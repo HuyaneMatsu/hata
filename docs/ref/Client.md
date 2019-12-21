@@ -168,6 +168,8 @@ The client's application info. By default is an empty `Application`, but after
 using the `Client.update_application_info()` method it should be updated. Only
 bots can request their application info.
 
+> Application info is updated on logon.
+
 ### `channels`
 
 - type : `dict`

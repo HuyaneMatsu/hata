@@ -93,37 +93,6 @@ Discord sends a `READY` dispatch. It usually happens when Discord drops
 the client, so it needs to reconnect. With some tricks you can check if the
 client is `ready-ready` or just `ready`.
 
-A useful API method to call when the client logs in is
-`.update_application_info()` which allows you to access the `.owner`
-property. Example:
-
-```py
-@client.events
-async def ready(client):
-    await client.update_application_info()
-    print(f'My owner is : {client.owner:f}')
-```
-
-This method also loads every application info about the bot too. These
-are stored at `.application` attribute.
-
-An example where we call ready only once:
-
-```py
-@client.events
-class ready:
-    def __init__(self):
-        self.called = False
-        
-    async def __call__(self,client):
-        if self.called:
-            return
-        self.called = True
-        
-        await client.update_application_info()
-        #do some stuffs
-```
-
 Events pick up on types or objects too and on their name. If it is a
 type and it's initializer is async it will be stored as a type.
 In every other case it initializes them and in this case the only condition 

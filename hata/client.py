@@ -2801,9 +2801,9 @@ class Client(UserBase):
         
         if self.is_bot:
             if __debug__:
-                Task(self.update_aplication_info(),self.loop).__silence__()
+                Task(self.update_application_info(),self.loop).__silence__()
             else:
-                Task(self.update_aplication_info(),self.loop)
+                Task(self.update_application_info(),self.loop)
         
         self.running=True
         Task(self._connect(),self.loop)

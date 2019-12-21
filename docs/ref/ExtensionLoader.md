@@ -299,19 +299,6 @@ Kuro = Client(TOKEN) # shiro's pair is kuro
 Kuro.events(events.ReactionAddWaitfor)
 Kuro.events(events.ReactionDeleteWaitfor)
 
-@Kuro.events
-class ready:
-    def __init__(self):
-        self.called = False
-        
-    async def __call__(self,client):
-        if self.called:
-            return
-        self.called = True
-        
-        # we will use `.is_owner` checks
-        await client.update_application_info()
-
 kuro_commands = Kuro.events(events.CommandProcesser('k|')).shortcut
 
 extension_loader = ExtensionLoader(Kuro)

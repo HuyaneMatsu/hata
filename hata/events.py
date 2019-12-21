@@ -59,9 +59,9 @@ class CommandProcesser(EventHandlerBase):
                 break
             
             if type(prefix) is str:
-                PREFIX_RP=re.compile(re.escape(prefix))
+                PREFIX_RP=re.compile(re.escape(prefix),flag)
             elif isinstance(prefix,(list,tuple)):
-                PREFIX_RP=re.compile("|".join(re.escape(p) for p in prefix))
+                PREFIX_RP=re.compile("|".join(re.escape(p) for p in prefix),flag)
             else:
                 raise TypeError(f'Prefix can be only callable, str or tuple/list type, got {prefix!r}')
             

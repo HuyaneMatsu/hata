@@ -324,10 +324,12 @@ class Client(UserBase):
             ext=ext_from_base64(avatar_data)
             if self.premium_type.value:
                 if ext not in VALID_ICON_FORMATS_EXTENDED:
-                    raise ValueError(f'Invalid image extension: {ext}')
+                    raise ValueError(f'Invalid image extension: `{ext}`')
             else:
                 if ext not in VALID_ICON_FORMATS:
-                    raise ValueError(f'Invalid image extension: {ext}{" Only premium users can set gif avatar!" if ext=="gif" else ""}')
+                    if ext=='gif':
+                        raise ValueError('Only premium users can have `gif` avatar!')
+                    raise ValueError(f'Invalid image extension: `{ext}`')
             data['avatar']=avatar_data
         
         if not self.is_bot:
@@ -2783,7 +2785,7 @@ class Client(UserBase):
                 '.connect\n',
                     ]
             
-            self.loop.render_exc_async(err,before,after)
+            await self.loop.render_exc_async(err,before,after)
             return
         
         if type(data) is not dict:
@@ -2796,6 +2798,12 @@ class Client(UserBase):
         self._init_on_ready(data)
         await self.client_gateway()
         await self.gateway.start(self.loop)
+        
+        if self.is_bot:
+            if __debug__:
+                Task(self.update_application_info(),self.loop).__silence__()
+            else:
+                Task(self.update_application_info(),self.loop)
         
         self.running=True
         Task(self._connect(),self.loop)

@@ -1050,8 +1050,8 @@ class content_parser_compiler:
                 raise RuntimeError(case)
             
             if loop:
-                result._back_state=2
                 result.append(f'{variable_name}.append({sub_var_name})')
+                result._back_state=2
                 if element.lower_limit or element.upper_limit:
                     result.append( 'index_+=1')
                 

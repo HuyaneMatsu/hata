@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name        = 'hata',
-    version     = '20191218.1',
+    version     = '20191221.1',
     packages    = [
         'hata',
         'hata.bin',

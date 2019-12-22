@@ -731,9 +731,10 @@ class Cooldown(object):
             limit=int(limit)
         self.limit=limit-weight
         
+        if (case is not None) and (not case.islower()):
+            case=case.lower()
+        
         if func is None:
-            if case is None:
-                case=''
             self.__name__=case
             self.__func__=EventDescriptor.DEFAULT_EVENT
             return self._wrapper
@@ -769,9 +770,10 @@ class Cooldown(object):
         self.limit  = source.limit+source.weight-weight
         self.handler= source.handler
         
+        if (case is not None) and (not case.islower()):
+            case=case.lower()
+            
         if func is None:
-            if case is None:
-                case=''
             self.__name__=case
             self.__func__=EventDescriptor.DEFAULT_EVENT
             return self._wrapper

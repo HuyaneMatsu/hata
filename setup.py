@@ -1,8 +1,19 @@
+import os, re
+from ast import literal_eval
 from setuptools import setup
+
+version_search_pattern=re.compile('^__version__[ ]*=[ ]*((?:\'[^\']+\')|(?:\"[^\"]+\"))[ ]*$',re.M)
+with open(os.path.join(os.path.split(__file__)[0],'hata','__init__.py')) as file:
+    parsed=version_search_pattern.search(file.read())
+
+if parsed is None:
+    raise RuntimeError('No version found at __init__.py')
+
+version=literal_eval(parsed.group(1))
 
 setup(
     name        = 'hata',
-    version     = '20191221.1',
+    version     = version,
     packages    = [
         'hata',
         'hata.bin',

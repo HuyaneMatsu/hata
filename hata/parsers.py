@@ -2497,12 +2497,19 @@ class _EventCreationManager(object):
         
         if case is None:
             case=check_name(func,None)
+
+        if (not case.islower()):
+            case=case.lower()
+        
         func=self.parent.__setevent__(func,case)
         return func
     
     def remove(self,func,case=None):
         if case is None:
             case=check_name(func,None)
+        
+        if (not case.islower()):
+            case=case.lower()
         
         self.parent.__delevent__(func,case)
     
@@ -2561,7 +2568,7 @@ class eventlist(list,metaclass=removemeta):
         '__setitem__','__contains__')
     __slots__=()
     def __init__(self,iterable=None):
-        if iterable is not None and iterable:
+        if (iterable is not None) and iterable:
             self.extend(iterable)
 
     class _wrapper(object):
@@ -2611,14 +2618,21 @@ class eventlist(list,metaclass=removemeta):
             raise ValueError('\n'.join(collected))
     
     def __call__(self,func=None,case=None):
+        if (case is not None) and (not case.islower()):
+            case=case.lower()
+        
         if func is None:
             return self._wrapper(self,case)
         
         func=just_convert(func)
+        
         list.append(self,(func,case))
         return func
     
     def remove(self,func,case=None):
+        if (case is not None) and (not case.islower()):
+            case=case.lower()
+            
         # we might overwrite __iter__ later
         for converted_func,converted_case in list.__iter__(self):
             
@@ -2823,6 +2837,10 @@ class EventDescriptor(object):
                 raise ValueError('\'name\' can not be None if \'pass_to_event\' is set to True')
             if case is None:
                 case=check_name(func,None)
+            
+            if (not case.islower()):
+                case=case.lower()
+            
             event_handler=getattr(self,name)
             func=event_handler.__setevent__(func,case)
             return func

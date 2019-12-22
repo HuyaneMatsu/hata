@@ -1134,9 +1134,10 @@ class ContentParser(object):
         self._on_failure=on_failure
         self._is_method=is_method
 
+        if (case is not None) and (not case.islower()):
+            case=case.lower()
+        
         if func is None:
-            if case is None:
-                case=''
             self.__name__=case
             self.__func__=EventDescriptor.DEFAULT_EVENT
             return self._wrapper

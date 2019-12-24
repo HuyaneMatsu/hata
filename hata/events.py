@@ -210,9 +210,9 @@ class CommandProcesser(EventHandlerBase):
     def __repr__(self):
         result = [
             '<', self.__class__.__name__,
-            ' prefix=', self.prefix.__repr__(),
-            ', command count=', self.commands.__len__().__repr__(),
-            ', mention_prefix=', self.mention_prefix.__repr__(),
+            ' prefix=', repr(self.prefix),
+            ', command count=', repr(len(self.commands)),
+            ', mention_prefix=', repr(self.mention_prefix),
                 ]
         
         default_event=self.default_event

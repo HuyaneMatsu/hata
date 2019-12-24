@@ -198,19 +198,16 @@ initializers.
 - items : (`str`, `Any`)
 
 Updates the channel and returns it's old attributes as (attribute name,
-old value). Exception at the returned data is only
-[`.overwrites`](#overwrites), because it is calculated with
-[`listdifference`](listdifference.md) and the data contains the
-function's return instead of the actual old value.
+old value).
 
-| name              | description                                                           |
-|-------------------|-----------------------------------------------------------------------|
-| bitrate           | int                                                                   |
-| category          | [ChannelCategory](ChannelCategory.md) / [Guild](Guild.md)             |
-| name              | str                                                                   |
-| overwrites        | [listdifference](listdifference.md) return of [PermOW](PermOW.md)     |
-| position          | int                                                                   |
-| user_limit        | int                                                                   |
+| name              | description                                               |
+|-------------------|-----------------------------------------------------------|
+| bitrate           | int                                                       |
+| category          | [ChannelCategory](ChannelCategory.md) / [Guild](Guild.md) |
+| name              | str                                                       |
+| overwrites        | list of [PermOW](PermOW.md)                               |
+| position          | int                                                       |
+| user_limit        | int                                                       |
 
 ### `_update_no_return(self,data)` (method)
 

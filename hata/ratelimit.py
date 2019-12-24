@@ -271,12 +271,15 @@ GLOBALLY_LIMITED=0x4000000000000000
 ##endpoint: /channels/{channel_id}/messages/{message_id}
 ##method  : DELETE
 ##auth    : bot
-##used at : message_delete
+##used at : message_delete / message_delete_a2wo
 ##limits  : `newer than 14 days` or `own` / `else`
-##    group   : 71680
+##    group   : 71680 / 87808
 ##    limit   : 3 / 30
-##    reset   : 2 / 120
+##    reset   : 1 / 120
 ##    limiter : channel_id
+##comment :
+##    For newer messages ratelimit is not every time included, but we ll ignore
+##    those, because we cannot detect, at which cases ar those applied.
 ##
 ##endpoint: /channels/{channel_id}/messages/{message_id}
 ##method  : GET

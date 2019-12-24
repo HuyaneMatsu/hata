@@ -2,7 +2,7 @@
 
 The flags of a [message](Message.md).
 
-- Source : [others.py](https://github.com/HuyaneMatsu/hata/blob/master/hata/others.py)
+- Source : [message.py](https://github.com/HuyaneMatsu/hata/blob/master/hata/message.py)
 
 A message can have 3 type of flags:
 - [`crossposted`](#crossposted)

@@ -936,7 +936,7 @@ additional `reason` argument can be passed too, which should show up the
 Similar to `message_delete_multiple`, but it accepts messages from different
 channels.
 
-### `message_delete_sequence(self,channel,after=None,before=None,limit=None,reason=None):
+### `message_delete_sequence(self,channel,after=None,before=None,limit=None,reason=None)`
 
 - `awaitable`
 - returns : `None`
@@ -1695,9 +1695,10 @@ Deletes the [`emoji`](Emoji.md). The `reason` shows up at the emoji's
 
 Edits the [`emoji`](Emoji.md) with the given arguments:
 
-- `name`, default : `None`. If set changes the emoji's name
-- `roles`, default : `[]`. The [roles](Role.md), which with the people can use
-the emoji.
+- `name`, default : `None`. If set changes the emoji's name. Emoji name length
+can be between 2 and 32.
+- `roles`, default : `None`. A list of [roles](Role.md), with which the users
+can use the emoji.
 - `reason`, default : `None`. Shows up at the [guild](Guild.md)'s audit logs.
 
 ### `vanity_invite(self,guild)`

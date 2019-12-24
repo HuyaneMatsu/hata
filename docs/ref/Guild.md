@@ -774,43 +774,40 @@ Syncs the guild's [emojis](Emoji.md) with the given data.
 - items : (`str`, `Any`)
 
 Updates the guild and returns it's old attributes as (attribute name, old value)
-pairs. A lot of attributes have their own dispatch events, so they are ignored.
-Exception at the returned data is only [`features`](#features), because it is
-calculated with [`listdifference`](listdifference.md) and the data contains the
-function's return instead of the actual old value.
+pairs.
 
-| name                      | description                                                                       |
-|---------------------------|-----------------------------------------------------------------------------------|
-| afk_channel               | [ChannelVoice](ChannelVoice.md) / None                                            |
-| afk_timeout               | int                                                                               |
-| available                 | bool                                                                              |
-| banner                    | int                                                                               |
-| booster_count             | int                                                                               |
-| content_filter            | [ContentFilterLevel](ContentFilterLevel.md)                                       |
-| description               | str                                                                               |
-| discovery_splash          | int                                                                               |
-| embed_channel             | [ChannelText](ChannelText.md) / None                                              |
-| embed_enabled             | bool                                                                              |
-| features                  | [listdifference](listdifference.md) return of [GuildFeature](GuildFeature.md)     |
-| has_animated_icon         | bool                                                                              |
-| icon                      | int                                                                               |
-| max_presences             | int                                                                               |
-| max_users                 | int                                                                               |
-| message_notification      | [MessageNotificationLevel](MessageNotificationLevel.md)                           |
-| mfa                       | [MFA](MFA.md)                                                                     |
-| name                      | str                                                                               |
-| owner                     | [User](User.md) / [Client](Client.md)                                             |
-| preferred_locale          | str                                                                               |
-| premium_tier              | int                                                                               |
-| region                    | [VoiceRegion](VoiceRegion.md)                                                     |
-| rules_channel             | [ChannelText](ChannelText.md) / None                                              |
-| splash                    | int                                                                               |
-| system_channel            | [ChannelText](ChannelText.md) / None                                              |
-| system_channel_flags      | [SystemChannelFlag](SystemChannelFlag.md)                                         |
-| vanity_code               | str                                                                               |
-| verification_level        | [VerificationLevel](VerificationLevel.md)                                         |
-| widget_channel            | [ChannelText](ChannelText.md) / None                                              |
-| widget_enabled            | bool                                                                              |
+| name                      | description                                               |
+|---------------------------|-----------------------------------------------------------|
+| afk_channel               | [ChannelVoice](ChannelVoice.md) / None                    |
+| afk_timeout               | int                                                       |
+| available                 | bool                                                      |
+| banner                    | int                                                       |
+| booster_count             | int                                                       |
+| content_filter            | [ContentFilterLevel](ContentFilterLevel.md)               |
+| description               | str                                                       |
+| discovery_splash          | int                                                       |
+| embed_channel             | [ChannelText](ChannelText.md) / None                      |
+| embed_enabled             | bool                                                      |
+| features                  | list of [GuildFeature](GuildFeature.md)                   |
+| has_animated_icon         | bool                                                      |
+| icon                      | int                                                       |
+| max_presences             | int                                                       |
+| max_users                 | int                                                       |
+| message_notification      | [MessageNotificationLevel](MessageNotificationLevel.md)   |
+| mfa                       | [MFA](MFA.md)                                             |
+| name                      | str                                                       |
+| owner                     | [User](User.md) / [Client](Client.md)                     |
+| preferred_locale          | str                                                       |
+| premium_tier              | int                                                       |
+| region                    | [VoiceRegion](VoiceRegion.md)                             |
+| rules_channel             | [ChannelText](ChannelText.md) / None                      |
+| splash                    | int                                                       |
+| system_channel            | [ChannelText](ChannelText.md) / None                      |
+| system_channel_flags      | [SystemChannelFlag](SystemChannelFlag.md)                 |
+| vanity_code               | str                                                       |
+| verification_level        | [VerificationLevel](VerificationLevel.md)                 |
+| widget_channel            | [ChannelText](ChannelText.md) / None                      |
+| widget_enabled            | bool                                                      |
 
 
 ### `_update_no_return(self,data)` (method)

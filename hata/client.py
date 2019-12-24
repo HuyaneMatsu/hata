@@ -13,13 +13,13 @@ from .futures import Future, Task, sleep, CancelledError
 from .py_formdata import Formdata
 from .py_hdrs import AUTHORIZATION
 
-from .others import Status, UserFlag, log_time_converter, _parse_ih_fsa,    \
+from .others import Status, id_to_time, log_time_converter, _parse_ih_fsa,  \
     VoiceRegion, ContentFilterLevel, PremiumType, MessageNotificationLevel, \
     bytes_to_base64, FriendRequestFlag, ext_from_base64, Theme, now_as_id,  \
     to_json, multi_delete_time_limit, VerificationLevel, RelationshipType,  \
-    random_id, parse_time, id_to_time
+    random_id, parse_time
 
-from .user import User, USERS, GuildProfile, UserBase
+from .user import User, USERS, GuildProfile, UserBase, UserFlag
 from .emoji import Emoji, PartialEmoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate,     \
     ChannelText, ChannelGroup, message_relativeindex, cr_pg_channel_object, \
@@ -70,7 +70,7 @@ class single_user_chunker(object):
         self.waiter.set_result_if_pending(users)
         timer=self.timer
         if timer is not None:
-            self.timer.cancel()
+            timer.cancel()
             self.timer=None
         return True
 
@@ -2490,9 +2490,10 @@ class Client(UserBase):
     async def emoji_delete(self,emoji,reason=None):
         await self.http.emoji_delete(emoji.guild.id,emoji.id,reason=reason)
 
-    async def emoji_edit(self,emoji,name=None,roles=[],reason=None):
+    async def emoji_edit(self,emoji,name=None,roles=None,reason=None):
         data={}
         
+        # name is required
         if (name is None):
             data['name']=emoji.name
         else:
@@ -2502,11 +2503,13 @@ class Client(UserBase):
                 raise ValueError(f'The length of the name can be between 2-32, got {name_ln}')
             
             data['name']=name
-
-        data['roles']=[role.id for role in roles]
+        
+        # roles are not required
+        if (roles is not None):
+            data['roles']=[role.id for role in roles]
         
         await self.http.emoji_edit(emoji.guild.id,emoji.id,data,reason)
-    
+        
     # Invite management
         
     async def vanity_invite(self,guild):

@@ -5,13 +5,15 @@ import sys, datetime
 from time import monotonic
 
 from .futures import Future, Task, iscoroutinefunction as iscoro
-from .dereaddons_local import function, remove, removemeta, _spaceholder, MethodLike
+from .dereaddons_local import function, remove, removemeta, _spaceholder,   \
+    MethodLike
 
 from .client_core import CACHE_USER, CACHE_PRESENCE, CLIENTS
-from .user import User,PartialUser,USERS
+from .user import User, PartialUser,USERS
 from .channel import CHANNEL_TYPES, CHANNELS
 from .others import Relationship, Gift
-from .guild import Guild,GUILDS
+from .guild import Guild, GUILDS, EMOJI_UPDATE_NEW, EMOJI_UPDATE_DELETE,    \
+    EMOJI_UPDATE_EDIT
 from .message import Message
 from .emoji import PartialEmoji
 from .role import Role
@@ -1081,9 +1083,36 @@ def GUILD_EMOJIS_UPDATE__CAL_SC(client,data):
         return
 
     changes=guild._update_emojis(data['emojis'])
-
-    if changes:
-        Task(client.events.emoji_edit(client,guild,changes),client.loop)
+    
+    if not changes:
+        return
+    
+    for action, emoji, old in changes:
+        if action==EMOJI_UPDATE_EDIT:
+            coro=client.events.emoji_edit
+            if coro is DEFAULT_EVENT:
+                continue
+            
+            Task(coro(client,guild,emoji,old),client.loop)
+            continue
+            
+        if action==EMOJI_UPDATE_NEW:
+            coro=client.events.emoji_create
+            if coro is DEFAULT_EVENT:
+                continue
+            
+            Task(coro(client,guild,emoji),client.loop)
+            continue
+        
+        if action==EMOJI_UPDATE_DELETE:
+            coro=client.events.emoji_delete
+            if coro is DEFAULT_EVENT:
+                continue
+            
+            Task(coro(client,guild,emoji),client.loop)
+            continue
+        
+        # no more case
 
 def GUILD_EMOJIS_UPDATE__CAL_MC(client,data):
     guild_id=int(data['guild_id'])
@@ -1097,11 +1126,46 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client,data):
         return
     
     changes=guild._update_emojis(data['emojis'])
-
-    if changes:
-        for client_ in guild.clients:
-            Task(client_.events.emoji_edit(client_,guild,changes),client_.loop)
-
+    
+    if not changes:
+        return
+    
+    for action, emoji, old in changes:
+        if action==EMOJI_UPDATE_EDIT:
+            for client_ in guild.clients:
+                coro=client_.events.emoji_edit
+                if coro is DEFAULT_EVENT:
+                    continue
+                
+                Task(coro(client,guild,emoji,old),client_.loop)
+                continue
+                
+            continue
+            
+        if action==EMOJI_UPDATE_NEW:
+            for client_ in guild.clients:
+                coro=client_.events.emoji_create
+                if coro is DEFAULT_EVENT:
+                    continue
+                
+                Task(coro(client,guild,emoji),client_.loop)
+                continue
+            
+            continue
+        
+        if action==EMOJI_UPDATE_DELETE:
+            for client_ in guild.clients:
+                coro=client_.events.emoji_delete
+                if coro is DEFAULT_EVENT:
+                    continue
+                
+                Task(coro(client,guild,emoji),client_.loop)
+                continue
+            
+            continue
+        
+        # no more case
+        
 def GUILD_EMOJIS_UPDATE__OPT_SC(client,data):
     guild_id=int(data['guild_id'])
     try:
@@ -1458,7 +1522,7 @@ del GUILD_CREATE__CAL, GUILD_CREATE__OPT
 def GUILD_SYNC__CAL(client,data):
     guild_id=int(data['guild_id'])
     try:
-        guild=GUILDS['guild_id']
+        guild=GUILDS[guild_id]
     except KeyError:
         sync_guild(client,data,None)
         return
@@ -1469,7 +1533,7 @@ def GUILD_SYNC__CAL(client,data):
 def GUILD_SYNC__OPT(client,data):
     guild_id=int(data['guild_id'])
     try:
-        guild=GUILDS['guild_id']
+        guild=GUILDS[guild_id]
     except KeyError:
         sync_guild(client,data,None)
         return
@@ -2284,7 +2348,9 @@ EVENTS.add_default('channel_create',            2, 'CHANNEL_CREATE',            
 EVENTS.add_default('channel_pin_update',        2, 'CHANNEL_PINS_UPDATE',           )
 EVENTS.add_default('channel_group_user_add',    3, 'CHANNEL_RECIPIENT_ADD',         )
 EVENTS.add_default('channel_group_user_delete', 3, 'CHANNEL_RECIPIENT_REMOVE',      )
-EVENTS.add_default('emoji_edit',                3, 'GUILD_EMOJIS_UPDATE',           )
+EVENTS.add_default('emoji_create',              3, 'GUILD_EMOJIS_UPDATE',           )
+EVENTS.add_default('emoji_delete',              3, 'GUILD_EMOJIS_UPDATE',           )
+EVENTS.add_default('emoji_edit',                4, 'GUILD_EMOJIS_UPDATE',           )
 EVENTS.add_default('guild_user_add',            3, 'GUILD_MEMBER_ADD',              )
 EVENTS.add_default('guild_user_delete',         4, 'GUILD_MEMBER_REMOVE',           )
 EVENTS.add_default('guild_create',              2, 'GUILD_CREATE',                  )
@@ -2813,16 +2879,14 @@ class asynclist(list):
         for coro in self:
             Task(coro(client,*args),client.loop)
 
+async def DEFAULT_EVENT(*args):
+    pass
+    
 class EventDescriptor(object):
     __slots__=list(EVENTS.defaults)
     __slots__.sort()
 
-    @staticmethod
-    async def DEFAULT_EVENT(*args):
-        pass
-
     def __init__(self):
-        DEFAULT_EVENT=self.DEFAULT_EVENT
         for name in EVENTS.defaults:
             object.__setattr__(self,name,DEFAULT_EVENT)
         object.__setattr__(self,'error',default_error_event)
@@ -2855,12 +2919,12 @@ class EventDescriptor(object):
         if (parser_name is None):
             raise AttributeError(f'Event name: \'{name}\' is invalid')
         
-        if func is self.DEFAULT_EVENT:
+        if func is DEFAULT_EVENT:
             return func
         
         parser_default=PARSER_DEFAULTS.all[parser_name]
         actual=getattr(self,name)
-        if actual is self.DEFAULT_EVENT:
+        if actual is DEFAULT_EVENT:
             object.__setattr__(self,name,func)
             parser_default.add()
             return func
@@ -2899,22 +2963,22 @@ class EventDescriptor(object):
         parser_default=PARSER_DEFAULTS.all[parser_name]
         actual=getattr(self,name)
         object.__setattr__(self,name,value)
-        if actual is self.DEFAULT_EVENT:
-            if value is self.DEFAULT_EVENT:
+        if actual is DEFAULT_EVENT:
+            if value is DEFAULT_EVENT:
                 return
             
             parser_default.add()
             return
         
-        if value is self.DEFAULT_EVENT:
+        if value is DEFAULT_EVENT:
             parser_default.remove()
     
     def __delattr__(self,name):
         actual=getattr(self,name)
-        if actual is self.DEFAULT_EVENT:
+        if actual is DEFAULT_EVENT:
             return
         
-        object.__setattr__(self,name,self.DEFAULT_EVENT)
+        object.__setattr__(self,name,DEFAULT_EVENT)
         
         parser_name=EVENTS.parsers.get(name,None)
         if (parser_name is None):

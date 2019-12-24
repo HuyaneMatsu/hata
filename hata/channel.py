@@ -7,7 +7,7 @@ import re
 from collections import deque
 from time import monotonic
 
-from .dereaddons_local import listdifference, weakposlist
+from .dereaddons_local import weakposlist
 from .futures import sleep
 
 from .client_core import CHANNELS
@@ -249,7 +249,7 @@ async def _load_till(client,channel,index):
 #the chunksize is 97, because it means 1 request for _load_till
 class MessageIterator(object):
     __slots__=('_index', '_permission', 'channel', 'chunksize', 'client',)
-    def __init__(self,client,channel,start=0,chunksize=97):
+    def __init__(self,client,channel,chunksize=97):
         self.client     = client
         self.channel    = channel
         self.chunksize  = chunksize
@@ -737,17 +737,16 @@ class ChannelGuildBase(ChannelBase):
             return overwrites
         if not overwrites_data:
             return overwrites
-
+        
         default_role=self.guild.default_role
-            
+        
         for overwrite_data in overwrites_data:
             overwrite=PermOW(overwrite_data)
-
             if overwrite.target is default_role:
                 overwrites.insert(0,overwrite)
             else:
                 overwrites.append(overwrite)
-                
+        
         return overwrites
     
     def __str__(self):
@@ -930,9 +929,8 @@ class ChannelText(ChannelGuildBase,ChannelTextBase):
             self.slowmode=slowmode
 
         overwrites=self._parse_overwrites(data)
-        difference=listdifference(sorted(self.overwrites),sorted(overwrites))
-        if difference[0] or difference[1]:
-            old['overwrites']=difference
+        if self.overwrites!=overwrites:
+            old['overwrites']=self.overwrites
             self.overwrites=overwrites
 
         self._update_catpos(data,old)
@@ -1243,9 +1241,8 @@ class ChannelVoice(ChannelGuildBase):
             self.user_limit=user_limit
 
         overwrites=self._parse_overwrites(data)
-        difference=listdifference(sorted(self.overwrites),sorted(overwrites))
-        if difference[0] or difference[1]:
-            old['overwrites']=difference
+        if self.overwrites!=overwrites:
+            old['overwrites']=self.overwrites
             self.overwrites=overwrites
 
         self._update_catpos(data,old)
@@ -1436,12 +1433,10 @@ class ChannelGroup(ChannelBase,ChannelTextBase):
             self.icon=icon
         
         users=[User(user) for user in data['recipeents']]
-        users.sort()
-        difference=listdifference(self.users,users)
-        if difference[0] or difference[1]:
+        if self.users!=users:
+            old['users']=self.users
             self.users=users
-            old['users']=difference
-                
+        
         owner_id=int(data['owner_id'])
         if self.owner.id!=owner_id:
             for user in self.users:
@@ -1615,9 +1610,8 @@ class ChannelCategory(ChannelGuildBase):
             self.name=name
 
         overwrites=self._parse_overwrites(data)
-        difference=listdifference(sorted(self.overwrites),sorted(overwrites))
-        if difference[0] or difference[1]:
-            old['overwrites']=difference
+        if self.overwrites!=overwrites:
+            old['overwrites']=self.overwrites
             self.overwrites=overwrites
 
         self._update_catpos(data,old)
@@ -1721,9 +1715,8 @@ class ChannelStore(ChannelGuildBase):
             self.nsfw=nsfw
 
         overwrites=self._parse_overwrites(data)
-        difference=listdifference(sorted(self.overwrites),sorted(overwrites))
-        if difference[0] or difference[1]:
-            old['overwrites']=difference
+        if self.overwrites!=overwrites:
+            old['overwrites']=self.overwrites
             self.overwrites=overwrites
 
         self._update_catpos(data,old)

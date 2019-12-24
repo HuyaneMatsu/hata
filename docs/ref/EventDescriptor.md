@@ -144,21 +144,21 @@ Called when a [channel](CHANNEL_TYPES.md) is deleted.
 Called when a channel](CHANNEL_TYPES.md) is edited. The `old` argument is a `dict`
 of the changed attributes, what contains (`attribute name`, `old value`) items.
 
-| name                      | description                                                                           |
-|---------------------------|---------------------------------------------------------------------------------------|
-| bitrate                   | int                                                                                   |
-| category                  | [Guild](Guild.md) / [ChannelCategory](ChannelCategory.md)                             |
-| icon                      | int                                                                                   |
-| name                      | str                                                                                   |
-| nsfw                      | bool                                                                                  |
-| overwrites                | [listdifference](listdifference.md) return of [PermOW](PermOW.md)                     |
-| owner                     | [User](User.md) / [Client](Client.md)                                                 |
-| position                  | int                                                                                   |
-| slowmode                  | int                                                                                   |
-| topic                     | str                                                                                   |
-| type                      | int                                                                                   |
-| user_limit                | int                                                                                   |
-| users                     | [listdifference](listdifference.md) return  of [User](User.md) / [Client](Client.md)  |
+| name                      | description                                               |
+|---------------------------|-----------------------------------------------------------|
+| bitrate                   | int                                                       |
+| category                  | [Guild](Guild.md) / [ChannelCategory](ChannelCategory.md) |
+| icon                      | int                                                       |
+| name                      | str                                                       |
+| nsfw                      | bool                                                      |
+| overwrites                | list of [PermOW](PermOW.md)                               |
+| owner                     | [User](User.md) / [Client](Client.md)                     |
+| position                  | int                                                       |
+| slowmode                  | int                                                       |
+| topic                     | str                                                       |
+| type                      | int                                                       |
+| user_limit                | int                                                       |
+| users                     | list of [User](User.md) / [Client](Client.md)             |
 
 ### `channel_group_user_add(client,channel,user)`
 
@@ -247,33 +247,33 @@ suppressed, but instead of desuppressing and updating, it removes the old embeds
 and adds new one to it. The message's flag will still show that the it's embeds
 are suppressed.
 
-### `emoji_edit(client,guild,changes)`
+### `emoji_create(client,guild,emoji)`
 
-Called when an [emoji](Emoji.md) is edited at a [guild](Guild.md). Not like at the
-case of most `edit` events, discord sends an `emoji` event for a guild as
-whole. So we have one `emoji` event instead of 3 separate.
+Called, when an [emoji](Emoji.md) is created at a [guild](Guild.md).
 
-(Or should we separate them?)
+### `emoji_delete(client,guild,emoji)`
 
-The `changes` arguemnt is list of `(operation, emoji, old)` tuples. Where:
-- Operation can be `n` for a `new`, `e` for `edit` and `d` for delete.
-- Emoji is every time the updated emoji.
-- Old is `None` or at the case of `edit` it is the `dict` of the old attributes.
+Called, when an [emoji](Emoji.md) is deleted at a [guild](Guild.md).
 
-The (`attribute name`, `old value`) items of `old`:
+> Deleted emojis's [`.guild`](Emoji.md#guild) attribute is set to `None`.
 
-| name                      | description               |
-|---------------------------|---------------------------|
-| animated                  | bool                      |
-| available                 | bool                      |
-| managed                   | bool                      |
-| name                      | str                       |
-| require_colons            | bool                      |
-| roles                     | list of [Role](Role.md)   |
+### `emoji_edit(client,guild,emoji,old)`
 
+Called when an [emoji](Emoji.md) is edited at a [guild](Guild.md). The `old`
+argument is a `dict` of the changed attributes, what contains (`attribute name`,
+`old value`) items.
 
-Additionally if an [emoji](Emoji.md) is upated it's `.user` instance attribute
-might be set too.
+| name                      | description                   |
+|---------------------------|-------------------------------|
+| animated                  | bool                          |
+| available                 | bool                          |
+| managed                   | bool                          |
+| name                      | str                           |
+| require_colons            | bool                          |
+| roles                     | set of [Role](Role.md) / None |
+
+> If an [emoji](Emoji.md) is upated it's `.user` instance attribute might be
+> set too.
 
 ### `error(client,event,err)`
 
@@ -315,36 +315,36 @@ left (got kicked or banned too) from it. The `profile` is the
 Called when a [guild](Guild.md) is edited. The `old` argument is a `dict`
 of the changed attributes, what contains (`attribute name`, `old value`) items.
 
-| name                      | description                                                                       |
-|---------------------------|-----------------------------------------------------------------------------------|
-| afk_channel               | [ChannelVoice](ChannelVoice.md) / None                                            |
-| afk_timeout               | int                                                                               |
-| available                 | bool                                                                              |
-| banner                    | int                                                                               |
-| booster_count             | int                                                                               |
-| content_filter            | [ContentFilterLevel](ContentFilterLevel.md)                                       |
-| description               | str                                                                               |
-| embed_channel             | [ChannelText](ChannelText.md) / None                                              |
-| embed_enabled             | bool                                                                              |
-| features                  | [listdifference](listdifference.md) return of [GuildFeature](GuildFeature.md)     |
-| has_animated_icon         | bool                                                                              |
-| icon                      | int                                                                               |
-| max_presences             | int                                                                               |
-| max_users                 | int                                                                               |
-| message_notification      | [MessageNotificationLevel](MessageNotificationLevel.md)                           |
-| mfa                       | [MFA](MFA.md)                                                                     |
-| name                      | str                                                                               |
-| owner                     | [User](User.md) / [Client](Client.md)                                             |
-| preferred_locale          | str                                                                               |
-| premium_tier              | int                                                                               |
-| region                    | [VoiceRegion](VoiceRegion.md)                                                     |
-| splash                    | int                                                                               |
-| system_channel            | [ChannelText](ChannelText.md) / None                                              |
-| system_channel_flags      | [SystemChannelFlag](SystemChannelFlag.md)                                         |
-| vanity_code               | str                                                                               |
-| verification_level        | [VerificationLevel](VerificationLevel.md)                                         |
-| widget_channel            | [ChannelText](ChannelText.md) / None                                              |
-| widget_enabled            | bool                                                                              |
+| name                      | description                                               |
+|---------------------------|-----------------------------------------------------------|
+| afk_channel               | [ChannelVoice](ChannelVoice.md) / None                    |
+| afk_timeout               | int                                                       |
+| available                 | bool                                                      |
+| banner                    | int                                                       |
+| booster_count             | int                                                       |
+| content_filter            | [ContentFilterLevel](ContentFilterLevel.md)               |
+| description               | str                                                       |
+| embed_channel             | [ChannelText](ChannelText.md) / None                      |
+| embed_enabled             | bool                                                      |
+| features                  | list of [GuildFeature](GuildFeature.md)                   |
+| has_animated_icon         | bool                                                      |
+| icon                      | int                                                       |
+| max_presences             | int                                                       |
+| max_users                 | int                                                       |
+| message_notification      | [MessageNotificationLevel](MessageNotificationLevel.md)   |
+| mfa                       | [MFA](MFA.md)                                             |
+| name                      | str                                                       |
+| owner                     | [User](User.md) / [Client](Client.md)                     |
+| preferred_locale          | str                                                       |
+| premium_tier              | int                                                       |
+| region                    | [VoiceRegion](VoiceRegion.md)                             |
+| splash                    | int                                                       |
+| system_channel            | [ChannelText](ChannelText.md) / None                      |
+| system_channel_flags      | [SystemChannelFlag](SystemChannelFlag.md)                 |
+| vanity_code               | str                                                       |
+| verification_level        | [VerificationLevel](VerificationLevel.md)                 |
+| widget_channel            | [ChannelText](ChannelText.md) / None                      |
+| widget_enabled            | bool                                                      |
 
 ### `guild_sync(client,guild)`
 
@@ -393,24 +393,22 @@ message's id-s, independently if they are loaded or not.
 
 Called when a loaded [message](Message.md) is edited. The `old` argument is a
 `dict` of the changed attributes, what contains (`attribute name`, `old value`)
-items.
+items. A special case is if a message is (un)pinned or (un)suppressed , because
+then the `old` is not going to contain `'edited'`, only `'pinned'` or `flags`.
 
-| name                      | description                                                                                                                                                                                                                       |
-|---------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| activity                  | [MessageActivity](MessageActivity.md)                                                                                                                                                                                             |
-| activity_party_id         | str                                                                                                                                                                                                                               |
-| application               | [MessageApplication](MessageApplication.md) / None                                                                                                                                                                                |
-| content                   | str                                                                                                                                                                                                                               |
-| cross_mentions            | None / (list of [Channel](CHANNEL_TYPES.md) / [UnknownCrossMention](UnknownCrossMention.md)) / ([listdifference](listdifference.md) return of [Channel](CHANNEL_TYPES.md) / [UnknownCrossMention](UnknownCrossMention.md)         |                                            |
-| edited                    | None / `datetime`                                                                                                                                                                                                                 |
-| embeds                    | list of [EmbedCore](EmbedCore.md)                                                                                                                                                                                                 |
-| flags                     | [MessageFlag](MessageFlag.md)                                                                                                                                                                                                     |
-| mention_everyone          | bool                                                                                                                                                                                                                              |
-| pinned                    | bool                                                                                                                                                                                                                              |
-| user_mentions             | None / (list of [User](User.md)) / [lient](Client.md)) / ([listdifference](listdifference.md) return of [User](User.md) / [Client](Client.md))                                                                                    |
-| role_mentions             | None / (list of [Role](Role.md)) / ([listdifference](listdifference.md) return of [Role](Role.md)))                                                                                                                               |
-
-`old` might not contain `edited` if only `pinned` or `flags` is updated.
+| name                      | description                                                                                   |
+|---------------------------|-----------------------------------------------------------------------------------------------|
+| activity                  | Nne / [MessageActivity](MessageActivity.md)                                                   |
+| application               | None /[MessageApplication](MessageApplication.md)                                             |
+| content                   | str                                                                                           |
+| cross_mentions            | None / (list of [Channel](CHANNEL_TYPES.md) / [UnknownCrossMention](UnknownCrossMention.md))  |
+| edited                    | None / datetime                                                                               |
+| embeds                    | list of [EmbedCore](EmbedCore.md)                                                             |
+| flags                     | [MessageFlag](MessageFlag.md)                                                                 |
+| mention_everyone          | bool                                                                                          |
+| pinned                    | bool                                                                                          |
+| user_mentions             | None / (list of [User](User.md)) / [lient](Client.md))                                        |
+| role_mentions             | None / (list of [Role](Role.md))                                                              |
 
 ### `reaction_add(client,message,emoji,user)`
 
@@ -545,15 +543,15 @@ what contains (`attribute name`, `old value`) items.
 Not like at other cases, this event updates not only
 [GuildProfile](GuildProfile.md) attributes.
 
-| name                      | description                                                   |
-|---------------------------|---------------------------------------------------------------|
-| nick                      | str / None                                                    |
-| roles                     | [listdifference](listdifference.md) return of [Role](Role.md) |
-| boosts_since              | datetime / None                                               |
+| name                      | description               |
+|---------------------------|---------------------------|
+| nick                      | str / None                |
+| roles                     | list of [Role](Role.md)   |
+| boosts_since              | datetime / None           |
 
 ### `voice_state_update(client,state,action,old)`
 
-Called when a [voice state](VoiceState) is updated a
+Called when a [voice state](VoiceState.md) is updated a
 [voice channel](ChannelVoice.md). The `action` argument can be `l` if a
 [user](User.md) `left` from the guild's channels (or got removed), `j` if the
 user just `joined`, or `u` if the voice state was `updated`. `old` is passed
@@ -575,26 +573,18 @@ Called when a [webhook](Webhook.md) of the [channel](CHANNEL_TYPES.md) is
 updated. Sadly Discord does not sends details, so we pass only the channel as
 argument.
 
-## Static methods
-
-### `DEFAULT_EVENT`
-
-- `awaitable`
-
-The default event. Does nothing at all.
-
 ## Magic methods
 
 ### `__setatrr__`
 
-If an event is set of any clients, what is not [.DEFAULT_EVENT](#DEFAULT_EVENT),
+If an event is set of any clients, what is not `DEFAULT_EVENT`,
 then the event's parser will switch from `OPT` to the normal one, which means,
 it will calculate changes to feed the event with and also will start to ensuring
 the event too.
 
 ### `__delattr__`
 
-Removes the event with switching it to [.DEFAULT_EVENT](#DEFAULT_EVENT).
+Removes the event with switching it to `DEFAULT_EVENT`.
 If non of the clients have this event set, then it switches the
 event's parser to `OPT`.
     

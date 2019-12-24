@@ -992,7 +992,18 @@ class DiscordHTTPClient(object):
             if err.response.status==404: #404==already deleted message
                 return
             raise
-            
+    
+    # after 2 week else
+    async def message_delete_a2wo(self,channel_id,message_id,reason):
+        try:
+            result = await self.request(ratelimit_handler(self.loop,channel_id,87808),METH_DELETE,
+                f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}',reason=reason)
+            return result
+        except DiscordException as err:
+            if err.code == 10008: # 10008==already deleted message
+                return
+            raise
+    
     async def message_delete_multiple(self,channel_id,data,reason):
         return await self.request(ratelimit_handler(self.loop,channel_id,30464),METH_POST,
             f'{API_ENDPOINT}/channels/{channel_id}/messages/bulk_delete',data,reason=reason)

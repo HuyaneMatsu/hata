@@ -261,21 +261,18 @@ initializers.
 - items : (`str`, `Any`)
 
 Updates the channel and returns it's old attributes as (attribute name,
-old value). Exception at the returned data is only
-[`.overwrites`](#overwrites), because it is calculated with
-[`listdifference`](listdifference.md) and the data contains the
-function's return instead of the actual old value.
+old value).
 
-| name              | description                                                           |
-|-------------------|-----------------------------------------------------------------------|
-| category          | [ChannelCategory](ChannelCategory.md) / [Guild](Guild.md)           |
-| name              | str                                                                   |
-| nsfw              | bool                                                                  |
-| overwrites        | [listdifference](listdifference.md) return of [PermOW](PermOW.md)   |
-| position          | int                                                                   |
-| slowmode          | int                                                                   |
-| topic             | str                                                                   |
-| type              | int                                                                   |
+| name              | description                                               |
+|-------------------|-----------------------------------------------------------|
+| category          | [ChannelCategory](ChannelCategory.md) / [Guild](Guild.md) |
+| name              | str                                                       |
+| nsfw              | bool                                                      |
+| overwrites        | list of [PermOW](PermOW.md)                               |
+| position          | int                                                       |
+| slowmode          | int                                                       |
+| topic             | str                                                       |
+| type              | int                                                       |
 
 ### `_update_no_return(self,data)` (method)
 

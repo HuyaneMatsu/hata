@@ -1,11 +1,12 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('AO2Access', 'UserOA2', )
+__all__ = ('AO2Access', 'UserOA2', 'parse_oauth2_redirect_url')
 
+import re
 from datetime import datetime
 
 from .integration import Integration
-from .others import UserFlag, PremiumType
-from .user import UserBase
+from .others import PremiumType
+from .user import UserBase, UserFlag
 
 DEFAULT_LOCALE='en-US'
 LOCALES={DEFAULT_LOCALE:DEFAULT_LOCALE}
@@ -48,7 +49,15 @@ def parse_locale_optional(data):
         LOCALES[locale]=locale
     
     return locale
-    
+
+OA2_RU_RP=re.compile('(https{0,1}://.+?)\?code=([a-zA-Z0-9]{30})')
+
+def parse_oauth2_redirect_url(url):
+    result=OA2_RU_RP.fullmatch(url)
+    if result is None:
+        raise ValueError
+    return result.groups()
+
 class Connection(object):
     __slots__=('friend_sync', 'id', 'integrations', 'name', 'revoked',
         'show_activity', 'type', 'verified', 'visibility',)
@@ -158,4 +167,4 @@ class UserOA2(UserBase):
     def is_bot(self):
         return False
 
-del UserBase
+del UserBase, re

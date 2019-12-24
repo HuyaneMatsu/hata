@@ -2490,9 +2490,10 @@ class Client(UserBase):
     async def emoji_delete(self,emoji,reason=None):
         await self.http.emoji_delete(emoji.guild.id,emoji.id,reason=reason)
 
-    async def emoji_edit(self,emoji,name=None,roles=[],reason=None):
+    async def emoji_edit(self,emoji,name=None,roles=None,reason=None):
         data={}
         
+        # name is required
         if (name is None):
             data['name']=emoji.name
         else:
@@ -2502,11 +2503,13 @@ class Client(UserBase):
                 raise ValueError(f'The length of the name can be between 2-32, got {name_ln}')
             
             data['name']=name
-
-        data['roles']=[role.id for role in roles]
+        
+        # roles are not required
+        if (roles is not None):
+            data['roles']=[role.id for role in roles]
         
         await self.http.emoji_edit(emoji.guild.id,emoji.id,data,reason)
-    
+        
     # Invite management
         
     async def vanity_invite(self,guild):

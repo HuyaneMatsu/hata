@@ -245,12 +245,12 @@ initializers.
 Updates the channel and returns it's old attributes as (attribute name,
 old value).
 
-| name              | description                                                                               |
-|-------------------|-------------------------------------------------------------------------------------------|
-| icon              | int                                                                                       |
-| name              | str                                                                                       |
-| owner             | [`User`](User.md) / [`Client`](Client.md)                                                 |
-| users             | [listdifference](listdifference.md) return of [`User`](User.md) / [`Client`](Client.md)   |
+| name              | description                                       |
+|-------------------|---------------------------------------------------|
+| icon              | int                                               |
+| name              | str                                               |
+| owner             | [`User`](User.md) / [`Client`](Client.md)         |
+| users             | list of [`User`](User.md) / [`Client`](Client.md) |
 
 ### `_update_no_return(self,data)` (method)
 

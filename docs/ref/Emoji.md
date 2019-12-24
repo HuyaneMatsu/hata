@@ -76,14 +76,14 @@ set to False.
 
 ### `roles`
 
-- type : `list` / `NoneType`
+- type : `set` / `NoneType`
 - default : `None`
 - elements : [`Role`](Role.md)
 
-The list of roles for which the custom emoji is whitelisted to.  If the emoji
-is not limited for specific roles, then it just uses it's guild's `.roles`
-attribute. If the emoji is a builtin (unicode) emoji, then this attribute is
-set to `None`.
+The set of roles for which the custom emoji is whitelisted to.  If the emoji
+is not limited for specific roles, then this value is set to `None`. If the
+emoji is a builtin (unicode) emoji, then this attribute is set to `None` as 
+well.
 
 ### `unicode`
 
@@ -98,7 +98,7 @@ of unicode emojis this attribute stores the emoji's unicode representation.
 - type : [`User`](User.md) / [`Client`](Client.md)
 - default : [`ZEROUSER`](ZEROUSER.md)
 
-The creator of the custom emoji. The emoji must be requested from the discord
+The creator of the custom emoji. The emoji must be requested from the Discord
 API, or it's user will be just the default `ZEROUSER`.
 
 ## `Properties`
@@ -107,7 +107,7 @@ API, or it's user will be just the default `ZEROUSER`.
 
 - returns : `str`
 
-This property returns the emoji's form, when it is sent in a mesage.
+This property returns the emoji's form, when it is sent in a [msesage](Message.md).
 
 ### `as_reaction`
 
@@ -245,6 +245,16 @@ Updates the emoji by the given data.
 
 Updates the emoji and returns it's old attributes with
 (`attribute name`, `old value`) items.
+
+| name              | description                   |
+|-------------------|-------------------------------|
+| animated          | bool                          |
+| available         | bool                          |
+| managed           | bool                          |
+| name              | str                           |
+| require_colons    | bool                          |
+| roles             | set of [Role](Role.md) / None |
+
 
 ### `_delete(self)` (method)
 

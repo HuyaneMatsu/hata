@@ -6,17 +6,10 @@
 
 ### `activity`
 
-- type : [`MessageActivity`](MessageActivity.md)
-- default: `MessageActivity.none`
+- type : [`MessageActivity`](MessageActivity.md) / `NoneType`
+- default: `None`
 
 Sent with "Rich presence" related embeds.
-
-### `activity_party_id`
-
-- type : `str`
-- default : `''`
-
-The message's activity's id if applicable.
 
 ### `application`
 
@@ -389,11 +382,22 @@ Updates the message and returns it's old attribtes with (`attribute name`,
 `old value`) items. Resets
 [`_channel_mentions`](#_channel_mentions-instance-attribute) to unset.
 A special case is if a message is (un)pinned or (un)suppressed , because then
-the returned dict is not containing `'edited'`, only `'pinned'` or `flags`.
-Exception at the returned data are the `'user_mentions'` and `'role_mentions'`.
-At these cases the change is calculated with the
-[`listdifference`](listdifference.md) function, and the returned dict contains
-the function's return.
+the returned dict is not going to contain `'edited'`, only `'pinned'` or
+`flags`.
+
+| name                      | description                                                                                   |
+|---------------------------|-----------------------------------------------------------------------------------------------|
+| activity                  | Nne / [MessageActivity](MessageActivity.md)                                                   |
+| application               | None /[MessageApplication](MessageApplication.md)                                             |
+| content                   | str                                                                                           |
+| cross_mentions            | None / (list of [Channel](CHANNEL_TYPES.md) / [UnknownCrossMention](UnknownCrossMention.md))  |
+| edited                    | None / datetime                                                                               |
+| embeds                    | list of [EmbedCore](EmbedCore.md)                                                             |
+| flags                     | [MessageFlag](MessageFlag.md)                                                                 |
+| mention_everyone          | bool                                                                                          |
+| pinned                    | bool                                                                                          |
+| user_mentions             | None / (list of [User](User.md)) / [lient](Client.md))                                        |
+| role_mentions             | None / (list of [Role](Role.md))                                                              |
 
 ### `_update_no_return(self,data)` (method)
     

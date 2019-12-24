@@ -2,7 +2,7 @@
 
 The hypesquad flags of an account.
 
-- Source : [others.py](https://github.com/HuyaneMatsu/hata/blob/master/hata/others.py)
+- Source : [user.py](https://github.com/HuyaneMatsu/hata/blob/master/hata/user.py)
 
 A user can be part of 9 hypesquad houses:
 - [`discord_employee`](#discord_employee)

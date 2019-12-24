@@ -64,10 +64,13 @@ Updates the guild profile and return None.
 - items : (`str`, `Any`)
 
 Updates the guild profile and returns it's old attributes with
-(`attribute name`, `old value`) items. Exception under it is the
-[`roles`](#roles) attribute, where we call [`listdifference`](listdifference.md)
-function to calculate the difference between the old and the new values and we
-store that at the dict.
+(`attribute name`, `old value`) items.
+
+| name                      | description               |
+|---------------------------|---------------------------|
+| nick                      | str / None                |
+| roles                     | list of [Role](Role.md)   |
+| boosts_since              | datetime / None           |
 
 ### `_set_created(self,data)` (method)
 

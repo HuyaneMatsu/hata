@@ -936,7 +936,7 @@ additional `reason` argument can be passed too, which should show up the
 Similar to `message_delete_multiple`, but it accepts messages from different
 channels.
 
-### `message_delete_sequence(self,channel,after=None,before=None,limit=None,reason=None):
+### `message_delete_sequence(self,channel,after=None,before=None,limit=None,reason=None)`
 
 - `awaitable`
 - returns : `None`

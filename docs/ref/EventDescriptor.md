@@ -259,7 +259,7 @@ Called, when an [emoji](Emoji.md) is deleted at a [guild](Guild.md).
 
 ### `emoji_edit(client,guild,emoji,old)`
 
-Called when an [emoji](Emoji.md) is edited at a [guild](Guild.md).  The `old`
+Called when an [emoji](Emoji.md) is edited at a [guild](Guild.md). The `old`
 argument is a `dict` of the changed attributes, what contains (`attribute name`,
 `old value`) items.
 
@@ -272,8 +272,8 @@ argument is a `dict` of the changed attributes, what contains (`attribute name`,
 | require_colons            | bool                          |
 | roles                     | set of [Role](Role.md) / None |
 
-Additionally if an [emoji](Emoji.md) is upated it's `.user` instance attribute
-might be set too.
+> If an [emoji](Emoji.md) is upated it's `.user` instance attribute might be
+> set too.
 
 ### `error(client,event,err)`
 

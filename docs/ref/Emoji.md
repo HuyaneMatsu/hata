@@ -107,7 +107,7 @@ API, or it's user will be just the default `ZEROUSER`.
 
 - returns : `str`
 
-This property returns the emoji's form, when it is sent in a [msesage](Message.md).
+This property returns the emoji's form, when it is sent in a [message](Message.md).
 
 ### `as_reaction`
 

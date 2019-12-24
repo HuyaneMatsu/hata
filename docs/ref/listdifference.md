@@ -7,7 +7,7 @@ second does, but the first does not.
 
 - Source : [dereaddons_local.py](https://github.com/HuyaneMatsu/hata/blob/master/hata/dereaddons_local.py)
 
-> `None`, ot `set` instance can be passed to the function as well.
+> `None`, or `set` instance can be passed to the function as well.
 
 ## listdifference(list1,list2) (function)
 

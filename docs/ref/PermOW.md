@@ -81,7 +81,7 @@ Compares the two permission overwrite.
 Compares the two permission overwrite's [`.target`](#target)'s type and id.
 
 Type comparing is first, where permission overwrites with their target's type
-of [`Role`](Role.md) are always less, than permission overwrites of their
+of [`Role`](Role.md) are always "less", than permission overwrites of their
 target's type [`User`](User.md).
 
 If the two overwrite's target's type is the same, then their id is being

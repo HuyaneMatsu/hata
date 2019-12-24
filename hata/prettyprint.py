@@ -1335,7 +1335,8 @@ def str_emoji(emoji,index=None,**kwargs):
     
     if not emoji.require_colons:
         result.append('- no colons required',1)
-        
+    
+    return result
     
 PRETTY_PRINTERS['Message']=str_message
 PRETTY_PRINTERS['reaction_mapping']=str_reaction_mapping

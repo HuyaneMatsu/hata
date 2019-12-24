@@ -62,6 +62,7 @@ The creator of the webhook, or [ZEROUSER](ZEROUSER.md) if unknown.
 - [`default_avatar_url`](UserBase.md#default_avatar_url)
 - [`full_name`](UserBase.md#full_name)
 - [`mention`](UserBase.md#mention)
+- [`mention_nick`](UserBase.md#mention_nick)
 - [`platform`](UserBase.md#platform)
 - [`activities`](UserBase.md#activities)
 - [`guild_profiles`](UserBase.md#guild_profiles)

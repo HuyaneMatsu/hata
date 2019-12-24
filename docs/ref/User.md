@@ -49,6 +49,7 @@ A `User` object represents a user in Discord, including [guild](Guild.md) member
 - [`default_avatar_url`](UserBase.md#default_avatar_url)
 - [`full_name`](UserBase.md#full_name)
 - [`mention`](UserBase.md#mention)
+- [`mention_nick`](UserBase.md#mention_nick)
 
 ## Classmethods
 

@@ -128,7 +128,11 @@ class Attachment(object):
         self.url        = data['url']
         self.height     = data.get('height',0)
         self.width      = data.get('width',0)
-
+    
+    @property
+    def created_at(self):
+        return id_to_time(self.id)
+    
     def __gt__(self,other):
         if type(self) is type(other):
             return self.id>other.id
@@ -162,6 +166,26 @@ class Attachment(object):
     def __hash__(self):
         return self.id
     
+    def __repr__(self):
+        result = [
+            '<',self.__class__.__name__,
+            ' id=',repr(self.id),
+            ', name=',repr(self.name),
+                ]
+        
+        x=self.width
+        y=self.height
+        if x and y:
+            result.append(', size=')
+            result.append(repr(x))
+            result.append('x')
+            result.append(repr(y))
+        
+        result.append('>')
+        
+        return ''.join(result)
+        
+
 class MessageApplication(object):
     __slots__=('cover', 'description', 'icon', 'id', 'name',)
     def __init__(self,data):

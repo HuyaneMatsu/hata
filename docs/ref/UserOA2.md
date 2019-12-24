@@ -120,6 +120,7 @@ Whether the email on this account is verified.
 - [`default_avatar_url`](UserBase.md#default_avatar_url)
 - [`full_name`](UserBase.md#full_name)
 - [`mention`](UserBase.md#mention)
+- [`mention_nick`](UserBase.md#mention_nick)
 
 ### `access_token`
 

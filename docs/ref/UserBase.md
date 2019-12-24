@@ -101,6 +101,13 @@ The user's "full" name. Example: "derpfish#1337"
 
 The user's mention.
 
+### `mention_nick`
+
+- returns : `str`
+
+The user's mention. It is not a real nick mention, because it does not depends
+on nick, can be used anywhere.
+
 ### `platform`
 
 - returns : `str`

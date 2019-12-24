@@ -737,12 +737,16 @@ class ChannelGuildBase(ChannelBase):
             return overwrites
         if not overwrites_data:
             return overwrites
-            
+        
+        default_role=self.guild.default_role
+        
         for overwrite_data in overwrites_data:
             overwrite=PermOW(overwrite_data)
-            overwrites.append(overwrite)
+            if overwrite.target is default_role:
+                overwrites.insert(0,overwrite)
+            else:
+                overwrites.append(overwrite)
         
-        overwrites.sort()
         return overwrites
     
     def __str__(self):

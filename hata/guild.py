@@ -1464,7 +1464,7 @@ class Guild(object):
                 old_ids.remove(emoji_id)
         for emoji_id in old_ids:
             emoji=emojis[emoji_id]
-            del emojis[emoji_id]
+            emoji._delete()
             changes.append((EMOJI_UPDATE_DELETE,emoji,None),)
 
         return changes

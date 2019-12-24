@@ -287,6 +287,10 @@ class UserBase(object):
 
     @property
     def mention(self):
+        return f'<@{self.id}>'
+    
+    @property
+    def mention_nick(self):
         return f'<@!{self.id}>'
     
     @property

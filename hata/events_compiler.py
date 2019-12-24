@@ -745,8 +745,12 @@ class content_parser_compiler:
                         return_part_on_fail=[f'if index_<{element.lower_limit}:']
                         for line in content_parser_compiler._return_line_on_fail(parsed_flag,results,is_method):
                             return_part_on_fail.append('    '+line)
-                        return_part_on_fail.append( 'break')
-                    return_part_on_fail_noneset=return_part_on_fail
+                    
+                    return_part_on_fail_noneset=[f'if {sub_var_name} is None:']
+                    for line in return_part_on_fail:
+                        return_part_on_fail_noneset.append('    '+line)
+                    if not element.default:
+                        return_part_on_fail_noneset.append('    break')
                 else:
                     return_part_on_fail=['break']
                     return_part_on_fail_noneset=[
@@ -826,6 +830,7 @@ class content_parser_compiler:
                 is_part_fallback_set=True
                 
             if case=='user':
+                go_to=result._back_state
                 if 'n' in element.flags:
                     if is_guild_only:
                         if CACHE_USER:
@@ -873,9 +878,8 @@ class content_parser_compiler:
                                  '    else:',
                                 f'        {sub_var_name}=None',
                                      ]
-                    by_name_part.extend(return_part_on_fail_noneset)
                 else:
-                    by_name_part=return_part_on_fail_noneset
+                    by_name_part=None
                 
                 if 'm' in element.flags:
                     result.append(f'{sub_var_name}=parse_user_mention(part,message)')
@@ -883,8 +887,6 @@ class content_parser_compiler:
                     if any_to_any(('a','i','n',),element.flags):
                         result.append(f'if {sub_var_name} is None:')
                         result.go_in()
-                    else:
-                        result.extend(return_part_on_fail_noneset)
 
                 if any_to_any(('a','i'),element.flags):
                     result.append( 'parsed_=IS_ID_RP.fullmatch(part)')
@@ -904,9 +906,8 @@ class content_parser_compiler:
                                 result.append(f'    {sub_var_name} = await client.user_get(id_)')
                                 result.extend(parsing_succes_part,1)
                                 result.append( 'except DiscordException:')
-                                result.go_in()
-                                result.extend(return_part_on_fail)
-                                result.go_out(2)
+                                result.append(f'    {sub_var_name}=None')
+                                result.go_out()
                                 result.append('else:')
                                 result.go_in()
                             result.append( 'try:')
@@ -923,8 +924,7 @@ class content_parser_compiler:
                         result.append(f'    {sub_var_name} = await client.user_get(id_)')
                         result.extend(parsing_succes_part,1)
                         result.append( 'except DiscordException:')
-                        result.go_in()
-                        result.extend(return_part_on_fail)
+                        result.append(f'    {sub_var_name}=None')
                         
                     else: #i
                         if is_guild_only:
@@ -934,11 +934,9 @@ class content_parser_compiler:
                                     result.append(f'    {sub_var_name} = await client.guild_user_get(guild,id_)')
                                     result.extend(parsing_succes_part,1)
                                     result.append('except DiscordException:')
-                                    result.go_in()
-                                result.extend(return_part_on_fail)
+                                    result.append(f'    {sub_var_name}=None')
                             else:
                                 result.append(f'{sub_var_name}=guild.users.get(id_)')
-                                result.extend(return_part_on_fail_noneset)
                         else:
                             result.append( 'if guild is None:')
                             result.go_in()
@@ -947,7 +945,6 @@ class content_parser_compiler:
                             result.append( '        break')
                             result.append( 'else:')
                             result.append(f'    {sub_var_name}=None')
-                            result.extend(return_part_on_fail_noneset)
                             result.go_out()
                             result.append('else:')
                             result.go_in()
@@ -957,25 +954,25 @@ class content_parser_compiler:
                                     result.append(f'    {sub_var_name} = await client.guild_user_get(guild,id_)')
                                     result.extend(parsing_succes_part,1)
                                     result.append('except DiscordException:')
-                                    result.go_in()
-                                result.extend(return_part_on_fail)
+                                    result.append(f'    {sub_var_name}=None')
                             else:
                                 result.append(f'{sub_var_name}=guild.users.get(id_)')
-                                result.extend(return_part_on_fail_noneset)
 
                 else:
                     if 'n' in element.flags:
                         result.extend(by_name_part)
-
+                
+                result._back_state=go_to
+                result.extend(return_part_on_fail_noneset)
+            
             elif case=='channel':
+                go_to=result._back_state
                 if 'm' in element.flags:
                     result.append(f'{sub_var_name}=parse_channel_mention(part,message)')
                     
                     if any_to_any(('i','n',),element.flags):
                         result.append(f'if {sub_var_name} is None:')
                         result.go_in()
-                    else:
-                        result.extend(return_part_on_fail_noneset)
 
                 if 'i' in element.flags:
                     result.append( 'parsed_=IS_ID_RP.fullmatch(part)')
@@ -987,24 +984,22 @@ class content_parser_compiler:
                     if 'n' in element.flags:
                         result.append( 'else:')
                         result.append(f'    {sub_var_name}=guild.get_channel(part)')
-
-                    result.extend(return_part_on_fail_noneset)
-
+                
                 else:
                     if 'n' in element.flags:
                         result.append(f'{sub_var_name}=guild.get_channel(part)')
-                        result.extend(return_part_on_fail_noneset)
-
+                        
+                result._back_state=go_to
+                result.extend(return_part_on_fail_noneset)
 
             elif case=='role':
+                go_to=result._back_state
                 if 'm' in element.flags:
                     result.append(f'{sub_var_name}=parse_role_mention(part,message)')
                     
                     if any_to_any(('i','n',),element.flags):
-                        result.append(f'if {sub_var_name} is not None:')
+                        result.append(f'if {sub_var_name} is None:')
                         result.go_in()
-                    else:
-                        result.extend(return_part_on_fail_noneset)
                         
                 if 'i' in element.flags:
                     result.append( 'parsed_=IS_ID_RP.fullmatch(part)')
@@ -1016,13 +1011,13 @@ class content_parser_compiler:
                     if 'n' in element.flags:
                         result.append( 'else:')
                         result.append(f'    {sub_var_name}=guild.get_role(part)')
-
-                    result.extend(return_part_on_fail_noneset)
-
+                
                 else:
                     if 'n' in element.flags:
                         result.append(f'{sub_var_name}=guild.get_role(part)')
-                        result.extend(return_part_on_fail_noneset)
+                        
+                result._back_state=go_to
+                result.extend(return_part_on_fail_noneset)
 
             elif case=='emoji':
                 result.append(f'{sub_var_name}=parse_emoji(part)')

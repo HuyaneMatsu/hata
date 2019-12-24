@@ -613,11 +613,11 @@ class titledstr(str):
         return str.__new__(cls,value)
 
     @classmethod
-    def by_pass_titling(cls,value='',encoding=sys.getdefaultencoding(),errors='strict'):
+    def bypass_titling(cls,value='',encoding=sys.getdefaultencoding(),errors='strict'):
         if type(value)==cls:
             return value
         if isinstance(value,(bytes, bytearray, memoryview)):
-            val=str(value,encoding,errors)
+            value=str(value,encoding,errors)
         elif isinstance(value,str):
             pass
         else:
@@ -628,9 +628,26 @@ class titledstr(str):
         return self
 
 def listdifference(list1,list2):
+    result=([],[])
+    
+    if list1 is None:
+        if list2 is None:
+            return result
+        else:
+            result[1].extend(list2)
+            return result
+    else:
+        if list2 is None:
+            result[0].extend(list1)
+            return result
+    
+    if isinstance(list1,set):
+        list1=sorted(list1)
+    if isinstance(list2,set):
+        list2=sorted(list2)
+        
     ln1=len(list1)
     ln2=len(list2)
-    result=([],[])       
     index1=index2=0
 
     #some quality python here again *cough*

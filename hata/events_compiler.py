@@ -21,6 +21,7 @@ from .user import USERS
 from .exceptions import DiscordException
 from .emoji import parse_emoji
 from .client_core import CACHE_USER
+from .parsers import DEFAULT_EVENT
 
 #for types at eval testing
 from . import client
@@ -284,6 +285,7 @@ class ParserMeta(object):
                 raise ValueError('For {self.name} \'default\' should have been passed')
             return value
         return ''
+
 #          name         flags_name  flags_default   flags_all       passing_enabled mode_enabled    default_enabled default_must
 ParserMeta('user',      '',         'mni',          'gmniap',       True,           True,           True,           False,          )
 ParserMeta('role',      'g',        'gmni',         'gmni',         True,           True,           True,           False,          )
@@ -1139,7 +1141,7 @@ class ContentParser(object):
         
         if func is None:
             self.__name__=case
-            self.__func__=EventDescriptor.DEFAULT_EVENT
+            self.__func__=DEFAULT_EVENT
             return self._wrapper
         
         self.__name__=check_name(func,case)

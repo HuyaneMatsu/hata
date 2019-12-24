@@ -1,15 +1,93 @@
 # -*- coding: utf-8 -*-
-__all__ = ('GuildProfile', 'User', 'UserBase', 'VoiceState', 'ZEROUSER')
+__all__ = ('GuildProfile', 'User', 'UserBase', 'UserFlag', 'VoiceState',
+    'ZEROUSER')
 
 from datetime import datetime
 
-from .dereaddons_local import any_to_any, listdifference, modulize
+from .dereaddons_local import any_to_any, modulize
 
 from .client_core import CACHE_USER,CACHE_PRESENCE, USERS
 from .others import parse_time, Status, DISCORD_EPOCH, id_to_time, _parse_ih_fsa
 from .color import Color, DefaultAvatar
 from .activity import ActivityUnknown, Activity
 from .http import URLS
+
+class UserFlag(int):
+    __slots__=()
+    
+    @property
+    def discord_employee(self):
+        return self&1
+    
+    @property
+    def discord_partner(self):
+        return (self>>1)&1
+    
+    @property
+    def hypesquad_events(self):
+        return (self>>2)&1
+    
+    @property
+    def bug_hunter(self):
+        return (self>>3)&1
+    
+    @property
+    def hypesquad_bravery(self):
+        return (self>>6)&1
+    
+    @property
+    def hypesquad_brilliance(self):
+        return (self>>7)&1
+    
+    @property
+    def hypesquad_balance(self):
+        return (self>>8)&1
+    
+    @property
+    def early_supporter(self):
+        return (self>>9)&1
+    
+    @property
+    def team_user(self):
+        return (self>>10)&1
+    
+    @property
+    def system(self):
+        return (self>>11)&1
+    
+    def __iter__(self):
+        if self&1:
+            yield 'discord_employee'
+            
+        if (self>>1)&1:
+            yield 'discord_partner'
+            
+        if (self>>2)&1:
+            yield 'bug_hunter'
+            
+        if (self>>3)&1:
+            yield 'hypesquad_bravery'
+            
+        if (self>>6)&1:
+            yield 'hypesquad_bravery'
+            
+        if (self>>7)&1:
+            yield 'hypesquad_brilliance'
+            
+        if (self>>8)&1:
+            yield 'hypesquad_balance'
+            
+        if (self>>9)&1:
+            yield 'early_supporter'
+            
+        if (self>>10)&1:
+            yield 'team_user'
+
+        if (self>>11)&1:
+            yield 'system'
+            
+    def __repr__(self):
+        return f'{self.__class__.__name__}({int.__repr__(self)})'
 
 if CACHE_PRESENCE:
     def PartialUser(user_id):
@@ -35,7 +113,7 @@ if CACHE_PRESENCE:
         user.activities=[]
 
         USERS[user_id]=user
-            
+        
         return user
 
 elif CACHE_USER:
@@ -58,7 +136,7 @@ elif CACHE_USER:
         user.partial=True
 
         USERS[user_id]=user
-            
+        
         return user
 
 else:
@@ -74,7 +152,7 @@ else:
 
         user.guild_profiles={}
         user.partial=True
-            
+        
         return user
 
 class GuildProfile(object):
@@ -124,7 +202,7 @@ class GuildProfile(object):
         roles.sort()
 
         boosts_since=data.get('premium_since',None)
-        if boosts_since is not None:
+        if (boosts_since is not None):
             boosts_since=parse_time(boosts_since)
         self.boosts_since=boosts_since
         
@@ -135,7 +213,7 @@ class GuildProfile(object):
             old['nick']=self.nick
             self.nick=nick
             
-        new_roles=[]
+        roles=[]
 
         guild_roles=guild.all_role
         for role_id in data['roles']:
@@ -144,13 +222,12 @@ class GuildProfile(object):
                 role=guild_roles[role_id]
             except KeyError:
                 continue
-            new_roles.append(role)
+            roles.append(role)
             
-        new_roles.sort()
-        role_difference=listdifference(self.roles,new_roles)
-        if role_difference[0] or role_difference[1]:
-            old['roles']=role_difference
-            self.roles[:]=new_roles
+        roles.sort()
+        if self.roles!=roles:
+            old['roles']=self.roles
+            self.roles=roles
         
         boosts_since=data.get('premium_since',None)
         if boosts_since is not None:

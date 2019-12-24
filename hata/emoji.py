@@ -83,10 +83,10 @@ class Emoji(object):
         try:
             role_ids=data['roles']
         except KeyError:
-            emoji.roles=guild.roles
+            emoji.roles=None
         else:
-            emoji.roles=[guild.all_role[int(role_id)] for role_id in role_ids]
-
+            emoji.roles={guild.all_role[int(role_id)] for role_id in role_ids}
+        
         return emoji
 
     def __gt__(self,other):
@@ -215,9 +215,9 @@ class Emoji(object):
     
     def _delete(self):
         del self.guild.emojis[self.id]
-        del self.roles
+        self.roles = None
         self.guild = None
-        self.available=False
+        self.available = False
         
     def _update_no_return(self,data):
         guild=self.guild
@@ -234,12 +234,12 @@ class Emoji(object):
         self.name=name
         
         try:
-            roles=data['roles']
+            role_ids=data['roles']
         except KeyError:
-            self.roles=guild.roles
+            self.roles=None
         else:
-            self.roles=[guild.all_role[int(role_id)] for role_id in roles]
-
+            self.roles={guild.all_role[int(role_id)] for role_id in role_ids}
+        
         try:
             user_data=data['user']
         except KeyError:
@@ -276,22 +276,31 @@ class Emoji(object):
             self.name=name
         
         try:
-            roles=data['roles']
+            role_ids=data['roles']
         except KeyError:
-            roles=guild.roles
+            roles=None
         else:
-            roles=[guild.all_role[int(role_id)] for role_id in roles]
-        if self.roles!=roles:
-            old['roles']=self.roles
-            self.roles=roles
-
+            roles={guild.all_role[int(role_id)] for role_id in role_ids}
+        
+        if (self.roles is None):
+            if (roles is not None):
+                old['roles']=None
+                self.roles=roles
+        else:
+            if (roles is None):
+                old['roles']=self.roles
+                self.roles=None
+            elif self.roles!=roles:
+                old['roles']=self.roles
+                self.roles=roles
+        
         try:
             user_data=data['user']
         except KeyError:
             pass
         else:
             self.user=User(user_data)
-
+        
         available=data.get('available',True)
         if self.available!=available:
             old['available']=self.available

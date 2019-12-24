@@ -4,8 +4,8 @@ __all__ = ('GWChannelReflection', 'GWUserReflection', 'Guild', 'GuildEmbed',
 
 import re
 
-from .dereaddons_local import autoposlist, listdifference, weakposlist,     \
-    cached_property, _spaceholder
+from .dereaddons_local import autoposlist, cached_property, weakposlist,    \
+    _spaceholder
 from hata.futures import Task
 
 from .client_core import CACHE_PRESENCE, GUILDS
@@ -26,6 +26,10 @@ from .oauth2 import parse_preferred_locale, DEFAULT_LOCALE
 VoiceClient=NotImplemented
 
 LARGE_LIMIT=250 #can be between 50 and 250
+
+EMOJI_UPDATE_NEW    = 0
+EMOJI_UPDATE_DELETE = 1
+EMOJI_UPDATE_EDIT   = 2
 
 class GuildFeature(object):
     # class related
@@ -432,11 +436,12 @@ def PartialGuild(data):
     try:
         features=data['features']
     except KeyError:
-        guild.features=[]
+        guild.features.clear()
     else:
+        features=[GuildFeature.get(feature) for feature in features]
         features.sort()
-        guild.features=[GuildFeature.get(feature) for feature in features]
-
+        guild.features=features
+        
     return guild
 
 #discord does not sends `embed_channel`, `embed_enabled`, `widget_channel`,
@@ -1197,10 +1202,10 @@ class Guild(object):
         except KeyError:
             features=[]
         else:
-            features.sort()
             features=[GuildFeature.get(feature) for feature in features]
+            features.sort()
         if self.features!=features:
-            old['features']=listdifference(self.features,features)
+            old['features']=self.features
             self.features=features
 
         system_channel_id=data['system_channel_id']
@@ -1369,9 +1374,10 @@ class Guild(object):
         except KeyError:
             self.features.clear()
         else:
+            features=[GuildFeature.get(feature) for feature in features]
             features.sort()
-            self.features=[GuildFeature.get(feature) for feature in features]
-
+            self.features=features
+            
         system_channel_id=data['system_channel_id']
         if system_channel_id is None:
             self.system_channel=None
@@ -1450,16 +1456,16 @@ class Guild(object):
             except KeyError:
                 emoji=Emoji(emoji_data,self)
                 emojis[emoji_id]=emoji
-                changes.append(('n',emoji,None),)
+                changes.append((EMOJI_UPDATE_NEW,emoji,None),)
             else:
                 old=emoji._update(emoji_data)
                 if old:
-                    changes.append(('e',emoji,old),)
+                    changes.append((EMOJI_UPDATE_EDIT,emoji,old),)
                 old_ids.remove(emoji_id)
         for emoji_id in old_ids:
             emoji=emojis[emoji_id]
             del emojis[emoji_id]
-            changes.append(('d',emoji,None),)
+            changes.append((EMOJI_UPDATE_DELETE,emoji,None),)
 
         return changes
 

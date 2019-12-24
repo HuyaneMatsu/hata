@@ -1,11 +1,40 @@
 # -*- coding: utf-8 -*-
-__all__ = ('Invite', )
+__all__ = ('Invite', 'InviteTargetType')
 
-from .others import parse_time, InviteTargetType
+from .others import parse_time
 from .http import URLS
 from .user import User,ZEROUSER
 from .guild import PartialGuild
 from .channel import PartialChannel
+
+class InviteTargetType(object):
+    # class related
+    INSTANCES = [NotImplemented] * 2
+    
+    # object related
+    __slots__=('name', 'value')
+    
+    def __init__(self,value,name):
+        self.value=value
+        self.name=name
+
+        self.INSTANCES[value]=self
+
+    def __str__(self):
+        return self.name
+
+    def __int__(self):
+        return self.value
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}(value={self.value}, name=\'{self.name}\')'
+    
+    # predefined
+    NONE    = NotImplemented
+    STREAM  = NotImplemented
+
+InviteTargetType.NONE   = InviteTargetType(0,'NONE')
+InviteTargetType.STREAM = InviteTargetType(1,'STREAM')
 
 class Invite(object):
     __slots__=('channel', 'code', 'created_at', 'guild', 'inviter', 'max_age',

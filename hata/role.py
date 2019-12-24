@@ -321,18 +321,53 @@ class PermOW(object):
         if type(self.target) is Role:
             return 'role'
         return 'member'
-
+    
+    def __lt__(self,other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if type(self.target) is Role:
+            if type(other.target) is Role:
+                if self.target.id<other.target.id:
+                    return True
+                return False
+            return True
+        if type(other.target) is Role:
+            return True
+        if self.target.id<other.target.id:
+            return True
+        return False
+        
     def __eq__(self,other):
-        if type(self) is type(other):
-            return (self.target.id==other.target.id and
-                self.allow==other.allow and self.deny==other.deny)
-        return NotImplemented
-
-    def __ne__(self,other):
-        if type(self) is type(other):
-            return (self.target.id!=other.target.id or
-            self.allow!=other.allow or self.deny!=other.deny)
-        return NotImplemented
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.target.id!=other.target.id:
+            return False
+        
+        if self.allow!=other.allow:
+            return False
+        
+        if self.deny!=other.deny:
+            return False
+        
+        return True
+    
+    def __gt__(self,other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if type(self.target) is Role:
+            if type(other.target) is Role:
+                if self.target.id>other.target.id:
+                    return True
+                return False
+            return False
+        if type(other.target) is Role:
+            return False
+        if self.target.id>other.target.id:
+            return True
+        return True
     
 def cr_p_role_object(name,id_=None,color=Color(0),separated=False,position=0,
         permissions=0,managed=False,mentionable=False):

@@ -1,12 +1,11 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('Relationship', 'ContentFilterLevel', 'DISCORD_EPOCH',
-    'FriendRequestFlag', 'Gift', 'HypesquadHouse', 'InviteTargetType', 'MFA',
-    'MessageActivity', 'MessageFlag', 'MessageNotificationLevel',
-    'MessageType', 'PremiumType', 'RelationshipType', 'Status',
-    'SystemChannelFlag', 'Theme', 'Unknown', 'UserFlag', 'VerificationLevel',
+    'FriendRequestFlag', 'Gift', 'HypesquadHouse', 'MFA',
+    'MessageNotificationLevel', 'PremiumType', 'RelationshipType', 'Status',
+    'SystemChannelFlag', 'Theme', 'Unknown', 'VerificationLevel',
     'VoiceRegion', 'filter_content', 'id_to_time', 'is_id', 'is_mention',
-    'is_role_mention', 'is_user_mention', 'now_as_id',
-    'parse_oauth2_redirect_url', 'random_id', 'time_to_id', )
+    'is_role_mention', 'is_user_mention', 'now_as_id', 'random_id',
+    'time_to_id', )
 
 import random, re, sys
 from urllib.parse import _ALWAYS_SAFE_BYTES as ALWAYS_SAFE_BYTES,Quoter
@@ -505,126 +504,6 @@ PremiumType.none            = PremiumType(0,'none')
 PremiumType.nitro_classic   = PremiumType(1,'nitro_classic')
 PremiumType.nitro           = PremiumType(2,'nitro')
 
-class UserFlag(int):
-    __slots__=()
-    
-    @property
-    def discord_employee(self):
-        return self&1
-    
-    @property
-    def discord_partner(self):
-        return (self>>1)&1
-    
-    @property
-    def hypesquad_events(self):
-        return (self>>2)&1
-    
-    @property
-    def bug_hunter(self):
-        return (self>>3)&1
-    
-    @property
-    def hypesquad_bravery(self):
-        return (self>>6)&1
-    
-    @property
-    def hypesquad_brilliance(self):
-        return (self>>7)&1
-    
-    @property
-    def hypesquad_balance(self):
-        return (self>>8)&1
-    
-    @property
-    def early_supporter(self):
-        return (self>>9)&1
-    
-    @property
-    def team_user(self):
-        return (self>>10)&1
-    
-    @property
-    def system(self):
-        return (self>>11)&1
-    
-    def __iter__(self):
-        if self&1:
-            yield 'discord_employee'
-            
-        if (self>>1)&1:
-            yield 'discord_partner'
-            
-        if (self>>2)&1:
-            yield 'bug_hunter'
-            
-        if (self>>3)&1:
-            yield 'hypesquad_bravery'
-            
-        if (self>>6)&1:
-            yield 'hypesquad_bravery'
-            
-        if (self>>7)&1:
-            yield 'hypesquad_brilliance'
-            
-        if (self>>8)&1:
-            yield 'hypesquad_balance'
-            
-        if (self>>9)&1:
-            yield 'early_supporter'
-            
-        if (self>>10)&1:
-            yield 'team_user'
-
-        if (self>>11)&1:
-            yield 'system'
-            
-    def __repr__(self):
-        return f'{self.__class__.__name__}({int.__repr__(self)})'
-
-class MessageFlag(int):
-    __slots__=()
-
-    @property
-    def crossposted(self):
-        return self&1
-
-    @property
-    def is_crosspost(self):
-        return (self>>1)&1
-
-    @property
-    def embeds_suppressed(self):
-        return (self>>2)&1
-
-    
-    @property
-    def source_message_deleted(self):
-        return (self>>3)&1
-    
-    @property
-    def urgent(self):
-        return (self>>4)&1
-    
-    def __iter__(self):
-        if self&1:
-            yield 'crossposted'
-            
-        if (self>>1)&1:
-            yield 'is_crosspost'
-            
-        if (self>>2)&1:
-            yield 'embeds_suppressed'
-
-        if (self>>3)&1:
-            yield 'source_message_deleted'
-
-        if (self>>4)&1:
-            yield 'urgent'
-            
-    def __repr__(self):
-        return f'{self.__class__.__name__}({int.__repr__(self)})'
-
 class RelationshipType(object):
     #class related
     INSTANCES = [NotImplemented] * 5
@@ -670,97 +549,6 @@ class Relationship(object):
     def __repr__(self):
         return f'<{self.__class__.__name__} {self.type.name} user={self.user.full_name}>'
 
-
-class MessageType(object):
-    # class related
-    INSTANCES = [NotImplemented] * 13
-    
-    # object related
-    __slots__=('name', 'value', 'convert',)
-    
-    def __init__(self,value,name):
-        self.value=value
-        self.name=name
-        self.convert=self._default_convert
-
-        self.INSTANCES[value]=self
-
-    def __str__(self):
-        return self.name
-
-    def __int__(self):
-        return self.value
-
-    def __repr__(self):
-        return f'{self.__class__.__name__}(value={self.value}, name=\'{self.name}\')'
-
-    @staticmethod
-    def _default_convert(self):
-        pass
-    
-    # predefined
-    default                 = NotImplemented
-    add_user                = NotImplemented
-    remove_user             = NotImplemented
-    call                    = NotImplemented
-    channel_name_change     = NotImplemented
-    channel_icon_change     = NotImplemented
-    new_pin                 = NotImplemented
-    new_member              = NotImplemented
-    new_guild_sub           = NotImplemented
-    new_guild_sub_t1        = NotImplemented
-    new_guild_sub_t2        = NotImplemented
-    new_guild_sub_t3        = NotImplemented
-    new_follower_channel    = NotImplemented
-
-MessageType.default               = MessageType(0,'default')
-MessageType.add_user              = MessageType(1,'add_user')
-MessageType.remove_user           = MessageType(2,'remove_user')
-MessageType.call                  = MessageType(3,'call')
-MessageType.channel_name_change   = MessageType(4,'channel_name_change')
-MessageType.channel_icon_change   = MessageType(5,'channel_icon_change')
-MessageType.new_pin               = MessageType(6,'new_pin')
-MessageType.new_member            = MessageType(7,'new_member')
-MessageType.new_guild_sub         = MessageType(8,'new_guild_sub')
-MessageType.new_guild_sub_t1      = MessageType(9,'new_guild_sub_t1')
-MessageType.new_guild_sub_t2      = MessageType(10,'new_guild_sub_t2')
-MessageType.new_guild_sub_t3      = MessageType(11,'new_guild_sub_t3')
-MessageType.new_follower_channel  = MessageType(12,'new_follower_channel')
-
-class MessageActivity(object):
-    # class related
-    INSTANCES = [NotImplemented] * 6
-    
-    # object related
-    __slots__=('name', 'value', )
-    
-    def __init__(self,value,name):
-        self.value=value
-        self.name=name
-
-        self.INSTANCES[value]=self
-
-    def __str__(self):
-        return self.name
-
-    def __int__(self):
-        return self.value
-
-    def __repr__(self):
-        return f'{self.__class__.__name__}(value={self.value}, name=\'{self.name}\')'
-
-    none        = NotImplemented
-    join        = NotImplemented
-    spectate    = NotImplemented
-    listen      = NotImplemented
-    join_request= NotImplemented
-
-MessageActivity.none           = MessageActivity(0,'none')
-MessageActivity.join           = MessageActivity(1,'join')
-MessageActivity.spectate       = MessageActivity(2,'spectate')
-MessageActivity.listen         = MessageActivity(3,'listen')
-MessageActivity.join_request   = MessageActivity(5,'join_request')
-
 def multi_delete_time_limit():
     #2 weeks-1 minute since now, so if we delete a lot of messages, it wont mess up
     return int((time_now()-1209540.)*1000.-DISCORD_EPOCH)<<22
@@ -785,7 +573,6 @@ ROLE_MENTION_RP=re.compile('<@&(\d{7,21})>')
 EMOJI_RP=re.compile('<([a]{0,1}):([a-zA-Z0-9_]{2,32}(~[1-9]){0,1}):(\d{7,21})>')
 EMOJI_NAME_RP=re.compile(':{0,1}([a-zA-Z0-9_\\-~]{1,32}):{0,1}')
 FILTER_RP=re.compile('("(.+?)"|\S+)')
-OA2_RU_RP=re.compile('(https{0,1}://.+?)\?code=([a-zA-Z0-9]{30})')
 
 def is_id(text):
     return IS_ID_RP.fullmatch(text) is not None
@@ -808,13 +595,6 @@ def now_as_id():
 #thanks Pythonic#6090 for the simple design
 def filter_content(content):
     return [match[1] or match[0] for match in FILTER_RP.findall(content)]
-
-def parse_oauth2_redirect_url(url):
-    result=OA2_RU_RP.fullmatch(url)
-    if result is None:
-        raise ValueError
-    return result.groups()
-
 
 def chunkify(lines,limit=2000):
     result=[]
@@ -969,36 +749,6 @@ class Unknown(object):
     @property
     def created_at(self):
         return id_to_time(self.id)
-    
-class InviteTargetType(object):
-    # class related
-    INSTANCES = [NotImplemented] * 2
-    
-    # object related
-    __slots__=('name', 'value')
-    
-    def __init__(self,value,name):
-        self.value=value
-        self.name=name
-
-        self.INSTANCES[value]=self
-
-    def __str__(self):
-        return self.name
-
-    def __int__(self):
-        return self.value
-
-    def __repr__(self):
-        return f'{self.__class__.__name__}(value={self.value}, name=\'{self.name}\')'
-    
-    # predefined
-    NONE    = NotImplemented
-    STREAM  = NotImplemented
-
-InviteTargetType.NONE   = InviteTargetType(0,'NONE')
-InviteTargetType.STREAM = InviteTargetType(1,'STREAM')
-
 
 #parse image hash formats
 def _parse_ih_fs(value):
@@ -1121,7 +871,7 @@ Theme.dark  = Theme('dark')
 Theme.light = Theme('light')
 
 class SystemChannelFlag(int):
-    __slots__=[]
+    __slots__=()
     
     @property
     def none(self):
@@ -1142,6 +892,7 @@ class SystemChannelFlag(int):
     def __iter__(self):
         if not self&1:
             yield 'welcome'
+        
         if not (self>>1)&1:
             yield 'boost'
 
@@ -1169,7 +920,85 @@ class Discord_hdrs:
     RATELIMIT_RESET_AFTER=titledstr('X-Ratelimit-Reset-After')
 
     #to send
-    RATELIMIT_PRECISION=titledstr.by_pass_titling('X-RateLimit-Precision')
+    RATELIMIT_PRECISION=titledstr.bypass_titling('X-RateLimit-Precision')
+
+def urlcutter(url):
+    if len(url)<50:
+        return url
+    
+    position=url.find('/')
+    
+    if position==-1:
+        return f'{url[:28]}...{url[-19:]}'
+    
+    position=position+1
+    if url[position]=='/':
+        position=position+1
+        if position==len(url):
+            return f'{url[:28]}...{url[-19:]}'
+        
+        position=url.find('/',position)
+        position=position+1
+        if position==0 or position==len(url):
+            return f'{url[:28]}...{url[-19:]}'
+    
+    positions=[position]
+    
+    while True:
+        position=url.find('/',position)
+        if position==-1:
+            break
+        position=position+1
+        if position==len(url):
+            break
+        positions.append(position)
+
+    from_start=0
+    from_end=0
+    top_limit=len(url)
+    index=0
+    
+    while True:
+        value=positions[index]
+        if value+from_end>47:
+            if from_start+from_end<33:
+                from_start=47-from_end
+                break
+            else:
+                index=index+1
+                if index==len(positions):
+                    value=0
+                else:
+                    value=positions[len(positions)-index]
+                value=top_limit-value
+                if value+from_start>47:
+                    break
+                else:
+                    from_end=value
+                    break
+        from_start=value
+        
+        index=index+1
+        value=positions[len(positions)-index]
+        value=top_limit-value
+        if value+from_start>47:
+            if from_start+from_end<33:
+                from_end=47-from_start
+                break
+            else:
+                if index==len(positions):
+                    value=top_limit
+                else:
+                    value=positions[index]
+                
+                if value+from_end>47:
+                    break
+                else:
+                    from_start=value
+                    break
+        from_end=value
+        
+    return f'{url[:from_start]}...{url[top_limit-from_end-1:]}'
 
 del re, titledstr, modulize
 

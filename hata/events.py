@@ -12,8 +12,8 @@ from weakref import WeakKeyDictionary
 from .futures import Task, Future
 
 from .others import USER_MENTION_RP
-from .parsers import check_passed, EventHandlerBase, EventDescriptor,       \
-    compare_converted, check_name, check_passed_tuple, asynclist
+from .parsers import check_passed, EventHandlerBase, compare_converted,     \
+    check_name, check_passed_tuple, asynclist, DEFAULT_EVENT
 from .emoji import BUILTIN_EMOJIS
 from .exceptions import DiscordException
 from .client_core import KOKORO
@@ -29,8 +29,8 @@ class CommandProcesser(EventHandlerBase):
         'mention_prefix', 'prefix', 'prefixfilter', 'waitfors',)
     __event_name__='message_create'
     def __init__(self,prefix,ignorecase=True,mention_prefix=True):
-        self.default_event=EventDescriptor.DEFAULT_EVENT
-        self.invalid_command=EventDescriptor.DEFAULT_EVENT
+        self.default_event=DEFAULT_EVENT
+        self.invalid_command=DEFAULT_EVENT
         self.mention_prefix=mention_prefix
         self.waitfors=WeakKeyDictionary()
         self.commands={}
@@ -103,13 +103,13 @@ class CommandProcesser(EventHandlerBase):
     def __delevent__(self,func,case):
         if case=='default_event':
             if func is self.default_event:
-                self.default_event=EventDescriptor.DEFAULT_EVENT
+                self.default_event=DEFAULT_EVENT
             else:
                 raise ValueError(f'The passed \'{case}\' ({func!r}) is not the same as the already loaded one: {self.default_event!r}')
         
         elif case=='invalid_command':
             if func is self.invalid_command:
-                self.invalid_command=EventDescriptor.DEFAULT_EVENT
+                self.invalid_command=DEFAULT_EVENT
             else:
                 raise ValueError(f'The passed \'{case}\' ({func!r}) is not the same as the already loaded one: {self.invalid_command!r}')
         
@@ -216,12 +216,12 @@ class CommandProcesser(EventHandlerBase):
                 ]
         
         default_event=self.default_event
-        if default_event is not EventDescriptor.DEFAULT_EVENT:
+        if default_event is not DEFAULT_EVENT:
             result.append(', default_event=')
             result.append(default_event.__repr__())
         
         invalid_command=self.invalid_command
-        if invalid_command is not EventDescriptor.DEFAULT_EVENT:
+        if invalid_command is not DEFAULT_EVENT:
             result.append(', invalid_command=')
             result.append(invalid_command.__repr__())
         
@@ -736,7 +736,7 @@ class Cooldown(object):
         
         if func is None:
             self.__name__=case
-            self.__func__=EventDescriptor.DEFAULT_EVENT
+            self.__func__=DEFAULT_EVENT
             return self._wrapper
         
         self.__name__=check_name(func,case)
@@ -775,7 +775,7 @@ class Cooldown(object):
             
         if func is None:
             self.__name__=case
-            self.__func__=EventDescriptor.DEFAULT_EVENT
+            self.__func__=DEFAULT_EVENT
             return self._wrapper
         
         self.__name__=check_name(func,case)

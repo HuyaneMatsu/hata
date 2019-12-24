@@ -1,15 +1,15 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('Attachment', 'Message', 'MessageApplication', 'MessageReference',
+__all__ = ('Attachment', 'Message', 'MessageActivity', 'MessageActivityType',
+    'MessageApplication', 'MessageFlag', 'MessageReference', 'MessageType',
     'UnknownCrossMention', )
 
 import re
 from datetime import datetime
 
-from .dereaddons_local import listdifference, autoposlist, cached_property, \
-    any_to_any, _spaceholder
+from .dereaddons_local import any_to_any, autoposlist, cached_property,     \
+    _spaceholder
 
-from .others import parse_time, MessageType, MessageActivity, MessageFlag,  \
-    id_to_time, CHANNEL_MENTION_RP, VoiceRegion
+from .others import parse_time, CHANNEL_MENTION_RP, id_to_time, VoiceRegion
 from .client_core import MESSAGES, CHANNELS, GUILDS
 from .user import USERS, ZEROUSER, User, PartialUser, VoiceState
 from .emoji import reaction_mapping
@@ -20,6 +20,104 @@ where=autoposlist.where
 
 ChannelBase=NotImplemented
 
+class MessageFlag(int):
+    __slots__=()
+
+    @property
+    def crossposted(self):
+        return self&1
+
+    @property
+    def is_crosspost(self):
+        return (self>>1)&1
+
+    @property
+    def embeds_suppressed(self):
+        return (self>>2)&1
+
+    
+    @property
+    def source_message_deleted(self):
+        return (self>>3)&1
+    
+    @property
+    def urgent(self):
+        return (self>>4)&1
+    
+    def __iter__(self):
+        if self&1:
+            yield 'crossposted'
+            
+        if (self>>1)&1:
+            yield 'is_crosspost'
+            
+        if (self>>2)&1:
+            yield 'embeds_suppressed'
+
+        if (self>>3)&1:
+            yield 'source_message_deleted'
+
+        if (self>>4)&1:
+            yield 'urgent'
+            
+    def __repr__(self):
+        return f'{self.__class__.__name__}({int.__repr__(self)})'
+
+class MessageActivityType(object):
+    # class related
+    INSTANCES = [NotImplemented] * 6
+    
+    # object related
+    __slots__=('name', 'value', )
+    
+    def __init__(self,value,name):
+        self.value=value
+        self.name=name
+
+        self.INSTANCES[value]=self
+
+    def __str__(self):
+        return self.name
+
+    def __int__(self):
+        return self.value
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}(value={self.value}, name=\'{self.name}\')'
+
+    none        = NotImplemented
+    join        = NotImplemented
+    spectate    = NotImplemented
+    listen      = NotImplemented
+    join_request= NotImplemented
+
+MessageActivityType.none           = MessageActivityType(0,'none')
+MessageActivityType.join           = MessageActivityType(1,'join')
+MessageActivityType.spectate       = MessageActivityType(2,'spectate')
+MessageActivityType.listen         = MessageActivityType(3,'listen')
+MessageActivityType.join_request   = MessageActivityType(5,'join_request')
+
+class MessageActivity(object):
+    __slots__ = ('party_id', 'type',)
+    def __init__(self,data):
+        self.party_id=data.get('party_id','')
+        self.type=MessageActivityType.INSTANCES[data['type']]
+
+    def __eq__(self,other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.type is not other.type:
+            return False
+        
+        if self.party_id!=other.party_id:
+            return False
+        
+        return True
+    
+    def __repr__(self):
+        return f'<{self.__class__.__name__} type={self.type.name} ({self.type.value}), party_id={self.party_id!r}>'
+    
 class Attachment(object):
     __slots__=('name', 'height', 'id', 'proxy_url', 'size', 'url', 'width',)
     def __init__(self,data):
@@ -237,12 +335,11 @@ class UnknownCrossMention(object):
         return NotImplemented
 
 class Message(object):
-    __slots__=('__weakref__', '_channel_mentions', 'activity',
-        'activity_party_id', 'application', 'attachments', 'author',
-        'call', 'channel', 'content', 'cross_mentions', 'cross_reference',
-        'edited', 'embeds', 'everyone_mention', 'flags', 'id', 'nonce',
-        'pinned', 'reactions', 'reference', 'role_mentions', 'tts', 'type',
-        'user_mentions',)
+    __slots__=('__weakref__', '_channel_mentions', 'activity', 'application',
+        'attachments', 'author', 'call', 'channel', 'content',
+        'cross_mentions', 'cross_reference', 'edited', 'embeds',
+        'everyone_mention', 'flags', 'id', 'nonce', 'pinned', 'reactions',
+        'reference', 'role_mentions', 'tts', 'type', 'user_mentions',)
     
     def __init__(self,data,channel):
         raise RuntimeError(f'`{self.__class__.__name__}` should not be created like this.')
@@ -361,12 +458,9 @@ class Message(object):
         try:
             activity_data=data['activity']
         except KeyError:
-            self.activity=MessageActivity.none
-            self.activity_party_id=''
+            self.activity=None
         else:
-            self.activity=MessageActivity.INSTANCES[activity_data['type']]
-            self.activity_party_id=activity_data.get('party_id','')
-
+            self.activity=MessageActivity(activity_data)
 
         edited=data['edited_timestamp']
         if edited is not None:
@@ -557,20 +651,22 @@ class Message(object):
         
         try:
             activity_data=data['activity']
-            activity=MessageActivity.INSTANCES[activity_data['type']]
         except KeyError:
-            activity=MessageActivity.none
-            activity_party_id=''
+            activity=None
         else:
-            activity_party_id=activity_data.get('party_id','')
-                
-        if self.activity!=activity:
-            old['activity']=self.activity
-            self.activity=activity
-            
-        if activity_party_id!=self.activity_party_id:
-            old['activity_party_id']=self.activity_party_id
-            self.activity_party_id=self.activity_party_id
+            activity=MessageActivity(activity_data)
+        
+        if self.activity is None:
+            if (activity is not None):
+                old['activity']=None
+                self.activity=activity
+        else:
+            if activity is None:
+                old['activity']=self.activity
+                self.activity=None
+            elif self.activity!=activity:
+                old['activity']=self.activity
+                self.activity=activity
                     
         everyone_mention=data.get('mention_everyone',False)
         if self.everyone_mention!=everyone_mention:
@@ -607,7 +703,7 @@ class Message(object):
             user_mentions=None
 
         if self.user_mentions is None:
-            if user_mentions is not None:
+            if (user_mentions is not None):
                 old['user_mentions']=None
                 self.user_mentions=user_mentions
         else:
@@ -616,7 +712,7 @@ class Message(object):
                 self.user_mentions=None
             else: 
                 if self.user_mentions!=user_mentions:
-                    old['user_mentions']=listdifference(self.user_mentions,user_mentions)
+                    old['user_mentions']=self.user_mentions
                     self.user_mentions=user_mentions
         
         if guild is None:
@@ -632,7 +728,7 @@ class Message(object):
             cross_mentions.sort()
 
         if self.cross_mentions is None:
-            if cross_mentions is not None:
+            if (cross_mentions is not None):
                 old['cross_mentions']=None
                 self.cross_mentions=cross_mentions
         else:
@@ -641,7 +737,7 @@ class Message(object):
                 self.cross_mentions=None
             else:
                 if self.cross_mentions!=cross_mentions:
-                    old['cross_mentions']=listdifference(self.cross_mentions,cross_mentions)
+                    old['cross_mentions']=self.cross_mentions
                     self.cross_mentions=cross_mentions
 
         try:
@@ -662,7 +758,7 @@ class Message(object):
                 role_mentions=None
 
         if self.role_mentions is None:
-            if role_mentions is not None:
+            if (role_mentions is not None):
                 old['role_mentions']=None
                 self.role_mentions=role_mentions
         else:
@@ -671,7 +767,7 @@ class Message(object):
                 self.role_mentions=None
             else:
                 if self.role_mentions!=role_mentions:
-                    old['role_mentions']=listdifference(self.role_mentions,role_mentions)
+                    old['role_mentions']=self.role_mentions
                     self.role_mentions=role_mentions
 
         return old     
@@ -716,14 +812,9 @@ class Message(object):
         try:
             activity_data=data['activity']
         except KeyError:
-            self.activity=MessageActivity.none
-            self.activity_party_id=''
+            self.activity=None
         else:
-            self.activity=MessageActivity.INSTANCES[activity_data['type']]
-            try:
-                self.activity_party_id=activity_data.get('party_id')
-            except KeyError:
-                pass
+            self.activity=MessageActivity(activity_data)
 
         self.everyone_mention=data['mention_everyone']
 
@@ -922,7 +1013,46 @@ class Message(object):
         except KeyError:
             return False
         return (user in reacters)
-        
+
+class MessageType(object):
+    # class related
+    INSTANCES = [NotImplemented] * 14
+    
+    # object related
+    __slots__=('name', 'value', 'convert',)
+    
+    def __init__(self,value,name,converter):
+        self.value  = value
+        self.name   = name
+        self.convert= converter
+
+        self.INSTANCES[value]=self
+
+    def __str__(self):
+        return self.name
+
+    def __int__(self):
+        return self.value
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}(value={self.value}, name=\'{self.name}\')'
+    
+    # predefined
+    default                 = NotImplemented
+    add_user                = NotImplemented
+    remove_user             = NotImplemented
+    call                    = NotImplemented
+    channel_name_change     = NotImplemented
+    channel_icon_change     = NotImplemented
+    new_pin                 = NotImplemented
+    new_member              = NotImplemented
+    new_guild_sub           = NotImplemented
+    new_guild_sub_t1        = NotImplemented
+    new_guild_sub_t2        = NotImplemented
+    new_guild_sub_t3        = NotImplemented
+    new_follower_channel    = NotImplemented
+    stream                  = NotImplemented
+
 def convert_default(self):
     escape=re.escape
     transformations = {
@@ -943,7 +1073,7 @@ def convert_default(self):
         if self.user_mentions is not None:
             for user in self.user_mentions:
                 profile=user.guild_profiles.get(guild,None)
-                if profile is None or profile.nick is None:
+                if (profile is None) or (profile.nick is None):
                     name=f'@{user.name}'
                 else:
                     name=f'@{profile.nick}'
@@ -957,23 +1087,11 @@ def convert_default(self):
 
     return re.compile("|".join(transformations)).sub(lambda mention:transformations[escape(mention.group(0))],self.content)
 
-MessageType.default.convert=convert_default
-del convert_default
-
-
 def convert_add_user(self):
     return f'{self.author.name} added {self.user_mentions[0].name} to the group.'
 
-MessageType.add_user.convert=convert_add_user
-del convert_add_user
-
-
 def convert_remove_user(self):
     return f'{self.author.name} removed {self.user_mentions[0].name} from the group.'
-
-MessageType.remove_user.convert=convert_remove_user
-del convert_remove_user
-
 
 def convert_call(self):
     if any_to_any(self.channel.clients,self.call.users):
@@ -982,30 +1100,14 @@ def convert_call(self):
         return f'{self.author.name} started a call \N{EM DASH} Join the call.'
     return f'You missed a call from {self.author.name}'
 
-MessageType.call.convert=convert_call
-del convert_call
-
-
 def convert_channel_name_change(self):
     return f'{self.author.name} changed the channel name: {self.content}'
-
-MessageType.channel_name_change.convert=convert_channel_name_change
-del convert_channel_name_change
-
 
 def convert_channel_icon_change(self):
     return f'{self.author.name} changed the channel icon.'
 
-MessageType.channel_icon_change.convert=convert_channel_icon_change
-del convert_channel_icon_change
-
-
 def convert_new_pin(self):
     return f'{self.author.name} pinned a message to this channel.'
-
-MessageType.new_pin.convert=convert_new_pin
-del convert_new_pin
-
 
 #TODO: this system changed, just pulled out the new texts from the js client source, but the calculation is bad
 def convert_new_member(self):
@@ -1054,10 +1156,6 @@ def convert_new_member(self):
 
     return join_messages[int(self.created_at.timestamp())%len(join_messages)].format(self.author.name)
 
-MessageType.new_member.convert=convert_new_member
-del convert_new_member
-
-
 def convert_new_guild_sub(self):
     guild=self.channel.guild
     if guild is None:
@@ -1065,10 +1163,6 @@ def convert_new_guild_sub(self):
     else:
         guild_name=guild.name
     return f'{self.author.name} boosted {guild_name} with Nitro!'
-
-MessageType.new_guild_sub.convert=convert_new_guild_sub
-del convert_new_guild_sub
-
 
 def convert_new_guild_sub_t1(self):
     guild=self.channel.guild
@@ -1079,10 +1173,6 @@ def convert_new_guild_sub_t1(self):
         
     return f'{self.author.name} boosted {guild_name} with Nitro! {guild_name} has achieved level 1!'
 
-MessageType.new_guild_sub_t1.convert=convert_new_guild_sub_t1
-del convert_new_guild_sub_t1
-
-
 def convert_new_guild_sub_t2(self):
     guild=self.channel.guild
     if guild is None:
@@ -1092,11 +1182,6 @@ def convert_new_guild_sub_t2(self):
     
     return f'{self.author.name} boosted {guild_name} with Nitro! {guild_name} has achieved level 2!'
 
-
-MessageType.new_guild_sub_t2.convert=convert_new_guild_sub_t2
-del convert_new_guild_sub_t2
-
-
 def convert_new_guild_sub_t3(self):
     guild=self.channel.guild
     if guild is None:
@@ -1105,9 +1190,6 @@ def convert_new_guild_sub_t3(self):
         guild_name=guild.name
         
     return f'{self.author.name} boosted {guild_name} with Nitro! {guild_name} has achieved level 3!'
-
-MessageType.new_guild_sub_t3.convert=convert_new_guild_sub_t3
-del convert_new_guild_sub_t3
 
 def convert_new_follower_channel(self):
     channel=self.channel
@@ -1119,9 +1201,39 @@ def convert_new_follower_channel(self):
     
     return f'{self.author.name} has added {guild_name} #{channel.name} to this channel. Its most important updates will show up here.'
 
-MessageType.new_follower_channel.convert=convert_new_follower_channel
-del convert_new_follower_channel
+#TODO
+def convert_stream(self):
+    return ''
 
+MessageType.default               = MessageType(0   , 'default'             , convert_default               , )
+MessageType.add_user              = MessageType(1   , 'add_user'            , convert_add_user              , )
+MessageType.remove_user           = MessageType(2   , 'remove_user'         , convert_remove_user           , )
+MessageType.call                  = MessageType(3   , 'call'                , convert_call                  , )
+MessageType.channel_name_change   = MessageType(4   , 'channel_name_change' , convert_channel_name_change   , )
+MessageType.channel_icon_change   = MessageType(5   , 'channel_icon_change' , convert_channel_icon_change   , )
+MessageType.new_pin               = MessageType(6   , 'new_pin'             , convert_new_pin               , )
+MessageType.new_member            = MessageType(7   , 'new_member'          , convert_new_member            , )
+MessageType.new_guild_sub         = MessageType(8   , 'new_guild_sub'       , convert_new_guild_sub         , )
+MessageType.new_guild_sub_t1      = MessageType(9   , 'new_guild_sub_t1'    , convert_new_guild_sub_t1      , )
+MessageType.new_guild_sub_t2      = MessageType(10  , 'new_guild_sub_t2'    , convert_new_guild_sub_t2      , )
+MessageType.new_guild_sub_t3      = MessageType(11  , 'new_guild_sub_t3'    , convert_new_guild_sub_t3      , )
+MessageType.new_follower_channel  = MessageType(12  , 'new_follower_channel', convert_new_follower_channel  , )
+MessageType.new_follower_channel  = MessageType(13  , 'stream'              , convert_stream                , )
+
+del convert_default
+del convert_add_user
+del convert_remove_user
+del convert_call
+del convert_channel_name_change
+del convert_channel_icon_change
+del convert_new_pin
+del convert_new_member
+del convert_new_guild_sub
+del convert_new_guild_sub_t1
+del convert_new_guild_sub_t2
+del convert_new_guild_sub_t3
+del convert_new_follower_channel
+del convert_stream
 
 #TODO:test
 class MessageCall(object):

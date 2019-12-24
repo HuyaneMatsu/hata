@@ -6,11 +6,12 @@ except ImportError:
     relativedelta=None
 
 from .dereaddons_local import multidict
-from .others import cchunkify, MessageType
+from .others import cchunkify
 if (relativedelta is not None):
     from .others import elapsed_time
 from .permission import PERM_KEYS
 from .user import ZEROUSER
+from .message import MessageType
 
 #testerfile for events
 #later embeds will be added in plan
@@ -163,10 +164,18 @@ def str_message(message,index=None,**kwargs):
         result.append(str_reaction_mapping(message.reactions),1)
     if message.application is not None:
         result.append(str_message_application(message.application,1))
-    if message.activity.value:
-        result.append(f'- activity: {message.activity.name} ({message.activity.value})',1)
-        if message.activity_party_id:
-            result.append(f' - activity_party_id: {message.activity_party_id}')
+    
+    activity=message.activity
+    if (activity is not None):
+        line=['- activity: ',activity.type.name]
+        party_id=activity.party_id
+        if party_id:
+            line.append('(')
+            line.append(party_id)
+            line.append(')')
+        
+        result.append(''.join(line),1)
+
     if message.pinned:
         result.append('- pinned = True',1)
     if message.tts:
@@ -1273,6 +1282,61 @@ def str_achievement(achievement,index=None,**kwargs):
     
     return result
 
+def str_emoji(emoji,index=None,**kwargs):
+    result=Pretty_block()
+    if index is None:
+        start=''
+    else:
+        start=f'{index}.: '
+    result.append(f'{start}Emoji:')
+    
+    result.append(f'- id : {emoji.id}',1)
+    result.append(f'- name : {emoji.name}',1)
+    
+    unicode = emoji.unicode
+    if (unicode is not None):
+        result.append(f'- unicode : {unicode.encode("utf8")}')
+        return result
+    
+    guild=emoji.guild
+    if guild is None:
+        result.append('- guild : *none*',1)
+    else:
+        result.append(f'- guild : {guild.name} ({guild.id})',1)
+    
+    roles=emoji.roles
+    if (roles is not None) and roles:
+        line=['- roles :']
+        roles=sorted(roles)
+        it_index=0
+        it_length=len(roles)
+        
+        while True:
+            role=roles[it_index]
+            line.append(role.mention)
+            it_index+=1
+            if it_index==it_length:
+                break
+            
+            line.append(', ')
+            continue
+            
+        result.append(''.join(line),1)
+    
+    user=emoji.user
+    if (user is not ZEROUSER):
+        result.append(f'- user : {user.name} ({user.id})',1)
+        
+    if emoji.animated:
+        result.append('- animated',1)
+    
+    if emoji.managed:
+        result.append('- managed',1)
+    
+    if not emoji.require_colons:
+        result.append('- no colons required',1)
+        
+    
 PRETTY_PRINTERS['Message']=str_message
 PRETTY_PRINTERS['reaction_mapping']=str_reaction_mapping
 PRETTY_PRINTERS['MessageApplication']=str_message_application
@@ -1314,3 +1378,4 @@ PRETTY_PRINTERS['GuildWidget']=str_GuildWidget
 PRETTY_PRINTERS['GWUserReflection']=str_GWUserReflection
 PRETTY_PRINTERS['GWChannelReflection']=str_GWChannelReflection
 PRETTY_PRINTERS['Achievement']=str_achievement
+PRETTY_PRINTERS['Emoji']=str_emoji

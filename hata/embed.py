@@ -5,8 +5,8 @@ __all__ = ('EXTRA_EMBED_TYPES', 'Embed', 'EmbedAuthor', 'EmbedCore',
 
 import re
 
-from .others import parse_time, USER_MENTION_RP, CHANNEL_MENTION_RP,        \
-    ROLE_MENTION_RP
+from .others import ROLE_MENTION_RP, USER_MENTION_RP, CHANNEL_MENTION_RP,   \
+    parse_time, urlcutter
 from .color import Color
 
 EXTRA_EMBED_TYPES=('link', 'video', 'gifv', 'image')
@@ -65,84 +65,6 @@ def _convert_content(content,message):
         
         return re.compile("|".join(transformations)).sub(lambda mention:transformations[escape(mention.group(0))],content)
 
-def _urlcutter(url):
-    if len(url)<50:
-        return url
-    
-    position=url.find('/')
-    
-    if position==-1:
-        return f'{url[:28]}...{url[-19:]}'
-    
-    position=position+1
-    if url[position]=='/':
-        position=position+1
-        if position==len(url):
-            return f'{url[:28]}...{url[-19:]}'
-        
-        position=url.find('/',position)
-        position=position+1
-        if position==0 or position==len(url):
-            return f'{url[:28]}...{url[-19:]}'
-    
-    positions=[position]
-    
-    while True:
-        position=url.find('/',position)
-        if position==-1:
-            break
-        position=position+1
-        if position==len(url):
-            break
-        positions.append(position)
-
-    from_start=0
-    from_end=0
-    top_limit=len(url)
-    index=0
-    
-    while True:
-        value=positions[index]
-        if value+from_end>47:
-            if from_start+from_end<33:
-                from_start=47-from_end
-                break
-            else:
-                index=index+1
-                if index==len(positions):
-                    value=0
-                else:
-                    value=positions[len(positions)-index]
-                value=top_limit-value
-                if value+from_start>47:
-                    break
-                else:
-                    from_end=value
-                    break
-        from_start=value
-        
-        index=index+1
-        value=positions[len(positions)-index]
-        value=top_limit-value
-        if value+from_start>47:
-            if from_start+from_end<33:
-                from_end=47-from_start
-                break
-            else:
-                if index==len(positions):
-                    value=top_limit
-                else:
-                    value=positions[index]
-                
-                if value+from_end>47:
-                    break
-                else:
-                    from_start=value
-                    break
-        from_end=value
-        
-    return f'{url[:from_start]}...{url[top_limit-from_end-1:]}'
-
 class EmbedThumbnail(object):
     __slots__=('height', 'proxy_url', 'url', 'width',)
     def __init__(self,url):
@@ -181,7 +103,7 @@ class EmbedThumbnail(object):
             text.append('None')
         else:
             text.append('\'')
-            url=_urlcutter(url)
+            url=urlcutter(url)
             text.append(url)
             text.append('\'')
         
@@ -241,7 +163,7 @@ class EmbedVideo(object):
             text.append('None')
         else:
             text.append('\'')
-            url=_urlcutter(url)
+            url=urlcutter(url)
             text.append(url)
             text.append('\'')
         
@@ -304,7 +226,7 @@ class EmbedImage(object):
             text.append('None')
         else:
             text.append('\'')
-            url=_urlcutter(url)
+            url=urlcutter(url)
             text.append(url)
             text.append('\'')
             
@@ -364,7 +286,7 @@ class EmbedProvider(object):
             text.append('None')
         else:
             text.append('\'')
-            url=_urlcutter(url)
+            url=urlcutter(url)
             text.append(url)
             text.append('\'')
         
@@ -451,7 +373,7 @@ class EmbedAuthor(object):
             text.append('None')
         else:
             text.append('\'')
-            url=_urlcutter(url)
+            url=urlcutter(url)
             text.append(url)
             text.append('\'')
         
@@ -461,7 +383,7 @@ class EmbedAuthor(object):
             text.append('None')
         else:
             text.append('\'')
-            icon_url=_urlcutter(icon_url)
+            icon_url=urlcutter(icon_url)
             text.append(icon_url)
             text.append('\'')
             
@@ -543,7 +465,7 @@ class EmbedFooter(object):
             text.append('None')
         else:
             text.append('\'')
-            icon_url=_urlcutter(icon_url)
+            icon_url=urlcutter(icon_url)
             text.append(icon_url)
             text.append('\'')
         

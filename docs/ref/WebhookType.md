@@ -3,7 +3,7 @@
 Represents a [webhook's](Webhook.md) type. [`WebhookRepr`](WebhookRepr.md)
 objects also have a `.type` attribute included.
 
-- Source : [others.py](https://github.com/HuyaneMatsu/hata/blob/master/hata/webhook.py)
+- Source : [webhook.py](https://github.com/HuyaneMatsu/hata/blob/master/hata/webhook.py)
 
 Each webhook type is stored in the classe's [`.INSTANCES`](#instances)
 `list` class attribute, with [`WebhookType`](WebhookType.md)
@@ -36,7 +36,7 @@ There are 2 (+1:placeholder) webhook types :
 - type : `list`
 - elements : [`WebhookType`](WebhookType.md)
 
-Stores the creates [`WebhookType`](WebhookType.md) instances. This
+Stores the created [`WebhookType`](WebhookType.md) instances. This
 container is accessed when translating a Discord webhook type's value to
 it's representation.
 

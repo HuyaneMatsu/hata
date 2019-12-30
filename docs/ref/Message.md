@@ -38,7 +38,7 @@ as author, then the author of the message wont be replaced with the
 
 ### `call`
 
-- type : [`MessageCall`](MessageCall) / `NoneType`
+- type : [`MessageCall`](MessageCall.md) / `NoneType`
 - default : `None`
 
 TODO or Deprecated.
@@ -272,7 +272,7 @@ messages, gonna check if the message is at `MESSAGES`.
 - returns : `int`
 - size : 64 bit
 
-Returns the message's hash value, which equals to the it's id.
+A message's hash value is equal to it's id.
 
 ### `__repr__(self)`
 
@@ -319,7 +319,7 @@ gets an update event, then this value is reseted to unset.
 
 ### `new(cls,data,channel)` (classmethod)
 
-- returns : [`Message`](Message)
+- returns : [`Message`](Message.md)
 
 Creates a new empty Message object with only id, then checks if the message 
 already exists. If it does returns that message, if not, then finishes the
@@ -327,14 +327,14 @@ message's initialization.
 
 ### `old(cls,data,channel)` (classmethod)
 
-- returns : [`Message`](Message)
+- returns : [`Message`](Message.md)
 
 Same as `new` but for old messages. Used if we request older messages, which can
 be chained with our message history's end.
 
 ### `fromchannel(cls,data,channel)` (classmethod)
 
-- returns : [`Message`](Message)
+- returns : [`Message`](Message.md)
 
 Check if the message is already loaded, if yes, then returns the already existing
 one. If not, then creates a new one, but this method does not adds it to the 
@@ -342,7 +342,7 @@ channel's history, because we dont actually know, where to put it.
 
 ### `exists(cls,data,channel)` (classmethod)
 
-- returns : (`True` / `False`) , [`Message`](Message)
+- returns : (`True` / `False`) , [`Message`](Message.md)
 
 Same as [`.fromchannel`](#fromchannelclsdatachannel-classmethod), but if it
 found the message, returns an additional `True`, if not, then `False`.

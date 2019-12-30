@@ -14,7 +14,7 @@ application by defualt. This application can be update by awaiting
 |---------------------------|-----------------------------------------------------------|-----------|
 | bot_public                | bool                                                      | False     |
 | bot_require_code_grant    | bool                                                      | False     |
-| cover_image               | int                                                       | 0         |
+| cover                     | int                                                       | 0         |
 | description               | str                                                       | ''        |
 | guild                     | [Guild](Guild.md) / NoneType                              | None      |
 | icon                      | int                                                       | 0         |
@@ -29,6 +29,20 @@ application by defualt. This application can be update by awaiting
 
 ## Properties
 
+### `created_at`
+
+- returns : `datetime`
+
+The creation time of the application.
+
+### `cover_url`
+
+- returns : `str` / `None`
+- default : `None`
+
+The application's cover's url. If the application has no cover, then returns
+`None`.
+
 ### `icon_url`
 
 - returns : `str` / `None`
@@ -38,6 +52,18 @@ The application's icon's url. If the application has no icon, then returns
 `None`.
 
 ## Methods
+
+### `cover_url_as(self,ext=None,size=None)`
+
+- returns : `str` / `None`
+- default : `None`
+- raises : `ValueError`
+
+Returns the application's cover's url.
+If the application has no cover, then returns `None`
+
+Valid extensions: 'jpg', 'jpeg', 'png', 'webp'.
+Valid sizes: 16, 32, 64, 128, 256, 512, 1024, 2048, 4096.
 
 ### `icon_url_as(self,ext=None,size=None)`
 
@@ -71,8 +97,3 @@ Called after creating an application without any data.
 - returns : `None`
 
 Called to update the application with the given data.
-
-
-
-
-

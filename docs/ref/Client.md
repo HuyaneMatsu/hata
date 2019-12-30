@@ -932,10 +932,13 @@ additional `reason` argument can be passed too, which should show up the
 ### `message_delete_multiple2(self,message,reason=None)`
 
 - `awaitable`
-- returns : `None`
+- returns : `None` / `list` of [`DiscordException`](DiscordException.md)
 
 Similar to `message_delete_multiple`, but it accepts messages from different
-channels.
+channels. Groups them up by channel and creates
+[`.message_delete_multiple`](#message_delete_multipleselfmessagesreasonnone)
+tasks for them. Returns when all the task are finished. If any exception was
+rasised meanwhile, then returns each of them in a list.
 
 ### `message_delete_sequence(self,channel,after=None,before=None,limit=None,reason=None)`
 
@@ -1751,16 +1754,19 @@ The other passed argumnets are same, as for
 ### `invite_create_pref(self,guild,*args,**kwargs)`
 
 - `awaitable`
-- returns : [`Invite`](Invite.md)
+- returns : [`Invite`](Invite.md) / `None`
 - raises : `ValueError`
 
 Chooses the prefered channel at the [guild](Guild.md) to create the invite from.
-The [`.invite_create`](#invite_createselfchannel)'s arguments are passable to 
+The [`.invite_create`](#invite_createselfchannel)'s arguments are passable too:
 
 - `max_age`, default : `0`.
 - `max_uses`, default : `0`.
 - `unique`, default : `True`.
 - `temporary`, default : `False`.
+
+If the client can not create invite from the prefered channel, will return
+`None`.
 
 ### `invite_get(self,invite_code,with_count=True)`
 

@@ -31,7 +31,7 @@ There are 2 (+ spaceholder) predefined `TeamMembershipState`-s.
 - length : `3`
 - elements : [`TeamMembershipState`](TeamMembershipState.md)
 
-Stores the creates [`RelationshipType`](RelationshipType.md) instances. This
+Stores the created [`RelationshipType`](RelationshipType.md) instances. This
 container is accessed when translating a Discord relationship type's value to
 it's representation.
 

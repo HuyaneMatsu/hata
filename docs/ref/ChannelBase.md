@@ -98,7 +98,7 @@ nicks too.
 - returns : `int`
 - size : 64 bit
 
-Returns the channel's hash value, which equals to the it's id.
+Returns the channel's hash value, which equals to it's id.
 
 ### `__repr__(self)`
 

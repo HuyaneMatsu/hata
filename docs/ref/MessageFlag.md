@@ -4,11 +4,6 @@ The flags of a [message](Message.md).
 
 - Source : [message.py](https://github.com/HuyaneMatsu/hata/blob/master/hata/message.py)
 
-A message can have 3 type of flags:
-- [`crossposted`](#crossposted)
-- [`is_crosspost`](#is_crosspost)
-- [`embeds_suppressed`](#embeds_suppressed)
-
 ## Superclasses
 
 - `int`

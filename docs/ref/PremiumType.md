@@ -32,7 +32,7 @@ There are 3 premium types:
 - type : `list`
 - elements : [`PremiumType`](PremiumType.md)
 
-Stores the creates [`PremiumType`](PremiumType.md) instances. This
+Stores the created [`PremiumType`](PremiumType.md) instances. This
 container is accessed when translating a Discord premium type's value to
 it's representation.
 

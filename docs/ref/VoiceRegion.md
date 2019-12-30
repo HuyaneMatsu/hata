@@ -58,7 +58,7 @@ class attributes.
 - type : `dict`
 - items : (`id`, [`VoiceRegion`](VoiceRegion.md))
 
-Stores the creates [`VoiceRegion`](VoiceRegion.md) instances. It stores the
+Stores the created [`VoiceRegion`](VoiceRegion.md) instances. It stores the
 translations of a Discord voice region ids to their representation.
 
 ## Class methods

@@ -12,6 +12,33 @@ Check [`CHANNEL_TYPES`](CHANNEL_TYPES.md) for more channel type related info.
 - [`ChannelPrivate`](ChannelPrivate.md)
 - [`ChannelGroup`](ChannelGroup.md)
 
+## Instance attributes
+
+This class cannot implement instance attributes, because its is only the second
+inherited base class, but every subclass of it implements the following 
+instance attributes:
+
+### `message_history_reached_end`
+
+- type : `bool`
+- values : `True` / `False`
+- default : `False`
+
+Tells if all the [messages](Message.md) are loaded at the channel. If they are 
+`message_history_reached_end` is set to `True` and no more requests will be
+executed on requesting older [messages](Message.md).
+
+### `messages`
+
+- type : [`deque`](https://docs.python.org/3/library/collections.html#collections.deque)
+- elements : [`Message`](Message.md)
+
+A `deque` of the messages stored from the channel. The deque's maximal
+lenght by default is same as [`MC_GC_LIMIT`](ChannelTextBase.md#mc_gc_limit)
+defined at [`ChannelTextBase`](ChannelTextBase.md). Or it can be
+changed locally with the
+[`mc_gc_limit`](ChannelTextBase.md#mc_gc_limit-getset) property.
+
 ## Class attributes
 
 ### `MC_GC_LIMIT`

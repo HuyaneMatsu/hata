@@ -9,6 +9,7 @@ from datetime import datetime
 from .dereaddons_local import any_to_any, autoposlist, cached_property,     \
     _spaceholder
 
+from .http import URLS
 from .others import parse_time, CHANNEL_MENTION_RP, id_to_time, VoiceRegion
 from .client_core import MESSAGES, CHANNELS, GUILDS
 from .user import USERS, ZEROUSER, User, PartialUser, VoiceState
@@ -97,6 +98,9 @@ MessageActivityType.spectate       = MessageActivityType(2,'spectate')
 MessageActivityType.listen         = MessageActivityType(3,'listen')
 MessageActivityType.join_request   = MessageActivityType(5,'join_request')
 
+# MessageActivity 4 is missing, lets add it as unknown
+MessageActivityType(4,'unknown')
+
 class MessageActivity(object):
     __slots__ = ('party_id', 'type',)
     def __init__(self,data):
@@ -119,7 +123,7 @@ class MessageActivity(object):
         return f'<{self.__class__.__name__} type={self.type.name} ({self.type.value}), party_id={self.party_id!r}>'
     
 class Attachment(object):
-    __slots__=('name', 'height', 'id', 'proxy_url', 'size', 'url', 'width',)
+    __slots__=('height', 'id', 'name', 'proxy_url', 'size', 'url', 'width',)
     def __init__(self,data):
         self.name       = data['filename']
         self.id         = int(data['id'])
@@ -196,7 +200,16 @@ class MessageApplication(object):
         self.icon       = 0 if icon is None else int(icon,16)
         self.id         = int(data['id'])
         self.name       = data['name']
-
+    
+    @property
+    def created_at(self):
+        return id_to_time(self.id)
+    
+    icon_url=property(URLS.application_icon_url)
+    icon_url_as=URLS.application_icon_url_as
+    cover_url=property(URLS.application_cover_url)
+    cover_url_as=URLS.application_cover_url_as
+    
     def __gt__(self,other):
         if type(self) is type(other):
             return self.id>other.id
@@ -229,6 +242,10 @@ class MessageApplication(object):
 
     def __hash__(self):
         return self.id
+    
+    def __repr__(self):
+        return f'<{self.__class__.__name__} name={self.name!r}, id={self.id}>'
+
 
 class MessageReference(object):
     __slots__=('_cache', 'data',)
@@ -447,6 +464,7 @@ class Message(object):
                     pass
                 self.author=User(author_data,guild)
         else:
+            webhook_id=int(webhook_id)
             cross_reference_data=data.get('message_reference',None)
             is_cross=(cross_reference_data is not None)
             if is_cross:
@@ -465,9 +483,9 @@ class Message(object):
                 webhook_type=WebhookType.bot
             
             if author_data is None:
-                self.author=PartialWebhook(int(webhook_id),'',type_=webhook_type)
+                self.author=PartialWebhook(webhook_id,'',type_=webhook_type)
             else:
-                self.author=WebhookRepr(author_data,int(webhook_id),type_=webhook_type)
+                self.author=WebhookRepr(author_data,webhook_id,type_=webhook_type)
 
         #the message might contain guild member data too
         #but we just gonna ignore that
@@ -1043,7 +1061,7 @@ class MessageType(object):
     INSTANCES = [NotImplemented] * 14
     
     # object related
-    __slots__=('name', 'value', 'convert',)
+    __slots__ = ('convert', 'name', 'value', )
     
     def __init__(self,value,name,converter):
         self.value  = value
@@ -1069,7 +1087,7 @@ class MessageType(object):
     channel_name_change     = NotImplemented
     channel_icon_change     = NotImplemented
     new_pin                 = NotImplemented
-    new_member              = NotImplemented
+    welcome                 = NotImplemented
     new_guild_sub           = NotImplemented
     new_guild_sub_t1        = NotImplemented
     new_guild_sub_t2        = NotImplemented
@@ -1134,7 +1152,7 @@ def convert_new_pin(self):
     return f'{self.author.name} pinned a message to this channel.'
 
 #TODO: this system changed, just pulled out the new texts from the js client source, but the calculation is bad
-def convert_new_member(self):
+def convert_welcome(self):
     #tuples with immutable elements are stored directly
     join_messages=(
         '{0} just joined the server - glhf!',
@@ -1236,13 +1254,13 @@ MessageType.call                  = MessageType(3   , 'call'                , co
 MessageType.channel_name_change   = MessageType(4   , 'channel_name_change' , convert_channel_name_change   , )
 MessageType.channel_icon_change   = MessageType(5   , 'channel_icon_change' , convert_channel_icon_change   , )
 MessageType.new_pin               = MessageType(6   , 'new_pin'             , convert_new_pin               , )
-MessageType.new_member            = MessageType(7   , 'new_member'          , convert_new_member            , )
+MessageType.welcome               = MessageType(7   , 'welcome'             , convert_welcome               , )
 MessageType.new_guild_sub         = MessageType(8   , 'new_guild_sub'       , convert_new_guild_sub         , )
 MessageType.new_guild_sub_t1      = MessageType(9   , 'new_guild_sub_t1'    , convert_new_guild_sub_t1      , )
 MessageType.new_guild_sub_t2      = MessageType(10  , 'new_guild_sub_t2'    , convert_new_guild_sub_t2      , )
 MessageType.new_guild_sub_t3      = MessageType(11  , 'new_guild_sub_t3'    , convert_new_guild_sub_t3      , )
 MessageType.new_follower_channel  = MessageType(12  , 'new_follower_channel', convert_new_follower_channel  , )
-MessageType.new_follower_channel  = MessageType(13  , 'stream'              , convert_stream                , )
+MessageType.stream                = MessageType(13  , 'stream'              , convert_stream                , )
 
 del convert_default
 del convert_add_user
@@ -1251,7 +1269,7 @@ del convert_call
 del convert_channel_name_change
 del convert_channel_icon_change
 del convert_new_pin
-del convert_new_member
+del convert_welcome
 del convert_new_guild_sub
 del convert_new_guild_sub_t1
 del convert_new_guild_sub_t2
@@ -1386,4 +1404,4 @@ class GroupCall(object):
         state._update_no_return(data,channel)
         return channel
 
-del autoposlist
+del autoposlist, URLS

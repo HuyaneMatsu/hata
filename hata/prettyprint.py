@@ -254,14 +254,20 @@ def str_reaction_mapping(reactions,index=None,**kwargs): #ignore index, 1 messag
     #    it will need to be able to handle unknown reactors too!
     return result
 
-#TODO: whats this?
 def str_message_application(application,index=None,**kwargs): #ignore index, 1/message
     result=Pretty_block()
     result.append(f'message_application : ({application.id})')
     result.append(f'- name : {application.name}',1)
     result.append(f'- id : {application.id}',1)
-    result.append(f'- cover: {application.cover:0>32x}',1)
-    result.append(f'- icon : {application.icon:0>32x}',1)
+    
+    cover_url=application.cover_url
+    if (cover_url is not None):
+        result.append(f'- cover: {application.cover_url}',1)
+    
+    icon_url=application.icon_url
+    if (icon_url is not None):
+        result.append(f'- icon : {icon_url}',1)
+    
     if len(application.description)>32:
         result.append(f'- descr.: {application.description[:26]}...(+{len(application.description)-26})',1)
     else:

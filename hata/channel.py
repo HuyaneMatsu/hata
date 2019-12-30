@@ -279,7 +279,10 @@ class MessageIterator(object):
             return channel.messages[index]
         
         raise StopAsyncIteration
-
+    
+    def __repr__(self):
+        return f'<{self.__class__.__name__} of client {self.client.full_name}, at channel {self.channel.name} ({self.channel.id})>'
+    
 async def message_at_index(client,channel,index):
     if index<len(channel.messages):
         return channel.messages[index]

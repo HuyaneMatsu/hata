@@ -792,9 +792,11 @@ class WebSocketCommonProtocol(object):
             if self.is_client and self.transfer_data_task is not None:
                 if (await self.wait_for_connection_lost()):
                     return
-            # Half-close the TCP connection if possible (when there's no TLS).
-            if self.writer.can_write_eof():
-                self.writer.write_eof()
+            # If connection goes off meawhile connecting, writer can be set
+            # to None.
+            writer = self.writer
+            if (writer is not None) and writer.can_write_eof():
+                writer.write_eof()
                 if (await self.wait_for_connection_lost()):
                     return
         finally:
@@ -803,12 +805,13 @@ class WebSocketCommonProtocol(object):
                 return
             
             #Close the TCP connection
-            if self.writer is not None:
-                self.writer.close()
+            writer = self.writer
+            if (writer is not None):
+                writer.close()
                 if (await self.wait_for_connection_lost()):
                     return
                 #Abort the TCP connection
-                self.writer.transport.abort()
+                writer.transport.abort()
             #connection_lost() is called quickly after aborting.
             await self.wait_for_connection_lost()
             

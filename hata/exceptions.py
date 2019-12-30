@@ -25,7 +25,7 @@ class DiscordException(Exception):
         self.data=data
         self._messages=None
         self._code=None
-        
+    
     @property
     def messages(self):
         messages=self._messages

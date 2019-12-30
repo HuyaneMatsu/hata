@@ -271,7 +271,7 @@ GLOBALLY_LIMITED=0x4000000000000000
 ##endpoint: /channels/{channel_id}/messages/{message_id}
 ##method  : DELETE
 ##auth    : bot
-##used at : message_delete / message_delete_a2wo
+##used at : message_delete / message_delete_b2wo
 ##limits  : `newer than 14 days` or `own` / `else`
 ##    group   : 71680 / 87808
 ##    limit   : 3 / 30

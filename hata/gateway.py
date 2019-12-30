@@ -649,13 +649,10 @@ class DiscordGatewaySharder(object):
             task=Task(gateway.start(loop),loop)
             tasks.append(task)
         
-        done, pending = await WaitTillExc(tasks,loop)
+        await WaitTillExc(tasks,loop)
         
-        for task in pending:
+        for task in tasks:
             task.cancel()
-        
-        for task in done:
-            task.result()
         
     async def run(self):
         tasks=[]
@@ -670,7 +667,12 @@ class DiscordGatewaySharder(object):
         for task in pending:
             task.cancel()
         
-        no_internet_stop = done.pop().result()
+        while done:
+            if done.pop().result():
+                no_internet_stop=True
+                break
+        else:
+            no_internet_stop = False
         
         if no_internet_stop:
             for gateway in self.gateways:

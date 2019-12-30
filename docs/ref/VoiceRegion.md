@@ -29,6 +29,7 @@ There are 21 voice regions:
 | id            | name              | deprecated    | vip       | custom    |
 |---------------|-------------------|---------------|-----------|-----------|
 | brazil        | Brazil            | False         | False     | False     |
+| dubai         | Dubai             | False         | False     | False     |
 | eu-central    | Central Europe    | False         | False     | False     |
 | eu-west       | Western Europe    | False         | False     | False     |
 | europe        | Europe            | False         | False     | False     |

@@ -1,6 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('GWChannelReflection', 'GWUserReflection', 'Guild', 'GuildEmbed',
-    'GuildFeature', 'GuildWidget', )
+    'GuildFeature', 'GuildWidget', 'SystemChannelFlag', )
 
 import re
 
@@ -11,7 +11,7 @@ from hata.futures import Task
 from .client_core import CACHE_PRESENCE, GUILDS
 from .others import _parse_ih_fsa, _parse_ih_fs, id_to_time, EMOJI_NAME_RP, \
     VoiceRegion, Status, VerificationLevel, MessageNotificationLevel, MFA,  \
-    SystemChannelFlag, ContentFilterLevel
+    ContentFilterLevel
     
 from .user import User, PartialUser, VoiceState, UserBase, ZEROUSER
 from .role import Role
@@ -133,6 +133,41 @@ GuildFeature.splash                 = GuildFeature('INVITE_SPLASH')
 GuildFeature.vanity                 = GuildFeature('VANITY_URL')
 GuildFeature.verified               = GuildFeature('VERIFIED')
 GuildFeature.vip                    = GuildFeature('VIP_REGIONS')
+
+class SystemChannelFlag(int):
+    __slots__=()
+    
+    @property
+    def none(self):
+        return self==self.NONE
+
+    @property
+    def all(self):
+        return self==self.ALL
+    
+    @property
+    def welcome(self):
+        return (self&1)^1
+    
+    @property
+    def boost(self):
+        return ((self>>1)&1)^1
+    
+    def __iter__(self):
+        if not self&1:
+            yield 'welcome'
+        
+        if not (self>>1)&1:
+            yield 'boost'
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self!s})'
+
+    NONE    = NotImplemented
+    ALL     = NotImplemented
+
+SystemChannelFlag.NONE  = SystemChannelFlag(0b11)
+SystemChannelFlag.ALL   = SystemChannelFlag(0b00)
 
 class GuildEmbed(object):
     __slots__=('channel', 'enabled', 'guild',)
@@ -1078,7 +1113,7 @@ class Guild(object):
             if channel.name==name:
                 return channel
         return default
-
+    
     def get_role(self,name,default=None):
         for role in self.all_role.values():
             if role.name==name:
@@ -1462,6 +1497,7 @@ class Guild(object):
                 if old:
                     changes.append((EMOJI_UPDATE_EDIT,emoji,old),)
                 old_ids.remove(emoji_id)
+        
         for emoji_id in old_ids:
             emoji=emojis[emoji_id]
             emoji._delete()
@@ -1483,9 +1519,11 @@ class Guild(object):
             else:
                 emoji._update_no_return(emoji_data)
                 old_ids.remove(emoji_id)
+        
         for emoji_id in old_ids:
-            del emojis[emoji_id]
-
+            emoji=emojis[emoji_id]
+            emoji._delete()
+    
     __gt__=User.__gt__
 
     def __ge__(self,other):

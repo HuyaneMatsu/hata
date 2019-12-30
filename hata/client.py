@@ -8,7 +8,8 @@ from collections import deque
 from os.path import split as splitpath
 
 from .dereaddons_local import multidict_titled, _spaceholder
-from .futures import Future, Task, sleep, CancelledError
+from .futures import Future, Task, sleep, CancelledError, WaitTillAll,      \
+    WaitTillFirst
 
 from .py_formdata import Formdata
 from .py_hdrs import AUTHORIZATION
@@ -17,7 +18,7 @@ from .others import Status, id_to_time, log_time_converter, _parse_ih_fsa,  \
     VoiceRegion, ContentFilterLevel, PremiumType, MessageNotificationLevel, \
     bytes_to_base64, FriendRequestFlag, ext_from_base64, Theme, now_as_id,  \
     to_json, multi_delete_time_limit, VerificationLevel, RelationshipType,  \
-    random_id, parse_time
+    random_id, parse_time, DISCORD_EPOCH
 
 from .user import User, USERS, GuildProfile, UserBase, UserFlag
 from .emoji import Emoji, PartialEmoji
@@ -1420,51 +1421,163 @@ class Client(UserBase):
         return form
 
     async def message_delete(self,message,reason=None):
-        await self.http.message_delete(message.channel.id,message.id,reason)
-                
-    #at the case of 100+ we break up the list to parts, and we delete them with 1s delay
-    #so this must be async
-    #older messages tahn 2 week must be deleted 1 by 1 tho
-    #however this request yields 204 on succes, we will still get delete event from the server, so instant deleting is useless
-    async def message_delete_multiple(self,messages,reason=None):
-        ln=len(messages)
-        if ln:
-            channel_id=messages[0].channel.id
+        if (message.author == self) or (message.id > int((time_now()-1209590.)*1000.-DISCORD_EPOCH)<<22):
+            # own or new
+            await self.http.message_delete(message.channel.id,message.id,reason)
         else:
+            await self.http.message_delete_b2wo(message.channel.id,message.id,reason)
+        
+    
+    async def message_delete_multiple(self,messages,reason=None):
+        if not messages:
             return
+        
         channel=messages[0].channel
+        channel_id=channel.id
 
         if not isinstance(channel,ChannelGuildBase):
-            #bulk delete is available only at guilds
+            # Bulk delete is available only at guilds. At private or group
+            # channel you can delete only yours tho.
             for message in messages:
                 await self.http.message_delete(channel_id,message.id,reason)
+                
             return
-                    
-        messages.sort(reverse=True)
-
-        limit=message_relativeindex(messages,multi_delete_time_limit())
-
-        if limit>100:
-            start=0
-            end=100
-            while end<limit:
-                await self.http.message_delete_multiple(channel_id,{'messages':[messages[index].id for index in range(start,end)]},reason)
-                start+=100
-                end+=100
-                limit=message_relativeindex(messages,multi_delete_time_limit())
-            amount=limit-start
-            if amount>1:
-                await self.http.message_delete_multiple(channel_id,{'messages':[messages[index].id for index in range(start,limit)]},reason)
-            elif amount==1:
-                await self.http.message_delete(channel_id,messages[limit-1].id,reason)
-        elif limit>1:
-            await self.http.message_delete_multiple(channel_id,{'messages':[messages[index].id for index in range(0,limit)]},reason)
-        else:
-            await self.http.message_delete(channel_id,messages[limit-1].id,reason)
         
-        if ln!=limit:
-            for index in range(limit,ln):
-                await self.http.message_delete(channel_id,messages[index].id,reason)
+        message_group_new       = deque()
+        message_group_old       = deque()
+        message_group_old_own   = deque()
+        
+        bulk_delete_limit = int((time_now()-1209600.)*1000.-DISCORD_EPOCH)<<22 # 2 weeks
+        
+        for message in messages:
+            message_id=message.id
+            own=(message.author==self)
+            
+            if message_id>bulk_delete_limit:
+                message_group_new.append((own,message_id),)
+                continue
+            
+            if own:
+                group = message_group_old_own
+            else:
+                group = message_group_old
+            
+            group.append(message_id)
+            continue
+            
+        loop = self.loop
+        tasks = []
+        
+        delete_mass_task= None
+        delete_new_task = None
+        delete_old_task = None
+        
+        while True:
+            if delete_mass_task is None:
+                message_limit=len(message_group_new)
+                
+                # 0 is all good, but if it is more, lets check them
+                if message_limit:
+                    message_ids=[]
+                    message_count=0
+                    limit = int((time_now()-1209590.)*1000.-DISCORD_EPOCH)<<22 # 2 weeks -10s
+                    
+                    while message_group_new:
+                        own,message_id=message_group_new.popleft()
+                        if message_id>limit:
+                            message_ids.append(message_id)
+                            message_count=message_count+1
+                            if message_count==100:
+                                break
+                            continue
+                        
+                        if (message_id+20971520000) < limit:
+                            continue
+                        
+                        # If the message is really older than the limit,
+                        # with ingoring the 10 second, then we move it.
+                        if own:
+                            group = message_group_old_own
+                        else:
+                            group = message_group_old
+                        
+                        group.appendleft(message_id)
+                        continue
+                    
+                    if message_count:
+                        if message_count==1:
+                            if (delete_new_task is None):
+                                message_id=message_ids[0]
+                                delete_new_task = Task(self.http.message_delete(channel_id,message_id,None),loop)
+                                tasks.append(delete_new_task)
+                        else:
+                            delete_mass_task = Task(self.http.message_delete_multiple(channel_id,{'messages':message_ids},None),loop)
+                            tasks.append(delete_mass_task)
+                
+            if delete_old_task is None:
+                if message_group_old:
+                    message_id=message_group_old.popleft()
+                    delete_old_task = Task(self.http.message_delete_b2wo(channel_id,message_id,reason),loop)
+                    tasks.append(delete_old_task)
+            
+            if delete_new_task is None:
+                if message_group_new:
+                    group = message_group_new
+                elif message_group_old_own:
+                    group = message_group_old_own
+                else:
+                    group = None
+                
+                if (group is not None):
+                    message_id=message_group_old_own.popleft()
+                    delete_new_task = Task(self.http.message_delete(channel_id,message_id,reason),loop)
+                    tasks.append(delete_new_task)
+            
+            if not tasks:
+                # It can happen, that there are no more tasks left,  at that case
+                # we check if there is more message left. Only at
+                # `message_group_new` can be anymore message, because there is a
+                # time intervallum of 5 seconds, what we do not move between
+                # categories.
+                if not message_group_new:
+                    break
+                
+                # We really have at least 1 message at that interval.
+                own,message_id = message_group_new.popleft()
+                # We will delete that message with old endpoint if not own, to make
+                # Sure it will not block the other endpoint for 2 minutes with any chance.
+                if own:
+                    delete_new_task = Task(self.http.message_delete(channel_id,message_id,None),loop)
+                else:
+                    delete_old_task = Task(self.http.message_delete_b2wo(channel_id,message_id,None),loop)
+                
+                tasks.append(delete_old_task)
+                
+            done, pending = await WaitTillFirst(tasks,loop)
+    
+            for task in done:
+                tasks.remove(task)
+                try:
+                    result = task.result()
+                except (DiscordException,ConnectionError):
+                    for task in tasks:
+                        task.cancel()
+                    raise
+                
+                if task is delete_mass_task:
+                    delete_mass_task=None
+                    continue
+                
+                if task is delete_new_task:
+                    delete_new_task=None
+                    continue
+                
+                if task is delete_old_task:
+                    delete_old_task=None
+                    continue
+                 
+                # Should not happen
+                continue
 
     #deletes from more channels
     async def message_delete_multiple2(self,messages,reason=None):
@@ -1472,12 +1585,31 @@ class Client(UserBase):
         for message in messages:
             channel_id=message.channel.id
             try:
-                delete_system[channel_id].append(message.id)
+                delete_system[channel_id].append(message)
             except KeyError:
-                delete_system[channel_id]=[message.id]
-        for channel_id,message_ids in delete_system.items():
-            await self.message_delete_multiple(message_ids,reason)
+                delete_system[channel_id]=[message]
+        
+        tasks = []
+        loop = self.loop
+        for messages in delete_system.values():
+            task=Task(self.message_delete_multiple(messages,reason),loop)
+            tasks.append(task)
+        
+        await WaitTillAll(tasks,loop)
+        
+        exceptions = []
+        for task in tasks:
+            exception=task.exception()
+            if exception is None:
+                continue
             
+            exceptions.append(exceptions)
+            if  __debug__:
+                task.__silence__()
+        
+        if exceptions:
+            return exceptions
+        
     async def message_delete_sequence(self,channel,after=None,before=None,limit=None,reason=None):
         permission=channel.permissions_for(self)
         if not permission.can_manage_messages:
@@ -1498,7 +1630,6 @@ class Client(UserBase):
         if after>message_id:
             return
 
-        bulk_limit=multi_delete_time_limit()
         reached_bulk_limit=False
         message_ids=[]
         counter=0
@@ -1547,8 +1678,9 @@ class Client(UserBase):
                 while True:
                     if index==received_amount:
                         break
+                        
                     message_id=received_ids[index]
-                    if message_id<bulk_limit:
+                    if message_id<multi_delete_time_limit():
                         reached_bulk_limit=True
 
                         if message_ids:
@@ -1637,8 +1769,8 @@ class Client(UserBase):
 
     message_at_index=message_at_index
     messages_till_index=messages_till_index
-    def message_iterator(self,*args,**kwargs):
-        return MessageIterator(self,*args,**kwargs)
+    def message_iterator(self,channel,chunksize=97):
+        return MessageIterator(self,channel,chunksize)
 
     async def typing(self,channel):
         await self.http.typing(channel.id)
@@ -2514,9 +2646,11 @@ class Client(UserBase):
         
     async def vanity_invite(self,guild):
         vanity_code=guild.vanity_code
-        if vanity_code:
-            data = await self.http.invite_get(vanity_code,{})
-            return Invite._create_vanity(guild,data)
+        if not vanity_code:
+            return None
+        
+        data = await self.http.invite_get(vanity_code,{})
+        return Invite._create_vanity(guild,data)
 
     async def vanity_edit(self,guild,code,reason=None):
         await self.http.vanity_edit(guild.id,{code:'code'},reason)
@@ -2603,8 +2737,19 @@ class Client(UserBase):
             else:
                 raise ValueError('The guild has only category channels and cannot create invite from them!')
             break
-            
-        return (await self.invite_create(channel,*args,**kwargs))
+        
+        # Check permission, because it can save a lot of time >.>
+        if not channel.cached_permissions_for(self).can_create_instant_invite:
+            return None
+        
+        try:
+            return (await self.invite_create(channel,*args,**kwargs))
+        except DiscordException as err:
+            if err.code in (10003, 50013):
+                # 10003 -> unknown channel -> the channel was deleted meanwhile
+                # 50013 -> missing permissions -> permissons changed meanwhile
+                return None
+            raise
 
     async def invite_get(self,invite_code,with_count=True):
         data = await self.http.invite_get(invite_code,{'with_counts':with_count})
@@ -2703,7 +2848,7 @@ class Client(UserBase):
         data={}
         if relationship_type is not None:
             data['type']=relationship_type.value
-        await self.http.relationsip_create(user.id,data)
+        await self.http.relationship_create(user.id,data)
 
     #hooman only
     async def relationship_friend_request(self,user):
@@ -4174,7 +4319,7 @@ class Achievement(object):
         if not code:
             return self.name
         if code=='c':
-            return f'{self.created_at:%Y.%m.%d-%H:%M:%S}'
+            return self.created_at.__format__('%Y.%m.%d-%H:%M:%S')
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
     def _update(self,data):

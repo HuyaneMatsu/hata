@@ -2,10 +2,9 @@
 __all__ = ('Relationship', 'ContentFilterLevel', 'DISCORD_EPOCH',
     'FriendRequestFlag', 'Gift', 'HypesquadHouse', 'MFA',
     'MessageNotificationLevel', 'PremiumType', 'RelationshipType', 'Status',
-    'SystemChannelFlag', 'Theme', 'Unknown', 'VerificationLevel',
-    'VoiceRegion', 'filter_content', 'id_to_time', 'is_id', 'is_mention',
-    'is_role_mention', 'is_user_mention', 'now_as_id', 'random_id',
-    'time_to_id', )
+    'Theme', 'Unknown', 'VerificationLevel', 'VoiceRegion', 'filter_content',
+    'id_to_time', 'is_id', 'is_mention', 'is_role_mention', 'is_user_mention',
+    'now_as_id', 'random_id', 'time_to_id', )
 
 import random, re, sys
 from urllib.parse import _ALWAYS_SAFE_BYTES as ALWAYS_SAFE_BYTES,Quoter
@@ -203,6 +202,7 @@ class VoiceRegion(object):
     
     # normal
     brazil          = NotImplemented
+    dubai           = NotImplemented
     eu_central      = NotImplemented
     eu_west         = NotImplemented
     europe          = NotImplemented
@@ -228,6 +228,7 @@ class VoiceRegion(object):
     vip_amsterdam   = NotImplemented
 
 VoiceRegion.brazil          = VoiceRegion('Brazil',         'brazil',       False,  False)
+VoiceRegion.dubai           = VoiceRegion('Dubai',          'dubai',        False,  False)
 VoiceRegion.eu_central      = VoiceRegion('Central Europe', 'eu-central',   False,  False)
 VoiceRegion.eu_west         = VoiceRegion('Western Europe', 'eu-west',      False,  False)
 VoiceRegion.europe          = VoiceRegion('Europe',         'europe',       False,  False)
@@ -869,41 +870,6 @@ class Theme(object):
 
 Theme.dark  = Theme('dark')
 Theme.light = Theme('light')
-
-class SystemChannelFlag(int):
-    __slots__=()
-    
-    @property
-    def none(self):
-        return self==0b11
-
-    @property
-    def all(self):
-        return self==0b00
-    
-    @property
-    def welcome(self):
-        return (self&1)^1
-    
-    @property
-    def boost(self):
-        return ((self>>1)&1)^1
-    
-    def __iter__(self):
-        if not self&1:
-            yield 'welcome'
-        
-        if not (self>>1)&1:
-            yield 'boost'
-
-    def __repr__(self):
-        return f'{self.__class__.__name__}({self!s})'
-
-    NONE    = NotImplemented
-    ALL     = NotImplemented
-
-SystemChannelFlag.NONE  = SystemChannelFlag(0b11)
-SystemChannelFlag.ALL   = SystemChannelFlag(0b00)
 
 class Gift(object):
     __slots__=('uses', 'code')

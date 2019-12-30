@@ -601,7 +601,7 @@ class multidict_titled(multidict):
     
 class titledstr(str):
     def __new__(cls,value='',encoding=sys.getdefaultencoding(),errors='strict'):
-        if type(value)==cls:
+        if type(value) is cls:
             return value
         if isinstance(value,(bytes, bytearray, memoryview)):
             val=str(value,encoding,errors)
@@ -614,7 +614,7 @@ class titledstr(str):
 
     @classmethod
     def bypass_titling(cls,value='',encoding=sys.getdefaultencoding(),errors='strict'):
-        if type(value)==cls:
+        if type(value) is cls:
             return value
         if isinstance(value,(bytes, bytearray, memoryview)):
             value=str(value,encoding,errors)

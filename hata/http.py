@@ -384,7 +384,6 @@ class URLS:
             
         return f'{CDN_ENDPOINT}/app-icons/{application.id}/{icon:0>32x}.png'
         
-        
     def application_icon_url_as(application,ext='png',size=None):
         icon=application.icon
         if not icon:
@@ -402,6 +401,30 @@ class URLS:
 
         return f'{CDN_ENDPOINT}/app-icons/{application.id}/{icon:0>32x}.{ext}{end}'
 
+    def application_cover_url(application):
+        cover=application.cover
+        if not cover:
+            return None
+        
+        return f'{CDN_ENDPOINT}/app-assets/{application.id}/store/{cover:0>32x}.png'
+        
+    def application_cover_url_as(application,ext='png',size=None):
+        cover=application.cover
+        if not cover:
+            return None
+        
+        if size is None:
+            end=''
+        elif size in VALID_ICON_SIZES:
+            end=f'?size={size}'
+        else:
+            raise ValueError(f'Size must be power of 2 between 16 and 4096 and not: {size}.')
+        
+        if ext not in VALID_ICON_FORMATS:
+            raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, and not {ext}.')
+        
+        return f'{CDN_ENDPOINT}/app-assets/{application.id}/store/{cover:0>32x}.{ext}{end}'
+    
     def team_icon_url(team):
         icon=team.icon
         if not icon:
@@ -994,7 +1017,7 @@ class DiscordHTTPClient(object):
             raise
     
     # after 2 week else
-    async def message_delete_a2wo(self,channel_id,message_id,reason):
+    async def message_delete_b2wo(self,channel_id,message_id,reason):
         try:
             result = await self.request(ratelimit_handler(self.loop,channel_id,87808),METH_DELETE,
                 f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}',reason=reason)

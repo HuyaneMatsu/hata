@@ -49,6 +49,12 @@ The owenr of the team.
 
 ## Properties
 
+### `created_at`
+
+- returns : `datetime`
+
+The creation time of the team.
+
 ### `icon_url`
 
 - returns : `str` / `None`

@@ -34,7 +34,7 @@ There are 5 verificatin levels:
 - type : `list`
 - items : [`VerificationLevel`](VerificationLevel.md)
 
-Stores the creates [`VerificationLevel`](VerificationLevel.md) instances. This
+Stores the created [`VerificationLevel`](VerificationLevel.md) instances. This
 container is accessed when translating a Discord verification level's value to
 it's representation.
 
@@ -55,7 +55,7 @@ Returns the verification level's name.
 
 - returns : `int`
 
-Returns the  verification level's value.
+Returns the verification level's value.
 
 ### `__repr__(self)`
 

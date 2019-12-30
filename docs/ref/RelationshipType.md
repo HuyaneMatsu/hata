@@ -37,7 +37,7 @@ There are 4 (+1 placeholder) relationship types:
 - type : `list`
 - elements : [`RelationshipType`](RelationshipType.md)
 
-Stores the creates [`RelationshipType`](RelationshipType.md) instances. This
+Stores the created [`RelationshipType`](RelationshipType.md) instances. This
 container is accessed when translating a Discord relationship type's value to
 it's representation.
 

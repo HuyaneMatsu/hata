@@ -5,9 +5,10 @@ from .http import URLS
 from .user import ZEROUSER, User
 from .guild import PartialGuild
 from .client_core import TEAMS
+from .others import id_to_time
 
 class Application(object):
-    __slots__=('bot_public', 'bot_require_code_grant', 'cover_image',
+    __slots__=('bot_public', 'bot_require_code_grant', 'cover',
         'description', 'guild', 'icon', 'id', 'name', 'owner',
         'primary_sku_id', 'rpc_origins', 'slug', 'summary', 'verify_key',)
 
@@ -31,7 +32,7 @@ class Application(object):
         self.guild=None
         self.primary_sku_id=0
         self.slug=''
-        self.cover_image=0
+        self.cover=0
         
     def __call__(self,data):
         self.id=int(data['id'])
@@ -64,12 +65,17 @@ class Application(object):
 
         self.slug=data.get('slug','')
 
-        cover_image=data.get('cover_image')
-        self.cover_image=0 if cover_image is None else int(cover_image,16)
-        
+        cover=data.get('cover_image')
+        self.cover=0 if cover is None else int(cover,16)
+    
+    @property
+    def created_at(self):
+        return id_to_time(self.id)
+    
     icon_url=property(URLS.application_icon_url)
     icon_url_as=URLS.application_icon_url_as
-
+    cover_url=property(URLS.application_cover_url)
+    cover_url_as=URLS.application_cover_url_as
 
 class Team(object):
     __slots__=('__weakref__', 'icon', 'id', 'members', 'name', 'owner',)
@@ -103,7 +109,11 @@ class Team(object):
     
     icon_url=property(URLS.team_icon_url)
     icon_url_as=URLS.team_icon_url_as
-
+    
+    @property
+    def created_at(self):
+        return id_to_time(self.id)
+    
     @property
     def invited(self):
         target_state=TeamMembershipState.INVITED

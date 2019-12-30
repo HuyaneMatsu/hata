@@ -2224,10 +2224,10 @@ class WaitTillExc(WaitTillFirst):
             
             pending.remove(future)
             done.add(future)
-
+            
             if (future._exception is None) and pending:
                 return
-
+            
             parent._state=FINISHED
             parent._loop._schedule_callbacks(parent)
             self._parent=None

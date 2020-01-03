@@ -1679,9 +1679,10 @@ Other arguments:
 can use the emojis.
 - `reason`, default : `None`. The `reason` shows up at the guild's audit logs.
 
-Unlike other `_create` methods, this method returns `resonponse_data`. The
-reason is, because we get all the emojis at the dispatch event for the guild,
-so else the wrapper could not tell which emoji is new / modified / deleted.
+Unlike other `_create` methods, this method returns `None`. The reason is,
+because we get **all** the emojis from the **same** dispatch event for the
+guild, so else the wrapper could not tell which emoji is new / edited /
+deleted.
 
 ### `emoji_delete(self,emoji,reason=None)`
 

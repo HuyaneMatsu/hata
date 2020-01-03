@@ -24,7 +24,7 @@ items. But they can also be accessed as `VoiceRegion.<id>`, where every
 
 ##### Predefined class attributes
 
-There are 21 voice regions:
+There are 22 voice regions:
 
 | id            | name              | deprecated    | vip       | custom    |
 |---------------|-------------------|---------------|-----------|-----------|

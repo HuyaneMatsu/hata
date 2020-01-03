@@ -265,6 +265,49 @@ Puts the message into `MESSAGES` `WeakValueDictionary`. If any event is
 dispatched, which refers to a message, then after looking up the channel's
 messages, gonna check if the message is at `MESSAGES`.
 
+## Class methods
+
+### `custom(cls,base=None,validate=True,**kwargs)`
+
+- returns : [`Message`](Message.md)
+- raises : `TypeError` / `ValueError`
+
+Creates a custom message with the given `kwargs`. If any of the passed types
+are incorrect, `TypeError` will be raised.
+
+If `base` (type [`Message`](Message.md)) is passed, then it will use it's
+attributes as default ones, else it will use the "real default" values as
+default ones.
+
+If `validate` is set as `True`, then the method will check if the message has any 
+contradicotry between it's attributes. If it has, `ValueError` will be raised.
+
+Kwargs can be:
+
+| name              | aliases           | default                                       | expected values                                                                                                           | alternative values and conversions                    |
+|-------------------|-------------------|-----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------|
+| activity          |                   | None                                          | None / [MessageActivity](MessageActivity.md)                                                                              |                                                       |
+| application       |                   | None                                          | None / [MessageApplication](MessageApplication.md)                                                                        |                                                       |
+| attachments       |                   | None                                          | None / list of [Attachment](Attachment.md)                                                                                | [ ] -> None                                           |
+| author            |                   | [ZEROUSER](ZEROUSER.md)                       | [Client](Client.md) / [User](User.md) / [Webhook](Webhook.md) / [WebhookRepr](WebhookRepr.md)                             | None -> [ZEROUSER](ZEROUSER.md)                       |
+| call              |                   | None                                          | None / [MessageCall](MessageCall.md)                                                                                      |                                                       |
+| channel           |                   |                                               | [ChannelTextBase](ChannelTextBase.md) subclass instance                                                                   |                                                       |
+| content           |                   | ''                                            | str                                                                                                                       |                                                       |
+| cross_mentions    |                   | None                                          | None / list of ([ChannelGuildBase](ChannelGuildBase.md) subclass instance / [UnknownCrossMention](UnknownCrossMention.md))| [ ] -> None                                           |
+| cross_reference   |                   | None                                          | None / [MessageReference](MessageReference.md)                                                                            |                                                       |
+| edited            |                   | None                                          | None / datetime                                                                                                           |                                                       |
+| embeds            |                   | None                                          | None / list of [EmbedCore](EmbedCore.md)                                                                                  | Embed compatible -> [EmbedCore](EmbedCore.md)         |
+| everyone_mention  |                   | False                                         | bool                                                                                                                      | 0 / 1 -> bool                                         |
+| flags             |                   | [MessageFlag(0)](MessageFlag.md)              | [MessageFlag](MessageFlag.md)                                                                                             | int -> [MessageFlag](MessageFlag.md)                  |
+| id                | id_, message_id   | 0                                             | int (uint64)                                                                                                              |                                                       |
+| nonce             |                   | None                                          | None / str / int                                                                                                          |                                                       |
+| pinned            |                   | False                                         | bool                                                                                                                      | 0 / 1 -> bool                                         |
+| reactions         |                   | [reaction_mapping(None)](reaction_mapping.md) | [reaction_mapping](reaction_mapping.md)                                                                                   | None -> [reaction_mapping(None)](reaction_mapping.md) |
+| role_mentions     |                   | None                                          | None / list of [Role](Role.md)                                                                                            | [ ] -> None                                           |
+| tts               |                   | False                                         | bool                                                                                                                      | 0 / 1 -> bool                                         |
+| type              | type_             | [MessageType.default](MessageType.md)         | [MessageType](MessageType.md)                                                                                             | int -> [MessageType](MessageType.md)                  |
+| user_mentions     |                   | None                                          | None / list of ([Client](Client.md) / [User](User.md) )                                                                   | [ ] -> None                                           |
+
 ## Magic methods
 
 ### `__hash__(self)`

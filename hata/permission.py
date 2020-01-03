@@ -104,7 +104,7 @@ class Permission(int):
             else:
                 new=new&(0b11111111111111111111111111111111^(1<<position))
 
-        return type(new)(self)
+        return type(self)(new)
 
     def handle_overwrite(self,allow,deny):
         #1st denies permissions, then allows

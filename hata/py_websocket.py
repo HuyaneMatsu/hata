@@ -450,7 +450,7 @@ class WebSocketCommonProtocol(object):
         'read_limit', 'reader', 'secure', 'state', 'subprotocol', 'timeout',
         'transfer_data_exc', 'transfer_data_task', 'write_limit', 'writer')
 
-    is_client = True #palceholder for subclasses
+    is_client = True #placeholder for subclasses
 
     def __init__(self, loop, host, port, *, secure=None, timeout=10.,
             max_size=1<<26, max_queue=None, read_limit=1<<16, write_limit=1<<16,

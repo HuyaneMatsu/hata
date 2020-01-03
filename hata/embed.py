@@ -981,7 +981,7 @@ class Embed(object):
 
     def to_data(self):
         return self.data
-
+    
     #author
     def _get_author(self):
         try:

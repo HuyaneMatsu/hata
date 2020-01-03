@@ -1156,12 +1156,12 @@ class ContentParser(object):
         return self._parser(self,client,message,content)
     
     def __repr__(self):
-        result=['<',self.__class__.__name__,' func=',self.__func__.__repr__()]
+        result=['<',self.__class__.__name__,' func=',repr(self.__func__)]
         
         on_failure=self._on_failure
         if on_failure is not None:
             result.append(', on_failure=')
-            result.append(on_failure.__repr__())
+            result.append(repr(on_failure))
         result.append('>')
         
         return ''.join(result)

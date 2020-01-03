@@ -10,16 +10,24 @@ from .dereaddons_local import any_to_any, autoposlist, cached_property,     \
     _spaceholder
 
 from .http import URLS
-from .others import parse_time, CHANNEL_MENTION_RP, id_to_time, VoiceRegion
+from .others import parse_time, CHANNEL_MENTION_RP, id_to_time, VoiceRegion,\
+    time_to_id
 from .client_core import MESSAGES, CHANNELS, GUILDS
 from .user import USERS, ZEROUSER, User, PartialUser, VoiceState
 from .emoji import reaction_mapping
 from .embed import EmbedCore, EXTRA_EMBED_TYPES
-from .webhook import WebhookRepr, PartialWebhook, WebhookType
+from .webhook import WebhookRepr, PartialWebhook, WebhookType, Webhook
+from .role import Role
 
 where=autoposlist.where
 
-ChannelBase=NotImplemented
+Client          = NotImplemented
+ChannelBase     = NotImplemented
+ChannelTextBase = NotImplemented
+ChannelGuildBase= NotImplemented
+ChannelText     = NotImplemented
+ChannelPrivate  = NotImplemented
+ChannelGroup    = NotImplemented
 
 class MessageFlag(int):
     __slots__=()
@@ -35,7 +43,6 @@ class MessageFlag(int):
     @property
     def embeds_suppressed(self):
         return (self>>2)&1
-
     
     @property
     def source_message_deleted(self):
@@ -380,7 +387,7 @@ class Message(object):
         'attachments', 'author', 'call', 'channel', 'content',
         'cross_mentions', 'cross_reference', 'edited', 'embeds',
         'everyone_mention', 'flags', 'id', 'nonce', 'pinned', 'reactions',
-        'reference', 'role_mentions', 'tts', 'type', 'user_mentions',)
+        'role_mentions', 'tts', 'type', 'user_mentions',)
     
     def __init__(self,data,channel):
         raise RuntimeError(f'`{self.__class__.__name__}` should not be created like this.')
@@ -397,7 +404,7 @@ class Message(object):
             if new is self:
                 self._finish_init(data,channel)
                 if channel.message_history_reached_end:
-                    if channel.messages.maxlen is not None and len(channel.messages)==channel._mc_gc_limit:
+                    if (channel.messages.maxlen is not None) and len(channel.messages)==channel._mc_gc_limit:
                         channel.message_history_reached_end=False
             return self
         new._finish_init(data,channel)
@@ -570,6 +577,499 @@ class Message(object):
                 role_mentions=None
                 
         self.role_mentions=role_mentions
+    
+    @classmethod
+    def custom(cls,base=None,validate=True,**kwargs):
+        if (base is not None) and (type(base) is not cls):
+            raise TypeError(f'`base` should be either `None`, or type `{cls.__name__}`, got `{base!r}`')
+        
+        try:
+            channel=kwargs.pop('channel')
+        except KeyError:
+            if base is None:
+                raise ValueError('Expected a passed `base`, or a passed `channel`, but got non of them.')
+            channel=base.channel
+        else:
+            if not isinstance(channel,ChannelTextBase):
+                raise TypeError(f'`channel` should be `{ChannelTextBase.__name__}` subclasse\'s instance, got `{channel!r}`')
+        
+        # `_channel_mentions` is internal, we wont check kwargs
+        if isinstance(channel,ChannelGuildBase):
+            _channel_mentions=None
+        else:
+            _channel_mentions=_spaceholder
+        
+        try:
+            activity=kwargs.pop('activity')
+        except KeyError:
+            if base is None:
+                activity=None
+            else:
+                activity=base.activity
+        else:
+            if (activity is not None) and (type(activity) is not MessageActivity):
+                raise TypeError(f'`activity` should be `None` or type `{MessageActivity.__name__}`, got `{activity!r}`')
+        
+        try:
+            application=kwargs.pop('application')
+        except KeyError:
+            if base is None:
+                application=None
+            else:
+                application=base.application
+        else:
+            if (application is not None) and (type(application) is not MessageApplication):
+                raise TypeError(f'`application` should be `None` or type `{MessageApplication.__name__}`, got `{application!r}`')
+        
+        try:
+            attachments=kwargs.pop('attachments')
+        except KeyError:
+            if base is None:
+                attachments=None
+            else:
+                attachments=base.attachments
+                if (attachments is not None):
+                    # Copy it, because it might change
+                    attachments=attachments.copy()
+        else:
+            if (attachments is not None):
+                if (type(attachments) is not list):
+                    raise TypeError(f'`attachments` should be `None` or `list` of type `{Attachment.__name__}`, got `{attachments!r}`')
+                
+                attachment_ln=len(attachments)
+                if validate:
+                    if attachment_ln>10:
+                        raise ValueError(f'`attachments` should have maximal length of `10`, got `{attachment_ln!r}`')
+                
+                if attachment_ln:
+                    for attachment in attachments:
+                        if (type(attachment) is not Attachment):
+                            raise TypeError(f'`attachments` `list` contains at least 1 non `{Attachment.__name__}` object, `{attachment!r}`')
+                else:
+                    # We should not have empty attachment list, lets fix it
+                    attachments=None
+                    
+        try:
+            author=kwargs.pop('author')
+        except KeyError:
+            author=ZEROUSER
+        else:
+            if author is None:
+                # Author cannot be None, but accept it as `ZEROUSER`
+                author=ZEROUSER
+            elif (type(author) in (User, Client, Webhook, WebhookRepr)):
+                # This should be the case
+                pass
+            else:
+                raise TypeError(
+                    f'`author` can be type `{User.__name__}` / `{Client.__name__}` / `{Webhook.__name__}` / '
+                    f'`{WebhookRepr.__repr__}`, got `{author!r}`')
+        
+        try:
+            call=kwargs.pop('call')
+        except KeyError:
+            if base is None:
+                call=None
+            else:
+                call=base.call
+        else:
+            # TODO : make MessageCall work. Anyways, it is a user account only feature
+            if (call is not None) and (type(call) is not MessageCall):
+                raise TypeError(f'`call` can be `None`, or `{MessageCall.__call__}`, got `{call!r}`')
+        
+        if validate:
+            if (call is not None) and (type(channel) not in (ChannelPrivate,ChannelGroup)):
+                raise ValueError(
+                    f'`call` was passed as not `None`; `{call!r}`, meanwhile `channel` is not '
+                    f'`{ChannelPrivate.__name__}` or `{ChannelPrivate.__name__}`; `{channel!r}`')
+        
+        try:
+            content=kwargs.pop('content')
+        except KeyError:
+            if base is None:
+                content=''
+            else:
+                content=base.content
+        else:
+            if (type(content) is not str):
+                raise TypeError(f'`content` should be type `str`, got `{content!r}`')
+        
+        try:
+            cross_reference=kwargs.pop('cross_reference')
+        except KeyError:
+            if base is None:
+                cross_reference=None
+            else:
+                cross_reference=base.cross_reference
+        else:
+            if (cross_reference is not None) and (type(cross_reference) is not MessageReference):
+                    raise TypeError(f'`cross_reference` should be `None` or type `{MessageReference.__call__}`, got `{cross_reference!r}`')
+        
+        if validate:
+            if (cross_reference is not None) and (type(channel) is not ChannelText):
+                raise ValueError(
+                    f'Only `{ChannelText.__name__}` can have `cross_reference` set as not `None`, but `channel` is set '
+                    f'as `{channel!r}`')
+        
+        try:
+            cross_mentions=kwargs.pop('cross_mentions')
+        except KeyError:
+            if base is None:
+                cross_mentions=None
+            else:
+                cross_mentions=base.cross_mentions
+                if (cross_mentions is not None):
+                    # Copy it, it might change
+                    cross_mentions=cross_mentions.copy()
+        else:
+            if (cross_mentions is not None):
+                if (type(cross_mentions) is not list):
+                    raise TypeError(
+                        f'`cross_mentions` should be `None` or `list` of `{ChannelGuildBase.__name__}` subclass instances, or '
+                        f'`{UnknownCrossMention.__name__}` instances, got `{cross_mentions!r}`')
+                
+                for channel_ in cross_mentions:
+                    if isinstance(channel_,ChannelGuildBase):
+                        continue
+                        
+                    if type(channel_) is UnknownCrossMention:
+                        continue
+                        
+                    raise TypeError(
+                        f'`cross_mentions` `list` contains at least 1 non `{ChannelGuildBase.__name__}` subclass '
+                        f'instance or `{UnknownCrossMention.__name__}` instance; `{channel_!r}`')
+        
+        if validate:
+            if (cross_reference is None) and (cross_mentions is not None):
+                raise ValueError('`cross_mentions` are supported, only if `cross_reference` is provided')
+        
+        # simple goto in python, because flat is justice
+        message_id_found=True
+        while True:
+            try:
+                message_id=kwargs.pop('message_id')
+            except KeyError:
+                pass
+            else:
+                break
+            
+            try:
+                message_id=kwargs.pop('id')
+            except KeyError:
+                pass
+            else:
+                break
+            
+            try:
+                message_id=kwargs.pop('id_')
+            except KeyError:
+                pass
+            else:
+                break
+            
+            message_id_found=False
+            break
+        
+        if message_id_found:
+            if (type(message_id) is not int) or (message_id<0) or (message_id>18446744073709551615):
+                raise TypeError(f'`id` should be type `int`, and can be between `0` and `18446744073709551615`, got `{message_id!r}`')
+        else:
+            if base is None:
+                message_id=0
+            else:
+                message_id=base.id
+        
+        try:
+            edited=kwargs.pop('edited')
+        except KeyError:
+            if base is None:
+                edited=None
+            else:
+                edited=base.edited
+        else:
+            if (edited is not None) and (type(edited) is not datetime):
+                raise TypeError(f'`edited` can be `None` or type `datetime`, got `{edited!r}`')
+        
+        if validate:
+            if (edited is not None) and (time_to_id(edited)<message_id):
+                raise ValueError('`edited` can not be lower, than `created_at`')
+        
+        try:
+            embeds=kwargs.pop('embeds')
+        except KeyError:
+            if base is None:
+                embeds=None
+            else:
+                embeds=base.embeds
+        else:
+            if (embeds is not None):
+                if (type(embeds) is not list):
+                    raise TypeError(f'`embeds` can be `None` or `list` of type `{EmbedCore.__name__}`, got `{embeds!r}`')
+                
+                # Do not check embed length, Discord might be able to send more?
+                
+                embed_ln=len(embeds)
+                if validate:
+                    if len(embeds)>10:
+                        raise ValueError(f'`embeds` can have maximal length of `10`, got `{embed_ln!r}`')
+                
+                if embed_ln:
+                    for index in range(embed_ln):
+                        embed=embeds[index]
+                        
+                        if type(embed) is EmbedCore:
+                            continue
+                            
+                        if hasattr(type(embed),'to_data'):
+                            # Embed compatible, lets convert it
+                            embed=EmbedCore.from_data(embed.to_data())
+                            embeds[index]=embed
+                            continue
+                        
+                        raise TypeError(f'`embeds` `list` contains at least 1 non `{EmbedCore.__name__}` object; `{embeds!r}`')
+                else:
+                    # embeds cannot be an empty list, lets fix it
+                    embeds=None
+        
+        try:
+            everyone_mention=kwargs.pop('everyone_mention')
+        except KeyError:
+            if base is None:
+                everyone_mention=False
+            else:
+                everyone_mention=base.everyone_mention
+        else:
+            if type(everyone_mention) is bool:
+                # We expect this
+                pass
+            elif (type(everyone_mention) is int) and (everyone_mention in (0,1)):
+                # Second attempt, lets accept `int` as `0` / `1` as well
+                everyone_mention=bool(everyone_mention)
+            else:
+                raise TypeError(f'`everyone_mention` should be type `bool`, got `{everyone_mention!r}`')
+        
+        try:
+            flags=kwargs.pop('flags')
+        except KeyError:
+            if base is None:
+                flags=MessageFlag(0)
+            else:
+                flags=base.flags
+        else:
+            if flags is None:
+                # Accept None, and then convert it.
+                flags=MessageFlag(0)
+            elif type(flags) is MessageFlag:
+                # We expect this
+                pass
+            elif (type(flags) is int) and (flags>=0) and (flags<=18446744073709551615):
+                # Accept int and then convert it as a second try
+                flags=MessageFlag(flags)
+            else:
+                raise TypeError(f'`flags` should be type `{MessageFlag.__name__}`, got `{flags!r}`')
+        
+        if validate:
+            if type(channel) is ChannelText:
+                if flags.source_message_deleted and (not flags.is_crosspost):
+                    raise ValueError(
+                        '`flags.source_message_deleted` is set, but `flags.is_crosspost` is not -> Only crossposted '
+                        'message\'s source can be deleted')
+                
+                if (cross_reference is not None) and (not flags.is_crosspost):
+                    raise ValueError(
+                        '`cross_reference` is set, but `flags.is_crosspost` is not -> Only crossposted messages can have `cross_reference`')
+                
+                # Other cases?
+            else:
+                if flags.crossposted:
+                    raise ValueError(f'`flags.crossposted` is set, meanwhile `channel` is not type `{ChannelText.__name__}`; `{channel!r}`')
+    
+                if flags.is_crosspost:
+                    raise ValueError(f'`flags.is_crosspost` is set, meanwhile `channel` is not type `{ChannelText.__name__}`; `{channel!r}`')
+    
+                if flags.source_message_deleted:
+                    raise ValueError(f'`flags.source_message_deleted` is set, meanwhile `channel` is not type `{ChannelText.__name__}`; `{channel!r}`')
+        
+        try:
+            nonce=kwargs.pop('nonce')
+        except KeyError:
+            if base is None:
+                nonce=None
+            else:
+                nonce=base.nonce
+        else: # we need `is not in`
+            if (nonce is not None) and (type(nonce) not in (int,str)):
+                raise TypeError(f'`nonce` should be `None` or type `int` / `str`, got `{nonce}`')
+        
+        try:
+            pinned=kwargs.pop('pinned')
+        except KeyError:
+            if base is None:
+                pinned=False
+            else:
+                pinned=base.pinned
+        else:
+            if type(pinned) is bool:
+                # We expect this case
+                pass
+            elif (type(pinned) is int) and (pinned in (0,1)):
+                # As second attempt, lets accept `int` as `0` / `1` as well
+                pinned=bool(pinned)
+            else:
+                raise TypeError(f'`pinned` should be type `bool`, got `{pinned}`')
+        
+        try:
+            reactions=kwargs.pop('reactions')
+        except KeyError:
+            if base is None:
+                reactions=reaction_mapping(None)
+            else:
+                # Copy it, because it might be modified
+                reactions=base.reactions.copy()
+        else:
+            if reactions is None:
+                # Lets accept `None` and create an empty one
+                reactions=reaction_mapping(None)
+            elif type(reactions) is reaction_mapping:
+                # We expect this as default
+                pass
+            else:
+                raise TypeError(f'`reactions`, should be type `{reaction_mapping.__name__}`, got `{reactions}`')
+        
+        try:
+            role_mentions=kwargs.pop('role_mentions')
+        except KeyError:
+            if base is None:
+                role_mentions=None
+            else:
+                role_mentions=base.role_mentions
+                if (role_mentions is not None):
+                    # Copy it, because it might change
+                    role_mentions=role_mentions.copy()
+        else:
+            if (role_mentions is not None):
+                if (type(role_mentions) is not list):
+                    raise TypeError(f'`role_mentions` should be `None` or `list` of type `{Role.__name__}`, got `{role_mentions!r}`')
+                
+                if role_mentions:
+                    for role in role_mentions:
+                        if type(role) is Role:
+                            continue
+                        
+                        raise TypeError(f'`role_mentions` contains at least 1 non `{Role.__name__}` object, `{role_mentions!r}`')
+                else:
+                    # There cannot be an empty mention list, so lets fix it.
+                    role_mentions=None
+        
+        if validate:
+            if (role_mentions is not None) and (not isinstance(channel,ChannelGuildBase)):
+                raise ValueError(
+                    f'`role_mentions` are set as not `None`, meanhile the `channel` is not `{ChannelGuildBase}` '
+                    f'subclasse\'s instance; `{channel!r}`')
+        
+        try:
+            tts=kwargs.pop('tts')
+        except KeyError:
+            if base is None:
+                tts=False
+            else:
+                tts=base.tts
+        else:
+            if type(tts) is bool:
+                # We expect this case
+                pass
+            elif (type(tts) is int) and (tts in (0,1)):
+                # As second attempt, lets accept `int` as `0` / `1` as well
+                tts=bool(tts)
+            else:
+                raise TypeError(f'`tts` should be type `bool`, got `{tts}`')
+        
+        type_found=True
+        while True:
+            try:
+                type_=kwargs.pop('type')
+            except KeyError:
+                pass
+            else:
+                break
+                
+            try:
+                type_=kwargs.pop('type_')
+            except KeyError:
+                pass
+            else:
+                break
+            
+            type_found=False
+            break
+        
+        if type_found:
+            if type(type_) is MessageType:
+                # This is as it should be
+                pass
+            elif (type(type_) is int) and (type_>=0) and (type_<len(MessageType.INSTANCES)):
+                # For second attemt, lets check int and it's value as well
+                type_=MessageType.INSTANCES[type_]
+            else:
+                raise TypeError(f'`type` should be type `{MessageType.__name__}`, got `{type_!r}`')
+            
+        else:
+            if base is None:
+                type_=MessageType.default
+            else:
+                type_=base.type
+        
+        try:
+            user_mentions=kwargs.pop('user_mentions')
+        except KeyError:
+            if base is None:
+                user_mentions=None
+            else:
+                user_mentions=base.user_mentions
+                if (user_mentions is not None):
+                    # Copy it, because it might change
+                    user_mentions=user_mentions.copy()
+        else:
+            if (user_mentions is not None):
+                if (type(user_mentions) is not list):
+                    raise TypeError(f'`user_mentions` should be type `list` of `{Client.__name__}` / `{User.__name__}`, got `{user_mentions!r}`')
+        
+                for user in user_mentions:
+                    if type(user) in (Client,User):
+                        continue
+                    
+                    raise TypeError(f'`user_mentions` contains at least 1 non `{Client.__name__}` or `{User.__name__}` object; `{user!r}`')
+        
+        # Check kwargs and raise TypeError if not every in used up
+        if kwargs:
+            raise TypeError(f'Unused aruments: {", ".join(list(kwargs))}')
+        
+        message=object.__new__(cls)
+        
+        message._channel_mentions=_channel_mentions
+        message.activity=activity
+        message.application=application
+        message.attachments=attachments
+        message.author=author
+        message.call=call
+        message.channel=channel
+        message.content=content
+        message.cross_mentions=cross_mentions
+        message.cross_reference=cross_reference
+        message.edited=edited
+        message.embeds=embeds
+        message.everyone_mention=everyone_mention
+        message.flags=flags
+        message.id=message_id
+        message.nonce=nonce
+        message.pinned=pinned
+        message.reactions=reactions
+        message.role_mentions=role_mentions
+        message.tts=tts
+        message.type=type_
+        message.user_mentions=user_mentions
+        
+        return message
         
     def _parse_channel_mentions(self):
         content=self.content

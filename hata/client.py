@@ -46,7 +46,7 @@ from .integration import Integration
 from .application import Application,Team
 from .color import Color
 
-from . import client_core
+from . import client_core, message
 
 _VALID_NAME_CHARS=re.compile('([0-9A-Za-z_]+)')
 
@@ -4365,6 +4365,7 @@ class Achievement(object):
 
 
 client_core.Client=Client
+message.Client=Client
 
 del client_core
 del re
@@ -4372,3 +4373,4 @@ del URLS
 del message_at_index
 del messages_till_index
 del UserBase
+del message

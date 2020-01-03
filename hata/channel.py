@@ -1868,6 +1868,11 @@ def cr_pg_channel_object(name,type_,overwrites=[],topic=None,nsfw=False,slowmode
 
 webhook.ChannelText=ChannelText
 message.ChannelBase=ChannelBase
+message.ChannelTextBase=ChannelTextBase
+message.ChannelGuildBase=ChannelGuildBase
+message.ChannelText=ChannelText
+message.ChannelPrivate=ChannelPrivate
+message.ChannelGroup=ChannelGroup
 
 del message
 del webhook

@@ -45,7 +45,7 @@ class InvalidStateError(Exception):
         self._message   = message
         
 def iscoroutinefunction(func):
-    if isinstance(func,(function,method)) and func.__code__.co_flags&0x80:
+    if isinstance(func,(function,method)) and func.__code__.co_flags&0x180:
         return True #the result MUST be converted to `1`
     return (getattr(func,'__async_call__',False)==True)
 
@@ -1940,7 +1940,11 @@ class _cancel_handle(_handle_base):
         if future._state is PENDING:
             future.set_result_if_pending(None)
 
-def sleep(delay,loop):
+def sleep(delay,loop=None):
+    if loop is None:
+        loop = current_thread()
+        if not isinstance(loop,EventThread):
+            raise RuntimeError(f'`sleep` called without passing `loop` argument from a non {EventThread.__name__}: {loop!r}.')
     future=Future(loop)
     if delay<=0.:
         future.set_result(None)

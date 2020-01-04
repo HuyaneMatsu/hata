@@ -349,39 +349,93 @@ class UnknownCrossMention(object):
 
         return channel
 
-    def __init__(self,data):
-        pass
-
     def __gt__(self,other):
-        if type(other) is UnknownCrossMention:
-            return self.id>other.id
-        return NotImplemented
-
+        if (type(other) is not UnknownCrossMention) or (not isinstance(other,ChannelBase)):
+            return NotImplemented
+        return self.id>other.id
+        
     def __ge__(self,other):
-        if type(other) is type(self) or isinstance(other,ChannelBase):
-            return self.id>=other.id
-        return NotImplemented
+        if (type(other) is not UnknownCrossMention) or (not isinstance(other,ChannelBase)):
+            return NotImplemented
+        return self.id>=other.id
 
     def __eq__(self,other):
-        if type(other) is type(self) or isinstance(other,ChannelBase):
-            return self.id==other.id
-        return NotImplemented
+        if (type(other) is not UnknownCrossMention) or (not isinstance(other,ChannelBase)):
+            return NotImplemented
+        return self.id==other.id
 
     def __ne__(self,other):
-        if type(other) is type(self) or isinstance(other,ChannelBase):
-            return self.id!=other.id
-        return NotImplemented
+        if (type(other) is not UnknownCrossMention) or (not isinstance(other,ChannelBase)):
+            return NotImplemented
+        return self.id!=other.id
 
     def __le__(self,other):
-        if type(other) is type(self) or isinstance(other,ChannelBase):
-            return self.id<=other.id
-        return NotImplemented
+        if (type(other) is not UnknownCrossMention) or (not isinstance(other,ChannelBase)):
+            return NotImplemented
+        return self.id<=other.id
 
     def __lt__(self,other):
-        if type(other) is type(self) or isinstance(other,ChannelBase):
-            return self.id<other.id
-        return NotImplemented
+        if (type(other) is not UnknownCrossMention) or (not isinstance(other,ChannelBase)):
+            return NotImplemented
+        return self.id<other.id
 
+    def __str__(self):
+        return self.name
+    
+    def __hash__(self):
+        return self.id
+
+    def __format__(self,code):
+        if not code:
+            return self.__str__()
+        if code=='m':
+            return f'<#{self.id}>'
+        if code=='d':
+            return self.display_name
+        if code=='c':
+            return f'{self.created_at:%Y.%m.%d-%H:%M:%S}'
+        raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
+
+    @property
+    def clients(self):
+        return []
+
+    @property
+    def created_at(self):
+        return id_to_time(self.id)
+
+    @property
+    def display_name(self):
+        type_=self.type
+        name=self.name
+        # Text or Store
+        if (type_==0) or (type_==5) or (type_==6):
+            return name.lower()
+        
+        # Voice
+        if (type==2):
+            return name.capitalize()
+        
+        # Category
+        if (type_==4):
+            return name.upper()
+        
+        # Should not happen
+        return name
+    
+    @property
+    def guild(self):
+        return None
+    
+    @property
+    def mention(self):
+        return f'<#{self.id}>'
+    
+    @property
+    def partial(self):
+        return True
+
+        
 class Message(object):
     __slots__=('__weakref__', '_channel_mentions', 'activity', 'application',
         'attachments', 'author', 'call', 'channel', 'content',

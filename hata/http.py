@@ -1012,7 +1012,7 @@ class DiscordHTTPClient(object):
                 f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}',reason=reason)
             return result
         except DiscordException as err:
-            if err.response.status==404: #404==already deleted message
+            if err.code == 10008: # 10008==already deleted message
                 return
             raise
     

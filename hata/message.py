@@ -255,62 +255,63 @@ class MessageApplication(object):
 
 
 class MessageReference(object):
-    __slots__=('_cache', 'data',)
+    __slots__=('_cache',)
     def __init__(self,data):
-        self._cache={}
-        self.data=data
-
-    @cached_property
+        self._cache=cache={}
+        
+        try:
+            channel_id=data['channel_id']
+        except KeyError:
+            channel_id=0
+        else:
+            channel_id=int(channel_id)
+            
+        cache['channel_id']=channel_id
+        
+        try:
+            guild_id=data['guild_id']
+        except KeyError:
+            guild_id=0
+        else:
+            guild_id=int(guild_id)
+            
+        cache['guild_id']=guild_id
+        
+        try:
+            message_id=data['message_id']
+        except KeyError:
+            message_id=0
+        else:
+            message_id=int(message_id)
+            
+        cache['message_id']=message_id
+    
+    @property
     def channel_id(self):
-        channel_id=self.data.get('channel_id')
-        if channel_id is None:
-            return 0
-        return int(channel_id)
-
-    @cached_property
+        return self._cache['channel_id']
+    
+    @property
     def guild_id(self):
-        guild_id=self.data.get('guild_id')
-        if guild_id is None:
-            return 0
-        return int(guild_id)
-
-    @cached_property
+        return self._cache['guild_id']
+    
+    @property
     def message_id(self):
-        message_id=self.data.get('message_id')
-        if message_id is None:
-            return 0
-        return int(message_id)
-
+        return self._cache['message_id']
+    
     @cached_property
     def channel(self):
-        try:
-            channel_id=self._cache['channel_id']
-        except KeyError:
-            channel_id=self.data.get('channel_id')
-            if channel_id is None:
-                self._cache['channel_id']=0
-                return
-            channel_id=int(channel_id)
-            self._cache['channel_id']=channel_id
-        else:
-            if channel_id==0:
-                return
+        channel_id=self._cache['channel_id']
+        if channel_id==0:
+            return None
+        
         return CHANNELS.get(channel_id)
 
     @cached_property
     def guild(self):
-        try:
-            guild_id=self._cache['guild_id']
-        except KeyError:
-            guild_id=self.data.get('guild_id')
-            if guild_id is None:
-                self._cache['guild_id']=0
-                return
-            guild_id=int(guild_id)
-            self._cache['guild_id']=guild_id
-        else:
-            if guild_id==0:
-                return
+        guild_id=self._cache['guild_id']
+        if guild_id==0:
+            return None
+        
         return GUILDS.get(guild_id)
 
     @cached_property
@@ -318,21 +319,15 @@ class MessageReference(object):
         channel=self.channel
         if channel is None:
             return None
-
-        try:
-            message_id=self._cache['message_id']
-        except KeyError:
-            message_id=self.data.get('message_id')
-            if message_id is None:
-                self._cache['message_id']=0
-                return
-            message_id=int(message_id)
-            self._cache['message_id']=message_id
-        else:
-            if message_id==0:
-                return
-
+        
+        message_id=self._cache['message_id']
+        if message_id==0:
+            return
+        
         return channel._mc_find(message_id)
+    
+    def __repr__(self):
+        return f'<{self.__class__.__name__} channel_id={self._cache["channel_id"]}, guild_id={self._cache["guild_id"]}, message_id={self._cache["message_id"]}>'
 
 class UnknownCrossMention(object):
     __slots__=('guild_id', 'id', 'name', 'type',)

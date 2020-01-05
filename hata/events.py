@@ -163,8 +163,10 @@ class CommandProcesser(EventHandlerBase):
                     break
                 
                 if needs_content:
-                    return await event(client,message,content)
-                return await event(client,message)
+                    await event(client,message,content)
+                else:
+                    await event(client,message)
+                return
         
         else:
             command,content=result
@@ -176,11 +178,27 @@ class CommandProcesser(EventHandlerBase):
                 return (await self.invalid_command(client,message,command,content))
 
             if needs_content:
-                return await event(client,message,content)
-            return await event(client,message)
+                await event(client,message,content)
+            else:
+                await event(client,message)
+            return
         
         return (await self.default_event(client,message))
-            
+    
+    async def call_command(self,command_name,client,message,content=''):
+        if not command_name.islower():
+            command_name=command_name.lower()
+        
+        try:
+            needs_content,event=self.commands[command_name]
+        except KeyError:
+            raise LookupError(command_name) from None
+
+        if needs_content:
+            await event(client,message,content)
+        else:
+            await event(client,message)
+    
     def append(self,wrapper,target):
         try:
             actual=self.waitfors[target]

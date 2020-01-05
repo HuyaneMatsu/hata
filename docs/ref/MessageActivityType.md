@@ -41,7 +41,7 @@ There are 4 (+2:placeholder) message activity types :
 > The `none` and `unknown` activity type is not used by Discord, they are
 > just a spaceholders.
 
-> \* message activity unknwon is not added as class attribute.
+> \* message activity unknown is not added as class attribute.
 
 ### `INSTANCES`
 

@@ -267,6 +267,17 @@ Normally the `CommandProcesser` cannot be used as a wrapper, because it's
 [`_EventCreationManager`](_EventCreationManager.md) what acts
 like a wrapper for the [`__setevent__`](#__setevent__-__delevent__) method.
 
+## Methods
+
+### `call_command(self,command_name,client,message,content='')`
+
+- `awaitable`
+- returns : `None`
+- raises : `LookupError`
+
+Looks up the command with the specific name. If the lookup fails, raises
+`LookupError`.  If the command is found, will call it.
+
 ## Magic Methods
 
 ### `__enter__`, `__exit__`
@@ -274,6 +285,9 @@ like a wrapper for the [`__setevent__`](#__setevent__-__delevent__) method.
 Entering a `command_proceser` is same as [shortcutting](#shortcut) it.
 
 ### `__call__`
+
+- `awaitable`
+- returns : `None`
 
 Handles the incoming event.
 

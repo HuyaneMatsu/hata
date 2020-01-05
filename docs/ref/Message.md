@@ -60,11 +60,11 @@ The message's content.
 
 - type : `list` / `NoneType`
 - default : `None`
-- elements : [`Channel`](CHANNEL_TYPES.md) / [`Unknown_cross_mention`](Unknown_cross_mention.md)
+- elements : [`Channel`](CHANNEL_TYPES.md) / [`UnknownCrossMention`](UnknownCrossMention.md)
 
 A list if cross guild channel mentions of the message.
 If the channel is not loaded by the wrapper, then it will represented with a 
-[`Unknown_cross_mention`](Unknown_cross_mention.md) instance.
+[`UnknownCrossMention`](UnknownCrossMention.md) instance.
 If there is non of them, it should be `None`.
 
 ### `cross_reference`
@@ -113,7 +113,7 @@ The message's flags. Right now it is used only to mark, if the message's
 - type : `int`
 - lenght : 64 bit
 - Discord side : [`snowflake`](https://github.com/discordapp/discord-api-docs/blob/master/docs/Reference.md#snowflakes)
-    
+
 The message's unique identificator number.
 
 ### `nonce`
@@ -392,7 +392,7 @@ found the message, returns an additional `True`, if not, then `False`.
 
 ### `onetime(cls,data,channel)` (classmethod)
 
-- returns : [`Message`](Message)
+- returns : [`Message`](Message.md)
 
 Creates a message, then returns it, with no extra operations.
 

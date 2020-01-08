@@ -161,13 +161,13 @@ class AuditLog(object):
         return self.logs.__reversed__()
     
     def __len__(self):
-        return self.logs.__len__()
+        return len(self.logs)
     
     def __getitem__(self,index):
         return self.logs.__getitem__(index)
     
     def __repr__(self):
-        return f'<{self.__class__.__name__} of {self.guild.name}, length={self.logs.__len__()}>'
+        return f'<{self.__class__.__name__} of {self.guild.name}, length={len(self.logs)}>'
     
 class AuditLogIterator(object):
     __slots__=('_data', '_index', 'client', 'guild', 'logs', 'users',
@@ -520,7 +520,7 @@ class AuditLogEntry(object):
     def __repr__(self):
         result = [
             '<',self.__class__.__name__,
-            ' id=',self.id.__repr__(),
+            ' id=',repr(self.id),
             ', type=',self.type.name,
                 ]
         
@@ -533,26 +533,26 @@ class AuditLogEntry(object):
         result.append(user_repr)
         
         result.append(', target=')
-        result.append(self.target.__repr__())
+        result.append(repr(self.target))
         
         result.append(', change count=')
         changes=self.changes
         if changes is None:
             change_amount_repr='0'
         else:
-            change_amount_repr=self.changes.__len__().__repr__()
+            change_amount_repr=repr(len(self.changes))
         result.append(change_amount_repr)
         
         reason=self.reason
         if reason is not None:
             result.append(', reason=')
             # use repr to escape special inserted characters
-            result.append(reason.__repr__())
+            result.append(repr(reason))
         
         details=self.details
         if details is not None:
             result.append(', details=')
-            result.append(details.__repr__())
+            result.append(repr(details))
         
         result.append('>')
         

@@ -1,7 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('Cycler', 'EventThread', 'ThreadSyncerCTX', )
 
-import sys, errno, weakref, subprocess
+import sys, errno, weakref, subprocess, os
 import socket as module_socket
 import time as module_time
 from selectors import DefaultSelector, EVENT_WRITE, EVENT_READ
@@ -10,7 +10,8 @@ from heapq import heappop, heappush
 from collections import deque
 
 from .dereaddons_local import alchemy_incendiary
-from .futures import Future, Task, gather, render_exc_to_list, iscoroutine, FutureAsyncWrapper
+from .futures import Future, Task, gather, render_exc_to_list, iscoroutine, \
+    FutureAsyncWrapper, WaitTillFirst
 from .py_transprotos import SSLProtocol, _SelectorSocketTransport
 from .executor import Executor
 
@@ -138,10 +139,10 @@ class Cycler(object):
         self.handle=self.loop.call_later(self.cycletime,self._run)
 
     def __repr__(self):
-        result=[self.__class__.__name__,'(',self.loop.__repr__(),', ',str(self.cycletime)]
+        result=[self.__class__.__name__,'(',repr(self.loop),', ',str(self.cycletime)]
         for func in self.funcs:
             result.append(', ')
-            result.append(func.__repr__())
+            result.append(repr(func))
         return ''.join(result)
 
     def cancel(self):
@@ -528,7 +529,91 @@ if sys.platform == 'win32':
             else:
                 result_w.extend(result_x)
                 return result_r,result_w,EMPTY
-            
+
+class Server(object):
+    __slots__ = ('active_count', 'backlog', 'loop', 'protocol_factory',
+        'serving', 'sockets', 'ssl_context', 'waiters')
+    
+    def __init__(self, loop, sockets, protocol_factory, ssl_context, backlog):
+        self.loop               = loop
+        self.sockets            = sockets
+        self.active_count       = 0
+        self.waiters            = []
+        self.protocol_factory   = protocol_factory
+        self.backlog            = backlog
+        self.ssl_context        = ssl_context
+        self.serving            = False
+    
+    def __repr__(self):
+        return f'<{self.__class__.__name__} sockets={self.sockets!r}>'
+
+    def _attach(self):
+        self.active_count += 1
+
+    def _detach(self):
+        active_count=self.active_count-1
+        self.active_count=active_count
+        if active_count:
+            return
+        
+        if (self.sockets is None):
+            self._wakeup()
+
+    def _wakeup(self):
+        waiters = self.waiters
+        self.waiters = None
+        for waiter in waiters:
+            if not waiter.done():
+                waiter.set_result(waiter)
+
+    def close(self):
+        sockets = self.sockets
+        if sockets is None:
+            return
+        
+        self.sockets=None
+        
+        loop=self.loop
+        for sock in sockets:
+            loop._stop_serving(sock)
+        
+        self.serving=False
+        
+        if self.active_count==0:
+            self._wakeup()
+
+    async def start(self):
+        if self.serving:
+            return
+        
+        self.serving = True
+        
+        protocol_factory=self.protocol_factory
+        ssl_context=self.ssl_context
+        backlog=self.backlog
+        loop=self.loop
+        
+        for sock in self.sockets:
+            sock.listen(backlog)
+            loop._start_serving(protocol_factory,sock,ssl_context,self,backlog)
+        
+        # Skip ready ietration cycle, so all the callbacks added up ^ will run down
+        future=Future(loop)
+        future.set_result(None)
+        await future
+
+    async def wait_closed(self):
+        if self.sockets is None:
+            return
+        
+        waiters=self.waiters
+        if waiters is None:
+            return
+        
+        waiter = Future(self.loop)
+        waiters.append(waiter)
+        await waiter
+
 class EventThreadCTXManager(object):
     __slots__=('flow_manager', 'thread', 'waiter',)
     def __init__(self,thread,flow_manager):
@@ -587,10 +672,10 @@ class EventThreadCTXManager(object):
             thread.selector = None
 
 class EventThreadType(type):
-    def __call__(cls,flow_manager=None,daemon=False):
+    def __call__(cls,flow_manager=None,daemon=False,name=None):
         obj=Thread.__new__(cls)
         cls.__init__(obj)
-        Thread.__init__(obj,daemon=daemon)
+        Thread.__init__(obj,daemon=daemon,name=name)
         obj.ctx=EventThreadCTXManager(obj,flow_manager)
         Thread.start(obj)
         obj.ctx.waiter.wait()
@@ -970,7 +1055,7 @@ class EventThread(Executor,Thread,metaclass=EventThreadType):
                     # We'll try again in a while.
                     self.render_exc_async(err,before=[
                         'Exception occured at',
-                        self.__repr__(),
+                        repr(self),
                         '._accept_connection\n',
                             ])
                     
@@ -1399,10 +1484,110 @@ class EventThread(Executor,Thread,metaclass=EventThreadType):
     def create_datagram_endpoint(self,protocol_factory,local_addr=None,remote_addr=None,*,family=0,proto=0,flags=0,reuse_address=None,reuse_port=None,allow_broadcast=None,sock=None):
         raise NotImplementedError
 
-    #should be async
-    def create_server(self,protocol_factory,host=None,port=None,*,family=module_socket.AF_UNSPEC,flags=module_socket.AI_PASSIVE,sock=None,backlog=100,ssl=None,reuse_address=None,reuse_port=None):
-        raise NotImplementedError
+    def _create_server_getaddrinfo(self, host, port, family, flags):
+        return self._ensure_resolved((host,port),family=family,type=module_socket.SOCK_STREAM,flags=flags)
+    
+    async def create_server(self,protocol_factory,host=None,port=None,*,family=module_socket.AF_UNSPEC,flags=module_socket.AI_PASSIVE,sock=None,backlog=100,ssl=None,reuse_address=None,reuse_port=None):
+        if type(ssl) is bool:
+            raise TypeError('ssl argument must be an SSLContext or None')
 
+        if (host is not None) or (port is not None):
+            if (sock is not None):
+                raise ValueError('host/port and sock can not be specified at the same time')
+            
+            if (reuse_address is None):
+                reuse_address = (os.name=='posix' and sys.platform!='cygwin')
+            else:
+                if (type(reuse_address) is not bool):
+                    raise TypeError(f'`reuse_address` can be `None` or type bool ,got `{reuse_address!r}`')
+            
+            if reuse_port and (not hasattr(module_socket,'SO_REUSEPORT')):
+                raise ValueError('reuse_port not supported by socket module')
+            
+            hosts=[]
+            if (host is None) or (host==''):
+                 hosts.append(None)
+            elif isinstance(host,str):
+                hosts.append(hosts)
+            elif hasattr(type(host),'__iter__'):
+                for host in hosts:
+                    if (host is None) or (host==''):
+                        hosts.append(None)
+                        continue
+                    
+                    if isinstance(host,str):
+                        hosts.append(None)
+                        continue
+                    
+                    raise TypeError(f'`host` is passed as iterable, but it has at yields at least 1 not `None`, or `str` instance; `{host!r}`')
+            else:
+                raise TypeError(f'`host` should be `None`, `str` instance or iterable of `None` or of `str` instances, got {host!r}')
+            
+            
+            sockets = []
+            
+            futures = {self._create_server_getaddrinfo(host,port,family=family,flags=flags) for host in hosts}
+            
+            try:
+                while True:
+                    done, pending = await WaitTillFirst(futures,self)
+                    for future in done:
+                        futures.remove(future)
+                        infos = future.result()
+                        
+                        for info in infos:
+                            af, socktype, proto, canonname, sa = info
+                            
+                            try:
+                                sock = module_socket.socket(af,socktype,proto)
+                            except module_socket.error:
+                                continue
+                            
+                            sockets.append(sock)
+                            
+                            if reuse_address:
+                                sock.setsockopt(module_socket.SOL_SOCKET, module_socket.SO_REUSEADDR, True)
+                            
+                            if reuse_port:
+                                try:
+                                    sock.setsockopt(module_socket.SOL_SOCKET, module_socket.SO_REUSEPORT, 1)
+                                except OSError as err:
+                                    raise ValueError('reuse_port not supported by socket module, SO_REUSEPORT defined but not implemented.') from err
+
+                            if (_HAS_IPv6 and af==module_socket.AF_INET6 and hasattr(module_socket,'IPPROTO_IPV6')):
+                                sock.setsockopt(module_socket.IPPROTO_IPV6, module_socket.IPV6_V6ONLY, True)
+                            try:
+                                sock.bind(sa)
+                            except OSError as err:
+                                raise OSError(err.errno, f'error while attempting to bind on address {sa!r}: {err.strerror.lower()!s}') from None
+                    
+                    if futures:
+                        continue
+                    
+                    break
+            except:
+                for sock in sockets:
+                    sock.close()
+                    
+                for future in futures:
+                    future.cancel()
+                
+                raise
+            
+        else:
+            if sock is None:
+                raise ValueError('Neither host/port nor sock were specified')
+            
+            if sock.type != module_socket.SOCK_STREAM:
+                raise ValueError(f'A Stream Socket was expected, got {sock!r}')
+            
+            sockets = [sock]
+        
+        for sock in sockets:
+            sock.setblocking(False)
+        
+        return Server(self, sockets, protocol_factory, ssl, backlog)
+            
     #should be async
     def create_unix_connection(self,protocol_factory,path,*,ssl=None,sock=None,server_hostname=None):
         raise NotImplementedError

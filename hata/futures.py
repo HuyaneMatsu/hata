@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-__all__ = ('AsyncQue', 'Future', 'FutureAsyncWrapper', 'FutureG',
-    'FutureSyncWrapper', 'FutureWM', 'Lock', 'Task', 'WaitTillAll',
-    'WaitTillExc', 'WaitTillFirst', 'future_or_timeout', 'gather',
-    'iscoroutine', 'iscoroutinefunction', 'shield', 'sleep', )
+__all__ = ('AsyncQue', 'CancelledError', 'Future', 'FutureAsyncWrapper',
+    'FutureG', 'FutureSyncWrapper', 'FutureWM', 'InvalidStateError', 'Lock',
+    'Task', 'WaitTillAll', 'WaitTillExc', 'WaitTillFirst', 'future_or_timeout',
+    'gather', 'iscoroutine', 'iscoroutinefunction', 'shield', 'sleep', )
 
 import sys, reprlib, linecache
 from types import GeneratorType, CoroutineType, MethodType as method, FunctionType as function
@@ -420,7 +420,7 @@ class Future(object):
             
             if state is CANCELLED:
                 raise CancelledError
-
+            
             #PENDING
             raise InvalidStateError(self,'result')
     else:

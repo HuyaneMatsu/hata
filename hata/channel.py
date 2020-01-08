@@ -1020,6 +1020,7 @@ class ChannelText(ChannelGuildBase,ChannelTextBase):
             channel.topic       = ''
 
             channel._mc_init()
+            CHANNELS[channel_id]=channel
         else:
             if not channel.partial:
                 return channel
@@ -1052,7 +1053,7 @@ class ChannelText(ChannelGuildBase,ChannelTextBase):
             if type_ not in cls.INTERCHANGE:
                 raise ValueError(f'Invalid passed type: {type_}')
         channel.type=type_
-
+        
         return channel
 
 
@@ -1152,7 +1153,8 @@ class ChannelPrivate(ChannelBase,ChannelTextBase):
             channel.users       = []
 
             channel._mc_init()
-
+            CHANNELS[channel_id]=channel
+        
         return channel
 
 
@@ -1327,7 +1329,7 @@ class ChannelVoice(ChannelGuildBase):
 
             channel.bitrate     = 64000
             channel.user_limit  = 0
-
+            CHANNELS[channel_id]=channel
         else:
             if not channel.partial:
                 return channel
@@ -1346,7 +1348,7 @@ class ChannelVoice(ChannelGuildBase):
             channel.user_limit=processable['user_limit']
         except KeyError:
             pass
-
+        
         return channel
 
 
@@ -1521,7 +1523,7 @@ class ChannelGroup(ChannelBase,ChannelTextBase):
             channel.name        = ''
             channel.icon        = 0
             channel.owner       = None
-
+            CHANNELS[channel_id]=channel
         else:
             if not channel.partial:
                 return channel
@@ -1539,7 +1541,7 @@ class ChannelGroup(ChannelBase,ChannelTextBase):
             channel.owner=processable['owner']
         except KeyError:
             pass
-
+        
         return channel
 
 class ChannelCategory(ChannelGuildBase):
@@ -1648,7 +1650,7 @@ class ChannelCategory(ChannelGuildBase):
             channel.overwrites  = []
             channel.position    = 0
             channel.name        = ''
-
+            CHANNELS[channel_id]=channel
         else:
             if not channel.partial:
                 return channel
@@ -1657,7 +1659,7 @@ class ChannelCategory(ChannelGuildBase):
             channel.name=processable['name']
         except KeyError:
             pass
-
+        
         return channel
 
 
@@ -1786,7 +1788,7 @@ class ChannelStore(ChannelGuildBase):
             channel.name        = ''
 
             channel.nsfw        = False
-
+            CHANNELS[channel_id]=channel
         else:
             if not channel.partial:
                 return channel
@@ -1800,7 +1802,7 @@ class ChannelStore(ChannelGuildBase):
             channel.nsfw=processable['nsfw']
         except KeyError:
             pass
-
+        
         return channel
 
 CHANNEL_TYPES = (

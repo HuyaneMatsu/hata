@@ -1,19 +1,37 @@
 # -*- coding: utf-8 -*-
+import hashlib, codecs, re, functools
 from random import getrandbits
-from base64 import b64encode
-import hashlib
-import codecs
-import re
+from base64 import b64encode, b64decode
 from struct import Struct
 import urllib.parse
 from collections import OrderedDict
+from binascii import Error as BinasciiError
+from email.utils import formatdate
 
 from .dereaddons_local import multidict_titled
-from . import py_hdrs as hdrs
-from .futures import (Future,AsyncQue,CancelledError,future_or_timeout,shield,
-    InvalidStateError, Task)
-from .py_exceptions import (PayloadError, WebSocketProtocolError,
-    ConnectionClosed, InvalidHandshake)
+
+from .py_hdrs import METH_GET, CONNECTION, SEC_WEBSOCKET_KEY, AUTHORIZATION,\
+    SEC_WEBSOCKET_VERSION, SEC_WEBSOCKET_EXTENSIONS, SEC_WEBSOCKET_PROTOCOL,\
+    HOST, ORIGIN, SEC_WEBSOCKET_ACCEPT, UPGRADE, DATE, CONTENT_TYPE, SERVER,\
+    CONTENT_LENGTH, build_extensions, build_basic_auth, parse_subprotocols, \
+    parse_upgrades, parse_connections, parse_extensions, build_subprotocols
+
+from .futures import Future, Task, AsyncQue, future_or_timeout, shield,     \
+    InvalidStateError, CancelledError, WaitTillAll, iscoroutine
+
+from .py_exceptions import PayloadError, InvalidUpgrade, AbortHandshake,     \
+    ConnectionClosed, InvalidHandshake, InvalidOrigin, WebSocketProtocolError
+
+import http
+
+FORBIDDEN             = http.HTTPStatus.FORBIDDEN
+UPGRADE_REQUIRED      = http.HTTPStatus.UPGRADE_REQUIRED
+BAD_REQUEST           = http.HTTPStatus.BAD_REQUEST
+INTERNAL_SERVER_ERROR = http.HTTPStatus.INTERNAL_SERVER_ERROR
+SERVICE_UNAVAILABLE   = http.HTTPStatus.SERVICE_UNAVAILABLE
+SWITCHING_PROTOCOLS   = http.HTTPStatus.SWITCHING_PROTOCOLS
+
+del http
 
 OP_CONT     = 0
 OP_TEXT     = 1
@@ -561,7 +579,7 @@ class WebSocketCommonProtocol(object):
             await task
         except (TimeoutError,CancelledError):
             pass
-
+        
         #quit for the close connection task to close the TCP connection.
         await shield(self.close_connection_task,self.loop)
 
@@ -616,7 +634,7 @@ class WebSocketCommonProtocol(object):
                 await shield(self.close_connection_task,self.loop)
             raise ConnectionClosed(self.close_code,None,self.close_reason) from self.transfer_data_exc
 
-        raise InvalidStateError('WebSocket connection isn\'t established yet')
+        raise Exception('WebSocket connection isn\'t established yet')
 
     async def transfer_data(self):
         try:
@@ -630,7 +648,7 @@ class WebSocketCommonProtocol(object):
         except CancelledError as err:
             #we alrady failed connection
             exception=ConnectionClosed(1000,err)
-            
+        
         except WebSocketProtocolError as err:
             exception=ConnectionClosed(1002,err)
             self.fail_connection(1002)
@@ -656,10 +674,15 @@ class WebSocketCommonProtocol(object):
             #we closed the connection
             exception=ConnectionClosed(1000,None)
 
+            # If we are a client and we receive this, we closed our own
+            # connection, there is no reason to wait for TCP abort
+            if self.is_client:
+                self.connection_lost_waiter.set_result_if_pending(None)
+            
         if self.transfer_data_exc is None:
             self.transfer_data_exc=exception
             self.messages.set_exception(exception)
-        
+
     async def read_message(self):
         frame = await self.read_data_frame(max_size=self.max_size)
         if frame is None: #close frame
@@ -748,7 +771,7 @@ class WebSocketCommonProtocol(object):
     async def write_frame(self,opcode,data,_expected_state=OPEN):
         # Defensive assertion for protocol compliance.
         if self.state is not _expected_state:
-            raise InvalidStateError(f'Cannot write to a WebSocket in the {self.state} state')
+            raise Exception(f'Cannot write to a WebSocket in the {self.state} state')
 
         #we write only 1 frame at a time, so we 'queue' it
         old_lock=self._drain_lock
@@ -787,15 +810,16 @@ class WebSocketCommonProtocol(object):
             # Cancel all pending pings because they'll never receive a pong.
             for ping in self.pings.values():
                 ping.cancel()
-
+            
             # A client should wait for a TCP close from the server.
             if self.is_client and self.transfer_data_task is not None:
                 if (await self.wait_for_connection_lost()):
                     return
+            
             # If connection goes off meawhile connecting, writer can be set
             # to None.
             writer = self.writer
-            if (writer is not None) and writer.can_write_eof():
+            if (writer is None) and writer.can_write_eof():
                 writer.write_eof()
                 if (await self.wait_for_connection_lost()):
                     return
@@ -928,7 +952,7 @@ class WebSocketCommonProtocol(object):
         await waiter
         
 class WebSocketURI(object):
-    __slots__=['host', 'port', 'resource_name', 'secure', 'user_info']
+    __slots__= ('host', 'port', 'resource_name', 'secure', 'user_info',)
     def __init__(self,uri):
         uri = urllib.parse.urlparse(uri)
 
@@ -963,7 +987,7 @@ class WSClient(WebSocketCommonProtocol):
             connection_kwargs.setdefault('ssl',True)
         elif connection_kwargs.get('ssl',None) is not None:
             raise ValueError(f'{cls.__name__}() received a SSL context for a ws:// URI, use a wss:// URI to enable TLS')
-
+        
         if compression is not None and compression!='deflate':
             raise ValueError(f'Unsupported compression: {compression}')
 
@@ -986,27 +1010,27 @@ class WSClient(WebSocketCommonProtocol):
             sec_key=b64encode(int.to_bytes(getrandbits(128),length=16,byteorder='big')).decode()
             request_headers = multidict_titled()
 
-            request_headers[hdrs.UPGRADE]='websocket'
-            request_headers[hdrs.CONNECTION]='Upgrade'
-            request_headers[hdrs.SEC_WEBSOCKET_KEY]=sec_key
-            request_headers[hdrs.SEC_WEBSOCKET_VERSION]='13'
+            request_headers[UPGRADE]='websocket'
+            request_headers[CONNECTION]='Upgrade'
+            request_headers[SEC_WEBSOCKET_KEY]=sec_key
+            request_headers[SEC_WEBSOCKET_VERSION]='13'
             
             if wsuri.port == (443 if wsuri.secure else 80):
-                request_headers[hdrs.HOST] = wsuri.host
+                request_headers[HOST] = wsuri.host
             else:
-                request_headers[hdrs.HOST] = f'{wsuri.host}:{wsuri.port}'
+                request_headers[HOST] = f'{wsuri.host}:{wsuri.port}'
 
             if wsuri.user_info is not None:
-                request_headers[hdrs.AUTHORIZATION]=hdrs.build_basic_auth(*wsuri.user_info)
+                request_headers[AUTHORIZATION]=build_basic_auth(*wsuri.user_info)
                 
             if origin is not None:
-                request_headers[hdrs.ORIGIN]=origin
+                request_headers[ORIGIN]=origin
 
             if available_extensions is not None:
-                request_headers[hdrs.SEC_WEBSOCKET_EXTENSIONS]=hdrs.build_extensions(available_extensions)
+                request_headers[SEC_WEBSOCKET_EXTENSIONS]=build_extensions(available_extensions)
                 
             if available_subprotocols is not None:
-                request_headers[hdrs.SEC_WEBSOCKET_PROTOCOL]=hdrs.build_subprotocols(available_subprotocols)
+                request_headers[SEC_WEBSOCKET_PROTOCOL]=build_subprotocols(available_subprotocols)
 
             if extra_headers is not None:
                 if isinstance(extra_headers,multidict_titled) or hasattr(extra_headers,'items'): #we use expecially items, so we check that
@@ -1024,11 +1048,12 @@ class WSClient(WebSocketCommonProtocol):
             status_line = await self.reader.readline()
 
             try:
-                version,status_code,reason = status_line[:-2].split(b' ', 2)
+                version,status_code,reason = status_line.split(b' ', 2)
             except ValueError as err:
                 #fails to unpack?
                 raise ValueError(f'Invalid status line: \'{status_line}\'') from err
-
+            
+            version=version
             if version != b'HTTP/1.1':
                 raise ValueError(f'Unsupported HTTP version: {version}')
             
@@ -1041,7 +1066,8 @@ class WSClient(WebSocketCommonProtocol):
             if not 100 <= status_code < 1000:
                 raise ValueError(f'Unsupported HTTP status code: {status_code}')
             
-            if not _HEADER_VALUE_RP.fullmatch(reason):
+            reason=reason[:-2] # Remove newline character
+            if _HEADER_VALUE_RP.fullmatch(reason) is None:
                 raise ValueError(f'Invalid HTTP reason phrase: {reason}')
 
             if status_code!=101:
@@ -1061,14 +1087,14 @@ class WSClient(WebSocketCommonProtocol):
                     raise ValueError('The maximum amount of headers exceeded')
 
                 try:
-                    name,value = line[:-2].split(b':', 1)
+                    name,value = line.split(b':', 1)
                 except ValueError as err:
                     raise ValueError(f'Invalid header (name, value) item: \'{line}\'') from err
                 
                 if _HEADER_KEY_RP.fullmatch(name) is None:
                     raise ValueError(f'Invalid HTTP header name: {name!r}')
                 
-                value=value.strip(b' \t')
+                value=value[:-2].strip(b' \t')
                 if _HEADER_VALUE_RP.fullmatch(value) is None:
                     raise ValueError(f'Invalid HTTP header value: {value!r}')
 
@@ -1076,29 +1102,45 @@ class WSClient(WebSocketCommonProtocol):
                 value=value.decode('ascii','surrogateescape')
                 response_headers[name]=value
             
-            connections = hdrs.parse_connections(response_headers.get(hdrs.CONNECTION, ''))
+            connections=[]
+            received_connections=response_headers.getall(CONNECTION,)
+            if (received_connections is not None):
+                for received_connection in received_connections:
+                    connections.extend(parse_connections(received_connection))
+            
             if not any(value.lower()=='upgrade' for value in connections):
                 raise InvalidHandshake(f'Invalid connection, no upgrade found, got {connections!r}')
-
-            upgrade = hdrs.parse_upgrades(response_headers.get(hdrs.UPGRADE, ''))
+            
+            upgrade=[]
+            received_upgrades=response_headers.getall(UPGRADE)
+            if (received_upgrades is not None):
+                for received_upgrade in received_upgrades:
+                    upgrade.extend(parse_upgrades(received_upgrade))
+            
             if len(upgrade)!=1 and upgrade[0].lower()!='websocket': #ignore upper/lover case
                 raise InvalidHandshake(f'Expected \'WebSocket\' for \'Upgrade\', but got {upgrade!r}')
 
             expected_key=b64encode(hashlib.sha1((sec_key+WS_KEY).encode()).digest()).decode()
-            received_key=response_headers.get(hdrs.SEC_WEBSOCKET_ACCEPT,'')
+            received_keys=response_headers.getall(SEC_WEBSOCKET_ACCEPT)
+            if received_keys is None:
+                raise InvalidHandshake(f'Expected 1 secret key \'{expected_key}\', but received 0')
+            if len(received_keys)>1:
+                raise InvalidHandshake(f'Expected 1 secret key \'{expected_key}\', but received more : {received_keys}')
+            
+            received_key=received_keys[0]
             if received_key!=expected_key:
                 raise InvalidHandshake(f'Expected secret key \'{expected_key}\', but got \'{received_key}\'')
 
             #extensions
             accepted_extensions=[]
-            received_extensions=response_headers.getall(hdrs.SEC_WEBSOCKET_EXTENSIONS)
-            if received_extensions:
+            received_extensions=response_headers.getall(SEC_WEBSOCKET_EXTENSIONS)
+            if (received_extensions is not None):
                 if available_extensions is None:
                     raise InvalidHandshake(f'No extensions supported, but received {received_extensions!r}')
-
+                
                 parsed_extension_values=[]
                 for value in received_extensions:
-                    parsed_extension_values.extend(hdrs.parse_extensions(value))
+                    parsed_extension_values.extend(parse_extensions(value))
                 
                 for name,params in parsed_extension_values:
                     for extension in available_extensions:
@@ -1113,27 +1155,27 @@ class WSClient(WebSocketCommonProtocol):
             self.extensions=accepted_extensions
 
             subprotocol = None
-            received_subprotocol=response_headers.getall(hdrs.SEC_WEBSOCKET_PROTOCOL)
-            if received_subprotocol:
+            received_subprotocols=response_headers.getall(SEC_WEBSOCKET_PROTOCOL)
+            if (received_subprotocols is not None):
                 if available_subprotocols is None:
                     raise InvalidHandshake('No subprotocols supported, btu received {received_subprotocol!r}')
-
+                
                 parsed_subprotocol_values=[]
-                for value in received_subprotocol:
-                    parsed_subprotocol_values.extend(hdrs.parse_subprotocols(value))
+                for received_subprotocol in received_subprotocols:
+                    parsed_subprotocol_values.extend(parse_subprotocols(received_subprotocol))
                 
                 if len(parsed_subprotocol_values)>1:
                     raise InvalidHandshake(f'Multiple subprotocols: {parsed_subprotocol_values!r}')
-
+                
                 subprotocol=parsed_subprotocol_values[0]
-
+                
                 if subprotocol not in available_subprotocols:
                     raise InvalidHandshake(f'Unsupported subprotocol: {subprotocol}')
 
             self.subprotocol=subprotocol
 
             self.connection_open()
-        except BaseException:
+        except:
             await self.fail_connection()
             raise
         
@@ -1141,4 +1183,481 @@ class WSClient(WebSocketCommonProtocol):
     
     def __call__(self):
         return self
+
+class WSServerProtocol(WebSocketCommonProtocol):
+    is_client = False
+    
+    __slots__ = ('available_extensions', 'available_subprotocols',
+        'extra_headers', 'handler', 'handler_task', 'origin', 'origins',
+        'request_processer', 'server', 'subprotocol_selector', 'path',
+        'request_headers', 'response_headers')
+    
+    def __init__(self,server):
+        handler, host, port, secure, origins, available_extensions, \
+        available_subprotocols , extra_headers, request_processer, \
+        subprotocol_selector, websocket_kwargs = server.proto_args
+        
+        self.handler=handler
+        self.server=server
+        self.origins=origins
+        self.available_extensions=available_extensions
+        self.available_subprotocols=available_subprotocols
+        self.extra_headers=extra_headers
+        self.request_processer=request_processer
+        self.subprotocol_selector=subprotocol_selector
+        self.handler_task=None
+        
+        WebSocketCommonProtocol.__init__(self, server.loop, host, port,
+            secure=secure, **websocket_kwargs)
+        
+        self.path=None
+        self.request_headers=None
+        self.response_headers=None
+        self.origin=None
+        
+    def connection_made(self, transpot):
+        WebSocketCommonProtocol.connection_made(self,transpot)
+        self.server.register(self)
+        self.handler_task=Task(self.lifetime_handler(),self.loop)
+        
+    async def lifetime_handler(self):
+        try:
+            # handshake returns True if it succeeded
+            if not (await self.handshake()):
+                return
+            
+            try:
+                await self.handler(self)
+            except BaseException as err:
+                await self.loop.render_exc_async(err,before = [
+                    'Unhandled exception occured at',
+                    self.__class__.__name__,
+                    '.lifetime_handler meanhile running: ',
+                    repr(self.handler),
+                    '\n',
+                        ])
+                return
+            
+            await self.close()
+        except:
+            # We will let Task.__del__ to render the exception...
+            writer=self.writer
+            if writer is None:
+                raise
+            
+            transport=writer.transport
+            if transport is None:
+                raise
+                
+            transport.close()
+            raise
+        
+        finally:
+            self.server.unregister(self)
+        
+    async def read_http_request(self):
+        #parse status line
+        
+        try:
+            request_line = await self.reader.readline()
+        except EOFError as err:
+            raise EOFError('Connection closed while reading HTTP request line') from err
+        
+        try:
+            method,path,version = request_line.split(b' ', 2)
+        except ValueError as err:
+            #fails to unpack?
+            raise ValueError(f'Invalid HTTP request line: {request_line!r}') from err
+        
+        method=method.decode()
+        
+        if method != METH_GET:
+            raise ValueError(f'Unsupported HTTP method: {method}')
+        
+        version=version[:-2]
+        if version != b'HTTP/1.1':
+            raise ValueError(f'Unsupported HTTP version: {version}')
+        
+        self.path = path.decode('ascii', 'surrogateescape')
+        
+        #parse headers
+        request_headers=multidict_titled()
+        
+        while True:
+            line=await self.reader.readline()
+            if line==b'\r\n':
+                break
+
+            try:
+                name,value = line.split(b':', 1)
+            except ValueError as err:
+                raise ValueError(f'Invalid header (name, value) item: \'{line}\'') from err
+            
+            if _HEADER_KEY_RP.fullmatch(name) is None:
+                raise ValueError(f'Invalid HTTP header name: {name!r}')
+            
+            value=value[:-2].strip(b' \t')
+            if _HEADER_VALUE_RP.fullmatch(value) is None:
+                raise ValueError(f'Invalid HTTP header value: {value!r}')
+
+            name=name.decode('ascii')
+            value=value.decode('ascii','surrogateescape')
+            request_headers[name]=value
+        
+        self.request_headers=request_headers
+    
+    def write_http_response(self,status,response_headers,body=None):
+        self.response_headers=response_headers
+        breaker='\r\n'
+        response = f'HTTP/1.1 {status.value} {status.phrase}\r\n{"".join([f"{k}: {v}{breaker}" for k,v in response_headers.items()])}\r\n'
+        
+        transport= self.writer.transport
+        transport.write(response.encode())
+        
+        if (body is None) or (not body):
+            return
+        
+        transport.write(body)
+    
+    async def handshake(self):
+        try:
+            await self.read_http_request()
+            request_headers=self.request_headers
+            if self.server.is_serving():
+                path=self.path
+                
+                request_processer=self.request_processer
+                if request_processer is None:
+                    early_response=None
+                else:
+                    early_response=request_processer(path, request_headers)
+                    if iscoroutine(early_response):
+                        early_response=await early_response
+                
+                if (early_response is not None):
+                    raise AbortHandshake(*early_response)
+                
+            else:
+                raise AbortHandshake(SERVICE_UNAVAILABLE,multidict_titled(),b'Server is shutting down.\n',)
+            
+            connections=[]
+            connection_headers=request_headers.getall(CONNECTION)
+            if (connection_headers is not None):
+                for connection_header in connection_headers:
+                    connections.extend(parse_connections(connection_header))
+        
+            if not any(value.lower()=='upgrade' for value in connections):
+                raise InvalidUpgrade(f'Invalid connection, no upgrade found, got {connections!r}')
+            
+            upgrade=[]
+            upgrade_headers=request_headers.getall(UPGRADE)
+            if (upgrade_headers is not None):
+                for upgrade_header in upgrade_headers:
+                    upgrade.extend(parse_upgrades(upgrade_header))
+            
+            if len(upgrade)!=1 and upgrade[0].lower()!='websocket': #ignore upper/lover case
+                raise InvalidUpgrade(f'Expected \'WebSocket\' for \'Upgrade\', but got {upgrade!r}')
+            
+            received_keys=request_headers.getall(SEC_WEBSOCKET_KEY)
+            if received_keys is None:
+                raise InvalidHandshake(f'Missing {SEC_WEBSOCKET_KEY!r} from headers')
+            
+            if len(received_keys)>1:
+                raise InvalidHandshake(f'Multiple {SEC_WEBSOCKET_KEY!r} values at headers')
+            
+            key=received_keys[0]
+        
+            try:
+                raw_key = b64decode(key.encode(),validate=True)
+            except BinasciiError:
+                raise InvalidHandshake(f'Invalid {SEC_WEBSOCKET_KEY!r}: {key!r}')
+            
+            if len(raw_key)!=16:
+                raise InvalidHandshake(f'Invalid {SEC_WEBSOCKET_KEY!r}, should be length 16; {key!r}')
+        
+            sw_version=request_headers.getall(SEC_WEBSOCKET_VERSION)
+            if sw_version is None:
+                raise InvalidHandshake(f'Missing {SEC_WEBSOCKET_VERSION!r} values at headers')
+            
+            if len(sw_version)>1:
+                raise InvalidHandshake(f'Multiple {SEC_WEBSOCKET_VERSION!r} values at headers')
+            
+            sw_version=sw_version[0]
+            if sw_version != "13":
+                raise InvalidHandshake(f'Invalid {SEC_WEBSOCKET_VERSION!r}: {sw_version!r}')
+            
+            while True:
+                origins=self.origins
+                if (origins is None):
+                    origin=None
+                    break
+                
+                origin_headers=request_headers.getall(ORIGIN)
+                
+                if (origin_headers is None):
+                    raise InvalidOrigin('No origin at header.')
+                
+                if len(origin_headers)>1:
+                    raise InvalidOrigin('More than 1 origin at header.')
+                
+                origin=origin_headers[0]
+                
+                if origin in origins:
+                    break
+                    
+                raise InvalidOrigin(origin)
+            
+            self.origin=origin
+            
+            while True:
+                accepted_extensions=[]
+                
+                available_extensions=self.available_extensions
+                if (available_extensions is None):
+                    extension_header=None
+                    break
+                
+                extension_headers_=request_headers.getall(SEC_WEBSOCKET_EXTENSIONS)
+                if (extension_headers_ is None):
+                    extension_header=None
+                    break
+                
+                extension_headers=[]
+                parsed_extension_values=[]
+                for extension_header_ in extension_headers_:
+                    parsed_extension_values.extend(parse_extensions(extension_header_))
+                
+                for name,params in parsed_extension_values:
+                    for extension in available_extensions:
+                        #do names and params match?
+                        if extension.name==name and extension.are_valid_params(params,accepted_extensions):
+                            accepted_extensions.append(extension)
+                            extension_headers.append((name,params))
+                            break
+                    else:
+                        #no matching extension
+                        raise InvalidHandshake(f'Unsupported extension: name = {name}, params = {params}')
+                    
+                    # If we didn't break from the loop, no extension in our list
+                    # matched what the client sent. The extension is declined.
+        
+                # Serialize extension header.
+                if extension_headers:
+                    extension_header=build_extensions(extension_headers)
+                    break
+                
+                extension_header=None
+                break
+            
+            self.extensions=accepted_extensions
+            
+            
+            while True:
+                available_subprotocols=self.available_subprotocols
+                if (available_subprotocols is None):
+                    subprotocol_header=None
+                    break
+                    
+                protocol_headers=request_headers.getall(SEC_WEBSOCKET_PROTOCOL)
+                if (protocol_headers is None):
+                    subprotocol_header=None
+                    break
+                
+                parsed_header_subprotocols=[]
+                for protocol_header in protocol_headers:
+                    parsed_header_subprotocols.extend(parse_subprotocols(protocol_header))
+                
+                subprotocol_selector=self.subprotocol_selector
+                if (subprotocol_selector is not None):
+                    subprotocol_header=subprotocol_selector(parsed_header_subprotocols,available_subprotocols)
+                    break
+                    
+                subprotocols=set(parsed_header_subprotocols)
+                subprotocols.intersection_update(available_subprotocols)
+                
+                if not subprotocols:
+                    subprotocol_header=None
+                    break
+                    
+                subprotocol_header=sorted(subprotocols, key = lambda priority: (parsed_header_subprotocols.index(priority)+available_subprotocols.index(priority)))[0]
+                break
+            
+            self.subprotocol=subprotocol_header
+            
+            response_headers = multidict_titled()
+    
+            response_headers[UPGRADE] = 'websocket'
+            response_headers[CONNECTION] = 'Upgrade'
+            response_headers[SEC_WEBSOCKET_ACCEPT] = b64encode(hashlib.sha1((key+WS_KEY).encode()).digest()).decode()
+            
+            if (extension_header is not None):
+                response_headers[SEC_WEBSOCKET_EXTENSIONS] = extension_header
+    
+            if (subprotocol_header is not None):
+                response_headers[SEC_WEBSOCKET_PROTOCOL] = subprotocol_header
+            
+            extra_headers=self.extra_headers
+            if (extra_headers is not None):
+                for key, value in extra_headers.items():
+                    response_headers[key] = value
+    
+            response_headers.setdefault(DATE, formatdate(usegmt=True))
+            response_headers.setdefault(SERVER, '')
+    
+            self.write_http_response(SWITCHING_PROTOCOLS, response_headers)
+    
+            self.connection_open()
+        except (CancelledError, ConnectionError) as err:
+            await self.loop.render_exc_async(err,before = [
+                'Unhandled exception occured at ',
+                self.__class__.__name__,
+                '.handshake, when handshaking:\n'])
+            return False
+        except BaseException as err:
+            if isinstance(err,AbortHandshake):
+                status=err.status
+                headers=err.headers
+                body=err.body
+            elif isinstance(err,InvalidOrigin):
+                status=FORBIDDEN
+                headers=multidict_titled()
+                body=f'Failed to open a WebSocket connection: {err}.\n'.encode()
+            elif isinstance(err,InvalidUpgrade):
+                status=UPGRADE_REQUIRED
+                headers=multidict_titled()
+                headers[UPGRADE]='websocket'
+                body = (
+                    f'Failed to open a WebSocket connection: {err}.\n\n'
+                    f'You cannot access a WebSocket server directly with a'
+                    f'browser. You need a WebSocket client.\n'
+                        ).encode()
+            elif isinstance(err,InvalidHandshake):
+                status=BAD_REQUEST
+                headers=multidict_titled()
+                body=f'Failed to open a WebSocket connection: {err}.\n'.encode()
+            else:
+                status=INTERNAL_SERVER_ERROR
+                headers=multidict_titled()
+                body=b'Failed to open a WebSocket connection.\n'
+                
+            headers.setdefault(DATE             , formatdate(usegmt=True))
+            headers.setdefault(SERVER           , '')
+            headers.setdefault(CONTENT_LENGTH   , repr(len(body)))
+            headers.setdefault(CONTENT_TYPE     , 'text/plain')
+            headers.setdefault(CONNECTION       , 'close')
+            
+            try:
+                self.write_http_response(status, headers, body)
+                self.fail_connection()
+                await self.wait_for_connection_lost()
+            except BaseException as err2:
+                await self.loop.render_exc_async(err2,before = [
+                    'Unhandled exception occured at ',
+                    self.__class__.__name__,
+                    '.handshake, when handling an other exception;',
+                    repr(err),':'])
+            return False
+        
+        return True
+        
+class WSServer(object):
+    __slots__ = ('loop', 'websockets', 'close_connection_task','handler', 'server', 'proto_args')
+    async def __new__(cls, loop, host, port, handler, *, protocol=None,
+            compression=None, available_extensions=None, extra_headers=None,
+            origins=None, available_subprotocols=None, request_processer=None,
+            subprotocol_selector=None, websocket_kwargs=None, **kwargs):
+        
+        if protocol is None:
+            protocol=WSServerProtocol
+        
+        if websocket_kwargs is None:
+            websocket_kwargs={}
+        
+        secure = (kwargs.get("ssl") is not None)
+        
+        if (compression is not None):
+            if compression!='deflate':
+                raise ValueError(f'Unsupported compression: {compression}')
+        
+            if available_extensions is None:
+                available_extensions=[]
+        
+        if (extra_headers is None):
+            pass
+        elif type(extra_headers) is multidict_titled:
+            pass
+        elif hasattr(type(extra_headers),'items'):
+            extra_headers_local=multidict_titled()
+            
+            for name,value in extra_headers.items():
+                extra_headers_local[name]=value
+            
+            extra_headers=extra_headers_local
+        else:
+            raise TypeError(f'extra_headers should be `None` or a dictlike with \'.items\' method, got {extra_headers.__class__.__name__} instance.')
+        
+        if (extra_headers is not None) and (not extra_headers):
+            extra_headers=None
+            
+        self=object.__new__(cls)
+        self.loop=loop
+        self.handler=handler
+        self.websockets=set()
+        self.close_connection_task=None
+        self.server = None
+        self.proto_args = (handler, host, port, secure, origins,
+            available_extensions, available_subprotocols , extra_headers,
+            request_processer, subprotocol_selector, websocket_kwargs)
+        
+        factory = functools.partial(protocol, self,)
+        server = await loop.create_server(factory, host, port, **kwargs)
+        
+        self.server = server
+        await server.start()
+        
+        return self
+    
+    def register(self,protocol):
+        self.websockets.add(protocol)
+        
+    def is_serving(self):
+        server=self.server
+        if server is None:
+            return False
+        
+        if server.sockets is None:
+            return False
+        
+        return True
+    
+    def close(self):
+        close_connection_task = self.close_connection_task
+        if close_connection_task is None:
+            close_connection_task=Task(self._close(),self.loop)
+            self.close_connection_task=close_connection_task
+        
+        return close_connection_task
+    
+    async def _close(self):
+        server=self.server
+        if server is None:
+            return
+        
+        server.close()
+        await server.wait_closed()
+        
+        loop=self.loop
+        
+        # Skip 1 full loop
+        future=Future(loop)
+        loop.call_at(0.0,future.set_result_if_pending,None)
+        await future
+
+        websockets=self.websockets
+        if websockets:
+            await WaitTillAll([websocket.close(1001) for websocket in websockets],loop)
+            
+        if websockets:
+            await WaitTillAll([websocket.handler_task for websocket in websockets],loop)
+
 

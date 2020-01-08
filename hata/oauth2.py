@@ -3,6 +3,7 @@ __all__ = ('AO2Access', 'UserOA2', 'parse_oauth2_redirect_url')
 
 import re
 from datetime import datetime
+from time import time as time_now
 
 from .integration import Integration
 from .others import PremiumType
@@ -95,7 +96,8 @@ SCOPES={v:v for v in ('activities.read', 'activities.write',
 #rest of scopes is ignorable
 
 class AO2Access(object):
-    token_type='Bearer'
+    TOKEN_TYPE='Bearer'
+    
     __slots__=('access_token', 'created_at', 'expires_in', 'redirect_url',
         'refresh_token', 'scopes',)
     def __init__(self,data,redirect_url):
@@ -111,7 +113,7 @@ class AO2Access(object):
                 pass
         self.created_at=datetime.now() #important for renewing
         
-    def renew(self,data):
+    def _renew(self,data):
         self.created_at=datetime.now()
         if data is None:
             return
@@ -125,6 +127,10 @@ class AO2Access(object):
                 scopes.add(SCOPES[scope])
             except KeyError:
                 pass
+    
+    def __repr__(self):
+        return f'<{self.__class__.__name__} {"active" if (self.created_at.timestamp()+self.expires_in > time_now()) else "expired"}, access_token={self.access_token!r}, scopes count={len(self.scopes)}>'
+        
         
 class UserOA2(UserBase):
     __slots__ = ('access', 'email', 'flags', 'locale', 'mfa', 'premium_type',

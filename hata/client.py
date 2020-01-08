@@ -555,7 +555,7 @@ class Client(UserBase):
 
         data = await self.http.oauth2_token(data)
 
-        access.renew(data)
+        access._renew(data)
 
     #needs `guilds.join` scope granted
     async def guild_user_add(self,guild,access_or_compuser,user=None,nick=None,roles=[],mute=False,deaf=False):
@@ -1537,7 +1537,7 @@ class Client(UserBase):
                 # It can happen, that there are no more tasks left,  at that case
                 # we check if there is more message left. Only at
                 # `message_group_new` can be anymore message, because there is a
-                # time intervallum of 5 seconds, what we do not move between
+                # time intervallum of 10 seconds, what we do not move between
                 # categories.
                 if not message_group_new:
                     break

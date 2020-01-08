@@ -27,8 +27,22 @@ class ResponseError(HttpProcessingError):
 class InvalidHandshake(Exception):
     pass
 
+class AbortHandshake(InvalidHandshake):
+    def __init__(self,status,headers,body):
+        self.status=status
+        self.headers=headers
+        self.body=body
+        
+        InvalidHandshake.__init__(self,f'HTTP {status}, {len(headers)} headers, {len(body)} bytes')
+    
 class ProxyError(HttpProcessingError):
     #if proxy responds with status other than "200 OK"
+    pass
+
+class InvalidOrigin(InvalidHandshake):
+    pass
+
+class InvalidUpgrade(InvalidHandshake):
     pass
 
 class ContentEncodingError(HttpProcessingError):

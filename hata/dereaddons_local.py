@@ -1,6 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('alchemy_incendiary', 'cached_property', 'methodize',
-    'modulize',  'weakmethod', )
+    'modulize',  'multidict', 'multidict_titled', 'weakmethod', )
 
 from types import \
     MethodType              as method, \
@@ -486,7 +486,7 @@ class multidict(dict):
         try:
             return dict.pop(self,key)
         except KeyError:
-            if default!=_spaceholder:
+            if default is not _spaceholder:
                 return default
             raise
 
@@ -494,7 +494,7 @@ class multidict(dict):
         try:
             return dict.__getitem__(self,key).pop(0)
         except KeyError:
-            if default!=_spaceholder:
+            if default is not _spaceholder:
                 return default
             raise
         

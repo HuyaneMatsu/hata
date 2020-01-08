@@ -155,7 +155,7 @@ class DiscordGateway(object):
             return True
         
     async def _received_message(self,message):
-        #returns True if everything is OK, False if NOT            
+        # return True if we should reconnect
         message     = from_json(message)
 
         operation   = message['op']

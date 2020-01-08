@@ -48,7 +48,7 @@ def stop_clients():
             Task(client.disconnect(),KOKORO)
             KOKORO.wakeup()
     
-KOKORO=EventThread(daemon=False)
+KOKORO=EventThread(daemon=False,name='KOKORO')
 
 GC_cycler=KOKORO.cycle(1200.)
 

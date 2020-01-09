@@ -46,7 +46,7 @@ class Permission(int):
         return (self>>PERM_KEYS[key])&1
 
     def keys(self):
-        for key,position in PERM_KEYS.values():
+        for key,position in PERM_KEYS.items():
             if (self>>position)&1:
                 yield key
 

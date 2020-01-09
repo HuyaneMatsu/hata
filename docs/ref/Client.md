@@ -629,7 +629,7 @@ Deletes the achievement.
 - returns : `list`
 - elements : [`Achievement`](Achievement.md)
  
-Requests the user's achievement with it's [oauth2 access](AO2Access.md).
+Requests the user's achievement with it's [oauth2 access](OA2Access.md).
 The user must grant `applications.store.update` scope for the application to
 do it.
 

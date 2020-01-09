@@ -890,7 +890,7 @@ class WebSocketCommonProtocol(object):
             self.close_code = 1006
         
         # `self.connection_lost_waiter` should be pending
-        self.connection_lost_waiter.set_result_if_pening(None)
+        self.connection_lost_waiter.set_result_if_pending(None)
         
         if self.reader is not None:
             if exception is None:

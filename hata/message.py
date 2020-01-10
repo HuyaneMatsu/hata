@@ -1445,10 +1445,10 @@ class Message(object):
         embed_datas=data['embeds']
         if embed_datas:
             embeds=[EmbedCore.from_data(embed_data) for embed_data in embed_datas]
-            self.embeds=embeds
         else:
-            self.embeds=None
-
+            embeds=None
+        self.embeds=embeds
+        
         self.content=data['content']
 
         user_mention_datas=data['mentions']

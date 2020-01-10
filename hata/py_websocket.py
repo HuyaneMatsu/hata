@@ -819,7 +819,7 @@ class WebSocketCommonProtocol(object):
             # If connection goes off meawhile connecting, writer can be set
             # to None.
             writer = self.writer
-            if (writer is None) and writer.can_write_eof():
+            if (writer is not None) and writer.can_write_eof():
                 writer.write_eof()
                 if (await self.wait_for_connection_lost()):
                     return

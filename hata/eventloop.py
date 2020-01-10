@@ -1510,19 +1510,18 @@ class EventThread(Executor,Thread,metaclass=EventThreadType):
             elif isinstance(host,str):
                 hosts.append(hosts)
             elif hasattr(type(host),'__iter__'):
-                for host in hosts:
+                for host in host:
                     if (host is None) or (host==''):
                         hosts.append(None)
                         continue
                     
                     if isinstance(host,str):
-                        hosts.append(None)
+                        hosts.append(host)
                         continue
                     
                     raise TypeError(f'`host` is passed as iterable, but it has at yields at least 1 not `None`, or `str` instance; `{host!r}`')
             else:
                 raise TypeError(f'`host` should be `None`, `str` instance or iterable of `None` or of `str` instances, got {host!r}')
-            
             
             sockets = []
             

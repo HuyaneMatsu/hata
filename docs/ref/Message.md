@@ -218,15 +218,6 @@ content, the content of the embeds and the content of embeds' subparts too.
 
 The creation time of the message.
 
-### `could_suppress_embeds`
-
-- returns : `int`
-- default : `0`
-
-Returns the amount of [`embeds`](EmbedCore.md), which could be suppressed.
-If a message's embeds are suppressed, they cannot be suppressed, but the
-message can still have embed, that is why the *could* and not *can*.
-
 ### `guild`
 
 - returns : [`Guild`](Guild.md) / `NoneType`
@@ -426,7 +417,8 @@ Updates the message and returns it's old attribtes with (`attribute name`,
 [`_channel_mentions`](#_channel_mentions-instance-attribute) to unset.
 A special case is if a message is (un)pinned or (un)suppressed , because then
 the returned dict is not going to contain `'edited'`, only `'pinned'` or
-`flags`.
+`flags`. If the embeds are (un)suppressed of the message, then the returned
+dict might contain also `'embeds'`.
 
 | name                      | description                                                                                   |
 |---------------------------|-----------------------------------------------------------------------------------------------|
@@ -456,14 +448,11 @@ Updates the message, replacing it's attributes and reseting
 
 After getting a message, it's embeds might be updated from links, or with image,
 video sizes. If it happens this method is called. Returns:
- - `0` if no update took place.
+ - `0` if no update took place, the embeds of the message might be suppressed
+already.
  - `1` if sizes are updated.
- - `2` if embed links are added
- - `3` if the message's embeds are suppressed, but an unsuppressed embed is
-added to it. Discord bug, happens when you update an embed, what is
-suppressed, but instead of desuppressing and updating, it removes the old embeds
-and adds new one to it. The message's flag will still show that the it's embeds
-are suppressed.
+ - `2` if embed links are added.
+ - `3` if the message has less embeds than nefore. Can be caused only by a bug.
 
 ### `_update_embed_no_return(self,data)` (method)
 

@@ -238,14 +238,9 @@ of the changed attributes, what contains (`attribute name`, `old value`) items.
 
 Called when only message's embeds are updated and the message is not edited.
 The `result` can be:
- - `0` if no update took place.
  - `1` if sizes are updated.
- - `2` if embed links are added
- - `3` if the message's embeds are suppressed, but an unsuppressed embed is
-added to it. Discord bug, happens when you update an embed, what is
-suppressed, but instead of desuppressing and updating, it removes the old embeds
-and adds new one to it. The message's flag will still show that the it's embeds
-are suppressed.
+ - `2` if embed links are added.
+ - `3` the amount of the embeds is lowered. Can be caused only by a bug.
 
 ### `emoji_create(client,guild,emoji)`
 
@@ -395,6 +390,8 @@ Called when a loaded [message](Message.md) is edited. The `old` argument is a
 `dict` of the changed attributes, what contains (`attribute name`, `old value`)
 items. A special case is if a message is (un)pinned or (un)suppressed , because
 then the `old` is not going to contain `'edited'`, only `'pinned'` or `flags`.
+If the embeds are (un)suppressed of the message, then `old` might contain also
+`'embeds'`.
 
 | name                      | description                                                                                   |
 |---------------------------|-----------------------------------------------------------------------------------------------|
@@ -492,7 +489,7 @@ the changed attributes, what contains (`attribute name`, `old value`) items.
 | has_animated_avatar       | bool                              |
 | name                      | str                               |
 
-### `user_presence_update(client,user,old)
+### `user_presence_update(client,user,old)`
 
 Called when a [user](User.md)'s presence is updated.
 

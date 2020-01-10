@@ -1209,16 +1209,31 @@ class Message(object):
             old['pinned']=self.pinned
             self.pinned=pinned
 
-        flags=MessageFlag(data.get('flags',0))
-        if self.flags!=flags:
+        flags=data.get('flags',0)
+        flag_difference=self.flags^flags
+        if flag_difference:
             old['flags'] = self.flags
-            self.flags = flags
-            value = (flags&0b00000100)>>2
-            embeds=self.embeds
-            if embeds is not None:
-                for embed in self.embeds:
-                    embed.suppressed=value
+            self.flags = MessageFlag(flags)
+            
+            if MessageFlag(flag_difference).embeds_suppressed:
+                embed_datas=data['embeds']
+                if embed_datas:
+                    embeds=[EmbedCore.from_data(embed) for embed in embed_datas]
+                else:
+                    embeds=None
                 
+                if self.embeds is None:
+                    if (embeds is not None):
+                        old['embeds']=None
+                        self.embeds=embeds
+                else:
+                    if embeds is None:
+                        old['embeds']=self.embeds
+                        self.embeds=None
+                    elif self.embeds!=embeds:
+                        old['embeds']=self.embeds
+                        self.embeds=embeds
+        
         #at the case of pin update edited is None
         edited_timestamp=data['edited_timestamp']
         if edited_timestamp is None:
@@ -1274,9 +1289,18 @@ class Message(object):
             embeds=[EmbedCore.from_data(embed) for embed in embed_datas]
         else:
             embeds=None
-        if self.embeds!=embeds:
-            old['embeds']=self.embeds
-            self.embeds=embeds
+        
+        if self.embeds is None:
+            if (embeds is not None):
+                old['embeds']=None
+                self.embeds=embeds
+        else:
+            if embeds is None:
+                old['embeds']=self.embeds
+                self.embeds=None
+            elif self.embeds!=embeds:
+                old['embeds']=self.embeds
+                self.embeds=embeds
             
         content=data['content']
         if self.content!=content:
@@ -1301,10 +1325,9 @@ class Message(object):
             if user_mentions is None:
                 old['user_mentions']=self.user_mentions
                 self.user_mentions=None
-            else: 
-                if self.user_mentions!=user_mentions:
-                    old['user_mentions']=self.user_mentions
-                    self.user_mentions=user_mentions
+            elif self.user_mentions!=user_mentions:
+                old['user_mentions']=self.user_mentions
+                self.user_mentions=user_mentions
         
         if guild is None:
             return old
@@ -1330,7 +1353,7 @@ class Message(object):
                 if self.cross_mentions!=cross_mentions:
                     old['cross_mentions']=self.cross_mentions
                     self.cross_mentions=cross_mentions
-
+        
         try:
             role_mention_ids=data['mention_roles']
         except KeyError:
@@ -1377,15 +1400,20 @@ class Message(object):
 
     def _update_no_return(self,data):
         self.pinned=data['pinned']
-        flags=MessageFlag(data.get('flags',0))
-        if self.flags!=flags:
-            self.flags = flags
-            value = (flags&0b00000100)>>2
-            embeds=self.embeds
-            if embeds is not None:
-                for embed in self.embeds:
-                    embed.suppressed=value
-
+        
+        flags=data.get('flags',0)
+        flag_difference=self.flags^flags
+        if flag_difference:
+            self.flags = MessageFlag(flags)
+            
+            if MessageFlag(flag_difference).embeds_suppressed:
+                embed_datas=data['embeds']
+                if embed_datas:
+                    embeds=[EmbedCore.from_data(embed_data) for embed_data in embed_datas]
+                else:
+                    embeds=None
+                self.embeds=embeds
+        
         edited_timestamp=data['edited_timestamp']
         if edited_timestamp is None:
             return
@@ -1416,13 +1444,8 @@ class Message(object):
 
         embed_datas=data['embeds']
         if embed_datas:
-            embeds=self.embeds
-            if embeds is None:
-                embeds=[EmbedCore.from_data(embed_data) for embed_data in embed_datas]
-                self.embeds=embeds
-            else:
-                embeds.clear()
-                embeds.extend(EmbedCore.from_data(embed_data) for embed_data in embed_datas)
+            embeds=[EmbedCore.from_data(embed_data) for embed_data in embed_datas]
+            self.embeds=embeds
         else:
             self.embeds=None
 
@@ -1481,27 +1504,59 @@ class Message(object):
                 self.role_mentions=None
         
     def _update_embed(self,data):
-        #this function gets called after embed message. Propably only auto
-        #sizes get updated, so we gonna do the same
-        try:
-            embed_datas=data['embeds']
-        except KeyError:
-            return 0
-
+        # This function gets called if only the embeds of the message are
+        # updated. There can be 3 case:
+        # 0 -> Nothing changed or the embeds are already suppressed.
+        # 1 -> Only sizes are updated -> images showed up?
+        # 2 -> New embeds appeard -> link.
+        # 3 -> There are less embed -> bug?
+        
         embeds=self.embeds
         if embeds is None:
+            ln1=0
+        else:
+            ln1=len(embeds)
+        
+        embed_datas=data.get('embeds',None)
+        if embed_datas is None:
+            ln2=0
+        else:
+            ln2=len(embed_datas)
+        
+        if ln1==0:
+            if ln2==0:
+                # No change
+                return 0
+            
+            # New embeds are added
             self.embeds=[EmbedCore.from_data(embed_data) for embed_data in embed_datas]
-            return 2|((self.flags>>2)&1)
+            return 2
         
-        ln1=len(embeds)
+        if ln2<ln1:
+            # Embeds are removed, should not happen, except if the message was suppressed.
+            if self.flags.embeds_suppressed:
+                self.embeds=None
+                # Embeds are suppressed, message_edit was already called. Return 0.
+                return 0
+            
+            # We have less embeds as we had, should not happen. Return 3.
+            if ln2==0:
+                self.embeds=None
+            else:
+                self.embeds=[EmbedCore.from_data(embed_data) for embed_data in embed_datas]
+            return 3
         
-        changed=0
-        for index in range(ln1):
-            changed|=embeds[index]._update_sizes(embed_datas[index])
-
-        ln2=len(embed_datas)
-        if ln1==ln2:
-            return changed
+        if ln1==0:
+            embeds=[]
+            self.embeds=embeds
+        else:
+            changed=0
+            for index in range(ln1):
+                embed_data=embed_datas[index]
+                changed|=embeds[index]._update_sizes(embed_data)
+            
+            if ln1==ln2:
+                return changed
         
         for index in range(ln1,ln2):
             embeds.append(EmbedCore.from_data(embed_datas[index]))
@@ -1509,29 +1564,55 @@ class Message(object):
         return 2
 
     def _update_embed_no_return(self,data):
-        try:
-            embed_datas=data['embeds']
-        except KeyError:
-            return
-
         embeds=self.embeds
         if embeds is None:
+            ln1=0
+        else:
+            ln1=len(embeds)
+        
+        embed_datas=data.get('embeds',None)
+        if embed_datas is None:
+            ln2=0
+        else:
+            ln2=len(embed_datas)
+        
+        if ln1==0:
+            if ln2==0:
+                # No change
+                return
+            
+            # New embeds are added
             self.embeds=[EmbedCore.from_data(embed_data) for embed_data in embed_datas]
             return
-
-        ln1=len(embeds)
-
-        for index in range(ln1):
-            embeds[index]._update_sizes_no_return(embed_datas[index])
-
-        ln2=len(embed_datas)
-        if ln1==ln2:
+        
+        if ln2<ln1:
+            # Embeds are removed, should not happen, except if the message was suppressed.
+            if self.flags.embeds_suppressed:
+                self.embeds=None
+                # Embeds are suppressed, message_edit was already called.
+                return
+            
+            # We have less embeds as we had, should not happen.
+            if ln2==0:
+                self.embeds=None
+            else:
+                self.embeds=[EmbedCore.from_data(embed_data) for embed_data in embed_datas]
             return
+        
+        if ln1==0:
+            embeds=[]
+            self.embeds=embeds
+        else:
+            for index in range(ln1):
+                embed_data=embed_datas[index]
+                embeds[index]._update_sizes_no_return(embed_data)
+
+            if ln1==ln2:
+                return
 
         for index in range(ln1,ln2):
             embeds.append(EmbedCore.from_data(embed_datas[index]))
-
-
+        
     @property
     def contents(self):
         result=[]
@@ -1586,17 +1667,6 @@ class Message(object):
                 continue
             result.append(embed._clean_copy(self))
         return result
-
-    @property
-    def could_suppress_embeds(self):
-        embeds=self.embeds
-        if embeds is None:
-            return 0
-
-        can_suppress=len(embeds)
-        for embed in embeds:
-            can_suppress-=embed.suppressed
-        return can_suppress
 
     def did_react(self,emoji,user):
         try:

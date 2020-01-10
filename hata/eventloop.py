@@ -1519,7 +1519,7 @@ class EventThread(Executor,Thread,metaclass=EventThreadType):
                         hosts.append(host)
                         continue
                     
-                    raise TypeError(f'`host` is passed as iterable, but it has at yields at least 1 not `None`, or `str` instance; `{host!r}`')
+                    raise TypeError(f'`host` is passed as iterable, but it yielded at least 1 not `None`, or `str` instance; `{host!r}`')
             else:
                 raise TypeError(f'`host` should be `None`, `str` instance or iterable of `None` or of `str` instances, got {host!r}')
             

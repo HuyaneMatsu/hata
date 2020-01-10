@@ -537,8 +537,7 @@ class EmbedField(object):
         
 class EmbedCore(object):
     __slots__=('author', 'color', 'description', 'fields', 'footer', 'image',
-        'provider', 'thumbnail', 'timestamp', 'title', 'type', 'url', 'video',
-        'suppressed',)
+        'provider', 'thumbnail', 'timestamp', 'title', 'type', 'url', 'video',)
 
     def __init__(self,title=None,description=None,color=None,url=None,timestamp=None,type_='rich'):
         self.title          = title
@@ -554,7 +553,6 @@ class EmbedCore(object):
         self.provider       = None
         self.author         = None
         self.fields         = []
-        self.suppressed     = 0
     
     @classmethod
     def from_data(cls,data):
@@ -627,9 +625,7 @@ class EmbedCore(object):
             self.fields     = []
         else:
             self.fields     = [EmbedField.from_data(field_data) for field_data in field_datas]
-
-        self.suppressed     = 0
-
+        
         return self
 
     def to_data(self):

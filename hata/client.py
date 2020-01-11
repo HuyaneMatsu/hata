@@ -1959,7 +1959,7 @@ class Client(UserBase):
         await self.http.reaction_add(message.channel.id,message.id,emoji.as_reaction)
 
     async def reaction_delete(self,message,emoji,user):
-        if self is user:
+        if self==user:
             await self.http.reaction_delete_own(message.channel.id,message.id,emoji.as_reaction)
         else:
             await self.http.reaction_delete(message.channel.id,message.id,emoji.as_reaction,user.id)

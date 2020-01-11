@@ -940,21 +940,25 @@ channels. Groups them up by channel and creates
 tasks for them. Returns when all the task are finished. If any exception was
 rasised meanwhile, then returns each of them in a list.
 
-### `message_delete_sequence(self,channel,after=None,before=None,limit=None,reason=None)`
+### `message_delete_sequence(self,channel,after=None,before=None,limit=None,filter=None,reason=None)`
 
 - `awaitable`
 - returns : `None`
 
-Requests if needed and deletes the messages. Does not creates
-[`Message`](Message.md) objects on requesting messages, so it is way more
-optimalized than just requesting then deleting messages. And other methods
-does not really support `->request->delete->repeat->` loops anyways. The
-`after` and the `before` arguments can be a valid Discord type with `id`, a
-[`snowflake`](https://github.com/discordapp/discord-api-docs/blob/master/docs/Reference.md#snowflakes)
-, or a `datetime` object. `limit` can be int, or `None` for deleting all.
-A difference between normal message logs API request and this method is, that
-it always starts the messages from the most recent one and goes towards the
-older ones.
+Deletes messages between an intervallum determined by `before` and `after`.
+`before` and `after` can be a valid Discord object with `.id`, a `datetime`
+object, or a [`snowflake`](https://github.com/discordapp/discord-api-docs/blob/master/docs/Reference.md#snowflakes).
+
+If `after` is not passed, then there will be no lower time limit.
+
+If `before` is not passed, then there will be no upper time limit.
+
+The method also accepts `limit`, to set how much message you want to delete
+at most.
+
+If `filter` is passed, then it will be called on each message, to decide, if it
+should be deleted. It should be passed as a callable, what accepts 1 argument,
+a [message](Message.md), and it should return `True` or `False`.
 
 ### `message_edit(self,message,content=None,embed=_spaceholder,suppress=None)`
 

@@ -1610,127 +1610,301 @@ class Client(UserBase):
         if exceptions:
             return exceptions
         
-    async def message_delete_sequence(self,channel,after=None,before=None,limit=None,reason=None):
-        permission=channel.permissions_for(self)
-        if not permission.can_manage_messages:
+    async def message_delete_sequence(self,channel,after=None,before=None,limit=None,filter=None,reason=None):
+        # Check permissions
+        permissions=channel.cached_permissions_for(self)
+        if not permissions.can_manage_messages:
             return
-        channel_id  = channel.id
-        after       = 0 if after is None else log_time_converter(after)
         
-        if before is None:
-            if channel.messages:
-                message_id = channel.messages[0].id
-            else:
-                message_id = now_as_id()
+        before  = 9223372036854775807 if before is None else log_time_converter(before)
+        after   = 0 if after is None else log_time_converter(after)
+        limit   = 9223372036854775807 if limit is None else limit
+        
+        # Check for reversed intervals
+        if before<after:
+            return
+        
+        # Check if we are done already
+        if limit<=0:
+            return
+        
+        message_group_new       = deque()
+        message_group_old       = deque()
+        message_group_old_own   = deque()
+        
+        # Check if we can request more messages
+        if channel.message_history_reached_end or (not permissions.can_read_message_history):
+            should_request=False
         else:
-            message_id = log_time_converter(before)
-
-        limit       = 9223372036854775807 if limit is None else limit
+            should_request=True
         
-        if after>message_id:
-            return
-
-        reached_bulk_limit=False
-        message_ids=[]
-        counter=0
-
-        requesting=False
-
-        while True:
-            target_amount=100 if limit>100 else limit
-            if requesting:
-                #data is defined when `requesting` is set to True
-                data['limit']=target_amount
-                data['before']=message_id
-                received_ids = [int(message_data['id']) for message_data in (await self.http.message_logs(channel_id,data))]
-                received_amount=len(received_ids)
-                
-                if after:
-                    if received_amount:
-                        if received_ids[-1]<after:
-                            del received_ids[-1]
-                            while received_ids:
-                                message_id=received_ids[-1]
-                                if message_id<after:
-                                    del received_ids[-1]
-                                    continue
-                                break
-                            received_amount=len(received_ids)
-                            limit=received_amount
-                    else:
-                        break
-            else:
-                received_ids = [message.id for message in channel._mc_generator(after,message_id,target_amount)]
-                received_amount=len(received_ids)
-            limit=limit-received_amount
-            
-            index=0
-            if reached_bulk_limit:
+        last_message_id = before
+        
+        messages_=channel.messages
+        if messages_:
+            before_index=message_relativeindex(messages_,before)
+            after_index=message_relativeindex(messages_,after)
+            if before_index!=after_index:
+                time_limit = int((time_now()-1209600.)*1000.-DISCORD_EPOCH)<<22
                 while True:
-                    if index==received_amount:
+                    if before_index==after_index:
                         break
-                    message_id=received_ids[index]
-                    await self.http.message_delete(channel.id,message_id,reason)
                     
-                    index=index+1
-
-            else:
-                while True:
-                    if index==received_amount:
-                        break
+                    message_ = messages_[before_index]
+                    before_index=before_index+1
+                    
+                    if (filter is not None):
+                        if not filter(message_):
+                            continue
+                    
+                    last_message_id=message_.id
+                    own = (message_.author==self)
+                    if last_message_id > time_limit:
+                        message_group_new.append((own,last_message_id,),)
+                    else:
+                        if own:
+                            group=message_group_old_own
+                        else:
+                            group=message_group_old
+                        group.append(last_message_id)
+                    
+                    # Check if we reached the limit
+                    limit=limit-1
+                    if limit:
+                        continue
+                    should_request=False
+                    break
+        
+        tasks               = []
+        
+        get_mass_task       = None
+        delete_mass_task    = None
+        delete_new_task     = None
+        delete_old_task     = None
+        
+        channel_id=channel.id
+        
+        while True:
+            if should_request and (get_mass_task is None):
+                request_data = {
+                    'limit' : 100,
+                    'before': last_message_id,
+                        }
+                
+                get_mass_task = Task(self.http.message_logs(channel_id,request_data),self.loop)
+                tasks.append(get_mass_task)
+            
+            if (delete_mass_task is None):
+                message_limit=len(message_group_new)
+                # If there are more messages, we are waiting for other tasks
+                if message_limit:
+                    time_limit = int((time_now()-1209590.)*1000.-DISCORD_EPOCH)<<22 # 2 weeks -10s
+                    collected = 0
+                    
+                    while True:
+                        if collected==message_limit:
+                            break
                         
-                    message_id=received_ids[index]
-                    if message_id<multi_delete_time_limit():
-                        reached_bulk_limit=True
-
-                        if message_ids:
-                            if len(message_ids)==1:
-                                await self.http.message_delete(channel_id,message_ids[0],reason)
-                            else:
-                                await self.http.message_delete_multiple(channel_id,{'messages':message_ids},reason)
-                            message_ids.clear()
+                        if collected==100:
+                            break
+                        
+                        own,message_id=message_group_new[collected]
+                        if message_id<time_limit:
+                            break
+                        
+                        collected=collected+1
+                        continue
+                    
+                    if collected==0:
+                        pass
+                    elif collected==1:
+                        # Delete the message if we dont delete a new message already
+                        if (delete_new_task is None):
+                            # We collected 1 message -> We cannot use mass delete on this.
+                            own,message_id=message_group_new.popleft()
+                            delete_new_task = Task(self.http.message_delete(channel_id,message_id,reason=reason),self.loop)
+                            tasks.append(delete_new_task)
+                    else:
+                        message_ids=[]
+                        while collected:
+                            collected = collected-1
+                            own,message_id=message_group_new.popleft()
+                            message_ids.append(message_id)
+                        
+                        delete_mass_task = Task(self.http.message_delete_multiple(channel_id,{'messages':message_ids},reason=reason),self.loop)
+                        tasks.append(delete_mass_task)
+                    
+                    # After we checked what is at this group, lets move the others from it's end, if needed ofc
+                    message_limit=len(message_group_new)
+                    if message_limit:
+                        # timelimit -> 2 week
+                        time_limit = time_limit-20971520000
                         
                         while True:
-                            await self.http.message_delete(channel_id,message_id,reason)
-                            index=index+1
-                            if index==received_amount:
+                            # Cannot start at index = len(...), so we instantly do -1
+                            message_limit = message_limit-1
+                            
+                            own, message_id = message_group_new[message_limit]
+                            # Check if we should not move -> leave
+                            if message_id>time_limit:
                                 break
-                            message_id=received_ids[index]
-                        
-                        break
+                            
+                            del message_group_new[message_limit]
+                            if own:
+                                group = message_group_old_own
+                            else:
+                                group = message_group_old
+                                
+                            group.appendleft(message_id)
+                            
+                            if message_limit:
+                                continue
+                            
+                            break
+            
+            if (delete_new_task is None):
+                # Check old own messages only, mass delete speed is pretty good by itself.
+                if message_group_old_own:
+                    message_id=message_group_old_own.popleft()
+                    delete_new_task = Task(self.http.message_delete(channel_id,message_id,reason=reason),self.loop)
+                    tasks.append(delete_new_task)
+            
+            if (delete_old_task is None):
+                if message_group_old:
+                    message_id=message_group_old.popleft()
+                    delete_old_task = Task(self.http.message_delete_b2wo(channel_id,message_id,reason=reason),self.loop)
+                    tasks.append(delete_old_task)
+            
+            if not tasks:
+                # It can happen, that there are no more tasks left,  at that case
+                # we check if there is more message left. Only at
+                # `message_group_new` can be anymore message, because there is a
+                # time intervallum of 10 seconds, what we do not move between
+                # categories.
+                if not message_group_new:
+                    break
+                
+                # We really have at least 1 message at that interval.
+                own,message_id = message_group_new.popleft()
+                # We will delete that message with old endpoint if not own, to make
+                # Sure it will not block the other endpoint for 2 minutes with any chance.
+                if own:
+                    delete_new_task = Task(self.http.message_delete(channel_id,message_id,reason=reason),self.loop)
+                    task=delete_new_task
+                else:
+                    delete_old_task = Task(self.http.message_delete_b2wo(channel_id,message_id,reason=reason),self.loop)
+                    task=delete_old_task
+                
+                tasks.append(task)
+            
+            done, pending = await WaitTillFirst(tasks,self.loop)
+            
+            for task in done:
+                tasks.remove(task)
+                try:
+                    result = task.result()
+                except (DiscordException,ConnectionError):
+                    for task in tasks:
+                        task.cancel()
+                    raise
+                
+                if task is get_mass_task:
+                    get_mass_task=None
                     
-                    message_ids.append(message_id)
-                    counter=counter+1
-                    if counter==100:
-                        await self.http.message_delete_multiple(channel.id,{'messages':message_ids},reason)
-                        message_ids.clear()
-                        counter=0
-                    index=index+1
-
-            if limit==0:
-                break
-            if target_amount==received_amount:
-                continue
-
-            if requesting:
-                if after==0:
-                    channel.message_history_reached_end=True
-                break
-            
-            else:
-                requesting=(permission.can_read_message_history and (not channel.message_history_reached_end))
-                if requesting:
-                    data={}
-                    continue
-                break
-            
-        if message_ids:
-            if len(message_ids)==1:
-                await self.http.message_delete(channel_id,message_ids[0],reason)
-            else:
-                await self.http.message_delete_multiple(channel_id,{'messages':message_ids},reason)
+                    received_count=len(result)
+                    if received_count<100:
+                        should_request=False
                         
-
+                        # We got 0 messages, move on the next task
+                        if received_count==0:
+                            continue
+                    
+                    # We dont really care about the limit, because we check
+                    # message id when we delete too.
+                    time_limit = int((time_now()-1209600.)*1000.-DISCORD_EPOCH)<<22 # 2 weeks
+                    
+                    for message_data in result:
+                        if (filter is None):
+                            last_message_id=int(message_data['id'])
+    
+                            # Did we reach the after limit?
+                            if last_message_id<after:
+                                should_request=False
+                                break
+                            
+                            # If filter is `None`, we just have to decide, if we
+                            # were the author or nope.
+                            
+                            # Try to get user id, first start it with trying to get
+                            # author data. The default author_id will be 0, because
+                            # thats sure not the id of the client.
+                            try:
+                                author_data=message_data['author']
+                            except KeyError:
+                                author_id=0
+                            else:
+                                # If we have author data, lets select the user's data
+                                # from it
+                                try:
+                                    user_data=author_data['user']
+                                except KeyError:
+                                    user_data=author_data
+                                
+                                try:
+                                    author_id=user_data['id']
+                                except KeyError:
+                                    author_id=0
+                                else:
+                                    author_id=int(author_id)
+                        else:
+                            message_=Message.onetime(message_data,channel)
+                            last_message_id=message_.id
+                            
+                            # Did we reach the after limit?
+                            if last_message_id<after:
+                                should_request=False
+                                break
+                            
+                            if not filter(message_):
+                                continue
+                            
+                            author_id=message_.author.id
+                        
+                        own = (author_id == self.id)
+                        
+                        if last_message_id>time_limit:
+                            message_group_new.append((own,last_message_id,),)
+                        else:
+                            if own:
+                                group = message_group_old_own
+                            else:
+                                group = message_group_old
+                            
+                            group.append(last_message_id)
+                        
+                        # Did we reach the amount limit?
+                        limit = limit-1
+                        if limit:
+                            continue
+                        
+                        should_request=False
+                        break
+                
+                if task is delete_mass_task:
+                    delete_mass_task=None
+                    continue
+                
+                if task is delete_new_task:
+                    delete_new_task=None
+                    continue
+                
+                if task is delete_old_task:
+                    delete_old_task=None
+                    continue
+                 
+                # Should not happen
+                continue
+    
     async def message_edit(self,message,content=None,embed=_spaceholder,suppress=None):
         data={}
         if (content is not None):

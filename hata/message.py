@@ -494,7 +494,7 @@ class Message(object):
         message._finish_init(data,channel)
         return message,False
 
-    #we call this only if we know our messae never existed
+    #we call this only if we know our message never existed
     @classmethod
     def onetime(cls,data,channel):
         message_id=int(data['id'])

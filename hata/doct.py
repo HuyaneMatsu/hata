@@ -33,13 +33,12 @@ else:
 del sys
 
 class DOC_default_id_cont(object):
-    __slots__=['_elements', '_ids', '_next', 'on_modify']
+    __slots__=('_elements', '_ids', '_next',)
 
     def __init__(self):
         self._elements  = []
         self._ids       = create_array()
         self._next      = 1
-        self.on_modify  = None
     
     def append(self,obj):
         id_=obj.id
@@ -55,9 +54,6 @@ class DOC_default_id_cont(object):
         if index==len(array): #put it at the last place
             array.append(id_)
             self._elements.append(obj)
-            on_modify=self.on_modify
-            if on_modify is not None:
-                on_modify(self)
             return
                 
         if array[index]==id_:  #this object is already at the container, lets check it!
@@ -70,9 +66,6 @@ class DOC_default_id_cont(object):
         #insert it at the right place
         array.insert(index,id_)
         self._elements.insert(index,obj)
-        on_modify=self.on_modify
-        if on_modify is not None:
-            on_modify(self)
 
     def remove(self,obj):
         id_=obj.id
@@ -92,10 +85,6 @@ class DOC_default_id_cont(object):
         del array[index]
         del self._elements[index]
 
-        on_modify=self.on_modify
-        if on_modify is not None:
-            on_modify(self)
-
     #familiar to normal remove
     def remove_by_id(self,id_):
         array=self._ids
@@ -109,9 +98,6 @@ class DOC_default_id_cont(object):
 
         del array[index]
         del self._elements[index]
-        on_modify=self.on_modify
-        if on_modify is not None:
-            on_modify(self)
 
     def update(self,obj,new_id):
         old_id=obj.id

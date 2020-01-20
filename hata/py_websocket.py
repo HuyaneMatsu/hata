@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+__all__ = ('WSClient', 'WSServer', )
+
 import hashlib, codecs, re, functools
 from random import getrandbits
 from base64 import b64encode, b64decode
@@ -17,7 +19,7 @@ from .py_hdrs import METH_GET, CONNECTION, SEC_WEBSOCKET_KEY, AUTHORIZATION,\
     parse_upgrades, parse_connections, parse_extensions, build_subprotocols
 
 from .futures import Future, Task, AsyncQue, future_or_timeout, shield,     \
-    InvalidStateError, CancelledError, WaitTillAll, iscoroutine
+    CancelledError, WaitTillAll, iscoroutine
 
 from .py_exceptions import PayloadError, InvalidUpgrade, AbortHandshake,     \
     ConnectionClosed, InvalidHandshake, InvalidOrigin, WebSocketProtocolError

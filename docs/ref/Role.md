@@ -26,7 +26,7 @@ set to `None`.
 - type : `int`
 - lenght : 64 bit
 - Discord side : [`snowflake`](https://github.com/discordapp/discord-api-docs/blob/master/docs/Reference.md#snowflakes)
-    
+
 The roles's unique identificator number.
 
 ### `managed`
@@ -160,9 +160,8 @@ Raises `ValueError` on invalid format code.
 
 ### `__gt__`, `__ge__`, `__eq__`, `__ne__`, `__le__`, `__lt__`
 
-Compares the two role's position. If we do not compare role it just compares
-the two object's ids, however if the obejct has same id their type must
-match too.
+Compares the two role's [`.position`](#position). If the two role has the same
+position, then it compares their [`.id`](#id).
 
 ## Internal
 
@@ -194,7 +193,3 @@ pairs.
 Called if a role is deleted from a [guild](Guild.md). It removes the role's
 references at the guild, and with the same way it removes the role from every
 user at the guild too.
-
-
-
-

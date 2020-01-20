@@ -21,6 +21,7 @@ from .guild import LARGE_LIMIT
 from .client_core import CACHE_PRESENCE, Kokoro
 from .opus import SAMPLES_PER_FRAME
 
+
 class DiscordGateway(object):
     __slots__=('_buffer', '_decompresser', 'client', 'kokoro', 'loop',
         'sequence', 'session_id', 'shard_id', 'websocket')
@@ -287,6 +288,7 @@ class DiscordGateway(object):
                 'compress'              : True,             #if we support compression, default : True
                 'large_threshold'       : LARGE_LIMIT,      #between 50 and 250, default is 50
                 'guild_subscriptions'   : CACHE_PRESENCE,   #optional, default is `True`
+                #'intents'               : client.intents,
                 'v'                     : 3,
                 'presence' : {
                     'status': status,

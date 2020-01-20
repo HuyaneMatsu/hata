@@ -1,14 +1,15 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('eventlist', )
+__all__ = ('eventlist', 'IntentFlag', )
 
 import sys, datetime
 from time import monotonic
+from weakref import WeakSet, ref as Weakreferer
 
 from .futures import Future, Task, iscoroutinefunction as iscoro
 from .dereaddons_local import function, remove, removemeta, _spaceholder,   \
     MethodLike
 
-from .client_core import CACHE_USER, CACHE_PRESENCE, CLIENTS
+from .client_core import CACHE_USER, CACHE_PRESENCE
 from .user import User, PartialUser,USERS
 from .channel import CHANNEL_TYPES, CHANNELS
 from .others import Relationship, Gift
@@ -18,6 +19,7 @@ from .message import Message
 from .emoji import PartialEmoji
 from .role import Role
 from .exceptions import DiscordException
+from .invite import Invite
 
 utcfromtimestamp=datetime.datetime.utcfromtimestamp
 
@@ -37,63 +39,471 @@ class event_system_core(object):
             raise LookupError(f'Invalid Event name: \'{name}\'.') from None
         return value
 
+INTENT_KEYS = {
+    'guilds'            : 0,
+    'guild_users'       : 1,
+    'guild_bans'        : 2,
+    'guild_emojis'      : 3,
+    'guild_integrations': 4,
+    'guild_webhooks'    : 5,
+    'guild_invites'     : 6,
+    'guild_voice_states': 7,
+    'guild_presences'   : 8,
+    'guild_messages'    : 9,
+    'guild_reactions'   : 10,
+    'guild_typings'     : 11,
+    'direct_messages'   : 12,
+    'direct_reactions'  : 13,
+    'direct_typings'    : 14,
+        }
+
+INTENT_EVENTS = {
+    0   : (
+        'GUILD_CREATE',
+        'GUILD_DELETE',
+        'GUILD_ROLE_CREATE',
+        'GUILD_ROLE_UPDATE',
+        'GUILD_ROLE_DELETE',
+        'CHANNEL_CREATE',
+        'CHANNEL_UPDATE',
+        'CHANNEL_DELETE',
+        'CHANNEL_PINS_UPDATE',
+            ),
+    1   : (
+        'GUILD_MEMBER_ADD',
+        'GUILD_MEMBER_UPDATE',
+        'GUILD_MEMBER_REMOVE',
+            ),
+    2   : (
+        'GUILD_BAN_ADD',
+        'GUILD_BAN_REMOVE',
+            ),
+    3   : (
+        'GUILD_EMOJIS_UPDATE',
+            ),
+    4   : (
+        'GUILD_INTEGRATIONS_UPDATE',
+            ),
+    5   : (
+        'WEBHOOKS_UPDATE',
+            ),
+    6   : (
+        'INVITE_CREATE',
+        'INVITE_DELETE',
+            ),
+    7   : (
+        'VOICE_STATE_UPDATE',
+            ),
+    8   : (
+        'PRESENCE_UPDATE',
+            ),
+    9   : (
+        'MESSAGE_CREATE',
+        'MESSAGE_UPDATE',
+        'MESSAGE_DELETE',
+        # 'MESSAGE_DELETE_BULK' ? # Not listed by Discord, yayyyy
+            ),
+    10  : (
+        'MESSAGE_REACTION_ADD',
+        'MESSAGE_REACTION_REMOVE',
+        'MESSAGE_REACTION_REMOVE_ALL',
+        'MESSAGE_REACTION_REMOVE_EMOJI',
+            ),
+    11  : (
+        'TYPING_START',
+            ),
+    12  : (
+        'CHANNEL_CREATE',
+        # 'CHANNEL_PINS_UPDATE' ? this is not listen by Discord, but this should be here
+        'MESSAGE_CREATE',
+        'MESSAGE_UPDATE',
+        'MESSAGE_DELETE',
+            ),
+    13  : (
+        'MESSAGE_REACTION_ADD',
+        'MESSAGE_REACTION_REMOVE',
+        'MESSAGE_REACTION_REMOVE_ALL',
+        'MESSAGE_REACTION_REMOVE_EMOJI',
+            ),
+    14  : (
+        'TYPING_START',
+            ),
+        }
+
+GLOBAL_INTENT_EVENTS = (
+    'READY',
+    'RESUMED',
+    'USER_UPDATE',
+    'MESSAGE_DELETE_BULK', # Guild support
+    'CHANNEL_PINS_UPDATE', # DM support
+    #'CHANNEL_RECIPIENT_ADD', # User account only
+    #'CHANNEL_RECIPIENT_REMOVE', # User only
+    #'GUILD_SYNC', # User CCOUNT only, outdated?
+    'GUILD_MEMBERS_CHUNK',
+    'VOICE_SERVER_UPDATE',
+    #'RELATIONSHIP_ADD', # User account only
+    #'RELATIONSHIP_REMOVE', # User account only
+    'PRESENCES_REPLACE', # Empty / User account
+    'USER_SETTINGS_UPDATE', # User account only
+    'GIFT_CODE_UPDATE',
+    #'USER_ACHIEVEMENT_UPDATE', # User acount only
+    #'MESSAGE_ACK', # User account only
+    #'SESSIONS_REPLACE', # User account only
+        )
+
+class IntentFlag(int):
+    __slots__ = ()
+    
+    def __new__(cls,int_):
+        if not isinstance(int_,int):
+            raise TypeError(f'{cls.__name__} expected `int` instance, got `{int_!r}')
+        
+        new=0
+        if int_ < 0:
+            for value in INTENT_KEYS.values():
+                new = new|(1<<value)
+            
+            # If presence cache is disabled, disable presence updates
+            if not CACHE_PRESENCE:
+                new = new^(1<<8)
+        else:
+            for value in INTENT_KEYS.values():
+                if (int_>>value)&1:
+                    new = new|(1<<value)
+            
+            # If presence cache is disabled, disable presence updates
+            if not CACHE_PRESENCE:
+                if (new>>8)&1:
+                    new = new^(1<<8)
+        
+        return int.__new__(cls,new)
+    
+    def iterate_parser_names(self):
+        for position in INTENT_KEYS.values():
+            if (self>>position)&1:
+                yield from INTENT_EVENTS[position]
+            
+        yield from GLOBAL_INTENT_EVENTS
+    
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self!s})'
+
+    def __getitem__(self,key):
+        return (self>>INTENT_KEYS[key])&1
+    
+    def keys(self):
+        for key,position in INTENT_KEYS.items():
+            if (self>>position)&1:
+                yield key
+    
+    __iter__=keys
+
+    def values(self):
+        for position in INTENT_KEYS.values():
+            if (self>>position)&1:
+                yield position
+
+    def items(self):
+        for key,index in INTENT_KEYS.items():
+            yield key,(self>>index)&1
+
+    def __contains__(self,key):
+        try:
+            position=INTENT_KEYS[key]
+        except KeyError:
+            return 0
+        return (self>>position)&1
+    
+    # Allows you to update more with 1 call
+    def update_by_keys(self,**kwargs):
+        new=self
+        for key,value in kwargs.items():
+            try:
+                position=INTENT_KEYS[key]
+            except KeyError as err:
+                err.args=(f'Invalid key:\'{key}\'',)
+                raise
+
+            if value:
+                new=new|(1<<position)
+            else:
+                new=new&(0b11111111111111111111111111111111^(1<<position))
+
+        return int.__new__(type(self),new)
+    
+    @property
+    def receives_guilds(self):
+        return self&1
+    
+    def deny_guilds(self):
+        return type(self)(self&0b11111111111111111111111111111110)
+        
+    def allow_guilds(self):
+        return type(self)(self|0b00000000000000000000000000000001)
+    
+    @property
+    def receives_guild_users(self):
+        return (self>>1)&1
+    
+    def deny_guild_users(self):
+        return type(self)(self&0b11111111111111111111111111111101)
+        
+    def allow_guild_users(self):
+        return type(self)(self|0b00000000000000000000000000000010)
+    
+    @property
+    def receives_guild_bans(self):
+        return (self>>2)&1
+    
+    def deny_guild_bans(self):
+        return type(self)(self&0b11111111111111111111111111111011)
+        
+    def allow_guild_bans(self):
+        return type(self)(self|0b00000000000000000000000000000100)
+    
+    @property
+    def receives_guild_emojis(self):
+        return (self>>3)&1
+    
+    def deny_guild_emojis(self):
+        return type(self)(self&0b11111111111111111111111111110111)
+        
+    def allow_guild_emojis(self):
+        return type(self)(self|0b00000000000000000000000000001000)
+    
+    @property
+    def receives_guild_integrations(self):
+        return (self>>4)&1
+    
+    def deny_guild_integrations(self):
+        return type(self)(self&0b11111111111111111111111111101111)
+        
+    def allow_guild_integrations(self):
+        return type(self)(self|0b00000000000000000000000000010000)
+    
+    @property
+    def receives_guild_webhooks(self):
+        return (self>>5)&1
+    
+    def deny_guild_webhooks(self):
+        return type(self)(self&0b11111111111111111111111111011111)
+        
+    def allow_guild_webhooks(self):
+        return type(self)(self|0b00000000000000000000000000100000)
+    
+    @property
+    def receives_guild_invites(self):
+        return (self>>6)&1
+    
+    def deny_guild_invites(self):
+        return type(self)(self&0b11111111111111111111111110111111)
+        
+    def allow_guild_invites(self):
+        return type(self)(self|0b00000000000000000000000001000000)
+    
+    @property
+    def receives_guild_voice_states(self):
+        return (self>>7)&1
+    
+    def deny_guild_voice_states(self):
+        return type(self)(self&0b11111111111111111111111101111111)
+        
+    def allow_guild_voice_states(self):
+        return type(self)(self|0b00000000000000000000000010000000)
+    
+    @property
+    def receives_guild_presences(self):
+        return (self>>8)&1
+    
+    def deny_guild_presences(self):
+        return type(self)(self&0b11111111111111111111111011111111)
+        
+    def allow_guild_presences(self):
+        return type(self)(self|0b00000000000000000000000100000000)
+    
+    @property
+    def receives_guild_messages(self):
+        return (self>>9)&1
+    
+    def deny_guild_messages(self):
+        return type(self)(self&0b11111111111111111111110111111111)
+        
+    def allow_guild_messages(self):
+        return type(self)(self|0b00000000000000000000001000000000)
+    
+    @property
+    def receives_guild_reactions(self):
+        return (self>>10)&1
+    
+    def deny_guild_reactions(self):
+        return type(self)(self&0b11111111111111111111101111111111)
+        
+    def allow_guild_reactions(self):
+        return type(self)(self|0b00000000000000000000010000000000)
+    
+    @property
+    def receives_guild_typings(self):
+        return (self>>11)&1
+    
+    def deny_guild_typings(self):
+        return type(self)(self&0b11111111111111111111011111111111)
+        
+    def allow_guild_typings(self):
+        return type(self)(self|0b00000000000000000000100000000000)
+    
+    @property
+    def receives_direct_messages(self):
+        return (self>>12)&1
+    
+    def deny_direct_messages(self):
+        return type(self)(self&0b11111111111111111110111111111111)
+        
+    def allow_direct_messages(self):
+        return type(self)(self|0b00000000000000000001000000000000)
+    
+    @property
+    def receives_direct_reactions(self):
+        return (self>>13)&1
+    
+    def deny_direct_reactions(self):
+        return type(self)(self&0b11111111111111111101111111111111)
+        
+    def allow_direct_reactions(self):
+        return type(self)(self|0b00000000000000000010000000000000)
+    
+    @property
+    def receives_direct_typings(self):
+        return (self>>14)&1
+    
+    def deny_direct_typings(self):
+        return type(self)(self&0b11111111111111111011111111111111)
+        
+    def allow_direct_typings(self):
+        return type(self)(self|0b00000000000000000100000000000000)
+
 PARSERS={}
 
 class PARSER_DEFAULTS(object):
     all={}
-    __slots__=('counter', 'cal_sc', 'name', 'opt_sc', 'cal_mc', 'opt_mc',)
+    registered=WeakSet()
+    
+    __slots__=('mention_count', 'client_count', 'cal_sc', 'name', 'opt_sc', 'cal_mc', 'opt_mc',)
     def __init__(self,name,cal_sc,cal_mc,opt_sc,opt_mc):
         self.name=name
         self.cal_sc=cal_sc
         self.cal_mc=cal_mc
         self.opt_sc=opt_sc
         self.opt_mc=opt_mc
-        self.counter=0
+        self.mention_count=0
+        self.client_count=0
         self.all[name]=self
         PARSERS[name]=opt_sc
-
-    def add(self):
-        counter=self.counter+1
-        self.counter=counter
-        if counter!=1:
+    
+    @classmethod
+    def register(cls,client):
+        registered=cls.registered
+        if client in registered:
             return
-
-        if len(CLIENTS)==1:
-            parser=self.cal_sc
+        
+        registered.add(client)
+        
+        enabled_parsers=set()
+        
+        if client.is_bot:
+            for parser_name in client.intents.iterate_parser_names():
+                enabled_parsers.add(parser_name)
         else:
-            parser=self.cal_mc
-        PARSERS[self.name]=parser
-
-    def remove(self):
-        counter=self.counter-1
-        self.counter=counter
-        if counter!=0:
+            for parser_name in cls.all.keys():
+                enabled_parsers.add(parser_name)
+        
+        for parser_name in enabled_parsers:
+            parser_default=cls.all[parser_name]
+            parser_default.client_count+=1
+            parser_default._recalculate()
+        
+        for event_name in EVENTS.parsers.keys():
+            event = getattr(client.events,event_name)
+            if event is DEFAULT_EVENT:
+                continue
+            
+            parser_name = EVENTS.parsers[event_name]
+            if parser_name not in enabled_parsers:
+                continue
+            
+            parser_default=cls.all[parser_name]
+            parser_default.mention_count+=1
+            parser_default._recalculate()
+            
+    
+    @classmethod
+    def unregister(cls,client):
+        registered=cls.registered
+        if client not in registered:
             return
-
-        if len(CLIENTS)==1:
-            parser=self.opt_sc
+        
+        registered.remove(client)
+        
+        enabled_parsers=set()
+        
+        if client.is_bot:
+            for parser_name in client.intents.iterate_parser_names():
+                enabled_parsers.add(parser_name)
         else:
-            parser=self.opt_mc
+            for parser_name in cls.all.keys():
+                enabled_parsers.add(parser_name)
+        
+        for parser_name in enabled_parsers:
+            parser_default=cls.all[parser_name]
+            parser_default.client_count-=1
+            parser_default._recalculate()
+        
+        for event_name in EVENTS.parsers.keys():
+            event = getattr(client.events,event_name)
+            if event is DEFAULT_EVENT:
+                continue
+            
+            parser_name = EVENTS.parsers[event_name]
+            if parser_name not in enabled_parsers:
+                continue
+            
+            parser_default=cls.all[parser_name]
+            parser_default.mention_count-=1
+            parser_default._recalculate()
+    
+    def add_mention(self,client):
+        if client is None:
+            return
+        
+        if client not in self.registered:
+            return
+        self.mention_count+=1
+        self._recalculate()
+    
+    def remove_mention(self,client):
+        if client is None:
+            return
+        
+        if client not in self.registered:
+            return
+        self.mention_count-=1
+        self._recalculate()
+        
+    def _recalculate(self):
+        mention_count=self.mention_count
+        client_count=self.client_count
+        
+        if mention_count==0:
+            if client_count<2:
+                parser=self.opt_sc
+            else:
+                parser=self.opt_mc
+        else:
+            if client_count<2:
+                parser=self.cal_sc
+            else:
+                parser=self.cal_mc
+        
         PARSERS[self.name]=parser
-
-def on_clients_modify(self):
-    if len(self)<2:
-        for parser_default in PARSER_DEFAULTS.all.values():
-            if parser_default.counter:
-                parser=parser_default.cal_sc
-            else:
-                parser=parser_default.opt_sc
-            PARSERS[parser_default.name]=parser
-    else:
-        for parser_default in PARSER_DEFAULTS.all.values():
-            if parser_default.counter:
-                parser=parser_default.cal_mc
-            else:
-                parser=parser_default.opt_mc
-            PARSERS[parser_default.name]=parser
-
-CLIENTS.on_modify=on_clients_modify
-del on_clients_modify
 
 SYNC_REQUESTS={}
 
@@ -122,14 +532,14 @@ def sync_guild(client,data,parser_and_checker):
         guild_id=int(data['guild_id'])
     except KeyError:
         return
-
+    
     try:
         queue=SYNC_REQUESTS[guild_id]
     except KeyError:
         queue=[]
         Task(sync_task(guild_id,client.sync_guild(guild_id),queue),client.loop)
         SYNC_REQUESTS[guild_id]=queue
-
+    
     if parser_and_checker is None:
         return
     queue.append((client,data,parser_and_checker),)
@@ -687,6 +1097,89 @@ def MESSAGE_REACTION_REMOVE__OPT_MC(client,data):
 
 PARSER_DEFAULTS('MESSAGE_REACTION_REMOVE',MESSAGE_REACTION_REMOVE__CAL_SC,MESSAGE_REACTION_REMOVE__CAL_MC,MESSAGE_REACTION_REMOVE__OPT_SC,MESSAGE_REACTION_REMOVE__OPT_MC)
 del MESSAGE_REACTION_REMOVE__CAL_SC, MESSAGE_REACTION_REMOVE__CAL_MC, MESSAGE_REACTION_REMOVE__OPT_SC, MESSAGE_REACTION_REMOVE__OPT_MC
+
+def MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC(client,data):
+    channel_id=int(data['channel_id'])
+    try:
+        channel=CHANNELS[channel_id]
+    except KeyError:
+        sync_guild(client,data,None)
+        return
+
+    message_id=int(data['message_id'])
+    message=channel._mc_find(message_id)
+    if message is None:
+        return
+    
+    emoji=PartialEmoji(data['emoji'])
+    users=message.reactions.remove_emoji(emoji)
+    if users is None:
+        return
+    
+    Task(client.events.reaction_delete_emoji(client,message,emoji,users),client.loop)
+
+def MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC(client,data):
+    channel_id=int(data['channel_id'])
+    try:
+        channel=CHANNELS[channel_id]
+    except KeyError:
+        sync_guild(client,data,None)
+        return
+
+    if client is not channel.clients[0]:
+        return
+    
+    message_id=int(data['message_id'])
+    message=channel._mc_find(message_id)
+    if message is None:
+        return
+    
+    emoji=PartialEmoji(data['emoji'])
+    users=message.reactions.remove_emoji(emoji)
+    if users is None:
+        return
+    
+    for client_ in channel.clients:
+        Task(client_.events.reaction_delete_emoji(client_,message,emoji,users),client_.loop)
+
+def MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC(client,data):
+    channel_id=int(data['channel_id'])
+    try:
+        channel=CHANNELS[channel_id]
+    except KeyError:
+        sync_guild(client,data,None)
+        return
+
+    message_id=int(data['message_id'])
+    message=channel._mc_find(message_id)
+    if message is None:
+        return
+    
+    emoji=PartialEmoji(data['emoji'])
+    message.reactions.remove_emoji(emoji)
+
+def MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC(client,data):
+    channel_id=int(data['channel_id'])
+    try:
+        channel=CHANNELS[channel_id]
+    except KeyError:
+        sync_guild(client,data,None)
+        return
+
+    if client is not channel.clients[0]:
+        return
+    
+    message_id=int(data['message_id'])
+    message=channel._mc_find(message_id)
+    if message is None:
+        return
+    
+    emoji=PartialEmoji(data['emoji'])
+    message.reactions.remove_emoji(emoji)
+
+PARSER_DEFAULTS('MESSAGE_REACTION_REMOVE_EMOJI',MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC,MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC,MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC,MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC)
+del MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC, MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC, MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC, MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC
+
 
 if CACHE_PRESENCE:
     def PRESENCE_UPDATE__CAL_SC(client,data):
@@ -2205,6 +2698,26 @@ else:
 PARSER_DEFAULTS('TYPING_START',TYPING_START__CAL,TYPING_START__CAL,TYPING_START__OPT,TYPING_START__OPT)
 del TYPING_START__CAL, TYPING_START__OPT
 
+def INVITE_CREATE__CAL(client,data):
+    invite = Invite(data)
+    Task(client.events.invite_create(client,invite),client.loop)
+
+def INVITE_CREATE__OPT(client,data):
+    pass
+
+PARSER_DEFAULTS('INVITE_CREATE',INVITE_CREATE__CAL,INVITE_CREATE__CAL,INVITE_CREATE__OPT,INVITE_CREATE__OPT)
+del INVITE_CREATE__CAL, INVITE_CREATE__OPT
+
+def INVITE_DELETE__CAL(client,data):
+    invite = Invite(data)
+    Task(client.events.invite_delete(client,invite),client.loop)
+
+def INVITE_DELETE__OPT(client,data):
+    pass
+
+PARSER_DEFAULTS('INVITE_DELETE',INVITE_DELETE__CAL,INVITE_DELETE__CAL,INVITE_DELETE__OPT,INVITE_DELETE__OPT)
+del INVITE_DELETE__CAL, INVITE_DELETE__OPT
+
 def RELATIONSHIP_ADD__CAL(client,data):
     user_id=int(data['id'])
     try:
@@ -2327,53 +2840,55 @@ del USER_GUILD_SETTINGS_UPDATE
 
 EVENTS=event_system_core()
 
-EVENTS.add_default('error',                     3, '',                              )
+EVENTS.add_default('error'                      , 3 , ''                                , )
 
-EVENTS.add_default('ready',                     1, 'READY',                         )
-EVENTS.add_default('client_edit',               2, 'USER_UPDATE'                    )
-EVENTS.add_default('message_create',            2, 'MESSAGE_CREATE'                 )
-EVENTS.add_default('message_delete',            2, 'MESSAGE_DELETE',                )
-EVENTS.add_default('message_delete_multyple',   4, 'MESSAGE_DELETE_BULK',           )
-EVENTS.add_default('message_edit',              3, 'MESSAGE_UPDATE',                )
-EVENTS.add_default('embed_update',              3, 'MESSAGE_UPDATE',                )
-EVENTS.add_default('reaction_add',              4, 'MESSAGE_REACTION_ADD',          )
-EVENTS.add_default('reaction_clear',            3, 'MESSAGE_REACTION_REMOVE_ALL',   )
-EVENTS.add_default('reaction_delete',           4, 'MESSAGE_REACTION_REMOVE',       )
-EVENTS.add_default('user_edit',                 3, 'PRESENCE_UPDATE',               )
-EVENTS.add_default('user_presence_update',      3, 'PRESENCE_UPDATE',               )
-EVENTS.add_default('user_profile_edit',         4, 'GUILD_MEMBER_UPDATE',           )
-EVENTS.add_default('channel_delete',            2, 'CHANNEL_DELETE',                )
-EVENTS.add_default('channel_edit',              3, 'CHANNEL_UPDATE',                )
-EVENTS.add_default('channel_create',            2, 'CHANNEL_CREATE',                )
-EVENTS.add_default('channel_pin_update',        2, 'CHANNEL_PINS_UPDATE',           )
-EVENTS.add_default('channel_group_user_add',    3, 'CHANNEL_RECIPIENT_ADD',         )
-EVENTS.add_default('channel_group_user_delete', 3, 'CHANNEL_RECIPIENT_REMOVE',      )
-EVENTS.add_default('emoji_create',              3, 'GUILD_EMOJIS_UPDATE',           )
-EVENTS.add_default('emoji_delete',              3, 'GUILD_EMOJIS_UPDATE',           )
-EVENTS.add_default('emoji_edit',                4, 'GUILD_EMOJIS_UPDATE',           )
-EVENTS.add_default('guild_user_add',            3, 'GUILD_MEMBER_ADD',              )
-EVENTS.add_default('guild_user_delete',         4, 'GUILD_MEMBER_REMOVE',           )
-EVENTS.add_default('guild_create',              2, 'GUILD_CREATE',                  )
-EVENTS.add_default('guild_sync',                2, 'GUILD_SYNC',                    )
-EVENTS.add_default('guild_edit',                2, 'GUILD_UPDATE',                  )
-EVENTS.add_default('guild_delete',              3, 'GUILD_DELETE',                  )
-EVENTS.add_default('guild_ban_add',             3, 'GUILD_BAN_ADD',                 )
-EVENTS.add_default('guild_ban_delete',          3, 'GUILD_BAN_REMOVE',              )
-EVENTS.add_default('guild_user_chunk',          3, 'GUILD_MEMBERS_CHUNK',           )
-EVENTS.add_default('integration_update',        2, 'GUILD_INTEGRATIONS_UPDATE',     )
-EVENTS.add_default('role_create',               2, 'GUILD_ROLE_CREATE',             )
-EVENTS.add_default('role_delete',               2, 'GUILD_ROLE_DELETE',             )
-EVENTS.add_default('role_edit',                 3, 'GUILD_ROLE_UPDATE',             )
-EVENTS.add_default('webhook_update',            2, 'WEBHOOKS_UPDATE',               )
-EVENTS.add_default('voice_state_update',        4, 'VOICE_STATE_UPDATE',            )
-EVENTS.add_default('typing',                    4, 'TYPING_START',                  )
-EVENTS.add_default('relationship_add',          2, 'RELATIONSHIP_ADD',              )
-EVENTS.add_default('relationship_change',       3, 'RELATIONSHIP_ADD',              )
-EVENTS.add_default('relationship_delete',       2, 'RELATIONSHIP_REMOVE',           )
-EVENTS.add_default('client_edit_settings',      2, 'USER_SETTINGS_UPDATE',          )
-EVENTS.add_default('gift_update',               3, 'GIFT_CODE_UPDATE',              )
-EVENTS.add_default('achievement',               2, 'USER_ACHIEVEMENT_UPDATE',       )
-
+EVENTS.add_default('ready'                      , 1 , 'READY'                           , )
+EVENTS.add_default('client_edit'                , 2 , 'USER_UPDATE'                     , )
+EVENTS.add_default('message_create'             , 2 , 'MESSAGE_CREATE'                  , )
+EVENTS.add_default('message_delete'             , 2 , 'MESSAGE_DELETE'                  , )
+EVENTS.add_default('message_delete_multyple'    , 4 , 'MESSAGE_DELETE_BULK'             , )
+EVENTS.add_default('message_edit'               , 3 , 'MESSAGE_UPDATE'                  , )
+EVENTS.add_default('embed_update'               , 3 , 'MESSAGE_UPDATE'                  , )
+EVENTS.add_default('reaction_add'               , 4 , 'MESSAGE_REACTION_ADD'            , )
+EVENTS.add_default('reaction_clear'             , 3 , 'MESSAGE_REACTION_REMOVE_ALL'     , )
+EVENTS.add_default('reaction_delete'            , 4 , 'MESSAGE_REACTION_REMOVE'         , )
+EVENTS.add_default('reaction_delete_emoji'      , 4 , 'MESSAGE_REACTION_REMOVE_EMOJI'   , )
+EVENTS.add_default('user_edit'                  , 3 , 'PRESENCE_UPDATE'                 , )
+EVENTS.add_default('user_presence_update'       , 3 , 'PRESENCE_UPDATE'                 , )
+EVENTS.add_default('user_profile_edit'          , 4 , 'GUILD_MEMBER_UPDATE'             , )
+EVENTS.add_default('channel_delete'             , 2 , 'CHANNEL_DELETE'                  , )
+EVENTS.add_default('channel_edit'               , 3 , 'CHANNEL_UPDATE'                  , )
+EVENTS.add_default('channel_create'             , 2 , 'CHANNEL_CREATE'                  , )
+EVENTS.add_default('channel_pin_update'         , 2 , 'CHANNEL_PINS_UPDATE'             , )
+EVENTS.add_default('channel_group_user_add'     , 3 , 'CHANNEL_RECIPIENT_ADD'           , )
+EVENTS.add_default('channel_group_user_delete'  , 3 , 'CHANNEL_RECIPIENT_REMOVE'        , )
+EVENTS.add_default('emoji_create'               , 3 , 'GUILD_EMOJIS_UPDATE'             , )
+EVENTS.add_default('emoji_delete'               , 3 , 'GUILD_EMOJIS_UPDATE'             , )
+EVENTS.add_default('emoji_edit'                 , 4 , 'GUILD_EMOJIS_UPDATE'             , )
+EVENTS.add_default('guild_user_add'             , 3 , 'GUILD_MEMBER_ADD'                , )
+EVENTS.add_default('guild_user_delete'          , 4 , 'GUILD_MEMBER_REMOVE'             , )
+EVENTS.add_default('guild_create'               , 2 , 'GUILD_CREATE'                    , )
+EVENTS.add_default('guild_sync'                 , 2 , 'GUILD_SYNC'                      , )
+EVENTS.add_default('guild_edit'                 , 2 , 'GUILD_UPDATE'                    , )
+EVENTS.add_default('guild_delete'               , 3 , 'GUILD_DELETE'                    , )
+EVENTS.add_default('guild_ban_add'              , 3 , 'GUILD_BAN_ADD'                   , )
+EVENTS.add_default('guild_ban_delete'           , 3 , 'GUILD_BAN_REMOVE'                , )
+EVENTS.add_default('guild_user_chunk'           , 3 , 'GUILD_MEMBERS_CHUNK'             , )
+EVENTS.add_default('integration_update'         , 2 , 'GUILD_INTEGRATIONS_UPDATE'       , )
+EVENTS.add_default('role_create'                , 2 , 'GUILD_ROLE_CREATE'               , )
+EVENTS.add_default('role_delete'                , 2 , 'GUILD_ROLE_DELETE'               , )
+EVENTS.add_default('role_edit'                  , 3 , 'GUILD_ROLE_UPDATE'               , )
+EVENTS.add_default('webhook_update'             , 2 , 'WEBHOOKS_UPDATE'                 , )
+EVENTS.add_default('voice_state_update'         , 4 , 'VOICE_STATE_UPDATE'              , )
+EVENTS.add_default('typing'                     , 4 , 'TYPING_START'                    , )
+EVENTS.add_default('invite_create'              , 2 , 'INVITE_CREATE'                   , )
+EVENTS.add_default('invite_delete'              , 2 , 'INVITE_DELETE'                   , )
+EVENTS.add_default('relationship_add'           , 2 , 'RELATIONSHIP_ADD'                , )
+EVENTS.add_default('relationship_change'        , 3 , 'RELATIONSHIP_ADD'                , )
+EVENTS.add_default('relationship_delete'        , 2 , 'RELATIONSHIP_REMOVE'             , )
+EVENTS.add_default('client_edit_settings'       , 2 , 'USER_SETTINGS_UPDATE'            , )
+EVENTS.add_default('gift_update'                , 3 , 'GIFT_CODE_UPDATE'                , )
+EVENTS.add_default('achievement'                , 2 , 'USER_ACHIEVEMENT_UPDATE'         , )
 
 def check_name(func,name):
     if name is not None and name:
@@ -2883,15 +3398,16 @@ async def DEFAULT_EVENT(*args):
     pass
     
 class EventDescriptor(object):
-    __slots__=list(EVENTS.defaults)
-    __slots__.sort()
+    __slots__=('client_reference',*sorted(EVENTS.defaults))
 
-    def __init__(self):
+    def __init__(self,client):
+        client_reference=Weakreferer(client)
+        object.__setattr__(self,'client_reference',client_reference)
         for name in EVENTS.defaults:
             object.__setattr__(self,name,DEFAULT_EVENT)
         object.__setattr__(self,'error',default_error_event)
         object.__setattr__(self,'guild_user_chunk',ChunkQueue())
-
+    
     def __call__(self,func=None,name=None,pass_to_event=False,case=None,overwrite=False):
         if func is None:
             return self._wrapper(self,(name,pass_to_event,case),)
@@ -2926,7 +3442,7 @@ class EventDescriptor(object):
         actual=getattr(self,name)
         if actual is DEFAULT_EVENT:
             object.__setattr__(self,name,func)
-            parser_default.add()
+            parser_default.add_mention(self.client_reference())
             return func
     
         if type(actual) is asynclist:
@@ -2951,9 +3467,10 @@ class EventDescriptor(object):
         delete=type(self).__delattr__
         for name in EVENTS.defaults:
             delete(self,name)
+            
         object.__setattr__(self,'error',default_error_event)
         object.__setattr__(self,'guild_user_chunk',ChunkQueue())
-        
+    
     def __setattr__(self,name,value):
         parser_name=EVENTS.parsers.get(name,None)
         if (parser_name is None):
@@ -2967,11 +3484,11 @@ class EventDescriptor(object):
             if value is DEFAULT_EVENT:
                 return
             
-            parser_default.add()
+            parser_default.add_mention(self.client_reference())
             return
         
         if value is DEFAULT_EVENT:
-            parser_default.remove()
+            parser_default.remove_mention(self.client_reference())
     
     def __delattr__(self,name):
         actual=getattr(self,name)
@@ -2985,8 +3502,8 @@ class EventDescriptor(object):
             return
 
         parser_default=PARSER_DEFAULTS.all[parser_name]
-        parser_default.remove()
-
+        parser_default.remove_mention(self.client_reference())
+        
 async def _with_error(client,task):
     try:
         await task

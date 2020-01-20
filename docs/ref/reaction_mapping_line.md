@@ -79,7 +79,6 @@ and reduces `.unknown`.
 If we know all the reacters, then insctead of executing a Discord API request
 we filter the reacters locally using this method.
 
-
 ### `clear(self)` (method)
 
 - returns : `None`

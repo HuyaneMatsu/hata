@@ -187,18 +187,7 @@ class autoposlist(list):
             index=old_position+1
             limit=new_position+1
             change=-1
-        if key:
-            while True:
-                 actual=self[index]
-                 result.append(key(actual,actual.position+change),)
-                 index+=1
-                 if index==limit:
-                     break
-            if change>0:
-                result.insert(0,key(value,new_position),)
-            else:
-                result.append(key(value,new_position),)
-        else:
+        if key is None:
             while True:
                 actual=self[index]
                 result.append((actual,actual.position+change),)
@@ -209,6 +198,17 @@ class autoposlist(list):
                 result.insert(0,(value,new_position),)
             else:
                 result.append((value,new_position),)
+        else:
+            while True:
+                 actual=self[index]
+                 result.append(key(actual,actual.position+change),)
+                 index+=1
+                 if index==limit:
+                     break
+            if change>0:
+                result.insert(0,key(value,new_position),)
+            else:
+                result.append(key(value,new_position),)
         return result
     def __delitem__(self,index):
         list.__delitem__(self,index)
@@ -303,16 +303,16 @@ class autoposlist(list):
         result=[]
         if position>ln:
             position=ln
-        if key:
+        if key is None:
             while True:
-                result.append(key(value,position))
+                result.append((value,position),)
                 if position==ln:
                     break
                 value=self[position]
                 position+=1
         else:
             while True:
-                result.append((value,position),)
+                result.append(key(value,position))
                 if position==ln:
                     break
                 value=self[position]
@@ -324,7 +324,7 @@ class autoposlist(list):
         for value in self:
             if key(value):
                 return value
-        raise LookupError
+        raise LookupError(key)
 
 class weakposlist(list):
     __slots__   = autoposlist.__slots__

@@ -3,7 +3,8 @@ __all__ = ('Invite', 'InviteTargetType')
 
 from .others import parse_time
 from .http import URLS
-from .user import User,ZEROUSER
+from .client_core import GUILDS, CHANNELS
+from .user import User, ZEROUSER
 from .guild import PartialGuild
 from .channel import PartialChannel
 
@@ -42,15 +43,42 @@ class Invite(object):
         'total_count', 'uses',)
 
     def __init__(self,data):
-        self.code           = data['code']
-        guild               = PartialGuild(data.get('guild',None))
-        self.guild          = guild
-        self.channel        = PartialChannel(data['channel'],guild)
+        self.code = data['code']
+        
+        try:
+            guild_data = data['guild']
+        except KeyError:
+            try:
+                guild_id = data['guild_id']
+            except KeyError:
+                guild = None
+            else:
+                guild_id = int(guild_id)
+                guild = GUILDS.get(guild_id,None)
+        else:
+            guild = PartialGuild(guild_data)
+        
+        self.guild = guild
+        
+        try:
+            channel_data = data['channel']
+        except KeyError:
+            try:
+                channel_id = data['channel_id']
+            except KeyError:
+                channel = None
+            else:
+                channel_id = int(channel_id)
+                channel = CHANNELS.get(channel_id,None)
+        else:
+            channel = PartialChannel(channel_data,guild)
+        
+        self.channel        = channel
         self.online_count   = data.get('approximate_presence_count',0)
         self.total_count    = data.get('approximate_member_count',0)
         
         try:
-            inviter_data=data['inviter']
+            inviter_data = data['inviter']
         except KeyError:
             self.inviter    = ZEROUSER
         else:

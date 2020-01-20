@@ -56,7 +56,7 @@ OA2_RU_RP=re.compile('(https{0,1}://.+?)\?code=([a-zA-Z0-9]{30})')
 def parse_oauth2_redirect_url(url):
     result=OA2_RU_RP.fullmatch(url)
     if result is None:
-        raise ValueError
+        return None
     return result.groups()
 
 class Connection(object):

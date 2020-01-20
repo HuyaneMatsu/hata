@@ -222,14 +222,6 @@ the changes.
 
 Removes the channel's references and changes it's [`.guild`](#guild) to `None`.
 
-### `_from_GWC_data(cls,data)` (classmethod)
-
-- returns : [`ChannelVoice`](ChannelVoice.md)
-
-Returns a voice channel from guild widget channel data. If the channel
-already exsists returns it, else creates a new one with it's attributes
-set to their default.
-
 ### `_from_partial_data(cls,data,channel_id,partial_guild)` (classmethod)
 
 - returns : [`ChannelVoice`](ChannelVoice.md)

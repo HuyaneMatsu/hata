@@ -1279,27 +1279,6 @@ class ChannelVoice(ChannelGuildBase):
         return result
 
     @classmethod
-    def _from_GWC_data(cls,data):
-        channel_id=int(data['id'])
-        try:
-            return CHANNELS[channel_id]
-        except KeyError:
-            pass
-        channel=object.__new__(cls)
-        channel.id      = channel_id
-        channel.name    = data['name']
-        channel.position= data['position']
-        channel.guild   = None
-        channel.category= None
-        channel.bitrate = 64000
-        channel.overwrites=[]
-        channel.user_limit=0
-
-        CHANNELS[channel_id]=channel
-
-        return channel
-
-    @classmethod
     def precreate(cls,channel_id,**kwargs):
         processable={}
         for key in ('name', 'bitrate', 'user_limit'):
@@ -1815,53 +1794,69 @@ CHANNEL_TYPES = (
     ChannelStore,
         )
 
-def cr_pg_channel_object(name,type_,overwrites=[],topic=None,nsfw=False,slowmode=0,bitrate=64000,user_limit=0,bitrate_limit=96000):
-    if type(type_) is int:
-        value=type_
-    elif isinstance(type_,type) and issubclass(type_,ChannelBase):
-        if issubclass(type_,ChannelGuildBase):
-            value=type_.INTERCHANGE[0]
-        else:
-            value=type_.type
-    else:
-        raise ValueError('\'type_\' argument should be int or Channel type, got {type!r}')
+def cr_pg_channel_object(name, type_, overwrites=None, topic=None, nsfw=False,
+        slowmode=0, bitrate=64000, user_limit=0, bitrate_limit=96000):
     
-    if value in (1,3):
-        raise ValueError('Not guild channel type: {value!r}')
-
-    if not 1<len(name)<101:
-        raise ValueError(f'Invalid nam length {len(name)}, should be 2-100')
+    if type(type_) is int:
+        if type_<0:
+            raise ValueError(f'`type_` cannot be negative value, got `{type_!r}`')
+        if type_>=len(CHANNEL_TYPES):
+            raise ValueError(f'`type_` exceeded the defined channel type limit. Limit: `{len(CHANNEL_TYPES)-1!r}`, got `{type_}`')
+        
+        if not isinstance(CHANNEL_TYPES[type_],ChannelGuildBase):
+            raise ValueError(f'The function accepts only guild channel types, got `{type_!r}`')
+            
+        type_value=CHANNEL_TYPES[type_]
+    
+    elif isinstance(type_,type) and issubclass(type_,ChannelBase):
+        if not isinstance(type_,ChannelGuildBase):
+            raise ValueError(f'The function accepts only guild channel types, got `{type_!r}`')
+        type_value=type_.INTERCHANGE[0]
+    
+    else:
+        raise ValueError(f'\'type_\' argument should be int or Channel type, got {type!r}')
+    
+    name_ln=len(name)
+    if name_ln<2 or name_ln>100:
+        raise ValueError(f'`name` length should be between 2-100, got `{name_ln}`')
+    
+    if overwrites is None:
+        overwrites=[]
     
     result = {
         'name'                  : name,
-        'type'                  : value,
+        'type'                  : type_value,
         'permission_overwrites' : overwrites,
             }
     
-    if value in (0,5):
+    # any Guild Text channel type
+    if type_value in ChannelText.INTERCHANGE:
         if (topic is not None):
             topic_ln=len(topic)
             if topic_ln>1024:
-                raise ValueError(f'Topic length can be betwen 0-1024, got {topic_ln}')
+                raise ValueError(f'`topic` length can be betwen 0-1024, got `{topic_ln}`')
             if topic_ln!=0:
                 result['topic']=topic
     
-    if value in (0,5,6):
+    # any Guild Text or any Guild Store channel type
+    if (type_value in ChannelText.INTERCHANGE) or (type_value in ChannelStore.INTERCHANGE):
         if nsfw:
             result['nsfw']=nsfw
-
-    if value==0:
+    
+    # Guild Text channel type only
+    if type_value == ChannelText.INTERCHANGE[0]:
         if slowmode<0 or slowmode>21600:
-            raise ValueError(f'Invalid slowmode {slowmode}, should be 0-120')
+            raise ValueError(f'Invalid `slowmode`, should be 0-21600, got `{slowmode!r}`')
         result['rate_limit_per_user']=slowmode
-            
-    elif value==2:
+    
+    # any Guild Voice channel type
+    if type_value in ChannelVoice.INTERCHANGE:
         if bitrate<8000 or bitrate>bitrate_limit:
-            raise ValueError(f'Invalid bitrate {bitrate!r}, should be 8000-96000. 128000 max for vip, or 128000, 256000, 384000 max depends on premium tier.')
+            raise ValueError(f'`bitrate` should be 8000-96000. 128000 max for vip, or 128000, 256000, 384000 max depends on premium tier. Got `{bitrate!r}`,')
         result['bitrate']=bitrate
 
         if user_limit<0 or user_limit>99:
-            raise ValueError(f'Invalid user_limit {user_limit!r}, should be 0 for unlimited or 1-99')
+            raise ValueError(f'`user_limit` should be 0 for unlimited or 1-99, got `{user_limit!r}`')
         result['user_limit']=user_limit
             
     return result

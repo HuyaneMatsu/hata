@@ -408,7 +408,7 @@ del convert_detail_channel
 
 def convert_detail_message(key,value,all_):
     message_id=int(value)
-    return Unknown('Message',message_id)
+    return 'message',Unknown('Message',message_id)
     
 DETAIL_CONVERSIONS['message_id']=convert_detail_message
 del convert_detail_message

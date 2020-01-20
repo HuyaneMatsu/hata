@@ -10,7 +10,6 @@ A `User` object represents a user in Discord, including [guild](Guild.md) member
 - [Client](Client.md)
 - [UserOA2](UserOA2.md)
 - [WebhookRepr](WebhookRepr.md)
-- [GWUserReflection](GWUserReflection.md)
 
 ## Superclasses
 

@@ -715,7 +715,7 @@ class Cooldown(object):
     __async_call__=True
     
     __slots__=('__func__', '__name__', 'cache', 'checker', 'handler', 'limit',
-        'reset', 'weight',)
+        'needs_args', 'reset', 'weight',)
     
     async def _default_handler(client,message,command,time_left):
         return
@@ -755,16 +755,28 @@ class Cooldown(object):
         if func is None:
             self.__name__=case
             self.__func__=DEFAULT_EVENT
+            self.needs_args=True
             return self._wrapper
         
         self.__name__=check_name(func,case)
-        self.__func__=check_passed(func,3)
+
+        argcount,func = check_passed_tuple(func,(3,2),)
+        self.__func__ = func
+        if argcount==2:
+            self.needs_args=False
+        else:
+            self.needs_args=True
         return self
 
     def _wrapper(self,func):
         if not self.__name__:
             self.__name__=check_name(func,None)
-        self.__func__=check_passed(func,3)
+        argcount,func = check_passed_tuple(func,(3,2),)
+        self.__func__ = func
+        if argcount==2:
+            self.needs_args=False
+        else:
+            self.needs_args=True
         return self
     
     def __call__(self,client,message,*args):
@@ -772,9 +784,12 @@ class Cooldown(object):
         value=self.checker(self,message,loop)
         if value:
             return self.handler(client,message,self.__name__,value-loop.time())
-        else:
+        
+        if self.needs_args:
             return self.__func__(client,message,*args)
-    
+        else:
+            return self.__func__(client,message)
+        
     def shared(source,weight=0,case=None,func=None):
         self        = object.__new__(type(source))
         self.checker= source.checker
@@ -794,10 +809,16 @@ class Cooldown(object):
         if func is None:
             self.__name__=case
             self.__func__=DEFAULT_EVENT
+            self.needs_args=True
             return self._wrapper
         
         self.__name__=check_name(func,case)
-        self.__func__=check_passed(func,3)
+        argcount,func = check_passed_tuple(func,(3,2),)
+        if argcount==2:
+            self.needs_args=False
+        else:
+            self.needs_args=True
+        self.__func__ = func
     
     @staticmethod
     def _check_user(self,message,loop):

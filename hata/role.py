@@ -235,35 +235,83 @@ class Role(object):
         return (self.guild is None)
 
     def __gt__(self,other):
-        if type(self) is type(other):
-            return self.position>other.position
-        return NotImplemented
+        if type(self) is not type(other):
+            return NotImplemented
         
+        if self.position>other.position:
+            return True
+        
+        if self.position<other.position:
+            return False
+        
+        if self.id>other.id:
+            return True
+        
+        return False
+    
     def __ge__(self,other):
-        if type(self) is type(other):
-            return self.position>other.position or (self.id==other.id and self.position==other.position)
-        return NotImplemented
-
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.position>other.position:
+            return True
+        
+        if self.position<other.position:
+            return False
+        
+        if self.id>=other.id:
+            return True
+        
+        return False
+    
     def __eq__(self,other):
-        if type(self) is type(other):
-            return self.id==other.id and self.position==other.position
-        return NotImplemented
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.id==other.id:
+            return True
+            
+        return False
     
     def __ne__(self,other):
-        if type(self) is type(other):
-            return self.id!=other.id or self.position!=other.position
-        return NotImplemented
-
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.id==other.id:
+            return False
+            
+        return True
+    
     def __le__(self,other):
-        if type(self) is type(other):
-            return self.position<other.position or (self.id==other.id and self.position==other.position)
-        return NotImplemented
+        if type(self) is not type(other):
+            return NotImplemented
         
+        if self.position<other.position:
+            return True
+        
+        if self.position>other.position:
+            return False
+        
+        if self.id<=other.id:
+            return True
+        
+        return False
+    
     def __lt__(self,other):
-        if type(self) is type(other):
-            return self.position<other.position
-        return NotImplemented
+        if type(self) is not type(other):
+            return NotImplemented
         
+        if self.position<other.position:
+            return True
+        
+        if self.position>other.position:
+            return False
+        
+        if self.id<other.id:
+            return True
+        
+        return False
+
 #permission overwrite
 class PermOW(object):
     __slots__=('allow', 'deny', 'target',)
@@ -369,10 +417,13 @@ class PermOW(object):
             return True
         return True
     
-def cr_p_role_object(name,id_=None,color=Color(0),separated=False,position=0,
-        permissions=0,managed=False,mentionable=False):
+def cr_p_role_object(name, id_=None, color=Color(0), separated=False,
+        position=0, permissions=Permission(0), managed=False,
+        mentionable=False):
+    
     if id_ is None:
         id_=random_id()
+    
     return {
         'id'            : id_,
         'name'          : name,

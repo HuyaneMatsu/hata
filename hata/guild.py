@@ -192,160 +192,151 @@ class GuildEmbed(object):
     def __repr__(self):
         return f'<{self.__class__.__name__} of guild {self.guild!r}>'
 
-class GWUserReflection(UserBase):
-    __slots__=('activity_name', 'is_bot', 'nick', 'status')
+class GWUserReflection(object):
+    __slots__ = ('activity_name', 'avatar_url', 'discrimintator', 'id', 'name', 'status')
 
     def __init__(self,data):
-        self.id=int(data['id'])
-        self.name=data['username']
-        self.discriminator=int(data['discriminator'])
-
-        avatar=data.get('avatar')
-        if avatar is None:
-            self.avatar=0
-            self.has_animated_avatar=False
-        elif avatar.startswith('a_'):
-            self.avatar=int(avatar[2:],16)
-            self.has_animated_avatar=True
+        self.name           = data['username']
+        self.id             = int(data['id'])
+        self.discrimintator = int(data['discriminator'])
+        self.avatar_url     = data['avatar_url']
+        self.status         = Status.INSTANCES[data['status']]
+        try:
+            activity_data = data['game']
+        except KeyError:
+            activity_name = None
         else:
-            self.avatar=int(avatar,16)
-            self.has_animated_avatar=False
-
-        self.nick=data.get('nick')
-
-        self.is_bot=data.get('bot',False)
-        self.status=Status.INSTANCES[data['status']]
-        self.activity_name=data.get('game',None)
-
-    @property
-    def partial(self):
-        return False
-
-class GWChannelReflection(object):
-    __slots__=('_data',)
-    
-    def __init__(self,data):
-        self._data=data
-
-    @property
-    def id(self):
-        return int(self._data['id'])
+            activity_name = activity_data['name']
         
-    @property
-    def name(self):
-        return self._data['name']
-
-    @property
-    def position(self):
-        return self._data['position']
-
-    def permissions_for(self,user):
-        return Permission.permission_none
-
-    def get_user(self,name,default=None):
-        return default
-    
-    @property
-    def partial(self):
-        return True
-    
-    @property
-    def users(self):
-        return []
-    
-    @property
-    def clients(self):
-        return []
+        self.activity_name  = activity_name
 
     def __str__(self):
-        return self._data['name']
+        return self.name
 
     def __repr__(self):
-        return f'<{self.__class__.__name__} id={self.id} name={self!s}>'
+        return f'<{self.__class__.__name__} name={self.name} ({self.id})>'
+    
+    def __hash__(self):
+        return self.id
+    
+    def __gt__(self,other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return self.id>other.id
+    
+    def __ge__(self,other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return self.id>=other.id
+
+    def __eq__(self,other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return self.id==other.id
+    
+    def __ne__(self,other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return self.id!=other.id
+    
+    def __le__(self,other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return self.id<=other.id
+
+    def __lt__(self,other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return self.id<other.id
+
+class GWChannelReflection(object):
+    __slots__  = ('id', 'name', 'position')
+    
+    def __init__(self,data):
+        self.id = int(data['id'])
+        self.name = data['name']
+        self.position=data['name']
+    
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return f'<{self.__class__.__name__} name={self.name} ({self.id})>'
 
     def __hash__(self):
         return self.id
 
-    def __format__(self,code):
-        if not code:
-            return self.__str__()
-        if code=='m':
-            return f'<#{self.id}>'
-        if code=='d':
-            return self.display_name
-        if code=='c':
-            return f'{self.created_at:%Y.%m.%d-%H:%M:%S}'
-        raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
-
     def __gt__(self,other):
-        if isinstance(other,ChannelBase):
-            return self.id>other.id
-        return NotImplemented
-
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.position>other.position:
+            return True
+        
+        if self.position<other.position:
+            return False
+        
+        return self.id>other.id
+    
     def __ge__(self,other):
-        if isinstance(other,ChannelBase):
-            return self.id>=other.id
-        return NotImplemented
-
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.position>other.position:
+            return True
+        
+        if self.position<other.position:
+            return False
+        
+        return self.id>=other.id
+    
     def __eq__(self,other):
-        if isinstance(other,ChannelBase):
-            return self.id==other.id
-        return NotImplemented
-
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return self.id==other.id
+    
     def __ne__(self,other):
-        if isinstance(other,ChannelBase):
-            return self.id!=other.id
-        return NotImplemented
-
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return self.id!=other.id
+    
     def __le__(self,other):
-        if isinstance(other,ChannelBase):
-            return self.id<=other.id
-        return NotImplemented
-
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.position<other.position:
+            return True
+        
+        if self.position>other.position:
+            return False
+        
+        return self.id<=other.id
+    
     def __lt__(self,other):
-        if isinstance(other,ChannelBase):
-            return self.id<other.id
-        return NotImplemented
-
-    @property
-    def display_name(self):
-        return self.name.capitalize()
-
-    @property
-    def created_at(self):
-        return id_to_time(self.id)
-    
-    @property
-    def bitarte(self):
-        return 64000
-    
-    @property
-    def overwrites(self):
-        return []
-    
-    @property
-    def user_limit(self):
-        return 0
-    
-    @property
-    def category(self):
-        return None
-    
-    @property
-    def guild(self):
-        return None
-
-    ORDER_GROUP = 2
-    type        = 2
-    INTERCHANGE = (2,)
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.position<other.position:
+            return True
+        
+        if self.position>other.position:
+            return False
+        
+        return self.id<other.id
 
 class GuildWidget(object):
-    __slots__=('_cache', '_data', 'guild', 'invite_url',)
+    __slots__=('_cache', '_data', 'guild',)
                  
     def __init__(self,data):
         self.guild=Guild._from_GW_data(data)
-        invite_url=data.get('instant_invite',None)
-        self.invite_url='' if invite_url is None else invite_url
         self._data=data
         self._cache={}
     
@@ -354,25 +345,32 @@ class GuildWidget(object):
     @property
     def id(self):
         return self.guild.id
-
+    
+    @property
+    def name(self):
+        return self.guild.name
+    
+    @property
+    def invite_url(self):
+        invite_url=self._data.get('instant_invite',None)
+        if invite_url is None:
+            return ''
+        return invite_url
+    
+    @property
+    def presence_count(self):
+        return self._data['presence_count']
+    
     @cached_property
-    def widget_users(self):
+    def users(self):
         return [GWUserReflection(GWU_data) for GWU_data in self._data['members']]
 
     @cached_property
-    def users(self):
-        return [User._from_GWU_data(GWU_data) for GWU_data in self._data['members']]
-
-    @cached_property
-    def widget_channels(self):
-        return [GWChannelReflection(GWC_data) for GWC_data in self._data['channels']]
-
-    @cached_property
     def channels(self):
-        return [ChannelVoice._from_GWC_data(GWC_data) for GWC_data in self._data['channels']]
+        return [GWChannelReflection(GWC_data) for GWC_data in self._data['channels']]
     
     def __repr__(self):
-        return f'<{self.__class__.__name__} of guild {self.guild!r}>'
+        return f'<{self.__class__.__name__} of guild {self.guild.name}>'
     
 #we need to ignore client adding, because clients count to being not
 #partial. If a guild is not partial it wont get update on Guild.__new__

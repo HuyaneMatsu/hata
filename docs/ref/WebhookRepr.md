@@ -10,7 +10,6 @@ Represents a Discord webhook's user representation.
 - [User](User.md)
 - [Client](Client.md)
 - [UserOA2](UserOA2.md)
-- [GWUserReflection](GWUserReflection.md)
 
 ## Superclasses
 

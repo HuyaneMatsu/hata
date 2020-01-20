@@ -11,7 +11,7 @@ interact with the Discord API.
 
 ## Creating a Client
 
-### `Client(token,secret=None,client_id=0,activity=ActivityUnknown,status=None,is_bot=True,shard_count=0,**kwargs)`
+### `Client(token,secret=None,client_id=0,activity=ActivityUnknown,status=None,is_bot=True,shard_count=0,intents=-1,**kwargs)`
 
 ##### `token`
 
@@ -49,6 +49,14 @@ will launch up without sharding (so with 1 gateway). If `shard_count` is passed
 as `1`, then the client will launch up with the requested shard amount on first
 login. If `shard_count` is more than `1`, then it will use the passed amount.
 
+##### `intents`
+
+The intents of the client can be defined by passing it. Any `int` instance is
+accepted. If not passed as type [`IntentFlag`](IntentFlag.md) will be
+converted. When validating the intents, negative values will be interpretered
+as using all the intents, meanwhile if passed as positive, non existing intent
+flags are removed.
+
 ##### `**kwargs`
 
 These keyword arguments are set as instance attributes of the client. The type
@@ -69,7 +77,6 @@ and `int`.
 - [Webhook](Webhook.md)
 - [UserOA2](UserOA2.md)
 - [WebhookRepr](WebhookRepr.md)
-- [GWUserReflection](GWUserReflection.md)
 
 Because of a client is a valid user it inherits more attributes, methods and
 properties from User like classes:
@@ -142,7 +149,6 @@ now:
 
 - `mar_token` (user account only, not tested)
 - `calls` (deprecated?)
-- `relationships` (user account only, not tested)
 
 ### `_acitivity`
 
@@ -200,6 +206,13 @@ The http session of the client. It executes the API requests and returns the
 response after it. This http session is a valid http client, and can be used
 to execute any type of requests.
 
+
+### `intents`
+
+- type : [`IntentFlag`](IntentFlag.md)
+
+The intents of the client.
+
 ### `is_bot`
 
 - type : `bool`
@@ -234,6 +247,14 @@ other recipient's id.
 The client on login fills up it's `ready_state` with [guilds](Guild.md), which
 will have their members requested, if it's is `None` we already received every
 member from each guild.
+
+### `relationships`
+
+- type : `dict`
+- items : (`int`, [`Relationship`](Relationship.md))
+
+Stores the relationships of the client. The relationships' users' ids are the
+keys and the relationships themselves are the values.
 
 ### `running`
 
@@ -485,7 +506,7 @@ or `str` representing it.
 ### `activate_authorization_code(self,redirect_url,code,scopes)`
 
 - `awaitable`
-- returns : [`AO2Access`](AO2Access.md) / `None`
+- returns : [`OA2Access`](OA2Access.md) / `None`
 
 Activates a user's oauth2 code. The method requeires the `redirect_url`, where
 the activation page redirected and the `code`, with which it redirected.
@@ -500,7 +521,7 @@ If code, redirect url or the scopes are invalid, the methods returns
 ### `owners_access(self,scopes)`
 
 - `awaitable`
-- returns : [`AO2Access`](AO2Access.md) / `None`
+- returns : [`OA2Access`](OA2Access.md) / `None`
 
 Similar to `activate_authorization_code`, but it requests the application's
 owner's access. It does not requires the `redirect_url` and the `code`
@@ -531,7 +552,7 @@ of the user will show up.
 - `awaitable`
 - returns : `None`
 
-Renews the access token of an [`AO2Access`](AO2Access.md) object. By
+Renews the access token of an [`OA2Access`](OA2Access.md) object. By
 default access tokens expire after one week.
 
 ### `guild_user_add(self,guild,access_or_compuser,...)`
@@ -543,7 +564,7 @@ default access tokens expire after one week.
 Adds a user to the [guild](Guild.md). The bot must be a member of the guild
 already, and the user must have been granted `guilds.join` oauth2 scope for
 the application too. The `access_or_compuser` argument can be
-[`AO2Access`](AO2Access.md) object or a
+[`OA2Access`](OA2Access.md) object or a
 [`UserOA2`](UserOA2.md) one.
 
 - `user`, default : `None`. If `access_or_compuser` is set with
@@ -559,7 +580,7 @@ the application too. The `access_or_compuser` argument can be
 - returns : `list`
 - elements : [`Guilds`](Guild.md)
 
-Requests a user's guilds with it's [`AO2Access`](AO2Access.md).
+Requests a user's guilds with it's [`OA2Access`](OA2Access.md).
 The user must provide the `guilds` oauth2 scope for this request to succeed.
 These guilds will be partial guilds, if non of the active clients is member
 of them.
@@ -1874,9 +1895,13 @@ instance object.
 
 - `awaitable`
 - returns : `None`
+- raises: `ValueError`
 
 Moves the [role](Role.md) to the set position. The reason shows up at the
 [guild](Guild.md)'s audit logs.
+
+> At the case of moving a default role, to not position 0, or moving a non
+> default role to position 0, raises `ValueError`.
 
 ### `relationship_delete(self,relationship)`
 

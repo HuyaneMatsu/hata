@@ -254,6 +254,20 @@ def str_reaction_mapping(reactions,index=None,**kwargs): #ignore index, 1 messag
     #    it will need to be able to handle unknown reactors too!
     return result
 
+def str_reaction_mapping_line(users,**kwargs): #ignore index
+    result=Pretty_block()
+    user_count=len(users)
+    unknown=users.unknown
+    if unknown:
+        result.append(f'Reacters: ({user_count}, unknown: {unknown})')
+    else:
+        result.append(f'Reacters: ({user_count})')
+    
+    for index, user in enumerate(users):
+        result.append(f'{index}.: {user.full_name} ({user.id})')
+    
+    return result
+
 def str_message_application(application,index=None,**kwargs): #ignore index, 1/message
     result=Pretty_block()
     result.append(f'message_application : ({application.id})')
@@ -1192,28 +1206,20 @@ def str_user(user,index=None,**kwargs):
     
     return result
 
-def str_GuildWidget(widget,render_flag=0b1010,**kwargs):
-    #render_flag:
-    #    0b1000 users
-    #    0b0100 widget users
-    #    0b0010 channels
-    #    0b0001 widget channels
+def str_GuildWidget(widget,**kwargs):
     result=Pretty_block()
     result.append(f'Guild widget:')
     result.append(f'- guild : {widget.guild.name} ({widget.guild.id})',1)
-    if widget.invite_url:
-        result.append(f'- invite_url : {widget.invite_url}',1)
+    invite_url=widget.invite_url
+    if invite_url:
+        result.append(f'- invite_url : {invite_url}',1)
     else:
         result.append(f'- invite_url : *Not included*',1)
-    if render_flag&0b1000:
-        result.append(str_list(widget.users,name='user',**kwargs),1)
-    if render_flag&0b0100:
-        result.append(str_list(widget.widget_users,name='widget users',**kwargs),1)
-    if render_flag&0b0010:
-        result.append(str_list(widget.channels,name='channels',**kwargs),1)
-    if render_flag&0b0001:
-        result.append(str_list(widget.widget_channels,name='widget channels',**kwargs),1)
-
+    result.append(f'- presence_count : {widget.presence_count}',1)
+    
+    result.append(str_list(widget.users,name='user',**kwargs),1)
+    result.append(str_list(widget.channels,name='channels',**kwargs),1)
+    
     return result
 
 def str_GWUserReflection(GWU,index=None,**kwargs):
@@ -1224,19 +1230,13 @@ def str_GWUserReflection(GWU,index=None,**kwargs):
         start=f'{index}.: '
     result.append(f'{start}Guild widget user:')
 
-    result.append(f'- name : {GWU:f}',1)
+    result.append(f'- name : {GWU.name}',1)
     result.append(f'- id : {GWU.id}',1)
-    if GWU.is_bot:
-        result.append(f'- BOT',1)
     result.append(f'- avatar: {GWU.avatar_url}',1)
-    result.append(f'- created at : {GWU:c}',1)
-    nick=GWU.nick
-    if nick is not None:
-        result.append(f'- nick : {nick}',1)
     result.append(f'- status : {GWU.status!s}',1)
-    activity=GWU.activity_name
-    if activity is not None:
-        result.append(f'- activity : {activity}',1)
+    activity_name=GWU.activity_name
+    if activity_name is not None:
+        result.append(f'- activity : {activity_name}',1)
         
     return result
 
@@ -1251,7 +1251,6 @@ def str_GWChannelReflection(GWC,index=None,**kwargs):
     result.append(f'- name : {GWC.name}',1)
     result.append(f'- id : {GWC.id}',1)
     result.append(f'- position {GWC.position}',1)
-    result.append(f'- created at : {GWC:c}',1)
 
     return result
 
@@ -1346,6 +1345,7 @@ def str_emoji(emoji,index=None,**kwargs):
     
 PRETTY_PRINTERS['Message']=str_message
 PRETTY_PRINTERS['reaction_mapping']=str_reaction_mapping
+PRETTY_PRINTERS['reaction_mapping_line']=str_reaction_mapping_line
 PRETTY_PRINTERS['MessageApplication']=str_message_application
 PRETTY_PRINTERS['Attachment']=str_attachment
 PRETTY_PRINTERS['EmbedCore']=str_embed_core

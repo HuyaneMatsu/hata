@@ -9,11 +9,10 @@ awaitable object.
 
 ## All method
 
-### `__init__(self)`
+### `__init__(self, client)`
 
-`EventDescriptor` is created at `Client.__init__` with no instance
-attributes at all. These are filled up by the user, or when
-`Client.connect` is called.
+`EventDescriptor` is created at `Client.__init__` with a weakreference to it'
+ client.
 
 ### `__call__(self,func=None,name=None,pass_content=False,case=None,overwrite=False)`
 
@@ -368,6 +367,14 @@ The `profile` is the [`GuildProfile`](GuildProfile.md) of the user at guild.
 Called when an [integration](Integration.md) of a [guild](Guild.md) is updated.
 Sadly Discord does not sends details, so we pass only the guild as argument.
 
+### `invite_create(client,invite)`
+
+Called when an [invite](Invite.md) is created.
+
+### `invite_delete(client,invite)`
+
+Called when an [invite](Invite.md) is deleted.
+
 ### `message_create(client,message)`
 
 Called when a [message](Message.md) is sent at any of the [client](Client.md)'s
@@ -419,8 +426,14 @@ Called when (reactions)[reaction_mapping) are cleared from a
 
 ### `reaction_delete(client,message,emoji,user)`
 
-Called when a [User](User.md) removes it's [reaction](Emoji.md) from a
+Called when a [user](User.md)'s [reaction](Emoji.md) is removed from a
 [messages](Message.md).
+
+### `reaction_delete_emoji(client,message,emoji,users)`
+
+Called when all the [reaction](Emoji.md) of a specific emoji are removed from a
+[messages](Message.md). `users` is passed as a
+[`reaction_mapping_line`](reaction_mapping_line.md) instance.
 
 ### `ready(client)`
 
@@ -570,18 +583,25 @@ Called when a [webhook](Webhook.md) of the [channel](CHANNEL_TYPES.md) is
 updated. Sadly Discord does not sends details, so we pass only the channel as
 argument.
 
+## Instance attirbutes
+
+### `client`
+
+- type : `weakref.ReferenceType`
+
+A weakreference to the owner client.
+
 ## Magic methods
 
 ### `__setatrr__`
 
+Sets the event of the `EventDescriptor` to the specified function. Then updates
+the event's parser if needed.
+
 If an event is set of any clients, what is not `DEFAULT_EVENT`,
-then the event's parser will switch from `OPT` to the normal one, which means,
-it will calculate changes to feed the event with and also will start to ensuring
-the event too.
+then the event's parser will be updated.
 
 ### `__delattr__`
 
-Removes the event with switching it to `DEFAULT_EVENT`.
-If non of the clients have this event set, then it switches the
-event's parser to `OPT`.
-    
+Removes the event with switching it to `DEFAULT_EVENT`. Then updates the
+event's parser if needed.

@@ -550,19 +550,17 @@ class Relationship(object):
     def __repr__(self):
         return f'<{self.__class__.__name__} {self.type.name} user={self.user.full_name}>'
 
-def multi_delete_time_limit():
-    #2 weeks-1 minute since now, so if we delete a lot of messages, it wont mess up
-    return int((time_now()-1209540.)*1000.-DISCORD_EPOCH)<<22
-
 def log_time_converter(value):
     if hasattr(value,'id'):
         return value.id
+    
     if isinstance(value,int):
         return value
+    
     if isinstance(value,datetime):
         return time_to_id(value)
 
-    raise TypeError
+    raise TypeError(f'Expected Discord type with `.id`, `int` as snowfake, or a `datetime` object, got `{value!r}`')
 
 IS_ID_RP=re.compile('(\d{7,21})')
 IS_MENTION_RP=re.compile('@everyone|@here|<@[!&]?\d{7,21}>|<#\d{7,21}>')

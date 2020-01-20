@@ -7,7 +7,7 @@ __all__ = ('AsyncQue', 'CancelledError', 'Future', 'FutureAsyncWrapper',
 import sys, reprlib, linecache
 from types import GeneratorType, CoroutineType, MethodType as method, FunctionType as function
 from collections import deque
-from threading import current_thread, Lock as sync_Lock, Event as sync_Event
+from threading import current_thread, Lock as SyncLock, Event as SyncEvent
 
 from .dereaddons_local import alchemy_incendiary
 
@@ -611,8 +611,8 @@ class FutureSyncWrapper(object):
     def __new__(cls,future):
         self=object.__new__(cls)
         self._future    = future
-        self._lock      = sync_Lock()
-        self._waiter    = sync_Event()
+        self._lock      = SyncLock()
+        self._waiter    = SyncEvent()
         self._state     = PENDING
         self._result    = None
         self._exception = None

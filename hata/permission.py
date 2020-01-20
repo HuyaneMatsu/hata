@@ -89,7 +89,7 @@ class Permission(int):
     __lt__ = is_strict_subset
     __le__ = is_subset
 
-    #u can update more with it
+    # Allows you to update more with 1 call
     def update_by_keys(self,**kwargs):
         new=self
         for key,value in kwargs.items():

@@ -312,7 +312,17 @@ GLOBALLY_LIMITED=0x4000000000000000
 ##    limit   : 1
 ##    reset   : 0.25
 ##    limiter : channel_id
-##    
+##
+##endpoint: /channels/{channel_id}/messages/{message_id}/reactions/{reaction}
+##method  : DELETE
+##auth    : bot
+##used at : reaction_delete_emoji
+##limits  :
+##    group   : 26880
+##    limit   : 1
+##    reset   : 0.25
+##    limiter : channel_id
+##
 ##endpoint: /channels/{channel_id}/messages/{message_id}/reactions/{reaction}
 ##method  : GET
 ##auth    : bot

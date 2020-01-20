@@ -437,7 +437,17 @@ class reaction_mapping(dict):
             if line.unknown:
                 return
             del self[emoji]
-
+    
+    def remove_emoji(self,emoji):
+        line=self.pop(emoji,None)
+        if line is None:
+            return
+        
+        if line.unknown:
+            self._full_check()
+        
+        return line
+    
     #this function is called if an emoji loses all it's unknown reacters
     def _full_check(self):
         for line in self.values():

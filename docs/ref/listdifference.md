@@ -9,7 +9,7 @@ second does, but the first does not.
 
 > `None`, or `set` instance can be passed to the function as well.
 
-## listdifference(list1,list2) (function)
+## `listdifference(list1,list2)` (function)
 
 - returns : `tuple` (`list`, `list`)
 - values : `Any`

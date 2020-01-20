@@ -1,18 +1,22 @@
 ﻿# -*- coding: utf-8 -*-
-__version__ = '20200112.1'
+__version__ = '20200120.1'
 
 import sys
 ASYNC_ONLY = ('async_only' in sys.argv) or ('async-only' in sys.argv)
 del sys
 
-#import general purpose
+# import general purpose
 from .dereaddons_local import *
 
-#import Async
+# import Async
 from .eventloop import *
 from .executor import *
 from .futures import *
 from .ios import *
+# import http and ws
+from .py_http import *
+from .py_websocket import *
+
 
 
 if ASYNC_ONLY:
@@ -22,6 +26,8 @@ if ASYNC_ONLY:
         *executor.__all__           ,
         *futures.__all__            ,
         *ios.__all__                ,
+        *py_http.__all__            ,
+        *py_websocket.__all__       ,
             )
 
 else:
@@ -61,6 +67,8 @@ else:
         *executor.__all__           ,
         *futures.__all__            ,
         *ios.__all__                ,
+        *py_http.__all__            ,
+        *py_websocket.__all__       ,
         *activity.__all__           ,
         *application.__all__        ,
         *audit_logs.__all__         ,

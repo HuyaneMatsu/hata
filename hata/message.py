@@ -701,7 +701,10 @@ class Message(object):
         try:
             author=kwargs.pop('author')
         except KeyError:
-            author=ZEROUSER
+            if base is None:
+                author=ZEROUSER
+            else:
+                author=base.author
         else:
             if author is None:
                 # Author cannot be None, but accept it as `ZEROUSER`

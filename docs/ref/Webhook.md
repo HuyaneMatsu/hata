@@ -11,7 +11,6 @@ represetation.
 - [Client](Client.md)
 - [UserOA2](UserOA2.md)
 - [WebhookRepr](WebhookRepr.md)
-- [GWUserReflection](GWUserReflection.md)
 
 ## Superclasses
 

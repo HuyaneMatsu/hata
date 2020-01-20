@@ -54,6 +54,15 @@ Adds a user to the reacters.
 
 Removes the user from the reacters.
 
+
+### `remove_emoji(self,emoji)` (method)
+
+- returns : `None` / [`reaction_mapping_line`](reaction_mapping_line.md)
+
+Removes all the users, who reacted with the specific [emoji](Emoji.md). If no
+users reacted with the emoji, then returns `None`, else it returns the whole
+[`reaction_mapping_line`](reaction_mapping_line.md) itself.
+
 ### `_full_check(self)` (method)
 
 - returns : `None`

@@ -17,8 +17,8 @@ from .py_hdrs import AUTHORIZATION
 from .others import Status, id_to_time, log_time_converter, _parse_ih_fsa,  \
     VoiceRegion, ContentFilterLevel, PremiumType, MessageNotificationLevel, \
     bytes_to_base64, FriendRequestFlag, ext_from_base64, Theme, now_as_id,  \
-    to_json, multi_delete_time_limit, VerificationLevel, RelationshipType,  \
-    random_id, parse_time, DISCORD_EPOCH
+    to_json, VerificationLevel, RelationshipType, random_id, parse_time,    \
+    DISCORD_EPOCH
 
 from .user import User, USERS, GuildProfile, UserBase, UserFlag
 from .emoji import Emoji, PartialEmoji
@@ -31,7 +31,7 @@ from .http import DiscordHTTPClient, URLS, CDN_ENDPOINT, VALID_ICON_FORMATS,\
 from .role import Role
 from .webhook import Webhook,PartialWebhook
 from .gateway import DiscordGateway, DiscordGatewaySharder
-from .parsers import EventDescriptor, _with_error
+from .parsers import EventDescriptor, _with_error, IntentFlag, PARSER_DEFAULTS
 from .audit_logs import AuditLog, AuditLogIterator
 from .invite import Invite
 from .message import Message
@@ -141,12 +141,12 @@ class Client(UserBase):
         'email', 'flags', 'locale', 'mfa', 'premium_type', 'system', #OA2
         'verified',
         '__dict__', '_activity', '_gateway_pair', 'application', 'calls', #Client all the way down
-        'channels',  'events', 'gateway', 'guild_profiles', 'http', 'loop',
-        'mar_token', 'private_channels', 'ready_state', 'relationships',
-        'running', 'secret', 'settings', 'shard_count', 'token',
-        'voice_clients')
+        'channels',  'events', 'gateway', 'guild_profiles', 'http', 'intents',
+        'loop', 'mar_token', 'private_channels', 'ready_state',
+        'relationships', 'running', 'secret', 'settings', 'shard_count',
+        'token', 'voice_clients')
     
-    def __init__(self,token,secret=None,client_id=0,activity=ActivityUnknown,status=None,is_bot=True,shard_count=0,**kwargs):
+    def __init__(self,token,secret=None,client_id=0,activity=ActivityUnknown,status=None,is_bot=True,shard_count=0,intents=-1,**kwargs):
 
         if kwargs:
             self.name=kwargs.pop('name','')
@@ -174,6 +174,14 @@ class Client(UserBase):
         self.shard_count        = shard_count
         self.loop               = KOKORO
         
+        if type(intents) is IntentFlag:
+            pass
+        elif isinstance(intents,int):
+            intents=IntentFlag(intents)
+        else:
+            raise TypeError(f'`intents` should have been passed as `int` or `{IntentFlag.__name__}` instance, got `{intents!r}`')
+        
+        self.intents            = intents
         self.running            = False
         
         self.mar_token          = None
@@ -192,7 +200,6 @@ class Client(UserBase):
         
         self.private_channels   = {}
         self.voice_clients      = {}
-        self.events             = EventDescriptor()
 
         self.id                 = client_id
         if client_id:
@@ -222,6 +229,8 @@ class Client(UserBase):
             if status is Status.offline:
                 status=Status.invisible
             self.settings.status=status
+        
+        self.events             = EventDescriptor(self)
         
         CLIENTS.append(self)
         
@@ -746,7 +755,7 @@ class Client(UserBase):
         self.ready_state        = None
         
     async def download_url(self,url):
-        async with self.http.request_get(url) as response:
+        async with self.http.get(url) as response:
             return (await response.read())
 
     async def download_attachment(self,attachment):
@@ -754,7 +763,7 @@ class Client(UserBase):
             url=attachment.proxy_url
         else:
             url=attachment.url
-        async with self.http.request_get(url) as response:
+        async with self.http.get(url) as response:
             return (await response.read())
 
     #loggin
@@ -1964,6 +1973,9 @@ class Client(UserBase):
         else:
             await self.http.reaction_delete(message.channel.id,message.id,emoji.as_reaction,user.id)
 
+    async def reaction_delete_emoji(self,message,emoji):
+        await self.http.reaction_delete_emoji(message.channel.id,message.id,emoji.as_reaction)
+
     async def reaction_delete_own(self,message,emoji):
         await self.http.reaction_delete_own(message.channel.id,message.id,emoji.as_reaction)
 
@@ -1971,13 +1983,10 @@ class Client(UserBase):
         await self.http.reaction_clear(message.channel.id,message.id)
         
     async def reaction_users(self,message,emoji,limit=None,after=None,before=None):
-        if message.reactions is None:
-            return []
         try:
             line=message.reactions[emoji]
         except KeyError:
             return []
-        line=message.reactions[emoji]
         
         if line.unknown:
             data={}
@@ -2087,62 +2096,50 @@ class Client(UserBase):
         Task(self._sync_guild_postprocess(guild),self.loop)
         return guild
 
-    if CACHE_USER:
-        async def _sync_guild_postprocess(self,guild):
-            for client in CLIENTS:
-                try:
-                    user_data = await self.http.guild_user_get(guild.id,client.id)
-                except DiscordException:
-                    continue
-                try:
-                    profile=client.guild_profiles[guild]
-                except KeyError:
-                    client.guild_profiles[guild]=GuildProfile(user_data,guild)
-                    if client not in guild.clients:
-                        guild.clients.append(client)
-                else:
-                    profile._update_no_return(user_data,guild)
-
-            old_ids=set(guild.users)
-            data={'limit':1000,'after':'0'}
-            while True:
-                user_datas = await self.http.guild_users(guild.id,data)
-                for user_data in user_datas:
-                    user=User._create_and_update(user_data,guild)
-                    try:
-                        old_ids.remove(user.id)
-                    except KeyError:
-                        pass
-                if len(user_datas)<1000:
-                    break
-                data['after']=user_datas[999]['user']['id']
-            del data
-
-            for id_ in old_ids:
-                try:
-                    user=guild.users.pop(id_)
-                except KeyError:
-                    continue #huh?
-                try:
-                    del user.guild_profiles[guild]
-                except KeyError:
-                    pass #huh??
-
-    else:
-        async def _sync_guild_postprocess(self,guild):
-            for client in CLIENTS:
-                try:
-                    user_data = await self.http.guild_user_get(guild.id,client.id)
-                except DiscordException:
-                    continue
-                try:
-                    profile=client.guild_profiles[guild]
-                except KeyError:
-                    client.guild_profiles[guild]=GuildProfile(user_data,guild)
-                    if client not in guild.clients:
-                        guild.clients.append(client)
-                else:
-                    profile._update_no_return(user_data,guild)
+    
+    async def _sync_guild_postprocess(self,guild):
+        for client in CLIENTS:
+            try:
+                user_data = await self.http.guild_user_get(guild.id,client.id)
+            except DiscordException:
+                continue
+            try:
+                profile=client.guild_profiles[guild]
+            except KeyError:
+                client.guild_profiles[guild]=GuildProfile(user_data,guild)
+                if client not in guild.clients:
+                    guild.clients.append(client)
+            else:
+                profile._update_no_return(user_data,guild)
+        
+        # Disable user syncing, takes too much time
+##        if not CACHE_USER:
+##            return
+##
+##        old_ids=set(guild.users)
+##        data={'limit':1000,'after':'0'}
+##        while True:
+##            user_datas = await self.http.guild_users(guild.id,data)
+##            for user_data in user_datas:
+##                user=User._create_and_update(user_data,guild)
+##                try:
+##                    old_ids.remove(user.id)
+##                except KeyError:
+##                    pass
+##             if len(user_datas)<1000:
+##                 break
+##             data['after']=user_datas[999]['user']['id']
+##        del data
+##
+##        for id_ in old_ids:
+##            try:
+##               user=guild.users.pop(id_)
+##           except KeyError:
+##               continue #huh?
+##           try:
+##               del user.guild_profiles[guild]
+##           except KeyError:
+##               pass #huh??
 
     #user account only
     async def guild_mar(self,guild):
@@ -2340,13 +2337,15 @@ class Client(UserBase):
         elif type(guild_or_id) is int:
             guild_id=guild_or_id
         else:
-            raise TypeError(f'Excepted guild or id, got {guild_or_id!r}')
+            raise TypeError(f'Excepted `{Guild.__name__}` or `int` (id), got `{guild_or_id!r}`')
+        
         try:
             data = await self.http.guild_widget_get(guild_id)
         except DiscordException as err:
             if err.response.status==403: #Widget Disabled -> return None
                 return
             raise
+        
         return GuildWidget(data)
         
     async def guild_users(self,guild):
@@ -3008,10 +3007,305 @@ class Client(UserBase):
         return Role(data,guild)
 
     async def role_move(self,role,position,reason=None):
-        data=role.guild.roles.change_on_switch(role,position,key=lambda role,pos:{'id':role.id,'position':pos})
-        await self.http.role_move(role.guild.id,data,reason)
-
-
+        guild=role.guild
+        if guild is None:
+            # The role is partial, we cannot move it, because there is nowhere to move it >.>
+            return
+        
+        # Is there nothing to move?
+        if role.position==position:
+            return
+        
+        # Default role cannot be moved to position not 0
+        if role.position==0:
+            if position!=0:
+                raise ValueError(f'Default role cannot be moved: `{role!r}`')
+        # non default role cannot be moved to position 0
+        else:
+            if position==0:
+                raise ValueError(f'Role cannot be moved to position `0`')
+        
+        data=guild.roles.change_on_switch(role,position,key=lambda role,pos:{'id':role.id,'position':pos})
+        if not data:
+            return
+        
+        await self.http.role_move(guild.id,data,reason)
+    
+    async def role_reorder(self,roles,reason=None):
+        # Nothing to move, nice
+        if not roles:
+            return
+        
+        # Lets check `roles` structure
+        roles_valid=[]
+        
+        # Is `roles` passed as dictlike?
+        if hasattr(type(roles),'items'):
+            for item in roles.items():
+                if type(item) is not tuple:
+                    raise TypeError(f'`roles` passed as dictlike, but when iterating it\'s `.items` returned not a `tuple`, got `{item!r}`')
+                
+                if len(item)!=2:
+                    raise TypeError(f'`roles` passed as dictlike, but when iterating it\'s `.items` returned a `tuple`, but not with length `2`, got `{item!r}`')
+                
+                if (type(item[0]) is not Role) or (type(item[1]) is not int):
+                    raise TypeError(f'Items should be `{Role.__name__}`, `int` pairs, but got `{item!r}`')
+                
+                roles_valid.append(item)
+        
+        # Is `roles` passed as other iterable
+        elif hasattr(type(roles),'__iter__'):
+            for item in roles:
+                if type(item) is not tuple:
+                    raise TypeError(f'`roles` passed as other iterable, but when iterating returned not a `tuple`, got `{item!r}`')
+                
+                if len(item)!=2:
+                    raise TypeError(f'`roles` passed as other iterable, but when iterating returned a `tuple`, but not with length `2`, got `{item!r}`')
+                
+                if (type(item[0]) is not Role) or (type(item[1]) is not int):
+                    raise TypeError(f'Items should be `{Role.__name__}`, `int` pairs, but got `{item!r}`')
+                
+                roles_valid.append(item)
+        
+        # `roles` has an unknown format
+        else:
+            raise TypeError(
+                f'`roles` should have been passed as dictlike with (`{Role.__name__}, `int`) items, or as other '
+                f'iterable with (`{Role.__name__}, `int`) elements, but got `{roles!r}`')
+        
+        # Check default and moving to default position
+        index=0
+        limit=len(roles_valid)
+        while True:
+            if index==limit:
+                break
+            
+            role, position = roles_valid[index]
+            # Default role cannot be moved
+            if role.position==0:
+                if position!=0:
+                    raise ValueError(f'Default role cannot be moved: `{role!r}`.')
+                
+                # default and moving to default, lets delete it
+                del roles_valid[index]
+                limit = limit-1
+                continue
+                
+            else:
+                # Role cannot be moved to default position
+                if position==0:
+                    raise ValueError(f'Role cannot be moved to position `0`.')
+            
+            index = index+1
+            continue
+        
+        if not limit:
+            return
+        
+        # Check dupe roles
+        roles=set()
+        ln=0
+        
+        for role, position in roles_valid:
+            roles.add(role)
+            if len(roles)==ln:
+                raise ValueError(f'{Role.__name__} `{role!r}` is duped.')
+            
+            ln=ln+1
+            continue
+        
+        # Now that we have the roles, lets order them
+        roles_valid.sort(key = lambda item : item[1])
+        
+        # We have all the roles sorted, but they can have dupe positions too
+        index=0
+        limit=len(roles_valid)
+        last_position=0
+        while True:
+            role, position = roles_valid[index]
+            
+            if last_position!=position:
+                last_position=position
+                
+                index=index+1
+                if index==limit:
+                    break
+                
+                continue
+            
+            # Oh no, we need to reorder
+            # First role cannot get here, becuase it cannot have position 0.
+            roles=[roles_valid[index-1][0],role]
+            
+            sub_index=index+1
+            
+            while True:
+                if sub_index==limit:
+                    break
+                
+                role, position = roles_valid[sub_index]
+                if position!=last_position:
+                    break
+                
+                roles.append(role)
+                sub_index=sub_index+1
+                continue
+            
+            # We have all the roles with the same target position.
+            # Now we order them by their actual position.
+            roles.sort()
+            
+            index=index-1
+            sub_index=0
+            sub_limit=len(roles)
+            while True:
+                real_index=sub_index+index
+                role=roles[sub_index]
+                real_position=last_position+sub_index
+                roles_valid[real_index]=(role,real_position)
+                
+                sub_index=sub_index+1
+                if sub_index==sub_limit:
+                    break
+                
+                continue
+            
+            added_position=sub_limit-1
+            
+            real_index=sub_index+index
+            while True:
+                if real_index==limit:
+                    break
+                
+                role, position = roles_valid[real_index]
+                real_position=position+added_position
+                roles_valid[real_index]=(role,real_position)
+                
+                real_index=real_index+1
+                continue
+            
+            
+            index=index+sub_limit
+            last_position=last_position+added_position
+            
+            if index==limit:
+                break
+            
+            continue
+        
+        # We have all the roles in order. Filter out partial roles.
+        index=0
+        push=0
+        while True:
+            role, position = roles_valid[index]
+            
+            if role.guild is None:
+                push=push+1
+                del roles_valid[index]
+                limit=limit-1
+            
+            else:
+                if push:
+                    roles_valid[index]=(role,position-push)
+                
+                index=index+1
+            
+            if index==limit:
+                break
+            
+            continue
+        
+        # Did we get down to 0 role?
+        if limit==0:
+            return
+        
+        # Check role guild
+        guild = roles_valid[0][0].guild
+        
+        index=1
+        while True:
+            if index==limit:
+                break
+            
+            guild_ = roles_valid[index][0].guild
+            index=index+1
+            
+            if guild is guild_:
+                continue
+            
+            raise ValueError(f'There were roles passed at least from two different guilds: `{guild!r}` and `{guild_!r}`.')
+        
+        # Lets cut out every other role from the guild's
+        roles_leftover=set(guild.all_role.values())
+        for item in roles_valid:
+            role=item[0]
+            roles_leftover.remove(role)
+        
+        roles_leftover=sorted(roles_leftover)
+    
+        target_order=[]
+        
+        index_valid=0
+        index_leftover=0
+        limit_valid=len(roles_valid)
+        limit_leftover=len(roles_leftover)
+        position_target=0
+        
+        while True:
+            if index_valid==limit_valid:
+                while True:
+                    if index_leftover==limit_leftover:
+                        break
+                    
+                    role = roles_leftover[index_leftover]
+                    index_leftover = index_leftover+1
+                    target_order.append(role)
+                    continue
+                
+                break
+            
+            if index_leftover==limit_leftover:
+                while True:
+                    if index_valid==limit_valid:
+                        break
+                    
+                    role = roles_valid[index_valid][0]
+                    index_valid = index_valid+1
+                    target_order.append(role)
+                    continue
+                
+                
+                break
+            
+            role, position = roles_valid[index_valid]
+            if position==position_target:
+                position_target = position_target+1
+                index_valid = index_valid+1
+                target_order.append(role)
+                continue
+            
+            role = roles_leftover[index_leftover]
+            position_target = position_target+1
+            index_leftover = index_leftover+1
+            target_order.append(role)
+            continue
+        
+        data = []
+        
+        for index, role in enumerate(target_order):
+            position=role.position
+            if index==position:
+                continue
+            
+            data.append({'id':role.id,'position':index})
+            continue
+        
+        # Nothing to move
+        if not data:
+            return
+        
+        await self.http.role_move(guild.id,data,reason)
+        
     # Relationship related
     #hooman only
     async def relationship_delete(self,relationship):
@@ -3087,7 +3381,8 @@ class Client(UserBase):
         await self.http.hypesquad_house_leave()
         
     async def connect(self):
-        self.http=DiscordHTTPClient(self)
+        if self.running:
+            raise RuntimeError(f'{self!r} is already running!')
 
         try:
             data = await self.client_login_static()
@@ -3127,28 +3422,33 @@ class Client(UserBase):
             else:
                 Task(self.update_application_info(),self.loop)
         
-        self.running=True
-        Task(self._connect(),self.loop)
+        # Check it twice, because meanwhile logging on, connect calls are not limited
+        if self.running:
+            raise RuntimeError(f'{self!r} is already running!')
         
+        self.running=True
+        PARSER_DEFAULTS.register(self)
+        Task(self._connect(),self.loop)
+    
     async def _connect(self):
         try:
             while True:
                 no_internet_stop = await self.gateway.run()
-                if no_internet_stop:
-                    self._freeze_voice()
-                    while True:
-                        await self.http.restart()
-                        await sleep(5.0,self.loop)
-                        self._gateway_pair=(self._gateway_pair[0],0.0)
-                        try:
-                            await self.client_gateway()
-                        except (OSError,ConnectionError,):
-                            continue
-                        else:
-                            break
-                    continue
-                else:
+                if not no_internet_stop:
                     break
+                
+                self._freeze_voice()
+                while True:
+                    await self.http.restart()
+                    await sleep(5.0,self.loop)
+                    self._gateway_pair=(self._gateway_pair[0],0.0)
+                    try:
+                        await self.client_gateway()
+                    except (OSError,ConnectionError,):
+                        continue
+                    else:
+                        break
+                continue
 
         except BaseException as err:
             self.loop.render_exc_async(err,[
@@ -3164,7 +3464,8 @@ class Client(UserBase):
         finally:
             await self.gateway.close()
             
-            self.running= False
+            PARSER_DEFAULTS.unregister(self)
+            self.running = False
             
             if not self.guild_profiles:
                 return

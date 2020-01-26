@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 __all__ = ('AsyncQue', 'CancelledError', 'Future', 'FutureAsyncWrapper',
     'FutureG', 'FutureSyncWrapper', 'FutureWM', 'InvalidStateError', 'Lock',
-    'Task', 'WaitTillAll', 'WaitTillExc', 'WaitTillFirst', 'future_or_timeout',
-    'gather', 'iscoroutine', 'iscoroutinefunction', 'shield', 'sleep', )
+    'Task', 'WaitTillAll', 'WaitTillExc', 'WaitTillFirst', 'enter_executor',
+    'future_or_timeout', 'gather', 'iscoroutine', 'iscoroutinefunction',
+    'shield', 'sleep', )
 
 import sys, reprlib, linecache
 from types import GeneratorType, CoroutineType, MethodType as method, FunctionType as function
@@ -1512,7 +1513,8 @@ class Task(Future):
                 
                 return 0
             
-            if (self._fut_waiter is None) or (not self._fut_waiter.cancel()):
+            fut_waiter=self._fut_waiter
+            if (fut_waiter is None) or (not fut_waiter.cancel()):
                 self._must_cancel=True
             
             return 1
@@ -1522,7 +1524,8 @@ class Task(Future):
             if self._state is not PENDING:
                 return 0
             
-            if (self._fut_waiter is None) or (not self._fut_waiter.cancel()):
+            fut_waiter=self._fut_waiter
+            if (fut_waiter is None) or (not fut_waiter.cancel()):
                 self._must_cancel=True
             
             return 1
@@ -1631,7 +1634,7 @@ class Task(Future):
                             result.add_done_callback(self.__wakeup)
                             self._fut_waiter=result
                             if self._must_cancel:
-                                if self._fut_waiter.cancel():
+                                if result.cancel():
                                     self._must_cancel=False
                     else:
                         new_exception=RuntimeError(f'`yield` was used instead of `yield from` in task {self!r} with {result!r}')
@@ -1920,14 +1923,15 @@ class _handle_base(object):
         self.handler=None
     
     def __call__(self,future):
-        if self.handler is None:
-            return
+        pass
     
     def cancel(self):
         handler=self.handler
-        if handler is not None:
-            handler.cancel()
-            self.handler=None
+        if handler is None:
+            return
+            
+        handler.cancel()
+        self.handler=None
 
 class _cancel_handle(_handle_base):
     __slots__=('handler',)
@@ -1935,10 +1939,10 @@ class _cancel_handle(_handle_base):
         handler=self.handler
         if handler is None:
             return
+        
         handler.cancel()
         self.handler=None
-        if future._state is PENDING:
-            future.set_result_if_pending(None)
+        future.set_result_if_pending(None)
 
 def sleep(delay,loop=None):
     if loop is None:
@@ -1961,6 +1965,7 @@ class _timeout_handle(_handle_base):
         handler=self.handler
         if handler is None:
             return
+        
         handler.cancel()
         self.handler=None
         future.set_exception_if_pending(TimeoutError())
@@ -2361,3 +2366,169 @@ class Lock(object):
         result.append('>')
         
         return ''.join(result)
+
+class enter_executor(object):
+    __slots__= ('_enter_future', '_exit_future', '_fut_waiter', '_task')
+    def __init__(self):
+        self._enter_future=None
+        self._task=None
+        self._exit_future=None
+        self._fut_waiter=None
+        
+    async def __aenter__(self):
+        thread = current_thread()
+        if not isinstance(thread,EventThread):
+            raise RuntimeError(f'{self.__class__.__name__} used outside of {EventThread.__name__}, at {thread!r}')
+        
+        task = thread.current_task
+        if task is None:
+            raise RuntimeError(f'{self.__class__.__name__} used outside of a {Task.__name__}')
+        
+        self._task=task
+        loop=task._loop
+        future = Future(loop)
+        self._enter_future = future
+        loop.call_soon(self._enter_executor)
+        await future
+        return self
+    
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self._exit_future
+        return False
+    
+    def _enter_executor(self):
+        callbacks=self._enter_future._callbacks
+        callbacks.clear()
+        
+        task=self._task
+        task.add_done_callback(self._cancel_callback)
+        
+        task._loop.run_in_executor(self._executor_task)
+    
+    def _cancel_callback(self,future):
+        if future._state is not CANCELLED:
+            return
+        
+        fut_waiter=self._fut_waiter
+        if fut_waiter is None:
+            return
+        
+        fut_waiter.cancel()
+        
+    def _executor_task(self):
+        task=self._task
+        # relink future task
+        loop=task._loop
+        end_future=Future(loop)
+        task._fut_waiter=end_future
+        self._exit_future=end_future
+        
+        # Set result to the enter task, so it can be retrieved.
+        self._enter_future.set_result(None)
+        
+        exception=None
+        coro=task._coro
+
+        # If some1 await at the block, we will syncwrap it. If the exit future
+        # is awaited, then we quit.
+        local_fut_waiter=None
+        
+        try:
+            while True:
+                if task._must_cancel:
+                    exception=task._must_exception(exception)
+                    
+                if (local_fut_waiter is not None):
+                    if local_fut_waiter is end_future:
+                        end_future.set_result(None)
+                        loop.call_soon_threadsafe(task._Task__step,exception)
+                        break
+                    
+                    try:
+                        self._fut_waiter=local_fut_waiter
+                        if type(exception) is CancelledError:
+                            local_fut_waiter.cancel()
+                        local_fut_waiter.syncwrap().wait()
+                    
+                    except CancelledError:
+                        break
+                    except BaseException as err:
+                        exception=err
+                    finally:
+                        local_fut_waiter=None
+                        self._fut_waiter=None
+                
+                if task._state is not PENDING:
+                    # there is no reason to raise
+                    break
+                
+                # call either coro.throw(err) or coro.send(None).
+                try:
+                    if exception is None:
+                        result=coro.send(None)
+                    else:
+                        result=coro.throw(exception)
+                
+                except StopIteration as exception:
+                    if task._must_cancel:
+                        #the task is cancelled meanwhile
+                        task._must_cancel=False
+                        Future.set_exception(task,CancelledError())
+                    else:
+                        Future.set_result(task,exception.value)
+                    
+                    loop.wakeup()
+                    break
+                    
+                except CancelledError:
+                    Future.cancel(task)
+                    loop.wakeup()
+                    break
+                
+                except BaseException as exception:
+                    Future.set_exception(task,exception)
+                    loop.wakeup()
+                    break
+                
+                else:
+                    try:
+                        blocking=result._blocking
+                    except AttributeError:
+                        if result is None:
+                            # bare yield relinquishes control for one event loop iteration.
+                            continue
+                        
+                        elif isinstance(result,GeneratorType):
+                            #Yielding a generator is just wrong.
+                            exception=RuntimeError(f'`yield` was used instead of `yield from` in {self.__class__.__name__} {self!r} with `{result!r}`')
+                            continue
+                            
+                        else:
+                            # yielding something else is an error.
+                            exception=RuntimeError(f'{self.__class__.__name__} got bad yield: `{result!r}`')
+                            continue
+                    else:
+                        if blocking:
+                            if loop is not result._loop:
+                                exception=RuntimeError(f'{self.__class__.__name__} {self!r} got a Future {result!r} attached to a different loop')
+                                continue
+                                
+                            elif result is self:
+                                exception=RuntimeError(f'{self.__class__.__name__} cannot await on itself: {self!r}')
+                                continue
+                            
+                            else:
+                                result._blocking=False
+                                local_fut_waiter=result
+                                if task._must_cancel:
+                                    if local_fut_waiter.cancel():
+                                        task._must_cancel=False
+                                
+                                continue
+                        else:
+                            exception=RuntimeError(f'`yield` was used instead of `yield from` in task {self!r} with {result!r}')
+                            continue
+        finally:
+            task.remove_done_callback(self._cancel_callback)
+            self=None
+            task=None

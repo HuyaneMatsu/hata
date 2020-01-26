@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+__all__ = ('Formdata', )
+
 from io import IOBase
 from urllib.parse import urlencode
 from .dereaddons_local import multidict
@@ -9,9 +11,9 @@ from json import dumps as dump_to_json
 #Helper class for multipart/form-data and
 #application/x-www-form-urlencoded body generation.
 
-class Formdata:
+class Formdata(object):
 
-    __slots__=['fields', 'is_multipart', 'quote_fields', 'writer']
+    __slots__=('fields', 'is_multipart', 'quote_fields', 'writer', )
 
     def __init__(self,quote_fields=True):
         self.writer=MultipartWriter('form-data')

@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-__version__ = '20200120.1'
+__version__ = '20200126.1'
 
 import sys
 ASYNC_ONLY = ('async_only' in sys.argv) or ('async-only' in sys.argv)
@@ -14,6 +14,7 @@ from .executor import *
 from .futures import *
 from .ios import *
 # import http and ws
+from .py_formdata import *
 from .py_http import *
 from .py_websocket import *
 
@@ -26,6 +27,7 @@ if ASYNC_ONLY:
         *executor.__all__           ,
         *futures.__all__            ,
         *ios.__all__                ,
+        *py_formdata.__all__        ,
         *py_http.__all__            ,
         *py_websocket.__all__       ,
             )
@@ -67,6 +69,7 @@ else:
         *executor.__all__           ,
         *futures.__all__            ,
         *ios.__all__                ,
+        *py_formdata.__all__        ,
         *py_http.__all__            ,
         *py_websocket.__all__       ,
         *activity.__all__           ,

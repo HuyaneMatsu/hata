@@ -4718,13 +4718,13 @@ class GuildFolder(object):
         return new
         
     def __len__(self):
-        return self.guild_ids.__len__()
+        return len(self.guild_ids)
     
     def __iter__(self):
-        return self.guilds.__iter__()
+        return iter(self.guilds)
     
     def __reversed__(self):
-        return self.guilds.__reversed__()
+        return reversed(self.guilds)
     
     def __repr__(self):
         result=['<',self.__class__.__name__,' length=',self.__len__().__repr__()]

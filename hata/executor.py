@@ -278,14 +278,11 @@ class _execution_ended_cb(object):
         future._loop.call_soon_threadsafe(self.parent._execution_ended,self.executor)
         
     def __eq__(self,other):
-        if type(self) is type(other):
-            return self.executor is other.executor
-        return NotImplemented
-    
-    def __ne__(self,other):
-        if type(self) is type(other):
-            return self.executor is not other.executor
-        return NotImplemented
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return self.executor is other.executor
+
     
 class _id_execution_ended_cb(object):
     __slots__=('id', 'parent',)
@@ -307,24 +304,29 @@ class _id_execution_ended_cb(object):
         return NotImplemented
 
 class Executor(object):
-    __slots__=('claimed_executors', 'free_executors', 'keep_executors',
+    __slots__=('claimed_executors', 'free_executors', 'keep_executor_count',
         'running_executors', 'running_id_executors',)
     
-    def __init__(self,keep_executors=1):
+    def __init__(self,keep_executor_count=1):
         self.free_executors=deque()
         self.running_executors={}
         self.running_id_executors={}
         self.claimed_executors={}
-        self.keep_executors=keep_executors
+        self.keep_executor_count=keep_executor_count
 
     def __repr__(self):
-        frees=len(self.free_executors)
-        used=len(self.running_executors)+len(self.running_id_executors)+len(self.claimed_executors)
-            
-        return f'<{self.__class__.__name__} free={frees}, used={used}, keep={self.keep_executors}>'
+        return f'<{self.__class__.__name__} free={self.free_executor_count}, used={self.used_executor_count}, keep={self.keep_executor_count}>'
+    
+    @property
+    def used_executor_count(self):
+        return len(self.running_executors)+len(self.running_id_executors)+len(self.claimed_executors)
+    
+    @property
+    def free_executor_count(self):
+        return len(self.free_executors)
     
     def cancel_executors(self):
-        self.keep_executors=0
+        self.keep_executor_count=0
         for executor in self.free_executors:
             executor.release()
         self.free_executors.clear()
@@ -336,7 +338,7 @@ class Executor(object):
             executor.cancel()
 
     def release_executors(self):
-        self.keep_executors=0
+        self.keep_executor_count=0
         for executor in self.free_executors:
             executor.release()
         self.free_executors.clear()
@@ -412,7 +414,7 @@ class Executor(object):
 
     def _sync_keep(self,executor):
         executors=self.free_executors
-        if len(executors)<self.keep_executors:
+        if len(executors)<self.keep_executor_count:
             executors.append(executor)
             return
         executor.release()

@@ -1897,10 +1897,30 @@ instance object.
 - returns : `None`
 - raises: `ValueError`
 
-Moves the [role](Role.md) to the set position. The reason shows up at the
+Moves the [role](Role.md) to the set position. The `reason` shows up at the
 [guild](Guild.md)'s audit logs.
 
-> At the case of moving a default role, to not position 0, or moving a non
+> At the case of moving a default role to not position 0, or moving a non
+> default role to position 0, raises `ValueError`.
+
+### `role_reorder(self,roles,reason=None)`
+
+- `awaitable`
+- returns : `None`
+- raises : `ValueError` / `TypeError`
+
+Moves more [roles](Role.md) of a [guild](Guild.md) to the speicifed positions.
+`roles` can be passed as `list` with ([`Role`](Role.md) / `position` (int))
+tuples, or as a `dict` with the same items. 
+
+Partial roles are ignored and if passed any, every role's position after it
+is reduced. If there are roles passed with different guilds, then `ValueError`
+will be raised. If there are roles passed with the same position, then their
+positions will be sorted out.
+
+The `reason` shows up at the [guild](Guild.md)'s audit logs.
+
+> At the case of moving a default role to not position 0, or moving a non
 > default role to position 0, raises `ValueError`.
 
 ### `relationship_delete(self,relationship)`

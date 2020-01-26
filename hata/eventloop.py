@@ -615,17 +615,10 @@ class Server(object):
         await waiter
 
 class EventThreadCTXManager(object):
-    __slots__=('flow_manager', 'thread', 'waiter',)
-    def __init__(self,thread,flow_manager):
+    __slots__=('thread', 'waiter',)
+    def __init__(self,thread):
         self.thread=thread
         self.waiter=Event()
-        
-        if flow_manager is None:
-            self.flow_manager=None
-        else:
-            flow_manager=iter(flow_manager(thread)) #finish it and feed thread
-            self.flow_manager=flow_manager
-            next(flow_manager,None)                 #jump till first yield
 
     def __enter__(self):
         thread=self.thread
@@ -639,8 +632,6 @@ class EventThreadCTXManager(object):
         thread._internal_fds+=1
         thread.add_reader(ssock.fileno(),thread._read_from_self)
         
-        if self.flow_manager is not None:
-            next(self.flow_manager,None)
         self.waiter.set()
 
     def __exit__(self,exc_type,exc_val,exc_tb):
@@ -655,12 +646,6 @@ class EventThreadCTXManager(object):
         thread._csock = None
         thread._internal_fds -= 1
         
-        flow_manager=self.flow_manager
-        if flow_manager is not None:
-            self.flow_manager=None
-            next(flow_manager,None)
-            flow_manager.close()
-        
         thread._ready.clear()
         thread._scheduled.clear()
         
@@ -672,11 +657,11 @@ class EventThreadCTXManager(object):
             thread.selector = None
 
 class EventThreadType(type):
-    def __call__(cls,flow_manager=None,daemon=False,name=None):
+    def __call__(cls,daemon=False,name=None):
         obj=Thread.__new__(cls)
         cls.__init__(obj)
         Thread.__init__(obj,daemon=daemon,name=name)
-        obj.ctx=EventThreadCTXManager(obj,flow_manager)
+        obj.ctx=EventThreadCTXManager(obj)
         Thread.start(obj)
         obj.ctx.waiter.wait()
         return obj
@@ -727,11 +712,11 @@ class EventThread(Executor,Thread,metaclass=EventThreadType):
         used=len(self.running_executors)+len(self.running_id_executors)+len(self.claimed_executors)
         
         result.append(' executor info: free=')
-        result.append(str(frees))
+        result.append(str(self.free_executor_count))
         result.append(', used=')
-        result.append(str(used))
+        result.append(str(self.used_executor_count))
         result.append(', keep=')
-        result.append(str(self.keep_executors))
+        result.append(str(self.keep_executor_count))
         result.append(')>')
 
         return ''.join(result)

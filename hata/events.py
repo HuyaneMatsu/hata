@@ -23,7 +23,6 @@ from .events_compiler import ContentParser
 
 COMMAND_RP=re.compile(' *([^ \t\\n]*) *(.*)')
 
-#example
 class CommandProcesser(EventHandlerBase):
     __slots__=('commands', 'default_event', 'ignorecase', 'invalid_command',
         'mention_prefix', 'prefix', 'prefixfilter', 'waitfors',)
@@ -236,12 +235,12 @@ class CommandProcesser(EventHandlerBase):
         default_event=self.default_event
         if default_event is not DEFAULT_EVENT:
             result.append(', default_event=')
-            result.append(default_event.__repr__())
+            result.append(repr(default_event))
         
         invalid_command=self.invalid_command
         if invalid_command is not DEFAULT_EVENT:
             result.append(', invalid_command=')
-            result.append(invalid_command.__repr__())
+            result.append(repr(invalid_command))
         
         result.append('>')
         

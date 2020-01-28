@@ -50,7 +50,7 @@ class Handle(object):
                 'Exception occured at ',
                 self.__class__.__name__,
                 '._run\nAt running ',
-                self.func.__repr__(),
+                repr(self.func),
                 '\n',
                     ])
 
@@ -132,7 +132,7 @@ class Cycler(object):
                 self.loop.render_exc_async(err,[
                     self.__class__.__name__,
                     ' exception occured\nat calling ',
-                    func.__repr__(),
+                    repr(func),
                     '\n',
                         ])
         
@@ -923,7 +923,7 @@ class EventThread(Executor,Thread,metaclass=EventThreadType):
         elif type(after) is list:
             extracted.extend(after)
         else:
-            extracted.append(after.__repr__())
+            extracted.append(repr(after))
         
         if file is None:
             # ignore exception cases
@@ -959,7 +959,7 @@ class EventThread(Executor,Thread,metaclass=EventThreadType):
             if exception is not None:
                 extracted=[
                     'Exception occured during shutting down asyncgen:\n',
-                    agen.__repr__(),
+                    repr(agen),
                         ]
                 render_exc_to_list(exception,extend=extracted)
                 sys.stderr.write(''.join(extracted))

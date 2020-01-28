@@ -28,7 +28,7 @@ class UserFlag(int):
         return (self>>2)&1
     
     @property
-    def bug_hunter(self):
+    def bug_hunter_level_1(self):
         return (self>>3)&1
     
     @property
@@ -53,7 +53,11 @@ class UserFlag(int):
     
     @property
     def system(self):
-        return (self>>11)&1
+        return (self>>12)&1
+    
+    @property
+    def bug_hunter_level_2(self):
+        return (self>>14)&1
     
     def __iter__(self):
         if self&1:
@@ -63,7 +67,7 @@ class UserFlag(int):
             yield 'discord_partner'
             
         if (self>>2)&1:
-            yield 'bug_hunter'
+            yield 'bug_hunter_level_1'
             
         if (self>>3)&1:
             yield 'hypesquad_bravery'
@@ -83,8 +87,11 @@ class UserFlag(int):
         if (self>>10)&1:
             yield 'team_user'
 
-        if (self>>11)&1:
+        if (self>>12)&1:
             yield 'system'
+        
+        if (self>>14)&1:
+            yield 'bug_hunter_level_2'
             
     def __repr__(self):
         return f'{self.__class__.__name__}({int.__repr__(self)})'

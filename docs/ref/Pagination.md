@@ -41,9 +41,8 @@ what at getting any of it's items returns an [`Embed`](Embed.md).
 
 ##### `timeout`
 
-The timeout when the `Pagination` will expire. If a pagination is used, it will
-expire later (except if it is closed). This stacking effect has a 240 second
-limit, but the timeout itself has no limit.
+The timeout when the `Pagination` will expire. Whenever the pagination is used,
+it's timeout will be reseted.
 
 If a `Pagination` expires, it removes it's reactions to mark, it is no longer
 usable.
@@ -115,6 +114,12 @@ A flag to store the state of the `Pagination`.
 | GUI_STATE_CANCELLED       | 3     | The pagination is, or is being cancelled right now.                                   |
 | GUI_STATE_SWITCHING_CTX   | 4     | The Pagination is switching context. (Not used by the default class, btu expected.)   |
 
+### `timeout`
+
+- type : `int`
+
+Stores the timeout of the [`Pagination`](Pagination.md).
+
 ### `timeouter`
 
 - type : [`Timeouter`](Timeouter.md) / `NoneType`
@@ -136,16 +141,10 @@ A flag to store the state of the `Pagination`.
 
 ## Methods
 
-### `cancel(self)`
+### `cancel(self,exception=None)`
 
 Cancels the [`Pagination`](Pagination.md) [`.timeouter`](#timeouter) and
-ensures it's [`.canceller`](#canceller) with `exception` as `None`.
-
-## Staticmethods
-
-### `reaction_remove(client,message,emoji,user)`
-
-Used to ensure reaction remove on the `Pagination`'s [`.message`](#message-1).
+ensures it's [`.canceller`](#canceller) with the given `exception`.
 
 ## Magic methods
 

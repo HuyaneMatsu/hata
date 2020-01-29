@@ -2575,8 +2575,8 @@ class Client(UserBase):
 
     async def webhook_create(self,channel,name,avatar=None):
         name_ln=len(name)
-        if name_ln==0 or name_ln>32:
-            raise ValueError(f'Name length can be between 1-32, got {name_ln}')
+        if name_ln==0 or name_ln>80:
+            raise ValueError(f'Name length can be between 1-80, got {name_ln}')
         
         data={'name':name}
         
@@ -2665,8 +2665,8 @@ class Client(UserBase):
         
         if (name is not None):
             name_ln=len(name)
-            if name_ln==0 or name_ln>32:
-                raise ValueError(f'The length of the name can be between 1-32, got {name_ln}')
+            if name_ln==0 or name_ln>80:
+                raise ValueError(f'The length of the name can be between 1-80, got {name_ln}')
             
             data['name']=name
         
@@ -2691,8 +2691,8 @@ class Client(UserBase):
         
         if (name is not None):
             name_ln=len(name)
-            if name_ln==0 or name_ln>32:
-                raise ValueError(f'The length of the name can be between 1-32, got {name_ln}')
+            if name_ln==0 or name_ln>80:
+                raise ValueError(f'The length of the name can be between 1-80, got {name_ln}')
             
             data['name']=name
         

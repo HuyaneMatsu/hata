@@ -1540,9 +1540,11 @@ the [guild's](Guild.md) audit logs.
 - returns : [`Webhook`](Webhook.md)
 - raises : `ValueError`
  
-Creates a [webhook](Webhook.md) at the channel with the given name and avatar. The
-`avatar` should be `bytes` type in `'jpg'`, `'png'`, `'webp'` or `'gif'`
-format. If `gif` is passed it will ignore the animation however.
+Creates a [webhook](Webhook.md) at the channel with the given name and avatar.
+The `anme`'s length can be between 1 and 80.
+`avatar` is optional. It should be passed as a `bytes` like and should have`
+'jpg'`, `'png'`, `'webp'` or `'gif'` format. If `gif` is passed it will ignore
+the animation however.
 
 ### `webhook_get(self,webhook_id)`
 

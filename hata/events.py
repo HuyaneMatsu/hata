@@ -331,7 +331,34 @@ class Timeouter(object):
         self.handler=None
         handler.cancel()
         self.owner=None
-
+    
+    def set_timeout(self,value):
+        handler=self.handler
+        if handler is None:
+            # Cannot change timeout of expired timeouter
+            return
+        
+        if value<=0.0:
+            self.timeout=0.0
+            handler._run()
+            handler.cancel()
+            return
+        
+        now=self.loop.time()
+        next_step=self.handler.when
+        
+        planed_end=now+value
+        if planed_end<next_step:
+            handler.cancel()
+            self.handler=self.loop.call_at(planed_end,self.__step,self)
+            return
+        
+        self.timeout=planed_end-next_step
+        
+    def get_expiration_delay(self):
+        return self.handler.when-self.loop.time()+self.timeout
+        
+        
 GUI_STATE_READY          = 0
 GUI_STATE_SWITCHING_PAGE = 1
 GUI_STATE_CANCELLING     = 2
@@ -347,7 +374,7 @@ class Pagination(object):
     EMOJIS  = (LEFT2,LEFT,RIGHT,RIGHT2,CANCEL,)
     
     __slots__=('canceller', 'channel', 'client', 'message', 'page', 'pages',
-        'task_flag', 'timeouter')
+        'task_flag', 'timeout', 'timeouter')
     
     async def __new__(cls,client,channel,pages,timeout=240.,message=None):
         self=object.__new__(cls)
@@ -358,6 +385,7 @@ class Pagination(object):
         self.canceller=cls._canceller
         self.task_flag=GUI_STATE_READY
         self.message=message
+        self.timeout=timeout
         self.timeouter=None
         
         if message is None:
@@ -386,11 +414,13 @@ class Pagination(object):
         
         message=self.message
         
-        can_manage_messages=self.channel.cached_permissions_for(client).can_manage_messages
-        if can_manage_messages:
+        if self.channel.cached_permissions_for(client).can_manage_messages:
             if not message.did_react(emoji,user):
                 return
-            Task(self.reaction_remove(client,message,emoji,user),client.loop)
+            
+            task = Task(client.reaction_delete(message,emoji,user),client.loop)
+            if __debug__:
+                task.__silence__()
         
         task_flag=self.task_flag
         if task_flag!=GUI_STATE_READY:
@@ -415,10 +445,11 @@ class Pagination(object):
                 self.task_flag=GUI_STATE_CANCELLED
                 try:
                     await client.message_delete(message)
-                except DiscordException:
+                except (DiscordException, ConnectionError):
                     pass
-                self.cancel()
-                return
+                finally:
+                    self.cancel()
+                    return
             
             if emoji is self.LEFT2:
                 page=0
@@ -443,34 +474,29 @@ class Pagination(object):
         
         try:
             await client.message_edit(message,embed=self.pages[page])
-        except DiscordException:
+        except BaseException as err:
             self.task_flag=GUI_STATE_CANCELLED
             self.cancel()
-            return
+            if isinstance(err,(DiscordException, ConnectionError)):
+                return
+            raise
         
         if self.task_flag==GUI_STATE_CANCELLING:
             self.task_flag=GUI_STATE_CANCELLED
-            if can_manage_messages:
-                try:
-                    await client.message_delete(message)
-                except DiscordException:
-                    pass
-
             self.cancel()
+            
+            try:
+                await client.message_delete(message)
+            except BaseException as err:
+                if isinstance(err,(DiscordException, ConnectionError)):
+                    return
+                
+                raise
+
             return
             
         self.task_flag=GUI_STATE_READY
-        
-        timeouter=self.timeouter
-        if timeouter.timeout<240.:
-            timeouter.timeout+=30.
-            
-    @staticmethod
-    async def reaction_remove(client,message,emoji,user):
-        try:
-            await client.reaction_delete(message,emoji,user)
-        except DiscordException:
-            pass
+        self.timeouter.set_timeout(self.timeout)
     
     async def _canceller(self,exception,):
         client=self.client
@@ -492,7 +518,7 @@ class Pagination(object):
             if self.channel.cached_permissions_for(client).can_manage_messages:
                 try:
                     await client.reaction_clear(message)
-                except DiscordException:
+                except (DiscordException, ConnectionError):
                     pass
             return
         
@@ -501,7 +527,7 @@ class Pagination(object):
             timeouter.cancel()
         #we do nothing
     
-    def cancel(self):
+    def cancel(self,exception=None):
         canceller=self.canceller
         if canceller is None:
             return
@@ -512,7 +538,7 @@ class Pagination(object):
         if timeouter is not None:
             timeouter.cancel()
         
-        return Task(canceller(self,None),self.client.loop)
+        return Task(canceller(self,exception),self.client.loop)
     
     def __repr__(self):
         result = [

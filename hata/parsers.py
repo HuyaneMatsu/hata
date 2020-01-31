@@ -9,9 +9,9 @@ from .futures import Future, Task, iscoroutinefunction as iscoro
 from .dereaddons_local import function, remove, removemeta, _spaceholder,   \
     MethodLike
 
-from .client_core import CACHE_USER, CACHE_PRESENCE
+from .client_core import CACHE_USER, CACHE_PRESENCE, CLIENTS
 from .user import User, PartialUser,USERS
-from .channel import CHANNEL_TYPES, CHANNELS
+from .channel import CHANNEL_TYPES, CHANNELS, ChannelGuildBase
 from .others import Relationship, Gift
 from .guild import Guild, GUILDS, EMOJI_UPDATE_NEW, EMOJI_UPDATE_DELETE,    \
     EMOJI_UPDATE_EDIT
@@ -39,26 +39,45 @@ class event_system_core(object):
             raise LookupError(f'Invalid Event name: \'{name}\'.') from None
         return value
 
+
+INTENT_GUILDS             = 0
+INTENT_GUILD_USERS        = 1
+INTENT_GUILD_BANS         = 2
+INTENT_GUILD_EMOJIS       = 3
+INTENT_GUILD_INTEGRATIONS = 4
+INTENT_GUILD_WEBHOOKS     = 5
+INTENT_GUILD_INVITES      = 6
+INTENT_GUILD_VOICE_STATES = 7
+INTENT_GUILD_PRESENCES    = 8
+INTENT_GUILD_MESSAGES     = 9
+INTENT_GUILD_REACTIONS    = 10
+INTENT_GUILD_TYPINGS      = 11
+INTENT_DIRECT_MESSAGES    = 12
+INTENT_DIRECT_REACTIONS   = 13
+INTENT_DIRECT_TYPINGS     = 14
+
+
 INTENT_KEYS = {
-    'guilds'            : 0,
-    'guild_users'       : 1,
-    'guild_bans'        : 2,
-    'guild_emojis'      : 3,
-    'guild_integrations': 4,
-    'guild_webhooks'    : 5,
-    'guild_invites'     : 6,
-    'guild_voice_states': 7,
-    'guild_presences'   : 8,
-    'guild_messages'    : 9,
-    'guild_reactions'   : 10,
-    'guild_typings'     : 11,
-    'direct_messages'   : 12,
-    'direct_reactions'  : 13,
-    'direct_typings'    : 14,
+    'guilds'            : INTENT_GUILDS,
+    'guild_users'       : INTENT_GUILD_USERS,
+    'guild_bans'        : INTENT_GUILD_BANS,
+    'guild_emojis'      : INTENT_GUILD_EMOJIS,
+    'guild_integrations': INTENT_GUILD_INTEGRATIONS,
+    'guild_webhooks'    : INTENT_GUILD_WEBHOOKS,
+    'guild_invites'     : INTENT_GUILD_INVITES,
+    'guild_voice_states': INTENT_GUILD_VOICE_STATES,
+    'guild_presences'   : INTENT_GUILD_PRESENCES,
+    'guild_messages'    : INTENT_GUILD_MESSAGES,
+    'guild_reactions'   : INTENT_GUILD_REACTIONS,
+    'guild_typings'     : INTENT_GUILD_TYPINGS,
+    'direct_messages'   : INTENT_DIRECT_MESSAGES,
+    'direct_reactions'  : INTENT_DIRECT_REACTIONS,
+    'direct_typings'    : INTENT_DIRECT_TYPINGS,
         }
 
+
 INTENT_EVENTS = {
-    0   : (
+    INTENT_GUILDS : (
         'GUILD_CREATE',
         'GUILD_DELETE',
         'GUILD_ROLE_CREATE',
@@ -69,63 +88,63 @@ INTENT_EVENTS = {
         'CHANNEL_DELETE',
         'CHANNEL_PINS_UPDATE',
             ),
-    1   : (
+    INTENT_GUILD_USERS : (
         'GUILD_MEMBER_ADD',
         'GUILD_MEMBER_UPDATE',
         'GUILD_MEMBER_REMOVE',
             ),
-    2   : (
+    INTENT_GUILD_BANS : (
         'GUILD_BAN_ADD',
         'GUILD_BAN_REMOVE',
             ),
-    3   : (
+    INTENT_GUILD_EMOJIS : (
         'GUILD_EMOJIS_UPDATE',
             ),
-    4   : (
+    INTENT_GUILD_INTEGRATIONS : (
         'GUILD_INTEGRATIONS_UPDATE',
             ),
-    5   : (
+    INTENT_GUILD_WEBHOOKS : (
         'WEBHOOKS_UPDATE',
             ),
-    6   : (
+    INTENT_GUILD_INVITES : (
         'INVITE_CREATE',
         'INVITE_DELETE',
             ),
-    7   : (
+    INTENT_GUILD_VOICE_STATES : (
         'VOICE_STATE_UPDATE',
             ),
-    8   : (
+    INTENT_GUILD_PRESENCES : (
         'PRESENCE_UPDATE',
             ),
-    9   : (
+    INTENT_GUILD_MESSAGES : (
         'MESSAGE_CREATE',
         'MESSAGE_UPDATE',
         'MESSAGE_DELETE',
-        # 'MESSAGE_DELETE_BULK' ? # Not listed by Discord, yayyyy
+        'MESSAGE_DELETE_BULK', # Not listed by Discord, yayyyy
             ),
-    10  : (
+    INTENT_GUILD_REACTIONS : (
         'MESSAGE_REACTION_ADD',
         'MESSAGE_REACTION_REMOVE',
         'MESSAGE_REACTION_REMOVE_ALL',
         'MESSAGE_REACTION_REMOVE_EMOJI',
             ),
-    11  : (
+    INTENT_GUILD_TYPINGS : (
         'TYPING_START',
             ),
-    12  : (
+    INTENT_DIRECT_MESSAGES : (
         'CHANNEL_CREATE',
-        # 'CHANNEL_PINS_UPDATE' ? this is not listen by Discord, but this should be here
+        'CHANNEL_PINS_UPDATE',
         'MESSAGE_CREATE',
         'MESSAGE_UPDATE',
         'MESSAGE_DELETE',
             ),
-    13  : (
+    INTENT_DIRECT_REACTIONS : (
         'MESSAGE_REACTION_ADD',
         'MESSAGE_REACTION_REMOVE',
         'MESSAGE_REACTION_REMOVE_ALL',
         'MESSAGE_REACTION_REMOVE_EMOJI',
             ),
-    14  : (
+    INTENT_DIRECT_TYPINGS : (
         'TYPING_START',
             ),
         }
@@ -165,7 +184,7 @@ class IntentFlag(int):
             
             # If presence cache is disabled, disable presence updates
             if not CACHE_PRESENCE:
-                new = new^(1<<8)
+                new = new^(1<<INTENT_GUILD_PRESENCES)
         else:
             for value in INTENT_KEYS.values():
                 if (int_>>value)&1:
@@ -173,8 +192,8 @@ class IntentFlag(int):
             
             # If presence cache is disabled, disable presence updates
             if not CACHE_PRESENCE:
-                if (new>>8)&1:
-                    new = new^(1<<8)
+                if (new>>INTENT_GUILD_PRESENCES)&1:
+                    new = new^(1<<INTENT_GUILD_PRESENCES)
         
         return int.__new__(cls,new)
     
@@ -187,7 +206,7 @@ class IntentFlag(int):
     
     def __repr__(self):
         return f'{self.__class__.__name__}({self!s})'
-
+    
     def __getitem__(self,key):
         return (self>>INTENT_KEYS[key])&1
     
@@ -197,16 +216,16 @@ class IntentFlag(int):
                 yield key
     
     __iter__=keys
-
+    
     def values(self):
         for position in INTENT_KEYS.values():
             if (self>>position)&1:
                 yield position
-
+    
     def items(self):
         for key,index in INTENT_KEYS.items():
             yield key,(self>>index)&1
-
+    
     def __contains__(self,key):
         try:
             position=INTENT_KEYS[key]
@@ -231,155 +250,248 @@ class IntentFlag(int):
 
         return int.__new__(type(self),new)
     
+    
     @property
     def receives_guilds(self):
-        return self&1
+        return (self>>INTENT_GUILDS)&1
     
     def deny_guilds(self):
-        return type(self)(self&0b11111111111111111111111111111110)
-        
+        if (self>>INTENT_GUILDS)&1:
+            self = type(self)(self^(1<<INTENT_GUILDS))
+        return self
+    
     def allow_guilds(self):
-        return type(self)(self|0b00000000000000000000000000000001)
+        return type(self)(self|(1<<INTENT_GUILDS))
+    
     
     @property
     def receives_guild_users(self):
-        return (self>>1)&1
+        return (self>>INTENT_GUILD_USERS)&1
     
     def deny_guild_users(self):
-        return type(self)(self&0b11111111111111111111111111111101)
-        
+        if (self>>INTENT_GUILD_USERS)&1:
+            self = type(self)(self^(1<<INTENT_GUILD_USERS))
+        return self
+    
     def allow_guild_users(self):
-        return type(self)(self|0b00000000000000000000000000000010)
+        return type(self)(self|(1<<INTENT_GUILDS))
+    
     
     @property
     def receives_guild_bans(self):
-        return (self>>2)&1
+        return (self>>INTENT_GUILD_BANS)&1
     
     def deny_guild_bans(self):
-        return type(self)(self&0b11111111111111111111111111111011)
-        
+        if (self>>INTENT_GUILD_BANS)&1:
+            self = type(self)(self^(1<<INTENT_GUILD_BANS))
+        return self
+    
     def allow_guild_bans(self):
-        return type(self)(self|0b00000000000000000000000000000100)
+        return type(self)(self|(1<<INTENT_GUILD_BANS))
+    
     
     @property
     def receives_guild_emojis(self):
-        return (self>>3)&1
+        return (self>>INTENT_GUILD_EMOJIS)&1
     
     def deny_guild_emojis(self):
-        return type(self)(self&0b11111111111111111111111111110111)
-        
+        if (self>>INTENT_GUILD_EMOJIS)&1:
+            self = type(self)(self^(1<<INTENT_GUILD_EMOJIS))
+        return self
+    
     def allow_guild_emojis(self):
-        return type(self)(self|0b00000000000000000000000000001000)
+        return type(self)(self|(1<<INTENT_GUILD_EMOJIS))
+    
     
     @property
     def receives_guild_integrations(self):
-        return (self>>4)&1
+        return (self>>INTENT_GUILD_INTEGRATIONS)&1
     
     def deny_guild_integrations(self):
-        return type(self)(self&0b11111111111111111111111111101111)
-        
+        if (self>>INTENT_GUILD_INTEGRATIONS)&1:
+            self = type(self)(self^(1<<INTENT_GUILD_INTEGRATIONS))
+        return self
+    
     def allow_guild_integrations(self):
-        return type(self)(self|0b00000000000000000000000000010000)
+        return type(self)(self|(1<<INTENT_GUILD_INTEGRATIONS))
+    
     
     @property
     def receives_guild_webhooks(self):
-        return (self>>5)&1
+        return (self>>INTENT_GUILD_WEBHOOKS)&1
     
     def deny_guild_webhooks(self):
-        return type(self)(self&0b11111111111111111111111111011111)
-        
+        if (self>>INTENT_GUILD_WEBHOOKS)&1:
+            self = type(self)(self^(1<<INTENT_GUILD_WEBHOOKS))
+        return self
+    
     def allow_guild_webhooks(self):
-        return type(self)(self|0b00000000000000000000000000100000)
+        return type(self)(self|(1<<INTENT_GUILD_WEBHOOKS))
+    
     
     @property
     def receives_guild_invites(self):
-        return (self>>6)&1
+        return (self>>INTENT_GUILD_INVITES)&1
     
     def deny_guild_invites(self):
-        return type(self)(self&0b11111111111111111111111110111111)
-        
+        if (self>>INTENT_GUILD_INVITES)&1:
+            self = type(self)(self^(1<<INTENT_GUILD_INVITES))
+        return self
+    
     def allow_guild_invites(self):
-        return type(self)(self|0b00000000000000000000000001000000)
+        return type(self)(self|(1<<INTENT_GUILD_INVITES))
+    
     
     @property
     def receives_guild_voice_states(self):
-        return (self>>7)&1
+        return (self>>INTENT_GUILD_VOICE_STATES)&1
     
     def deny_guild_voice_states(self):
-        return type(self)(self&0b11111111111111111111111101111111)
-        
+        if (self>>INTENT_GUILD_VOICE_STATES)&1:
+            self = type(self)(self^(1<<INTENT_GUILD_VOICE_STATES))
+        return self
+    
     def allow_guild_voice_states(self):
-        return type(self)(self|0b00000000000000000000000010000000)
+        return type(self)(self|(1<<INTENT_GUILD_VOICE_STATES))
+    
     
     @property
     def receives_guild_presences(self):
-        return (self>>8)&1
+        return (self>>INTENT_GUILD_PRESENCES)&1
     
     def deny_guild_presences(self):
-        return type(self)(self&0b11111111111111111111111011111111)
-        
+        if (self>>INTENT_GUILD_PRESENCES)&1:
+            self = type(self)(self^(1<<INTENT_GUILD_PRESENCES))
+        return self
+    
     def allow_guild_presences(self):
-        return type(self)(self|0b00000000000000000000000100000000)
+        return type(self)(self|(1<<INTENT_GUILD_PRESENCES))
+    
     
     @property
     def receives_guild_messages(self):
-        return (self>>9)&1
+        return (self>>INTENT_GUILD_MESSAGES)&1
     
     def deny_guild_messages(self):
-        return type(self)(self&0b11111111111111111111110111111111)
-        
+        if (self>>INTENT_GUILD_MESSAGES)&1:
+            self = type(self)(self^(1<<INTENT_GUILD_MESSAGES))
+        return self
+    
     def allow_guild_messages(self):
-        return type(self)(self|0b00000000000000000000001000000000)
+        return type(self)(self|(1<<INTENT_GUILD_MESSAGES))
+    
     
     @property
     def receives_guild_reactions(self):
-        return (self>>10)&1
+        return (self>>INTENT_GUILD_REACTIONS)&1
     
     def deny_guild_reactions(self):
-        return type(self)(self&0b11111111111111111111101111111111)
-        
+        if (self>>INTENT_GUILD_REACTIONS)&1:
+            self = type(self)(self^(1<<INTENT_GUILD_REACTIONS))
+        return self
+    
     def allow_guild_reactions(self):
-        return type(self)(self|0b00000000000000000000010000000000)
+        return type(self)(self|(1<<INTENT_GUILD_REACTIONS))
+    
     
     @property
     def receives_guild_typings(self):
-        return (self>>11)&1
+        return (self>>INTENT_GUILD_TYPINGS)&1
     
     def deny_guild_typings(self):
-        return type(self)(self&0b11111111111111111111011111111111)
-        
+        if (self>>INTENT_GUILD_TYPINGS)&1:
+            self = type(self)(self^(1<<INTENT_GUILD_TYPINGS))
+        return self
+    
     def allow_guild_typings(self):
-        return type(self)(self|0b00000000000000000000100000000000)
+        return type(self)(self|(1<<INTENT_GUILD_TYPINGS))
+    
     
     @property
     def receives_direct_messages(self):
-        return (self>>12)&1
+        return (self>>INTENT_DIRECT_MESSAGES)&1
     
     def deny_direct_messages(self):
-        return type(self)(self&0b11111111111111111110111111111111)
-        
+        if (self>>INTENT_DIRECT_MESSAGES)&1:
+            self = type(self)(self^(1<<INTENT_DIRECT_MESSAGES))
+        return self
+    
     def allow_direct_messages(self):
-        return type(self)(self|0b00000000000000000001000000000000)
+        return type(self)(self|(1<<INTENT_DIRECT_MESSAGES))
+    
     
     @property
     def receives_direct_reactions(self):
-        return (self>>13)&1
+        return (self>>INTENT_DIRECT_REACTIONS)&1
     
     def deny_direct_reactions(self):
-        return type(self)(self&0b11111111111111111101111111111111)
-        
+        if (self>>INTENT_DIRECT_REACTIONS)&1:
+            self = type(self)(self^(1<<INTENT_DIRECT_REACTIONS))
+        return self
+    
     def allow_direct_reactions(self):
-        return type(self)(self|0b00000000000000000010000000000000)
+        return type(self)(self|(1<<INTENT_DIRECT_REACTIONS))
+    
     
     @property
     def receives_direct_typings(self):
-        return (self>>14)&1
+        return (self>>INTENT_DIRECT_TYPINGS)&1
     
     def deny_direct_typings(self):
-        return type(self)(self&0b11111111111111111011111111111111)
-        
+        if (self>>INTENT_DIRECT_TYPINGS)&1:
+            self = type(self)(self^(1<<INTENT_DIRECT_TYPINGS))
+        return self
+    
     def allow_direct_typings(self):
-        return type(self)(self|0b00000000000000000100000000000000)
+        return type(self)(self|(1<<INTENT_DIRECT_TYPINGS))
+
+
+def filter_clients(clients,flag):
+    index=0
+    limit=len(clients)
+    
+    while True:
+        if index==limit:
+            yield None
+            return
+        
+        client=clients[index]
+        if (client.intents>>flag)&1:
+            yield client
+            break
+        
+        index=index+1
+        continue
+        
+    yield client
+    index=index+1
+    
+    while True:
+        if index==limit:
+            return
+        
+        client=clients[index]
+        if (client.intents>>flag)&1:
+            yield client
+        
+        index=index+1
+        continue
+
+def first_client(clients,flag):
+    index=0
+    limit=len(clients)
+    
+    while True:
+        if index==limit:
+            return None
+        
+        client=clients[index]
+        if (client.intents>>flag)&1:
+            return client
+            break
+        
+        index=index+1
+        continue
 
 PARSERS={}
 
@@ -564,7 +676,7 @@ def READY(client,data):
         for guild_data in guild_datas:
             guild=Guild(guild_data,client)
             ready_state.feed(guild)
-            
+    
     try:
         relationship_datas=data['relationships']
     except KeyError:
@@ -572,7 +684,7 @@ def READY(client,data):
     else:
         for relationship_data in relationship_datas:
             Relationship(client,PartialUser(int(relationship_data['id'])),relationship_data)
-
+    
     try:
         channel_private_datas=data['private_channels']
     except KeyError:
@@ -580,7 +692,7 @@ def READY(client,data):
     else:
         for channel_private_data in channel_private_datas:
             CHANNEL_TYPES[channel_private_data['type']](channel_private_data,client)
-
+    
     try:
         settings_data=data['user_settings']
     except KeyError:
@@ -588,7 +700,7 @@ def READY(client,data):
     else:
         if settings_data:
             client.settings._update_no_return(settings_data)
-
+    
     #"client.events.ready" gonna be called by _delay_ready at the end
     
     return _spaceholder
@@ -604,8 +716,10 @@ del RESUMED
 
 def USER_UPDATE__CAL(client,data):
     old=client._update(data)
-    if old:
-        Task(client.events.client_edit(client,old),client.loop)
+    if not old:
+        return
+    
+    Task(client.events.client_edit(client,old),client.loop)
 
 def USER_UPDATE__OPT(client,data):
     client._update_no_return(data)
@@ -632,7 +746,7 @@ def MESSAGE_CREATE__OPT(client,data):
     except KeyError:
         sync_guild(client,data,('MESSAGE_CREATE',check_channel,channel_id))
         return
-
+    
     Message.new(data,channel)
 
 PARSER_DEFAULTS('MESSAGE_CREATE',MESSAGE_CREATE__CAL,MESSAGE_CREATE__CAL,MESSAGE_CREATE__OPT,MESSAGE_CREATE__OPT)
@@ -645,14 +759,14 @@ def MESSAGE_DELETE__CAL_SC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     message_id=int(data['id'])
     message=channel._mc_pop(message_id)
     if message is None:
         return
-
+    
     Task(client.events.message_delete(client,message),client.loop)
-        
+
 def MESSAGE_DELETE__CAL_MC(client,data):
     channel_id=int(data['channel_id'])
     try:
@@ -660,18 +774,20 @@ def MESSAGE_DELETE__CAL_MC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
-    if client is not channel.clients[0]:
+    
+    clients=filter_clients(channel.clients,INTENT_GUILD_MESSAGES if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_MESSAGES)
+    if clients.send(None) is not client:
+        clients.close()
         return
-
+    
     message_id=int(data['id'])
     message=channel._mc_pop(message_id)
     if message is None:
         return
-
-    for client_ in channel.clients:
+    
+    for client_ in clients:
         Task(client_.events.message_delete(client_,message),client_.loop)
-
+    
 def MESSAGE_DELETE__OPT_SC(client,data):
     channel_id=int(data['channel_id'])
     try:
@@ -679,7 +795,7 @@ def MESSAGE_DELETE__OPT_SC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     message_id=int(data['id'])
     channel._mc_pop(message_id)
 
@@ -690,10 +806,10 @@ def MESSAGE_DELETE__OPT_MC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
-    if client is not channel.clients[0]:
+    
+    if first_client(channel.clients,INTENT_GUILD_MESSAGES if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_MESSAGES) is not client:
         return
-
+    
     message_id=int(data['id'])
     channel._mc_pop(message_id)
 
@@ -707,10 +823,10 @@ def MESSAGE_DELETE_BULK__CAL_SC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     message_ids=[int(message_id) for message_id in data['ids']]
     messages=channel._mc_pop_multiple(message_ids)
-
+    
     Task(client.events.message_delete_multyple(client,channel,messages,message_ids),client.loop)
 
 def MESSAGE_DELETE_BULK__CAL_MC(client,data):
@@ -720,14 +836,16 @@ def MESSAGE_DELETE_BULK__CAL_MC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
-    if client is not channel.clients[0]:
+    
+    clients=filter_clients(channel.clients,INTENT_GUILD_MESSAGES)
+    if clients.send(None) is not client:
+        clients.close()
         return
-
+    
     message_ids=[int(message_id) for message_id in data['ids']]
     messages=channel._mc_pop_multiple(message_ids)
-
-    for client_ in channel.clients:
+    
+    for client_ in clients:
         Task(client_.events.message_delete_multyple(client_,channel,messages,message_ids),client_.loop)
 
 def MESSAGE_DELETE_BULK__OPT_SC(client,data):
@@ -749,7 +867,7 @@ def MESSAGE_DELETE_BULK__OPT_MC(client,data):
         sync_guild(client,data,None)
         return
 
-    if client is not channel.clients[0]:
+    if first_client(channel.clients,INTENT_GUILD_MESSAGES) is not client:
         return
 
     message_ids=[int(message_id) for message_id in data['ids']]
@@ -765,7 +883,7 @@ def MESSAGE_UPDATE__CAL_SC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     message_id=int(data['id'])
     message=channel._mc_find(message_id)
     if message is None:
@@ -773,12 +891,16 @@ def MESSAGE_UPDATE__CAL_SC(client,data):
     
     if 'edited_timestamp' in data:
         old=message._update(data)
-        if old:
-            Task(client.events.message_edit(client,message,old),client.loop)
+        if not old:
+            return
+        
+        Task(client.events.message_edit(client,message,old),client.loop)
     else:
         result=message._update_embed(data)
-        if result:
-            Task(client.events.embed_update(client,message,result),client.loop)
+        if not result:
+            return
+        
+        Task(client.events.embed_update(client,message,result),client.loop)
 
 def MESSAGE_UPDATE__CAL_MC(client,data):
     channel_id=int(data['channel_id'])
@@ -787,25 +909,31 @@ def MESSAGE_UPDATE__CAL_MC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
-    if client is not channel.clients[0]:
+    
+    clients=filter_clients(channel.clients,INTENT_GUILD_MESSAGES if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_MESSAGES)
+    if clients.send(None) is not client:
+        clients.close()
         return
-
+    
     message_id=int(data['id'])
     message=channel._mc_find(message_id)
     if message is None:
         return
-
+    
     if 'edited_timestamp' in data:
         old=message._update(data)
-        if old:
-            for client_ in channel.clients:
-                Task(client_.events.message_edit(client_,message,old),client_.loop)
+        if not old:
+            return
+        
+        for client_ in clients:
+            Task(client_.events.message_edit(client_,message,old),client_.loop)
     else:
         result=message._update_embed(data)
-        if result:
-            for client_ in channel.clients:
-                Task(client_.events.embed_update(client_,message,result),client_.loop)
+        if not result:
+            return
+            
+        for client_ in clients:
+            Task(client_.events.embed_update(client_,message,result),client_.loop)
 
 def MESSAGE_UPDATE__OPT_SC(client,data):
     channel_id=int(data['channel_id'])
@@ -814,12 +942,12 @@ def MESSAGE_UPDATE__OPT_SC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     message_id=int(data['id'])
     message=channel._mc_find(message_id)
     if message is None:
         return
-
+    
     if 'edited_timestamp' in data:
         message._update_no_return(data)
     else:
@@ -832,10 +960,10 @@ def MESSAGE_UPDATE__OPT_MC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
-    if client is not channel.clients[0]:
+    
+    if first_client(channel.clients,INTENT_GUILD_MESSAGES if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_MESSAGES) is not client:
         return
-
+    
     message_id=int(data['id'])
     message=channel._mc_find(message_id)
     if message is None:
@@ -857,17 +985,17 @@ def MESSAGE_REACTION_ADD__CAL_SC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     message_id=int(data['message_id'])
     message=channel._mc_find(message_id)
     if message is None:
         return
-
+    
     user_id=int(data['user_id'])
     user=PartialUser(user_id)
     emoji=PartialEmoji(data['emoji'])
     message.reactions.add(emoji,user)
-
+    
     Task(client.events.reaction_add(client,message,emoji,user),client.loop)
 
 def MESSAGE_REACTION_ADD__CAL_MC(client,data):
@@ -877,21 +1005,23 @@ def MESSAGE_REACTION_ADD__CAL_MC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
-    if client is not channel.clients[0]:
+    
+    clients=filter_clients(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS)
+    if clients.send(None) is not client:
+        clients.close()
         return
-
+    
     message_id=int(data['message_id'])
     message=channel._mc_find(message_id)
     if message is None:
         return
-
+    
     user_id=int(data['user_id'])
     user=PartialUser(user_id)
     emoji=PartialEmoji(data['emoji'])
     message.reactions.add(emoji,user)
-
-    for client_ in channel.clients:
+    
+    for client_ in clients:
         Task(client_.events.reaction_add(client_,message,emoji,user),client_.loop)
 
 def MESSAGE_REACTION_ADD__OPT_SC(client,data):
@@ -901,12 +1031,12 @@ def MESSAGE_REACTION_ADD__OPT_SC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     message_id=int(data['message_id'])
     message=channel._mc_find(message_id)
     if message is None:
         return
-
+    
     user_id=int(data['user_id'])
     user=PartialUser(user_id)
     emoji=PartialEmoji(data['emoji'])
@@ -919,15 +1049,15 @@ def MESSAGE_REACTION_ADD__OPT_MC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
-    if client is not channel.clients[0]:
+    
+    if first_client(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS) is not client:
         return
-
+    
     message_id=int(data['message_id'])
     message=channel._mc_find(message_id)
     if message is None:
         return
-
+    
     user_id=int(data['user_id'])
     user=PartialUser(user_id)
     emoji=PartialEmoji(data['emoji'])
@@ -943,16 +1073,18 @@ def MESSAGE_REACTION_REMOVE_ALL__CAL_SC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     message_id=int(data['message_id'])
     message=channel._mc_find(message_id)
     if message is None:
         return
-
+    
     old_reactions=message.reactions
-    if old_reactions:
-        message.reactions=type(old_reactions)(None)
-        Task(client.events.reaction_clear(client,message,old_reactions),client.loop)
+    if not old_reactions:
+        return
+    
+    message.reactions=type(old_reactions)(None)
+    Task(client.events.reaction_clear(client,message,old_reactions),client.loop)
 
 def MESSAGE_REACTION_REMOVE_ALL__CAL_MC(client,data):
     channel_id=int(data['channel_id'])
@@ -961,21 +1093,25 @@ def MESSAGE_REACTION_REMOVE_ALL__CAL_MC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
-    if client is not channel.clients[0]:
+    
+    clients=filter_clients(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS)
+    if clients.send(None) is not client:
+        clients.close()
         return
-
+    
     message_id=int(data['message_id'])
     message=channel._mc_find(message_id)
     if message is None:
         return
-
+    
     old_reactions=message.reactions
-    if old_reactions:
-        message.reactions=type(old_reactions)(None)
-        for client_ in channel.clients:
-            Task(client_.events.reaction_clear(client_,message,old_reactions),client_.loop)
-
+    if not old_reactions:
+        return
+    
+    message.reactions=type(old_reactions)(None)
+    for client_ in clients:
+        Task(client_.events.reaction_clear(client_,message,old_reactions),client_.loop)
+    
 def MESSAGE_REACTION_REMOVE_ALL__OPT_SC(client,data):
     channel_id=int(data['channel_id'])
     try:
@@ -998,15 +1134,15 @@ def MESSAGE_REACTION_REMOVE_ALL__OPT_MC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
-    if client is not channel.clients[0]:
+    
+    if first_client(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS) is not client:
         return
-
+    
     message_id=int(data['message_id'])
     message=channel._mc_find(message_id)
     if message is None:
         return
-
+    
     message.reactions=type(message.reactions)(None)
 
 PARSER_DEFAULTS('MESSAGE_REACTION_REMOVE_ALL',MESSAGE_REACTION_REMOVE_ALL__CAL_SC,MESSAGE_REACTION_REMOVE_ALL__CAL_MC,MESSAGE_REACTION_REMOVE_ALL__OPT_SC,MESSAGE_REACTION_REMOVE_ALL__OPT_MC)
@@ -1019,17 +1155,17 @@ def MESSAGE_REACTION_REMOVE__CAL_SC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     message_id=int(data['message_id'])
     message=channel._mc_find(message_id)
     if message is None:
         return
-
+    
     user_id=int(data['user_id'])
     user=PartialUser(user_id)
     emoji=PartialEmoji(data['emoji'])
     message.reactions.remove(emoji,user)
-
+    
     Task(client.events.reaction_delete(client,message,emoji,user),client.loop)
 
 def MESSAGE_REACTION_REMOVE__CAL_MC(client,data):
@@ -1039,21 +1175,23 @@ def MESSAGE_REACTION_REMOVE__CAL_MC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
-    if client is not channel.clients[0]:
+    
+    clients=filter_clients(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS)
+    if clients.send(None) is not client:
+        clients.close()
         return
-
+    
     message_id=int(data['message_id'])
     message=channel._mc_find(message_id)
     if message is None:
         return
-
+    
     user_id=int(data['user_id'])
     user=PartialUser(user_id)
     emoji=PartialEmoji(data['emoji'])
     message.reactions.remove(emoji,user)
-
-    for client_ in channel.clients:
+    
+    for client_ in clients:
         Task(client_.events.reaction_delete(client_,message,emoji,user),client_.loop)
 
 def MESSAGE_REACTION_REMOVE__OPT_SC(client,data):
@@ -1063,12 +1201,12 @@ def MESSAGE_REACTION_REMOVE__OPT_SC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     message_id=int(data['message_id'])
     message=channel._mc_find(message_id)
     if message is None:
         return
-
+    
     user_id=int(data['user_id'])
     user=PartialUser(user_id)
     emoji=PartialEmoji(data['emoji'])
@@ -1081,15 +1219,15 @@ def MESSAGE_REACTION_REMOVE__OPT_MC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
-    if client is not channel.clients[0]:
+    
+    if first_client(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS) is not client:
         return
-
+    
     message_id=int(data['message_id'])
     message=channel._mc_find(message_id)
     if message is None:
         return
-
+    
     user_id=int(data['user_id'])
     user=PartialUser(user_id)
     emoji=PartialEmoji(data['emoji'])
@@ -1105,7 +1243,7 @@ def MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     message_id=int(data['message_id'])
     message=channel._mc_find(message_id)
     if message is None:
@@ -1125,8 +1263,10 @@ def MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
-    if client is not channel.clients[0]:
+    
+    clients=filter_clients(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS)
+    if clients.send(None) is not client:
+        clients.close()
         return
     
     message_id=int(data['message_id'])
@@ -1139,7 +1279,7 @@ def MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC(client,data):
     if users is None:
         return
     
-    for client_ in channel.clients:
+    for client_ in clients:
         Task(client_.events.reaction_delete_emoji(client_,message,emoji,users),client_.loop)
 
 def MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC(client,data):
@@ -1149,7 +1289,7 @@ def MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     message_id=int(data['message_id'])
     message=channel._mc_find(message_id)
     if message is None:
@@ -1165,8 +1305,8 @@ def MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
-    if client is not channel.clients[0]:
+    
+    if first_client(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS) is not client:
         return
     
     message_id=int(data['message_id'])
@@ -1189,26 +1329,28 @@ if CACHE_PRESENCE:
             user=USERS[user_id]
         except KeyError:
             return #pretty much we dont care
-
+        
         while True:
             if user_data:
                 old=user._update(user_data)
                 if old:
                     presence=False
                     break
-
+            
             old=user._update_presence(data)
             if old:
                 presence=True
                 break
-
+            
             return
-
+        
         if presence:
-            Task(client.events.user_presence_update(client,user,old),client.loop)
+            coro=client.events.user_presence_update
         else:
-            Task(client.events.user_edit(client,user,old),client.loop)
-
+            coro=client.events.user_edit
+        
+        Task(coro(client,user,old),client.loop)
+    
     def PRESENCE_UPDATE__CAL_MC(client,data):
         user_data=data['user']
         user_id=int(user_data.pop('id'))
@@ -1216,7 +1358,7 @@ if CACHE_PRESENCE:
             user=USERS[user_id]
         except KeyError:
             return #pretty much we dont care 
-
+        
         while True:
             if user_data:
                 old=user._update(user_data)
@@ -1230,18 +1372,22 @@ if CACHE_PRESENCE:
                 break
             
             return
-
-        clients=set()
-        for guild in user.guild_profiles:
-            clients.update(guild.clients)
-
-        if presence:
-            for client_ in clients:
-                Task(client_.events.user_presence_update(client_,user,old),client_.loop)
-        else:
-            for client_ in clients:
-                Task(client_.events.user_edit(client_,user,old),client_.loop)
-
+        
+        for client_ in CLIENTS:
+            if (client_.intents>>INTENT_GUILD_PRESENCES)&1==0:
+                continue
+            
+            if presence:
+                coro=client_.events.user_presence_update
+            else:
+                coro=client_.events.user_edit
+            
+            if coro is DEFAULT_EVENT:
+                continue
+            
+            Task(coro(client_,user,old),client_.loop)
+            continue
+    
     def PRESENCE_UPDATE__OPT(client,data):
         user_data=data['user']
         user_id=int(user_data.pop('id'))
@@ -1249,9 +1395,10 @@ if CACHE_PRESENCE:
             user=USERS[user_id]
         except KeyError:
             return #pretty much we dont care
-
+        
         if user_data:
             user._update_no_return(user_data)
+        
         user._update_presence_no_return(data)
 
 else:
@@ -1271,11 +1418,13 @@ if CACHE_USER:
         except KeyError:
             sync_guild(client,data,'GUILD_MEMBER_UPDATE')
             return
-
+        
         user,old=User._update_profile(data,guild)
-
-        if old:
-            Task(client.events.user_profile_edit(client,user,old,guild),client.loop)
+        
+        if not old:
+            return
+        
+        Task(client.events.user_profile_edit(client,user,old,guild),client.loop)
 
     def GUILD_MEMBER_UPDATE__CAL_MC(client,data):
         guild_id=int(data['guild_id'])
@@ -1284,16 +1433,20 @@ if CACHE_USER:
         except KeyError:
             sync_guild(client,data,'GUILD_MEMBER_UPDATE')
             return
-
-        if client is not guild.clients[0]:
+        
+        clients=filter_clients(guild.clients,INTENT_GUILD_USERS)
+        if clients.send(None) is not client:
+            clients.close()
             return
         
         user,old=User._update_profile(data,guild)
         
-        if old:
-            for client_ in guild.clients:
-                Task(client_.events.user_profile_edit(client_,user,old,guild),client_.loop)
-
+        if not old:
+            return
+        
+        for client_ in clients:
+            Task(client_.events.user_profile_edit(client_,user,old,guild),client_.loop)
+    
     def GUILD_MEMBER_UPDATE__OPT_SC(client,data):
         guild_id=int(data['guild_id'])
         try:
@@ -1301,7 +1454,7 @@ if CACHE_USER:
         except KeyError:
             sync_guild(client,data,'GUILD_MEMBER_UPDATE')
             return
-
+        
         User._update_profile_no_return(data,guild)
 
     def GUILD_MEMBER_UPDATE__OPT_MC(client,data):
@@ -1311,10 +1464,10 @@ if CACHE_USER:
         except KeyError:
             sync_guild(client,data,'GUILD_MEMBER_UPDATE')
             return
-
-        if client is not guild.clients[0]:
+        
+        if first_client(guild.clients,INTENT_GUILD_USERS) is not client:
             return
-
+        
         User._update_profile_no_return(data,guild)
 
 else:
@@ -1332,8 +1485,10 @@ else:
 
         old=client._update_profile_only(data,guild)
         
-        if old:
-            Task(client.events.user_profile_edit(client,client,old,guild),client.loop)
+        if not old:
+            return
+        
+        Task(client.events.user_profile_edit(client,client,old,guild),client.loop)
 
     GUILD_MEMBER_UPDATE__CAL_MC=GUILD_MEMBER_UPDATE__CAL_SC
 
@@ -1341,14 +1496,14 @@ else:
         user_id=int(data['user']['id'])
         if user_id!=client.id:
             return
-
+        
         guild_id=int(data['guild_id'])
         try:
             guild=GUILDS[guild_id]
         except KeyError:
             sync_guild(client,data,'GUILD_MEMBER_UPDATE')
             return
-
+        
         client._update_profile_only_no_return(data,guild)
 
     GUILD_MEMBER_UPDATE__OPT_MC=GUILD_MEMBER_UPDATE__OPT_SC
@@ -1363,7 +1518,7 @@ def CHANNEL_DELETE__CAL(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-        
+    
     channel._delete(client)
     
     #we do this only for the source client, it is handled personally
@@ -1376,7 +1531,7 @@ def CHANNEL_DELETE__OPT(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     channel._delete(client)
 
 PARSER_DEFAULTS('CHANNEL_DELETE',CHANNEL_DELETE__CAL,CHANNEL_DELETE__CAL,CHANNEL_DELETE__OPT,CHANNEL_DELETE__OPT)
@@ -1389,10 +1544,12 @@ def CHANNEL_UPDATE__CAL_SC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     old=channel._update(data)
-    if old:
-        Task(client.events.channel_edit(client,channel,old),client.loop)
+    if not old:
+        return
+    
+    Task(client.events.channel_edit(client,channel,old),client.loop)
 
 def CHANNEL_UPDATE__CAL_MC(client,data):
     channel_id=int(data['id'])
@@ -1401,14 +1558,18 @@ def CHANNEL_UPDATE__CAL_MC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
-    if client is not channel.clients[0]:
+    
+    clients=filter_clients(channel.clients,INTENT_GUILDS)
+    if clients.send(None) is not client:
+        clients.close()
         return
     
     old=channel._update(data)
-    if old:
-        for client_ in channel.clients:
-            Task(client_.events.channel_edit(client_,channel,old),client_.loop)
+    if not old:
+        return
+    
+    for client_ in clients:
+        Task(client_.events.channel_edit(client_,channel,old),client_.loop)
 
 def CHANNEL_UPDATE__OPT_SC(client,data):
     channel_id=int(data['id'])
@@ -1417,7 +1578,7 @@ def CHANNEL_UPDATE__OPT_SC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     channel._update_no_return(data)
 
 def CHANNEL_UPDATE__OPT_MC(client,data):
@@ -1427,10 +1588,10 @@ def CHANNEL_UPDATE__OPT_MC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
-    if client is not channel.clients[0]:
+    
+    if first_client(channel.clients,INTENT_GUILDS) is not client:
         return
-
+    
     channel._update_no_return(data)
 
 PARSER_DEFAULTS('CHANNEL_UPDATE',CHANNEL_UPDATE__CAL_SC,CHANNEL_UPDATE__CAL_MC,CHANNEL_UPDATE__OPT_SC,CHANNEL_UPDATE__OPT_MC)
@@ -1449,9 +1610,9 @@ def CHANNEL_CREATE__CAL(client,data):
         except KeyError:
             sync_guild(client,data,'CHANNEL_CREATE')
             return
-
+        
         channel=CHANNEL_TYPES[channel_type](data,client,guild)
-
+    
     Task(client.events.channel_create(client,channel),client.loop)
 
 def CHANNEL_CREATE__OPT(client,data):
@@ -1459,14 +1620,14 @@ def CHANNEL_CREATE__OPT(client,data):
     if channel_type in (1,3):
         CHANNEL_TYPES[channel_type]._dispatch(data,client)
         return
-
+    
     guild_id=int(data['guild_id'])
     try:
         guild=GUILDS[guild_id]
     except KeyError:
         sync_guild(client,data,'CHANNEL_CREATE')
         return
-
+    
     CHANNEL_TYPES[channel_type](data,client,guild)
 
 PARSER_DEFAULTS('CHANNEL_CREATE',CHANNEL_CREATE__CAL,CHANNEL_CREATE__CAL,CHANNEL_CREATE__OPT,CHANNEL_CREATE__OPT)
@@ -1479,7 +1640,7 @@ def CHANNEL_PINS_UPDATE__CAL(client,data):
     except KeyError:
         sync_guild(client,data,('CHANNEL_PINS_UPDATE',check_channel,channel_id))
         return
-
+    
     #ignoring message search
     Task(client.events.channel_pin_update(client,channel),client.loop)
 
@@ -1495,12 +1656,12 @@ def CHANNEL_RECIPIENT_ADD_CAL(client,data):
         channel=CHANNELS[channel_id]
     except KeyError:
         return
-
+    
     user=User(data['user'])
     users=channel.users
     if user not in users:
         users.append(user)
-
+    
     Task(client.events.channel_group_user_add(client,channel,user),client.loop)
 
 def CHANNEL_RECIPIENT_ADD__OPT(client,data):
@@ -1509,7 +1670,7 @@ def CHANNEL_RECIPIENT_ADD__OPT(client,data):
         channel=CHANNELS[channel_id]
     except KeyError:
         return
-
+    
     user=User(data['user'])
     users=channel.users
     if user not in users:
@@ -1524,13 +1685,13 @@ def CHANNEL_RECIPIENT_REMOVE__CAL_SC(client,data):
         channel=CHANNELS[channel_id]
     except KeyError:
         return
-
+    
     user=User(data['user'])
     try:
         channel.users.remove(user)
     except ValueError:
         return
-
+    
     if client!=user:
         Task(client.events.channel_group_user_delete(client,channel,user),client.loop)
 
@@ -1614,8 +1775,10 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
-    if client is not guild.clients[0]:
+    
+    clients=filter_clients(guild.clients,INTENT_GUILD_EMOJIS)
+    if clients.send(None) is not client:
+        clients.close()
         return
     
     changes=guild._update_emojis(data['emojis'])
@@ -1623,9 +1786,9 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client,data):
     if not changes:
         return
     
-    for action, emoji, old in changes:
-        if action==EMOJI_UPDATE_EDIT:
-            for client_ in guild.clients:
+    for client_ in clients:
+        for action, emoji, old in changes:
+            if action==EMOJI_UPDATE_EDIT:
                 coro=client_.events.emoji_edit
                 if coro is DEFAULT_EVENT:
                     continue
@@ -1633,10 +1796,7 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client,data):
                 Task(coro(client,guild,emoji,old),client_.loop)
                 continue
                 
-            continue
-            
-        if action==EMOJI_UPDATE_NEW:
-            for client_ in guild.clients:
+            if action==EMOJI_UPDATE_NEW:
                 coro=client_.events.emoji_create
                 if coro is DEFAULT_EVENT:
                     continue
@@ -1644,10 +1804,7 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client,data):
                 Task(coro(client,guild,emoji),client_.loop)
                 continue
             
-            continue
-        
-        if action==EMOJI_UPDATE_DELETE:
-            for client_ in guild.clients:
+            if action==EMOJI_UPDATE_DELETE:
                 coro=client_.events.emoji_delete
                 if coro is DEFAULT_EVENT:
                     continue
@@ -1656,9 +1813,8 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client,data):
                 continue
             
             continue
-        
-        # no more case
-        
+            # no more case
+
 def GUILD_EMOJIS_UPDATE__OPT_SC(client,data):
     guild_id=int(data['guild_id'])
     try:
@@ -1666,7 +1822,7 @@ def GUILD_EMOJIS_UPDATE__OPT_SC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     guild._sync_emojis(data['emojis'])
 
 def GUILD_EMOJIS_UPDATE__OPT_MC(client,data):
@@ -1676,10 +1832,10 @@ def GUILD_EMOJIS_UPDATE__OPT_MC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
-    if client is not guild.clients[0]:
+    
+    if first_client(guild.clients,INTENT_GUILD_EMOJIS) is not client:
         return
-
+    
     guild._sync_emojis(data['emojis'])
 
 PARSER_DEFAULTS('GUILD_EMOJIS_UPDATE',GUILD_EMOJIS_UPDATE__CAL_SC,GUILD_EMOJIS_UPDATE__CAL_MC,GUILD_EMOJIS_UPDATE__OPT_SC,GUILD_EMOJIS_UPDATE__OPT_MC)
@@ -1692,10 +1848,10 @@ def GUILD_MEMBER_ADD__CAL_SC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     user=User(data,guild)
     guild.user_count+=1
-
+    
     Task(client.events.guild_user_add(client,guild,user),client.loop)
 
 def GUILD_MEMBER_ADD__CAL_MC(client,data):
@@ -1705,14 +1861,16 @@ def GUILD_MEMBER_ADD__CAL_MC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
-    if client is not guild.clients[0]:
+    
+    clients=filter_clients(guild.clients,INTENT_GUILD_USERS)
+    if clients.send(None) is not client:
+        clients.close()
         return
     
     user=User(data,guild)
     guild.user_count+=1
-
-    for client_ in guild.clients:
+    
+    for client_ in clients:
         Task(client_.events.guild_user_add(client_,guild,user),client_.loop)
 
 if CACHE_USER:
@@ -1723,7 +1881,7 @@ if CACHE_USER:
         except KeyError:
             sync_guild(client,data,None)
             return
-
+        
         User(data,guild)
         guild.user_count+=1
 
@@ -1735,7 +1893,7 @@ if CACHE_USER:
             sync_guild(client,data,None)
             return
 
-        if client is not guild.clients[0]:
+        if first_client(guild.clients,INTENT_GUILD_USERS) is not client:
             return
 
         User(data,guild)
@@ -1748,7 +1906,7 @@ else:
         except KeyError:
             sync_guild(client,data,None)
             return
-
+        
         guild.user_count+=1
 
     def GUILD_MEMBER_ADD__OPT_MC(client,data):
@@ -1758,10 +1916,10 @@ else:
         except KeyError:
             sync_guild(client,data,None)
             return
-
-        if client is not guild.clients[0]:
+        
+        if first_client(guild.clients,INTENT_GUILD_USERS) is not client:
             return
-
+        
         guild.user_count+=1
 
 PARSER_DEFAULTS('GUILD_MEMBER_ADD',GUILD_MEMBER_ADD__CAL_SC,GUILD_MEMBER_ADD__CAL_MC,GUILD_MEMBER_ADD__OPT_SC,GUILD_MEMBER_ADD__OPT_MC)
@@ -1775,9 +1933,9 @@ if CACHE_USER:
         except KeyError:
             sync_guild(client,data,'GUILD_MEMBER_REMOVE')
             return
-
+        
         user=User(data['user'])
-
+        
         try:
             del guild.users[user.id]
         except KeyError:
@@ -1799,8 +1957,10 @@ if CACHE_USER:
         except KeyError:
             sync_guild(client,data,'GUILD_MEMBER_REMOVE')
             return
-
-        if client is not guild.clients[0]:
+        
+        clients=filter_clients(guild.clients,INTENT_GUILD_USERS)
+        if clients.send(None) is not client:
+            clients.close()
             return
         
         user=User(data['user'])
@@ -1817,9 +1977,9 @@ if CACHE_USER:
         
         guild.user_count-=1
         
-        for client_ in guild.clients:
+        for client_ in clients:
             Task(client_.events.guild_user_delete(client_,guild,user,profile),client_.loop)
-
+    
     def GUILD_MEMBER_REMOVE__OPT_SC(client,data):
         guild_id=int(data['guild_id'])
         try:
@@ -1827,9 +1987,9 @@ if CACHE_USER:
         except KeyError:
             sync_guild(client,data,'GUILD_MEMBER_REMOVE')
             return
-
+        
         user=User(data['user'])
-
+        
         try:
             del guild.users[user.id]
         except KeyError:
@@ -1837,9 +1997,9 @@ if CACHE_USER:
         else:
             if type(user) is User:
                 user.guild_profiles.pop(guild,None)
-
+        
         guild.user_count-=1
-
+    
     def GUILD_MEMBER_REMOVE__OPT_MC(client,data):
         guild_id=int(data['guild_id'])
         try:
@@ -1847,12 +2007,12 @@ if CACHE_USER:
         except KeyError:
             sync_guild(client,data,'GUILD_MEMBER_REMOVE')
             return
-
-        if client is not guild.clients[0]:
+        
+        if first_client(guild.clients,INTENT_GUILD_USERS) is not client:
             return
-
+        
         user=User(data['user'])
-
+        
         try:
             del guild.users[user.id]
         except KeyError:
@@ -1860,7 +2020,7 @@ if CACHE_USER:
         else:
             if type(user) is User:
                 user.guild_profiles.pop(guild,None)
-
+        
         guild.user_count-=1
 
 else:
@@ -1871,10 +2031,10 @@ else:
         except KeyError:
             sync_guild(client,data,'GUILD_MEMBER_REMOVE')
             return
-
+        
         user=User(data['user'])
         guild.user_count-=1
-
+        
         Task(client.events.guild_user_delete(client,guild,user,None),client.loop)
 
     def GUILD_MEMBER_REMOVE__CAL_MC(client,data):
@@ -1884,15 +2044,18 @@ else:
         except KeyError:
             sync_guild(client,data,'GUILD_MEMBER_REMOVE')
             return
-
-        if client is not guild.clients[0]:
+        
+        clients=filter_clients(guild.clients,INTENT_GUILD_USERS)
+        if clients.send(None) is not client:
+            clients.close()
             return
-
+        
         user=User(data['user'])
         guild.user_count-=1
         
-        Task(client.events.guild_user_delete(client,guild,user,None),client.loop)
-
+        for client_ in clients:
+            Task(client_.events.guild_user_delete(client_,guild,user,None),client_.loop)
+    
     def GUILD_MEMBER_REMOVE__OPT_SC(client,data):
         guild_id=int(data['guild_id'])
         try:
@@ -1900,9 +2063,9 @@ else:
         except KeyError:
             sync_guild(client,data,'GUILD_MEMBER_REMOVE')
             return
-
+        
         guild.user_count-=1
-
+    
     def GUILD_MEMBER_REMOVE__OPT_MC(client,data):
         guild_id=int(data['guild_id'])
         try:
@@ -1910,10 +2073,10 @@ else:
         except KeyError:
             sync_guild(client,data,'GUILD_MEMBER_REMOVE')
             return
-
-        if client is not guild.clients[0]:
+        
+        if first_client(guild.clients,INTENT_GUILD_USERS) is not client:
             return
-
+        
         guild.user_count-=1
 
 PARSER_DEFAULTS('GUILD_MEMBER_REMOVE',GUILD_MEMBER_REMOVE__CAL_SC,GUILD_MEMBER_REMOVE__CAL_MC,GUILD_MEMBER_REMOVE__OPT_SC,GUILD_MEMBER_REMOVE__OPT_MC)
@@ -2006,7 +2169,7 @@ else:
         ready_state=client.ready_state
         if ready_state is None:
             return
-
+        
         ready_state.feed(guild)
 
 PARSER_DEFAULTS('GUILD_CREATE',GUILD_CREATE__CAL,GUILD_CREATE__CAL,GUILD_CREATE__OPT,GUILD_CREATE__OPT)
@@ -2030,7 +2193,7 @@ def GUILD_SYNC__OPT(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     guild._sync(data,client)
 
 PARSER_DEFAULTS('GUILD_SYNC',GUILD_SYNC__CAL,GUILD_SYNC__CAL,GUILD_SYNC__OPT,GUILD_SYNC__OPT)
@@ -2043,11 +2206,12 @@ def GUILD_UPDATE__CAL_SC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     old=guild._update(data)
-
-    if old:
-        Task(client.events.guild_edit(client,guild,old),client.loop)
+    if not old:
+        return
+    
+    Task(client.events.guild_edit(client,guild,old),client.loop)
 
 def GUILD_UPDATE__CAL_MC(client,data):
     guild_id=int(data['guild_id'])
@@ -2057,14 +2221,17 @@ def GUILD_UPDATE__CAL_MC(client,data):
         sync_guild(client,data,None)
         return
     
-    if client is not guild.clients[0]:
+    clients=filter_clients(guild.clients,INTENT_GUILDS)
+    if clients.send(None) is not client:
+        clients.close()
         return
     
     old=guild._update(data)
-
-    if old:
-        for client_ in guild.clients:
-            Task(client_.events.guild_edit(client_,guild,old),client_.loop)
+    if not old:
+        return
+    
+    for client_ in clients:
+        Task(client_.events.guild_edit(client_,guild,old),client_.loop)
 
 def GUILD_UPDATE__OPT_SC(client,data):
     guild_id=int(data['guild_id'])
@@ -2073,7 +2240,7 @@ def GUILD_UPDATE__OPT_SC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     guild._update_no_return(data)
 
 def GUILD_UPDATE__OPT_MC(client,data):
@@ -2083,10 +2250,10 @@ def GUILD_UPDATE__OPT_MC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
-    if client is not guild.clients[0]:
+    
+    if first_client(guild.clients,INTENT_GUILDS) is not client:
         return
-
+    
     guild._update_no_return(data)
 
 PARSER_DEFAULTS('GUILD_UPDATE',GUILD_UPDATE__CAL_SC,GUILD_UPDATE__CAL_MC,GUILD_UPDATE__OPT_SC,GUILD_UPDATE__OPT_MC)
@@ -2098,14 +2265,14 @@ def GUILD_DELETE__CAL(client,data):
         guild=GUILDS[guild_id]
     except KeyError:
         return
-
+    
     if data.get('unavailable',2)==1:
         return
-
+    
     profile=client.guild_profiles.pop(guild,None)
     
     guild._delete(client)
-
+    
     Task(client.events.guild_delete(client,guild,profile),client.loop)
 
 def GUILD_DELETE__OPT(client,data):
@@ -2114,12 +2281,12 @@ def GUILD_DELETE__OPT(client,data):
         guild=GUILDS[guild_id]
     except KeyError:
         return
-
+    
     if data.get('unavailable',2)==1:
         return
-
+    
     client.guild_profiles.pop(guild,None)
-
+    
     guild._delete(client)
 
 PARSER_DEFAULTS('GUILD_DELETE',GUILD_DELETE__CAL,GUILD_DELETE__CAL,GUILD_DELETE__OPT,GUILD_DELETE__OPT)
@@ -2134,7 +2301,7 @@ def GUILD_BAN_ADD__CAL(client,data):
         return
     
     user=User(data['user'])
-
+    
     Task(client.events.guild_ban_add(client,guild,user),client.loop)
 
 def GUILD_BAN_ADD__OPT(client,data):
@@ -2167,19 +2334,19 @@ if CACHE_PRESENCE:
             guild=GUILDS[guild_id]
         except KeyError:
             return
-
+        
         collected=[]
         for user_data in data['members']:
             user=User(user_data,guild)
             collected.append(user)
-
+        
         try:
             presence_datas=data['presences']
         except KeyError:
             pass
         else:
             guild._apply_presences(presence_datas)
-
+        
         #this event is called at guild joining, and only 1 client joins at the same time
         Task(client.events.guild_user_chunk(client,guild,collected),client.loop)
 else:
@@ -2189,7 +2356,7 @@ else:
             guild=GUILDS[guild_id]
         except KeyError:
             return
-
+        
         collected=[]
         for user_data in data['members']:
             user=User(user_data,guild)
@@ -2207,7 +2374,7 @@ def GUILD_INTEGRATIONS_UPDATE__CAL(client,data):
     except KeyError:
         sync_guild(client,data,'GUILD_INTEGRATIONS_UPDATE')
         return
-
+    
     Task(client.events.integration_update(client,guild),client.loop)
 
 def GUILD_INTEGRATIONS_UPDATE__OPT(client,data):
@@ -2223,9 +2390,9 @@ def GUILD_ROLE_CREATE__CAL_SC(client,data):
     except KeyError:
         sync_guild(client,data,'GUILD_ROLE_CREATE')
         return
-
+    
     role=Role(data['role'],guild)
-
+    
     Task(client.events.role_create(client,role),client.loop)
 
 def GUILD_ROLE_CREATE__CAL_MC(client,data):
@@ -2236,12 +2403,14 @@ def GUILD_ROLE_CREATE__CAL_MC(client,data):
         sync_guild(client,data,'GUILD_ROLE_CREATE')
         return
     
-    if client is not guild.clients[0]:
+    clients=filter_clients(guild.clients,INTENT_GUILDS)
+    if clients.send(None) is not client:
+        clients.close()
         return
     
     role=Role(data['role'],guild)
-
-    for client_ in guild.clients:
+    
+    for client_ in clients:
         Task(client_.events.role_create(client_,role),client_.loop)
 
 def GUILD_ROLE_CREATE__OPT_SC(client,data):
@@ -2251,7 +2420,7 @@ def GUILD_ROLE_CREATE__OPT_SC(client,data):
     except KeyError:
         sync_guild(client,data,'GUILD_ROLE_CREATE')
         return
-
+    
     Role(data['role'],guild)
 
 def GUILD_ROLE_CREATE__OPT_MC(client,data):
@@ -2261,10 +2430,10 @@ def GUILD_ROLE_CREATE__OPT_MC(client,data):
     except KeyError:
         sync_guild(client,data,'GUILD_ROLE_CREATE')
         return
-
-    if client is not guild.clients[0]:
+    
+    if first_client(guild.clients,INTENT_GUILDS) is not client:
         return
-
+    
     Role(data['role'],guild)
 
 PARSER_DEFAULTS('GUILD_ROLE_CREATE',GUILD_ROLE_CREATE__CAL_SC,GUILD_ROLE_CREATE__CAL_MC,GUILD_ROLE_CREATE__OPT_SC,GUILD_ROLE_CREATE__OPT_MC)
@@ -2277,16 +2446,16 @@ def GUILD_ROLE_DELETE__CAL_SC(client, data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     role_id=int(data['role_id'])
     try:
         role=guild.all_role[role_id]
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     role._delete()
-
+    
     Task(client.events.role_delete(client,role),client.loop)
 
 def GUILD_ROLE_DELETE__CAL_MC(client, data):
@@ -2296,8 +2465,10 @@ def GUILD_ROLE_DELETE__CAL_MC(client, data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
-    if client is not guild.clients[0]:
+    
+    clients=filter_clients(guild.clients,INTENT_GUILDS)
+    if clients.send(None) is not client:
+        clients.close()
         return
     
     role_id=int(data['role_id'])
@@ -2306,10 +2477,10 @@ def GUILD_ROLE_DELETE__CAL_MC(client, data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     role._delete()
     
-    for client_ in guild.clients:
+    for client_ in clients:
         Task(client_.events.role_delete(client_,role),client_.loop)
 
 def GUILD_ROLE_DELETE__OPT_SC(client, data):
@@ -2319,14 +2490,14 @@ def GUILD_ROLE_DELETE__OPT_SC(client, data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     role_id=int(data['role_id'])
     try:
         role=guild.all_role[role_id]
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     role._delete()
 
 def GUILD_ROLE_DELETE__OPT_MC(client, data):
@@ -2336,17 +2507,17 @@ def GUILD_ROLE_DELETE__OPT_MC(client, data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
-    if client is not guild.clients[0]:
+    
+    if first_client(guild.clients,INTENT_GUILDS) is not client:
         return
-
+    
     role_id=int(data['role_id'])
     try:
         role=guild.all_role[role_id]
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     role._delete()
 
 PARSER_DEFAULTS('GUILD_ROLE_DELETE',GUILD_ROLE_DELETE__CAL_SC,GUILD_ROLE_DELETE__CAL_MC,GUILD_ROLE_DELETE__OPT_SC,GUILD_ROLE_DELETE__OPT_MC)
@@ -2359,7 +2530,7 @@ def GUILD_ROLE_UPDATE__CAL_SC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     role_data=data['role']
     role_id=int(role_data['id'])
     try:
@@ -2367,11 +2538,12 @@ def GUILD_ROLE_UPDATE__CAL_SC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     old=role._update(data['role'])
-
-    if old:
-        Task(client.events.role_edit(client,role,old),client.loop)
+    if not old:
+        return
+    
+    Task(client.events.role_edit(client,role,old),client.loop)
 
 def GUILD_ROLE_UPDATE__CAL_MC(client,data):
     guild_id=int(data['guild_id'])
@@ -2380,8 +2552,10 @@ def GUILD_ROLE_UPDATE__CAL_MC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
-    if client is not guild.clients[0]:
+    
+    clients=filter_clients(guild.clients,INTENT_GUILDS)
+    if clients.send(None) is not client:
+        clients.close()
         return
     
     role_data=data['role']
@@ -2393,10 +2567,11 @@ def GUILD_ROLE_UPDATE__CAL_MC(client,data):
         return
     
     old=role._update(data['role'])
+    if not old:
+        return
     
-    if old:
-        for client_ in guild.clients:
-            Task(client_.events.role_edit(client_,role,old),client_.loop)
+    for client_ in clients:
+        Task(client_.events.role_edit(client_,role,old),client_.loop)
 
 def GUILD_ROLE_UPDATE__OPT_SC(client,data):
     guild_id=int(data['guild_id'])
@@ -2405,7 +2580,7 @@ def GUILD_ROLE_UPDATE__OPT_SC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     role_data=data['role']
     role_id=int(role_data['id'])
     try:
@@ -2413,7 +2588,7 @@ def GUILD_ROLE_UPDATE__OPT_SC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     role._update_no_return(data['role'])
 
 def GUILD_ROLE_UPDATE__OPT_MC(client,data):
@@ -2423,10 +2598,10 @@ def GUILD_ROLE_UPDATE__OPT_MC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
-    if client is not guild.clients[0]:
+    
+    if first_client(guild.clients,INTENT_GUILDS) is not client:
         return
-
+    
     role_data=data['role']
     role_id=int(role_data['id'])
     try:
@@ -2434,7 +2609,7 @@ def GUILD_ROLE_UPDATE__OPT_MC(client,data):
     except KeyError:
         sync_guild(client,data,None)
         return
-
+    
     role._update_no_return(data['role'])
 
 PARSER_DEFAULTS('GUILD_ROLE_UPDATE',GUILD_ROLE_UPDATE__CAL_SC,GUILD_ROLE_UPDATE__CAL_MC,GUILD_ROLE_UPDATE__OPT_SC,GUILD_ROLE_UPDATE__OPT_MC)
@@ -2447,12 +2622,12 @@ def WEBHOOKS_UPDATE__CAL(client,data):
     except KeyError:
         sync_guild(client,data,'WEBHOOKS_UPDATE')
         return
-
+    
     guild.webhooks_uptodate=False
     
     channel_id=int(data['channel_id'])
     channel=guild.all_channel.get(channel_id,None)
-
+    
     #if this happens the client might ask for update.
     Task(client.events.webhook_update(client,channel,),client.loop)
 
@@ -2463,7 +2638,7 @@ def WEBHOOKS_UPDATE__OPT(client,data):
     except KeyError:
         sync_guild(client,data,'WEBHOOKS_UPDATE')
         return
-
+    
     guild.webhooks_uptodate=False
 
 PARSER_DEFAULTS('WEBHOOKS_UPDATE',WEBHOOKS_UPDATE__CAL,WEBHOOKS_UPDATE__CAL,WEBHOOKS_UPDATE__OPT,WEBHOOKS_UPDATE__OPT)
@@ -2486,16 +2661,16 @@ def VOICE_STATE_UPDATE__CAL_SC(client,data):
             sync_guild(client,data,'VOICE_STATE_UPDATE')
             return
         call=guild
-
+    
     try:
         user=User(data['member'],guild)
     except KeyError:
         user=User(data['user'])
     result=call._update_voice_state(data,user)
-
+    
     if result is None:
         return
-
+    
     #need to comapre id, because if caching is disabled,
     #the objects will be different.
     if user==client:
@@ -2508,7 +2683,7 @@ def VOICE_STATE_UPDATE__CAL_SC(client,data):
                 Task(voice_client.disconnect(force=True,terminate=False),client.loop)
             else:
                 voice_client.channel=result[0].channel
-
+    
     Task(client.events.voice_state_update(client,*result),client.loop)
 
 def VOICE_STATE_UPDATE__CAL_MC(client,data):
@@ -2530,8 +2705,10 @@ def VOICE_STATE_UPDATE__CAL_MC(client,data):
             return
         call=guild
         clients=guild.clients
-
-    if client is not clients[0]:
+    
+    clients=filter_clients(clients,INTENT_GUILD_VOICE_STATES)
+    if clients.send(None) is not client:
+        clients.close()
         return
     
     try:
@@ -2556,7 +2733,7 @@ def VOICE_STATE_UPDATE__CAL_MC(client,data):
                     Task(voice_client.disconnect(force=True,terminate=False),client_.loop)
                 else:
                     voice_client.channel=result[0].channel
-
+        
         Task(client_.events.voice_state_update(client_,*result),client_.loop)
 
 def VOICE_STATE_UPDATE__OPT_SC(client,data):
@@ -2576,27 +2753,27 @@ def VOICE_STATE_UPDATE__OPT_SC(client,data):
             sync_guild(client,data,'VOICE_STATE_UPDATE')
             return
         call=guild
-
+    
     try:
         user=User(data['member'],guild)
     except KeyError:
         user=User(data['user'])
     
     result=call._update_voice_state_restricted(data,user)
-
+    
     if result is None:
         return
-
+    
     #need to comapre id, because if caching is disabled,
     #the objects will be different.
     if user!=client:
         return
-
+    
     try:
         voice_client=client.voice_clients[id_]
     except KeyError:
         return
-
+    
     if result is _spaceholder:
         Task(voice_client.disconnect(force=True,terminate=False),client.loop)
     else:
@@ -2621,10 +2798,10 @@ def VOICE_STATE_UPDATE__OPT_MC(client,data):
             return
         call=guild
         clients=guild.clients
-
-    if client is not clients[0]:
+    
+    if first_client(clients,INTENT_GUILD_VOICE_STATES) is not client:
         return
-
+    
     try:
         user=User(data['member'],guild)
     except KeyError:
@@ -2633,7 +2810,7 @@ def VOICE_STATE_UPDATE__OPT_MC(client,data):
     
     if result is None:
         return
-
+    
     for client in clients:
         #need to comapre id, because if caching is disabled,
         #the objects will be different.
@@ -2641,12 +2818,12 @@ def VOICE_STATE_UPDATE__OPT_MC(client,data):
             break
     else:
         return
-
+    
     try:
         voice_client=client.voice_clients[id_]
     except KeyError:
         return
-
+    
     if result is _spaceholder:
         Task(voice_client.disconnect(force=True,terminate=False),client.loop)
     else:
@@ -2664,7 +2841,7 @@ def VOICE_SERVER_UPDATE(client,data):
         voice_client=client.voice_clients[voice_client_id]
     except KeyError:
         return
-
+    
     Task(voice_client._create_socket(data),client.loop)
     #should we add event to this?
 
@@ -2677,17 +2854,16 @@ if CACHE_PRESENCE:
         try:
             channel=CHANNELS[channel_id]
         except KeyError:
-            if 'guild_id' in data:
-                sync_guild(client,data,('TYPING_START',check_channel,channel_id))
+            sync_guild(client,data,('TYPING_START',check_channel,channel_id))
             return
-
+        
         user_id=int(data['user_id'])
         user=PartialUser(user_id)
         
         timestamp=utcfromtimestamp(data.get('timestamp'))
-
+        
         Task(client.events.typing(client,channel,user,timestamp),client.loop)
-
+    
     def TYPING_START__OPT(client,data):
         return
 else:
@@ -2724,11 +2900,11 @@ def RELATIONSHIP_ADD__CAL(client,data):
         old_relationship=client.relationships.pop(user_id)
     except KeyError:
         old_relationship=None
-
+    
     user=PartialUser(user_id)
     
     new_relationship=Relationship(client,user,data)
-
+    
     if old_relationship is None:
         coro=client.events.relationship_add(client,new_relationship)
     else:
@@ -2741,9 +2917,9 @@ def RELATIONSHIP_ADD__OPT(client,data):
         del client.relationships[user_id]
     except KeyError:
         pass
-
+    
     user=PartialUser(user_id)
-
+    
     Relationship(client,user,data)
 
 PARSER_DEFAULTS('RELATIONSHIP_ADD',RELATIONSHIP_ADD__CAL,RELATIONSHIP_ADD__CAL,RELATIONSHIP_ADD__OPT,RELATIONSHIP_ADD__OPT)
@@ -2793,7 +2969,7 @@ def GIFT_CODE_UPDATE__CAL(client,data):
     except KeyError:
         sync_guild(client,data,('GIFT_CODE_UPDATE',check_channel,channel_id))
         return
-
+    
     gift=Gift(data)
     Task(client.events.gift_update(client,channel,gift),client.loop)
 

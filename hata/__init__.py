@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-__version__ = '20200126.1'
+__version__ = '20200131.1'
 
 import sys
 ASYNC_ONLY = ('async_only' in sys.argv) or ('async-only' in sys.argv)
@@ -17,7 +17,6 @@ from .ios import *
 from .py_formdata import *
 from .py_http import *
 from .py_websocket import *
-
 
 
 if ASYNC_ONLY:

@@ -93,3 +93,15 @@ time. Can be `0` for unlimited, or between 1 and 99 for the exact amount.
 
 The bitrate limit used, when validating the passed [`bitrate`](#bitrate)'s
 value.
+
+> Bound to any Guild Voice channel type.
+
+##### `category_id`
+
+- type : `int`
+- default : `None`
+
+If the channel supposed to be under a category, then the category's id can be
+passed.
+
+> Bound to all non Guild Category channel type.

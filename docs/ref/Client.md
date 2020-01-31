@@ -1194,6 +1194,17 @@ of less than 10 guilds.
 
 - `name`, can have length from 2 up to 100.
 - `icon`, default : `None`, should be `bytes` object if set.
+- `roles`, default : `[]`. The listed roles should be created with the
+[`cr_p_role_object`](cr_p_role_object.md) function. The role's id represent
+just a symbolic number, which with they can be mentioned at permission
+overwrites. Role 0 is `@everyone`.
+- `channels`, default : `[]`. The listed channels should be created with
+[`cr_pg_channel_object`](cr_pg_channel_object.md) function.
+- `afk_channel_id`, default : `None`. The `id` of the guild's afk channel.
+- `system_channel_id`, default : `None`. The `id` of the guild's system
+channel.
+- `afk_timeout`, default : `None`. The afk timeout in seconds, of the afk
+channel. Should be passed as one of: 60, 300, 900, 1800, 3600.
 - `region`, default  : `VoiceRegion.eu_central`. Any 
 [`voice region`](VoiceRegion.md).
 - `verification_level` default : `verification_levels.medium`. The
@@ -1205,12 +1216,6 @@ guild.
 mentioned.
 - `ContentFilterLevel`, default : `ContentFilterLevel.disabled`. The
 [explicit content filter level](ContentFilterLevel.md) of the guild.
-- `roles`, default : `[]`. The listed roles should be created with the
-[`cr_p_role_object`](cr_p_role_object.md) function. The role's id represent
-just a symbolic number, which with they can be mentioned at permission
-overwrites. Role 0 is `@everyone`.
-- `channels`, default : `[]`. The listed channels should be created with
-[`cr_pg_channel_object`](cr_pg_channel_object.md) function.
 
 ### `guild_prune(self,guild,days,count=False,reason=None)`
 

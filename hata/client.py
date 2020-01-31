@@ -2152,16 +2152,22 @@ class Client(UserBase):
     async def guild_delete(self,guild):
         await self.http.guild_delete(guild.id)
 
-    async def guild_create(self,name,icon=None,
-            region=VoiceRegion.eu_central,
-            verification_level=VerificationLevel.medium,
-            message_notification_level=MessageNotificationLevel.only_mentions,
-            content_filter_level=ContentFilterLevel.disabled,
-            roles=[],channels=[]):
+    async def guild_create(self         , name                                  ,
+            icon                        = None                                  ,
+            roles                       = []                                    ,
+            channels                    = []                                    ,
+            afk_channel_id              = None                                  ,
+            system_channel_id           = None                                  ,
+            afk_timeout                 = None                                  ,
+            region                      = VoiceRegion.eu_central                ,
+            verification_level          = VerificationLevel.medium              ,
+            message_notification_level  = MessageNotificationLevel.only_mentions,
+            content_filter_level        = ContentFilterLevel.disabled           ,
+                ):
         
         if len(self.guild_profiles)>(99,9)[self.is_bot]:
             if self.is_bot:
-                message='Bots cannot create a new server if they have more than 10.'
+                message='Bots cannot create a new server if they have 10 or more.'
             else:
                 message='Hooman cannot have more than 100 guilds.'
             raise ValueError(message)
@@ -2180,6 +2186,18 @@ class Client(UserBase):
             'roles'                         : roles,
             'channels'                      : channels,
                 }
+        
+        if (afk_channel_id is not None):
+            data['afk_channel_id'] = afk_channel_id
+        
+        if (system_channel_id is not None):
+            data['system_channel_id'] = system_channel_id
+        
+        if (afk_timeout is not None):
+            if afk_timeout not in (60,300,900,1800,3600):
+                raise ValueError(f'Afk timeout should be 60, 300, 900, 1800, 3600 seconds!, got `{afk_timeout!r}`')
+            data['afk_timeout']=afk_timeout
+        
         data = await self.http.guild_create(data)
         #we can create only partial, because the guild data is not completed usually
         return PartialGuild(data)
@@ -2287,7 +2305,7 @@ class Client(UserBase):
 
         if afk_timeout is not None:
             if afk_timeout not in (60,300,900,1800,3600):
-                raise ValueError('Afk timeout should be 60, 300, 900, 1800, 3600  seconds!')
+                raise ValueError(f'Afk timeout should be 60, 300, 900, 1800, 3600  seconds, got `{afk_timeout!r}`')
             data['afk_timeout']=afk_timeout
         
         if (verification_level is not None):

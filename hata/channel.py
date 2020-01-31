@@ -1795,7 +1795,8 @@ CHANNEL_TYPES = (
         )
 
 def cr_pg_channel_object(name, type_, overwrites=None, topic=None, nsfw=False,
-        slowmode=0, bitrate=64000, user_limit=0, bitrate_limit=96000):
+        slowmode=0, bitrate=64000, user_limit=0, bitrate_limit=96000,
+        category_id=None):
     
     if type(type_) is int:
         if type_<0:
@@ -1858,7 +1859,11 @@ def cr_pg_channel_object(name, type_, overwrites=None, topic=None, nsfw=False,
         if user_limit<0 or user_limit>99:
             raise ValueError(f'`user_limit` should be 0 for unlimited or 1-99, got `{user_limit!r}`')
         result['user_limit']=user_limit
-            
+    
+    if type_value not in ChannelCategory.INTERCHANGE[0]:
+        if (category_id is not None):
+            result['parent_id']=category_id
+    
     return result
 
 #scopes

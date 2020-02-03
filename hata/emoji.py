@@ -1,5 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('BUILTIN_EMOJIS', 'Emoji', 'parse_emoji', )
+__all__ = ('BUILTIN_EMOJIS', 'Emoji', 'parse_emoji', 'reaction_mapping',
+    'reaction_mapping_line',)
 
 from .client_core import EMOJIS
 from .others import id_to_time, EMOJI_RP
@@ -313,9 +314,26 @@ class reaction_mapping_line(set):
     
     def __init__(self,unknown):
         self.unknown=unknown
-        
+    
     def __len__(self):
         return set.__len__(self)+self.unknown
+    
+    def __repr__(self):
+        result=[self.__class__.__name__,'({']
+        for user in self:
+            result.append(repr(user))
+            result.append(', ')
+        
+        result[-1]='}'
+        
+        unknown=self.unknown
+        if unknown:
+            result.append(', unknown=')
+            result.append(repr(unknown))
+        
+        result.append(')')
+        
+        return ''.join(result)
     
     @classmethod
     def _full(cls,users):
@@ -323,7 +341,7 @@ class reaction_mapping_line(set):
         set.__init__(self,users)
         self.unknown=0
         return self
-
+    
     @staticmethod
     def _relative_id_index(self,user_id):
         bot=0
@@ -338,7 +356,7 @@ class reaction_mapping_line(set):
                 continue
             break
         return bot
-
+    
     def update(self,users):
         ln_old=len(self)
         set.update(self,users)
@@ -352,22 +370,26 @@ class reaction_mapping_line(set):
         return new
     
     #executes an api request if we know we know all reacters
-    def filter(self,limit,after,before):
+    def filter_after(self,limit,after):
         list_form=sorted(self)
-        index=self._relative_id_index(list_form,after)
-        end=self._relative_id_index(list_form,before)
+        index=self._relative_id_index(list_form,after+1) # do not include the specified id
+        length=len(list_form)
         result=[]
+        
         while True:
-            if index==end:
+            if index==length:
                 break
+            
+            if limit<=0:
+                break
+            
             result.append(list_form[index])
             index+=1
             limit-=1
-            if limit:
-                continue
-            break
+            continue
+        
         return result
-
+    
     def clear(self):
         clients=[]
         for user in self:
@@ -378,7 +400,7 @@ class reaction_mapping_line(set):
         self.unknown += (set.__len__(self) - len(clients))
         set.clear(self)
         set.update(self,clients)
-            
+
 class reaction_mapping(dict):
     __slots__=('fully_loaded',)
     def __init__(self,data):
@@ -395,6 +417,12 @@ class reaction_mapping(dict):
             count+=set.__len__(line)
             count+=line.unknown
         return count
+    
+    # Avoid looping over the object, just get it's source length
+    def __bool__(self):
+        if dict.__len__(self):
+            return True
+        return False
     
     def clear(self):
         for value in self.values():

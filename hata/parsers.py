@@ -36,7 +36,7 @@ class event_system_core(object):
         try:
             value=self.defaults[name]
         except KeyError:
-            raise LookupError(f'Invalid Event name: \'{name}\'.') from None
+            raise LookupError(f'Invalid Event name: `{name!r}`.') from None
         return value
 
 
@@ -153,21 +153,19 @@ GLOBAL_INTENT_EVENTS = (
     'READY',
     'RESUMED',
     'USER_UPDATE',
-    'MESSAGE_DELETE_BULK', # Guild support
-    'CHANNEL_PINS_UPDATE', # DM support
-    #'CHANNEL_RECIPIENT_ADD', # User account only
-    #'CHANNEL_RECIPIENT_REMOVE', # User only
-    #'GUILD_SYNC', # User CCOUNT only, outdated?
+    'CHANNEL_RECIPIENT_ADD', # User account only
+    'CHANNEL_RECIPIENT_REMOVE', # User only
+    'GUILD_SYNC', # User account only, outdated?
     'GUILD_MEMBERS_CHUNK',
     'VOICE_SERVER_UPDATE',
-    #'RELATIONSHIP_ADD', # User account only
-    #'RELATIONSHIP_REMOVE', # User account only
+    'RELATIONSHIP_ADD', # User account only
+    'RELATIONSHIP_REMOVE', # User account only
     'PRESENCES_REPLACE', # Empty / User account
     'USER_SETTINGS_UPDATE', # User account only
     'GIFT_CODE_UPDATE',
-    #'USER_ACHIEVEMENT_UPDATE', # User acount only
-    #'MESSAGE_ACK', # User account only
-    #'SESSIONS_REPLACE', # User account only
+    'USER_ACHIEVEMENT_UPDATE', # User acount only
+    'MESSAGE_ACK', # User account only
+    'SESSIONS_REPLACE', # User account only
         )
 
 class IntentFlag(int):
@@ -247,7 +245,7 @@ class IntentFlag(int):
                 new=new|(1<<position)
             else:
                 new=new&(0b11111111111111111111111111111111^(1<<position))
-
+        
         return int.__new__(type(self),new)
     
     

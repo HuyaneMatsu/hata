@@ -1981,8 +1981,10 @@ class Client(UserBase):
 
     async def reaction_clear(self,message):
         await self.http.reaction_clear(message.channel.id,message.id)
-        
-    async def reaction_users(self,message,emoji,limit=None,after=None,before=None):
+    
+    # before is not supported
+    
+    async def reaction_users(self,message,emoji,limit=None,after=None):
         try:
             line=message.reactions[emoji]
         except KeyError:
@@ -1991,17 +1993,19 @@ class Client(UserBase):
         if line.unknown:
             data={}
             if (limit is not None):
-                limit_ln=len(limit)
-                if limit_ln<1 or limit_ln>100:
-                    raise ValueError(f'Limit can be between 1-100, got {limit}')
+                if type(limit) is not int:
+                    raise TypeError(f'`limit` can be `None` or type `int`, got `{limit!r}`')
+                
+                if limit<1 or limit>100:
+                    raise ValueError(f'`limit` can be between 1-100, got `{limit!r}`')
                 
                 data['limit']=limit
             
             if (after is not None):
                 data['after']=log_time_converter(after)
-            
-            if (before is not None):
-                data['before']=log_time_converter(before)
+            #
+            #if (before is not None):
+            #    data['before']=log_time_converter(before)
                 
             data = await self.http.reaction_users(message.channel.id,message.id,emoji.as_reaction,data)
             
@@ -2010,22 +2014,33 @@ class Client(UserBase):
             
         else:
             #if we know every reacters:
-            users=line.filter(limit,after,before)
+            if limit is None:
+                limit=100
+            elif type(limit) is not int:
+                raise TypeError(f'`limit` can be `None` or type `int`, got `{limit!r}`')
+            elif limit<1 or limit>100:
+                raise ValueError(f'`limit` can be between 1-100, got `{limit!r}`')
+            
+            #before = 9223372036854775807 if before is None else log_time_converter(before)
+            after = 0 if after is None else log_time_converter(after)
+            users=line.filter_after(limit,after)
             
         return users
     
     async def reaction_users_all(self,message,emoji):
-        if message.reactions is None:
+        if not message.reactions:
             return []
+        
         try:
             line=message.reactions[emoji]
         except KeyError:
             return []
-        reaction=emoji.as_reaction
+        
         if line.unknown:
             limit=len(line)
             data={'limit':100,'after':0}
             users=[]
+            reaction=emoji.as_reaction
             
             while limit>0:
                 user_datas = await self.http.reaction_users(message.channel.id,message.id,reaction,data)
@@ -2042,27 +2057,29 @@ class Client(UserBase):
         return users
 
     async def reaction_load_all(self,message):
-        if message.reactions is None:
+        if not message.reactions:
             return
+        
         users=[]
         data={'limit':100,'after':0}
         for emoji,line in message.reactions.items():
+            if not line.unknown:
+                continue
+            
             reaction=emoji.as_reaction
-            
-            if line.unknown:
-                data['after']=0
-                limit=len(line)
-                while limit>0:
-                    
-                    user_datas = await self.http.reaction_users(message.channel.id,message.id,reaction,data)
-                    users.extend(User(user_data) for user_data in user_datas)
-                    
-                    data['after']=users[-1].id
-                    limit-=100
+            data['after']=0
+            limit=len(line)
+            while limit>0:
+                
+                user_datas = await self.http.reaction_users(message.channel.id,message.id,reaction,data)
+                users.extend(User(user_data) for user_data in user_datas)
+                
+                data['after']=users[-1].id
+                limit-=100
 
-                message.reactions._update_all_users(emoji,users)
-                users.clear()
-            
+            message.reactions._update_all_users(emoji,users)
+            users.clear()
+    
     # Guild
 
     async def guild_user_delete(self,guild,user,reason=None):

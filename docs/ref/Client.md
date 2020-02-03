@@ -1088,12 +1088,12 @@ Removes your own reaction ([`Emoji`](Emoji.md)) from the [message](Message.md).
 
 Clears all the reactions from the [message](Message.md).
 
-### `reaction_users(self,message,emoji,limit=None,after=None,before=None)`
+### `reaction_users(self,message,emoji,limit=None,after=None)`
 
 - `awaitable`
 - returns : `list`
 - values : [`User`](User.md) / [`Client`](Client.md)
-- raises : `ValueError`
+- raises : `ValueError` / `TypeError`
 
 Requests the [users](User.md), who reacted on the [message](Message.md)
 with the [`Emoji`](Emoji.md).
@@ -1102,10 +1102,10 @@ If the message has no reacters at all or no reacters with that emoji, returns
 an empty list. If we know the emoji's every reacters we query the parameters
 from that.
 
-The `after` and `before` arguments can be a valid discord type with
-`id`, a
+The `after` arguments can be a valid discord type with `id`, a
 [`snowflake`](https://github.com/discordapp/discord-api-docs/blob/master/docs/Reference.md#snowflakes)
-, or a `datetime` object. `limit` can be between 1 and 100.
+, or a `datetime` object.
+`limit` can be `int` between 1 and 100.
 
 ### `reaction_users_all(self,message,emoji)`
 

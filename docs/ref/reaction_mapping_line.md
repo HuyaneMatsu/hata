@@ -71,7 +71,7 @@ Mkes sure that all of the `users` is in `self`. If the user is in `self` does
 nothing. If the `user` is missing from `self`, then puts it at the right index
 and reduces `.unknown`.
 
-### `filter(self,limit,after,before)` (method)
+### `filter_after(self,limit,after)` (method)
 
 - returns : `list`
 - values : [`User`](User.md) / [`Client`](Client.md)

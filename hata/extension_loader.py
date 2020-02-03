@@ -48,10 +48,10 @@ class ExtensionError(Exception):
         if type(message) is str:
             return 1
         
-        return message.__len__()
+        return len(message)
         
     def __repr__(self):
-        return f'{self.__class__.__name__} ({self.__len__()}):\n{self.message}\n'
+        return f'{self.__class__.__name__} ({len(self)}):\n{self.message}\n'
     
     __str__=__repr__
     
@@ -79,7 +79,7 @@ class Extension(object):
         return self
         
     def __hash__(self):
-        return self.spec.origin.__hash__()
+        return hash(self.spec.origin)
     
     def load(self):
         state=self.state
@@ -407,7 +407,7 @@ class ExtensionLoader(object):
                 message = await client.loop.run_in_executor(alchemy_incendiary(
                     self._render_exc,(err,[
                     'Exception occured meanwhile entering an extension: `',extension.name,
-                    '`\nAt entry_point:',entry_point.__repr__(),'\n',],
+                    '`\nAt entry_point:',repr(entry_point),'\n',],
                         )))
                 
                 raise ExtensionError(message) from None
@@ -432,7 +432,7 @@ class ExtensionLoader(object):
             message = await client.loop.run_in_executor(alchemy_incendiary(
                 self._render_exc,(err,[
                 'Exception occured meanwhile entering an extension: `',extension.name,
-                '`\nAt entry_point:',entry_point.__repr__(),'\n',],
+                '`\nAt entry_point:',repr(entry_point),'\n',],
                     )))
             
             raise ExtensionError(message) from None
@@ -460,7 +460,7 @@ class ExtensionLoader(object):
                 message = await client.loop.run_in_executor(alchemy_incendiary(
                     self._render_exc,(err,[
                     'Exception occured meanwhile exiting an extension: `',extension.name,
-                    '`\nAt exit_point:',exit_point.__repr__(),'\n',],
+                    '`\nAt exit_point:',repr(exit_point),'\n',],
                         )))
                 
                 raise ExtensionError(message) from None
@@ -485,7 +485,7 @@ class ExtensionLoader(object):
             message = await client.loop.run_in_executor(alchemy_incendiary(
                 self._render_exc,(err,[
                 'Exception occured meanwhile exiting an extension: `',extension.name,
-                '`\nAt exit_point:',exit_point.__repr__(),'\n',],
+                '`\nAt exit_point:',repr(exit_point),'\n',],
                     )))
             
             raise ExtensionError(message) from None
@@ -504,9 +504,9 @@ class ExtensionLoader(object):
         if client is None:
             client_repr='deleted'
         else:
-            client_repr=client.full_name.__repr__()
+            client_repr=repr(client.full_name)
         
-        extension_count=self.extensions.__len__().__repr__()
+        extension_count=repr(len(self.extensions))
         
         return f'{self.__class__.__name__} client={client_repr}, extension count={extension_count}>'
     

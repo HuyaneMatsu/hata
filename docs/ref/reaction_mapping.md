@@ -33,8 +33,19 @@ the flag must be refreshed after calling a `clear`.
 
 ### `__len__(self)`
 
+- returns : `str`
+
 Returns the the amount of the reacters with the emoji. This amount is the sum of
 the list's length itself and of the `unknown` attribute's value.
+
+### `__bool__(self)`
+
+- returns : `bool`
+- values : `False` / `True`
+
+A faster version, than [`.__len__`](#__len__self) when checking the boolean
+value of the object, because [`.__len__`](#__len__self) counts up all the
+reacters, meanwhile [`.__bool__`](#__bool__self) just returns if it has any.
 
 ## Internal
 

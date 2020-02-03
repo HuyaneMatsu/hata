@@ -224,6 +224,11 @@ The preferred language of the guild.
 
 The guilds premium tier. More sub means higher tier.
 
+### `public_updates_channel`
+
+- type : [`ChannelText`](ChannelText.md)  `NoneType`
+- default : `None`
+
 ### `region`
 
 - type : [`VoiceRegion`](VoiceRegion.md)
@@ -799,6 +804,7 @@ pairs.
 | owner                     | [User](User.md) / [Client](Client.md)                     |
 | preferred_locale          | str                                                       |
 | premium_tier              | int                                                       |
+| public_updates_channel    | [ChannelText](ChannelText.md) / None                      |
 | region                    | [VoiceRegion](VoiceRegion.md)                             |
 | rules_channel             | [ChannelText](ChannelText.md) / None                      |
 | splash                    | int                                                       |

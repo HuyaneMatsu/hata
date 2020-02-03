@@ -331,6 +331,7 @@ of the changed attributes, what contains (`attribute name`, `old value`) items.
 | owner                     | [User](User.md) / [Client](Client.md)                     |
 | preferred_locale          | str                                                       |
 | premium_tier              | int                                                       |
+| public_updates_channel    | [ChannelText](ChannelText.md) / None                      |
 | region                    | [VoiceRegion](VoiceRegion.md)                             |
 | splash                    | int                                                       |
 | system_channel            | [ChannelText](ChannelText.md) / None                      |
@@ -339,10 +340,6 @@ of the changed attributes, what contains (`attribute name`, `old value`) items.
 | verification_level        | [VerificationLevel](VerificationLevel.md)                 |
 | widget_channel            | [ChannelText](ChannelText.md) / None                      |
 | widget_enabled            | bool                                                      |
-
-### `guild_sync(client,guild)`
-
-Called when a [guild](Guild.md) synced after requesting it.
 
 ### `guild_user_add(client,guild,user)`
 

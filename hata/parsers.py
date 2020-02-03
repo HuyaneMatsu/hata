@@ -155,7 +155,6 @@ GLOBAL_INTENT_EVENTS = (
     'USER_UPDATE',
     'CHANNEL_RECIPIENT_ADD', # User account only
     'CHANNEL_RECIPIENT_REMOVE', # User only
-    'GUILD_SYNC', # User account only, outdated?
     'GUILD_MEMBERS_CHUNK',
     'VOICE_SERVER_UPDATE',
     'RELATIONSHIP_ADD', # User account only
@@ -637,7 +636,7 @@ async def sync_task(queue_id,coro,queue):
 def check_channel(guild,channel_id):
     return (channel_id in guild.all_channel)
 
-def sync_guild(client,data,parser_and_checker):
+def guild_sync(client,data,parser_and_checker):
     try:
         guild_id=int(data['guild_id'])
     except KeyError:
@@ -647,7 +646,7 @@ def sync_guild(client,data,parser_and_checker):
         queue=SYNC_REQUESTS[guild_id]
     except KeyError:
         queue=[]
-        Task(sync_task(guild_id,client.sync_guild(guild_id),queue),client.loop)
+        Task(sync_task(guild_id,client.guild_sync(guild_id),queue),client.loop)
         SYNC_REQUESTS[guild_id]=queue
     
     if parser_and_checker is None:
@@ -730,7 +729,7 @@ def MESSAGE_CREATE__CAL(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,('MESSAGE_CREATE',check_channel,channel_id))
+        guild_sync(client,data,('MESSAGE_CREATE',check_channel,channel_id))
         return
 
     message=Message.new(data,channel)
@@ -742,7 +741,7 @@ def MESSAGE_CREATE__OPT(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,('MESSAGE_CREATE',check_channel,channel_id))
+        guild_sync(client,data,('MESSAGE_CREATE',check_channel,channel_id))
         return
     
     Message.new(data,channel)
@@ -755,7 +754,7 @@ def MESSAGE_DELETE__CAL_SC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     message_id=int(data['id'])
@@ -770,7 +769,7 @@ def MESSAGE_DELETE__CAL_MC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     clients=filter_clients(channel.clients,INTENT_GUILD_MESSAGES if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_MESSAGES)
@@ -791,7 +790,7 @@ def MESSAGE_DELETE__OPT_SC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     message_id=int(data['id'])
@@ -802,7 +801,7 @@ def MESSAGE_DELETE__OPT_MC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     if first_client(channel.clients,INTENT_GUILD_MESSAGES if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_MESSAGES) is not client:
@@ -819,7 +818,7 @@ def MESSAGE_DELETE_BULK__CAL_SC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     message_ids=[int(message_id) for message_id in data['ids']]
@@ -832,7 +831,7 @@ def MESSAGE_DELETE_BULK__CAL_MC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     clients=filter_clients(channel.clients,INTENT_GUILD_MESSAGES)
@@ -851,7 +850,7 @@ def MESSAGE_DELETE_BULK__OPT_SC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
 
     message_ids=[int(message_id) for message_id in data['ids']]
@@ -862,7 +861,7 @@ def MESSAGE_DELETE_BULK__OPT_MC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
 
     if first_client(channel.clients,INTENT_GUILD_MESSAGES) is not client:
@@ -879,7 +878,7 @@ def MESSAGE_UPDATE__CAL_SC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     message_id=int(data['id'])
@@ -905,7 +904,7 @@ def MESSAGE_UPDATE__CAL_MC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     clients=filter_clients(channel.clients,INTENT_GUILD_MESSAGES if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_MESSAGES)
@@ -938,7 +937,7 @@ def MESSAGE_UPDATE__OPT_SC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     message_id=int(data['id'])
@@ -956,7 +955,7 @@ def MESSAGE_UPDATE__OPT_MC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     if first_client(channel.clients,INTENT_GUILD_MESSAGES if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_MESSAGES) is not client:
@@ -981,7 +980,7 @@ def MESSAGE_REACTION_ADD__CAL_SC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     message_id=int(data['message_id'])
@@ -1001,7 +1000,7 @@ def MESSAGE_REACTION_ADD__CAL_MC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     clients=filter_clients(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS)
@@ -1027,7 +1026,7 @@ def MESSAGE_REACTION_ADD__OPT_SC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     message_id=int(data['message_id'])
@@ -1045,7 +1044,7 @@ def MESSAGE_REACTION_ADD__OPT_MC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     if first_client(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS) is not client:
@@ -1069,7 +1068,7 @@ def MESSAGE_REACTION_REMOVE_ALL__CAL_SC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     message_id=int(data['message_id'])
@@ -1089,7 +1088,7 @@ def MESSAGE_REACTION_REMOVE_ALL__CAL_MC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     clients=filter_clients(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS)
@@ -1115,7 +1114,7 @@ def MESSAGE_REACTION_REMOVE_ALL__OPT_SC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
 
     message_id=int(data['message_id'])
@@ -1130,7 +1129,7 @@ def MESSAGE_REACTION_REMOVE_ALL__OPT_MC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     if first_client(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS) is not client:
@@ -1151,7 +1150,7 @@ def MESSAGE_REACTION_REMOVE__CAL_SC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     message_id=int(data['message_id'])
@@ -1171,7 +1170,7 @@ def MESSAGE_REACTION_REMOVE__CAL_MC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     clients=filter_clients(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS)
@@ -1197,7 +1196,7 @@ def MESSAGE_REACTION_REMOVE__OPT_SC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     message_id=int(data['message_id'])
@@ -1215,7 +1214,7 @@ def MESSAGE_REACTION_REMOVE__OPT_MC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     if first_client(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS) is not client:
@@ -1239,7 +1238,7 @@ def MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     message_id=int(data['message_id'])
@@ -1259,7 +1258,7 @@ def MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     clients=filter_clients(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS)
@@ -1285,7 +1284,7 @@ def MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     message_id=int(data['message_id'])
@@ -1301,7 +1300,7 @@ def MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     if first_client(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS) is not client:
@@ -1414,7 +1413,7 @@ if CACHE_USER:
         try:
             guild=GUILDS[guild_id]
         except KeyError:
-            sync_guild(client,data,'GUILD_MEMBER_UPDATE')
+            guild_sync(client,data,'GUILD_MEMBER_UPDATE')
             return
         
         user,old=User._update_profile(data,guild)
@@ -1429,7 +1428,7 @@ if CACHE_USER:
         try:
             guild=GUILDS[guild_id]
         except KeyError:
-            sync_guild(client,data,'GUILD_MEMBER_UPDATE')
+            guild_sync(client,data,'GUILD_MEMBER_UPDATE')
             return
         
         clients=filter_clients(guild.clients,INTENT_GUILD_USERS)
@@ -1450,7 +1449,7 @@ if CACHE_USER:
         try:
             guild=GUILDS[guild_id]
         except KeyError:
-            sync_guild(client,data,'GUILD_MEMBER_UPDATE')
+            guild_sync(client,data,'GUILD_MEMBER_UPDATE')
             return
         
         User._update_profile_no_return(data,guild)
@@ -1460,7 +1459,7 @@ if CACHE_USER:
         try:
             guild=GUILDS[guild_id]
         except KeyError:
-            sync_guild(client,data,'GUILD_MEMBER_UPDATE')
+            guild_sync(client,data,'GUILD_MEMBER_UPDATE')
             return
         
         if first_client(guild.clients,INTENT_GUILD_USERS) is not client:
@@ -1478,7 +1477,7 @@ else:
         try:
             guild=GUILDS[guild_id]
         except KeyError:
-            sync_guild(client,data,'GUILD_MEMBER_UPDATE')
+            guild_sync(client,data,'GUILD_MEMBER_UPDATE')
             return
 
         old=client._update_profile_only(data,guild)
@@ -1499,7 +1498,7 @@ else:
         try:
             guild=GUILDS[guild_id]
         except KeyError:
-            sync_guild(client,data,'GUILD_MEMBER_UPDATE')
+            guild_sync(client,data,'GUILD_MEMBER_UPDATE')
             return
         
         client._update_profile_only_no_return(data,guild)
@@ -1514,7 +1513,7 @@ def CHANNEL_DELETE__CAL(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     channel._delete(client)
@@ -1527,7 +1526,7 @@ def CHANNEL_DELETE__OPT(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     channel._delete(client)
@@ -1540,7 +1539,7 @@ def CHANNEL_UPDATE__CAL_SC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     old=channel._update(data)
@@ -1554,7 +1553,7 @@ def CHANNEL_UPDATE__CAL_MC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     clients=filter_clients(channel.clients,INTENT_GUILDS)
@@ -1574,7 +1573,7 @@ def CHANNEL_UPDATE__OPT_SC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     channel._update_no_return(data)
@@ -1584,7 +1583,7 @@ def CHANNEL_UPDATE__OPT_MC(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     if first_client(channel.clients,INTENT_GUILDS) is not client:
@@ -1606,7 +1605,7 @@ def CHANNEL_CREATE__CAL(client,data):
         try:
             guild=GUILDS[guild_id]
         except KeyError:
-            sync_guild(client,data,'CHANNEL_CREATE')
+            guild_sync(client,data,'CHANNEL_CREATE')
             return
         
         channel=CHANNEL_TYPES[channel_type](data,client,guild)
@@ -1623,7 +1622,7 @@ def CHANNEL_CREATE__OPT(client,data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,'CHANNEL_CREATE')
+        guild_sync(client,data,'CHANNEL_CREATE')
         return
     
     CHANNEL_TYPES[channel_type](data,client,guild)
@@ -1636,7 +1635,7 @@ def CHANNEL_PINS_UPDATE__CAL(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,('CHANNEL_PINS_UPDATE',check_channel,channel_id))
+        guild_sync(client,data,('CHANNEL_PINS_UPDATE',check_channel,channel_id))
         return
     
     #ignoring message search
@@ -1731,7 +1730,7 @@ def GUILD_EMOJIS_UPDATE__CAL_SC(client,data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
 
     changes=guild._update_emojis(data['emojis'])
@@ -1771,7 +1770,7 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client,data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     clients=filter_clients(guild.clients,INTENT_GUILD_EMOJIS)
@@ -1818,7 +1817,7 @@ def GUILD_EMOJIS_UPDATE__OPT_SC(client,data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     guild._sync_emojis(data['emojis'])
@@ -1828,7 +1827,7 @@ def GUILD_EMOJIS_UPDATE__OPT_MC(client,data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     if first_client(guild.clients,INTENT_GUILD_EMOJIS) is not client:
@@ -1844,7 +1843,7 @@ def GUILD_MEMBER_ADD__CAL_SC(client,data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     user=User(data,guild)
@@ -1857,7 +1856,7 @@ def GUILD_MEMBER_ADD__CAL_MC(client,data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     clients=filter_clients(guild.clients,INTENT_GUILD_USERS)
@@ -1877,7 +1876,7 @@ if CACHE_USER:
         try:
             guild=GUILDS[guild_id]
         except KeyError:
-            sync_guild(client,data,None)
+            guild_sync(client,data,None)
             return
         
         User(data,guild)
@@ -1888,7 +1887,7 @@ if CACHE_USER:
         try:
             guild=GUILDS[guild_id]
         except KeyError:
-            sync_guild(client,data,None)
+            guild_sync(client,data,None)
             return
 
         if first_client(guild.clients,INTENT_GUILD_USERS) is not client:
@@ -1902,7 +1901,7 @@ else:
         try:
             guild=GUILDS[guild_id]
         except KeyError:
-            sync_guild(client,data,None)
+            guild_sync(client,data,None)
             return
         
         guild.user_count+=1
@@ -1912,7 +1911,7 @@ else:
         try:
             guild=GUILDS[guild_id]
         except KeyError:
-            sync_guild(client,data,None)
+            guild_sync(client,data,None)
             return
         
         if first_client(guild.clients,INTENT_GUILD_USERS) is not client:
@@ -1929,7 +1928,7 @@ if CACHE_USER:
         try:
             guild=GUILDS[guild_id]
         except KeyError:
-            sync_guild(client,data,'GUILD_MEMBER_REMOVE')
+            guild_sync(client,data,'GUILD_MEMBER_REMOVE')
             return
         
         user=User(data['user'])
@@ -1953,7 +1952,7 @@ if CACHE_USER:
         try:
             guild=GUILDS[guild_id]
         except KeyError:
-            sync_guild(client,data,'GUILD_MEMBER_REMOVE')
+            guild_sync(client,data,'GUILD_MEMBER_REMOVE')
             return
         
         clients=filter_clients(guild.clients,INTENT_GUILD_USERS)
@@ -1983,7 +1982,7 @@ if CACHE_USER:
         try:
             guild=GUILDS[guild_id]
         except KeyError:
-            sync_guild(client,data,'GUILD_MEMBER_REMOVE')
+            guild_sync(client,data,'GUILD_MEMBER_REMOVE')
             return
         
         user=User(data['user'])
@@ -2003,7 +2002,7 @@ if CACHE_USER:
         try:
             guild=GUILDS[guild_id]
         except KeyError:
-            sync_guild(client,data,'GUILD_MEMBER_REMOVE')
+            guild_sync(client,data,'GUILD_MEMBER_REMOVE')
             return
         
         if first_client(guild.clients,INTENT_GUILD_USERS) is not client:
@@ -2027,7 +2026,7 @@ else:
         try:
             guild=GUILDS[guild_id]
         except KeyError:
-            sync_guild(client,data,'GUILD_MEMBER_REMOVE')
+            guild_sync(client,data,'GUILD_MEMBER_REMOVE')
             return
         
         user=User(data['user'])
@@ -2040,7 +2039,7 @@ else:
         try:
             guild=GUILDS[guild_id]
         except KeyError:
-            sync_guild(client,data,'GUILD_MEMBER_REMOVE')
+            guild_sync(client,data,'GUILD_MEMBER_REMOVE')
             return
         
         clients=filter_clients(guild.clients,INTENT_GUILD_USERS)
@@ -2059,7 +2058,7 @@ else:
         try:
             guild=GUILDS[guild_id]
         except KeyError:
-            sync_guild(client,data,'GUILD_MEMBER_REMOVE')
+            guild_sync(client,data,'GUILD_MEMBER_REMOVE')
             return
         
         guild.user_count-=1
@@ -2069,7 +2068,7 @@ else:
         try:
             guild=GUILDS[guild_id]
         except KeyError:
-            sync_guild(client,data,'GUILD_MEMBER_REMOVE')
+            guild_sync(client,data,'GUILD_MEMBER_REMOVE')
             return
         
         if first_client(guild.clients,INTENT_GUILD_USERS) is not client:
@@ -2173,36 +2172,12 @@ else:
 PARSER_DEFAULTS('GUILD_CREATE',GUILD_CREATE__CAL,GUILD_CREATE__CAL,GUILD_CREATE__OPT,GUILD_CREATE__OPT)
 del GUILD_CREATE__CAL, GUILD_CREATE__OPT
 
-def GUILD_SYNC__CAL(client,data):
-    guild_id=int(data['guild_id'])
-    try:
-        guild=GUILDS[guild_id]
-    except KeyError:
-        sync_guild(client,data,None)
-        return
-    
-    guild._sync(data,client)
-    Task(client.events.guild_sync(client,guild),client.loop)
-
-def GUILD_SYNC__OPT(client,data):
-    guild_id=int(data['guild_id'])
-    try:
-        guild=GUILDS[guild_id]
-    except KeyError:
-        sync_guild(client,data,None)
-        return
-    
-    guild._sync(data,client)
-
-PARSER_DEFAULTS('GUILD_SYNC',GUILD_SYNC__CAL,GUILD_SYNC__CAL,GUILD_SYNC__OPT,GUILD_SYNC__OPT)
-del GUILD_SYNC__CAL, GUILD_SYNC__OPT
-
 def GUILD_UPDATE__CAL_SC(client,data):
     guild_id=int(data['guild_id'])
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     old=guild._update(data)
@@ -2216,7 +2191,7 @@ def GUILD_UPDATE__CAL_MC(client,data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     clients=filter_clients(guild.clients,INTENT_GUILDS)
@@ -2236,7 +2211,7 @@ def GUILD_UPDATE__OPT_SC(client,data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     guild._update_no_return(data)
@@ -2246,7 +2221,7 @@ def GUILD_UPDATE__OPT_MC(client,data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     if first_client(guild.clients,INTENT_GUILDS) is not client:
@@ -2295,7 +2270,7 @@ def GUILD_BAN_ADD__CAL(client,data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,'GUILD_BAN_ADD')
+        guild_sync(client,data,'GUILD_BAN_ADD')
         return
     
     user=User(data['user'])
@@ -2313,7 +2288,7 @@ def GUILD_BAN_REMOVE__CAL(client,data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,'GUILD_BAN_REMOVE')
+        guild_sync(client,data,'GUILD_BAN_REMOVE')
         return
     
     user=User(data['user'])
@@ -2370,7 +2345,7 @@ def GUILD_INTEGRATIONS_UPDATE__CAL(client,data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,'GUILD_INTEGRATIONS_UPDATE')
+        guild_sync(client,data,'GUILD_INTEGRATIONS_UPDATE')
         return
     
     Task(client.events.integration_update(client,guild),client.loop)
@@ -2386,7 +2361,7 @@ def GUILD_ROLE_CREATE__CAL_SC(client,data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,'GUILD_ROLE_CREATE')
+        guild_sync(client,data,'GUILD_ROLE_CREATE')
         return
     
     role=Role(data['role'],guild)
@@ -2398,7 +2373,7 @@ def GUILD_ROLE_CREATE__CAL_MC(client,data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,'GUILD_ROLE_CREATE')
+        guild_sync(client,data,'GUILD_ROLE_CREATE')
         return
     
     clients=filter_clients(guild.clients,INTENT_GUILDS)
@@ -2416,7 +2391,7 @@ def GUILD_ROLE_CREATE__OPT_SC(client,data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,'GUILD_ROLE_CREATE')
+        guild_sync(client,data,'GUILD_ROLE_CREATE')
         return
     
     Role(data['role'],guild)
@@ -2426,7 +2401,7 @@ def GUILD_ROLE_CREATE__OPT_MC(client,data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,'GUILD_ROLE_CREATE')
+        guild_sync(client,data,'GUILD_ROLE_CREATE')
         return
     
     if first_client(guild.clients,INTENT_GUILDS) is not client:
@@ -2442,14 +2417,14 @@ def GUILD_ROLE_DELETE__CAL_SC(client, data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     role_id=int(data['role_id'])
     try:
         role=guild.all_role[role_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     role._delete()
@@ -2461,7 +2436,7 @@ def GUILD_ROLE_DELETE__CAL_MC(client, data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     clients=filter_clients(guild.clients,INTENT_GUILDS)
@@ -2473,7 +2448,7 @@ def GUILD_ROLE_DELETE__CAL_MC(client, data):
     try:
         role=guild.all_role[role_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     role._delete()
@@ -2486,14 +2461,14 @@ def GUILD_ROLE_DELETE__OPT_SC(client, data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     role_id=int(data['role_id'])
     try:
         role=guild.all_role[role_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     role._delete()
@@ -2503,7 +2478,7 @@ def GUILD_ROLE_DELETE__OPT_MC(client, data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     if first_client(guild.clients,INTENT_GUILDS) is not client:
@@ -2513,7 +2488,7 @@ def GUILD_ROLE_DELETE__OPT_MC(client, data):
     try:
         role=guild.all_role[role_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     role._delete()
@@ -2526,7 +2501,7 @@ def GUILD_ROLE_UPDATE__CAL_SC(client,data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     role_data=data['role']
@@ -2534,7 +2509,7 @@ def GUILD_ROLE_UPDATE__CAL_SC(client,data):
     try:
         role=guild.all_role[role_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     old=role._update(data['role'])
@@ -2548,7 +2523,7 @@ def GUILD_ROLE_UPDATE__CAL_MC(client,data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     clients=filter_clients(guild.clients,INTENT_GUILDS)
@@ -2561,7 +2536,7 @@ def GUILD_ROLE_UPDATE__CAL_MC(client,data):
     try:
         role=guild.all_role[role_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     old=role._update(data['role'])
@@ -2576,7 +2551,7 @@ def GUILD_ROLE_UPDATE__OPT_SC(client,data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     role_data=data['role']
@@ -2584,7 +2559,7 @@ def GUILD_ROLE_UPDATE__OPT_SC(client,data):
     try:
         role=guild.all_role[role_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     role._update_no_return(data['role'])
@@ -2594,7 +2569,7 @@ def GUILD_ROLE_UPDATE__OPT_MC(client,data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     if first_client(guild.clients,INTENT_GUILDS) is not client:
@@ -2605,7 +2580,7 @@ def GUILD_ROLE_UPDATE__OPT_MC(client,data):
     try:
         role=guild.all_role[role_id]
     except KeyError:
-        sync_guild(client,data,None)
+        guild_sync(client,data,None)
         return
     
     role._update_no_return(data['role'])
@@ -2618,7 +2593,7 @@ def WEBHOOKS_UPDATE__CAL(client,data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,'WEBHOOKS_UPDATE')
+        guild_sync(client,data,'WEBHOOKS_UPDATE')
         return
     
     guild.webhooks_uptodate=False
@@ -2634,7 +2609,7 @@ def WEBHOOKS_UPDATE__OPT(client,data):
     try:
         guild=GUILDS[guild_id]
     except KeyError:
-        sync_guild(client,data,'WEBHOOKS_UPDATE')
+        guild_sync(client,data,'WEBHOOKS_UPDATE')
         return
     
     guild.webhooks_uptodate=False
@@ -2656,7 +2631,7 @@ def VOICE_STATE_UPDATE__CAL_SC(client,data):
         try:
             guild=GUILDS[id_]
         except KeyError:
-            sync_guild(client,data,'VOICE_STATE_UPDATE')
+            guild_sync(client,data,'VOICE_STATE_UPDATE')
             return
         call=guild
     
@@ -2699,7 +2674,7 @@ def VOICE_STATE_UPDATE__CAL_MC(client,data):
         try:
             guild=GUILDS[id_]
         except KeyError:
-            sync_guild(client,data,'VOICE_STATE_UPDATE')
+            guild_sync(client,data,'VOICE_STATE_UPDATE')
             return
         call=guild
         clients=guild.clients
@@ -2748,7 +2723,7 @@ def VOICE_STATE_UPDATE__OPT_SC(client,data):
         try:
             guild=GUILDS[id_]
         except KeyError:
-            sync_guild(client,data,'VOICE_STATE_UPDATE')
+            guild_sync(client,data,'VOICE_STATE_UPDATE')
             return
         call=guild
     
@@ -2792,7 +2767,7 @@ def VOICE_STATE_UPDATE__OPT_MC(client,data):
         try:
             guild=GUILDS[id_]
         except KeyError:
-            sync_guild(client,data,'VOICE_STATE_UPDATE')
+            guild_sync(client,data,'VOICE_STATE_UPDATE')
             return
         call=guild
         clients=guild.clients
@@ -2852,7 +2827,7 @@ if CACHE_PRESENCE:
         try:
             channel=CHANNELS[channel_id]
         except KeyError:
-            sync_guild(client,data,('TYPING_START',check_channel,channel_id))
+            guild_sync(client,data,('TYPING_START',check_channel,channel_id))
             return
         
         user_id=int(data['user_id'])
@@ -2965,7 +2940,7 @@ def GIFT_CODE_UPDATE__CAL(client,data):
     try:
         channel=CHANNELS[channel_id]
     except KeyError:
-        sync_guild(client,data,('GIFT_CODE_UPDATE',check_channel,channel_id))
+        guild_sync(client,data,('GIFT_CODE_UPDATE',check_channel,channel_id))
         return
     
     gift=Gift(data)
@@ -3042,7 +3017,6 @@ EVENTS.add_default('emoji_edit'                 , 4 , 'GUILD_EMOJIS_UPDATE'     
 EVENTS.add_default('guild_user_add'             , 3 , 'GUILD_MEMBER_ADD'                , )
 EVENTS.add_default('guild_user_delete'          , 4 , 'GUILD_MEMBER_REMOVE'             , )
 EVENTS.add_default('guild_create'               , 2 , 'GUILD_CREATE'                    , )
-EVENTS.add_default('guild_sync'                 , 2 , 'GUILD_SYNC'                      , )
 EVENTS.add_default('guild_edit'                 , 2 , 'GUILD_UPDATE'                    , )
 EVENTS.add_default('guild_delete'               , 3 , 'GUILD_DELETE'                    , )
 EVENTS.add_default('guild_ban_add'              , 3 , 'GUILD_BAN_ADD'                   , )

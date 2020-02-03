@@ -186,7 +186,7 @@ class Timeout(object):
         return self
 
     def __exit__(self,exc_type,exc_val,exc_tb):
-        if exc_type is CancelledError and self.cancelled:
+        if exc_type in (CancelledError, GeneratorExit) and self.cancelled:
             self.cancel_handler=None
             self.task=None
             raise TimeoutError from None
@@ -225,7 +225,7 @@ class TimerContext(object):
         if self.tasks:
             self.tasks.pop()
 
-        if exc_type is CancelledError and self.cancelled:
+        if exc_type in (CancelledError, GeneratorExit) and self.cancelled:
             raise TimeoutError from None
 
     def timeout(self):

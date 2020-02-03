@@ -72,7 +72,7 @@ The websocket client of the gateway.
 | INVALIDATE_SESSION    | 9     | receive           | [`._special_operation`](#_special_operationselfoperationmessage-method)                                                                                                                                                           |
 | HELLO                 | 10    | receive           | [`._special_operation`](#_special_operationselfoperationmessage-method)                                                                                                                                                           |
 | HEARTBEAT_ACK         | 11    | receive           | [`._special_operation`](#_special_operationselfoperationmessage-method)                                                                                                                                                           |
-| GUILD_SYNC            | 12    | send              | [`._request_sync`](#_request_syncselfguilds-method)                                                                                                                                                                               |
+| GUILD_SYNC            | 12    | send              |                                                                                                                                                                                                                                   |
 
 ## Properties
 
@@ -208,13 +208,6 @@ Sends a `VOICE_STATE` packet to Discord.
 - returns : `None`
 
 Sends a `HEARTBEAT` packet to Discord.
-
-### `_request_sync(self)` (method)
-
-- `awaitable`
-- returns : `None`
-
-Sends a `GUILD_SYNC` packet to Discord.
 
 ### `_terminate(self,*args,**kwargs)` (method)
 

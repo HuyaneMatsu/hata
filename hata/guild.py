@@ -419,6 +419,7 @@ def PartialGuild(data):
     guild.owner=ZEROUSER
     guild.preferred_locale=DEFAULT_LOCALE
     guild.premium_tier=0
+    guild.public_updates_channel=None
     guild.region=VoiceRegion.eu_central
     guild.roles=autoposlist()
     guild.rules_channel=None
@@ -486,11 +487,11 @@ class Guild(object):
         'description', 'discovery_splash', 'embed_channel', 'embed_enabled',
         'emojis', 'features', 'has_animated_icon', 'icon', 'id', 'is_large',
         'max_presences', 'max_users', 'message_notification', 'mfa', 'name',
-        'owner', 'preferred_locale', 'premium_tier', 'region', 'roles',
-        'rules_channel', 'splash', 'system_channel', 'system_channel_flags',
-        'user_count', 'users', 'vanity_code', 'verification_level',
-        'voice_states', 'webhooks', 'webhooks_uptodate', 'widget_channel',
-        'widget_enabled',)
+        'owner', 'preferred_locale', 'premium_tier', 'public_updates_channel',
+        'region', 'roles', 'rules_channel', 'splash', 'system_channel',
+        'system_channel_flags', 'user_count', 'users', 'vanity_code',
+        'verification_level', 'voice_states', 'webhooks', 'webhooks_uptodate',
+        'widget_channel', 'widget_enabled',)
 
     def __new__(cls,data,client):
         guild_id=int(data['id'])
@@ -666,6 +667,7 @@ class Guild(object):
             guild.owner=ZEROUSER
             guild.preferred_locale=DEFAULT_LOCALE
             guild.premium_tier=0
+            guild.public_updates_channel=None
             guild.region=VoiceRegion.eu_central
             guild.roles=autoposlist()
             guild.rules_channel=None
@@ -881,31 +883,22 @@ class Guild(object):
             self.is_large=data['large']
         except KeyError:
             self.is_large=self.user_count>=LARGE_LIMIT
-
-        try:
-            presence_datas=data['presences']
-        except KeyError:
-            pass
-        else:
-            self._apply_presences(presence_datas)
-
+        
+        self._update_no_return(data)
+        
         try:
             role_datas=data['roles']
         except KeyError:
-            role_datas=[]
-        self._sync_roles(role_datas)
-
+            pass
+        else:
+            self._sync_roles(role_datas)
+        
         try:
             emoji_datas=data['emojis']
         except KeyError:
-            emoji_datas=[]
-        self._sync_emojis(emoji_datas)
-
-        try:
-            channel_datas=data['channels']
-        except KeyError:
-            channel_datas=[]
-        self._sync_channels(channel_datas,client)
+            pass
+        else:
+            self._sync_emojis(emoji_datas)
 
 ##        #sadly we dont get voice states with guild_get
 ##        try:
@@ -1249,7 +1242,7 @@ class Guild(object):
         if self.system_channel is not system_channel:
             old['system_channel']=self.system_channel
             self.system_channel=system_channel
-
+        
         try:
             system_channel_flags=SystemChannelFlag(data['system_channel_flags'])
         except KeyError:
@@ -1257,7 +1250,16 @@ class Guild(object):
         if self.system_channel_flags!=system_channel_flags:
             old['system_channel_flags']=self.system_channel_flags
             self.system_channel_flags=system_channel_flags
-
+        
+        public_updates_channel_id=data.get('public_updates_channel_id',None)
+        if public_updates_channel_id is None:
+            public_updates_channel=None
+        else:
+            public_updates_channel=self.all_channel[int(public_updates_channel_id)]
+        if self.public_updates_channel is not public_updates_channel:
+            old['public_updates_channel']=self.public_updates_channel
+            self.public_updates_channel=public_updates_channel
+        
         owner=PartialUser(int(data['owner_id']))
         if self.owner is not owner:
             old['owner']=self.owner
@@ -1422,8 +1424,14 @@ class Guild(object):
         except KeyError:
             self.system_channel_flags=SystemChannelFlag.ALL
         
+        public_updates_channel_id=data.get('public_updates_channel_id',None)
+        if public_updates_channel_id is None:
+            self.public_updates_channel=None
+        else:
+            self.public_updates_channel=self.all_channel[int(public_updates_channel_id)]
+        
         self.owner=PartialUser(int(data['owner_id']))
-
+        
         afk_channel_id=data['afk_channel_id']
         if afk_channel_id is None:
             self.afk_channel=None

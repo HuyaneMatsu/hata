@@ -338,13 +338,6 @@ class DiscordGateway(object):
             'd' : self.sequence,
                 }
         await self.send_as_json(data)
-    
-    async def _request_sync(self):
-        data = {
-            'op': self.GUILD_SYNC,
-            'd' : [guild.id for guild in self.client.guild_profiles.keys()],
-                }
-        await self.send_as_json(data)
 
     async def _terminate(self,*args,**kwargs):
         self.kokoro.terminate()
@@ -616,7 +609,7 @@ class DiscordGatewayVoice(object):
                 'delay'     : 0,
                     },
                 }
-
+        
         await self.send_as_json(data)
     
     async def _terminate(self,*args,**kwargs):
@@ -666,7 +659,7 @@ class DiscordGatewaySharder(object):
         
         done, pending = await WaitTillFirst(tasks,loop)
 
-        for task in pending:
+        for task in tasks:
             task.cancel()
         
         while done:

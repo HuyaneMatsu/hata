@@ -2096,40 +2096,52 @@ class Client(UserBase):
     async def guild_ban_delete(self,guild,user,reason=None):
         await self.http.guild_ban_delete(guild.id,user.id,reason)
 
-    async def sync_guild(self,guild_id):
+    async def guild_sync(self,guild_id):
         #sadly guild_get does not returns channel and voice state data
         #at least we can request the channels
-        channel_data = await self.http.guild_channels(guild_id)
-        data = await self.http.guild_get(guild_id)
-        data['channels']=channel_data
         try:
             guild=GUILDS[guild_id]
         except KeyError:
+            data = await self.http.guild_get(guild_id)
+            channel_data = await self.http.guild_channels(guild_id)
+            data['channels']=channel_data
+            user_data = await self.http.guild_user_get(guild_id,self.id)
+            data['members']=[user_data]
             guild=Guild(data,self)
         else:
+            data = await self.http.guild_get(guild_id)
             guild._sync(data,self)
-            guild._update_no_return(data)
-
-        Task(self._sync_guild_postprocess(guild),self.loop)
-        return guild
-
-    
-    async def _sync_guild_postprocess(self,guild):
-        for client in CLIENTS:
+            channel_data = await self.http.guild_channels(guild_id)
+            guild._sync_channels(channel_data)
+        
+            user_data = await self.http.guild_user_get(guild_id,self.id)
             try:
-                user_data = await self.http.guild_user_get(guild.id,client.id)
-            except DiscordException:
-                continue
-            try:
-                profile=client.guild_profiles[guild]
+                profile=self.guild_profiles[guild]
             except KeyError:
-                client.guild_profiles[guild]=GuildProfile(user_data,guild)
-                if client not in guild.clients:
-                    guild.clients.append(client)
+                self.guild_profiles[guild]=GuildProfile(user_data,guild)
+                if guild not in guild.clients:
+                    guild.clients.append(self)
             else:
                 profile._update_no_return(user_data,guild)
         
-        # Disable user syncing, takes too much time
+        return guild
+
+##    # Disable user syncing, takes too much time
+##    async def _guild_sync_postprocess(self,guild):
+##        for client in CLIENTS:
+##            try:
+##                user_data = await self.http.guild_user_get(guild.id,client.id)
+##           except (DiscordException, ConnectionError):
+##                continue
+##            try:
+##                profile=client.guild_profiles[guild]
+##            except KeyError:
+##                client.guild_profiles[guild]=GuildProfile(user_data,guild)
+##                if client not in guild.clients:
+##                    guild.clients.append(client)
+##            else:
+##                profile._update_no_return(user_data,guild)
+##
 ##        if not CACHE_USER:
 ##            return
 ##
@@ -2425,11 +2437,11 @@ class Client(UserBase):
                 optimals.append(region)
         return results,optimals
 
-    async def sync_guild_channels(self,guild):
+    async def guild_sync_channels(self,guild):
         data = await self.http.guild_channels(guild.id)
         guild._sync_channels(data,self)
 
-    async def sync_guild_roles(self,guild):
+    async def guild_sync_roles(self,guild):
         data = await self.http.guild_roles(guild.id)
         guild._sync_roles(data)
     
@@ -2807,7 +2819,7 @@ class Client(UserBase):
         data = await self.http.emoji_get(guild.id,emoji_id)
         return Emoji(data,guild)
 
-    async def sync_guild_emojis(self,guild):
+    async def guild_sync_emojis(self,guild):
         data = await self.http.guild_emojis(guild.id)
         guild._sync_emojis(data)
 
@@ -3444,7 +3456,7 @@ class Client(UserBase):
             sys.stderr.write(''.join([
                 'Connection failed, could not connect to Discord.\n'
                 'Received invalid data:\n',
-                data.__repr__(),'\n']))
+                repr(data),'\n']))
             return
         
         self._init_on_ready(data)
@@ -3452,10 +3464,9 @@ class Client(UserBase):
         await self.gateway.start(self.loop)
         
         if self.is_bot:
+            task = Task(self.update_application_info(),self.loop)
             if __debug__:
-                Task(self.update_application_info(),self.loop).__silence__()
-            else:
-                Task(self.update_application_info(),self.loop)
+                task.__silence__()
         
         # Check it twice, because meanwhile logging on, connect calls are not limited
         if self.running:
@@ -3468,32 +3479,42 @@ class Client(UserBase):
     async def _connect(self):
         try:
             while True:
-                no_internet_stop = await self.gateway.run()
-                if not no_internet_stop:
-                    break
-                
-                self._freeze_voice()
-                while True:
-                    await self.http.restart()
-                    await sleep(5.0,self.loop)
-                    self._gateway_pair=(self._gateway_pair[0],0.0)
-                    try:
-                        await self.client_gateway()
-                    except (OSError,ConnectionError,):
-                        continue
-                    else:
+                try:
+                    no_internet_stop = await self.gateway.run()
+                except (GeneratorExit,CancelledError) as err:
+                    # For now only here. These errors occured randomly for me since I made the wrapper, only once-once,
+                    # and it was not the wrapper causing them, so it is time to say STOP.
+                    # I also know `GeneratorExit` will show up as RuntimeError, but it is already a RuntimeError.
+                    self._freeze_voice()
+                    sys.stderr.write(
+                        f'Ignoring unexpected outer Task or coroutine cancellation at {self!r}._connect as {err!r}.\n'
+                        'The client will reconnect.\n')
+                    continue
+                else:
+                    if not no_internet_stop:
                         break
-                continue
-
+                    
+                    self._freeze_voice()
+                    while True:
+                        await self.http.restart()
+                        await sleep(5.0,self.loop)
+                        self._gateway_pair=(self._gateway_pair[0],0.0)
+                        try:
+                            await self.client_gateway()
+                        except (OSError,ConnectionError,):
+                            continue
+                        else:
+                            break
+                    continue
+        
         except BaseException as err:
-            self.loop.render_exc_async(err,[
-                'Exception occured at ',
-                self.__repr__(),
+            await self.loop.render_exc_async(err,[
+                'Unexpected exception occured at ',
+                repr(self),
                 '._connect\n',
                     ],
-                'If you can reproduce this bug, Please send me a message or '
-                'open an issue whith your code, and with every detail how to '
-                'reproduce it.\n'
+                'If you can reproduce this bug, Please send me a message or open an issue whith your code, and with '
+                'every detail how to reproduce it.\n'
                 'Thanks!\n')
         
         finally:
@@ -3517,8 +3538,8 @@ class Client(UserBase):
                     del self.guild_profiles[guild]
 
             #needs to delete the references for cleanup
-            del guild
-            del to_remove
+            guild=None
+            to_remove=None
             
     async def join_voice_channel(self,channel):
         guild_id=channel.guild.id

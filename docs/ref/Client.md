@@ -1154,7 +1154,7 @@ between 0 and 7.
 Unbans a user from the guild.  An additional `reason` argument is passable too,
 which will show up at the guild's audit logs.
 
-### `sync_guild(self,guild_id)`
+### `guild_sync(self,guild_id)`
 
 - `awaitable`
 - returns : [`Guild`](Guild.md)
@@ -1352,7 +1352,7 @@ Requests, then returns the client's guilds.
 Requests the available voice regions for the client and returns two lists.
 The First contains all the regions and the second the optimal ones.
 
-### `sync_guild_channels(self,guild)`
+### `guild_sync_channels(self,guild)`
 
 - `awaitable`
 - returns : `None`
@@ -1360,7 +1360,7 @@ The First contains all the regions and the second the optimal ones.
 Request all the channels of the [`guild`](Guild.md). If there is any desync
 between  the wrapper and Discord, it applies the changes to the guild.
 
-### `sync_guild_roles(self,guild)`
+### `guild_sync_roles(self,guild)`
 
 - `awaitable`
 - `returns : `None`
@@ -1685,7 +1685,7 @@ Every emoji is already accessable by `Guild.emojis`, but there is 1 difference.
 After using this method `Emoji.user` (so the person who added it) will be
 loaded.
 
-### `sync_guild_emojis(self,guild)`
+### `guild_sync_emojis(self,guild)`
 
 - `awaitable`
 - returns : `None`
@@ -2177,14 +2177,6 @@ Used only when user caching is disabled. Updates the client's
 
 Familiar to [`.update_profile_only`](#_update_profile_onlyselfdataguild-method),
 but it does not checks changes, so returns `None` instead of them.
-
-### `_sync_guild_postprocess(self,guild)` (method)
-
- - `awaitable`
- - returns : `None`
- 
-Ensured after [`.sync_guild`](#sync_guildselfguild_id) is finished. Syncs the
-users of the [guild](Guild.md).
 
 ### `_freeze_voice(self)` (method)
 

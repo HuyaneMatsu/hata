@@ -1262,8 +1262,12 @@ removes the guild's actual voice channel, else it should be a
 current system channel. If you wanna set it to a channel, it should be a
 [text channel](ChannelText.md).
 - `rules_channel`, default : `_spaceholder`. The guild must have `DISCOVERABLE`
-feature. If pased as `None` removes the guild's current rules channel. If you
+feature. If passed as `None` removes the guild's current rules channel. If you
 want to set it, then it should be passed as a [text channel](ChannelText.md).
+- `public_updates_channel`, default : `_spaceholder`. The guild must have
+`DISCOVERABLE` feature. If passed as `None` removes the guild's current updates
+channel. If you want to set it, then it should be passed as a
+[text channel](ChannelText.md).
 - `owner`, default : `None`, transfers the guild's ownership to an another
 user. Guild owner only.
 - `region`, default : `None`. Changes the guild's voice region, accepts type

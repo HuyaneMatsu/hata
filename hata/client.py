@@ -2253,8 +2253,9 @@ class Client(UserBase):
             splash=_spaceholder, discovery_splash=_spaceholder,
             banner=_spaceholder, afk_channel=_spaceholder,
             system_channel=_spaceholder, rules_channel=_spaceholder,
-            owner=None,region=None, afk_timeout=None, verification_level=None,
-            content_filter=None, message_notification=None, description=None,
+            public_updates_channel=_spaceholder, owner=None,region=None,
+            afk_timeout=None, verification_level=None, content_filter=None,
+            message_notification=None, description=None,
             system_channel_flags=None, reason=None):
 
         data={}
@@ -2324,14 +2325,19 @@ class Client(UserBase):
                 raise ValueError('The guild has no `DISCOVERABLE` feature')
             data['rules_channel_id']=None if rules_channel is None else rules_channel.id
         
+        if (public_updates_channel is not _spaceholder):
+            if GuildFeature.discoverable not in guild.features:
+                raise ValueError('The guild has no `DISCOVERABLE` feature')
+            data['public_updates_channel_id']=None if public_updates_channel is None else public_updates_channel.id
+        
         if (owner is not None):
             if (guild.owner!=self):
                 raise ValueError('You must be owner to transfer ownership')
             data['owner_id']=owner.id
-
+        
         if (region is not None):
             data['region']=region.id
-
+        
         if afk_timeout is not None:
             if afk_timeout not in (60,300,900,1800,3600):
                 raise ValueError(f'Afk timeout should be 60, 300, 900, 1800, 3600  seconds, got `{afk_timeout!r}`')

@@ -547,12 +547,14 @@ class Message(object):
         #but we just gonna ignore that
 
         self.reactions=reaction_mapping(data.get('reactions',None))
-
+        
         try:
-            self.application=MessageApplication(data['application'])
+            application_data=data['application']
         except KeyError:
             self.application=None
-
+        else:
+            self.application=MessageApplication(application_data)
+        
         try:
             activity_data=data['activity']
         except KeyError:
@@ -575,17 +577,17 @@ class Message(object):
             self.attachments=[Attachment(attachment) for attachment in attachments]
         else:
             self.attachments=None
-            
+        
         embed_datas=data['embeds']
         if embed_datas:
             self.embeds=[EmbedCore.from_data(embed) for embed in embed_datas]
         else:
             self.embeds=None
-
+        
         self.nonce=data.get('nonce',None)
         self.content=data['content']
         self.flags=MessageFlag(data.get('flags',0))
-
+        
         call_data=data.get('call',None)
         if call_data is None or self.type is not MessageType.call:
             self.call=None

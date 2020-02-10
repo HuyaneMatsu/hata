@@ -24,10 +24,14 @@ from .events_compiler import ContentParser
 COMMAND_RP=re.compile(' *([^ \t\\n]*) *(.*)')
 
 class CommandProcesser(EventHandlerBase):
-    __slots__=('commands', 'default_event', 'ignorecase', 'invalid_command',
-        'mention_prefix', 'prefix', 'prefixfilter', 'waitfors',)
+    __slots__ = ('command_error', 'commands', 'default_event', 'ignorecase',
+        'invalid_command', 'mention_prefix', 'prefix', 'prefixfilter',
+        'waitfors')
+    
     __event_name__='message_create'
+    
     def __init__(self,prefix,ignorecase=True,mention_prefix=True):
+        self.command_error=DEFAULT_EVENT
         self.default_event=DEFAULT_EVENT
         self.invalid_command=DEFAULT_EVENT
         self.mention_prefix=mention_prefix
@@ -35,7 +39,7 @@ class CommandProcesser(EventHandlerBase):
         self.commands={}
         self.update_prefix(prefix,ignorecase)
         self.ignorecase=ignorecase
-        
+    
     def update_prefix(self,prefix,ignorecase=None):
         if ignorecase is None:
             ignorecase=self.ignorecase
@@ -78,16 +82,22 @@ class CommandProcesser(EventHandlerBase):
         self.prefix=prefix
         self.prefixfilter=prefixfilter
         self.ignorecase=ignorecase
-
+    
     def __setevent__(self,func,case):
         #called every time, but only if every other fails
         if case=='default_event':
             func=check_passed(func,2,'\'default_event\' expects 2 arguments (client, message).')
             self.default_event=func
+        
         #called when user used bad command after the preset prefix, called if a command fails
         elif case=='invalid_command':
             func=check_passed(func,4,'\'invalid_command\' expected 4 arguemnts (client, message, command, content).')
             self.invalid_command=func
+        
+        elif case=='command_error':
+            func=check_passed(func,5,'\'invalid_command\' expected 4 arguemnts (client, message, command, content, exception).')
+            self.command_error=func
+        
         else:
             #called first
             argcount,func = check_passed_tuple(func,(3,2),)
@@ -111,6 +121,12 @@ class CommandProcesser(EventHandlerBase):
                 self.invalid_command=DEFAULT_EVENT
             else:
                 raise ValueError(f'The passed \'{case}\' ({func!r}) is not the same as the already loaded one: {self.invalid_command!r}')
+        
+        elif case=='command_error':
+            if func is self.command_error:
+                self.command_error=DEFAULT_EVENT
+            else:
+                raise ValueError(f'The passed \'{case}\' ({func!r}) is not the same as the already loaded one: {self.command_error!r}')
         
         else:
             try:
@@ -161,11 +177,29 @@ class CommandProcesser(EventHandlerBase):
                 except KeyError:
                     break
                 
-                if needs_content:
-                    await event(client,message,content)
+                try:
+                    if needs_content:
+                        result = await event(client,message,content)
+                    else:
+                        result = await event(client,message)
+                except BaseException as err1:
+                    command_error=self.command_error
+                    if command_error is not DEFAULT_EVENT:
+                        try:
+                            result = await command_error(client,message,command,content,err1)
+                        except BaseException as err2:
+                            await client.events.error(client,repr(self),err2)
+                            return
+                        else:
+                            if not result:
+                                return
+                    
+                    await client.events.error(client,repr(self),err1)
+                    return
+                
                 else:
-                    await event(client,message)
-                return
+                    if not result:
+                        return
         
         else:
             command,content=result
@@ -174,15 +208,37 @@ class CommandProcesser(EventHandlerBase):
             try:
                 needs_content,event=self.commands[command]
             except KeyError:
-                return (await self.invalid_command(client,message,command,content))
+                await self.invalid_command(client,message,command,content)
+                return
 
-            if needs_content:
-                await event(client,message,content)
+            try:
+                if needs_content:
+                    result = await event(client,message,content)
+                else:
+                    result = await event(client,message)
+            except BaseException as err1:
+                command_error=self.command_error
+                if command_error is not DEFAULT_EVENT:
+                    try:
+                        result = await command_error(client,message,command,content,err1)
+                    except BaseException as err2:
+                        await client.events.error(client,repr(self),err2)
+                        return
+                    else:
+                        if not result:
+                            return
+                
+                await client.events.error(client,repr(self),err1)
+                return
+            
             else:
-                await event(client,message)
+                if result:
+                    await self.invalid_command(client,message,command,content)
+            
             return
         
-        return (await self.default_event(client,message))
+        await self.default_event(client,message)
+        return
     
     async def call_command(self,command_name,client,message,content=''):
         if not command_name.islower():
@@ -241,6 +297,11 @@ class CommandProcesser(EventHandlerBase):
         if invalid_command is not DEFAULT_EVENT:
             result.append(', invalid_command=')
             result.append(repr(invalid_command))
+        
+        command_error=self.command_error
+        if command_error is not DEFAULT_EVENT:
+            result.append(', command_error=')
+            result.append(repr(command_error))
         
         result.append('>')
         

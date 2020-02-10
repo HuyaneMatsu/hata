@@ -320,11 +320,16 @@ class reaction_mapping_line(set):
     
     def __repr__(self):
         result=[self.__class__.__name__,'({']
-        for user in self:
-            result.append(repr(user))
-            result.append(', ')
         
-        result[-1]='}'
+        # set indexing is not public, so we need to do a check, like this
+        if set.__len__(self):
+            for user in self:
+                result.append(repr(user))
+                result.append(', ')
+            
+            result[-1]='}'
+        else:
+            result.append('}')
         
         unknown=self.unknown
         if unknown:

@@ -3,18 +3,18 @@
 At the previous chapter we did some basic event handling, but lets go deeper
 now (uwu). The wrapper contains some nice predefined events which can be
 easily integrated. This part of the introduction will walk you trough
- the most useful one of them in detail.
+the most useful one of them in detail.
 
 ```py
 from hata import Client, start_clients, events
 
-client=Client(TOKEN)
+Neko = Client(TOKEN)
 
-on_command = client.events(events.CommandProcesser('e!')).shortcut
+on_command = Neko.events(events.CommandProcesser('e!')).shortcut
         
 @on_command
 async def rate(client, message, content):
-    #rigg it
+    # rigg it
     if message.author is client:
         rating = 10
     else:
@@ -29,8 +29,8 @@ async def rate(client, message, content):
 async def default_event(client, message):
     if message.author.is_bot:
         return
-    content = message.content # filter out totally useless cases
-    if len(content)!=3:
+    content = message.content
+    if len(content)!=3: # filter out totally useless cases
         return
     
     content = content.lower()
@@ -56,6 +56,7 @@ method is already used when the object is called by a parser but their
 shorcut is a wrapper for this.
 
 > [CommandProcesser reference](https://github.com/HuyaneMatsu/hata/blob/master/docs/ref/CommandProcesser.md)
+> contains more detailed information about itself
 
 ### Cases
 
@@ -63,6 +64,7 @@ This event implements 5 cases:
 - [`waitfor`](#waitfor)
 - [`commands`](#commands)
 - [`invalid_command`](#invalid_command)
+- [`command_error`](#command_error)
 - [`mention_prefix`](#mention_prefix)
 - [`default_event`](#default_event)
 
@@ -111,10 +113,20 @@ It can be added as any other command. It's specific name is `invalid_command`.
 
 ```py
 @on_command
-async def invalid_command(client,message,command,content):
+async def invalid_command(client, message, command, content):
     pass
 ```
-    
+
+#### command_error
+
+If set, it is called, when an exception occures at a command.
+
+```py
+@on_command
+async def command_error(client, message, command, content, exception):
+    pass
+```
+
 #### mention_prefix
 
 By default at creating `CommandProcesser` the `mention_prefix` argument is
@@ -129,30 +141,36 @@ can not find it we just move on.
 
 #### default_event
 
-Same as the normal `message_create` event.
+Same as the normal `message_create`, but called only if nothing else picks up
+the message.
 
 ### Usage
 
 ```py
 # Single prefix case, with mentioning the optional arguments.
-event=CommandProcesser(prefix='e!', ignorecase=True, mention_prefix=True)
+event = CommandProcesser(prefix='e!', ignorecase=True, mention_prefix=True)
 
 # Add the event to the client
-client.events(event)
+Neko.events(event)
 
 # The event has `__event_name__` set to `'message_create'`. so it can pick
 # it up at the right place.
 
 # Now lets shortcut our event:
-on_command = client.events.message_create.shortcut
+on_command = Neko.events.message_create.shortcut
 
 # Or we can use `with` statement too, what does the same:
-with client.events.message_create.shortcut as on_command:
+with Neko.events.message_create.shortcut as on_command:
     pass
 
 # Add a normal command
 @on_command
 async def test(client, message, content): 
+    await client.message_create(message.channel,'test')
+
+# If you will not use the content option, you can just skip it
+@on_command
+async def test(client, message): 
     await client.message_create(message.channel,'test')
 
 # Add a command with different name
@@ -179,7 +197,7 @@ This is probably simpler as most of the people think, lets look into it!
 ```py
 from hata import eventlist
 
-cute_commands=eventlist()
+cute_commands = eventlist()
 
 @cute_commands
 async def pat(client, message, content):
@@ -196,16 +214,16 @@ async def send_love(client, message, content):
 from hata import Client, start_clients, events
 from cute_commands import cute_commands
 
-client=Client(TOKEN)
+Neko = Client(TOKEN)
 
-on_command = client.events(events.CommandProcesser('e!')).shortcut
+on_command = Neko.events(events.CommandProcesser('e!')).shortcut
 on_command.extend(cute_commands)
 
 start_clients()
 ```
         
-The type `eventlist` knows all the 3 main operation the same that our `on_command`
-shortcut knows.
+The type `eventlist` knows all the 3 main operation the same that our
+`on_command` shortcut knows.
 (`on_command` is just my preferable name so do not stick with it).
 This 2 main operations are `__call__` and `.extend`.
 
@@ -214,4 +232,5 @@ be checked when the main event handler is extended with them.
 
 Creating complex systems is easily solvable because we can add not only
 functions as events and the client itself is always passed as the first
-argument. If these options are not enough - you are smart enough to make something awesome.
+argument. If these options are not enough - you are smart enough to make
+something awesome.

@@ -9,7 +9,7 @@ from .others import ROLE_MENTION_RP, USER_MENTION_RP, CHANNEL_MENTION_RP,   \
     parse_time, urlcutter
 from .color import Color
 
-EXTRA_EMBED_TYPES=('link', 'video', 'gifv', 'image', 'article')
+EXTRA_EMBED_TYPES=('application_news', 'article', 'gifv', 'image', 'link', 'video')
 
 def _convert_content(content,message):
     escape=re.escape

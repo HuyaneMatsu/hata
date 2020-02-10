@@ -540,10 +540,6 @@ class content_parser_compiler:
 
     def compile_parsed(parsed):
         result=code()
-        is_async=any(('a' in x.flags) for x in parsed)
-        is_async|=any((x.name=='user' and ('n' in x.flags)) for x in parsed)
-        if not CACHE_USER:
-            is_async|=any((x.name=='user' and ('i' in x.flags)) for x in parsed)
 
         is_method=any(('d' in x.flags) for x in parsed)
         is_guild_only=any(('g' in x.flags) for x in parsed)
@@ -552,16 +548,16 @@ class content_parser_compiler:
         else:
             needs_guild_set=any(any_to_any('ni',x.flags) for x in parsed)
 
-        parsed_flag=is_async
+        parsed_flag=0
         if parsed:
             if 'f' in parsed[0].flags:
                 parsed_flag+=0b010
             elif 'c' in parsed[0].flags:
                 parsed_flag+=0b100
 
-        result.append(f'{"async " if is_async else ""}def parser(self,{"parent," if is_method else ""}client,message,content):')
+        result.append(f'async def parser(self,{"parent," if is_method else ""}client,message,content):')
         result.go_in()
-
+        
         _locals=_unindexed_static.copy()
         results=[]
         counters={}
@@ -589,7 +585,7 @@ class content_parser_compiler:
                     if 'r' in element.flags:
                         result.extend(content_parser_compiler._return_line_on_fail(parsed_flag,results,is_method),1)
                     else:
-                        result.append(content_parser_compiler._return_line_on_success(is_async,results,is_method),1)
+                        result.append(content_parser_compiler._return_line_on_success(results,is_method),1)
                         
                 else:
                     pass #no default
@@ -1057,33 +1053,21 @@ class content_parser_compiler:
                 results.append(variable_name)
             is_part_set=False
 
-        result.append(content_parser_compiler._return_line_on_success(is_async,results,is_method))
+        result.append(content_parser_compiler._return_line_on_success(results,is_method))
         
         return result.compile(__file__,_globals,'parser')
 
-    def _return_line_on_success(is_async,results,is_method):
+    def _return_line_on_success(results,is_method):
         to_pass=','.join(results)
-        if is_async:
-            return f'return await self.__func__({"parent," if is_method else ""}client,message,{to_pass})'
-        else:
-            return f'return self.__func__({"parent," if is_method else ""}client,message,{to_pass})'
+        return f'return await self.__func__({"parent," if is_method else ""}client,message,{to_pass})'
         
     def _return_line_on_fail(parsed_flag,results,is_method):
         if parsed_flag<2:
-            if parsed_flag==0:
-                return ['return defaultcoro()']
-            else:
-                return ['return']
+            return ['return']
         to_pass=','.join(results)
         if parsed_flag<4:
-            if parsed_flag==2:
-                return [f'self._on_failure(client,{"parent," if is_method else ""}message,{to_pass})',
-                        'return defaultcoro()']
-            else:
-                return [f'return self._on_failure({"parent," if is_method else ""}client,message,{to_pass})']
+            return [f'return await self._on_failure({"parent," if is_method else ""}client,message,{to_pass})']
         if parsed_flag==4:
-            return [f'return self._on_failure({"parent," if is_method else ""}client,message,{to_pass})']
-        else:
             return [f'return await self._on_failure({"parent," if is_method else ""}client,message,{to_pass})']
 
 

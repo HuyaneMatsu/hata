@@ -3538,10 +3538,76 @@ async def default_error_event(client,event,err):
     sys.stderr.write(''.join(extracted))
 
 class asynclist(list):
+    __slots__ = ('_attribute_cache')
+    
+    def __init__(self,iterable=None):
+        self._attribute_cache={}
+        if iterable is not None:
+            list.extend(self,iterable)
+    
     async def __call__(self,client,*args):
         for coro in self:
             Task(coro(client,*args),client.loop)
-
+    
+    def __repr__(self):
+        result = [
+            self.__class__.__name__,
+            '([']
+        
+        index=0
+        limit=len(self)
+        if index!=limit:
+            while True:
+                element=self[index]
+                result.append(repr(element))
+                if index==limit:
+                    break
+                
+                result.append(', ')
+                index=index+1
+        
+        result.append('])')
+        
+        return ''.join(result)
+        
+    def __getattr__(self, name):
+        if not isinstance(name,str):
+            raise TypeError(f'attribute name must be string, not `{type(name).__name__}`')
+        
+        attribute = self._attribute_cache.get(name,_spaceholder)
+        if attribute is not _spaceholder:
+            return attribute
+        
+        for coro in self:
+            attribute = getattr(coro,name,_spaceholder)
+            if attribute is _spaceholder:
+                continue
+            
+            self._attribute_cache[name]=attribute
+            return attribute
+        
+        raise AttributeError(f'`{self.__class__.__name__}` object has no attribte `{name}`')
+    
+    def __delitem__(self,index):
+        list.__delitem__(self,index)
+        self._attribute_cache.clear()
+    
+    def clear(self):
+        list.clear(self)
+        self._attribute_cache.clear()
+    
+    def append(self,object_):
+        list.append(self,object_)
+        self._attribute_cache.clear()
+    
+    def extend(self,iterable):
+        self._attribute_cache.clear()
+        list.extend(self,iterable)
+    
+    def insert(self,index,object_):
+        list.insert(self,index,object_)
+        self._attribute_cache.clear()
+    
 async def DEFAULT_EVENT(*args):
     pass
     

@@ -99,7 +99,7 @@ class ChannelBase(object):
         return channel
 
     def __repr__(self):
-        return f'<{self.__class__.__name__} id={self.id} name={self!s}>'
+        return f'<{self.__class__.__name__} id={self.id}, name={self!s}>'
 
     def __hash__(self):
         return self.id
@@ -242,9 +242,8 @@ async def _load_till(client,channel,index):
             raise IndexError
 
         await sleep(0.1,client.loop) #sometimes deque can not keep up?
-        
-            
-        
+
+
 #sounds funny, but this is a class
 #the chunksize is 97, because it means 1 request for _load_till
 class MessageIterator(object):
@@ -255,7 +254,7 @@ class MessageIterator(object):
         self.chunksize  = chunksize
         self._index     = 0
         self._permission= not channel.cached_permissions_for(client).can_read_message_history
-            
+        
     def __aiter__(self):
         return self
     

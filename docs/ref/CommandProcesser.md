@@ -23,6 +23,10 @@ with client.events.message_create as on_command:
     pass
 ```
 
+> If more handler is added `client.events.message_create`, then it will be
+replaced with [`asynclist`](asynclist.md), but that datatype still supports
+attribute lookup from it's element with overwriting `__getattr__`.
+
 An important note might be, that [client.events](EventDescriptor.md) returns
 the object after adding, so insta shortcut is the most elegant solution:
 
@@ -64,6 +68,7 @@ We can separate the flow of the event's handling on 5 steps:
 - [`waitfor`](#waitfor)
 - [`commands`](#commands)
 - [`invalid_command`](#invalid_command)
+- [`command_error`](#command_error)
 - [`mention_prefix`](#mention_prefix)
 - [`default_event`](#default_event)
 
@@ -133,8 +138,37 @@ async def hug_command(client, message, content):
     # do things
     pass
 
-on_commands.extend(some_commads) #extending works too
+on_command.extend(some_commads) #extending works too
 ```
+
+If someone has no permissin to use a command (or such), then the command
+should return a value what evaluates to `True`, because then the
+[`CommandProcesser`](CommandProcesser.md) will act, like there is no command
+with that name.
+
+```py
+from hata import Client
+from hata.events import ContentParser
+
+@on_command
+@ContentParser('user, flags=mna, default="client"',)
+async def update_application_info(client, message, user):
+    if not client.is_owner(message.author):
+        return True
+    
+    if type(user) is Client:
+        await user.update_application_info()
+        content = f'Application info of `{user:f}` is updated succesfully!'
+    else:
+         content = 'I can update application info only of a client.'
+    
+    await client.message_create(message.channel, content)
+    
+    return False
+```
+
+> Returning `False` is unnecesary, becuse `None` evaluates to `False` anyways,
+> but it might look cleaner to return objects of just one datatype.
 
 #### invalid_command
 
@@ -147,7 +181,111 @@ async def invalid_command(client, message, command, content):
     #do things
     pass
 ```
+
+#### command_error
+
+Whenever an exception occures meanwhile awaiting a command,
+[`client.events.error`](EventDescriptor.md#errorclienteventerr)
+will be ensured, but an another handler can be added too to
+[`CommandProcesser`](CommandProcesser.md).
+
+```py
+from io import StringIO
+
+from hata import Embed
+from hata.events import Pagination
+
+@on_command
+async def command_error(client, message, command, content, exception):
+    with StringIO() as buffer:
+        await client.loop.render_exc_async(exception, [
+            client.full_name,
+            ' ignores an occured exception at command ',
+            repr(command),
+            '\n\nMessage details:\nGuild: ',
+            repr(message.guild),
+            '\nChannel: ',
+            repr(message.channel),
+            '\nAuthor: ',
+            message.author.full_name,
+            ' (',
+            repr(message.author.id),
+            ')\nContent: ',
+            repr(content),
+            '\n```py\n'], '```', file=buffer)
+        
+        buffer.seek(0)
+        lines = buffer.readlines()
     
+    pages = []
+    
+    page_length = 0
+    page_contents = []
+    
+    index = 0
+    limit = len(lines)
+    
+    while True:
+        if index == limit:
+            embed = Embed(description=''.join(page_contents))
+            pages.append(embed)
+            page_contents = None
+            break
+        
+        line = lines[index]
+        index = index+1
+        
+        line_lenth = len(line)
+        # long line check, should not happen
+        if line_lenth > 500:
+            line = line[:500]+'...\n'
+            line_lenth = 504
+        
+        if page_length+line_lenth > 1997:
+            if index == limit:
+                # If we are at the last element, we dont need to shard up,
+                # because the last element is always '```'
+                page_contents.append(line)
+                embed = Embed(description=''.join(page_contents))
+                pages.append(embed)
+                page_contents = None
+                break
+            
+            page_contents.append('```')
+            embed = Embed(description=''.join(page_contents))
+            pages.append(embed)
+            
+            page_contents.clear()
+            page_contents.append('```py\n')
+            page_contents.append(line)
+            
+            page_length = 6+line_lenth
+            continue
+        
+        page_contents.append(line)
+        page_length += line_lenth
+        continue
+    
+    limit = len(pages)
+    index = 0
+    while index<limit:
+        embed = pages[index]
+        index += 1
+        embed.add_footer(f'page {index}/{limit}')
+    
+    await Pagination(client,message.channel,pages)
+```
+
+> Pagination uses different events too, so those should be added as well, to
+> make this example work.
+
+If exception occures at `command_error`, `client.events.error` will be ensured.
+Same return applies to `command_error` as at [`commands`](#commands). If
+`command_error` returns a value, what evaluates to `True`, then 
+`client.events.error` will be called too, with the same exception. Can be
+usefull for example if you want to show up exceptions only at a specific guild
+or such.
+
 #### mention_prefix
 
 If our client is `@mentioned` at the start of the [message](Message.md),
@@ -247,6 +385,7 @@ Sets the event's prefix to the set value. If `ignorecase` is not passed as
 
 | name              | description                                                                                   |
 |-------------------|-----------------------------------------------------------------------------------------------|
+| command_error     | The event, hat is called, when a command raised an exception.                                 |
 | commands          | Dict of commands added to the event.                                                          |
 | default_event     | The default event if prefix could not be parsed.                                              |
 | ignorecase        | Is prefix not-case sensitive.                                                                 |

@@ -180,5 +180,11 @@ If the `exception` argument is `TimeoutError` instance, means that the
 `Pagination` expired by it's [`.timeouter`](#timeouter). At this case it
 removes the reactions on itself.
 
-[`Pagination`] does not excepts other cancelling cases, so at every other case,
-it just cancels it's [`.timeouter`](#timeouter).
+[`Pagination`](Pagination.md) does not excepts other cancelling cases, so at
+every other case, it just cancels it's [`.timeouter`](#timeouter).
+
+### `_reaction_delete(self,emoji,user)` (method)
+
+Ensured when the [`Pagination`](Pagination.md) removes a specific reaction
+from it's [`.message`](#message-1). If any exception occures meanwhile, it
+handles it.

@@ -16,7 +16,9 @@
 ##| 502   | GATEWAY UNAVAILABLE   | retry         |
 ##| 5XX   | SERVER ERROR          | raise         |
 
-__all__ = ('DiscordException', )
+__all__ = ('DiscordException', 'ERROR_CODES', )
+
+from .dereaddons_local import modulize
 
 class DiscordException(Exception):
     def __init__(self,response,data):
@@ -155,25 +157,25 @@ class DiscordException(Exception):
             message_parts.append(message_base)
         elif messages:
             message_parts.append(':')
-            
+        
         messages.append(''.join(message_parts))
         messages.reverse()
-                    
+        
         self._messages=messages
         return messages
     
     def __repr__(self):
         return '\n'.join(self.messages)
-
+    
     __str__=__repr__
-
+    
     @property
     def code(self):
         code=self._code
         if code is None:
             return self._cr_code()
         return code
-
+    
     def _cr_code(self):
         if type(self.data) is dict:
             code=self.data.get('code',0)
@@ -182,9 +184,81 @@ class DiscordException(Exception):
         
         self._code=code
         return code
-
+    
     @property
     def status(self):
         return self.response.status
 
 
+@modulize
+class ERROR_CODES:
+    unknown_account         = 10001
+    unknown_aoolication     = 10002
+    unknown_channel         = 10003
+    unknown_guild           = 10004
+    unknown_integration     = 10005
+    unknown_invite          = 10006
+    unknown_member          = 10007
+    unknown_message         = 10008
+    unknown_overwrite       = 10009
+    unknown_provider        = 10010
+    unknown_role            = 10011
+    unknown_token           = 10012
+    unknown_user            = 10013
+    unknown_emoji           = 10014
+    unknown_webhook         = 10015
+    unknown_SKU             = 10027
+    unknown_store_listing   = 10028
+    unknown_entitlement     = 10029
+    unknown_build           = 10030
+    unknown_lobby           = 10031
+    unknown_branch          = 10032
+    unknown_redistributable = 10036
+    
+    bots_cannot_use_this_endpoint   = 20001
+    only_bots_can_use_this_endpoint = 20002
+    
+    max_guilds              = 30001 # 100
+    max_friends             = 30001 # 10000
+    max_pins                = 30003 # 50
+    max_roles               = 30005 # 250
+    max_webhooks            = 30007 # 10
+    max_reactions           = 30010 # 20
+    max_channels            = 30013 # 500
+    maxinvites              = 30016 # 1000
+    
+    unauthorized            = 40001
+    request_too_large       = 40005
+    feature_disabled        = 40006
+    user_banned_from_guild  = 40007
+    
+    missing_access                  = 50001
+    invalid_account_type            = 50002
+    cannot_execute_action_in_dm     = 50003
+    widget_disabled                 = 50004
+    edit_other_users_message        = 50005
+    empty_message                   = 50006
+    cannot_send_message_to_user     = 50007
+    cannot_send_message_to_voice_channel = 50008
+    channel_verification_level_too_high = 50009
+    oauth2_application_has_no_bot   = 50010
+    oauth2_application_limit_reached= 50011
+    oauth2_state_invalid            = 50012
+    missing_permissions             = 50013
+    invalid_auth_token              = 50014
+    note_too_long                   = 50015
+    invalid_amount_of_message_to_bulk_delete = 50016
+    can_pin_message_at_its_own_channel = 50019
+    invite_code_invalid_or_taken    = 50020
+    cannot_execute_action_on_system_message = 50021
+    oauth2_access_token_invalid     = 50025
+    message_too_old_to_bulk_delete  = 50034
+    invalid_form_body               = 50035
+    invite_accepted_where_application_bot_is_not_in = 50036
+    invalid_API_version             = 50041
+    
+    reaction_blocked        = 90001
+    
+    resource_overloaded     = 130000
+
+del modulize

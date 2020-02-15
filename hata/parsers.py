@@ -3220,9 +3220,9 @@ class _EventCreationManager(object):
     def __init__(self,parent):
         self.parent=parent
         
-    def __call__(self,func=None,case=None):
+    def __call__(self,func=None,case=None,**kwargs):
         if func is None:
-            return self._wrapper(self,case)
+            return self._wrapper(self,case,kwargs)
         
         if case is None:
             case=check_name(func,None)
@@ -3230,7 +3230,7 @@ class _EventCreationManager(object):
         if (not case.islower()):
             case=case.lower()
         
-        func=self.parent.__setevent__(func,case)
+        func=self.parent.__setevent__(func,case,**kwargs)
         return func
     
     def remove(self,func,case=None):
@@ -3243,12 +3243,14 @@ class _EventCreationManager(object):
         self.parent.__delevent__(func,case)
     
     class _wrapper(object):
-        __slots__=('parent', 'case',)
-        def __init__(self,parent,case):
+        __slots__=('parent', 'case', 'kwargs')
+        def __init__(self,parent,case,kwargs):
             self.parent=parent
             self.case=case
-        def __call__(self,func):
-            return self.parent(func,self.case)
+            self.kwargs=kwargs
+        
+        def __call__(self,func,):
+            return self.parent(func,self.case,**self.kwargs)
 
     def __getattr__(self,name):
         return getattr(self.parent,name)

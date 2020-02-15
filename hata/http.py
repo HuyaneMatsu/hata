@@ -9,7 +9,7 @@ from .py_reqrep import Request_CM
 from .py_hdrs import METH_PATCH, METH_GET, METH_DELETE, METH_POST, METH_PUT,\
     CONTENT_TYPE, USER_AGENT, AUTHORIZATION
 
-from .exceptions import DiscordException
+from .exceptions import DiscordException, ERROR_CODES
 from .others import to_json, from_json, quote, Discord_hdrs
 
 AUDIT_LOG_REASON    = Discord_hdrs.AUDIT_LOG_REASON
@@ -718,7 +718,7 @@ class DiscordHTTPClient(HTTPClient):
                 f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}',reason=reason)
             return result
         except DiscordException as err:
-            if err.code == 10008: # 10008==already deleted message
+            if err.code == ERROR_CODES.unknown_message: # already deleted
                 return
             raise
     
@@ -729,7 +729,7 @@ class DiscordHTTPClient(HTTPClient):
                 f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}',reason=reason)
             return result
         except DiscordException as err:
-            if err.code == 10008: # 10008==already deleted message
+            if err.code == ERROR_CODES.unknown_message: # already deleted
                 return
             raise
     

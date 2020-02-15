@@ -262,16 +262,17 @@ class UserBase(object):
             cls.color       = cls.__rich__.color
             cls.name_at     = cls.__rich__.name_at
             cls.mentioned_in= cls.__rich__.mentioned_in
-
+            cls.has_role    = cls.__rich__.has_role
+        
         if 'activities' in cls.__slots__:
             cls.activity    = cls.__rich__.activity
-
+        
         if 'statuses' in cls.__slots__:
             cls.platform    = cls.__rich__.platform
-
+    
     def __str__(self):
         return self.name
-
+    
     def __repr__(self):
         if self.partial:
             return f'<{self.__class__.__name__} partial id={self.id}>'
@@ -393,49 +394,61 @@ class UserBase(object):
         if message.user_mentions is not None and self in message.user_mentions:
             return True
         return False
-
+    
+    def has_role(self,role):
+        return False
+    
     @modulize
     class __rich__:
         def color(self,guild):
-            while True:
-                if guild is None:
-                    break
+            if guild is not None:
                 try:
-                    roles=self.guild_profiles[guild].roles
+                    profile=self.guild_profiles[guild]
                 except KeyError:
-                    break
-                for role in reversed(roles):
-                    if role.color:
-                        return role.color
-                break
+                    pass
+                else:
+                    for role in reversed(profile.roles):
+                        color=role.color
+                        if color:
+                            return color
+            
             return Color(0)
 
         def name_at(self,guild):
-            while True:
-                if guild is None:
-                    break
+            if guild is not None:
                 try:
-                    nick=self.guild_profiles[guild].nick
-                    if nick is None:
-                        break
-                    return nick
+                    profile=self.guild_profiles[guild]
                 except KeyError:
                     pass
-                break
+                else:
+                    nick=profile.nick
+                    if nick is not None:
+                        return nick
+            
             return self.name
 
         def mentioned_in(self,message):
             if message.everyone_mention:
                 return True
-            if message.user_mentions is not None and self in message.user_mentions:
+            
+            user_mentions=message.user_mentions
+            if user_mentions is not None and self in user_mentions:
                 return True
-            if message.role_mentions is not None:
-                try:
-                    roles=self.guild_profiles[message.guild].roles
-                except KeyError:
-                    return False
-                return any_to_any(roles,message.role_mentions)
-
+            
+            role_mentions=message.role_mentions
+            if role_mentions is not None:
+                # if channel is deleted, it's guild is None
+                guild = message.channel.guild
+                if guild is not None:
+                    try:
+                        profile=self.guild_profiles[guild]
+                    except KeyError:
+                        return False
+                    
+                    for role in profile.roles:
+                        if role in role_mentions:
+                            return True
+            
             return False
 
         @property
@@ -454,7 +467,20 @@ class UserBase(object):
                     if l_status==status:
                         return platform
             return ''
-
+        
+        def has_role(self,role):
+            # if role is deleted, it's guild is None
+            guild = role.guild
+            if guild is None:
+                return False
+            
+            try:
+                profile=self.guild_profiles[guild]
+            except KeyError:
+                return False
+            
+            return (role in profile.roles)
+    
 class User(UserBase):
     if CACHE_PRESENCE:
         __slots__=('guild_profiles', 'is_bot', 'partial', #default User
@@ -486,12 +512,12 @@ class User(UserBase):
                 update=True
                 
                 USERS[user_id]=user
-
+            
             if update:
                 user.partial=False
                 user.is_bot=user_data.get('bot',False)
                 user._update_no_return(user_data)
-
+            
             if member_data is not None and guild is not None:
                 try:
                     profile=user.guild_profiles[guild]
@@ -500,7 +526,7 @@ class User(UserBase):
                     user.guild_profiles[guild]=GuildProfile(member_data,guild)
                 else:
                     profile._set_joined(member_data)
-
+            
             return user
             
     elif CACHE_USER:

@@ -1165,4 +1165,8 @@ class ContentParser(object):
     def __delete__(self,obj):
         raise AttributeError('can\'t delete attribute')
 
+    @property
+    def __doc__(self):
+        return getattr(self.__func__,'__doc__',None)
+
 del modulize

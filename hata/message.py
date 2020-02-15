@@ -246,7 +246,7 @@ class MessageApplication(object):
         if type(self) is type(other):
             return self.id<other.id
         return NotImplemented
-
+    
     def __hash__(self):
         return self.id
     
@@ -528,10 +528,11 @@ class Message(object):
                 
                 cross_mention_datas=data.get('mention_channels',None)
                 if cross_mention_datas is None:
-                    self.cross_mentions=None
+                    cross_mentions=None
                 else:
-                    self.cross_mentions=[UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas]
-                    self.cross_mentions.sort()
+                    cross_mentions=[UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas]
+                    cross_mentions.sort()
+                self.cross_mentions=cross_mentions
                 webhook_type=WebhookType.server
             else:
                 self.cross_reference=None
@@ -542,10 +543,7 @@ class Message(object):
                 self.author=PartialWebhook(webhook_id,'',type_=webhook_type)
             else:
                 self.author=WebhookRepr(author_data,webhook_id,type_=webhook_type)
-
-        #the message might contain guild member data too
-        #but we just gonna ignore that
-
+        
         self.reactions=reaction_mapping(data.get('reactions',None))
         
         try:
@@ -1682,7 +1680,7 @@ class Message(object):
 
 class MessageType(object):
     # class related
-    INSTANCES = [NotImplemented] * 14
+    INSTANCES = [NotImplemented] * 16
     
     # object related
     __slots__ = ('convert', 'name', 'value', )
@@ -1718,6 +1716,8 @@ class MessageType(object):
     new_guild_sub_t3        = NotImplemented
     new_follower_channel    = NotImplemented
     stream                  = NotImplemented
+    discovery_disqualified  = NotImplemented
+    discovery_requalified   = NotImplemented
 
 def convert_default(self):
     escape=re.escape
@@ -1871,20 +1871,30 @@ def convert_new_follower_channel(self):
 def convert_stream(self):
     return ''
 
-MessageType.default               = MessageType(0   , 'default'             , convert_default               , )
-MessageType.add_user              = MessageType(1   , 'add_user'            , convert_add_user              , )
-MessageType.remove_user           = MessageType(2   , 'remove_user'         , convert_remove_user           , )
-MessageType.call                  = MessageType(3   , 'call'                , convert_call                  , )
-MessageType.channel_name_change   = MessageType(4   , 'channel_name_change' , convert_channel_name_change   , )
-MessageType.channel_icon_change   = MessageType(5   , 'channel_icon_change' , convert_channel_icon_change   , )
-MessageType.new_pin               = MessageType(6   , 'new_pin'             , convert_new_pin               , )
-MessageType.welcome               = MessageType(7   , 'welcome'             , convert_welcome               , )
-MessageType.new_guild_sub         = MessageType(8   , 'new_guild_sub'       , convert_new_guild_sub         , )
-MessageType.new_guild_sub_t1      = MessageType(9   , 'new_guild_sub_t1'    , convert_new_guild_sub_t1      , )
-MessageType.new_guild_sub_t2      = MessageType(10  , 'new_guild_sub_t2'    , convert_new_guild_sub_t2      , )
-MessageType.new_guild_sub_t3      = MessageType(11  , 'new_guild_sub_t3'    , convert_new_guild_sub_t3      , )
-MessageType.new_follower_channel  = MessageType(12  , 'new_follower_channel', convert_new_follower_channel  , )
-MessageType.stream                = MessageType(13  , 'stream'              , convert_stream                , )
+#TODO
+def convert_discovery_disqualified(self):
+    return ''
+
+#TODO
+def convert_discovery_requalified(self):
+    return ''
+
+MessageType.default               = MessageType(0   , 'default'                 , convert_default               , )
+MessageType.add_user              = MessageType(1   , 'add_user'                , convert_add_user              , )
+MessageType.remove_user           = MessageType(2   , 'remove_user'             , convert_remove_user           , )
+MessageType.call                  = MessageType(3   , 'call'                    , convert_call                  , )
+MessageType.channel_name_change   = MessageType(4   , 'channel_name_change'     , convert_channel_name_change   , )
+MessageType.channel_icon_change   = MessageType(5   , 'channel_icon_change'     , convert_channel_icon_change   , )
+MessageType.new_pin               = MessageType(6   , 'new_pin'                 , convert_new_pin               , )
+MessageType.welcome               = MessageType(7   , 'welcome'                 , convert_welcome               , )
+MessageType.new_guild_sub         = MessageType(8   , 'new_guild_sub'           , convert_new_guild_sub         , )
+MessageType.new_guild_sub_t1      = MessageType(9   , 'new_guild_sub_t1'        , convert_new_guild_sub_t1      , )
+MessageType.new_guild_sub_t2      = MessageType(10  , 'new_guild_sub_t2'        , convert_new_guild_sub_t2      , )
+MessageType.new_guild_sub_t3      = MessageType(11  , 'new_guild_sub_t3'        , convert_new_guild_sub_t3      , )
+MessageType.new_follower_channel  = MessageType(12  , 'new_follower_channel'    , convert_new_follower_channel  , )
+MessageType.stream                = MessageType(13  , 'stream'                  , convert_stream                , )
+MessageType.discovery_disqualified= MessageType(14  , 'discovery_disqualified'  , convert_discovery_disqualified, )
+MessageType.discovery_requalified = MessageType(15  , 'discovery_requalified'   , convert_discovery_requalified , )
 
 del convert_default
 del convert_add_user
@@ -1900,6 +1910,8 @@ del convert_new_guild_sub_t2
 del convert_new_guild_sub_t3
 del convert_new_follower_channel
 del convert_stream
+del convert_discovery_disqualified
+del convert_discovery_requalified
 
 #TODO:test
 class MessageCall(object):

@@ -124,6 +124,7 @@ Methods:
     - [`name_at`](UserBase.md#name_atselfguild)
     - [`color`](UserBase.md#colorselfguild)
     - [`mentioned_in`](UserBase.md#mentioned_inselfmessage)
+    - [`hasrole`](UserBase.md#has_roleselfrole)
 - [`User`](User.md) :
     - [`_update_presence`](User.md#_update_presenceselfdata-method)
     - [`_update_presence_no_return`](User.md#_update_presence_no_returnselfdata-method)

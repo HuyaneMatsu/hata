@@ -6,7 +6,7 @@ __all__ = ('CommandProcesser', 'ContentParser', 'Cooldown',
     'multievent', 'prefix_by_guild', 'wait_for_message',
     'wait_for_reaction', )
 
-import re
+import re, reprlib
 from weakref import WeakKeyDictionary
 
 from .futures import Task, Future
@@ -15,13 +15,120 @@ from .others import USER_MENTION_RP
 from .parsers import check_passed, EventHandlerBase, compare_converted,     \
     check_name, check_passed_tuple, asynclist, DEFAULT_EVENT
 from .emoji import BUILTIN_EMOJIS
-from .exceptions import DiscordException
+from .exceptions import DiscordException, ERROR_CODES
 from .client_core import KOKORO
 
 #Invite this as well, to shortcut imports
 from .events_compiler import ContentParser
 
 COMMAND_RP=re.compile(' *([^ \t\\n]*) *(.*)')
+    
+class Command(object):
+    __slots__ = ('command', 'description', 'name', 'needs_content', )
+    def __init__(self, name, command, needs_content, description):
+        self.command        = command
+        self.needs_content  = needs_content
+        self.name           = name
+
+        if description is None:
+            description=getattr(command,'__doc__',None)
+        
+        if (description is not None) and isinstance(description,str):
+            description=self.normalize_description(description)
+                
+        self.description    = description
+    
+    def __repr__(self):
+        return f'{self.__class__.__name__}(name={self.name!r}, command={self.command!r}, needs_content={self.needs_content!r}, description={reprlib.repr(self.description)})'
+
+    @property
+    def __doc__(self):
+        description = self.description
+        
+        # go in the order of most likely cases
+        if description is None:
+            return None
+        
+        if isinstance(description,str):
+            return description
+        
+        return None
+    
+    async def __call__(self, client, message, content):
+        if self.needs_content:
+            return await self.command(client, message, content)
+        else:
+            return await self.command(client, message)
+    
+    @staticmethod
+    def normalize_description(text):
+        lines=text.splitlines()
+        
+        for index in range(len(lines)):
+            lines[index]=lines[index].rstrip()
+        
+        while True:
+            if not lines:
+                return None
+            
+            line=lines[0]
+            if line:
+                break
+            
+            del lines[0]
+            continue
+        
+        while True:
+            if not lines:
+                return None
+            
+            line=lines[-1]
+            if line:
+                break
+            
+            del lines[-1]
+            continue
+        
+        limit=len(lines)
+        if limit==1:
+            return lines[0].lstrip()
+        
+        ignore_index=0
+        
+        while True:
+            next_char=lines[0][ignore_index]
+            if next_char not in ('\t', ' '):
+                break
+            
+            index=1
+            while index<limit:
+                line=lines[index]
+                index=index+1
+                if not line:
+                    continue
+                
+                char=line[ignore_index]
+                if char!=next_char:
+                    break
+                
+                continue
+            
+            if char!=next_char:
+                break
+            
+            ignore_index=ignore_index+1
+            continue
+        
+        if ignore_index!=0:
+            for index in range(len(lines)):
+                line=lines[index]
+                if not line:
+                    continue
+                
+                lines[index]=line[ignore_index:]
+                continue
+        
+        return '\n'.join(lines)
 
 class CommandProcesser(EventHandlerBase):
     __slots__ = ('command_error', 'commands', 'default_event', 'ignorecase',
@@ -83,7 +190,7 @@ class CommandProcesser(EventHandlerBase):
         self.prefixfilter=prefixfilter
         self.ignorecase=ignorecase
     
-    def __setevent__(self,func,case):
+    def __setevent__(self, func, case, description=None):
         #called every time, but only if every other fails
         if case=='default_event':
             func=check_passed(func,2,'\'default_event\' expects 2 arguments (client, message).')
@@ -105,7 +212,8 @@ class CommandProcesser(EventHandlerBase):
                 needs_content=False
             else:
                 needs_content=True
-            self.commands[case]=(needs_content,func)
+            
+            self.commands[case]=Command(case, func, needs_content, description)
         
         return func
     
@@ -130,15 +238,15 @@ class CommandProcesser(EventHandlerBase):
         
         else:
             try:
-                argcount,actual=self.commands[case]
+                command=self.commands[case]
             except KeyError as err:
                 raise ValueError(f'The passed \'{case}\' is not added as a command right now.')
             
-            if compare_converted(actual,func):
+            if (type(func) is Command and (command is func)) or compare_converted(command.command,func):
                 del self.commands[case]
             else:
-                raise ValueError(f'The passed \'{case}\' ({func!r}) command is not the same as the already loaded one: {actual!r}')
-            
+                raise ValueError(f'The passed \'{case}\' ({func!r}) command is not the same as the already loaded one: {command!r}')
+    
     async def __call__(self,client,message):
         try:
             event=self.waitfors[message.channel]
@@ -169,29 +277,33 @@ class CommandProcesser(EventHandlerBase):
                 if result is None:
                     break
                 
-                command,content=result.groups()
-                command=command.lower()
+                command_name,content=result.groups()
+                command_name=command_name.lower()
                 
                 try:
-                    needs_content,event=self.commands[command]
+                    command=self.commands[command_name]
                 except KeyError:
                     break
                 
                 try:
-                    if needs_content:
-                        result = await event(client,message,content)
+                    if command.needs_content:
+                        result = await command.command(client,message,content)
                     else:
-                        result = await event(client,message)
+                        result = await command.command(client,message)
                 except BaseException as err1:
                     command_error=self.command_error
                     if command_error is not DEFAULT_EVENT:
                         try:
-                            result = await command_error(client,message,command,content,err1)
+                            result = await command_error(client,message,command_name,content,err1)
                         except BaseException as err2:
                             await client.events.error(client,repr(self),err2)
                             return
                         else:
-                            if not result:
+                            if result is None:
+                                return
+                            elif not isinstance(result,int):
+                                return
+                            elif not result:
                                 return
                     
                     await client.events.error(client,repr(self),err1)
@@ -202,38 +314,49 @@ class CommandProcesser(EventHandlerBase):
                         return
         
         else:
-            command,content=result
-            command=command.lower()
+            command_name,content=result
+            command_name=command_name.lower()
             
             try:
-                needs_content,event=self.commands[command]
+                command=self.commands[command_name]
             except KeyError:
-                await self.invalid_command(client,message,command,content)
+                await self.invalid_command(client,message,command_name,content)
                 return
-
+            
             try:
-                if needs_content:
-                    result = await event(client,message,content)
+                if command.needs_content:
+                    result = await command.command(client,message,content)
                 else:
-                    result = await event(client,message)
+                    result = await command.command(client,message)
             except BaseException as err1:
                 command_error=self.command_error
                 if command_error is not DEFAULT_EVENT:
                     try:
-                        result = await command_error(client,message,command,content,err1)
+                        result = await command_error(client,message,command_name,content,err1)
                     except BaseException as err2:
                         await client.events.error(client,repr(self),err2)
                         return
                     else:
-                        if not result:
+                        if result is None:
+                            return
+                        elif not isinstance(result,int):
+                            return
+                        elif not result:
                             return
                 
                 await client.events.error(client,repr(self),err1)
                 return
             
             else:
-                if result:
-                    await self.invalid_command(client,message,command,content)
+                if result is None:
+                    return
+                elif not isinstance(result,int):
+                    return
+                elif not result:
+                    return
+                
+                await self.invalid_command(client,message,command_name,content)
+                return
             
             return
         
@@ -245,14 +368,14 @@ class CommandProcesser(EventHandlerBase):
             command_name=command_name.lower()
         
         try:
-            needs_content,event=self.commands[command_name]
+            command=self.commands[command_name]
         except KeyError:
             raise LookupError(command_name) from None
-
-        if needs_content:
-            await event(client,message,content)
+        
+        if command.needs_content:
+            await command.command(client,message,content)
         else:
-            await event(client,message)
+            await command.command(client,message)
     
     def append(self,wrapper,target):
         try:
@@ -345,7 +468,7 @@ class multievent(object):
     
     def __init__(self,*events):
         self.events=events
-        
+    
     def append(self,wrapper,target):
         for event in self.events:
             event.append(wrapper,target)
@@ -361,7 +484,7 @@ class Timeouter(object):
         self.owner=owner
         self.timeout=timeout
         self.handler=loop.call_later(timeout,self.__step,self)
-        
+    
     @staticmethod
     def __step(self):
         timeout=self.timeout
@@ -479,9 +602,7 @@ class Pagination(object):
             if not message.did_react(emoji,user):
                 return
             
-            task = Task(client.reaction_delete(message,emoji,user),client.loop)
-            if __debug__:
-                task.__silence__()
+            Task(self._reaction_delete(emoji,user),client.loop)
         
         task_flag=self.task_flag
         if task_flag!=GUI_STATE_READY:
@@ -489,7 +610,7 @@ class Pagination(object):
                 if emoji is self.CANCEL:
                     self.task_flag=GUI_STATE_CANCELLING
                 return
-
+            
             # ignore GUI_STATE_CANCELLED and GUI_STATE_SWITCHING_CTX
             return
         
@@ -497,25 +618,37 @@ class Pagination(object):
             if emoji is self.LEFT:
                 page=self.page-1
                 break
-                
+            
             if emoji is self.RIGHT:
                 page=self.page+1
                 break
-                
+            
             if emoji is self.CANCEL:
                 self.task_flag=GUI_STATE_CANCELLED
                 try:
                     await client.message_delete(message)
-                except (DiscordException, ConnectionError):
-                    pass
-                finally:
+                except BaseException as err:
+                    self.cancel()
+                    
+                    if isinstance(err,ConnectionError):
+                        # no internet
+                        return
+                    
+                    if isinstance(err,DiscordException):
+                        if err.code == ERROR_CODES.missing_access: # client removed
+                            return
+                    
+                    await client.events.error(client,f'{self!r}.__call__',err)
+                    return
+                
+                else:
                     self.cancel()
                     return
             
             if emoji is self.LEFT2:
                 page=0
                 break
-                
+            
             if emoji is self.RIGHT2:
                 page=len(self.pages)-1
                 break
@@ -538,9 +671,21 @@ class Pagination(object):
         except BaseException as err:
             self.task_flag=GUI_STATE_CANCELLED
             self.cancel()
-            if isinstance(err,(DiscordException, ConnectionError)):
+            
+            if isinstance(err,ConnectionError):
+                # no internet
                 return
-            raise
+            
+            if isinstance(err,DiscordException):
+                if err.code in (
+                        ERROR_CODES.missing_access, # client removed
+                        ERROR_CODES.unknown_message, # message already deleted
+                            ):
+                    return
+            
+            # We definitedly do not want to silence `ERROR_CODES.invalid_form_body`
+            await client.events.error(client,f'{self!r}.__call__',err)
+            return
         
         if self.task_flag==GUI_STATE_CANCELLING:
             self.task_flag=GUI_STATE_CANCELLED
@@ -549,11 +694,18 @@ class Pagination(object):
             try:
                 await client.message_delete(message)
             except BaseException as err:
-                if isinstance(err,(DiscordException, ConnectionError)):
+                
+                if isinstance(err,ConnectionError):
+                    # no internet
                     return
                 
-                raise
-
+                if isinstance(err,DiscordException):
+                    if err.code==ERROR_CODES.missing_access: # client removed
+                        return
+                
+                await client.events.error(client,f'{self!r}.__call__',err)
+                return
+            
             return
             
         self.task_flag=GUI_STATE_READY
@@ -579,8 +731,22 @@ class Pagination(object):
             if self.channel.cached_permissions_for(client).can_manage_messages:
                 try:
                     await client.reaction_clear(message)
-                except (DiscordException, ConnectionError):
-                    pass
+                except BaseException as err:
+                    
+                    if isinstance(err,ConnectionError):
+                        # no internet
+                        return
+                    
+                    if isinstance(err,DiscordException):
+                        if err.code in (
+                                ERROR_CODES.missing_access, # client removed
+                                ERROR_CODES.unknown_message, # message deleted
+                                ERROR_CODES.missing_permissions, # permissions changed meanwhile
+                                    ):
+                            return
+                    
+                    await client.events.error(client,f'{self!r}._canceller',err)
+                    return
             return
         
         timeouter=self.timeouter
@@ -626,6 +792,27 @@ class Pagination(object):
         result.append(')>')
         
         return ''.join(result)
+    
+    async def _reaction_delete(self,emoji,user):
+        client=self.client
+        try:
+            await client.reaction_delete(self.message,emoji,user)
+        except BaseException as err:
+            
+            if isinstance(err,ConnectionError):
+                # no internet
+                return
+            
+            if isinstance(err,DiscordException):
+                if err.code in (
+                        ERROR_CODES.missing_access, # client removed
+                        ERROR_CODES.unknown_message, # message deleted
+                        ERROR_CODES.missing_permissions, # permissions changed meanwhile
+                            ):
+                    return
+            
+            await client.events.error(client,f'{self!r}._reaction_delete',err)
+            return
 
 class WaitAndContinue(object):
     __slots__=('canceller', 'check', 'event', 'future', 'target', 'timeouter')
@@ -875,7 +1062,7 @@ class Cooldown(object):
             return self.__func__(client,message,*args)
         else:
             return self.__func__(client,message)
-        
+    
     def shared(source,weight=0,case=None,func=None):
         self        = object.__new__(type(source))
         self.checker= source.checker
@@ -891,7 +1078,7 @@ class Cooldown(object):
         
         if (case is not None) and (not case.islower()):
             case=case.lower()
-            
+        
         if func is None:
             self.__name__=case
             self.__func__=DEFAULT_EVENT
@@ -905,6 +1092,10 @@ class Cooldown(object):
         else:
             self.needs_args=True
         self.__func__ = func
+    
+    @property
+    def __doc__(self):
+        return getattr(self.__func__,'__doc__',None)
     
     @staticmethod
     def _check_user(self,message,loop):
@@ -943,7 +1134,7 @@ class Cooldown(object):
             unit.uses_left=left-self.weight
             return 0.
         return unit.expires_at
-
+    
     #returns -1. if non guild
     @staticmethod
     def _check_guild(self,message,loop):

@@ -79,6 +79,7 @@ and `int`.
 - [`name_at`](UserBase.md#name_atselfguild)
 - [`color`](UserBase.md#colorselfguild)
 - [`mentioned_in`](UserBase.md#mentioned_inselfmessage)
+- [`has_role`](UserBase.md#has_roleselfrole)
 
 ## Magic methods
 

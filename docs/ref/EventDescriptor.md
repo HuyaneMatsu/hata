@@ -126,13 +126,14 @@ always passed as first argument.
 ### `achievement(client,data)`
 
 Called when one of the [client](Client.md)'s [achievement](Achievement.md)
-changes. Becase I have no idea what type of data Discord sends, it just passes
-everything.
+changes. Because I cannot reproduce this event, it just passes the data
+sent by Discord.
 
 ### `channel_create(client,channel)`
 
 Called when a [channel](CHANNEL_TYPES.md) is created.
-(Private channels are created only once too).
+
+> Private channels are created only once too.
 
 ### `channel_delete(client,channel)`
 
@@ -140,8 +141,8 @@ Called when a [channel](CHANNEL_TYPES.md) is deleted.
 
 ### `channel_edit(client,channel,old)`
 
-Called when a channel](CHANNEL_TYPES.md) is edited. The `old` argument is a `dict`
-of the changed attributes, what contains (`attribute name`, `old value`) items.
+Called when a [channel](CHANNEL_TYPES.md) is edited. The `old` argument is a `dict`
+of the changed attributes what contains (`attribute name`, `old value`) items.
 
 | name                      | description                                               |
 |---------------------------|-----------------------------------------------------------|
@@ -235,11 +236,13 @@ of the changed attributes, what contains (`attribute name`, `old value`) items.
 
 ### `embed_update(client,message,result)`
 
-Called when only message's embeds are updated and the message is not edited.
+Called when only a [message](Message.md)'s embeds are updated and the message
+is not edited.
+
 The `result` can be:
  - `1` if sizes are updated.
  - `2` if embed links are added.
- - `3` the amount of the embeds is lowered. Can be caused only by a bug.
+ - `3` the amount of the embeds is lowered. Should be caused only by a bug.
 
 ### `emoji_create(client,guild,emoji)`
 
@@ -253,9 +256,8 @@ Called, when an [emoji](Emoji.md) is deleted at a [guild](Guild.md).
 
 ### `emoji_edit(client,guild,emoji,old)`
 
-Called when an [emoji](Emoji.md) is edited at a [guild](Guild.md). The `old`
-argument is a `dict` of the changed attributes, what contains (`attribute name`,
-`old value`) items.
+Called when an [emoji](Emoji.md) is edited. The `old` argument is a `dict`
+of the changed attributes, what contains (`attribute name`, `old value`) items.
 
 | name                      | description                   |
 |---------------------------|-------------------------------|
@@ -347,7 +349,7 @@ Called when a [User](User.md) joins a [guild](Guild.md).
 
 ### `guild_user_chunk(client,guild,collected)`
 
-Called when a chunk of [users](User.md) is receaved from a [guild](Guild.md).
+Called when a chunk of [users](User.md) is received from a [guild](Guild.md).
 Used only at the case of `large` guilds. Also this event plays a big role when
 logging in, because it delays the ready state, till we get all the user chunks.
 
@@ -383,10 +385,10 @@ Called when a loaded [message](Message.md) is deleted.
 
 ### `message_delete_multyple(client,channel,messages,message_ids)`
 
-Called when more [messages](Message.md) are deletes at once at a
-[text channel](ChannelTextBase.md). The `messages` is a list of the loaded
-messages, what got deleted and the `message_ids` arguent is a list of all the
-message's id-s, independently if they are loaded or not.
+Called when more [messages](Message.md) are delete at once at a
+[text channel](ChannelTextBase.md). The `messages` argument is a list of the
+loaded messages, which were found and the `message_ids` argument is a list of
+all the message's id-s, independently if they were loaded or not.
 
 ### `message_edit(client,message,old)`
 
@@ -418,7 +420,7 @@ Called when a [User](User.md) reacts on a [messages](Message.md) with and
 
 ### `reaction_clear(client,message,old_reactions)`
 
-Called when (reactions)[reaction_mapping) are cleared from a
+Called when the (reactions)[reaction_mapping.md] are cleared from a
 [messages](Message.md).
 
 ### `reaction_delete(client,message,emoji,user)`
@@ -435,8 +437,8 @@ Called when all the [reaction](Emoji.md) of a specific emoji are removed from a
 ### `ready(client)`
 
 Called when the client finishes logging in. This event can be called more
-times too, because we might disconnect or Discord might ask us to reconnect
-too.
+times, because we might disconnect or Discord might ask us to reconnect as
+well.
 
 ### `relationship_add(client,new_relationship)`
 
@@ -461,7 +463,7 @@ Called when a [role](Role.md) is created at a [guild](Guild.md).
 
 Called when a [role](Role.md) is deleted at a [guild](Guild.md).
 
-### `role_delete(client,role,old)`
+### `role_edit(client,role,old)`
 
 Called when a [role](Role.md) is edited at a [guild](Guild.md). The `old`
 argument is a `dict` of the changed attributes, what contains

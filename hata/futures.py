@@ -1461,23 +1461,14 @@ class Task(Future):
         result.append('>')
 
         return ''.join(result)
-
-    if __debug__:
-        def print_stack(self,limit=-1,file=None):
-            local_thread=current_thread()
-            if isinstance(local_thread,EventThread):
-                future=local_thread.run_in_executor(alchemy_incendiary(self._print_stack,(self,limit,file),))
-                future.__silence__()
-            else:
-                self._print_stack(self,limit,file)
-    else:
-        def print_stack(self,limit=-1,file=None):
-            local_thread=current_thread()
-            if isinstance(local_thread,EventThread):
-                local_thread.run_in_executor(alchemy_incendiary(self._print_stack,(self,limit,file),))
-            else:
-                self._print_stack(self,limit,file)
-
+    
+    def print_stack(self,limit=-1,file=None):
+        local_thread=current_thread()
+        if isinstance(local_thread,EventThread):
+            return local_thread.run_in_executor(alchemy_incendiary(self._print_stack,(self,limit,file),))
+        else:
+            self._print_stack(self,limit,file)
+    
     @staticmethod
     def _print_stack(self,limit,file):
         if file is None:

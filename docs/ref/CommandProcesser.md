@@ -35,7 +35,7 @@ on_command=client.events(CommandProcesser(PREFIX)).shortcut
 ```
 Of cource `with` works as well.
 
-## Creating the event
+## Creating the event handler
 
 Because the class has an attribute, called `__event_name__` set to
 `'message_create'` means, the [`EventDescriptor`](EventDescriptor.md) will
@@ -60,19 +60,19 @@ event's parser to act, like the message's content was started with it's prefix.
 But the main difference is that at this case if we fail to find the command, we
 will not await the [`invalid_command`](#invalid_command) branch.
 
-## Calling the event
+## Calling the event handler
 
 ### `client.events.message_create(client,message)`
 
 We can separate the flow of the event's handling on 5 steps:
-- [`waitfor`](#waitfor)
+- [`waitfors`](#waitfors)
 - [`commands`](#commands)
 - [`invalid_command`](#invalid_command)
 - [`command_error`](#command_error)
 - [`mention_prefix`](#mention_prefix)
 - [`default_event`](#default_event)
 
-#### waitfor
+#### waitfors
 
 We can wait for a `message_create` event at a
 [`channel`](ChannelBase.md). If we get a [message](Message.md)
@@ -141,10 +141,10 @@ async def hug_command(client, message, content):
 on_command.extend(some_commads) #extending works too
 ```
 
-If someone has no permissin to use a command (or such), then the command
-should return a value what evaluates to `True`, because then the
-[`CommandProcesser`](CommandProcesser.md) will act, like there is no command
-with that name.
+If someone should not use a command (no permission or such), then the command
+should return `True` (or any int instance what evaulates to `True`), because
+then the [`CommandProcesser`](CommandProcesser.md) will act, like there is no
+command with that name.
 
 ```py
 from hata import Client
@@ -168,7 +168,7 @@ async def update_application_info(client, message, user):
 ```
 
 > Returning `False` is unnecesary, becuse `None` evaluates to `False` anyways,
-> but it might look cleaner to return objects of just one datatype.
+> but it might look cleaner to return objects of the same type.
 
 #### invalid_command
 
@@ -299,7 +299,7 @@ can not find it, we just move on.
 
 #### default_event
 
-Same as the normal `message_create` event. Awaited if non of the cases above
+Familiar to a normal `message_create` event. Awaited if non of the cases above
 occurs.
 
 ```py
@@ -320,9 +320,10 @@ like a wrapper for the [`__setevent__`](#__setevent__-__delevent__) method.
 
 - raises : `TypeError` / `ValueError`
 
-This method checks 3 cases:
+This method checks 4 cases:
 - is `case` `'default_event'` and argcount is 2
 - is `case` `'invalid_command'` and argcount is 4
+- is `case` `'command_error'` and argcount is 5
 - is `case` anything else and argcount is 2 or 3
 
 If anything check fails, you might get some nice errors, like:
@@ -386,7 +387,7 @@ Sets the event's prefix to the set value. If `ignorecase` is not passed as
 | name              | description                                                                                   |
 |-------------------|-----------------------------------------------------------------------------------------------|
 | command_error     | The event, hat is called, when a command raised an exception.                                 |
-| commands          | Dict of commands added to the event.                                                          |
+| commands          | A dict of the added commands to the handler as (command_name, [Command](Command.md) pairs.    |
 | default_event     | The default event if prefix could not be parsed.                                              |
 | ignorecase        | Is prefix not-case sensitive.                                                                 |
 | invalid_command   | The event what called, when prefix found, but the corresponding command not.                  |

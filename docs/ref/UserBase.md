@@ -220,6 +220,15 @@ If the user is mentioned at a message.
 > This method will be a [rich](#__rich__-module) method if the cubclass
 implements `'guild_profiles'` in it's slots.
 
+### `has_role(self,role)`
+
+- type : `bool`
+
+If the user has the specific role.
+
+> This method will be a [rich](#__rich__-module) method if the cubclass
+implements `'guild_profiles'` in it's slots.
+
 ## Magic methods
 
 ### `__hash__(self)`

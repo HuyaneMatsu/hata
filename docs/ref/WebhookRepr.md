@@ -74,9 +74,9 @@ always partial and has only it's `.id` set.
 
 - [`avatar_url_as`](UserBase.md#avatar_url_asselfextnonesizenone)
 - [`name_at`](UserBase.md#name_atselfguild)
-- [`mention_at`](UserBase.md#mention_atselfguild)
 - [`color`](UserBase.md#colorselfguild)
 - [`mentioned_in`](UserBase.md#mentioned_inselfmessage)
+- [`has_role`](UserBase.md#has_roleselfrole)
 
 ## Magic methods
 

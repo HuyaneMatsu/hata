@@ -72,37 +72,6 @@ class remove(set):
     __slots__=()
     def __init__(self,*args):
         set.__init__(self,args)
-        
-def _it_con_builder(it,start,end):
-    it=iter(it)
-    _next=it.__next__
-    try:
-        v0=_next()
-    except StopIteration:
-        yield start+end
-        return
-    try:
-        v1=_next()
-        yield start+str(v0)
-    except StopIteration:
-        yield f'{start}{v0!s}{end}'
-        return
-    while True:
-        try:
-            v0=_next()
-            yield str(v1)
-        except StopIteration:
-            yield str(v1)+end
-            return
-        try:
-            v1=_next()
-            yield str(v0)
-        except StopIteration:
-            yield str(v0)+end
-            return
-    
-def it_con(it,sep=', ',start='[',end=']'):
-    return sep.join(list(_it_con_builder(it,start,end)))
 
 def any_to_any(v1,v2):
     for v in v1:
@@ -356,7 +325,7 @@ class weakposlist(list):
     def switch(self,value,new_position):
         value.position=new_position
         self.sort()
-    
+
 def inherit(parent,kid=None):
     if kid is None:
         return lambda kid,parent=parent:inherit(parent,kid)
@@ -515,7 +484,23 @@ class multidict(dict):
         return _multidict_values(self)
     
     def __repr__(self):
-        return it_con(self.items(),start=f'<{self.__class__.__name__}(',end=')>')
+        result = [
+            self.__class__.__name__,
+            '({',
+                ]
+        
+        if self:
+            for key, value in self.items():
+                result.append(repr(key))
+                result.append(': ')
+                result.append(repr(value))
+                result.append(', ')
+            
+            result[-1]='})'
+        else:
+            result.append('})')
+        
+        return ''.join(result)
     
     __str__=__repr__
 
@@ -948,4 +933,213 @@ class methodize(object):
     def __delete__(self,obj):
         raise AttributeError('can\'t delete attribute')
 
+class sortedlist(list,metaclass=removemeta):
+    __slots__ = ('_reversed', )
 
+    delete = remove('__setitem__', 'insert', 'sort', '__add__', '__radd__',
+        '__iadd__', '__mul__', '__rmul__', '__imul__', 'append', )
+    
+    def __init__(self,it=None,reverse=False):
+        self._reversed=reverse
+        if (it is not None):
+            self.extend(it)
+            list.sort(self,reverse=reverse)
+    
+    def __repr__(self):
+        result=[self.__class__.__name__,'([']
+        
+        limit=len(self)
+        if limit:
+            index=0
+            while True:
+                element=self[index]
+                index=index+1
+                result.append(repr(element))
+                
+                if index==limit:
+                    break
+                
+                result.append(', ')
+                continue
+        
+        result.append('], reversed=')
+        result.append(repr(self._reversed))
+        result.append(')')
+        
+        return ''.join(result)
+    
+    def __getstate__(self):
+        return self._reversed
+    
+    def __setstate__(self,state):
+        self._reversed=state
+    
+    def _get_reverse(self):
+        return self._reversed
+    def _set_reverse(self,value):
+        if self._reversed==value:
+            return
+        self._reversed=value
+        list.reverse(self)
+    
+    reverse=property(_get_reverse,_set_reverse)
+    del _get_reverse,_set_reverse
+    
+    def add(self,value):
+        index=self.relativeindex(value)
+        if index==len(self):
+            # If the the index is at the end, then we just list append it.
+            list.append(self,value)
+            return
+        
+        element=self[index]
+        if element==value:
+            # If the element is same as the current, we overwrite it.
+            list.__setitem__(self,index,value)
+            return
+        
+        # No more special cases, simply list insert it
+        list.insert(self,index,value)
+        return
+    
+    def remove(self, value):
+        index=self.relativeindex(value)
+        if index==len(self):
+            # The element is not at self, leave
+            return
+        
+        element=self[index]
+        if element!=value:
+            # The element is different as the already added one att the
+            # correct position, leave.
+            return
+        
+        # No more speccial case, remove it.
+        list.__delitem__(self,index)
+    
+    def extend(self,other):
+        ln=len(self)
+        insert=list.insert
+        bot=0
+        if self._reversed:
+            if type(self) is not type(other):
+                other=sorted(other,reverse=True)
+            elif not other._reversed:
+                other=reversed(other)
+            for value in other:
+                top=ln
+                while True:
+                    if bot<top:
+                        half=(bot+top)>>1
+                        if self[half]>value:
+                            bot=half+1
+                        else:
+                            top=half
+                        continue
+                    break
+                insert(self,bot,value)
+                ln+=1
+        else:
+            if type(self) is not type(other):
+                other=sorted(other)
+            elif other._reversed:
+                other=reversed(other)
+            for value in other:
+                top=ln
+                while True:
+                    if bot<top:
+                        half=(bot+top)>>1
+                        if self[half]<value:
+                            bot=half+1
+                        else:
+                            top=half
+                        continue
+                    break
+                insert(self,bot,value)
+                ln+=1
+    
+    def __contains__(self,value):
+        index=self.relativeindex(value)
+        if index==len(self):
+            return False
+        
+        if self[index]==value:
+            return True
+        
+        return False
+    
+    def index(self,value):
+        index=self.relativeindex(value)
+        if index==len(self) or self[index]!=value:
+            raise ValueError(f'{value!r} is not in the {self.__class__.__name__}')
+        return index
+    
+    def relativeindex(self,value):
+        bot=0
+        top=len(self)
+        if self._reversed:
+            while True:
+                if bot<top:
+                    half=(bot+top)>>1
+                    if self[half]>value:
+                        bot=half+1
+                    else:
+                        top=half
+                    continue
+                break
+        else:
+            while True:
+                if bot<top:
+                    half=(bot+top)>>1
+                    if self[half]<value:
+                        bot=half+1
+                    else:
+                        top=half
+                    continue
+                break
+        return bot
+    
+    def keyedrelativeindex(self, value, key):
+        bot=0
+        top=len(self)
+        if self._reversed:
+            while True:
+                if bot<top:
+                    half=(bot+top)>>1
+                    if key(self[half])>value:
+                        bot=half+1
+                    else:
+                        top=half
+                    continue
+                break
+        else:
+            while True:
+                if bot<top:
+                    half=(bot+top)>>1
+                    if key(self[half])<value:
+                        bot=half+1
+                    else:
+                        top=half
+                    continue
+                break
+        return bot
+    
+    def copy(self):
+        new=list.__new__(type(self))
+        new._reversed=self._reversed
+        list.extend(new,self)
+        return new
+    
+    def resort(self):
+        list.sort(self,reverse=self._reversed)
+    
+    def get(self, value, key, default=None):
+        index = self.keyedrelativeindex(value, key)
+        if index==len(self):
+            return default
+        
+        object_ = self[index]
+        if key(object_)==value:
+            return object_
+        
+        return default

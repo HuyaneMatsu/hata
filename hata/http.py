@@ -507,7 +507,7 @@ class DiscordHTTPClient(HTTPClient):
                 header[CONTENT_TYPE]='application/json'
                 data=to_json(data)
             
-        #handling rateimit
+        #handling ratelimit
         if self.global_lock is not None:
             await self.global_lock
 

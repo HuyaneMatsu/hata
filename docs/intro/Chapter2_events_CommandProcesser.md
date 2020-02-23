@@ -50,8 +50,9 @@ start_clients()
 ```
 
 One of the most useful events is the `CommandProcesser`.
-This event can be shortcutted (or joining with `with` works the same way).
-These events can not be used with `@` because the `__call__` magic
+This event can be shortcutted.
+
+These handlers can not be used with `@` because the `__call__` magic
 method is already used when the object is called by a parser but their
 shorcut is a wrapper for this.
 
@@ -158,10 +159,6 @@ Neko.events(event)
 
 # Now lets shortcut our event:
 on_command = Neko.events.message_create.shortcut
-
-# Or we can use `with` statement too, what does the same:
-with Neko.events.message_create.shortcut as on_command:
-    pass
 
 # Add a normal command
 @on_command

@@ -3213,34 +3213,83 @@ def create_valid_case(func,name):
     
     return func
 
+def _convert_unsafe_event_iterable(iterable):
+    result=[]
+    for element in iterable:
+        if isinstance(element,tuple):
+            element_len=len(element)
+            if element_len>2 or element_len==0:
+                raise ValueError(f'Expected `tuple` with length 1 or 2, got `{element!r}`.')
+            
+            func=element[0]
+            if element_len==1:
+                element=EventListElement(func,None,None)
+                result.append(element)
+                continue
+            
+            case=element[1]
+            if (case is not None) and not isinstance(case,str):
+                raise ValueError(f'Expected `None` or `str` instance at index 1 at element: `{element!r}`')
+            
+            element=EventListElement(func,case,None)
+            result.append(element)
+            continue
+        
+        if isinstance(element,dict):
+            try:
+                func=element.pop('func')
+            except KeyError:
+                raise ValueError(f'Expected all `dict` elements to contain `\'func\'` key, but was not found at `{element!r}`') from None
+            
+            case=element.pop('case',None)
+            
+            if not element:
+                element = None
+            
+            element=EventListElement(func,case,element)
+            result.append(element)
+            continue
+        
+        if type(element) is EventListElement:
+            result.append(element)
+            continue
+        
+        element=EventListElement(element,None,None)
+        result.append(element)
+        continue
+    
+    return result
 #autoadds : "client.events.", "name=parent.__name__" and "pass_content=True", basically
 class _EventCreationManager(object):
     __slots__=('parent',)
     
     def __init__(self,parent):
         self.parent=parent
-        
+    
+    def __repr__(self):
+        return f'<{self.__class__.__name__} of {self.parent!r}>'
+    
     def __call__(self,func=None,case=None,**kwargs):
         if func is None:
             return self._wrapper(self,case,kwargs)
         
         if case is None:
             case=check_name(func,None)
-
+        
         if (not case.islower()):
             case=case.lower()
         
         func=self.parent.__setevent__(func,case,**kwargs)
         return func
     
-    def remove(self,func,case=None):
+    def remove(self,func,case=None,**kwargs):
         if case is None:
             case=check_name(func,None)
         
         if (not case.islower()):
             case=case.lower()
         
-        self.parent.__delevent__(func,case)
+        self.parent.__delevent__(func,case,**kwargs)
     
     class _wrapper(object):
         __slots__=('parent', 'case', 'kwargs')
@@ -3251,48 +3300,58 @@ class _EventCreationManager(object):
         
         def __call__(self,func,):
             return self.parent(func,self.case,**self.kwargs)
-
+    
     def __getattr__(self,name):
         return getattr(self.parent,name)
-
-    @staticmethod
-    def _convert_unsafe(iterable):
-        result=[]
-        for element in iterable:
-            if isinstance(element,tuple):
-                element_len=len(element)
-                if element_len>2 or element_len==0:
-                    raise ValueError(f'Expected tuple with length 1 or 2, got {element!r}.')
-                
-                if element_len==1:
-                    element=(element[0],None,)
-                
-            result.append(element)
-        
-        return result
     
     def extend(self,iterable):
         if type(iterable) is not eventlist:
-            iterable=self._convert_unsafe(iterable)
+            iterable=_convert_unsafe_event_iterable(iterable)
+        
+        for element in iterable:
+            case=element.case
+            func=element.func
             
-        for item in iterable:
-            self(*item)
+            if (case is None):
+                case=check_name(func,None)
+            
+            if (not case.islower()):
+                case=case.lower()
+            
+            kwargs=element.kwargs
+            if kwargs is None:
+                self.parent.__setevent__(func,case)
+            else:
+                self.parent.__setevent__(func,case,**kwargs)
     
     def unextend(self,iterable):
         if type(iterable) is not eventlist:
-            iterable=self._convert_unsafe(iterable)
+            iterable=_convert_unsafe_event_iterable(iterable)
         
         collected=[]
-        for item in iterable:
+        for element in iterable:
+            kwargs=element.kwargs
             try:
-                self.remove(*item)
+                if kwargs is None:
+                    self.remove(element.func,element.case)
+                else:
+                    self.remove(element.func,element.case,**kwargs)
             except ValueError as err:
                 collected.append(err.args[0])
         
         if collected:
             raise ValueError('\n'.join(collected))
         
-                
+class EventListElement(object):
+    __slots__= ('case', 'kwargs', 'func', )
+    def __init__(self,func,case,kwargs):
+        self.func  = func
+        self.case  = case
+        self.kwargs= kwargs
+    
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self.func!r}, {self.case!r}, kwargs={self.kwargs!r})'
+
 class eventlist(list,metaclass=removemeta):
     delete=remove('insert','sort','pop','reverse','remove','sort','index',
         'count','__mul__','__rmul__','__imul__','__add__','__radd__','__iadd__',
@@ -3303,40 +3362,27 @@ class eventlist(list,metaclass=removemeta):
             self.extend(iterable)
 
     class _wrapper(object):
-        __slots__=('parent', 'case',)
-        def __init__(self,parent,case):
+        __slots__=('parent', 'case', 'kwargs')
+        def __init__(self, parent, case, kwargs):
             self.parent=parent
             self.case=case
+            self.kwargs=kwargs
+        
         def __call__(self,func):
             func=just_convert(func)
-            list.append(self.parent,(func,self.case))
+            
+            list.append(self.parent,EventListElement(func,self.case,self.kwargs))
             return func
     
     def extend(self,iterable):
         if type(iterable) is not type(self):
-            iterable=self._convert_unsafe(iterable)
+            iterable=_convert_unsafe_event_iterable(iterable)
             
         list.extend(self,iterable)
     
-    @staticmethod
-    def _convert_unsafe(iterable):
-        result=[]
-        for element in iterable:
-            if isinstance(element,tuple):
-                element_len=len(element)
-                if element_len>2 or element_len==0:
-                    raise ValueError(f'Expected tuple with length 1 or 2, got {element!r}.')
-                
-                if element_len==1:
-                    element=(element[0],None,)
-                
-            result.append(element)
-        
-        return result
-    
     def unextend(self,iterable):
         if type(iterable) is not type(self):
-            iterable=self._convert_unsafe(iterable)
+            iterable=_convert_unsafe_event_iterable(iterable)
         
         collected=[]
         for element in iterable:
@@ -3348,16 +3394,19 @@ class eventlist(list,metaclass=removemeta):
         if collected:
             raise ValueError('\n'.join(collected))
     
-    def __call__(self,func=None,case=None):
+    def __call__(self,func=None,case=None,**kwargs):
         if (case is not None) and (not case.islower()):
             case=case.lower()
         
+        if not kwargs:
+            kwargs=None
+        
         if func is None:
-            return self._wrapper(self,case)
+            return self._wrapper(self,case,kwargs)
         
         func=just_convert(func)
         
-        list.append(self,(func,case))
+        list.append(self,EventListElement(func,case,kwargs))
         return func
     
     def remove(self,func,case=None):
@@ -3365,8 +3414,9 @@ class eventlist(list,metaclass=removemeta):
             case=case.lower()
             
         # we might overwrite __iter__ later
-        for converted_func,converted_case in list.__iter__(self):
+        for element in list.__iter__(self):
             
+            converted_case=element.case
             # `case` can be `None` or `str`
             if converted_case is None:
                 if case is not None:
@@ -3374,15 +3424,36 @@ class eventlist(list,metaclass=removemeta):
             else:
                 if case is None:
                     continue
-                    
+                
                 if converted_case!=case:
                     continue
             
-            if compare_converted(converted_func,func):
+            if compare_converted(element.func,func):
                 return
         
         raise ValueError(f'Did not find any element, what matched the passed func={func!r}, case={case!r} combination.')
+    
+    def __repr__(self):
+        result=[self.__class__.__name__,'([']
         
+        limit=list.__len__(self)
+        if limit!=0:
+            index=0
+            
+            while True:
+                element=list.__getitem__(self,index)
+                result.append(repr(element))
+                index=index+1
+                
+                if index==limit:
+                    break
+                
+                result.append(', ')
+                continue
+        
+        result.append('])')
+        
+        return ''.join(result)
         
 # this class is a placeholder for the `with` statemnet support
 # also for the `shortcut` propery as well.
@@ -3390,25 +3461,20 @@ class EventHandlerBase(object):
     __slots__=()
     
     # subclasses should overwrite it
-    async def __call__(self,*args):
+    async def __call__(self, *args):
         return
 
     # subclasses should overwrite it
-    def __setevent__(self,func,case):
+    def __setevent__(self, func, case):
         pass
 
     # subclasses should overwrite it
-    def __delevent__(self,func,case):
-        pass
-    
-    def __enter__(self):
-        return _EventCreationManager(self)
-    
-    def __exit__(self,exc_type,exc_val,exc_tb):
+    def __delevent__(self, func, case):
         pass
 
-    
-    shortcut=property(__enter__)
+    @property
+    def shortcut(self):
+        return _EventCreationManager(self)
 
 class ReadyState(object):
     __slots__=('counter', 'guilds', 'last_guild', 'last_ready', 'waiter', )

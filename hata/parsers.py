@@ -482,6 +482,7 @@ def filter_clients_or_me(clients,flag,me):
         if index==limit:
             # If non of the clients have the intent, then yield `me`
             yield me
+            yield
             yield me
             return
         

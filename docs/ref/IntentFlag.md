@@ -3,9 +3,6 @@
 An `int` subclass representing the intents to receive specific events. The
 wrapper picks these up as well and optimizes the dispatch events' parsers.
 
-The intents should not be used yet, because the gateways ignores them, but the
-parsers not, so using them could cause issues.
-
 - Source : [parsers.py](https://github.com/HuyaneMatsu/hata/blob/master/hata/parsers.py)
 
 ##### Intents and their parsers

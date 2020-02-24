@@ -285,10 +285,10 @@ class DiscordGateway(object):
                     '$referrer'         : '',
                     '$referring_domain' : '',
                         },
-                'compress'              : True,             #if we support compression, default : True
-                'large_threshold'       : LARGE_LIMIT,      #between 50 and 250, default is 50
-                'guild_subscriptions'   : CACHE_PRESENCE,   #optional, default is `True`
-                #'intents'               : client.intents,
+                'compress'              : True,             # if we support compression, default : False
+                'large_threshold'       : LARGE_LIMIT,      # between 50 and 250, default is 50
+                'guild_subscriptions'   : CACHE_PRESENCE,   # optional, default is `False`
+                'intents'               : client.intents,   # Grip & Break down
                 'v'                     : 3,
                 'presence' : {
                     'status': status,

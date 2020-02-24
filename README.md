@@ -2,6 +2,9 @@
 
 Async Discord API wrapper written in Python.
 
+> **The wrapper uses the new [Privileged Intent](https://github.com/discordapp/discord-api-docs/issues/1363)
+> system, so please check it out.**
+
 ## Acknowledgement
 
 The project is based on early versions of:

@@ -170,7 +170,7 @@ GLOBAL_INTENT_EVENTS = (
 class IntentFlag(int):
     __slots__ = ()
     
-    def __new__(cls,int_):
+    def __new__(cls, int_ = -1):
         if not isinstance(int_,int):
             raise TypeError(f'{cls.__name__} expected `int` instance, got `{int_!r}')
         
@@ -474,6 +474,50 @@ def filter_clients(clients,flag):
         index=index+1
         continue
 
+def filter_clients_or_me(clients,flag,me):
+    index=0
+    limit=len(clients)
+    
+    while True:
+        if index==limit:
+            # If non of the clients have the intent, then yield `me`
+            yield me
+            yield me
+            return
+        
+        client=clients[index]
+        if (client.intents>>flag)&1:
+            user = yield client
+            break
+        
+        index=index+1
+        continue
+    
+    yield
+    
+    yield client
+    index=index+1
+    
+    while True:
+        if index==limit:
+            break
+        
+        client=clients[index]
+        if (client.intents>>flag)&1:
+            yield client
+        
+        index=index+1
+        continue
+    
+    # Whether the user is type Client and we did not yield it, yield it.
+    if type(user) is User:
+        return
+    
+    if (user.intents>>flag)&1:
+        return
+    
+    yield user
+
 def first_client(clients,flag):
     index=0
     limit=len(clients)
@@ -481,6 +525,22 @@ def first_client(clients,flag):
     while True:
         if index==limit:
             return None
+        
+        client=clients[index]
+        if (client.intents>>flag)&1:
+            return client
+            break
+        
+        index=index+1
+        continue
+
+def first_client_or_me(clients,flag,me):
+    index=0
+    limit=len(clients)
+    
+    while True:
+        if index==limit:
+            return me
         
         client=clients[index]
         if (client.intents>>flag)&1:
@@ -1431,7 +1491,7 @@ if CACHE_USER:
             guild_sync(client,data,'GUILD_MEMBER_UPDATE')
             return
         
-        clients=filter_clients(guild.clients,INTENT_GUILD_USERS)
+        clients=filter_clients_or_me(guild.clients,INTENT_GUILD_USERS,client)
         if clients.send(None) is not client:
             clients.close()
             return
@@ -1441,6 +1501,7 @@ if CACHE_USER:
         if not old:
             return
         
+        clients.send(user)
         for client_ in clients:
             Task(client_.events.user_profile_edit(client_,user,old,guild),client_.loop)
     
@@ -1462,7 +1523,7 @@ if CACHE_USER:
             guild_sync(client,data,'GUILD_MEMBER_UPDATE')
             return
         
-        if first_client(guild.clients,INTENT_GUILD_USERS) is not client:
+        if first_client_or_me(guild.clients,INTENT_GUILD_USERS,client) is not client:
             return
         
         User._update_profile_no_return(data,guild)
@@ -1479,7 +1540,7 @@ else:
         except KeyError:
             guild_sync(client,data,'GUILD_MEMBER_UPDATE')
             return
-
+        
         old=client._update_profile_only(data,guild)
         
         if not old:
@@ -1502,7 +1563,7 @@ else:
             return
         
         client._update_profile_only_no_return(data,guild)
-
+    
     GUILD_MEMBER_UPDATE__OPT_MC=GUILD_MEMBER_UPDATE__OPT_SC
 
 PARSER_DEFAULTS('GUILD_MEMBER_UPDATE',GUILD_MEMBER_UPDATE__CAL_SC,GUILD_MEMBER_UPDATE__CAL_MC,GUILD_MEMBER_UPDATE__OPT_SC,GUILD_MEMBER_UPDATE__OPT_MC)

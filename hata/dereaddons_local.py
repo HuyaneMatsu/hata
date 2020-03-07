@@ -9,6 +9,8 @@ from types import \
     GetSetDescriptorType    as getset_descriptor, \
     ModuleType              as module
 
+NoneType = type(None)
+
 import sys
 from weakref import ref as WeakReferer
 
@@ -804,7 +806,7 @@ class cached_property(object):
     def __init__(self, func):
         self.func = func
         self.__name__ = func.__name__
-
+    
     def __get__(self, obj, objtype=None):
         if obj is None:
             return self
@@ -812,9 +814,9 @@ class cached_property(object):
         if value is _spaceholder:
             value = self.func(obj)
             obj._cache[self.__name__] = value
-
+        
         return value
-
+    
     def __set__(self, obj, value):
         raise AttributeError('can\'t set attribute')
 
@@ -829,9 +831,8 @@ class alchemy_incendiary(object):
         kwargs=self.kwargs
         if kwargs is None:
             return self.func(*self.args)
-
+        
         return self.func(*self.args,**kwargs)
-
 
 class SubCheckType(type):
     def __instancecheck__(cls,instance):
@@ -841,19 +842,20 @@ class SubCheckType(type):
         return (klass in cls.__subclasses__)
 
 class MethodLike(metaclass=SubCheckType):
-    __subclasses__=[method]
+    __subclasses__={method}
     __slots__=()
     def __init_subclass__(cls):
-        cls.__subclasses__.append(cls)
+        cls.__subclasses__.add(cls)
 
     __reserved_argcount__=1
 
     @classmethod
     def get_reserved_argcount(cls,instance):
         klass=type(instance)
-        if hasattr(klass,'__reserved_argcount__'):
-            return klass.__reserved_argcount__
-
+        reserved_argcount=getattr(klass,'__reserved_argcount__',-1)
+        if reserved_argcount!=-1:
+            reserved_argcount
+        
         if klass in cls.__subclasses__:
             return cls.__reserved_argcount__
 
@@ -863,7 +865,7 @@ class MethodLike(metaclass=SubCheckType):
 class weakmethod(MethodLike):
     __slots__=('__func__', '__self__',)
     __reserved_argcount__=1
-
+    
     def __init__(self,obj,func):
         self.__self__=WeakReferer(obj)
         self.__func__=func
@@ -873,24 +875,12 @@ class weakmethod(MethodLike):
         if obj is None:
             return
         return self.__func__(obj,*args,**kwargs)
-
+    
     def is_alive(self):
         return (self.__self__() is not None)
-
-    @property
-    def __code__(self):
-        return self.__func__.__code__
-
-    @property
-    def __module__(self):
-        obj=self.__self__()
-        if obj is None:
-            return '__none__'
-        return obj.__module__
-
-    @property
-    def __name__(self):
-        return self.__func__.__name__
+    
+    def __getattr__(self,name):
+        return getattr(self.__func__,name)
 
 wrapper_descriptor=type(object.__ne__)
 method_descriptor=type(object.__format__)
@@ -1140,6 +1130,18 @@ class sortedlist(list,metaclass=removemeta):
         
         object_ = self[index]
         if key(object_)==value:
+            return object_
+        
+        return default
+    
+    def pop(self, value, key, default=None):
+        index = self.keyedrelativeindex(value, key)
+        if index==len(self):
+            return default
+        
+        object_ = self[index]
+        if key(object_)==value:
+            del self[index]
             return object_
         
         return default

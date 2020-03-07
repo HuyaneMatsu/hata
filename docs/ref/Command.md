@@ -23,24 +23,6 @@ attribute will be set as `None`.
 
 The command's owner category.
 
-### `check_failure_handler`
-
-- type : `Any`
-- `awaitable` (if not `None`)
-- default : `None`
-
-An async callable, what will be added to be called, when any of the
-[`.checks`](#checks) returns a positive number. By default set as `None`.
-
-### `checks`
-
-- type : `list` / `NoneType`
-- elements : `check._check_base` instances
-- default : `None`
-
-Checks, which run before the would be called to deside if it really should,
-or we should call [`.check_failure_handler`](#check_failure_handler) if set.
-
 ### `command`
 
 - type : `Any`
@@ -57,15 +39,8 @@ A description added to the command. If no description is provided, then it
 will check the commands's `.__doc__` attribute.
 
 If the description is a string instance, then it will be normalized with the
-[`._normalize_description`](#_normalize_descriptiontext-function). If it
+[`normalize_description`](normalize_description.md). If it
 ends up as an empty string, then `None` will be set as the description.
-
-### `needs_content`
-
-- type : `bool`
-
-Whether the `content` parsed by the [`CommandProcesser`](CommandProcesser.md)
-should be passed to [`.command`](#command) when calling it.
 
 ### `name`
 
@@ -76,6 +51,82 @@ The command's name.
 > Always lowercase.
 
 ## Properties
+
+### `check_failure_handler` (get)
+
+- returns: `Any`
+- `awaitable` (if not `None`)
+- default : `None`
+
+An async callable, what will be added to be called, when any of the
+[`.checks`](#checks-get) returns a positive number. By default set as `None`.
+
+### `check_failure_handler` (set)
+
+- raises : `TypeError` / `ValueError`
+
+`check_failure_handler` can be set as `None` or an async callable, what
+accepts 5 arguments in this order:
+
+| name                  | type                  |
+|-----------------------|-----------------------|
+| client                | [Client](Client.md)   |
+| message               | [Message](Message.md) |
+| command               | [Command](Command.md) |
+| content               | str                   |
+| fail_identificator    | int                   |
+
+### `check_failure_handler` (del)
+
+Removes the command's check failure handler by setting is as `None`.
+
+### `checks` (get)
+
+- returns : `list` / `NoneType`
+- elements : `check._check_base` instances
+- default : `None`
+
+Returns the checks of the command. These not include the checks of the
+command's category.
+
+### `checks` (set)
+
+Sets the checks of the command. If they are provided as an empty `iterable` or
+as `None`, then the attribute will be set as `None`, else the iterable will be
+converted to a `list` and each of it's elements will be checked, whether they
+are `check._check_base` instances.
+
+### `checks` (del)
+
+Removes the command's checks, by setting them as `None`.
+
+### `parser_failure_handler` (get)
+
+- returns: `Any`
+- `awaitable` (if not `None`)
+- default : `None`
+
+An async callable, what is called, when [`._parser`](#_parser-instance-attribute)
+fails to parse every argument. By default set as `None`.
+
+### `parser_failure_handler` (set)
+
+- raises : `TypeError` / `ValueError`
+
+`parser_failure_handler` can be set as `None` or an async callable, what
+accepts 5 arguments in this order:
+
+| name                  | type                  |
+|-----------------------|-----------------------|
+| client                | [Client](Client.md)   |
+| message               | [Message](Message.md) |
+| command               | [Command](Command.md) |
+| content               | str                   |
+| args                  | list of Any           |
+
+### `parse_failure_handler` (del)
+
+Removes the command's parser failure handler by setting is as `None`.
 
 ### `__doc__(self)`
 
@@ -98,14 +149,14 @@ as `None`.
 If `description` is provided as `None`, then will check the passed `command`'s
 `.__doc__` for it. If `description` ends up as being provided as `str`, then it
 will be nomrmalized with
-[`._normalize_description`](#_normalize_descriptiontext-function).
+[`normalize_description`](normalize_description.md).
 
 If `checks_` are provided as an empty `iterable` or as `None`, then the
-attribute will be set as `None`, else it wiill be converted to a `list` and
-each element will be checked, if it is `check._check_base` instance as
-expected.
+attribute will be set as `None`, else it will be converted to a `list` and
+each of the iterable's element will be checked, whether they are
+`check._check_base` instances.
 
-If `check_failure_handler` can be `None` or an async callable, what accepts 5
+`check_failure_handler` can be `None` or an async callable, what accepts 5
 arguments in this order:
 
 | name                  | type                  |
@@ -131,40 +182,46 @@ Returns the representation of the command object.
 - returns : `Any`
 
 First calls the checks of it's [`.category`](#category), then it's own
-[`.checks`](#checks).
+[`.checks`](#checks-get).
 
 If a `check` returns:
 - `-2`: goes on the next.
 - `-1`: stops and returns `1`, so it will be show up, like there is no
 command with that name.
-- `0` or more: calls [`.check_failure_handler`](#check_failure_handler) if set
-as not `None` and returns it's return. If it is set as `None`, then returns `0`.
+- `0` or more: calls [`.check_failure_handler`](#check_failure_handler-get)
+if set as not `None` and returns it's return. If it is set as `None`, then
+returns `0`.
 
-If every check passed, then awaits [`.command`](#command) with the `content`
-if [needed](#needs_content) and return's it's return.
+If every check passed, then checks [`._call_setting`](#_call_setting-instance-attribute)
+whether it should pass `content` to [`.command`](#command) or not, or whether
+it should use [`._parser`](#_parser-instance-attribute) to parse the 
+message's content for specific arguments.
+
+If the parser fails and [.parser_failure_hanler](#parser_failure_handler-get)
+is not `None`, then it is ensured.
 
 ### `call_checks(self, client, message)`
 
 - returns : `Any`
 - `awaitable`
 
-Runs the [checks](#checks) of the [`.category`](#category) and of the
+Runs the [checks](#checks-get) of the [`.category`](#category) and of the
 command itself too. If every passes, then returns `None`. If they do not pass,
-then calls [`.check_failure_handler`](#check_failure_handler) if set and
+then calls [`.check_failure_handler`](#check_failure_handler-get) if set and
 returns it's return.
 
 ### `run_checks(self, client, message)`
 
 - retuns : `bool`
 
-Runs [checks](#checks) of the [`.category`](#category) and of the
+Runs [checks](#checks-get) of the [`.category`](#category) and of the
 command itself too. If every passes, then returns `True`.
 
 ### `run_own_checks(self, client, message)`
 
 - retuns : `bool`
 
-Runs only the command's own [checks](#checks) without it's category's.
+Runs only the command's own [checks](#checks-get) without it's category's.
 If every passes, then returns `True`.
 
 ### `call_command(self, client, message, content)`
@@ -172,8 +229,9 @@ If every passes, then returns `True`.
 - returns : `Any`
 - `awaitable`
 
-Awaits [`.command`](#command) with the `content` if [needed](#needs_content),
-then return's it's return.
+Awaits [`.command`](#command) with the `content` if needed or uses
+[`._parser`](#_parser-instance-attribute) and
+[`.parser_failure_handler-gt`](#parser_failure_handler-get) if needed.
 
 ### `__getattr__(self,name)`
 
@@ -188,12 +246,42 @@ Compares the two command's name.
 
 ## Internal
 
-### `_normalize_description(text)` (function)
+### `_call_setting` (instance attribute)
 
-- returns : `str` / `None`
+- type : `int`
 
-Normalizes a passed string with right stripping every line, removing every
-empty line from it's start and from it's end and with dedenting it.
+An `int` flag defines, how the command should be called. With 2 arguments,
+with 3, or should we use parser.
 
-> If the function would return an empty string, because it ends up with
-> no more lines left, then it returns `None` instead.
+### `_check_failure_handler` (instance attribute)
+
+- type : `Any`
+- `awaitable` (if not `None`)
+- default : `None`
+
+The internal slot used by the
+[`check_failure_handler`](#check_failure_handler-get) property.
+
+### `_checks` (instance attribute)
+
+- type : `list` / `NoneType`
+- elements : `check._check_base` instances
+- default : `None`
+
+The internal slot used by the [`checks`](#checks-get) property.
+
+### `_parser` (instance attribute)
+
+- type : `NoneType` / `function`
+- `awaitable` (if not `None`)
+- default : `None`
+
+The generated parser function for parsing arguments if needed.
+
+### `_parser_failure_handler` (instance attribute)
+
+- type : `Any`
+- `awaitable` (if not `None`)
+- default : `None`
+The internal slot used by the
+[`parser_failure_handler`](#parser_failure_handler-get) property.

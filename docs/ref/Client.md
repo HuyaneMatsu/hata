@@ -2019,7 +2019,24 @@ they need to wait for timeout.
 
 ## Methods
 
-### `is_owner(self,user)`
+### `start(self)`
+
+- returns : `None` / `Task` / `TaskAsyncWrapper`
+- raises : `RuntimeError`
+
+Starts the clients's connecting to Discord. If the client is already running,
+raises `RuntimeError`.
+
+The return of the method depends on the thread, from which it was called
+from.
+
+| called from                           | return                                                                                                    |
+|---------------------------------------|-----------------------------------------------------------------------------------------------------------|
+| The client's event thread (`KOKORO`)  | Returns an **awaitable** `Task` created from the [`self._connect`](#connectself-method)                   |
+| EventThread, but not the client's     | Returns an **awaitable** `TaskAsyncwWapper`, so connecting can be awaited from the other thread as well.  |
+| Any other thread                      | Returns `None`, because syncwraps and waits the connecting task.                                          |
+
+### `is_owner(self, user)`
 
 - returns : `bool`
 - values : `True` / `False`

@@ -8,6 +8,7 @@ from weakref import WeakSet, ref as Weakreferer
 from .futures import Future, Task, iscoroutinefunction as iscoro
 from .dereaddons_local import function, remove, removemeta, _spaceholder,   \
     MethodLike
+from .analyzer import CallableAnalyzer
 
 from .client_core import CACHE_USER, CACHE_PRESENCE, CLIENTS
 from .user import User, PartialUser,USERS
@@ -237,9 +238,9 @@ class IntentFlag(int):
             try:
                 position=INTENT_KEYS[key]
             except KeyError as err:
-                err.args=(f'Invalid key:\'{key}\'',)
+                err.args=(f'Invalid key: `{key!r}`',)
                 raise
-
+            
             if value:
                 new=new|(1<<position)
             else:
@@ -3101,89 +3102,80 @@ EVENTS.add_default('gift_update'                , 3 , 'GIFT_CODE_UPDATE'        
 EVENTS.add_default('achievement'                , 2 , 'USER_ACHIEVEMENT_UPDATE'         , )
 
 def check_name(func,name):
-    if name is not None and name:
-        return name.lower()
+    if (name is not None) and name:
+        if not name.islower():
+            name=name.lower()
+        return name
+    
     if hasattr(func,'__event_name__'):
         return func.__event_name__
+    
     #func or method
     if hasattr(func,'__name__'):
-        return func.__name__.lower()
+        name=func.__name__
+        if not name.islower():
+            name=name.lower()
+        return name
+    
     func=type(func)
     if not issubclass(func,type) and hasattr(func,'__name__'):
-        return func.__name__.lower()
-
+        name=func.__name__
+        if not name.islower():
+            name=name.lower()
+        return name
+    
     raise TypeError('The class must have \'__name__\' attribute and metaclasses are not allowed')
+    
+def check_argcount_and_convert(func, expected, errormsg=None):
+    analyzer = CallableAnalyzer(func)
+    if analyzer.is_async():
+        min_, max_ = analyzer.get_non_reserved_positional_argument_range()
+        if min_>expected:
+            raise ValueError(f'`{func!r}` excepts at least `{min_!r}` non reserved arguments, meanwhile the event expects to pass `{expected!r}`.')
         
-            
-def check_argcount_and_convert(func,expected,errormsg=None):
-    while True:
-        # func
-        if isinstance(func,function):
-            result=func
-            real_func=func
-            ismethod=0
-            break
-            
-        # method
-        if isinstance(func,MethodLike):
-            result=func
-            real_func=func
-            ismethod=MethodLike.get_reserved_argcount(real_func)
-            break
-            
-        # callable object
-        if not isinstance(func,type) and hasattr(type(func),'__call__'):
-            result=func
-            real_func=result.__call__
-            ismethod=MethodLike.get_reserved_argcount(real_func)
-            break
-            
-        # type, but not metaclass
-        if not issubclass(func,type) and isinstance(func,type):
-            
-            # async initializer
-            if iscoro(func.__new__):
-                result=func
-                real_func=result.__new__
-                
-                # by default `__new__` is a classmethod, but without a descriptor
-                if isinstance(result.__new__,function):
-                    ismethod=1
-                else:
-                    ismethod=MethodLike.get_reserved_argcount(real_func)
-                    
-                ismethod=True
-                break
-            
-            # async call -> initialize 1st
-            if hasattr(func,'__call__'):
-                result=func()
-                real_func=result.__call__
-                ismethod=MethodLike.get_reserved_argcount(real_func)
-                break
-        # meow?
-        raise TypeError(f'Expected function, method or a callable object, got {func!r}')
+        if min_==expected:
+            return func
+        
+        #min<expected
+        if max_>=expected:
+            return func
+        
+        if analyzer.accepts_args():
+            return func
+        
+        raise ValueError(f'`{func!r}` expects maximum `{max_!r}` non reserved arguments  meanwhile the event expects to pass `{expected!r}`.')
     
-    if not hasattr(real_func,'__code__'):
-        raise TypeError(f'expected a function, got : {real_func!r}')
-    
-    argcount=real_func.__code__.co_argcount-ismethod
-    args=real_func.__code__.co_flags&4
-    
-    if type(expected) is int:
-        if argcount==expected or (args and argcount<expected):
-            return result
-    else:
-        for expected_ in expected:
-            if argcount==expected_ or (args and argcount<expected_):
-                return expected_,result
+    if analyzer.can_instance_to_async_callable():
+        sub_analyzer=CallableAnalyzer(func.__call__, as_method=True)
+        if sub_analyzer.is_async():
+            min_, max_ = sub_analyzer.get_non_reserved_positional_argument_range()
+            
+            if min_>expected:
+                raise ValueError(f'After instancing `{func!r}` would still except at least `{min_!r}` non reserved arguments, meanwhile the event expects to pass `{expected!r}`.')
+            
+            if min_==expected:
+                func = analyzer.instance_to_async_callable()
+                return func
+            
+            #min<expected
+            if max_>=expected:
+                func = analyzer.instance_to_async_callable()
+                return func
+            
+            if analyzer.sub_accepts_args():
+                func = analyzer.instance_to_async_callable()
+                return func
+            
+            raise ValueError(f'After instancing `{func!r}` would still expects maximum `{max_!r}` non reserved arguments  meanwhile the event expects to pass `{expected!r}`.')
+            
+            func = analyzer.instance_to_async_callable()
+            return func
     
     if errormsg is None:
-        errormsg=f'Invalid argcount, expected {expected}, got {argcount} (args={bool(args)}).'
+        errormsg=f'Not async callable type, or cannot be instance to async: `{func!r}`.'
     
     raise ValueError(errormsg)
 
-    
 def compare_converted(converted,non_converted):
     # function, both should be functions
     if isinstance(non_converted,function):
@@ -3211,70 +3203,6 @@ def compare_converted(converted,non_converted):
     #meow?
     raise TypeError(f'Expected function, method or a callable object, got {non_converted!r}')
 
-def just_convert(func):
-    if isinstance(func,(function,MethodLike)):
-        return func
-    if not isinstance(func,type) and hasattr(type(func),'__call__'):
-        return func
-    if not issubclass(func,type) and isinstance(func,type):
-        if iscoro(func.__new__):
-            return func
-        if hasattr(func,'__call__'):
-            return func()
-    #nya?
-    raise TypeError(f'Expected function, method or callable object, got {func!r}')
-
-def check_coro(func):
-    if getattr(func,'__async_call__',False):
-        return True
-    if isinstance(func,(function,MethodLike)):
-        return iscoro(func)
-    
-    if iscoro(func.__new__):
-        return True
-
-    func=getattr(func,'__call__',None)
-    return iscoro(func)
-    
-
-# 1 line check, so u dont need to write that much
-def check_passed(func,expected,errormsg=None):
-    func=check_argcount_and_convert(func,expected,errormsg)
-    if check_coro(func):
-        return func
-    raise TypeError(f'Expected coroutine function, got {func!r}')
-
-def check_passed_tuple(func,expected,errormsg=None):
-    expected,func=check_argcount_and_convert(func,expected,errormsg)
-    if check_coro(func):
-        return expected,func
-    raise TypeError(f'Expected coroutine function, got {func!r}')
-
-# when every line can raise error, feelsgoodman
-def create_valid_event(func,name):
-    name=check_name(func,name)
-    argcount=EVENTS.get_argcount(name)
-    func=check_argcount_and_convert(func,argcount)
-
-    if not check_coro(func):
-        raise ValueError(f'Events must be coroutine functions!')
-    
-    return name,func
-
-
-def create_valid_case(func,name):
-    #a quick check
-    if isinstance(func,str):
-        return func
-
-    argcount=EVENTS.get_argcount(name)
-    func=check_argcount_and_convert(func,argcount)
-
-    if check_coro(func):
-        raise ValueError(f'Cases must be NOT coroutine fucntions!')
-    
-    return func
-
 def _convert_unsafe_event_iterable(iterable):
     result=[]
     for element in iterable:
@@ -3289,11 +3217,11 @@ def _convert_unsafe_event_iterable(iterable):
                 result.append(element)
                 continue
             
-            case=element[1]
-            if (case is not None) and not isinstance(case,str):
+            name=element[1]
+            if (name is not None) and not isinstance(name,str):
                 raise ValueError(f'Expected `None` or `str` instance at index 1 at element: `{element!r}`')
             
-            element=EventListElement(func,case,None)
+            element=EventListElement(func,name,None)
             result.append(element)
             continue
         
@@ -3303,12 +3231,12 @@ def _convert_unsafe_event_iterable(iterable):
             except KeyError:
                 raise ValueError(f'Expected all `dict` elements to contain `\'func\'` key, but was not found at `{element!r}`') from None
             
-            case=element.pop('case',None)
+            name=element.pop('name',None)
             
             if not element:
                 element = None
             
-            element=EventListElement(func,case,element)
+            element=EventListElement(func,name,element)
             result.append(element)
             continue
         
@@ -3331,37 +3259,37 @@ class _EventCreationManager(object):
     def __repr__(self):
         return f'<{self.__class__.__name__} of {self.parent!r}>'
     
-    def __call__(self,func=None,case=None,**kwargs):
+    def __call__(self,func=None,name=None,**kwargs):
         if func is None:
-            return self._wrapper(self,case,kwargs)
+            return self._wrapper(self,name,kwargs)
         
-        if case is None:
-            case=check_name(func,None)
+        if name is None:
+            name=check_name(func,None)
         
-        if (not case.islower()):
-            case=case.lower()
+        if (not name.islower()):
+            name=name.lower()
         
-        func=self.parent.__setevent__(func,case,**kwargs)
+        func=self.parent.__setevent__(func,name,**kwargs)
         return func
     
-    def remove(self,func,case=None,**kwargs):
-        if case is None:
-            case=check_name(func,None)
+    def remove(self,func,name=None,**kwargs):
+        if name is None:
+            name=check_name(func,None)
         
-        if (not case.islower()):
-            case=case.lower()
+        if (not name.islower()):
+            name=name.lower()
         
-        self.parent.__delevent__(func,case,**kwargs)
+        self.parent.__delevent__(func,name,**kwargs)
     
     class _wrapper(object):
-        __slots__=('parent', 'case', 'kwargs')
-        def __init__(self,parent,case,kwargs):
+        __slots__=('parent', 'name', 'kwargs')
+        def __init__(self,parent,name,kwargs):
             self.parent=parent
-            self.case=case
+            self.name=name
             self.kwargs=kwargs
         
         def __call__(self,func,):
-            return self.parent(func,self.case,**self.kwargs)
+            return self.parent(func,self.name,**self.kwargs)
     
     def __getattr__(self,name):
         return getattr(self.parent,name)
@@ -3371,20 +3299,20 @@ class _EventCreationManager(object):
             iterable=_convert_unsafe_event_iterable(iterable)
         
         for element in iterable:
-            case=element.case
+            name=element.name
             func=element.func
             
-            if (case is None):
-                case=check_name(func,None)
+            if (name is None):
+                name=check_name(func,None)
             
-            if (not case.islower()):
-                case=case.lower()
+            if (not name.islower()):
+                name=name.lower()
             
             kwargs=element.kwargs
             if kwargs is None:
-                self.parent.__setevent__(func,case)
+                self.parent.__setevent__(func,name)
             else:
-                self.parent.__setevent__(func,case,**kwargs)
+                self.parent.__setevent__(func,name,**kwargs)
     
     def unextend(self,iterable):
         if type(iterable) is not eventlist:
@@ -3395,9 +3323,9 @@ class _EventCreationManager(object):
             kwargs=element.kwargs
             try:
                 if kwargs is None:
-                    self.remove(element.func,element.case)
+                    self.remove(element.func,element.name)
                 else:
-                    self.remove(element.func,element.case,**kwargs)
+                    self.remove(element.func,element.name,**kwargs)
             except ValueError as err:
                 collected.append(err.args[0])
         
@@ -3405,14 +3333,14 @@ class _EventCreationManager(object):
             raise ValueError('\n'.join(collected))
         
 class EventListElement(object):
-    __slots__= ('case', 'kwargs', 'func', )
-    def __init__(self,func,case,kwargs):
+    __slots__= ('name', 'kwargs', 'func', )
+    def __init__(self,func,name,kwargs):
         self.func  = func
-        self.case  = case
+        self.name  = name
         self.kwargs= kwargs
     
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.func!r}, {self.case!r}, kwargs={self.kwargs!r})'
+        return f'{self.__class__.__name__}({self.func!r}, {self.name!r}, kwargs={self.kwargs!r})'
 
 class eventlist(list,metaclass=removemeta):
     delete=remove('insert','sort','pop','reverse','remove','sort','index',
@@ -3424,16 +3352,14 @@ class eventlist(list,metaclass=removemeta):
             self.extend(iterable)
 
     class _wrapper(object):
-        __slots__=('parent', 'case', 'kwargs')
-        def __init__(self, parent, case, kwargs):
+        __slots__=('parent', 'name', 'kwargs')
+        def __init__(self, parent, name, kwargs):
             self.parent=parent
-            self.case=case
+            self.name=name
             self.kwargs=kwargs
         
         def __call__(self,func):
-            func=just_convert(func)
-            
-            list.append(self.parent,EventListElement(func,self.case,self.kwargs))
+            list.append(self.parent,EventListElement(func,self.name,self.kwargs))
             return func
     
     def extend(self,iterable):
@@ -3456,44 +3382,42 @@ class eventlist(list,metaclass=removemeta):
         if collected:
             raise ValueError('\n'.join(collected))
     
-    def __call__(self,func=None,case=None,**kwargs):
-        if (case is not None) and (not case.islower()):
-            case=case.lower()
+    def __call__(self,func=None,name=None,**kwargs):
+        if (name is not None) and (not name.islower()):
+            name=name.lower()
         
         if not kwargs:
             kwargs=None
         
         if func is None:
-            return self._wrapper(self,case,kwargs)
+            return self._wrapper(self,name,kwargs)
         
-        func=just_convert(func)
-        
-        list.append(self,EventListElement(func,case,kwargs))
+        list.append(self,EventListElement(func,name,kwargs))
         return func
     
-    def remove(self,func,case=None):
-        if (case is not None) and (not case.islower()):
-            case=case.lower()
+    def remove(self,func,name=None):
+        if (name is not None) and (not name.islower()):
+            name=name.lower()
             
         # we might overwrite __iter__ later
         for element in list.__iter__(self):
             
-            converted_case=element.case
-            # `case` can be `None` or `str`
-            if converted_case is None:
-                if case is not None:
+            converted_name=element.name
+            # `name` can be `None` or `str`
+            if converted_name is None:
+                if name is not None:
                     continue
             else:
-                if case is None:
+                if name is None:
                     continue
                 
-                if converted_case!=case:
+                if converted_name!=name:
                     continue
             
             if compare_converted(element.func,func):
                 return
         
-        raise ValueError(f'Did not find any element, what matched the passed func={func!r}, case={case!r} combination.')
+        raise ValueError(f'Did not find any element, what matched the passed func={func!r}, name={name!r} combination.')
     
     def __repr__(self):
         result=[self.__class__.__name__,'([']
@@ -3527,11 +3451,11 @@ class EventHandlerBase(object):
         return
 
     # subclasses should overwrite it
-    def __setevent__(self, func, case):
+    def __setevent__(self, func, name):
         pass
 
     # subclasses should overwrite it
-    def __delevent__(self, func, case):
+    def __delevent__(self, func, name):
         pass
 
     @property
@@ -3743,7 +3667,7 @@ async def DEFAULT_EVENT(*args):
     
 class EventDescriptor(object):
     __slots__=('client_reference',*sorted(EVENTS.defaults))
-
+    
     def __init__(self,client):
         client_reference=Weakreferer(client)
         object.__setattr__(self,'client_reference',client_reference)
@@ -3752,24 +3676,27 @@ class EventDescriptor(object):
         object.__setattr__(self,'error',default_error_event)
         object.__setattr__(self,'guild_user_chunk',ChunkQueue())
     
-    def __call__(self,func=None,name=None,pass_to_event=False,case=None,overwrite=False):
+    def __call__(self,func=None,name=None,pass_to_handler=False,passed_name=None,overwrite=False):
         if func is None:
-            return self._wrapper(self,(name,pass_to_event,case),)
+            return self._wrapper(self,(name,pass_to_handler,passed_name),)
         
-        if pass_to_event:
+        if pass_to_handler:
             if name is None:
-                raise ValueError('\'name\' can not be None if \'pass_to_event\' is set to True')
-            if case is None:
-                case=check_name(func,None)
+                raise ValueError('\'name\' can not be None if `pass_to_handler` is set to True')
             
-            if (not case.islower()):
-                case=case.lower()
+            if passed_name is None:
+                passed_name=check_name(func,None)
+            
+            if (not passed_name.islower()):
+                passed_name=passed_name.lower()
             
             event_handler=getattr(self,name)
-            func=event_handler.__setevent__(func,case)
+            func=event_handler.__setevent__(func,passed_name)
             return func
         
-        name,func=create_valid_event(func,name)
+        name=check_name(func,name)
+        argcount=EVENTS.get_argcount(name)
+        func=check_argcount_and_convert(func,argcount)
         
         if overwrite:
             setattr(self,name,func)

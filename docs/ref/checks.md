@@ -18,7 +18,7 @@ check failure handler.
 | has_role                          | role                  | Whether the author has the specific role.                                                                                         |
 | owner_or_has_role                 | role                  | Whether the author is the owner of the client, or the specific role.                                                              |
 | has_any_role                      | roles                 | Whether the author has any of the specified roles                                                                                 |
-| owner_has_any_role                | roles                 | Whether the author is the owner of the client or has any of te specified roles.                                                   |
+| owner_or_has_any_role             | roles                 | Whether the author is the owner of the client or has any of te specified roles.                                                   |
 | guild_only                        |                       | Whether the command was called from a guild channel.                                                                              |
 | private_only                      |                       | Whether the command was called from a private (or group) channel.                                                                 |
 | owner_only                        |                       | Whether the athor is the owner of the client.                                                                                     |

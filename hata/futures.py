@@ -2324,7 +2324,7 @@ class Lock(object):
         future=Future(self._loop)
         waiters=self._waiters
         waiters.appendleft(future)
-        if waiters.__len__()>1:
+        if len(waiters)>1:
             await waiters[1]
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):

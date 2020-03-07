@@ -31,7 +31,7 @@ def PartialEmoji(data):
         EMOJIS[emoji_id]= emoji
         emoji.unicode   = None
         emoji.guild     = None
-
+    
     # name can change
     name=data['name']
     if name is None:

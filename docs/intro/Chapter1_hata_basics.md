@@ -1,133 +1,137 @@
 # Hata basics
 
-Lets start instantly with a simple client example:
+Familiarly to other wrappers, hata use asynchronous environment and we can put
+different coroutine functions under different discord events, which are
+ensured when the mentioned event occurs.
+
+Lets continue with a simple example and then explain what happens.
+
+###### Basic client example
 
 ```py
-from hata import Client,start_clients
+import re
 
-client=Client(TOKEN)
+from hata import Client, start_clients
 
-@client.events
+OWO_RP = re.compile('owo|uwu|0w0', re.I)
+AYY_RP = re.compile('ay+', re.I)
+
+TOKEN = ''
+NekoBot = Client(TOKEN)
+
+@NekoBot.events
 async def ready(client):
     print(f'{client:f} ({client.id}) logged in')
 
-#we reply on uwu and on owo messages
-@client.events
-async def message_create(client,message):
+@NekoBot.events
+async def message_create(client, message):
     if message.author.is_bot:
         return
+    
     content = message.content
-    if len(content)!=3: # filter out totally useless cases
+    
+    matched = OWO_RP.fullmatch(content)
+    if (matched is not None):
+        result = f'{content[0].upper()}{content[1].lower()}{content[2].upper()}'
+        await client.message_create(message.channel, result)
         return
     
-    content = content.lower()
-    
-    if content=='owo':
-        result = 'OwO'
-    elif content=='uwu':
-        result = 'UwU'
-    elif content=='0w0':
-        result = '0w0'
-    else:
+    matched = AYY_RP.fullmatch(content)
+    if (matched is not None):
+        result = 'lmao'
+        await client.message_create(message.channel, result)
         return
-    
-    await client.message_create(message.channel, result)
 
 start_clients()
 ```
 
-Familiarly to other wrappers we use asynchronous environment and we can put
-different functions under different discord events, which will be called
-when the specific event occurs. There are 47 events defined right now.
+1.: We import `Client` and `start_clients` from the library. If you get
+`ImportError` or `ModuleNotFoundError`, then the library is not correctly
+installed. I personally prefer importing the used.
 
-Lets check some cases where we add events to a client:
+> The examples will follow the `import ... from ...` pattern, when importing
+> from the library, but `import ...` works totally fine as well.
+
+2.:  We import the `re` module and we define some regex, what we will use
+later. Knowing regex is really usefull, when working with strings, so if you
+do not already know it, you should check 
+[it](https://docs.python.org/3/library/re.html) out.
+
+3.: We create our `Client` instance. When creating it, we need to define at
+least it's token, got from
+[Discord's application page](https://discordapp.com/developers/applications).
+It accepts other optional attributes too, like `intents`, `shard_count` or
+a whole set of them, what you might need later.
+
+4.: We use `client.events` as a decorator, what allows you to put different
+handlers under different discord events. There are multiple ways of adding
+them, some is [mentioned](#Adding-event-examples) later. These handlers are
+ensured, when the respective event is received from Discord.
+
+5.: The `ready` event is ensured after the client finished logged in. When it
+happens, at the example we print out the client's full name and it's id. The
+wrapper's required python version is 3.6, what means format string are a thing,
+so the wrapper actively [supports](#Formatting-objects) it.
+
+6.: The `message_create` is ensured every time when the client receives a
+message. It is triggered after bot messages as well, so first of all we want
+to filter them out. Then we check it, whether it's content contains any kind
+of OwO. If it does, then we reply on it. if it does not, then we check whether
+the content contains Ayy, if it does, we reply on it as well.
+
+7.: At the end we run up our client(s) with calling the `start_clients`
+function.
+
+###### Adding event examples
+
+Events can be added on multiple ways, here are some examples:
 
 ```py
-@client.events
-async def event_name(client,*args):
+@NekoBot.events
+async def emoji_create(client, guild, emoji):
     pass
 ```
 
 That's the same as doing:
-    
-```py
-async def event_name(client,*args):
-    pass
-client.events(event_name)
-```
-
-As expected we can use a custom name to:
 
 ```py
-async def not_event_name(client,*args):
+async def emoji_create(client, guild, emoji):
     pass
-client.events(not_event_name,name='event_name')
+
+NekoBot.events(emoji_create)
 ```
 
-An another case:
+Using a different name:
 
 ```py
-@client.events.add(name='event_name')
-async def not_event_name(client,*args):
+async def random_name(client, guild, emoji):
+    pass
+
+NekoBot.events(random_name, name='emoji_create')
+```
+
+
+```py
+@NekoBot.events(name='emoji_create')
+async def random_name(client, guild, emoji):
     pass
 ```
 
-There are other useful cases too, but lets not mention them right now.
+There are other cases as well, but these should be enough for now.
 
-Most of the classes have `__slots__` at the wrapper, so `client.event`'s
-type has it too. That's an easy way to check each event's name. Also when
-adding an event - type, arg-count and event name is checked so you should
-get an exception which tells you what you messed up at adding a new event.
-
-Some exception examples:
+When adding event handler, then type and arg-count is checked, so whenever you
+would mess something up, it should raise an exception, like:
 
 - `ValueError: Events must be coroutine functions!`
 - `ValueError: Invalid argcount, expected 2, got 1 (args=False).`
 - `LookupError: Invalid Event name: 'owowhatsthis'.`
 
-## `ready` event
+## Formatting objects
 
-As you probably think - ready runs when the client logs in.
-But actually ready is not a `ready-ready` event - it is called every time when
-Discord sends a `READY` dispatch. It usually happens when Discord drops
-the client, so it needs to reconnect. With some tricks you can check if the
-client is `ready-ready` or just `ready`.
+A lot of hata's types' instances, which represent a Discord object have
+formatting support. Lets take a `User` object as example:
 
-Events pick up on types or objects too and on their name. If it is a
-type and it's initializer is async it will be stored as a type.
-In every other case it initializes them and in this case the only condition 
-is to have their `__call__` async.
-
-## Comparing and formatting objects
-
-A big speciality of the wrapper is that each Discord object
-representation exists only once at the memory, so if you want to compare
-two users like:
-
-```py
-if user1 == user2:
-```
-
-You should prefer using `is` over `==` :
-
-```py
-if user1 is user2:
-```
-
-The difference is that `==` compares their `id` but `is` compares their
-address at the memory. The only case when you should use `==` instead of `is`
-is when you want to compare webhook message authors because webhooks can
-be sent using different avatars and names, so to check these
-attributes each webhook's message's author might be a different object.
-
-Also `>`, `>=`, `<=`, `<` works on Discord objects too - it compares
-their `id` by default. But some types have `position` - like roles
-or channels, so it will prefer comparing their position over the id.
-
-An another speciality of the wrapper is that you can use special formatting
-codes with f-strings. Lets take a `User` object as example:
-
-- no format code is simply the user's name itself.
+- no format code is the user's name itself.
 - `f` format code means full name, so name with discriminator.
 - `m` format code stands for mention.
 - `c` format code stands for the date when the user was created.
@@ -139,5 +143,8 @@ These formattings are also available as attributes or properties too:
 - `.mention`
 - `.created_at`
 
-The only difference is `.created_at` returns `datetime` object instead of
-`str`.
+The only difference is that `.created_at` returns `datetime` object, meanwhile
+formatting with `'c'` returns `str`.
+
+> `Client` instances, are valid users too and they support the same formatting
+> codes as well.

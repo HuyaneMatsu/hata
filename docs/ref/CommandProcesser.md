@@ -5,17 +5,30 @@ A predefined class to help out the bot devs with an already defined
 
 - Source : [events.py](https://github.com/HuyaneMatsu/hata/blob/master/hata/events.py)
 
-Adding it to events is easy:
+The class is part of the wrapper's `events` extension, what can be setupped,
+with [`events.setup_extension`](setup_extension.md) function. It adds more
+hanlers to `client.events` and some more attributes to the client itself as
+well. If you are using that function, then you skip the next part and go on
+[Creating the event handler](#Creating-the-event-handler) part.
+
+> The intro uses `client.commands` for adding commands, meanwhile this part
+> of the documentation focuses just on the `CommandProcesser`'s capabilities,
+> so we will use `on_command` here instead.
+
+## Default setup
+
+Adding it to events is simple:
 ```py
 client.events(CommandProcesser(PREFIX))
 ```
 
 After adding it should be shortcutted with the [`.shortcut`](#shortcut)
-property.
+property. The reason of shortcutting is, because the object is an event
+handler, so it's `__call__` method is already taken, but `.shortcut` returns
+a specifalized object just for using it as a decorator.
 
 ```py
 on_command=client.events.message_create.shortcut
-```
 ```
 
 > If more handler is added `client.events.message_create`, then it will be
@@ -23,12 +36,11 @@ replaced with [`asynclist`](asynclist.md), but that datatype still supports
 attribute lookup from it's element with overwriting `__getattr__`.
 
 An important note might be, that [client.events](EventDescriptor.md) returns
-the object after adding, so insta shortcut is the most elegant solution:
+the object after adding, so instant shortcut is the most elegant solution:
 
 ```py
 on_command=client.events(CommandProcesser(PREFIX)).shortcut
 ```
-Of cource `with` works as well.
 
 ## Creating the event handler
 
@@ -36,7 +48,7 @@ Because the class has an attribute, called `__event_name__` set to
 `'message_create'` means, the [`EventDescriptor`](EventDescriptor.md) will
 always pick it up at the correct place.
 
-### `CommandProcesser(self, prefix,ignorecase=True, mention_prefix=True, default_category_name=None)`
+### `CommandProcesser(self, prefix, ignorecase=True, mention_prefix=True, default_category_name=None)`
 
 - `prefix`
 
@@ -85,17 +97,17 @@ channels, where we can not send messages comes only after this.
 
 At this step we try to parse the message's content to 3 parts:
 - prefix
-- command
+- command name
 - content
 
-The commands' names are not case sensitive.
+> The commands' names are not case sensitive. The content ends at the first
+> linebreak, or at it's real end.
 
-The content ends at the first linebreak, or at it's real end.
+If the parsed `command name` points to a command, then the command will be
+esured. The added commands are wrapped in [`Command`](Command.md) objects.
 
-If the parsed `command` is a valid command, we will await it and pass 2
-or 3 arguments to it, depends how much arguments the command accepts. These
-arguments are the following: the `client`, the `message` and the parsed
-`content` as optional too.
+Commands must accept at least 2 arguments, the `client` and the `message` and
+they can accept an optional thir as well, called `content`.
 
 If we did not find the prefix we move on the
 [`mention_prefix`](#default_event), then on the
@@ -104,12 +116,11 @@ If we did not find the prefix we move on the
 If we found the prefix, but the command is invalid, we move on the
 [`invalid_command`](#invalid_command) case.
 
-##### Commands examples
-
+##### Command examples
 ```py
 @on_command
-async def ping(client, message, content):
-    await client.message_create(message.channel, f'{client.gateway.latency*1000.:.0f} ms')
+async def say(client, message, content):
+    await client.message_create(message.channel, content)
 ```
 
 Content is optional.
@@ -132,19 +143,19 @@ on_command(ping)
 Adding command with different name is supported too.
 
 ```py
-@on_command(case='pong')
+@on_command(name='pong')
 async def ping(client, message): # content is optional
     await client.message_create(message.channel, f'{client.gateway.latency*1000.:.0f} ms')
 ```
 
-When you add a command with just a simpel call, can be conbined with adding
+When you add a command with just a simple call, can be conbined with adding
 with other keyword arguments too.
 
 ```py
 async def ping(client, message): # content is optional
     await client.message_create(message.channel, f'{client.gateway.latency*1000.:.0f} ms')
-    
-on_command(ping, case='pong')
+
+on_command(ping, name='pong')
 ```
 
 You can create a container, from what you can add each command. Keyword
@@ -152,18 +163,22 @@ arguments are supported too. `eventlist` is not `CommandProcesser` specific,
 so specialized exceptions will be raised only when it is used up.
 
 ```py
-from hata import eventlist
-some_commads=eventlist()
+from hata import eventlist, BUILTIN_EMOJIS
 
-@some_commads
-async def pat(client, message):
-    await client.message_create(message.channel, 'pats')
+CAKE = BUILTIN_EMOJIS['cake']
 
-@some_commands(case='hug') 
-async def hug_command(client, message):
-    await client.message_create(message.channel, 'hugs')
+cute_commands = eventlist()
 
-on_command.extend(some_commads) #extending works too
+@cute_commands
+async def cake(client, message):
+    await client.message_create(message.channel, CAKE.as_emoji)
+
+@cute_commands(name='love')
+async def send_love(client, message):
+    channel = await client.channel_private_create(message.author)
+    await client.message_create(channel, 'I love you :3')
+
+on_command.extend(cute_commands)
 ```
 
 You can mark aliases as supported as well.
@@ -198,7 +213,7 @@ If a check fails, then an `int` value is returned by it what can be modifed.
 Cannot be set as negative value tho. If it is modified, then the check failure
 handler will be called with that value as well.
 
-To the check failure handler always 5 argument is passed:
+To the check failure handler always 5 arguments are passed:
 
 | name                  | type                  |
 |-----------------------|-----------------------|
@@ -280,6 +295,143 @@ async def update_application_info(client, message, user):
 
 > Returning `False` is unnecesary, becuse `None` evaluates to `False` anyways,
 > but it might look cleaner to return objects of the same type.
+
+You can also add a command with more arguments. At that case a parser function
+will be generated to deal with it. Annottions and dedfault values will be
+picked up as well.
+```
+from hata import User
+
+@on_command
+async def hug(client, message, user:User=None):
+    if user is None:
+        user = message.author
+    
+    await client.message_create(message.channel, f'Hugs {user:m} !')
+```
+
+Like this piece of code generates a parser, what tries to parse out a user
+from mention, name and id of the next word of the content. With using a
+default value, we can make sure, that the command will be called even if
+the parsing fails.
+
+Just some bultin and hata types are supported:
+
+| type          | description                                                                                                   |
+|---------------|---------------------------------------------------------------------------------------------------------------|
+| str           | Parses the next word.                                                                                         |
+| int           | Converts the next word to int. The maximal length of converted ints is 100 by default, but can be changed.    |
+| timedelta     |                                                                                                               |
+| relativedelta | You must have deateutil installed.                                                                            |
+| User          |                                                                                                               |
+| Emoji         |                                                                                                               |
+| ChannelBase   | Guild only for getting any channel of it.                                                                     |
+| Role          | Guild only for getting any role of it.                                                                        |
+
+The last argument without annotation will always mean the rest of the content
+and every other argument before that will be interpretered as `str` annotation.
+If you want to you can also use `*args` to receive undfined amount of parsed
+arguments.
+```
+@on_command
+async def separate(client, message, *args):
+    if not args:
+        result = 'Nothing to separate'
+    else:
+        result = ', '. join(args)
+    await client.message_create(message.channel, result)
+```
+The parser everything within quote will interpreter as one word, for cases,
+when you want to pass more words separated with space.
+
+| input	                            | output                                        |
+|-----------------------------------|-----------------------------------------------|
+| 'Nekos are cute and fluffy.'	    | ('Nekos', 'are', 'cute', 'and', 'fluffy.')    |
+| 'Nekos are "cute and fluffy."'	| ('Nekos', 'are', 'cute and fluffy.')          |
+| '"Nekos are cute and fluffy."'	| ('Nekos are cute and fluffy.')                |
+
+You can also specify the generated parser, with using the `Converter` object.
+```py
+from hata import Embed
+from hata.events import Converter, ConverterFlag
+
+@on_command
+async def avatar(client, message, user : Converter('user', flags=ConverterFlag.user_default.update_by_keys(everywhere=True), default_code='message.author')):
+    color = user.avatar&0xffffff
+    if color==0:
+        color = user.default_avatar.color
+    
+    url=user.avatar_url_as(size=4096)
+    embed=Embed(f'{user:f}\'s avatar', color=color, url=url)
+    embed.add_image(url)
+    
+    await client.message_create(message.channel, embed=embed)
+```
+By default `user` search is by searching by `mention` / `id` / `name` at the
+respective guild, or private channel, but they can be disabled, or some
+more option can be enabled with passing a moified converter flag. When
+looking up a `user`, with using the `everywere` flag as well, will generate
+a parser what will request the user by `id` if not found locally.
+
+Converter also allows to pass `default` or `default_code` mutually exclusive
+arguments, which allows you for more control over the default value.
+```py
+import random
+
+@on_command
+async def choose(client, message, emojis : Converter('emoji', amount=2)):
+    emoji = random.choice(emojis)
+    await client.message_create(message.channel, f'I choose {emoji:e} !')
+```
+`amount` is also a valid argument, which allows you to define how much object
+you want to get. Passing amount as a `tuple` with as `(start, end)` is also
+supported. (`end` can be passd as `0` as well, then it will go for as much as
+it can.)
+
+Each type has it's name at the parser and also 2 more value is supported
+`content` and `rest` as well.
+
+| type          | name          |
+|---------------|---------------|
+| str           | 'str'         |
+| int           | 'int'         |
+| timedelta     | 'tdelta'      |
+| relativedelta | 'rdelta'      |
+| User          | 'user         |
+| Emoji         | 'emoji'       |
+| ChannelBase   | 'channel'     |
+| Role          | 'role'        |
+| -             | 'content'     |
+| -             | 'rest'        |
+
+If there is check failure handler, then must be there a parser failure handler
+as well when the user did not pass enough or correct arguments.
+
+```py
+async def on_parse_fail(client, message, command, content, args):
+    emojis = args[0]
+    if len(emojis)==1:
+        result = 'Please pass 1 more emoji.'
+    else:
+        result = 'Please pass 2 emojis after the command\'s name.'
+    
+    await client.message_create(message.channel, result)
+
+@on_command(parser_failure_handler=on_parse_fail)
+async def choose(client, message, emojis : Converter('emoji', amount=2)):
+    emoji = random.choice(emojis)
+    await client.message_create(message.channel, f'I choose {emoji:e} !')
+```
+
+To the parser failure handler always 5 arguments are passed:
+
+| name                  | type                  |
+|-----------------------|-----------------------|
+| client                | [Client](Client.md)   |
+| message               | [Message](Message.md) |
+| command               | [Command](Command.md) |
+| content               | str                   |
+| args                  | list of Any           |
 
 #### invalid_command
 
@@ -388,7 +540,8 @@ async def command_error(client, message, command, content, exception):
 ```
 
 > Pagination uses different events too, so those should be added as well, to
-> make this example work.
+> make this example work. If you used `setup_extension`, then you have nothing
+> to fear from.
 
 If exception occures at `command_error`, `client.events.error` will be ensured.
 Same return applies to `command_error` as at [`commands`](#commands). If
@@ -428,15 +581,15 @@ When it happens, a bound [`_EventCreationManager`](_EventCreationManager.md) is
 returned, what acts like a wrapper for the
 [`__setevent__`](#__setevent__-__delevent__) method.
 
-### `client.message_create.__setevent__(func, case, description=None, aliases=None, category=None, checks=None, on_check_failure=None):)`
+### `client.message_create.__setevent__(func, name, description=None, aliases=None, category=None, checks=None, on_check_failure=None):)`
 
 - raises : `TypeError` / `ValueError`
 
 This method checks 4 cases:
-- is `case` `'default_event'` and argcount is 2
-- is `case` `'invalid_command'` and argcount is 4
-- is `case` `'command_error'` and argcount is 5
-- is `case` anything else and argcount is 2 or 3
+- is `name` `'default_event'` and argcount is 2
+- is `name` `'invalid_command'` and argcount is 4
+- is `name` `'command_error'` and argcount is 5
+- is `name` anything else and argcount is 2 or 3
 
 If anything check fails, you might get some nice errors, like:
 - `ValueError: 'default_event' expects 2 arguments (client, message).`
@@ -447,7 +600,7 @@ If anything check fails, you might get some nice errors, like:
 
 Removing events is on the same way as adding.
 
-### `client.message_create.__delevent__(func, case, **kwargs)`
+### `client.message_create.__delevent__(func, name, **kwargs)`
 
 - raises : `TypeError` / `ValueError`
 
@@ -546,13 +699,35 @@ Can be asigned as `str` instance or as `None`. If other value is passed, raises
 
 ## Methods
 
-### `create_category(self, name, checks=None, on_check_failure=None)`
+### `create_category(self, name, checks=None, on_check_failure=None, description=None)`
 
 - returns : [`Category`](Category.md)
-- raises : `ValueError`
+- raises : `TypeError` / `ValueError`
 
 Creates a category with the specified arguments. If a category exists with the
 same name, raises `ValueError`.
+
+### `delete_category(self, category)`
+
+- returns : `None`
+- raises : `TypeError` / `ValueError`
+
+Deletes a category from the [`CommandProcesser`](CommandProcesser.md). It can
+be passed as [`Category`](Category.md) or as `str` instance.
+
+If the category is found, then every of it's commands will be removed from
+the [`CommandProcesser`](CommandProcesser.md).
+
+### `get_category(self, category_name)`
+
+- returns : [`Category`](Category.md) / `None`
+- default : `None`
+- raises : `TypeError`
+
+Returns the category for the given name. If the name is passed as `None`, then
+will return the default category of the [`CommandProcesser`](CommandProcesser.md).
+
+Accepts `None` and `str` instance. If other object is passed, raises `TypeError`.
 
 ### `get_category(self, category_name)`
 

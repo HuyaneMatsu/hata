@@ -620,7 +620,15 @@ calling [`Client.request_memebers`](Client.md/#request_memebers).
 
 - returns : `default` / [`Emoji`](Emoji.md)
 
-Tries to find the emoji by it's name. If it cant returns the `default` value.
+Tries to find the emoji. First tries to raw match it, if it fails, then tries
+to fin by name. If it do not finds anything, returns the `default` value.
+
+### `get_emoji_like(self,name,default=None)`
+
+- returns : `default` / [`Emoji`](Emoji.md)
+
+Returns the emoji, which's name matches the passed name the most. If it cannot
+find anything, returns the `default` value.
 
 ### `get_channel(self,name,defualt=None)`
 

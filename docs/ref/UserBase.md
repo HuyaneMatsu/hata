@@ -256,10 +256,10 @@ Returns the representation of the user.
 - raises `ValueError`
 
 ```python
-f'{user}' #-> user.name
-f'{user:f}' #-> user.full_name
-f'{user:m}' #-> user.mention
-f'{user:c}' #-> user.created_at with '%Y.%m.%d-%H:%M:%S' format
+f'{user}'   # -> user.name
+f'{user:f}' # -> user.full_name
+f'{user:m}' # -> user.mention
+f'{user:c}' # -> user.created_at with '%Y.%m.%d-%H:%M:%S' format
 ```
 
 Raises `ValueError` on invalid format code.

@@ -1093,7 +1093,36 @@ class Guild(object):
             if emoji.name==name:
                 return emoji
         return default
-
+    
+    def get_emoji_like(self,name,default=None):
+        target_name_length=len(name)
+        if target_name_length<2 or target_name_length>32:
+            return default
+        pattern=re.compile(re.escape(name),re.I)
+        
+        accurate_emoji=default
+        accurate_name_length=33
+        
+        for emoji in self.emojis.values():
+            emoji_name=emoji.name
+            name_length=len(emoji_name)
+            if name_length>accurate_name_length:
+                continue
+            
+            if pattern.match(emoji_name) is None:
+                continue
+            
+            if name_length<accurate_name_length:
+                accurate_emoji=emoji
+                accurate_name_length=name_length
+            
+            if name_length==target_name_length and name==emoji_name:
+                return emoji
+            
+            continue
+        
+        return accurate_emoji
+    
     def get_channel(self,name,default=None):
         if name.startswith('#'):
             name=name[1:]
@@ -1110,7 +1139,7 @@ class Guild(object):
             if role.name==name:
                 return role
         return default
-
+    
     def permissions_for(self,user):
         if user==self.owner:
             return Permission.permission_all

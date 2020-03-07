@@ -6,10 +6,12 @@ from math import ceil
 from time import monotonic, time as time_now
 from collections import deque
 from os.path import split as splitpath
+from threading import current_thread
 
 from .dereaddons_local import multidict_titled, _spaceholder
 from .futures import Future, Task, sleep, CancelledError, WaitTillAll,      \
     WaitTillFirst
+from .eventloop import EventThread
 
 from .py_formdata import Formdata
 from .py_hdrs import AUTHORIZATION
@@ -2549,7 +2551,7 @@ class Client(UserBase):
         
     #user only, the returned data is unknown actually, propably needs compuser type
     async def user_profile(self,user_id):
-        data = await self.http.user_profile(user_id)
+        data = await self.http.user_get_profile(user_id)
         return User._create_and_update(data)
     
     #integrations
@@ -3432,7 +3434,24 @@ class Client(UserBase):
     #user account only
     async def hypesquad_house_leave(self):
         await self.http.hypesquad_house_leave()
+    
+    def start(self):
+        if self.running:
+            raise RuntimeError(f'{self!r} is already running!')
         
+        task = Task(self.connect(),KOKORO)
+        
+        thread = current_thread()
+        if thread is KOKORO:
+            return task
+        
+        if isinstance(thread,EventThread):
+            # Asyncwrap wakes up KOKORO
+            return task.asyncwrap(thread)
+        
+        KOKORO.wakeup()
+        task.syncwrap().wait()
+    
     async def connect(self):
         if self.running:
             raise RuntimeError(f'{self!r} is already running!')

@@ -14,7 +14,7 @@ awaitable object.
 `EventDescriptor` is created at `Client.__init__` with a weakreference to it'
  client.
 
-### `__call__(self,func=None,name=None,pass_content=False,case=None,overwrite=False)`
+### `__call__(self,func=None,name=None,pass_content=False,sub_name=None,overwrite=False)`
 
 - returns : `callable`
 
@@ -95,22 +95,22 @@ attribute, or when you pass an object with an `__event_name__` attribute.
 
 #### Third case:
 
-When you pass a `pass_to_event=True` and an optional `case`.
+When you pass a `pass_to_hanler=True` and an optional `sub_name`.
 
 ```py
-client.events(coroutine_function, name='example', pass_to_event=True)
-client.events(coroutine_function, name='example', pass_to_event=True, case='owo')
+client.events(coroutine_function, name='example', pass_to_handler=True)
+client.events(coroutine_function, name='example', pass_to_handler=True, sub_name='owo')
 ```
 
 At these cases instead of setting an event to the `client.events` it will
 call:
 
 ```py
-client.event.<name>.__setevent__(func,case)
+client.event.<name>.__setevent__(func, name)
 ```
 
-If `case` is `None` it will try to get case on the same way as we get the
-`name` above.
+If `sub_name` is `None` it will try to get the sub name on the same way as we
+get the `name` above.
 
 Using this option we can get an additional `ValueError` if we did not pass
 a `name` argument or an `AttributeError` if the event is not implemented

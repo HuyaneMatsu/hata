@@ -16,7 +16,7 @@ async def ping(client, message, content):
     
 ```
 
-### `Cooldown(for_, reset, limit=1, weight=1, handler=_default_handler, case=None, func=None)`
+### `Cooldown(for_, reset, limit=1, weight=1, handler=_default_handler, name=None, func=None)`
 
 ##### `for_`
 
@@ -58,16 +58,16 @@ It always calls the function with 4 variables:
 `time_left` will be always `-1.0` at those cases.
 
 
-```py
+```pys
 from hata import DiscordException, CancelledError, sleep
 from hata.events import Cooldown
 
 class CooldownHandler:
     __slots__=('cache',)
-
+    
     def __init__(self):
         self.cache = {}
-
+    
     async def __call__(self, client, message, command, time_left):
         user_id = message.author.id
         try:
@@ -111,9 +111,9 @@ async def ping(client, message, content):
     await client.message_create(message.channel, f'{client.gateway.latency.:.0f} ms')
 ```
 
-##### `case`
+##### `name`
 
-Same as passing `case` when adding a command at
+Same as passing `name` when adding a command at
 [CommandProcesser](CommandProcesser.md). Instead of trying to get the name of
 the command by checking different kind of attributes of it, it will use the
 passes string instead.
@@ -167,7 +167,7 @@ async def myavatar(client, message, content):
     await client.message_create(message.channel, embed=embed)
 ```
 
-### `cooldown_instance.shared(weight=0., case=None, func=None)`
+### `cooldown_instance.shared(weight=0., name=None, func=None)`
 
 Acts familiarly as `Cooldown()` itself. 
 

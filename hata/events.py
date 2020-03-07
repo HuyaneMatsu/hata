@@ -1,20 +1,20 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('Category', 'CommandProcesser', 'ContentParser', 'Cooldown',
+__all__ = ('Category', 'CommandProcesser', 'Converter', 'ConverterFlag', 'Cooldown',
     'GUI_STATE_CANCELLED', 'GUI_STATE_CANCELLING', 'GUI_STATE_READY',
     'GUI_STATE_SWITCHING_CTX', 'GUI_STATE_SWITCHING_PAGE', 'Pagination',
     'ReactionAddWaitfor', 'ReactionDeleteWaitfor', 'WaitAndContinue', 'checks',
-    'multievent', 'prefix_by_guild', 'wait_for_message', 'wait_for_reaction', )
+    'multievent', 'normalize_description', 'prefix_by_guild',
+    'setup_extension', 'wait_for_message', 'wait_for_reaction', )
 
 import re, reprlib
 from weakref import WeakKeyDictionary
 
-from .dereaddons_local import sortedlist, modulize
+from .dereaddons_local import sortedlist, modulize, MethodLike
 from .futures import Task, Future
 
 from .others import USER_MENTION_RP
-from .parsers import check_passed, EventHandlerBase, compare_converted,     \
-    check_name, check_passed_tuple, asynclist, check_argcount_and_convert,  \
-    DEFAULT_EVENT
+from .parsers import EventHandlerBase, compare_converted, check_name,       \
+    asynclist, check_argcount_and_convert, DEFAULT_EVENT
 
 from .emoji import BUILTIN_EMOJIS
 from .exceptions import DiscordException, ERROR_CODES
@@ -24,17 +24,20 @@ from .guild import Guild
 from .permission import Permission
 from .role import Role
 from .channel import ChannelBase
+from .client import Client
 
 #Invite this as well, to shortcut imports
-from .events_compiler import ContentParser
+from .events_compiler import parse, Converter, COMMAND_CALL_SETTING_2ARGS,  \
+    COMMAND_CALL_SETTING_3ARGS, COMMAND_CALL_SETTING_USE_PARSER, ConverterFlag
 
 COMMAND_RP=re.compile(' *([^ \t\\n]*) *(.*)')
 
 class Command(object):
-    __slots__ = ('aliases', 'category', 'check_failure_handler', 'checks',
-        'command', 'description', 'name', 'needs_content', )
+    __slots__ = ( '_call_setting', '_check_failure_handler', '_checks',
+        '_parser', '_parser_failure_handler', 'aliases','category', 'command',
+        'description', 'name', )
     
-    def __new__(cls, name, command, needs_content, description, aliases, category, checks_, check_failure_handler):
+    def __new__(cls, name, command, description, aliases, category, checks_, check_failure_handler, parser_failure_handler):
         
         while True:
             if aliases is None:
@@ -56,7 +59,7 @@ class Command(object):
             
             if not aliases_processed:
                 aliases_processed=None
-                
+            
             aliases_processed.sort()
             
             index=len(aliases_processed)-1
@@ -85,8 +88,7 @@ class Command(object):
             description=getattr(command,'__doc__',None)
         
         if (description is not None) and isinstance(description,str):
-            description=cls._normalize_description(description)
-        
+            description=normalize_description(description)
         
         if checks_ is None:
             checks_processed=None
@@ -95,7 +97,7 @@ class Command(object):
             
             for check in checks_:
                 if not isinstance(check, checks._check_base):
-                    raise TypeError(f'`checks should be `checks._check_base` instances, meanwhile received `{check!r}`.')
+                    raise TypeError(f'`checks` should be `checks._check_base` instances, meanwhile received `{check!r}`.')
                 
                 checks_processed.append(check)
                 continue
@@ -106,45 +108,157 @@ class Command(object):
         if check_failure_handler is None:
             check_failure_handler = category.check_failure_handler
         else:
-            check_failure_handler = check_passed(check_failure_handler,5,'\'check_failure_handler\' expected 5 arguemnts (client, message, command, content, fail_identificator).')
+            check_failure_handler = check_argcount_and_convert(check_failure_handler, 5,
+                '`check_failure_handler` expected 5 arguemnts (client, message, command, content, fail_identificator).')
+        
+        if (parser_failure_handler is not None):
+            parser_failure_handler = check_argcount_and_convert(parser_failure_handler, 5,
+                '`parser_failure_handler` expected 5 arguemnts (client, message, command, content, args.')
+        
+        if getattr(command,'__wrapper__',0):
+            wrapped = True
+            original = command
+            while True:
+                wrapper = command
+                command = command.__func__
+                if getattr(command,'__wrapper__',0):
+                    continue
+                break
+        else:
+            wrapped = False
+        
+        command, call_setting, parser = parse(command)
+        
+        if wrapped:
+            wrapper.__func__=command
+            command=original
         
         self=object.__new__(cls)
         self.command        = command
-        self.needs_content  = needs_content
         self.name           = name
         self.aliases        = aliases_processed
         self.description    = description
         self.category       = category
-        self.checks         = checks_processed
-        self.check_failure_handler=check_failure_handler
+        self._call_setting   = call_setting
+        self._checks        = checks_processed
+        self._check_failure_handler=check_failure_handler
+        self._parser        = parser
+        self._parser_failure_handler=parser_failure_handler
+        
         return self
     
     def __repr__(self):
         result = [
+            '<',
             self.__class__.__name__,
-            '(name=',
+            ' name=',
             repr(self.name),
             ', command=',
             repr(self.command),
-            ', needs_content=',
-            repr(self.needs_content),
-            ', description=',
-            reprlib.repr(self.description),
-            ', aliases=',
                 ]
         
+        description=self.description
+        if (description is not None):
+            result.append(', description=')
+            result.append(reprlib.repr(self.description))
+        
         aliases=self.aliases
-        if aliases is None:
-            result.append('[]')
-        else:
+        if (aliases is not None):
+            result.append(', aliases=')
             result.append(repr(aliases))
+        
+        checks=self._checks
+        if (checks is not None):
+            result.append(', checks=')
+            result.append(repr(checks))
+        
+            check_failure_handler=self._check_failure_handler
+            if (check_failure_handler is not None):
+                result.append(', check_failure_handler=')
+                result.append(repr(check_failure_handler))
         
         result.append(', category=')
         result.append(repr(self.category))
-        result.append(')')
+        
+        call_setting=self._call_setting
+        if call_setting != COMMAND_CALL_SETTING_2ARGS:
+            if COMMAND_CALL_SETTING_3ARGS:
+                result.append(', call with content')
+            else:
+                result.append(', use parser')
+            
+            parser_failure_handler=self.parser_failure_handler
+            if (parser_failure_handler is not None):
+                result.append(', parser_failure_handler=')
+                result.append(repr(parser_failure_handler))
+            
+        result.append('>')
         
         return ''.join(result)
+    
+    def _get_checks(self):
+        checks=self._checks
+        if checks is None:
+            return None
+        return checks.copy()
+    
+    def _set_checks(self,checks_):
+        if checks_ is None:
+            checks_processed=None
+        else:
+            checks_processed = []
+            
+            for check in checks_:
+                if not isinstance(check, checks._check_base):
+                    raise TypeError(f'`checks` should be `checks._check_base` instances, meanwhile received `{check!r}`.')
+                
+                checks_processed.append(check)
+                continue
+            
+            if not checks_processed:
+                checks_processed=None
         
+        self._checks=checks_processed
+    
+    def _del_checks(self):
+        self._checks=None
+    
+    checks = property(_get_checks, _set_checks, _del_checks)
+    del _get_checks, _set_checks, _del_checks
+    
+    def _get_check_failure_handler(self):
+        return self._check_failure_handler
+        
+    def _set_check_failure_handler(self,check_failure_handler):
+        if (check_failure_handler is not None):
+            check_failure_handler = check_argcount_and_convert(check_failure_handler, 5,
+                '`check_failure_handler` expected 5 arguemnts (client, message, command, content, fail_identificator).')
+        
+        self._check_failure_handler=check_failure_handler
+    
+    def _del_check_failure_handler(self):
+        self._check_failure_handler = self.category._check_failure_handler
+    
+    check_failure_handler = property(_get_check_failure_handler, _set_check_failure_handler, _del_check_failure_handler)
+    del _get_check_failure_handler, _set_check_failure_handler, _del_check_failure_handler
+    
+    def _get_parser_failure_handler(self):
+        return self._parser_failure_handler
+    
+    def _set_parser_failure_handler(self, parser_failure_handler):
+        if parser_failure_handler is None:
+            return
+        
+        parser_failure_handler = check_argcount_and_convert(parser_failure_handler, 5,
+            '`parser_failure_handler` expected 5 arguemnts (client, message, command, content, args.')
+        self._parser_failure_handler=parser_failure_handler
+    
+    def _del_parser_failure_handler(self):
+        self._parser_failure_handler=None
+    
+    parser_failure_handler = property(_get_parser_failure_handler, _set_parser_failure_handler, _del_parser_failure_handler)
+    del _get_parser_failure_handler, _set_parser_failure_handler, _del_parser_failure_handler
+    
     @property
     def __doc__(self):
         description = self.description
@@ -169,13 +283,13 @@ class Command(object):
                 if fail_identificator==-1:
                     return 1
                 
-                check_failure_handler=self.check_failure_handler
+                check_failure_handler=self._check_failure_handler
                 if check_failure_handler is None:
                     return 1
                 
                 return await check_failure_handler(client, message, self, content, fail_identificator)
         
-        checks=self.checks
+        checks=self._checks
         if (checks is not None):
             for check in checks:
                 fail_identificator = check(client, message)
@@ -185,16 +299,30 @@ class Command(object):
                 if fail_identificator==-1:
                     return 1
                 
-                check_failure_handler=self.check_failure_handler
+                check_failure_handler=self._check_failure_handler
                 if check_failure_handler is None:
                     return 1
                 
                 return await check_failure_handler(client, message, self, content, fail_identificator)
         
-        if self.needs_content:
-            return await self.command(client, message, content)
-        else:
+        call_setting = self._call_setting
+        if call_setting == COMMAND_CALL_SETTING_USE_PARSER:
+            passed, args = await self._parser(client, message, content)
+            if not passed:
+                parser_failure_handler = self._parser_failure_handler
+                if parser_failure_handler is None:
+                    return None
+                
+                return await parser_failure_handler(client, message, self, content, args)
+            
+            return await self.command(client, message, *args)
+        
+        if call_setting == COMMAND_CALL_SETTING_2ARGS:
             return await self.command(client, message)
+        
+        # last case: COMMAND_CALL_SETTING_3ARGS
+        return await self.command(client, message, content)
+        
     
     async def call_checks(self, client, message, content):
         checks=self.category._checks
@@ -207,13 +335,13 @@ class Command(object):
                 if fail_identificator==-1:
                     return 1
                 
-                check_failure_handler=self.check_failure_handler
+                check_failure_handler=self._check_failure_handler
                 if check_failure_handler is None:
                     return 1
                 
                 return await check_failure_handler(client, message, self, content, fail_identificator)
         
-        checks=self.checks
+        checks=self._checks
         if (checks is not None):
             for check in checks:
                 fail_identificator = check(client, message)
@@ -223,7 +351,7 @@ class Command(object):
                 if fail_identificator==-1:
                     return 1
                 
-                check_failure_handler=self.check_failure_handler
+                check_failure_handler=self._check_failure_handler
                 if check_failure_handler is None:
                     return 1
                 
@@ -239,7 +367,7 @@ class Command(object):
                 
                 return True
         
-        checks=self.checks
+        checks=self._checks
         if (checks is not None):
             for check in checks:
                 fail_identificator = check(client, message)
@@ -251,7 +379,7 @@ class Command(object):
         return False
     
     def run_own_checks(self, client, message):
-        checks=self.checks
+        checks=self._checks
         if (checks is not None):
             for check in checks:
                 fail_identificator = check(client, message)
@@ -263,20 +391,33 @@ class Command(object):
         return False
     
     async def call_command(self, client, message, content):
-        if self.needs_content:
-            return await self.command(client, message, content)
-        else:
+        call_setting = self._call_setting
+        if call_setting == COMMAND_CALL_SETTING_USE_PARSER:
+            passed, args = await self._parser(client, message, content)
+            if not passed:
+                parser_failure_handler = self._parser_failure_handler
+                if parser_failure_handler is None:
+                    return None
+                
+                return await parser_failure_handler(client, message, self, content, args)
+            
+            return await self.command(client, message, *args)
+        
+        if call_setting == COMMAND_CALL_SETTING_2ARGS:
             return await self.command(client, message)
+        
+        # last case: COMMAND_CALL_SETTING_3ARGS
+        return await self.command(client, message, content)
     
     def __getattr__(self,name):
         return getattr(self.command,name)
-
+    
     def __gt__(self,other):
         return self.name>other.name
     
     def __ge__(self,other):
         return self.name>=other.name
-
+    
     def __eq__(self,other):
         return self.name==other.name
     
@@ -288,75 +429,75 @@ class Command(object):
     
     def __lt__(self,other):
         return self.name<other.name
+
+def normalize_description(text):
+    lines=text.splitlines()
     
-    def _normalize_description(text):
-        lines=text.splitlines()
+    for index in range(len(lines)):
+        lines[index]=lines[index].rstrip()
+    
+    while True:
+        if not lines:
+            return None
         
-        for index in range(len(lines)):
-            lines[index]=lines[index].rstrip()
+        line=lines[0]
+        if line:
+            break
         
-        while True:
-            if not lines:
-                return None
-            
-            line=lines[0]
-            if line:
-                break
-            
-            del lines[0]
-            continue
+        del lines[0]
+        continue
+    
+    while True:
+        if not lines:
+            return None
         
-        while True:
-            if not lines:
-                return None
-            
-            line=lines[-1]
-            if line:
-                break
-            
-            del lines[-1]
-            continue
+        line=lines[-1]
+        if line:
+            break
         
-        limit=len(lines)
-        if limit==1:
-            return lines[0].lstrip()
+        del lines[-1]
+        continue
+    
+    limit=len(lines)
+    if limit==1:
+        return lines[0].lstrip()
+    
+    ignore_index=0
+    
+    while True:
+        next_char=lines[0][ignore_index]
+        if next_char not in ('\t', ' '):
+            break
         
-        ignore_index=0
-        
-        while True:
-            next_char=lines[0][ignore_index]
-            if next_char not in ('\t', ' '):
-                break
-            
-            index=1
-            while index<limit:
-                line=lines[index]
-                index=index+1
-                if not line:
-                    continue
-                
-                char=line[ignore_index]
-                if char!=next_char:
-                    break
-                
+        index=1
+        while index<limit:
+            line=lines[index]
+            index=index+1
+            if not line:
                 continue
             
+            char=line[ignore_index]
             if char!=next_char:
                 break
             
-            ignore_index=ignore_index+1
             continue
         
-        if ignore_index!=0:
-            for index in range(len(lines)):
-                line=lines[index]
-                if not line:
-                    continue
-                
-                lines[index]=line[ignore_index:]
-                continue
+        if char!=next_char:
+            break
         
-        return '\n'.join(lines)
+        ignore_index=ignore_index+1
+        continue
+    
+    if ignore_index!=0:
+        for index in range(len(lines)):
+            line=lines[index]
+            if not line:
+                continue
+            
+            lines[index]=line[ignore_index:]
+            continue
+    
+    return '\n'.join(lines)
 
 @modulize
 class checks:
@@ -372,7 +513,7 @@ class checks:
         
         if fail_identificator<0:
             raise ValueError(f'`fail_identificator` value was passed as a negative number: `{fail_identificator!r}`.')
-    
+        
         return fail_identificator
     
     def _convert_permissions(permissions):
@@ -443,6 +584,7 @@ class checks:
                     index=index+1
                     
                     result.append(name)
+                    result.append('=')
                     attr=getattr(self,name)
                     result.append(repr(attr))
                     
@@ -463,7 +605,7 @@ class checks:
             result.append(')')
             
             return ''.join(result)
-        
+    
     class has_role(_check_base):
         __slots__ = ('role', )
         def __init__(self, role, fail_identificator=None):
@@ -505,7 +647,7 @@ class checks:
             
             return self.fail_identificator
     
-    class owner_has_any_role(has_any_role):
+    class owner_or_has_any_role(has_any_role):
         def __call__(self, client, message):
             user=message.author
             for role in self.roles:
@@ -538,7 +680,7 @@ class checks:
         __slots__ = ()
         def __call__(self, client, message):
             if client.is_owner(message.author):
-                return True
+                return -2
             
             return self.fail_identificator
     
@@ -767,8 +909,8 @@ class checks:
             return self.fail_identificator
 
 class Category(object):
-    __slots__ = ('_checks', '_check_failure_handler', 'commands', 'name', )
-    def __new__(cls, name, checks_ = None, check_failure_handler=None):
+    __slots__ = ('_checks', '_check_failure_handler', 'commands', 'description', 'name', )
+    def __new__(cls, name, checks_ = None, check_failure_handler=None, description=None):
         
         if checks_ is None:
             checks_processed=None
@@ -776,7 +918,7 @@ class Category(object):
             checks_processed = []
             for check in checks_:
                 if not isinstance(check, checks._check_base):
-                    raise TypeError(f'`checks should be `checks._check_base` instances, meanwhile received `{check!r}`.')
+                    raise TypeError(f'`checks` should be `checks._check_base` instances, meanwhile received `{check!r}`.')
                 
                 checks_processed.append(check)
                 continue
@@ -785,17 +927,25 @@ class Category(object):
                 checks_processed=None
         
         if (check_failure_handler is not None):
-            check_failure_handler = check_passed(check_failure_handler,5,'\'check_failure_handler\' expected 5 arguemnts (client, message, command, content, fail_identificator).')
+            check_failure_handler = check_argcount_and_convert(check_failure_handler, 5,
+                '`check_failure_handler` expected 5 arguemnts (client, message, command, content, fail_identificator).')
+        
+        if (description is not None) and isinstance(description,str):
+            description=normalize_description(description)
         
         self=object.__new__(cls)
         self.name=name
         self.commands=sortedlist()
         self._checks = checks_processed
         self._check_failure_handler = check_failure_handler
+        self.description=description
         return self
     
     def _get_checks(self):
-        return self._checks.copy()
+        checks=self._checks
+        if checks is None:
+            return None
+        return checks.copy()
     
     def _set_checks(self, checks_):
         if checks_ is None:
@@ -804,7 +954,7 @@ class Category(object):
             checks_processed = []
             for check in checks_:
                 if not isinstance(check, checks._check_base):
-                    raise TypeError(f'`checks should be `checks._check_base` instances, meanwhile received `{check!r}`.')
+                    raise TypeError(f'`checks` should be `checks._check_base` instances, meanwhile received `{check!r}`.')
                 
                 checks_processed.append(check)
                 continue
@@ -814,25 +964,40 @@ class Category(object):
             
         self._checks=checks_processed
     
-    checks=property(_get_checks,_set_checks)
-    del _get_checks, _set_checks
+    def _del_checks(self):
+        self._checks=None
+    
+    checks=property(_get_checks,_set_checks, _del_checks)
+    del _get_checks, _set_checks, _del_checks
     
     def _get_check_failure_handler(self):
         return self._check_failure_handler
     
-    def _set_check_failure_handler(self, value):
-        if (value is not None):
-            value = check_passed(value,5,'\'check_failure_handler\' expected 5 arguemnts (client, message, command, content, fail_identificator).')
+    def _set_check_failure_handler(self, check_failure_handler):
+        if (check_failure_handler is not None):
+            check_failure_handler = check_argcount_and_convert(check_failure_handler, 5,
+                '`check_failure_handler` expected 5 arguemnts (client, message, command, content, fail_identificator).')
         
         actual_check_failure_handler=self._check_failure_handler
-        self._check_failure_handler=value
+        self._check_failure_handler=check_failure_handler
         
         for command in self.commands:
-            if command.check_failure_handler is actual_check_failure_handler:
-                command.check_failure_handler=value
+            if command._check_failure_handler is actual_check_failure_handler:
+                command._check_failure_handler=check_failure_handler
     
-    check_failure_handler=property(_get_check_failure_handler,_set_check_failure_handler)
-    del _get_check_failure_handler, _set_check_failure_handler
+    def _del_check_failure_handler(self):
+        actual_check_failure_handler=self._check_failure_handler
+        if actual_check_failure_handler is None:
+            return
+        
+        self._check_failure_handler=None
+        
+        for command in self.commands:
+            if command._check_failure_handler is actual_check_failure_handler:
+                command._check_failure_handler=None
+    
+    check_failure_handler=property(_get_check_failure_handler,_set_check_failure_handler, _del_check_failure_handler)
+    del _get_check_failure_handler, _set_check_failure_handler, _del_check_failure_handler
     
     def run_own_checks(self, client, message):
         checks=self._checks
@@ -960,9 +1125,10 @@ class Category(object):
         result.append(' length=')
         result.append(repr(len(self.commands)))
         result.append(', checks=')
-        result.append(repr(self.checks))
-        result.append(', check_failure_handler')
+        result.append(repr(self._checks))
+        result.append(', check_failure_handler=')
         result.append(repr(self.check_failure_handler))
+        result.append('>')
         
         return ''.join(result)
 
@@ -1060,14 +1226,49 @@ class CommandProcesser(EventHandlerBase):
     default_category_name = property(_get_default_category_name,_set_default_category_name)
     del _get_default_category_name, _set_default_category_name
     
-    def create_category(self, name, checks=None, check_failure_handler=None):
+    def create_category(self, name, checks=None, check_failure_handler=None, description=None):
         category=self.get_category(name)
         if (category is not None):
             raise ValueError(f'There is already a category added with that name: `{name!r}`')
         
-        category=Category(name,checks,check_failure_handler)
+        category=Category(name,checks,check_failure_handler,description)
         self.categories.add(category)
         return category
+    
+    def delete_category(self, category):
+        if isinstance(category,str):
+            if (not category):
+                raise ValueError('Default category cannot be deleted.')
+            default_category_name=self._default_category_name
+            if (default_category_name is not None) and (category==default_category_name):
+                raise ValueError('Default category cannot be deleted.')
+            category_name = category
+        elif type(category) is Category:
+            category_name = category.name
+        elif category is None:
+            raise ValueError('Default category cannot be deleted.')
+        else:
+            raise TypeError(f'Expected type `str` instance or `{Category.__name__}`, got `{category!r}`.')
+        
+        category = self.categories.pop(category_name, key=self._get_category_key)
+        if category is None:
+            return
+        
+        commands=self.commands
+        for command in category.commands:
+            name=command.name
+            other_command=commands.get(name)
+            if other_command is command:
+                del commands[name]
+            
+            aliases=command.aliases
+            if aliases is None:
+                continue
+            
+            for name in aliases:
+                other_command=commands.get(name)
+                if other_command is command:
+                    del commands[name]
     
     def update_prefix(self,prefix,ignorecase=None):
         if ignorecase is None:
@@ -1112,30 +1313,25 @@ class CommandProcesser(EventHandlerBase):
         self.prefixfilter=prefixfilter
         self._ignorecase=ignorecase
     
-    def __setevent__(self, func, case, description=None, aliases=None, category=None, checks=None, check_failure_handler=None):
+    def __setevent__(self, func, name, description=None, aliases=None, category=None, checks=None, check_failure_handler=None, parser_failure_handler=None):
         #called every time, but only if every other fails
-        if case=='default_event':
-            func=check_passed(func,2,'\'default_event\' expects 2 arguments (client, message).')
+        if name=='default_event':
+            func=check_argcount_and_convert(func, 2, '`default_event` expects 2 arguments (client, message).')
             self.default_event=func
             return func
         
         #called when user used bad command after the preset prefix, called if a command fails
-        if case=='invalid_command':
-            func=check_passed(func,4,'\'invalid_command\' expected 4 arguemnts (client, message, command, content).')
+        if name=='invalid_command':
+            func=check_argcount_and_convert(func, 4, '`invalid_command` expected 4 arguemnts (client, message, command, content).')
             self.invalid_command=func
             return func
         
-        if case=='command_error':
-            func=check_passed(func,5,'\'invalid_command\' expected 5 arguemnts (client, message, command, content, exception).')
+        if name=='command_error':
+            func=check_argcount_and_convert(func, 5, '`invalid_command` expected 5 arguemnts (client, message, command, content, exception).')
             self.command_error=func
             return func
         
         #called first
-        argcount,func = check_passed_tuple(func,(3,2),)
-        if argcount==2:
-            needs_content=False
-        else:
-            needs_content=True
         
         if type(category) is Category:
             category_object=self.get_category(category.name)
@@ -1155,11 +1351,11 @@ class CommandProcesser(EventHandlerBase):
             if category_object is None:
                 category_object=Category(category)
         
-        command=Command(case, func, needs_content, description, aliases, category_object, checks, check_failure_handler)
+        command=Command(name, func, description, aliases, category_object, checks, check_failure_handler, parser_failure_handler)
         commands=self.commands
         
-        would_overwrite=commands.get(case)
-        if (would_overwrite is not None) and (would_overwrite.name!=case):
+        would_overwrite=commands.get(name)
+        if (would_overwrite is not None) and (would_overwrite.name!=name):
             raise ValueError(f'The command would overwrite an alias of an another one: `{would_overwrite}`.'
                 'If you intend to overwrite an another command please overwrite it with it\'s default name.')
         
@@ -1205,7 +1401,7 @@ class CommandProcesser(EventHandlerBase):
         
         category_object.commands.add(command)
         self.categories.add(category_object)
-        commands[case]=command
+        commands[name]=command
         
         aliases=command.aliases
         if (aliases is not None):
@@ -1214,40 +1410,40 @@ class CommandProcesser(EventHandlerBase):
         
         return command
     
-    def __delevent__(self, func, case, **kwargs):
-        if (case is not None) and (not type(case) is str):
-            raise TypeError(f'Case should have been `str`, or can be `None` if `func` is passed as `Command` instance. Got `{case!r}`.')
+    def __delevent__(self, func, name, **kwargs):
+        if (name is not None) and (not type(name) is str):
+            raise TypeError(f'Case should have been `str`, or can be `None` if `func` is passed as `Command` instance. Got `{name!r}`.')
         
         if type(func) is Command:
             commands=self.commands
-            if (case is None) or (case==func.name):
-                found_cases=[]
+            if (name is None) or (name==func.name):
+                found_names=[]
                 
-                case=func.name
+                name=func.name
                 try:
-                    command=commands[case]
+                    command=commands[name]
                 except KeyError:
                     pass
                 else:
                     if command is func:
-                        found_cases.append(case)
+                        found_names.append(name)
                 
                 aliases=func.aliases
                 if (aliases is not None):
-                    for case in aliases:
+                    for name in aliases:
                         try:
-                            command=commands[case]
+                            command=commands[name]
                         except KeyError:
                             pass
                         else:
                             if command is func:
-                                found_cases.append(case)
+                                found_names.append(name)
                 
-                if not found_cases:
+                if not found_names:
                     raise ValueError(f'The passed command `{func!r}` is not added with any of it\'s own names as a command.')
                 
-                for case in found_cases:
-                    del commands[case]
+                for name in found_names:
+                    del commands[name]
                     
                 category=self.get_category(func.name)
                 if (category is not None):
@@ -1257,62 +1453,62 @@ class CommandProcesser(EventHandlerBase):
             
             aliases=func.aliases
             if (aliases is None):
-                raise ValueError(f'The passed case `{case!r}` is not the name, neither an alias of the command `{func!r}`')
+                raise ValueError(f'The passed name `{name!r}` is not the name, neither an alias of the command `{func!r}`')
             
             try:
-                position=aliases.index(case)
+                position=aliases.index(name)
             except ValueError:
-                raise ValueError(f'The passed case `{case!r}` is not the name, neither an alias of the command `{func!r}`')
+                raise ValueError(f'The passed name `{name!r}` is not the name, neither an alias of the command `{func!r}`')
             
             try:
-                command=commands[case]
+                command=commands[name]
             except KeyError:
-                raise ValueError(f'At the passed case `{case!r}` there is no command removed, so it cannot be deleted either.')
+                raise ValueError(f'At the passed name `{name!r}` there is no command removed, so it cannot be deleted either.')
             
             if func is not command:
-                raise ValueError(f'At the specified case `{case!r}` there is a different command added already.')
+                raise ValueError(f'At the specified name `{name!r}` there is a different command added already.')
             
             del aliases[position]
             if not aliases:
                 func.aliases=None
             
-            del commands[case]
+            del commands[name]
             return
             
-        if case is None:
+        if name is None:
             raise TypeError(f'Case should have been passed as `str`, if `func` is not passed as `Command` instance, `{func!r}`.')
         
-        if case=='default_event':
+        if name=='default_event':
             if func is self.default_event:
                 self.default_event=DEFAULT_EVENT
                 return
             
-            raise ValueError(f'The passed `{case!r}` ({func!r}) is not the same as the already loaded one: `{self.default_event!r}`')
+            raise ValueError(f'The passed `{name!r}` ({func!r}) is not the same as the already loaded one: `{self.default_event!r}`')
         
-        if case=='invalid_command':
+        if name=='invalid_command':
             if func is self.invalid_command:
                 self.invalid_command=DEFAULT_EVENT
                 return
             
-            raise ValueError(f'The passed `{case!r}` ({func!r}) is not the same as the already loaded one: `{self.invalid_command!r}`')
+            raise ValueError(f'The passed `{name!r}` ({func!r}) is not the same as the already loaded one: `{self.invalid_command!r}`')
         
-        if case=='command_error':
+        if name=='command_error':
             if func is self.command_error:
                 self.command_error=DEFAULT_EVENT
                 return
             
-            raise ValueError(f'The passed `{case!r}` ({func!r}) is not the same as the already loaded one: `{self.command_error!r}`')
+            raise ValueError(f'The passed `{name!r}` ({func!r}) is not the same as the already loaded one: `{self.command_error!r}`')
         
         try:
-            command=self.commands[case]
+            command=self.commands[name]
         except KeyError:
-            raise ValueError(f'The passed `{case!r}` is not added as a command right now.') from None
+            raise ValueError(f'The passed `{name!r}` is not added as a command right now.') from None
         
         if compare_converted(command.command,func):
-            del self.commands[case]
+            del self.commands[name]
             return
         
-        raise ValueError(f'The passed `{case!r}` (`{func!r}`) command is not the same as the already loaded one: `{command!r}`')
+        raise ValueError(f'The passed `{name!r}` (`{func!r}`) command is not the same as the already loaded one: `{command!r}`')
     
     async def __call__(self,client,message):
         try:
@@ -1353,10 +1549,7 @@ class CommandProcesser(EventHandlerBase):
                     break
                 
                 try:
-                    if command.needs_content:
-                        result = await command.command(client,message,content)
-                    else:
-                        result = await command.command(client,message)
+                    result = await command(client,message,content)
                 except BaseException as err1:
                     command_error=self.command_error
                     if command_error is not DEFAULT_EVENT:
@@ -1391,10 +1584,7 @@ class CommandProcesser(EventHandlerBase):
                 return
             
             try:
-                if command.needs_content:
-                    result = await command.command(client,message,content)
-                else:
-                    result = await command.command(client,message)
+                result = await command(client,message,content)
             except BaseException as err1:
                 command_error=self.command_error
                 if command_error is not DEFAULT_EVENT:
@@ -1884,7 +2074,7 @@ class WaitAndContinue(object):
         self.target=target
         self.timeouter=Timeouter(future._loop,self,timeout)
         event.append(self,target)
-        
+    
     async def __call__(self, client, *args):
         result = self.check(*args)
         if type(result) is bool:
@@ -1916,7 +2106,7 @@ class WaitAndContinue(object):
         timeouter=self.timeouter
         if timeouter is not None:
             timeouter.cancel()
-        
+    
     def cancel(self):
         canceller=self.canceller
         if canceller is None:
@@ -1928,15 +2118,14 @@ class WaitAndContinue(object):
         
         return Task(canceller(self,None),self.future._loop)
 
-
-def wait_for_reaction(client,message,case,timeout):
+def wait_for_reaction(client,message,check,timeout):
     future=Future(client.loop)
-    WaitAndContinue(future,case,message,client.events.reaction_add,timeout)
+    WaitAndContinue(future,check,message,client.events.reaction_add,timeout)
     return future
 
-def wait_for_message(client,channel,case,timeout):
+def wait_for_message(client,channel,check,timeout):
     future=Future(client.loop)
-    WaitAndContinue(future,case,channel,client.events.message_create,timeout)
+    WaitAndContinue(future,check,channel,client.events.message_create,timeout)
     return future
 
 class prefix_by_guild(dict):
@@ -2043,17 +2232,18 @@ class _CD_unit(object):
     
     def __repr__(self):
         return f'{self.__class__.__name__}(expires_at={self.expires_at}, uses_left={self.uses_left})'
-    
-class Cooldown(object):
+
+class Cooldown(MethodLike):
     __async_call__=True
+    __wrapper__=1
     
     __slots__=('__func__', '__name__', 'cache', 'checker', 'handler', 'limit',
-        'needs_args', 'reset', 'weight',)
+        'reset', 'weight',)
     
     async def _default_handler(client,message,command,time_left):
         return
     
-    def __new__(cls,for_,reset,limit=1,weight=1,handler=_default_handler,case=None,func=None):
+    def __new__(cls,for_,reset,limit=1,weight=1,handler=_default_handler,name=None,func=None):
         if 'user'.startswith(for_):
             checker=cls._check_user
         elif 'channel'.startswith(for_):
@@ -2082,34 +2272,22 @@ class Cooldown(object):
             limit=int(limit)
         self.limit=limit-weight
         
-        if (case is not None) and (not case.islower()):
-            case=case.lower()
+        if (name is not None) and (not name.islower()):
+            name=name.lower()
         
         if func is None:
-            self.__name__=case
+            self.__name__=name
             self.__func__=DEFAULT_EVENT
-            self.needs_args=True
             return self._wrapper
         
-        self.__name__=check_name(func,case)
-
-        argcount,func = check_passed_tuple(func,(3,2),)
+        self.__name__=check_name(func,name)
         self.__func__ = func
-        if argcount==2:
-            self.needs_args=False
-        else:
-            self.needs_args=True
         return self
-
+    
     def _wrapper(self,func):
         if not self.__name__:
             self.__name__=check_name(func,None)
-        argcount,func = check_passed_tuple(func,(3,2),)
         self.__func__ = func
-        if argcount==2:
-            self.needs_args=False
-        else:
-            self.needs_args=True
         return self
     
     def __call__(self,client,message,*args):
@@ -2118,12 +2296,9 @@ class Cooldown(object):
         if value:
             return self.handler(client,message,self.__name__,value-loop.time())
         
-        if self.needs_args:
-            return self.__func__(client,message,*args)
-        else:
-            return self.__func__(client,message)
+        return self.__func__(client,message,*args)
     
-    def shared(source,weight=0,case=None,func=None):
+    def shared(source,weight=0,name=None,func=None):
         self        = object.__new__(type(source))
         self.checker= source.checker
         self.reset  = source.reset
@@ -2136,21 +2311,15 @@ class Cooldown(object):
         self.limit  = source.limit+source.weight-weight
         self.handler= source.handler
         
-        if (case is not None) and (not case.islower()):
-            case=case.lower()
+        if (name is not None) and (not name.islower()):
+            name=name.lower()
         
         if func is None:
-            self.__name__=case
+            self.__name__=name
             self.__func__=DEFAULT_EVENT
-            self.needs_args=True
             return self._wrapper
         
-        self.__name__=check_name(func,case)
-        argcount,func = check_passed_tuple(func,(3,2),)
-        if argcount==2:
-            self.needs_args=False
-        else:
-            self.needs_args=True
+        self.__name__=check_name(func,name)
         self.__func__ = func
     
     @property
@@ -2219,4 +2388,89 @@ class Cooldown(object):
             return 0.
         return unit.expires_at
 
-del modulize
+def implements_waitfor(event):
+    if not hasattr(event,'waitfors'):
+        return False
+    
+    event=type(event)
+    for name in ('append', 'remove',):
+        if not hasattr(event,name):
+            return False
+    
+    return True
+
+def setup_extension(client, prefix, **kwargs):
+    if type(client) is not Client:
+        raise TypeError(f'Expecte type `{Client.__name__}` as client, meanwhile got `{client!r}`.')
+    
+    if hasattr(client,'command_processer'):
+        raise RuntimeError(f'The client already has an attribute named as `{"command_processer"!r}`.')
+    
+    if hasattr(client,'commands'):
+        raise RuntimeError(f'The client already has an attribute named s `{"commands"!r}`.')
+    
+    event_message_create=client.events.message_create
+    while True:
+        if event_message_create is DEFAULT_EVENT:
+            break
+        
+        if type(event_message_create) is asynclist:
+            for event in event_message_create:
+                if isinstance(event,CommandProcesser):
+                    raise RuntimeError(f'The client already has a `{CommandProcesser.__name__}` instance added as event.')
+            break
+        
+        if isinstance(event_message_create,CommandProcesser):
+            raise RuntimeError(f'The client already has a `{CommandProcesser.__name__}` instance added as event.')
+        
+        break
+    
+    command_processer = client.events(CommandProcesser(prefix,**kwargs))
+    client.command_processer=command_processer
+    client.commands=command_processer.shortcut
+    
+    event_reaction_add = client.events.reaction_add
+    while True:
+        if event_reaction_add is DEFAULT_EVENT:
+            client.events(ReactionAddWaitfor)
+            break
+        
+        if type(event_reaction_add) is asynclist:
+            for event in event_reaction_add:
+                if implements_waitfor(event):
+                    break
+            else:
+                client.events(ReactionAddWaitfor)
+            
+            break
+        
+        if implements_waitfor(event_reaction_add):
+            break
+        
+        client.events(ReactionAddWaitfor)
+        break
+    
+    event_reaction_delete = client.events.reaction_delete
+    while True:
+        if event_reaction_delete is DEFAULT_EVENT:
+            client.events(ReactionDeleteWaitfor)
+            break
+        
+        if type(event_reaction_delete) is asynclist:
+            for event in event_reaction_add:
+                if implements_waitfor(event):
+                    break
+            else:
+                client.events(ReactionDeleteWaitfor)
+            
+            break
+        
+        if implements_waitfor(event_reaction_delete):
+            break
+        
+        client.events(ReactionDeleteWaitfor)
+        break
+    
+    return command_processer
+
+del modulize, MethodLike

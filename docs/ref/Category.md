@@ -16,6 +16,13 @@ a global check failure handler for each of them as well.
 
 A sortedlist of the commands of the category.
 
+### `desription`
+
+- type: `Any`
+- default : `None`
+
+Description provided for the category.
+
 ### `name`
 
 - type : `str` / `NoneType`
@@ -39,8 +46,12 @@ category's commands's checks.
 - raises: `TypeError`
 
 Sets the checks for the [`Category`](Category.md). They can be set as `None` to
-remove the current ones, o can be set as any `iterable` of `checks._check_base`
+remove the current ones, or can be set as any `iterable` of `checks._check_base`
 instances.
+
+### `checks` (del)
+
+Removes the checks of teh category, by setting it to `None`.
 
 ### `check_failure_handler` (get)
 
@@ -68,6 +79,12 @@ callable, what accepts 5 arguments in this order:
 By modifying the failure handler of the category, it's each commands' will be
 modified too, which have the same one.
 
+### `check_failure_handler` (del)
+
+Sets the check failure handler of the category to `None`. If it had
+previously a handler, then modifies it's commands', which had the same
+handler.
+
 ## Methods
 
 ### `run_own_checks(self, client, message)`
@@ -84,7 +101,7 @@ Runs the category's [checks](#checks-get). If every passes, then returns
 Compares the two category's name. If the category has name as `None`, then
 it will be always on the less side.
 
-### `__new__(cls, name, checks_ = None, check_failure_handler=None)`
+### `__new__(cls, name, checks_ = None, check_failure_handler=None, description=None)`
 
 - returns : [`Category`](Category.md)
 - raises : `ValueError` / `TypeError`

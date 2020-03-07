@@ -858,11 +858,11 @@ class Theme(object):
 
     def __repr__(self):
         return f'<{self.__class__.__name__} value={self.value!r}>'
-
+    
     @property
     def name(self):
         return self.value
-
+    
     dark    = NotImplemented
     light   = NotImplemented
 
@@ -882,7 +882,7 @@ class Discord_hdrs:
     RATELIMIT_REMAINING=titledstr('X-Ratelimit-Remaining')
     RATELIMIT_RESET=titledstr('X-Ratelimit-Reset')
     RATELIMIT_RESET_AFTER=titledstr('X-Ratelimit-Reset-After')
-
+    RATELIMIT_LIMIT=titledstr('X-Ratelimit-Limit')
     #to send
     RATELIMIT_PRECISION=titledstr.bypass_titling('X-RateLimit-Precision')
 

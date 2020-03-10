@@ -27,7 +27,8 @@ from .emoji import Emoji, PartialEmoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate,     \
     ChannelText, ChannelGroup, message_relativeindex, cr_pg_channel_object, \
     message_at_index, messages_till_index, MessageIterator, CHANNEL_TYPES
-from .guild import Guild, PartialGuild, GuildEmbed, GuildWidget, GuildFeature
+from .guild import Guild, PartialGuild, GuildEmbed, GuildWidget, GuildFeature,\
+    GuildPreview
 from .http import DiscordHTTPClient, URLS, CDN_ENDPOINT, VALID_ICON_FORMATS,\
     VALID_ICON_FORMATS_EXTENDED
 from .role import Role
@@ -1333,7 +1334,7 @@ class Client(UserBase):
         data = await self.http.message_get(channel.id,message_id)
         return Message.onetime(data,channel)
     
-    async def message_create(self,channel,content=None,embed=None,file=None,tts=False,nonce=None):
+    async def message_create(self,channel,content=None,embed=None,file=None,allowed_mentions=_spaceholder,tts=False,nonce=None):
         data={}
         contains_content=False
         
@@ -1350,7 +1351,10 @@ class Client(UserBase):
         
         if (nonce is not None):
             data['nonce']=nonce
-
+        
+        if (allowed_mentions is not _spaceholder):
+            data['allowed_mentions']=self._parse_allowed_mentions(allowed_mentions)
+        
         if file is None:
             to_send=data
         else:
@@ -1430,7 +1434,84 @@ class Client(UserBase):
             raise ValueError('You can send maximum 10 files at once.')
         
         return form
-
+    
+    @staticmethod
+    def _parse_allowed_mentions(allowed_mentions):
+        if (allowed_mentions is None) or (not allowed_mentions):
+            return {'parse':[]}
+        
+        allow_everyone = False
+        allow_users = False
+        allow_roles = False
+        
+        allowed_users = None
+        allowed_roles = None
+        
+        for element in allowed_mentions:
+            if type(element) is str:
+                if element=='everyone':
+                    allow_everyone=True
+                    continue
+                
+                if element=='users':
+                    allow_users=True
+                    continue
+                
+                if element=='roles':
+                    allow_roles=True
+                    continue
+                
+                raise ValueError(f'`allowed_mentions` contains a not valid `str` element: `{element!r}`. Type`str` elements can be one of: (\'everyone\', \'users\', \'roles\').')
+            
+            if isinstance(element,UserBase):
+                if allowed_users is None:
+                    allowed_users = []
+                
+                allowed_users.append(element.id)
+                continue
+            
+            if type(element) is Role:
+                if allowed_roles is None:
+                    allowed_roles = []
+                
+                allowed_roles.append(element.id)
+                continue
+            
+            raise ValueError(f'`allowed_mentions` contains an element of an invalid type: `{element!r}`. The allowed types are: `str`, `Role` and any`UserBase` instance.')
+        
+        
+        result = {}
+        parse_all_of=None
+        
+        if allow_everyone:
+            if parse_all_of is None:
+                parse_all_of = []
+                result['parse'] = parse_all_of
+            
+            parse_all_of.append('everyone')
+        
+        if allow_users:
+            if parse_all_of is None:
+                parse_all_of = []
+                result['parse'] = parse_all_of
+            
+            parse_all_of.append('users')
+        else:
+            if (allowed_users is not None):
+                result['users']=allowed_users
+        
+        if allow_roles:
+            if parse_all_of is None:
+                parse_all_of = []
+                result['parse'] = parse_all_of
+            
+            parse_all_of.append('roles')
+        else:
+            if (allowed_roles is not None):
+                result['roles']=allowed_roles
+        
+        return result
+    
     async def message_delete(self,message,reason=None):
         if (message.author == self) or (message.id > int((time_now()-1209590.)*1000.-DISCORD_EPOCH)<<22):
             # own or new
@@ -1916,6 +1997,8 @@ class Client(UserBase):
                 # Should not happen
                 continue
     
+    # open issue about allowed_mentions
+    # https://github.com/discordapp/discord-api-docs/issues/1419
     async def message_edit(self,message,content=None,embed=_spaceholder,suppress=None):
         data={}
         if (content is not None):
@@ -2084,6 +2167,10 @@ class Client(UserBase):
     
     # Guild
 
+    async def guild_preview(self, guild_id):
+        data = await self.http.guild_preview(guild_id)
+        return GuildPreview(data)
+        
     async def guild_user_delete(self,guild,user,reason=None):
         await self.http.guild_user_delete(guild.id,user.id,reason)
 
@@ -2097,7 +2184,7 @@ class Client(UserBase):
 
     async def guild_ban_delete(self,guild,user,reason=None):
         await self.http.guild_ban_delete(guild.id,user.id,reason)
-
+    
     async def guild_sync(self,guild_id):
         #sadly guild_get does not returns channel and voice state data
         #at least we can request the channels
@@ -2176,13 +2263,13 @@ class Client(UserBase):
     async def guild_mar(self,guild):
         data= await self.http.guild_mar(guild.id,{'token':self.mar_token})
         self.mar_token=data['token']
-
+    
     async def guild_leave(self,guild):
         await self.http.guild_leave(guild.id)
-
+    
     async def guild_delete(self,guild):
         await self.http.guild_delete(guild.id)
-
+    
     async def guild_create(self         , name                                  ,
             icon                        = None                                  ,
             roles                       = []                                    ,
@@ -2257,7 +2344,7 @@ class Client(UserBase):
             system_channel=_spaceholder, rules_channel=_spaceholder,
             public_updates_channel=_spaceholder, owner=None,region=None,
             afk_timeout=None, verification_level=None, content_filter=None,
-            message_notification=None, description=None,
+            message_notification=None, description=_spaceholder,
             system_channel_flags=None, reason=None):
 
         data={}
@@ -2354,8 +2441,10 @@ class Client(UserBase):
         if (message_notification is not None):
             data['default_message_notifications']=message_notification.value
 
-        if (description is not None):
-            data['description']=description if description else None
+        if (description is not _spaceholder):
+            if (description is not None) and (not description):
+                description = None
+            data['description']=description
 
         if (system_channel_flags is not None):
             data['system_channel_flags']=system_channel_flags
@@ -2764,7 +2853,7 @@ class Client(UserBase):
         data = await self.http.webhook_edit_token(webhook,data)
         webhook._update_no_return(data)
    
-    async def webhook_send(self,webhook,content=None,embed=None,file=None,tts=False,name=None,avatar_url=None,wait=False):
+    async def webhook_send(self,webhook,content=None,embed=None,file=None,allowed_mentions=_spaceholder,tts=False,name=None,avatar_url=None,wait=False):
         data={}
         contains_content=False
         
@@ -2790,6 +2879,9 @@ class Client(UserBase):
             data['content']=content
             contains_content=True
 
+        if (allowed_mentions is not _spaceholder):
+            data['allowed_mentions']=self._parse_allowed_mentions(allowed_mentions)
+        
         if tts:
             data['tts']=True
         
@@ -2874,7 +2966,7 @@ class Client(UserBase):
         
     async def vanity_invite(self,guild):
         vanity_code=guild.vanity_code
-        if not vanity_code:
+        if vanity_code is None:
             return None
         
         data = await self.http.invite_get(vanity_code,{})
@@ -3590,9 +3682,6 @@ class Client(UserBase):
                 await self._request_members2(ready_state.guilds)
                 
             self.ready_state=None
-
-            if not self.is_bot:
-                await self.gateway._request_sync()
                 
         except CancelledError:
             pass
@@ -4928,5 +5017,4 @@ del re
 del URLS
 del message_at_index
 del messages_till_index
-del UserBase
 del message

@@ -1,6 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('GWChannelReflection', 'GWUserReflection', 'Guild', 'GuildEmbed',
-    'GuildFeature', 'GuildWidget', 'SystemChannelFlag', )
+    'GuildFeature', 'GuildPreview', 'GuildWidget', 'SystemChannelFlag', )
 
 import re
 
@@ -102,37 +102,43 @@ class GuildFeature(object):
         return  NotImplemented
     
     # predefined
-    animated_icon       = NotImplemented
-    banner              = NotImplemented
-    commerce            = NotImplemented
-    discoverable        = NotImplemented
-    featurable          = NotImplemented
-    member_list_disabled= NotImplemented
-    more_emoji          = NotImplemented
-    news                = NotImplemented
-    partnered           = NotImplemented
-    public              = NotImplemented
-    public_disabled     = NotImplemented
-    splash              = NotImplemented
-    vanity              = NotImplemented
-    verified            = NotImplemented
-    vip                 = NotImplemented
+    animated_icon               = NotImplemented
+    banner                      = NotImplemented
+    commerce                    = NotImplemented
+    discoverable                = NotImplemented
+    enabled_discoverable_before = NotImplemented
+    featurable                  = NotImplemented
+    member_list_disabled        = NotImplemented
+    more_emoji                  = NotImplemented
+    news                        = NotImplemented
+    partnered                   = NotImplemented
+    public                      = NotImplemented
+    public_disabled             = NotImplemented
+    relay_enabled               = NotImplemented
+    splash                      = NotImplemented
+    vanity                      = NotImplemented
+    verified                    = NotImplemented
+    vip                         = NotImplemented
 
-GuildFeature.animated_icon          = GuildFeature('ANIMATED_ICON')
-GuildFeature.banner                 = GuildFeature('BANNER')
-GuildFeature.commerce               = GuildFeature('COMMERCE')
-GuildFeature.discoverable           = GuildFeature('DISCOVERABLE')
-GuildFeature.featurable             = GuildFeature('FEATURABLE')
-GuildFeature.member_list_disabled   = GuildFeature('MEMBER_LIST_DISABLED')
-GuildFeature.more_emoji             = GuildFeature('MORE_EMOJI')
-GuildFeature.news                   = GuildFeature('NEWS')
-GuildFeature.partnered              = GuildFeature('PARTNERED')
-GuildFeature.public                 = GuildFeature('PUBLIC')
-GuildFeature.public_disabled        = GuildFeature('PUBLIC_DISABLED')
-GuildFeature.splash                 = GuildFeature('INVITE_SPLASH')
-GuildFeature.vanity                 = GuildFeature('VANITY_URL')
-GuildFeature.verified               = GuildFeature('VERIFIED')
-GuildFeature.vip                    = GuildFeature('VIP_REGIONS')
+
+GuildFeature.animated_icon              = GuildFeature('ANIMATED_ICON')
+GuildFeature.banner                     = GuildFeature('BANNER')
+GuildFeature.commerce                   = GuildFeature('COMMERCE')
+GuildFeature.discoverable               = GuildFeature('DISCOVERABLE')
+GuildFeature.enabled_discoverable_before= GuildFeature('ENABLED_DISCOVERABLE_BEFORE')
+GuildFeature.featurable                 = GuildFeature('FEATURABLE')
+GuildFeature.member_list_disabled       = GuildFeature('MEMBER_LIST_DISABLED')
+GuildFeature.more_emoji                 = GuildFeature('MORE_EMOJI')
+GuildFeature.news                       = GuildFeature('NEWS')
+GuildFeature.partnered                  = GuildFeature('PARTNERED')
+GuildFeature.public                     = GuildFeature('PUBLIC')
+GuildFeature.public_disabled            = GuildFeature('PUBLIC_DISABLED')
+GuildFeature.relay_enabled              = GuildFeature('RELAY_ENABLED')
+GuildFeature.splash                     = GuildFeature('INVITE_SPLASH')
+GuildFeature.vanity                     = GuildFeature('VANITY_URL')
+GuildFeature.verified                   = GuildFeature('VERIFIED')
+GuildFeature.vip                        = GuildFeature('VIP_REGIONS')
+
 
 class SystemChannelFlag(int):
     __slots__=()
@@ -428,7 +434,7 @@ def PartialGuild(data):
     guild.system_channel_flags=SystemChannelFlag.NONE
     guild.user_count=1
     guild.users={}
-    guild.vanity_code=''
+    guild.vanity_code=None
     guild.verification_level=VerificationLevel.none
     guild.voice_states={}
     guild.webhooks={}
@@ -441,11 +447,11 @@ def PartialGuild(data):
         guild.icon=0
         guild.has_animated_icon=False
         guild.splash=0
-        guild.description=''
+        guild.description=None
         return guild
-
+    
     guild.name=data.get('name','')
-
+    
     icon=data.get('icon',None)
     if icon is None:
         guild.icon=0
@@ -456,17 +462,19 @@ def PartialGuild(data):
     else:
         guild.icon=int(icon,16)
         guild.has_animated_icon=False
-
+    
     splash=data.get('splash',None)
     guild.splash=0 if splash is None else int(splash,16)
-
+    
+    guild.description=data.get('description',None)
+    
     try:
         verification_level=data['verification_level']
     except KeyError:
         pass
     else:
         guild.verification_level=VerificationLevel.INSTANCES[verification_level]
-
+    
     try:
         features=data['features']
     except KeyError:
@@ -649,7 +657,7 @@ class Guild(object):
             guild.channels=weakposlist()
             guild.clients=[]
             guild.content_filter=ContentFilterLevel.disabled
-            guild.description=''
+            guild.description=None
             guild.discovery_splash=0
             guild.embed_channel=None
             guild.embed_enabled=False
@@ -676,7 +684,7 @@ class Guild(object):
             guild.system_channel_flags=SystemChannelFlag.NONE
             guild.user_count=1
             guild.users={}
-            guild.vanity_code=''
+            guild.vanity_code=None
             guild.verification_level=VerificationLevel.none
             guild.voice_states={}
             guild.webhooks={}
@@ -747,7 +755,7 @@ class Guild(object):
             self.embed_channel=None
         else:
             self.embed_channel=self.all_channel[int(channel_id)]
-
+    
     @property
     def embed(self):
         return GuildEmbed.from_guild(self)
@@ -1171,7 +1179,7 @@ class Guild(object):
 
     def _update(self,data):
         old={}
-
+        
         #ignoring 'roles'
         #ignoring 'emojis'
         #ignoring 'members'
@@ -1342,16 +1350,30 @@ class Guild(object):
             self.rules_channel=rules_channel
         
         description=data.get('description',None)
-        description='' if description is None else description
-        if self.description!=description:
-            old['description']=self.description
-            self.description=description
-
+        if self.description is None:
+            if (description is not None):
+                old['description']=None
+                self.description=description
+        else:
+            if description is None:
+                old['description']=self.description
+                self.description=None
+            elif self.description!=description:
+                old['description']=self.description
+                self.description=description
+        
         vanity_code=data.get('vanity_url_code',None)
-        vanity_code='' if vanity_code is None else vanity_code
-        if self.vanity_code!=vanity_code:
-            old['vanity_code']=self.vanity_code
-            self.vanity_code=vanity_code
+        if self.vanity_code is None:
+            if vanity_code is not None:
+                old['vanity_code']=None
+                self.vanity_code=vanity_code
+        else:
+            if vanity_code is None:
+                old['vanity_code']=self.vanity_code
+                self.vanity_code=None
+            elif self.vanity_code!=vanity_code:
+                old['vanity_code']=self.vanity_code
+                self.vanity_code=vanity_code
 
         banner=data['banner']
         banner=0 if banner is None else int(banner,16)
@@ -1388,9 +1410,9 @@ class Guild(object):
         if self.preferred_locale!=preferred_locale:
             old['preferred_locale']=self.preferred_locale
             self.preferred_locale=preferred_locale
-
+        
         return old
-
+    
     def _update_no_return(self,data):
 
         #ignoring 'roles'
@@ -1489,11 +1511,9 @@ class Guild(object):
         else:
             self.rules_channel=self.all_channel[int(rules_channel_id)]
         
-        description=data.get('description',None)
-        self.description='' if description is None else description
-
-        vanity_code=data.get('vanity_url_code',None)
-        self.vanity_code='' if vanity_code is None else vanity_code
+        self.description=data.get('description',None)
+        
+        self.vanity_code=data.get('vanity_url_code',None)
             
         banner=data['banner']
         self.banner=0 if banner is None else int(banner,16)
@@ -1559,7 +1579,11 @@ class Guild(object):
             emoji=emojis[emoji_id]
             emoji._delete()
     
-    __gt__=User.__gt__
+    def __gt__(self,other):
+        try:
+            return self.id>other.id
+        except AttributeError:
+            return NotImplemented
 
     def __ge__(self,other):
         if type(self) is type(other):
@@ -1587,7 +1611,11 @@ class Guild(object):
         except AttributeError:
             return NotImplemented
 
-    __lt__=User.__lt__
+    def __lt__(self,other):
+        try:
+            return self.id>other.id
+        except AttributeError:
+            return NotImplemented
 
     @property
     def emoji_limit(self):
@@ -1646,7 +1674,127 @@ class Guild(object):
         GUILDS[guild_id]=guild
 
         return guild
+
+class GuildPreview(object):
+    __slots__ = ('description', 'discovery_splash', 'emojis', 'features',
+        'has_animated_icon', 'icon', 'id', 'name', 'online_count', 'splash',
+        'user_count')
+    
+    def __init__(self,data):
+        self.description = data.get('description',None)
         
+        discovery_splash=data.get('discovery_splash',None)
+        self.discovery_splash=0 if discovery_splash is None else int(discovery_splash,16)
+        
+        emojis={}
+        self.emojis=emojis
+        try:
+            emoji_datas=data['emojis']
+        except KeyError:
+            pass
+        else:
+            for emoji_data in emoji_datas:
+                emoji=Emoji(emoji_data,None)
+                emojis[emoji.id]=emoji
+        
+        features=[]
+        self.features=features
+        try:
+            feature_datas=data['features']
+        except KeyError:
+            pass
+        else:
+            for feature_data in feature_datas:
+                feature=GuildFeature.get(feature_data)
+                features.append(feature)
+            
+            features.sort()
+        
+        icon=data.get('icon',None)
+        if icon is None:
+            self.icon=0
+            self.has_animated_icon=False
+        elif icon.startswith('a_'):
+            self.icon=int(icon[2:],16)
+            self.has_animated_icon=True
+        else:
+            self.icon=int(icon,16)
+            self.has_animated_icon=False
+        
+        self.id=int(data['id'])
+        
+        self.name=data['name']
+        
+        self.online_count=data['approximate_presence_count']
+        
+        splash=data.get('splash',None)
+        self.splash=0 if splash is None else int(splash,16)
+        
+        self.user_count=data['approximate_member_count']
+    
+    icon_url=property(URLS.guild_icon_url)
+    icon_url_as=URLS.guild_icon_url_as
+    splash_url=property(URLS.guild_splash_url)
+    splash_url_as=URLS.guild_splash_url_as
+    discovery_splash_url=property(URLS.guild_discovery_splash_url)
+    discovery_splash_url_as=URLS.guild_discovery_splash_url_as
+    
+    @property
+    def created_at(self):
+        return id_to_time(self.id)
+    
+    def __str__(self):
+        return self.name
+    
+    def __repr__(self):
+        return f'<{self.__class__.__name__} {self.name} ({self.id})>'
+    
+    def __hash__(self):
+        return self.id
+    
+    def __format__(self,code):
+        if not code:
+            return self.name
+        if code=='c':
+            return f'{self.created_at:%Y.%m.%d-%H:%M:%S}'
+        raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
+    
+    def __gt__(self,other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return self.id>other.id
+    
+    def __ge__(self,other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return self.id>=other.id
+    
+    def __eq__(self,other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return self.id==other.id
+    
+    def __ne__(self,other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return self.id!=other.id
+    
+    def __le__(self,other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return self.id<=other.id
+    
+    def __lt__(self,other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return self.id<other.id
+
 del URLS
 del cached_property
 del ActivityUnknown

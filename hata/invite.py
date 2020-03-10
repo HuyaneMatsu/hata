@@ -40,7 +40,7 @@ InviteTargetType.STREAM = InviteTargetType(1,'STREAM')
 class Invite(object):
     __slots__=('channel', 'code', 'created_at', 'guild', 'inviter', 'max_age',
         'max_uses', 'online_count','target_type', 'target_user', 'temporary',
-        'total_count', 'uses',)
+        'user_count', 'uses',)
 
     def __init__(self,data):
         self.code = data['code']
@@ -75,7 +75,7 @@ class Invite(object):
         
         self.channel        = channel
         self.online_count   = data.get('approximate_presence_count',0)
-        self.total_count    = data.get('approximate_member_count',0)
+        self.user_count    = data.get('approximate_member_count',0)
         
         try:
             inviter_data = data['inviter']
@@ -117,7 +117,7 @@ class Invite(object):
         invite.guild        = guild
         invite.channel      = guild.all_channel[int(data['channel']['id'])]
         invite.online_count = 0
-        invite.total_count  = 0
+        invite.user_count  = 0
         invite.target_type  = InviteTargetType.NONE
         invite.target_user  = ZEROUSER
             
@@ -129,7 +129,7 @@ class Invite(object):
     
     def __str__(self):
         return self.url
-
+    
     def __repr__(self):
         return f'<{self.__class__.__name__} code={self.code!r}>'
 
@@ -143,7 +143,7 @@ class Invite(object):
         #code cant change, i am pretty sure
         try:
             self.online_count=data['approximate_presence_count']
-            self.total_count=data['approximate_member_count']
+            self.user_count=data['approximate_member_count']
         except KeyError:
             pass
     
@@ -155,10 +155,10 @@ class Invite(object):
                 old['online_count']=self.online_count
                 self.online_count=online_count
 
-            total_count=data['approximate_member_count']
-            if self.total_count!=total_count:
-                old['total_count']=self.total_count
-                self.total_count=total_count
+            user_count=data['approximate_member_count']
+            if self.user_count!=user_count:
+                old['user_count']=self.user_count
+                self.user_count=user_count
         except KeyError:
             pass
         

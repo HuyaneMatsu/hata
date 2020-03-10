@@ -930,8 +930,12 @@ send, then returns `None`.
 should be [`Embed`](Embed.md), [`EmbedCore`](EmbedCore.md), or any
 compatible type's instance.
 - `file`, default : `None`. [For details](#_create_file_formdatafile-staticmethod).
+- `allowed_mentions`, default : `_spaceholder`. [For details](#_parse_allowed_mentionsallowed_mentions-staticmethod).
 - `tts`, default : `False`. Is the message `tts`, text-to-speech.
 - `nonce`, default : `None`. `nonce` is used for validating a message was sent (?).
+
+> `allowed_mentions` data is not applied to edited messages and editing does
+> not uses it either.
 
 ### `message_delete(self,message,reason=None)`
 
@@ -1129,6 +1133,13 @@ from that.
 Requests all the [users](User.md) reacted on a [message](Message.md)
 with any [emojis](Emoji.md).
 
+### `guild_preview(self,guild_id)
+
+- `awaitable`
+- returns : [`GuildPreview`](GuildPreview.md)
+
+Requests the preview of a public guild.
+
 ### `guild_user_delete(self,guild,user,reason=None)`
 
 - `awaitable`
@@ -1282,8 +1293,7 @@ seconds.
 [ContentFilterLevel](ContentFilterLevel.md).
 - `message_notification`, default : `None`, should be type
 [MessageNotificationLevel](MessageNotificationLevel.md).
-- `description`, default : `None`, should be type `str`. the guild's
-description can be remvoed by passing empty string.
+- `description`, default : `_spaceholder`, should be type `str` or `None`.
 - `system_channel_flags`, default : `None`. Should be passed as type
 `int` or [`SystemChannelFlag`](SystemChannelFlag.md).
 - `reason`, default : `None`. Reason shows up at the guild's audit logs.
@@ -1671,6 +1681,7 @@ then returns `None`. If `wait` is set to `True`, it returns the
 - `embed`, default : `None`. The embedned content sent with the message. Not
 like at `message_create`, it can be a list of embeds too, up to 10.
 - `file`, default : `None`. [For details](#_create_file_formdatafile-staticmethod).
+- `allowed_mentions`, default : `_spaceholder`. [For details](#_parse_allowed_mentionsallowed_mentions-staticmethod).
 - `tts`, default : `False`. Is the message `tts`, text-to-speech.
 - `name`, default : `None`. The webhook's name will show up differently on the
 message, if the `name` argument is changed.
@@ -2123,6 +2134,30 @@ not be able to resend the file, except if we have a datatype, what instead of
 closing on `.close()` just seeks to 0 (or later if needed) on close, instead of
 really closing instantly. These datatypes implement a `.real_close()` method,
 but they `real_close` on `__exit__` too.
+
+### `_parse_allowed_mentions(allowed_mentions)` (staticmethod)
+
+- returns : `dict`
+- raises : `ValueError`
+
+If `allowed_mentions` is passed as `None`, then returns a `dict`, what will
+cause all mentions to be disabled.
+
+If passed as an `iterable`, then it's elements will be checked. They
+can be either type `str` (any value from `('everyone', 'users', 'roles')`),
+[`UserBase`](UserBase.md) instances or [`Role`](Role.md) instances.
+
+Passing `everyone` will allow the message to mention `@everyone` (permissions
+can overwrite this behaviour).
+
+Passing `users` will allow the message to mention all the users, meanwhile
+passing [`UserBase`](UserBase.md) instances allow to mentioned the respective
+users. Using `users` and [`UserBase`](UserBase.md) instances is mutually
+exclusive, and the wrapper will register only `users` to avoid getting
+[`DiscordExcepton`](DiscordException.md).
+
+`roles` and [`Role`](Role.md) instances follow the same rules as `users` and
+the [`UserBase`](UserBase.md) instances.
 
 ### `client_gateway(self,encoding='json',v=6,zlib=True)` (method)
 

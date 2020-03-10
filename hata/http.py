@@ -797,6 +797,10 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.guild_get, 0),
             METH_GET, f'{API_ENDPOINT}/guilds/{guild_id}')
     
+    async def guild_preview(self,guild_id):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.guild_preview, GLOBALLY_LIMITED),
+            METH_GET, f'{API_ENDPOINT}/guilds/{guild_id}/preview')
+    
     async def guild_user_delete(self,guild_id,user_id,reason):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.guild_user_delete, guild_id),
             METH_DELETE, f'{API_ENDPOINT}/guilds/{guild_id}/members/{user_id}',reason)

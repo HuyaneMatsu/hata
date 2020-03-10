@@ -445,6 +445,7 @@ class RATELIMIT_GROUPS:
     guild_user_add              = RatelimitGroup(RatelimitGroup.GUILD)
     user_role_delete            = GROUP_USER_ROLE_MODIFY
     user_role_add               = GROUP_USER_ROLE_MODIFY
+    guild_preview               = RatelimitGroup()
     guild_prune_estimate        = RatelimitGroup.unlimited()
     guild_prune                 = RatelimitGroup.unlimited()
     guild_regions               = RatelimitGroup.unlimited()
@@ -493,6 +494,7 @@ class RATELIMIT_GROUPS:
 ##INFO :
 ##    some endpoints might be off 1s
 ##    groups are not accurate now, because we use autogroups
+##    last group id: 89600
 ##
 ##endpoint: https://cdn.discordapp.com/
 ##method  : GET
@@ -1086,6 +1088,16 @@ class RATELIMIT_GROUPS:
 ##    limit   : 10
 ##    reset   : 10
 ##    limiter : guild_id
+##
+##endpoint: /guilds/{guild_id}/preview
+##method  : GET
+##auth    : bot
+##used at : guild_preview
+##limits   :
+##    group   : 89600
+##    limit   : 5
+##    reset   : 5
+##    limiter : GLOBAL
 ##
 ##endpoint: /guilds/{guild_id}/prune
 ##method  : GET

@@ -723,7 +723,7 @@ def str_guild(guild,index=None,**kwargs):
         result.append('- PARTIAL/UNAVAILABLE/DELETED',1)
         return result
     result.append(f'- verification level : {guild.verification_level.name}',1)
-    result.append(f'- users : {guild.user_count}',1)
+    result.append(f'- user count: {guild.user_count}',1)
     result.append(f'- afk timeout : {guild.afk_timeout}s',1)
     result.append(f'- message notification : {guild.message_notification.name}',1)
     result.append(f'- mfa level : {guild.mfa.name}',1)
@@ -732,16 +732,24 @@ def str_guild(guild,index=None,**kwargs):
     result.append(f'- max_users : {guild.max_users}',1)
     result.append(f'- max_presences : {guild.max_presences}',1)
     result.append(f'- preferred_locale : {guild.preferred_locale}',1)
-    if guild.description:
-        result.append(f'description : {guild.description}',1)
-    if guild.vanity_code:
-        result.append(f'vanity_code : {guild.vanity_code}',1)
-    if guild.features:
-        result.append(f'- features : {", ".join(feature.value for feature in guild.features)}',1)
-    if guild.owner.partial:
-            result.append(f'- owner : Partial user {guild.owner.id}',1)
+    
+    description=guild.description
+    if (description is not None):
+        result.append(f'description : {description}',1)
+    
+    vanity_code=guild.vanity_code
+    if (vanity_code is not None):
+        result.append(f'vanity_code : {vanity_code}',1)
+    
+    features=guild.features
+    if features:
+        result.append(f'- features : {", ".join(feature.value for feature in features)}',1)
+    
+    owner=guild.owner
+    if owner.partial:
+            result.append(f'- owner : Partial user {owner.id}',1)
     else:
-        result.append(f'- owner : {guild.owner:f} {guild.owner.id}',1)
+        result.append(f'- owner : {owner.full_name} {owner.id}',1)
     
     system_channel=guild.system_channel
     if (system_channel is not None):
@@ -781,9 +789,10 @@ def str_guild(guild,index=None,**kwargs):
             result.append(f'Channel {channel.name} {channel.id}',2)
             for index,user in enumerate(users,1):
                 result.append(f'{index}.: {user:f} {user.id}',3)
-    if guild.emojis:
-        result.append(f'Emojis : {len(guild.emojis)}',1)
-        for index,emoji in enumerate(guild.emojis.values(),1):
+    emojis=guild.emojis
+    if emojis:
+        result.append(f'Emojis : {len(emojis)}',1)
+        for index,emoji in enumerate(emojis.values(),1):
             if emoji.animated:
                 animated=' (animated)'
             else:
@@ -880,9 +889,9 @@ def str_invite(invite,index=None,write_parents=True,**kwargs):
     if online_count:
         result.append(f'- online count : {online_count}',1)
         
-    total_count=invite.total_count
-    if total_count:
-        result.append(f'- total count : {total_count}',1)
+    user_count=invite.user_count
+    if user_count:
+        result.append(f'- user count : {user_count}',1)
     
     result.append(f'- {"temporary" if invite.temporary else "permament"}',1)
 
@@ -1346,7 +1355,45 @@ def str_emoji(emoji,index=None,**kwargs):
         result.append('- no colons required',1)
     
     return result
+
+def str_guild_preview(guild_preview,index=None,**kwargs):
+    result=Pretty_block()
+    if index is None:
+        start=''
+    else:
+        start=f'{index}.: '
+    result.append(f'{start}Guild ({guild_preview.id}):')
     
+    result.append(f'- name : {guild_preview.name}',1)
+    if guild_preview.icon:
+        result.append(f'- icon : {guild_preview.icon_url}',1)
+    if guild_preview.splash:
+        result.append(f'- splash : {guild_preview.splash_url}',1)
+    if guild_preview.discovery_splash:
+        result.append(f'- discovery splash : {guild_preview.discovery_splash_url}',1)
+    result.append(f'- user count : {guild_preview.user_count}',1)
+    result.append(f'- online count : {guild_preview.online_count}',1)
+    
+    description=guild_preview.description
+    if (description is not None):
+        result.append(f'description : {description}',1)
+    
+    features=guild_preview.features
+    if features:
+        result.append(f'- features : {", ".join(feature.value for feature in features)}',1)
+    
+    emojis=guild_preview.emojis
+    if emojis:
+        result.append(f'Emojis : {len(emojis)}',1)
+        for index,emoji in enumerate(emojis.values(),1):
+            if emoji.animated:
+                animated=' (animated)'
+            else:
+                animated=''
+            result.append(f'{index}.: {emoji.name} {emoji.id}{animated}',2)
+    
+    return result
+
 PRETTY_PRINTERS['Message']=str_message
 PRETTY_PRINTERS['reaction_mapping']=str_reaction_mapping
 PRETTY_PRINTERS['reaction_mapping_line']=str_reaction_mapping_line
@@ -1390,3 +1437,4 @@ PRETTY_PRINTERS['GWUserReflection']=str_GWUserReflection
 PRETTY_PRINTERS['GWChannelReflection']=str_GWChannelReflection
 PRETTY_PRINTERS['Achievement']=str_achievement
 PRETTY_PRINTERS['Emoji']=str_emoji
+PRETTY_PRINTERS['GuildPreview']=str_guild_preview

@@ -81,6 +81,7 @@ INTENT_EVENTS = {
     INTENT_GUILDS : (
         'GUILD_CREATE',
         'GUILD_DELETE',
+        'GUILD_UPDATE',
         'GUILD_ROLE_CREATE',
         'GUILD_ROLE_UPDATE',
         'GUILD_ROLE_DELETE',

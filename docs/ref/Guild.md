@@ -93,7 +93,7 @@ The explicit content filter level of the guild.
 ### `description`
 
 - type : `str`
-- defaut : `''` (empty str)
+- defaut : `None`
 
 Description for the guild.
 
@@ -128,7 +128,7 @@ If the guild embeddable. (Linked to [`embed_channel`](#embed_channel).)
 - type : `dict`
 - items : (`int`, [`Emoji`](Emoji.md))
 
-All the emojis of the guild with (`emoji_id`, `Role`) item pairs.
+All the emojis of the guild with (`emoji_id`, `Emoji`) item pairs.
 
 ### `features`
 
@@ -299,10 +299,10 @@ All the users at the guild with (`user_id`, `User`) items.
 
 The minimal verification needed to join to guild.
 
-### `vanity_url_code`
+### `vanity_code`
 
 - type : `str`
-- default : `''` (empty string)
+- default : `None`
 
 The guild's vanity invite's code if it has.
 
@@ -797,7 +797,7 @@ pairs.
 | banner                    | int                                                       |
 | booster_count             | int                                                       |
 | content_filter            | [ContentFilterLevel](ContentFilterLevel.md)               |
-| description               | str                                                       |
+| description               | str / None                                                |
 | discovery_splash          | int                                                       |
 | embed_channel             | [ChannelText](ChannelText.md) / None                      |
 | embed_enabled             | bool                                                      |
@@ -818,7 +818,7 @@ pairs.
 | splash                    | int                                                       |
 | system_channel            | [ChannelText](ChannelText.md) / None                      |
 | system_channel_flags      | [SystemChannelFlag](SystemChannelFlag.md)                 |
-| vanity_code               | str                                                       |
+| vanity_code               | str / None                                                |
 | verification_level        | [VerificationLevel](VerificationLevel.md)                 |
 | widget_channel            | [ChannelText](ChannelText.md) / None                      |
 | widget_enabled            | bool                                                      |

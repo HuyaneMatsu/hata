@@ -752,7 +752,7 @@ class checks:
             if guild is None:
                 return self.fail_identificator
             
-            if guild.channel.permissions_for(message.author)>=self.permissions:
+            if guild.permissions_for(message.author)>=self.permissions:
                 return -2
             
             return self.fail_identificator
@@ -764,7 +764,7 @@ class checks:
             if guild is None:
                 return self.fail_identificator
             
-            if guild.channel.permissions_for(message.author)>=self.permissions:
+            if guild.permissions_for(message.author)>=self.permissions:
                 return 0
             
             return self.fail_identificator

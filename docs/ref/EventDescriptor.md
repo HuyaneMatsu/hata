@@ -319,7 +319,7 @@ of the changed attributes, what contains (`attribute name`, `old value`) items.
 | banner                    | int                                                       |
 | booster_count             | int                                                       |
 | content_filter            | [ContentFilterLevel](ContentFilterLevel.md)               |
-| description               | str                                                       |
+| description               | str / None                                                |
 | embed_channel             | [ChannelText](ChannelText.md) / None                      |
 | embed_enabled             | bool                                                      |
 | features                  | list of [GuildFeature](GuildFeature.md)                   |
@@ -338,7 +338,7 @@ of the changed attributes, what contains (`attribute name`, `old value`) items.
 | splash                    | int                                                       |
 | system_channel            | [ChannelText](ChannelText.md) / None                      |
 | system_channel_flags      | [SystemChannelFlag](SystemChannelFlag.md)                 |
-| vanity_code               | str                                                       |
+| vanity_code               | str / None                                                |
 | verification_level        | [VerificationLevel](VerificationLevel.md)                 |
 | widget_channel            | [ChannelText](ChannelText.md) / None                      |
 | widget_enabled            | bool                                                      |

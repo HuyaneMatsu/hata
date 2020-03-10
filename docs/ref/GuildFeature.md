@@ -33,23 +33,25 @@ instances, with their [`.value`] as the key, and them as the value.
 The known [`GuildFeature`](GuildFeature.md) instances can be accessed as
 class attributes as well.
 
-| attribute name        | value                 |
-|-----------------------|-----------------------|
-| animated_icon         | ANIMATED_ICON         |
-| banner                | BANNER                |
-| commerce              | COMMERCE              |
-| discoverable          | DISCOVERABLE          |
-| featurable            | FEATURABLE            |
-| member_list_disabled  | MEMBER_LIST_DISABLED  |
-| more_emoji            | MORE_EMOJI            |
-| news                  | NEWS                  |
-| partnered             | PARTNERED             |
-| public                | PUBLIC                |
-| public_disabled       | PUBLIC_DISABLED       |
-| splash                | INVITE_SPLASH         |
-| vanity                | VANITY_URL            |
-| verified              | VERIFIED              |
-| vip                   | VIP_REGIONS           |
+| attribute name                | value                         |
+|-------------------------------|-------------------------------|
+| animated_icon                 | ANIMATED_ICON                 |
+| banner                        | BANNER                        |
+| commerce                      | COMMERCE                      |
+| discoverable                  | DISCOVERABLE                  |
+| enabled_discoverable_before   | ENABLED_DISCOVERABLE_BEFORE   |
+| featurable                    | FEATURABLE                    |
+| member_list_disabled          | MEMBER_LIST_DISABLED          |
+| more_emoji                    | MORE_EMOJI                    |
+| news                          | NEWS                          |
+| partnered                     | PARTNERED                     |
+| public                        | PUBLIC                        |
+| public_disabled               | PUBLIC_DISABLED               |
+| relay_enabled                 | RELAY_ENABLED                 |
+| splash                        | INVITE_SPLASH                 |
+| vanity                        | VANITY_URL                    |
+| verified                      | VERIFIED                      |
+| vip                           | VIP_REGIONS                   |
 
 > Guild features added at runtime are not stored as class attributes.
 

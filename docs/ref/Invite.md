@@ -102,12 +102,12 @@ Whether this invite only grants temporary membership.
             
 > Copied docs from Discord, actually ???.
 
-### `total_count`
+### `user_count`
 
 - type : `int`
 - default : `0`
 
-The amount of total users at the invite's [`.guild`](#guild). If not included,
+The amount of users at the invite's [`.guild`](#guild). If not included,
 then it is set to `0`.
 
 ### `uses`
@@ -172,12 +172,12 @@ data, what should contain a partial channel object as well.
 
 Updates the invite and returns it's old attributes as (attribute name, old value)
 pairs. Sadly only two attributes of the invite can be updated:
-[`.online_count`](#online_count) and [`.total_count`](#total_count).
+[`.online_count`](#online_count) and [`.user_count`](#user_count).
 
 | name          | description    |
 |---------------|----------------|
 | online_count  | int            |
-| total_count   | int            |
+| user_count   | int            |
 
 ### `_update_no_return(self,data)` (method)
 

@@ -854,7 +854,7 @@ class MethodLike(metaclass=SubCheckType):
         klass=type(instance)
         reserved_argcount=getattr(klass,'__reserved_argcount__',-1)
         if reserved_argcount!=-1:
-            reserved_argcount
+            return reserved_argcount
         
         if klass in cls.__subclasses__:
             return cls.__reserved_argcount__

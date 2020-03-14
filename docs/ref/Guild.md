@@ -368,7 +368,7 @@ The maximal bitrate to set at the voice channels of the guild.
 ### `category_channels`
 
 - returns : `list`
-- values : [`Category_channel`](ChannelCategory.md)
+- values : [`ChannelCategory`](ChannelCategory.md)
 
 Returns all the category channels (type 4) of the guild.
 

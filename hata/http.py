@@ -553,7 +553,7 @@ class DiscordHTTPClient(HTTPClient):
                         await sleep(retry_after,self.loop)
                     continue
                 
-                if (status==500 or status==502) and try_again:
+                if status in (500, 502, 503, ) and try_again:
                     await sleep(10./try_again,self.loop)
                     try_again-=1
                     continue

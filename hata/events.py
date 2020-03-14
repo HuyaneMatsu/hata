@@ -1391,7 +1391,7 @@ class CommandProcesser(EventHandlerBase):
                 for alias in aliases:
                     if commands[alias] is would_overwrite:
                         del commands[alias]
-        
+            
             category_object=would_overwrite.category
             if (category_object is not None):
                 category_object.commands.remove(would_overwrite)

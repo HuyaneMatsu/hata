@@ -236,7 +236,7 @@ async def check_failure_handler(client, message, command, content, fail_identifi
     if fail_identificator == FAIL_IDENTIFICATOR_NO_ADMIN:
         content = 'You must have administartor permission to use this command'
     elif fail_identificator == FAIL_IDENTIFICATOR_NO_TESTER_ROLE:
-        content = 'You must have {TESTER_ROLE} to use this command'
+        content = f'You must have {TESTER_ROLE} to use this command'
     else:
         return
     
@@ -662,6 +662,16 @@ Sets the event's prefix to the set value. If `ignorecase` is not passed as
 | prefixfilter      | The generated function to check the prefix at the start of the message and parse it's content.|
 | waitfors          | A WeakKeyDictionary to store each waitfor, in (channel, callable) pair.                       |
 
+## Class attrbiutes
+
+### `SUPPORTED_TYPES`
+
+- type : `tuple`
+- elements : [`Command`](Command.md)
+
+A `tuple` of the types, what's instances the `CommandProcesser` supports
+to be added with typed `eventlist`.
+
 ## Properties
 
 ### `command_count`
@@ -761,7 +771,7 @@ Returns the representation of the object.
 
 Handles the incoming event.
 
-### `__setevent__`, `__delevent__`
+### `__setevent__`, `__delevent__`, `__setevent_from_class__`
 
 The internal methods to set and del events from a
 [`EventHandlerBase`](EventHandlerBase.md) "subclass".

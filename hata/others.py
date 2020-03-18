@@ -2,9 +2,9 @@
 __all__ = ('Relationship', 'ContentFilterLevel', 'DISCORD_EPOCH',
     'FriendRequestFlag', 'Gift', 'HypesquadHouse', 'MFA',
     'MessageNotificationLevel', 'PremiumType', 'RelationshipType', 'Status',
-    'Theme', 'Unknown', 'VerificationLevel', 'VoiceRegion', 'filter_content',
-    'id_to_time', 'is_id', 'is_mention', 'is_role_mention', 'is_user_mention',
-    'now_as_id', 'random_id', 'time_to_id', )
+    'Theme', 'Unknown', 'VerificationLevel', 'VoiceRegion', 'cchunkify',
+    'filter_content', 'id_to_time', 'is_id', 'is_mention', 'is_role_mention',
+    'is_user_mention', 'now_as_id', 'random_id', 'time_to_id', )
 
 import random, re, sys
 from urllib.parse import _ALWAYS_SAFE_BYTES as ALWAYS_SAFE_BYTES,Quoter

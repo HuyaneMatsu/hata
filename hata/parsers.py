@@ -10,12 +10,13 @@ from .dereaddons_local import function, remove, removemeta, _spaceholder,   \
     MethodLike
 from .analyzer import CallableAnalyzer
 
-from .client_core import CACHE_USER, CACHE_PRESENCE, CLIENTS
+from .client_core import CACHE_USER, CACHE_PRESENCE, CLIENTS, CHANNELS,     \
+    GUILDS, MESSAGES
 from .user import User, PartialUser,USERS
-from .channel import CHANNEL_TYPES, CHANNELS, ChannelGuildBase
+from .channel import CHANNEL_TYPES, ChannelGuildBase
 from .others import Relationship, Gift
-from .guild import Guild, GUILDS, EMOJI_UPDATE_NEW, EMOJI_UPDATE_DELETE,    \
-    EMOJI_UPDATE_EDIT
+from .guild import EMOJI_UPDATE_NEW, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT,\
+    Guild
 from .message import Message
 from .emoji import PartialEmoji
 from .role import Role
@@ -937,15 +938,8 @@ PARSER_DEFAULTS('MESSAGE_DELETE_BULK',MESSAGE_DELETE_BULK__CAL_SC,MESSAGE_DELETE
 del MESSAGE_DELETE_BULK__CAL_SC, MESSAGE_DELETE_BULK__CAL_MC, MESSAGE_DELETE_BULK__OPT_SC, MESSAGE_DELETE_BULK__OPT_MC
 
 def MESSAGE_UPDATE__CAL_SC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
-        return
-    
     message_id=int(data['id'])
-    message=channel._mc_find(message_id)
+    message=MESSAGES.get(message_id)
     if message is None:
         return
     
@@ -963,21 +957,15 @@ def MESSAGE_UPDATE__CAL_SC(client,data):
         Task(client.events.embed_update(client,message,result),client.loop)
 
 def MESSAGE_UPDATE__CAL_MC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
+    message_id=int(data['id'])
+    message=MESSAGES.get(message_id)
+    if message is None:
         return
     
+    channel = message.channel
     clients=filter_clients(channel.clients,INTENT_GUILD_MESSAGES if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_MESSAGES)
     if clients.send(None) is not client:
         clients.close()
-        return
-    
-    message_id=int(data['id'])
-    message=channel._mc_find(message_id)
-    if message is None:
         return
     
     if 'edited_timestamp' in data:
@@ -996,15 +984,8 @@ def MESSAGE_UPDATE__CAL_MC(client,data):
             Task(client_.events.embed_update(client_,message,result),client_.loop)
 
 def MESSAGE_UPDATE__OPT_SC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
-        return
-    
     message_id=int(data['id'])
-    message=channel._mc_find(message_id)
+    message=MESSAGES.get(message_id)
     if message is None:
         return
     
@@ -1014,19 +995,13 @@ def MESSAGE_UPDATE__OPT_SC(client,data):
         message._update_embed_no_return(data)
 
 def MESSAGE_UPDATE__OPT_MC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
-        return
-    
-    if first_client(channel.clients,INTENT_GUILD_MESSAGES if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_MESSAGES) is not client:
-        return
-    
     message_id=int(data['id'])
-    message=channel._mc_find(message_id)
+    message=MESSAGES.get(message_id)
     if message is None:
+        return
+    
+    channel = message.channel
+    if first_client(channel.clients,INTENT_GUILD_MESSAGES if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_MESSAGES) is not client:
         return
     
     if 'edited_timestamp' in data:
@@ -1039,15 +1014,8 @@ PARSER_DEFAULTS('MESSAGE_UPDATE',MESSAGE_UPDATE__CAL_SC,MESSAGE_UPDATE__CAL_MC,M
 del MESSAGE_UPDATE__CAL_SC, MESSAGE_UPDATE__CAL_MC, MESSAGE_UPDATE__OPT_SC, MESSAGE_UPDATE__OPT_MC
 
 def MESSAGE_REACTION_ADD__CAL_SC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
-        return
-    
     message_id=int(data['message_id'])
-    message=channel._mc_find(message_id)
+    message=MESSAGES.get(message_id)
     if message is None:
         return
     
@@ -1059,21 +1027,15 @@ def MESSAGE_REACTION_ADD__CAL_SC(client,data):
     Task(client.events.reaction_add(client,message,emoji,user),client.loop)
 
 def MESSAGE_REACTION_ADD__CAL_MC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
+    message_id=int(data['message_id'])
+    message=MESSAGES.get(message_id)
+    if message is None:
         return
     
+    channel = message.channel
     clients=filter_clients(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS)
     if clients.send(None) is not client:
         clients.close()
-        return
-    
-    message_id=int(data['message_id'])
-    message=channel._mc_find(message_id)
-    if message is None:
         return
     
     user_id=int(data['user_id'])
@@ -1085,15 +1047,8 @@ def MESSAGE_REACTION_ADD__CAL_MC(client,data):
         Task(client_.events.reaction_add(client_,message,emoji,user),client_.loop)
 
 def MESSAGE_REACTION_ADD__OPT_SC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
-        return
-    
     message_id=int(data['message_id'])
-    message=channel._mc_find(message_id)
+    message=MESSAGES.get(message_id)
     if message is None:
         return
     
@@ -1103,19 +1058,13 @@ def MESSAGE_REACTION_ADD__OPT_SC(client,data):
     message.reactions.add(emoji,user)
 
 def MESSAGE_REACTION_ADD__OPT_MC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
-        return
-    
-    if first_client(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS) is not client:
-        return
-    
     message_id=int(data['message_id'])
-    message=channel._mc_find(message_id)
+    message=MESSAGES.get(message_id)
     if message is None:
+        return
+    
+    channel = message.channel
+    if first_client(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS) is not client:
         return
     
     user_id=int(data['user_id'])
@@ -1127,15 +1076,8 @@ PARSER_DEFAULTS('MESSAGE_REACTION_ADD',MESSAGE_REACTION_ADD__CAL_SC,MESSAGE_REAC
 del MESSAGE_REACTION_ADD__CAL_SC, MESSAGE_REACTION_ADD__CAL_MC, MESSAGE_REACTION_ADD__OPT_SC, MESSAGE_REACTION_ADD__OPT_MC
 
 def MESSAGE_REACTION_REMOVE_ALL__CAL_SC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
-        return
-    
     message_id=int(data['message_id'])
-    message=channel._mc_find(message_id)
+    message=MESSAGES.get(message_id)
     if message is None:
         return
     
@@ -1147,21 +1089,15 @@ def MESSAGE_REACTION_REMOVE_ALL__CAL_SC(client,data):
     Task(client.events.reaction_clear(client,message,old_reactions),client.loop)
 
 def MESSAGE_REACTION_REMOVE_ALL__CAL_MC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
+    message_id=int(data['message_id'])
+    message=MESSAGES.get(message_id)
+    if message is None:
         return
     
+    channel = message.channel
     clients=filter_clients(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS)
     if clients.send(None) is not client:
         clients.close()
-        return
-    
-    message_id=int(data['message_id'])
-    message=channel._mc_find(message_id)
-    if message is None:
         return
     
     old_reactions=message.reactions
@@ -1173,34 +1109,21 @@ def MESSAGE_REACTION_REMOVE_ALL__CAL_MC(client,data):
         Task(client_.events.reaction_clear(client_,message,old_reactions),client_.loop)
     
 def MESSAGE_REACTION_REMOVE_ALL__OPT_SC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
-        return
-
     message_id=int(data['message_id'])
-    message=channel._mc_find(message_id)
+    message=MESSAGES.get(message_id)
     if message is None:
         return
 
     message.reactions=type(message.reactions)(None)
 
 def MESSAGE_REACTION_REMOVE_ALL__OPT_MC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
-        return
-    
-    if first_client(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS) is not client:
-        return
-    
     message_id=int(data['message_id'])
-    message=channel._mc_find(message_id)
+    message=MESSAGES.get(message_id)
     if message is None:
+        return
+    
+    channel = message.channel
+    if first_client(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS) is not client:
         return
     
     message.reactions=type(message.reactions)(None)
@@ -1209,15 +1132,8 @@ PARSER_DEFAULTS('MESSAGE_REACTION_REMOVE_ALL',MESSAGE_REACTION_REMOVE_ALL__CAL_S
 del MESSAGE_REACTION_REMOVE_ALL__CAL_SC, MESSAGE_REACTION_REMOVE_ALL__CAL_MC, MESSAGE_REACTION_REMOVE_ALL__OPT_SC, MESSAGE_REACTION_REMOVE_ALL__OPT_MC
 
 def MESSAGE_REACTION_REMOVE__CAL_SC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
-        return
-    
     message_id=int(data['message_id'])
-    message=channel._mc_find(message_id)
+    message=MESSAGES.get(message_id)
     if message is None:
         return
     
@@ -1229,21 +1145,15 @@ def MESSAGE_REACTION_REMOVE__CAL_SC(client,data):
     Task(client.events.reaction_delete(client,message,emoji,user),client.loop)
 
 def MESSAGE_REACTION_REMOVE__CAL_MC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
+    message_id=int(data['message_id'])
+    message=MESSAGES.get(message_id)
+    if message is None:
         return
     
+    channel = message.channel
     clients=filter_clients(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS)
     if clients.send(None) is not client:
         clients.close()
-        return
-    
-    message_id=int(data['message_id'])
-    message=channel._mc_find(message_id)
-    if message is None:
         return
     
     user_id=int(data['user_id'])
@@ -1255,15 +1165,8 @@ def MESSAGE_REACTION_REMOVE__CAL_MC(client,data):
         Task(client_.events.reaction_delete(client_,message,emoji,user),client_.loop)
 
 def MESSAGE_REACTION_REMOVE__OPT_SC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
-        return
-    
     message_id=int(data['message_id'])
-    message=channel._mc_find(message_id)
+    message=MESSAGES.get(message_id)
     if message is None:
         return
     
@@ -1273,19 +1176,13 @@ def MESSAGE_REACTION_REMOVE__OPT_SC(client,data):
     message.reactions.remove(emoji,user)
 
 def MESSAGE_REACTION_REMOVE__OPT_MC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
-        return
-    
-    if first_client(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS) is not client:
-        return
-    
     message_id=int(data['message_id'])
-    message=channel._mc_find(message_id)
+    message=MESSAGES.get(message_id)
     if message is None:
+        return
+    
+    channel = message.channel
+    if first_client(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS) is not client:
         return
     
     user_id=int(data['user_id'])
@@ -1297,15 +1194,8 @@ PARSER_DEFAULTS('MESSAGE_REACTION_REMOVE',MESSAGE_REACTION_REMOVE__CAL_SC,MESSAG
 del MESSAGE_REACTION_REMOVE__CAL_SC, MESSAGE_REACTION_REMOVE__CAL_MC, MESSAGE_REACTION_REMOVE__OPT_SC, MESSAGE_REACTION_REMOVE__OPT_MC
 
 def MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
-        return
-    
     message_id=int(data['message_id'])
-    message=channel._mc_find(message_id)
+    message=MESSAGES.get(message_id)
     if message is None:
         return
     
@@ -1317,21 +1207,15 @@ def MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC(client,data):
     Task(client.events.reaction_delete_emoji(client,message,emoji,users),client.loop)
 
 def MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
+    message_id=int(data['message_id'])
+    message=MESSAGES.get(message_id)
+    if message is None:
         return
     
+    channel = message.channel
     clients=filter_clients(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS)
     if clients.send(None) is not client:
         clients.close()
-        return
-    
-    message_id=int(data['message_id'])
-    message=channel._mc_find(message_id)
-    if message is None:
         return
     
     emoji=PartialEmoji(data['emoji'])
@@ -1343,15 +1227,8 @@ def MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC(client,data):
         Task(client_.events.reaction_delete_emoji(client_,message,emoji,users),client_.loop)
 
 def MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
-        return
-    
     message_id=int(data['message_id'])
-    message=channel._mc_find(message_id)
+    message=MESSAGES.get(message_id)
     if message is None:
         return
     
@@ -1359,19 +1236,13 @@ def MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC(client,data):
     message.reactions.remove_emoji(emoji)
 
 def MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
-        return
-    
-    if first_client(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS) is not client:
-        return
-    
     message_id=int(data['message_id'])
-    message=channel._mc_find(message_id)
+    message=MESSAGES.get(message_id)
     if message is None:
+        return
+    
+    channel = message.channel
+    if first_client(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS) is not client:
         return
     
     emoji=PartialEmoji(data['emoji'])
@@ -3102,31 +2973,46 @@ EVENTS.add_default('client_edit_settings'       , 2 , 'USER_SETTINGS_UPDATE'    
 EVENTS.add_default('gift_update'                , 3 , 'GIFT_CODE_UPDATE'                , )
 EVENTS.add_default('achievement'                , 2 , 'USER_ACHIEVEMENT_UPDATE'         , )
 
+def _check_name_should_break(name):
+    if (name is None):
+        return False
+        
+    if type(name) is not str:
+        raise TypeError(f'`name` should be type `str`, got `{name!r}`.')
+        
+    if name:
+        return True
+    
+    return False
+    
 def check_name(func,name):
-    if (name is not None) and name:
-        if not name.islower():
-            name=name.lower()
-        return name
+    while True:
+        if _check_name_should_break(name):
+            break
+        
+        if hasattr(func,'__event_name__'):
+            name = func.__event_name__
+            if _check_name_should_break(name):
+                break
+        
+        #func or method
+        if hasattr(func,'__name__'):
+            name=func.__name__
+            if _check_name_should_break(name):
+                break
+        
+        func=type(func)
+        if not issubclass(func,type) and hasattr(func,'__name__'):
+            name=func.__name__
+            if _check_name_should_break(name):
+                break
+        
+        raise TypeError('The class must have \'__name__\' attribute and metaclasses are not allowed')
     
-    if hasattr(func,'__event_name__'):
-        return func.__event_name__
-    
-    #func or method
-    if hasattr(func,'__name__'):
-        name=func.__name__
-        if not name.islower():
-            name=name.lower()
-        return name
-    
-    func=type(func)
-    if not issubclass(func,type) and hasattr(func,'__name__'):
-        name=func.__name__
-        if not name.islower():
-            name=name.lower()
-        return name
-    
-    raise TypeError('The class must have \'__name__\' attribute and metaclasses are not allowed')
-    
+    if not name.islower():
+        name=name.lower()
+    return name
+
 def check_argcount_and_convert(func, expected, errormsg=None):
     analyzer = CallableAnalyzer(func)
     if analyzer.is_async():
@@ -3204,59 +3090,75 @@ def compare_converted(converted,non_converted):
     #meow?
     raise TypeError(f'Expected function, method or a callable object, got {non_converted!r}')
 
-def _convert_unsafe_event_iterable(iterable):
+def _convert_unsafe_event_iterable(iterable,type_=None):
     result=[]
     for element in iterable:
-        if isinstance(element,tuple):
-            element_len=len(element)
-            if element_len>2 or element_len==0:
-                raise ValueError(f'Expected `tuple` with length 1 or 2, got `{element!r}`.')
-            
-            func=element[0]
-            if element_len==1:
-                element=EventListElement(func,None,None)
-                result.append(element)
-                continue
-            
-            name=element[1]
-            if (name is not None) and not isinstance(name,str):
-                raise ValueError(f'Expected `None` or `str` instance at index 1 at element: `{element!r}`')
-            
-            element=EventListElement(func,name,None)
-            result.append(element)
-            continue
-        
-        if isinstance(element,dict):
-            try:
-                func=element.pop('func')
-            except KeyError:
-                raise ValueError(f'Expected all `dict` elements to contain `\'func\'` key, but was not found at `{element!r}`') from None
-            
-            name=element.pop('name',None)
-            
-            if not element:
-                element = None
-            
-            element=EventListElement(func,name,element)
-            result.append(element)
-            continue
-        
         if type(element) is EventListElement:
-            result.append(element)
-            continue
-        
-        element=EventListElement(element,None,None)
+            if (type_ is not None):
+                element=type_.from_kwargs(element.func, element.name, element.kwargs)
+        if type(element) is type_:
+            pass
+        else:
+            if isinstance(element,tuple):
+                element_len=len(element)
+                if element_len>3 or element_len==0:
+                    raise ValueError(f'Expected `tuple` with length 1 or 2, got `{element!r}`.')
+                
+                func=element[0]
+                if element_len==1:
+                    name=None
+                    kwargs=None
+                else:
+                    name=element[1]
+                    if (name is not None) and (type(name) is not str):
+                        raise ValueError(f'Expected `None` or `str` instance at index 1 at element: `{element!r}`')
+                    
+                    if element_len==2:
+                        kwargs=None
+                    else:
+                        kwargs=element[2]
+                        if (kwargs is not None):
+                            if (type(kwargs) is not dict):
+                                raise ValueError(f'Expected `None` or `dict` instance at index 1 at element: `{element!r}`')
+                            
+                            if not kwargs:
+                                kwargs=None
+            
+            elif isinstance(element,dict):
+                try:
+                    func=element.pop('func')
+                except KeyError:
+                    raise ValueError(f'Expected all `dict` elements to contain `\'func\'` key, but was not found at `{element!r}`') from None
+                
+                name=element.pop('name',None)
+                
+                if element:
+                    kwargs=element
+                else:
+                    kwargs=None
+            
+            else:
+                func=element
+                name=None
+                kwargs=None
+            
+            if type_ is None:
+                element = EventListElement(element,name,kwargs)
+            else:
+                element = type_.from_kwargs(element,name,kwargs)
+            
         result.append(element)
         continue
-    
+        
     return result
-#autoadds : "client.events.", "name=parent.__name__" and "pass_content=True", basically
+
 class _EventCreationManager(object):
-    __slots__=('parent',)
+    __slots__=('parent', '_supports_from_class')
     
     def __init__(self,parent):
         self.parent=parent
-    
+        self._supports_from_class = hasattr(type(parent),'__setevent_from_class__')
+        
     def __repr__(self):
         return f'<{self.__class__.__name__} of {self.parent!r}>'
     
@@ -3264,21 +3166,19 @@ class _EventCreationManager(object):
         if func is None:
             return self._wrapper(self,name,kwargs)
         
-        if name is None:
-            name=check_name(func,None)
-        
-        if (not name.islower()):
-            name=name.lower()
+        name=check_name(func,name)
         
         func=self.parent.__setevent__(func,name,**kwargs)
         return func
     
-    def remove(self,func,name=None,**kwargs):
-        if name is None:
-            name=check_name(func,None)
+    def from_class(self,klass):
+        if not self._supports_from_class:
+            raise TypeError(f'`.from_class` is not supported by `{self.parent!r}`.')
         
-        if (not name.islower()):
-            name=name.lower()
+        return self.parent.__setevent_from_class__(klass)
+        
+    def remove(self,func,name=None,**kwargs):
+        name=check_name(func,name)
         
         self.parent.__delevent__(func,name,**kwargs)
     
@@ -3296,42 +3196,76 @@ class _EventCreationManager(object):
         return getattr(self.parent,name)
     
     def extend(self,iterable):
-        if type(iterable) is not eventlist:
+        if type(iterable) is eventlist:
+            type_=iterable.type
+            if (type_ is not None):
+                parent=self.parent
+                supported_types=getattr(parent,'SUPPORTED_TYPES',None)
+                if (supported_types is None) or (type_ not in supported_types):
+                    raise TypeError(f'`{parent!r}` does not supports elements of type `{type_!r}`.')
+                
+                for element in iterable:
+                    parent.__setevent__(element,None)
+                return
+        else:
             iterable=_convert_unsafe_event_iterable(iterable)
         
+        parent=self.parent
         for element in iterable:
-            name=element.name
             func=element.func
+            name=element.name
             
-            if (name is None):
-                name=check_name(func,None)
-            
-            if (not name.islower()):
-                name=name.lower()
+            name=check_name(func,name)
             
             kwargs=element.kwargs
             if kwargs is None:
-                self.parent.__setevent__(func,name)
+                parent.__setevent__(func,name)
             else:
-                self.parent.__setevent__(func,name,**kwargs)
+                parent.__setevent__(func,name,**kwargs)
     
     def unextend(self,iterable):
-        if type(iterable) is not eventlist:
+        if type(iterable) is eventlist:
+            type_=iterable.type
+            if (type_ is not None):
+                parent=self.parent
+                supported_types=getattr(parent,'SUPPORTED_TYPES',None)
+                if (supported_types is None) or (type_ not in supported_types):
+                    raise TypeError(f'`{parent!r}` does not supports elements of type `{type_!r}`.')
+                
+                collected=[]
+                for element in iterable:
+                    try:
+                        parent.__delevent__(element,None)
+                    except ValueError as err:
+                        collected.append(err.args[0])
+
+                if collected:
+                    raise ValueError('\n'.join(collected)) from None
+                return
+        else:
             iterable=_convert_unsafe_event_iterable(iterable)
         
         collected=[]
+        parent=self.parent
         for element in iterable:
+            func=element.func
+            name=element.name
+            
+            name=check_name(func,name)
+            
             kwargs=element.kwargs
             try:
+                
                 if kwargs is None:
-                    self.remove(element.func,element.name)
+                    parent.__delevent__(func,name)
                 else:
-                    self.remove(element.func,element.name,**kwargs)
+                    parent.__delvent__(func,name,**kwargs)
+            
             except ValueError as err:
                 collected.append(err.args[0])
         
         if collected:
-            raise ValueError('\n'.join(collected))
+            raise ValueError('\n'.join(collected)) from None
         
 class EventListElement(object):
     __slots__= ('name', 'kwargs', 'func', )
@@ -3347,11 +3281,31 @@ class eventlist(list,metaclass=removemeta):
     delete=remove('insert','sort','pop','reverse','remove','sort','index',
         'count','__mul__','__rmul__','__imul__','__add__','__radd__','__iadd__',
         '__setitem__','__contains__')
-    __slots__=()
-    def __init__(self,iterable=None):
-        if (iterable is not None) and iterable:
+    
+    __slots__=('_supports_from_class', 'type')
+    
+    def __new__(cls,iterable=None,type_=None):
+        
+        if (type_ is None):
+            supports_from_class = False
+        else:
+            if not isinstance(type_,type):
+                raise TypeError(f'`type_` should be `type` instance, got `{type!r}`.')
+            
+            if not hasattr(type_,'from_kwargs'):
+                raise ValueError('The passed `type_` has no method called `from_kwargs`.')
+            
+            supports_from_class = hasattr(type_,'from_class')
+        
+        self=list.__new__(cls)
+        self.type=type_
+        self._supports_from_class = supports_from_class
+        
+        if (iterable is not None):
             self.extend(iterable)
-
+        
+        return self
+    
     class _wrapper(object):
         __slots__=('parent', 'name', 'kwargs')
         def __init__(self, parent, name, kwargs):
@@ -3360,18 +3314,44 @@ class eventlist(list,metaclass=removemeta):
             self.kwargs=kwargs
         
         def __call__(self,func):
-            list.append(self.parent,EventListElement(func,self.name,self.kwargs))
+            parent=self.parent
+            type_ = parent.type
+            if type_ is None:
+                element = EventListElement(func,self.name,self.kwargs)
+            else:
+                element = func = type_.from_kwargs(func,self.name,self.kwargs)
+            
+            list.append(self.parent,element)
             return func
     
+    def from_class(self,klass):
+        type_=self.type
+        if not self._supports_from_class:
+            if type_ is None:
+                message='On `eventlist` without type `.from_class` method cannot be used.'
+            else:
+                message=f'The `eventlist`\'s type: `{type!r}` is not supporting `.from_class`.'
+            raise TypeError(message)
+        
+        element = type_.from_class(klass)
+        list.append(self,element)
+        return element
+    
     def extend(self,iterable):
-        if type(iterable) is not type(self):
-            iterable=_convert_unsafe_event_iterable(iterable)
-            
+        if type(iterable) is type(self):
+            if self.type is not iterable.type:
+                raise ValueError(f'Extensing {self.__class__.__name__} with an other object of the same type, but with a different type, own: `{self.type!r}`, other\'s: `{iterable.type!r}`.')
+        else:
+            iterable=_convert_unsafe_event_iterable(iterable,self.type)
+        
         list.extend(self,iterable)
     
     def unextend(self,iterable):
         if type(iterable) is not type(self):
-            iterable=_convert_unsafe_event_iterable(iterable)
+            iterable=_convert_unsafe_event_iterable(iterable,self.type)
+        else:
+            if self.type is not iterable.type:
+                raise ValueError(f'Extensing {self.__class__.__name__} with an other object of the same type, but with a different type, own: `{self.type!r}`, other\'s: `{iterable.type!r}`.')
         
         collected=[]
         for element in iterable:
@@ -3384,8 +3364,15 @@ class eventlist(list,metaclass=removemeta):
             raise ValueError('\n'.join(collected))
     
     def __call__(self,func=None,name=None,**kwargs):
-        if (name is not None) and (not name.islower()):
-            name=name.lower()
+        if (name is not None):
+            if type(name) is not str:
+                raise TypeError(f'`name` should be `None`, or type `str`, got `{name!r}`.')
+            
+            if name:
+                if not name.islower():
+                    name=name.lower()
+            else:
+                name=None
         
         if not kwargs:
             kwargs=None
@@ -3393,12 +3380,25 @@ class eventlist(list,metaclass=removemeta):
         if func is None:
             return self._wrapper(self,name,kwargs)
         
-        list.append(self,EventListElement(func,name,kwargs))
+        type_ = self.type
+        if type_ is None:
+            element = EventListElement(func,name,kwargs)
+        else:
+            element = func = type_.from_kwargs(func,name,kwargs)
+        
+        list.append(self,element)
         return func
-    
+        
     def remove(self,func,name=None):
-        if (name is not None) and (not name.islower()):
-            name=name.lower()
+        if (name is not None):
+            if type(name) is not str:
+                raise TypeError(f'`name` should be `None`, or type `str`, got `{name!r}`.')
+            
+            if name:
+                if not name.islower():
+                    name=name.lower()
+            else:
+                name=None
             
         # we might overwrite __iter__ later
         for element in list.__iter__(self):
@@ -3438,8 +3438,14 @@ class eventlist(list,metaclass=removemeta):
                 result.append(', ')
                 continue
         
-        result.append('])')
+        result.append(']')
         
+        type_=self.type
+        if (type_ is not None):
+            result.append(', type=')
+            result.append(repr(type_))
+        
+        result.append(')')
         return ''.join(result)
         
 # this class is a placeholder for the `with` statemnet support

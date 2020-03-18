@@ -135,9 +135,62 @@ Removes the command's parser failure handler by setting is as `None`.
 If [`.description`](#description) is set as `str` instance, then returns that,
 else returns `None`.
 
+## Methods
+
+
+### `call_checks(self, client, message)`
+
+- returns : `Any`
+- `awaitable`
+
+Runs the [checks](#checks-get) of the [`.category`](#category) and of the
+command itself too. If every passes, then returns `None`. If they do not pass,
+then calls [`.check_failure_handler`](#check_failure_handler-get) if set and
+returns it's return.
+
+### `run_all_checks(self, client, message)`
+
+- retuns : `bool`
+
+Runs [checks](#checks-get) of the [`.category`](#category) and of the
+command itself too. If every passes, then returns `True`.
+
+### `run_checks(self, client, message)`
+
+- retuns : `bool`
+
+Runs only the command's own [checks](#checks-get) without it's category's.
+If every passes, then returns `True`.
+
+### `call_command(self, client, message, content)`
+
+- returns : `Any`
+- `awaitable`
+
+Awaits [`.command`](#command) with the `content` if needed or uses
+[`._parser`](#_parser-instance-attribute) and
+[`.parser_failure_handler-gt`](#parser_failure_handler-get) if needed.
+
+## Class methods
+
+### `from_class(cls, klass)`
+
+- returns : `Command`
+- raises : `TypeError` / `ValueError`
+
+The method used, when creating a `Command` object from a class.
+
+### `from_kwargs(cls, command, name, kwargs)`
+
+- returns : `Command`
+- raises : `TypeError` / `ValueError`
+
+The method called, when a `Command` is created before adding it to a
+[`CommandProceser`](CommandProcesser.md). 
+
 ## Magic methods
 
-### `__new__(cls, name, command, needs_content, description, aliases, category, checks_, check_failure_handler)`
+### `__new__(cls, command, name, needs_content, description, aliases, category, checks_, check_failure_handler)`
 
 - returns : [`Command`](Command.md)
 - raises : `ValueError` / `TypeError`
@@ -199,39 +252,6 @@ message's content for specific arguments.
 
 If the parser fails and [.parser_failure_hanler](#parser_failure_handler-get)
 is not `None`, then it is ensured.
-
-### `call_checks(self, client, message)`
-
-- returns : `Any`
-- `awaitable`
-
-Runs the [checks](#checks-get) of the [`.category`](#category) and of the
-command itself too. If every passes, then returns `None`. If they do not pass,
-then calls [`.check_failure_handler`](#check_failure_handler-get) if set and
-returns it's return.
-
-### `run_checks(self, client, message)`
-
-- retuns : `bool`
-
-Runs [checks](#checks-get) of the [`.category`](#category) and of the
-command itself too. If every passes, then returns `True`.
-
-### `run_own_checks(self, client, message)`
-
-- retuns : `bool`
-
-Runs only the command's own [checks](#checks-get) without it's category's.
-If every passes, then returns `True`.
-
-### `call_command(self, client, message, content)`
-
-- returns : `Any`
-- `awaitable`
-
-Awaits [`.command`](#command) with the `content` if needed or uses
-[`._parser`](#_parser-instance-attribute) and
-[`.parser_failure_handler-gt`](#parser_failure_handler-get) if needed.
 
 ### `__getattr__(self,name)`
 

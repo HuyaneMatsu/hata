@@ -249,12 +249,6 @@ If the message mentions everyone too, the list ll contain `None`.
 
 Returns if the [`user`](User.md) reacted with the given
 [`emoji`](Emoji.md) on the message.
-                       
-### `weakrefer(self)`
-
-Puts the message into `MESSAGES` `WeakValueDictionary`. If any event is
-dispatched, which refers to a message, then after looking up the channel's
-messages, gonna check if the message is at `MESSAGES`.
 
 ## Class methods
 

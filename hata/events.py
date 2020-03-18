@@ -33,11 +33,75 @@ from .events_compiler import parse, Converter, COMMAND_CALL_SETTING_2ARGS,  \
 COMMAND_RP=re.compile(' *([^ \t\\n]*) *(.*)')
 
 class Command(object):
-    __slots__ = ( '_call_setting', '_check_failure_handler', '_checks',
-        '_parser', '_parser_failure_handler', 'aliases','category', 'command',
-        'description', 'name', )
+    __slots__ = ( '_call_setting', '_category_hint', '_check_failure_handler',
+        '_checks', '_parser', '_parser_failure_handler', 'aliases', 'category',
+        'command', 'description', 'name', )
     
-    def __new__(cls, name, command, description, aliases, category, checks_, check_failure_handler, parser_failure_handler):
+    @classmethod
+    def from_class(cls, klass):
+        if not isinstance(klass,type):
+            raise TypeError(f'Expected `type` instance, got `{klass!r}`.')
+        
+        name = getattr(klass,'name',None)
+        if name is None:
+            name = klass.__name__
+        
+        command = getattr(klass,'command',None)
+        if command is None:
+            while True:
+                if type(name) is not str:
+                    break
+                
+                command = getattr(klass,name,None)
+                if (command is not None):
+                    break
+                
+                raise ValueError('`command` class attribute is missing.')
+        
+        
+        description = getattr(klass,'description',None)
+        if description is None:
+            description = klass.__doc__
+        
+        aliases = getattr(klass,'aliases',None)
+        
+        category = getattr(klass,'category',None)
+        
+        checks_=getattr(klass,'checks',None)
+        if checks_ is None:
+            checks_=getattr(klass,'checks_',None)
+        
+        check_failure_handler=getattr(klass,'check_failure_handler',None)
+        
+        parser_failure_handler=getattr(klass,'parser_failure_handler',None)
+        
+        return cls(command, name, description, aliases, category, checks_, check_failure_handler, parser_failure_handler)
+    
+    @classmethod
+    def from_kwargs(cls, command, name, kwargs):
+        if kwargs is None:
+            description = None
+            aliases = None
+            category = None
+            checks_ = None
+            check_failure_handler = None
+            parser_failure_handler = None
+        else:
+            description = kwargs.pop('description',None)
+            aliases = kwargs.pop('aliases',None)
+            category = kwargs.pop('category',None)
+            checks_ = kwargs.pop('checks',None)
+            check_failure_handler = kwargs.pop('check_failure_handler',None)
+            parser_failure_handler = kwargs.pop('parser_failure_handler',None)
+            
+            if kwargs:
+                raise TypeError(f'type `{cls.__name__}` not uses: `{list(kwargs)!r}`')
+        
+        return cls(command, name, description, aliases, category, checks_, check_failure_handler, parser_failure_handler)
+    
+    def __new__(cls, command, name, description, aliases, category, checks_, check_failure_handler, parser_failure_handler):
+        
+        name = check_name(command,name)
         
         while True:
             if aliases is None:
@@ -90,6 +154,15 @@ class Command(object):
         if (description is not None) and isinstance(description,str):
             description=normalize_description(description)
         
+        if type(category) is Category:
+            category_hint=category.name
+            category=category
+        elif (type(category) is str) or (category is None):
+            category_hint=category
+            category=None
+        else:
+            raise TypeError(f'`category should be type `str` or `{Category.__name__}`, got {category!r}`.')
+        
         if checks_ is None:
             checks_processed=None
         else:
@@ -106,7 +179,8 @@ class Command(object):
                 checks_processed=None
         
         if check_failure_handler is None:
-            check_failure_handler = category.check_failure_handler
+            if (category is not None):
+                check_failure_handler = category.check_failure_handler
         else:
             check_failure_handler = check_argcount_and_convert(check_failure_handler, 5,
                 '`check_failure_handler` expected 5 arguemnts (client, message, command, content, fail_identificator).')
@@ -139,7 +213,8 @@ class Command(object):
         self.aliases        = aliases_processed
         self.description    = description
         self.category       = category
-        self._call_setting   = call_setting
+        self._call_setting  = call_setting
+        self._category_hint = category_hint
         self._checks        = checks_processed
         self._check_failure_handler=check_failure_handler
         self._parser        = parser
@@ -357,7 +432,7 @@ class Command(object):
                 
                 return await check_failure_handler(client, message, self, content, fail_identificator)
     
-    def run_checks(self, client, message):
+    def run_all_checks(self, client, message):
         checks=self.category._checks
         if (checks is not None):
             for check in checks:
@@ -365,7 +440,7 @@ class Command(object):
                 if fail_identificator==-2:
                     continue
                 
-                return True
+                return False
         
         checks=self._checks
         if (checks is not None):
@@ -374,11 +449,11 @@ class Command(object):
                 if fail_identificator==-2:
                     continue
                 
-                return True
+                return False
         
-        return False
+        return True
     
-    def run_own_checks(self, client, message):
+    def run_checks(self, client, message):
         checks=self._checks
         if (checks is not None):
             for check in checks:
@@ -386,9 +461,9 @@ class Command(object):
                 if fail_identificator==-2:
                     continue
                 
-                return True
+                return False
         
-        return False
+        return True
     
     async def call_command(self, client, message, content):
         call_setting = self._call_setting
@@ -999,7 +1074,7 @@ class Category(object):
     check_failure_handler=property(_get_check_failure_handler,_set_check_failure_handler, _del_check_failure_handler)
     del _get_check_failure_handler, _set_check_failure_handler, _del_check_failure_handler
     
-    def run_own_checks(self, client, message):
+    def run_checks(self, client, message):
         checks=self._checks
         if (checks is not None):
             for check in checks:
@@ -1007,9 +1082,9 @@ class Category(object):
                 if fail_identificator==-2:
                     continue
                 
-                return True
+                return False
         
-        return False
+        return True
     
     def __gt__(self,other):
         self_name=self.name
@@ -1139,6 +1214,8 @@ class CommandProcesser(EventHandlerBase):
     
     __event_name__='message_create'
     
+    SUPPORTED_TYPES = (Command, )
+    
     def __init__(self, prefix, ignorecase=True, mention_prefix=True, default_category_name=None):
         
         if (default_category_name is not None):
@@ -1222,6 +1299,7 @@ class CommandProcesser(EventHandlerBase):
         default_category = self.get_category(default_category_name)
         default_category.name = value
         self.categories.resort()
+        self._default_category_name = value
     
     default_category_name = property(_get_default_category_name,_set_default_category_name)
     del _get_default_category_name, _set_default_category_name
@@ -1314,13 +1392,17 @@ class CommandProcesser(EventHandlerBase):
         self._ignorecase=ignorecase
     
     def __setevent__(self, func, name, description=None, aliases=None, category=None, checks=None, check_failure_handler=None, parser_failure_handler=None):
-        #called every time, but only if every other fails
+        
+        if type(func) is Command:
+            return self._add_command(func)
+        
+        # called every time, but only if every other fails
         if name=='default_event':
             func=check_argcount_and_convert(func, 2, '`default_event` expects 2 arguments (client, message).')
             self.default_event=func
             return func
         
-        #called when user used bad command after the preset prefix, called if a command fails
+        # called when user used bad command after the preset prefix, called if a command fails
         if name=='invalid_command':
             func=check_argcount_and_convert(func, 4, '`invalid_command` expected 4 arguemnts (client, message, command, content).')
             self.invalid_command=func
@@ -1331,28 +1413,38 @@ class CommandProcesser(EventHandlerBase):
             self.command_error=func
             return func
         
-        #called first
+        # called first
         
-        if type(category) is Category:
-            category_object=self.get_category(category.name)
-            if category_object is not category:
+        command=Command(func, name, description, aliases, category, checks, check_failure_handler, parser_failure_handler)
+        return self._add_command(command)
+        
+    def __setevent_from_class__(self, klass):
+        command = Command.from_class(klass)
+        return self._add_command(command)
+    
+    def _add_command(self, command):
+        category=command.category
+        if (category is not None):
+            if self.get_category(category.name) is not category:
                 raise ValueError(f'The passed `{Category.__class__.__name__}` object is not owned; `{category!r}`.')
-        else:
-            if category is None:
-                category=self._default_category_name
-            else:
-                if not isinstance(category,str):
-                    raise TypeError(f'`category` should have been passed as type `{Category.__class__.__name__}`, `None` or as `str` instance, got `{category!r}`')
-                
-                if not category:
-                    category=self._default_category_name
-            
-            category_object=self.get_category(category)
-            if category_object is None:
-                category_object=Category(category)
+            category_added=True
         
-        command=Command(name, func, description, aliases, category_object, checks, check_failure_handler, parser_failure_handler)
+        else:
+            category_hint = command._category_hint
+            if category_hint is None:
+                category_hint=self._default_category_name
+            
+            category=self.get_category(category_hint)
+            if category is None:
+                category=Category(category_hint)
+                category_added=False
+            else:
+                category_added=True
+            
+            command.category = category
+        
         commands=self.commands
+        name=command.name
         
         would_overwrite=commands.get(name)
         if (would_overwrite is not None) and (would_overwrite.name!=name):
@@ -1392,15 +1484,16 @@ class CommandProcesser(EventHandlerBase):
                     if commands[alias] is would_overwrite:
                         del commands[alias]
             
-            category_object=would_overwrite.category
-            if (category_object is not None):
-                category_object.commands.remove(would_overwrite)
+            category=would_overwrite.category
+            if (category is not None):
+                category.commands.remove(would_overwrite)
             
         # If everything is correct check for category, create it if needed,
-        # add to it. Then add to the comands as well with it's aliases ofc.
+        # add to it. Then add to the commands as well with it's aliases ofc.
         
-        category_object.commands.add(command)
-        self.categories.add(category_object)
+        category.commands.add(command)
+        if not category_added:
+            self.categories.add(category)
         commands[name]=command
         
         aliases=command.aliases
@@ -1828,8 +1921,6 @@ class Pagination(object):
         
         if not channel.cached_permissions_for(client).can_add_reactions:
             return self
-
-        message.weakrefer()
         
         if len(self.pages)>1:
             for emoji in self.EMOJIS:
@@ -2285,7 +2376,8 @@ class Cooldown(MethodLike):
         return self
     
     def _wrapper(self,func):
-        if not self.__name__:
+        name=self.__name__
+        if (name is None) or (not name):
             self.__name__=check_name(func,None)
         self.__func__ = func
         return self

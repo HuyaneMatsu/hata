@@ -17,7 +17,7 @@ Each permission has it's own name used by the wrapper and a bitwize position.
 | manage_channel            |  4        |
 | manage_guild              |  5        |
 | add_reactions             |  6        |
-| view_audit_log            |  7        |
+| view_audit_logs           |  7        |
 | priority_speaker          |  8        |
 | stream                    |  9        |
 | view_channel              | 10        |

@@ -364,17 +364,17 @@ class ChannelTextBase(object):
     del _get_mc_gc_limit, _set_mc_gc_limit
 
     def _mc_find(channel,message_id):
-        if channel._mc_gc_limit==0:
-            return MESSAGES.get(message_id)
-        self=channel.messages
-        index=message_relativeindex(self,message_id)
-        if index==len(self):
-            return MESSAGES.get(message_id)
-        potential=self[index]
-        if potential.id!=message_id:
-            return MESSAGES.get(message_id)
-        return potential
-
+        if channel._mc_gc_limit!=0:
+            self=channel.messages
+            index=message_relativeindex(self,message_id)
+            if index!=len(self):
+                message=self[index]
+                if message.id==message_id:
+                    return message, True
+        
+        message=MESSAGES.get(message_id)
+        return message,False
+    
     #we always return the message, at the case of dupe, we return the original
     def _mc_insert_new_message(channel,message):
         self=channel.messages

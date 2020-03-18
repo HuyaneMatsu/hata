@@ -9,7 +9,7 @@ PERM_KEYS = {
     'manage_channel'        :  4,
     'manage_guild'          :  5,
     'add_reactions'         :  6,
-    'view_audit_log'        :  7,
+    'view_audit_logs'       :  7,
     'priority_speaker'      :  8,
     'stream'                :  9,
     'view_channel'          : 10,
@@ -175,11 +175,11 @@ class Permission(int):
 
     #7
     @property
-    def can_view_audit_log(self):
+    def can_view_audit_logs(self):
         return (self>>7)&1
-    def allow_view_audit_log(self):
+    def allow_view_audit_logs(self):
         return type(self)(self|0b00000000000000000000000010000000)
-    def deny_view_audit_log(self):
+    def deny_view_audit_logs(self):
         return type(self)(self&0b11111111111111111111111101111111)
     
     #8

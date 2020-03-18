@@ -324,7 +324,7 @@ class MessageReference(object):
         if message_id==0:
             return
         
-        return channel._mc_find(message_id)
+        return MESSAGES.get(message_id)
     
     def __repr__(self):
         return f'<{self.__class__.__name__} channel_id={self._cache["channel_id"]}, guild_id={self._cache["guild_id"]}, message_id={self._cache["message_id"]}>'
@@ -438,12 +438,9 @@ class Message(object):
         'everyone_mention', 'flags', 'id', 'nonce', 'pinned', 'reactions',
         'role_mentions', 'tts', 'type', 'user_mentions',)
     
-    def __init__(self,data,channel):
-        raise RuntimeError(f'`{self.__class__.__name__}` should not be created like this.')
-
-    def weakrefer(self):
-        MESSAGES[self.id]=self
-
+    def __new__(cls,data,channel):
+        raise RuntimeError(f'`{cls.__name__}` should not be created like this.')
+    
     @classmethod
     def new(cls,data,channel):
         new=object.__new__(cls)
@@ -474,35 +471,44 @@ class Message(object):
     @classmethod
     def fromchannel(cls,data,channel):
         message_id=int(data['id'])
-        message=channel._mc_find(message_id)
-        if message:
+        message=MESSAGES.get(message_id)
+        if (message is not None):
             return message
         message=object.__new__(cls)
         message.id=message_id
         message._finish_init(data,channel)
         return message
-
+    
     #called, when we wanna know if the message existed before or not
     @classmethod
     def exists(cls,data,channel):
         message_id=int(data['id'])
-        message=channel._mc_find(message_id)
-        if message is not None:
+        message,found=channel._mc_find(message_id)
+        if (message is None):
             return message,True
+        
+        if not found:
+            return message,False
+        
         message=object.__new__(cls)
         message.id=message_id
         message._finish_init(data,channel)
         return message,False
-
+    
     #we call this only if we know our message never existed
     @classmethod
     def onetime(cls,data,channel):
+        
         message_id=int(data['id'])
+        message=MESSAGES.get(message_id)
+        if message is None:
+            return message
+        
         message=object.__new__(cls)
         message.id=message_id
         message._finish_init(data,channel)
         return message
-
+    
     def _finish_init(self,data,channel):
         self.channel=channel
         guild=channel.guild
@@ -626,7 +632,9 @@ class Message(object):
                 role_mentions=None
                 
         self.role_mentions=role_mentions
-    
+        
+        MESSAGES[self.id]=self
+        
     @classmethod
     def custom(cls,base=None,validate=True,**kwargs):
         if (base is not None) and (type(base) is not cls):

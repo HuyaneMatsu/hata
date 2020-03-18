@@ -87,7 +87,7 @@ handler.
 
 ## Methods
 
-### `run_own_checks(self, client, message)`
+### `run_checks(self, client, message)`
 
 - retuns : `bool`
 

@@ -193,7 +193,7 @@ class DiscordException(Exception):
 @modulize
 class ERROR_CODES:
     unknown_account         = 10001
-    unknown_aoolication     = 10002
+    unknown_application     = 10002
     unknown_channel         = 10003
     unknown_guild           = 10004
     unknown_integration     = 10005
@@ -225,7 +225,7 @@ class ERROR_CODES:
     max_webhooks            = 30007 # 10
     max_reactions           = 30010 # 20
     max_channels            = 30013 # 500
-    maxinvites              = 30016 # 1000
+    max_invites             = 30016 # 1000
     
     unauthorized            = 40001
     request_too_large       = 40005

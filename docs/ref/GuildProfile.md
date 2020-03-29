@@ -36,6 +36,8 @@ The user's nick at the guild, or None if it has not.
 
 The user's roles at the guild.
 
+> Feel free to `.sort()` it whenever you need it.
+
 ## Properties
 
 ### `created_at`
@@ -44,6 +46,24 @@ The user's roles at the guild.
 
 For compability purposes with other types. Returns
 [`self.joined_at`](#joined_at) if set, else the Discord epoch in datetime.
+
+### `color`
+
+- returns : [`Color`](Color.md)
+- default : `Color(0)`
+
+Returns the color of the respective user at the respective guild of the
+profile.
+
+## Methods
+
+### `get_top_role(self, default=None)`
+
+- returns : [`Role`](Role.md) / `default`
+- default : `default`
+
+Returns the top role of the guild profile. If the profile has no roles, then
+returns the `default`'s value.
 
 ## Internal
 

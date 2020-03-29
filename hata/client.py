@@ -520,7 +520,7 @@ class Client(UserBase):
     # - 'activities.read'
     # - 'activities.write'
     # - 'applications.builds.upload'
-
+    
     async def owners_access(self,scopes):
         data = {
             'client_id'     : self.id,
@@ -1290,9 +1290,9 @@ class Client(UserBase):
         data = await self.http.channel_follow(source_channel.id,data)
         webhook = await Webhook._from_follow_data(data,source_channel,target_channel,self)
         return webhook
-
+    
     #messages
-
+    
     #bots cant do this!
     async def message_mar(self,message):
         data={'token':self.mar_token}
@@ -3124,10 +3124,10 @@ class Client(UserBase):
 
         if data:
             await self.http.role_edit(role.guild.id,role.id,data,reason)
-
+    
     async def role_delete(self,role,reason=None):
         await self.http.role_delete(role.guild.id,role.id,reason)
-
+    
     async def role_create(self,guild,name=None,permissions=None,color=None,
             separated=None,mentionable=None,reason=None):
         

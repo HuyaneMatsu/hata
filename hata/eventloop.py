@@ -317,31 +317,35 @@ def _is_stream_socket(sock):
 
 _OLD_AGEN_HOOKS=sys.get_asyncgen_hooks()
 
-def _asyncgen_firstiter_hook(self,agen):
-    try:
-        loop=current_thread()
-    except AttributeError:
-        firstiter=_OLD_AGEN_HOOKS.firstiter
-        if firstiter is not None:
-            firstiter(agen)
-    else:
+def _asyncgen_firstiter_hook(agen):
+    loop=current_thread()
+    if isinstance(loop,EventThread):
         if loop._asyncgens_shutdown_called:
-            pass
+            return
         
         loop._asyncgens.add(agen)
+        return
+    
+    firstiter=_OLD_AGEN_HOOKS.firstiter
+    if firstiter is not None:
+        firstiter(agen)
+    
+    return
 
 def _asyncgen_finalizer_hook(agen):
-    try:
-        loop=current_thread()
-    except AttributeError:
-        finalizer=_OLD_AGEN_HOOKS.finalizer
-        if finalizer is not None:
-            finalizer(agen)
-    else:
+    loop=current_thread()
+    if isinstance(loop,EventThread):
         loop._asyncgens.discard(agen)
-        if loop.running:
-            Task(agen.aclose(),loop)
-            loop.wakeup()
+        if not loop.running:
+            return
+            
+        Task(agen.aclose(),loop)
+        loop.wakeup()
+        return
+    
+    finalizer=_OLD_AGEN_HOOKS.finalizer
+    if finalizer is not None:
+        finalizer(agen)
 
 sys.set_asyncgen_hooks(firstiter=_asyncgen_firstiter_hook,
                        finalizer=_asyncgen_finalizer_hook)
@@ -802,12 +806,12 @@ class EventThread(Executor,Thread,metaclass=EventThreadType):
             task=Task(coro_or_future,self)
             self.wakeup()
             return task
-
+        
         if isinstance(coro_or_future,Future):
             if coro_or_future._loop is not self:
                 coro_or_future=FutureAsyncWrapper(coro_or_future,self)
             return coro_or_future
-
+        
         type_=type(coro_or_future)
         if hasattr(type_,'__await__'):
             task=Task(type_.__await__(coro_or_future),self)

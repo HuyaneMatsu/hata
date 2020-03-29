@@ -86,9 +86,9 @@ def _validate_entry_or_exit(point):
 class Extension(object):
     __slots__ = ('__weakref__', '_added_variable_names', '_default_variables',
         '_entry_point', '_exit_point', '_extend_default_variables', '_lib',
-        '_spec', '_state', )
+        '_locked', '_spec', '_state', )
     
-    def __new__(cls, name, entry_point, exit_point, extend_default_variables, default_variables):
+    def __new__(cls, name, entry_point, exit_point, extend_default_variables, locked, default_variables, ):
         try:
             return EXTENSIONS[name]
         except KeyError:
@@ -105,6 +105,7 @@ class Extension(object):
         self._entry_point= entry_point
         self._exit_point = exit_point
         self._extend_default_variables = extend_default_variables
+        self._locked     = locked
         self._default_variables = default_variables
         self._added_variable_names = []
         EXTENSIONS[name]= self
@@ -127,6 +128,9 @@ class Extension(object):
         result.append(' (')
         result.append(('undefined', 'loaded', 'unloaded')[state])
         result.append(')')
+        
+        if self._locked:
+            result.append(', locked=True')
         
         default_variables = self._default_variables
         if self._extend_default_variables:
@@ -212,18 +216,30 @@ class Extension(object):
     
     def _set_extend_default_variables(self, extend_default_variables):
         if not isinstance(extend_default_variables, int):
-            raise TypeError(f'`extend_default_variables` should have been passed as `int` instance, got `{extend_default_variables!r}`.')
+            raise TypeError(f'`extend_default_variables` should have been passed as `bool`, got `{extend_default_variables!r}`.')
         
         if type(extend_default_variables) is not bool:
-            if extend_default_variables:
-                extend_default_variables=True
-            else:
-                extend_default_variables=False
+            extend_default_variables = bool(extend_default_variables)
         
         self._extend_default_variables=extend_default_variables
     
     extend_default_variables=property(_get_extend_default_variables,_set_extend_default_variables)
     del _get_extend_default_variables, _set_extend_default_variables
+    
+    def _get_locked(self):
+        return self._locked
+    
+    def _set_locked(self,locked):
+        if not isinstance(locked,int):
+            raise TypeError(f'`locked` should have been passed as `bool`, got: {locked!r}`.')
+        
+        if type(locked) is not bool:
+            locked = bool(locked)
+        
+        self._locked = locked
+    
+    locked = property(_get_locked, _set_locked)
+    del _get_locked, _set_locked
     
     def _load(self):
         state=self._state
@@ -447,7 +463,7 @@ class ExtensionLoader(object):
     def clear_default_variables(self):
         self._default_variables.clear()
     
-    def add(self, name, entry_point=None, exit_point=None, extend_default_variables=True, **variables):
+    def add(self, name, entry_point=None, exit_point=None, extend_default_variables=True, locked=False, **variables):
         if _validate_entry_or_exit(entry_point):
             raise TypeError(f'`{self.__class__.__name__}.add` expected None, str or a callable as `entry_point`, got `{entry_point!r}`.')
         
@@ -463,9 +479,21 @@ class ExtensionLoader(object):
         else:
             default_variables = None
         
+        if isinstance(extend_default_variables,int):
+            if type(extend_default_variables) is not bool:
+                extend_default_variables = bool(extend_default_variables)
+        else:
+            raise TypeError(f'`extend_default_variables` should have been passed as `bool`, got: {extend_default_variables!r}`.')
+        
+        if isinstance(locked,int):
+            if type(locked) is not bool:
+                locked = bool(locked)
+        else:
+            raise TypeError(f'`locked` should have been passed as `bool`, got: {locked!r}`.')
+        
         if isinstance(name,str):
             # case of 1 element
-            self.extensions[name] = Extension(name, entry_point, exit_point, extend_default_variables, default_variables)
+            self.extensions[name] = Extension(name, entry_point, exit_point, extend_default_variables, locked, default_variables)
             return
         
         if hasattr(type(name),'__iter__'):
@@ -480,7 +508,7 @@ class ExtensionLoader(object):
                     f'{name!r} is not `str`, but `iterable`, but it has at least 1 non `str` element: {value!r}')
             
             for name in values:
-                self.extensions[name] = Extension(name, entry_point, exit_point, extend_default_variables, default_variables)
+                self.extensions[name] = Extension(name, entry_point, exit_point, extend_default_variables, locked, default_variables)
             
             return
         
@@ -619,6 +647,9 @@ class ExtensionLoader(object):
         error_messages=[]
         
         for extension in self.extensions.values():
+            if extension._locked:
+                continue
+            
             try:
                 await self._load_extension(extension)
             except ExtensionError as err:
@@ -644,6 +675,9 @@ class ExtensionLoader(object):
         error_messages=[]
         
         for extension in self.extensions.values():
+            if extension._locked:
+                continue
+            
             try:
                 await self._unload_extension(extension)
             except ExtensionError as err:
@@ -669,6 +703,9 @@ class ExtensionLoader(object):
         error_messages=[]
         
         for extension in self.extensions.values():
+            if extension._locked:
+                continue
+            
             try:
                 await self._unload_extension(extension)
             except ExtensionError as err:

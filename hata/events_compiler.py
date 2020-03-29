@@ -8,7 +8,8 @@ try:
 except ImportError:
     relativedelta = None
     
-from .dereaddons_local import code, function, method, _spaceholder, NoneType
+from .dereaddons_local import code, function, method, _spaceholder, NoneType,\
+    MethodLike
 from .analyzer import CallableAnalyzer
 
 from .others import USER_MENTION_RP, ROLE_MENTION_RP, CHANNEL_MENTION_RP,   \
@@ -25,6 +26,7 @@ from .guild import Guild
 from .role import Role
 from .webhook import Webhook
 from .oauth2 import UserOA2
+from .parsers import check_argcount_and_convert
 
 REQUEST_OVER = 50000
 INT_CONVERSION_LIMIT = 100
@@ -252,7 +254,7 @@ class ConverterFlag(int):
         return (self>>6)&1
     
     def __iter__(self):
-        for name, push in PARSER_FLAG_KEYS:
+        for name, push in PARSER_FLAG_KEYS.items():
             if (self>>push)&1:
                 yield name
     
@@ -525,6 +527,9 @@ class Converter(object):
         if self.args != other.args:
             return False
         
+        if self.flags!=other.flags:
+            return False
+        
         self_amount=self.amount
         other_amount=other.amount
         if type(self_amount) is int:
@@ -554,7 +559,7 @@ class Converter(object):
         return True
     
     def __hash__(self):
-        result = (self.args<<11)
+        result = self.flags+(self.args<<11)
         
         amount = self.amount
         if type(amount) is int:
@@ -680,7 +685,7 @@ Converter.str = converter
 del converter
 
 COMPILED_PARSERS = {}
-
+    
 def parse(func):
     analyzer = CallableAnalyzer(func)
     if analyzer.is_async():
@@ -882,7 +887,6 @@ def compile_parsed(converters):
         element=converters[index]
         name=element.meta.name
         
-        
         if name=='condition':
             
             if element.default_type is not ConverterDefaultType.none:
@@ -1061,46 +1065,39 @@ def compile_parsed(converters):
                 return_part_on_fail_noneset=[
                     f'if {sub_var_name} is None:',
                      '    break']
-            return_part_on_set=return_part_on_fail
+            return_part_on_fail_nonset=return_part_on_fail
         elif element.default_type is not ConverterDefaultType.none:
             element.check_default(_locals)
             return_part_on_fail=[f'{sub_var_name}={element.default_value}']
             if element.default_value=='None':
                 if index!=len(converters)-1:
                     return_part_on_fail_noneset=[f'free_part=({sub_var_name} is None)']
-                    return_part_on_set=[ 'free_part=False']
                 else:
                     return_part_on_fail_noneset=[]
-                    return_part_on_set=return_part_on_fail
             else:
                 if index!=len(converters)-1:
                     return_part_on_fail.append('free_part=True')
                     return_part_on_fail_noneset=[
                         f'if {sub_var_name} is None:',
                         f'    {sub_var_name}={element.default_value}',
-                         '    free_part=False',
-                         'else:',
                          '    free_part=True',]
-                    return_part_on_set=[
-                        f'{sub_var_name}={element.default_value}',
-                         'free_part=False']
                 else:
                     return_part_on_fail_noneset=[
                         f'if {sub_var_name} is None:',
                         f'    {sub_var_name}={element.default_value}',]
-                    return_part_on_set=[f'{sub_var_name}={element.default_value}',]
+                
+            return_part_on_fail_nonset=[f'{sub_var_name}={element.default_value}',]
         
         else:
-            return_part_on_fail=['return False,result']
-            return_part_on_fail_noneset=[f'if {sub_var_name} is None:']
-            for line in return_part_on_fail:
-                return_part_on_fail_noneset.append('    '+line)
-            return_part_on_set=return_part_on_fail
-
-        if (element.default_type is not ConverterDefaultType.none) and index!=len(converters)-1:
-            parsing_succes_part=['free_part=False']
-        else:
-            parsing_succes_part=[]
+            return_part_on_fail=[
+                 'return False,result',
+                    ]
+            return_part_on_fail_noneset=[
+                f'if {sub_var_name} is None:',
+                 '    return False,result',
+                    ]
+            
+            return_part_on_fail_nonset=return_part_on_fail
 
         if not is_part_set:
             go_to=result._back_state
@@ -1110,10 +1107,12 @@ def compile_parsed(converters):
                 result.append( 'else:')
                 result.go_in()
             if is_index_set:
+                if index!=len(converters)-1:
+                    result.append( 'free_part=False')
                 result.append( 'if index==limit:')
             else:
                 result.append( 'if not content:')
-            result.extend(return_part_on_set,1)
+            result.extend(return_part_on_fail_nonset,1)
             result.append( 'else:')
             result.go_in()
             if is_index_set:
@@ -1192,7 +1191,7 @@ def compile_parsed(converters):
                 if element.flags.name or element.flags.everywhere or element.flags.id:
                     result.append(f'if {sub_var_name} is None:')
                     result.go_in()
-
+            
             if element.flags.everywhere or element.flags.id:
                 result.append( 'parsed_=IS_ID_RP.fullmatch(part)')
                 result.append( 'if parsed_ is None:')
@@ -1209,7 +1208,6 @@ def compile_parsed(converters):
                             result.go_in()
                             result.append( 'try:')
                             result.append(f'    {sub_var_name} = await client.user_get(id_)')
-                            result.extend(parsing_succes_part,1)
                             result.append( 'except DiscordException:')
                             result.append(f'    {sub_var_name}=None')
                             result.go_out()
@@ -1217,17 +1215,14 @@ def compile_parsed(converters):
                             result.go_in()
                         result.append( 'try:')
                         result.append(f'    {sub_var_name} = await client.guild_user_get(guild,id_)')
-                        result.extend(parsing_succes_part,1)
                         result.append( 'except DiscordException:')
                     else:
                         result.append( 'try:')
                         result.append(f'    {sub_var_name}=USERS[id_]')
-                        result.extend(parsing_succes_part,1)
                         result.append( 'except KeyError:')
                     result.go_in()
                     result.append( 'try:')
                     result.append(f'    {sub_var_name} = await client.user_get(id_)')
-                    result.extend(parsing_succes_part,1)
                     result.append( 'except DiscordException:')
                     result.append(f'    {sub_var_name}=None')
                     
@@ -1237,7 +1232,6 @@ def compile_parsed(converters):
                             if element.flags.profile:
                                 result.append('try:')
                                 result.append(f'    {sub_var_name} = await client.guild_user_get(guild,id_)')
-                                result.extend(parsing_succes_part,1)
                                 result.append('except DiscordException:')
                                 result.append(f'    {sub_var_name}=None')
                         else:
@@ -1259,7 +1253,6 @@ def compile_parsed(converters):
                             if element.flags.profile:
                                 result.append('try:')
                                 result.append(f'    {sub_var_name} = await client.guild_user_get(guild,id_)')
-                                result.extend(parsing_succes_part,1)
                                 result.append('except DiscordException:')
                                 result.append(f'    {sub_var_name}=None')
                             else:
@@ -1372,7 +1365,6 @@ def compile_parsed(converters):
                         result.go_in()
                         result.append('if guild is not None:')
                         result.append(f'    {sub_var_name}=guild.get_emoji_like(part)')
-
                 
             else:
                 if element.flags.name:
@@ -1386,7 +1378,6 @@ def compile_parsed(converters):
             
         elif name=='str':
             result.append(f'{sub_var_name}=part')
-            result.extend(parsing_succes_part)
             
         elif name=='int':
             result.append('if len(part)>INT_CONVERSION_LIMIT:')
@@ -1395,7 +1386,6 @@ def compile_parsed(converters):
             result.go_in()
             result.append( 'try:')
             result.append(f'    {sub_var_name}=int(part)')
-            result.extend(parsing_succes_part,1)
             result.append( 'except ValueError:')
             result.go_in()
             result.extend(return_part_on_fail)
@@ -1425,3 +1415,140 @@ def compile_parsed(converters):
     result.append('return True,result')
     
     return result.compile(__file__,_globals,'parser')
+
+
+class ContentParser(object):
+    __slots__ = ('__func__', '_call_setting', '_is_method', '_parser', '_parser_failure_handler', )
+    __wrapper__ = 1
+    __async_call__= True
+    
+    def __new__(cls, func=None, parser_failure_handler=None, is_method=False):
+        
+        if (parser_failure_handler is not None):
+            if is_method:
+                parser_failure_handler = check_argcount_and_convert(parser_failure_handler, 5,
+                    '`parser_failure_handler` expected 5 arguemnts if `is_method` is set to `True` (client, message, parent, content, args).')
+            else:
+                parser_failure_handler = check_argcount_and_convert(parser_failure_handler, 4,
+                    '`parser_failure_handler` expected 4 arguemnts (client, message, content, args).')
+        
+        if func is None:
+            return cls._wrapper(parser_failure_handler, is_method)
+        
+        if is_method:
+            func = method(func, object())
+        
+        func, call_setting, parser = parse(func)
+        
+        if is_method:
+            func = func.__func__
+        
+        self = object.__new__(cls)
+        self.__func__       = func
+        self._call_setting  = call_setting
+        self._parser        = parser
+        self._parser_failure_handler=parser_failure_handler
+        self._is_method     = is_method
+        return self
+    
+    class _wrapper(object):
+        __slots__ = ('_is_method', '_parser_failure_handler', )
+        def __init__(self, parser_failure_handler, is_method):
+            self._parser_failure_handler=parser_failure_handler
+            self._is_method = is_method
+        
+        def __call__(self, func):
+            return ContentParser(func=func, parser_failure_handler=self._parser_failure_handler, is_method=self._is_method)
+    
+    async def __call__(self, client, message, content=''):
+        call_setting = self._call_setting
+        if call_setting == COMMAND_CALL_SETTING_USE_PARSER:
+            passed, args = await self._parser(client, message, content)
+            if not passed:
+                parser_failure_handler = self._parser_failure_handler
+                if parser_failure_handler is None:
+                    return None
+                
+                return await parser_failure_handler(client, message, content, args)
+            
+            return await self.__func__(client, message, *args)
+        
+        if call_setting == COMMAND_CALL_SETTING_2ARGS:
+            return await self.__func__(client, message)
+        
+        # last case: COMMAND_CALL_SETTING_3ARGS
+        return await self.__func__(client, message, content)
+    
+    def __get__(self,obj,type_):
+        if self._is_method:
+            if (obj is None):
+                return ContentParserMethod(self,type_)
+            else:
+                return ContentParserMethod(self,obj)
+        
+        return self
+
+    def __set__(self,obj,value):
+        raise AttributeError('can\'t set attribute')
+
+    def __delete__(self,obj):
+        raise AttributeError('can\'t delete attribute')
+    
+    @property
+    def __doc__(self):
+        return getattr(self.__func__,'__doc__',None)
+
+class ContentParserMethod(MethodLike):
+    __slots__ = ('__parent__', '__self__', )
+    __reserved_argcount__ = 2
+    __async_call__ = True
+    
+    def __new__(cls, content_parser, obj):
+        self = object.__new__(cls)
+        self.__parent__ = content_parser
+        self.__self__   = obj
+        return self
+    
+    @property
+    def __func__(self):
+        parent = self.parent
+        parser = parent._parser
+        if parser is None:
+            return parent.__func__
+        else:
+            return parser
+    
+    async def __call__(self, client, message, content=''):
+        parent = self.__self__
+        content_parser = self.__parent__
+        
+        call_setting = content_parser._call_setting
+        if call_setting == COMMAND_CALL_SETTING_USE_PARSER:
+            passed, args = await content_parser._parser(client, message, content)
+            if not passed:
+                parser_failure_handler = content_parser._parser_failure_handler
+                if parser_failure_handler is None:
+                    return None
+                
+                return await parser_failure_handler(client, message, parent, content, args)
+            
+            return await content_parser.__func__(parent, client, message, *args)
+        
+        if call_setting == COMMAND_CALL_SETTING_2ARGS:
+            return await content_parser.__func__(parent, client, message)
+        
+        # last case: COMMAND_CALL_SETTING_3ARGS
+        return await content_parser.__func__(parent, client, message, content)
+    
+    @property
+    def __module__(self):
+        return self.__self__.__module__
+    
+    def __getattr__(self,name):
+        parent = self.parent
+        func = parent._parser
+        if func is None:
+            func = parent.__func__
+        
+        return getattr(func, name)
+

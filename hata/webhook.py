@@ -36,7 +36,7 @@ WebhookType.none    = WebhookType(0,'NONE')
 WebhookType.bot     = WebhookType(1,'BOT')
 WebhookType.server  = WebhookType(2,'SERVER')
 
-def PartialWebhook(webhook_id,token,type_=WebhookType.bot):
+def PartialWebhook(webhook_id, token, type_=WebhookType.bot, channel=None):
     try:
         webhook=USERS[webhook_id]
     except KeyError:
@@ -50,7 +50,7 @@ def PartialWebhook(webhook_id,token,type_=WebhookType.bot):
         webhook.has_animated_avatar=False
 
         webhook.user    = ZEROUSER
-        webhook.channel = None
+        webhook.channel = channel
         
         webhook.type=type_
         
@@ -201,14 +201,20 @@ class Webhook(UserBase):
     @property
     def guild(self):
         channel=self.channel
-        if self.channel is None:
+        if channel is None:
             return
         return channel.guild
 
     def _delete(self):
-        if self.channel is None:
+        channel=self.channel
+        if channel is None:
             return
-        del self.channel.guild.webhooks[self.id]
+        guild=channel.guild
+        if (guild is not None):
+            try:
+                del guild.webhooks[self.id]
+            except KeyError:
+                pass
         self.channel=None
         self.user=ZEROUSER 
 
@@ -260,7 +266,7 @@ class Webhook(UserBase):
         webhook.type        = WebhookType.server
         
         guild=target_channel.guild
-        if guild is not None:
+        if (guild is not None):
             guild.webhooks[webhook_id]=webhook
         
         USERS[webhook_id]=webhook
@@ -268,13 +274,13 @@ class Webhook(UserBase):
         return webhook
 
 class WebhookRepr(UserBase):
-    __slots__=('type')
-
-    def __init__(self,data,webhook_id,type_):
+    __slots__=('type', 'channel')
+    
+    def __init__(self,data,webhook_id,type_,channel):
         self.id=webhook_id
         self.discriminator=0
         self.name=data['username']
-
+        
         avatar=data.get('avatar')
         if avatar is None:
             self.avatar=0
@@ -287,18 +293,23 @@ class WebhookRepr(UserBase):
             self.has_animated_avatar=False
         
         self.type=type_
-        
+        self.channel = channel
+    
     @property
     def webhook(self):
-        return PartialWebhook(self.id,'',self.type)
-
+        return PartialWebhook(self.id, '', self.type, self.channel)
+    
     @property
     def partial(self):
         return False
-
+    
     @property
     def is_bot(self):
         return True
     
+    @property
+    def guild(self):
+        return self.channel.guild
+
 del URLS
 del UserBase

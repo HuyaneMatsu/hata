@@ -119,6 +119,7 @@ class GuildFeature(object):
     vanity                      = NotImplemented
     verified                    = NotImplemented
     vip                         = NotImplemented
+    welcome_screen              = NotImplemented
 
 
 GuildFeature.animated_icon              = GuildFeature('ANIMATED_ICON')
@@ -138,7 +139,7 @@ GuildFeature.splash                     = GuildFeature('INVITE_SPLASH')
 GuildFeature.vanity                     = GuildFeature('VANITY_URL')
 GuildFeature.verified                   = GuildFeature('VERIFIED')
 GuildFeature.vip                        = GuildFeature('VIP_REGIONS')
-
+GuildFeature.welcome_screen             = GuildFeature('WELCOME_SCREEN_ENABLED')
 
 class SystemChannelFlag(int):
     __slots__=()
@@ -1151,24 +1152,25 @@ class Guild(object):
     def permissions_for(self,user):
         if user==self.owner:
             return Permission.permission_all
-
+        
         base=self.roles[0].permissions
-
+        
         try:
             roles=user.guild_profiles[self].roles
         except KeyError:
             if type(user) is Webhook and user.guild is self:
                 return base
             return Permission.permission_none
-
+        
+        roles.sort()
         for role in roles:
             base|=role.permissions
-
+        
         if Permission.can_administrator.fget(base):
             return Permission.permission_all
-
+        
         return Permission(base)
-
+    
     def cached_permissions_for(self,user):
         try:
             return self._cache_perm[user.id]
@@ -1176,7 +1178,7 @@ class Guild(object):
             permissions=self.permissions_for(user)
             self._cache_perm[user.id]=permissions
             return permissions
-
+    
     def _update(self,data):
         old={}
         

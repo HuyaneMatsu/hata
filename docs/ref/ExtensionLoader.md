@@ -394,7 +394,7 @@ mentioned. If a variable with a specific name is not found, no error is raised.
 
 Removes all the default variables of the extension loader.
 
-### `add(self, name, entry_point=None, exit_point=None, extend_default_variables=True, **variables)`
+### `add(self, name, entry_point=None, exit_point=None, extend_default_variables=True, locked=False, **variables)`
 
 - returns : `None`
 - raises : `TypeError` / `ModuleNotFoundError` / `ValuError`
@@ -405,12 +405,13 @@ The method to add extensions to the extension loader.
 extension (module) names. `entry_point` and `exit_point` can be `None`, 
 `str`, or a `callable`.
 
-The `entry_point`, `exit_point`, `extend_default_variables` and the `variables`
-are going to be extension specific. If `entry_point` and `exit_point` is
-specified, then the extension loader will use those instead of it's own
-defaults. If `extend_default_variables` is passed as `False` the
+The `entry_point`, `exit_point`, `extend_default_variables`, `locked` and the
+`variables` are going to be extension specific. If `entry_point` and
+`exit_point` is specified, then the extension loader will use those instead of
+it's own defaults. If `extend_default_variables` is passed as `False` the
 extension will not pick up the extension loader's default variables, instead
-just use it's own.
+just use it's own. If `locked` is passed as `True` means that the extension
+wont be picked up by the `.{}_all` methods.
 
 > If the extension is not found, a `ModuleNotFoundError` will be raised.
 
@@ -433,7 +434,7 @@ extension (module) names.
 - returns : `None` / `Task` -> `None` / `FutureAsyncWrapper` -> `None`
 - raises : [`ExtensionError`](ExtensionError.md) / `TypeError` / `ModuleNotFoundError` / `ValuError`
 
-[Adds](#addself-name-entry_pointnone-exit_pointnone-extend_default_variablestrue-variables)
+[Adds](#addself-name-entry_pointnone-exit_pointnone-extend_default_variablestrue-lockedfalse-variables)
 the extension first with the passed `args` and `kwargs`, then [loads](#loadself-name) it.
 
 > If the extension is not found, an [`ExtensionError`](ExtensionError.md) will

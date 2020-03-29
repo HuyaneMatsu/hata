@@ -145,35 +145,41 @@ class Attachment(object):
         return id_to_time(self.id)
     
     def __gt__(self,other):
-        if type(self) is type(other):
-            return self.id>other.id
-        return NotImplemented
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return self.id>other.id
 
     def __ge__(self,other):
-        if type(self) is type(other):
-            return self.id>=other.id
-        return NotImplemented
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return self.id>=other.id
 
     def __eq__(self,other):
-        if type(self) is type(other):
-            return self.id==other.id
-        return NotImplemented
-
+        if type(self) is not type(other):
+            return NotImplemented
+            
+        return self.id==other.id
+        
     def __ne__(self,other):
-        if type(self) is type(other):
-            return self.id!=other.id
-        return NotImplemented
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return self.id!=other.id
 
     def __le__(self,other):
-        if type(self) is type(other):
-            return self.id<=other.id
-        return NotImplemented
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return self.id<=other.id
 
     def __lt__(self,other):
-        if type(self) is type(other):
-            return self.id<other.id
-        return NotImplemented
-
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return self.id<other.id
+    
     def __hash__(self):
         return self.id
     
@@ -501,7 +507,7 @@ class Message(object):
         
         message_id=int(data['id'])
         message=MESSAGES.get(message_id)
-        if message is None:
+        if (message is not None):
             return message
         
         message=object.__new__(cls)
@@ -548,7 +554,7 @@ class Message(object):
             if author_data is None:
                 self.author=PartialWebhook(webhook_id,'',type_=webhook_type)
             else:
-                self.author=WebhookRepr(author_data,webhook_id,type_=webhook_type)
+                self.author=WebhookRepr(author_data,webhook_id,type_=webhook_type,channel=channel)
         
         self.reactions=reaction_mapping(data.get('reactions',None))
         
@@ -576,11 +582,12 @@ class Message(object):
         self.tts=data.get('tts',False)
         self.type=MessageType.INSTANCES[data['type']]
         
-        attachments=data['attachments']
-        if attachments:
-            self.attachments=[Attachment(attachment) for attachment in attachments]
+        attachment_datas=data['attachments']
+        if attachment_datas:
+            attachments=[Attachment(attachment) for attachment in attachment_datas]
         else:
-            self.attachments=None
+            attachments=None
+        self.attachments=attachments
         
         embed_datas=data['embeds']
         if embed_datas:
@@ -604,34 +611,33 @@ class Message(object):
             self.user_mentions.sort()
         else:
             self.user_mentions=None
-
+        
         if guild is None:
             self._channel_mentions=None
             self.role_mentions=None
             self.cross_mentions=None
             self.cross_reference=None
-            return
-        
-        self._channel_mentions=_spaceholder
-
-        try:
-            role_mention_ids=data['mention_roles']
-        except KeyError:
-            role_mentions=None
         else:
-            if role_mention_ids:
-                roles=guild.all_role
-                role_mentions=[]
-                for role_id in role_mention_ids:
-                    try:
-                        role_mentions.append(roles[int(role_id)])
-                    except KeyError:
-                        continue
-                role_mentions.sort()
-            else:
+            self._channel_mentions=_spaceholder
+    
+            try:
+                role_mention_ids=data['mention_roles']
+            except KeyError:
                 role_mentions=None
-                
-        self.role_mentions=role_mentions
+            else:
+                if role_mention_ids:
+                    roles=guild.all_role
+                    role_mentions=[]
+                    for role_id in role_mention_ids:
+                        try:
+                            role_mentions.append(roles[int(role_id)])
+                        except KeyError:
+                            continue
+                    role_mentions.sort()
+                else:
+                    role_mentions=None
+                    
+            self.role_mentions=role_mentions
         
         MESSAGES[self.id]=self
         
@@ -723,7 +729,7 @@ class Message(object):
             else:
                 raise TypeError(
                     f'`author` can be type `{User.__name__}` / `{Client.__name__}` / `{Webhook.__name__}` / '
-                    f'`{WebhookRepr.__repr__}`, got `{author!r}`')
+                    f'`{WebhookRepr.__name__}`, got `{author!r}`')
         
         try:
             call=kwargs.pop('call')
@@ -1157,6 +1163,8 @@ class Message(object):
             return channel_mentions
         self._channel_mentions=None
     
+    url = property(URLS.message_jump_url)
+    
     @property
     def channel_mentions(self):
         result=self._channel_mentions
@@ -1293,8 +1301,25 @@ class Message(object):
         #ignoring tts
         #ignoring type
         #ignoring nonce
-        #ignoring attachments
-
+        
+        attachment_datas=data['attachments']
+        if attachment_datas:
+            attachments=[Attachment(attachment) for attachment in attachment_datas]
+        else:
+            attachments=None
+        
+        if self.attachments is None:
+            if (attachments is not None):
+                old['attachments']=None
+                self.attachments=attachments
+        else:
+            if attachments is None:
+                old['attachments']=self.attachments
+                self.attachments=None
+            elif self.attachments!=attachments:
+                old['attachments']=self.attachments
+                self.attachments=attachments
+        
         embed_datas=data['embeds']
         if embed_datas:
             embeds=[EmbedCore.from_data(embed) for embed in embed_datas]
@@ -1451,7 +1476,13 @@ class Message(object):
         #ignoring tts
         #ignoring type
         #ignoring nonce
-        #ignoring attachments
+        
+        attachment_datas=data['attachments']
+        if attachment_datas:
+            attachments=[Attachment(attachment) for attachment in attachment_datas]
+        else:
+            attachments=None
+        self.attachments=attachments
 
         embed_datas=data['embeds']
         if embed_datas:
@@ -1879,13 +1910,11 @@ def convert_new_follower_channel(self):
 def convert_stream(self):
     return ''
 
-#TODO
 def convert_discovery_disqualified(self):
-    return ''
+    return 'This server has been removed from Server Discovery because it no longer passes all the requirements. Check `Server Settings` for more details.'
 
-#TODO
 def convert_discovery_requalified(self):
-    return ''
+    return 'This server is eligible for Server Discovery again and has been automatically relisted!'
 
 MessageType.default               = MessageType(0   , 'default'                 , convert_default               , )
 MessageType.add_user              = MessageType(1   , 'add_user'                , convert_add_user              , )

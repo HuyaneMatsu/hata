@@ -181,7 +181,7 @@ class GuildProfile(object):
         else:
             self.joined_at=parse_time(joined_at_data)
         self._update_no_return(data,guild)
-
+    
     def _set_joined(self,data):
         if self.joined_at is None:
             try:
@@ -190,7 +190,7 @@ class GuildProfile(object):
                 self.joined_at=None
             else:
                 self.joined_at=parse_time(joined_at_data)
-
+    
     def _update_no_return(self,data,guild):
         self.nick=data.get('nick',None)
         
@@ -206,22 +206,20 @@ class GuildProfile(object):
                 continue
             roles.append(role)
         
-        roles.sort()
-
         boosts_since=data.get('premium_since',None)
         if (boosts_since is not None):
             boosts_since=parse_time(boosts_since)
         self.boosts_since=boosts_since
-        
+    
     def _update(self,data,guild):
         old={}
         nick=data.get('nick',None)
         if self.nick!=nick:
             old['nick']=self.nick
             self.nick=nick
-            
+        
         roles=[]
-
+        
         guild_roles=guild.all_role
         for role_id in data['roles']:
             role_id=int(role_id)
@@ -232,7 +230,9 @@ class GuildProfile(object):
             roles.append(role)
             
         roles.sort()
-        if self.roles!=roles:
+        own_roles = self.roles
+        own_roles.sort()
+        if own_roles!=roles:
             old['roles']=self.roles
             self.roles=roles
         
@@ -253,31 +253,60 @@ class GuildProfile(object):
                 self.boosts_since=boosts_since
         
         return old
-
+    
+    def get_top_role(self, default=None):
+        roles = self.roles
+        if not roles:
+            return default
+        
+        roles.sort()
+        return roles[-1]
+    
+    @property
+    def color(self):
+        roles = self.roles
+        if roles:
+            roles.sort()
+            for role in reversed(roles):
+                color = role.color
+                if color:
+                    return color
+        
+        return Color(0)
+        
 class UserBase(object):
     __slots__=('id', 'name', 'discriminator', 'avatar', 'has_animated_avatar', '__weakref__',)
 
     def __init_subclass__(cls):
+        rich = cls.__rich__
         if 'guild_profiles' in cls.__slots__:
-            cls.color       = cls.__rich__.color
-            cls.name_at     = cls.__rich__.name_at
-            cls.mentioned_in= cls.__rich__.mentioned_in
-            cls.has_role    = cls.__rich__.has_role
+            cls.color_at        = rich.color_at
+            cls.name_at         = rich.name_at
+            cls.mentioned_in    = rich.mentioned_in
+            cls.has_role        = rich.has_role
+            cls.top_role_at     = rich.top_role_at
+            cls.can_use_emoji   = rich.can_use_emoji
+            cls.has_higher_role_than    = rich.has_higher_role_than
+            cls.has_higher_role_than_at = rich.has_higher_role_than
         
         if 'activities' in cls.__slots__:
-            cls.activity    = cls.__rich__.activity
+            cls.activity      = rich.activity
         
         if 'statuses' in cls.__slots__:
-            cls.platform    = cls.__rich__.platform
-    
+            cls.platform      = rich.platform
+        
+        # webhook type
+        if hasattr(cls,'guild'):
+            cls.can_use_emoji = rich.can_use_emoji__w_guild
+        
     def __str__(self):
         return self.name
     
     def __repr__(self):
         if self.partial:
             return f'<{self.__class__.__name__} partial id={self.id}>'
-        return f'<{self.__class__.__name__} name={self.name}#{self.discriminator:0>4} id={self.id}>'
-
+        return f'<{self.__class__.__name__} name={self.name}#{self.discriminator:0>4}, id={self.id}>'
+    
     def __format__(self,code):
         if not code:
             return self.name
@@ -288,11 +317,11 @@ class UserBase(object):
         if code=='c':
             return f'{self.created_at:%Y.%m.%d-%H:%M:%S}'
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
-
+    
     @property
     def full_name(self):
         return f'{self.name}#{self.discriminator:0>4}'
-
+    
     @property
     def mention(self):
         return f'<@{self.id}>'
@@ -304,21 +333,21 @@ class UserBase(object):
     @property
     def created_at(self):
         return id_to_time(self.id)
-
+    
     def __hash__(self):
         return self.id
-
+    
     avatar_url=property(URLS.user_avatar_url)
     avatar_url_as=URLS.user_avatar_url_as
     
     @property
     def default_avatar_url(self):
         return DefaultAvatar.INSTANCES[self.discriminator%DefaultAvatar.COUNT].url
-
+    
     @property
     def default_avatar(self):
         return DefaultAvatar.INSTANCES[self.discriminator%DefaultAvatar.COUNT]
-
+    
     #for sorting users
     def __gt__(self,other):
         if isinstance(other,UserBase):
@@ -382,12 +411,12 @@ class UserBase(object):
     def platform(self):
         return ''
 
-    def color(self,guild):
+    def color_at(self,guild):
         return Color(0)
 
     def name_at(self,guild):
         return self.name
-
+    
     def mentioned_in(self,message):
         if message.everyone_mention:
             return True
@@ -398,24 +427,36 @@ class UserBase(object):
     def has_role(self,role):
         return False
     
+    def top_role_at(self, guild, default=None):
+        return default
+    
+    def can_use_emoji(self, emoji):
+        if emoji.is_unicode_emoji():
+            return True
+        
+        return False
+    
+    def has_higher_role_than(self, role):
+        return False
+    
+    def has_higher_role_than_at(self, role, guild):
+        return False
+    
     @modulize
     class __rich__:
-        def color(self,guild):
-            if guild is not None:
+        def color_at(self, guild):
+            if (guild is not None):
                 try:
                     profile=self.guild_profiles[guild]
                 except KeyError:
                     pass
                 else:
-                    for role in reversed(profile.roles):
-                        color=role.color
-                        if color:
-                            return color
+                    return profile.color
             
             return Color(0)
-
+        
         def name_at(self,guild):
-            if guild is not None:
+            if (guild is not None):
                 try:
                     profile=self.guild_profiles[guild]
                 except KeyError:
@@ -480,7 +521,127 @@ class UserBase(object):
                 return False
             
             return (role in profile.roles)
-    
+        
+        def top_role_at(self, guild, default=None):
+            if (guild is not None):
+                try:
+                    profile = self.guild_profiles[guild]
+                except KeyError:
+                    pass
+                else:
+                    return profile.get_top_role(default)
+            
+            return default
+        
+        def can_use_emoji(self, emoji):
+            if emoji.is_unicode_emoji():
+                return True
+            
+            guild = emoji.guild
+            if guild is None:
+                return False
+            
+            try:
+                profile = self.guild_profiles[guild]
+            except KeyError:
+                return False
+            
+            roles = emoji.roles
+            if (roles is None) or (not roles):
+                return True
+            
+            if guild.owner == self:
+                return True
+            
+            if roles.isdisjoint(profile.roles):
+                return False
+            
+            return True
+        
+        def can_use_emoji__w_guild(self, emoji):
+            if emoji.is_unicode_emoji():
+                return True
+            
+            guild = emoji.guild
+            if guild is None:
+                return False
+            
+            webhook_guild = self.guild
+            if webhook_guild is None:
+                return False
+            
+            roles = emoji.roles
+            if (roles is None) or (not roles):
+                return True
+            
+            return False
+        
+        def has_higher_role_than(self, role):
+            guild = role.guild
+            if guild is None:
+                return False
+            
+            try:
+                profile = self.guild_profiles[guild]
+            except KeyError:
+                return False
+            
+            if guild.owner == self:
+                return True
+            
+            top_role = profile.get_top_role()
+            if top_role is None:
+                return False
+            
+            if top_role>role:
+                return True
+            
+            return False
+        
+        def has_higher_role_than_at(self, user, guild):
+            if (guild is None):
+                return False
+            
+            try:
+                own_profile = self.guild_profiles[guild]
+            except KeyError:
+                return False
+            
+            if guild.owner == self:
+                return True
+            
+            try:
+                other_profile = user.guild_profiles[guild]
+            except KeyError:
+                # Is the other user a Webhook?
+                webhook_guild = getattr(user, 'guild', None)
+                if (webhook_guild is not guild):
+                    # Not webhook or partial webhook, or a webhook of a different guild
+                    return False
+                
+                # If we have any roles, we have more role than a webhook with 0
+                if own_profile.roles:
+                    return True
+                
+                return False
+            
+            if guild.owner == user:
+                return False
+            
+            own_top_role = own_profile.get_top_role()
+            if own_top_role is None:
+                return False
+            
+            other_top_role = other_profile.get_top_role()
+            if other_top_role is None:
+                return True
+            
+            if own_top_role > other_top_role:
+                return True
+            
+            return False
+
+
 class User(UserBase):
     if CACHE_PRESENCE:
         __slots__=('guild_profiles', 'is_bot', 'partial', #default User
@@ -575,27 +736,27 @@ class User(UserBase):
             except KeyError:
                 user_data=data
                 member_data=data.get('member')
-                
+            
             user_id=int(user_data['id'])
-
+            
             user=object.__new__(cls)
             user.id=user_id
             user.guild_profiles={}
             user.partial=False
             user.is_bot=user_data.get('bot',False)
             user._update_no_return(user_data)
-
+            
             if member_data is not None and guild is not None:
                 user.guild_profiles[guild]=GuildProfile(member_data,guild)
-                    
+            
             return user
-
+    
     if (not CACHE_PRESENCE):
         @staticmethod
         def _bypass_no_cache(data,guild):
             user_data=data['user']
             member_data=data
-                
+            
             user_id=int(user_data['id'])
             
             try:
@@ -611,7 +772,7 @@ class User(UserBase):
             else:
                 profile._set_joined(member_data)
                 profile._update_no_return(member_data,guild)
-
+    
     
     if CACHE_PRESENCE:
         @classmethod

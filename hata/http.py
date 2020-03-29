@@ -38,7 +38,7 @@ class URLS:
         guild=channel.guild
         guild_id='@me' if guild is None else str(guild.id)
         return f'{DIS_ENDPOINT}/channels/{guild_id}/{channel.id}/{message.id}'
-
+    
     def guild_icon_url(guild):
         icon=guild.icon
         if not icon:

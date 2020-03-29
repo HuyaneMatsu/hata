@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-__version__ = '20200318.1'
+__version__ = '20200329.1'
 
 import sys
 ASYNC_ONLY = ('async_only' in sys.argv) or ('async-only' in sys.argv)

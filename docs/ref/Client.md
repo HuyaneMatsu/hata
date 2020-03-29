@@ -116,15 +116,19 @@ Properties:
     - [`created_at`](UserBase.md#created_at)
     - [`activity`](UserBase.md#activity)
     - [`platform`](UserBase.md#platform)
+    - [`has_higher_role_than`](UserBase.md#has_higher_role_thanself-role)
+    - [`has_higher_role_than_at`](UserBase.md#has_higher_role_than_atself-user-guild)
 
 Methods:
 
 - [`UserBase`](UserBase.md) :
     - [`avatar_url_as`](UserBase.md#avatar_url_asselfextnonesizenone)
     - [`name_at`](UserBase.md#name_atselfguild)
-    - [`color`](UserBase.md#colorselfguild)
+    - [`color_at`](UserBase.md#color_atselfguild)
     - [`mentioned_in`](UserBase.md#mentioned_inselfmessage)
     - [`hasrole`](UserBase.md#has_roleselfrole)
+    - [`top_role_at`](UserBase.md#top_role_atself-guild-defaultnone)
+    - [`can_use_emoji`](UserBase.md#can_use_emojiself-emoji)
 - [`User`](User.md) :
     - [`_update_presence`](User.md#_update_presenceselfdata-method)
     - [`_update_presence_no_return`](User.md#_update_presence_no_returnselfdata-method)

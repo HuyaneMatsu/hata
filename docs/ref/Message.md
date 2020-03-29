@@ -186,6 +186,12 @@ Cached property with
 attribute. Returns the list of the mentioned channels at the message, or `None`
  if none.
 
+### `url`
+
+- returns : `str`
+
+Returns the jump url to the message.
+
 ### `clean_content`
 
 - returns : `str`
@@ -417,7 +423,8 @@ dict might contain also `'embeds'`.
 | name                      | description                                                                                   |
 |---------------------------|-----------------------------------------------------------------------------------------------|
 | activity                  | Nne / [MessageActivity](MessageActivity.md)                                                   |
-| application               | None /[MessageApplication](MessageApplication.md)                                             |
+| application               | None / [MessageApplication](MessageApplication.md)                                            |
+| attachments               | None / (list of [Attachment](Attachment.md))                                                  |
 | content                   | str                                                                                           |
 | cross_mentions            | None / (list of [Channel](CHANNEL_TYPES.md) / [UnknownCrossMention](UnknownCrossMention.md))  |
 | edited                    | None / datetime                                                                               |

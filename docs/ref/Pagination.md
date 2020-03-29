@@ -153,7 +153,7 @@ ensures it's [`.canceller`](#canceller) with the given `exception`.
 - `awaitable`
 - raises : `DiscordException`
 
-### `__call__(self,emoji,user)`
+### `__call__(self, client, message, emoji, user)`
 
 - returns : `None`
 - `awaitable`

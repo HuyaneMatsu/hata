@@ -1,9 +1,10 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('eventlist', 'IntentFlag', )
+__all__ = ('eventlist', 'EventHandlerBase', 'EventWaitforBase',
+    'IntentFlag', )
 
 import sys, datetime
 from time import monotonic
-from weakref import WeakSet, ref as Weakreferer
+from weakref import WeakSet, ref as Weakreferer, WeakKeyDictionary
 
 from .futures import Future, Task, iscoroutinefunction as iscoro
 from .dereaddons_local import function, remove, removemeta, _spaceholder,   \
@@ -11,7 +12,7 @@ from .dereaddons_local import function, remove, removemeta, _spaceholder,   \
 from .analyzer import CallableAnalyzer
 
 from .client_core import CACHE_USER, CACHE_PRESENCE, CLIENTS, CHANNELS,     \
-    GUILDS, MESSAGES
+    GUILDS, MESSAGES, KOKORO
 from .user import User, PartialUser,USERS
 from .channel import CHANNEL_TYPES, ChannelGuildBase
 from .others import Relationship, Gift
@@ -33,7 +34,7 @@ class event_system_core(object):
     def add_default(self,name,value,parser):
         self.defaults[name]=value
         self.parsers[name]=parser
-
+    
     def get_argcount(self,name):
         try:
             value=self.defaults[name]
@@ -710,7 +711,7 @@ def guild_sync(client,data,parser_and_checker):
         queue=SYNC_REQUESTS[guild_id]
     except KeyError:
         queue=[]
-        Task(sync_task(guild_id,client.guild_sync(guild_id),queue),client.loop)
+        Task(sync_task(guild_id,client.guild_sync(guild_id),queue), KOKORO)
         SYNC_REQUESTS[guild_id]=queue
     
     if parser_and_checker is None:
@@ -725,7 +726,7 @@ def READY(client,data):
     if ready_state is None:
         ready_state=ReadyState(client,guild_datas)
         client.ready_state=ready_state
-        Task(client._delay_ready(),client.loop)
+        Task(client._delay_ready(), KOKORO)
     else:
         ready_state.shard_ready(data)
     
@@ -780,7 +781,7 @@ def USER_UPDATE__CAL(client,data):
     if not old:
         return
     
-    Task(client.events.client_edit(client,old),client.loop)
+    Task(client.events.client_edit(client,old), KOKORO)
 
 def USER_UPDATE__OPT(client,data):
     client._update_no_return(data)
@@ -798,7 +799,7 @@ def MESSAGE_CREATE__CAL(client,data):
 
     message=Message.new(data,channel)
     
-    Task(client.events.message_create(client,message),client.loop)
+    Task(client.events.message_create(client,message), KOKORO)
 
 def MESSAGE_CREATE__OPT(client,data):
     channel_id=int(data['channel_id'])
@@ -826,7 +827,7 @@ def MESSAGE_DELETE__CAL_SC(client,data):
     if message is None:
         return
     
-    Task(client.events.message_delete(client,message),client.loop)
+    Task(client.events.message_delete(client,message), KOKORO)
 
 def MESSAGE_DELETE__CAL_MC(client,data):
     channel_id=int(data['channel_id'])
@@ -888,7 +889,7 @@ def MESSAGE_DELETE_BULK__CAL_SC(client,data):
     message_ids=[int(message_id) for message_id in data['ids']]
     messages=channel._mc_pop_multiple(message_ids)
     
-    Task(client.events.message_delete_multyple(client,channel,messages,message_ids),client.loop)
+    Task(client.events.message_delete_multyple(client,channel,messages,message_ids), KOKORO)
 
 def MESSAGE_DELETE_BULK__CAL_MC(client,data):
     channel_id=int(data['channel_id'])
@@ -948,13 +949,13 @@ def MESSAGE_UPDATE__CAL_SC(client,data):
         if not old:
             return
         
-        Task(client.events.message_edit(client,message,old),client.loop)
+        Task(client.events.message_edit(client,message,old), KOKORO)
     else:
         result=message._update_embed(data)
         if not result:
             return
         
-        Task(client.events.embed_update(client,message,result),client.loop)
+        Task(client.events.embed_update(client,message,result), KOKORO)
 
 def MESSAGE_UPDATE__CAL_MC(client,data):
     message_id=int(data['id'])
@@ -1024,7 +1025,7 @@ def MESSAGE_REACTION_ADD__CAL_SC(client,data):
     emoji=PartialEmoji(data['emoji'])
     message.reactions.add(emoji,user)
     
-    Task(client.events.reaction_add(client,message,emoji,user),client.loop)
+    Task(client.events.reaction_add(client,message,emoji,user), KOKORO)
 
 def MESSAGE_REACTION_ADD__CAL_MC(client,data):
     message_id=int(data['message_id'])
@@ -1086,7 +1087,7 @@ def MESSAGE_REACTION_REMOVE_ALL__CAL_SC(client,data):
         return
     
     message.reactions=type(old_reactions)(None)
-    Task(client.events.reaction_clear(client,message,old_reactions),client.loop)
+    Task(client.events.reaction_clear(client,message,old_reactions), KOKORO)
 
 def MESSAGE_REACTION_REMOVE_ALL__CAL_MC(client,data):
     message_id=int(data['message_id'])
@@ -1142,7 +1143,7 @@ def MESSAGE_REACTION_REMOVE__CAL_SC(client,data):
     emoji=PartialEmoji(data['emoji'])
     message.reactions.remove(emoji,user)
     
-    Task(client.events.reaction_delete(client,message,emoji,user),client.loop)
+    Task(client.events.reaction_delete(client,message,emoji,user), KOKORO)
 
 def MESSAGE_REACTION_REMOVE__CAL_MC(client,data):
     message_id=int(data['message_id'])
@@ -1204,7 +1205,7 @@ def MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC(client,data):
     if users is None:
         return
     
-    Task(client.events.reaction_delete_emoji(client,message,emoji,users),client.loop)
+    Task(client.events.reaction_delete_emoji(client,message,emoji,users), KOKORO)
 
 def MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC(client,data):
     message_id=int(data['message_id'])
@@ -1280,7 +1281,7 @@ if CACHE_PRESENCE:
         else:
             coro=client.events.user_edit
         
-        Task(coro(client,user,old),client.loop)
+        Task(coro(client,user,old), KOKORO)
     
     def PRESENCE_UPDATE__CAL_MC(client,data):
         user_data=data['user']
@@ -1355,7 +1356,7 @@ if CACHE_USER:
         if not old:
             return
         
-        Task(client.events.user_profile_edit(client,user,old,guild),client.loop)
+        Task(client.events.user_profile_edit(client,user,old,guild), KOKORO)
 
     def GUILD_MEMBER_UPDATE__CAL_MC(client,data):
         guild_id=int(data['guild_id'])
@@ -1420,7 +1421,7 @@ else:
         if not old:
             return
         
-        Task(client.events.user_profile_edit(client,client,old,guild),client.loop)
+        Task(client.events.user_profile_edit(client,client,old,guild), KOKORO)
 
     GUILD_MEMBER_UPDATE__CAL_MC=GUILD_MEMBER_UPDATE__CAL_SC
 
@@ -1451,10 +1452,12 @@ def CHANNEL_DELETE__CAL(client,data):
         guild_sync(client,data,None)
         return
     
+    guild = channel.guild
+    
     channel._delete(client)
     
     #we do this only for the source client, it is handled personally
-    Task(client.events.channel_delete(client,channel),client.loop)
+    Task(client.events.channel_delete(client,channel,guild), KOKORO)
 
 def CHANNEL_DELETE__OPT(client,data):
     channel_id=int(data['id'])
@@ -1481,7 +1484,7 @@ def CHANNEL_UPDATE__CAL_SC(client,data):
     if not old:
         return
     
-    Task(client.events.channel_edit(client,channel,old),client.loop)
+    Task(client.events.channel_edit(client,channel,old), KOKORO)
 
 def CHANNEL_UPDATE__CAL_MC(client,data):
     channel_id=int(data['id'])
@@ -1545,7 +1548,7 @@ def CHANNEL_CREATE__CAL(client,data):
         
         channel=CHANNEL_TYPES[channel_type](data,client,guild)
     
-    Task(client.events.channel_create(client,channel),client.loop)
+    Task(client.events.channel_create(client,channel), KOKORO)
 
 def CHANNEL_CREATE__OPT(client,data):
     channel_type=data['type']
@@ -1574,7 +1577,7 @@ def CHANNEL_PINS_UPDATE__CAL(client,data):
         return
     
     #ignoring message search
-    Task(client.events.channel_pin_update(client,channel),client.loop)
+    Task(client.events.channel_pin_update(client,channel), KOKORO)
 
 def CHANNEL_PINS_UPDATE__OPT(client,data):
     pass
@@ -1594,7 +1597,7 @@ def CHANNEL_RECIPIENT_ADD_CAL(client,data):
     if user not in users:
         users.append(user)
     
-    Task(client.events.channel_group_user_add(client,channel,user),client.loop)
+    Task(client.events.channel_group_user_add(client,channel,user), KOKORO)
 
 def CHANNEL_RECIPIENT_ADD__OPT(client,data):
     channel_id=int(data['channel_id'])
@@ -1625,7 +1628,7 @@ def CHANNEL_RECIPIENT_REMOVE__CAL_SC(client,data):
         return
     
     if client!=user:
-        Task(client.events.channel_group_user_delete(client,channel,user),client.loop)
+        Task(client.events.channel_group_user_delete(client,channel,user), KOKORO)
 
 def CHANNEL_RECIPIENT_REMOVE__CAL_MC(client,data):
     channel_id=int(data['channel_id'])
@@ -1679,7 +1682,7 @@ def GUILD_EMOJIS_UPDATE__CAL_SC(client,data):
             if coro is DEFAULT_EVENT:
                 continue
             
-            Task(coro(client,guild,emoji,old),client.loop)
+            Task(coro(client,emoji,old), KOKORO)
             continue
             
         if action==EMOJI_UPDATE_NEW:
@@ -1687,7 +1690,7 @@ def GUILD_EMOJIS_UPDATE__CAL_SC(client,data):
             if coro is DEFAULT_EVENT:
                 continue
             
-            Task(coro(client,guild,emoji),client.loop)
+            Task(coro(client,emoji), KOKORO)
             continue
         
         if action==EMOJI_UPDATE_DELETE:
@@ -1695,7 +1698,7 @@ def GUILD_EMOJIS_UPDATE__CAL_SC(client,data):
             if coro is DEFAULT_EVENT:
                 continue
             
-            Task(coro(client,guild,emoji),client.loop)
+            Task(coro(client,emoji,guild), KOKORO)
             continue
         
         # no more case
@@ -1784,7 +1787,7 @@ def GUILD_MEMBER_ADD__CAL_SC(client,data):
     user=User(data,guild)
     guild.user_count+=1
     
-    Task(client.events.guild_user_add(client,guild,user),client.loop)
+    Task(client.events.guild_user_add(client,guild,user), KOKORO)
 
 def GUILD_MEMBER_ADD__CAL_MC(client,data):
     guild_id=int(data['guild_id'])
@@ -1880,7 +1883,7 @@ if CACHE_USER:
         
         guild.user_count-=1
         
-        Task(client.events.guild_user_delete(client,guild,user,profile),client.loop)
+        Task(client.events.guild_user_delete(client,guild,user,profile), KOKORO)
 
     def GUILD_MEMBER_REMOVE__CAL_MC(client,data):
         guild_id=int(data['guild_id'])
@@ -1967,7 +1970,7 @@ else:
         user=User(data['user'])
         guild.user_count-=1
         
-        Task(client.events.guild_user_delete(client,guild,user,None),client.loop)
+        Task(client.events.guild_user_delete(client,guild,user,None), KOKORO)
 
     def GUILD_MEMBER_REMOVE__CAL_MC(client,data):
         guild_id=int(data['guild_id'])
@@ -2025,8 +2028,8 @@ if CACHE_PRESENCE:
         ready_state=client.ready_state
         if ready_state is None:
             if guild.is_large:
-                Task(client._request_members(guild),client.loop)
-            Task(client.events.guild_create(client,guild),client.loop)
+                Task(client._request_members(guild), KOKORO)
+            Task(client.events.guild_create(client,guild), KOKORO)
             return
         
         ready_state.feed(guild)
@@ -2041,7 +2044,7 @@ if CACHE_PRESENCE:
         ready_state=client.ready_state
         if ready_state is None:
             if guild.is_large:
-                Task(client._request_members(guild),client.loop)
+                Task(client._request_members(guild), KOKORO)
             return
         
         ready_state.feed(guild)
@@ -2056,8 +2059,8 @@ elif CACHE_USER:
         
         ready_state=client.ready_state
         if ready_state is None:
-            Task(client._request_members(guild),client.loop)
-            Task(client.events.guild_create(client,guild),client.loop)
+            Task(client._request_members(guild), KOKORO)
+            Task(client.events.guild_create(client,guild), KOKORO)
             return
         
         ready_state.feed(guild)
@@ -2071,7 +2074,7 @@ elif CACHE_USER:
         
         ready_state=client.ready_state
         if ready_state is None:
-            Task(client._request_members(guild),client.loop)
+            Task(client._request_members(guild), KOKORO)
             return
         
         ready_state.feed(guild)
@@ -2086,7 +2089,7 @@ else:
         
         ready_state=client.ready_state
         if ready_state is None:
-            Task(client.events.guild_create(client,guild),client.loop)
+            Task(client.events.guild_create(client,guild), KOKORO)
             return
         
         ready_state.feed(guild)
@@ -2119,7 +2122,7 @@ def GUILD_UPDATE__CAL_SC(client,data):
     if not old:
         return
     
-    Task(client.events.guild_edit(client,guild,old),client.loop)
+    Task(client.events.guild_edit(client,guild,old), KOKORO)
 
 def GUILD_UPDATE__CAL_MC(client,data):
     guild_id=int(data['guild_id'])
@@ -2181,7 +2184,7 @@ def GUILD_DELETE__CAL(client,data):
     
     guild._delete(client)
     
-    Task(client.events.guild_delete(client,guild,profile),client.loop)
+    Task(client.events.guild_delete(client,guild,profile), KOKORO)
 
 def GUILD_DELETE__OPT(client,data):
     guild_id=int(data['id'])
@@ -2210,7 +2213,7 @@ def GUILD_BAN_ADD__CAL(client,data):
     
     user=User(data['user'])
     
-    Task(client.events.guild_ban_add(client,guild,user),client.loop)
+    Task(client.events.guild_ban_add(client,guild,user), KOKORO)
 
 def GUILD_BAN_ADD__OPT(client,data):
     pass
@@ -2227,7 +2230,7 @@ def GUILD_BAN_REMOVE__CAL(client,data):
         return
     
     user=User(data['user'])
-    Task(client.events.guild_ban_delete(client,guild,user),client.loop)
+    Task(client.events.guild_ban_delete(client,guild,user), KOKORO)
 
 def GUILD_BAN_REMOVE__OPT(client,data):
     pass
@@ -2256,7 +2259,7 @@ if CACHE_PRESENCE:
             guild._apply_presences(presence_datas)
         
         #this event is called at guild joining, and only 1 client joins at the same time
-        Task(client.events.guild_user_chunk(client,guild,collected),client.loop)
+        Task(client.events.guild_user_chunk(client,guild,collected), KOKORO)
 else:
     def GUILD_MEMBERS_CHUNK(client,data):
         guild_id=int(data['guild_id'])
@@ -2270,7 +2273,7 @@ else:
             user=User(user_data,guild)
             collected.append(user)
         #this event is called at guild joining, and only 1 client joins at the same time
-        Task(client.events.guild_user_chunk(client,guild,collected),client.loop)
+        Task(client.events.guild_user_chunk(client,guild,collected), KOKORO)
 
 PARSER_DEFAULTS('GUILD_MEMBERS_CHUNK',GUILD_MEMBERS_CHUNK,GUILD_MEMBERS_CHUNK,GUILD_MEMBERS_CHUNK,GUILD_MEMBERS_CHUNK)
 del GUILD_MEMBERS_CHUNK
@@ -2283,7 +2286,7 @@ def GUILD_INTEGRATIONS_UPDATE__CAL(client,data):
         guild_sync(client,data,'GUILD_INTEGRATIONS_UPDATE')
         return
     
-    Task(client.events.integration_update(client,guild),client.loop)
+    Task(client.events.integration_update(client,guild), KOKORO)
 
 def GUILD_INTEGRATIONS_UPDATE__OPT(client,data):
     pass
@@ -2301,7 +2304,7 @@ def GUILD_ROLE_CREATE__CAL_SC(client,data):
     
     role=Role(data['role'],guild)
     
-    Task(client.events.role_create(client,role),client.loop)
+    Task(client.events.role_create(client,role), KOKORO)
 
 def GUILD_ROLE_CREATE__CAL_MC(client,data):
     guild_id=int(data['guild_id'])
@@ -2364,7 +2367,7 @@ def GUILD_ROLE_DELETE__CAL_SC(client, data):
     
     role._delete()
     
-    Task(client.events.role_delete(client,role),client.loop)
+    Task(client.events.role_delete(client,role,guild), KOKORO)
 
 def GUILD_ROLE_DELETE__CAL_MC(client, data):
     guild_id=int(data['guild_id'])
@@ -2451,7 +2454,7 @@ def GUILD_ROLE_UPDATE__CAL_SC(client,data):
     if not old:
         return
     
-    Task(client.events.role_edit(client,role,old),client.loop)
+    Task(client.events.role_edit(client,role,old), KOKORO)
 
 def GUILD_ROLE_UPDATE__CAL_MC(client,data):
     guild_id=int(data['guild_id'])
@@ -2537,7 +2540,7 @@ def WEBHOOKS_UPDATE__CAL(client,data):
     channel=guild.all_channel.get(channel_id,None)
     
     #if this happens the client might ask for update.
-    Task(client.events.webhook_update(client,channel,),client.loop)
+    Task(client.events.webhook_update(client,channel,), KOKORO)
 
 def WEBHOOKS_UPDATE__OPT(client,data):
     guild_id=int(data['guild_id'])
@@ -2588,11 +2591,11 @@ def VOICE_STATE_UPDATE__CAL_SC(client,data):
             pass
         else:
             if result[1]=='l':
-                Task(voice_client.disconnect(force=True,terminate=False),client.loop)
+                Task(voice_client.disconnect(force=True,terminate=False), KOKORO)
             else:
                 voice_client.channel=result[0].channel
     
-    Task(client.events.voice_state_update(client,*result),client.loop)
+    Task(client.events.voice_state_update(client,*result), KOKORO)
 
 def VOICE_STATE_UPDATE__CAL_MC(client,data):
     try:
@@ -2683,7 +2686,7 @@ def VOICE_STATE_UPDATE__OPT_SC(client,data):
         return
     
     if result is _spaceholder:
-        Task(voice_client.disconnect(force=True,terminate=False),client.loop)
+        Task(voice_client.disconnect(force=True,terminate=False), KOKORO)
     else:
         voice_client.channel=result
 
@@ -2733,7 +2736,7 @@ def VOICE_STATE_UPDATE__OPT_MC(client,data):
         return
     
     if result is _spaceholder:
-        Task(voice_client.disconnect(force=True,terminate=False),client.loop)
+        Task(voice_client.disconnect(force=True,terminate=False), KOKORO)
     else:
         voice_client.channel=result
 
@@ -2750,7 +2753,7 @@ def VOICE_SERVER_UPDATE(client,data):
     except KeyError:
         return
     
-    Task(voice_client._create_socket(data),client.loop)
+    Task(voice_client._create_socket(data), KOKORO)
     #should we add event to this?
 
 PARSER_DEFAULTS('VOICE_SERVER_UPDATE',VOICE_SERVER_UPDATE,VOICE_SERVER_UPDATE,VOICE_SERVER_UPDATE,VOICE_SERVER_UPDATE)
@@ -2770,7 +2773,7 @@ if CACHE_PRESENCE:
         
         timestamp=utcfromtimestamp(data.get('timestamp'))
         
-        Task(client.events.typing(client,channel,user,timestamp),client.loop)
+        Task(client.events.typing(client,channel,user,timestamp), KOKORO)
     
     def TYPING_START__OPT(client,data):
         return
@@ -2784,7 +2787,7 @@ del TYPING_START__CAL, TYPING_START__OPT
 
 def INVITE_CREATE__CAL(client,data):
     invite = Invite(data)
-    Task(client.events.invite_create(client,invite),client.loop)
+    Task(client.events.invite_create(client,invite), KOKORO)
 
 def INVITE_CREATE__OPT(client,data):
     pass
@@ -2794,7 +2797,7 @@ del INVITE_CREATE__CAL, INVITE_CREATE__OPT
 
 def INVITE_DELETE__CAL(client,data):
     invite = Invite(data)
-    Task(client.events.invite_delete(client,invite),client.loop)
+    Task(client.events.invite_delete(client,invite), KOKORO)
 
 def INVITE_DELETE__OPT(client,data):
     pass
@@ -2817,7 +2820,7 @@ def RELATIONSHIP_ADD__CAL(client,data):
         coro=client.events.relationship_add(client,new_relationship)
     else:
         coro=client.events.relationship_change(client,old_relationship,new_relationship)
-    Task(coro,client.loop)
+    Task(coro, KOKORO)
 
 def RELATIONSHIP_ADD__OPT(client,data):
     user_id=int(data['id'])
@@ -2841,7 +2844,7 @@ def RELATIONSHIP_REMOVE__CAL(client,data):
         coro=client.events.unknown_relationship(client,'relationship_delete',data,)
     else:
         coro=client.events.relationship_delete(client,old_relationship)
-    Task(coro,client.loop)
+    Task(coro, KOKORO)
 
 def RELATIONSHIP_REMOVE__OPT(client,data):
     user_id=int(data['id'])
@@ -2862,7 +2865,7 @@ del PRESENCES_REPLACE
 
 def USER_SETTINGS_UPDATE__CAL(client,data):
     old=client.settings._update(data)
-    Task(client.events.client_edit_settings(client,old),client.loop)
+    Task(client.events.client_edit_settings(client,old), KOKORO)
 
 def USER_SETTINGS_UPDATE__OPT(client,data):
     client.settings._update_no_return(data)
@@ -2879,7 +2882,7 @@ def GIFT_CODE_UPDATE__CAL(client,data):
         return
     
     gift=Gift(data)
-    Task(client.events.gift_update(client,channel,gift),client.loop)
+    Task(client.events.gift_update(client,channel,gift), KOKORO)
 
 def GIFT_CODE_UPDATE__OPT(client,data):
     pass
@@ -2889,7 +2892,7 @@ del GIFT_CODE_UPDATE__CAL, GIFT_CODE_UPDATE__OPT
 
 #hooman only event, needs futher testing, there is no real documentation on this
 def USER_ACHIEVEMENT_UPDATE__CAL(client,data):
-    Task(client.events.achievement(client,data),client.loop)
+    Task(client.events.achievement(client,data), KOKORO)
 
 def USER_ACHIEVEMENT_UPDATE__OPT(client,data):
     pass
@@ -2940,15 +2943,15 @@ EVENTS.add_default('reaction_delete_emoji'      , 4 , 'MESSAGE_REACTION_REMOVE_E
 EVENTS.add_default('user_edit'                  , 3 , 'PRESENCE_UPDATE'                 , )
 EVENTS.add_default('user_presence_update'       , 3 , 'PRESENCE_UPDATE'                 , )
 EVENTS.add_default('user_profile_edit'          , 4 , 'GUILD_MEMBER_UPDATE'             , )
-EVENTS.add_default('channel_delete'             , 2 , 'CHANNEL_DELETE'                  , )
+EVENTS.add_default('channel_delete'             , 3 , 'CHANNEL_DELETE'                  , )
 EVENTS.add_default('channel_edit'               , 3 , 'CHANNEL_UPDATE'                  , )
 EVENTS.add_default('channel_create'             , 2 , 'CHANNEL_CREATE'                  , )
 EVENTS.add_default('channel_pin_update'         , 2 , 'CHANNEL_PINS_UPDATE'             , )
 EVENTS.add_default('channel_group_user_add'     , 3 , 'CHANNEL_RECIPIENT_ADD'           , )
 EVENTS.add_default('channel_group_user_delete'  , 3 , 'CHANNEL_RECIPIENT_REMOVE'        , )
-EVENTS.add_default('emoji_create'               , 3 , 'GUILD_EMOJIS_UPDATE'             , )
+EVENTS.add_default('emoji_create'               , 2 , 'GUILD_EMOJIS_UPDATE'             , )
 EVENTS.add_default('emoji_delete'               , 3 , 'GUILD_EMOJIS_UPDATE'             , )
-EVENTS.add_default('emoji_edit'                 , 4 , 'GUILD_EMOJIS_UPDATE'             , )
+EVENTS.add_default('emoji_edit'                 , 3 , 'GUILD_EMOJIS_UPDATE'             , )
 EVENTS.add_default('guild_user_add'             , 3 , 'GUILD_MEMBER_ADD'                , )
 EVENTS.add_default('guild_user_delete'          , 4 , 'GUILD_MEMBER_REMOVE'             , )
 EVENTS.add_default('guild_create'               , 2 , 'GUILD_CREATE'                    , )
@@ -2959,7 +2962,7 @@ EVENTS.add_default('guild_ban_delete'           , 3 , 'GUILD_BAN_REMOVE'        
 EVENTS.add_default('guild_user_chunk'           , 3 , 'GUILD_MEMBERS_CHUNK'             , )
 EVENTS.add_default('integration_update'         , 2 , 'GUILD_INTEGRATIONS_UPDATE'       , )
 EVENTS.add_default('role_create'                , 2 , 'GUILD_ROLE_CREATE'               , )
-EVENTS.add_default('role_delete'                , 2 , 'GUILD_ROLE_DELETE'               , )
+EVENTS.add_default('role_delete'                , 3 , 'GUILD_ROLE_DELETE'               , )
 EVENTS.add_default('role_edit'                  , 3 , 'GUILD_ROLE_UPDATE'               , )
 EVENTS.add_default('webhook_update'             , 2 , 'WEBHOOKS_UPDATE'                 , )
 EVENTS.add_default('voice_state_update'         , 4 , 'VOICE_STATE_UPDATE'              , )
@@ -3049,7 +3052,7 @@ def check_argcount_and_convert(func, expected, errormsg=None):
                 func = analyzer.instance_to_async_callable()
                 return func
             
-            if analyzer.sub_accepts_args():
+            if sub_analyzer.accepts_args():
                 func = analyzer.instance_to_async_callable()
                 return func
             
@@ -3469,10 +3472,296 @@ class EventHandlerBase(object):
     def shortcut(self):
         return _EventCreationManager(self)
 
+class EventWaitforMeta(type):
+    def __call__(cls, *args, **kwargs):
+        object_ = cls.__new__(cls, *args, **kwargs)
+        if type(object_) is not cls:
+            return object_
+        
+        object_.waitfors = WeakKeyDictionary()
+        cls.__init__(object_,*args,**kwargs)
+        return object_
+    
+    _call_waitfors = {}
+    
+    async def _call_message_create(self, client, message):
+        args = (client, message)
+        channel = message.channel
+        self._run_waitfors_for(channel, args)
+        guild = channel.guild
+        if guild is None:
+            return
+        self._run_waitfors_for(guild, args)
+        
+    _call_waitfors['message_create'] = _call_message_create
+    del _call_message_create
+    
+    async def _call_message_edit(self, client, message, old):
+        args = (client, message, old)
+        channel = message.channel
+        self._run_waitfors_for(channel, args)
+        guild = channel.guild
+        if guild is None:
+            return
+        self._run_waitfors_for(guild, args)
+    
+    _call_waitfors['message_edit'] = _call_message_edit
+    del _call_message_edit
+    
+    async def _call_message_delete(self, client, message,):
+        args = (client, message)
+        channel = message.channel
+        self._run_waitfors_for(channel, args)
+        guild = channel.guild
+        if guild is None:
+            return
+        self._run_waitfors_for(guild, args)
+    
+    _call_waitfors['message_delete'] = _call_message_delete
+    del _call_message_delete
+    
+    async def _call_channel_create(self, client, channel):
+        guild = channel.guild
+        if guild is None:
+            return
+        args = (client, channel)
+        self._run_waitfors_for(guild, args)
+    
+    _call_waitfors['channel_create'] = _call_channel_create
+    del _call_channel_create
+    
+    async def _call_channel_edit(self, client, channel, old):
+        args = (client, channel, old)
+        self._run_waitfors_for(channel, args)
+        guild = channel.guild
+        if guild is None:
+            return
+        self._run_waitfors_for(guild, old)
+    
+    _call_waitfors['channel_edit'] = _call_channel_edit
+    del _call_channel_edit
+    
+    async def _call_channel_delete(self, client, channel, guild):
+        args = (client, channel, guild)
+        self._run_waitfors_for(channel, args)
+        if guild is None:
+            return
+        self._run_waitfors_for(guild, args)
+    
+    _call_waitfors['channel_delete'] = _call_channel_delete
+    del _call_channel_delete
+    
+    async def _call_role_create(self, client, role):
+        args = (client, role)
+        guild = role.guild
+        self._run_waitfors_for(guild, args)
+    
+    _call_waitfors['role_create'] = _call_role_create
+    del _call_role_create
+    
+    async def _call_role_edit(self, client, role, old):
+        args = (client, role, old)
+        self._run_waitfors_for(role, args)
+        guild = role.guild
+        self._run_waitfors_for(guild, args)
+    
+    _call_waitfors['role_edit'] = _call_role_edit
+    del _call_role_edit
+
+    async def _call_role_delete(self, client, role, guild):
+        args = (client, role, guild)
+        self._run_waitfors_for(role, args)
+        self._run_waitfors_for(guild, args)
+    
+    _call_waitfors['role_delete'] = _call_role_delete
+    del _call_role_delete
+    
+    async def _call_guild_delete(self, client, guild, profile):
+        args = (client, guild, profile)
+        self._run_waitfors_for(guild, args)
+    
+    _call_waitfors['guild_delete'] = _call_guild_delete
+    del _call_guild_delete
+    
+    async def _call_guild_edit(self, client, guild, old):
+        args = (client, guild, old)
+        self._run_waitfors_for(guild, args)
+    
+    _call_waitfors['guild_edit'] = _call_guild_edit
+    del _call_guild_edit
+    
+    async def _call_emoji_create(self, client, emoji):
+        args = (client, emoji)
+        guild = emoji.guild
+        self._run_waitfors_for(guild, args)
+    
+    _call_waitfors['emoji_create'] = _call_emoji_create
+    del _call_emoji_create
+    
+    async def _call_emoji_edit(self, client, emoji, old):
+        args = (client, emoji, old)
+        self._run_waitfors_for(emoji, args)
+        guild = emoji.guild
+        self._run_waitfors_for(guild, args)
+    
+    _call_waitfors['emoji_edit'] = _call_emoji_edit
+    del _call_emoji_edit
+
+    async def _call_emoji_delete(self, client, emoji, guild):
+        args = (client, emoji, guild)
+        self._run_waitfors_for(emoji, args)
+        self._run_waitfors_for(guild, args)
+    
+    _call_waitfors['emoji_delete'] = _call_emoji_delete
+    del _call_emoji_delete
+    
+    async def _call_reaction_add(self, client, message, emoji, user):
+        args = (client, message, emoji, user)
+        self._run_waitfors_for(message, args)
+    
+    _call_waitfors['reaction_add'] = _call_reaction_add
+    del _call_reaction_add
+    
+    async def _call_reaction_delete(self, client, message, emoji, user):
+        args = (client, message, emoji, user)
+        self._run_waitfors_for(message, args)
+    
+    _call_waitfors['reaction_delete'] = _call_reaction_delete
+    del _call_reaction_delete
+
+class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
+    __slots__ = ('waitfors', )
+    __event_name__ = None
+    call_waitfors = None
+    
+    def append(self, target, waiter):
+        try:
+            actual=self.waitfors[target]
+            if type(actual) is asynclist:
+                actual.append(waiter)
+            else:
+                self.waitfors[target]=container=asynclist()
+                container.append(actual)
+                container.append(waiter)
+        except KeyError:
+            self.waitfors[target]=waiter
+    
+    def remove(self, target, waiter,):
+        try:
+            container=self.waitfors.pop(target)
+        except KeyError:
+            return
+        
+        if type(container) is not asynclist:
+            return
+        
+        try:
+            container.remove(waiter)
+        except ValueError:
+            pass
+        else:
+            if len(container)==1:
+                self.waitfors[target]=container[0]
+                return
+        
+        self.waitfors[target]=container
+    
+    def get_waiter(self, target, waiter, by_type=False, is_method=False):
+        try:
+            element = self.waitfors[target]
+        except KeyError:
+            return None
+        
+        if type(element) is asynclist:
+            for element in element:
+                if is_method:
+                    if not isinstance(element,MethodLike):
+                        continue
+                    
+                    element = element.__self__
+                
+                if by_type:
+                    if type(element) is waiter:
+                        return element
+                    else:
+                        continue
+                else:
+                    if element == waiter:
+                        return element
+                    else:
+                        continue
+            
+            return None
+        
+        else:
+            if is_method:
+                if not isinstance(element,MethodLike):
+                    return None
+                
+                element = element.__self__
+            
+            if by_type:
+                if type(element) is waiter:
+                    return element
+                else:
+                    return None
+            else:
+                if element == waiter:
+                    return element
+                else:
+                    return None
+    
+    def _run_waitfors_for(self, key, args):
+        try:
+            event=self.waitfors[key]
+        except KeyError:
+            pass
+        else:
+            if type(event) is asynclist:
+                for event in event:
+                    Task(event(*args), KOKORO)
+            else:
+                Task(event(*args), KOKORO)
+        
+def EventWaitforMeta__new__(cls, class_name, class_bases, class_dict):
+    for base in class_bases:
+        if issubclass(base,EventWaitforBase):
+            break
+    else:
+        raise TypeError(f'`{cls.__name__} should be only the metaclass of `{EventWaitforBase.__name__}`.')
+    
+    event_name = class_dict.get('__event_name__')
+    if event_name is None:
+        event_name = class_name
+    
+    if event_name not in EVENTS.parsers:
+        raise ValueError(f'`{class_name}.__event_name__` is not set, or not set correctly.')
+    
+    if (class_dict.get('call_waitfors') is None):
+        try:
+            call_waitfors = cls._call_waitfors[event_name]
+        except KeyError:
+            raise TypeError(f'The following event name: `{event_name!r}` has no auto `call_waitfor` added. Please define one.')
+        
+        class_dict['call_waitfors'] = call_waitfors
+        
+        try:
+            call = class_dict.get('__call__')
+        except KeyError:
+            call = None
+        
+        if (call is None) or (call is EventHandlerBase.__call__):
+            class_dict['__call__'] = call_waitfors
+    
+    return type.__new__(cls, class_name, class_bases, class_dict)
+
+EventWaitforMeta.__new__  = EventWaitforMeta__new__
+del EventWaitforMeta__new__
+
 class ReadyState(object):
     __slots__=('counter', 'guilds', 'last_guild', 'last_ready', 'waiter', )
     def __init__(self,client,guild_datas):
-        self.waiter     = Future(client.loop)
+        self.waiter     = Future(KOKORO)
         self.guilds     = []
         self.counter    = guild_datas.__len__()
         now=monotonic()
@@ -3588,7 +3877,7 @@ async def default_error_event(client,event,err):
             ]
     
     if isinstance(err,BaseException):
-        await client.loop.render_exc_async(err,extracted)
+        await KOKORO.render_exc_async(err,extracted)
         return
     
     if type(err) is str:
@@ -3606,9 +3895,9 @@ class asynclist(list):
         if iterable is not None:
             list.extend(self,iterable)
     
-    async def __call__(self,client,*args):
+    async def __call__(self,*args):
         for coro in self:
-            Task(coro(client,*args),client.loop)
+            Task(coro(*args), KOKORO)
     
     def __repr__(self):
         result = [
@@ -3781,6 +4070,57 @@ class EventDescriptor(object):
 
         parser_default=PARSER_DEFAULTS.all[parser_name]
         parser_default.remove_mention(self.client_reference())
+    
+    def remove(self, func, name=None, by_type=False, count=-1):
+        if count==0:
+            return
+        
+        name=check_name(func,name)
+        
+        actual=getattr(self,name)
+        if actual is DEFAULT_EVENT:
+            return
+        
+        if type(actual) is asynclist:
+            for index in reversed(range(len(asynclist))):
+                element = actual[index]
+                if by_type:
+                    element = type(element)
+                
+                if element != func:
+                    continue
+                
+                del actual[index]
+                count = count-1
+                if count==0:
+                    break
+                
+                continue
+            
+            if len(actual)>1:
+                return
+            
+            if len(actual)==0:
+                actual=actual[0]
+                object.__setattr__(self,name,actual)
+                return
+        
+        else:
+            if by_type:
+                actual = type(actual)
+            
+            if actual != func:
+                return
+        
+        object.__setattr__(self,name,DEFAULT_EVENT)
+        
+        parser_name=EVENTS.parsers.get(name,None)
+        if (parser_name is None):
+            return
+
+        parser_default=PARSER_DEFAULTS.all[parser_name]
+        parser_default.remove_mention(self.client_reference())
+        return
         
 async def _with_error(client,task):
     try:

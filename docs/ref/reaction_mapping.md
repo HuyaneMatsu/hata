@@ -18,6 +18,22 @@ A dict, which contains the reactions on a [message](Message.md) with
 
 A flag which tells if every reacter is loaded on the message.
 
+## Properties
+
+### `emoji_count`
+
+- returns : `int`
+
+Return the amount of the unique emojis on the `reaction_mapping`'s respective
+message.
+
+### `total_count`
+
+- returns : `int`
+
+Returns the total amount of reactions on the `reaction_mapping`'s respective
+message.
+
 ## Methods:
 
 ### `clear(self)` (method)
@@ -33,10 +49,10 @@ the flag must be refreshed after calling a `clear`.
 
 ### `__len__(self)`
 
-- returns : `str`
+- returns : `int`
 
-Returns the the amount of the reacters with the emoji. This amount is the sum of
-the list's length itself and of the `unknown` attribute's value.
+Return the amount of the unique emojis on the `reaction_mapping`'s respective
+message.
 
 ### `__bool__(self)`
 

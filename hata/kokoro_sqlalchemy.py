@@ -144,10 +144,10 @@ class AsyncResultProxyIterator(object):
     def __init__(self,result_proxy,executor):
         self._result_proxy=result_proxy
         self.executor=executor
-
+    
     def __aiter__(self):
         return self
-
+    
     async def __anext__(self):
         row = await self.executor.execute(self._result_proxy.fetchone)
         if row is None:

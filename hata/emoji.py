@@ -187,7 +187,7 @@ class Emoji(object):
         return (self.guild is None)
     
     def is_custom_emoji(self):
-        return self.id>UNICODE_EMOJI_LIMIT
+        return self.id>=UNICODE_EMOJI_LIMIT
 
     def is_unicode_emoji(self):
         return self.id<UNICODE_EMOJI_LIMIT
@@ -415,19 +415,16 @@ class reaction_mapping(dict):
         self.fully_loaded=False
         for line in data:
             self[PartialEmoji(line['emoji'])]=reaction_mapping_line(line.get('count',1))
-        
-    def __len__(self):
+    
+    emoji_count = property(dict.__len__)
+    
+    @property
+    def total_count(self):
         count=0
         for line in self.values():
             count+=set.__len__(line)
             count+=line.unknown
         return count
-    
-    # Avoid looping over the object, just get it's source length
-    def __bool__(self):
-        if dict.__len__(self):
-            return True
-        return False
     
     def clear(self):
         for value in self.values():

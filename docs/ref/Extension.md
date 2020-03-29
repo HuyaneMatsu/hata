@@ -64,6 +64,20 @@ just it's own's.
 Sets whether the extension should use the loader's default variables or
 just it's own's.
 
+### `locked` (get)
+
+- returns : `bool`
+
+Returns whether the extension uses the loader's default variables or
+just it's own's.
+
+### `locked` (set)
+
+- raises : `TypeError`
+
+Sets whether the extension should be picked up by the `.{}_all` methods of the
+[extension loader](ExtensionLoader.md).
+
 ### `name`
 
 - returns : `str`
@@ -143,6 +157,12 @@ state.
 
 The extension's module. Set as `module` object only if it the extension was
 already loaded.
+
+### `_locked` (instance attribute)
+
+- type : `bool`
+
+The internal slot used for the [locked](#locked-get) property.
 
 ### `_entry_point` (instance attribute)
 

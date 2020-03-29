@@ -702,6 +702,7 @@ class ChannelGuildBase(ChannelBase):
             return Permission.none
         
         else:
+            roles.sort()
             for role in roles:
                 base|=role.permissions
         

@@ -576,7 +576,7 @@ async def default_event(client, message):
 ## Adding events
 
 The [`CommandProcesser`](CommandProcesser.md) class inherits
-[`EventHandlerBase`](EventHandlerBase.md), what means it can `shortcut`-ted. 
+[`EventWaitforBase`](EventWaitforBase.md), what means it can `shortcut`-ted. 
 When it happens, a bound [`_EventCreationManager`](_EventCreationManager.md) is
 returned, what acts like a wrapper for the
 [`__setevent__`](#__setevent__-__delevent__) method.
@@ -618,17 +618,22 @@ Waitfors are implemented with `WeakKeyDictionary`. Where The values are
 `callables`, which should return an `awaitable` object. The keys are the
 `wait where` objects, at this case [`channels`](ChannelBase.md).
 
-### `client.events.message_create.append(wrapper, target)`
+### `client.events.message_create.append(target, waiter)`
 
-The `wrapper` is what will get called and the `target` is "where".
-More `wrapper` can be added under the same `target` too. All of them will be
+The `waiter` is what will get called and the `target` is "where".
+More `waiter` can be added under the same `target` too. All of them will be
 awaited in a reversed order, so if wrappers can safely remove themselves
 meanwhile.
 
-### `client.events.message_create.remove(wrapper, target)`
+### `client.events.message_create.remove(target, waiter)`
 
-Same as adding but it removes the `wrapper`. Also raises no error, if the
-`target` is "already" removed.
+Same as adding but it removes the `waiter`. Also raises no error, if the
+`waiter` is "already" removed.
+
+### `get_waiter(self, target, waiter, by_type=False, is_method=False)`
+
+Returns the first `waiter` what matches the criteria. If nothing is found,
+what would, return `None`.
 
 ## Updating prefixes
 
@@ -645,7 +650,7 @@ Sets the event's prefix to the set value. If `ignorecase` is not passed as
 
 ### Superclasses
 
-- [`EventHandlerBase`](EventHandlerBase.md)
+- [`EventWaitforBase`](EventWaitforBase.md)
 
 ## Instance attributes
 
@@ -774,7 +779,7 @@ Handles the incoming event.
 ### `__setevent__`, `__delevent__`, `__setevent_from_class__`
 
 The internal methods to set and del events from a
-[`EventHandlerBase`](EventHandlerBase.md) "subclass".
+[`EventWaitforBase`](EventWaitforBase.md) "subclass".
 
 ## Internal
 
@@ -784,3 +789,18 @@ The internal methods to set and del events from a
 
 Used as a key, when searching a category for a specific name at `.categories`.
 
+### `_add_command(self, command)` (method)
+
+- returns : `None`
+- raises : `ValueError`
+
+Adds the [`Command`](Command.md) to the command processer.
+
+> If the command has category set as a [`Category`](Category.md), and the
+> command processer has a different one, but with the same name, then raises
+> `ValueError`
+
+> If the command would overwrite an another command's alias, but not it's name,
+> raises `ValueError`.
+
+> If the command would overwrite more command's name, raises `ValueError`.

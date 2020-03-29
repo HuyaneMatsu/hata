@@ -52,6 +52,7 @@ class attributes as well.
 | vanity                        | VANITY_URL                    |
 | verified                      | VERIFIED                      |
 | vip                           | VIP_REGIONS                   |
+| welcome_screen                | WELCOME_SCREEN_ENABLED        |
 
 > Guild features added at runtime are not stored as class attributes.
 

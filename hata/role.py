@@ -119,7 +119,7 @@ class Role(object):
         position=data['position']
         if self.position!=position:
             self.guild.roles.switch(self,position)
-                
+            
         self.name=data['name']
         self.permissions=Permission(data['permissions'])
         self.color=Color(data['color'])

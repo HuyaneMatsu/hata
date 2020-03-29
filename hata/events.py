@@ -1,19 +1,19 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('Category', 'CommandProcesser', 'Converter', 'ConverterFlag', 'Cooldown',
-    'GUI_STATE_CANCELLED', 'GUI_STATE_CANCELLING', 'GUI_STATE_READY',
-    'GUI_STATE_SWITCHING_CTX', 'GUI_STATE_SWITCHING_PAGE', 'Pagination',
-    'ReactionAddWaitfor', 'ReactionDeleteWaitfor', 'WaitAndContinue', 'checks',
-    'multievent', 'normalize_description', 'prefix_by_guild',
-    'setup_extension', 'wait_for_message', 'wait_for_reaction', )
+__all__ = ('Category', 'CommandProcesser', 'ContentParser', 'Converter',
+    'ConverterFlag', 'Cooldown', 'GUI_STATE_CANCELLED', 'GUI_STATE_CANCELLING',
+    'GUI_STATE_READY', 'GUI_STATE_SWITCHING_CTX', 'GUI_STATE_SWITCHING_PAGE',
+    'Pagination', 'ReactionAddWaitfor', 'ReactionDeleteWaitfor',
+    'WaitAndContinue', 'checks', 'multievent', 'normalize_description',
+    'prefix_by_guild', 'setup_extension', 'wait_for_message',
+    'wait_for_reaction', )
 
 import re, reprlib
-from weakref import WeakKeyDictionary
 
 from .dereaddons_local import sortedlist, modulize, MethodLike
 from .futures import Task, Future
 
 from .others import USER_MENTION_RP
-from .parsers import EventHandlerBase, compare_converted, check_name,       \
+from .parsers import EventWaitforBase, compare_converted, check_name,       \
     asynclist, check_argcount_and_convert, DEFAULT_EVENT
 
 from .emoji import BUILTIN_EMOJIS
@@ -27,8 +27,8 @@ from .channel import ChannelBase
 from .client import Client
 
 #Invite this as well, to shortcut imports
-from .events_compiler import parse, Converter, COMMAND_CALL_SETTING_2ARGS,  \
-    COMMAND_CALL_SETTING_3ARGS, COMMAND_CALL_SETTING_USE_PARSER, ConverterFlag
+from .events_compiler import parse, Converter, ConverterFlag, ContentParser,\
+    COMMAND_CALL_SETTING_2ARGS, COMMAND_CALL_SETTING_3ARGS, COMMAND_CALL_SETTING_USE_PARSER
 
 COMMAND_RP=re.compile(' *([^ \t\\n]*) *(.*)')
 
@@ -187,7 +187,7 @@ class Command(object):
         
         if (parser_failure_handler is not None):
             parser_failure_handler = check_argcount_and_convert(parser_failure_handler, 5,
-                '`parser_failure_handler` expected 5 arguemnts (client, message, command, content, args.')
+                '`parser_failure_handler` expected 5 arguemnts (client, message, command, content, args).')
         
         if getattr(command,'__wrapper__',0):
             wrapped = True
@@ -257,7 +257,7 @@ class Command(object):
         
         call_setting=self._call_setting
         if call_setting != COMMAND_CALL_SETTING_2ARGS:
-            if COMMAND_CALL_SETTING_3ARGS:
+            if call_setting == COMMAND_CALL_SETTING_3ARGS:
                 result.append(', call with content')
             else:
                 result.append(', use parser')
@@ -1207,17 +1207,16 @@ class Category(object):
         
         return ''.join(result)
 
-class CommandProcesser(EventHandlerBase):
+class CommandProcesser(EventWaitforBase):
     __slots__ = ('_default_category_name', '_ignorecase', 'categories',
         'command_error', 'commands', 'default_event', 'invalid_command',
-        'mention_prefix', 'prefix', 'prefixfilter', 'waitfors', )
+        'mention_prefix', 'prefix', 'prefixfilter', )
     
     __event_name__='message_create'
     
     SUPPORTED_TYPES = (Command, )
     
-    def __init__(self, prefix, ignorecase=True, mention_prefix=True, default_category_name=None):
-        
+    def __new__(cls, prefix, ignorecase=True, mention_prefix=True, default_category_name=None):
         if (default_category_name is not None):
             if not isinstance(default_category_name,str):
                 raise TypeError(f'`default_category_name` should have been passed as `None`, or as `str` instance, meanwhile got `{default_category_name!r}`.')
@@ -1225,11 +1224,11 @@ class CommandProcesser(EventHandlerBase):
             if not default_category_name:
                 default_category_name=None
         
+        self = object.__new__(cls)
         self.command_error=DEFAULT_EVENT
         self.default_event=DEFAULT_EVENT
         self.invalid_command=DEFAULT_EVENT
         self.mention_prefix=mention_prefix
-        self.waitfors=WeakKeyDictionary()
         self.commands={}
         self.update_prefix(prefix,ignorecase)
         self._ignorecase=ignorecase
@@ -1238,6 +1237,7 @@ class CommandProcesser(EventHandlerBase):
         categories=sortedlist()
         self.categories=categories
         categories.add(Category(default_category_name))
+        return self
     
     def get_category(self, category_name):
         # category name can be None, but when we wanna use `.get` we need to
@@ -1604,16 +1604,7 @@ class CommandProcesser(EventHandlerBase):
         raise ValueError(f'The passed `{name!r}` (`{func!r}`) command is not the same as the already loaded one: `{command!r}`')
     
     async def __call__(self,client,message):
-        try:
-            event=self.waitfors[message.channel]
-        except KeyError:
-            pass
-        else:
-            if type(event) is asynclist:
-                for event in event:
-                    Task(event(client,message,),client.loop)
-            else:
-                Task(event(client,message,),client.loop)
+        await self.call_waitfors(client, message)
         
         if message.author.is_bot:
             return
@@ -1713,32 +1704,6 @@ class CommandProcesser(EventHandlerBase):
         await self.default_event(client,message)
         return
     
-    def append(self,wrapper,target):
-        try:
-            actual=self.waitfors[target]
-            if type(actual) is asynclist:
-                actual.append(wrapper)
-            else:
-                self.waitfors[target]=container=asynclist()
-                container.append(actual)
-                container.append(wrapper)
-        except KeyError:
-            self.waitfors[target]=wrapper
-
-    def remove(self,wrapper,target,):
-        try:
-            container=self.waitfors.pop(target)
-            if type(container) is asynclist:
-                container.remove(wrapper)
-                if len(container)==1:
-                    self.waitfors[target]=container[0]
-                else:
-                    self.waitfors[target]=container
-        except (KeyError,ValueError):
-            #`KeyError` if `target` is missing
-            #`ValueError` if `wrapper` is missing
-            pass
-    
     def __repr__(self):
         result = [
             '<', self.__class__.__name__,
@@ -1773,39 +1738,14 @@ class CommandProcesser(EventHandlerBase):
             count+=len(category.commands)
         
         return count
-        
-class ReactionAddWaitfor(EventHandlerBase):
-    __slots__=('waitfors',)
-    __event_name__='reaction_add'
-    
-    def __init__(self):
-        self.waitfors=WeakKeyDictionary()
-    
-    append=CommandProcesser.append
-    remove=CommandProcesser.remove
-    
-    async def __call__(self,client,message,emoji,user):
-        try:
-            event=self.waitfors[message]
-        except KeyError:
-            return
 
-        if type(event) is asynclist:
-            for event in event:
-                Task(event(client,emoji,user,),client.loop)
-        else:
-            Task(event(client,emoji,user,),client.loop)
+class ReactionAddWaitfor(EventWaitforBase):
+    __slots__ = ()
+    __event_name__ = 'reaction_add'
 
-class ReactionDeleteWaitfor(EventHandlerBase):
-    __slots__=('waitfors',)
-    __event_name__='reaction_delete'
-    
-    def __init__(self):
-        self.waitfors=WeakKeyDictionary()
-    
-    append  = ReactionAddWaitfor.append
-    remove  = ReactionAddWaitfor.remove
-    __call__= ReactionAddWaitfor.__call__
+class ReactionDeleteWaitfor(EventWaitforBase):
+    __slots__ = ()
+    __event_name__ = 'reaction_delete'
 
 class multievent(object):
     __slots__=('events',)
@@ -1813,13 +1753,13 @@ class multievent(object):
     def __init__(self,*events):
         self.events=events
     
-    def append(self,wrapper,target):
+    def append(self, target, waiter):
         for event in self.events:
-            event.append(wrapper,target)
+            event.append(target, waiter)
     
-    def remove(self,wrapper,target):
+    def remove(self, target, waiter):
         for event in self.events:
-            event.remove(wrapper,target)
+            event.remove(target, waiter)
 
 class Timeouter(object):
     __slots__=('loop', 'handler', 'owner', 'timeout')
@@ -1929,15 +1869,13 @@ class Pagination(object):
             await client.reaction_add(message,self.CANCEL)
         
         self.timeouter=Timeouter(client.loop,self,timeout=timeout)
-        client.events.reaction_add.append(self,message)
-        client.events.reaction_delete.append(self,message)
+        client.events.reaction_add.append(message, self)
+        client.events.reaction_delete.append(message, self)
         return self
     
-    async def __call__(self,client,emoji,user):
+    async def __call__(self, client, message, emoji, user):
         if user.is_bot or (emoji not in self.EMOJIS):
             return
-        
-        message=self.message
         
         if self.channel.cached_permissions_for(client).can_manage_messages:
             if not message.did_react(emoji,user):
@@ -1976,7 +1914,10 @@ class Pagination(object):
                         return
                     
                     if isinstance(err,DiscordException):
-                        if err.code == ERROR_CODES.missing_access: # client removed
+                        if err.code in (
+                                ERROR_CODES.unknown_channel, # message's channel deleted
+                                ERROR_CODES.missing_access, # client removed
+                                    ):
                             return
                     
                     await client.events.error(client,f'{self!r}.__call__',err)
@@ -2019,8 +1960,9 @@ class Pagination(object):
             
             if isinstance(err,DiscordException):
                 if err.code in (
+                        ERROR_CODES.unknown_message, # message deleted
+                        ERROR_CODES.unknown_channel, # channel deleted
                         ERROR_CODES.missing_access, # client removed
-                        ERROR_CODES.unknown_message, # message already deleted
                             ):
                     return
             
@@ -2041,7 +1983,10 @@ class Pagination(object):
                     return
                 
                 if isinstance(err,DiscordException):
-                    if err.code==ERROR_CODES.missing_access: # client removed
+                    if err.code in (
+                            ERROR_CODES.unknown_channel, #message's channel deleted
+                            ERROR_CODES.missing_access, # client removed
+                                ):
                         return
                 
                 await client.events.error(client,f'{self!r}.__call__',err)
@@ -2056,13 +2001,13 @@ class Pagination(object):
         client=self.client
         message=self.message
         
-        client.events.reaction_add.remove(self,message)
-        client.events.reaction_delete.remove(self,message)
+        client.events.reaction_add.remove(message, self)
+        client.events.reaction_delete.remove(message, self)
         
         if self.task_flag==GUI_STATE_SWITCHING_CTX:
             # the message is not our, we should not do anything with it.
             return
-
+        
         self.task_flag=GUI_STATE_CANCELLED
         
         if exception is None:
@@ -2080,8 +2025,9 @@ class Pagination(object):
                     
                     if isinstance(err,DiscordException):
                         if err.code in (
-                                ERROR_CODES.missing_access, # client removed
                                 ERROR_CODES.unknown_message, # message deleted
+                                ERROR_CODES.unknown_channel, # channel deleted
+                                ERROR_CODES.missing_access, # client removed
                                 ERROR_CODES.missing_permissions, # permissions changed meanwhile
                                     ):
                             return
@@ -2146,8 +2092,9 @@ class Pagination(object):
             
             if isinstance(err,DiscordException):
                 if err.code in (
-                        ERROR_CODES.missing_access, # client removed
                         ERROR_CODES.unknown_message, # message deleted
+                        ERROR_CODES.unknown_channel, # channel deleted
+                        ERROR_CODES.missing_access, # client removed
                         ERROR_CODES.missing_permissions, # permissions changed meanwhile
                             ):
                     return
@@ -2164,7 +2111,7 @@ class WaitAndContinue(object):
         self.event=event
         self.target=target
         self.timeouter=Timeouter(future._loop,self,timeout)
-        event.append(self,target)
+        event.append(target, self)
     
     async def __call__(self, client, *args):
         result = self.check(*args)
@@ -2184,7 +2131,7 @@ class WaitAndContinue(object):
         self.cancel()
         
     async def _canceller(self,exception):
-        self.event.remove(self,self.target)
+        self.event.remove(self.target, self)
         if exception is None:
             self.future.set_result_if_pending(None)
             return
@@ -2308,7 +2255,7 @@ class prefix_by_guild(dict):
         async with engine.connect() as connector:
             await connector.execute(table.delete(). \
                 where(model.guild_id==guild_id))
-
+    
     def __repr__(self):
         return f'<{self.__class__.__name__} default=\'{self.default}\' len={self.__len__()}>'
     
@@ -2480,17 +2427,6 @@ class Cooldown(MethodLike):
             return 0.
         return unit.expires_at
 
-def implements_waitfor(event):
-    if not hasattr(event,'waitfors'):
-        return False
-    
-    event=type(event)
-    for name in ('append', 'remove',):
-        if not hasattr(event,name):
-            return False
-    
-    return True
-
 def setup_extension(client, prefix, **kwargs):
     if type(client) is not Client:
         raise TypeError(f'Expecte type `{Client.__name__}` as client, meanwhile got `{client!r}`.')
@@ -2529,14 +2465,14 @@ def setup_extension(client, prefix, **kwargs):
         
         if type(event_reaction_add) is asynclist:
             for event in event_reaction_add:
-                if implements_waitfor(event):
+                if isinstance(event,EventWaitforBase):
                     break
             else:
                 client.events(ReactionAddWaitfor)
             
             break
         
-        if implements_waitfor(event_reaction_add):
+        if isinstance(event_reaction_add,EventWaitforBase):
             break
         
         client.events(ReactionAddWaitfor)
@@ -2550,14 +2486,14 @@ def setup_extension(client, prefix, **kwargs):
         
         if type(event_reaction_delete) is asynclist:
             for event in event_reaction_add:
-                if implements_waitfor(event):
+                if isinstance(event,EventWaitforBase):
                     break
             else:
                 client.events(ReactionDeleteWaitfor)
             
             break
         
-        if implements_waitfor(event_reaction_delete):
+        if isinstance(event_reaction_delete,EventWaitforBase):
             break
         
         client.events(ReactionDeleteWaitfor)

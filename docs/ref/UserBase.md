@@ -201,7 +201,7 @@ Returns the users's nick at the guild if it has, else it's name.
 > This method will be a [rich](#__rich__) method if the cubclass implements
 `'guild_profiles'` in it's slots.
 
-### `color(self,guild)`
+### `color_at(self,guild)`
 
 - returns : [`Color`](Color.md)
 - default : `Color(0)`
@@ -213,7 +213,7 @@ implements `'guild_profiles'` in it's slots.
 
 ### `mentioned_in(self,message)`
 
-- type : `bool`
+- returns : `bool`
 
 If the user is mentioned at a message.
 
@@ -222,9 +222,50 @@ implements `'guild_profiles'` in it's slots.
 
 ### `has_role(self,role)`
 
-- type : `bool`
+- returns : `bool`
 
 If the user has the specific role.
+
+> This method will be a [rich](#__rich__-module) method if the cubclass
+implements `'guild_profiles'` in it's slots.
+
+### `top_role_at(self, guild, default=None)`
+
+- returns : [`Role`](Role.md) / `default`
+- default : `default`
+
+Returns the user's top role at the given [guild](Guild.md). If the user is
+not at the given guild, or has no roles, returns the `default` value.
+
+> This method will be a [rich](#__rich__-module) method if the cubclass
+implements `'guild_profiles'` in it's slots.
+
+### `can_use_emoji(self, emoji)`
+
+- returns : `bool`
+
+Returns whether the user can use the given emoji.
+
+> This method will be a [rich](#__rich__-module) method if the cubclass
+implements `'guild_profiles'` in it's slots. Webhook subclasses get their own
+[rich](#__rich__-module) specific method as well.
+
+### `has_higher_role_than(self, role)`
+
+- returns : `bool`
+
+Returns whether the user has higher role at the passed [`role`](Role.md)'s
+[guild](Guild.md). If the user is the owner of the respective guild, then
+returns `True`.
+
+> This method will be a [rich](#__rich__-module) method if the cubclass
+implements `'guild_profiles'` in it's slots.
+
+### `has_higher_role_than_at(self, user, guild)`
+
+Returns whether our user (`self`) has higher [role](Role.md) at the given
+[guild](Guild.md) than the other user (`user`). Ownership is always prefered
+over the top roles.
 
 > This method will be a [rich](#__rich__-module) method if the cubclass
 implements `'guild_profiles'` in it's slots.

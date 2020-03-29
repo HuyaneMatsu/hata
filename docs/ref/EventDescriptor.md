@@ -244,17 +244,17 @@ The `result` can be:
  - `2` if embed links are added.
  - `3` the amount of the embeds is lowered. Should be caused only by a bug.
 
-### `emoji_create(client,guild,emoji)`
+### `emoji_create(client,emoji)`
 
 Called, when an [emoji](Emoji.md) is created at a [guild](Guild.md).
 
-### `emoji_delete(client,guild,emoji)`
+### `emoji_delete(client,emoji,guild)`
 
 Called, when an [emoji](Emoji.md) is deleted at a [guild](Guild.md).
 
 > Deleted emojis's [`.guild`](Emoji.md#guild) attribute is set to `None`.
 
-### `emoji_edit(client,guild,emoji,old)`
+### `emoji_edit(client,emoji,old)`
 
 Called when an [emoji](Emoji.md) is edited. The `old` argument is a `dict`
 of the changed attributes, what contains (`attribute name`, `old value`) items.
@@ -403,6 +403,7 @@ If the embeds are (un)suppressed of the message, then `old` might contain also
 |---------------------------|-----------------------------------------------------------------------------------------------|
 | activity                  | Nne / [MessageActivity](MessageActivity.md)                                                   |
 | application               | None /[MessageApplication](MessageApplication.md)                                             |
+| attachments               | None / (list of [Attachment](Attachment.md))                                                  |
 | content                   | str                                                                                           |
 | cross_mentions            | None / (list of [Channel](CHANNEL_TYPES.md) / [UnknownCrossMention](UnknownCrossMention.md))  |
 | edited                    | None / datetime                                                                               |
@@ -459,7 +460,7 @@ is removed.
 
 Called when a [role](Role.md) is created at a [guild](Guild.md).
 
-### `role_delete(client,role)`
+### `role_delete(client,role,guild)`
 
 Called when a [role](Role.md) is deleted at a [guild](Guild.md).
 

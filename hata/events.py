@@ -2429,7 +2429,7 @@ class Cooldown(MethodLike):
 
 def setup_extension(client, prefix, **kwargs):
     if type(client) is not Client:
-        raise TypeError(f'Expecte type `{Client.__name__}` as client, meanwhile got `{client!r}`.')
+        raise TypeError(f'Expected type `{Client.__name__}` as client, meanwhile got `{client!r}`.')
     
     if hasattr(client,'command_processer'):
         raise RuntimeError(f'The client already has an attribute named as `{"command_processer"!r}`.')

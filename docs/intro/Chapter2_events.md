@@ -1,21 +1,20 @@
 # Events (extension)
 
 The last chapter was all about basic event handling and some example cases,
-but at this chapter we will look into one of hata's extension, into `events`.
-It is a higher level modular command framework, which got it's name, because
-it contains 3 *event handlers*. (Maybe it's name should be changed for once.)
+but at this chapter we will look into one of hata's extension, into `commands`.
+It is a higher level modular command framework.
  
 All features of the extension can be setupped with using the
-`setup_extension` function.
+`setup_ext_commands` function.
 
 ```py
 from hata import Client, start_clients
-from hata.events import setup_extension
+from hata.ext.commands import setup_ext_commands
 
 TOKEN = ''
 NekoBot = Client(TOKEN)
 
-setup_extension(NekoBot,'n!')
+setup_ext_commands(NekoBot,'n!')
 
 @NekoBot.commands
 async def pat(client, message):
@@ -29,7 +28,18 @@ async def say(client, message, content):
 start_clients()
 ```
 
-After the client is created and `setup_extension` is called on it with a
+`setup_ext_commands` function accepts more arguments:
+
+| name                  | type                                                      | default       | description                                                                                           |
+|-----------------------|-----------------------------------------------------------|---------------|-------------------------------------------------------------------------------------------------------|
+| client                | `[Client`](../ref/discord/Client.md)                      | *required*    | The client on what the extension will be setupped.                                                    |
+| prefix                | `str`, `iterable` of `str`, `callable` returnning `str`   | *required*    | The prefix used for by the client's [CommandProcesser](../ref/ext/commands/CommandProcesser.md)       |
+| ignorecase            | `bool`                                                    | `True`        | Whether the prefixe's case should be ignored.                                                         |
+| mention_prefix        | `bool`                                                    | `True`        | Whether the client should accept it's mention at the start of the messages as an alternative prefix.  |
+| default_category_name | `NoneType` / `str`                                        | `None`        | The CommandProcesser's default [Category](../ref/ext/commands/Category.md)'s name.                    |
+
+
+After the client is created and `setup_ext_commands` is called on it with a
 `prefix`, commands can be registered to the Client, with using it's new
 `.commands` attribute as a decorator.
 
@@ -97,7 +107,7 @@ when you want to pass more words separated with space.
 You can also specify the generated parser, with using the `Converter` object.
 ```py
 from hata import Embed
-from hata.events import Converter, ConverterFlag
+from hata.ext.commands import Converter, ConverterFlag
 
 @NekoBot.commands
 async def avatar(client, message, user : Converter('user', flags=ConverterFlag.user_default.update_by_keys(everywhere=True), default_code='message.author')):
@@ -160,7 +170,7 @@ async def print_(client, message, content):
 
 Or add checks for the command:
 ```py
-from hata.events import checks
+from hata.ext.commands import checks
 
 @NekoBot.commands(checks=[checks.owner_only()])
 async def owner(client, message):

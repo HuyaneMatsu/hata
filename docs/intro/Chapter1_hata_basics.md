@@ -123,7 +123,7 @@ When adding event handler, then type and arg-count is checked, so whenever you
 would mess something up, it should raise an exception, like:
 
 - `ValueError: Events must be coroutine functions!`
-- `ValueError: Invalid argcount, expected 2, got 1 (args=False).`
+- `ValueError: Invalid argcount, expected 2, got 1.`
 - `LookupError: Invalid Event name: 'owowhatsthis'.`
 
 ## Formatting objects

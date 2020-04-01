@@ -16,7 +16,13 @@ setup(
     version     = version,
     packages    = [
         'hata',
-        'hata.bin',
+        'hata.backend',
+        'hata.discord',
+        'hata.discord.bin',
+        'hata.ext.commands',
+        'hata.ext.extension_loader',
+        'hata.ext.kokoro_sqlalchemy',
+        'hata.ext.prettyprint',
             ],
     url         = 'https://github.com/HuyaneMatsu/hata',
     license     = 'Apache 2.0',
@@ -29,10 +35,10 @@ setup(
             ],
     include_package_data = True,
     package_data = {
-        'hata': [
+        'hata.discord': [
             'emojis.dnd',
                 ],
-        'hata.bin' : [
+        'hata.discord.bin' : [
             'libopus-0.x64.dll',
             'libopus-0.x86.dll',
                 ],

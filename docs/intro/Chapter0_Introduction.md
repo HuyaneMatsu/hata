@@ -20,7 +20,7 @@ until you have enough knowledge of the wrapper to be able to make more advanced 
 command creation.
 
 If you want to check
-[references](https://github.com/HuyaneMatsu/hata/blob/master/docs/ref/), we got them too.
+[references](../ref), we got them too.
 
 ### About Hata
 

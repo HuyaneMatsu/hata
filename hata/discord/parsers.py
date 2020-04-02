@@ -3706,6 +3706,48 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
                     return element
                 else:
                     return None
+
+    def get_waiters(self, target, waiter, by_type=False, is_method=False):
+        result = []
+        
+        try:
+            element = self.waitfors[target]
+        except KeyError:
+            return result
+        
+        if type(element) is asynclist:
+            for element in element:
+                if is_method:
+                    if not isinstance(element,MethodLike):
+                        continue
+                    
+                    element = element.__self__
+                
+                if by_type:
+                    if type(element) is not waiter:
+                        continue
+                else:
+                    if element != waiter:
+                        continue
+                
+                result.append(element)
+                continue
+        
+        else:
+            if is_method:
+                if not isinstance(element,MethodLike):
+                    return result
+                
+                element = element.__self__
+            
+            if by_type:
+                if type(element) is waiter:
+                    result.append(element)
+            else:
+                if element == waiter:
+                    result.append(element)
+        
+        return result
     
     def _run_waitfors_for(self, key, args):
         try:

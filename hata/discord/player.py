@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
-__all__ = ('LocalAudio', )
+__all__ = ('DownloadError', 'LocalAudio', 'YTaudio', )
 
 import os, sys, subprocess, audioop, shlex
-from threading import Event, Thread
+from threading import Event, Thread, current_thread
 from time import perf_counter, sleep as blocking_sleep
 
 from ..backend.dereaddons_local import alchemy_incendiary
 from ..backend.futures import render_exc_to_list
+from ..backend.eventloop import EventThread
 
 from .opus import FRAME_LENGTH, FRAME_SIZE, SAMPLES_PER_FRAME
 
@@ -165,7 +166,11 @@ class LocalAudio(object):
     def _open(path):
         return FFmpegPCMaudio(path)
 
-    async def __new__(cls,loop,path):
+    async def __new__(cls,path):
+        loop = current_thread()
+        if not isinstance(loop,EventThread):
+            raise RuntimeError(f'{cls.__name__}({path!r},...) was called from a non {EventThread.__name__}: {loop!r}.')
+            
         source = await loop.run_in_executor(alchemy_incendiary(cls._open,(path,)))
         return PCM_volume_transformer(source)
 
@@ -173,9 +178,9 @@ try:
     import youtube_dl
 except ImportError:
     youtube_dl=None
+    DownloadError = None
+    YTaudio = None
 else:
-    __all__ = (*__all__, 'YTaudio', 'DownloadError', )
-    
     from youtube_dl.utils import DownloadError
     youtube_dl.utils.bug_reports_message = lambda: ''
     
@@ -210,13 +215,17 @@ else:
 
             return original,filename,data
         
-        async def __new__(cls,loop,url,executor_id=0,delete_after=True):
+        async def __new__(cls,url,executor_id=0,delete_after=True):
+            loop = current_thread()
+            if not isinstance(loop,EventThread):
+                raise RuntimeError(f'{cls.__name__}({url!r},...) was called from a non {EventThread.__name__}: {loop!r}.')
+            
             func=alchemy_incendiary(cls._download,(url,))
             if executor_id:
                 future=loop.run_in_id_executor(func,executor_id)
             else:
                 future=loop.run_in_executor(func)
-
+            
             original,filename,data = await future
             
             #create self only at the end, so the `__del__` wont pick it up

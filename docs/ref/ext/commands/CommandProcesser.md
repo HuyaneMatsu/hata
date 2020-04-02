@@ -632,8 +632,20 @@ Same as adding but it removes the `waiter`. Also raises no error, if the
 
 ### `get_waiter(self, target, waiter, by_type=False, is_method=False)`
 
+- returns : `Any`
+- default : None`
+
 Returns the first `waiter` what matches the criteria. If nothing is found,
 what would, return `None`.
+
+### `get_waiters(self, target, waiter, by_type=False, is_method=False)`
+
+- returns: `list`
+- elements : `Any`
+
+Familiar to [`.get_waiter`](#get_waiterself-target-waiter-by_typefalse-is_methodfalse),
+but instead of returning the first found waiter or `None`, returns a `list` of
+all the found waiters.
 
 ## Updating prefixes
 

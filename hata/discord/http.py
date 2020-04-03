@@ -672,7 +672,7 @@ class DiscordHTTPClient(HTTPClient):
             METH_PATCH, f'{API_ENDPOINT}/guilds/{guild_id}/channels', data, reason=reason)
     
     async def channel_edit(self,channel_id,data,reason):
-        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.channel_edit, 0),
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.channel_edit, channel_id),
             METH_PATCH, f'{API_ENDPOINT}/channels/{channel_id}', data, reason=reason)
     
     async def channel_create(self,guild_id,data,reason):
@@ -955,7 +955,7 @@ class DiscordHTTPClient(HTTPClient):
     #role
     
     async def role_edit(self,guild_id,role_id,data,reason):
-        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.role_edit, 0),
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.role_edit, guild_id),
             METH_PATCH, f'{API_ENDPOINT}/guilds/{guild_id}/roles/{role_id}',data,reason=reason)
     
     async def role_delete(self,guild_id,role_id,reason):
@@ -963,7 +963,7 @@ class DiscordHTTPClient(HTTPClient):
             METH_DELETE, f'{API_ENDPOINT}/guilds/{guild_id}/roles/{role_id}',reason=reason)
     
     async def role_create(self,guild_id,data,reason):
-        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.role_create, 0),
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.role_create, guild_id),
             METH_POST, f'{API_ENDPOINT}/guilds/{guild_id}/roles', data, reason=reason)
     
     async def role_move(self,guild_id,data,reason):

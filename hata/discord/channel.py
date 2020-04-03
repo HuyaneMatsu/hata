@@ -1805,10 +1805,10 @@ def cr_pg_channel_object(name, type_, overwrites=None, topic=None, nsfw=False,
         if type_>=len(CHANNEL_TYPES):
             raise ValueError(f'`type_` exceeded the defined channel type limit. Limit: `{len(CHANNEL_TYPES)-1!r}`, got `{type_}`')
         
-        if not isinstance(CHANNEL_TYPES[type_],ChannelGuildBase):
+        if not issubclass(CHANNEL_TYPES[type_],ChannelGuildBase):
             raise ValueError(f'The function accepts only guild channel types, got `{type_!r}`')
-            
-        type_value=CHANNEL_TYPES[type_]
+        
+        type_value=type_
     
     elif isinstance(type_,type) and issubclass(type_,ChannelBase):
         if not isinstance(type_,ChannelGuildBase):
@@ -1861,7 +1861,7 @@ def cr_pg_channel_object(name, type_, overwrites=None, topic=None, nsfw=False,
             raise ValueError(f'`user_limit` should be 0 for unlimited or 1-99, got `{user_limit!r}`')
         result['user_limit']=user_limit
     
-    if type_value not in ChannelCategory.INTERCHANGE[0]:
+    if type_value not in ChannelCategory.INTERCHANGE:
         if (category_id is not None):
             result['parent_id']=category_id
     

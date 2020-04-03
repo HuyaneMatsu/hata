@@ -2388,7 +2388,7 @@ def GUILD_ROLE_DELETE__CAL_MC(client, data):
     role._delete()
     
     for client_ in clients:
-        Task(client_.events.role_delete(client_,role),client_.loop)
+        Task(client_.events.role_delete(client_,role, guild),client_.loop)
 
 def GUILD_ROLE_DELETE__OPT_SC(client, data):
     guild_id=int(data['guild_id'])

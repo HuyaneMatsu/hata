@@ -378,7 +378,7 @@ class RATELIMIT_GROUPS:
     client_logout               = RatelimitGroup() # untested
     channel_delete              = RatelimitGroup.unlimited()
     channel_group_leave         = RatelimitGroup() # untested; same as channel_delete?
-    channel_edit                = RatelimitGroup.unlimited()
+    channel_edit                = RatelimitGroup(RatelimitGroup.CHANNEL)
     channel_group_edit          = RatelimitGroup() # untested; same as channel_edit?
     channel_follow              = RatelimitGroup.unlimited()
     invite_get_channel          = RatelimitGroup.unlimited()
@@ -451,9 +451,9 @@ class RATELIMIT_GROUPS:
     guild_regions               = RatelimitGroup.unlimited()
     guild_roles                 = RatelimitGroup.unlimited()
     role_move                   = RatelimitGroup.unlimited()
-    role_create                 = RatelimitGroup.unlimited()
+    role_create                 = RatelimitGroup(RatelimitGroup.GUILD)
     role_delete                 = RatelimitGroup.unlimited()
-    role_edit                   = RatelimitGroup.unlimited()
+    role_edit                   = RatelimitGroup(RatelimitGroup.GUILD)
     vanity_get                  = RatelimitGroup.unlimited()
     vanity_edit                 = RatelimitGroup.unlimited() # untested
     webhook_get_guild           = RatelimitGroup.unlimited()
@@ -494,7 +494,7 @@ class RATELIMIT_GROUPS:
 ##INFO :
 ##    some endpoints might be off 1s
 ##    groups are not accurate now, because we use autogroups
-##    last group id: 89600
+##    last group id: 94976
 ##
 ##endpoint: https://cdn.discordapp.com/
 ##method  : GET
@@ -586,7 +586,12 @@ class RATELIMIT_GROUPS:
 ##method  : PATCH
 ##auth    : bot
 ##used at : channel_edit
-##limits  : unlimited
+##limits  :
+##limits  :
+##    group   : 91392
+##    limit   : 5
+##    reset   : 15
+##    limiter : channel_id
 ##
 ##endpoint: /channels/{channel_id}
 ##method  : PATCH
@@ -1134,6 +1139,10 @@ class RATELIMIT_GROUPS:
 ##auth    : bot
 ##used at : role_create
 ##limits  : unlimited
+##    group   : 94976
+##    limit   : 250
+##    reset   : 172800
+##    limiter : guild_id
 ##
 ##endpoint: /guilds/{guild_id}/roles/{role_id}
 ##method  : DELETE
@@ -1145,7 +1154,11 @@ class RATELIMIT_GROUPS:
 ##method  : PATCH
 ##auth    : bot
 ##used at : role_edit
-##limits  : unlimited
+##limits  :
+##    group   : 93184
+##    limit   : 1000
+##    reset   : 86400
+##    limiter : guild_id
 ##
 ##endpoint: /guilds/{guild_id}/vanity-url
 ##method  : GET

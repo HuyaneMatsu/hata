@@ -1,7 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('Cooldown', 'GUI_STATE_CANCELLED', 'GUI_STATE_CANCELLING', 'GUI_STATE_READY', 'GUI_STATE_SWITCHING_CTX',
-    'GUI_STATE_SWITCHING_PAGE', 'Timeouter', 'Pagination', 'WaitAndContinue', 'ReactionAddWaitfor',
-    'ReactionDeleteWaitfor', 'multievent', 'prefix_by_guild', 'wait_for_message', 'wait_for_reaction', )
+__all__ = ('ChooseMenu', 'Cooldown', 'GUI_STATE_CANCELLED', 'GUI_STATE_CANCELLING', 'GUI_STATE_READY',
+    'GUI_STATE_SWITCHING_CTX', 'GUI_STATE_SWITCHING_PAGE', 'Timeouter', 'Pagination', 'WaitAndContinue',
+    'ReactionAddWaitfor', 'ReactionDeleteWaitfor', 'multievent', 'prefix_by_guild', 'wait_for_message',
+    'wait_for_reaction', )
 
 from ...backend.dereaddons_local import MethodLike
 from ...backend.futures import Task, Future
@@ -10,6 +11,7 @@ from ...discord.parsers import check_name, DEFAULT_EVENT, EventWaitforBase
 from ...discord.emoji import BUILTIN_EMOJIS
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.client_core import KOKORO
+from ...discord.embed import Embed
 
 class ReactionAddWaitfor(EventWaitforBase):
     __slots__ = ()
@@ -116,6 +118,9 @@ class Pagination(object):
         'task_flag', 'timeout', 'timeouter')
     
     async def __new__(cls,client,channel,pages,timeout=240.,message=None):
+        if not pages:
+            return None
+        
         self=object.__new__(cls)
         self.client=client
         self.channel=channel
@@ -127,18 +132,36 @@ class Pagination(object):
         self.timeout=timeout
         self.timeouter=None
         
-        if message is None:
-            message = await client.message_create(channel,embed=pages[0])
-            self.message=message
-        
-        if not channel.cached_permissions_for(client).can_add_reactions:
-            return self
-        
-        if len(self.pages)>1:
-            for emoji in self.EMOJIS:
-                await client.reaction_add(message,emoji)
-        else:
-            await client.reaction_add(message,self.CANCEL)
+        try:
+            if message is None:
+                message = await client.message_create(channel,embed=pages[0])
+                self.message=message
+            else:
+                await client.message_edit(message,embed=pages[0])
+            
+            if not channel.cached_permissions_for(client).can_add_reactions:
+                return self
+            
+            if len(self.pages)>1:
+                for emoji in self.EMOJIS:
+                    await client.reaction_add(message,emoji)
+            else:
+                await client.reaction_add(message,self.CANCEL)
+        except BaseException as err:
+            if isinstance(err,ConnectionError):
+                return None
+            
+            if isinstance(self,DiscordException):
+                if err.code in (
+                        ERROR_CODES.unknown_message, # message deleted
+                        ERROR_CODES.unknown_channel, # message's channel deleted
+                        ERROR_CODES.max_reactions, # reached reaction 20, some1 is trolling us.
+                        ERROR_CODES.missing_access, # client removed
+                        ERROR_CODES.missing_permissions, # permissions changed meanwhile
+                            ):
+                    return None
+            
+            raise
         
         self.timeouter=Timeouter(client.loop,self,timeout=timeout)
         client.events.reaction_add.append(message, self)
@@ -329,7 +352,8 @@ class Pagination(object):
     def __repr__(self):
         result = [
             '<', self.__class__.__name__,
-            ' pages=', repr(len(self.pages)),
+            ' client=', repr(self.client),
+            ', pages=', repr(len(self.pages)),
             ', page=', repr(self.page),
             ', channel=', repr(self.channel),
             ', task_flag='
@@ -373,6 +397,424 @@ class Pagination(object):
             
             await client.events.error(client,f'{self!r}._reaction_delete',err)
             return
+
+
+class ChooseMenu(object):
+    UP      = BUILTIN_EMOJIS['arrow_up_small']
+    DOWN    = BUILTIN_EMOJIS['arrow_down_small']
+    LEFT    = BUILTIN_EMOJIS['arrow_backward']
+    RIGHT   = BUILTIN_EMOJIS['arrow_forward']
+    SELECT  = BUILTIN_EMOJIS['ok']
+    CANCEL  = BUILTIN_EMOJIS['x']
+    EMOJIS_RESTRICTED = (UP,DOWN,SELECT,CANCEL)
+    EMOJIS  = (UP,DOWN,LEFT,RIGHT,SELECT,CANCEL)
+    
+    __slots__ = ('canceller', 'channel', 'client', 'embed', 'message', 'selected',
+        'choices', 'task_flag', 'timeout', 'timeouter', 'prefix', 'selecter')
+    
+    async def __new__(cls, client, channel, choices, selecter, embed=Embed(), timeout=240., message=None, prefix=None):
+        if (prefix is not None) and len(prefix)>100:
+            raise ValueError(f'Please pass a prefix, what is shorter than 100 characters, got {prefix!r}')
+        
+        result_ln=len(choices)
+        if result_ln<2:
+            if result_ln==1:
+                choice = choices[0]
+                if isinstance(choice, tuple):
+                    await selecter(client, message, *choice)
+                else:
+                    await selecter(client, message, choice)
+            return None
+        
+        self=object.__new__(cls)
+        self.client=client
+        self.channel=channel
+        self.choices=choices
+        self.selecter=selecter
+        self.selected = 0
+        self.canceller=cls._canceller
+        self.task_flag=GUI_STATE_READY
+        self.message=message
+        self.timeout=timeout
+        self.timeouter=None
+        self.prefix=prefix
+        self.embed=embed
+        
+        try:
+            if message is None:
+                message = await client.message_create(channel,embed=self._render_embed())
+                self.message=message
+            else:
+                await client.message_edit(message,embed=self._render_embed())
+            
+            if not channel.cached_permissions_for(client).can_add_reactions:
+                return self
+            
+            for emoji in (self.EMOJIS if len(choices)>10 else self.EMOJIS_RESTRICTED):
+                await client.reaction_add(message,emoji)
+        except BaseException as err:
+            if isinstance(err,ConnectionError):
+                return self
+            
+            if isinstance(self,DiscordException):
+                if err.code in (
+                        ERROR_CODES.unknown_message, # message deleted
+                        ERROR_CODES.unknown_channel, # message's channel deleted
+                        ERROR_CODES.max_reactions, # reached reaction 20, some1 is trolling us.
+                        ERROR_CODES.missing_access, # client removed
+                        ERROR_CODES.missing_permissions, # permissions changed meanwhile
+                            ):
+                    return self
+            
+            raise
+            
+        self.timeouter=Timeouter(client.loop,self,timeout=timeout)
+        client.events.reaction_add.append(message, self)
+        client.events.reaction_delete.append(message, self)
+        return self
+
+    def _render_embed(self):
+        selected = self.selected
+        choices = self.choices
+        index = (selected//10)*10
+        end = index+10
+        if len(choices)<end:
+            end = len(choices)
+        
+        parts=[]
+        prefix=self.prefix
+        left_length = 195
+        if (prefix is not None):
+            left_length-=len(prefix)
+        
+        while True:
+            title=choices[index]
+            if isinstance(title,tuple):
+                if not title:
+                    title=''
+                else:
+                    title = title[0]
+            
+            if not isinstance(title,str):
+                title = str(title)
+            
+            if len(title)>left_length:
+                space_position = title.rfind(' ',left_length-25,left_length)
+                if space_position==-1:
+                    space_position=left_length-3
+                
+                title = title[:space_position]+'...'
+            
+            if index==selected:
+                if (prefix is not None):
+                    parts.append('**')
+                    parts.append(prefix)
+                    parts.append('** ')
+                parts.append('**')
+                parts.append(title)
+                parts.append('**\n')
+            else:
+                if (prefix is not None):
+                    parts.append(prefix)
+                    parts.append(' ')
+                parts.append(title)
+                parts.append('\n')
+            
+            index=index+1
+            if index==end:
+                break
+        
+        embed=self.embed
+        embed.description=''.join(parts)
+        
+        current_page = (selected//10)+1
+        limit = len(choices)
+        page_limit = (limit//10)+1
+        start = end-9
+        if start<1:
+            start=1
+        if end==len(choices):
+            end-=1
+        limit-=1
+        
+        embed.add_footer(f'Page {current_page}/{page_limit}, {start} - {end} / {limit}, selected: {selected+1}')
+        return embed
+    
+    async def __call__(self,client,message,emoji,user):
+        if user.is_bot or (emoji not in (self.EMOJIS if len(self.choices)>10 else self.EMOJIS_RESTRICTED)):
+            return
+        
+        client=self.client
+        message=self.message
+        
+        if self.channel.cached_permissions_for(client).can_manage_messages:
+            if not message.did_react(emoji,user):
+                return
+            
+            Task(self._reaction_delete(emoji,user),client.loop)
+        
+        task_flag=self.task_flag
+        if task_flag!=GUI_STATE_READY:
+            if task_flag==GUI_STATE_SWITCHING_PAGE:
+                if emoji is self.CANCEL:
+                    self.task_flag=GUI_STATE_CANCELLING
+                return
+            
+            # ignore GUI_STATE_CANCELLED and GUI_STATE_SWITCHING_CTX
+            return
+        
+        while True:
+            if emoji is self.UP:
+                selected = self.selected-1
+                break
+            
+            if emoji is self.DOWN:
+                selected = self.selected+1
+                break
+            
+            if emoji is self.LEFT:
+                selected = self.selected-10
+                break
+            
+            if emoji is self.RIGHT:
+                selected = self.selected+10
+                break
+            
+            if emoji is self.CANCEL:
+                self.task_flag=GUI_STATE_CANCELLED
+                try:
+                    await client.message_delete(message)
+                except BaseException as err:
+                    self.cancel()
+                    
+                    if isinstance(err,ConnectionError):
+                        # no internet
+                        return
+                    
+                    if isinstance(err,DiscordException):
+                        if err.code in (
+                                ERROR_CODES.unknown_channel, # message's channel deleted
+                                ERROR_CODES.missing_access, # client removed
+                                    ):
+                            return
+                    
+                    await client.events.error(client,f'{self!r}.__call__',err)
+                    return
+                
+                else:
+                    self.cancel()
+                    return
+            
+            if emoji is self.SELECT:
+                self.task_flag=GUI_STATE_SWITCHING_CTX
+                self.cancel()
+                
+                try:
+                    if self.channel.cached_permissions_for(client).can_manage_messages:
+                        await client.reaction_clear(message)
+                    
+                    else:
+                        for emoji in self.EMOJIS:
+                            await client.reaction_delete_own(message,emoji)
+                except BaseException as err:
+                    if isinstance(err,ConnectionError):
+                        # no internet
+                        return
+                    
+                    if isinstance(err,DiscordException):
+                        if err.code in (
+                                ERROR_CODES.unknown_message, # message already deleted
+                                ERROR_CODES.unknown_channel, # channel deleted
+                                ERROR_CODES.missing_access, # client removed
+                                ERROR_CODES.missing_permissions, # permissions changed meanwhile
+                                    ):
+                            return
+                    
+                    await client.events.error(client,f'{self!r}.__call__',err)
+                    return
+                
+                selecter = self.selecter
+                try:
+                    choice = self.choices[0]
+                    if isinstance(choice, tuple):
+                        await selecter(client, message, *choice)
+                    else:
+                        await selecter(client, message, choice)
+                except BaseException as err:
+                    await client.events.error(client,f'{self!r}.__call__ when calling {selecter!r}',err)
+                return
+            
+            return
+        
+        if selected<0:
+            selected=0
+        elif selected>=len(self.choices):
+            selected=len(self.choices)-1
+        
+        if self.selected==selected:
+            return
+        
+        self.selected=selected
+        self.task_flag=GUI_STATE_SWITCHING_PAGE
+        try:
+            await client.message_edit(message,embed=self._render_embed())
+        except BaseException as err:
+            self.task_flag=GUI_STATE_CANCELLED
+            self.cancel()
+            
+            if isinstance(err,ConnectionError):
+                # no internet
+                return
+            
+            if isinstance(err,DiscordException):
+                if err.code in (
+                        ERROR_CODES.unknown_message, # message already deleted
+                        ERROR_CODES.unknown_channel, # message's channel deleted
+                        ERROR_CODES.missing_access, # client removed
+                            ):
+                    return
+            
+            # We definitedly do not want to silence `ERROR_CODES.invalid_form_body`
+            await client.events.error(client,f'{self!r}.__call__',err)
+            return
+
+        if self.task_flag==GUI_STATE_CANCELLING:
+            self.task_flag=GUI_STATE_CANCELLED
+            try:
+                await client.message_delete(message)
+            except BaseException as err:
+                
+                if isinstance(err,ConnectionError):
+                    # no internet
+                    return
+                
+                if isinstance(err,DiscordException):
+                    if err.code in (
+                            ERROR_CODES.unknown_channel,
+                            ERROR_CODES.missing_access, # client removed
+                                ):
+                        return
+                
+                await client.events.error(client,f'{self!r}.__call__',err)
+                return
+            
+            self.cancel()
+            return
+        
+        self.task_flag=GUI_STATE_READY
+        self.timeouter.set_timeout(self.timeout)
+    
+    async def _reaction_delete(self,emoji,user):
+        client=self.client
+        try:
+            await client.reaction_delete(self.message,emoji,user)
+        except BaseException as err:
+            
+            if isinstance(err,ConnectionError):
+                # no internet
+                return
+            
+            if isinstance(err,DiscordException):
+                if err.code in (
+                        ERROR_CODES.unknown_message, # message deleted
+                        ERROR_CODES.unknown_channel, # channel deleted
+                        ERROR_CODES.missing_access, # client removed
+                        ERROR_CODES.missing_permissions, # permissions changed meanwhile
+                            ):
+                    return
+            
+            await client.events.error(client,f'{self!r}._reaction_delete',err)
+            return
+    
+    async def _canceller(self,exception,):
+        client=self.client
+        message=self.message
+        
+        client.events.reaction_add.remove(message, self)
+        client.events.reaction_delete.remove(message, self)
+        
+        if self.task_flag==GUI_STATE_SWITCHING_CTX:
+            # the message is not our, we should not do anything with it.
+            return
+
+        self.task_flag=GUI_STATE_CANCELLED
+        
+        if exception is None:
+            return
+        
+        if isinstance(exception,TimeoutError):
+            if self.channel.cached_permissions_for(client).can_manage_messages:
+                try:
+                    await client.reaction_clear(message)
+                except BaseException as err:
+                    
+                    if isinstance(err,ConnectionError):
+                        # no internet
+                        return
+                    
+                    if isinstance(err,DiscordException):
+                        if err.code in (
+                                ERROR_CODES.unknown_message, # message deleted
+                                ERROR_CODES.unknown_channel, # channel deleted
+                                ERROR_CODES.missing_access, # client removed
+                                ERROR_CODES.missing_permissions, # permissions changed meanwhile
+                                    ):
+                            return
+                    
+                    await client.events.error(client,f'{self!r}._canceller',err)
+                    return
+            return
+        
+        timeouter=self.timeouter
+        if timeouter is not None:
+            timeouter.cancel()
+        #we do nothing
+    
+    def cancel(self):
+        canceller=self.canceller
+        if canceller is None:
+            return
+        
+        self.canceller=None
+        
+        timeouter=self.timeouter
+        if timeouter is not None:
+            timeouter.cancel()
+        
+        return Task(canceller(self,None),self.client.loop)
+
+    def __repr__(self):
+        result = [
+            '<', self.__class__.__name__,
+            ' client=', repr(self.client),
+            ', choices=', repr(len(self.choices)),
+            ', selected=', repr(self.selected),
+            ', channel=', repr(self.channel),
+            ', selecter=', repr(self.selecter),
+                ]
+        
+        prefix=self.prefix
+        if (prefix is not None):
+            result.append(', prefix=')
+            result.append(repr(prefix))
+        
+        result.append(', task_flag=')
+        task_flag=self.task_flag
+        result.append(repr(task_flag))
+        result.append(' (')
+        
+        task_flag_name = (
+            'GUI_STATE_READY',
+            'GUI_STATE_SWITCHING_PAGE',
+            'GUI_STATE_CANCELLING',
+            'GUI_STATE_CANCELLED',
+            'GUI_STATE_SWITCHING_CTX',
+                )[task_flag]
+        
+        result.append(task_flag_name)
+        result.append(')>')
+        
+        return ''.join(result)
 
 class WaitAndContinue(object):
     __slots__=('canceller', 'check', 'event', 'future', 'target', 'timeouter')

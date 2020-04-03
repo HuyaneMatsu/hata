@@ -18,8 +18,6 @@
 
 __all__ = ('DiscordException', 'ERROR_CODES', )
 
-from ..backend.dereaddons_local import modulize
-
 class DiscordException(Exception):
     def __init__(self,response,data):
         Exception.__init__(self)
@@ -190,7 +188,6 @@ class DiscordException(Exception):
         return self.response.status
 
 
-@modulize
 class ERROR_CODES:
     unknown_account         = 10001
     unknown_application     = 10002
@@ -261,4 +258,3 @@ class ERROR_CODES:
     
     resource_overloaded     = 130000
 
-del modulize

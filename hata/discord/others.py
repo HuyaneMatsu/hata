@@ -594,41 +594,109 @@ def filter_content(content):
     return [match[1] or match[0] for match in FILTER_RP.findall(content)]
 
 def chunkify(lines,limit=2000):
+    if limit<500:
+        raise ValueError(f'Minimal limit should be at least 500, got {limit!r}.')
+    
     result=[]
-    ln_count=0
-    shard=[]
+    chunk_ln=0
+    chunk=[]
     for line in lines:
-        ln=len(line)+1
-        ln_count+=ln
-        if ln_count>limit:
-            ln_count=ln
-            result.append('\n'.join(shard))
-            shard.clear()
-        shard.append(line)
-    result.append('\n'.join(shard))
+        while True:
+            ln=len(line)+1
+            if chunk_ln+ln>limit:
+                position=limit-chunk_ln
+                if position<250:
+                    result.append('\n'.join(chunk))
+                    chunk.clear()
+                    chunk.append(line)
+                    chunk_ln=ln
+                    break
+                
+                position=line.rfind(' ',position-250,position-3)
+                if position==-1:
+                    position = limit-chunk_ln-3
+                    post_part=line[position:]
+                else:
+                    post_part=line[position+1:]
+                
+                pre_part=line[:position]+'...'
+                
+                chunk.append(pre_part)
+                result.append('\n'.join(chunk))
+                chunk.clear()
+                if len(post_part)>limit:
+                    line=post_part
+                    chunk_ln=0
+                    continue
+                
+                chunk.append(post_part)
+                chunk_ln=len(post_part)+1
+                break
+            
+            chunk.append(line)
+            chunk_ln+=ln
+            break
+    
+    result.append('\n'.join(chunk))
+    
     return result
 
 def cchunkify(lines,lang='',limit=2000):
-    limit=limit-4
+    if limit<500:
+        raise ValueError(f'Minimal limit should be at least 500, got {limit!r}.')
+    
     starter=f'```{lang}'
-    ln_starter=len(starter)
+    limit=limit-len(starter)-5
     
     result=[]
-    ln_count=ln_starter
-    shard=[starter]
+    chunk_ln=0
+    chunk=[starter]
     for line in lines:
-        ln=len(line)+1
-        ln_count+=ln
-        if ln_count>limit:
-            ln_count=ln+ln_starter
-            shard.append('```')
-            result.append('\n'.join(shard))
-            shard.clear()
-            shard.append(starter)
-        shard.append(line)
-    if len(shard)>1:
-        shard.append('```')
-        result.append('\n'.join(shard))
+        while True:
+            ln=len(line)+1
+            if chunk_ln+ln>limit:
+                position=limit-chunk_ln
+                if position<250:
+                    chunk.append('```')
+                    result.append('\n'.join(chunk))
+                    chunk.clear()
+                    chunk.append(starter)
+                    chunk.append(line)
+                    chunk_ln=ln
+                    break
+                
+                position=line.rfind(' ',position-250,position-3)
+                if position==-1:
+                    position = limit-chunk_ln-3
+                    post_part=line[position:]
+                else:
+                    post_part=line[position+1:]
+                
+                pre_part=line[:position]+'...'
+                
+                chunk.append(pre_part)
+                chunk.append('```')
+                result.append('\n'.join(chunk))
+                chunk.clear()
+                chunk.append(starter)
+                
+                if len(post_part)>limit:
+                    line=post_part
+                    chunk_ln=0
+                    continue
+                
+                chunk.append(post_part)
+                chunk_ln=len(post_part)+1
+                break
+            
+            chunk.append(line)
+            chunk_ln+=ln
+            break
+    
+    if len(chunk)>1:
+        chunk.append('```')
+        result.append('\n'.join(chunk))
+    
     return result
 
 if (relativedelta is not None):

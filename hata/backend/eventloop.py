@@ -9,7 +9,7 @@ from threading import current_thread, Thread, Event
 from heapq import heappop, heappush
 from collections import deque
 
-from .dereaddons_local import alchemy_incendiary
+from .dereaddons_local import alchemy_incendiary, WeakReferer, weakmethod, method, WeakCallable
 from .futures import Future, Task, gather, render_exc_to_list, iscoroutine, FutureAsyncWrapper, WaitTillFirst
 from .py_transprotos import SSLProtocol, _SelectorSocketTransport
 from .executor import Executor
@@ -24,23 +24,52 @@ del threading, _ignore_frame
 
 class Handle(object):
     __slots__ = ('func', 'args', 'cancelled',)
-
+    
     def __init__(self, func, args):
         self.func       = func
         self.args       = args
         self.cancelled  = False
-
+    
     def __repr__(self):
+        result = [
+            '<',
+            self.__class__.__name__,
+                ]
+        
         if self.cancelled:
-            return f'<{self.__class__.__name__} cancelled>'
-        return f'<{self.__class__.__name__} function={self.func!r}({", ".join([repr(arg) for arg in self.args])})>'
-
+            result.append(' cancelled')
+        else:
+            result.append(' function=')
+            result.append(repr(self.func))
+            result.append('(')
+            
+            args = self.args
+            limit = len(args)
+            if limit:
+                index = 0
+                while True:
+                    arg = args[index]
+                    result.append(repr(arg))
+                    
+                    index = index+1
+                    if index == limit:
+                        break
+                    
+                    result.append(', ')
+                    continue
+            
+            result.append(')')
+        
+        result.append('>')
+        
+        return ''.join(result)
+    
     def cancel(self):
         if not self.cancelled:
             self.cancelled  = True
             self.func       = None
             self.args       = None
-
+    
     def _run(self):
         try:
             self.func(*self.args)
@@ -52,34 +81,65 @@ class Handle(object):
                 repr(self.func),
                 '\n',
                     ])
-
+        
         self = None  # Needed to break cycles when an exception occurs.
 
 class TimerHandle(Handle):
     __slots__ = ('when',)
-
+    
     def __init__(self, when, func, args):
         self.func       = func
         self.args       = args
         self.cancelled  = False
         self.when       = when
-
+    
     def __repr__(self):
+        result = [
+            '<',
+            self.__class__.__name__,
+                ]
+        
         if self.cancelled:
-            return f'<{self.__class__.__name__} cancelled>'
-        return f'<{self.__class__.__name__} function={self.func!r}({", ".join([repr(arg) for arg in self.args])}) when={self.when}>'
-
+            result.append(' cancelled')
+        else:
+            result.append(' function=')
+            result.append(repr(self.func))
+            result.append('(')
+            
+            args = self.args
+            limit = len(args)
+            if limit:
+                index = 0
+                while True:
+                    arg = args[index]
+                    result.append(repr(arg))
+                    
+                    index = index+1
+                    if index == limit:
+                        break
+                    
+                    result.append(', ')
+                    continue
+            
+            result.append(')')
+            result.append(', when=')
+            result.append(repr(self.when))
+        
+        result.append('>')
+        
+        return ''.join(result)
+    
     def __hash__(self):
         return hash(self.when)
-
+    
     def __gt__(self, other):
         return self.when>other.when
-
+    
     def __ge__(self, other):
         if self.when>other.when:
             return True
         return self.__eq__(other)
-
+    
     def __eq__(self, other):
         if type(self) is type(other):
             return (self.when       == other.when       and
@@ -87,7 +147,7 @@ class TimerHandle(Handle):
                     self.args       == other.args       and
                     self.cancelled  == other.cancelled      )
         return NotImplemented
-
+    
     def __ne__(self, other):
         if type(self) is type(other):
             return (self.when       != other.when       or
@@ -95,14 +155,47 @@ class TimerHandle(Handle):
                     self.args       != other.args       or
                     self.cancelled  != other.cancelled      )
         return NotImplemented
-
+    
     def __le__(self,other):
         if self.when<other.when:
             return True
         return self.__eq__(other)
-
+    
     def __lt__(self,other):
         return self.when<other.when
+
+class TimerWeakHandle(TimerHandle):
+    __slots__ = ('__weakref__', )
+    
+    def __init__(self, when, func, args):
+        self.when       = when
+        callback = self._callback(self)
+        try:
+            if type(func) is method:
+                func = weakmethod.from_method(func, callback)
+            else:
+                func = WeakCallable(func, callback)
+        except:
+            # never leave a half finished object behind
+            self.func       = None
+            self.args       = None
+            self.cancelled  = True
+            raise
+        else:
+            self.func = func
+            self.args = args
+            self.cancelled = False
+        
+    class _callback(object):
+        __slot__ = ('handle', )
+        
+        def __init__(self, handle):
+            self.handle = WeakReferer(handle)
+        
+        def __call__(self, reference):
+            handle = self.handle()
+            if (handle is not None):
+                handle.cancel()
 
 class Cycler(object):
     __slots__=('cycletime', 'funcs', 'handle', 'loop',)
@@ -220,7 +313,7 @@ class Cycler(object):
         
         loop.call_soon_threadsafe(self.funcs.remove,obj)
 
-    def time_left(self):
+    def time_till_next_call(self):
         handle=self.handle
         if handle is None:
             return -1. #wont be be called
@@ -228,6 +321,12 @@ class Cycler(object):
         if at<0.:
             return 0. #right now
         return at
+    
+    def time_of_next_call(self):
+        handle=self.handle
+        if handle is None:
+            return -1. #wont be be called
+        return handle.when
 
 class ThreadSyncerCTX(object):
     __slots__=('loop', 'enter_event', 'exit_event')
@@ -353,7 +452,7 @@ sys.set_asyncgen_hooks(firstiter=_asyncgen_firstiter_hook,
 if sys.platform == 'win32':
     #If windows select raises OSError, we cacnnot do anything, but
     #if it it raises ValueError, we can increases windows select()
-    #from 500~ till tze hard limit, with sharding up it's polls
+    #from 500~ till the hard limit, with sharding up it's polls
     
     from select import select
     MAX_FD_S    = 500 #512 is the actual amount?
@@ -723,33 +822,45 @@ class EventThread(Executor,Thread,metaclass=EventThreadType):
         result.append(')>')
 
         return ''.join(result)
-
-
-    def call_later(self,delay,callback,*args):
+    
+    
+    def call_later(self, delay, callback, *args):
         if self.running:
-            handle=TimerHandle(self.time()+delay,callback,args)
-            heappush(self._scheduled,handle)
+            handle = TimerHandle(self.time()+delay, callback, args)
+            heappush(self._scheduled, handle)
             return handle
-
-    def call_at(self,when,callback,*args):
+    
+    def call_at(self, when, callback, *args):
         if self.running:
-            handle=TimerHandle(when,callback,args)
-            heappush(self._scheduled,handle)
+            handle = TimerHandle(when,callback,args)
+            heappush(self._scheduled, handle)
             return handle
-
-    def call_soon(self,func,*args):
+    
+    def call_later_weak(self, delay, callback, *args):
         if self.running:
-            handle=Handle(func,args)
+            handle = TimerWeakHandle(self.time()+delay, callback, args)
+            heappush(self._scheduled, handle)
+            return handle
+    
+    def call_at_weak(self, when, callback, *args):
+        if self.running:
+            handle = TimerHandle(when, callback, args)
+            heappush(self._scheduled, handle)
+            return handle
+    
+    def call_soon(self, func, *args):
+        if self.running:
+            handle = Handle(func, args)
             self._ready.append(handle)
             return handle
-
+    
     def call_soon_threadsafe(self,func,*args):
         if self.running:
-            handle=Handle(func,args)
+            handle = Handle(func, args)
             self._ready.append(handle)
             self.wakeup()
             return handle
-
+    
     def cycle(self,cycletime,*funcs):
         return Cycler(self,cycletime,*funcs)
 
@@ -765,18 +876,18 @@ class EventThread(Executor,Thread,metaclass=EventThreadType):
             while callbacks:
                 handle=Handle(callbacks.pop(),(future,))
                 self._ready.append(handle)
-
+    
     def create_future(self):
         return Future(self)
-
+    
     def create_task(self,coro):
         return Task(coro,self)
-
+    
     def create_task_threadsafe(self,coro):
         task=Task(coro,self)
         self.wakeup()
         return task
-
+    
     def enter(self):
         return ThreadSyncerCTX(self)
 

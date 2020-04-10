@@ -83,7 +83,7 @@ class ConnectionClosed(Exception):
 
         return '`unknown`'
 
-    def __init__(self,code,exception,reason=''):
+    def __init__(self, code, exception, reason=None):
         self.code=code
         self.exception=exception
         self._reason=reason
@@ -92,7 +92,7 @@ class ConnectionClosed(Exception):
     @property
     def reason(self):
         reason=self._reason
-        if reason:
+        if (reason is not None):
             return reason
         return self._get_close_reason(self.code)
         

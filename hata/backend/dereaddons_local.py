@@ -1,6 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('KeepType', 'alchemy_incendiary', 'any_to_any', 'cached_property', 'isweakreferable', 'listdifference',
-    'methodize', 'modulize', 'multidict', 'multidict_titled', 'titledstr', 'weakmethod', )
+__all__ = ('BaseMethodDescriptor', 'KeepType', 'KeyedReferer', 'RemoveMeta', 'WeakCallable', 'WeakMap', 'WeakReferer',
+    'alchemy_incendiary', 'any_to_any', 'cached_property', 'isweakreferable', 'listdifference', 'methodize',
+    'modulize', 'multidict', 'multidict_titled', 'titledstr', 'weakmethod', )
 
 from types import \
     MethodType              as method, \
@@ -11,70 +12,31 @@ from types import \
 
 NoneType = type(None)
 
-import sys
-from weakref import ref as WeakReferer
-import weakref
+import sys, weakref
 
-class removemeta(type):
-    def __new__(meta,name,bases,values):
-        hide={'__hide__'}
-        for cls in bases:
-            if type(cls) is meta:
-                hide=hide.union(cls.__hide__)
-        keys=tuple(values.keys())
-        for key in keys:
-            try:
-                value=values[key]
-            except KeyError:
-                continue
-            if type(value) is remove:
-                del values[key]
-                for thing in value:
-                    hide.add(thing)
-                    values[thing]=removed(thing)
+class RemoveMeta(type):
+    def __new__(meta, name, bases, values, remove=None):
+        if (remove is not None) and remove:
+            for name_ in remove:
+                values[name_]=Removed(name_)
         
-        for key in keys:
-            if key in hide:
-                hide.remove(key)
-                values[key]=removed(key)
-        def __dir__(self):
-            result=object.__dir__(self)
-            for value in self.__hide__:
-                result.remove(value)
-            return result
-        __dir__.__module__=values['__module__']
-        __dir__.__qualname__=values['__qualname__']+'.__dir__'
-        values['__dir__']=__dir__
-        values['__hide__']=hide
+        return type.__new__(meta, name, bases, values)
 
-        return type.__new__(meta,name,bases,values)
-    def __dir__(cls):
-        result=type.__dir__(cls)
-        for value in cls.__hide__:
-            result.remove(value)
-        return result
-    def __setattr__(cls,name,value):
-        if name in cls.__hide__:
-            cls.__hide__.remove(name)
-        type.__setattr__(cls,name,value)
-            
-class removed:
+class Removed:
     __slots__=('name',)
     def __init__(self,name):
         self.name=name
+    
     def __get__(self,obj,objtype=None):
         if obj is None:
             raise AttributeError(f"type object '{objtype.__name__}' has no attribute '{self.name}'")
         raise AttributeError(f"'{obj.__class__.__name__}' object has no attribute '{self.name}'")
-    def __set__(self,obj,value):
-        raise AttributeError
+    
+    def __set__(self, obj, value):
+        raise AttributeError(self.name)
+    
     def __delete__(self,obj):
-        raise AttributeError
-        
-class remove(set):
-    __slots__=()
-    def __init__(self,*args):
-        set.__init__(self,args)
+        raise AttributeError(self.name)
 
 def any_to_any(v1,v2):
     for v in v1:
@@ -82,11 +44,13 @@ def any_to_any(v1,v2):
             return True
     return False
 
-class autoposlist(list):
+class autoposlist(list, metaclass=RemoveMeta, remove=['extend', '__add__', '__iadd__', '__radd__', '__mul__',
+        '__imul__', '__rmul__', '__setitem__', 'insert', 'sort', 'reverse']):
     __slots__=()
-    delete=remove('extend','__add__','__iadd__','__radd__','__mul__','__imul__','__rmul__','__setitem__','insert','sort','reverse')
+    
     def __init__(self):
         list.__init__(self)
+    
     def append(self,value):
         index=value.position
         ln=len(self)
@@ -861,27 +825,38 @@ class MethodLike(metaclass=SubCheckType):
 
         raise TypeError(f'Expected a method like, got {instance!r}')
 
-
-class weakmethod(MethodLike):
-    __slots__=('__func__', '__self__',)
-    __reserved_argcount__=1
+class basemethod(MethodLike):
+    __slots__=('__base__', '__func__', '__self__', )
+    __reserved_argcount__=2
     
-    def __init__(self,obj,func):
-        self.__self__=WeakReferer(obj)
-        self.__func__=func
+    def __init__(self, func, cls, base):
+        self.__base__ = base
+        self.__func__ = func
+        self.__self__ = cls
     
-    def __call__(self,*args,**kwargs):
-        obj=self.__self__()
-        if obj is None:
-            return
-        return self.__func__(obj,*args,**kwargs)
-    
-    def is_alive(self):
-        return (self.__self__() is not None)
+    def __call__(self, *args, **kwargs):
+        return self.__func__(self.__self__, self.__base__, *args, **kwargs)
     
     def __getattr__(self,name):
         return getattr(self.__func__,name)
 
+class BaseMethodDescriptor(object):
+    __slots__=('func',)
+    def __init__(self, func):
+        self.func = func
+    
+    def __get__(self, obj, type_=None):
+        if type_ is None:
+            type_ = type(obj)
+        
+        return basemethod(self.func, type_, obj)
+    
+    def __set__(self, obj, value):
+        raise AttributeError('can\'t set attribute')
+    
+    def __delete__(self, obj):
+        raise AttributeError('can\'t delete attribute')
+    
 wrapper_descriptor=type(object.__ne__)
 method_descriptor=type(object.__format__)
 
@@ -911,23 +886,21 @@ class methodize(object):
     __slots__=('klass',)
     def __init__(self,klass):
         self.klass=klass
-        
-    def __get__(self,obj,type_):
+    
+    def __get__(self, obj, type_=None):
         if obj is None:
             return self.klass
-        return method(self.klass,obj)
-
+        return method(self.klass, obj)
+    
     def __set__(self,obj,value):
         raise AttributeError('can\'t set attribute')
     
     def __delete__(self,obj):
         raise AttributeError('can\'t delete attribute')
 
-class sortedlist(list,metaclass=removemeta):
+class sortedlist(list,metaclass=RemoveMeta, remove=['__setitem__', 'insert', 'sort', '__add__', '__radd__', '__iadd__',
+        '__mul__', '__rmul__', '__imul__', 'append', ]):
     __slots__ = ('_reversed', )
-
-    delete = remove('__setitem__', 'insert', 'sort', '__add__', '__radd__',
-        '__iadd__', '__mul__', '__rmul__', '__imul__', 'append', )
     
     def __init__(self,it=None,reverse=False):
         self._reversed=reverse
@@ -1147,7 +1120,7 @@ class sortedlist(list,metaclass=removemeta):
         return default
 
 def isweakreferable(object_):
-    slots=getattr(type(object_),'__slots__',None)
+    slots=getattr(type(object_), '__slots__',None)
     if (slots is not None) and ('__weakref__' in slots):
         return True
     
@@ -1155,6 +1128,83 @@ def isweakreferable(object_):
         return True
     
     return False
+
+# speedup builtin stuff, Cpython is welcome
+class WeakReferer(weakref.ref):
+    __slots__ = ()
+    __init__ = object.__init__
+
+weakref.ref = WeakReferer
+
+class KeyedReferer(WeakReferer):
+    __slots__ = ('key', )
+    def __new__(cls, obj, callback, key, ):
+        self = WeakReferer.__new__(cls, obj, callback)
+        self.key=key
+        return self
+
+weakref.KeyedRef = KeyedReferer
+
+class WeakCallable(WeakReferer):
+    __slots__ = ()
+    def __call__(self, *args, **kwargs):
+        self = WeakReferer.__call__(self)
+        if self is None:
+            return
+        
+        return self(*args, **kwargs)
+    
+    def is_alive(self):
+        return (WeakReferer.__call__(self) is not None)
+
+class weakmethod(WeakReferer, MethodLike):
+    __slots__ = ('__func__')
+    __reserved_argcount__ = 1
+    
+    def __new__(cls, obj, func, callback=None):
+        self = WeakReferer.__new__(cls, obj, callback)
+        self.__func__ = func
+        return self
+    
+    @property
+    def __self__(self):
+        return WeakReferer.__call__(self)
+    
+    def __call__(self, *args, **kwargs):
+        obj = WeakReferer.__call__(self)
+        if obj is None:
+            return
+        return self.__func__(obj, *args, **kwargs)
+    
+    def is_alive(self):
+        return (WeakReferer.__call__(self) is not None)
+    
+    def __getattr__(self,name):
+        return getattr(self.__func__, name)
+    
+    @classmethod
+    def from_method(cls, method_, callback=None):
+        self = WeakReferer.__new__(cls, method_.__self__, callback)
+        self.__func__ = method_.__func__
+        return self
+
+class _HybridValueDictionaryCallback(object):
+    __slots__ = ('parent', )
+    def __new__(cls, parent):
+        self=object.__new__(cls)
+        self.parent=WeakReferer(parent)
+        return self
+    
+    def __call__(self, reference):
+        parent = self.parent()
+        if parent is None:
+            return
+        
+        key=reference.key
+        if parent._iterating:
+            parent._pending_removals.add(key)
+        else:
+            dict.__delitem__(parent,key)
 
 class _HybridValueDictionaryKeyIterator(object):
     __slots__ = ('parent',)
@@ -1190,7 +1240,7 @@ class _HybridValueDictionaryKeyIterator(object):
                 dict.__delitem__(self,key)
     
     def __contains__(self, key):
-        return self.parent.__contains__(key)
+        return (key in self.parent)
     
     def __len__(self):
         return len(self.parent)
@@ -1346,34 +1396,6 @@ class _HybridValueDictionaryItemIterator(object):
     def __len__(self):
         return len(self.parent)
 
-class KeyedReferer(WeakReferer):
-    __slots__ = ('key', )
-    def __new__(cls, obj, callback, key, ):
-        self = WeakReferer.__new__(cls, obj, callback)
-        self.key=key
-        return self
-    
-    __init__=object.__init__
-
-class _HybridValueDictionaryCallback(object):
-    __slots__ = ('parent', )
-    def __new__(cls, parent):
-        self=object.__new__(cls)
-        self.parent=WeakReferer(parent)
-        return self
-    
-    def __call__(self, ref):
-        parent = self.parent()
-        if parent is None:
-            return
-        
-        key=ref.key
-        if parent._iterating:
-            parent._pending_removals.add(key)
-        else:
-            dict.__delitem__(self.parent,key)
-
-
 class HybridValueDictionary(dict):
     __slots__ = ('__weakref__', '_pending_removals', '_iterating', '_callback')
     # __class__ -> same
@@ -1468,14 +1490,16 @@ class HybridValueDictionary(dict):
                 result.append(', ')
             
             if len(result)>2:
-                result[-1]=')'
+                result[-1]='})'
+            else:
+                result.append('})')
             
             if not self._iterating:
                 while pending_removals:
                     key = pending_removals.pop()
                     dict.__delitem__(self, key)
         else:
-            result.append(')')
+            result.append('})')
         
         return ''.join(result)
     
@@ -1503,27 +1527,30 @@ class HybridValueDictionary(dict):
     
     def copy(self):
         new = dict.__new__(type(self))
-        new._iterating=False
-        new._pending_removals=set()
-        callback=_HybridValueDictionaryCallback(new)
-        new._callback=callback
+        new._iterating = False
+        new._pending_removals = set()
+        callback = _HybridValueDictionaryCallback(new)
+        new._callback = callback
         
         pending_removals = self._pending_removals
         
         for key, value in dict.items(self):
-            if value[0] and (value[1]() is None):
-                pending_removals.add(key)
-                continue
+            if value[0]:
+                value = value[1]()
+                
+                if (value is None):
+                    pending_removals.add(key)
+                    continue
+                
+                value = (True, KeyedReferer(value, callback, key), )
             
-            dict.__setitem__(new,key,value)
+            dict.__setitem__(new, key, value)
             continue
         
-        if self._iterating:
-            return new
-        
-        while pending_removals:
-            key = pending_removals.pop()
-            dict.__delitem__(self,key)
+        if not self._iterating:
+            while pending_removals:
+                key = pending_removals.pop()
+                dict.__delitem__(self, key)
         
         return new
     
@@ -1577,9 +1604,9 @@ class HybridValueDictionary(dict):
             if not value[0]:
                 return key, value[1]
             
-            reference = value[1]()
-            if (reference is not None):
-                return key, reference
+            value = value[1]()
+            if (value is not None):
+                return key, value
             
             if self._iterating:
                 self._pending_removals.add(key)
@@ -1587,6 +1614,8 @@ class HybridValueDictionary(dict):
                 dict.__delitem__(self, key)
             
             continue
+        
+        raise KeyError('popitem(): dictionary is empty.')
     
     def setdefault(self, key, default=None):
         value = dict.get(self, key, None)
@@ -1622,17 +1651,17 @@ class HybridValueDictionary(dict):
                 try:
                     iterator=iter(item)
                 except TypeError:
-                    raise TypeError(f'cannot convert dictionary update sequence element #{index} to a sequence') from None
+                    raise TypeError(f'Cannot convert dictionary update sequence element #{index} to a sequence.') from None
                 
                 try:
                     key = next(iterator)
                 except StopIteration:
-                    raise ValueError(f'dictionary update sequence element #{index} has length {0}; 2 is required') from None
+                    raise ValueError(f'Dictionary update sequence element #{index} has length {0}; 2 is required.') from None
                 
                 try:
                     value = next(iterator)
                 except StopIteration:
-                    raise ValueError(f'dictionary update sequence element #{index} has length {1}; 2 is required') from None
+                    raise ValueError(f'Dictionary update sequence element #{index} has length {1}; 2 is required.') from None
                 
                 try:
                     next(iterator)
@@ -1651,7 +1680,7 @@ class HybridValueDictionary(dict):
                 else:
                     length=repr(length)
                 
-                raise ValueError(f'dictionary update sequence element #{index} has length {length}; 2 is required')
+                raise ValueError(f'Dictionary update sequence element #{index} has length {length}; 2 is required.')
             return
         
         raise TypeError(f'{other.__class__.__name__!r} object is not iterable')
@@ -1659,6 +1688,260 @@ class HybridValueDictionary(dict):
     def values(self):
         return _HybridValueDictionaryValueIterator(self)
 
-weakref.KeyedRef = KeyedReferer
+class _WeakMapCallback(object):
+    __slots__ = ('parent', )
+    def __new__(cls, parent):
+        self = object.__new__(cls)
+        self.parent = WeakReferer(parent)
+        return self
+    
+    def __call__(self, reference):
+        parent = self.parent()
+        if parent is None:
+            return
+        
+        if parent._iterating:
+            parent._pending_removals.add(reference)
+        else:
+            dict.__delitem__(parent,reference)
+
+class _WeakMapIterator(object):
+    __slots__ = ('parent', )
+    def __init__(self, parent):
+        self.parent=parent
+    
+    def __iter__(self):
+        parent = self.parent
+        parent._iterating +=1
+        pending_removals = parent._pending_removals
+
+        try:
+            for reference in dict.__iter__(parent):
+                key = reference()
+                if (key is not None):
+                    yield key
+                    continue
+                
+                pending_removals.add(reference)
+                continue
+        
+        finally:
+            iterating = parent._iterating-1
+            parent._iterating = iterating
+            if iterating:
+                return
+            
+            while pending_removals:
+                reference = pending_removals.pop()
+                dict.__delitem__(self, reference)
+
+    def __contains__(self, key):
+        return (key in self.parent)
+    
+    def __len__(self):
+        return len(self.parent)
+
+class WeakMap(dict, metaclass=RemoveMeta, remove=['__setitem__', 'items', 'keys', 'popitem', 'setdefault', 'update',
+        'values', ]):
+    __slots__ = ('__weakref__', '_pending_removals', '_iterating', '_callback')
+    # __class__ -> same
+    
+    def __contains__(self, key):
+        try:
+            reference = WeakReferer(key)
+        except TypeError:
+            return False
+    
+        return dict.__contains__(self, reference)
+    
+    # __delattr__ -> same
+    
+    def __delitem__(self, key):
+        try:
+            reference = WeakReferer(key)
+        except TypeError:
+            raise KeyError(key) from None
+        
+        try:
+            dict.__delitem__(self, reference)
+        except KeyError as err:
+            err.args=(key,)
+            raise
+    
+    # __dir__ -> same
+    # __doc__ -> same
+    # __eq__ -> same
+    # __format__ -> same
+    # __ge__ -> same
+    # __getattribute__ -> same
+    
+    def __getitem__(self, key):
+        try:
+            reference = WeakReferer(key)
+        except TypeError:
+            raise KeyError(key) from None
+        
+        return dict.__getitem__(self, reference)
+    
+    # __gt__ -> same
+    # __hash__ -> same
+    
+    def __init__(self,iterable=None):
+        self._pending_removals=set()
+        self._iterating=0
+        self._callback=_WeakMapCallback(self)
+        if iterable is None:
+            return
+        
+        self.update(iterable)
+        return
+    
+    # __init_subclass__ -> same
+    
+    def __iter__(self):
+        return iter(_WeakMapIterator(self))
+    
+    # __le__ -> same
+    
+    def __len__(self):
+        return dict.__len__(self)-len(self._pending_removals)
+    
+    # __lt__ -> same
+    # __ne__ -> same
+    # __new__ -> same
+    # __reduce__ -> we do not care
+    # __redue_ex__ -> we do not care
+    
+    def __repr__(self):
+        result = [self.__class__.__name__,'({']
+        if self:
+            pending_removals=self._pending_removals
+            for reference in dict.__iter__(self):
+                key = reference()
+                if (key is None):
+                    pending_removals.add(reference)
+                    continue
+                
+                result.append(repr(key))
+                result.append(', ')
+                continue
+            
+            if len(result)>2:
+                result[-1]='})'
+            else:
+                result.append('})')
+            
+            if not self._iterating:
+                while pending_removals:
+                    reference = pending_removals.pop()
+                    dict.__delitem__(self, reference)
+        else:
+            result.append('})')
+        
+        return ''.join(result)
+    
+    # __setattr__ -> same
+    # __setitem__ -> removed
+    # __sizeof__ -> same
+    
+    __str__ = __repr__
+    
+    # __subclasshook__ -> same
+    
+    def clear(self):
+        dict.clear(self)
+        self._pending_removals.clear()
+    
+    def copy(self):
+        new = dict.__new__(type(self))
+        new._iterating = False
+        new._pending_removals = set()
+        new._callback = callback = _WeakMapCallback(new)
+        
+        pending_removals = self._pending_removals
+        
+        for reference in dict.__iter__(self):
+            key = reference()
+            if (key is None):
+                pending_removals.add(reference)
+                continue
+            
+            reference = WeakReferer(key, callback)
+            dict.__setitem__(new, reference, reference)
+            continue
+        
+        if not self._iterating:
+            while pending_removals:
+                reference = pending_removals.pop()
+                dict.__delitem__(self, reference)
+        
+        return new
+    
+    def get(self, key, default=None):
+        try:
+            reference = WeakReferer(key)
+        except TypeError:
+            return default
+        
+        real_reference = dict.get(self, reference, None)
+        if real_reference is None:
+            return default
+        
+        real_key = real_reference()
+        if (real_key is not None):
+            return real_key
+        
+        if self._iterating:
+            self._pending_removals.add(real_reference)
+        else:
+            dict.__delitem__(self, real_reference)
+        
+        return default
+    
+    # items -> removed
+    # keys -> removed
+    
+    def pop(self, key, default=_spaceholder):
+        try:
+            reference = WeakReferer(key)
+        except TypeError:
+            pass
+        else:
+            real_reference = dict.pop(self, reference, _spaceholder)
+            if (real_reference is not default):
+                real_key = real_reference()
+                if (real_key is None):
+                    if self._iterating:
+                        self._pending_removals.add(real_reference)
+                    else:
+                        dict.__delitem__(self, real_reference)
+                else:
+                    return real_key
+        
+        if default is _spaceholder:
+            raise KeyError(key)
+        else:
+            return default
+    
+    # popitem -> removed
+    # setdefault -> removed
+    # update -> removed
+    # values -> removed
+    
+    def set(self, key):
+        reference = WeakReferer(key, self._callback)
+        real_reference = dict.get(self, reference, None)
+        if (real_reference is not None):
+            real_key = real_reference()
+            if real_key is None:
+                if self._iterating:
+                    self._pending_removals.add(real_reference)
+                else:
+                    dict.__delitem__(self, real_reference)
+            else:
+                return real_key
+        
+        dict.__setitem__(self, reference, reference)
+        return key
 
 del weakref

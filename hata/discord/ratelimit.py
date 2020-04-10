@@ -1,43 +1,30 @@
 # -*- coding: utf-8 -*-
+__all__ = ('RATELIMIT_GROUPS', 'RatelimitProxy', )
+
 from email._parseaddr import _parsedate_tz
-from datetime import datetime,timedelta,timezone
+from datetime import datetime, timedelta, timezone
 from time import monotonic
 from collections import deque
+from threading import current_thread
 
-from ..backend.dereaddons_local import modulize
+from ..backend.dereaddons_local import modulize, WeakReferer
 from ..backend.futures import Future
 from ..backend.py_hdrs import DATE
 
-from .client_core import GC_cycler, CLIENTS, KOKORO
+from .client_core import KOKORO
 from .others import Discord_hdrs
+
+ChannelBase = NotImplemented
+Message     = NotImplemented
+Role        = NotImplemented
+Webhook     = NotImplemented
+WebhookRepr = NotImplemented
+Guild       = NotImplemented
 
 RATELIMIT_RESET         = Discord_hdrs.RATELIMIT_RESET
 RATELIMIT_RESET_AFTER   = Discord_hdrs.RATELIMIT_RESET_AFTER
+RATELIMIT_REMAINING     = Discord_hdrs.RATELIMIT_REMAINING
 RATELIMIT_LIMIT         = Discord_hdrs.RATELIMIT_LIMIT
-
-del Discord_hdrs
-
-def GC_handlers(cycler):
-    collected=[]
-    for client in CLIENTS:
-        session=client.http
-        
-        handlers=session.handlers
-        
-        for handler in handlers:
-            if handler:
-                continue
-            
-            collected.append(handler)
-        
-        for handler in collected:
-            del handlers[handler]
-        
-        collected.clear()
-
-GC_cycler.append(GC_handlers)
-
-del GC_cycler, GC_handlers
 
 #parsing time
 #email.utils.parsedate_to_datetime
@@ -53,7 +40,7 @@ class global_lock_canceller:
         self.session=session
     def __call__(self,future):
         self.session.global_lock=None
-    
+
 def ratelimit_global(session,retry_after):
     future=session.global_lock
     if future is not None:
@@ -67,22 +54,22 @@ def ratelimit_global(session,retry_after):
 GLOBALLY_LIMITED = 0x4000000000000000
 RATELIMIT_DROP_ROUND = 0.20
 
+LIMITER_CHANNEL     = 'channel_id'
+LIMITER_GUILD       = 'guild_id'
+LIMITER_WEBHOOK     = 'webhook_id'
+LIMITER_GLOBAL      = 'global'
+LIMITER_UNLIMITED   = 'unlimited'
+
 class RatelimitGroup(object):
-    CHANNEL     = 'channel_id'
-    GUILD       = 'guild_id'
-    WEBHOOK     = 'webhook_id'
-    GLOBAL      = 'global'
-    UNLIMITED   = 'unlimited'
-    
     __slots__ = ('group_id', 'limiter', 'size', )
     
     __auto_next_id = 105<<8
     __unlimited = None
     
-    def __new__(cls, limiter = GLOBAL):
+    def __new__(cls, limiter = LIMITER_GLOBAL):
         self = object.__new__(cls)
         self.limiter = limiter
-        self.size = 1
+        self.size = -1
         group_id = cls.__auto_next_id
         cls.__auto_next_id = group_id + (7<<8)
         self.group_id = group_id
@@ -97,7 +84,7 @@ class RatelimitGroup(object):
         self = object.__new__(cls)
         self.size = 0
         self.group_id = 0
-        self.limiter = cls.UNLIMITED
+        self.limiter = LIMITER_UNLIMITED
         
         cls.__unlimited = self
         return self
@@ -115,9 +102,9 @@ class RatelimitGroup(object):
                 ]
         
         limiter = self.limiter
-        if limiter is self.GLOBAL:
+        if limiter is LIMITER_GLOBAL:
             result.append('limited globally')
-        elif limiter is self.UNLIMITED:
+        elif limiter is LIMITER_UNLIMITED:
             result.append('unlimited')
         else:
             result.append('limited by ')
@@ -127,15 +114,125 @@ class RatelimitGroup(object):
         
         return ''.join(result)
 
+class RatelimitUnit(object):
+    __slots__ = ('allocates', 'drop', 'next')
+    
+    def __init__(self, drop, allocates):
+        self.drop = drop
+        self.allocates = allocates
+        self.next = None
+    
+    def update_with(self, drop, allocates):
+        actual_drop = self.drop
+        new_drop_max = drop+RATELIMIT_DROP_ROUND
+        if new_drop_max < actual_drop:
+            new = object.__new__(type(self))
+            new.drop = self.drop
+            new.allocates = self.allocates
+            new.next = self.next
+            self.drop = drop
+            self.allocates = allocates
+            self.next = new
+            return
+        
+        new_drop_min = drop-RATELIMIT_DROP_ROUND
+        if new_drop_min > actual_drop:
+            last = self
+            while True:
+                actual = last.next
+                if actual is None:
+                    new = object.__new__(type(self))
+                    new.drop = drop
+                    new.allocates = allocates
+                    new.next = None
+                    last.next = new
+                    break
+                
+                actual_drop = actual.drop
+                if new_drop_max < actual_drop:
+                    new = object.__new__(type(self))
+                    new.drop = drop
+                    new.allocates = allocates
+                    new.next = actual
+                    last.next = new
+                    break
+                
+                if new_drop_min > actual_drop:
+                    last = actual
+                    continue
+                
+                if drop < actual_drop:
+                    actual.drop = drop
+                
+                actual.allocates += allocates
+                break
+            
+            return
+            
+        if drop < actual_drop:
+            self.drop = drop
+        
+        self.allocates += allocates
+        return
+        
+    def __repr__(self):
+        result = [
+            '<',
+            self.__class__.__name__,
+            ' drop=',
+            repr(self.drop),
+            ', allocates=',
+            repr(self.allocates),
+                ]
+        
+        next = self.next
+        if (next is not None):
+            result.append(', nexts=[')
+            while True:
+                result.append('(')
+                result.append(repr(next.drop))
+                result.append(', ')
+                result.append(repr(next.allocates))
+                result.append(')')
+                next = next.next
+                if (next is None):
+                    break
+                
+                result.append(', ')
+                continue
+            
+            result.append(']')
+        
+        result.append('>')
+        
+        return ''.join(result)
+
 class RatelimitHandler(object):
-    __slots__ = ('active', 'drops', 'limiter_id', 'parent', 'queue', 'wakeupper', )
-    def __init__(self, parent, limiter_id):
+    __slots__ = ('__weakref__', 'active', 'drops', 'limiter_id', 'parent', 'queue', 'wakeupper', )
+    def __init__(self, parent, limiter_id=0):
         self.parent     = parent
+        
+        limiter = parent.limiter
+        if limiter is LIMITER_UNLIMITED:
+            limiter_id = 0
+        elif limiter is LIMITER_UNLIMITED:
+            limiter_id = GLOBALLY_LIMITED
+        
         self.limiter_id = limiter_id
-        self.drops      = []
+        self.drops      = None
         self.active     = 0
-        self.queue      = deque()
+        self.queue      = None
         self.wakeupper  = None
+    
+    def copy(self):
+        new = object.__new__(type(self))
+        new.parent      = self.parent
+        new.limiter_id  = self.limiter_id
+        new.drops       = None
+        new.active      = 0
+        new.queue       = None
+        new.wakeupper   = None
+        return new
     
     def __repr__(self):
         result = [
@@ -144,19 +241,31 @@ class RatelimitHandler(object):
                 ]
         
         limiter = self.parent.limiter
-        if limiter is RatelimitGroup.UNLIMITED:
+        if limiter is LIMITER_UNLIMITED:
             result.append(' unlimited')
         else:
             result.append(' size: ')
-            result.append(repr(self.parent.size))
+            size = self.parent.size
+            if size==-1:
+                result.append('unset')
+            else:
+                result.append(repr(size))
+            
             result.append(', active: ')
             result.append(repr(self.active))
+            
             result.append(', cooldown drops: ')
             result.append(repr(self.drops))
-            result.append(', queue length: ')
-            result.append(repr(len(self.queue)))
             
-            if limiter is RatelimitGroup.GLOBAL:
+            result.append(', queue length: ')
+            queue = self.queue
+            if queue is None:
+                length = '0'
+            else:
+                length = repr(len(self.queue))
+            result.append(length)
+            
+            if limiter is LIMITER_GLOBAL:
                 result.append(', limited globally')
             else:
                 result.append(', limited by ')
@@ -164,7 +273,7 @@ class RatelimitHandler(object):
                 result.append(': ')
                 result.append(repr(self.limiter_id))
             
-            result.append(' group id: ')
+            result.append(', group id: ')
             result.append(repr(self.parent.group_id))
             
         result.append('>')
@@ -174,10 +283,11 @@ class RatelimitHandler(object):
         if self.active:
             return True
         
-        if self.drops:
+        if (self.drops is not None):
             return True
         
-        if self.queue:
+        queue = self.queue
+        if (queue is not None) and queue:
             return True
         
         return False
@@ -205,36 +315,41 @@ class RatelimitHandler(object):
     
     async def enter(self):
         size = self.parent.size
-        if size == 0:
-            return
+        if size < 1:
+            if size==0:
+                return
+            
+            size = 1
         
-        size = self.parent.size
+        queue = self.queue
+        if queue is None:
+            self.queue = queue = deque()
+        
         active = self.active
         left = size-active
         
         if left <= 0:
             future = Future(KOKORO)
-            self.queue.append(future)
+            queue.append(future)
             await future
             
             self.active = self.active+1
             return
         
-        drops = self.drops
-        left = left-len(drops)
+        left -= self.count_drops()
         if left > 0:
             self.active = active+1
             return
         
         future = Future(KOKORO)
-        self.queue.append(future)
+        queue.append(future)
         await future
         
         self.active = self.active+1
     
     def exit(self, headers):
         current_size = self.parent.size
-        if current_size==0:
+        if current_size == 0:
             return
         
         self.active = self.active-1
@@ -253,21 +368,28 @@ class RatelimitHandler(object):
             self.wakeup()
             return
         
+        allocates =1
         size = int(size)
-        self.parent.size = size
-        if size > current_size:
-            can_free = size-current_size
-            queue = self.queue
-            queue_ln = len(queue)
-            
-            if can_free>queue_ln:
-                can_free=queue_ln
-            
-            while can_free>0:
-                future = queue.popleft()
-                future.set_result(None)
-                can_free-=1
-                continue
+        if size!=current_size:
+            self.parent.size = size
+            if size > current_size:
+                if current_size==-1:
+                    current_size = 1
+                    # We might have cooldowns from before as well
+                    allocates = size-int(headers[RATELIMIT_REMAINING])
+                
+                can_free = size-current_size
+                queue = self.queue
+                queue_ln = len(queue)
+                
+                if can_free>queue_ln:
+                    can_free=queue_ln
+                
+                while can_free>0:
+                    future = queue.popleft()
+                    future.set_result(None)
+                    can_free-=1
+                    continue
         
         delay1 = (
             datetime.fromtimestamp(float(headers[RATELIMIT_RESET]),timezone.utc)-parsedate_to_datetime(headers[DATE])
@@ -282,8 +404,10 @@ class RatelimitHandler(object):
         drop = monotonic()+delay
         
         drops = self.drops
-        drops.append(drop)
-        drops.sort(reverse=True)
+        if (drops is None):
+            self.drops = RatelimitUnit(drop, allocates)
+        else:
+            self.drops.update_with(drop, allocates)
         
         wakeupper = self.wakeupper
         if wakeupper is None:
@@ -293,31 +417,24 @@ class RatelimitHandler(object):
         
         if wakeupper.when<=drop:
             return
-            
+        
         wakeupper.cancel()
         wakeupper = KOKORO.call_at(drop,type(self).wakeup,self)
         self.wakeupper = wakeupper
     
     def wakeup(self):
         # add some delay, so we wont need to wakeup that much time
-        now = monotonic()+RATELIMIT_DROP_ROUND
-        
         drops = self.drops
-        
-        limit = len(drops)-1
-        
-        while limit>=0:
-            drop = drops[limit]
-            if drop > now:
-                wakeupper = KOKORO.call_at(drop,type(self).wakeup,self)
-                self.wakeupper = wakeupper
-                break
-            
-            del drops[-1]
-            limit = limit-1
-            continue
+        if (drops is None):
+            wakeupper = None
         else:
-            self.wakeupper = None
+            self.drops = drops = drops.next
+            if (drops is not None):
+                wakeupper = KOKORO.call_at(drops.drop,type(self).wakeup,self)
+            else:
+                wakeupper = None
+        
+        self.wakeupper = wakeupper
         
         queue = self.queue
         queue_ln = len(queue)
@@ -327,7 +444,7 @@ class RatelimitHandler(object):
         # if exception occures, nothing is added to self.drops, but active is descreased by one,
         # so lets check active count as well.
         # also the first requests might set self.parent.size as well, to higher than 1 >.>
-        can_free = self.parent.size-self.active-len(drops)
+        can_free = self.parent.size-self.active-self.count_drops()
         
         if can_free > queue_ln:
             can_free = queue_ln
@@ -340,6 +457,16 @@ class RatelimitHandler(object):
     
     def ctx(self):
         return RatelimitHandlerCTX(self)
+    
+    def count_drops(self):
+        drops = self.drops
+        result = 0
+        while (drops is not None):
+            result += drops.allocates
+            drops = drops.next
+            continue
+        
+        return result
 
 class RatelimitHandlerCTX(object):
     __slots__ = ('parent', 'exited', )
@@ -361,12 +488,263 @@ class RatelimitHandlerCTX(object):
         self.exited = True
         self.parent.exit(None)
 
+class RatelimitProxy(object):
+    __slots__ = ('_handler', '_key', 'client', 'group',)
+    def __new__(cls, client, group, limiter=None, keep_alive=False):
+        if type(group) is not RatelimitGroup:
+            raise TypeError(f'group should be type `{RatelimitGroup.__name__}`, got `{group!r}`.')
+        
+        while True:
+            group_limiter = group.limiter
+            if group_limiter is LIMITER_GLOBAL:
+                limiter_id = GLOBALLY_LIMITED
+                break
+            
+            elif group_limiter is LIMITER_UNLIMITED:
+                limiter_id = 0
+                break
+            
+            elif group_limiter is LIMITER_CHANNEL:
+                if isinstance(limiter, ChannelBase):
+                    limiter_id = limiter.id
+                    break
+                
+                if type(limiter) is Message:
+                    limiter_id = limiter.channel.id
+                    break
+            
+            elif group_limiter is LIMITER_GUILD:
+                if isinstance(limiter, Guild):
+                    limiter_id = limiter.id
+                    break
+                
+                if isinstance(limiter, ChannelBase) or (type(limiter) in (Message, Role, Webhook, WebhookRepr)):
+                    guild = limiter.guild
+                    if (guild is not None):
+                        limiter_id = group.id
+                        break
+            
+            elif group_limiter is LIMITER_WEBHOOK:
+                if type(limiter) in (Webhook, WebhookRepr):
+                    limiter_id = limiter.id
+                    break
+            
+            else:
+                raise RuntimeError(f'`{group!r}.limiter` is not any of the defined limit groups.')
+            
+            raise ValueError(f'Cannot cast ratelimit group\'s: `{group!r}` ratelimit_id of: `{limiter!r}`.')
+        
+        key = RatelimitHandler(group, limiter_id)
+        if keep_alive:
+            key = client.http.handlers.set(key)
+            handler = WeakReferer(key)
+        else:
+            handler = None
+        
+        self = object.__new__(cls)
+        self.client = client
+        self.group = group
+        self._handler = handler
+        self._key = key
+        return self
+    
+    def is_limited_by_channel(self):
+        return (self.group.limiter is LIMITER_CHANNEL)
+    
+    def is_limited_by_guild(self):
+        return (self.group.limiter is LIMITER_GUILD)
+    
+    def is_limited_by_webhook(self):
+        return (self.group.limiter is LIMITER_WEBHOOK)
+    
+    def is_limited_globally(self):
+        return (self.group.limiter is LIMITER_GLOBAL)
+    
+    def is_unlimited(self):
+        return (self.group.limiter is LIMITER_UNLIMITED)
+    
+    def is_alive(self):
+        return (self.handler is not None)
+    
+    def has_info(self):
+        handler = self.handler
+        if handler is None:
+            return False
+        
+        return (handler.queue is not None)
+        
+    def _get_keep_alive(self):
+        handler = self._handler
+        if handler is None:
+            return False
+        
+        return (handler() is self._key)
+    
+    def _set_keep_alive(self, value):
+        if value:
+            while True:
+                handler = self._handler
+                if handler is None:
+                    break
+                
+                handler = handler()
+                if handler is None:
+                    break
+                
+                if (self._key is not handler):
+                    self._key = handler
+                
+                return
+            
+            key = self._key
+            handler = self.client.http.handlers.set(key)
+            if (handler is not key):
+                self._key = handler
+            self._handler = WeakReferer(handler)
+            return
+        else:
+            handler = self._handler
+            if handler is None:
+                return
+            
+            handler = handler()
+            if handler is None:
+                return
+            
+            if self._key is handler:
+                self._key = handler.copy()
+            return
+        
+    keep_alive = property(_get_keep_alive, _set_keep_alive)
+    del _get_keep_alive, _set_keep_alive
+    
+    @property
+    def limiter_id(self):
+        return self._key.limiter_id
+    
+    def has_size_set(self):
+        return (self.group.size!=-1)
+    
+    @property
+    def size(self):
+        return self.group.size
+    
+    @property
+    def handler(self):
+        handler = self._handler
+        if (handler is not None):
+            handler = handler()
+            if (handler is not None):
+                return handler
+        
+        handler = self.client.http.handlers.get(self._key)
+        if (handler is not None):
+            self._handler = WeakReferer(handler)
+        
+        return handler
+    
+    @property
+    def used_count(self):
+        handler = self.handler
+        if handler is None:
+            return 0
+        
+        return (handler.active + handler.count_drops())
+    
+    @property
+    def free_count(self):
+        size = self.group.size
+        if size < 1:
+            if size==0:
+                return size
+            
+            size = 1
+        
+        handler = self.handler
+        if handler is None:
+            return size
+        
+        return (size - handler.active - handler.count_drops())
+    
+    @property
+    def waiting_count(self):
+        handler = self.handler
+        if handler is None:
+            return 0
+        
+        queue = handler.queue
+        if queue is None:
+            return 0
+        
+        return len(queue)
+    
+    def __hash__(self):
+        return self.group.group_id^self._key.limiter_id
+    
+    class _wait_till_limits_expire_callback(object):
+        __slots__ = ('future')
+        def __init__(self, future):
+            self.future = future
+        
+        def __call__(self, reference):
+            future = self.future
+            future.set_result_if_pending(None)
+            loop = future._loop
+            if current_thread() is not loop:
+                loop.wakeup()
+    
+    async def wait_till_limits_expire(self):
+        handler = self._handler
+        
+        while True:
+            if (handler is not None):
+                handler = handler()
+                if (handler is not None):
+                    break
+            
+            handler = self.client.http.handlers.get(self._key)
+            if handler is None:
+                return
+            
+            break
+        
+        if handler is self._key:
+            raise RuntimeError('Cannot use `.wait_till_limits_expire` meanwhile `keep_alive` is `True`.')
+        
+        future = Future(current_thread())
+        self._handler = WeakReferer(handler, self._wait_till_limits_expire_callback(future))
+        await future
+    
+    @property
+    def next_reset_at(self):
+        handler = self.handler
+        if handler is None:
+            return 0.0
+        
+        drops = handler.drops
+        if (drops is None) or (not drops):
+            return 0.0
+        
+        return drops[0].drop
+    
+    @property
+    def next_reset_after(self):
+        handler = self.handler
+        if handler is None:
+            return 0.0
+        
+        drops = handler.drops
+        if (drops is None) or (not drops):
+            return 0.0
+        
+        return drops[0].drop-monotonic()
+    
 @modulize
 class RATELIMIT_GROUPS:
-    GROUP_REACTION_MODIFY       = RatelimitGroup(RatelimitGroup.CHANNEL)
-    GROUP_PIN_MODIFY            = RatelimitGroup(RatelimitGroup.CHANNEL)
-    GROUP_USER_MODIFY           = RatelimitGroup(RatelimitGroup.GUILD) # both has the same endpoint
-    GROUP_USER_ROLE_MODIFY      = RatelimitGroup(RatelimitGroup.GUILD)
+    GROUP_REACTION_MODIFY       = RatelimitGroup(LIMITER_CHANNEL)
+    GROUP_PIN_MODIFY            = RatelimitGroup(LIMITER_CHANNEL)
+    GROUP_USER_MODIFY           = RatelimitGroup(LIMITER_GUILD) # both has the same endpoint
+    GROUP_USER_ROLE_MODIFY      = RatelimitGroup(LIMITER_GUILD)
     
     oauth2_token                = RatelimitGroup.unlimited()
     application_get             = RatelimitGroup() # untested
@@ -378,18 +756,18 @@ class RATELIMIT_GROUPS:
     client_logout               = RatelimitGroup() # untested
     channel_delete              = RatelimitGroup.unlimited()
     channel_group_leave         = RatelimitGroup() # untested; same as channel_delete?
-    channel_edit                = RatelimitGroup(RatelimitGroup.CHANNEL)
+    channel_edit                = RatelimitGroup(LIMITER_CHANNEL)
     channel_group_edit          = RatelimitGroup() # untested; same as channel_edit?
     channel_follow              = RatelimitGroup.unlimited()
     invite_get_channel          = RatelimitGroup.unlimited()
     invite_create               = RatelimitGroup()
     message_logs                = RatelimitGroup.unlimited()
-    message_create              = RatelimitGroup(RatelimitGroup.CHANNEL)
-    message_delete_multiple     = RatelimitGroup(RatelimitGroup.CHANNEL)
-    message_delete              = RatelimitGroup(RatelimitGroup.CHANNEL)
-    message_delete_b2wo         = RatelimitGroup(RatelimitGroup.CHANNEL)
+    message_create              = RatelimitGroup(LIMITER_CHANNEL)
+    message_delete_multiple     = RatelimitGroup(LIMITER_CHANNEL)
+    message_delete              = RatelimitGroup(LIMITER_CHANNEL)
+    message_delete_b2wo         = RatelimitGroup(LIMITER_CHANNEL)
     message_get                 = RatelimitGroup.unlimited()
-    message_edit                = RatelimitGroup(RatelimitGroup.CHANNEL)
+    message_edit                = RatelimitGroup(LIMITER_CHANNEL)
     message_mar                 = RatelimitGroup() # untested
     reaction_clear              = GROUP_REACTION_MODIFY
     reaction_delete_emoji       = GROUP_REACTION_MODIFY
@@ -405,7 +783,7 @@ class RATELIMIT_GROUPS:
     message_pin                 = GROUP_PIN_MODIFY
     channel_group_user_delete   = RatelimitGroup() # untested
     channel_group_user_add      = RatelimitGroup() # untested
-    typing                      = RatelimitGroup(RatelimitGroup.CHANNEL)
+    typing                      = RatelimitGroup(LIMITER_CHANNEL)
     webhook_get_channel         = RatelimitGroup.unlimited()
     webhook_create              = RatelimitGroup.unlimited()
     client_gateway_hooman       = RatelimitGroup() # untested
@@ -426,8 +804,8 @@ class RATELIMIT_GROUPS:
     guild_embed_get             = RatelimitGroup.unlimited()
     guild_embed_edit            = RatelimitGroup.unlimited()
     guild_emojis                = RatelimitGroup.unlimited()
-    emoji_create                = RatelimitGroup(RatelimitGroup.GUILD)
-    emoji_delete                = RatelimitGroup(RatelimitGroup.GUILD)
+    emoji_create                = RatelimitGroup(LIMITER_GUILD)
+    emoji_delete                = RatelimitGroup(LIMITER_GUILD)
     emoji_get                   = RatelimitGroup.unlimited()
     emoji_edit                  = RatelimitGroup()
     integration_get_all         = RatelimitGroup() # untested
@@ -436,13 +814,13 @@ class RATELIMIT_GROUPS:
     integration_edit            = RatelimitGroup() # untested
     integration_sync            = RatelimitGroup() # untested
     invite_get_guild            = RatelimitGroup.unlimited()
-    guild_users                 = RatelimitGroup(RatelimitGroup.GUILD)
+    guild_users                 = RatelimitGroup(LIMITER_GUILD)
     client_edit_nick            = RatelimitGroup()
-    guild_user_delete           = RatelimitGroup(RatelimitGroup.GUILD)
+    guild_user_delete           = RatelimitGroup(LIMITER_GUILD)
     guild_user_get              = RatelimitGroup()
     user_edit                   = GROUP_USER_MODIFY
     user_move                   = GROUP_USER_MODIFY
-    guild_user_add              = RatelimitGroup(RatelimitGroup.GUILD)
+    guild_user_add              = RatelimitGroup(LIMITER_GUILD)
     user_role_delete            = GROUP_USER_ROLE_MODIFY
     user_role_add               = GROUP_USER_ROLE_MODIFY
     guild_preview               = RatelimitGroup()
@@ -451,9 +829,9 @@ class RATELIMIT_GROUPS:
     guild_regions               = RatelimitGroup.unlimited()
     guild_roles                 = RatelimitGroup.unlimited()
     role_move                   = RatelimitGroup.unlimited()
-    role_create                 = RatelimitGroup(RatelimitGroup.GUILD)
+    role_create                 = RatelimitGroup(LIMITER_GUILD)
     role_delete                 = RatelimitGroup.unlimited()
-    role_edit                   = RatelimitGroup(RatelimitGroup.GUILD)
+    role_edit                   = RatelimitGroup(LIMITER_GUILD)
     vanity_get                  = RatelimitGroup.unlimited()
     vanity_edit                 = RatelimitGroup.unlimited() # untested
     webhook_get_guild           = RatelimitGroup.unlimited()
@@ -489,7 +867,9 @@ class RATELIMIT_GROUPS:
     webhook_delete_token        = RatelimitGroup.unlimited()
     webhook_get_token           = RatelimitGroup.unlimited()
     webhook_edit_token          = RatelimitGroup.unlimited()
-    webhook_send                = RatelimitGroup(RatelimitGroup.WEBHOOK)
+    webhook_send                = RatelimitGroup(LIMITER_WEBHOOK)
+
+del modulize
 
 ##INFO :
 ##    some endpoints might be off 1s

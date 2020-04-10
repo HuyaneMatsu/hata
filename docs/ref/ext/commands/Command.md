@@ -173,12 +173,14 @@ Awaits [`.command`](#command) with the `content` if needed or uses
 
 ## Class methods
 
-### `from_class(cls, klass)`
+### `from_class(cls, klass, kwargs=None)`
 
 - returns : `Command`
 - raises : `TypeError` / `ValueError`
 
 The method used, when creating a `Command` object from a class.
+
+> Extra `kwargs` are supported as well for the usecase.
 
 ### `from_kwargs(cls, command, name, kwargs)`
 

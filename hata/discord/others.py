@@ -827,8 +827,13 @@ def _parse_ih_fs(value):
 
 #parse image hash formats animated
 def _parse_ih_fsa(value,animated):
-    if type(animated) is not bool:
-        raise TypeError('Animated should be type bool, got {animated.__class__.__name__}')
+    if (type(animated) is not bool):
+        # Edge case, animated is 0 or 1 ?
+        if isinstance(animated,int) and (animated in (0,1)):
+            animated = bool(animated)
+        else:
+            raise TypeError(f'Animated should be type bool, got {animated.__class__.__name__}')
+    
     if value is None:
         return 0,False
     if type(value) is str:

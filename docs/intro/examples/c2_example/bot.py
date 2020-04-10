@@ -1,7 +1,7 @@
 import re, random
 
 from hata import Client, start_clients, User, Embed
-from hata.events import setup_extension, Converter, ConverterFlag, checks
+from hata.ext.commands import setup_extension, Converter, ConverterFlag, checks
 
 from cute_commands import cute_commands
 

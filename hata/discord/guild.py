@@ -20,6 +20,8 @@ from .emoji import Emoji
 from .webhook import Webhook
 from .oauth2 import parse_preferred_locale, DEFAULT_LOCALE
 
+from . import ratelimit
+
 VoiceClient=NotImplemented
 
 LARGE_LIMIT=250 #can be between 50 and 250
@@ -1794,7 +1796,10 @@ class GuildPreview(object):
         
         return self.id<other.id
 
+ratelimit.Guild = Guild
+
 del URLS
 del cached_property
 del ActivityUnknown
 del UserBase
+del ratelimit

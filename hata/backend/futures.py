@@ -838,9 +838,11 @@ class FutureSyncWrapper(object):
                 break
 
     def wait(self,timeout=None):
-        self._waiter.wait(timeout)
-        return self.result()
-
+        if self._waiter.wait(timeout):
+            return self.result()
+        else:
+            raise CancelledError
+    
     def _set_future_result(self,future,result):
         try:
             future.set_result(result)
@@ -2004,7 +2006,8 @@ class _future_chainer(object):
     if __debug__:
         def __call__(self,future):
             #remove chain remover
-            callbacks=self.target._callbacks
+            target = self.target
+            callbacks=target._callbacks
             for index in range(len(callbacks)):
                 callback=callbacks[index]
                 if (type(callback) is _chain_remover) and (callback.target is future):
@@ -2015,23 +2018,24 @@ class _future_chainer(object):
             if state is FINISHED:
                 future._state=RETRIEVED
                 if future._exception is None:
-                    self.target.set_result(future._result)
+                    target.set_result(future._result)
                 else:
-                    self.target.set_exception(future._exception)
+                    target.set_exception(future._exception)
                 return
             if state is RETRIEVED:
                 if future._exception is None:
-                    self.target.set_result(future._result)
+                    target.set_result(future._result)
                 else:
-                    self.target.set_exception(future._exception)
+                    target.set_exception(future._exception)
                 return
             #if state is CANCELLED: normally, but the future can be cleared as well.
-            self.target.cancel()
+            target.cancel()
     
     else:
         def __call__(self,future):
             #remove chain remover
-            callbacks=self.target._callbacks
+            target = self.target
+            callbacks=target._callbacks
             for index in range(len(callbacks)):
                 callback=callbacks[index]
                 if type(callback) is _chain_remover and callback.target is future:
@@ -2040,18 +2044,18 @@ class _future_chainer(object):
             #set result
             if future._state is FINISHED:
                 if future._exception is None:
-                    self.target.set_result(future._result)
+                    target.set_result(future._result)
                 else:
-                    self.target.set_exception(future._exception)
+                    target.set_exception(future._exception)
                 return
             #if state is CANCELLED: normally, but the future can be cleared as well.
-            self.target.cancel()
+            target.cancel()
 
 class _chain_remover(object):
     __slots__=('target',)
     def __init__(self,target):
         self.target=target
-
+    
     def __call__(self,future):
         #remove chainer
         callbacks=self.target._callbacks
@@ -2060,7 +2064,7 @@ class _chain_remover(object):
             if (type(callback) is _future_chainer) and (callback.target is future):
                 del callbacks[index]
                 if __debug__:
-                    # because this is might be the only place, where we
+                    # because this might be the only place, where we
                     # retrieve the result, we will just silence it.
                     future.__silence__()
                 break

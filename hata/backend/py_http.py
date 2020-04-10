@@ -5,7 +5,7 @@ from .dereaddons_local import multidict_titled
 
 from .py_helpers import TimeoutHandle,CeilTimeout,tcp_nodelay
 from .py_url import URL
-from .py_reqrep import ClientRequest,merge_ssl_params,Request_CM
+from .py_reqrep import ClientRequest, Request_CM, SSL_ALLOWED_TYPES
 from .py_connector import TCPConnector
 from .py_cookiejar import CookieJar
 from .py_hdrs import CONTENT_LENGTH, AUTHORIZATION, METH_HEAD, LOCATION, URI, METH_GET, METH_POST, METH_OPTIONS, \
@@ -36,18 +36,18 @@ class HTTPClient(object):
             with timer:
                 while True:
                     cookies=self.cookie_jar.filter_cookies(url)
-
+                    
                     if proxy_url:
                         proxy_url=URL(proxy_url)
-            
+                    
                     request=ClientRequest(method,url,self.loop,headers,data,params,
                         cookies,None,proxy_url,self.proxy_auth,timer)
-
+                    
                     with CeilTimeout(self.loop,DEFAULT_TIMEOUT):
                         connection = await self.connector.connect(request,DEFAULT_TIMEOUT)
-
+                    
                     tcp_nodelay(connection.transport,True)
-
+                    
                     connection.protocol.set_response_params(
                         timer           =timer,
                         skip_payload    = (method.upper()==METH_HEAD),
@@ -65,11 +65,11 @@ class HTTPClient(object):
                     except:
                         connection.close()
                         raise
-
+                    
                     #we do nothing with os error
-
+                    
                     self.cookie_jar.update_cookies(response.cookies,response.url)
-
+                    
                     # redirects
                     if response.status in (301,302,303,307) and redirect:
                         redirect-=1
@@ -77,7 +77,7 @@ class HTTPClient(object):
                         if not redirect:
                             response.close()
                             raise ConnectionError('Too many redirects',history[0].request_info,tuple(history))
-
+                        
                         # For 301 and 302, mimic IE behaviour, now changed in RFC.
                         # Details: https://github.com/kennethreitz/requests/pull/269
                         if (response.status==303 and response.method!=METH_HEAD) \
@@ -85,7 +85,7 @@ class HTTPClient(object):
                             method=METH_GET
                             data=None
                             headers.pop(CONTENT_LENGTH,None)
-
+                        
                         redirect_url = (response.headers.get(LOCATION) or response.headers.get(URI))
                         if redirect_url is None:
                             break
@@ -93,18 +93,17 @@ class HTTPClient(object):
                             response.release()
                         
                         redirect_url=URL(redirect_url)
-
+                        
                         scheme=redirect_url.scheme
                         if scheme not in ('http','https',''):
                             response.close()
                             raise ValueError('Can redirect only to http or https')
                         elif not scheme:
                             redirect_url=url.join(redirect_url)
-
-
+                        
                         if url.origin()!=redirect_url.origin():
                             headers.pop(AUTHORIZATION,None)
-                            
+                        
                         url=redirect_url
                         params = None
                         response.release()
@@ -127,20 +126,23 @@ class HTTPClient(object):
     async def _request2(self, method, url, headers=None, params=None,
             data=None, auth=None, redirects=10, read_until_eof=True,
             proxy_url=None, proxy_auth=None, timeout=DEFAULT_TIMEOUT,
-            ssl=None, verify_ssl=None, ssl_context=None, fingerprint=None, ):
+            ssl=None):
 
         # Transform headers to multidict_titled
         headers = multidict_titled(headers)
-
+        
         if (headers and auth is not None and AUTHORIZATION in headers):
             raise ValueError('Can\'t combine \'Authorization\' header with \'auth\' argument')
-
+        
         if (proxy_url is None):
             proxy_url   = self.proxy_url
+        
         if (proxy_auth is None):
             proxy_auth  = self.proxy_auth
         
-        ssl             = merge_ssl_params(ssl,verify_ssl,ssl_context,fingerprint)
+        if not isinstance(ssl, SSL_ALLOWED_TYPES):
+            raise TypeError(f'`ssl` should be one of instance of: {SSL_ALLOWED_TYPES!r}, but got `{ssl!r}` instead.')
+        
         history         = []
         url             = URL(url)
         timer_obj       = TimeoutHandle(self.loop,timeout)

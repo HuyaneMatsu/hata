@@ -7,6 +7,8 @@ from .color import Color, _parse_c_fs
 from .permission import Permission, PERM_KEYS
 from .user import PartialUser
 
+from . import ratelimit
+
 def PartialRole(role_id):
     try:
         return ROLES[role_id]
@@ -442,3 +444,8 @@ def cr_p_overwrite_object(target,allow,deny):
         'id'    : target.id,
         'type'  : 'role' if type(target) is Role else 'member',
             }
+
+
+ratelimit.Role = Role
+
+del ratelimit

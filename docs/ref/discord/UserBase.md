@@ -147,6 +147,13 @@ empty `dict`.
 Bot accounts have `is_bot` set to `True`, user accounts to `False`.
 Subclasses might overwrite this property.
 
+### `flags`
+
+- returns : [`UserFlag`](UserFlag.md)
+- default : `UserFlag()`
+
+The flags of the account.
+
 ### `status`
 
 - returns : [`Status`](Status.md)

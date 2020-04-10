@@ -8,7 +8,7 @@ from collections import deque
 from os.path import split as splitpath
 from threading import current_thread
 
-from ..backend.dereaddons_local import multidict_titled, _spaceholder
+from ..backend.dereaddons_local import multidict_titled, _spaceholder, methodize
 from ..backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, WaitTillFirst
 from ..backend.eventloop import EventThread
 from ..backend.py_formdata import Formdata
@@ -32,13 +32,14 @@ from .audit_logs import AuditLog, AuditLogIterator
 from .invite import Invite
 from .message import Message
 from .oauth2 import Connection, parse_locale, DEFAULT_LOCALE, AO2Access, UserOA2, parse_locale_optional
-from .exceptions import DiscordException
+from .exceptions import DiscordException, IntentError
 from .client_core import CLIENTS, start_clients, CACHE_USER, CACHE_PRESENCE, KOKORO, GUILDS
 from .voice_client import VoiceClient
 from .activity import ActivityUnknown
 from .integration import Integration
 from .application import Application,Team
 from .color import Color
+from .ratelimit import RatelimitProxy
 
 from . import client_core, message
 
@@ -161,7 +162,15 @@ class Client(UserBase):
             self.discriminator=0
             self.avatar=0
             self.has_animated_avatar=False
-            
+        
+        self.mfa            = False
+        self.system         = False
+        self.verified       = False
+        self.email          = ''
+        self.flags          = UserFlag()
+        self.premium_type   = PremiumType.none
+        self.locale         = DEFAULT_LOCALE
+        
         self.token              = token
         self.secret             = secret
         self.is_bot             = is_bot
@@ -198,7 +207,7 @@ class Client(UserBase):
         self.id                 = client_id
         if client_id:
             USERS[client_id]    = self
-            
+        
         self.partial            = True
         
         self.ready_state        = None
@@ -1325,7 +1334,9 @@ class Client(UserBase):
         data = await self.http.message_get(channel.id,message_id)
         return Message.onetime(data,channel)
     
-    async def message_create(self,channel,content=None,embed=None,file=None,allowed_mentions=_spaceholder,tts=False,nonce=None):
+    async def message_create(self, channel, content=None, embed=None, file=None, allowed_mentions=_spaceholder,
+            tts=False, nonce=None):
+        
         data={}
         contains_content=False
         
@@ -1358,8 +1369,8 @@ class Client(UserBase):
         if not contains_content:
             return None
         
-        data = await self.http.message_create(channel.id,to_send)
-        return Message.new(data,channel)
+        data = await self.http.message_create(channel.id, to_send)
+        return Message.new(data, channel)
     
     @staticmethod
     def _create_file_form(data,file):
@@ -1988,9 +1999,9 @@ class Client(UserBase):
                 # Should not happen
                 continue
     
-    # open issue about allowed_mentions
-    # https://github.com/discordapp/discord-api-docs/issues/1419
-    async def message_edit(self,message,content=None,embed=_spaceholder,suppress=None):
+    async def message_edit(self, message, content=None, embed=_spaceholder, allowed_mentions=_spaceholder,
+            suppress=None):
+        
         data={}
         if (content is not None):
             data['content']=content
@@ -2003,14 +2014,17 @@ class Client(UserBase):
             
             data['embed']=embed_data
         
+        if (allowed_mentions is not _spaceholder):
+            data['allowed_mentions']=self._parse_allowed_mentions(allowed_mentions)
+        
         if (suppress is not None):
             if suppress:
                 flags=message.flags|0b00000100
             else:
                 flags=message.flags&0b11111011
             data['flags']=flags
-            
-        await self.http.message_edit(message.channel.id,message.id,data)
+        
+        await self.http.message_edit(message.channel.id, message.id, data)
 
     async def message_suppress_embeds(self,message,suppress=True):
         await self.http.message_suppress_embeds(message.channel.id,message.id,{'suppress':suppress})
@@ -2192,7 +2206,7 @@ class Client(UserBase):
             data = await self.http.guild_get(guild_id)
             guild._sync(data,self)
             channel_data = await self.http.guild_channels(guild_id)
-            guild._sync_channels(channel_data)
+            guild._sync_channels(channel_data,self)
         
             user_data = await self.http.guild_user_get(guild_id,self.id)
             try:
@@ -3614,7 +3628,11 @@ class Client(UserBase):
                         else:
                             break
                     continue
-        
+        except IntentError as err:
+            sys.stderr.write(
+                f'{err.__class__.__name__} occured, at {self!r}._connect:\n'
+                f'{err!r}\n'
+                    )
         except BaseException as err:
             await self.loop.render_exc_async(err,[
                 'Unexpected exception occured at ',
@@ -3802,7 +3820,7 @@ class Client(UserBase):
         else:
             waiters.append(waiter)
             await waiters[-2]
-
+        
         data = {
             'op'            : DiscordGateway.REQUEST_MEMBERS,
             'd' : {
@@ -3872,13 +3890,15 @@ class Client(UserBase):
             return
         
         return self.voice_clients.get(guild.id,None)
-
+    
     def get_guild(self,name):
         if 1<len(name)<101:
             for guild in self.guild_profiles.keys():
                 if guild.name==name:
                     return guild
-
+    
+    get_ratelimits_of = methodize(RatelimitProxy)
+    
     @property
     def owner(self):
         maybe_owner=self.application.owner
@@ -4176,8 +4196,7 @@ class Client(UserBase):
             result.append(guild)
             
         return result
-        
-
+    
     @property
     def allowed_DM_guilds(self):
         guild_ids=self.settings.no_DM_guild_ids

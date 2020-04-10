@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-import sys,zlib
+import sys, zlib
 from time import time as time_now
 
 try:
@@ -20,6 +20,7 @@ from .parsers import PARSERS
 from .guild import LARGE_LIMIT
 from .client_core import CACHE_PRESENCE, Kokoro
 from .opus import SAMPLES_PER_FRAME
+from .exceptions import IntentError
 
 class DiscordGateway(object):
     __slots__=('_buffer', '_decompresser', 'client', 'kokoro', 'loop',
@@ -75,15 +76,19 @@ class DiscordGateway(object):
 
             except (OSError, TimeoutError, ConnectionError, ConnectionClosed,
                     WebSocketProtocolError, InvalidHandshake, ValueError) as err:
-                
                 if not client.running:
                     return False
-
+                
                 #u can extract and exception from here too:
                 #if isinstance(err,exc.ConnectionClosed) and err.exception is not None:
                 
-                if isinstance(err,ConnectionClosed) and err.code in (1000,1006):
-                    continue
+                if isinstance(err,ConnectionClosed):
+                    code = err.code
+                    if code in (1000,1006):
+                        continue
+                    
+                    if code in (4013, 4014):
+                        raise IntentError(code) from err
                 
                 if isinstance(err,TimeoutError):
                     continue
@@ -99,8 +104,8 @@ class DiscordGateway(object):
         while True:
             self.kokoro.terminate()
             websocket=self.websocket
-            if websocket is not None and not websocket.closed:
-                await websocket.close()
+            if (websocket is not None) and (not websocket.closed):
+                await websocket.close(4000)
                 self.websocket=None
             
             self._decompresser=zlib.decompressobj()
@@ -147,7 +152,7 @@ class DiscordGateway(object):
                 else:
                     buffer.extend(message)
         except ConnectionClosed as err:
-            if err.code in (1000,1006,4004,4010,4011):
+            if err.code in (1000, 1006, 4004, 4010, 4011, 4013, 4014, ):
                 raise err
             return True
         except zlib.error as err:
@@ -229,7 +234,7 @@ class DiscordGateway(object):
         return False
         
     #general stuffs
-
+    
     @property
     def latency(self):
         kokoro=self.kokoro
@@ -246,14 +251,14 @@ class DiscordGateway(object):
             await websocket.send(to_json(data))
         except ConnectionClosed as err:
             pass
-        
-    async def close(self,*args,**kwargs):
+    
+    async def close(self, code=1000):
         self.kokoro.cancel()
         websocket=self.websocket
         if websocket is None:
             return
         self.websocket=None
-        await websocket.close(*args,**kwargs)
+        await websocket.close(code)
     
     def __repr__(self):
         return f'<{self.__class__.__name__} client={self.client.full_name}, shard_id={self.shard_id}>'
@@ -338,13 +343,13 @@ class DiscordGateway(object):
                 }
         await self.send_as_json(data)
 
-    async def _terminate(self,*args,**kwargs):
+    async def _terminate(self):
         self.kokoro.terminate()
         websocket=self.websocket
         if websocket is None:
             return
         self.websocket=None
-        await websocket.close(*args,**kwargs)
+        await websocket.close(4000)
         
 class DiscordGatewayVoice(object):
     __slots__ = ('client', 'kokoro', 'loop', 'websocket')
@@ -382,7 +387,7 @@ class DiscordGatewayVoice(object):
     async def connect(self,resume=False):
         self.kokoro.terminate()
         if self.websocket is not None and not self.websocket.closed:
-            await self.websocket.close()
+            await self.websocket.close(4000)
         gateway=f'wss://{self.client._endpoint}/?v=4'
         self.websocket = await WSClient(self.loop,gateway)
         self.kokoro.start_beating()
@@ -480,7 +485,7 @@ class DiscordGatewayVoice(object):
             return Kokoro.DEFAULT_LATENCY
         return kokoro.latency
     
-    async def close(self,*args,**kwargs):
+    async def close(self, code=1000):
         kokoro=self.kokoro
         if kokoro is not None:
             kokoro.cancel()
@@ -490,7 +495,7 @@ class DiscordGatewayVoice(object):
         if websocket is None:
             return
         self.websocket=None
-        await websocket.close(*args,**kwargs)
+        await websocket.close(code)
 
     def __repr__(self):
         return f'<{self.__class__.__name__} of {self.client}>'
@@ -611,7 +616,7 @@ class DiscordGatewayVoice(object):
         
         await self.send_as_json(data)
     
-    async def _terminate(self,*args,**kwargs):
+    async def _terminate(self,):
         kokoro=self.kokoro
         if kokoro is not None:
             kokoro.terminate()
@@ -620,7 +625,7 @@ class DiscordGatewayVoice(object):
         if websocket is None:
             return
         self.websocket=None
-        await websocket.close(*args,**kwargs)
+        await websocket.close(4000)
     
 class DiscordGatewaySharder(object):
     __slots__=('client', 'loop', 'gateways',)
@@ -721,11 +726,11 @@ class DiscordGatewaySharder(object):
         for task in done:
             task.result()
         
-    async def close(self,*args,**kwargs):
+    async def close(self, code=1000):
         tasks=[]
         loop=self.loop
         for gateway in self.gateways:
-            task=Task(gateway.close(*args,**kwargs),loop)
+            task=Task(gateway.close(code),loop)
             tasks.append(task)
             
         await WaitTillAll(tasks,loop)

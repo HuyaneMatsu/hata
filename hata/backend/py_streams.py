@@ -87,7 +87,7 @@ class StreamReader(object):
         info=['<',__class__.__name__]
         
         info.append(' size=')
-        info.append(self.size.__str__())
+        info.append(repr(self.size))
         info.append(' bytes')
 
         eof=self.eof
@@ -95,10 +95,10 @@ class StreamReader(object):
             info.append(' eof')
         
         info.append(' waiter=')
-        info.append(self.waiter.__repr__())
+        info.append(repr(self.waiter))
         
         info.append(' exception=')
-        info.append(self.exception.__repr__())
+        info.append(str(self.exception))
         
         info.append('>')
         
@@ -124,10 +124,10 @@ class StreamReader(object):
         if self.eof:
             try:
                 callback()
-            except Exception as err:
+            except BaseException as err:
                 self.loop.render_exc_async(err,[
                     'Exception occured at ',
-                    self.__class__.__name__,
+                    repr(self),
                     '.on_eof\n',
                           ])
         else:
@@ -139,37 +139,37 @@ class StreamReader(object):
         waiter=self.waiter
         if waiter is not None:
             self.waiter=None
-            if not waiter.done():
-                waiter.set_result(True)
+            waiter.set_result_if_pending(None)
 
         waiter=self.eof_waiter
         if waiter is not None:
             self.eof_waiter=None
-            if not waiter.done():
-                waiter.set_result(True)
-
-        for callback in self.eof_callbacks:
+            waiter.set_result_if_pending(None)
+        
+        callbacks = self.eof_callbacks
+        while callbacks:
+            callback =  callbacks.pop()
             try:
                 callback()
-            except (AttributeError,NameError):
-                raise #for testing
-            except Exception:
-                pass
-
-        self.eof_callbacks.clear()
-
+            except BaseException as err:
+                self.loop.render_exc_async(err,[
+                    'Exception occured at ',
+                    repr(self),
+                    '.feed_eof\n',
+                          ])
+    
     def is_eof(self):
         #Return True if  'feed_eof' was called.
         return self.eof
-
+    
     def at_eof(self):
         #Return True if the buffer is empty and 'feed_eof' was called.
         return self.eof and not self.buffer
-
+    
     async def wait_eof(self):
         if self.eof:
             return
-
+        
         self.eof_waiter=Future(self.loop)
         try:
             await self.eof_waiter
@@ -202,41 +202,43 @@ class StreamReader(object):
         waiter=self.waiter
         if waiter is not None:
             self.waiter=None
-            if not waiter.done():
-                waiter.set_result(True)
-
+            waiter.set_result_if_pending(None)
+        
         if (self.size>self.high_water and not self.protocol.reading_paused):
             self.protocol.pause_reading()
-
+    
     def begin_http_chunk_receiving(self):
         if self.chunk_splits is None:
             self.chunk_splits=[]
 
     def end_http_chunk_receiving(self):
-        if self.chunk_splits is None:
+        chunk_splits = self.chunk_splits
+        if chunk_splits is None:
             raise RuntimeError('Called end_chunk_receiving without calling begin_chunk_receiving first')
-        if not self.chunk_splits or self.chunk_splits[-1]!=self.total_bytes:
-            self.chunk_splits.append(self.total_bytes)
-
-    async def _wait(self,func_name):
+        
+        if not chunk_splits or chunk_splits[-1]!=self.total_bytes:
+            chunk_splits.append(self.total_bytes)
+    
+    async def _wait(self):
         # StreamReader uses a future to link the protocol feed_data() method
         # to a read coroutine. Running two read coroutines at the same time
         # would have an unexpected behaviour. It would not possible to know
         # which coroutine would get the next data.
         if self.waiter is not None:
-            raise RuntimeError(f'{func_name} called while another coroutine is already waiting for incoming data')
+            raise RuntimeError(f'`_wait` called while another coroutine is already waiting for incoming data')
 
         waiter=self.waiter=Future(self.loop)
         try:
-            if self.timer is None:
+            timer = self.timer
+            if timer is None:
                 await waiter
             else:
-                with self.timer:
+                with timer:
                     await waiter
         finally:
             self.waiter=None
-
-    async def readline(self,n=None): #n is gonna get ignored, but mut for the iterator class
+    
+    async def readline(self,n=None): #n is gonna get ignored, but must for the iterator class
         if self.exception is not None:
             raise self.exception
 
@@ -267,7 +269,7 @@ class StreamReader(object):
                 break
 
             if not_enough:
-                await self._wait('readline')
+                await self._wait()
 
         return b''.join(line)
 
@@ -292,7 +294,7 @@ class StreamReader(object):
             return b''.join(blocks)
 
         if not self.buffer and not self.eof:
-            await self._wait('read')
+            await self._wait()
 
         return self._read_nowait(n)
 
@@ -301,7 +303,7 @@ class StreamReader(object):
             raise self.exception
 
         if not self.buffer and not self.eof:
-            await self._wait('readany')
+            await self._wait()
 
         return self._read_nowait(-1)
 
@@ -318,7 +320,7 @@ class StreamReader(object):
                 # end of http chunk without available data
                 self.chunk_splits=self.chunk_splits[1:]
                 return b'',True
-            await self._wait('readchunk')
+            await self._wait()
 
         if not self.buffer:
             # end of file
@@ -629,20 +631,18 @@ class DataQueue(object):
             return
 
         self.waiter=None
-        if not waiter.done():
-            waiter.set_result(True)
+        waiter.set_result_if_pending(None)
 
     def feed_eof(self):
         self.eof=True
-
+        
         waiter=self.waiter
         if waiter is None:
             return
         
         self.waiter=None
-        if not waiter.done():
-            waiter.set_result(False)
-
+        waiter.set_result_if_pending(None)
+    
     async def read(self):
         if not self.buffer and not self.eof:
             self.waiter=Future(self.loop)

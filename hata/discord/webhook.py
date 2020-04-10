@@ -6,6 +6,8 @@ from .others import _parse_ih_fsa
 from .user import User, ZEROUSER, USERS, UserBase
 from .exceptions import DiscordException
 
+from . import ratelimit
+
 ChannelText=NotImplemented
 
 class WebhookType(object):
@@ -311,5 +313,9 @@ class WebhookRepr(UserBase):
     def guild(self):
         return self.channel.guild
 
+ratelimit.Webhook = Webhook
+ratelimit.WebhookRepr = WebhookRepr
+
 del URLS
 del UserBase
+del ratelimit

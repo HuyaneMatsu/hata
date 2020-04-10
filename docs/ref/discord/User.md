@@ -29,6 +29,7 @@ A `User` object represents a user in Discord, including [guild](Guild.md) member
 
 - [`guild_profiles`](UserBase.md#guild_profiles)
 - [`is_bot`](UserBase.md#is_bot)
+- [`flags`](UserBase.md#flags)
 - [`partial`](UserBase.md#partial)
 
 ##### Overwritten properties to instance attributes if presence is not cached
@@ -52,7 +53,7 @@ A `User` object represents a user in Discord, including [guild](Guild.md) member
 
 ## Classmethods
 
-### `precreate(cls,user_id,**kwargs)`
+### `precreate(cls, user_id, **kwargs)`
 
 - returns : [`User`](User.md)
 - raises : `AttributeError` / `TypeError`
@@ -174,10 +175,16 @@ Familiar to [`.update_profile`], but it does not checks changes and returns
 Tries to get the user. If fails, creates a new one from the given
 [guild widget](GuildWidget.md) user data.
 
-### `_bypass_no_cache(data,guild)` staticmethod
+### `_bypass_no_cache(data,guild)` (staticmethod)
 
 - returns : `None`
 
 Only available when user or presence caching is disabled. Called to set a
 [`Client`](Client.md)'s [`GuildProfile`](GuildProfile.md).
 
+### `_create_empty(cls, user_id)` (classmethod)
+
+- returns : [`User`](User.md)
+
+Creates a user instance with the given `user_id` and with the default
+attributes.

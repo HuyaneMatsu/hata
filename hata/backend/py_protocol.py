@@ -101,10 +101,10 @@ class ResponseHandler(BaseProtocol,DataQueue):
                 self.exception is not None or
                 self.payload_parser is not None or
                 len(self) or self.tail)
-
+    
     def force_close(self):
         self._should_close=True
-
+    
     def close(self):
         transport=self.transport
         if transport is not None:
@@ -118,11 +118,11 @@ class ResponseHandler(BaseProtocol,DataQueue):
             
     def connection_lost(self,exception):
         self.drop_timeout()
-
+        
         if self.payload_parser is not None:
             #with suppress(Exception):
             self.payload_parser.feed_eof()
-
+        
         try:
             uncompleted=self.parser.feed_eof()
         except Exception:
@@ -130,20 +130,20 @@ class ResponseHandler(BaseProtocol,DataQueue):
             payload=self.payload
             if payload is not None:
                 payload.set_exception(PayloadError('Response payload is not completed'))
-
+        
         if not self.is_eof():
             if exception is None:
                 exception=ConnectionError(uncompleted)
             # assigns self._should_close to True as side effect,
             # we do it anyway below
             self.exception=exception
-
+        
         self._should_close      = True
         self.parser             = None
         self.payload            = None
         self.payload_parser     = None
         self.reading_paused     = False
-
+        
         BaseProtocol.connection_lost(self,exception)
 
     def eof_received(self):

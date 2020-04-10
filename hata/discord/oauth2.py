@@ -156,7 +156,13 @@ class UserOA2(UserBase):
         self.mfa            = data.get('mfa_enabled',False)
         self.verified       = data.get('verified',False)
         self.email          = data.get('email','')
-        self.flags          = UserFlag(data.get('flags',0))
+        
+        try:
+            flags = data['flags']
+        except KeyError:
+            flags = data.get('public_flags',0)
+        
+        self.flags          = UserFlag(flags)
         self.premium_type   = PremiumType.INSTANCES[data.get('premium_type',0)]
         self.locale         = parse_locale(data)
         self.system         = data.get('system',False)

@@ -1,7 +1,12 @@
 ﻿# -*- coding: utf-8 -*-
-import json, ssl, re, codecs
+import json, re, codecs
 from http.cookies import SimpleCookie, CookieError, Morsel
 from hashlib import md5, sha1, sha256
+
+try:
+    import ssl as module_ssl
+except ImportError:
+    module_ssl = None
 
 try:
     import cchardet as chardet
@@ -13,8 +18,6 @@ except ImportError:
         err.args=(message,)
         err.msg=message
         raise err from None
-
-NoneType=type(None)
 
 from .dereaddons_local import multidict_titled
 from .futures import Task, CancelledError
@@ -62,35 +65,18 @@ class Fingerprint(object):
             host,port,*_=transport.get_extra_info('peername')
             raise ValueError(self.fingerprint,got,host,port)
 
-SSL_ALLOWED_TYPES = (ssl.SSLContext, bool, Fingerprint, NoneType)
-
-def merge_ssl_params(ssl,verify_ssl,ssl_context,fingerprint):
-    if verify_ssl is not None and not verify_ssl:
-        if ssl is not None:
-            raise ValueError('verify_ssl, ssl_context, fingerprint and ssl parameters are mutually exclusive')
-        else:
-            ssl = False
-    if ssl_context is not None:
-        if ssl is not None:
-            raise ValueError('verify_ssl, ssl_context, fingerprint and ssl parameters are mutually exclusive')
-        else:
-            ssl = ssl_context
-    if fingerprint is not None:
-        if ssl is not None:
-            raise ValueError('verify_ssl, ssl_context, fingerprint and ssl parameters are mutually exclusive')
-        else:
-            ssl = Fingerprint(fingerprint)
-    if not isinstance(ssl, SSL_ALLOWED_TYPES):
-        raise TypeError(f'ssl should be SSLContext, bool, Fingerprint or None, \'got {ssl!r} instead.')
-    return ssl
+if module_ssl is None:
+    SSL_ALLOWED_TYPES = type(None)
+else:
+    SSL_ALLOWED_TYPES = (module_ssl.SSLContext, bool, Fingerprint, type(None))
 
 #the key should contain an information about used proxy / TLS
 #to prevent reusing wrong connections from a pool
-class ConnectionKey:
+class ConnectionKey(object):
     __slots__=('host', 'is_ssl', 'port', 'proxy_auth', #'proxy_header_hash',
         'proxy_url', 'ssl',)
 
-    def __init__(self,request):
+    def __init__(self, request):
         #if request.proxy_headers:
         #    proxy_header_hash=hash(tuple(request.proxy_headers.items()))
         #else:
@@ -106,6 +92,54 @@ class ConnectionKey:
         
     def __repr__(self):
         return f'<{self.__class__.__name__} host={self.host}, port={self.port}>'
+    
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.host != other.host:
+            return False
+        
+        if self.port != other.port:
+            return False
+        
+        if self.is_ssl != other.is_ssl:
+            return False
+        
+        if self.ssl is None:
+            if other.ssl is not None:
+                return False
+        else:
+            if other.ssl is None:
+                return False
+            
+            if self.ssl != other.ssl:
+                return False
+            
+        if self.proxy_auth is None:
+            if other.proxy_auth is not None:
+                return False
+        else:
+            if other.proxy_auth is None:
+                return False
+            
+            if self.proxy_auth != other.proxy_auth:
+                return False
+
+        if self.proxy_url is None:
+            if other.proxy_url is not None:
+                return False
+        else:
+            if other.proxy_url is None:
+                return False
+            
+            if self.proxy_url != other.proxy_url:
+                return False
+        
+        return True
+    
+    def __hash__(self):
+        return hash(self.host) ^ (self.port << 17) ^ (self.is_ssl << 16) ^ hash(self.ssl) ^ hash(self.proxy_auth) ^ hash(self.proxy_url)
 
 class RequestInfo(object):
     __slots__=('headers', 'method', 'real_url', 'url',)
@@ -115,7 +149,7 @@ class RequestInfo(object):
         self.headers            = request.headers       #multidict_titiled
         self.real_url           = request.original_url  #URL #maybe request.url is a default for this if this is None
 
-    
+
 class ClientRequest(object):
 
 
@@ -458,7 +492,7 @@ class ClientResponse:
             ascii_encodable_reason=self.reason.encode('ascii','backslashreplace').decode('ascii')
         else:
             ascii_encodable_reason=self.reason
-        return f'<{self.__class__.__name__}({ascii_encodable_url}) [{self.status} {ascii_encodable_reason}]>\n{self.headers!s}\n'     
+        return f'<{self.__class__.__name__}({ascii_encodable_url}) [{self.status} {ascii_encodable_reason}]>'
         
     async def start(self,connection):
         #Start response processing.

@@ -31,6 +31,14 @@ class UserFlag(int):
         return (self>>3)&1
     
     @property
+    def mfa_sms(self):
+        return (self>>4)&1
+    
+    @property
+    def premium_promo_dismissed(self):
+        return (self>>5)&1
+    
+    @property
     def hypesquad_bravery(self):
         return (self>>6)&1
     
@@ -55,8 +63,24 @@ class UserFlag(int):
         return (self>>12)&1
     
     @property
+    def has_unread_urgent_messages(self):
+        return (self>>13)&1
+    
+    @property
     def bug_hunter_level_2(self):
         return (self>>14)&1
+    
+    @property
+    def underage_deleted(self):
+        return (self>>15)&1
+    
+    @property
+    def verified_bot(self):
+        return (self>>16)&1
+    
+    @property
+    def verified_bot_developer(self):
+        return (self>>17)&1
     
     def __iter__(self):
         if self&1:
@@ -66,11 +90,17 @@ class UserFlag(int):
             yield 'discord_partner'
             
         if (self>>2)&1:
-            yield 'bug_hunter_level_1'
+            yield 'hypesquad_events'
             
         if (self>>3)&1:
-            yield 'hypesquad_bravery'
-            
+            yield 'bug_hunter_level_1'
+        
+        if (self>>4)&1:
+            yield 'mfa_sms'
+        
+        if (self>>5)&1:
+            yield 'premium_promo_dismissed'
+        
         if (self>>6)&1:
             yield 'hypesquad_bravery'
             
@@ -89,81 +119,41 @@ class UserFlag(int):
         if (self>>12)&1:
             yield 'system'
         
+        if (self>>13)&1:
+            yield 'has_unread_urgent_messages'
+        
         if (self>>14)&1:
             yield 'bug_hunter_level_2'
-            
+        
+        if (self>>15)&1:
+            yield 'underage_deleted'
+        
+        if (self>>16)&1:
+            yield 'verified_bot'
+        
+        if (self>>17)&1:
+            yield 'verified_bot_developer'
+    
     def __repr__(self):
         return f'{self.__class__.__name__}({int.__repr__(self)})'
 
-if CACHE_PRESENCE:
+if CACHE_USER:
     def PartialUser(user_id):
         try:
             return USERS[user_id]
         except KeyError:
             pass
         
-        user=object.__new__(User)
-        user.id=user_id
-        
-        user.name=''
-        user.discriminator=0
-        user.avatar=0
-        user.has_animated_avatar=False
-        user.is_bot=False
-
-        user.guild_profiles={}
-        user.partial=True
-
-        user.status=Status.offline
-        user.statuses={}
-        user.activities=[]
-
-        USERS[user_id]=user
-        
-        return user
-
-elif CACHE_USER:
-    def PartialUser(user_id):
-        try:
-            return USERS[user_id]
-        except KeyError:
-            pass
-        
-        user=object.__new__(User)
-        user.id=user_id
-
-        user.name=''
-        user.discriminator=0
-        user.avatar=0
-        user.has_animated_avatar=False
-        user.is_bot=False
-
-        user.guild_profiles={}
-        user.partial=True
-
-        USERS[user_id]=user
-        
-        return user
+        return User._create_empty(user_id)
 
 else:
     def PartialUser(user_id):
-        user=object.__new__(User)
-        user.id=user_id
+        return User._create_empty(user_id)
 
-        user.name=''
-        user.discriminator=0
-        user.avatar=0
-        user.has_animated_avatar=False
-        user.is_bot=False
-
-        user.guild_profiles={}
-        user.partial=True
-        
-        return user
 
 class GuildProfile(object):
     __slots__=('boosts_since', 'joined_at', 'nick', 'roles',)
-
+    
     @property
     def created_at(self):
         joined_at=self.joined_at
@@ -272,10 +262,10 @@ class GuildProfile(object):
                     return color
         
         return Color(0)
-        
+
 class UserBase(object):
     __slots__=('id', 'name', 'discriminator', 'avatar', 'has_animated_avatar', '__weakref__',)
-
+    
     def __init_subclass__(cls):
         rich = cls.__rich__
         if 'guild_profiles' in cls.__slots__:
@@ -352,60 +342,64 @@ class UserBase(object):
         if isinstance(other,UserBase):
             return self.id>other.id
         return NotImplemented
-
+    
     def __ge__(self,other):
         if isinstance(other,UserBase):
             return self.id>=other.id
         return NotImplemented
-
+    
     def __eq__(self,other):
         if isinstance(other,UserBase):
             return self.id==other.id
         return NotImplemented
-
+    
     def __ne__(self,other):
         if isinstance(other,UserBase):
             return self.id!=other.id
         return NotImplemented
-
+    
     def __le__(self,other):
         if isinstance(other,UserBase):
             return self.id<=other.id
         return NotImplemented
-
+    
     def __lt__(self,other):
         if isinstance(other,UserBase):
             return self.id<other.id
         return NotImplemented
-
+    
     @property
     def activities(self):
         return []
-
+    
     @property
     def status(self):
         return Status.offline
-
+    
     @property
     def statuses(self):
         return {}
-
+    
     @property
     def guild_profiles(self):
         return {}
-
+    
     @property
     def is_bot(self):
         return False
-
+    
+    @property
+    def flags(self):
+        return UserFlag()
+    
     @property
     def partial(self):
         return True
-
+    
     @property
     def activity(self):
         return  ActivityUnknown
-
+    
     @property
     def platform(self):
         return ''
@@ -416,11 +410,27 @@ class UserBase(object):
     def name_at(self,guild):
         return self.name
     
-    def mentioned_in(self,message):
+    def mentioned_in(self, message):
         if message.everyone_mention:
             return True
-        if message.user_mentions is not None and self in message.user_mentions:
+        
+        user_mentions = message.user_mentions
+        if (user_mentions is not None) and (self in user_mentions):
             return True
+        
+        role_mentions = message.role_mentions
+        if (role_mentions is not None):
+            guild = message.channel.guild
+            if (guild is not None):
+                try:
+                    profile = self.guild_profiles[guild]
+                except KeyError:
+                    pass
+                else:
+                    for role in profile.roles:
+                        if role in role_mentions:
+                            return True
+        
         return False
     
     def has_role(self,role):
@@ -643,11 +653,11 @@ class UserBase(object):
 
 class User(UserBase):
     if CACHE_PRESENCE:
-        __slots__=('guild_profiles', 'is_bot', 'partial', #default User
+        __slots__=('guild_profiles', 'is_bot', 'flags', 'partial', #default User
             'activities', 'status', 'statuses') #Presence
     else:
-        __slots__=('guild_profiles', 'is_bot', 'partial') #default User
-        
+        __slots__=('guild_profiles', 'is_bot', 'flags', 'partial') #default User
+    
     if CACHE_PRESENCE:
         def __new__(cls,data,guild=None):
             try:
@@ -772,162 +782,99 @@ class User(UserBase):
                 profile._set_joined(member_data)
                 profile._update_no_return(member_data,guild)
     
-    
-    if CACHE_PRESENCE:
-        @classmethod
-        def precreate(cls,user_id,**kwargs):
-            processable={}
-            for key in ('name', 'discriminator', 'avatar', 'has_animated_avatar', 'is_bot'):
-                try:
-                    value=kwargs.pop(key)
-                except KeyError:
-                    pass
-                else:
-                    processable[key]=value
-                    
-            if kwargs:
-                raise ValueError(f'Unused or unsettable attributes: {kwargs}')
-            
-            try:
-                user=USERS[user_id]
-            except KeyError:
-                user=object.__new__(cls)
-                user.id=user_id
-                
-                user.name=''
-                user.discriminator=0
-                user.avatar=0
-                user.has_animated_avatar=False
-                user.is_bot=False
-                
-                user.guild_profiles={}
-                user.partial=True
-                
-                user.status=Status.offline
-                user.statuses={}
-                user.activities=[]
+    @classmethod
+    def precreate(cls, user_id, **kwargs):
+        if isinstance(user_id,int):
+            if (type(user_id) is not int):
+                user_id=int(user_id)
+        else:
+            raise TypeError(f'`user_id` can be passed as `int` instance, got {user_id!r}.')
         
-                USERS[user_id]=user
-            else:
-                if not user.partial:
-                    return user
-    
-            try:
-                user.avatar,user.has_animated_avatar=_parse_ih_fsa(
-                    processable.get('avatar'),
-                    processable.get('has_animated_avatar',False))
-            except KeyError:
-                pass
-            
-            for attr in ('name', 'discriminator', 'is_bot'):
-                try:
-                    value=processable[attr]
-                except KeyError:
-                    continue
-                setattr(user,attr,value)
-            
-            return user
-    
-    elif CACHE_USER:
-        @classmethod
-        def precreate(cls,user_id,**kwargs):
-            processable={}
-            for key in ('name', 'discriminator', 'avatar', 'has_animated_avatar', 'is_bot'):
-                try:
-                    value=kwargs.pop(key)
-                except KeyError:
-                    pass
-                else:
-                    processable[key]=value
-                    
-            if kwargs:
-                raise ValueError(f'Unused or unsettable attributes: {kwargs}')
-            
-            try:
-                user=USERS[user_id]
-            except KeyError:
-                user=object.__new__(cls)
-                user.id=user_id
-                
-                user.name=''
-                user.discriminator=0
-                user.avatar=0
-                user.has_animated_avatar=False
-                user.is_bot=False
-                
-                user.guild_profiles={}
-                user.partial=True
+        processable = []
         
-                USERS[user_id]=user
+        try:
+            name = kwargs.pop('name')
+        except KeyError:
+            pass
+        else:
+            if not isinstance(name, str):
+                raise TypeError(f'`name` can be passed as `str` instance, got {name!r}.')
+            if type(name) is not str:
+                name = str(name)
+            
+            processable.append(('name',name))
+        
+        try:
+            discriminator = kwargs.pop('discriminator')
+        except KeyError:
+            pass
+        else:
+            # Discord sends `discriminator` as `str`, so lets accept that as well.
+            if isinstance(discriminator, str):
+                try:
+                    discriminator = int(discriminator)
+                except ValueError:
+                    raise TypeError(f'`discriminator` can be passed as `int` instance, got {discriminator!r}.')
+            
+            elif isinstance(discriminator, int):
+                if type(discriminator) is not int:
+                    discriminator = int(discriminator)
+            
             else:
-                if not user.partial:
-                    return user
-    
-            try:
-                user.avatar,user.has_animated_avatar=_parse_ih_fsa(
-                    processable.get('avatar'),
-                    processable.get('has_animated_avatar',False))
-            except KeyError:
-                pass
+                raise TypeError(f'`discriminator` can be passed as `int` instance, got {discriminator!r}.')
             
-            for attr in ('name', 'discriminator', 'is_bot'):
-                try:
-                    value=processable[attr]
-                except KeyError:
-                    continue
-                setattr(user,attr,value)
+            processable.append(('discriminator',discriminator))
+        
+        try:
+            avatar = kwargs.pop('avatar')
+        except KeyError:
+            if 'has_animated_avatar' in kwargs:
+                raise TypeError('`has_animated_avatar` was passed without passing `avatar`.')
+        else:
+            has_animated_avatar = kwargs.pop('has_animated_avatar', False)
+            avatar, has_animated_avatar = _parse_ih_fsa(avatar, has_animated_avatar)
             
-            return user
-    
-    else:
-        @classmethod
-        def precreate(cls,user_id,**kwargs):
-            processable={}
-            for key in ('name', 'discriminator', 'avatar', 'has_animated_avatar', 'is_bot'):
-                try:
-                    value=kwargs.pop(key)
-                except KeyError:
-                    pass
+            processable.append(('avatar', avatar))
+            processable.append(('has_animated_avatar',has_animated_avatar))
+        
+        try:
+            is_bot = kwargs.pop('is_bot')
+        except KeyError:
+            pass
+        else:
+            if (type(is_bot) is not bool):
+                if isinstance(is_bot,int) and (is_bot in (0,1)):
+                    is_bot = bool(is_bot)
                 else:
-                    processable[key]=value
-                    
-            if kwargs:
-                raise ValueError(f'Unused or unsettable attributes: {kwargs}')
+                    raise TypeError(f'`is_bot` can be passed as `bool` instance, got {is_bot!r}.')
             
-            try:
-                user=USERS[user_id]
-            except KeyError:
-                user=object.__new__(cls)
-                user.id=user_id
-                
-                user.name=''
-                user.discriminator=0
-                user.avatar=0
-                user.has_animated_avatar=False
-                user.is_bot=False
-                
-                user.guild_profiles={}
-                user.partial=True
-            else:
-                if not user.partial:
-                    return user
-    
-            try:
-                user.avatar,user.has_animated_avatar=_parse_ih_fsa(
-                    processable.get('avatar'),
-                    processable.get('has_animated_avatar',False))
-            except KeyError:
-                pass
+            processable.append(('is_bot', is_bot))
+        
+        try:
+            flags = kwargs.pop('flags')
+        except KeyError:
+            pass
+        else:
+            if not isinstance(flags, int):
+                raise TypeError(f'`flags` can be passed as `{UserFlag.__name__}` instance, got {flags!r}.')
             
-            for attr in ('name', 'discriminator', 'is_bot'):
-                try:
-                    value=processable[attr]
-                except KeyError:
-                    continue
-                setattr(user,attr,value)
+            if (type(flags) is not UserFlag):
+                flags = UserFlag(flags)
             
+            processable.append(('flags', flags))
+        
+        if kwargs:
+            raise ValueError(f'Unused or unsettable attributes: {kwargs}.')
+        
+        user = PartialUser(user_id)
+        if not user.partial:
             return user
-
+        
+        for name, value in processable:
+            setattr(user, name, value)
+        
+        return user
+    
     def _update_no_return(self,data):
         self.name=data['username']
         self.discriminator=int(data['discriminator'])
@@ -942,7 +889,9 @@ class User(UserBase):
         else:
             self.avatar=int(avatar,16)
             self.has_animated_avatar=False
-
+        
+        self.flags = UserFlag(data.get('public_flags',0))
+    
     if CACHE_PRESENCE:
         @classmethod
         def _create_and_update(cls,data,guild=None):
@@ -1168,9 +1117,14 @@ class User(UserBase):
         if self.has_animated_avatar!=has_animated_avatar:
             old['has_animated_avatar']=self.has_animated_avatar
             self.has_animated_avatar=has_animated_avatar
-
+        
+        flags = data.get('public_flags',0)
+        if self.flags != flags:
+            data['flags']=self.flags
+            self.flags = UserFlag(flags)
+        
         return old
-
+    
     @classmethod
     def _update_profile(cls,data,guild):
         user_id=int(data['user']['id'])
@@ -1190,7 +1144,7 @@ class User(UserBase):
 
         profile._set_joined(data)
         return user,profile._update(data,guild)
-
+    
     @classmethod
     def _update_profile_no_return(cls,data,guild):
         user_id=int(data['user']['id'])
@@ -1209,7 +1163,7 @@ class User(UserBase):
 
         profile._update_no_return(data,guild)
 
-
+    
     if CACHE_PRESENCE:
         @classmethod
         def _from_GWU_data(cls,data):
@@ -1258,7 +1212,47 @@ class User(UserBase):
             user.partial=False
             user._update_no_return(data)
             return user
-        
+    
+    if CACHE_PRESENCE:
+        @classmethod
+        def _create_empty(cls, user_id):
+            user = object.__new__(cls)
+            user.id = user_id
+            
+            user.name = ''
+            user.discriminator = 0
+            user.avatar = 0
+            user.has_animated_avatar = False
+            user.is_bot = False
+            user.flags = UserFlag()
+            
+            user.guild_profiles = {}
+            user.partial = True
+            
+            user.status = Status.offline
+            user.statuses = {}
+            user.activities = []
+            
+            return user
+    
+    else:
+        @classmethod
+        def _create_empty(cls, user_id):
+            user = object.__new__(cls)
+            user.id = user_id
+            
+            user.name = ''
+            user.discriminator = 0
+            user.avatar = 0
+            user.has_animated_avatar=False
+            user.is_bot = False
+            user.flags = UserFlag()
+            
+            user.guild_profiles = {}
+            user.partial = True
+            
+            return user
+
 class VoiceState(object):
     __slots__=('channel', 'deaf', 'mute', 'self_deaf', 'self_mute', 'self_video',
         'session_id', 'user',)
@@ -1330,21 +1324,7 @@ class VoiceState(object):
     def __repr__(self):
         return f'<{self.__class__.__name__} user={self.user.full_name} channel={self.channel!r}>'
     
-ZEROUSER=object.__new__(User)
-ZEROUSER.id             = 0
-ZEROUSER.name           = ''
-ZEROUSER.discriminator  = 0
-ZEROUSER.avatar         = 0
-
-ZEROUSER.has_animated_avatar=False
-ZEROUSER.guild_profiles = {}
-ZEROUSER.is_bot         = True
-ZEROUSER.partial        = True
-
-if CACHE_PRESENCE:
-    ZEROUSER.activities     = []
-    ZEROUSER.status         = Status.offline
-    ZEROUSER.statuses       = {}
+ZEROUSER = User._create_empty(0)
 
 del URLS
 del modulize

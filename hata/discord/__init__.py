@@ -20,6 +20,7 @@ from .others import *
 from .parsers import *
 from .permission import *
 from .player import *
+from .ratelimit import *
 from .role import *
 from .user import *
 from .voice_client import *
@@ -47,6 +48,7 @@ __all__ = (
     *parsers.__all__            ,
     *permission.__all__         ,
     *player.__all__             ,
+    *ratelimit.__all__          ,
     *role.__all__               ,
     *user.__all__               ,
     *voice_client.__all__       ,

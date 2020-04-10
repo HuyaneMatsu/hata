@@ -23,7 +23,7 @@ class Command(object):
         'command', 'description', 'name', )
     
     @classmethod
-    def from_class(cls, klass):
+    def from_class(cls, klass, kwargs=None):
         if not isinstance(klass,type):
             raise TypeError(f'Expected `type` instance, got `{klass!r}`.')
         
@@ -60,11 +60,55 @@ class Command(object):
         
         parser_failure_handler=getattr(klass,'parser_failure_handler',None)
         
+        if (kwargs is not None) and kwargs:
+            if (description is None):
+                description = kwargs.pop('description', None)
+            else:
+                try:
+                    del kwargs['description']
+                except KeyError:
+                    pass
+            
+            if (category is None):
+                category = kwargs.pop('category', None)
+            else:
+                try:
+                    del kwargs['category']
+                except KeyError:
+                    pass
+            
+            if (checks_ is None) or not checks_:
+                checks_ = kwargs.pop('checks', None)
+            else:
+                try:
+                    del kwargs['checks']
+                except KeyError:
+                    pass
+            
+            if (check_failure_handler is None):
+                check_failure_handler = kwargs.pop('check_failure_handler', None)
+            else:
+                try:
+                    del kwargs['check_failure_handler']
+                except KeyError:
+                    pass
+            
+            if (parser_failure_handler is None):
+                parser_failure_handler = kwargs.pop('parser_failure_handler', None)
+            else:
+                try:
+                    del kwargs['parser_failure_handler']
+                except KeyError:
+                    pass
+            
+            if kwargs:
+                raise TypeError(f'`{cls.__name__}.from_class` did not use up some kwargs: `{list(kwargs)!r}`.')
+        
         return cls(command, name, description, aliases, category, checks_, check_failure_handler, parser_failure_handler)
     
     @classmethod
     def from_kwargs(cls, command, name, kwargs):
-        if kwargs is None:
+        if (kwargs is None) or (not kwargs):
             description = None
             aliases = None
             category = None
@@ -80,7 +124,7 @@ class Command(object):
             parser_failure_handler = kwargs.pop('parser_failure_handler',None)
             
             if kwargs:
-                raise TypeError(f'type `{cls.__name__}` not uses: `{list(kwargs)!r}`')
+                raise TypeError(f'type `{cls.__name__}` not uses: `{list(kwargs)!r}`.')
         
         return cls(command, name, description, aliases, category, checks_, check_failure_handler, parser_failure_handler)
     
@@ -310,7 +354,7 @@ class Command(object):
             return
         
         parser_failure_handler = check_argcount_and_convert(parser_failure_handler, 5,
-            '`parser_failure_handler` expected 5 arguemnts (client, message, command, content, args.')
+            '`parser_failure_handler` expected 5 arguemnts (client, message, command, content, args).')
         self._parser_failure_handler=parser_failure_handler
     
     def _del_parser_failure_handler(self):
@@ -1193,9 +1237,8 @@ class Category(object):
         return ''.join(result)
 
 class CommandProcesser(EventWaitforBase):
-    __slots__ = ('_default_category_name', '_ignorecase', 'categories',
-        'command_error', 'commands', 'default_event', 'invalid_command',
-        'mention_prefix', 'prefix', 'prefixfilter', )
+    __slots__ = ('_default_category_name', '_ignorecase', 'categories', 'command_error', 'commands', 'default_event',
+        'get_prefix_for', 'invalid_command', 'mention_prefix', 'prefix', 'prefixfilter', )
     
     __event_name__='message_create'
     
@@ -1352,20 +1395,46 @@ class CommandProcesser(EventWaitforBase):
                         return
                     return result.groups()
                 
+                get_prefix_for = prefix
                 break
             
             if type(prefix) is str:
+                if not prefix:
+                    raise ValueError('Prefix cannot be passed as empty string.')
+                
                 PREFIX_RP=re.compile(re.escape(prefix),flag)
+                def get_prefix_for(message):
+                    return practical_prefix
+            
             elif isinstance(prefix,(list,tuple)):
-                PREFIX_RP=re.compile("|".join(re.escape(p) for p in prefix),flag)
+                if not prefix:
+                    raise ValueError(f'Prefix fed as empty {prefix.__class__.__name__}: {prefix!r}')
+                
+                for prefix_ in prefix:
+                    if type(prefix_) is not str:
+                        raise TypeError(f'Prefix can be only callable, str or tuple/list type of str, got {prefix_!r}')
+                    
+                    if not prefix_:
+                        raise ValueError('Prefix cannot be passed as empty string.')
+                
+                PREFIX_RP=re.compile("|".join(re.escape(prefix_) for prefix_ in prefix),flag)
+                practical_prefix = prefix[0]
+                
+                def get_prefix_for(message):
+                    result=PREFIX_RP.match(message.content)
+                    if result is None:
+                        return practical_prefix
+                    else:
+                        return result.group(0)
             else:
-                raise TypeError(f'Prefix can be only callable, str or tuple/list type, got {prefix!r}')
+                raise TypeError(f'Prefix can be only callable, str or tuple/list type of str, got {prefix!r}')
             
             def prefixfilter(message):
-                result=PREFIX_RP.match(message.content)
+                content = message.content
+                result=PREFIX_RP.match(content)
                 if result is None:
                     return
-                result=COMMAND_RP.match(message.content,result.end())
+                result=COMMAND_RP.match(content,result.end())
                 if result is None:
                     return
                 return result.groups()
@@ -1374,6 +1443,7 @@ class CommandProcesser(EventWaitforBase):
         
         self.prefix=prefix
         self.prefixfilter=prefixfilter
+        self.get_prefix_for=get_prefix_for
         self._ignorecase=ignorecase
     
     def __setevent__(self, func, name, description=None, aliases=None, category=None, checks=None, check_failure_handler=None, parser_failure_handler=None):

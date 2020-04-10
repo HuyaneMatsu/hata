@@ -645,7 +645,7 @@ class WebSocketCommonProtocol(object):
 
         except CancelledError as err:
             #we alrady failed connection
-            exception=ConnectionClosed(1000,err)
+            exception=ConnectionClosed(self.close_code or 1000, err, self.close_reason)
         
         except WebSocketProtocolError as err:
             exception=ConnectionClosed(1002,err)
@@ -669,9 +669,9 @@ class WebSocketCommonProtocol(object):
             self.fail_connection(1011)
         
         else:
-            #we closed the connection
-            exception=ConnectionClosed(1000,None)
-
+            # connection wa closed
+            exception = ConnectionClosed(self.close_code or 1000, None, self.close_reason)
+            
             # If we are a client and we receive this, we closed our own
             # connection, there is no reason to wait for TCP abort
             if self.is_client:
@@ -692,20 +692,20 @@ class WebSocketCommonProtocol(object):
             text = False
         else: #frame.opcode == OP_CONT:
             raise WebSocketProtocolError('Unexpected opcode')
-
+        
         #we got a whole frame, nice
         if frame.fin:
             return frame.data.decode('utf-8') if text else frame.data
-
+        
         max_size=self.max_size #set max size to BIG number to ignore it
         chunks=[]
-
+        
         if text:
             decoder = codecs.getincrementaldecoder('utf-8')(errors='strict')
             append=lambda frame : chunks.append(decoder.decode(frame.data,frame.fin))
         else:
             append=lambda frame : chunks.append(frame.data)
-
+        
         while True:
             append(frame)
             max_size-=len(frame.data)
@@ -718,7 +718,7 @@ class WebSocketCommonProtocol(object):
                 raise WebSocketProtocolError('Incomplete fragmented message')
             if frame.opcode!=OP_CONT:
                 raise WebSocketProtocolError('Unexpected opcode')
-            
+        
         return ('' if text else b'').join(chunks)
 
     async def read_data_frame(self,max_size):

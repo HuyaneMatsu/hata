@@ -6,7 +6,7 @@ from time import monotonic
 from weakref import WeakSet, ref as Weakreferer, WeakKeyDictionary
 
 from ..backend.futures import Future, Task, iscoroutinefunction as iscoro
-from ..backend.dereaddons_local import function, remove, removemeta, _spaceholder, MethodLike
+from ..backend.dereaddons_local import function, RemoveMeta, _spaceholder, MethodLike
 from ..backend.analyzer import CallableAnalyzer
 
 from .client_core import CACHE_USER, CACHE_PRESENCE, CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO
@@ -3276,14 +3276,12 @@ class EventListElement(object):
     def __repr__(self):
         return f'{self.__class__.__name__}({self.func!r}, {self.name!r}, kwargs={self.kwargs!r})'
 
-class eventlist(list,metaclass=removemeta):
-    delete=remove('insert','sort','pop','reverse','remove','sort','index',
-        'count','__mul__','__rmul__','__imul__','__add__','__radd__','__iadd__',
-        '__setitem__','__contains__')
+class eventlist(list,metaclass=RemoveMeta, remove=['insert', 'sort', 'pop', 'reverse', 'remove', 'sort', 'index',
+        'count', '__mul__', '__rmul__', '__imul__', '__add__', '__radd__', '__iadd__', '__setitem__','__contains__']):
     
-    __slots__=('_supports_from_class', 'type')
+    __slots__=('_supports_from_class', 'kwargs', 'type')
     
-    def __new__(cls,iterable=None,type_=None):
+    def __new__(cls, iterable=None, type_=None, **kwargs):
         
         if (type_ is None):
             supports_from_class = False
@@ -3296,9 +3294,13 @@ class eventlist(list,metaclass=removemeta):
             
             supports_from_class = hasattr(type_,'from_class')
         
+        if not kwargs:
+            kwargs = None
+        
         self=list.__new__(cls)
         self.type=type_
         self._supports_from_class = supports_from_class
+        self.kwargs = kwargs
         
         if (iterable is not None):
             self.extend(iterable)
@@ -3315,6 +3317,7 @@ class eventlist(list,metaclass=removemeta):
         def __call__(self,func):
             parent=self.parent
             type_ = parent.type
+                
             if type_ is None:
                 element = EventListElement(func,self.name,self.kwargs)
             else:
@@ -3332,7 +3335,12 @@ class eventlist(list,metaclass=removemeta):
                 message=f'The `eventlist`\'s type: `{type!r}` is not supporting `.from_class`.'
             raise TypeError(message)
         
-        element = type_.from_class(klass)
+        # kwargs are gonna be emptied, so copy them if needed
+        kwargs = self.kwargs
+        if (kwargs is not None):
+            kwargs = kwargs.copy()
+        
+        element = type_.from_class(klass, kwargs = kwargs)
         list.append(self,element)
         return element
     
@@ -3373,8 +3381,10 @@ class eventlist(list,metaclass=removemeta):
             else:
                 name=None
         
-        if not kwargs:
-            kwargs=None
+        own_kwargs = self.kwargs
+        if (own_kwargs is not None) and own_kwargs:
+            for name_, value_ in own_kwargs.items():
+                kwargs.setdefault(name_, value_)
         
         if func is None:
             return self._wrapper(self,name,kwargs)
@@ -3444,9 +3454,44 @@ class eventlist(list,metaclass=removemeta):
             result.append(', type=')
             result.append(repr(type_))
         
+        kwargs = self.kwargs
+        if (kwargs is not None):
+            result.append(', kwargs=')
+            result.append(repr(kwargs))
+        
         result.append(')')
         return ''.join(result)
+    
+    def add_kwargs(self, **kwargs):
+        if not kwargs:
+            return
         
+        own_kwargs = self.kwargs
+        if own_kwargs is None:
+            self.kwargs = kwargs
+        else:
+            own_kwargs.update(kwargs)
+    
+    def remove_kwargs(self, *names):
+        if not names:
+            return
+        
+        own_kwargs = self.kwargs
+        if own_kwargs is None:
+            return
+        
+        for name in names:
+            try:
+                del own_kwargs[name]
+            except KeyError:
+                pass
+        
+        if not own_kwargs:
+            self.kwargs = None
+    
+    def clear_kwargs(self):
+        self.kwargs = None
+
 # this class is a placeholder for the `with` statemnet support
 # also for the `shortcut` propery as well.
 class EventHandlerBase(object):
@@ -4159,13 +4204,12 @@ class EventDescriptor(object):
         parser_default=PARSER_DEFAULTS.all[parser_name]
         parser_default.remove_mention(self.client_reference())
         return
-        
+
 async def _with_error(client,task):
     try:
         await task
     except BaseException as err:
         await client.events.error(client,repr(task),err)
 
-del removemeta
-del remove
+del RemoveMeta
 del datetime

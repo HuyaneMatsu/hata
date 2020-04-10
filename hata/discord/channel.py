@@ -19,7 +19,7 @@ from .role import PermOW
 from .client_core import GC_cycler
 from .webhook import Webhook
 
-from . import webhook, message
+from . import webhook, message, ratelimit
 
 Q_on_GC=deque()
 
@@ -1869,14 +1869,16 @@ def cr_pg_channel_object(name, type_, overwrites=None, topic=None, nsfw=False,
 
 #scopes
 
-webhook.ChannelText=ChannelText
-message.ChannelBase=ChannelBase
-message.ChannelTextBase=ChannelTextBase
-message.ChannelGuildBase=ChannelGuildBase
-message.ChannelText=ChannelText
-message.ChannelPrivate=ChannelPrivate
-message.ChannelGroup=ChannelGroup
+webhook.ChannelText = ChannelText
+message.ChannelBase = ChannelBase
+message.ChannelTextBase = ChannelTextBase
+message.ChannelGuildBase = ChannelGuildBase
+message.ChannelText = ChannelText
+message.ChannelPrivate = ChannelPrivate
+message.ChannelGroup = ChannelGroup
+ratelimit.ChannelBase = ChannelBase
 
 del message
 del webhook
 del URLS
+del ratelimit

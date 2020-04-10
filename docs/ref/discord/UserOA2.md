@@ -27,6 +27,7 @@ exists.
 - [`discriminator`](UserBase.md#discriminator)
 - [`avatar`](UserBase.md#avatar)
 - [`has_animated_avatar`](UserBase.md#has_animated_avatar)
+- [`flags`](UserBase.md#flags) (from property)
 
 ### `access`
 
@@ -40,13 +41,6 @@ updated.
 - type : `str`
 
 The user's email.
-
-### `flags`
-
-- type : [`UserFlag`](UserFlag.md)
-- default : `UserFlag(0)`
-
-The hypesquad flags of the account.
 
 ### `has_animated_avatar`
 

@@ -5,7 +5,7 @@ __all__ = ('Attachment', 'Message', 'MessageActivity', 'MessageActivityType', 'M
 import re
 from datetime import datetime
 
-from ..backend.dereaddons_local import any_to_any, autoposlist, cached_property, _spaceholder
+from ..backend.dereaddons_local import any_to_any, autoposlist, cached_property, _spaceholder, BaseMethodDescriptor
 
 from .http import URLS
 from .others import parse_time, CHANNEL_MENTION_RP, id_to_time, VoiceRegion, time_to_id
@@ -15,6 +15,8 @@ from .emoji import reaction_mapping
 from .embed import EmbedCore, EXTRA_EMBED_TYPES
 from .webhook import WebhookRepr, PartialWebhook, WebhookType, Webhook
 from .role import Role
+
+from . import ratelimit
 
 where=autoposlist.where
 
@@ -638,8 +640,8 @@ class Message(object):
         
         MESSAGES[self.id]=self
         
-    @classmethod
-    def custom(cls,base=None,validate=True,**kwargs):
+    @BaseMethodDescriptor
+    def custom(cls, base, validate=True, **kwargs):
         if (base is not None) and (type(base) is not cls):
             raise TypeError(f'`base` should be either `None`, or type `{cls.__name__}`, got `{base!r}`')
         
@@ -2074,4 +2076,8 @@ class GroupCall(object):
         state._update_no_return(data,channel)
         return channel
 
-del autoposlist, URLS
+ratelimit.Message = Message
+
+del autoposlist
+del URLS
+del ratelimit

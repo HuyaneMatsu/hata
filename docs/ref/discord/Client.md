@@ -90,6 +90,7 @@ Instance Attributes:
     - [`avatar`](UserBase.md#avatar)
     - [`has_animated_avatar`](UserBase.md#has_animated_avatar)
     - [`is_bot`](UserBase.md#is_bot) (from property)
+    - [`flags`](UserBase.md#flags) (from property)
     - [`guild_profiles`](UserBase.md#guild_profiles) (from property)
     - [`partial`](UserBase.md#partial) (from property)
     - [`status`](UserBase.md#status) (from property)
@@ -920,7 +921,7 @@ requests the newest messages of a channel and returns them as a list.
 
 Requests and returns the message for the given id at the given channel.
 
-### `message_create(self,channel,...)`
+### `message_create(self, channel, ...)`
 
 - `awaitable`
 - returns : [`Message`](Message.md) / `None`
@@ -937,9 +938,6 @@ compatible type's instance.
 - `allowed_mentions`, default : `_spaceholder`. [For details](#_parse_allowed_mentionsallowed_mentions-staticmethod).
 - `tts`, default : `False`. Is the message `tts`, text-to-speech.
 - `nonce`, default : `None`. `nonce` is used for validating a message was sent (?).
-
-> `allowed_mentions` data is not applied to edited messages and editing does
-> not uses it either.
 
 ### `message_delete(self,message,reason=None)`
 
@@ -990,14 +988,15 @@ If `filter` is passed, then it will be called on each message, to decide, if it
 should be deleted. It should be passed as a callable, what accepts 1 argument,
 a [message](Message.md), and it should return `True` or `False`.
 
-### `message_edit(self,message,content=None,embed=_spaceholder,suppress=None)`
+### `message_edit(self, message, content=None, embed=_spaceholder, allowed_mentions=_spaceholder, suppress=None)`
 
 - `awaitable`
 - returns : `None`
 
 Edits the message with the given `content` and [`embed`](Embed.md).
 Pass `content` as `''` to remove it. Pass `embed` as `None` to remove it.
-This method also supports editing a message's suppress, with editing it's
+You can also use [`allowed_mentions`](#_parse_allowed_mentionsallowed_mentions-staticmethod)
+as well. This method also supports editing a message's suppress, with editing it's
 [`.flags`](Message.md#flags).
 
 ### `message_suppress_embeds(self,message,suppress=True)`
@@ -1676,7 +1675,7 @@ authorization instead of the client's token itself. Same as
 - returns : [`Message`](Message.md) / `None`
 - raises : `ValueError` / `TypeError`
 
-Almost same as [`.message_create`](#message_createselfchannel). Sends a message
+Almost same as [`.message_create`](#message_createself-channel-). Sends a message
 with the [`webhook`](Webhook.md) to it's channel. If there is nothing to send,
 then returns `None`. If `wait` is set to `True`, it returns the
 [`message`](Message.md), else `None`.
@@ -2071,6 +2070,16 @@ Returns the voice client for the [message](Message.md)'s [guild](Guild.md) or
 
 Tries to find the [`guild`](Guild.md) by it's name. If there is no guild with
 the given nam returns `None`.
+
+### `get_ratelimits_of(self, group, limiter=None, keep_alive=False)`
+
+- returns : `RatelimitProxy`
+- raises : `RuntimeError` / `TypeError` / `RuntimeError`
+
+Returns a proxy to the specified `ratelimit group` bound to that specific
+limiter.
+
+> Experimental.
 
 ## Internal
 

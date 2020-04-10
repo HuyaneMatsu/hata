@@ -4,8 +4,9 @@ from collections import namedtuple
 from urllib.parse import quote
 from math import ceil
 import socket as module_socket
+from time import monotonic
 
-from .futures import CancelledError, Future
+from .futures import CancelledError
 
 CHAR = set(chr(i) for i in range(0, 128))
 CTL = set(chr(i) for i in range(0, 32)) | {chr(127), }
@@ -139,60 +140,61 @@ class TimeoutHandle(object):
         self.callbacks.clear()
 
     def start(self):
-        if self.timeout is not None and self.timeout>0:
-            
-            at=ceil(self.loop.time()+self.timeout)
-            return self.loop.call_at(at,self.__call__)
-
+        timeout = self.timeout
+        if timeout>0:
+            at=ceil(monotonic()+self.timeout)
+            return self.loop.call_at(at,self)
+    
     def timer(self):
-        if self.timeout is not None and self.timeout>0:
+        if self.timeout>0:
             timer=TimerContext(self.loop)
             self.register(timer.timeout)
         else:
             timer=EmptyTimer()
         return timer
-
+    
     def __call__(self):
-        for callback,args,kwargs in self.callbacks:
+        callbacks = self.callbacks
+        while callbacks:
+            callback, args, kwargs = callbacks.pop()
             try:
                 callback(*args,**kwargs)
             except BaseException as err:
                 self.loop.render_exc_async(err,[
                     'Exception occured at ',
-                    self.__class__.__name__,
+                    repr(self),
                     '.__call__\n'
                         ])
-
-        self.callbacks.clear()
-
+    
+    def __repr__(self):
+        return f'<{self.__class__.__name__}, timeout={self.timeout!r}, callbacks={self.callbacks!r}>'
         
 class Timeout(object):
     __slots__=('cancel_handler', 'cancelled', 'loop', 'task', 'timeout',)
-    def __init__(self,loop,timeout):
+    def __init__(self, loop, timeout):
         
         self.timeout        = timeout
         self.loop           = loop
         self.task           = None
         self.cancelled      = False
         self.cancel_handler = None
-
+    
     def __enter__(self):
-        self.task=self.loop.current_task
-        if self.task is None:
+        self.task = task=self.loop.current_task
+        if task is None:
             raise RuntimeError('Timeout context manager should be used inside a task')
-        if self.timeout:
-            self.cancel_handler=self.loop.call_later(self.timeout,self._cancel_task)
+        
+        self.cancel_handler=self.loop.call_later(self.timeout,self._cancel_task)
         return self
-
+    
     def __exit__(self,exc_type,exc_val,exc_tb):
         if exc_type in (CancelledError, GeneratorExit) and self.cancelled:
             self.cancel_handler=None
             self.task=None
             raise TimeoutError from None
         
-        if self.timeout:
-            self.cancel_handler.cancel()
-            self.cancel_handler=None
+        self.cancel_handler.cancel()
+        self.cancel_handler=None
         self.task=None
 
     def _cancel_task(self):
@@ -221,8 +223,9 @@ class TimerContext(object):
         return self
 
     def __exit__(self,exc_type,exc_val,exc_tb):
-        if self.tasks:
-            self.tasks.pop()
+        tasks = self.tasks
+        if tasks:
+            tasks.pop()
 
         if exc_type in (CancelledError, GeneratorExit) and self.cancelled:
             raise TimeoutError from None
@@ -231,17 +234,19 @@ class TimerContext(object):
         if not self.cancelled:
             for task in set(self.tasks):
                 task.cancel()
-
+            
             self.cancelled=True
 
             
 class CeilTimeout(Timeout):
     def __enter__(self):
         if self.timeout:
-            self.task=self.loop.current_task
-            if self.task is None:
+            self.task = task = self.loop.current_task
+            if task is None:
                 raise RuntimeError('Timeout context manager should be used inside a task')
+            
             self.cancel_handler=self.loop.call_at(ceil(self.loop.time()+self.timeout),self._cancel_task)
+        
         return self
 
 def content_disposition_header(disptype,params,quote_fields=True):
@@ -287,24 +292,3 @@ def tcp_nodelay(transport,value):
         socket.setsockopt(module_socket.IPPROTO_TCP,module_socket.TCP_NODELAY,value)
     except OSError:
         pass
-
-class EventResultOrError(object):
-    __slots__=('exception', 'loop', 'waiter',)
-    def __init__(self,loop):
-        self.loop       = loop
-        self.exception  = None
-        self.waiter     = Future(loop)
-
-    def set(self,exception=None):
-        self.exception=exception
-        self.waiter.set_result_if_pending(None)
-
-    async def wait(self):
-        value = await self.waiter
-        exception=self.exception
-        if exception is not None:
-            raise exception
-        return value
-
-    def cancel(self):
-        self.waiter.cancel()

@@ -16,7 +16,7 @@
 ##| 502   | GATEWAY UNAVAILABLE   | retry         |
 ##| 5XX   | SERVER ERROR          | raise         |
 
-__all__ = ('DiscordException', 'ERROR_CODES', )
+__all__ = ('DiscordException', 'ERROR_CODES', 'IntentError', )
 
 class DiscordException(Exception):
     def __init__(self,response,data):
@@ -222,6 +222,7 @@ class ERROR_CODES:
     max_webhooks            = 30007 # 10
     max_reactions           = 30010 # 20
     max_channels            = 30013 # 500
+    max_attachments         = 30015 # 10
     max_invites             = 30016 # 1000
     
     unauthorized            = 40001
@@ -258,3 +259,32 @@ class ERROR_CODES:
     
     resource_overloaded     = 130000
 
+class IntentError(BaseException):
+    CODETABLE = {
+        4013 : 'An invalid intent is one that is not meaningful and not documented.',
+        4014 : 'A disallowed intent is one which you have not enabled for your bot or one that your bot is not whitelisted to use.',
+            }
+    
+    def __init__(self, code):
+        BaseException.__init__(self, code)
+        self.code = code
+    
+    def __repr__(self):
+        result = [
+            self.__class__.__name__,
+            '(code=',
+                ]
+        
+        code = self.code
+        result.append(repr(code))
+        result.append(')')
+        
+        try:
+            description = self.CODETABLE[code]
+        except KeyError:
+            pass
+        else:
+            result.append(': ')
+            result.append(description)
+        
+        return ''.join(result)

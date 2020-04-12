@@ -499,6 +499,7 @@ the changed attributes, what contains (`attribute name`, `old value`) items.
 |---------------------------|-----------------------------------|
 | avatar                    | int                               |
 | discriminator             | int                               |
+| flags                     | [UserFlag](UserFlag.md)           |
 | has_animated_avatar       | bool                              |
 | name                      | str                               |
 

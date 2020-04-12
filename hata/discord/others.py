@@ -815,35 +815,6 @@ class Unknown(object):
     def created_at(self):
         return id_to_time(self.id)
 
-#parse image hash formats
-def _parse_ih_fs(value):
-    if value is None:
-        return 0
-    if type(value) is str:
-        return int(value,16)
-    if type(value) is int:
-        return value
-    raise TypeError(f'Image hash can be `NoneType`, `str` or `int` type, got {value.__class__.__name__}')
-
-#parse image hash formats animated
-def _parse_ih_fsa(value,animated):
-    if (type(animated) is not bool):
-        # Edge case, animated is 0 or 1 ?
-        if isinstance(animated,int) and (animated in (0,1)):
-            animated = bool(animated)
-        else:
-            raise TypeError(f'Animated should be type bool, got {animated.__class__.__name__}')
-    
-    if value is None:
-        return 0,False
-    if type(value) is str:
-        if value.startswith('a_'):
-            return int(value[2:],16),True
-        return int(value,16),animated
-    if type(value) is int:
-        return value,animated
-    raise TypeError(f'Image hash can be `NoneType`, `str` or `int` type, got {value.__class__.__name__}')
-
 class FriendRequestFlag(object):
     # class related
     INSTANCES = [NotImplemented] * 5

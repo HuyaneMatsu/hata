@@ -109,10 +109,10 @@ Returns a list of the guild's members who have this role.
 
 ## Classmethods
 
-### `precreate(cls,role_id,**kwargs)`
+### `precreate(cls, role_id, **kwargs)`
 
 - returns : [`Role`](Role.md)
-- raises : `AttributeError` / `TypeError`
+- raises : `TypeError` / `ValueError`
 
 First tries to query the role from the already existing ones, if it fails
 creates a new one with the given keyword arguments. The newly created role will

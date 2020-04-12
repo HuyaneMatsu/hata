@@ -14,9 +14,9 @@ from ..backend.eventloop import EventThread
 from ..backend.py_formdata import Formdata
 from ..backend.py_hdrs import AUTHORIZATION
 
-from .others import Status, id_to_time, log_time_converter, _parse_ih_fsa, VoiceRegion, ContentFilterLevel, \
+from .others import Status, id_to_time, log_time_converter, DISCORD_EPOCH, VoiceRegion, ContentFilterLevel, \
     PremiumType, MessageNotificationLevel, bytes_to_base64, FriendRequestFlag, ext_from_base64, Theme, now_as_id, \
-    to_json, VerificationLevel, RelationshipType, random_id, parse_time, DISCORD_EPOCH
+    to_json, VerificationLevel, RelationshipType, random_id, parse_time
 from .user import User, USERS, GuildProfile, UserBase, UserFlag
 from .emoji import Emoji, PartialEmoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, \
@@ -25,7 +25,7 @@ from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelT
 from .guild import Guild, PartialGuild, GuildEmbed, GuildWidget, GuildFeature, GuildPreview
 from .http import DiscordHTTPClient, URLS, CDN_ENDPOINT, VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED
 from .role import Role
-from .webhook import Webhook,PartialWebhook
+from .webhook import Webhook, PartialWebhook
 from .gateway import DiscordGateway, DiscordGatewaySharder
 from .parsers import EventDescriptor, _with_error, IntentFlag, PARSER_DEFAULTS
 from .audit_logs import AuditLog, AuditLogIterator
@@ -35,13 +35,15 @@ from .oauth2 import Connection, parse_locale, DEFAULT_LOCALE, AO2Access, UserOA2
 from .exceptions import DiscordException, IntentError
 from .client_core import CLIENTS, start_clients, CACHE_USER, CACHE_PRESENCE, KOKORO, GUILDS
 from .voice_client import VoiceClient
-from .activity import ActivityUnknown
+from .activity import ActivityUnknown, ActivityBase, ActivityCustom
 from .integration import Integration
-from .application import Application,Team
+from .application import Application, Team
 from .color import Color
 from .ratelimit import RatelimitProxy
+from .preconverters import preconvert_snowflake, preconvert_animated_image_hash, preconvert_str, preconvert_bool, \
+    preconvert_discriminator, preconvert_flag, preconvert_preinstanced_type
 
-from . import client_core, message
+from . import client_core, message, webhook, channel
 
 _VALID_NAME_CHARS=re.compile('([0-9A-Za-z_]+)')
 
@@ -51,7 +53,7 @@ class single_user_chunker(object):
         self.limit=limit
         self.timer=None
         self.waiter=Future(client.loop)
-
+    
     def start_timer(self,client,timeout):
         if timeout>0.4:
             timeout=0.8
@@ -141,102 +143,156 @@ class Client(UserBase):
         'relationships', 'running', 'secret', 'settings', 'shard_count',
         'token', 'voice_clients')
     
-    def __init__(self,token,secret=None,client_id=0,activity=ActivityUnknown,status=None,is_bot=True,shard_count=0,intents=-1,**kwargs):
-
+    def __new__(cls, token, secret=None, client_id=0, activity=ActivityUnknown, status=None, is_bot=True,
+            shard_count=0, intents=-1, **kwargs):
+        
+        # token
+        if (type(token) is str):
+            pass
+        elif isinstance(token,str):
+            token = str(token)
+        else:
+            raise TypeError(f'`token` can be passed as `str` instance, got {token!r}.')
+        
+        # secret
+        if (secret is None) or type(secret is str):
+            pass
+        elif isinstance(secret,str):
+            secret = str(secret)
+        else:
+            raise TypeError(f'`secret` can be passed as `str` instance, got {secret!r}.')
+        
+        # client_id
+        client_id = preconvert_snowflake(client_id, 'client_id')
+        
+        # activity
+        if (not isinstance(activity, ActivityBase)) or (type(activity) is ActivityCustom):
+            raise TypeError(f'`activity` should have been passed as `{ActivityBase.__name__} instance (except {ActivityCustom.__name__}), got: {activity!r}.')
+        
+        # status
+        if (status is not None):
+            status = preconvert_preinstanced_type(status, 'status', Status)
+            if status is Status.offline:
+                status = Status.invisible
+        
+        # is_bot
+        is_bot = preconvert_bool(is_bot, 'is_bot')
+        
+        # shard count
+        if (type(shard_count) is int):
+            pass
+        elif isinstance(shard_count, int):
+            shard_count = int(shard_count)
+        else:
+            raise TypeError(f'`shard_count` should have been passed as `int` instance, got {shard_count!r}.')
+        
+        if shard_count<0:
+            raise ValueError(f'`shard_count` can be passed only as non negative `int`, got {shard_count!r}.')
+        
+        # intents
+        intents = preconvert_flag(intents, 'intents', IntentFlag)
+        
+        # kwargs
         if kwargs:
-            self.name=kwargs.pop('name','')
-            self.discriminator=int(kwargs.pop('discriminator','0'))
+            # kwargs.name
+            try:
+                name = kwargs.pop('name')
+            except KeyError:
+                name = ''
+            else:
+                name = preconvert_str(name, 'name', 2, 32)
             
-            self.avatar,self.has_animated_avatar=_parse_ih_fsa(
-                kwargs.pop('avatar',None),
-                kwargs.pop('has_animated_avatar',False))
-
+            # kwargs.discriminator
+            try:
+                discriminator = kwargs.pop('discriminator')
+            except KeyError:
+                discriminator = 0
+            else:
+                discriminator = preconvert_discriminator(discriminator)
+            
+            # kwargs.avatar & kwargs.has_animated_avatar
+            try:
+                avatar = kwargs.pop('avatar')
+            except KeyError:
+                if 'has_animated_avatar' in kwargs:
+                    raise TypeError('`has_animated_avatar` was passed without passing `avatar`.')
+                
+                avatar = 0
+                has_animated_avatar = False
+                
+            else:
+                has_animated_avatar = kwargs.pop('has_animated_avatar', False)
+                avatar, has_animated_avatar = preconvert_animated_image_hash(avatar, has_animated_avatar, 'avatar', 'has_animated_avatar')
+            
+            # kwargs.flags
+            try:
+                flags = kwargs.pop('flags')
+            except KeyError:
+                flags = UserFlag()
+            else:
+                flags = preconvert_flag(flags, 'flags', UserFlag)
+            
             if kwargs:
-                for key,value in kwargs.items():
-                    if hasattr(type(self),key):
-                        raise AttributeError(key)
-                    setattr(self,key,value)
+                raise TypeError(f'Unused or unsettable attributes: {kwargs}.')
         
         else:
-            self.name=''
-            self.discriminator=0
-            self.avatar=0
-            self.has_animated_avatar=False
+            name = ''
+            discriminator = 0
+            avatar = 0
+            has_animated_avatar = False
+            flags = UserFlag()
         
-        self.mfa            = False
-        self.system         = False
-        self.verified       = False
-        self.email          = ''
-        self.flags          = UserFlag()
-        self.premium_type   = PremiumType.none
-        self.locale         = DEFAULT_LOCALE
+        self = object.__new__(cls)
         
+        self.name               = name
+        self.discriminator      = discriminator
+        self.avatar             = avatar
+        self.has_animated_avatar= has_animated_avatar
+        self.flags              = flags
+        self.mfa                = False
+        self.system             = False
+        self.verified           = False
+        self.email              = ''
+        self.premium_type       = PremiumType.none
+        self.locale             = DEFAULT_LOCALE
         self.token              = token
         self.secret             = secret
         self.is_bot             = is_bot
         self.shard_count        = shard_count
         self.loop               = KOKORO
-        
-        if type(intents) is IntentFlag:
-            pass
-        elif isinstance(intents,int):
-            intents=IntentFlag(intents)
-        else:
-            raise TypeError(f'`intents` should have been passed as `int` or `{IntentFlag.__name__}` instance, got `{intents!r}`')
-        
         self.intents            = intents
         self.running            = False
-        
         self.mar_token          = None
-        
         self.calls              = {} #deprecated ?
-        
         self.relationships      = {}
         self.channels           = {}
-        
         self.guild_profiles     = {}
         self.status             = Status.offline
         self.statuses           = {}
         self._activity          = activity
         self.activities         = []
         self._gateway_pair      = ('',0.0)
-        
         self.private_channels   = {}
         self.voice_clients      = {}
-
         self.id                 = client_id
-        if client_id:
-            USERS[client_id]    = self
-        
         self.partial            = True
-        
         self.ready_state        = None
-        
         self.application        = Application()
         self.settings           = Settings()
-        
-        if shard_count:
-            self.gateway        = DiscordGatewaySharder(self)
-        else:
-            self.gateway        = DiscordGateway(self)
+        self.gateway            = DiscordGatewaySharder(self) if shard_count else DiscordGateway(self)
         self.http               = DiscordHTTPClient(self)
-        
-        if status is not None:
-            if type(status) is str:
-                try:
-                    status=Status.INSTANCES[status]
-                except KeyError:
-                    raise ValueError(f'Expected status: {", ".join(list(Status.INSTANCES))}; got {status!r}')
-            elif type(status) is not Status:
-                raise TypeError(f'Expected status types are: str, Status, got {status!r}')
-            if status is Status.offline:
-                status=Status.invisible
-            self.settings.status=status
-        
         self.events             = EventDescriptor(self)
+        
+        if (status is not None):
+            self.settings.status=status
         
         CLIENTS.append(self)
         
+        if client_id:
+            USERS[client_id]    = self
+        
+        return self
+    
     def _init_on_ready(self,data):
         client_id           = int(data['id'])
         if self.id!=client_id:
@@ -770,7 +826,7 @@ class Client(UserBase):
             return (await response.read())
 
     #loggin
-        
+    
     async def client_login_static(self):        
         try:
             data = await self.http.client_user()
@@ -1253,7 +1309,7 @@ class Client(UserBase):
         if value==0:
             if slowmode is not None:
                 if slowmode<0 or slowmode>21600:
-                    raise ValueError(f'Invalid slowmode {slowmode}, should be 0-21600')
+                    raise ValueError(f'`slowmode` should be between 0 and 21600, got: {slowmode}.')
                 data['rate_limit_per_user']=slowmode
 
         elif value==2:
@@ -5019,8 +5075,10 @@ class Achievement(object):
         self.icon=0 if icon is None else int(icon,16)
 
 
-client_core.Client=Client
-message.Client=Client
+client_core.Client = Client
+message.Client = Client
+webhook.Client = Client
+channel.Client = Client
 
 del client_core
 del re
@@ -5028,3 +5086,4 @@ del URLS
 del message_at_index
 del messages_till_index
 del message
+del webhook

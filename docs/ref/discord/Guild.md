@@ -487,19 +487,15 @@ created as partial, so when they will get loaded first time, they will have
 it's attributes replaced.
 
 Some attributes are set automatically or processed from kwargs:
-- [`banner`](#banner) : default is `0`, accepts `None`,
-[image hash](https://github.com/discordapp/discord-api-docs/blob/master/docs/Reference.md#cdn-endpoints)
-and `int`.
-- [`icon`](#icon) : default is `0`, accepts `None`,
-[image hash](https://github.com/discordapp/discord-api-docs/blob/master/docs/Reference.md#cdn-endpoints)
-and `int`.
-- [`has_animated_icon`](#has_animated_icon) : default is `False`.
-- [`name`](#name) : default is `''`.
-- [`splash`](#splash) : default is `0`, accepts `None`,
-[image hash](https://github.com/discordapp/discord-api-docs/blob/master/docs/Reference.md#cdn-endpoints)
-- [`discovery_splash`](#discovery_splash) : default is `0`, accepts `None`,
-[image hash](https://github.com/discordapp/discord-api-docs/blob/master/docs/Reference.md#cdn-endpoints)
-and `int`.
+
+| name                  | default                   | type                              | alternatives                                                                                                                                  |
+|-----------------------|---------------------------|-----------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| name                  | ''                        | str (2-100 char)                  | str instances                                                                                                                                 |
+| icon                  | 0                         | int (uint128)                     | None, int instances, str instances ([image hash](https://github.com/discordapp/discord-api-docs/blob/master/docs/Reference.md#cdn-endpoints)) |
+| has_animated_icon     | False                     | bool                              | int instance 0 or 1                                                                                                                           |
+| banner                | 0                         | int (uint128)                     | None, int instances, str instances ([image hash](https://github.com/discordapp/discord-api-docs/blob/master/docs/Reference.md#cdn-endpoints)) |
+| splash                | 0                         | int (uint128)                     | None, int instances, str instances ([image hash](https://github.com/discordapp/discord-api-docs/blob/master/docs/Reference.md#cdn-endpoints)) |
+| discovery_splash      | 0                         | int (uint128)                     | None, int instances, str instances ([image hash](https://github.com/discordapp/discord-api-docs/blob/master/docs/Reference.md#cdn-endpoints)) |
 
 ## Methods
 

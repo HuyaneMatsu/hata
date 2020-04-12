@@ -119,7 +119,10 @@ Because different kind of channels are displayed on different ways, each
 - raises : `ValueError`
 
 Some attributes are processed from kwargs, the rest is set automatically:
-- `name`, default is `''`
+
+| name      | default   | type              | alternatives              |
+|-----------|-----------|-------------------|---------------------------|
+| name      | ''        | str (2-100 char)  | str instances             |
 
 ## Magic methods
 

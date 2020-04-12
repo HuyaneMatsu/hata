@@ -1206,6 +1206,12 @@ def str_user(user,index=None,**kwargs):
         if user.is_bot:
             result.append(f'- BOT',1)
         result.append(f'- avatar: {user.avatar_url}',1)
+        flags=user.flags
+        if flags:
+            result.append(f'- flags :',1)
+            for index,flag in enumerate(flags,1):
+                result.append(f'{index}.: {flag}',2)
+        
         result.append(f'- known guilds: {len(user.guild_profiles)}',1)
     result.append(f'- created at : {user:c}',1)
     if user.activities:

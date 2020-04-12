@@ -145,9 +145,12 @@ Users at voice channels do not have text related permissions.
 - raises : `ValueError`
 
 Some attributes are processed from kwargs, the rest is set automatically:
-- `name`, default is `''`
-- `bitrate`, default is `64000`
-- `user_limit`, default is `0`
+
+| name          | default   | type              | alternatives              |
+|---------------|-----------|-------------------|---------------------------|
+| name          | ''        | str (2-100 char)  | str instances             |
+| bitrate       | 0         | int (8000-384000) | int instances             |
+| user_limit    | 0         | int (0-99)        | int instances             |
 
 ## Magic methods
 

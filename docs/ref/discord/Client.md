@@ -11,7 +11,7 @@ interact with the Discord API.
 
 ## Creating a Client
 
-### `Client(token,secret=None,client_id=0,activity=ActivityUnknown,status=None,is_bot=True,shard_count=0,intents=-1,**kwargs)`
+### `Client(token, secret=None, client_id=0,a ctivity=ActivityUnknown, status=None, is_bot=True, shard_count=0, intents=-1, **kwargs)`
 
 ##### `token`
 
@@ -59,17 +59,16 @@ flags are removed.
 
 ##### `**kwargs`
 
-These keyword arguments are set as instance attributes of the client. The type
-implements `__dict__`, but at the case of overwriting a class attribute it
-still raises `AttributeError`
+These keyword arguments are set as instance attributes of the client:
 
-Some extra attributes are set automatically or processed from kwargs:
-- `name` : default : `''`.
-- `discriminator` : default : `0`, can be set as `str` and
-`int`.
-- `avatar` : default : `0`, accepts `None`,
-[image hash](https://github.com/discordapp/discord-api-docs/blob/master/docs/Reference.md#cdn-endpoints)
-and `int`.
+| name                  | default                   | type                              | alternatives                                                                                                                                  |
+|-----------------------|---------------------------|-----------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| name                  | ''                        | str (2-32 char)                   | str instances                                                                                                                                 |
+| discriminator         | 0                         | int (0-9999)                      | int instances, str instances                                                                                                                  |
+| avatar                | 0                         | int (uint128)                     | None, int instances, str instances ([image hash](https://github.com/discordapp/discord-api-docs/blob/master/docs/Reference.md#cdn-endpoints)) |
+| has_animated_avatar   | False                     | bool                              | int instance 0 or 1                                                                                                                           |
+| flags                 | [UserFlag()](UserFlag.md) | [UserFlag](UserFlag.md) (uint64)  | int                                                                                                                                           |
+
 
 ## Familiar types
 

@@ -5,40 +5,40 @@ from .http import URLS
 
 class Color(int):
     __slots__=()
-
+    
     def __repr__(self):
         return f'<{self.__class__.__name__} #{self:06X}>'
-
+    
     @property
     def as_html(self):
         return f'#{self:06X}'
-
+    
     @classmethod
     def from_html(cls,value):
         if len(value)!=7:
             raise ValueError
         return cls(value[1:],base=16)
-
+    
     @classmethod
     def from_tuple(cls,value):
         return cls((value[0]<<16)|(value[1]<<8)|value[2])
-
+    
     @property
     def as_tuple(self):
         return (self>>16,(self>>8)&0x00ff,self&0x0000ff)
-
+    
     @classmethod
     def from_rgb(cls,r,g,b):
         return cls((r<<16)|(g<<8)|b)
-
+    
     @property
     def red(self):
         return self>>16
-
+    
     @property
     def green(self):
         return (self>>8)&0x0000ff
-
+    
     @property
     def blue(self):
         return self&0x0000ff
@@ -86,14 +86,4 @@ DefaultAvatar.green     = DefaultAvatar(2,  'green',    Color(0x43b581))
 DefaultAvatar.orange    = DefaultAvatar(3,  'orange',   Color(0xfaa61a))
 DefaultAvatar.red       = DefaultAvatar(4,  'red',      Color(0xf04747))
 
-#parse color formats
-def _parse_c_fs(value):
-    if type(value) is Color:
-        return value
-    if type(value) is int:
-        if value:
-            return Color(value)
-        return Color(0)
-    raise TypeError(f'Color can be `Color` or `int` type, got {value.__class__.__name__}')
-    
 del URLS

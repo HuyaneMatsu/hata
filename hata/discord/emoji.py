@@ -5,6 +5,7 @@ from .client_core import EMOJIS
 from .others import id_to_time, EMOJI_RP
 from .http import URLS
 from .user import User, ZEROUSER
+from .preconverters import preconvert_str, preconvert_bool, preconvert_snowflake
 
 from . import activity
 
@@ -120,38 +121,55 @@ class Emoji(object):
         return NotImplemented
     
     @classmethod
-    def precreate(cls,emoji_id,**kwargs):
+    def precreate(cls, emoji_id, **kwargs):
+        emoji_id = preconvert_snowflake(emoji_id, 'emoji_id')
+        
+        if kwargs:
+            processable = []
+            
+            try:
+                name = kwargs.pop('name')
+            except KeyError:
+                pass
+            else:
+                name = preconvert_str(name, 'name', 2, 32)
+                processable.append(('name',name))
+            
+            try:
+                animated = kwargs.pop('animated')
+            except KeyError:
+                pass
+            else:
+                animated = preconvert_bool(animated, 'animated')
+                processable.append(('animated', animated))
+            
+            if kwargs:
+                raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+        
+        else:
+            processable = None
+        
         try:
             emoji=EMOJIS[emoji_id]
         except KeyError:
             emoji=object.__new__(cls)
-
-            if kwargs:
-                emoji.name=kwargs.pop('name','')
-                emoji.animated=kwargs.pop('animated',False)
-                if kwargs:
-                    for name,value in kwargs.items():
-                        if name in ('id','guild','unicode','user'):
-                            raise AttributeError(f'Cannot set {name!r} attribute with precreate!')
-                        setattr(emoji,name,value)
-            else:
-                emoji.name=''
-                emoji.animated=False
-
+            
+            emoji.name=''
+            emoji.animated=False
             emoji.id        = emoji_id 
             emoji.guild     = None
             emoji.unicode   = None
             emoji.user      = ZEROUSER
             
             EMOJIS[emoji_id]= emoji
-
         else:
-            if emoji.guild is None and kwargs:
-                for name,value in kwargs.items():
-                    if name in ('id','guild','unicode','user'):
-                        raise AttributeError(f'Cannot set {name!r} attribute with precreate!')
-                    setattr(emoji,name,value)
-
+            if (emoji.guild is not None) or (emoji.unicode is not None):
+                return emoji
+        
+        if (processable is not None):
+            for name, value in processable:
+                setattr(emoji, name, value)
+        
         return emoji
     
     def __hash__(self):

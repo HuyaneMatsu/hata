@@ -10,7 +10,7 @@ from ..backend.dereaddons_local import weakposlist
 from ..backend.futures import sleep
 
 from .client_core import CHANNELS
-from .others import id_to_time, _parse_ih_fs
+from .others import id_to_time
 from .permission import Permission
 from .http import URLS
 from .message import Message, MESSAGES
@@ -18,8 +18,11 @@ from .user import User, ZEROUSER
 from .role import PermOW
 from .client_core import GC_cycler
 from .webhook import Webhook
+from .preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_image_hash, preconvert_bool
 
 from . import webhook, message, ratelimit
+
+Client = NotImplemented
 
 Q_on_GC=deque()
 
@@ -98,7 +101,7 @@ class ChannelBase(object):
         return channel
 
     def __repr__(self):
-        return f'<{self.__class__.__name__} id={self.id}, name={self!s}>'
+        return f'<{self.__class__.__name__} id={self.id}, name={self.__str__()!r}>'
 
     def __hash__(self):
         return self.id
@@ -279,7 +282,7 @@ class MessageIterator(object):
         raise StopAsyncIteration
     
     def __repr__(self):
-        return f'<{self.__class__.__name__} of client {self.client.full_name}, at channel {self.channel.name} ({self.channel.id})>'
+        return f'<{self.__class__.__name__} of client {self.client.full_name}, at channel {self.channel.name!r} ({self.channel.id})>'
     
 async def message_at_index(client,channel,index):
     if index<len(channel.messages):
@@ -989,19 +992,57 @@ class ChannelText(ChannelGuildBase,ChannelTextBase):
         return Permission(result)
 
     @classmethod
-    def precreate(cls,channel_id,**kwargs):
-        processable={}
-        for key in ('name','nsfw','slowmode','topic','type_'):
+    def precreate(cls, channel_id, **kwargs):
+        channel_id = preconvert_snowflake(channel_id, 'channel_id')
+        
+        if kwargs:
+            processable = []
+            
+            for key, details in (
+                    ('name' , (2, 100)),
+                    ('topic', (0,1024)),
+                        ):
+                try:
+                    value = kwargs.pop(key)
+                except KeyError:
+                    pass
+                else:
+                    value = preconvert_str(value, key, *details)
+                    processable.append((key,value))
+            
             try:
-                value=kwargs.pop(key)
+                slowmode = kwargs.pop('slowmode')
             except KeyError:
                 pass
             else:
-                processable[key]=value
-
-        if kwargs:
-            raise ValueError(f'Unused or unsettable attributes: {kwargs}')
-
+                slowmode = preconvert_int(slowmode, 'slowmode', 0, 21600)
+                processable.append(('slowmode', slowmode))
+            
+            try:
+                type_ = kwargs.pop('type')
+            except KeyError:
+                pass
+            else:
+                type_ = preconvert_int(type_, 'type', 0, 256)
+                if (type_ not in cls.INTERCHANGE):
+                    raise ValueError(f'`type` should be one of: {cls.INTERCHANGE!r}')
+                
+                processable.append(('type', type_))
+            
+            try:
+                nsfw = kwargs.pop('nsfw')
+            except KeyError:
+                pass
+            else:
+                nsfw = preconvert_bool(nsfw, 'nsfw')
+                processable.append(('nsfw', nsfw))
+            
+            if kwargs:
+                raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+        
+        else:
+            processable = None
+        
         try:
             channel=CHANNELS[channel_id]
         except KeyError:
@@ -1021,39 +1062,16 @@ class ChannelText(ChannelGuildBase,ChannelTextBase):
             channel.topic       = ''
 
             channel._mc_init()
+            
             CHANNELS[channel_id]=channel
+            
         else:
             if not channel.partial:
                 return channel
 
-        try:
-            channel.name=processable['name']
-        except KeyError:
-            pass
-
-        try:
-            channel.nsfw=processable['nsfw']
-        except KeyError:
-            pass
-
-        try:
-            channel.slowmode=processable['slowmode']
-        except KeyError:
-            pass
-
-        try:
-            channel.topic=processable['topic']
-        except KeyError:
-            pass
-
-        try:
-            type_=processable['type_']
-        except KeyError:
-            type_=0
-        else:
-            if type_ not in cls.INTERCHANGE:
-                raise ValueError(f'Invalid passed type: {type_}')
-        channel.type=type_
+        if (processable is not None):
+            for item in processable:
+                setattr(channel, *item)
         
         return channel
 
@@ -1139,10 +1157,12 @@ class ChannelPrivate(ChannelBase,ChannelTextBase):
         return result
 
     @classmethod
-    def precreate(cls,channel_id,**kwargs):
+    def precreate(cls, channel_id, **kwargs):
+        channel_id = preconvert_snowflake(channel_id, 'channel_id')
+        
         if kwargs:
             raise ValueError(f'Unused or unsettable attributes: {kwargs}')
-
+        
         try:
             channel=CHANNELS[channel_id]
         except KeyError:
@@ -1154,6 +1174,7 @@ class ChannelPrivate(ChannelBase,ChannelTextBase):
             channel.users       = []
 
             channel._mc_init()
+            
             CHANNELS[channel_id]=channel
         
         return channel
@@ -1280,19 +1301,38 @@ class ChannelVoice(ChannelGuildBase):
         return result
 
     @classmethod
-    def precreate(cls,channel_id,**kwargs):
-        processable={}
-        for key in ('name', 'bitrate', 'user_limit'):
+    def precreate(cls, channel_id, **kwargs):
+        channel_id = preconvert_snowflake(channel_id, 'channel_id')
+        
+        if kwargs:
+            processable = []
+            
             try:
-                value=kwargs.pop(key)
+                name = kwargs.pop('name')
             except KeyError:
                 pass
             else:
-                processable[key]=value
-
-        if kwargs:
-            raise ValueError(f'Unused or unsettable attributes: {kwargs}')
-
+                name = preconvert_str(name, 'name', 2, 100)
+                processable.append(('name',name))
+            
+            for key, details in (
+                    ('bitrate'   , (8000, 384000)),
+                    ('user_limit', (    0,    99)),
+                        ):
+                try:
+                    value = kwargs.pop(key)
+                except KeyError:
+                    pass
+                else:
+                    value = preconvert_int(value, key, *details)
+                    processable.append((key,value))
+            
+            if kwargs:
+                raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+        
+        else:
+            processable = None
+        
         try:
             channel=CHANNELS[channel_id]
         except KeyError:
@@ -1309,25 +1349,16 @@ class ChannelVoice(ChannelGuildBase):
 
             channel.bitrate     = 64000
             channel.user_limit  = 0
+            
             CHANNELS[channel_id]=channel
+        
         else:
             if not channel.partial:
                 return channel
-
-        try:
-            channel.name=processable['name']
-        except KeyError:
-            pass
-
-        try:
-            channel.bitrate=processable['bitrate']
-        except KeyError:
-            pass
-
-        try:
-            channel.user_limit=processable['user_limit']
-        except KeyError:
-            pass
+        
+        if (processable is not None):
+            for item in processable:
+                setattr(channel, *item)
         
         return channel
 
@@ -1477,50 +1508,66 @@ class ChannelGroup(ChannelBase,ChannelTextBase):
     icon_url_as=URLS.channel_group_icon_url_as
 
     @classmethod
-    def precreate(cls,channel_id,**kwargs):
-        processable={}
-        for key in ('icon', 'name', 'owner'):
+    def precreate(cls, channel_id, **kwargs):
+        channel_id = preconvert_snowflake(channel_id, 'channel_id')
+        
+        if kwargs:
+            processable = []
+            
             try:
-                value=kwargs.pop(key)
+                name = kwargs.pop('name')
             except KeyError:
                 pass
             else:
-                processable[key]=value
-
-        if kwargs:
-            raise ValueError(f'Unused or unsettable attributes: {kwargs}')
-
+                name = preconvert_str(name, 'name', 2, 100)
+                processable.append(('name', name))
+            
+            try:
+                icon = kwargs.pop('icon')
+            except KeyError:
+                pass
+            else:
+                icon = preconvert_image_hash(icon, 'icon')
+                processable.append(('name', icon))
+            
+            try:
+                owner = kwargs.pop('owner')
+            except KeyError:
+                pass
+            else:
+                if not isinstance(owner,(User,Client)):
+                    raise TypeError(f'`owner can be {User.__name__} or {Client.__name__} instance, got {owner.__class__.__name__}.')
+                processable.append(('owner', owner))
+            
+            if kwargs:
+                raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+        
+        else:
+            processable = None
+        
         try:
             channel=CHANNELS[channel_id]
         except KeyError:
             channel=object.__new__(cls)
-
+            
             channel.id          = channel_id
-
+            
             channel.call        = None
             channel.users       = []
-
+            
             channel.name        = ''
             channel.icon        = 0
-            channel.owner       = None
+            channel.owner       = ZEROUSER
+            
             CHANNELS[channel_id]=channel
+            
         else:
             if not channel.partial:
                 return channel
-
-        try:
-            channel.name=processable['name']
-        except KeyError:
-            pass
-
-        icon=_parse_ih_fs(kwargs.pop('icon',None))
-        if icon:
-            channel.icon=icon
-
-        try:
-            channel.owner=processable['owner']
-        except KeyError:
-            pass
+        
+        if (processable is not None):
+            for item in processable:
+                setattr(channel, *item)
         
         return channel
 
@@ -1604,19 +1651,26 @@ class ChannelCategory(ChannelGuildBase):
         return old
 
     @classmethod
-    def precreate(cls,channel_id,**kwargs):
-        processable={}
-        for key in ('name',):
+    def precreate(cls, channel_id, **kwargs):
+        channel_id = preconvert_snowflake(channel_id, 'channel_id')
+        
+        if kwargs:
+            processable = []
+            
             try:
-                value=kwargs.pop(key)
+                name = kwargs.pop('name')
             except KeyError:
                 pass
             else:
-                processable[key]=value
-
-        if kwargs:
-            raise ValueError(f'Unused or unsettable attributes: {kwargs}')
-
+                name = preconvert_str(name, 'name', 2, 100)
+                processable.append(('name', name))
+            
+            if kwargs:
+                raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+        
+        else:
+            processable = None
+        
         try:
             channel=CHANNELS[channel_id]
         except KeyError:
@@ -1630,15 +1684,16 @@ class ChannelCategory(ChannelGuildBase):
             channel.overwrites  = []
             channel.position    = 0
             channel.name        = ''
+            
             CHANNELS[channel_id]=channel
+            
         else:
             if not channel.partial:
                 return channel
-
-        try:
-            channel.name=processable['name']
-        except KeyError:
-            pass
+        
+        if (processable is not None):
+            for item in processable:
+                setattr(channel, *item)
         
         return channel
 
@@ -1740,18 +1795,33 @@ class ChannelStore(ChannelGuildBase):
         return Permission(result)
 
     @classmethod
-    def precreate(cls,channel_id,**kwargs):
-        processable={}
-        for key in ('name','nsfw'):
+    def precreate(cls, channel_id, **kwargs):
+        channel_id = preconvert_snowflake(channel_id, 'channel_id')
+        
+        if kwargs:
+            processable = []
+            
             try:
-                value=kwargs.pop(key)
+                name = kwargs.pop('name')
             except KeyError:
                 pass
             else:
-                processable[key]=value
-
-        if kwargs:
-            raise ValueError(f'Unused or unsettable attributes: {kwargs}')
+                name = preconvert_str(name, 'name', 2, 100)
+                processable.append(('name', name))
+            
+            try:
+                nsfw = kwargs.pop('nsfw')
+            except KeyError:
+                pass
+            else:
+                nsfw = preconvert_bool(nsfw, 'nsfw')
+                processable.append(('nsfw', nsfw))
+            
+            if kwargs:
+                raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+        
+        else:
+            processable = None
 
         try:
             channel=CHANNELS[channel_id]
@@ -1768,20 +1838,16 @@ class ChannelStore(ChannelGuildBase):
             channel.name        = ''
 
             channel.nsfw        = False
+            
             CHANNELS[channel_id]=channel
+            
         else:
             if not channel.partial:
                 return channel
-
-        try:
-            channel.name=processable['name']
-        except KeyError:
-            pass
-
-        try:
-            channel.nsfw=processable['nsfw']
-        except KeyError:
-            pass
+        
+        if (processable is not None):
+            for item in processable:
+                setattr(channel, *item)
         
         return channel
 

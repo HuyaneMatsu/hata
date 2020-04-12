@@ -108,16 +108,16 @@ Tries to query the given webhook from the existing ones, if it fails, it creates
 a one. At the end it updates the webhook with the given kwargs.
 
 Some attributes are set automatically or processed from kwargs:
-- [`name`](#inherited-instance-attributes) : default is `''`.
-- [`token`](#token) : default is `''`.
-- [`avatar`](#inherited-instance-attributes) : default is `0`, accepts `None`,
-[image hash](https://github.com/discordapp/discord-api-docs/blob/master/docs/Reference.md#cdn-endpoints)
-and `int`.
-- [`avatar`](#inherited-instance-attributes) : default is `False`.
-- [`user`](#user), default is `None`.
-- [`channel`](#channel), default is `None`.
-- [`type_`](#type), default is
-[`WebhookType.bot`](WebhookType.md#predefined-class-attributes).
+
+| name                  | default                           | type                                  | alternatives                                                                                                                                  |
+|-----------------------|-----------------------------------|---------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| name                  | ''                                | str (2-80 char)                       | str instances                                                                                                                                 |
+| token                 | ''                                | str (60-68 char)                      | str instances                                                                                                                                 |
+| avatar                | 0                                 | int (uint128)                         | None, int instances, str instances ([image hash](https://github.com/discordapp/discord-api-docs/blob/master/docs/Reference.md#cdn-endpoints)) |
+| has_animated_avatar   | False                             | bool                                  | int instance 0 or 1                                                                                                                           |
+| user                  | [ZEROUSER](ZEROUSER.md)           | [User](User.md) / [Client](Client.md) | -                                                                                                                                             |
+| channel               | None                              | [ChannelText](ChannelText.md)         | -                                                                                                                                             |
+| type                  | [WebhookType](WebhookType.md).bot | [WebhookType](WebhookType.md)         | int instances                                                                                                                                 |
 
 ### `from_url(cls,url)`
 

@@ -8,8 +8,8 @@ from ..backend.dereaddons_local import autoposlist, cached_property, weakposlist
 from ..backend.futures import Task
 
 from .client_core import CACHE_PRESENCE, GUILDS
-from .others import _parse_ih_fsa, _parse_ih_fs, id_to_time, EMOJI_NAME_RP, VoiceRegion, Status, VerificationLevel, \
-    MessageNotificationLevel, MFA, ContentFilterLevel
+from .others import id_to_time, EMOJI_NAME_RP, VoiceRegion, Status, VerificationLevel, MessageNotificationLevel, \
+    MFA, ContentFilterLevel
 from .user import User, PartialUser, VoiceState, UserBase, ZEROUSER
 from .role import Role
 from .channel import CHANNEL_TYPES, ChannelCategory
@@ -19,6 +19,7 @@ from .activity import Activity, ActivityUnknown
 from .emoji import Emoji
 from .webhook import Webhook
 from .oauth2 import parse_preferred_locale, DEFAULT_LOCALE
+from .preconverters import preconvert_snowflake, preconvert_image_hash, preconvert_animated_image_hash, preconvert_str
 
 from . import ratelimit
 
@@ -628,19 +629,46 @@ class Guild(object):
         return guild
 
     @classmethod
-    def precreate(cls,guild_id,**kwargs):
-        processable={}
-        for key in ('name','banner', 'icon', 'has_animated_icon', 'splash', 'discovery_splash'):
+    def precreate(cls, guild_id, **kwargs):
+        guild_id = preconvert_snowflake(guild_id, 'guild_id')
+        
+        if kwargs:
+            processable = []
+            
             try:
-                value=kwargs.pop(key)
+                name = kwargs.pop('name')
             except KeyError:
                 pass
             else:
-                processable[key]=value
-
-        if kwargs:
-            raise ValueError(f'Unused or unsettable attributes: {kwargs}')
-
+                name = preconvert_str(name, 'name', 2, 100)
+                processable.append(('name', name))
+            
+            for key in ('banner', 'splash', 'discovery_splash'):
+                try:
+                    value = kwargs.pop('key')
+                except KeyError:
+                    pass
+                else:
+                    value = preconvert_image_hash(value, key)
+                    processable.append((key, value))
+            
+            try:
+                icon = kwargs.pop('icon')
+            except KeyError:
+                if 'has_animated_icon' in kwargs:
+                    raise TypeError('`has_animated_icon` was passed without passing `icon`.')
+            else:
+                has_animated_icon = kwargs.pop('has_animated_icon', False)
+                icon, has_animated_icon = preconvert_animated_image_hash(icon, has_animated_icon, 'icon', 'has_animated_icon')
+                processable.append(('icon', icon))
+                processable.append(('has_animated_icon', has_animated_icon))
+            
+            if kwargs:
+                raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+        
+        else:
+            processable = None
+        
         try:
             guild=GUILDS[guild_id]
         except KeyError:
@@ -693,30 +721,12 @@ class Guild(object):
             guild.widget_enabled=False
             GUILDS[guild_id]=guild
         else:
-            if not guild.clients:
+            if guild.clients:
                 return guild
-
-        try:
-            guild.banner=_parse_ih_fs(processable.pop('banner'))
-        except KeyError:
-            pass
         
-        try:
-            guild.icon,guild.has_animated_icon=_parse_ih_fsa(
-                processable.pop('icon'),
-                processable.pop('has_animated_icon',False))
-        except KeyError:
-            pass
-        
-        try:
-            guild.splash=_parse_ih_fs(processable.pop('splash'))
-        except KeyError:
-            pass
-        
-        try:
-            guild.discovery_splash=_parse_ih_fs(processable.pop('discovery_splash'))
-        except KeyError:
-            pass
+        if (processable is not None):
+            for item in processable:
+                setattr(guild, *item)
         
         return guild
 

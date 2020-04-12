@@ -132,10 +132,10 @@ with different [channel types](CHANNEL_TYPES.md) it is necessary.
 
 ## Classmethods
 
-### `precreate(cls,channel_id,**kwargs)`
+### `precreate(cls, channel_id, **kwargs)`
 
 - returns : [`ChannelPrivate`](ChannelPrivate.md)
-- raises : `ValueError`
+- raises : `TypeError` / `ValueError`
 
 ## Magic methods
 

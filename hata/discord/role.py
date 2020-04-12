@@ -3,9 +3,11 @@ __all__ = ('PermOW', 'Role', 'cr_p_overwrite_object', 'cr_p_role_object', )
 
 from .client_core import ROLES
 from .others import id_to_time, random_id
-from .color import Color, _parse_c_fs
+from .color import Color
 from .permission import Permission, PERM_KEYS
 from .user import PartialUser
+from .preconverters import preconvert_snowflake, preconvert_str, preconvert_color, preconvert_int, preconvert_bool, \
+    preconvert_flag
 
 from . import ratelimit
 
@@ -68,25 +70,58 @@ class Role(object):
         return role
 
     @classmethod
-    def precreate(cls,role_id,**kwargs):
-        processable={}
-        for key in ('name', 'separated', 'position', 'managed', 'mentionable', 'permissions',):
+    def precreate(cls, role_id, **kwargs):
+        role_id = preconvert_snowflake(role_id, 'role_id')
+        
+        if kwargs:
+            processable = []
+            
             try:
-                value=kwargs.pop(key)
+                name = kwargs.pop('name')
             except KeyError:
                 pass
             else:
-                processable[key]=value
-                
-        try:
-            value=kwargs.pop('color')
-        except KeyError:
-            pass
+                name = preconvert_str(name, 'name', 2, 32)
+                processable.append(('name',name))
+            
+            for key in ('managed', 'mentionable', 'separated',):
+                try:
+                    value = kwargs.pop(key)
+                except KeyError:
+                    pass
+                else:
+                    value = preconvert_bool(value, key)
+                    processable.append((key,value))
+            
+            try:
+                position = kwargs.pop('position')
+            except KeyError:
+                pass
+            else:
+                position = preconvert_int(position, 'position', 0, 250)
+                processable.append(('position', position))
+            
+            try:
+                permissions = kwargs.pop('permissions')
+            except KeyError:
+                pass
+            else:
+                permissions = preconvert_flag(permissions, 'permissions', Permission)
+                processable.append(('permissions',permissions))
+            
+            try:
+                color = kwargs.pop('color')
+            except KeyError:
+                pass
+            else:
+                color = preconvert_color(color)
+                processable.append(('color',color))
+            
+            if kwargs:
+                raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+        
         else:
-            processable['color']=_parse_c_fs[value]
-                
-        if kwargs:
-            raise ValueError(f'Unused or unsettable attributes: {kwargs}')
+            processable = None
         
         try:
             role=ROLES[role_id]
@@ -94,27 +129,23 @@ class Role(object):
             role=object.__new__(cls)
             role.id=role_id
             
-            role.color=Color(0)
-            role.guild=None
-            role.separated=False
-            # id set up
-            role.managed=False
-            role.mentionable=False
-            role.name=''
-            role.permissions=Permission.permission_none
-            role.position=1
-            ROLES[role_id]=role
+            role.color      = Color()
+            role.guild      = None
+            role.separated  = False
+            role.managed    = False
+            role.mentionable= False
+            role.name       = ''
+            role.permissions= Permission.permission_none
+            role.position   = 1
+            ROLES[role_id]  = role
         else:
-            if role.guild is not None:
+            if (role.guild is not None):
                 return role
         
-        for attr in ('name', 'color', 'separated', 'position', 'managed', 'mentionable', 'permissions',):
-            try:
-                value=processable['attr']
-            except KeyError:
-                continue
-            setattr(role,attr,value)
-    
+        if (processable is not None):
+            for item in processable:
+                setattr(role, *item)
+        
         return role
 
     def _update_no_return(self,data):

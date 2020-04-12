@@ -1404,7 +1404,7 @@ class CommandProcesser(EventWaitforBase):
                 
                 PREFIX_RP=re.compile(re.escape(prefix),flag)
                 def get_prefix_for(message):
-                    return practical_prefix
+                    return prefix
             
             elif isinstance(prefix,(list,tuple)):
                 if not prefix:

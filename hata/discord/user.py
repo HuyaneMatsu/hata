@@ -6,10 +6,12 @@ from datetime import datetime
 from ..backend.dereaddons_local import modulize
 
 from .client_core import CACHE_USER,CACHE_PRESENCE, USERS
-from .others import parse_time, Status, DISCORD_EPOCH, id_to_time, _parse_ih_fsa
+from .others import parse_time, Status, DISCORD_EPOCH, id_to_time
 from .color import Color, DefaultAvatar
 from .activity import ActivityUnknown, Activity
 from .http import URLS
+from .preconverters import preconvert_snowflake, preconvert_animated_image_hash, preconvert_str, preconvert_bool, \
+    preconvert_discriminator, preconvert_flag
 
 class UserFlag(int):
     __slots__=()
@@ -784,94 +786,67 @@ class User(UserBase):
     
     @classmethod
     def precreate(cls, user_id, **kwargs):
-        if isinstance(user_id,int):
-            if (type(user_id) is not int):
-                user_id=int(user_id)
-        else:
-            raise TypeError(f'`user_id` can be passed as `int` instance, got {user_id!r}.')
-        
-        processable = []
-        
-        try:
-            name = kwargs.pop('name')
-        except KeyError:
-            pass
-        else:
-            if not isinstance(name, str):
-                raise TypeError(f'`name` can be passed as `str` instance, got {name!r}.')
-            if type(name) is not str:
-                name = str(name)
-            
-            processable.append(('name',name))
-        
-        try:
-            discriminator = kwargs.pop('discriminator')
-        except KeyError:
-            pass
-        else:
-            # Discord sends `discriminator` as `str`, so lets accept that as well.
-            if isinstance(discriminator, str):
-                try:
-                    discriminator = int(discriminator)
-                except ValueError:
-                    raise TypeError(f'`discriminator` can be passed as `int` instance, got {discriminator!r}.')
-            
-            elif isinstance(discriminator, int):
-                if type(discriminator) is not int:
-                    discriminator = int(discriminator)
-            
-            else:
-                raise TypeError(f'`discriminator` can be passed as `int` instance, got {discriminator!r}.')
-            
-            processable.append(('discriminator',discriminator))
-        
-        try:
-            avatar = kwargs.pop('avatar')
-        except KeyError:
-            if 'has_animated_avatar' in kwargs:
-                raise TypeError('`has_animated_avatar` was passed without passing `avatar`.')
-        else:
-            has_animated_avatar = kwargs.pop('has_animated_avatar', False)
-            avatar, has_animated_avatar = _parse_ih_fsa(avatar, has_animated_avatar)
-            
-            processable.append(('avatar', avatar))
-            processable.append(('has_animated_avatar',has_animated_avatar))
-        
-        try:
-            is_bot = kwargs.pop('is_bot')
-        except KeyError:
-            pass
-        else:
-            if (type(is_bot) is not bool):
-                if isinstance(is_bot,int) and (is_bot in (0,1)):
-                    is_bot = bool(is_bot)
-                else:
-                    raise TypeError(f'`is_bot` can be passed as `bool` instance, got {is_bot!r}.')
-            
-            processable.append(('is_bot', is_bot))
-        
-        try:
-            flags = kwargs.pop('flags')
-        except KeyError:
-            pass
-        else:
-            if not isinstance(flags, int):
-                raise TypeError(f'`flags` can be passed as `{UserFlag.__name__}` instance, got {flags!r}.')
-            
-            if (type(flags) is not UserFlag):
-                flags = UserFlag(flags)
-            
-            processable.append(('flags', flags))
+        user_id = preconvert_snowflake(user_id, 'user_id')
         
         if kwargs:
-            raise ValueError(f'Unused or unsettable attributes: {kwargs}.')
+            processable = []
+            
+            try:
+                name = kwargs.pop('name')
+            except KeyError:
+                pass
+            else:
+                name = preconvert_str(name, 'name', 2, 32)
+                processable.append(('name',name))
+            
+            try:
+                discriminator = kwargs.pop('discriminator')
+            except KeyError:
+                pass
+            else:
+                discriminator = preconvert_discriminator(discriminator)
+                processable.append(('discriminator',discriminator))
+            
+            try:
+                avatar = kwargs.pop('avatar')
+            except KeyError:
+                if 'has_animated_avatar' in kwargs:
+                    raise TypeError('`has_animated_avatar` was passed without passing `avatar`.')
+            else:
+                has_animated_avatar = kwargs.pop('has_animated_avatar', False)
+                avatar, has_animated_avatar = preconvert_animated_image_hash(avatar, has_animated_avatar, 'avatar', 'has_animated_avatar')
+                processable.append(('avatar', avatar))
+                processable.append(('has_animated_avatar',has_animated_avatar))
+            
+            try:
+                is_bot = kwargs.pop('is_bot')
+            except KeyError:
+                pass
+            else:
+                is_bot = preconvert_bool(is_bot, 'is_bot')
+                processable.append(('is_bot', is_bot))
+            
+            try:
+                flags = kwargs.pop('flags')
+            except KeyError:
+                pass
+            else:
+                flags = preconvert_flag(flags, 'flags', UserFlag)
+                processable.append(('flags', flags))
+            
+            if kwargs:
+                raise TypeError(f'Unused or unsettable attributes: {kwargs}.')
+        
+        else:
+            processable = None
         
         user = PartialUser(user_id)
         if not user.partial:
             return user
         
-        for name, value in processable:
-            setattr(user, name, value)
+        if (processable is not None):
+            for item in processable:
+                setattr(user, *item)
         
         return user
     

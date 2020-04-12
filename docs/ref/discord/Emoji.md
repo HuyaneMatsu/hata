@@ -181,8 +181,11 @@ stores and updates it. The precreated emojis are always partial, so when they
 are created on dispatch event their attributes will be overwritten.
 
 Some attributes are set as default or processed from kwargs:
-- [`name`](#name) : default is `''`.
-- [`animated`](#animated) : default is `False`.
+
+| name      | default   | type              | alternatives              |
+|-----------|-----------|-------------------|---------------------------|
+| name      | ''        | str (2-32 char)   | str instances             |
+| animated  | False     | bool              | int instance as 0 or 1    |
 
 ## Magic methods
 

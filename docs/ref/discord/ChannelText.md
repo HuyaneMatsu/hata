@@ -180,11 +180,14 @@ Users at text channels do not have voice related permissions.
 - raises : `ValueError`
 
 Some attributes are processed from kwargs, the rest is set automatically:
-- `name`, default is `''`
-- `nsfw`, default is `False`
-- `topic`, default is `''`
-- `slowmode`, default is `0`
-- `topic`, default is `0`
+
+| name      | default   | type              | alternatives              |
+|-----------|-----------|-------------------|---------------------------|
+| name      | ''        | str (2-100 char)  | str instances             |
+| nsfw      | False     | bool              | int instance as 0 or 1    |
+| topic     | ''        | str (0-1000 char) | str instances             |
+| slowmode  | 0         | int (0-21600)     | int instances             |
+| type      | 0         | int (0 or 5)      | int instances             |
 
 ## Magic methods
 

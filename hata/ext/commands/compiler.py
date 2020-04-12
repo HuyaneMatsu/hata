@@ -1099,19 +1099,24 @@ def compile_parsed(converters):
         if not is_part_set:
             go_to=result._back_state
             if is_part_fallback_set:
-                result.append( 'if free_part:')
-                result.append( '    free_part=False')
-                result.append( 'else:')
-                result.go_in()
+                go_to+=1
             if is_index_set:
-                if index!=len(converters)-1:
+                if index!=len(converters)-1 and element.default_type is not ConverterDefaultType.none:
                     result.append( 'free_part=False')
-                result.append( 'if index==limit:')
+                if is_part_fallback_set:
+                    result.append( 'if index==limit and not free_part:')
+                else:
+                    result.append( 'if index==limit:')
             else:
                 result.append( 'if not content:')
             result.extend(return_part_on_fail_nonset,1)
             result.append( 'else:')
             result.go_in()
+            if is_part_fallback_set:
+                result.append( 'if free_part:')
+                result.append( '    free_part=False')
+                result.append( 'else:')
+                result.go_in()
             if is_index_set:
                 result.append( 'parsed=PARSER_RP.match(content,index)')
             else:

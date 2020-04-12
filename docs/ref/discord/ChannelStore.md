@@ -127,14 +127,17 @@ Users at store channels do not have neither text and voice related permissions.
 
 ## Classmethods
 
-### `precreate(cls,channel_id,**kwargs)`
+### `precreate(cls, channel_id, **kwargs)`
 
 - returns : [`ChannelStore`](ChannelStore.md)
 - raises : `ValueError`
 
 Some attributes are processed from kwargs, the rest is set automatically:
-- `name`, default is `''`
-- `nsfw`, default is `False`
+
+| name      | default   | type              | alternatives              |
+|-----------|-----------|-------------------|---------------------------|
+| name      | ''        | str (2-100 char)  | str instances             |
+| nsfw      | False     | bool              | int instance as 0 or 1    |
 
 ## Magic methods
 

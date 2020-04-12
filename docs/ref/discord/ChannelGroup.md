@@ -167,16 +167,18 @@ Valid extensions: 'jpg', 'jpeg', 'png', 'webp'. Valid sizes: 16, 32, 64, 128, 25
 
 ## Classmethods
 
-### `precreate(cls,channel_id,**kwargs)`
+### `precreate(cls, channel_id, **kwargs)`
 
 - returns : [`ChannelGroup`](ChannelGroup.md)
 - raises : `ValueError` / `TypeError`
 
 Some attributes are processed from kwargs, the rest is set automatically:
-- `name`, default is `''`
-- `icon`, default : `0`, accepts `None`,
-[image hash](https://github.com/discordapp/discord-api-docs/blob/master/docs/Reference.md#cdn-endpoints)
-and `int`.
+
+| name      | default                   | type                                  | alternatives                                                                                                                                  |
+|-----------|---------------------------|---------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| name      | ''                        | str (2-100 char)                      | str instances                                                                                                                                 |
+| icon      | 0                         | int (uint128)                         | None, int instances, str instances ([image hash](https://github.com/discordapp/discord-api-docs/blob/master/docs/Reference.md#cdn-endpoints)) |
+| user      | [ZEROUSER](ZEROUSER.md)   | [User](User.md) / [Client](Client.md) | -                                                                                                                                             |
 
 ## Magic methods
 

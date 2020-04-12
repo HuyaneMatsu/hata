@@ -64,13 +64,14 @@ as partial, so when the user will get loaded first time, it will have it's
 attributes replaced.
 
 Some attributes are set automatically or processed from kwargs:
-- [`name`](#inherited-properties) : default is `''`.
-- [`discriminator`](#inherited-properties) : default is `0`, can be set as `str` and
-`int`.
-- [`avatar`](#Inherited Properties) : default is `0`, accepts `None`,
-[image hash](https://github.com/discordapp/discord-api-docs/blob/master/docs/Reference.md#cdn-endpoints)
-and `int`.
-- [`has_animated_avatar`](#inherited-properties), default is `False`.
+
+| name                  | default                   | type                              | alternatives                                                                                                                                  |
+|-----------------------|---------------------------|-----------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| name                  | ''                        | str (2-32 char)                   | str instances                                                                                                                                 |
+| discriminator         | 0                         | int (0-9999)                      | int instances, str instances                                                                                                                  |
+| avatar                | 0                         | int (uint128)                     | None, int instances, str instances ([image hash](https://github.com/discordapp/discord-api-docs/blob/master/docs/Reference.md#cdn-endpoints)) |
+| has_animated_avatar   | False                     | bool                              | int instance 0 or 1                                                                                                                           |
+| flags                 | [UserFlag()](UserFlag.md) | [UserFlag](UserFlag.md) (uint64)  | int instances                                                                                                                                 |
 
 ## Methods
 

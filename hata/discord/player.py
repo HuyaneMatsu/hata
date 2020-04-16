@@ -61,7 +61,7 @@ class FFmpegPCMaudio(AudioSource):
     __slots__=('process', 'source', 'stdout',)
 
     #use __new__, so __del__ wont run
-    def __new__(cls,source,executable='ffmpeg',pipe=False,stderr=None,before_options=[],options=[]):
+    def __new__(cls,source,executable='ffmpeg',pipe=False,stderr=None,before_options=[],options=[],loglevel='info'):
 
         if isinstance(before_options,str):
             before_options=shlex.split(before_options)
@@ -71,6 +71,9 @@ class FFmpegPCMaudio(AudioSource):
 
         args = [
             'ffmpeg',
+            '-reconnect_at_eof', '1',
+            '-reconnect_delay_max', '4',
+            '-analyzeduration', '0',
             *before_options,
             '-i',
             '-' if pipe else source,
@@ -80,8 +83,7 @@ class FFmpegPCMaudio(AudioSource):
             '48000',
             '-ac',
             '2',
-            '-loglevel',
-            'warning',
+            '-loglevel', loglevel,
             *options,
             'pipe:1',
                 ]

@@ -237,7 +237,7 @@ class HttpParser:
                 bname, bvalue = line.split(b':', 1)
             except ValueError:
                 raise ValueError(line) from None
-
+            
             bname = bname.strip(b' \t')
             bvalue = bvalue.lstrip()
             if HDRRE.search(bname):
@@ -246,11 +246,11 @@ class HttpParser:
                 raise PayloadError(f'request header name {bname.decode("utf8", "xmlcharrefreplace")}',
                     self.max_field_size,len(bname))
             header_length=len(bvalue)
-
+            
             # next line
             line_index  = line_index+1
             line        = lines[line_index]
-
+            
             # consume continuation lines
             continuation = line and line[0] in (32,9)  # (' ', '\t')
 
@@ -292,6 +292,7 @@ class HttpParser:
         raw_headers = tuple(raw_headers)
 
         # keep-alive
+
         connnection=headers.get(CONNECTION)
         if connnection:
             v=connnection.lower()
@@ -301,7 +302,6 @@ class HttpParser:
                 close_conn=False
             elif v=='upgrade':
                 upgrade=True
-
         # encoding
         enc=headers.get(CONTENT_ENCODING)
         if enc:
@@ -550,7 +550,7 @@ class HttpRequestParser(HttpParser):
             method,path,version=line.split(None,2)
         except ValueError:
             raise ValueError(line) from None
-
+        
         if len(path)>self.max_line_size:
             raise PayloadError('Status line is too long',self.max_line_size,len(path))
 
@@ -572,13 +572,13 @@ class HttpRequestParser(HttpParser):
             raise #for testing
         except Exception:
             raise ValueError(version)
-
+        
         # read headers
         headers,raw_headers,close,compression,upgrade,chunked=self.parse_headers(lines)
         
         if close is None:  # then the headers weren't set in the request
             close=False
-
+        
         return RawRequestMessage(
             method,path,version,headers,raw_headers,
             close,compression,upgrade,chunked,URL(path))

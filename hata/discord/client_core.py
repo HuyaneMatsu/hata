@@ -5,6 +5,7 @@ __all__ = ('CACHE_PRESENCE', 'CACHE_USER', 'CHANNELS', 'CLIENTS', 'EMOJIS', 'GUI
 import sys
 from time import perf_counter
 from weakref import WeakValueDictionary
+from threading import current_thread
 
 from ..backend.futures import Future, sleep, CancelledError, future_or_timeout, Task
 from ..backend.eventloop import EventThread
@@ -36,17 +37,20 @@ def start_clients():
     for client in CLIENTS:
         if client.running:
             continue
-            
+        
         Task(client.connect(),KOKORO)
+    
+    if (current_thread() is not KOKORO):
         KOKORO.wakeup()
-        return
 
 def stop_clients():
     for client in CLIENTS:
         if client.running:
             Task(client.disconnect(),KOKORO)
-            KOKORO.wakeup()
     
+    if (current_thread() is not KOKORO):
+        KOKORO.wakeup()
+
 KOKORO=EventThread(daemon=False,name='KOKORO')
 
 GC_cycler=KOKORO.cycle(1200.)

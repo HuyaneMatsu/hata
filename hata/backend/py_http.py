@@ -15,13 +15,16 @@ DEFAULT_TIMEOUT=20.
 
 class HTTPClient(object):
     __slots__=('loop','connector','proxy_url','proxy_auth', 'cookie_jar')
-    def __init__(self,loop,proxy_url=None,proxy_auth=None):
+    def __init__(self,loop, proxy_url=None, proxy_auth=None, *, connector=None):
         self.loop=loop
         
         self.proxy_url=proxy_url
         self.proxy_auth=proxy_auth
         
-        self.connector=TCPConnector(loop)
+        if connector is None:
+            connector = TCPConnector(loop)
+        
+        self.connector =connector
         self.cookie_jar=CookieJar(loop)
         
     async def _request(self, method, url, headers, data=None, params=None, redirect=3):
@@ -244,21 +247,8 @@ class HTTPClient(object):
             raise
     
     async def close(self):
-        connector=self.connector
-        if connector is None:
-            return
-        
-        if not connector.closed:
-            connector.close()
-        self.connector=None
-        
-    async def restart(self):
-        connector=self.connector
-        if (connector is not None) and (not connector.closed):
-            connector.close()
-        
-        self.connector=TCPConnector(self.loop)
-        
+        self.__del__()
+    
     @property
     def closed(self):
         connector=self.connector
@@ -269,22 +259,22 @@ class HTTPClient(object):
             return True
         
         return False
-        
+    
     async def __aenter__(self):
         return self
-
+    
     async def __aexit__(self,exc_type,exc_val,exc_tb):
         await self.close()
-
+    
     def __del__(self):
         connector=self.connector
         if connector is None:
             return
         
+        self.connector=None
+        
         if not connector.closed:
             connector.close()
-        
-        self.connector=None
     
     def request(self, meth, url, headers=None, **kwargs):
         if headers is None:

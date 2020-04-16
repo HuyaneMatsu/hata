@@ -2049,6 +2049,12 @@ from.
 | EventThread, but not the client's     | Returns an **awaitable** `TaskAsyncwWapper`, so connecting can be awaited from the other thread as well.  |
 | Any other thread                      | Returns `None`, because syncwraps and waits the connecting task.                                          |
 
+### `stop(self)`
+
+- returns : `None` / `Task` / `TaskAsyncWrapper`
+
+Familiar to [`.start`](#startself), but instead of starting a client, it stops it.
+
 ### `is_owner(self, user)`
 
 - returns : `bool`

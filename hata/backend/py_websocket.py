@@ -6,19 +6,20 @@ from random import getrandbits
 from base64 import b64encode, b64decode
 from struct import Struct
 import urllib.parse
-from collections import OrderedDict
+from collections import OrderedDict, deque
 from binascii import Error as BinasciiError
 from email.utils import formatdate
 
 from .dereaddons_local import multidict_titled
 from .futures import Future, Task, AsyncQue, future_or_timeout, shield, CancelledError, WaitTillAll, iscoroutine
 
-from .py_hdrs import METH_GET, CONNECTION, SEC_WEBSOCKET_KEY, AUTHORIZATION, SEC_WEBSOCKET_VERSION, \
-    SEC_WEBSOCKET_EXTENSIONS, SEC_WEBSOCKET_PROTOCOL, HOST, ORIGIN, SEC_WEBSOCKET_ACCEPT, UPGRADE, DATE, \
+from .py_hdrs import CONNECTION, SEC_WEBSOCKET_KEY, AUTHORIZATION, SEC_WEBSOCKET_VERSION, CONTENT_ENCODING, \
+    SEC_WEBSOCKET_EXTENSIONS, SEC_WEBSOCKET_PROTOCOL, HOST, ORIGIN, SEC_WEBSOCKET_ACCEPT, UPGRADE, DATE, METH_GET, \
     CONTENT_TYPE, SERVER, CONTENT_LENGTH, build_extensions, build_basic_auth, parse_subprotocols, parse_upgrades, \
-    parse_connections, parse_extensions, build_subprotocols
+    parse_connections, parse_extensions, build_subprotocols, TRANSFER_ENCODING
 from .py_exceptions import PayloadError, InvalidUpgrade, AbortHandshake, ConnectionClosed, InvalidHandshake, \
     InvalidOrigin, WebSocketProtocolError
+from .py_helpers import HttpVersion, HttpVersion11
 
 import http
 
@@ -61,7 +62,82 @@ WS_KEY = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
 _HEADER_KEY_RP = re.compile(rb'[-!#$%&\'*+.^_`|~0-9a-zA-Z]+')
 _HEADER_VALUE_RP = re.compile(rb'[\x09\x20-\x7e\x80-\xff]*')
 
+HTTP_STATUS_RP = re.compile(b'HTTP/(\d)\.(\d) (\d\d\d)(?: (.*?))?\r\n')
+HTTP_REQUEST_RP = re.compile(b'([^ ]+) ([^ ]+) HTTP/(\d)\.(\d)\r\n')
+
+HTTP_STATUS_LINE_RP=re.compile(b'HTTP/(\d)\.(\d) (\d\d\d)(?: (.*?))?')
+HTTP_REQUEST_LINE_RP = re.compile(b'([^ ]+) ([^ ]+) HTTP/(\d)\.(\d)')
+
+CHUNK_LIMIT = 32
+MAX_LINE_LENGTH = 8190
+
 del Struct, re
+
+class RawMessage(object):
+    __slots__ = ('headers', )
+    
+    @property
+    def close_connection(self):
+        try:
+            connection=self.headers[CONNECTION]
+        except KeyError:
+            pass
+        else:
+            connection = connection.lower()
+            if connection.lower() == 'keep-alive':
+                return True
+            
+            if connection == 'close':
+                return False
+        
+        return False # deside?
+    
+    @property
+    def upgrade(self):
+        try:
+            connection=self.headers[CONNECTION]
+        except KeyError:
+            return False
+        
+        return (connection.lower() == 'upgrade')
+    
+    @property
+    def chunked(self):
+        try:
+            transfer_encoding = self.headers[TRANSFER_ENCODING]
+        except KeyError:
+            return False
+        
+        return ('chunked' in transfer_encoding)
+    
+    @property
+    def encoding(self):
+        try:
+            encoding = self.headers[CONTENT_ENCODING]
+        except KeyError:
+            return
+       
+        encoding = encoding.lower()
+        if encoding in ('gzip', 'deflate', 'br'):
+            return encoding
+
+class RawResponseMessage(RawMessage):
+    __slots__ = ('version', 'status', 'reason')
+    
+    def __init__(self, version, status, reason, headers):
+        self.version=version
+        self.status=status
+        self.reason=reason
+        self.headers=headers
+
+class RawRequestMessage(RawMessage):
+    __slots__ = ('version', 'meth', 'path',)
+    
+    def __init__(self, version, meth, path, headers):
+        self.version = version
+        self.meth = meth
+        self.path = path
+        self.headers = headers
 
 #TODO: whats the fastest way on pypy ? casting 64 bit ints -> xor -> replace?
 _XOR_TABLE = [bytes(a^b for a in range(256)) for b in range(256)]
@@ -76,7 +152,7 @@ class Frame(object):
     def __init__(self, fin, opcode, data):
         self.data=data
         self.head1=(fin<<7)|opcode
-
+    
     @property
     def fin(self):
         return (self.head1&0b10000000)>>7
@@ -101,13 +177,15 @@ class Frame(object):
     async def read(cls,websocket,max_size):
         #read the header.
         reader=websocket.reader
-        head1,head2 = await reader.readexactly(2)
+        
+        data = await reader.readexactly(2)
+        head1,head2=data
         
         opcode=head1&0b00001111
-
+        
         if ((head2&0b10000000)>>7)==websocket.is_client:
             raise WebSocketProtocolError('Incorrect masking')
-
+        
         length = head2&0b01111111
         
         if length == 126:
@@ -116,10 +194,10 @@ class Frame(object):
         elif length == 127:
             data = await reader.readexactly(8)
             length, = UNPACK_LEN3(data)
-
+        
         if max_size is not None and length>max_size:
             raise PayloadError(f'Payload length exceeds size limit ({length} > {max_size} bytes)')
-
+        
         #Read the data.
         if websocket.is_client:
             data = await reader.readexactly(length)
@@ -127,19 +205,19 @@ class Frame(object):
             mask = await reader.readexactly(4)
             data = await reader.readexactly(length)
             data=apply_mask(mask,data)
-
+        
         frame=object.__new__(cls)
         frame.data=data
         frame.head1=head1
-
+        
         if websocket.extensions is not None:
             for extension in reversed(websocket.extensions):
                 frame=extension.decode(frame,max_size=websocket.max_size)
-
+        
         frame.check()
-
+        
         return frame
-
+    
     def write(frame,websocket):
         #walidates, then writes a websocket frame.
         frame.check()
@@ -204,7 +282,30 @@ class StreamWriter(object):
 
     def write(self, data):
         self.transport.write(data)
-
+    
+    def write_http_request(self, meth, path, headers, version = HttpVersion11):
+        result = [f'{meth} {path} HTTP/{version.major}.{version.major}\r\n']
+        extend = result.extend
+        for k, v in headers.items():
+            extend((k,': ',v,'\r\n'))
+        
+        result.append('\r\n')
+    
+        self.transport.write(''.join(result).encode())
+    
+    def write_http_response(self, status, headers, version = HttpVersion11, body = None):
+        result = [f'HTTP/{version.major}.{version.minor} {status.value} {status.phrase}\r\n']
+        extend = result.extend
+        for k, v in headers.items():
+            extend((k,': ',v,'\r\n'))
+        
+        result.append('\r\n')
+        
+        transport = self.transport
+        transport.write(''.join(result).encode())
+        if (body is not None) and body:
+            transport.write(body)
+    
     def writelines(self, data):
         self.transport.writelines(data)
 
@@ -222,13 +323,15 @@ class StreamWriter(object):
 
     async def drain(self):
         #use after writing
-        if self.reader is not None:
-            exception = self.reader.exception
-            if exception is not None:
+        reader = self.reader
+        if reader is not None:
+            exception = reader.exception
+            if (exception is not None):
                 raise exception
         
-        if self.transport is not None:
-            if self.transport.is_closing():
+        transport = self.transport
+        if transport is not None:
+            if transport.is_closing():
                 #skip 1 loop, so connection_lost() will be called
                 future=Future(self.loop)
                 future.set_result(None)
@@ -237,226 +340,636 @@ class StreamWriter(object):
         await self.protocol._drain_helper()
 
 class StreamReader(object):
-    __slots__=('_paused', '_waiter', 'buffer', 'eof', 'exception', 'limit',
-        'loop', 'transport')
-    def __init__(self,loop,limit=65536):
-        if limit <= 0:
-            raise ValueError(f'Limit cannot be <= 0, got {limit}')
-
-        self.limit      = limit
-        self.loop       = loop
-        self.buffer     = bytearray()
-        self.eof        = False     #whether we're done.
-        self._waiter    = None      #a future used by _wait_for_data()
-        self.exception  = None
-        self.transport  = None
-        self._paused    = False
-
+    __slots__ = ('chunks', '_waiter', 'loop', 'exception', 'eof', 'transport', '_paused', '_offset')
+    
+    def __init__(self, loop):
+        self.chunks = deque()
+        self._waiter = None
+        self.loop = loop
+        self.exception=None
+        self.eof = False
+        self.transport = None
+        self._paused = False
+        self._offset = 0
+        
     def __repr__(self):
-        parts=[self.__class__.__name__]
-        if self.buffer:
-            parts.append(f'{len(self.buffer)} bytes')
+        result = [
+            '<',
+            self.__class__.__name__,
+                ]
+        
+        add_comma = False
+        size = self.size
+        if size:
+            result.append(' ')
+            result.append(repr(size))
+            result.append(' bytes')
+            add_comma=True
+        
         if self.eof:
-            parts.append('eof')
-        parts.append(f'limit={self.limit}')
-        if self._waiter is not None:
-            parts.append(f'waiter={self._waiter!r}')
-        if self.exception:
-            parts.append(f'exception={self.exception!r}')
-        if self.transport:
-            parts.append(f'transport={self.transport!r}')
+            if add_comma:
+                result.append(',')
+            else:
+                add_comma = True
+            result.append(' at eof')
+        
+        waiter = self._waiter
+        if (waiter is not None):
+            if add_comma:
+                result.append(',')
+            else:
+                add_comma = True
+            result.append(' waiter=')
+            result.append(repr(waiter))
+        
+        exception = self.exception
+        if (exception is not None):
+            if add_comma:
+                result.append(',')
+            else:
+                add_comma = True
+            result.append(' exception=')
+            result.append(repr(exception))
+        
+        transport = self.transport
+        if (transport is not None):
+            if add_comma:
+                result.append(',')
+            else:
+                add_comma = True
+            result.append(' transport=')
+            result.append(repr(transport))
+        
         if self._paused:
-            parts.append('paused')
-        return f'<{" ".join(parts)}>'
-
-    def set_exception(self,exception):
-        self.exception=exception
-
-        waiter=self._waiter
+            if add_comma:
+                result.append(',')
+            else:
+                add_comma = True
+            result.append(' paused')
+        
+        result.append('>')
+        
+        return ''.join(result)
+    
+    @property
+    def size(self):
+        result = - self._offset
+        for chunk in self.chunks:
+            result += len(chunk)
+        
+        return result
+    
+    def set_exception(self, exception):
+        self.exception = exception
+        waiter = self._waiter
         if waiter is None:
             return
         
-        self._waiter=None
         if not waiter.cancelled():
             waiter.set_exception(exception)
-
-    def _wakeup_waiter(self):
-        waiter=self._waiter
-        if waiter is None:
-            return
-        
-        self._waiter=None
-        if not waiter.cancelled():
-            waiter.set_result(None)
-
-    def set_transport(self,transport):
-        assert self.transport is None, 'Transport already set'
+    
+    def set_transport(self, transport):
         self.transport = transport
-
-    def _maybe_resume_transport(self):
-        if self._paused and len(self.buffer) <= self.limit:
+    
+    def _maybe_resume_tranport(self):
+        if self._paused and len(self.chunks) > CHUNK_LIMIT:
             self._paused = False
             self.transport.resume_reading()
-
+        
     def feed_eof(self):
         self.eof = True
-        self._wakeup_waiter()
-
+        
+        waiter = self._waiter
+        if (waiter is not None):
+            self._waiter = None
+            
+            if (not waiter.cancelled()):
+                waiter.set_result(None)
+    
     def at_eof(self):
-        #return True if the buffer is empty and 'feed_eof' was called
-        return self.eof and not self.buffer
-
+        return (self.eof and (not self.size))
+    
     def feed_data(self, data):
-        if not data:
+        size = len(data)
+        if size == 0:
             return
-
-        self.buffer.extend(data)
-        self._wakeup_waiter()
-
-        if ((self.transport is not None) and (not self._paused) and (len(self.buffer)>self.limit<<1)):
-            try:
-                self.transport.pause_reading()
-            except (AttributeError,NotImplemented):
-                #cant be paused
-                self.transport = None
-            else:
-                self._paused = True
-
+        
+        chunks = self.chunks
+        self.chunks.append(data)
+        
+        waiter = self._waiter
+        if (waiter is not None):
+            self._waiter = None
+            
+            if (not waiter.cancelled()):
+                waiter.set_result(None)
+        
+        if (len(chunks) > CHUNK_LIMIT) and (not self._paused):
+            transport = self.transport
+            if (transport is not None):
+                try:
+                    transport.pause_reading()
+                except (AttributeError,NotImplemented):
+                    #cant be paused
+                    self.transport = None
+                else:
+                    self._paused = True
+    
     async def _wait_for_data(self):
         if self._paused:
             self._paused = False
             self.transport.resume_reading()
-
-        self._waiter=Future(self.loop)
-        try:
-            await self._waiter
-        finally:
-            self._waiter = None
-
-    async def readline(self):
-        separator=b'\n'
-        try:
-            line = await self.readuntil(separator)
-        except EOFError as err:
-            return err.args[0]
-        except ValueError as err:
-            if len(err.args)==2:
-                consumed=err.args[1]
-                err.args=err.args[:1]
-                if self.buffer.startswith(separator,consumed):
-                    del self.buffer[:consumed+1]
-                else:
-                    self.buffer.clear()
-                self._maybe_resume_transport()
-            raise
-        return line
-
-    async def readuntil(self,separator=b'\n'):
-        seplen=len(separator)
-        if seplen==0:
-            raise ValueError('Separator should be at least one-byte string')
-
-        if self.exception is not None:
-            raise self.exception
-
-        offset = 0
-
-        #loop until we find the separator in the buffer
-        #or we exceed the buffer size or get EOF
-        while True:
-            buflen=len(self.buffer)
-            #vheck if we now have enough data in the buffer for the separator
-            if buflen-offset>=seplen:
-                isep=self.buffer.find(separator,offset)
-
-                #separator is in not in the buffer
-                if isep!=-1:
-                    break
-
-                #we start the next check where we last finished
-                offset=buflen+1-seplen
-                #did we pass message size?
-                if offset>self.limit:
-                    raise ValueError(f'Separator is not found, and chunk exceeds the limit',offset)
-
-            #if we wont get more data we can stop
-            if self.eof:
-                chunk=bytes(self.buffer)
-                self.buffer.clear()
-                raise EOFError(chunk)
-
-            # _wait_for_data() will resume reading if stream was paused.
-            await self._wait_for_data()
-
-        if isep>self.limit:
-            raise ValueError(f'Separator is found, but chunk is longer than limit',isep)
-
-        chunk=self.buffer[:isep + seplen]
-        del self.buffer[:isep + seplen]
-        self._maybe_resume_transport()
-        return bytes(chunk)
-
-    async def read(self, n=-1):
-        if self.exception is not None:
-            raise self.exception
-
-        if n==0:
-            return b''
-
-        if n<0:
-            blocks = []
-            while True:
-                block = await self.read(self.limit)
-                if not block:
-                    break
-                blocks.append(block)
-            return b''.join(blocks)
-
-        if not self.buffer and not self.eof:
-            await self._wait_for_data()
-
-        #works if we have less bytes too
-        data=bytes(self.buffer[:n])
-        del self.buffer[:n]
-
-        self._maybe_resume_transport()
-        return data
-
-    async def readexactly(self, n):
-        if n<0:
-            raise ValueError('readexactly size can not be less than zero')
-
-        if self.exception is not None:
-            raise self.exception
-
-        if n==0:
-            return b''
-
-        while len(self.buffer)<n:
-            if self.eof:
-                incomplete = bytes(self.buffer)
-                self.buffer.clear()
-                raise EOFError(incomplete)
-
-            await self._wait_for_data()
-
-        if len(self.buffer)==n:
-            data=bytes(self.buffer)
-            self.buffer.clear()
+        
+        waiter = self._waiter = Future(self.loop)
+        await waiter
+    
+    async def readtill_CRLF(self):
+        exception = self.exception
+        if (exception is not None):
+            raise exception
+        
+        chunks = self.chunks
+        
+        chunk = chunks[0]
+        
+        # Do first search outside, because we operate with offset
+        offset = self._offset
+        
+        position = chunk.find(b'\r\n', offset)
+        
+        if position != -1:
+            # We found!
+            # Because the result must be bytes, we slice it
+            collected = chunk[offset:position]
+            # Add 2 to position to compensate CRLF
+            position = position+2
+            
+            # If the chunk is exhausted, remove it
+            if len(chunk)==position:
+                del chunks[0]
+                self._offset = 0
+            # Else, offset it, fast slicing!
+            else:
+                self._offset = position
+            
+            return collected
+        
+        # If first did not succeed, lets go normally.
+        collected = []
+        n = MAX_LINE_LENGTH - len(chunk)
+        # If there is offset, apply it
+        if offset:
+            collected.append(memoryview(chunk)[offset:])
+            n += offset
         else:
-            data=bytes(self.buffer[:n])
-            del self.buffer[:n]
-        self._maybe_resume_transport()
-        return data
+            collected.append(chunk)
+        del chunks[0]
+        
+        while True:
+            # case 2: found between 2?
+            if chunk[-1] == b'\r'[0]:
+                if chunks:
+                    chunk = chunks[0]
+                else:
+                    if self.eof:
+                        chunks.clear()
+                        self._offset = 0
+                        raise EOFError(b''.join(collected))
+                    
+                    await self._wait_for_data()
+                    chunk = chunks[0]
+                
+                if chunk[0] == b'\n'[0]:
+                    # If size is 1, we delete it
+                    if len(chunk)==1:
+                        del chunks[0]
+                        self._offset = 0
+                    # If more, fast slice it!
+                    else:
+                        self._offset = 1
+                    
+                    # cast memory view, so we do not need to create a new immutable
+                    collected[-1] = memoryview(collected[-1])[:-1]
+                    
+                    return b''.join(collected)
+                
+            else:
+                # case 3: not found, go for next chunk
+                if chunks:
+                    chunk = chunks[0]
+                else:
+                    if self.eof:
+                        chunks.clear()
+                        self._offset = 0
+                        raise EOFError(b''.join(collected))
+                    
+                    await self._wait_for_data()
+                    chunk = chunks[0]
+            
+            # no offset search
+            position = chunk.find(b'\r\n')
+            
+            # case 1: found in middle
+            if position != -1:
+                # cast memoryview
+                collected.append(memoryview(chunk)[:position])
+                
+                # Add 2 position to ompensate CRLF
+                position = position+2
+                # If the chunk is fully exhausted remove it
+                if len(chunk) == position:
+                    del chunks[0]
+                    self._offset = 0
+                # Fast slice the rest of the chunk with offset
+                else:
+                    self._offset=position
+                
+                return b''.join(collected)
+            
+            # collected the data
+            collected.append(chunk)
+            del chunks[0]
+            n -=len(chunk)
+            if n < 0:
+                raise PayloadError(f'Header line exceeds max line length: {MAX_LINE_LENGTH!r} by {-n!r} and CRLF still not found.')
+            
+            continue
+        
+    async def readexactly(self, n):
+        exception = self.exception
+        if (exception is not None):
+            raise exception
+        
+        if n<1:
+            if n<0:
+                raise ValueError(f'.readexactly called with negative `n`: {n!r}')
+            else:
+                return b''
+        
+        chunks = self.chunks
+        if not chunks:
+            if not chunks:
+                if self.eof:
+                    self._offset = 0
+                    raise EOFError(b'')
+                
+                await self._wait_for_data()
+            
+        chunk = chunks[0]
+        offset = self._offset
+        chunk_size = len(chunk)
+        if offset == 0:
+            if chunk_size > n:
+                self._offset = n
+                result = chunk[:n]
+                return chunk[:n]
+            #chunk same size as the requested?
+            elif chunk_size == n:
+                del chunks[0]
+                # offset is already 0, nice!
+                return chunk
+            
+            else:
+                n -= len(chunk)
+                collected = [chunk]
+                del chunks[0]
+        else:
+            end = offset+n
+            if chunk_size > end:
+                self._offset = end
+                return chunk[offset:end]
+            #chunksize + offset end when the requested's end is.
+            elif chunk_size == end:
+                del chunks[0]
+                self._offset = 0
+                return chunk[offset:]
+            
+            else:
+                n -= (chunk_size - offset)
+                collected = [memoryview(chunk)[offset:]]
+                del chunks[0]
+        
+        while True:
+            if not chunks:
+                if self.eof:
+                    self._offset = 0
+                    raise EOFError(b''.join(collected))
+                
+                await self._wait_for_data()
+            
+            chunk = chunks[0]
+            chunk_size = len(chunk)
+            
+            n -= chunk_size
+            
+            if n > 0:
+                collected.append(chunk)
+                del chunks[0]
+                continue
+            
+            if n == 0:
+                collected.append(chunk)
+                del chunks[0]
+                self._offset = 0
+                return b''.join(collected)
+            
+            offset = self._offset = chunk_size+n
+            collected.append(memoryview(chunk)[:offset])
+            return b''.join(collected)
+    
+    async def _read_http_helper(self):
+        chunks = self.chunks
+        if chunks:
+            chunk = chunks[0]
+            offset = self._offset
+        else:
+            if self.eof:
+                raise EOFError(b'')
+            
+            await self._wait_for_data()
+            chunk = chunks[0]
+            offset = 0
+        
+        return chunk, offset
+    
+    async def read_http_response(self):
+        exception = self.exception
+        if (exception is not None):
+            raise exception
+        
+        chunk, offset = await self._read_http_helper()
+        
+        parsed = HTTP_STATUS_RP.match(chunk, offset)
+        if parsed is None:
+            # stupid fallback
+            line = await self.readtill_CRLF()
+            parsed = HTTP_STATUS_LINE_RP.fullmatch(line)
+            if parsed is None:
+                raise PayloadError(f'Invalid status line: {line!r}.')
+            
+            chunk, offset = await self._read_http_helper()
+        else:
+            offset = parsed.end()
+            
+        major, minor, status, reason = parsed.groups()
+        
+        headers = await self.read_http_headers(chunk, offset)
+        return RawResponseMessage(HttpVersion(int(major), int(minor)), int(status), reason, headers)
+    
+    async def read_http_request(self):
+        exception = self.exception
+        if (exception is not None):
+            raise exception
+        
+        chunk, offset = await self._read_http_helper()
+        
+        parsed = HTTP_REQUEST_RP.match(chunk, offset)
+        if parsed is None:
+            # stupid fallback
+            line = await self.readtill_CRLF()
+            parsed = HTTP_REQUEST_LINE_RP.fullmatch(line)
+            if parsed is None:
+                raise PayloadError(f'invalid request line: {line!r}')
+            
+            chunk, offset = await self._read_http_helper()
+        else:
+            offset = parsed.end()
+        
+        meth, path, major, minor = parsed.groups()
+        
+        headers = await self.read_http_headers(chunk, offset)
+        return RawRequestMessage(HttpVersion(int(major), int(minor)), meth.upper().decode(), path.decode('ascii', 'surrogateescape'), headers)
+    
+    async def read_http_headers(self, chunk, offset):
+        headers = multidict_titled()
+        chunks = self.chunks
+        
+        middle = chunk.find(b':',offset)
+        end = chunk.find(b'\r\n',middle)
+        
+        if end == -1:
+            # This aint a real `while True`, just a Python GOTO
+            while True:
+                # we are at the end?
+                if len(chunk) == offset:
+                    del chunks[0]
+                    
+                    # read a new chunk, because thats pretty simple
+                    if not chunks:
+                        if self.eof:
+                            raise EOFError(b'')
+                        
+                        await self._wait_for_data()
+                    
+                    chunk = chunks[0]
+                    
+                    middle = chunk.find(b':')
+                    end = chunk.find(b'\r\n')
+                    
+                    if end == -1:
+                        self._offset = 0
+                    else:
+                        name = chunk[offset:middle].lstrip()
+                        value = chunk[middle+1:end].strip()
+                        offset = end+2
+                
+                elif len(chunk) >= (offset - 2) and chunk[offset] == b'\r'[0] and chunk[offset+1] == b'\n'[0]:
+                    # No headers at all: Store offset and quit
+                    self._offset = offset+2
+                    return headers
+                
+                self._offset = offset
+                #  try getting a full line
+                line = await self.readtill_CRLF()
+                # no headers at all? OK, I guess
+                if not line:
+                    return headers
+                
+                middle = line.find(b':')
+                if middle == -1:
+                    #Nothing to do, no more case
+                    raise PayloadError(f'Invalid header line: {line!r}')
+                
+                name = line[:middle]
+                value = line[middle+1:]
+                
+                # read a chunk again
+                if chunks:
+                    offset = self._offset
+                else:
+                    if self.eof:
+                        raise EOFError(b'')
+                    
+                    await self._wait_for_data()
+                    offset = 0
+                
+                chunk = chunks[0]
+                break
+        
+        else:
+            name = chunk[offset:middle].lstrip()
+            value = chunk[middle+1:end].strip()
+            offset = end+2
+        
+        name = name.decode('utf-8','surrogateescape')
+        
+        while True:
+            if chunk[offset] in (b'\t'[0], b' '[0]):
+                # continous, I hate it!
+                value = [value]
+                while True:
+                    end = chunk.find(b'\r\n',offset)
+                    if end == -1:
+                        self._offset = offset
+                        line = await self.readtill_CRLF()
+                        if not line:
+                            headers[name] = b' '.join(value).decode('utf-8','surrogateescape')
+                            return headers
+                        
+                        value.append(line.strip())
+                        
+                        if chunks:
+                            offset = self._offset
+                        else:
+                            if self.eof:
+                                raise EOFError(b'')
+                                
+                            await self._wait_for_data()
+                            offset = 0
+                            
+                        chunk = chunks[0]
+                        
+                        if chunk[offset] in (b'\t'[0], b' '[0]):
+                            continue
+                        
+                        value = b' '.join(value)
+                        break
+                    
+                    value.append(chunk[offset:end].strip())
+                    offset = end+2
+                    
+                    if offset == len(chunk):
+                        del chunks[0]
+                        if not chunks:
+                            if self.eof:
+                                raise EOFError(b'')
+                                
+                            await self._wait_for_data()
+                        
+                        chunk = chunks[0]
+                        offset = 0
+                    
+                    if chunk[offset] in (b'\t'[0], b' '[0]):
+                        continue
+                    
+                    value = b' '.join(value)
+                    break
+            
+            headers[name] = value.decode('utf-8','surrogateescape')
+            
+            middle = chunk.find(b':',offset)
+            end = chunk.find(b'\r\n',middle)
+            
+            if end == -1:
+                if len(chunk) == offset:
+                    del chunks[0]
+                    if not chunks:
+                        if self.eof:
+                            raise EOFError(b'')
+                    
+                        await self._wait_for_data()
+                    
+                    chunk = chunks[0]
+                    offset = 0
+                    
+                    middle = chunk.find(b':')
+                    end = chunk.find(b'\r\n',middle)
+                    if end == -1:
+                        self._offset = offset
+                        line = await self.readtill_CRLF()
+                        if not line:
+                            return headers
+                        
+                        middle = line.find(b':')
+                        if middle == -1:
+                            raise PayloadError(f'Invalid header line: {line!r}')
+                        
+                        name = line[:middle].lstrip().decode('utf-8','surrogateescape')
+                        value = line[middle+1:].strip()
+                        
+                        if chunks:
+                            offset = self._offset
+                        else:
+                            if self.eof:
+                                raise EOFError(b'')
+                            
+                            await self._wait_for_data()
+                            offset = 0
+                        
+                        chunk = chunks[0]
+                        continue
+                    
+                    else:
+                        name = chunk[:middle].lstrip().decode('utf-8','surrogateescape')
+                        value = chunk[middle+1:end].strip()
+                        
+                        offset = end+2
+                        if offset == len(chunk):
+                            del chunks[0]
+                            if not chunks:
+                                if self.eof:
+                                    raise EOFError(b'')
+                            
+                                await self._wait_for_data()
+                            
+                            chunk = chunks[0]
+                            offset = 0
+                        
+                        continue
+                        
+                else:
+                    self._offset = offset
+                    line = await self.readtill_CRLF()
+                    if not line:
+                        return headers
+                    
+                    middle = line.find(b':')
+                    if middle == -1:
+                        raise PayloadError(f'Invalid header line: {line!r}')
+                    
+                    name = line[:middle].lstrip().decode('utf-8','surrogateescape')
+                    value = line[middle+1:].strip()
+                    
+                    if chunks:
+                        offset = self._offset
+                    else:
+                        if self.eof:
+                            raise EOFError(b'')
+                        
+                        await self._wait_for_data()
+                        offset = 0
+                    
+                    chunk = chunks[0]
+                    continue
+                
+            else:
+                name = chunk[offset:middle].lstrip().decode('utf-8','surrogateescape')
+                value = chunk[middle+1:end].strip()
+            
+            offset = end+2
+            if offset == len(chunk):
+                del chunks[0]
+                if not chunks:
+                    if self.eof:
+                        raise EOFError(b'')
+                    
+                    await self._wait_for_data()
+                
+                offset = 0
+                chunk = chunks[0]
+            
+            continue
 
-    def __aiter__(self):
-        return self
-
-    async def __anext__(self):
-        val = await self.readline()
-        if val:
-            return val
-        raise StopAsyncIteration
         
 class WebSocketCommonProtocol(object):
     __slots__=('_connection_lost', '_drain_lock', '_drain_waiter', '_paused',
@@ -465,9 +978,9 @@ class WebSocketCommonProtocol(object):
         'max_queue', 'max_size', 'messages', 'over_ssl', 'pings', 'port',
         'read_limit', 'reader', 'secure', 'state', 'subprotocol', 'timeout',
         'transfer_data_exc', 'transfer_data_task', 'write_limit', 'writer')
-
+    
     is_client = True #placeholder for subclasses
-
+    
     def __init__(self, loop, host, port, *, secure=None, timeout=10.,
             max_size=1<<26, max_queue=None, read_limit=1<<16, write_limit=1<<16,
             legacy_recv=False):
@@ -489,7 +1002,7 @@ class WebSocketCommonProtocol(object):
         self._drain_waiter = None
         self._connection_lost = False
         
-        self.reader = StreamReader(loop,limit=read_limit>>1)
+        self.reader = StreamReader(loop)
         self.writer = None #we will set it later
         self.over_ssl = False #we will set it latet
 
@@ -606,15 +1119,15 @@ class WebSocketCommonProtocol(object):
         await self.write_frame(OP_PING,data)
 
         return shield(self.pings[data],self.loop)
-
+    
     async def pong(self,data=b''):
         await self.ensure_open()
         if type(data) is str:
             data.encode('utf-8')
         await self.write_frame(OP_PONG,data)
-
+    
     # Private methods - no guarantees.
-
+    
     async def ensure_open(self):
         if self.state is OPEN:
             #if self.transfer_data_task exited without a closing handshake.
@@ -633,7 +1146,7 @@ class WebSocketCommonProtocol(object):
             raise ConnectionClosed(self.close_code,None,self.close_reason) from self.transfer_data_exc
 
         raise Exception('WebSocket connection isn\'t established yet')
-
+    
     async def transfer_data(self):
         try:
             while True:
@@ -641,8 +1154,8 @@ class WebSocketCommonProtocol(object):
                 #exit the loop when receiving a close frame.
                 if message is None:
                     break
+                
                 self.messages.set_result(message)
-
         except CancelledError as err:
             #we alrady failed connection
             exception=ConnectionClosed(self.close_code or 1000, err, self.close_reason)
@@ -664,6 +1177,11 @@ class WebSocketCommonProtocol(object):
             self.fail_connection(1009)
 
         except BaseException as err:
+            await self.loop.render_exc_async(err, [
+                'Unexpected exception occured at ',
+                repr(self),
+                '.transfer_data\n',
+                    ])
             #should not happen
             exception=ConnectionClosed(1011,err)
             self.fail_connection(1011)
@@ -1000,14 +1518,14 @@ class WSClient(WebSocketCommonProtocol):
         #init
         self=object.__new__(cls)
         WebSocketCommonProtocol.__init__(self,loop,host,port,**websocket_kwargs)
-
+        
         try:
             await loop.create_connection(self,host,port,**connection_kwargs)
-
+            
             #building headers
             sec_key=b64encode(int.to_bytes(getrandbits(128),length=16,byteorder='big')).decode()
             request_headers = multidict_titled()
-
+            
             request_headers[UPGRADE]='websocket'
             request_headers[CONNECTION]='Upgrade'
             request_headers[SEC_WEBSOCKET_KEY]=sec_key
@@ -1017,7 +1535,7 @@ class WSClient(WebSocketCommonProtocol):
                 request_headers[HOST] = wsuri.host
             else:
                 request_headers[HOST] = f'{wsuri.host}:{wsuri.port}'
-
+            
             if wsuri.user_info is not None:
                 request_headers[AUTHORIZATION]=build_basic_auth(*wsuri.user_info)
                 
@@ -1036,70 +1554,19 @@ class WSClient(WebSocketCommonProtocol):
                         request_headers[name]=value
                 else:
                     raise TypeError(f'extra_headers should be dictlike with \'.items\' method, got {extra_headers.__class__.__name__} instance.')
-
-            #writes request line and headers to the HTTP request. py_streams 466
-            breaker='\r\n'
-            request = f'GET {wsuri.resource_name} HTTP/1.1\r\n{"".join([f"{k}: {v}{breaker}" for k,v in request_headers.items()])}\r\n'
-            self.writer.write(request.encode())
-
+            
+            self.writer.write_http_request(METH_GET, wsuri.resource_name, request_headers)
+            
             #parse status line
-            status_line = await self.reader.readline()
+            message = await self.reader.read_http_response()
+           
+            if message.version != HttpVersion11:
+                raise ValueError(f'Unsupported HTTP version: {message.version}')
 
-            try:
-                version,status_code,reason = status_line.split(b' ', 2)
-            except ValueError as err:
-                #fails to unpack?
-                raise ValueError(f'Invalid status line: \'{status_line}\'') from err
+            if message.status!=101:
+                raise InvalidHandshake(f'Invalid status code: {message.status}')
             
-            version=version
-            if version != b'HTTP/1.1':
-                raise ValueError(f'Unsupported HTTP version: {version}')
-            
-            try:
-                status_code = int(status_code)
-            except ValueError as err:
-                #not int?
-                raise ValueError(f'Invalid status_code: \'{status_code}\'') from err
-            
-            if not 100 <= status_code < 1000:
-                raise ValueError(f'Unsupported HTTP status code: {status_code}')
-            
-            reason=reason[:-2] # Remove newline character
-            if _HEADER_VALUE_RP.fullmatch(reason) is None:
-                raise ValueError(f'Invalid HTTP reason phrase: {reason}')
-
-            if status_code!=101:
-                raise InvalidHandshake(f'Invalid status code: {status_code}')
-            
-            #parse headers
-            response_headers=multidict_titled()
-            limit=256
-            while True:
-                line=await self.reader.readline()
-                if line==b'\r\n':
-                    break
-                
-                if limit:
-                    limit-=1
-                else:
-                    raise ValueError('The maximum amount of headers exceeded')
-
-                try:
-                    name,value = line.split(b':', 1)
-                except ValueError as err:
-                    raise ValueError(f'Invalid header (name, value) item: \'{line}\'') from err
-                
-                if _HEADER_KEY_RP.fullmatch(name) is None:
-                    raise ValueError(f'Invalid HTTP header name: {name!r}')
-                
-                value=value[:-2].strip(b' \t')
-                if _HEADER_VALUE_RP.fullmatch(value) is None:
-                    raise ValueError(f'Invalid HTTP header value: {value!r}')
-
-                name=name.decode('ascii')
-                value=value.decode('ascii','surrogateescape')
-                response_headers[name]=value
-            
+            response_headers = message.headers
             connections=[]
             received_connections=response_headers.getall(CONNECTION,)
             if (received_connections is not None):
@@ -1187,8 +1654,8 @@ class WSServerProtocol(WebSocketCommonProtocol):
     
     __slots__ = ('available_extensions', 'available_subprotocols',
         'extra_headers', 'handler', 'handler_task', 'origin', 'origins',
-        'request_processer', 'server', 'subprotocol_selector', 'path',
-        'request_headers', 'response_headers')
+        'request_processer', 'server', 'subprotocol_selector',
+        'request', 'response_headers')
     
     def __init__(self,server):
         handler, host, port, secure, origins, available_extensions, \
@@ -1208,8 +1675,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
         WebSocketCommonProtocol.__init__(self, server.loop, host, port,
             secure=secure, **websocket_kwargs)
         
-        self.path=None
-        self.request_headers=None
+        self.request=None
         self.response_headers=None
         self.origin=None
         
@@ -1252,77 +1718,14 @@ class WSServerProtocol(WebSocketCommonProtocol):
         
         finally:
             self.server.unregister(self)
-        
-    async def read_http_request(self):
-        #parse status line
-        
-        try:
-            request_line = await self.reader.readline()
-        except EOFError as err:
-            raise EOFError('Connection closed while reading HTTP request line') from err
-        
-        try:
-            method,path,version = request_line.split(b' ', 2)
-        except ValueError as err:
-            #fails to unpack?
-            raise ValueError(f'Invalid HTTP request line: {request_line!r}') from err
-        
-        method=method.decode()
-        
-        if method != METH_GET:
-            raise ValueError(f'Unsupported HTTP method: {method}')
-        
-        version=version[:-2]
-        if version != b'HTTP/1.1':
-            raise ValueError(f'Unsupported HTTP version: {version}')
-        
-        self.path = path.decode('ascii', 'surrogateescape')
-        
-        #parse headers
-        request_headers=multidict_titled()
-        
-        while True:
-            line=await self.reader.readline()
-            if line==b'\r\n':
-                break
-
-            try:
-                name,value = line.split(b':', 1)
-            except ValueError as err:
-                raise ValueError(f'Invalid header (name, value) item: \'{line}\'') from err
-            
-            if _HEADER_KEY_RP.fullmatch(name) is None:
-                raise ValueError(f'Invalid HTTP header name: {name!r}')
-            
-            value=value[:-2].strip(b' \t')
-            if _HEADER_VALUE_RP.fullmatch(value) is None:
-                raise ValueError(f'Invalid HTTP header value: {value!r}')
-
-            name=name.decode('ascii')
-            value=value.decode('ascii','surrogateescape')
-            request_headers[name]=value
-        
-        self.request_headers=request_headers
-    
-    def write_http_response(self,status,response_headers,body=None):
-        self.response_headers=response_headers
-        breaker='\r\n'
-        response = f'HTTP/1.1 {status.value} {status.phrase}\r\n{"".join([f"{k}: {v}{breaker}" for k,v in response_headers.items()])}\r\n'
-        
-        transport= self.writer.transport
-        transport.write(response.encode())
-        
-        if (body is None) or (not body):
-            return
-        
-        transport.write(body)
     
     async def handshake(self):
         try:
-            await self.read_http_request()
-            request_headers=self.request_headers
+            self.request = request =await self.reader.read_http_request()
+            
+            request_headers=request.headers
             if self.server.is_serving():
-                path=self.path
+                path=request.path
                 
                 request_processer=self.request_processer
                 if request_processer is None:
@@ -1501,9 +1904,10 @@ class WSServerProtocol(WebSocketCommonProtocol):
     
             response_headers.setdefault(DATE, formatdate(usegmt=True))
             response_headers.setdefault(SERVER, '')
-    
-            self.write_http_response(SWITCHING_PROTOCOLS, response_headers)
-    
+            
+            self.response_headers = response_headers
+            self.writer.write_http_response(SWITCHING_PROTOCOLS, response_headers)
+            
             self.connection_open()
         except (CancelledError, ConnectionError) as err:
             await self.loop.render_exc_async(err,before = [
@@ -1526,7 +1930,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
                 headers[UPGRADE]='websocket'
                 body = (
                     f'Failed to open a WebSocket connection: {err}.\n\n'
-                    f'You cannot access a WebSocket server directly with a'
+                    f'You cannot access a WebSocket server directly with a '
                     f'browser. You need a WebSocket client.\n'
                         ).encode()
             elif isinstance(err,InvalidHandshake):
@@ -1545,7 +1949,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
             headers.setdefault(CONNECTION       , 'close')
             
             try:
-                self.write_http_response(status, headers, body)
+                self.writer.write_http_response(status, headers, body=body)
                 self.fail_connection()
                 await self.wait_for_connection_lost()
             except BaseException as err2:

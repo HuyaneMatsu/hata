@@ -775,7 +775,7 @@ class EventThread(Executor,Thread,metaclass=EventThreadType):
         '_asyncgens_shutdown_called', '_csock', '_internal_fds', '_ready',
         '_scheduled', '_ssock', 'ctx', 'current_task', 'running', 'selector',
         'should_run', 'transports',)
-
+    
     def __init__(self):
         Executor.__init__(self)
         self.should_run = True

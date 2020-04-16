@@ -195,17 +195,15 @@ class BaseConnector(object):
     
     def close(self):
         #Close all opened transports.
-        result=Future(self.loop)
-        result.set_result(None)
         if self.closed:
-            return result
+            return
         
         self.closed=True
 
         try:
             if not self.loop.running:
-                return result
-
+                return
+            
             for connections in self.connections.values():
                 for transport, time in connections:
                     transport.close()
@@ -216,8 +214,6 @@ class BaseConnector(object):
         finally:
             self.connections.clear()
             self.acquired.clear()
-        
-        return result
     
     async def connect(self,request,timeout):
         #Get from pool or create new connection.

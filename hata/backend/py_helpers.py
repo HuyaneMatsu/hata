@@ -16,7 +16,7 @@ TOKEN = CHAR ^ CTL ^ SEPARATORS
 
 sentinel = object()
 
-HttpVersion = namedtuple('HttpVersion',['major','minor'])
+HttpVersion = namedtuple('HttpVersion',('major','minor'))
 HttpVersion10 = HttpVersion(1,0)
 HttpVersion11 = HttpVersion(1,1)
 

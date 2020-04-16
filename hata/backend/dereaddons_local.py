@@ -1714,7 +1714,7 @@ class _WeakMapIterator(object):
         parent = self.parent
         parent._iterating +=1
         pending_removals = parent._pending_removals
-
+        
         try:
             for reference in dict.__iter__(parent):
                 key = reference()
@@ -1734,7 +1734,7 @@ class _WeakMapIterator(object):
             while pending_removals:
                 reference = pending_removals.pop()
                 dict.__delitem__(self, reference)
-
+    
     def __contains__(self, key):
         return (key in self.parent)
     

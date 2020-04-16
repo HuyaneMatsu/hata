@@ -2,12 +2,13 @@
 __all__ = ('DiscordHTTPClient', )
 
 import sys, re
+from weakref import WeakKeyDictionary
 
 from ..backend.dereaddons_local import multidict_titled, modulize, WeakMap
 from ..backend.futures import sleep
 from ..backend.py_http import HTTPClient
 from ..backend.py_reqrep import Request_CM
-
+from ..backend.py_connector import TCPConnector
 from ..backend.py_hdrs import METH_PATCH, METH_GET, METH_DELETE, METH_POST, METH_PUT, CONTENT_TYPE, USER_AGENT, \
     AUTHORIZATION
 
@@ -474,12 +475,32 @@ del version_l
 
 del sys
 
+class _ConnectorRefCounter(object):
+    __slots__ = ('connector', 'count')
+    def __init__(self, connector):
+        self.connector = connector
+        self.count = 1
+
 class DiscordHTTPClient(HTTPClient):
     __slots__=('connector', 'cookie_jar', 'global_lock', 'handlers', 'header',
         'loop', 'proxy_auth', 'proxy_url',)
+    
+    CONREFCOUNTS = WeakKeyDictionary()
+    
     def __init__(self,client,proxy_url=None,proxy_auth=None):
         loop = client.loop
-        HTTPClient.__init__(self,loop,proxy_url,proxy_auth)
+        
+        try:
+            connector_ref_counter = self.CONREFCOUNTS[loop]
+        except KeyError:
+            connector = TCPConnector(loop)
+            connector_ref_counter = _ConnectorRefCounter(connector)
+            self.CONREFCOUNTS[loop] = connector_ref_counter
+        else:
+            connector_ref_counter.count +=1
+            connector = connector_ref_counter.connector
+        
+        HTTPClient.__init__(self, loop, proxy_url, proxy_auth, connector = connector)
         
         header=multidict_titled()
         header[USER_AGENT]=LIB_USER_AGENT
@@ -489,6 +510,33 @@ class DiscordHTTPClient(HTTPClient):
         self.header     = header
         self.global_lock= None
         self.handlers   = WeakMap()
+    
+    __aenter__ = None
+    __aexit__ = None
+    
+    async def close(self):
+        self.__del__()
+    
+    def __del__(self):
+        connector=self.connector
+        if connector is None:
+            return
+        
+        self.connector=None
+        
+        try:
+            connector_ref_counter = self.CONREFCOUNTS[self.loop]
+        except KeyError:
+            pass
+        else:
+            connector_ref_counter.count = count = connector_ref_counter.count-1
+            if count:
+                return
+                
+            del self.CONREFCOUNTS[self.loop]
+        
+        if not connector.closed:
+            connector.close()
     
     async def discord_request(self,handler,method,url,data=None,params=None,header=None,reason=None):
         if header is None:

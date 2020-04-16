@@ -1792,10 +1792,31 @@ class AsyncQue(object):
         return self.result().__await__()
 
     def __repr__(self):
-        results=self._results
-        maxlen=results.maxlen
+        result = [
+            self.__class__.__name__,
+            '([',
+                ]
+        
+        results = self._results
+        if results:
+            for value in results:
+                result.append(repr(value))
+                result.append(', ')
+            del result[-1]
+        result.append(']')
+        
+        maxlen = results.maxlen
+        if (maxlen is not None):
+            result.append(', maxlen=')
+            result.append(repr(maxlen))
+        
         exception=self._exception
-        return f'{self.__class__.__name__}([{", ".join([repr(element) for element in results])}]{"" if maxlen is None else f", maxlen={maxlen}"} {"" if exception is None else f", exception={exception}"})'
+        if (exception is not None):
+            result.append(', exception=')
+            result.append(str(exception))
+        
+        result.append(')')
+        return ''.join(result)
 
     __str__=__repr__
     

@@ -227,7 +227,7 @@ class ResponseHandler(BaseProtocol,DataQueue):
     def data_received(self,data):
         if not data:
             return
-
+        
         # custom payload parser
         if self.payload_parser is not None:
             eof,tail=self.payload_parser.feed_data(data)
@@ -237,7 +237,7 @@ class ResponseHandler(BaseProtocol,DataQueue):
 
                 if tail:
                     self.data_received(tail)
-
+        
             return
         if self.upgraded or self.parser is None:
             # i.e. websocket connection, websocket parser is not set yet

@@ -33,7 +33,7 @@ from .invite import Invite
 from .message import Message
 from .oauth2 import Connection, parse_locale, DEFAULT_LOCALE, AO2Access, UserOA2, parse_locale_optional
 from .exceptions import DiscordException, IntentError
-from .client_core import CLIENTS, start_clients, CACHE_USER, CACHE_PRESENCE, KOKORO, GUILDS
+from .client_core import CLIENTS, CACHE_USER, CACHE_PRESENCE, KOKORO, GUILDS
 from .voice_client import VoiceClient
 from .activity import ActivityUnknown, ActivityBase, ActivityCustom
 from .integration import Integration
@@ -3605,6 +3605,20 @@ class Client(UserBase):
         KOKORO.wakeup()
         task.syncwrap().wait()
     
+    def stop(self):
+        task = Task(self.disconnect(),KOKORO)
+        
+        thread = current_thread()
+        if thread is KOKORO:
+            return task
+        
+        if isinstance(thread,EventThread):
+            # Asyncwrap wakes up KOKORO
+            return task.asyncwrap(thread)
+        
+        KOKORO.wakeup()
+        task.syncwrap().wait()
+    
     async def connect(self):
         if self.running:
             raise RuntimeError(f'{self!r} is already running!')
@@ -3674,7 +3688,6 @@ class Client(UserBase):
                     
                     self._freeze_voice()
                     while True:
-                        await self.http.restart()
                         await sleep(5.0,self.loop)
                         self._gateway_pair=(self._gateway_pair[0],0.0)
                         try:
@@ -3752,8 +3765,6 @@ class Client(UserBase):
             pass
         else:
             Task(_with_error(self,self.events.ready(self)),self.loop)
-        finally:
-            start_clients()
 
     async def _request_members2(self,guilds):
         count=0

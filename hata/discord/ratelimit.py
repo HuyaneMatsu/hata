@@ -769,6 +769,7 @@ class RATELIMIT_GROUPS:
     message_get                 = RatelimitGroup.unlimited()
     message_edit                = RatelimitGroup(LIMITER_CHANNEL)
     message_mar                 = RatelimitGroup() # untested
+    message_crosspost           = RatelimitGroup(LIMITER_CHANNEL)
     reaction_clear              = GROUP_REACTION_MODIFY
     reaction_delete_emoji       = GROUP_REACTION_MODIFY
     reaction_users              = RatelimitGroup.unlimited()
@@ -874,7 +875,7 @@ del modulize
 ##INFO :
 ##    some endpoints might be off 1s
 ##    groups are not accurate now, because we use autogroups
-##    last group id: 94976
+##    last group id: 96768
 ##
 ##endpoint: https://cdn.discordapp.com/
 ##method  : GET
@@ -1061,6 +1062,16 @@ del modulize
 ##auth    : user
 ##used at : message_mar
 ##limits  : UNTESTED
+##
+##endpoint: /channels/{channel_id}/messages/{message_id}/crosspost
+##method  : POST
+##auth    : bot
+##used at : message_crosspost
+##limits  :
+##    group : 96768
+##    limit : 10
+##    reset : 3600
+##    limiter : channel_id
 ##
 ##endpoint: /channels/{channel_id}/messages/{message_id}/reactions
 ##method  : DELETE

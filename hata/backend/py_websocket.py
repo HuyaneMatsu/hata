@@ -59,9 +59,6 @@ CLOSED      = 'CLOSED'
 
 WS_KEY = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
 
-_HEADER_KEY_RP = re.compile(rb'[-!#$%&\'*+.^_`|~0-9a-zA-Z]+')
-_HEADER_VALUE_RP = re.compile(rb'[\x09\x20-\x7e\x80-\xff]*')
-
 HTTP_STATUS_RP = re.compile(b'HTTP/(\d)\.(\d) (\d\d\d)(?: (.*?))?\r\n')
 HTTP_REQUEST_RP = re.compile(b'([^ ]+) ([^ ]+) HTTP/(\d)\.(\d)\r\n')
 
@@ -422,11 +419,10 @@ class StreamReader(object):
     def set_exception(self, exception):
         self.exception = exception
         waiter = self._waiter
-        if waiter is None:
-            return
         
-        if not waiter.cancelled():
-            waiter.set_exception(exception)
+        if (waiter is not None):
+            self._waiter = None
+            waiter.set_exception_if_pending(exception)
     
     def set_transport(self, transport):
         self.transport = transport
@@ -442,9 +438,8 @@ class StreamReader(object):
         waiter = self._waiter
         if (waiter is not None):
             self._waiter = None
-            
-            if (not waiter.cancelled()):
-                waiter.set_result(None)
+            # Fixes deque index error
+            waiter.cancel()
     
     def at_eof(self):
         return (self.eof and (not self.size))
@@ -460,9 +455,7 @@ class StreamReader(object):
         waiter = self._waiter
         if (waiter is not None):
             self._waiter = None
-            
-            if (not waiter.cancelled()):
-                waiter.set_result(None)
+            waiter.set_result_if_pending(None)
         
         if (len(chunks) > CHUNK_LIMIT) and (not self._paused):
             transport = self.transport
@@ -608,13 +601,12 @@ class StreamReader(object):
         
         chunks = self.chunks
         if not chunks:
-            if not chunks:
-                if self.eof:
-                    self._offset = 0
-                    raise EOFError(b'')
-                
-                await self._wait_for_data()
+            if self.eof:
+                self._offset = 0
+                raise EOFError(b'')
             
+            await self._wait_for_data()
+        
         chunk = chunks[0]
         offset = self._offset
         chunk_size = len(chunk)

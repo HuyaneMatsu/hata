@@ -1354,7 +1354,7 @@ class Client(UserBase):
         data={'token':self.mar_token}
         data = await self.http.message_mar(message.channel.id,message.id,data)
         self.mar_token=data['token']
-
+    
     async def message_logs(self,channel,limit=100,after=None,around=None,before=None):
         if limit<1 or limit>100:
             raise ValueError(f'limit must be in <1,100>, got {limit}')
@@ -1576,7 +1576,7 @@ class Client(UserBase):
             await self.http.message_delete(message.channel.id,message.id,reason)
         else:
             await self.http.message_delete_b2wo(message.channel.id,message.id,reason)
-        
+    
     
     async def message_delete_multiple(self,messages,reason=None):
         if not messages:
@@ -2084,7 +2084,10 @@ class Client(UserBase):
 
     async def message_suppress_embeds(self,message,suppress=True):
         await self.http.message_suppress_embeds(message.channel.id,message.id,{'suppress':suppress})
-
+    
+    async def message_crosspost(self, message):
+        await self.http.message_crosspost(message.channel.id, message.id)
+    
     async def message_pin(self,message):
         await self.http.message_pin(message.channel.id,message.id)
 

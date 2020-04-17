@@ -791,6 +791,10 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.message_suppress_embeds),
             METH_POST, f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}/suppress-embeds',data)
     
+    async def message_crosspost(self, channel_id, message_id):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.message_crosspost),
+            METH_POST, f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}/crosspost')
+    
     async def message_pin(self,channel_id,message_id):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.message_pin, channel_id),
             METH_PUT, f'{API_ENDPOINT}/channels/{channel_id}/pins/{message_id}')

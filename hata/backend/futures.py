@@ -1790,7 +1790,7 @@ class AsyncQue(object):
     
     def __await__(self):
         return self.result().__await__()
-
+    
     def __repr__(self):
         result = [
             self.__class__.__name__,

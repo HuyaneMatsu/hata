@@ -226,6 +226,7 @@ class ERROR_CODES:
     max_invites             = 30016 # 1000
     
     unauthorized            = 40001
+    account_verification_neded = 40002
     request_too_large       = 40005
     feature_disabled        = 40006
     user_banned_from_guild  = 40007

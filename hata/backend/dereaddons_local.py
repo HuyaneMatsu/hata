@@ -158,7 +158,7 @@ class autoposlist(list, metaclass=RemoveMeta, remove=['extend', '__add__', '__ia
     def switch(self,value,new_position):
         #discord dev safe
         value.position=new_position
-        self.sort()
+        list.sort(self)
         
 ##        ln=len(self)
 ##        old_position=value.position

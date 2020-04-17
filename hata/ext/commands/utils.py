@@ -421,9 +421,9 @@ class ChooseMenu(object):
             if result_ln==1:
                 choice = choices[0]
                 if isinstance(choice, tuple):
-                    await selecter(client, message, *choice)
+                    await selecter(client, channel, message, *choice)
                 else:
-                    await selecter(client, message, choice)
+                    await selecter(client, channel, message, choice)
             return None
         
         self=object.__new__(cls)
@@ -636,10 +636,11 @@ class ChooseMenu(object):
                 selecter = self.selecter
                 try:
                     choice = self.choices[0]
+                    channel = self.channel
                     if isinstance(choice, tuple):
-                        await selecter(client, message, *choice)
+                        await selecter(client, channel, message, *choice)
                     else:
-                        await selecter(client, message, choice)
+                        await selecter(client, channel, message, choice)
                 except BaseException as err:
                     await client.events.error(client,f'{self!r}.__call__ when calling {selecter!r}',err)
                 return

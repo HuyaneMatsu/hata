@@ -1006,6 +1006,13 @@ as well. This method also supports editing a message's suppress, with editing it
 Suppresses the [`message`](Message.md)'s embeds. If `suppress` is set to
 `False`, then reverses the suppress.
 
+### `message_crosspost(self, message)`
+
+- `awaitable`
+- returns : `None`
+
+Crossposts the given [`message`](Message.md).
+
 ### `message_pin(self,message)`
 
 - `awaitable`

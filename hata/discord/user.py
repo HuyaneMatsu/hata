@@ -1229,73 +1229,70 @@ class User(UserBase):
             return user
 
 class VoiceState(object):
-    __slots__=('channel', 'deaf', 'mute', 'self_deaf', 'self_mute', 'self_video',
-        'session_id', 'user',)
-    def __init__(self,data,channel):
+    __slots__=('channel', 'deaf', 'mute', 'self_deaf', 'self_mute', 'self_stream', 'self_video', 'session_id', 'user',)
+    def __init__(self, data, channel):
         self.channel        = channel
         self.user           = PartialUser(int(data['user_id']))
         self.session_id     = data['session_id']
         self.mute           = data['mute']
         self.deaf           = data['deaf']
-        self.self_mute      = data['self_mute']
         self.self_deaf      = data['self_deaf']
-        #private or group can be self_video, guild can be stream?
-        if data['self_video']:
-            self.self_video = True
-        else:
-            self.self_video = data.get('self_stream',False)
-
+        self.self_mute      = data['self_mute']
+        self.self_stream    = data.get('self_stream',False)
+        self.self_video     = data['self_video']
+    
     @property
     def guild(self):
         return self.channel.guild
     
     def _update(self,data,channel):
         old={}
-
-        if self.channel is not channel:
+        
+        if (self.channel is not channel):
             old['channel']=self.channel
             self.channel=channel
-
-        mute=data['mute']
-        if self.mute!=mute:
-            old['mute']=self.mute
-            self.mute=mute
-
+        
         deaf=data['deaf']
         if self.deaf!=deaf:
             old['deaf']=self.deaf
             self.deaf=deaf
-            
-        self_mute=data['self_mute']
-        if self.self_mute!=self_mute:
-            old['self_mute']=self.self_mute
-            self.self_mute=self_mute
-
+        
+        mute=data['mute']
+        if self.mute!=mute:
+            old['mute']=self.mute
+            self.mute=mute
+        
         self_deaf=data['self_deaf']
         if self.self_deaf!=self_deaf:
             old['self_deaf']=self.self_deaf
             self.self_deaf=self_deaf
-
+        
         self_video=data['self_video']
-        if not self_video:
-            self_video=data.get('self_stream',False)
         if self.self_video!=self_video:
             old['self_video']=self.self_video
             self.self_video=self_video
-
+        
+        self_stream = data.get('self_stream', False)
+        if self.self_stream != self_stream:
+            old['self_stream'] = self.self_stream
+            self.self_stream = self_stream
+        
+        self_mute=data['self_mute']
+        if self.self_mute!=self_mute:
+            old['self_mute']=self.self_mute
+            self.self_mute=self_mute
+        
         return old
     
     def _update_no_return(self,data,channel):
         self.channel    = channel
-        self.mute       = data['mute']
         self.deaf       = data['deaf']
-        self.self_mute  = data['self_mute']
+        self.mute       = data['mute']
         self.self_deaf  = data['self_deaf']
-        if data['self_video']:
-            self.self_video = True
-        else:
-            self.self_video = data.get('self_stream',False)
-
+        self.self_mute  = data['self_mute']
+        self.self_stream= data.get('self_stream',False)
+        self.self_video = data['self_video']
+    
     def __repr__(self):
         return f'<{self.__class__.__name__} user={self.user.full_name} channel={self.channel!r}>'
     

@@ -576,6 +576,7 @@ contains the changed attributes with (`attribute name`, `old value`) items.
 | mute                      | bool                              |
 | self_deaf                 | bool                              |
 | self_mute                 | bool                              |
+| self_stream               | bool                              |
 | self_video                | bool                              |
 
 ### `webhook_update(client,channel)`

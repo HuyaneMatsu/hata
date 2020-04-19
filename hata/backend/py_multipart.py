@@ -916,36 +916,37 @@ class MultipartWriter(payload_superclass):
         'haders', 'parts', 'value')
     
     def __init__(self,subtype='mixed',boundary=None):
-        if boundary:
+        if (boundary is None):
+            boundary=uuid.uuid4().hex.encode('ascii')
+        else:
             try:
-                self._boundary=boundary.encode('ascii')
+                boundary=boundary.encode('ascii')
             except UnicodeEncodeError:
                 raise ValueError('boundary should contains ASCII only chars')
-        else:
-            self._boundary=uuid.uuid4().hex.encode('ascii')
-            
+        
+        self._boundary = boundary
         payload_superclass.__init__(self,None,content_type=f'multipart/{subtype}; boundary={self.boundary_value}')
-
+        
         self.parts=[]
         self.headers=multidict_titled()
         self.headers[CONTENT_TYPE]=self.content_type
-
+    
     @property
     def boundary(self):
         return self._boundary.decode('ascii')
     
     def __enter__(self):
         return self
-
+    
     def __exit__(self,exc_type,exc_val,exc_tb):
         pass
-
+    
     def __iter__(self):
         return iter(self.parts)
-
+    
     def __len__(self):
         return len(self.parts)
-
+    
     _valid_tchar_regex          = re.compile(br"\A[!#$%&'*+\-.^_`|~\w]+\Z")
     _invalid_qdtext_char_regex  = re.compile(br"[\x00-\x08\x0A-\x1F\x7F]")
 

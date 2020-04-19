@@ -1152,11 +1152,75 @@ class Guild(object):
                 return channel
         return default
     
+    def get_channel_like(self, name, default=None):
+        if name.startswith('#'):
+            name=name[1:]
+        
+        target_name_length = len(name)
+        if target_name_length<2 or target_name_length>100:
+            return default
+        
+        pattern=re.compile(re.escape(name),re.I)
+        
+        accurate_channel = default
+        accurate_name_length = 101
+        
+        for channel in self.all_role.values():
+            channel_name=channel.name
+            name_length=len(channel_name)
+            if name_length>accurate_name_length:
+                continue
+            
+            if pattern.match(channel_name) is None:
+                continue
+            
+            if name_length<accurate_name_length:
+                accurate_channel=channel
+                accurate_name_length=name_length
+            
+            # Compare with display name
+            if name_length==target_name_length and name==channel.display_name:
+                return channel
+            
+            continue
+        
+        return accurate_channel
+    
     def get_role(self,name,default=None):
         for role in self.all_role.values():
             if role.name==name:
                 return role
         return default
+    
+    def get_role_like(self, name, default=None):
+        target_name_length = len(name)
+        if target_name_length<2 or target_name_length>32:
+            return default
+        
+        pattern=re.compile(re.escape(name),re.I)
+        
+        accurate_role = default
+        accurate_name_length = 33
+        
+        for role in self.all_role.values():
+            role_name=role.name
+            name_length=len(role_name)
+            if name_length>accurate_name_length:
+                continue
+            
+            if pattern.match(role_name) is None:
+                continue
+            
+            if name_length<accurate_name_length:
+                accurate_role=role
+                accurate_name_length=name_length
+            
+            if name_length==target_name_length and name==role_name:
+                return role
+            
+            continue
+        
+        return accurate_role
     
     def permissions_for(self,user):
         if user==self.owner:
@@ -1215,7 +1279,7 @@ class Guild(object):
         else:
             icon=int(icon,16)
             has_animated_icon=False
-
+        
         if self.icon!=icon:
             old['icon']=self.icon
             self.icon=icon

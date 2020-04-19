@@ -71,7 +71,7 @@ MAX_LINE_LENGTH = 8190
 del Struct, re
 
 class RawMessage(object):
-    __slots__ = ('headers', )
+    __slots__ = ('_upgraded', 'headers', )
     
     @property
     def close_connection(self):
@@ -89,14 +89,28 @@ class RawMessage(object):
         
         return False # deside?
     
-    @property
-    def upgrade(self):
-        try:
-            connection=self.headers[CONNECTION]
-        except KeyError:
-            return False
+    def _get_upgraded(self):
+        upgraded = self._upgraded
+        if upgraded!= 2:
+            try:
+                connection=self.headers[CONNECTION]
+            except KeyError:
+                upgraded = False
+            else:
+                upgraded = (connection.lower() == 'upgrade')
+            
+            self._upgraded = upgraded
         
-        return (connection.lower() == 'upgrade')
+        return upgraded
+    
+    def _set_upgraded(self, value):
+        self._upgraded = value
+    
+    upgraded = property(_get_upgraded, _set_upgraded)
+    del _get_upgraded, _set_upgraded
+    
+    def set_upgraded(self, upgraded):
+        self._upgraded = upgraded
     
     @property
     def chunked(self):
@@ -119,13 +133,14 @@ class RawMessage(object):
             return encoding
 
 class RawResponseMessage(RawMessage):
-    __slots__ = ('version', 'status', 'reason')
+    __slots__ = ('version', 'status', 'reason',)
     
     def __init__(self, version, status, reason, headers):
-        self.version=version
-        self.status=status
-        self.reason=reason
-        self.headers=headers
+        self.version = version
+        self.status = status
+        self.reason = reason
+        self.headers = headers
+        self._upgraded = 2
 
 class RawRequestMessage(RawMessage):
     __slots__ = ('version', 'meth', 'path',)
@@ -135,7 +150,8 @@ class RawRequestMessage(RawMessage):
         self.meth = meth
         self.path = path
         self.headers = headers
-
+        self._upgraded = 2
+    
 #TODO: whats the fastest way on pypy ? casting 64 bit ints -> xor -> replace?
 _XOR_TABLE = [bytes(a^b for a in range(256)) for b in range(256)]
 def apply_mask(mask,data):
@@ -157,114 +173,36 @@ class Frame(object):
     @property
     def rsv1(self):
         return (self.head1&0b01000000)>>6
-
+    
     @property
     def rsv2(self):
         return (self.head1&0b00100000)>>5
-
+    
     @property
     def rsv3(self):
         return (self.head1&0b00010000)>>4
-
+    
     @property
     def opcode(self):
         return  self.head1&0b00001111
-
-    @classmethod
-    async def read(cls,websocket,max_size):
-        #read the header.
-        reader=websocket.reader
-        
-        data = await reader.readexactly(2)
-        head1,head2=data
-        
-        opcode=head1&0b00001111
-        
-        if ((head2&0b10000000)>>7)==websocket.is_client:
-            raise WebSocketProtocolError('Incorrect masking')
-        
-        length = head2&0b01111111
-        
-        if length == 126:
-            data = await reader.readexactly(2)
-            length, = UNPACK_LEN2(data)
-        elif length == 127:
-            data = await reader.readexactly(8)
-            length, = UNPACK_LEN3(data)
-        
-        if max_size is not None and length>max_size:
-            raise PayloadError(f'Payload length exceeds size limit ({length} > {max_size} bytes)')
-        
-        #Read the data.
-        if websocket.is_client:
-            data = await reader.readexactly(length)
-        else:
-            mask = await reader.readexactly(4)
-            data = await reader.readexactly(length)
-            data=apply_mask(mask,data)
-        
-        frame=object.__new__(cls)
-        frame.data=data
-        frame.head1=head1
-        
-        if websocket.extensions is not None:
-            for extension in reversed(websocket.extensions):
-                frame=extension.decode(frame,max_size=websocket.max_size)
-        
-        frame.check()
-        
-        return frame
     
-    def write(frame,websocket):
-        #walidates, then writes a websocket frame.
-        frame.check()
-
-        if websocket.extensions is not None:
-            for extension in websocket.extensions:
-                frame = extension.encode(frame)
-
-        writer=websocket.writer
-        
-        # Prepare the header.
-        head1 = frame.head1
-        head2 = websocket.is_client<<7
-
-        length=len(frame.data)
-        if length<126:
-            writer.write(PACK_LEN1(head1,head2|length))
-        elif length<65536:
-            writer.write(PACK_LEN2(head1,head2|126,length))
-        else:
-            writer.write(PACK_LEN3(head1,head2|127,length))
-
-        #prepare the data.
-        if websocket.is_client:
-            mask=getrandbits(32).to_bytes(4,'big')
-            writer.write(mask)
-            data=apply_mask(mask,frame.data,)
-        else:
-            data=frame.data
-            
-        writer.write(data)
-
-    def check(frame):
+    def check(self):
         #check that this frame contains acceptable values.
-        if frame.head1&0b01110000:
+        if self.head1&0b01110000:
             raise WebSocketProtocolError('Reserved bits must be 0')
 
-        opcode=frame.head1&0b00001111
+        opcode=self.head1&0b00001111
         if opcode in DATA_OPCODES:
             return
         
         if opcode in CTRL_OPCODES:
-            if len(frame.data)>125:
+            if len(self.data)>125:
                 raise WebSocketProtocolError('Control frame too long')
-            if not frame.head1&0b10000000:
+            if not self.head1&0b10000000:
                 raise WebSocketProtocolError('Fragmented control frame')
             return
         
         raise WebSocketProtocolError(f'Invalid opcode: {opcode}')
-
 
 class StreamWriter(object):
     __slots__=('loop', 'protocol', 'reader', 'transport')
@@ -303,6 +241,32 @@ class StreamWriter(object):
         if (body is not None) and body:
             transport.write(body)
     
+    def write_websocket_frame(self, frame, is_client):
+        
+        # Prepare the header.
+        head1 = frame.head1
+        head2 = is_client<<7
+        
+        transport = self.transport
+        
+        length=len(frame.data)
+        if length<126:
+            transport.write(PACK_LEN1(head1,head2|length))
+        elif length<65536:
+            transport.write(PACK_LEN2(head1,head2|126,length))
+        else:
+            transport.write(PACK_LEN3(head1,head2|127,length))
+        
+        #prepare the data.
+        if is_client:
+            mask=getrandbits(32).to_bytes(4,'big')
+            transport.write(mask)
+            data=apply_mask(mask,frame.data,)
+        else:
+            data=frame.data
+        
+        transport.write(data)
+        
     def writelines(self, data):
         self.transport.writelines(data)
 
@@ -321,13 +285,13 @@ class StreamWriter(object):
     async def drain(self):
         #use after writing
         reader = self.reader
-        if reader is not None:
+        if (reader is not None):
             exception = reader.exception
             if (exception is not None):
                 raise exception
         
         transport = self.transport
-        if transport is not None:
+        if (transport is not None):
             if transport.is_closing():
                 #skip 1 loop, so connection_lost() will be called
                 future=Future(self.loop)
@@ -337,7 +301,7 @@ class StreamWriter(object):
         await self.protocol._drain_helper()
 
 class StreamReader(object):
-    __slots__ = ('chunks', '_waiter', 'loop', 'exception', 'eof', 'transport', '_paused', '_offset')
+    __slots__ = ('_offset', '_paused', '_waiter', 'chunks', 'eof', 'exception', 'loop', 'reader', 'transport', )
     
     def __init__(self, loop):
         self.chunks = deque()
@@ -348,7 +312,8 @@ class StreamReader(object):
         self.transport = None
         self._paused = False
         self._offset = 0
-        
+        self.reader = None
+    
     def __repr__(self):
         result = [
             '<',
@@ -400,8 +365,6 @@ class StreamReader(object):
         if self._paused:
             if add_comma:
                 result.append(',')
-            else:
-                add_comma = True
             result.append(' paused')
         
         result.append('>')
@@ -961,8 +924,64 @@ class StreamReader(object):
                 chunk = chunks[0]
             
             continue
-
+    
+    async def read_websocket_frame(self, is_client, max_size):
         
+        head1,head2 = await self.readexactly(2)
+        
+        if ((head2&0b10000000)>>7)==is_client:
+            raise WebSocketProtocolError('Incorrect masking')
+        
+        length = head2&0b01111111
+        
+        if length == 126:
+            data = await self.readexactly(2)
+            length, = UNPACK_LEN2(data)
+        elif length == 127:
+            data = await self.readexactly(8)
+            length, = UNPACK_LEN3(data)
+        
+        if (max_size is not None) and length>max_size:
+            raise PayloadError(f'Payload length exceeds size limit ({length} > {max_size} bytes)')
+        
+        #Read the data.
+        if is_client:
+            data = await self.readexactly(length)
+        else:
+            mask = await self.readexactly(4)
+            data = await self.readexactly(length)
+            data=apply_mask(mask,data)
+        
+        frame=object.__new__(Frame)
+        frame.data=data
+        frame.head1=head1
+        
+        return frame
+
+    async def read_chunked(self):
+        collected = []
+        while True:
+            length = await self.readtill_CRLF()
+            if len(length)<21 and length.isdigit():
+                length = str(length)
+            else:
+                raise PayloadError(f'Too long, or not decimal chunk size: {length!r}')
+            
+            if length==0:
+                end = await self.readexactly(2)
+                if end != b'\r\n':
+                    raise PayloadError(f'Recevied chunk does not end with b\'\\r\\n\', instead with: {end}')
+                break
+            
+            chunk = await self.readexactly(length)
+            end = await self.readexactly(2)
+            if end != b'\r\n':
+                raise PayloadError(f'Recevied chunk does not end with b\'\\r\\n\', instead with: {end}')
+            
+            collected.append(chunk)
+        
+        return b''.join(collected)
+
 class WebSocketCommonProtocol(object):
     __slots__=('_connection_lost', '_drain_lock', '_drain_waiter', '_paused',
         'close_code', 'close_connection_task', 'close_reason',
@@ -1026,9 +1045,10 @@ class WebSocketCommonProtocol(object):
 
     @property
     def local_address(self):
-        if self.writer is None:
+        writer = self.writer
+        if writer is None:
             return None
-        return self.writer.get_extra_info('sockname')
+        return writer.get_extra_info('sockname')
 
     @property
     def remote_address(self):
@@ -1230,10 +1250,17 @@ class WebSocketCommonProtocol(object):
                 raise WebSocketProtocolError('Unexpected opcode')
         
         return ('' if text else b'').join(chunks)
-
+    
     async def read_data_frame(self,max_size):
         while True:
-            frame = await Frame.read(self,max_size)
+            frame = await self.reader.read_websocket_frame(self.is_client, max_size)
+            
+            extensions = self.extensions
+            if (extensions is not None):
+                for extension in reversed(extensions):
+                    frame = extension.decode(frame,max_size=max_size)
+            
+            frame.check()
             
             #most likely
             if frame.opcode in DATA_OPCODES:
@@ -1241,6 +1268,7 @@ class WebSocketCommonProtocol(object):
 
             if (await self._process_CTRL_frame(frame)):
                 continue
+            
             return
 
     async def _process_CTRL_frame(self,frame):
@@ -1288,8 +1316,17 @@ class WebSocketCommonProtocol(object):
         await old_lock
         try:
             frame=Frame(True,opcode,data)
-            frame.write(self)
-            await self.writer.drain()
+            
+            extensions = self.extensions
+            if (extensions is not None):
+                for extension in extensions:
+                    frame = extension.encode(frame)
+                
+                frame.check()
+            
+            writer = self.writer
+            writer.write_websocket_frame(frame, self.is_client)
+            await writer.drain()
         except ConnectionError:
             self.fail_connection()
             #raise ConnectionClosed with the correct code and reason.
@@ -1373,9 +1410,18 @@ class WebSocketCommonProtocol(object):
             frame_data = self._serialize_close(code,reason)
             #Write the close frame without draining the write buffer.
             self.state = CLOSING
+            
             frame = Frame(True,OP_CLOSE,frame_data)
-            frame.write(self)
-
+            
+            extensions = self.extensions
+            if (extensions is not None):
+                for extension in extensions:
+                    frame = extension.encode(frame)
+                
+                frame.check()
+            
+            self.writer.write_websocket_frame(frame, self.is_client)
+        
         #start close_connection_task if the opening handshake didn't succeed.
         close_task=self.close_connection_task
         if close_task is None:

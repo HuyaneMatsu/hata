@@ -171,9 +171,9 @@ class ClientRequest(object):
     def __init__(self,method,url,loop,headers=None,data=None,params=None,
                  cookies=None,auth=None,proxy_url=None,proxy_auth=None,
                  timer=None,ssl=None):
-
+        
         url=url.extend_query(params)
-
+        
         self.original_url   = url
         self.url            = url.with_fragment(None)
         self.method         = method
@@ -223,13 +223,13 @@ class ClientRequest(object):
     @property
     def port(self):
         return self.url.port
-
+    
     def update_host(self,url):
         #Update destination host, port and connection type (ssl).
         # get host/port
         if not url.host:
             raise ValueError('Host could not be detected.')
-
+        
         # basic auth info
         username=url.user
         password=url.password
@@ -238,9 +238,9 @@ class ClientRequest(object):
             if password is None:
                 password=''
             self.auth=BasicAuth(username,password)
-
+    
         # Record entire netloc for usage in host header
-
+    
     def update_auto_headers(self):
         for key,value in self.DEFAULT_HEADERS:
             if key not in self.headers:
@@ -488,18 +488,18 @@ class ClientResponse:
 
     def __repr__(self):
         ascii_encodable_url=str(self.url)
-        if self.reason:
-            ascii_encodable_reason=self.reason.encode('ascii','backslashreplace').decode('ascii')
-        else:
-            ascii_encodable_reason=self.reason
-        return f'<{self.__class__.__name__}({ascii_encodable_url}) [{self.status} {ascii_encodable_reason}]>'
+        reason = self.reason
+        if (reason is not None):
+            reason = reason.encode('ascii','backslashreplace').decode('ascii')
+        
+        return f'<{self.__class__.__name__}({ascii_encodable_url}) [{self.status} {reason}]>'
         
     async def start(self,connection):
         #Start response processing.
         self.closed=False
         self.connection=connection
         protocol=connection.protocol
-
+        
         with self.timer:
             while True:
                 # read response
@@ -507,7 +507,7 @@ class ClientResponse:
                     message,data = await protocol.read()
                 except HttpProcessingError as err:
                     raise ResponseError( message=err.message,headers=err.headers) from err
-
+                
                 if (message.code<100 or message.code>199 or message.code==101):
                     break
         

@@ -94,7 +94,7 @@ class HttpParser:
     def feed_data(self,data,
                   SEP=b'\r\n',EMPTY=b'',
                   SEC_WEBSOCKET_KEY1=SEC_WEBSOCKET_KEY1):
-
+        
         if self.tail:
             data=self.tail+data
             self.tail=b''

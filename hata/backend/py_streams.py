@@ -191,7 +191,7 @@ class StreamReader(object):
 
     # TODO: size is ignored, remove the param later
     def feed_data(self,data,size=0):
-
+        
         if not data:
             return
 

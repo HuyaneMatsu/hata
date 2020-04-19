@@ -15,7 +15,7 @@ else:
     ssl_errors = (module_ssl.SSLError, module_ssl.CertificateError)
 
 from .dereaddons_local import multidict_titled
-from .futures import shield, Future, Task
+from .futures import shield, Task
 
 from .py_hdrs import HOST, METH_GET, AUTHORIZATION, PROXY_AUTHORIZATION, METH_CONNECT
 from .py_reqrep import ClientRequest, Fingerprint, SSL_ALLOWED_TYPES

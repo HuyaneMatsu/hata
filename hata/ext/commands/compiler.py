@@ -1285,14 +1285,14 @@ def compile_parsed(converters):
                 result.append(f'{sub_var_name}=guild.all_channel.get(id_)')
                 if element.flags.name:
                     result.append(f'if {sub_var_name} is None:')
-                    result.append(f'    {sub_var_name}=guild.get_channel(part)')
+                    result.append(f'    {sub_var_name}=guild.get_channel_like(part)')
                     result.go_out()
                     result.append( 'else:')
-                    result.append(f'    {sub_var_name}=guild.get_channel(part)')
+                    result.append(f'    {sub_var_name}=guild.get_channel_like(part)')
             
             else:
                 if element.flags.name:
-                    result.append(f'{sub_var_name}=guild.get_channel(part)')
+                    result.append(f'{sub_var_name}=guild.get_channel_like(part)')
                     
             result._back_state=go_to
             result.extend(return_part_on_fail_noneset)
@@ -1316,14 +1316,14 @@ def compile_parsed(converters):
                 result.append(f'{sub_var_name}=guild.all_role.get(id_)')
                 if element.flags.name:
                     result.append(f'if {sub_var_name} is None:')
-                    result.append(f'    {sub_var_name}=guild.get_role(part)')
+                    result.append(f'    {sub_var_name}=guild.get_role_like(part)')
                     result.go_out()
                     result.append( 'else:')
-                    result.append(f'    {sub_var_name}=guild.get_role(part)')
+                    result.append(f'    {sub_var_name}=guild.get_role_like(part)')
             
             else:
                 if element.flags.name:
-                    result.append(f'{sub_var_name}=guild.get_role(part)')
+                    result.append(f'{sub_var_name}=guild.get_role_like(part)')
                     
             result._back_state=go_to
             result.extend(return_part_on_fail_noneset)

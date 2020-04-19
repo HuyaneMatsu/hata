@@ -71,9 +71,6 @@ class FFmpegPCMaudio(AudioSource):
 
         args = [
             'ffmpeg',
-            '-reconnect_at_eof', '1',
-            '-reconnect_delay_max', '4',
-            '-analyzeduration', '0',
             *before_options,
             '-i',
             '-' if pipe else source,

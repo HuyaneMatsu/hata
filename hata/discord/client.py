@@ -3074,10 +3074,10 @@ class Client(UserBase):
             voice_state=guild.voice_states[user_id]
         except ValueError:
             raise ValueError('The user must stream at a voice channel of the guild!') from None
-
-        if not voice_state.self_video:
+        
+        if not voice_state.self_stream:
             raise ValueError('The user must stream at a voice channel of the guild!')
-
+        
         data = {
             'max_age'           : max_age,
             'max_uses'          : max_uses,
@@ -3086,10 +3086,10 @@ class Client(UserBase):
             'target_user_id'    : user_id,
             'target_user_type'  : 1,
                 }
-
+        
         data = await self.http.invite_create(voice_state.channel.id,data)
         return Invite(data)
-
+    
     #u cannot create invite from guild, but this chooses a prefered channel
     async def invite_create_pref(self,guild,*args,**kwargs):
         while True:
@@ -3162,10 +3162,10 @@ class Client(UserBase):
 
     async def role_edit(self,role,name=None,color=None,separated=None,
             mentionable=None,permissions=None,position=0,reason=None):
-
+        
         if position:
             await self.role_move(role,position,reason)
-
+        
         data={}
         
         if (name is not None):
@@ -3176,16 +3176,16 @@ class Client(UserBase):
         
         if color is not None:
             data['color']=color
-            
+        
         if separated is not None:
             data['hoist']=separated
-
+        
         if mentionable is not None:
             data['mentionable']=mentionable
-
+        
         if permissions is not None:
             data['permissions']=permissions
-
+        
         if data:
             await self.http.role_edit(role.guild.id,role.id,data,reason)
     

@@ -632,11 +632,25 @@ find anything, returns the `default` value.
 
 Tries to find the channel by it's name. If it cant returns the `default` value.
 
+### `get_channel_like(self, name, default=None)`
+
+- returns : `default` / [`Channel`](CHANNEL_TYPES.md)
+
+Returns the channel, which's name matches the passed name the most. If it
+cannot find anything, returns the `default` value.
+
 ### `get_role(self,name,defualt=None)`
 
 - returns : `default` / [`Role`](Role.md)
 
 Tries to find the role by it's name. If it cant returns the `default` value.
+
+### `get_role_like(self, name, default=None)`
+
+- returns : `default` / [`Role`](Role.md)
+
+Returns the role, which's name matches the passed name the most. If it cannot
+find anything, returns the `default` value.
 
 ### `permissions_for(self,user)`
 

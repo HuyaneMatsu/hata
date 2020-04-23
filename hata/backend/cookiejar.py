@@ -6,13 +6,13 @@ from collections import defaultdict
 from http.cookies import Morsel, SimpleCookie
 from math import ceil
 
-from .py_url import URL
-from .py_helpers import is_ip_address
+from .url import URL
+from .helpers import is_ip_address
 
 
-class CookieJar:
+class CookieJar(object):
    #Implements cookie storage adhering to RFC 6265.
-
+    
     DATE_TOKENS_RE      = re.compile('[\x09\x20-\x2F\x3B-\x40\x5B-\x60\x7B-\x7E]*(?P<token>[\x00-\x08\x0A-\x1F\d:a-zA-Z\x7F-\xFF]+)')
     DATE_HMS_TIME_RE    = re.compile('(\d{1,2}):(\d{1,2}):(\d{1,2})')
     DATE_DAY_OF_MONTH_RE= re.compile('(\d{1,2})')
@@ -20,8 +20,7 @@ class CookieJar:
     DATE_YEAR_RE        = re.compile('(\d{2,4})')
     MAX_TIME            = 2051215261.0  # so far in future (2035-01-01)
     
-    __slots__=['cookies', 'expirations', 'host_only_cookies', 'loop',
-        'next_expiration', 'unsafe']
+    __slots__ = ('cookies', 'expirations', 'host_only_cookies', 'loop',  'next_expiration', 'unsafe', )
     
     def __init__(self,loop,unsafe=False):
         self.loop               = loop
@@ -30,31 +29,31 @@ class CookieJar:
         self.unsafe             = unsafe
         self.next_expiration    = ceil(loop.time())
         self.expirations        = {}
-
+    
     def save(self,file_path):
         file_path=pathlib.Path(file_path)
         with file_path.open(mode='wb') as file:
             pickle.dump(self.cookies,file,pickle.HIGHEST_PROTOCOL)
-
+    
     def load(self, file_path):
         file_path=pathlib.Path(file_path)
         with file_path.open(mode='rb') as f:
             self.cookies=pickle.load(f)
-
+    
     def clear(self):
         self.cookies.clear()
         self.host_only_cookies.clear()
         self.next_expiration=ceil(self.loop.time())
         self.expirations.clear()
-
+    
     def __iter__(self):
         self._do_expiration()
         for val in self.cookies.values():
             yield from val.values()
-
+    
     def __len__(self):
         return sum(1 for i in self)
-
+    
     def _do_expiration(self):
         now=self.loop.time()
         if self.next_expiration>now:

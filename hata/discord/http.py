@@ -6,10 +6,9 @@ from weakref import WeakKeyDictionary
 
 from ..backend.dereaddons_local import multidict_titled, modulize, WeakMap
 from ..backend.futures import sleep
-from ..backend.py_http import HTTPClient
-from ..backend.py_reqrep import Request_CM
-from ..backend.py_connector import TCPConnector
-from ..backend.py_hdrs import METH_PATCH, METH_GET, METH_DELETE, METH_POST, METH_PUT, CONTENT_TYPE, USER_AGENT, \
+from ..backend.http import HTTPClient, Request_CM
+from ..backend.connector import TCPConnector
+from ..backend.hdrs import METH_PATCH, METH_GET, METH_DELETE, METH_POST, METH_PUT, CONTENT_TYPE, USER_AGENT, \
     AUTHORIZATION
 
 from .exceptions import DiscordException, ERROR_CODES

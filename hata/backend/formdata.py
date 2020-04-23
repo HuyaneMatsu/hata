@@ -7,8 +7,8 @@ from json import dumps as dump_to_json
 
 from .dereaddons_local import multidict
 
-from .py_hdrs import CONTENT_TYPE, CONTENT_TRANSFER_ENCODING, CONTENT_LENGTH
-from .py_multipart import MultipartWriter, create_payload, BytesPayload
+from .hdrs import CONTENT_TYPE, CONTENT_TRANSFER_ENCODING, CONTENT_LENGTH
+from .multipart import MultipartWriter, create_payload, BytesPayload
 
 
 #Helper class for multipart/form-data and
@@ -130,12 +130,29 @@ class Formdata(object):
 
     def __repr__(self):
         result=[f'<{self.__class__.__name__} [']
-        for type_options,header,value in self.fields:
-            value=repr(value)
-            if len(value)>40:
-                value=object.__repr__(value)
-            result.append(f'({type_options}, {header}, {value}), ')
+        
+        fields = self.fields
+        limit = len(fields)
+        if limit:
+            index = 0
+            while True:
+                type_options, header, value = fields[index]
+                result.append('(')
+                result.append(repr(type_options))
+                result.append(', ')
+                result.append(repr(header))
+                result.append(', ')
+                result.append(repr(value))
+                result.append(')')
+                
+                index = index+1
+                if index == limit:
+                    break
+                    
+                result.append(', ')
+                continue
+        
         result.append(']>')
         return ''.join(result)
-
+    
     __str__=__repr__

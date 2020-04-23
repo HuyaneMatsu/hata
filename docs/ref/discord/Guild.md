@@ -170,6 +170,13 @@ A guild is large if it has more members than 250, or if `'large': True` is sent
 with the guild's data. If a guild is large, then we requests it's members,
 because it is not sent with the guild's data.
 
+### `max_presences`
+
+- type : `int`
+- default : 5000
+
+The maximal amount of presences for the guild.
+
 ### `max_users`
 
 - type : `int`
@@ -177,12 +184,12 @@ because it is not sent with the guild's data.
 
 The maximal amount of users for the guild.
 
-### `max_presences`
+### `max_video_channel_users`
 
 - type : `int`
-- default : 5000
+- default : 25
 
-The maximal amount of presences for the guild.
+The maximal amaunt of users in a video channel(?).
 
 ### `message_notification`
 
@@ -816,6 +823,7 @@ pairs.
 | icon                      | int                                                       |
 | max_presences             | int                                                       |
 | max_users                 | int                                                       |
+| max_video_channel_users   | int                                                       |
 | message_notification      | [MessageNotificationLevel](MessageNotificationLevel.md)   |
 | mfa                       | [MFA](MFA.md)                                             |
 | name                      | str                                                       |

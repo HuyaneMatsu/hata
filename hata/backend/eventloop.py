@@ -11,7 +11,7 @@ from collections import deque
 
 from .dereaddons_local import alchemy_incendiary, WeakReferer, weakmethod, method, WeakCallable
 from .futures import Future, Task, gather, render_exc_to_list, iscoroutine, FutureAsyncWrapper, WaitTillFirst
-from .py_transprotos import SSLProtocol, _SelectorSocketTransport
+from .transprotos import SSLProtocol, _SelectorSocketTransport
 from .executor import Executor
 
 import threading

@@ -1,13 +1,14 @@
 ﻿# -*- coding: utf-8 -*-
-import ssl
+import ssl, selectors
 from collections import deque
 import socket as module_socket
-import selectors
+
+from .futures import Future
 
 def _create_transport_context(server_side,server_hostname):
     if server_side:
         raise ValueError('Server side SSL needs a valid SSLContext')
-
+    
     # Client side may pass ssl=True to use a default
     # context; in that case the sslcontext passed is None.
     # The default is secure for client connections.
@@ -24,13 +25,7 @@ if hasattr(module_socket,'TCP_NODELAY'):
 else:
     def _set_nodelay(sock):
         pass
-    
 
-def _set_result_if_can(future,result):
-    if future.done():
-        return
-    future.set_result(result)
-    
 UNWRAPPED   = 'UNWRAPPED'
 DO_HANDSHAKE= 'DO_HANDSHAKE'
 WRAPPED     = 'WRAPPED'
@@ -72,11 +67,12 @@ class _SSLPipe(object):
         return ssldata
 
     def shutdown(self, callback=None):
-        if self.state is UNWRAPPED:
+        state = self.state
+        if state is UNWRAPPED:
             raise RuntimeError('no security layer present')
-        if self.state is SHUTDOWN:
+        if state is SHUTDOWN:
             raise RuntimeError('shutdown in progress')
-
+        
         self.state=SHUTDOWN
         self._shutdown_cb=callback
         ssldata,_=self.feed_ssldata(b'')
@@ -102,17 +98,21 @@ class _SSLPipe(object):
         ssldata = []
         appdata = []
         try:
+            state = self.state
             if self.state is DO_HANDSHAKE:
                 # Call do_handshake() until it doesn't raise anymore.
                 self.ssl_object.do_handshake()
-                self.state = WRAPPED
-                if self._handshake_cb:
-                    self._handshake_cb(None)
+                self.state = state = WRAPPED
+                
+                handshake_cb = self._handshake_cb
+                if (handshake_cb is not None):
+                    handshake_cb(None)
+                
                 if only_handshake:
                     return ssldata,appdata
                 # Handshake done: execute the wrapped block
 
-            if self.state is WRAPPED:
+            if state is WRAPPED:
                 # Main state: read data from SSL until close_notify
                 while True:
                     chunk = self.ssl_object.read(MAX_SIZE)
@@ -120,23 +120,29 @@ class _SSLPipe(object):
                     if not chunk:  # close_notify
                         break
 
-            elif self.state is SHUTDOWN:
+            elif state is SHUTDOWN:
                 # Call shutdown() until it doesn't raise anymore.
                 self.ssl_object.unwrap()
                 self.ssl_object = None
                 self.state = UNWRAPPED
-                if self._shutdown_cb:
-                    self._shutdown_cb()
-
-            elif self.state is UNWRAPPED:
+                
+                shutdown_cb = self._shutdown_cb
+                if (shutdown_cb is not None):
+                    shutdown_cb()
+            
+            elif state is UNWRAPPED:
                 # Drain possible plaintext data after close_notify.
                 appdata.append(self._incoming.read())
+        
         except (ssl.SSLError,ssl.CertificateError) as err:
             err_number=getattr(err,'errno',None)
             if err_number not in (ssl.SSL_ERROR_WANT_READ,ssl.SSL_ERROR_WANT_WRITE,ssl.SSL_ERROR_SYSCALL):
-                if self.state is DO_HANDSHAKE and self._handshake_cb:
-                    self._handshake_cb(err)
+                if self.state is DO_HANDSHAKE:
+                    handshake_cb = self._handshake_cb
+                    if (handshake_cb is not None):
+                        handshake_cb(err)
                 raise
+            
             self.need_ssldata=(err_number==ssl.SSL_ERROR_WANT_READ)
 
         # Check for record level data that needs to be sent back.
@@ -188,10 +194,11 @@ class _SSLProtocolTransport(object):
 
     def get_extra_info(self,name,default=None):
         return self.ssl_protocol._get_extra_info(name,default)
-
+    
     def set_protocol(self, protocol):
         self.app_protocol=protocol
-
+        self.ssl_protocol.app_protocol = protocol
+     
     def get_protocol(self):
         return self.app_protocol
 
@@ -211,25 +218,25 @@ class _SSLProtocolTransport(object):
 
     def resume_reading(self):
         self.ssl_protocol.transport.resume_reading()
-
+    
     def set_write_buffer_limits(self,high=None,low=None):
         self.ssl_protocol.transport.set_write_buffer_limits(high,low)
     
     def get_write_buffer_size(self):
         return self.ssl_protocol.transport.get_write_buffer_size()
-            
+    
     def write(self,data):
         if not isinstance(data,(bytes,bytearray,memoryview)):
             raise TypeError(f'data: expecting a bytes-like instance, got {data.__class__.__name__}')
         if data:
             self.ssl_protocol._write_appdata(data)
-
+    
     def writelines(self,list_of_data):
         self.write(b''.join(list_of_data))
-        
+    
     def can_write_eof(self):
         return False
-
+    
     def abort(self):
         self.ssl_protocol._abort()
 
@@ -279,14 +286,15 @@ class SSLProtocol(object):
         waiter=self._waiter
         if waiter is None:
             return
+        
+        self._waiter=None
         if waiter.pending():
             if exception is None:
                 waiter.set_result(None)
             else:
                 waiter.set_exception(exception)
 
-        self._waiter=None
-
+        
     def connection_made(self, transport):
         self.transport=transport
         self.sslpipe=_SSLPipe(self._sslcontext,self.server_side,self.server_hostname)
@@ -362,9 +370,9 @@ class SSLProtocol(object):
         sslobj=self.sslpipe.ssl_object
         
         try:
-            if handshake_exc is not None:
+            if (handshake_exc is not None):
                 raise handshake_exc
-
+            
             peercert = sslobj.getpeercert()
         except BaseException as err:
             self.transport.close()
@@ -395,9 +403,10 @@ class SSLProtocol(object):
 
     def _process_write_backlog(self):
         # Try to make progress on the write backlog.
-        if self.transport is None:
+        transport = self.transport
+        if transport is None:
             return
-
+        
         try:
             for i in range(len(self._write_backlog)):
                 data,offset=self._write_backlog[0]
@@ -411,15 +420,15 @@ class SSLProtocol(object):
                     offset=1
 
                 for chunk in ssldata:
-                    self.transport.write(chunk)
+                    transport.write(chunk)
 
                 if offset<len(data):
                     self._write_backlog[0]=(data,offset)
                     # A short write means that a write is blocked on a read
                     # We need to enable reading if it is paused!
                     assert self.sslpipe.need_ssldata
-                    if self.transport._paused:
-                        self.transport.resume_reading()
+                    if transport._paused:
+                        transport.resume_reading()
                     break
 
                 # An entire chunk from the backlog was processed. We can
@@ -441,21 +450,24 @@ class SSLProtocol(object):
             self.loop.render_exc_async(exception,[
                 message,
                 ' exception occured\n',
-                self.__repr__(),
+                repr(self),
                 '\n',
                     ])
-            
-        if self.transport is not None:
-            self.transport._force_close(exception)
+        
+        transport = self.transport
+        if (transport is not None):
+            transport._force_close(exception)
 
     def _finalize(self):
-        if self.transport is not None:
-            self.transport.close()
+        transport = self.transport
+        if (transport is not None):
+            transport.close()
 
     def _abort(self):
-        if self.transport is not None:
+        transport = self.transport
+        if (transport is not None):
             try:
-                self.transport.abort()
+                transport.abort()
             finally:
                 self._finalize()
 
@@ -503,33 +515,38 @@ class _SelectorSocketTransport(object):
         # sent without waiting for the TCP ACK.  This generally
         # decreases the latency (in some cases significantly.)
         _set_nodelay(sock)
-
-        self.loop.call_soon(self.protocol.connection_made,self)
+        
+        loop.call_soon(protocol.connection_made,self)
         
         #only start reading when connection_made() has been called
-        self.loop.call_soon(self.loop._add_reader,self._sock_fd,self._read_ready)
-        if waiter is not None:
+        loop.call_soon(loop._add_reader,self._sock_fd,self._read_ready)
+        if (waiter is not None):
             # only wake up the waiter when connection_made() has been called
-            self.loop.call_soon(_set_result_if_can,waiter,None)
-
+            loop.call_soon(Future.set_result_if_pending,waiter,None)
+    
     def __del__(self):
         socket=self.socket
         if socket is not None:
             socket.close()
-
+    
     def __repr__(self):
-        result=['<',self.__class__.__name__]
+        result = [
+            '<',
+            self.__class__.__name__,
+                ]
+        
         if self.socket is None:
             result.append(' closed')
         elif self.closing:
             result.append(' closing')
+        
         result.append(' fd=')
-        result.append(self._sock_fd.__repr__())
+        result.append(repr(self._sock_fd))
         
         loop=self.loop
         #is the transport open?
         if (loop is not None) and loop.running:
-
+        
             try:
                 key=loop.selector.get_key(self._sock_fd)
             except KeyError:
@@ -585,7 +602,7 @@ class _SelectorSocketTransport(object):
         except Exception as err:
             self.loop.render_exc_async(err,[
                 'Exception occured at:\n',
-                self.__repr__(),
+                repr(self),
                 '._maybe_pause_protocol\n',
                     ])
     def _maybe_resume_protocol(self):
@@ -597,7 +614,7 @@ class _SelectorSocketTransport(object):
         except Exception as err:
             self.loop.render_exc_async(err,[
                 'Exception occured at:\n',
-                self.__repr__(),
+                repr(self),
                 '._maybe_resume_protocol\n',
                     ])
 
@@ -650,7 +667,7 @@ class _SelectorSocketTransport(object):
             self.loop.render_exc_async(exception,[
                 message,
                 ' exception occured\n',
-                self.__repr__(),
+                repr(self),
                 '\n',
                     ])
         
@@ -681,7 +698,7 @@ class _SelectorSocketTransport(object):
             self.protocol=None
             self.loop=None
             server=self.server
-            if server is not None:
+            if (server is not None):
                 server._detach()
                 self.server=None
 

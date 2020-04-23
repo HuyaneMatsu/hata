@@ -732,9 +732,10 @@ def str_guild(guild,index=None,**kwargs):
     result.append(f'- mfa level : {guild.mfa.name}',1)
     result.append(f'- content filter : {guild.content_filter.name}',1)
     result.append(f'- available : {guild.available}',1)
-    result.append(f'- max_users : {guild.max_users}',1)
-    result.append(f'- max_presences : {guild.max_presences}',1)
-    result.append(f'- preferred_locale : {guild.preferred_locale}',1)
+    result.append(f'- max users : {guild.max_users}',1)
+    result.append(f'- max presences : {guild.max_presences}',1)
+    result.append(f'- max video channel users . {guild.max_video_channel_users}',1)
+    result.append(f'- preferred locale : {guild.preferred_locale}',1)
     
     description=guild.description
     if (description is not None):

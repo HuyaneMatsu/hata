@@ -204,6 +204,7 @@ class ERROR_CODES:
     unknown_user            = 10013
     unknown_emoji           = 10014
     unknown_webhook         = 10015
+    unknown_ban             = 10026
     unknown_SKU             = 10027
     unknown_store_listing   = 10028
     unknown_entitlement     = 10029

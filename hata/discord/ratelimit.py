@@ -9,7 +9,7 @@ from threading import current_thread
 
 from ..backend.dereaddons_local import modulize, WeakReferer
 from ..backend.futures import Future
-from ..backend.py_hdrs import DATE
+from ..backend.hdrs import DATE
 
 from .client_core import KOKORO
 from .others import Discord_hdrs

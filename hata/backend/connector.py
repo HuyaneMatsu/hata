@@ -17,18 +17,13 @@ else:
 from .dereaddons_local import multidict_titled
 from .futures import shield, Task
 
-from .py_hdrs import HOST, METH_GET, AUTHORIZATION, PROXY_AUTHORIZATION, METH_CONNECT
-from .py_reqrep import ClientRequest, Fingerprint, SSL_ALLOWED_TYPES
-from .py_exceptions import ProxyError
-from .py_helpers import is_ip_address, CeilTimeout
-from .py_protocol import ResponseHandler
+from .hdrs import HOST, METH_GET, AUTHORIZATION, PROXY_AUTHORIZATION, METH_CONNECT
+from .reqrep import ClientRequest, Fingerprint, SSL_ALLOWED_TYPES
+from .exceptions import ProxyError
+from .helpers import is_ip_address, CeilTimeout
+from .websocket import ProtocolBase
 
 KEEP_ALIVE_TIMEOUT = 15.0
-
-class TransportPlaceholder(object):
-    __slots__=()
-    def close(self):
-        pass
     
 class Connection(object):
     __slots__=('callbacks', 'connector', 'key', 'loop', 'protocol',)
@@ -95,33 +90,32 @@ class Connection(object):
         self._run_callbacks()
         
         protocol=self.protocol
-        if protocol is not None:
+        if (protocol is not None):
             self.connector.release(self.key,protocol,should_close=True)
             self.protocol=None
-
+    
     def release(self):
         self._run_callbacks()
         
         protocol=self.protocol
-        if protocol is not None:
-            self.connector.release(self.key,protocol,should_close=protocol.should_close)
+        if (protocol is not None):
+            self.connector.release(self.key,protocol,should_close=protocol.should_close())
             self.protocol=None
-
+    
     def detach(self):
         self._run_callbacks()
         
         protocol=self.protocol
-        if protocol is not None:
-            self.connector.release_acquired(protocol)
+        if (protocol is not None):
+            self.connector.release_acquired(self.key,protocol)
             self.protocol=None
-
+    
     @property
     def closed(self):
-        protocol=self.protocol
-        return (protocol.transport is None) or (not protocol.is_connected())
+        return (self.protocol.transport is None)
 
 
-class BaseConnector(object):
+class ConnectorBase(object):
     __slots__=('__weakref__', 'acquired', 'acquired_per_host', 'cleanup_handle', 'closed', 'connections', 'cookies',
         'force_close', 'loop', )
     #Base connector class.
@@ -219,26 +213,12 @@ class BaseConnector(object):
         #Get from pool or create new connection.
         key=request.connection_key
         
-        placeholder=TransportPlaceholder()
-        self.acquired.add(placeholder)
-        self.acquired_per_host[key].add(placeholder)
-        
         protocol = self.get_protocol(key)
         if protocol is None:
-            try:
-                protocol = await self.create_connection(request,timeout)
-                if self.closed:
-                    protocol.close()
-                    raise ConnectionError('Connector is closed.')
-            
-            except BaseException:
-                if not self.closed:
-                    self.acquired.remove(placeholder)
-                    self.drop_acquired_per_host(key,placeholder)
-                raise
-            
-            self.acquired.remove(placeholder)
-            self.drop_acquired_per_host(key,placeholder)
+            protocol = await self.create_connection(request,timeout)
+            if self.closed:
+                protocol.close()
+                raise ConnectionError('Connector is closed.')
         
         self.acquired.add(protocol)
         self.acquired_per_host[key].add(protocol)
@@ -254,7 +234,7 @@ class BaseConnector(object):
         now = monotonic()
         while connections:
             protocol, time = connections.pop()
-            if not protocol.is_connected():
+            if (protocol.transport is None):
                 continue
             
             if (now - time) > KEEP_ALIVE_TIMEOUT:
@@ -286,7 +266,7 @@ class BaseConnector(object):
         
         self.release_acquired(key,protocol)
         
-        if should_close or self.force_close or protocol.should_close:
+        if should_close or self.force_close or protocol.should_close():
             transport = protocol.transport
             protocol.close()
             if key.is_ssl and (transport is not None):
@@ -410,7 +390,7 @@ class HostInfoCont(object):
     def __repr__(self):
         return f'<{self.__class__.__name__} addrs={self.addrs!r}, index={self.index!r}, timestamp={self.timestamp!r}>'
     
-class TCPConnector(BaseConnector):
+class TCPConnector(ConnectorBase):
     __slots__=('acquired', 'acquired_per_host', 'cached_hosts',
         'closed', 'force_close', 'connections', 'cookies',
         'dns_events', 'family', 'local_addr', 'loop',
@@ -433,7 +413,7 @@ class TCPConnector(BaseConnector):
         if not isinstance(ssl, SSL_ALLOWED_TYPES):
             raise TypeError(f'`ssl` should be one of instance of: {SSL_ALLOWED_TYPES!r}, but got `{ssl!r}` instead.')
         
-        self = BaseConnector.__new__(cls,loop,force_close,)
+        self = ConnectorBase.__new__(cls,loop,force_close,)
         
         self.ssl            = ssl
         self.cached_hosts   = {}
@@ -447,8 +427,7 @@ class TCPConnector(BaseConnector):
         for event in self.dns_events.values():
             event.cancel()
         
-        BaseConnector.close(self)
-    
+        ConnectorBase.close(self)
     
     def clear_dns_cache(self,host=None,port=None):
         if (host is not None) and (port is not None):
@@ -604,7 +583,7 @@ class TCPConnector(BaseConnector):
         async for host_info in self.resolve_host_iterator(request):
             try:
                 with CeilTimeout(self.loop,timeout):
-                    transport, protocol = await self.loop.create_connection(ResponseHandler(self.loop),
+                    transport, protocol = await self.loop.create_connection(ProtocolBase(self.loop),
                         host_info.host, host_info.port,
                         ssl = sslcontext,
                         family = host_info.family,
@@ -637,26 +616,26 @@ class TCPConnector(BaseConnector):
 
     async def create_proxy_connection(self,request,timeout):
         headers=multidict_titled()
-
+        
         headers[HOST]=request.headers[HOST]
-
+        
         proxy_request=ClientRequest(METH_GET,request.proxy_url,self.loop,headers=headers,auth=request.proxy_auth,ssl=request.ssl)
-
+        
         # create connection to proxy server
         transport, protocol = await self.create_direct_connection(proxy_request,timeout)
-
+        
         # Many HTTP proxies has buggy keepalive support.  Let's not
         # reuse connection but close it after processing every
         # response.
         protocol.force_close()
-
+        
         auth=proxy_request.headers.pop(AUTHORIZATION,None)
         if auth is not None:
             if not request.is_ssl():
                 request.headers[PROXY_AUTHORIZATION]=auth
             else:
                 proxy_request.headers[PROXY_AUTHORIZATION]=auth
-
+        
         if request.is_ssl():
             sslcontext          = self.get_ssl_context(request)
             proxy_request.method= METH_CONNECT
@@ -687,7 +666,7 @@ class TCPConnector(BaseConnector):
 
                 try:
                     with CeilTimeout(self.loop,timeout):
-                        transport, protocol= await self.loop.create_connection(ResponseHandler(self.loop),
+                        transport, protocol= await self.loop.create_connection(ProtocolBase(self.loop),
                             ssl=sslcontext,
                             sock=rawsock,
                             server_hostname=request.host,)

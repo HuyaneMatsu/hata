@@ -327,6 +327,7 @@ of the changed attributes, what contains (`attribute name`, `old value`) items.
 | icon                      | int                                                       |
 | max_presences             | int                                                       |
 | max_users                 | int                                                       |
+| max_video_channel_users   | int                                                       |
 | message_notification      | [MessageNotificationLevel](MessageNotificationLevel.md)   |
 | mfa                       | [MFA](MFA.md)                                             |
 | name                      | str                                                       |

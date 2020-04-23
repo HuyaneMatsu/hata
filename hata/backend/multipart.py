@@ -7,10 +7,8 @@ from urllib.parse import parse_qsl, unquote, urlencode
 from .dereaddons_local import multidict_titled, multidict
 from .ios import AsyncIO
 
-from .py_hdrs import CONTENT_DISPOSITION, CONTENT_ENCODING, CONTENT_LENGTH, CONTENT_TRANSFER_ENCODING, CONTENT_TYPE
-from .py_parsers import HttpParser
-from .py_streams import DEFAULT_LIMIT, StreamReader
-from .py_helpers import content_disposition_header,CHAR,TOKEN,sentinel
+from .hdrs import CONTENT_DISPOSITION, CONTENT_ENCODING, CONTENT_LENGTH, CONTENT_TRANSFER_ENCODING, CONTENT_TYPE
+from .helpers import content_disposition_header,CHAR,TOKEN,sentinel
 
 ################X#X   py payload X#X################
 #thesse both need to be at the same file, because of the scopes
@@ -36,13 +34,11 @@ def create_payload(data,*args,**kwargs):
         type_=IOBasePayload
     elif isinstance(data,AsyncIO):
         type_=AsyncIOPayload
-    elif isinstance(data,StreamReader):
-        type_=StreamReaderPayload
     elif hasattr(data,'__aiter__'):
         type_=AsyncIterablePayload
     else:
         raise LookupError
-
+    
     return type_(data,*args,**kwargs)
 
 
@@ -145,7 +141,7 @@ class IOBasePayload(payload_superclass):
     async def write(self,writer):
         try:
             while True:
-                chunk=self.value.read(DEFAULT_LIMIT)
+                chunk=self.value.read(BIG_CHUNK_LIMIT)
                 if chunk:
                     await writer.write(chunk)
                 else:
@@ -181,7 +177,7 @@ class TextIOPayload(IOBasePayload):
     async def write(self,writer):
         try:
             while True:
-                chunk=self.value.read(DEFAULT_LIMIT)
+                chunk=self.value.read(BIG_CHUNK_LIMIT)
                 if chunk:
                     await writer.write(chunk.encode(self.encoding))
                 else:
@@ -239,12 +235,6 @@ class AsyncIterablePayload(payload_superclass):
                 await writer.write(chunk)
         except StopAsyncIteration:
             self._iter = None
-
-
-class StreamReaderPayload(AsyncIterablePayload):
-
-    def __init__(self, value, *args, **kwargs):
-        AsyncIterablePayload.__init__(self,value.iter_any(), *args, **kwargs)
 
 class AsyncIOPayload(IOBasePayload):
     async def write(self,writer):
@@ -464,41 +454,7 @@ def content_disposition_filename(params,name='filename'):
             return unquote(value, encoding, 'strict')
         return value
 
-
-class MultipartResponseWrapper:
-    __slots__=('resp', 'stream',)
-    #Wrapper around the :class:`MultipartBodyReader` to take care about
-    #underlying connection and close it when it needs in.
-
-    def __init__(self,resp,stream):
-        self.resp   = resp
-        self.stream = stream
-
-    def __aiter__(self):
-        return self
-
-    async def __anext__(self):
-        part = await self.next()
-        if part is None:
-            raise StopAsyncIteration
-        return part
-
-    def at_eof(self):
-        #Returns True when all response data had been read.
-        return self.resp.content.at_eof()
-
-    async def next(self):
-        #Emits next multipart reader object
-        item = await self.stream.next()
-        if self.stream.at_eof():
-            await self.release()
-        return item
-
-    async def release(self):
-        #Releases the connection gracefully, reading all the content to the void.
-        await self.resp.release()
-
-
+# TODO
 class BodyPartReader(object):
     __slots__=('headers','_boundary','_content','_at_eof','_length',
                '_read_bytes','_unread','_prev_chunk','_content_eof',
@@ -752,163 +708,6 @@ class BodyPartReader(object):
         _,params=parse_content_disposition(self.headers.get(CONTENT_DISPOSITION))
         return content_disposition_filename(params,'filename')
 
-class MultipartReader:
-    __slots__=('headers','_boundary','_content','_last_part','_at_eof',
-               '_at_bof','_unread',)
-    
-    #Multipart body reader.
-
-    def __init__(self, headers, content):
-        self.headers    = headers
-        self._boundary  = ('--' + self._get_boundary()).encode()
-        self._content   = content
-        self._last_part = None
-        self._at_eof    = False
-        self._at_bof    = True
-        self._unread    = []
-
-    def __aiter__(self):
-        return self
-
-    async def __anext__(self):
-        part = await self.next()
-        if part is None:
-            raise StopAsyncIteration
-        return part
-
-    @classmethod
-    def from_response(cls, response):
-        #Constructs reader instance from HTTP response.
-        #response = ClientResponse
-        
-        return MultipartResponseWrapper(response,cls(response.headers,response.content))
-
-
-    def at_eof(self):
-        #Returns True if the final boundary was reached or False otherwise.
-        
-        return self._at_eof
-
-    async def next(self):
-        #Emits the next multipart body part.
-        # So, if we're at BOF, we need to skip till the boundary.
-        if self._at_eof:
-            return
-        
-        await self._maybe_release_last_part()
-        if self._at_bof:
-            await self._read_until_first_boundary()
-            self._at_bof = False
-        else:
-            await self._read_boundary()
-        if self._at_eof:  # we just read the last boundary, nothing to do there
-            return
-        self._last_part = await self.fetch_next_part()
-        return self._last_part
-
-    async def release(self):
-        #Reads all the body parts to the void till the final boundary.
-        while not self._at_eof:
-            item = await self.next()
-            if item is None:
-                break
-            await item.release()
-
-    async def fetch_next_part(self):
-        #Returns the next body part reader.
-        
-        headers=await self._read_headers()
-        return self._get_part_reader(headers)
-
-    def _get_part_reader(self, headers):
-        #Dispatches the response by the Content-Type header, returning uitable reader instance.
-        #headers = dict
-
-        ctype = headers.get(CONTENT_TYPE, '')
-        mimetype=MimeType(ctype)
-        if mimetype.mtype == 'multipart':
-            return type(self)(headers, self._content)
-
-        else:
-            return BodyPartReader(self._boundary, headers, self._content)
-
-    def _get_boundary(self):
-        mimetype=MimeType(self.headers[CONTENT_TYPE])
-
-        if 'boundary' not in mimetype.params:
-            raise ValueError(f'boundary missed for Content-Type: {self.headers[CONTENT_TYPE]}')
-
-        boundary = mimetype.params['boundary']
-        if len(boundary)>70:
-            raise ValueError(f'boundary {boundary!r} is too long (70 chars max)')
-
-        return boundary
-
-    async def _readline(self):
-        if self._unread:
-            return self._unread.pop()
-        return (await self._content.readline())
-
-    async def _read_until_first_boundary(self):
-        while True:
-            chunk = await self._readline()
-            if chunk == b'':
-                raise ValueError(f'Could not find starting boundary {self._boundary!r}')
-
-            chunk=chunk.rstrip()
-            
-            if chunk==self._boundary:
-                return
-            
-            elif chunk==self._boundary+b'--':
-                self._at_eof=True
-                return
-
-    async def _read_boundary(self):
-        chunk = (await self._readline()).rstrip()
-        if chunk==self._boundary:
-            pass
-        
-        elif chunk==self._boundary+b'--':
-            self._at_eof=True
-            
-            epilogue  = await self._readline()
-            next_line = await self._readline()
-
-            # the epilogue is expected and then either the end of input or the
-            # parent multipart boundary, if the parent boundary is found then
-            # it should be marked as unread and handed to the parent for
-            # processing
-            if next_line.startswith(b'--'):
-                self._unread.append(next_line)
-            # otherwise the request is likely missing an epilogue and both
-            # lines should be passed to the parent for processing
-            # (this handles the old behavior gracefully)
-            else:
-                self._unread.extend([next_line, epilogue])
-                
-        else:
-            raise ValueError('Invalid boundary {chunk!r}, expected {self._boundary!r}')
-
-    async def _read_headers(self):
-        lines = [b'']
-        while True:
-            chunk = await self._content.readline()
-            chunk = chunk.strip()
-            lines.append(chunk)
-            if not chunk:
-                break
-        parser = HttpParser()
-        headers, *_ = parser.parse_headers(lines)
-        return headers
-
-    async def _maybe_release_last_part(self):
-        #makes sure that the last read body part is read completely.
-        if self._last_part is not None:
-            if not self._last_part.at_eof():
-                await self._last_part.release()
-            self._unread.extend(self._last_part._unread)
-            self._last_part = None
 
         
 class MultipartWriter(payload_superclass):
@@ -1014,7 +813,7 @@ class MultipartWriter(payload_superclass):
                 raise RuntimeError(f'unknown content encoding: {encoding}')
             if encoding=='identity':
                 encoding=None
-
+        
         # te encoding
         try:
             te_encoding = payload.headers[CONTENT_TRANSFER_ENCODING].lower()

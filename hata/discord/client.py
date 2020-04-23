@@ -11,8 +11,8 @@ from threading import current_thread
 from ..backend.dereaddons_local import multidict_titled, _spaceholder, methodize
 from ..backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, WaitTillFirst
 from ..backend.eventloop import EventThread
-from ..backend.py_formdata import Formdata
-from ..backend.py_hdrs import AUTHORIZATION
+from ..backend.formdata import Formdata
+from ..backend.hdrs import AUTHORIZATION
 
 from .others import Status, id_to_time, log_time_converter, DISCORD_EPOCH, VoiceRegion, ContentFilterLevel, \
     PremiumType, MessageNotificationLevel, bytes_to_base64, FriendRequestFlag, ext_from_base64, Theme, now_as_id, \
@@ -67,9 +67,10 @@ class single_user_chunker(object):
             return False
         self.waiter.set_result_if_pending(users)
         timer=self.timer
-        if timer is not None:
-            timer.cancel()
+        if (timer is not None):
             self.timer=None
+            timer.cancel()
+            
         return True
 
     def cancel(self):
@@ -77,9 +78,9 @@ class single_user_chunker(object):
         if timer is None:
             return
         
+        self.timer=None
         self.waiter.set_result_if_pending(None)
         timer.cancel()
-        self.timer=None
         
     def _cancel(self):
         self.waiter.set_result_if_pending(None)
@@ -109,20 +110,20 @@ class mass_user_chunker(object):
             return False
         self.waiter.set_result_if_pending(_spaceholder)
         timer=self.timer
-        if timer is not None:
-            timer.cancel()
+        if (timer is not None):
             self.timer=None
+            timer.cancel()
+            
         return True
-
+    
     def cancel(self):
         self.left=None
         self.waiter.set_result_if_pending(None)
         timer=self.timer
-        if timer is None:
-            return
-        timer.cancel()
-        self.timer=None
-
+        if (timer is not None):
+            self.timer=None
+            timer.cancel()
+    
     def _cancel(self):
         self.left=0
         self.waiter.set_result_if_pending(None)

@@ -21,25 +21,24 @@ except ImportError:
 
 from .dereaddons_local import multidict_titled
 from .futures import Task, CancelledError
-from .py_hdrs import METH_POST_ALL, METH_CONNECT, SET_COOKIE, CONTENT_LENGTH, CONNECTION, ACCEPT, ACCEPT_ENCODING, \
+from .hdrs import METH_POST_ALL, METH_CONNECT, SET_COOKIE, CONTENT_LENGTH, CONNECTION, ACCEPT, ACCEPT_ENCODING, \
     HOST, TRANSFER_ENCODING, COOKIE, CONTENT_ENCODING, AUTHORIZATION, CONTENT_TYPE
-from .py_helpers import BasicAuth,EmptyTimer
-from .py_multipart import MimeType, create_payload, payload_superclass
-from .py_streams import StreamWriter
-from .py_exceptions import HttpProcessingError, ResponseError
-from .py_formdata import Formdata
+from .helpers import BasicAuth, EmptyTimer
+from .multipart import MimeType, create_payload, payload_superclass
+from .formdata import Formdata
+from .protocol import StreamWriter
 
 json_re = re.compile(r'^application/(?:[\w.+-]+?\+)?json')
 
 class Fingerprint(object):
     __slots__=('fingerprint', 'hashfunc',)
-
+    
     HASHFUNC_BY_DIGESTLEN = {
         16  : md5,
         20  : sha1,
         32  : sha256,
             }
-
+    
     def __init__(self,fingerprint):
         digestlen=len(fingerprint)
         try:
@@ -159,12 +158,8 @@ class ClientRequest(object):
             )
     
     _default_encoding='utf-8'
-    # N.B.
-    # Adding __del__ method with self.writer closing doesn't make sense
-    # because _writer is instance method, thus it keeps a reference to self.
-    # Until writer has finished finalizer will not be called.
-
-    __slots__=('auth', 'body', 'chunked', 'compress', 'encoding', 'headers',
+    
+    __slots__=('auth', 'body', 'chunked', 'compression', 'encoding', 'headers',
         'length', 'loop', 'method', 'original_url', 'proxy_auth', 'proxy_url',
         'response', 'ssl', 'timer', 'url', 'writer',)
     
@@ -187,13 +182,13 @@ class ClientRequest(object):
          
         #create for later
         self.chunked        = None
-        self.compress       = None
+        self.compression    = None
         self.body           = b''
         self.auth           = None
         self.response       = None
         self.length         = None
         self.writer         = None
-
+        
         self.update_host(url)
         self.headers = multidict_titled(headers)
         self.update_auto_headers()
@@ -201,25 +196,25 @@ class ClientRequest(object):
         self.update_content_encoding(data)
         self.update_auth(auth)
         self.update_proxy(proxy_url,proxy_auth)
-
+        
         self.update_body_from_data(data)
         self.update_transfer_encoding()
-
+    
     def is_ssl(self):
         return self.url.scheme in ('https', 'wss')
-
+    
     @property
     def connection_key(self):
         return ConnectionKey(self)
-
+    
     @property
     def request_info(self):
         return RequestInfo(self)
-            
+    
     @property
     def host(self):
         return self.url.host
-
+    
     @property
     def port(self):
         return self.url.port
@@ -280,18 +275,16 @@ class ClientRequest(object):
             return
 
         encoding=self.headers.get(CONTENT_ENCODING,'').lower()
-
-        if self.compress:
+        
+        compression = self.compression
+        if (compression is not None):
             if encoding:
-                raise ValueError('compress can not be set if Content-Encoding header is set')
+                raise ValueError('compression can not be set if Content-Encoding header is set')
             
-            if not isinstance(self.compress, str):
-                self.compress = 'deflate'
-            self.headers[CONTENT_ENCODING] = self.compress
+            self.headers[CONTENT_ENCODING] = compression
             #enable chunked, no need to deal with length
             self.chunked = True
-
-
+    
     def update_auth(self,auth):
         if auth is None:
             auth=self.auth
@@ -299,8 +292,7 @@ class ClientRequest(object):
             return
             
         self.headers[AUTHORIZATION]=auth.encode()
-
-
+    
     def update_body_from_data(self,data):
         if not data:
             return
@@ -313,7 +305,7 @@ class ClientRequest(object):
                 data=create_payload(data,disposition=None)
             except LookupError:
                 data=Formdata.fromfields(data)()
-
+        
         self.body=data
         
         if not self.chunked:
@@ -324,24 +316,24 @@ class ClientRequest(object):
                 else:
                     if CONTENT_LENGTH not in self.headers:
                         self.headers[CONTENT_LENGTH]=str(size)
-                        
+        
         if CONTENT_TYPE not in self.headers:
             self.headers[CONTENT_TYPE]=data.content_type
-
+        
         if data.headers:
             for key,value in data.headers.items():
                 if key not in self.headers:
                     self.headers[key]=value
-
+    
     def update_transfer_encoding(self):
         #Analyze transfer-encoding header
-
+        
         transfer_encoding = self.headers.get(TRANSFER_ENCODING, '').lower()
-
+        
         if 'chunked' in transfer_encoding:
             if self.chunked:
                 raise ValueError('Chunked can not be set if "Transfer-Encoding: chunked" header is set.')
-
+        
         elif self.chunked:
             if CONTENT_LENGTH in self.headers:
                 raise ValueError('Chunked can not be set if Content-Length header is set.')
@@ -350,8 +342,8 @@ class ClientRequest(object):
         else:
             if CONTENT_LENGTH not in self.headers:
                 self.headers[CONTENT_LENGTH]=str(len(self.body))
-
-
+    
+    
     def update_proxy(self,proxy_url,proxy_auth):
         if proxy_url:
             if proxy_auth.scheme!='http':
@@ -360,7 +352,7 @@ class ClientRequest(object):
                 raise ValueError('proxy_auth must be None or BasicAuth')
         self.proxy_url=proxy_url
         self.proxy_auth=proxy_auth
-
+    
     def keep_alive(self):
         return self.headers.get(CONNECTION)!='close'
     
@@ -375,7 +367,7 @@ class ClientRequest(object):
 
                 for chunk in self.body:
                     await writer.write(chunk)
-
+            
             await writer.write_eof()
         except (AttributeError,NameError) as err:
             connection.protocol.set_exception(err)
@@ -406,36 +398,28 @@ class ClientRequest(object):
             path=self.url.raw_path
             if self.url.raw_query_string:
                 path=f'{path}?{self.url.raw_query_string}'
-
-        writer=StreamWriter(connection.protocol,self.loop)
-
-        if self.compress:
-            writer.enable_compression(self.compress)
-
-        if self.chunked is not None:
-            writer.enable_chunking()
-
+        
+        protocol = connection.protocol
+        writer = StreamWriter(protocol,self.loop,self.compression,self.chunked)
+        
         # set default content-type
         if (self.method in METH_POST_ALL) and (CONTENT_TYPE not in self.headers):
             self.headers[CONTENT_TYPE]='application/octet-stream'
-
+        
         
         connection_type=self.headers.get(CONNECTION)
            
-        if not connection_type and not self.keep_alive():
+        if ((connection_type is None) or (not connection_type)) and (not self.keep_alive()):
             connection_type='close'
                 
-        if connection_type is not None:
+        if (connection_type is not None):
             self.headers[CONNECTION]=connection_type
-
-
-        status_line=f'{self.method} {path} HTTP/1.1'
-
         
-        await writer.write_headers(status_line,self.headers)
-
+        
+        protocol.write_http_request(self.method, path, self.headers)
+        
         self.writer = Task(self.write_bytes(writer,connection),self.loop)
-
+        
         self.response=ClientResponse(self.method,self.original_url,self.loop,self.writer,self.timer)
         return self.response
 
@@ -453,15 +437,15 @@ class ClientRequest(object):
             self.writer=None
 
 class ClientResponse:
-    __slots__=('_released', 'body', 'closed', 'connection', 'content',
-        'cookies', 'headers', 'history', 'loop', 'method', 'raw_headers',
-        'reason', 'status', 'timer', 'url', 'writer',)
+    __slots__=('_released', 'body', 'closed', 'connection', 'payload_waiter',
+        'cookies', 'headers', 'history', 'loop', 'method',
+        'reason', 'status', 'timer', 'url', 'writer', 'raw_message')
        
     def __init__(self,method,url,loop,writer,timer):
         self.method         = method
         self.url            = url
         self.loop           = loop
-
+        
         self.writer         = writer
         self.closed         = False # to allow __del__ for non-initialized properly response
         self.timer          = timer
@@ -470,30 +454,31 @@ class ClientResponse:
         
         self.body           = None
         self.status         = None  # Status-Code
-        self.reason         = None  # Reason-Phrase
-        self.content        = None  # Data stream
+        self.payload_waiter = None  # Data stream
         self.headers        = None  # Response headers, multidict_titled
-        self.raw_headers    = None  # Response raw headers, a sequence of pairs
         self.connection     = None  # current connection
-
+        
         self.history        = None  # will be added later
 
     def __del__(self):
         if self.closed:
             return
-
-        if self.connection is not None:
-            self.connection.release()
+        
+        connection = self.connection
+        if (connection is not None):
+            connection.release()
             self._cleanup_writer()                
-
+    
     def __repr__(self):
         ascii_encodable_url=str(self.url)
-        reason = self.reason
-        if (reason is not None):
-            reason = reason.encode('ascii','backslashreplace').decode('ascii')
+        raw_message = self.raw_message
+        if (raw_message is None):
+            reason = None
+        else:
+            reason = self.raw_message.reason
         
-        return f'<{self.__class__.__name__}({ascii_encodable_url}) [{self.status} {reason}]>'
-        
+        return f'<{self.__class__.__name__}({ascii_encodable_url}) [{self.status} {reason!r}]>'
+    
     async def start(self,connection):
         #Start response processing.
         self.closed=False
@@ -501,26 +486,23 @@ class ClientResponse:
         protocol=connection.protocol
         
         with self.timer:
-            while True:
-                # read response
-                try:
-                    message,data = await protocol.read()
-                except HttpProcessingError as err:
-                    raise ResponseError( message=err.message,headers=err.headers) from err
-                
-                if (message.code<100 or message.code>199 or message.code==101):
-                    break
-        
-        data.on_eof(self._response_eof)
+            self.raw_message = message = await protocol.set_payload_reader(protocol.read_http_response())
+            protocol.handle_payload_waiter_cancellation()
+            payload_reader = protocol.get_payload_reader_task(message)
+            if (payload_reader is None):
+                payload_waiter = None
+                self._response_eof(None)
+            else:
+                payload_waiter = protocol.set_payload_reader(payload_reader)
+                payload_waiter.add_done_callback(self._response_eof)
         
         #response status
-        self.status     = message.code
+        self.status     = message.status
         self.reason     = message.reason
         #headers
         self.headers    = message.headers
-        self.raw_headers= message.raw_headers
         #owo
-        self.content    = data
+        self.payload_waiter    = payload_waiter
         
         # cookies
         for header in self.headers.getall(SET_COOKIE, ()):
@@ -528,55 +510,56 @@ class ClientResponse:
                 self.cookies.load(header)
             except CookieError: #so sad
                 pass
+        
         return self
-
-
-    def _response_eof(self):
+    
+    def _response_eof(self, future):
         if self.closed:
             return
         
-        connection=self.connection
-        if connection is not None:
-            # websocket, protocol could be None because
-            # connection could be detached
-            if (connection.protocol is not None and connection.protocol.upgraded):
+        self.payload_waiter = None
+        connection = self.connection
+        if (connection is not None):
+            # websocket, protocol could be None because connection could be detached
+            if (connection.protocol is not None) and self.raw_message.upgraded:
                 return
             
             connection.release()
             self.connection=None
-
+        
         self.closed=True
         self._cleanup_writer()
-
+    
+    # If content is still present
     def _notify_content(self):
-        content = self.content
-        if content and content.exception is None:
-            content.set_exception(ConnectionError('Connection closed'))
-        self._released = True
-
-    def _cleanup_writer(self):
-        writer=self.writer
-        if writer is not None:
-            writer.cancel()
-            self.writer=None
+        payload_waiter = self.payload_waiter
+        if (payload_waiter is not None):
+            self.connection.protocol.set_exception(ConnectionError('Connection closed'))
         
+        self._released = True
+    
+    def _cleanup_writer(self):
+        writer = self.writer
+        if (writer is not None):
+            self.writer=None
+            writer.cancel()
+    
     async def read(self):
-        if self.body is None:
+        payload_waiter = self.payload_waiter
+        if (payload_waiter is None):
+            body = self.body
+        else:
             try:
-                self.body = await self.content.read()
-            except BaseException:
-                self.close()
-                raise
-        elif self._released:
-            raise ConnectionError('Connection closed')
-
-        return self.body
-
-
+                self.body = body = await payload_waiter
+            finally:
+                self.payload_waiter = None
+        
+        return body
+    
     def get_encoding(self):
         ctype=self.headers.get(CONTENT_TYPE,'').lower()
         mimetype=MimeType(ctype)
-
+        
         encoding=mimetype.params.get('charset',None)
         if encoding is not None:
             try:
@@ -590,23 +573,24 @@ class ClientResponse:
                 encoding=chardet.detect(self.body)['encoding']
         if not encoding:
             encoding='utf-8'
-
-        return encoding
-
-    async def text(self,encoding=None,errors='strict'):
-        if self.body is None:
-            await self.read()
-
-        if encoding is None:
-            encoding=self.get_encoding()
-
-        return self.body.decode(encoding,errors)
-
         
+        return encoding
+    
+    async def text(self,encoding=None,errors='strict'):
+        body = await self.read()
+        if body is None:
+            return
+        
+        if encoding is None:
+            encoding = self.get_encoding()
+        
+        return body.decode(encoding,errors)
+    
     async def json(self,encoding=None,loader=json.loads,content_type='application/json'):
-        if self.body is None:
-            await self.read()
-
+        body = await self.read()
+        if body is None:
+            return
+        
         if content_type is not None:
             ctype=self.headers.get(CONTENT_TYPE,'').lower()
 
@@ -618,7 +602,7 @@ class ClientResponse:
             if failed:
                 raise TypeError(f'Attempt to decode JSON with unexpected mimetype: {ctype}',self)
 
-        stripped = self.body.strip()
+        stripped = body.strip()
         if not stripped:
             return None
 
@@ -642,61 +626,29 @@ class ClientResponse:
         
         if self.closed:
             return
-
+        
         self.closed=True
         if not self.loop.running:
             return
         
         connection=self.connection
-        if connection is not None:
+        if (connection is not None):
             connection.close()
             self.connection=None
         
         self._cleanup_writer()
-
+    
     def release(self):
         if not self._released:
             self._notify_content()
+        
         if self.closed:
             return
-
         self.closed=True
         
         connection=self.connection
-        if connection is not None:
+        if (connection is not None):
             connection.release()
             self.connection=None
-
+        
         self._cleanup_writer()
-
-class Request_CM(object):
-
-    async def __aexit__(self,exc_type,exc_val,exc_tb):
-        self.response.release()
-    
-    __slots__=('coroutine', 'response',)
-
-    def __init__(self,coroutine):
-        self.coroutine=coroutine
-
-    def send(self,argument):
-        return self.coroutine.send(argument)
-
-    def throw(self,argument):
-        return self.coroutine.throw(argument)
-
-    def close(self):
-        return self.coroutine.close()
-
-    def __await__(self):
-        result=self.coroutine.__await__()
-        return result
-
-    def __iter__(self):
-        return self.__await__()
-
-    async def __aenter__(self):
-        self.response = await self.coroutine
-        return self.response
-
-del re

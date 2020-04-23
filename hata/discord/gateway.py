@@ -10,9 +10,8 @@ else:
     SecretBox=nacl.secret.SecretBox
     del nacl
 
-from ..backend.py_websocket import WSClient
 from ..backend.futures import sleep, Task, future_or_timeout, WaitTillExc, WaitTillFirst, WaitTillAll
-from ..backend.py_exceptions import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
+from ..backend.exceptions import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
 
 from .others import to_json, from_json
 from .activity import ActivityUnknown
@@ -59,7 +58,7 @@ class DiscordGateway(object):
             return
 
         await kokoro.restart()
-
+    
     async def run(self):
         loop=self.loop
         client=self.client
@@ -78,9 +77,6 @@ class DiscordGateway(object):
                     WebSocketProtocolError, InvalidHandshake, ValueError) as err:
                 if not client.running:
                     return False
-                
-                #u can extract and exception from here too:
-                #if isinstance(err,exc.ConnectionClosed) and err.exception is not None:
                 
                 if isinstance(err,ConnectionClosed):
                     code = err.code
@@ -110,14 +106,14 @@ class DiscordGateway(object):
             
             self._decompresser=zlib.decompressobj()
             gateway = await self.client.client_gateway()
-            self.websocket = await WSClient(self.loop,gateway,)
+            self.websocket = await self.client.http.connect_ws(gateway)
             self.kokoro.start_beating()
-        
+            
             if not resume:
                 await self._identify()
                 self.loop.call_later(.2,self.client._unfreeze_voice_for,self,)
                 return
-
+            
             await self._resume()
             
             try:
@@ -389,7 +385,7 @@ class DiscordGatewayVoice(object):
         if self.websocket is not None and not self.websocket.closed:
             await self.websocket.close(4000)
         gateway=f'wss://{self.client._endpoint}/?v=4'
-        self.websocket = await WSClient(self.loop,gateway)
+        self.websocket = await self.client.client.http.connect_ws(gateway)
         self.kokoro.start_beating()
         
         if resume:

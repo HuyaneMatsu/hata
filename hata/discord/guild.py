@@ -420,6 +420,7 @@ def PartialGuild(data):
     guild.is_large=False
     guild.max_presences=5000
     guild.max_users=250000
+    guild.max_video_channel_users=25
     guild.message_notification=MessageNotificationLevel.only_mentions
     guild.mfa=MFA.none
     # name will be set down
@@ -490,17 +491,13 @@ def PartialGuild(data):
 #discord does not sends `embed_channel`, `embed_enabled`, `widget_channel`,
 #`widget_enabled`, `max_presences`, `max_users` correctly and thats sad.
 class Guild(object):
-    __slots__=('__weakref__', '_boosters', '_cache_perm', 'afk_channel',
-        'afk_timeout', 'all_channel', 'all_role', 'available', 'banner',
-        'booster_count', 'channels', 'clients', 'content_filter',
-        'description', 'discovery_splash', 'embed_channel', 'embed_enabled',
-        'emojis', 'features', 'has_animated_icon', 'icon', 'id', 'is_large',
-        'max_presences', 'max_users', 'message_notification', 'mfa', 'name',
-        'owner', 'preferred_locale', 'premium_tier', 'public_updates_channel',
-        'region', 'roles', 'rules_channel', 'splash', 'system_channel',
-        'system_channel_flags', 'user_count', 'users', 'vanity_code',
-        'verification_level', 'voice_states', 'webhooks', 'webhooks_uptodate',
-        'widget_channel', 'widget_enabled',)
+    __slots__ = ('__weakref__', '_boosters', '_cache_perm', 'afk_channel', 'afk_timeout', 'all_channel', 'all_role',
+        'available', 'banner', 'booster_count', 'channels', 'clients', 'content_filter', 'description',
+        'discovery_splash', 'embed_channel', 'embed_enabled', 'emojis', 'features', 'has_animated_icon', 'icon', 'id',
+        'is_large', 'max_presences', 'max_users', 'max_video_channel_users', 'message_notification', 'mfa', 'name',
+        'owner', 'preferred_locale', 'premium_tier', 'public_updates_channel', 'region', 'roles', 'rules_channel',
+        'splash', 'system_channel', 'system_channel_flags', 'user_count', 'users', 'vanity_code', 'verification_level',
+        'voice_states', 'webhooks', 'webhooks_uptodate', 'widget_channel', 'widget_enabled',)
 
     def __new__(cls,data,client):
         guild_id=int(data['id'])
@@ -697,6 +694,7 @@ class Guild(object):
             guild.is_large=False
             guild.max_presences=5000
             guild.max_users=250000
+            guild.max_video_channel_users=25
             guild.message_notification=MessageNotificationLevel.only_mentions
             guild.mfa=MFA.none
             guild.name=''
@@ -1263,12 +1261,12 @@ class Guild(object):
         #ignoring 'voice_states'
         #ignoring 'member_count'
         #ignoring 'large'
-
+        
         name=data['name']
         if self.name!=name:
             old['name']=self.name
             self.name=name
-
+        
         icon=data.get('icon',None)
         if icon is None:
             icon=0
@@ -1283,11 +1281,11 @@ class Guild(object):
         if self.icon!=icon:
             old['icon']=self.icon
             self.icon=icon
-
+        
         if self.has_animated_icon!=has_animated_icon:
             old['has_animated_icon']=self.has_animated_icon
             self.has_animated_icon=has_animated_icon
-
+        
         splash=data.get('splash',None)
         splash=0 if splash is None else int(splash,16)
         if self.splash!=splash:
@@ -1455,19 +1453,24 @@ class Guild(object):
         if self.banner!=banner:
             old['banner']=self.banner
             self.banner=banner
-
+        
         max_users=data.get('max_members',250000)
         if self.max_users!=max_users:
             old['max_users']=self.max_users
             self.max_users=max_users
-
+        
         max_presences=data.get('max_presences',None)
         if max_presences is None:
             max_presences=5000
         if self.max_presences!=max_presences:
             old['max_presences']=self.max_presences
             self.max_presences=max_presences
-
+        
+        max_video_channel_users = data.get('max_video_channel_users', 25)
+        if self.max_video_channel_users!=max_video_channel_users:
+            old['max_video_channel_users'] = self.max_video_channel_users
+            self.max_video_channel_users = max_video_channel_users
+        
         premium_tier=data['premium_tier']
         if self.premium_tier!=premium_tier:
             old['premium_tier']=self.premium_tier
@@ -1594,10 +1597,12 @@ class Guild(object):
         self.banner=0 if banner is None else int(banner,16)
         
         self.max_users=data.get('max_members',250000)
-
+        
         max_presences=data.get('max_presences',None)
         self.max_presences=5000 if max_presences is None else max_presences
-
+        
+        self.max_video_channel_users = data.get('max_video_channel_users', 25)
+        
         self.premium_tier=data['premium_tier']
 
         booster_count=data.get('premium_subscription_count',None)

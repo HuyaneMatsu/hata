@@ -84,23 +84,22 @@ class URL:
     #               / path-noscheme
     #               / path-empty
     # absolute-URI  = scheme ":" hier-part [ "?" query ]
-    __slots__ =['_cache', '_val']
+    __slots__ = ('_cache', '_val', )
 
-    def __new__(cls,val='',encoded=False):
+    def __new__(cls, val='', encoded=False):
         if isinstance(val,cls):
             return val
-        else:
-            return object.__new__(cls)
-
-    def __init__(self,val='',encoded=False):
+        
+        self=object.__new__(cls)
+        
         if isinstance(val, str):
             val=urlsplit(val)
         elif isinstance(val,SplitResult):
             if not encoded:
                 raise ValueError('Cannot apply decoding to SplitResult')
         else:
-            raise TypeError('Constructor parameter should be str')
-
+            raise TypeError(f'Constructor parameter should be str, got {val.__class__.__name__}')
+        
         if not encoded:
             if not val[1]:  # netloc
                 netloc = ''
@@ -133,10 +132,11 @@ class URL:
                               quote(val[2],safe='@:',protected='/'),
                               query=quote(val[3],safe='=+&?/:@',protected='=+&',qs=True),
                               fragment=quote(val[4],safe='?/:@'))
-
+        
         self._val = val
         self._cache = {}
-
+        return self
+    
     def __str__(self):
         val = self._val
         if not val.path and self.is_absolute() and (val.query or val.fragment):
@@ -144,7 +144,7 @@ class URL:
         return urlunsplit(val)
 
     def __repr__(self):
-        return f'{self.__class__.__name__}(\'{self!s}\')'
+        return f'{self.__class__.__name__}({str(self)!r})'
 
     def __hash__(self):
         ret = self._cache.get('hash')

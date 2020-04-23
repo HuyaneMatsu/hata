@@ -1,15 +1,16 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('HTTPClient', )
-
 from .dereaddons_local import multidict_titled
 
-from .py_helpers import TimeoutHandle,CeilTimeout,tcp_nodelay
-from .py_url import URL
-from .py_reqrep import ClientRequest, Request_CM, SSL_ALLOWED_TYPES
-from .py_connector import TCPConnector
-from .py_cookiejar import CookieJar
-from .py_hdrs import CONTENT_LENGTH, AUTHORIZATION, METH_HEAD, LOCATION, URI, METH_GET, METH_POST, METH_OPTIONS, \
+from .helpers import TimeoutHandle, CeilTimeout, tcp_nodelay
+from .url import URL
+from .reqrep import ClientRequest, SSL_ALLOWED_TYPES
+from .connector import TCPConnector
+from .cookiejar import CookieJar
+from .hdrs import CONTENT_LENGTH, AUTHORIZATION, METH_HEAD, LOCATION, URI, METH_GET, METH_POST, METH_OPTIONS, \
     METH_PUT, METH_PATCH, METH_DELETE
+from .websocket import WSClient
+from . import websocket
 
 DEFAULT_TIMEOUT=20.
 
@@ -50,13 +51,6 @@ class HTTPClient(object):
                         connection = await self.connector.connect(request,DEFAULT_TIMEOUT)
                     
                     tcp_nodelay(connection.transport,True)
-                    
-                    connection.protocol.set_response_params(
-                        timer           =timer,
-                        skip_payload    = (method.upper()==METH_HEAD),
-                        read_until_eof  =True,
-                        auto_decompress =True,
-                        read_timeout    =None,)
                     
                     try:
                         response=await request.send(connection)
@@ -320,3 +314,64 @@ class HTTPClient(object):
         if headers is None:
             headers=multidict_titled()
         return Request_CM(self._request(METH_DELETE, url, headers, **kwargs))
+
+    def connect_ws(self, url, **kwargs):
+        return Websocket_CM(WSClient(self.loop, url, **kwargs, http_client = self))
+
+class Request_CM(object):
+    __slots__=('coroutine', 'response', )
+    
+    def __init__(self, coroutine):
+        self.coroutine = coroutine
+        self.response = None
+    
+    def __getattr__(self, name):
+        return getattr(self.coroutine, name)
+    
+    def __await__(self):
+        self.response = result = self.coroutine.__await__()
+        return result
+    
+    def __iter__(self):
+        return self.__await__()
+    
+    async def __aenter__(self):
+        self.response = response = await self.coroutine
+        return response
+    
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        response = self.response
+        if (response is not None):
+            response.release()
+            self.response = None
+    
+class Websocket_CM(object):
+    __slots__=('coroutine', 'websocket', )
+    
+    def __init__(self, coroutine):
+        self.coroutine = coroutine
+        self.websocket = None
+    
+    def __getattr__(self, name):
+        return getattr(self.coroutine, name)
+    
+    def __await__(self):
+        self.websocket = result = self.coroutine.__await__()
+        return result
+    
+    def __iter__(self):
+        return self.__await__()
+    
+    async def __aenter__(self):
+        self.websocket = await self.coroutine
+        return self.websocket
+    
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        websocket = self.websocket
+        if (websocket is not None):
+            self.websocket = None
+            await websocket.close()
+
+websocket.HTTPClient = HTTPClient
+
+del websocket

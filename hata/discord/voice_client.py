@@ -5,7 +5,7 @@ import socket as module_socket
 from threading import Event, Lock
 
 from ..backend.futures import Future, Task, sleep, future_or_timeout
-from ..backend.py_exceptions import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
+from ..backend.exceptions import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
 
 from .opus import OpusEncoder
 from .player import AudioPlayer, AudioSource, PCM_volume_transformer, PLAYER_DELAY
@@ -43,7 +43,7 @@ class VoiceClient(object):
         self.lock           = Lock()
         self.sources        = {}
         self.reader         = None
-
+        
         self._handshake_complete=Future(client.loop)
         self._encoder       = OpusEncoder()
         self._sequence      = 0

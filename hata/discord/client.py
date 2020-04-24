@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('Client', 'Typer', 'Settings', 'Achievement',)
+__all__ = ('Client', 'Typer', )
 
 import re, sys
 from math import ceil
@@ -14,11 +14,11 @@ from ..backend.eventloop import EventThread
 from ..backend.formdata import Formdata
 from ..backend.hdrs import AUTHORIZATION
 
-from .others import Status, id_to_time, log_time_converter, DISCORD_EPOCH, VoiceRegion, ContentFilterLevel, \
-    PremiumType, MessageNotificationLevel, bytes_to_base64, FriendRequestFlag, ext_from_base64, Theme, now_as_id, \
-    to_json, VerificationLevel, RelationshipType, random_id, parse_time
+from .others import Status, log_time_converter, DISCORD_EPOCH, VoiceRegion, ContentFilterLevel, PremiumType, \
+    MessageNotificationLevel, bytes_to_base64, ext_from_base64, now_as_id, to_json, VerificationLevel, \
+    RelationshipType, random_id
 from .user import User, USERS, GuildProfile, UserBase, UserFlag
-from .emoji import Emoji, PartialEmoji
+from .emoji import Emoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, \
     message_relativeindex, cr_pg_channel_object, message_at_index, messages_till_index, MessageIterator, \
     CHANNEL_TYPES
@@ -31,14 +31,13 @@ from .parsers import EventDescriptor, _with_error, IntentFlag, PARSER_DEFAULTS
 from .audit_logs import AuditLog, AuditLogIterator
 from .invite import Invite
 from .message import Message
-from .oauth2 import Connection, parse_locale, DEFAULT_LOCALE, AO2Access, UserOA2, parse_locale_optional
+from .oauth2 import Connection, parse_locale, DEFAULT_LOCALE, AO2Access, UserOA2, Achievement
 from .exceptions import DiscordException, IntentError
 from .client_core import CLIENTS, CACHE_USER, CACHE_PRESENCE, KOKORO, GUILDS
 from .voice_client import VoiceClient
 from .activity import ActivityUnknown, ActivityBase, ActivityCustom
 from .integration import Integration
 from .application import Application, Team
-from .color import Color
 from .ratelimit import RatelimitProxy
 from .preconverters import preconvert_snowflake, preconvert_animated_image_hash, preconvert_str, preconvert_bool, \
     preconvert_discriminator, preconvert_flag, preconvert_preinstanced_type
@@ -136,13 +135,10 @@ class Client(UserBase):
     __slots__ = (
         'guild_profiles', 'is_bot', 'partial', #default user
         'activities', 'status', 'statuses', #presence
-        'email', 'flags', 'locale', 'mfa', 'premium_type', 'system', #OA2
-        'verified',
-        '__dict__', '_activity', '_gateway_pair', 'application', 'calls', #Client all the way down
-        'channels',  'events', 'gateway', 'guild_profiles', 'http', 'intents',
-        'loop', 'mar_token', 'private_channels', 'ready_state',
-        'relationships', 'running', 'secret', 'settings', 'shard_count',
-        'token', 'voice_clients')
+        'email', 'flags', 'locale', 'mfa', 'premium_type', 'system', 'verified', # OAUTH 2
+        '__dict__', '_activity', '_gateway_pair', '_status', 'application',  'channels',  'events', 'gateway',
+        'guild_profiles', 'http', 'intents', 'loop', 'private_channels', 'ready_state', 'relationships', 'running',
+        'secret', 'shard_count', 'token', 'voice_clients')
     
     def __new__(cls, token, secret=None, client_id=0, activity=ActivityUnknown, status=None, is_bot=True,
             shard_count=0, intents=-1, **kwargs):
@@ -243,6 +239,11 @@ class Client(UserBase):
             has_animated_avatar = False
             flags = UserFlag()
         
+        if (status is None):
+            _status = Status.online
+        else:
+            _status = status
+        
         self = object.__new__(cls)
         
         self.name               = name
@@ -263,11 +264,10 @@ class Client(UserBase):
         self.loop               = KOKORO
         self.intents            = intents
         self.running            = False
-        self.mar_token          = None
-        self.calls              = {} #deprecated ?
         self.relationships      = {}
         self.channels           = {}
         self.guild_profiles     = {}
+        self._status            = _status
         self.status             = Status.offline
         self.statuses           = {}
         self._activity          = activity
@@ -279,13 +279,9 @@ class Client(UserBase):
         self.partial            = True
         self.ready_state        = None
         self.application        = Application()
-        self.settings           = Settings()
         self.gateway            = DiscordGatewaySharder(self) if shard_count else DiscordGateway(self)
         self.http               = DiscordHTTPClient(self)
         self.events             = EventDescriptor(self)
-        
-        if (status is not None):
-            self.settings.status=status
         
         CLIENTS.append(self)
         
@@ -425,58 +421,6 @@ class Client(UserBase):
         else:
             await self.hypesquad_house_change(house)
         
-    #user account only
-    #TODO : consider adding folder editing(?)
-    async def client_edit_settings(self,**kwargs):
-        data={}
-
-        for wrapper_side, discord_side, target_type, transformer in (
-                ('accessibility_detection', 'allow_accessibility_detection',bool,                           None,                                       ),
-                ('afk_timeout',             'afk_timeout',                  int,                            None,                                       ),
-                ('animate_emojis',          'animate_emojis',               bool,                           None,                                       ),
-                ('compact_mode',            'message_display_compact',      bool,                           None,                                       ),
-                ('content_filter',          'explicit_content_filter',      ContentFilterLevel,             lambda x:x.value,                           ),
-                ('convert_emojis',          'convert_emoticons',            bool,                           None,                                       ),
-                ('custom_status',           'custom_status',                dict,                           lambda x:Settings.encode_custom_status(x),  ),
-                ('detect_platform_accounts','detect_platform_accounts',     bool,                           None,                                       ),
-                ('developer_mode',          'developer_mode',               bool,                           None,                                       ),
-                ('enable_tts_command',      'enable_tts_command',           bool,                           None,                                       ),
-                ('friend_request_flag',     'friend_source_flags',          FriendRequestFlag,              lambda x:x.encode(),                        ),
-                ('games_tab',               'disable_games_tab',            bool,                           lambda x:(not x),                           ),
-                ('guild_order_ids',         'guild_positions',              list,                           None,                                       ),
-                ('locale',                  'locale',                       str,                            None,                                       ),
-                ('no_DM_from_new_guilds',   'default_guilds_restricted',    bool,                           None,                                       ),
-                ('no_DM_guild_ids',         'restricted_guilds',            list,                           None,                                       ),
-                ('play_gifs',               'gif_auto_play',                bool,                           None,                                       ),
-                ('render_attachments',      'inline_attachment_media',      bool,                           None,                                       ),
-                ('render_embeds',           'render_embeds',                bool,                           None,                                       ),
-                ('render_links',            'inline_embed_media',           bool,                           None,                                       ),
-                ('render_reactions',        'render_reactions',             bool,                           None,                                       ),
-                ('show_current_game',       'show_current_game',            bool,                           None,                                       ),
-                ('status',                  'status',                       Status,                         lambda x:x.value,                           ),
-                ('stream_notifications',    'stream_notifications_enabled', bool,                           None,                                       ),
-                ('theme',                   'theme',                        Theme,                          lambda x:x.value,                           ),
-                ('timezone_offset',         'timezone_offset',              int,                            None,                                       ),
-                    ):
-            try:
-                value=kwargs[wrapper_side]
-            except KeyError:
-                continue
-
-            if type(value) is not target_type:
-                raise ValueError(f'Invalid `{wrapper_side}`, expected `{target_type!r}`, got `{value!r}`')
-            if transformer is not None:
-                value=transformer(value)
-            data[discord_side]=value
-
-        data = await self.http.client_edit_settings(data)
-        self.settings._update_no_return(data)
-    
-    #user account only  
-    async def client_sync_settings(self):
-        data = await self.http.client_get_settings()
-        self.settings._update_no_return(data)
-        
     async def client_edit_nick(self,guild,nick,reason=None):
         if (nick is not None):
             nick_ln=len(nick)
@@ -517,11 +461,11 @@ class Client(UserBase):
                 status=Status.INSTANCES[status]
             except KeyError as err:
                 raise ValueError(f'Invalid status {status}') from err
-            self.settings.status=status
+            self._status=status
         elif isinstance(status,Status):
-            self.settings.status=status
+            self._status=status
         elif status is None:
-            status=self.settings.status
+            status=self._status
         else:
             raise TypeError(f'Invalid status type ({type(status)!r}), it must be str or {status!r}')
         
@@ -625,7 +569,7 @@ class Client(UserBase):
         data = await self.http.oauth2_token(data)
 
         access._renew(data)
-
+    
     #needs `guilds.join` scope granted
     async def guild_user_add(self,guild,access_or_compuser,user=None,nick=None,roles=[],mute=False,deaf=False):
         if type(access_or_compuser) is AO2Access:
@@ -646,16 +590,16 @@ class Client(UserBase):
                 if nick_ln>32:
                     raise ValueError(f'The length of the nick can be between 1-32, got {nick_ln}')
                 data['nick']=nick
-                
+        
         if roles:
             data['roles']=[role.id for role in roles]
-            
+        
         if mute:
             data['mute']=mute
-            
+        
         if deaf:
             data['deaf']=deaf
-            
+        
         await self.http.guild_user_add(guild.id,user.id,data)
 
     #needs `guilds` scope granted
@@ -803,7 +747,6 @@ class Client(UserBase):
 
         self.private_channels.clear()
         self.channels.clear()
-        self.calls.clear() #deprecated ?
         self.application._fillup()
         self.events.clear()
         
@@ -1349,12 +1292,6 @@ class Client(UserBase):
         return webhook
     
     #messages
-    
-    #bots cant do this!
-    async def message_mar(self,message):
-        data={'token':self.mar_token}
-        data = await self.http.message_mar(message.channel.id,message.id,data)
-        self.mar_token=data['token']
     
     async def message_logs(self,channel,limit=100,after=None,around=None,before=None):
         if limit<1 or limit>100:
@@ -2323,11 +2260,6 @@ class Client(UserBase):
 ##               del user.guild_profiles[guild]
 ##           except KeyError:
 ##               pass #huh??
-
-    #user account only
-    async def guild_mar(self,guild):
-        data= await self.http.guild_mar(guild.id,{'token':self.mar_token})
-        self.mar_token=data['token']
     
     async def guild_leave(self,guild):
         await self.http.guild_leave(guild.id)
@@ -2702,11 +2634,6 @@ class Client(UserBase):
     async def guild_user_get(self,guild,user_id):
         data = await self.http.guild_user_get(guild.id,user_id)
         return User._create_and_update(data,guild)
-        
-    #user only, the returned data is unknown actually, propably needs compuser type
-    async def user_profile(self,user_id):
-        data = await self.http.user_get_profile(user_id)
-        return User._create_and_update(data)
     
     #integrations
     
@@ -2714,7 +2641,7 @@ class Client(UserBase):
     async def integration_get_all(self,guild):
         data = await self.http.integration_get_all(guild.id)
         return [Integration(integration_data) for integration_data in data]
-
+    
     #TODO: what is integration id?
     async def integration_create(self,guild,integration_id,type_):
         data = {
@@ -4081,7 +4008,7 @@ class Client(UserBase):
         self.flags=UserFlag(data.get('flags',0))
 
         self.locale=parse_locale(data)
-
+    
     def _update_profile_only(self,data,guild):
         try:
             profile=self.guild_profiles[guild]
@@ -4090,7 +4017,7 @@ class Client(UserBase):
             guild.users[self.id]=self
             return {}
         return profile._update(data,guild)
-
+    
     def _update_profile_only_no_return(self,data,guild):
         try:
             profile=self.guild_profiles[guild]
@@ -4099,7 +4026,7 @@ class Client(UserBase):
             guild.users[self.id]=self
             return
         profile._update_no_return(data,guild)
-
+    
     @property
     def friends(self):
         type_=RelationshipType.friend
@@ -4119,180 +4046,6 @@ class Client(UserBase):
     def sent_requests(self):
         type_=RelationshipType.sent_request
         return [rs for rs in self.relationships.values() if rs.type is type_]
-
-    @property
-    def guild_order(self):
-        guild_ids=self.settings.guild_order_ids
-        if guild_ids:
-            leftover_guilds=set(self.guild_profiles.keys())
-            ordered=[]
-            for guild_id in guild_ids:
-                
-                try:
-                    guild=GUILDS[guild_id]
-                except KeyError:
-                    continue
-                
-                # already left guilds can show up as well
-                try:
-                    leftover_guilds.remove(guild)
-                except KeyError:
-                    continue
-                
-                ordered.append(guild)
-            
-            if not leftover_guilds:
-                return ordered
-            
-            orderable=[]
-            un_orderable=[]
-            
-            for guild in leftover_guilds:
-                joined_at=self.guild_profiles[guild].joined_at
-                
-                # joined_at can be None
-                if joined_at is None:
-                    # we get the guilds in creation order, so it is fine ^^'
-                    un_orderable.append(guild)
-                else:
-                    # newest guild is every time the 1st
-                    orderable.append((joined_at,guild),)
-            
-            orderable.sort(key=lambda x:x[0],reverse=True)
-            
-            # we want the reversed creation order
-            un_orderable.reverse()
-            un_orderable.extend(x[1] for x in orderable)
-            un_orderable.extend(ordered)
-            
-            return un_orderable
-
-        orderable=[]
-        un_orderable=[]
-        
-        for guild,profile in self.guild_profiles.items():
-            joined_at=profile.joined_at
-            
-            # joined_at can be None
-            if joined_at is None:
-                # we get the guilds in creation order, so it is fine ^^'
-                un_orderable.append(guild)
-            else:
-                # newest guild is every time the 1st
-                orderable.append((joined_at,guild),)
-        
-        orderable.sort(key=lambda x:x[0],reverse=True)
-        
-        # we want the reversed creation order
-        un_orderable.reverse()
-        un_orderable.extend(x[1] for x in orderable)
-        return un_orderable
-    
-    @property
-    def guild_order_with_folders(self):
-        guild_folders=self.settings.guild_folders
-        
-        # you must(?) have at least 1 folder
-        if not guild_folders:
-            return self.guild_order
-        
-        leftover_guilds=set(self.guild_profiles.keys())
-        ordered=[]
-        
-        for folder in guild_folders:
-            guilds=folder._get_and_filter_guilds(self)
-            
-            # real folder
-            if folder.id:
-                for guild in guilds:
-                    try:
-                        leftover_guilds.remove(guild)
-                    except KeyError:
-                        continue
-                    
-                ordered.append(folder)
-            # folder placeholder
-            else:
-                for guild in guilds:
-                    try:
-                        leftover_guilds.remove(guild)
-                    except KeyError:
-                        continue
-                    
-                    ordered.append(guild)
-        
-        if not leftover_guilds:
-            return ordered
-        
-        orderable=[]
-        un_orderable=[]
-        
-        for guild in leftover_guilds:
-            joined_at=self.guild_profiles[guild].joined_at
-            
-            # joined_at can be None
-            if joined_at is None:
-                # we get the guilds in creation order, so it is fine ^^'
-                un_orderable.append(guild)
-            else:
-                # newest guild is every time the 1st
-                orderable.append((joined_at,guild),)
-        
-        orderable.sort(key=lambda x:x[0],reverse=True)
-        
-        # we want the reversed creation order
-        un_orderable.reverse()
-        un_orderable.extend(x[1] for x in orderable)
-        un_orderable.extend(ordered)
-        
-        return un_orderable
-        
-    @property
-    def no_DM_guilds(self):
-        guild_ids=self.settings.no_DM_guild_ids
-        
-        result=[]
-        if not guild_ids:
-            return result
-            
-        for guild_id in guild_ids:
-            try:
-                guild=GUILDS[guild_id]
-            except KeyError:
-                continue
-            
-            if self not in guild.clients:
-                continue
-            
-            result.append(guild)
-            
-        return result
-    
-    @property
-    def allowed_DM_guilds(self):
-        guild_ids=self.settings.no_DM_guild_ids
-        
-        result=list(self.guild_profiles.keys())
-        if not guild_ids:
-            return result
-        
-        for guild_id in guild_ids:
-            index=0
-            limit=len(result)
-            while True:
-                if index==limit:
-                    break
-                
-                guild=result[index]
-                if guild.id==guild_id:
-                    del result[index]
-                    limit=limit-1
-                    continue
-                
-                index=index+1
-                continue
-                
-        return result
     
     def _freeze_voice(self):
         voice_clients=self.voice_clients
@@ -4387,708 +4140,6 @@ class Typer(object):
             
     def __exit__(self,exc_type,exc_val,exc_tb):
         self.cancel()
-
-class Settings(object):
-    __slots__=('accessibility_detection', 'afk_timeout', 'animate_emojis',
-        'compact_mode', 'content_filter', 'convert_emojis', 'custom_status',
-        'detect_platform_accounts', 'developer_mode', 'enable_tts_command',
-        'friend_request_flag', 'games_tab', 'guild_folders', 'guild_order_ids',
-        'locale', 'no_DM_from_new_guilds', 'no_DM_guild_ids', 'play_gifs',
-        'render_attachments', 'render_embeds', 'render_links',
-        'render_reactions', 'show_current_game', 'status',
-        'stream_notifications', 'theme', 'timezone_offset', )
-    
-    def __init__(self):
-        self.accessibility_detection=False
-        self.afk_timeout    = 0
-        self.animate_emojis = True
-        self.compact_mode   = False
-        self.content_filter = ContentFilterLevel.disabled
-        self.convert_emojis = True
-        self.custom_status  = None
-        self.detect_platform_accounts=True
-        self.developer_mode = False
-        self.enable_tts_command=True
-        self.friend_request_flag=FriendRequestFlag.all
-        self.games_tab      = True
-        self.guild_folders  = []
-        self.guild_order_ids= []
-        self.locale         = DEFAULT_LOCALE
-        self.no_DM_from_new_guilds=False
-        self.no_DM_guild_ids= []
-        self.play_gifs      = True
-        self.render_attachments=True
-        self.render_embeds  = True
-        self.render_links   = True
-        self.render_reactions=True
-        self.status         = Status.online
-        self.stream_notifications=True
-        self.show_current_game=True
-        self.theme          = Theme.dark
-        self.timezone_offset= 0
-
-    def _update(self,data):
-        old={}
-        
-        try:
-            accessibility_detection=data['allow_accessibility_detection']
-        except KeyError:
-            pass
-        else:
-            if self.accessibility_detection!=accessibility_detection:
-                old['accessibility_detection']=self.accessibility_detection
-                self.accessibility_detection=accessibility_detection
-        
-        try:
-            afk_timeout=data['afk_timeout']
-        except KeyError:
-            pass
-        else:
-            if self.afk_timeout!=afk_timeout:
-                old['afk_timeout']=self.afk_timeout
-                self.afk_timeout=afk_timeout
-        
-        try:
-            animate_emojis=data['animate_emojis']
-        except KeyError:
-            pass
-        else:
-            if self.animate_emojis!=animate_emojis:
-                old['animate_emojis']=self.animate_emojis
-                self.animate_emojis=animate_emojis
-        
-        try:
-            compact_mode=data['message_display_compact']
-        except KeyError:
-            pass
-        else:
-            if self.compact_mode!=compact_mode:
-                old['compact_mode']=self.compact_mode
-                self.compact_mode=compact_mode
-        
-        try:
-            content_filter=data['explicit_content_filter']
-        except KeyError:
-            pass
-        else:
-            content_filter=ContentFilterLevel.INSTANCES[content_filter]
-            if self.content_filter is not content_filter:
-                old['content_filter']=self.content_filter
-                self.content_filter=content_filter
-        
-        try:
-            convert_emojis=data['convert_emoticons']
-        except KeyError:
-            pass
-        else:
-            if self.convert_emojis!=convert_emojis:
-                old['convert_emojis']=self.convert_emojis
-                self.convert_emojis=convert_emojis
-        
-        try:
-            custom_status=data['custom_status']
-        except KeyError:
-            pass
-        else:
-            custom_status=self.decode_custom_status(custom_status)
-            if self.custom_status is None:
-                if custom_status is not None:
-                    old['custom_status']=None
-            else:
-                if custom_status is None:
-                    old['custom_status']=self.custom_status
-                    self.custom_status=None
-                elif self.custom_status!=custom_status:
-                    old['custom_status']=self.custom_status
-                    self.custom_status=custom_status
-        
-        try:
-            detect_platform_accounts=data['detect_platform_accounts']
-        except KeyError:
-            pass
-        else:
-            if self.detect_platform_accounts!=detect_platform_accounts:
-                old['detect_platform_accounts']=self.detect_platform_accounts
-                self.detect_platform_accounts=detect_platform_accounts
-        
-        try:
-            developer_mode=data['developer_mode']
-        except KeyError:
-            pass
-        else:
-            if self.developer_mode!=developer_mode:
-                old['developer_mode']=self.developer_mode
-                self.developer_mode=developer_mode
-        
-        try:
-            enable_tts_command=data['enable_tts_command']
-        except KeyError:
-            pass
-        else:
-            if self.enable_tts_command!=enable_tts_command:
-                old['enable_tts_command']=self.enable_tts_command
-                self.enable_tts_command=enable_tts_command
-        
-        try:
-            friend_request_flag=data['friend_source_flags']
-        except KeyError:
-            pass
-        else:
-            friend_request_flag=FriendRequestFlag.decode(friend_request_flag)
-            if self.friend_request_flag is not friend_request_flag:
-                old['friend_request_flag']=self.friend_request_flag
-                self.friend_request_flag=friend_request_flag
-        
-        try:
-            games_tab=(not data['disable_games_tab'])
-        except KeyError:
-            pass
-        else:
-            if self.games_tab!=games_tab:
-                old['games_tab']=self.games_tab
-                self.games_tab=games_tab
-        
-        try:
-            guild_folders=data['guild_folders']
-        except KeyError:
-            pass
-        else:
-            guild_folders=[GuildFolder(guild_folder_data) for guild_folder_data in guild_folders]
-            if self.guild_folders!=guild_folders:
-                old['guild_folders']=self.guild_folders
-                self.guild_folders=guild_folders
-        
-        try:
-            guild_order_ids=data['guild_positions']
-        except KeyError:
-            pass
-        else:
-            guild_order_ids=[int(guild_id) for guild_id in guild_order_ids]
-            if self.guild_order_ids!=guild_order_ids:
-                old['guild_order_ids']=self.guild_order_ids
-                self.guild_order_ids=guild_order_ids
-
-        locale=parse_locale_optional(data)
-        if (locale is not None):
-            if self.locale!=locale:
-                old['locale']=self.locale
-                self.locale=locale
-        
-        try:
-            no_DM_from_new_guilds=data['default_guilds_restricted']
-        except KeyError:
-            pass
-        else:
-            if self.no_DM_from_new_guilds!=no_DM_from_new_guilds:
-                old['no_DM_from_new_guilds']=self.no_DM_from_new_guilds
-                self.no_DM_from_new_guilds=no_DM_from_new_guilds
-        
-        try:
-            no_DM_guild_ids=data['restricted_guilds']
-        except KeyError:
-            pass
-        else:
-            no_DM_guild_ids=[int(guild_id) for guild_id in no_DM_guild_ids]
-            if self.no_DM_guild_ids!=no_DM_guild_ids:
-                old['no_DM_guild_ids']=self.no_DM_guild_ids
-                self.no_DM_guild_ids=no_DM_guild_ids
-        
-        try:
-            play_gifs=data['gif_auto_play']
-        except KeyError:
-            pass
-        else:
-            if self.play_gifs!=play_gifs:
-                old['play_gifs']=self.play_gifs
-                self.play_gifs=play_gifs
-        
-        try:
-            render_attachments=data['inline_attachment_media']
-        except KeyError:
-            pass
-        else:
-            if self.render_attachments!=render_attachments:
-                old['render_attachments']=self.render_attachments
-                self.render_attachments=render_attachments
-        
-        try:
-            render_embeds=data['render_embeds']
-        except KeyError:
-            pass
-        else:
-            if self.render_embeds!=render_embeds:
-                old['render_embeds']=self.render_embeds
-                self.render_embeds=render_embeds
-        
-        try:
-            render_links=data['inline_embed_media']
-        except KeyError:
-            pass
-        else:
-            if self.render_links!=render_links:
-                old['render_links']=self.render_links
-                self.render_links=render_links
-        
-        try:
-            render_reactions=data['render_reactions']
-        except KeyError:
-            pass
-        else:
-            if self.render_reactions!=render_reactions:
-                old['render_reactions']=self.render_reactions
-                self.render_reactions=render_reactions
-        
-        try:
-            show_current_game=data['show_current_game']
-        except KeyError:
-            pass
-        else:
-            if self.show_current_game!=show_current_game:
-                old['show_current_game']=self.show_current_game
-                self.show_current_game=show_current_game
-
-        try:
-            status=data['status']
-        except KeyError:
-            pass
-        else:
-            status=Status.INSTANCES[status]
-            if self.status is not status:
-                old['status']=self.status
-                self.status=status
-        
-        try:
-            stream_notifications=data['stream_notifications_enabled']
-        except KeyError:
-            pass
-        else:
-            if self.stream_notifications!=stream_notifications:
-                old['stream_notifications']=self.stream_notifications
-                self.stream_notifications=stream_notifications
-        
-        try:
-            theme=data['theme']
-        except KeyError:
-            pass
-        else:
-            theme=Theme.INSTANCES[theme]
-            if self.theme is not theme:
-                old['theme']=self.theme
-                self.theme=theme
-        
-        try:
-            timezone_offset=data['timezone_offset']
-        except KeyError:
-            pass
-        else:
-            if self.timezone_offset!=timezone_offset:
-                old['timezone_offset']=self.timezone_offset
-                self.timezone_offset=timezone_offset
-        
-        return old
-        
-    def _update_no_return(self,data):
-        try:
-            self.accessibility_detection=data['allow_accessibility_detection']
-        except KeyError:
-            pass
-        
-        try:
-            self.afk_timeout=data['afk_timeout']
-        except KeyError:
-            pass
-        
-        try:
-            self.animate_emojis=data['animate_emojis']
-        except KeyError:
-            pass
-        
-        try:
-            self.compact_mode=data['message_display_compact']
-        except KeyError:
-            pass
-        
-        try:
-            content_filter=data['explicit_content_filter']
-        except KeyError:
-            pass
-        else:
-            self.content_filter=ContentFilterLevel.INSTANCES[content_filter]
-        
-        try:
-            self.convert_emojis=data['convert_emoticons']
-        except KeyError:
-            pass
-        
-        try:
-            custom_status=data['custom_status']
-        except KeyError:
-            pass
-        else:
-            self.custom_status=self.decode_custom_status(custom_status)
-            
-        try:
-            self.detect_platform_accounts=data['detect_platform_accounts']
-        except KeyError:
-            pass
-        
-        try:
-            self.developer_mode=data['developer_mode']
-        except KeyError:
-            pass
-        
-        try:
-            self.enable_tts_command=data['enable_tts_command']
-        except KeyError:
-            pass
-        
-        try:
-            friend_request_flag=data['friend_request_flag']
-        except KeyError:
-            pass
-        else:
-            self.friend_request_flag=FriendRequestFlag.decode(friend_request_flag)
-        
-        try:
-            self.games_tab=(not data['disable_games_tab'])
-        except KeyError:
-            pass
-        
-        try:
-            guild_folders=data['guild_folders']
-        except KeyError:
-            pass
-        else:
-            self.guild_folders=[GuildFolder(guild_folder_data) for guild_folder_data in guild_folders]
-            
-        try:
-            guild_order_ids=data['guild_positions']
-        except KeyError:
-            pass
-        else:
-            self.guild_order_ids=[int(guild_id) for guild_id in guild_order_ids]
-        
-        
-        locale = parse_locale_optional(data)
-        if locale is not None:
-            self.locale=locale
-        
-        try:
-            self.no_DM_from_new_guilds=data['default_guilds_restricted']
-        except KeyError:
-            pass
-        
-        try:
-            no_DM_guild_ids=data['restricted_guilds']
-        except KeyError:
-            pass
-        else:
-            self.no_DM_guild_ids=[int(guild_id) for guild_id in no_DM_guild_ids]
-        
-        try:
-            self.play_gifs=data['gif_auto_play']
-        except KeyError:
-            pass
-        
-        try:
-            self.render_attachments=data['inline_attachment_media']
-        except KeyError:
-            pass
-        
-        try:
-            self.render_embeds=data['render_embeds']
-        except KeyError:
-            pass
-        
-        try:
-            self.render_links=data['inline_embed_media']
-        except KeyError:
-            pass
-        
-        try:
-            self.render_reactions=data['render_reactions']
-        except KeyError:
-            pass
-        
-        try:
-            self.show_current_game=data['show_current_game']
-        except KeyError:
-            pass
-        
-        try:
-            status=data['status']
-        except KeyError:
-            pass
-        else:
-            self.status=Status.INSTANCES[status]
-        
-        try:
-            self.stream_notifications=data['stream_notifications_enabled']
-        except KeyError:
-            pass
-        
-        try:
-            theme=data['theme']
-        except KeyError:
-            pass
-        else:
-            self.theme=Theme.INSTANCES[theme]
-        
-        try:
-            self.timezone_offset=data['timezone_offset']
-        except KeyError:
-            pass
-    
-    @staticmethod
-    def decode_custom_status(data):
-        if data is None:
-            return None
-        
-        result={}
-        
-        result['text']=data['text']
-        
-        expires_at=data['expires_at']
-        if expires_at is not None:
-            expires_at=parse_time(expires_at)
-        result['expires_at']=expires_at
-        
-        emoji_id=data['emoji_id']
-        emoji_name=data['emoji_name']
-        if None is emoji_id is emoji_name:
-            emoji=None
-        else:
-            emoji_data = {
-                'id'    : emoji_id,
-                'name'  : emoji_name,
-                    }
-            emoji=PartialEmoji(emoji_data)
-        result['emoji']=emoji
-        
-        return result
-    
-    @staticmethod
-    def encode_custom_status(data):
-        result={}
-        
-        result['text']=data.get('text')
-        
-        expires_at=data.get('expires_at')
-        if expires_at is not None:
-            expires_at=expires_at.__format__('%Y-%m-%dT%H:%M:%S+00:00')
-        result['expires_at']=expires_at
-        
-        emoji=data.get('emoji')
-        if emoji is None:
-            emoji_id    = None
-            emoji_name  = None
-        elif emoji.is_custom_emoji:
-            emoji_id    = None
-            emoji_name  = emoji.unicode
-        else:
-            emoji_id    = emoji.id.__str__()
-            emoji_name  = emoji.name
-            
-        result['emoji_id']  = emoji_id
-        result['emoji_name']= emoji_name
-        
-        return result
-    
-class GuildFolder(object):
-    __slots__=('color', 'guild_ids', 'id', 'name', )
-    def __init__(self,data):
-        name        = data['name']
-        if name is None:
-            name    = ''
-        self.name   = name
-        
-        color       = data['color']
-        if color is not None:
-            color   = Color(color)
-        self.color  = color
-        
-        id_         = data['id']
-        if id_ is None:
-            id_     = 0
-        self.id     = id_
-        
-        self.guild_ids=[int(guild_id) for guild_id in data['guild_ids']]
-
-    @property
-    def guilds(self):
-        guilds=[]
-        for guild_id in self.guild_ids:
-            try:
-                guild=GUILDS[guild_id]
-            except KeyError:
-                continue
-            guilds.append(guild)
-        
-        return guilds
-    
-    # filter out deleted guilds as well
-    def _get_and_filter_guilds(self,client):
-        guild_profiles=client.guild_profiles
-        guild_ids=self.guild_ids
-        
-        guilds=[]
-        
-        index=0
-        limit=len(guild_ids)
-        while True:
-            if index==limit:
-                break
-            
-            guild_id=guild_ids[index]
-            
-            try:
-                guild=GUILDS[guild_id]
-            except KeyError:
-                del guild_ids[index]
-                limit=limit-1
-                continue
-            
-            if client not in guild.clients:
-                del guild_ids[index]
-                limit=limit-1
-                continue
-            
-            guilds.append(guild)
-            index=index+1
-            
-        return guilds
-        
-    def copy(self):
-        new=object.__new__(type(self))
-        
-        new.color       = self.color
-        new.name        = self.name
-        new.id          = self.id
-        new.guild_ids   = self.guild_ids.copy()
-        
-        return new
-        
-    def __len__(self):
-        return len(self.guild_ids)
-    
-    def __iter__(self):
-        return iter(self.guilds)
-    
-    def __reversed__(self):
-        return reversed(self.guilds)
-    
-    def __repr__(self):
-        result=['<',self.__class__.__name__,' length=',self.__len__().__repr__()]
-        name=self.name
-        if name:
-            result.append(', name=\'')
-            result.append(name)
-            result.append('\'')
-        
-        color=self.color
-        if color is not None:
-            result.append(', color=')
-            result.append(color.as_html)
-        
-        result.append('>')
-        
-        return ''.join(result)
-    
-    def __eq__(self, other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        if self.id!=other.id:
-            return False
-        
-        if self.name!=other.name:
-            return False
-        
-        if self.color is None:
-            if other.color is not None:
-                return False
-        else:
-            if other.color is None:
-                return False
-            elif self.color!=other.color:
-                return False
-        
-        if self.guild_ids!=other.guild_ids:
-            return False
-        
-        return True
-    
-class Achievement(object):
-    __slots__=('application_id', 'description', 'icon', 'id', 'name', 'secret',
-        'secure',)
-    
-    def __init__(self,data):
-        self.application_id=int(data['application_id'])
-        self.id=int(data['id'])
-
-        self._update_no_return(data)
-
-    icon_url=property(URLS.achievement_icon_url)
-    icon_url_as=URLS.achievement_icon_url_as
-    
-    @property
-    def created_at(self):
-        return id_to_time(self.id)
-    
-    def __repr__(self):
-        return f'<{self.__class__.__name__} name={self.name!r}, id={self.id}>'
-    
-    def __str__(self):
-        return self.name
-    
-    def __format__(self,code):
-        if not code:
-            return self.name
-        if code=='c':
-            return self.created_at.__format__('%Y.%m.%d-%H:%M:%S')
-        raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
-    
-    def _update(self,data):
-        old={}
-        
-        name=data['name']['default']
-        if self.name!=name:
-            old['name']=self.name
-            self.name=name
-        
-        description=data['description']['default']
-        if self.description!=description:
-            old['description']=self.description
-            self.description=description
-        
-        secret=data['secret']
-        if self.secret!=secret:
-            old['secret']=self.secret
-            self.secret=secret
-        
-        secure=data['secure']
-        if self.secure!=secure:
-            old['secure']=self.secure
-            self.secure=secure
-        
-        icon=data.get('icon_hash')
-        icon=0 if icon is None else int(icon,16)
-        if self.icon!=icon:
-            old['icon']=icon
-            self.icon=icon
-        
-        return old
-    
-    def _update_no_return(self,data):
-        self.name=data['name']['default']
-        self.description=data['description']['default']
-        
-        self.secret=data['secret']
-        self.secure=data['secure']
-        
-        icon=data.get('icon_hash')
-        self.icon=0 if icon is None else int(icon,16)
-
 
 client_core.Client = Client
 message.Client = Client

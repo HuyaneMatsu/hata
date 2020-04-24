@@ -1,12 +1,13 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('AO2Access', 'UserOA2', 'parse_oauth2_redirect_url')
+__all__ = ('Achievement', 'AO2Access', 'UserOA2', 'parse_oauth2_redirect_url')
 
 import re
 from datetime import datetime
 from time import time as time_now
 
+from .http import URLS
 from .integration import Integration
-from .others import PremiumType
+from .others import PremiumType, id_to_time
 from .user import UserBase, UserFlag
 
 DEFAULT_LOCALE='en-US'
@@ -179,4 +180,76 @@ class UserOA2(UserBase):
     def is_bot(self):
         return False
 
-del UserBase, re
+
+class Achievement(object):
+    __slots__=('application_id', 'description', 'icon', 'id', 'name', 'secret',
+        'secure',)
+    
+    def __init__(self,data):
+        self.application_id=int(data['application_id'])
+        self.id=int(data['id'])
+
+        self._update_no_return(data)
+
+    icon_url=property(URLS.achievement_icon_url)
+    icon_url_as=URLS.achievement_icon_url_as
+    
+    @property
+    def created_at(self):
+        return id_to_time(self.id)
+    
+    def __repr__(self):
+        return f'<{self.__class__.__name__} name={self.name!r}, id={self.id}>'
+    
+    def __str__(self):
+        return self.name
+    
+    def __format__(self,code):
+        if not code:
+            return self.name
+        if code=='c':
+            return self.created_at.__format__('%Y.%m.%d-%H:%M:%S')
+        raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
+    
+    def _update(self,data):
+        old={}
+        
+        name=data['name']['default']
+        if self.name!=name:
+            old['name']=self.name
+            self.name=name
+        
+        description=data['description']['default']
+        if self.description!=description:
+            old['description']=self.description
+            self.description=description
+        
+        secret=data['secret']
+        if self.secret!=secret:
+            old['secret']=self.secret
+            self.secret=secret
+        
+        secure=data['secure']
+        if self.secure!=secure:
+            old['secure']=self.secure
+            self.secure=secure
+        
+        icon=data.get('icon_hash')
+        icon=0 if icon is None else int(icon,16)
+        if self.icon!=icon:
+            old['icon']=icon
+            self.icon=icon
+        
+        return old
+    
+    def _update_no_return(self,data):
+        self.name=data['name']['default']
+        self.description=data['description']['default']
+        
+        self.secret=data['secret']
+        self.secure=data['secure']
+        
+        icon=data.get('icon_hash')
+        self.icon=0 if icon is None else int(icon,16)
+
+del UserBase, re, URLS

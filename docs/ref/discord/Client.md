@@ -95,13 +95,13 @@ Instance Attributes:
     - [`status`](UserBase.md#status) (from property)
     - [`statuses`](UserBase.md#statuses) (from property)
     - [`activities`](UserBase.md#activities) (from property)
+    - [`flags`](UserBase.md#flags) (from property)
 - [`UserOA2`](UserOA2.md):
     - [`mfa`](UserOA2.md#mfa)
     - [`locale`](UserOA2.md#locale)
     - [`system`](UserOA2.md#system)
     - [`verified`](UserOA2.md#verified)
     - [`email`](UserOA2.md#email)
-    - [`flags`](UserOA2.md#flags)
     - [`premium_type`](UserOA2.md#premium_type)
 
 Properties:
@@ -149,18 +149,19 @@ Magic Methods:
 
 ## Instance attributes
 
-Some instance attributes are not used / tested or they might be deprecated right
-now:
-
-- `mar_token` (user account only, not tested)
-- `calls` (deprecated?)
-
 ### `_acitivity`
 
 - type : [`activity`](ACTIVITY_TYPES.md)
 - default : [`ActivityUnknown`](ActivityUnknown.md)
 
 The client's local activity.
+
+### `_status`
+
+- type : [`Status`](Status.md)
+- default : `Status.online`
+
+The client's locally preferred status.
 
 ### `_gateway_pair`
 
@@ -279,12 +280,6 @@ so the exception is guaranteed.
 
 The bot's application's `secret` key. Used at requesting oauth2 access tokens.
 
-### `settings`
-
-- type : [`Settings`](Settings.md)
-
-The client's settings.
-
 ### `shard_count`
 
 - type : `int`
@@ -360,35 +355,6 @@ Returns the received friend requests of the client.
 
 Returns the out going friend requests of the client.
 
-### `guild_order`
-
-- returns : `list`
-- elements : [`Guild`](Guild.md)
-
-Returns the display order of the client's guild on the sidebar.
-
-### `guild_order_with_folders`
-
-- returns : `list`
-- elements : [`Guild`](Guild.md) / `GuildFolder`
-
-Returns the display order of the client's guilds on the sidebar. Gouped up
-guilds will be returned as a `GuildFolder`.
-
-### `no_DM_guilds`
-
-- returns : `list`
-- elements : [`Guild`](Guild.md)
-
-Returns the list of guilds, from which the client cant get DM messages.
-
-### `allowed_DM_guilds`
-
-- returns : `list`
-- values : [`Guild`](Guild.md)
-
-Returns the list of guilds, from which the client can get DM messages.
-
 ## `Discord API side methods`
 
 All Discord API method might raise [`DiscordException`](DiscordException.md).
@@ -414,62 +380,6 @@ as `None`, will leave from the actual ones.
 - `name`, default : `None`. Can be 2-32 character long.
 - `avatar`, default : `_spaceholder`. Should be `bytes` in `'jpg'`, `'png'`, `'webp'`
 format. If the client has premium account, it can be `gif` too.
-
-### `client_edit_settings(self,...)`
-
-- `awaitable`
-- returns : `None`
-- raises : `ValueError`
-- user account only, not tested
-
-Edits the client's settings. Accepted kwargs:
-
-| name                      | description                                       |
-|---------------------------|---------------------------------------------------|
-| accessibility_detection   | bool                                              |
-| afk_timeout               | int                                               |
-| animate_emojis            | bool                                              |
-| animate_emojis            | bool                                              |
-| compact_mode              | bool                                              |
-| content_filter            | [ContentFilterLevel](ContentFilterLevel.md)       |
-| convert_emojis            | bool                                              |
-| custom_status             | dict / None                                       |
-| detect_platform_accounts  | bool                                              |
-| developer_mode            | bool                                              |
-| enable_tts_command        | bool                                              |
-| friend_request_flag       | [FriendRequestFlag](FriendRequestFlag.md)         |
-| games_tab                 | bool                                              |
-| guild_order_ids           | list of int                                       |
-| locale                    | str                                               |
-| no_DM_from_new_guilds     | bool                                              |
-| no_DM_guild_ids           | list of int                                       |
-| play_gifs                 | bool                                              |
-| render_attachments        | bool                                              |
-| render_embeds             | bool                                              |
-| render_links              | bool                                              |
-| render_reactions          | bool                                              |
-| show_current_game         | bool                                              |
-| status                    | [Status](Status.md)                               |
-| stream_notifications      | bool                                              |
-| theme                     | [Theme](Theme.md)                                 |
-| timezone_offset           | int                                               |
-
-###### `custom_status` structure
-
-| key           | value                         | default   |
-|---------------|-------------------------------|-----------|
-| text          | `str` / `None`                | `None`    |
-| expires_at    | `datetime` / `None`           | `None`    |
-| emoji         | [`Emoji`](Emoji.md) / `None`  | `None`    |
-
-### `client_sync_settings(self)`
-
-- `awaitable`
-- returns : `None`
-- raises : `ValueError`
-- user account only, not tested
-
-Requests and syncs the client's [settings](Settings.md).
 
 ### `client_edit_nick(self,guild,nick,reason=None)`
 
@@ -879,14 +789,6 @@ Returns the [webhook](Webhook.md), which follows the `target_channel`. This
 webhook will have no [`.token`](Webhook.md#token), because Discord itself
 does the actions.
 
-### `message_mar(self,message)`
-
-- `awaitable`
-- returns : `None`
-- user account only, not tested
-
-Marks the [message](Message.md) as read.
-
 ### `message_logs(self,channel,limit=100,after=None,around=None,before=None)`
 
 - `awaitable`
@@ -1181,14 +1083,6 @@ which will show up at the guild's audit logs.
 - returns : [`Guild`](Guild.md)
 
 Requests a [`guild`](Guild.md) by id and syncs it with the wrapper.
-
-### `guild_mar(self,guild)`
-
-- `awaitable`
-- returns : `None`
-- user account only, not tested
-
-Marks the guild as read.
 
 ### `guild_leave(self,guild)`
 
@@ -2145,7 +2039,6 @@ Accepted `io` types with check order:
 - `BufferedReader`, `BufferedRandom` instance
 - `IOBase` instance
 - [`AsyncIO`](AsyncIO.md) instance
-- `StreamReader` instance
 - `async iterable`
 
 Raises `TypeError` at the case of invalid `io` type .

@@ -141,8 +141,11 @@ def str_message(message,index=None,**kwargs):
         start=f'{index}.: '
     result.append(f'{start}Message {message.id}:')
     result.append(f'- length: {len(message)}')
-    if message.author is not ZEROUSER:
-        result.append(f'- author: {message.author:f}',1)
+    
+    author = message.author
+    if (author is not ZEROUSER):
+        result.append(f'- author: {author:f}',1)
+    
     if message.type is not MessageType.default:
         result.append(f'--------------------\n{message.clean_content}\n--------------------',-1)
     elif message.content:
@@ -155,20 +158,29 @@ def str_message(message,index=None,**kwargs):
         else:
             content=content.replace('`','\\`')
             result.append(f'--------------------\n{content}\n--------------------',-1)
-    channel=message.channel
+    
+    channel = message.channel
     result.append(f'- channel {channel.id} ({channel.__class__.__name__}, {channel.type})',1)
-    if channel.guild is not None:
-        result.append(f'- guild {channel.guild.id}',1)
+    
+    guild = channel.guild
+    if (guild is not None):
+        result.append(f'- guild {guild.id}',1)
+    
     result.append(f'- created at: {message:c}',1)
-    if message.edited is not None:
-        result.append(f'- edited at: {message.edited:%Y.%m.%d-%H:%M:%S}',1)
     
-    if message.reactions is not None:
-        result.append(str_reaction_mapping(message.reactions),1)
-    if message.application is not None:
-        result.append(str_message_application(message.application,1))
+    edited = message.edited
+    if (edited is not None):
+        result.append(f'- edited at: {edited:%Y.%m.%d-%H:%M:%S}',1)
     
-    activity=message.activity
+    reactions = message.reactions
+    if reactions:
+        result.append(str_reaction_mapping(reactions),1)
+    
+    application = message.application
+    if (application is not None):
+        result.append(str_message_application(application,1))
+    
+    activity = message.activity
     if (activity is not None):
         line=['- activity: ',activity.type.name]
         party_id=activity.party_id
@@ -178,14 +190,17 @@ def str_message(message,index=None,**kwargs):
             line.append(')')
         
         result.append(''.join(line),1)
-
+    
     if message.pinned:
-        result.append('- pinned = True',1)
+        result.append('- pinned',1)
     if message.tts:
-        result.append('- tts = True',1)
+        result.append('- tts',1)
+    
     result.append(f'- type : {message.type.name} ({message.type.value})',1)
-    if message.nonce:
-        result.append('- nonce = True',1)
+    
+    nonce = message.nonce
+    if (nonce is not None):
+        result.append(f'- nonce : {nonce!r}',1)
         
     mention_count=len(message.mentions)
     if mention_count:
@@ -195,47 +210,64 @@ def str_message(message,index=None,**kwargs):
             if message.everyone_mention:
                 result.append(f'- {index}.: everyone',2)
                 index+=1
-            if message.user_mentions is not None:
-                for user in message.user_mentions:
+            
+            user_mentions = message.user_mentions
+            if (user_mentions is not None):
+                for user in user_mentions:
                     result.append(f'- {index}.: {user:f} ({user.id})',2)
                     index+=1
-            if message.role_mentions is not None:
-                for role in message.role_mentions:
+            
+            role_mentions = message.role_mentions
+            if (role_mentions is not None):
+                for role in role_mentions:
                     result.append(f'- {index}.: {role.name} ({role.id})',2)
                     index+=1
-            if message.channel_mentions is not None:
-                for channel in message.channel_mentions:
+            
+            channel_mentions = message.channel_mentions
+            if (channel_mentions is not None):
+                for channel in channel_mentions:
                     result.append(f'- {index}.: {channel.name} ({channel.id})',2)
                     index+=1
 
         else:
             if message.everyone_mention:
                 result.append('- everyone',2)
-            if message.user_mentions is not None:
-                result.append(f'- users ({len(message.user_mentions)})',2)
-            if message.role_mentions is not None:
-                result.append(f'- roles ({len(message.role_mentions)})',2)
-            if message.channel_mentions is not None:
-                result.append(f'- channels ({len(message.channel_mentions)})',2)
-            if message.cross_mentions is not None:
-                result.append(f'- cross channels ({len(message.cross_mentions)})',2)
-
-    if message.call is not None:
-        result.append(str_message_call(message.call),1)
-    if message.attachments is not None:
-        result.append(f'Attachments: ({len(message.attachments)})',1)
-        for index,attachment in enumerate(message.attachments,1):
+            
+            user_mentions = message.user_mentions
+            if (user_mentions is not None):
+                result.append(f'- users ({len(user_mentions)})',2)
+            
+            role_mentions = message.role_mentions
+            if (role_mentions is not None):
+                result.append(f'- roles ({len(role_mentions)})',2)
+            
+            channel_mentions = message.channel_mentions
+            if channel_mentions is not None:
+                result.append(f'- channels ({len(channel_mentions)})',2)
+            
+            cross_mentions = message.cross_mentions
+            if (cross_mentions is not None):
+                result.append(f'- cross channels ({len(cross_mentions)})',2)
+    
+    attachments = message.attachments
+    if (attachments is not None):
+        result.append(f'Attachments: ({len(attachments)})',1)
+        for index,attachment in enumerate(attachments,1):
             result.append(str_attachment(attachment,index),1)
-    if message.embeds:
-        result.append(f'Embeds: ({len(message.embeds)})',1)
-        for index,embed in enumerate(message.embeds,1):
+    
+    embeds = message.embeds
+    if (embeds is not None):
+        result.append(f'Embeds: ({len(embeds)})',1)
+        for index,embed in enumerate(embeds,1):
             result.append(str_embed_core(embed,index),1)
-    cross_reference=message.cross_reference
-    if cross_reference is not None:
+    
+    cross_reference = message.cross_reference
+    if (cross_reference is not None):
         result.append('Cross reference:',1)
         result.append(f'- message id : {cross_reference.message_id}',2)
         result.append(f'- channel id : {cross_reference.channel_id}',2)
         result.append(f'- guild id : {cross_reference.guild_id}',2)
+    
     return result
 
 def str_reaction_mapping(reactions,index=None,**kwargs): #ignore index, 1 message can have only 1
@@ -307,8 +339,6 @@ def str_attachment(attachment,index=None,**kwargs):
     if attachment.width:
         result.append(f'- width    : {attachment.width}',1)
     return result
-
-#TODO: def str_message_call(call,**kwargs):
     
 def str_embed_core(embed,index=None,**kwargs):
     result=Pretty_block()
@@ -500,16 +530,19 @@ def str_role(role,index=None,write_parents=True,detailed=True,**kwargs):
         start=f'{index}.: '
     result.append(f'{start}Role: ({role.id})')
     result.append(f'- name : {role.name}',1)
-    guild=role.guild
-    if not guild:
+    
+    guild = role.guild
+    if (guild is None):
         result.append('- DELETED',1)
         return result
 
     if write_parents:
         result.append(f'- guild : {guild.name} ({guild.id})',1)
+    
     result.append(f'- position : {role.position}',1)
     result.append(f'- color : {role.color.as_html}',1)
     result.append(f'- permissions : {role.permissions}',1)
+    
     if role.separated:
         result.append('- separated',1)
     if role.mentionable:
@@ -1274,22 +1307,6 @@ def str_GWChannelReflection(GWC,index=None,**kwargs):
     result.append(f'- name : {GWC.name}',1)
     result.append(f'- id : {GWC.id}',1)
     result.append(f'- position {GWC.position}',1)
-
-    return result
-
-def str_message_call(call,**kwargs):
-    result=Pretty_block()
-
-    result.append(f'Message call:')
-
-    if call.ended_timestamp is None:
-        result.append('- ended : not yet',1)
-    else:
-        result.append(f'- ended : {call.ended_timestamp:%Y.%m.%d-%H:%M:%S}',1)
-    result.append(f'- message : {call.message.id}',1)
-    result.append(f'Users: {len(call.users)}',1)
-    for index,user in enumerate(call.users,1):
-        result.append(f'{index}.: {user:f}',2)
 
     return result
 

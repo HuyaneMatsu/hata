@@ -724,6 +724,15 @@ class EventThreadCTXManager(object):
 
     def __enter__(self):
         thread=self.thread
+        if (thread is not current_thread()):
+            raise RuntimeError(f'{thread!r}.run called from an other thread: {current_thread()!r}')
+        
+        if (thread.running):
+            raise RuntimeError(f'{thread!r}.run called when the thread is already running.')
+        
+        if (thread._is_stopped):
+            raise RuntimeError(f'{thread!r}.run called when the thread is already stopped.')
+        
         thread.running = True
         
         ssock,csock=module_socket.socketpair()
@@ -757,6 +766,24 @@ class EventThreadCTXManager(object):
         if selector is not None:
             selector.close()
             thread.selector = None
+
+class EventThreadRunDescriptor(object):
+    def __get__(self, obj, type_=None):
+        if obj is None:
+            return self
+        
+        if obj.running:
+            return obj.caller
+        elif not obj._is_stopped:
+            return obj.runner
+        else:
+            raise RuntimeError(f'The {obj.__class__.__name__} is already stopped.')
+    
+    def __set__(self,obj,value):
+        raise AttributeError('can\'t set attribute')
+    
+    def __delete__(self,obj):
+        raise AttributeError('can\'t delete attribute')
 
 class EventThreadType(type):
     def __call__(cls,daemon=False,name=None):
@@ -809,7 +836,7 @@ class EventThread(Executor,Thread,metaclass=EventThreadType):
         if ident is not None:
             result.append(' ident=')
             result.append(str(ident))
-
+        
         frees=len(self.free_executors)
         used=len(self.running_executors)+len(self.running_id_executors)+len(self.claimed_executors)
         
@@ -863,12 +890,12 @@ class EventThread(Executor,Thread,metaclass=EventThreadType):
     
     def cycle(self,cycletime,*funcs):
         return Cycler(self,cycletime,*funcs)
-
+    
     def _add_callback(self,handle):
         if handle.cancelled:
             return
         self._ready.append(handle)
-
+    
     def _schedule_callbacks(self,future):
         if self.running:
             callbacks=future._callbacks
@@ -930,7 +957,9 @@ class EventThread(Executor,Thread,metaclass=EventThreadType):
 
         raise TypeError('A Future, a coroutine or an awaitable is required.')
     
-    def run(self):
+    run = EventThreadRunDescriptor()
+    
+    def runner(self):
         with self.ctx:
             key     = None
             fileobj = None
@@ -991,7 +1020,10 @@ class EventThread(Executor,Thread,metaclass=EventThreadType):
                     if not handle.cancelled:
                         handle._run()
                 handle=None  #remove from locals (they said needed)
-
+    
+    def caller(self, awaitable, timeout=None):
+        return self.ensure_future_threadsafe(awaitable).syncwrap().wait(timeout)
+    
     if __debug__:
         def render_exc_async(self,exception,before=None,after=None,file=None):
             future=self.run_in_executor(alchemy_incendiary(self._render_exc_sync,(exception,before,after,file),))
@@ -1044,7 +1076,7 @@ class EventThread(Executor,Thread,metaclass=EventThreadType):
             file=sys.stderr
         
         file.write(''.join(extracted))
-
+    
     def stop(self):
         if self.should_run:
             if current_thread() is self:

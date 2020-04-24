@@ -151,7 +151,7 @@ class Pagination(object):
             if isinstance(err,ConnectionError):
                 return None
             
-            if isinstance(self,DiscordException):
+            if isinstance(err,DiscordException):
                 if err.code in (
                         ERROR_CODES.unknown_message, # message deleted
                         ERROR_CODES.unknown_channel, # message's channel deleted
@@ -456,7 +456,7 @@ class ChooseMenu(object):
             if isinstance(err,ConnectionError):
                 return self
             
-            if isinstance(self,DiscordException):
+            if isinstance(err,DiscordException):
                 if err.code in (
                         ERROR_CODES.unknown_message, # message deleted
                         ERROR_CODES.unknown_channel, # message's channel deleted

@@ -12,15 +12,6 @@ class HttpProcessingError(Exception):
 
         Exception.__init__(self,f'{self.code}, message=\'{message}\'')
 
-
-class RequestError(HttpProcessingError):
-    #Connection error during sending request."""
-    pass
-
-class ResponseError(HttpProcessingError):
-    #Connection error during reading response."""
-    pass
-
 class InvalidHandshake(Exception):
     pass
 

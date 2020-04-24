@@ -272,7 +272,7 @@ class DiscordGateway(object):
             else:
                 activity=activity.hoomandict()
         
-        status=client.settings.status.value
+        status=client._status.value
         
         data = {
             'op': self.IDENTIFY,

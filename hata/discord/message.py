@@ -8,9 +8,9 @@ from datetime import datetime
 from ..backend.dereaddons_local import any_to_any, autoposlist, cached_property, _spaceholder, BaseMethodDescriptor
 
 from .http import URLS
-from .others import parse_time, CHANNEL_MENTION_RP, id_to_time, VoiceRegion, time_to_id
+from .others import parse_time, CHANNEL_MENTION_RP, id_to_time, time_to_id
 from .client_core import MESSAGES, CHANNELS, GUILDS
-from .user import USERS, ZEROUSER, User, PartialUser, VoiceState
+from .user import ZEROUSER, User
 from .emoji import reaction_mapping
 from .embed import EmbedCore, EXTRA_EMBED_TYPES
 from .webhook import WebhookRepr, PartialWebhook, WebhookType, Webhook
@@ -437,11 +437,9 @@ class UnknownCrossMention(object):
 
         
 class Message(object):
-    __slots__=('__weakref__', '_channel_mentions', 'activity', 'application',
-        'attachments', 'author', 'call', 'channel', 'content',
-        'cross_mentions', 'cross_reference', 'edited', 'embeds',
-        'everyone_mention', 'flags', 'id', 'nonce', 'pinned', 'reactions',
-        'role_mentions', 'tts', 'type', 'user_mentions',)
+    __slots__=('__weakref__', '_channel_mentions', 'activity', 'application', 'attachments', 'author', 'channel',
+        'content', 'cross_mentions', 'cross_reference', 'edited', 'embeds', 'everyone_mention', 'flags', 'id', 'nonce',
+        'pinned', 'reactions', 'role_mentions', 'tts', 'type', 'user_mentions',)
     
     def __new__(cls,data,channel):
         raise RuntimeError(f'`{cls.__name__}` should not be created like this.')
@@ -598,12 +596,6 @@ class Message(object):
         self.content=data['content']
         self.flags=MessageFlag(data.get('flags',0))
         
-        call_data=data.get('call',None)
-        if call_data is None or self.type is not MessageType.call:
-            self.call=None
-        else:
-            self.call=MessageCall(self,call_data)
-        
         user_mention_datas=data['mentions']
         if user_mention_datas:
             self.user_mentions=[User(user_mention_data,guild) for user_mention_data in user_mention_datas]
@@ -729,24 +721,6 @@ class Message(object):
                 raise TypeError(
                     f'`author` can be type `{User.__name__}` / `{Client.__name__}` / `{Webhook.__name__}` / '
                     f'`{WebhookRepr.__name__}`, got `{author!r}`')
-        
-        try:
-            call=kwargs.pop('call')
-        except KeyError:
-            if base is None:
-                call=None
-            else:
-                call=base.call
-        else:
-            # TODO : make MessageCall work. Anyways, it is a user account only feature
-            if (call is not None) and (type(call) is not MessageCall):
-                raise TypeError(f'`call` can be `None`, or `{MessageCall.__call__}`, got `{call!r}`')
-        
-        if validate:
-            if (call is not None) and (type(channel) not in (ChannelPrivate,ChannelGroup)):
-                raise ValueError(
-                    f'`call` was passed as not `None`; `{call!r}`, meanwhile `channel` is not '
-                    f'`{ChannelPrivate.__name__}` or `{ChannelPrivate.__name__}`; `{channel!r}`')
         
         try:
             content=kwargs.pop('content')
@@ -1116,7 +1090,6 @@ class Message(object):
         message.application=application
         message.attachments=attachments
         message.author=author
-        message.call=call
         message.channel=channel
         message.content=content
         message.cross_mentions=cross_mentions
@@ -1948,133 +1921,6 @@ del convert_new_follower_channel
 del convert_stream
 del convert_discovery_disqualified
 del convert_discovery_requalified
-
-#TODO:test
-class MessageCall(object):
-    __slots__=('ended_timestamp', 'message', 'users',)
-    def __init__(self,message,call_data):
-
-        users=[]
-        try:
-            user_ids=call_data['participants']
-        except KeyError:
-            pass
-        else:
-            author_id=message.author.id
-            for user_id in user_ids:
-                user_id=int(user_id)
-                if user_id==author_id:
-                    users.append(message.author)
-                    continue
-                try:
-                    users.append(USERS[user_id])
-                except KeyError:
-                    pass
-            
-        self.message=message
-        self.users=users
-        ended_timestamp=call_data.get('ended_timestamp',None)
-        self.ended_timestamp=None if ended_timestamp is None else parse_time(ended_timestamp)
-        
-    @property
-    def call_ended(self):
-        return self.ended_timestamp is not None
-
-    @property
-    def channel(self):
-        return self.message.channel
-
-    @property
-    def duration(self):
-        if self.ended_timestamp is None:
-            return datetime.utcnow()-self.message.created_at
-        else:
-            return self.ended_timestamp-self.message.created_at
-
-#TODO:test
-class GroupCall(object):
-    __slots__=('available', 'call', 'channel', 'region', 'ringing', 'voice_states',)
-
-    def __new__(cls,data,call,channel):
-        if channel.call is None:
-            self=object.__new__(cls)
-            channel.call=self
-            self.voice_states={}
-            self.channel=channel
-        else:
-            self=channel.call
-
-        self.call=call
-        self.available=not data['unavailable']
-        self.region=VoiceRegion.get(data['region'])
-        
-        unmentioned_ids=set(self.voice_states)
-        for voice_state_data in data['voice_states']:
-            user_id=int(voice_state_data['user_id'])
-            unmentioned_ids.remove(user_id)
-            self._update_voice_state(voice_state_data,PartialUser(user_id))
-
-        for user_id in unmentioned_ids:
-            del self.voice_states[user_id]
-        
-        self.ringing=[]
-        try:
-            ringing_data=data['ringing']
-        except KeyError:
-            pass
-        else:
-            for user_id in ringing_data:
-                self.ringing.append(where(channel.users,lambda user,id_=int(user_id):user.id==id_))
-
-    def _update_voice_state(self,data,user):
-        while True:
-            channel_id=data.get('channel_id',None)
-            if channel_id is None:
-                try:
-                    state=self.voice_states.pop(user.id)
-                except KeyError:
-                    return
-                old=None
-                action='l'
-                break
-            
-            channel=self.channel
-            
-            try:
-                state=self.voice_states[user.id]
-            except KeyError:
-                state=self.voice_states[user.id]=VoiceState(data,channel)
-                old=None
-                action='j'
-                break
-
-            old=state._update(data,channel)
-            if old:
-                action='u'
-                break
-            return
-        
-        return state,action,old
-
-    def _update_voice_state_restricted(self,data,user):
-        channel_id=data.get('channel_id',None)
-        if channel_id is None:
-            try:
-                del self.voice_states[user.id]
-            except KeyError:
-                return
-            return _spaceholder
-
-        channel=self.channel
-
-        try:
-            state=self.voice_states[user.id]
-        except KeyError:
-            self.voice_states[user.id]=VoiceState(data,channel)
-            return channel
-
-        state._update_no_return(data,channel)
-        return channel
 
 ratelimit.Message = Message
 

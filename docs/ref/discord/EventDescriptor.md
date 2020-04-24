@@ -191,41 +191,6 @@ contains (`attribute name`, `old value`) items.
 | premium_type              | [PremiumType](PremiumType.md)     |
 | verified                  | bool                              |
 
-### `client_edit_settings(client,old)`
-
-Called when the client's settings are edited. The `old` argument is a `dict`
-of the changed attributes, what contains (`attribute name`, `old value`) items.
-
-| name                      | description                                       |
-|---------------------------|---------------------------------------------------|
-| accessibility_detection   | bool                                              |
-| afk_timeout               | int                                               |
-| animate_emojis            | bool                                              |
-| compact_mode              | bool                                              |
-| content_filter            | [ContentFilterLevel](ContentFilterLevel.md)       |
-| convert_emojis            | bool                                              |
-| custom_status             | dict / None                                       |
-| detect_platform_accounts  | bool                                              |
-| developer_mode            | bool                                              |
-| enable_tts_command        | bool                                              |
-| friend_request_flag       | [FriendRequestFlag](FriendRequestFlag.md)         |
-| games_tab                 | bool                                              |
-| guild_folders             | list of GuildFolder                               |
-| guild_order_ids           | list of int                                       |
-| locale                    | str                                               |
-| no_DM_from_new_guilds     | bool                                              |
-| no_DM_guild_ids           | list of int                                       |
-| gif_auto_play             | bool                                              |
-| render_attachments        | bool                                              |
-| render_embeds             | bool                                              |
-| render_links              | bool                                              |
-| render_reactions          | bool                                              |
-| show_current_game         | bool                                              |
-| status                    | [Status](Status.md)                               |
-| stream_notifications      | bool                                              |
-| theme                     | [Theme](Theme.md)                                 |
-| timezone_offset           | int                                               |
-
 ###### `custom_status` structure
 
 | key           | value                         | default   |

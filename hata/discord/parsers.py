@@ -751,13 +751,7 @@ def READY(client,data):
         for channel_private_data in channel_private_datas:
             CHANNEL_TYPES[channel_private_data['type']](channel_private_data,client)
     
-    try:
-        settings_data=data['user_settings']
-    except KeyError:
-        pass
-    else:
-        if settings_data:
-            client.settings._update_no_return(settings_data)
+    # ignore `'user_settings'`
     
     #"client.events.ready" gonna be called by _delay_ready at the end
     
@@ -2555,25 +2549,20 @@ def VOICE_STATE_UPDATE__CAL_SC(client,data):
     try:
         id_=int(data['guild_id'])
     except KeyError:
-        id_=int(data['channel_id'])
-        try:
-            call=client.calls[id_]
-        except KeyError:
-            return
-        guild=None
+        # Do not handle outside of guild calls
+        return
     else:
         try:
             guild=GUILDS[id_]
         except KeyError:
             guild_sync(client,data,'VOICE_STATE_UPDATE')
             return
-        call=guild
     
     try:
         user=User(data['member'],guild)
     except KeyError:
         user=User(data['user'])
-    result=call._update_voice_state(data,user)
+    result=guild._update_voice_state(data,user)
     
     if result is None:
         return
@@ -2597,23 +2586,16 @@ def VOICE_STATE_UPDATE__CAL_MC(client,data):
     try:
         id_=int(data['guild_id'])
     except KeyError:
-        id_=int(data['channel_id'])
-        try:
-            call=client.calls[id_]
-        except KeyError:
-            return
-        clients=call.channel.clients
-        guild=None
+        # Do not handle outside of guild calls
+        return
     else:
         try:
             guild=GUILDS[id_]
         except KeyError:
             guild_sync(client,data,'VOICE_STATE_UPDATE')
             return
-        call=guild
-        clients=guild.clients
     
-    clients=filter_clients(clients,INTENT_GUILD_VOICE_STATES)
+    clients=filter_clients(guild.clients,INTENT_GUILD_VOICE_STATES)
     if clients.send(None) is not client:
         clients.close()
         return
@@ -2622,7 +2604,7 @@ def VOICE_STATE_UPDATE__CAL_MC(client,data):
         user=User(data['member'],guild)
     except KeyError:
         user=User(data['user'])
-    result=call._update_voice_state(data,user)
+    result=guild._update_voice_state(data,user)
     
     if result is None:
         return
@@ -2647,26 +2629,21 @@ def VOICE_STATE_UPDATE__OPT_SC(client,data):
     try:
         id_=int(data['guild_id'])
     except KeyError:
-        id_=int(data['channel_id'])
-        try:
-            call=client.calls[id_]
-        except KeyError:
-            return
-        guild=None
+        # Do not handle outside of guild calls
+        return
     else:
         try:
             guild=GUILDS[id_]
         except KeyError:
             guild_sync(client,data,'VOICE_STATE_UPDATE')
             return
-        call=guild
     
     try:
         user=User(data['member'],guild)
     except KeyError:
         user=User(data['user'])
     
-    result=call._update_voice_state_restricted(data,user)
+    result=guild._update_voice_state_restricted(data,user)
     
     if result is None:
         return
@@ -2690,35 +2667,28 @@ def VOICE_STATE_UPDATE__OPT_MC(client,data):
     try:
         id_=int(data['guild_id'])
     except KeyError:
-        id_=int(data['channel_id'])
-        try:
-            call=client.calls[id_]
-        except KeyError:
-            return
-        clients=call.channel.clients
-        guild=None
+        # Do not handle outside of guild calls
+        return
     else:
         try:
             guild=GUILDS[id_]
         except KeyError:
             guild_sync(client,data,'VOICE_STATE_UPDATE')
             return
-        call=guild
-        clients=guild.clients
     
-    if first_client(clients,INTENT_GUILD_VOICE_STATES) is not client:
+    if first_client(guild.clients,INTENT_GUILD_VOICE_STATES) is not client:
         return
     
     try:
         user=User(data['member'],guild)
     except KeyError:
         user=User(data['user'])
-    result=call._update_voice_state_restricted(data,user)
+    result=guild._update_voice_state_restricted(data,user)
     
     if result is None:
         return
     
-    for client in clients:
+    for client in guild.clients:
         #need to comapre id, because if caching is disabled,
         #the objects will be different.
         if user==client:
@@ -2859,15 +2829,11 @@ def PRESENCES_REPLACE(client,data):
 PARSER_DEFAULTS('PRESENCES_REPLACE',PRESENCES_REPLACE,PRESENCES_REPLACE,PRESENCES_REPLACE,PRESENCES_REPLACE)
 del PRESENCES_REPLACE
 
-def USER_SETTINGS_UPDATE__CAL(client,data):
-    old=client.settings._update(data)
-    Task(client.events.client_edit_settings(client,old), KOKORO)
+def USER_SETTINGS_UPDATE(client,data):
+    pass
 
-def USER_SETTINGS_UPDATE__OPT(client,data):
-    client.settings._update_no_return(data)
-
-PARSER_DEFAULTS('USER_SETTINGS_UPDATE',USER_SETTINGS_UPDATE__CAL,USER_SETTINGS_UPDATE__CAL,USER_SETTINGS_UPDATE__OPT,USER_SETTINGS_UPDATE__OPT)
-del USER_SETTINGS_UPDATE__CAL, USER_SETTINGS_UPDATE__OPT
+PARSER_DEFAULTS('USER_SETTINGS_UPDATE',USER_SETTINGS_UPDATE, USER_SETTINGS_UPDATE, USER_SETTINGS_UPDATE, USER_SETTINGS_UPDATE)
+del USER_SETTINGS_UPDATE
 
 def GIFT_CODE_UPDATE__CAL(client,data):
     channel_id=int(data['channel_id'])
@@ -2914,7 +2880,6 @@ del SESSIONS_REPLACE
 #hooman only event,
 def USER_GUILD_SETTINGS_UPDATE(client,data):
     # invidual guild settings data.
-    # should we store it at settings?
     pass
 
 PARSER_DEFAULTS('USER_GUILD_SETTINGS_UPDATE',USER_GUILD_SETTINGS_UPDATE,USER_GUILD_SETTINGS_UPDATE,USER_GUILD_SETTINGS_UPDATE,USER_GUILD_SETTINGS_UPDATE)
@@ -2968,7 +2933,6 @@ EVENTS.add_default('invite_delete'              , 2 , 'INVITE_DELETE'           
 EVENTS.add_default('relationship_add'           , 2 , 'RELATIONSHIP_ADD'                , )
 EVENTS.add_default('relationship_change'        , 3 , 'RELATIONSHIP_ADD'                , )
 EVENTS.add_default('relationship_delete'        , 2 , 'RELATIONSHIP_REMOVE'             , )
-EVENTS.add_default('client_edit_settings'       , 2 , 'USER_SETTINGS_UPDATE'            , )
 EVENTS.add_default('gift_update'                , 3 , 'GIFT_CODE_UPDATE'                , )
 EVENTS.add_default('achievement'                , 2 , 'USER_ACHIEVEMENT_UPDATE'         , )
 

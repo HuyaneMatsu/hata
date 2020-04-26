@@ -4,7 +4,6 @@ __all__ = ('WSClient', 'WSServer', )
 import hashlib, codecs, functools, http
 from random import getrandbits
 from base64 import b64encode, b64decode
-import urllib.parse
 from collections import OrderedDict
 from binascii import Error as BinasciiError
 from email.utils import formatdate

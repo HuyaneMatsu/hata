@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-__version__ = '20200424.1'
+__version__ = '1.0.0'
 
 import sys
 BACKEND_ONLY = ('backend_only' in sys.argv) or ('backend-only' in sys.argv)

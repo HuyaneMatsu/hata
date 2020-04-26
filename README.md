@@ -32,12 +32,13 @@ $ python -m pip install https://github.com/HuyaneMatsu/hata/archive/master.zip
 #### Requirements
 
 - Python >= 3.6
-- [chardet](https://pypi.python.org/pypi/chardet)
+- [chardet](https://pypi.python.org/pypi/chardet) / [cchardet](https://pypi.org/project/cchardet/)
 
 #### Optional requirements
 
 - [dateutil](https://pypi.org/project/python-dateutil/)
 - [PyNaCl](https://pypi.org/project/PyNaCl/) (for voice support)
+- [brotli](https://pypi.org/project/Brotli/) / [brotlipy](https://pypi.org/project/brotlipy/)
 
 ## Join our server
 

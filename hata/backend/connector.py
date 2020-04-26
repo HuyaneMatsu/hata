@@ -38,10 +38,10 @@ class Connection(object):
         return f'<{self.__class__.__name__} to {self.key}>'
     
     def __del__(self):
-        if not self.loop.running:
-            protocol=self.protocol
-            if protocol is not None:
-                self.connector.release(self.key,protocol,should_close=True)
+        if self.loop.running:
+            protocol = self.protocol
+            if (protocol is not None):
+                self.connector.release(self.key, protocol, should_close=True)
     
     @property
     def transport(self):

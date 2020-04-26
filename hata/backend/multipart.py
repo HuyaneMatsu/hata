@@ -9,9 +9,8 @@ from .ios import AsyncIO
 
 from .hdrs import CONTENT_DISPOSITION, CONTENT_ENCODING, CONTENT_LENGTH, CONTENT_TRANSFER_ENCODING, CONTENT_TYPE
 from .helpers import content_disposition_header,CHAR,TOKEN,sentinel
-
-################X#X   py payload X#X################
-#thesse both need to be at the same file, because of the scopes
+from .protocol import ZLIB_COMPRESSOR, BROTLI_COMPRESSOR
+from .exceptions import ContentEncodingError
 
 BIG_CHUNK_LIMIT=1<<16
 
@@ -270,12 +269,6 @@ class BodyPartReaderPayload(payload_superclass):
                 await writer.write(field.decode(chunk))
             else:
                 break
-
-
-################X#X   py multipart X#X################
-
-
-
 
 class MimeType(object):
     #Parses a MIME type into its components.
@@ -777,9 +770,9 @@ class MultipartWriter(payload_superclass):
         # escape %x5C and %x22
         quoted_value_content = value.replace(b'\\',b'\\\\')
         quoted_value_content = quoted_value_content.replace(b'"', b'\\"')
-
+        
         return f'"{quoted_value_content.decode("ascii")}"'
-
+    
     def append(self,obj,headers=None):
         #Adds a new body part to multipart writer.
         if headers is None:
@@ -807,34 +800,39 @@ class MultipartWriter(payload_superclass):
         try:
             encoding=payload.headers[CONTENT_ENCODING].lower()
         except KeyError:
-            encoding=''
+            encoding = None
         else:
-            if encoding and encoding not in ('deflate', 'gzip', 'identity'):
+            if encoding in ('deflate', 'gzip', 'br', ):
+                pass
+            elif encoding in ('', 'identity'):
+                encoding = None
+            else:
                 raise RuntimeError(f'unknown content encoding: {encoding}')
-            if encoding=='identity':
-                encoding=None
         
         # te encoding
         try:
             te_encoding = payload.headers[CONTENT_TRANSFER_ENCODING].lower()
         except KeyError:
-            te_encoding=''
+            te_encoding = None
         else:
-            if te_encoding not in ('', 'base64', 'quoted-printable', 'binary'):
-                raise RuntimeError(f'unknown content transfer encoding: {te_encoding}')
-
-            if te_encoding=='binary':
+            if te_encoding == '':
+                te_encoding = None
+            elif te_encoding in ('base64', 'quoted-printable'):
+                pass
+            elif te_encoding=='binary':
                 te_encoding=None
-
+            else:
+                raise RuntimeError(f'unknown content transfer encoding: {te_encoding}')
+        
         # size
         size=payload.size
         
-        if size is not None and not (encoding or te_encoding):
+        if (size is not None) and (encoding is None) and (te_encoding is None):
             payload.headers[CONTENT_LENGTH]=str(size)
-
+        
         # render headers
         headers=''.join([f'{k}: {v}\r\n' for k, v in payload.headers.items()]).encode('utf-8') + b'\r\n'
-
+        
         self.parts.append((payload,headers,encoding,te_encoding))
 
         return payload
@@ -860,19 +858,19 @@ class MultipartWriter(payload_superclass):
 
         return self.append_payload(
             StringPayload(data,headers=headers,content_type='application/x-www-form-urlencoded'))
-
+    
     @property
     def size(self):
         if not self.parts:
             return 0
-
+        
         total=0
         for part,headers,encoding,te_encoding in self.parts:
             if encoding or te_encoding or part.size is None:
                 return None
             total+=6+len(self._boundary)+part.size+len(headers)
             # b'--'+self._boundary+b'\r\n' # b'\r\n'
-
+        
         total+=6+len(self._boundary) 
         # b'--'+self._boundary+b'--\r\n'
         
@@ -880,86 +878,99 @@ class MultipartWriter(payload_superclass):
 
     async def write(self,writer,close_boundary=True):
         #Writes body
-        if not self.parts:
+        parts = self.parts
+        if not parts:
             return
-
-        for part,headers,encoding,te_encoding in self.parts:
+        
+        for part, headers, encoding, te_encoding in parts:
             await writer.write(b'--'+self._boundary+b'\r\n') #fb strings pls!
             await writer.write(headers)
             
-            if encoding or te_encoding:
+            if (encoding is not None) or (te_encoding is not None):
                 w = MultipartPayloadWriter(writer)
-                if encoding:
+                if (encoding is not None):
                     w.enable_compression(encoding)
-                if te_encoding:
+                if (te_encoding is not None):
                     w.enable_encoding(te_encoding)
                 await part.write(w)
                 await w.write_eof()
             else:
                 await part.write(writer)
             await writer.write(b'\r\n')
-
+        
         if close_boundary:
             await writer.write(b'--'+self._boundary+b'--\r\n')
 
 
 class MultipartPayloadWriter:
-    __slots__=('compress', 'encoding', 'encoding_buffer', 'writer',)
-
+    __slots__=('compressor', 'encoding', 'encoding_buffer', 'writer',)
+    
     def __init__(self,writer):
         self.writer    = writer
         self.encoding  = None
-        self.compress  = None
-
+        self.compressor= None
+        self.encoding_buffer = None
+    
     def enable_encoding(self,encoding):
-        if encoding=='base64':
-            self.encoding          = encoding
-            self.encoding_buffer   = bytearray()
+        if encoding == 'base64':
+            self.encoding = encoding
+            self.encoding_buffer = bytearray()
         
-        elif encoding=='quoted-printable':
-            self.encoding          = 'quoted-printable'
-
-    def enable_compression(self,encoding='deflate'):
+        elif encoding == 'quoted-printable':
+            self.encoding = encoding
+    
+    def enable_compression(self,encoding):
         if encoding=='gzip':
-            zlib_mode=16+zlib.MAX_WBITS
+            compressor = ZLIB_COMPRESSOR(wbits=16+zlib.MAX_WBITS)
+        elif encoding=='deflate':
+            compressor = ZLIB_COMPRESSOR(wbits=-zlib.MAX_WBITS)
+        elif encoding=='br':
+            if BROTLI_COMPRESSOR is None:
+                raise ContentEncodingError('Can not decode content-encoding: brotli (br). Please install `brotlipy`.')
+            compressor = BROTLI_COMPRESSOR()
+        elif encoding=='identity':
+            # I asume this is no encoding
+            compressor = None
         else:
-            zlib_mode=-zlib.MAX_WBITS
-            
-        self.compress=zlib.compressobj(wbits=zlib_mode)
-
+            raise ContentEncodingError(f'Can not decode content-encoding: {encoding!r}.')
+        
+        self.compressor = compressor
+    
     async def write_eof(self):
-        if self.compress is not None:
-            chunk=self.compress.flush()
+        compressor = self.compressor
+        if (compressor is not None):
+            chunk = compressor.flush()
+            self.compressor = None
             if chunk:
-                self.compress=None
                 await self.write(chunk)
-
+        
         if self.encoding=='base64':
-            if self.encoding_buffer:
-                await self.writer.write(base64.b64encode(self.encoding_buffer))
-
+            encoding_buffer = self.encoding_buffer
+            if encoding_buffer:
+                await self.writer.write(base64.b64encode(encoding_buffer))
+    
     async def write(self, chunk):
-        if self.compress is not None:
+        compressor = self.compressor
+        if (compressor is not None):
             if chunk:
-                chunk=self.compress.compress(chunk)
+                chunk = compressor.compress(chunk)
                 if not chunk:
                     return
-
-        if self.encoding=='base64':
-            self.encoding_buffer.extend(chunk)
-
-            if self.encoding_buffer:
-                buffer=self.encoding_buffer
-                div,mod=divmod(len(buffer),3)
-                
-                encoding_chunk         = buffer[:div*3]
-                self.encoding_buffer   = buffer[div*3:]
-                
-                if encoding_chunk:
-                    encoding_chunk=base64.b64encode(encoding_chunk)
+        
+        encoding = self.encoding
+        if encoding=='base64':
+            encoding_buffer = self.encoding_buffer
+            encoding_buffer.extend(chunk)
+            
+            if encoding_buffer:
+                barrier = (len(encoding_buffer)//3)*3
+                if barrier:
+                    encoding_chunk = encoding_buffer[:barrier]
+                    del encoding_buffer[:barrier]
+                    encoding_chunk = base64.b64encode(encoding_chunk)
                     await self.writer.write(encoding_chunk)
-                    
-        elif self.encoding=='quoted-printable':
+        
+        elif encoding=='quoted-printable':
             await self.writer.write(binascii.b2a_qp(chunk))
             
         else:

@@ -9,7 +9,7 @@ from .preconverters import preconvert_str, preconvert_bool, preconvert_snowflake
 
 from . import activity
 
-UNICODE_EMOJI_LIMIT=0b10000000000000000000000
+UNICODE_EMOJI_LIMIT=0b1000000000000000000000
 
 def PartialEmoji(data):
     emoji_id=data.get('id')

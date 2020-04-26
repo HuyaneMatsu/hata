@@ -438,8 +438,7 @@ class ClientRequest(object):
 
 class ClientResponse:
     __slots__=('_released', 'body', 'closed', 'connection', 'payload_waiter',
-        'cookies', 'headers', 'history', 'loop', 'method',
-        'reason', 'status', 'timer', 'url', 'writer', 'raw_message')
+        'cookies', 'headers', 'history', 'loop', 'method', 'status', 'timer', 'url', 'writer', 'raw_message')
        
     def __init__(self,method,url,loop,writer,timer):
         self.method         = method
@@ -458,8 +457,17 @@ class ClientResponse:
         self.headers        = None  # Response headers, multidict_titled
         self.connection     = None  # current connection
         
+        self.raw_message    = None
         self.history        = None  # will be added later
-
+    
+    @property
+    def reason(self):
+        message = self.raw_message
+        if (message is not None):
+            reason = message.reason
+            if (reason is not None):
+                return reason.decode()
+        
     def __del__(self):
         if self.closed:
             return
@@ -471,13 +479,8 @@ class ClientResponse:
     
     def __repr__(self):
         ascii_encodable_url=str(self.url)
-        raw_message = self.raw_message
-        if (raw_message is None):
-            reason = None
-        else:
-            reason = self.raw_message.reason
         
-        return f'<{self.__class__.__name__}({ascii_encodable_url}) [{self.status} {reason!r}]>'
+        return f'<{self.__class__.__name__}({ascii_encodable_url}) [{self.status} {self.reason!r}]>'
     
     async def start(self,connection):
         #Start response processing.
@@ -498,7 +501,6 @@ class ClientResponse:
         
         #response status
         self.status     = message.status
-        self.reason     = message.reason
         #headers
         self.headers    = message.headers
         #owo

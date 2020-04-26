@@ -16,24 +16,35 @@ try:
 except ImportError:
     brotli = None
     COMPRESSION_ERRORS = zlib.error
-    BROTLI_DECOMPRESSER = None
+    BROTLI_DECOMPRESSOR = None
+    BROTLI_COMPRESSOR = None
 else:
     COMPRESSION_ERRORS = (zlib.error, brotli.error)
     
     if hasattr(brotli, 'Error'):
         # brotlipy case
-        BROTLI_DECOMPRESSER = brotli.Decompressor
+        BROTLI_DECOMPRESSOR = brotli.Decompressor
+        BROTLI_COMPRESSOR = brotli.Compressor
     else:
         # brotli case
-        class BROTLI_DECOMPRESSER(object):
-            __slots__ = ('_decompresser', )
+        class BROTLI_DECOMPRESSOR(object):
+            __slots__ = ('_decompressor', )
             def __init__(self):
-                self._decompresser = brotli.Decompressor()
+                self._decompressor = brotli.Decompressor()
             
             def decompress(self, value):
-                return self._decompresser.process(value)
+                return self._decompressor.process(value)
+        
+        class BROTLI_COMPRESSOR(object):
+            __slots__ = ('_compressor', )
+            def __init__(self):
+                self._compressor = brotli.Compressor()
+            
+            def compress(self, value):
+                return self._compressor.process(value)
 
-ZLIB_DECOMPRESSER = zlib.decompressobj
+ZLIB_DECOMPRESSOR = zlib.decompressobj
+ZLIB_COMPRESSOR = zlib.compressobj
 
 WS_OP_CONT     = 0
 WS_OP_TEXT     = 1
@@ -1331,22 +1342,22 @@ class ProtocolBase(object):
     @staticmethod
     def _decompresser_for(encoding):
         if (encoding is None):
-            decompresser = None
-        elif encoding=='br':
-            if brotli is None:
-                raise ContentEncodingError('Can not decode content-encoding: brotli (br). Please install `brotlipy`.')
-            decompresser = BROTLI_DECOMPRESSER()
+            decompressor = None
         elif encoding=='gzip':
-            decompresser=ZLIB_DECOMPRESSER(wbits=16+zlib.MAX_WBITS)
+            decompressor=ZLIB_DECOMPRESSOR(wbits=16+zlib.MAX_WBITS)
         elif encoding=='deflate':
-            decompresser=ZLIB_DECOMPRESSER(wbits=-zlib.MAX_WBITS)
+            decompressor=ZLIB_DECOMPRESSOR(wbits=-zlib.MAX_WBITS)
+        elif encoding=='br':
+            if BROTLI_DECOMPRESSOR is None:
+                raise ContentEncodingError('Can not decode content-encoding: brotli (br). Please install `brotlipy`.')
+            decompressor = BROTLI_DECOMPRESSOR()
         elif encoding=='identity':
             # I asume this is no encoding
-            decompresser = None
+            decompressor = None
         else:
             raise ContentEncodingError(f'Can not decode content-encoding: {encoding!r}.')
         
-        return decompresser
+        return decompressor
     
     def read_chunked(self):
         collected = []

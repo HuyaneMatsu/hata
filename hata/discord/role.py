@@ -1,8 +1,9 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('PermOW', 'Role', 'cr_p_overwrite_object', 'cr_p_role_object', )
 
+from .bases import DiscordEntity
 from .client_core import ROLES
-from .others import id_to_time, random_id
+from .others import random_id
 from .color import Color
 from .permission import Permission, PERM_KEYS
 from .user import PartialUser
@@ -34,9 +35,9 @@ def PartialRole(role_id):
     
     return role
 
-class Role(object):
-    __slots__=('__weakref__', 'color', 'guild', 'separated', 'id', 'managed',
-        'mentionable', 'name', 'permissions', 'position',)
+class Role(DiscordEntity, immortal=True):
+    __slots__ = ('color', 'guild', 'separated', 'managed', 'mentionable', 'name', 'permissions', 'position',)
+    
     def __new__(cls,data,guild):
         role_id=int(data['id'])
         try:
@@ -234,10 +235,6 @@ class Role(object):
     @property
     def is_default(self):
        return self.position==0
-    
-    @property
-    def created_at(self):
-        return id_to_time(self.id)
 
     @property
     def mention(self):
@@ -251,9 +248,6 @@ class Role(object):
         if code=='c':
             return f'{self.created_at:%Y.%m.%d-%H:%M:%S}'
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
-
-    def __hash__(self):
-        return self.id
     
     @property
     def users(self):
@@ -268,82 +262,56 @@ class Role(object):
         return (self.guild is None)
 
     def __gt__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
+        if type(self) is type(other):
+            if self.position > other.position:
+                return True
+            
+            if self.position == other.position:
+                if self.id>other.id:
+                    return True
         
-        if self.position>other.position:
-            return True
-        
-        if self.position<other.position:
             return False
         
-        if self.id>other.id:
-            return True
-        
-        return False
+        return NotImplemented
     
     def __ge__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        if self.position>other.position:
-            return True
-        
-        if self.position<other.position:
+        if type(self) is type(other):
+            if self.position > other.position:
+                return True
+            
+            if self.position == other.position:
+                if self.id >= other.id:
+                    return True
+            
             return False
         
-        if self.id>=other.id:
-            return True
-        
-        return False
-    
-    def __eq__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        if self.id==other.id:
-            return True
-            
-        return False
-    
-    def __ne__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        if self.id==other.id:
-            return False
-            
-        return True
+        return NotImplemented
     
     def __le__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        if self.position<other.position:
-            return True
-        
-        if self.position>other.position:
+        if type(self) is type(other):
+            if self.position < other.position:
+                return True
+            
+            if self.position == other.position:
+                if self.id <= other.id:
+                    return True
+            
             return False
         
-        if self.id<=other.id:
-            return True
-        
-        return False
+        return NotImplemented
     
     def __lt__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        if self.position<other.position:
-            return True
-        
-        if self.position>other.position:
+        if type(self) is type(other):
+            if self.position < other.position:
+                return True
+            
+            if self.position == other.position:
+                if self.id < other.id:
+                    return True
+            
             return False
         
-        if self.id<other.id:
-            return True
-        
-        return False
+        return NotImplemented
 
 #permission overwrite
 class PermOW(object):
@@ -480,3 +448,4 @@ def cr_p_overwrite_object(target,allow,deny):
 ratelimit.Role = Role
 
 del ratelimit
+del DiscordEntity

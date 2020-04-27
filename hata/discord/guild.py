@@ -7,9 +7,10 @@ import re
 from ..backend.dereaddons_local import autoposlist, cached_property, weakposlist, _spaceholder
 from ..backend.futures import Task
 
+from .bases import DiscordEntity
 from .client_core import CACHE_PRESENCE, GUILDS
-from .others import id_to_time, EMOJI_NAME_RP, VoiceRegion, Status, VerificationLevel, MessageNotificationLevel, \
-    MFA, ContentFilterLevel
+from .others import EMOJI_NAME_RP, VoiceRegion, Status, VerificationLevel, MessageNotificationLevel, MFA, \
+    ContentFilterLevel
 from .user import User, PartialUser, VoiceState, UserBase, ZEROUSER
 from .role import Role
 from .channel import CHANNEL_TYPES, ChannelCategory
@@ -187,7 +188,7 @@ class GuildEmbed(object):
         else:
             channel=None
         self.channel= guild.embed_channel=channel
-        
+    
     @classmethod
     def from_guild(cls,guild):
         self=object.__new__(cls)
@@ -199,9 +200,9 @@ class GuildEmbed(object):
     def __repr__(self):
         return f'<{self.__class__.__name__} of guild {self.guild!r}>'
 
-class GWUserReflection(object):
-    __slots__ = ('activity_name', 'avatar_url', 'discrimintator', 'id', 'name', 'status')
-
+class GWUserReflection(DiscordEntity):
+    __slots__ = ('activity_name', 'avatar_url', 'discrimintator', 'name', 'status')
+    
     def __init__(self,data):
         self.name           = data['username']
         self.id             = int(data['id'])
@@ -216,54 +217,15 @@ class GWUserReflection(object):
             activity_name = activity_data['name']
         
         self.activity_name  = activity_name
-
+    
     def __str__(self):
         return self.name
-
+    
     def __repr__(self):
         return f'<{self.__class__.__name__} name={self.name} ({self.id})>'
-    
-    def __hash__(self):
-        return self.id
-    
-    def __gt__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        return self.id>other.id
-    
-    def __ge__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        return self.id>=other.id
 
-    def __eq__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        return self.id==other.id
-    
-    def __ne__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        return self.id!=other.id
-    
-    def __le__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        return self.id<=other.id
-
-    def __lt__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        return self.id<other.id
-
-class GWChannelReflection(object):
-    __slots__  = ('id', 'name', 'position')
+class GWChannelReflection(DiscordEntity):
+    __slots__  = ('name', 'position')
     
     def __init__(self,data):
         self.id = int(data['id'])
@@ -272,72 +234,53 @@ class GWChannelReflection(object):
     
     def __str__(self):
         return self.name
-
+    
     def __repr__(self):
         return f'<{self.__class__.__name__} name={self.name} ({self.id})>'
-
-    def __hash__(self):
-        return self.id
-
+    
     def __gt__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
+        if type(self) is type(other):
+            if self.position > other.position:
+                return True
+            
+            if self.position == other.position:
+                if self.id > other.id:
+                    return True
         
-        if self.position>other.position:
-            return True
-        
-        if self.position<other.position:
-            return False
-        
-        return self.id>other.id
+        return NotImplemented
     
     def __ge__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
+        if type(self) is type(other):
+            if self.position > other.position:
+                return True
+            
+            if self.position == other.position:
+                if self.id >= other.id:
+                    return True
         
-        if self.position>other.position:
-            return True
-        
-        if self.position<other.position:
-            return False
-        
-        return self.id>=other.id
-    
-    def __eq__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        return self.id==other.id
-    
-    def __ne__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        return self.id!=other.id
+        return NotImplemented
     
     def __le__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
+        if type(self) is type(other):
+            if self.position < other.position:
+                return True
+            
+            if self.position == other.position:
+                if self.id <= other.id:
+                    return True
         
-        if self.position<other.position:
-            return True
-        
-        if self.position>other.position:
-            return False
-        
-        return self.id<=other.id
+        return NotImplemented
     
     def __lt__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
+        if type(self) is type(other):
+            if self.position < other.position:
+                return True
+            
+            if self.position == other.position:
+                if self.id < other.id:
+                    return True
         
-        if self.position<other.position:
-            return True
-        
-        if self.position>other.position:
-            return False
-        
-        return self.id<other.id
+        return NotImplemented
 
 class GuildWidget(object):
     __slots__=('_cache', '_data', 'guild',)
@@ -348,7 +291,7 @@ class GuildWidget(object):
         self._cache={}
     
     json_url=property(URLS.guild_widget_json_url)
-        
+    
     @property
     def id(self):
         return self.guild.id
@@ -490,15 +433,15 @@ def PartialGuild(data):
 
 #discord does not sends `embed_channel`, `embed_enabled`, `widget_channel`,
 #`widget_enabled`, `max_presences`, `max_users` correctly and thats sad.
-class Guild(object):
-    __slots__ = ('__weakref__', '_boosters', '_cache_perm', 'afk_channel', 'afk_timeout', 'all_channel', 'all_role',
-        'available', 'banner', 'booster_count', 'channels', 'clients', 'content_filter', 'description',
-        'discovery_splash', 'embed_channel', 'embed_enabled', 'emojis', 'features', 'has_animated_icon', 'icon', 'id',
-        'is_large', 'max_presences', 'max_users', 'max_video_channel_users', 'message_notification', 'mfa', 'name',
-        'owner', 'preferred_locale', 'premium_tier', 'public_updates_channel', 'region', 'roles', 'rules_channel',
-        'splash', 'system_channel', 'system_channel_flags', 'user_count', 'users', 'vanity_code', 'verification_level',
+class Guild(DiscordEntity, immortal=True):
+    __slots__ = ('_boosters', '_cache_perm', 'afk_channel', 'afk_timeout', 'all_channel', 'all_role', 'available',
+        'banner', 'booster_count', 'channels', 'clients', 'content_filter', 'description', 'discovery_splash',
+        'embed_channel', 'embed_enabled', 'emojis', 'features', 'has_animated_icon', 'icon',  'is_large',
+        'max_presences', 'max_users', 'max_video_channel_users', 'message_notification', 'mfa', 'name', 'owner',
+        'preferred_locale', 'premium_tier', 'public_updates_channel', 'region', 'roles', 'rules_channel', 'splash',
+        'system_channel', 'system_channel_flags', 'user_count', 'users', 'vanity_code', 'verification_level',
         'voice_states', 'webhooks', 'webhooks_uptodate', 'widget_channel', 'widget_enabled',)
-
+    
     def __new__(cls,data,client):
         guild_id=int(data['id'])
         
@@ -733,10 +676,7 @@ class Guild(object):
 
     def __repr__(self):
         return f'<{self.__class__.__name__} {self.name if self.clients else "Partial"} ({self.id})>'
-
-    def __hash__(self):
-        return self.id
-
+    
     def __format__(self,code):
         if not code:
             return self.name
@@ -881,19 +821,15 @@ class Guild(object):
     @property
     def messageable_channels(self):
         return [channel for channel in self.all_channel.values() if channel.type in (0,5)]
-
+    
     @property
     def default_role(self):
         return self.roles[0]
-
+    
     @property
     def partial(self):
         return (not self.clients)
-
-    @property
-    def created_at(self):
-        return id_to_time(self.id)
-
+    
     def _sync(self,data,client):
         try:
             self.is_large=data['large']
@@ -1659,44 +1595,6 @@ class Guild(object):
             emoji=emojis[emoji_id]
             emoji._delete()
     
-    def __gt__(self,other):
-        try:
-            return self.id>other.id
-        except AttributeError:
-            return NotImplemented
-
-    def __ge__(self,other):
-        if type(self) is type(other):
-            return self.id>=other.id
-        try:
-            return self.id>other.id
-        except AttributeError:
-            return NotImplemented
-
-    def __eq__(self,other):
-        if type(self) is type(other):
-            return self.id==other.id
-        return NotImplemented
-
-    def __ne__(self,other):
-        if type(self) is type(other):
-            return self.id!=other.id
-        return NotImplemented
-
-    def __le__(self,other):
-        if type(self) is type(other):
-            return self.id<=other.id
-        try:
-            return self.id<other.id
-        except AttributeError:
-            return NotImplemented
-
-    def __lt__(self,other):
-        try:
-            return self.id>other.id
-        except AttributeError:
-            return NotImplemented
-
     @property
     def emoji_limit(self):
         limit=(50,100,150,250)[self.premium_tier]
@@ -1755,10 +1653,9 @@ class Guild(object):
 
         return guild
 
-class GuildPreview(object):
-    __slots__ = ('description', 'discovery_splash', 'emojis', 'features',
-        'has_animated_icon', 'icon', 'id', 'name', 'online_count', 'splash',
-        'user_count')
+class GuildPreview(DiscordEntity):
+    __slots__ = ('description', 'discovery_splash', 'emojis', 'features', 'has_animated_icon', 'icon', 'name',
+        'online_count', 'splash', 'user_count', )
     
     def __init__(self,data):
         self.description = data.get('description',None)
@@ -1819,18 +1716,11 @@ class GuildPreview(object):
     discovery_splash_url=property(URLS.guild_discovery_splash_url)
     discovery_splash_url_as=URLS.guild_discovery_splash_url_as
     
-    @property
-    def created_at(self):
-        return id_to_time(self.id)
-    
     def __str__(self):
         return self.name
     
     def __repr__(self):
         return f'<{self.__class__.__name__} {self.name} ({self.id})>'
-    
-    def __hash__(self):
-        return self.id
     
     def __format__(self,code):
         if not code:
@@ -1838,42 +1728,6 @@ class GuildPreview(object):
         if code=='c':
             return f'{self.created_at:%Y.%m.%d-%H:%M:%S}'
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
-    
-    def __gt__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        return self.id>other.id
-    
-    def __ge__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        return self.id>=other.id
-    
-    def __eq__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        return self.id==other.id
-    
-    def __ne__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        return self.id!=other.id
-    
-    def __le__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        return self.id<=other.id
-    
-    def __lt__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        return self.id<other.id
 
 ratelimit.Guild = Guild
 
@@ -1882,3 +1736,4 @@ del cached_property
 del ActivityUnknown
 del UserBase
 del ratelimit
+del DiscordEntity

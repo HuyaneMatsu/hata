@@ -65,7 +65,7 @@ def PartialWebhook(webhook_id, token, type_=WebhookType.bot, channel=None):
 
 
 class Webhook(UserBase):
-    __slots__=('channel', 'token', 'type', 'user', ) #default webhook
+    __slots__ = ('channel', 'token', 'type', 'user', ) #default webhook
 
     @property
     def is_bot(self):

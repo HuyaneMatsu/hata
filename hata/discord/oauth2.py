@@ -5,9 +5,10 @@ import re
 from datetime import datetime
 from time import time as time_now
 
+from .bases import DiscordEntity
 from .http import URLS
 from .integration import Integration
-from .others import PremiumType, id_to_time
+from .others import PremiumType
 from .user import UserBase, UserFlag
 
 DEFAULT_LOCALE='en-US'
@@ -60,9 +61,8 @@ def parse_oauth2_redirect_url(url):
         return None
     return result.groups()
 
-class Connection(object):
-    __slots__=('friend_sync', 'id', 'integrations', 'name', 'revoked',
-        'show_activity', 'type', 'verified', 'visibility',)
+class Connection(DiscordEntity):
+    __slots__ = ('friend_sync', 'integrations', 'name', 'revoked', 'show_activity', 'type', 'verified', 'visibility',)
     def __init__(self,data):
         self.name=data['name']
         self.type=data['type']
@@ -99,8 +99,7 @@ SCOPES={v:v for v in ('activities.read', 'activities.write',
 class AO2Access(object):
     TOKEN_TYPE='Bearer'
     
-    __slots__=('access_token', 'created_at', 'expires_in', 'redirect_url',
-        'refresh_token', 'scopes',)
+    __slots__ = ('access_token', 'created_at', 'expires_in', 'redirect_url', 'refresh_token', 'scopes',)
     def __init__(self,data,redirect_url):
         self.redirect_url=redirect_url
         self.access_token=data['access_token']
@@ -134,8 +133,7 @@ class AO2Access(object):
         
         
 class UserOA2(UserBase):
-    __slots__ = ('access', 'email', 'flags', 'locale', 'mfa', 'premium_type',
-    'system', 'verified',) #oauth 2 provided by scope
+    __slots__ = ('access', 'email', 'flags', 'locale', 'mfa', 'premium_type', 'system', 'verified', )
 
     def __init__(self,data,access):
         self.access         = access
@@ -181,9 +179,8 @@ class UserOA2(UserBase):
         return False
 
 
-class Achievement(object):
-    __slots__=('application_id', 'description', 'icon', 'id', 'name', 'secret',
-        'secure',)
+class Achievement(DiscordEntity):
+    __slots__ = ('application_id', 'description', 'icon', 'name', 'secret', 'secure',)
     
     def __init__(self,data):
         self.application_id=int(data['application_id'])
@@ -193,10 +190,6 @@ class Achievement(object):
 
     icon_url=property(URLS.achievement_icon_url)
     icon_url_as=URLS.achievement_icon_url_as
-    
-    @property
-    def created_at(self):
-        return id_to_time(self.id)
     
     def __repr__(self):
         return f'<{self.__class__.__name__} name={self.name!r}, id={self.id}>'
@@ -252,4 +245,7 @@ class Achievement(object):
         icon=data.get('icon_hash')
         self.icon=0 if icon is None else int(icon,16)
 
-del UserBase, re, URLS
+del UserBase
+del re
+del URLS
+del DiscordEntity

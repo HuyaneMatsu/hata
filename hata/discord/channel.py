@@ -9,8 +9,8 @@ from time import monotonic
 from ..backend.dereaddons_local import weakposlist
 from ..backend.futures import sleep
 
+from .bases import DiscordEntity
 from .client_core import CHANNELS
-from .others import id_to_time
 from .permission import Permission
 from .http import URLS
 from .message import Message, MESSAGES
@@ -68,10 +68,9 @@ def PartialChannel(data,partial_guild=None):
     
     return channel
     
-class ChannelBase(object):
-    __slots__=('__weakref__', 'id')
+class ChannelBase(DiscordEntity, immortal=True):
     INTERCHANGE=(0,)
-
+    
     def __new__(cls,data,client=None,guild=None):
         channel_id=int(data['id'])
         try:
@@ -86,15 +85,16 @@ class ChannelBase(object):
         if update:
             #make sure about this
             channel._finish_init(data,client,guild)
-                
+        
         if cls is ChannelPrivate:
             if channel.users[0] is client:
                 user=channel.users[1]
             else:
                 user=channel.users[0]
-                
+            
             client.private_channels[user.id]=channel
             client.channels[channel_id]=channel
+        
         elif cls is ChannelGroup:
             client.channels[channel_id]=channel
         
@@ -102,10 +102,10 @@ class ChannelBase(object):
 
     def __repr__(self):
         return f'<{self.__class__.__name__} id={self.id}, name={self.__str__()!r}>'
-
-    def __hash__(self):
-        return self.id
-
+    
+    def __str__(self):
+        return ''
+    
     def __format__(self,code):
         if not code:
             return self.__str__()
@@ -116,24 +116,24 @@ class ChannelBase(object):
         if code=='c':
             return f'{self.created_at:%Y.%m.%d-%H:%M:%S}'
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
-
+    
+    @property
+    def display_name(self):
+        return ''
+    
     @property
     def mention(self):
         return f'<#{self.id}>'
     
     @property
-    def created_at(self):
-        return id_to_time(self.id)
-
-    @property
     def partial(self):
         return (not self.clients)
-
+    
     def get_user(self,name,default=None):
         if len(name)>37:
             return default
         users=self.users
-
+        
         if len(name)>6 and name[-5]=='#':
             try:
                 discriminator=int(name[-4:])
@@ -144,16 +144,16 @@ class ChannelBase(object):
                 for user in users:
                     if user.discriminator==discriminator and user.name==name:
                         return user
-
+        
         if len(name)>32:
             return default
-
+        
         for user in users:
             if user.name==name:
                 return user
         
         return default
-
+    
     def get_user_like(self,name,default=None):
         if not 1<len(name)<33:
             return default
@@ -174,7 +174,11 @@ class ChannelBase(object):
                 continue
             result.append(user)
         return result
-                
+    
+    @property
+    def users(self):
+        return []
+    
     @property
     def clients(self):
         result=[]
@@ -183,38 +187,38 @@ class ChannelBase(object):
                 continue
             result.append(user)
         return result
-
+    
     #for sorting channels
     def __gt__(self,other):
         if isinstance(other,ChannelBase):
             return self.id>other.id
         return NotImplemented
-
+    
     def __ge__(self,other):
         if isinstance(other,ChannelBase):
             return self.id>=other.id
         return NotImplemented
-
+    
     def __eq__(self,other):
         if isinstance(other,ChannelBase):
             return self.id==other.id
         return NotImplemented
-
+    
     def __ne__(self,other):
         if isinstance(other,ChannelBase):
             return self.id!=other.id
         return NotImplemented
-
+    
     def __le__(self,other):
         if isinstance(other,ChannelBase):
             return self.id<=other.id
         return NotImplemented
-
+    
     def __lt__(self,other):
         if isinstance(other,ChannelBase):
             return self.id<other.id
         return NotImplemented
-    
+
 async def _load_till(client,channel,index):
     if index>=channel._mc_gc_limit:
         if channel.messages.maxlen is not None:
@@ -312,9 +316,7 @@ async def messages_till_index(client,channel,start=0,end=100):
         result.append(messages[index])
         
     return result
-            
-    
-    
+
 #searches the relative index of a message in a list
 def message_relativeindex(self,message_id):
     bot=0
@@ -329,15 +331,15 @@ def message_relativeindex(self,message_id):
             continue
         break
     return bot
-    
-class ChannelTextBase(object):
+
+class ChannelTextBase:
 #do not call any functions from this if u dunno anything about them!
 #the message history is basically sorted by message_id, what can be translated to real time
 #the newer messages are at the start meanwhile the olders at the end
 #do not try to delete not existing message's id, or it will cause desync
 #this class is propably slow as fork at cpython, use pypy?
     MC_GC_LIMIT=10
-    __slots__=()
+    __slots = ('_mc_gc_limit', '_turn_gc_on_at', 'message_history_reached_end', 'messages', )
     def _mc_init(channel):
         #discord side bug: we cant check last message
         channel.message_history_reached_end=False
@@ -345,7 +347,7 @@ class ChannelTextBase(object):
         limit=channel.MC_GC_LIMIT
         channel._mc_gc_limit=limit
         channel.messages=deque(maxlen=limit)
-        
+    
     def _get_mc_gc_limit(channel):
         return channel._mc_gc_limit
     
@@ -564,65 +566,88 @@ class ChannelTextBase(object):
             limit=limit-1
 
 class ChannelGuildBase(ChannelBase):
-    __slots__=('_cache_perm', 'category', 'guild', 'name', 'overwrites', 'position',)
-
+    __slots__ = ('_cache_perm', 'category', 'guild', 'name', 'overwrites', 'position', )
+    
     ORDER_GROUP=0
-
+    
     def __gt__(self,other):
-        if isinstance(other,ChannelGuildBase):
-            return (
-                self.ORDER_GROUP>other.ORDER_GROUP or ( \
-                    self.ORDER_GROUP==other.ORDER_GROUP and ( \
-                        self.position>other.position or ( \
-                            self.position==other.position and self.id>other.id
-                                ))))
-
-        if isinstance(other,ChannelBase):
-            return self.id>other.id
-
-        return NotImplemented
-
-    def __ge__(self,other):
-        if isinstance(other,ChannelGuildBase):
-            return (
-                self.ORDER_GROUP>other.ORDER_GROUP or ( \
-                    self.ORDER_GROUP==other.ORDER_GROUP and ( \
-                        self.position>other.position or ( \
-                            self.position==other.position and self.id>other.id
-                                )) or (self.id==other.id) ))
-
-        if isinstance(other,ChannelBase):
-            return self.id>=other.id
-
-        return NotImplemented
-
+        if isinstance(other, ChannelGuildBase):
+            if self.ORDER_GROUP > other.ORDER_GROUP:
+                return True
+            
+            if self.ORDER_GROUP == other.ORDER_GROUP:
+                if self.position > other.position:
+                    return True
+                
+                if self.position == other.position:
+                    if self.id > other.id:
+                        return True
+            
+            return False
         
+        if isinstance(other, ChannelBase):
+            return self.id > other.id
+        
+        return NotImplemented
+    
+    def __ge__(self, other):
+        if isinstance(other, ChannelGuildBase):
+            if self.ORDER_GROUP > other.ORDER_GROUP:
+                return True
+            
+            if self.ORDER_GROUP == other.ORDER_GROUP:
+                if self.position > other.position:
+                    return True
+                
+                if self.position == other.position:
+                    if self.id >= other.id:
+                        return True
+            
+            return False
+        
+        if isinstance(other, ChannelBase):
+            return self.id >= other.id
+        
+        return NotImplemented
+    
     def __le__(self,other):
-        if isinstance(other,ChannelGuildBase):
-            return (
-                self.ORDER_GROUP<other.ORDER_GROUP or ( \
-                    self.ORDER_GROUP==other.ORDER_GROUP and ( \
-                        self.position<other.position or ( \
-                            self.position==other.position and self.id<other.id
-                                )) or (self.id==other.id) ))
-
-        if isinstance(other,ChannelBase):
-            return self.id<=other.id
-
-        return NotImplemented
+        if isinstance(other, ChannelGuildBase):
+            if self.ORDER_GROUP < other.ORDER_GROUP:
+                return True
+            
+            if self.ORDER_GROUP == other.ORDER_GROUP:
+                if self.position < other.position:
+                    return True
+                
+                if self.position == other.position:
+                    if self.id <= other.id:
+                        return True
+            
+            return False
         
+        if isinstance(other, ChannelBase):
+            return self.id <= other.id
+        
+        return NotImplemented
+    
     def __lt__(self,other):
-        if isinstance(other,ChannelGuildBase):
-            return (
-                self.ORDER_GROUP<other.ORDER_GROUP or ( \
-                    self.ORDER_GROUP==other.ORDER_GROUP and ( \
-                        self.position<other.position or ( \
-                            self.position==other.position and self.id<other.id
-                                ))))
-
-        if isinstance(other,ChannelBase):
-            return self.id<other.id
-
+        if isinstance(other, ChannelGuildBase):
+            if self.ORDER_GROUP < other.ORDER_GROUP:
+                return True
+            
+            if self.ORDER_GROUP == other.ORDER_GROUP:
+                if self.position < other.position:
+                    return True
+                
+                if self.position == other.position:
+                    if self.id < other.id:
+                        return True
+            
+            return False
+        
+        if isinstance(other, ChannelBase):
+            return self.id < other.id
+        
         return NotImplemented
 
     def _init_catpos(self,data,guild):
@@ -848,9 +873,8 @@ class ChannelGuildBase(ChannelBase):
             return permissions
 
 
-class ChannelText(ChannelGuildBase,ChannelTextBase):
-    __slots__=('nsfw', 'slowmode', 'topic', 'type', #guild text channel related
-        '_mc_gc_limit', '_turn_gc_on_at', 'message_history_reached_end', 'messages',) #text channel related
+class ChannelText(ChannelGuildBase, ChannelTextBase):
+    __slots__ = ('nsfw', 'slowmode', 'topic', 'type',) #guild text channel related
 
     ORDER_GROUP=0
     INTERCHANGE=(0,5,)
@@ -1076,9 +1100,8 @@ class ChannelText(ChannelGuildBase,ChannelTextBase):
         return channel
 
 
-class ChannelPrivate(ChannelBase,ChannelTextBase):
-    __slots__=('call', 'users', #private related
-        '_mc_gc_limit', '_turn_gc_on_at',  'message_history_reached_end', 'messages',) # text channel related
+class ChannelPrivate(ChannelBase, ChannelTextBase):
+    __slots__ = ('users',) #private related
 
     INTERCHANGE=(1,)
     type=1
@@ -1086,7 +1109,6 @@ class ChannelPrivate(ChannelBase,ChannelTextBase):
     def _finish_init(self,data,client,guild):
         self.users=[User(data['recipients'][0]),client]
         self.users.sort()
-        self.call=None
         
         self._mc_init()
 
@@ -1096,7 +1118,6 @@ class ChannelPrivate(ChannelBase,ChannelTextBase):
         self._mc_init()
         self.id         = channel_id
         #what data does this contain?
-        self.call       = None
         self.users      = []
         
         return self
@@ -1169,8 +1190,7 @@ class ChannelPrivate(ChannelBase,ChannelTextBase):
             channel=object.__new__(cls)
 
             channel.id          = channel_id
-
-            channel.call        = None
+            
             channel.users       = []
 
             channel._mc_init()
@@ -1182,7 +1202,7 @@ class ChannelPrivate(ChannelBase,ChannelTextBase):
 
 class ChannelVoice(ChannelGuildBase):
     __slots__=('bitrate',  'user_limit') #Voice channel related
-
+    
     ORDER_GROUP=2
     INTERCHANGE=(2,)
     type=2
@@ -1363,10 +1383,9 @@ class ChannelVoice(ChannelGuildBase):
         return channel
 
 
-class ChannelGroup(ChannelBase,ChannelTextBase):
-    __slots__=('call', 'users', # private channel related
-        'icon', 'name', 'owner', #group channel related
-        '_mc_gc_limit', '_turn_gc_on_at', 'message_history_reached_end', 'messages') # text channel related
+class ChannelGroup(ChannelBase, ChannelTextBase):
+    __slots__ = ('users', # private channel related
+        'icon', 'name', 'owner',) #group channel related
 
     INTERCHANGE=(3,)
     type=3
@@ -1379,7 +1398,6 @@ class ChannelGroup(ChannelBase,ChannelTextBase):
         
         icon=data.get('icon')
         self.icon=0 if icon is None else int(icon,16)
-        self.call=None
         
         users=[User(user_data) for user_data in data['recipients']]
         users.sort()
@@ -1398,7 +1416,6 @@ class ChannelGroup(ChannelBase,ChannelTextBase):
         self=object.__new__(cls)
         self._mc_init()
         self.id         = channel_id
-        self.call       = None
         # even if we get recipients, we will ignore them
         self.users      = []
         
@@ -1552,7 +1569,6 @@ class ChannelGroup(ChannelBase,ChannelTextBase):
             
             channel.id          = channel_id
             
-            channel.call        = None
             channel.users       = []
             
             channel.name        = ''
@@ -1948,3 +1964,4 @@ del message
 del webhook
 del URLS
 del ratelimit
+del DiscordEntity

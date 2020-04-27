@@ -1,23 +1,55 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('Application', 'Team', 'TeamMember', 'TeamMembershipState', )
 
+from .bases import DiscordEntity
 from .http import URLS
 from .user import ZEROUSER, User
 from .guild import PartialGuild
 from .client_core import TEAMS
-from .others import id_to_time
 
-class Application(object):
-    __slots__=('bot_public', 'bot_require_code_grant', 'cover',
-        'description', 'guild', 'icon', 'id', 'name', 'owner',
+class Application(DiscordEntity):
+    __slots__ = ('bot_public', 'bot_require_code_grant', 'cover', 'description', 'guild', 'icon', 'name', 'owner',
         'primary_sku_id', 'rpc_origins', 'slug', 'summary', 'verify_key',)
-
+    
     def __init__(self,data=None):
         if data is None:
             self._fillup()
         else:
             self(data)
-
+    
+    def __hash__(self):
+        id_ = self.id
+        if id_:
+            return id_
+        
+        raise TypeError(f'Cannot hash partial {self.__class__.__name__} object.')
+    
+    @property
+    def partial(self):
+        return (self.id == 0)
+    
+    def __repr__(self):
+        result = [
+            '<',
+            self.__class__.__name__,
+                ]
+        
+        id_ = self.id
+        if id_:
+            result.append(' id=')
+            result.append(repr(id_))
+            result.append(', name=')
+            result.append(repr(self.name))
+        else:
+            result.append(' partial')
+        
+        result.append('>')
+        
+        return ''.join(result)
+    
+    def __str__(self):
+        return self.name
+    
     def _fillup(self):
         self.id=0
         self.name=''
@@ -33,7 +65,7 @@ class Application(object):
         self.primary_sku_id=0
         self.slug=''
         self.cover=0
-        
+    
     def __call__(self,data):
         self.id=int(data['id'])
         self.name=data['name']
@@ -67,18 +99,14 @@ class Application(object):
 
         cover=data.get('cover_image')
         self.cover=0 if cover is None else int(cover,16)
-    
-    @property
-    def created_at(self):
-        return id_to_time(self.id)
-    
+        
     icon_url=property(URLS.application_icon_url)
     icon_url_as=URLS.application_icon_url_as
     cover_url=property(URLS.application_cover_url)
     cover_url_as=URLS.application_cover_url_as
 
-class Team(object):
-    __slots__=('__weakref__', 'icon', 'id', 'members', 'name', 'owner',)
+class Team(DiscordEntity, immortal=True):
+    __slots__=('icon', 'members', 'name', 'owner',)
     def __new__(cls,data):
         team_id=int(data['id'])
         try:
@@ -86,7 +114,7 @@ class Team(object):
         except KeyError:
             team=object.__new__(cls)
             team.id=team_id
-            
+        
         #update every attribute
         team.name=data['name']
         
@@ -104,15 +132,11 @@ class Team(object):
 
         #sync it later to keep the references meanwhile
         team.members=members
-
+        
         return team
     
     icon_url=property(URLS.team_icon_url)
     icon_url_as=URLS.team_icon_url_as
-    
-    @property
-    def created_at(self):
-        return id_to_time(self.id)
     
     @property
     def invited(self):
@@ -123,7 +147,10 @@ class Team(object):
     def accepted(self):
         target_state=TeamMembershipState.ACCEPTED
         return [team_member.user for team_member in self.members if team_member.state is target_state]
-
+    
+    def __str__(self):
+        return self.name
+    
     def __repr__(self):
         return f'<{self.__class__.__name__} owner={self.owner:f} total members : {len(self.members)}>'
     
@@ -169,13 +196,13 @@ class TeamMembershipState(object):
         self.name=name
         
         self.INSTANCES[value]=self
-
+    
     def __str__(self):
         return self.name
-
+    
     def __int__(self):
         return self.value
-
+    
     def __repr__(self):
         return f'{self.__class__.__name__}(value={self.value}, name=\'{self.name}\')'
     

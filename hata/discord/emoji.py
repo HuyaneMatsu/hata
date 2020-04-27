@@ -1,6 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('BUILTIN_EMOJIS', 'Emoji', 'parse_emoji', 'reaction_mapping', 'reaction_mapping_line',)
 
+from .bases import DiscordEntity
 from .client_core import EMOJIS
 from .others import id_to_time, EMOJI_RP
 from .http import URLS
@@ -41,9 +42,8 @@ def PartialEmoji(data):
     
     return emoji
     
-class Emoji(object):
-    __slots__=('__weakref__', 'animated', 'available', 'guild', 'id',
-        'managed', 'name', 'require_colons', 'roles', 'unicode', 'user',)
+class Emoji(DiscordEntity, immortal=True):
+    __slots__ = ('animated', 'available', 'guild', 'managed', 'name', 'require_colons', 'roles', 'unicode', 'user', )
     
     def __new__(cls,data,guild):
         emoji_id=int(data['id'])
@@ -89,36 +89,6 @@ class Emoji(object):
             emoji.roles={guild.all_role[int(role_id)] for role_id in role_ids}
         
         return emoji
-
-    def __gt__(self,other):
-        if type(self) is type(self):
-            return self.id>other.id
-        return NotImplemented
-        
-    def __ge__(self,other):
-        if type(self) is type(self):
-            return self.id<other.id
-        return NotImplemented
-    
-    def __eq__(self,other):
-        if type(self) is type(self):
-            return self.id==other.id
-        return NotImplemented
-        
-    def __ne__(self,other):
-        if type(self) is type(self):
-            return self.id!=other.id
-        return NotImplemented
-    
-    def __le__(self,other):
-        if type(self) is type(self):
-            return self.id<=other.id
-        return NotImplemented
-        
-    def __lt__(self,other):
-        if type(self) is type(self):
-            return self.id<other.id
-        return NotImplemented
     
     @classmethod
     def precreate(cls, emoji_id, **kwargs):
@@ -172,15 +142,12 @@ class Emoji(object):
         
         return emoji
     
-    def __hash__(self):
-        return self.id
-
     def __str__(self):
         return self.name
-
+    
     def __repr__(self):
         return f'<{self.__class__.__name__} id={self.id} name={self.name}>'
-
+    
     def __format__(self,code):
         if not code:
             return self.name
@@ -208,13 +175,13 @@ class Emoji(object):
 
     def is_unicode_emoji(self):
         return self.id<UNICODE_EMOJI_LIMIT
-
+    
     @property
     def as_reaction(self):
         if self.id<UNICODE_EMOJI_LIMIT:
             return self.unicode
         return f'{self.name}:{self.id}'
-
+    
     @property
     def as_emoji(self):
         if self.id<UNICODE_EMOJI_LIMIT:
@@ -223,7 +190,7 @@ class Emoji(object):
             return f'<a:{self.name}:{self.id}>'
         else:
             return f'<:{self.name}:{self.id}>'
-
+    
     @property
     def created_at(self):
         return id_to_time(0 if self.id<UNICODE_EMOJI_LIMIT else self.id)

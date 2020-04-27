@@ -7,8 +7,9 @@ from datetime import datetime
 
 from ..backend.dereaddons_local import any_to_any, autoposlist, cached_property, _spaceholder, BaseMethodDescriptor
 
+from .bases import DiscordEntity
 from .http import URLS
-from .others import parse_time, CHANNEL_MENTION_RP, id_to_time, time_to_id
+from .others import parse_time, CHANNEL_MENTION_RP, time_to_id
 from .client_core import MESSAGES, CHANNELS, GUILDS
 from .user import ZEROUSER, User
 from .emoji import reaction_mapping
@@ -128,8 +129,8 @@ class MessageActivity(object):
     def __repr__(self):
         return f'<{self.__class__.__name__} type={self.type.name} ({self.type.value}), party_id={self.party_id!r}>'
     
-class Attachment(object):
-    __slots__=('height', 'id', 'name', 'proxy_url', 'size', 'url', 'width',)
+class Attachment(DiscordEntity):
+    __slots__ = ('height', 'name', 'proxy_url', 'size', 'url', 'width',)
     def __init__(self,data):
         self.name       = data['filename']
         self.id         = int(data['id'])
@@ -138,49 +139,6 @@ class Attachment(object):
         self.url        = data['url']
         self.height     = data.get('height',0)
         self.width      = data.get('width',0)
-    
-    @property
-    def created_at(self):
-        return id_to_time(self.id)
-    
-    def __gt__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        return self.id>other.id
-
-    def __ge__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        return self.id>=other.id
-
-    def __eq__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-            
-        return self.id==other.id
-        
-    def __ne__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        return self.id!=other.id
-
-    def __le__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        return self.id<=other.id
-
-    def __lt__(self,other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        return self.id<other.id
-    
-    def __hash__(self):
-        return self.id
     
     def __repr__(self):
         result = [
@@ -202,8 +160,8 @@ class Attachment(object):
         return ''.join(result)
         
 
-class MessageApplication(object):
-    __slots__=('cover', 'description', 'icon', 'id', 'name',)
+class MessageApplication(DiscordEntity):
+    __slots__ = ('cover', 'description', 'icon', 'name',)
     def __init__(self,data):
         cover = data.get('cover_image',None)
         self.cover      = 0 if cover is None else int(cover,16)
@@ -213,51 +171,13 @@ class MessageApplication(object):
         self.id         = int(data['id'])
         self.name       = data['name']
     
-    @property
-    def created_at(self):
-        return id_to_time(self.id)
-    
     icon_url=property(URLS.application_icon_url)
     icon_url_as=URLS.application_icon_url_as
     cover_url=property(URLS.application_cover_url)
     cover_url_as=URLS.application_cover_url_as
     
-    def __gt__(self,other):
-        if type(self) is type(other):
-            return self.id>other.id
-        return NotImplemented
-
-    def __ge__(self,other):
-        if type(self) is type(other):
-            return self.id>=other.id
-        return NotImplemented
-
-    def __eq__(self,other):
-        if type(self) is type(other):
-            return self.id==other.id
-        return NotImplemented
-
-    def __ne__(self,other):
-        if type(self) is type(other):
-            return self.id!=other.id
-        return NotImplemented
-
-    def __le__(self,other):
-        if type(self) is type(other):
-            return self.id<=other.id
-        return NotImplemented
-
-    def __lt__(self,other):
-        if type(self) is type(other):
-            return self.id<other.id
-        return NotImplemented
-    
-    def __hash__(self):
-        return self.id
-    
     def __repr__(self):
         return f'<{self.__class__.__name__} name={self.name!r}, id={self.id}>'
-
 
 class MessageReference(object):
     __slots__=('_cache',)
@@ -270,7 +190,7 @@ class MessageReference(object):
             channel_id=0
         else:
             channel_id=int(channel_id)
-            
+        
         cache['channel_id']=channel_id
         
         try:
@@ -334,8 +254,8 @@ class MessageReference(object):
     def __repr__(self):
         return f'<{self.__class__.__name__} channel_id={self._cache["channel_id"]}, guild_id={self._cache["guild_id"]}, message_id={self._cache["message_id"]}>'
 
-class UnknownCrossMention(object):
-    __slots__=('guild_id', 'id', 'name', 'type',)
+class UnknownCrossMention(DiscordEntity):
+    __slots__ = ('guild_id', 'name', 'type',)
     def __new__(cls,data):
         channel_id=int(data['id'])
         try:
@@ -381,9 +301,6 @@ class UnknownCrossMention(object):
 
     def __str__(self):
         return self.name
-    
-    def __hash__(self):
-        return self.id
 
     def __format__(self,code):
         if not code:
@@ -399,11 +316,7 @@ class UnknownCrossMention(object):
     @property
     def clients(self):
         return []
-
-    @property
-    def created_at(self):
-        return id_to_time(self.id)
-
+    
     @property
     def display_name(self):
         type_=self.type
@@ -436,10 +349,10 @@ class UnknownCrossMention(object):
         return True
 
         
-class Message(object):
-    __slots__=('__weakref__', '_channel_mentions', 'activity', 'application', 'attachments', 'author', 'channel',
-        'content', 'cross_mentions', 'cross_reference', 'edited', 'embeds', 'everyone_mention', 'flags', 'id', 'nonce',
-        'pinned', 'reactions', 'role_mentions', 'tts', 'type', 'user_mentions',)
+class Message(DiscordEntity, immortal=True):
+    __slots__ = ('_channel_mentions', 'activity', 'application', 'attachments', 'author', 'channel', 'content',
+        'cross_mentions', 'cross_reference', 'edited', 'embeds', 'everyone_mention', 'flags', 'nonce', 'pinned',
+        'reactions', 'role_mentions', 'tts', 'type', 'user_mentions',)
     
     def __new__(cls,data,channel):
         raise RuntimeError(f'`{cls.__name__}` should not be created like this.')
@@ -1144,42 +1057,9 @@ class Message(object):
             return self._parse_channel_mentions()
         return result
     
-    def __gt__(self,other):
-        if type(self) is type(other):
-            return self.id>=other.id
-        return NotImplemented
-    
-    def __ge__(self,other):
-        if type(self) is type(other):
-            return self.id>=other.id
-        return NotImplemented
-    
-    def __eq__(self,other):
-        if type(self) is type(other):
-            return self.id==other.id
-        return NotImplemented
-    
-    def __ne__(self,other):
-        if type(self) is type(other):
-            return self.id!=other.id
-        return NotImplemented
-    
-    def __le__(self,other):
-        if type(self) is type(other):
-            return self.id<=other.id
-        return NotImplemented
-    
-    def __lt__(self,other):
-        if type(self) is type(other):
-            return self.id<other.id
-        return NotImplemented
-
-    def __hash__(self):
-        return self.id
-    
     def __repr__(self):
-        return f'<{self.__class__.__name__} id={self.id} ln={len(self)} author={self.author:f}>'
-
+        return f'<{self.__class__.__name__} id={self.id}, ln={len(self)}, author={self.author:f}>'
+    
     def __format__(self,code):
         if not code:
             return self.__repr__()
@@ -1190,8 +1070,7 @@ class Message(object):
                return f'{self.edited:%Y.%m.%d-%H:%M:%S}'
             return 'never'
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
-
-        
+    
     def _update(self,data):
         old={}
 
@@ -1402,10 +1281,6 @@ class Message(object):
     def clean_content(self):
         return self.type.convert(self)
     
-    @property
-    def created_at(self):
-        return id_to_time(self.id)
-
     def _update_no_return(self,data):
         self.pinned=data['pinned']
         
@@ -1927,3 +1802,4 @@ ratelimit.Message = Message
 del autoposlist
 del URLS
 del ratelimit
+del DiscordEntity

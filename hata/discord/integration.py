@@ -1,13 +1,13 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('Integration', )
 
+from .bases import DiscordEntity
 from .client_core import INTEGRATIONS, ROLES
 from .user import User
-from .others import parse_time, id_to_time
+from .others import parse_time
 
-class Integration(object):
-    __slots__=('__weakref__', 'account_id', 'account_name', 'enabled',
-        'expire_behavior', 'expire_grace_period', 'id', 'name', 'role',
+class Integration(DiscordEntity, immortal=True):
+    __slots__ = ('account_id', 'account_name', 'enabled', 'expire_behavior', 'expire_grace_period', 'name', 'role',
         'synced_at', 'syncing', 'type', 'user',)
     
     def __new__(cls,data):
@@ -32,15 +32,10 @@ class Integration(object):
         
         return integration
     
-    def __hash__(self):
-        return self.id
-
     def __str__(self):
         return self.name
     
     def __repr__(self):
         return f'<{self.__class__.__name__} type={self.type} id={self.id} user={self.user.full_name}>'
 
-    @property
-    def created_at(self):
-        return id_to_time(self.id)
+del DiscordEntity

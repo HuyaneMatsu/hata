@@ -38,9 +38,8 @@ InviteTargetType.NONE   = InviteTargetType(0,'NONE')
 InviteTargetType.STREAM = InviteTargetType(1,'STREAM')
 
 class Invite(object):
-    __slots__=('channel', 'code', 'created_at', 'guild', 'inviter', 'max_age',
-        'max_uses', 'online_count','target_type', 'target_user', 'temporary',
-        'user_count', 'uses',)
+    __slots__ = ('channel', 'code', 'created_at', 'guild', 'inviter', 'max_age', 'max_uses', 'online_count',
+        'target_type', 'target_user', 'temporary', 'user_count', 'uses',)
 
     def __init__(self,data):
         self.code = data['code']

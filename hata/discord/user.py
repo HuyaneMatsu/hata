@@ -5,8 +5,9 @@ from datetime import datetime
 
 from ..backend.dereaddons_local import modulize
 
-from .client_core import CACHE_USER,CACHE_PRESENCE, USERS
-from .others import parse_time, Status, DISCORD_EPOCH, id_to_time
+from .bases import DiscordEntity
+from .client_core import CACHE_USER, CACHE_PRESENCE, USERS
+from .others import parse_time, Status, DISCORD_EPOCH
 from .color import Color, DefaultAvatar
 from .activity import ActivityUnknown, Activity
 from .http import URLS
@@ -152,9 +153,8 @@ else:
     def PartialUser(user_id):
         return User._create_empty(user_id)
 
-
 class GuildProfile(object):
-    __slots__=('boosts_since', 'joined_at', 'nick', 'roles',)
+    __slots__ = ('boosts_since', 'joined_at', 'nick', 'roles',)
     
     @property
     def created_at(self):
@@ -265,8 +265,8 @@ class GuildProfile(object):
         
         return Color(0)
 
-class UserBase(object):
-    __slots__=('id', 'name', 'discriminator', 'avatar', 'has_animated_avatar', '__weakref__',)
+class UserBase(DiscordEntity, immortal=True):
+    __slots__ = ('name', 'discriminator', 'avatar', 'has_animated_avatar',)
     
     def __init_subclass__(cls):
         rich = cls.__rich__
@@ -320,13 +320,6 @@ class UserBase(object):
     @property
     def mention_nick(self):
         return f'<@!{self.id}>'
-    
-    @property
-    def created_at(self):
-        return id_to_time(self.id)
-    
-    def __hash__(self):
-        return self.id
     
     avatar_url=property(URLS.user_avatar_url)
     avatar_url_as=URLS.user_avatar_url_as
@@ -1302,3 +1295,4 @@ del URLS
 del modulize
 del CACHE_USER
 del CACHE_PRESENCE
+del DiscordEntity

@@ -12,7 +12,7 @@ from ...backend.dereaddons_local import multidict
 from ...discord.others import cchunkify
 if (relativedelta is not None):
     from ...discord.others import elapsed_time
-from ...discord.permission import PERM_KEYS
+from ...discord.permission import Permission
 from ...discord.user import ZEROUSER
 from ...discord.message import MessageType
 
@@ -854,7 +854,7 @@ def str_PermOW(overwrite,index=None,detailed=True,**kwargs):
     deny=overwrite.deny
     if detailed:
         result.append('Permission changes:',1)
-        for name,push in PERM_KEYS.items():
+        for name, push in Permission.__keys__.items():
             if (allow>>push)&1:
                 v='allow'
             elif (deny>>push)&1:

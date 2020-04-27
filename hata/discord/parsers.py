@@ -9,6 +9,7 @@ from ..backend.futures import Future, Task, iscoroutinefunction as iscoro
 from ..backend.dereaddons_local import function, RemoveMeta, _spaceholder, MethodLike
 from ..backend.analyzer import CallableAnalyzer
 
+from .bases import FlagBase
 from .client_core import CACHE_USER, CACHE_PRESENCE, CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO
 from .user import User, PartialUser,USERS
 from .channel import CHANNEL_TYPES, ChannelGuildBase
@@ -54,26 +55,6 @@ INTENT_GUILD_TYPINGS      = 11
 INTENT_DIRECT_MESSAGES    = 12
 INTENT_DIRECT_REACTIONS   = 13
 INTENT_DIRECT_TYPINGS     = 14
-
-
-INTENT_KEYS = {
-    'guilds'            : INTENT_GUILDS,
-    'guild_users'       : INTENT_GUILD_USERS,
-    'guild_bans'        : INTENT_GUILD_BANS,
-    'guild_emojis'      : INTENT_GUILD_EMOJIS,
-    'guild_integrations': INTENT_GUILD_INTEGRATIONS,
-    'guild_webhooks'    : INTENT_GUILD_WEBHOOKS,
-    'guild_invites'     : INTENT_GUILD_INVITES,
-    'guild_voice_states': INTENT_GUILD_VOICE_STATES,
-    'guild_presences'   : INTENT_GUILD_PRESENCES,
-    'guild_messages'    : INTENT_GUILD_MESSAGES,
-    'guild_reactions'   : INTENT_GUILD_REACTIONS,
-    'guild_typings'     : INTENT_GUILD_TYPINGS,
-    'direct_messages'   : INTENT_DIRECT_MESSAGES,
-    'direct_reactions'  : INTENT_DIRECT_REACTIONS,
-    'direct_typings'    : INTENT_DIRECT_TYPINGS,
-        }
-
 
 INTENT_EVENTS = {
     INTENT_GUILDS : (
@@ -167,8 +148,24 @@ GLOBAL_INTENT_EVENTS = (
     'SESSIONS_REPLACE', # User account only
         )
 
-class IntentFlag(int):
-    __slots__ = ()
+class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
+    __keys__ = {
+        'guilds'            : INTENT_GUILDS,
+        'guild_users'       : INTENT_GUILD_USERS,
+        'guild_bans'        : INTENT_GUILD_BANS,
+        'guild_emojis'      : INTENT_GUILD_EMOJIS,
+        'guild_integrations': INTENT_GUILD_INTEGRATIONS,
+        'guild_webhooks'    : INTENT_GUILD_WEBHOOKS,
+        'guild_invites'     : INTENT_GUILD_INVITES,
+        'guild_voice_states': INTENT_GUILD_VOICE_STATES,
+        'guild_presences'   : INTENT_GUILD_PRESENCES,
+        'guild_messages'    : INTENT_GUILD_MESSAGES,
+        'guild_reactions'   : INTENT_GUILD_REACTIONS,
+        'guild_typings'     : INTENT_GUILD_TYPINGS,
+        'direct_messages'   : INTENT_DIRECT_MESSAGES,
+        'direct_reactions'  : INTENT_DIRECT_REACTIONS,
+        'direct_typings'    : INTENT_DIRECT_TYPINGS,
+            }
     
     def __new__(cls, int_ = -1):
         if not isinstance(int_,int):
@@ -176,14 +173,14 @@ class IntentFlag(int):
         
         new=0
         if int_ < 0:
-            for value in INTENT_KEYS.values():
+            for value in cls.__keys__.values():
                 new = new|(1<<value)
             
             # If presence cache is disabled, disable presence updates
             if not CACHE_PRESENCE:
                 new = new^(1<<INTENT_GUILD_PRESENCES)
         else:
-            for value in INTENT_KEYS.values():
+            for value in cls.__keys__.values():
                 if (int_>>value)&1:
                     new = new|(1<<value)
             
@@ -195,253 +192,11 @@ class IntentFlag(int):
         return int.__new__(cls,new)
     
     def iterate_parser_names(self):
-        for position in INTENT_KEYS.values():
-            if (self>>position)&1:
-                yield from INTENT_EVENTS[position]
-            
-        yield from GLOBAL_INTENT_EVENTS
-    
-    def __repr__(self):
-        return f'{self.__class__.__name__}({self!s})'
-    
-    def __getitem__(self,key):
-        return (self>>INTENT_KEYS[key])&1
-    
-    def keys(self):
-        for key,position in INTENT_KEYS.items():
-            if (self>>position)&1:
-                yield key
-    
-    __iter__=keys
-    
-    def values(self):
-        for position in INTENT_KEYS.values():
-            if (self>>position)&1:
-                yield position
-    
-    def items(self):
-        for key,index in INTENT_KEYS.items():
-            yield key,(self>>index)&1
-    
-    def __contains__(self,key):
-        try:
-            position=INTENT_KEYS[key]
-        except KeyError:
-            return 0
-        return (self>>position)&1
-    
-    # Allows you to update more with 1 call
-    def update_by_keys(self,**kwargs):
-        new=self
-        for key,value in kwargs.items():
-            try:
-                position=INTENT_KEYS[key]
-            except KeyError as err:
-                err.args=(f'Invalid key: `{key!r}`',)
-                raise
-            
-            if value:
-                new=new|(1<<position)
-            else:
-                new=new&(0b11111111111111111111111111111111^(1<<position))
+        for shift in self.__keys__.values():
+            if (self>>shift)&1:
+                yield from INTENT_EVENTS[shift]
         
-        return int.__new__(type(self),new)
-    
-    
-    @property
-    def receives_guilds(self):
-        return (self>>INTENT_GUILDS)&1
-    
-    def deny_guilds(self):
-        if (self>>INTENT_GUILDS)&1:
-            self = type(self)(self^(1<<INTENT_GUILDS))
-        return self
-    
-    def allow_guilds(self):
-        return type(self)(self|(1<<INTENT_GUILDS))
-    
-    
-    @property
-    def receives_guild_users(self):
-        return (self>>INTENT_GUILD_USERS)&1
-    
-    def deny_guild_users(self):
-        if (self>>INTENT_GUILD_USERS)&1:
-            self = type(self)(self^(1<<INTENT_GUILD_USERS))
-        return self
-    
-    def allow_guild_users(self):
-        return type(self)(self|(1<<INTENT_GUILDS))
-    
-    
-    @property
-    def receives_guild_bans(self):
-        return (self>>INTENT_GUILD_BANS)&1
-    
-    def deny_guild_bans(self):
-        if (self>>INTENT_GUILD_BANS)&1:
-            self = type(self)(self^(1<<INTENT_GUILD_BANS))
-        return self
-    
-    def allow_guild_bans(self):
-        return type(self)(self|(1<<INTENT_GUILD_BANS))
-    
-    
-    @property
-    def receives_guild_emojis(self):
-        return (self>>INTENT_GUILD_EMOJIS)&1
-    
-    def deny_guild_emojis(self):
-        if (self>>INTENT_GUILD_EMOJIS)&1:
-            self = type(self)(self^(1<<INTENT_GUILD_EMOJIS))
-        return self
-    
-    def allow_guild_emojis(self):
-        return type(self)(self|(1<<INTENT_GUILD_EMOJIS))
-    
-    
-    @property
-    def receives_guild_integrations(self):
-        return (self>>INTENT_GUILD_INTEGRATIONS)&1
-    
-    def deny_guild_integrations(self):
-        if (self>>INTENT_GUILD_INTEGRATIONS)&1:
-            self = type(self)(self^(1<<INTENT_GUILD_INTEGRATIONS))
-        return self
-    
-    def allow_guild_integrations(self):
-        return type(self)(self|(1<<INTENT_GUILD_INTEGRATIONS))
-    
-    
-    @property
-    def receives_guild_webhooks(self):
-        return (self>>INTENT_GUILD_WEBHOOKS)&1
-    
-    def deny_guild_webhooks(self):
-        if (self>>INTENT_GUILD_WEBHOOKS)&1:
-            self = type(self)(self^(1<<INTENT_GUILD_WEBHOOKS))
-        return self
-    
-    def allow_guild_webhooks(self):
-        return type(self)(self|(1<<INTENT_GUILD_WEBHOOKS))
-    
-    
-    @property
-    def receives_guild_invites(self):
-        return (self>>INTENT_GUILD_INVITES)&1
-    
-    def deny_guild_invites(self):
-        if (self>>INTENT_GUILD_INVITES)&1:
-            self = type(self)(self^(1<<INTENT_GUILD_INVITES))
-        return self
-    
-    def allow_guild_invites(self):
-        return type(self)(self|(1<<INTENT_GUILD_INVITES))
-    
-    
-    @property
-    def receives_guild_voice_states(self):
-        return (self>>INTENT_GUILD_VOICE_STATES)&1
-    
-    def deny_guild_voice_states(self):
-        if (self>>INTENT_GUILD_VOICE_STATES)&1:
-            self = type(self)(self^(1<<INTENT_GUILD_VOICE_STATES))
-        return self
-    
-    def allow_guild_voice_states(self):
-        return type(self)(self|(1<<INTENT_GUILD_VOICE_STATES))
-    
-    
-    @property
-    def receives_guild_presences(self):
-        return (self>>INTENT_GUILD_PRESENCES)&1
-    
-    def deny_guild_presences(self):
-        if (self>>INTENT_GUILD_PRESENCES)&1:
-            self = type(self)(self^(1<<INTENT_GUILD_PRESENCES))
-        return self
-    
-    def allow_guild_presences(self):
-        return type(self)(self|(1<<INTENT_GUILD_PRESENCES))
-    
-    
-    @property
-    def receives_guild_messages(self):
-        return (self>>INTENT_GUILD_MESSAGES)&1
-    
-    def deny_guild_messages(self):
-        if (self>>INTENT_GUILD_MESSAGES)&1:
-            self = type(self)(self^(1<<INTENT_GUILD_MESSAGES))
-        return self
-    
-    def allow_guild_messages(self):
-        return type(self)(self|(1<<INTENT_GUILD_MESSAGES))
-    
-    
-    @property
-    def receives_guild_reactions(self):
-        return (self>>INTENT_GUILD_REACTIONS)&1
-    
-    def deny_guild_reactions(self):
-        if (self>>INTENT_GUILD_REACTIONS)&1:
-            self = type(self)(self^(1<<INTENT_GUILD_REACTIONS))
-        return self
-    
-    def allow_guild_reactions(self):
-        return type(self)(self|(1<<INTENT_GUILD_REACTIONS))
-    
-    
-    @property
-    def receives_guild_typings(self):
-        return (self>>INTENT_GUILD_TYPINGS)&1
-    
-    def deny_guild_typings(self):
-        if (self>>INTENT_GUILD_TYPINGS)&1:
-            self = type(self)(self^(1<<INTENT_GUILD_TYPINGS))
-        return self
-    
-    def allow_guild_typings(self):
-        return type(self)(self|(1<<INTENT_GUILD_TYPINGS))
-    
-    
-    @property
-    def receives_direct_messages(self):
-        return (self>>INTENT_DIRECT_MESSAGES)&1
-    
-    def deny_direct_messages(self):
-        if (self>>INTENT_DIRECT_MESSAGES)&1:
-            self = type(self)(self^(1<<INTENT_DIRECT_MESSAGES))
-        return self
-    
-    def allow_direct_messages(self):
-        return type(self)(self|(1<<INTENT_DIRECT_MESSAGES))
-    
-    
-    @property
-    def receives_direct_reactions(self):
-        return (self>>INTENT_DIRECT_REACTIONS)&1
-    
-    def deny_direct_reactions(self):
-        if (self>>INTENT_DIRECT_REACTIONS)&1:
-            self = type(self)(self^(1<<INTENT_DIRECT_REACTIONS))
-        return self
-    
-    def allow_direct_reactions(self):
-        return type(self)(self|(1<<INTENT_DIRECT_REACTIONS))
-    
-    
-    @property
-    def receives_direct_typings(self):
-        return (self>>INTENT_DIRECT_TYPINGS)&1
-    
-    def deny_direct_typings(self):
-        if (self>>INTENT_DIRECT_TYPINGS)&1:
-            self = type(self)(self^(1<<INTENT_DIRECT_TYPINGS))
-        return self
-    
-    def allow_direct_typings(self):
-        return type(self)(self|(1<<INTENT_DIRECT_TYPINGS))
-
+        yield from GLOBAL_INTENT_EVENTS
 
 def filter_clients(clients,flag):
     index=0
@@ -4177,3 +3932,4 @@ async def _with_error(client,task):
 
 del RemoveMeta
 del datetime
+del FlagBase

@@ -5,7 +5,7 @@ from .bases import DiscordEntity
 from .client_core import ROLES
 from .others import random_id
 from .color import Color
-from .permission import Permission, PERM_KEYS
+from .permission import Permission
 from .user import PartialUser
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_color, preconvert_int, preconvert_bool, \
     preconvert_flag
@@ -333,14 +333,14 @@ class PermOW(object):
         return f'<{self.__class__.__name__} target={self.target!r}>'
 
     def keys(self):
-        return PERM_KEYS.keys()
+        return Permission.__keys__.keys()
 
     __iter__=keys
 
     def values(self):
         allow=self.allow
         deny=self.deny
-        for index in PERM_KEYS.values():
+        for index in Permission.__keys__.values():
             if (allow>>index)&1:
                 yield 'a'
             if (deny>>index)&1:
@@ -350,7 +350,7 @@ class PermOW(object):
     def items(self):
         allow=self.allow
         deny=self.deny
-        for key,index in PERM_KEYS.items():
+        for key,index in Permission.__keys__.items():
             if (allow>>index)&1:
                 yield key,'a'
             if (deny>>index)&1:
@@ -358,7 +358,7 @@ class PermOW(object):
             yield key,'n'
 
     def __getitem__(self,key):
-        index=PERM_KEYS[key]
+        index=Permission.__keys__[key]
         if (self.allow>>index)&1:
             return 'a'
         if (self.deny>>index)&1:

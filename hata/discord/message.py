@@ -7,7 +7,7 @@ from datetime import datetime
 
 from ..backend.dereaddons_local import any_to_any, autoposlist, cached_property, _spaceholder, BaseMethodDescriptor
 
-from .bases import DiscordEntity
+from .bases import DiscordEntity, FlagBase
 from .http import URLS
 from .others import parse_time, CHANNEL_MENTION_RP, time_to_id
 from .client_core import MESSAGES, CHANNELS, GUILDS
@@ -29,47 +29,14 @@ ChannelText     = NotImplemented
 ChannelPrivate  = NotImplemented
 ChannelGroup    = NotImplemented
 
-class MessageFlag(int):
-    __slots__=()
-
-    @property
-    def crossposted(self):
-        return self&1
-
-    @property
-    def is_crosspost(self):
-        return (self>>1)&1
-
-    @property
-    def embeds_suppressed(self):
-        return (self>>2)&1
-    
-    @property
-    def source_message_deleted(self):
-        return (self>>3)&1
-    
-    @property
-    def urgent(self):
-        return (self>>4)&1
-    
-    def __iter__(self):
-        if self&1:
-            yield 'crossposted'
-            
-        if (self>>1)&1:
-            yield 'is_crosspost'
-            
-        if (self>>2)&1:
-            yield 'embeds_suppressed'
-
-        if (self>>3)&1:
-            yield 'source_message_deleted'
-
-        if (self>>4)&1:
-            yield 'urgent'
-            
-    def __repr__(self):
-        return f'{self.__class__.__name__}({int.__repr__(self)})'
+class MessageFlag(FlagBase):
+    __keys__ = {
+        'crossposted'           : 0,
+        'is_crosspost'          : 1,
+        'embeds_suppressed'     : 2,
+        'source_message_deleted': 3,
+        'urgent'                : 4,
+            }
 
 class MessageActivityType(object):
     # class related
@@ -1803,3 +1770,4 @@ del autoposlist
 del URLS
 del ratelimit
 del DiscordEntity
+del FlagBase

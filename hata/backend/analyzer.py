@@ -492,11 +492,11 @@ class CallableAnalyzer(object):
     
     def get_non_reserved_positional_argument_count(self):
         count = 0
-        for argument in self.argument:
+        for argument in self.arguments:
             if not argument.is_positional():
                 break
             
-            if argument.reversed:
+            if argument.reserved:
                 continue
             
             count = count+1

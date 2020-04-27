@@ -733,7 +733,7 @@ class ChannelGuildBase(ChannelBase):
             for role in roles:
                 base|=role.permissions
         
-        if Permission.can_administrator.fget(base):
+        if Permission.can_administrator(base):
             return Permission.all
         
         overwrites=self.overwrites
@@ -754,7 +754,7 @@ class ChannelGuildBase(ChannelBase):
             return Permission.permission_all
 
         result=self._permissions_for(user)
-        if not Permission.can_view_channel.fget(result):
+        if not Permission.can_view_channel(result):
             return Permission.permission_none
 
         return Permission(result)
@@ -1000,17 +1000,17 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
             return Permission.permission_all_deny_voice
         
         result=self._permissions_for(user)
-        if not Permission.can_view_channel.fget(result):
+        if not Permission.can_view_channel(result):
             return Permission.permission_none
         
         #text channels dont have voice permissions
         result&=Permission.deny_voice
         
-        if self.type and (not Permission.can_manage_messages.fget(result)):
+        if self.type and (not Permission.can_manage_messages(result)):
             result=result&Permission.deny_text
             return Permission(result)
         
-        if not Permission.can_send_messages.fget(result):
+        if not Permission.can_send_messages(result):
             result=result&Permission.deny_text
         
         return Permission(result)
@@ -1301,13 +1301,13 @@ class ChannelVoice(ChannelGuildBase):
             return Permission.permission_all_deny_text
         
         result=self._permissions_for(user)
-        if not Permission.can_view_channel.fget(result):
+        if not Permission.can_view_channel(result):
             return Permission.permission_none
 
         #voice channels dont have text permissions
         result&=Permission.deny_text
 
-        if not Permission.can_connect.fget(result):
+        if not Permission.can_connect(result):
             result&=Permission.deny_voice_con
         
         return Permission(result)
@@ -1802,7 +1802,7 @@ class ChannelStore(ChannelGuildBase):
             return Permission.permission_all_deny_both
         
         result=self._permissions_for(user)
-        if not Permission.can_view_channel.fget(result):
+        if not Permission.can_view_channel(result):
             return Permission.permission_none
 
         #store channels do not have text and voice related permissions

@@ -13,6 +13,7 @@ except ImportError:
 from ...backend.dereaddons_local import code, function, method, _spaceholder, NoneType, MethodLike
 from ...backend.analyzer import CallableAnalyzer
 
+from ...discord.bases import FlagBase
 from ...discord.others import USER_MENTION_RP, ROLE_MENTION_RP, CHANNEL_MENTION_RP, IS_ID_RP
 from ...discord.client import Client
 from ...discord.exceptions import DiscordException
@@ -219,60 +220,16 @@ PARSER_FLAG_KEYS = {
     'reversed'  : 6,
         }
 
-class ConverterFlag(int):
-    __slots__ = ()
-    
-    @property
-    def guild(self):
-        return self&1
-    
-    @property
-    def mention(self):
-        return (self>>1)&1
-    
-    @property
-    def name(self):
-        return (self>>2)&1
-    
-    @property
-    def id(self):
-        return (self>>3)&1
-    
-    @property
-    def everywhere(self):
-        return (self>>4)&1
-    
-    @property
-    def profile(self):
-        return (self>>5)&1
-    
-    @property
-    def reversed(self):
-        return (self>>6)&1
-    
-    def __iter__(self):
-        for name, push in PARSER_FLAG_KEYS.items():
-            if (self>>push)&1:
-                yield name
-    
-    def __repr__(self):
-        return f'{self.__class__.__name__}({self})'
-    
-    def update_by_keys(self,**kwargs):
-        new=self
-        for key,value in kwargs.items():
-            try:
-                position=PARSER_FLAG_KEYS[key]
-            except KeyError as err:
-                err.args=(f'Invalid key:\'{key}\'',)
-                raise
-            
-            if value:
-                new=new|(1<<position)
-            else:
-                new=new&(0b11111111111111111111111111111111^(1<<position))
-        
-        return int.__new__(type(self),new)
+class ConverterFlag(FlagBase):
+    __keys__ = {
+        'guild'     : 0,
+        'mention'   : 1,
+        'name'      : 2,
+        'id'        : 3,
+        'everywhere': 4,
+        'profile'   : 5,
+        'reversed'  : 6,
+            }
     
     user_default = NotImplemented
     role_default = NotImplemented
@@ -1555,3 +1512,4 @@ class ContentParserMethod(MethodLike):
         return getattr(func, name)
 
 del re
+del FlagBase

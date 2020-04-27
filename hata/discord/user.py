@@ -5,7 +5,7 @@ from datetime import datetime
 
 from ..backend.dereaddons_local import modulize
 
-from .bases import DiscordEntity
+from .bases import DiscordEntity, FlagBase
 from .client_core import CACHE_USER, CACHE_PRESENCE, USERS
 from .others import parse_time, Status, DISCORD_EPOCH
 from .color import Color, DefaultAvatar
@@ -14,131 +14,26 @@ from .http import URLS
 from .preconverters import preconvert_snowflake, preconvert_animated_image_hash, preconvert_str, preconvert_bool, \
     preconvert_discriminator, preconvert_flag
 
-class UserFlag(int):
-    __slots__=()
-    
-    @property
-    def discord_employee(self):
-        return self&1
-    
-    @property
-    def discord_partner(self):
-        return (self>>1)&1
-    
-    @property
-    def hypesquad_events(self):
-        return (self>>2)&1
-    
-    @property
-    def bug_hunter_level_1(self):
-        return (self>>3)&1
-    
-    @property
-    def mfa_sms(self):
-        return (self>>4)&1
-    
-    @property
-    def premium_promo_dismissed(self):
-        return (self>>5)&1
-    
-    @property
-    def hypesquad_bravery(self):
-        return (self>>6)&1
-    
-    @property
-    def hypesquad_brilliance(self):
-        return (self>>7)&1
-    
-    @property
-    def hypesquad_balance(self):
-        return (self>>8)&1
-    
-    @property
-    def early_supporter(self):
-        return (self>>9)&1
-    
-    @property
-    def team_user(self):
-        return (self>>10)&1
-    
-    @property
-    def system(self):
-        return (self>>12)&1
-    
-    @property
-    def has_unread_urgent_messages(self):
-        return (self>>13)&1
-    
-    @property
-    def bug_hunter_level_2(self):
-        return (self>>14)&1
-    
-    @property
-    def underage_deleted(self):
-        return (self>>15)&1
-    
-    @property
-    def verified_bot(self):
-        return (self>>16)&1
-    
-    @property
-    def verified_bot_developer(self):
-        return (self>>17)&1
-    
-    def __iter__(self):
-        if self&1:
-            yield 'discord_employee'
-            
-        if (self>>1)&1:
-            yield 'discord_partner'
-            
-        if (self>>2)&1:
-            yield 'hypesquad_events'
-            
-        if (self>>3)&1:
-            yield 'bug_hunter_level_1'
-        
-        if (self>>4)&1:
-            yield 'mfa_sms'
-        
-        if (self>>5)&1:
-            yield 'premium_promo_dismissed'
-        
-        if (self>>6)&1:
-            yield 'hypesquad_bravery'
-            
-        if (self>>7)&1:
-            yield 'hypesquad_brilliance'
-            
-        if (self>>8)&1:
-            yield 'hypesquad_balance'
-            
-        if (self>>9)&1:
-            yield 'early_supporter'
-            
-        if (self>>10)&1:
-            yield 'team_user'
-
-        if (self>>12)&1:
-            yield 'system'
-        
-        if (self>>13)&1:
-            yield 'has_unread_urgent_messages'
-        
-        if (self>>14)&1:
-            yield 'bug_hunter_level_2'
-        
-        if (self>>15)&1:
-            yield 'underage_deleted'
-        
-        if (self>>16)&1:
-            yield 'verified_bot'
-        
-        if (self>>17)&1:
-            yield 'verified_bot_developer'
-    
-    def __repr__(self):
-        return f'{self.__class__.__name__}({int.__repr__(self)})'
+class UserFlag(FlagBase):
+    __keys__ = {
+        'discord_employee'          :  0,
+        'discord_partner'           :  1,
+        'hypesquad_events'          :  2,
+        'bug_hunter_level_1'        :  3,
+        'mfa_sms'                   :  4,
+        'premium_promo_dismissed'   :  5,
+        'hypesquad_bravery'         :  6,
+        'hypesquad_brilliance'      :  7,
+        'hypesquad_balance'         :  8,
+        'early_supporter'           :  9,
+        'team_user'                 : 10,
+        'system'                    : 12,
+        'has_unread_urgent_messages': 13,
+        'bug_hunter_level_2'        : 14,
+        'underage_deleted'          : 15,
+        'verified_bot'              : 16,
+        'verified_bot_developer'    : 17,
+            }
 
 if CACHE_USER:
     def PartialUser(user_id):
@@ -1296,3 +1191,4 @@ del modulize
 del CACHE_USER
 del CACHE_PRESENCE
 del DiscordEntity
+del FlagBase

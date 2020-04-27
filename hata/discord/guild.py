@@ -7,7 +7,7 @@ import re
 from ..backend.dereaddons_local import autoposlist, cached_property, weakposlist, _spaceholder
 from ..backend.futures import Task
 
-from .bases import DiscordEntity
+from .bases import DiscordEntity, ReverseFlagBase
 from .client_core import CACHE_PRESENCE, GUILDS
 from .others import EMOJI_NAME_RP, VoiceRegion, Status, VerificationLevel, MessageNotificationLevel, MFA, \
     ContentFilterLevel
@@ -142,35 +142,20 @@ GuildFeature.verified                   = GuildFeature('VERIFIED')
 GuildFeature.vip                        = GuildFeature('VIP_REGIONS')
 GuildFeature.welcome_screen             = GuildFeature('WELCOME_SCREEN_ENABLED')
 
-class SystemChannelFlag(int):
-    __slots__=()
+class SystemChannelFlag(ReverseFlagBase):
+    __keys__ = {
+        'welcome': 0,
+        'boost' : 1,
+            }
     
     @property
     def none(self):
         return self==self.NONE
-
+    
     @property
     def all(self):
         return self==self.ALL
     
-    @property
-    def welcome(self):
-        return (self&1)^1
-    
-    @property
-    def boost(self):
-        return ((self>>1)&1)^1
-    
-    def __iter__(self):
-        if not self&1:
-            yield 'welcome'
-        
-        if not (self>>1)&1:
-            yield 'boost'
-
-    def __repr__(self):
-        return f'{self.__class__.__name__}({self!s})'
-
     NONE    = NotImplemented
     ALL     = NotImplemented
 
@@ -1173,7 +1158,7 @@ class Guild(DiscordEntity, immortal=True):
         for role in roles:
             base|=role.permissions
         
-        if Permission.can_administrator.fget(base):
+        if Permission.can_administrator(base):
             return Permission.permission_all
         
         return Permission(base)
@@ -1737,3 +1722,4 @@ del ActivityUnknown
 del UserBase
 del ratelimit
 del DiscordEntity
+del ReverseFlagBase

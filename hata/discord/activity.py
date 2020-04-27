@@ -4,59 +4,22 @@ __all__ = ( 'ActivityBase', 'ActivityCustom', 'ActivityFlag', 'ActivityGame', 'A
 
 from datetime import datetime
 
+from .bases import FlagBase
 from .color import Color
 from .http import URLS
 
 PartialEmoji=NotImplemented
 
-class ActivityFlag(int):
+class ActivityFlag(FlagBase):
+    __keys__ = {
+        'INSTANCE'    : 0,
+        'JOIN'        : 1,
+        'SPECTATE'    : 2,
+        'JOIN_REQUEST': 3,
+        'SYNC'        : 4,
+        'PLAY'        : 5,
+            }
     
-    @property
-    def INSTANCE(self):
-        return self&1
-
-    @property
-    def JOIN(self):
-        return (self>>1)&1
-
-    @property
-    def SPECTATE(self):
-        return (self>>2)&1
-
-    @property
-    def JOIN_REQUEST(self):
-        return (self>>3)&1
-
-    @property
-    def SYNC(self):
-        return (self>>4)&1
-
-    @property
-    def PLAY(self):
-        return (self>>5)&1
-
-    def __iter__(self):
-        if self&1:
-            yield 'INSTANCE'
-        
-        if (self>>1)&1:
-            yield 'JOIN'
-        
-        if (self>>2)&1:
-            yield 'SPECTATE'
-        
-        if (self>>3)&1:
-            yield 'JOIN_REQUEST'
-        
-        if (self>>4)&1:
-            yield 'SYNC'
-        
-        if (self>>5)&1:
-            yield 'PLAY'
-
-    def __repr__(self):
-        return f'{self.__class__.__name__}({int.__repr__(self)})'
-
     spotify = NotImplemented
 
 ActivityFlag.spotify = ActivityFlag(48)
@@ -1404,3 +1367,4 @@ def Activity(data):
 
 del URLS
 del Color
+del FlagBase

@@ -5,6 +5,7 @@ import re, reprlib
 
 from ...backend.dereaddons_local import sortedlist, modulize
 from ...backend.futures import Task
+from ...backend.analyzer import CallableAnalyzer
 
 from ...discord.others import USER_MENTION_RP
 from ...discord.parsers import EventWaitforBase, compare_converted, check_name, check_argcount_and_convert, DEFAULT_EVENT
@@ -953,11 +954,14 @@ class checks:
                 return -2
             
             return self.fail_identificator
-        
+    
     class custom(_check_base):
         __slots__ = ('function', )
         def __init__(self, function, fail_identificator=None):
-            function = check_argcount_and_convert(function, 2)
+            if CallableAnalyzer(function).get_non_reserved_positional_argument_count() != 2:
+                raise TypeError(f'The passed function: {function} should have accept 2 not reserved, positional, not '
+                    'default arguments, meanwhile it does not.')
+            
             fail_identificator = checks._convert_fail_identificator(fail_identificator)
             
             self.function = function

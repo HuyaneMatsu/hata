@@ -2,7 +2,6 @@
 __all__ = ('Client', 'Typer', )
 
 import re, sys
-from math import ceil
 from time import monotonic, time as time_now
 from collections import deque
 from os.path import split as splitpath
@@ -46,99 +45,99 @@ from . import client_core, message, webhook, channel
 
 _VALID_NAME_CHARS=re.compile('([0-9A-Za-z_]+)')
 
-class single_user_chunker(object):
-    __slots__=('limit', 'timer', 'waiter',)
-    def __init__(self,client,limit):
-        self.limit=limit
-        self.timer=None
-        self.waiter=Future(client.loop)
+USER_CHUNK_TIMEOUT = 2.5
+
+class SingleUserChunker(object):
+    __slots__ = ('timer', 'waiter',)
     
-    def start_timer(self,client,timeout):
-        if timeout>0.4:
-            timeout=0.8
-        else:
-            timeout+=0.4
-        
-        self.timer=client.loop.call_later(timeout,self._cancel)
+    def __init__(self, ):
+        self.waiter = Future(KOKORO)
+        self.timer = KOKORO.call_at(monotonic()+USER_CHUNK_TIMEOUT, type(self)._cancel, self)
     
-    def __call__(self,users):
-        if len(users)>self.limit:
-            return False
-        self.waiter.set_result_if_pending(users)
+    def __call__(self, event):
+        self.waiter.set_result_if_pending(event.users)
         timer=self.timer
         if (timer is not None):
-            self.timer=None
+            self.timer = None
             timer.cancel()
-            
+        
         return True
-
-    def cancel(self):
-        timer=self.timer
-        if timer is None:
-            return
-        
-        self.timer=None
-        self.waiter.set_result_if_pending(None)
-        timer.cancel()
-        
+    
     def _cancel(self):
-        self.waiter.set_result_if_pending(None)
-        self.timer=None
+        self.waiter.cancel()
         
+        timer=self.timer
+        if (timer is not None):
+            self.timer = None
+            timer.cancel()
+    
+    def cancel(self):
+        self.waiter.set_result_if_pending([])
+        
+        timer=self.timer
+        if (timer is not None):
+            self.timer = None
+            timer.cancel()
+    
     def __await__(self):
         return self.waiter.__await__()
 
-class mass_user_chunker(object):
-    __slots__=('left', 'timer', 'waiter',)
-    def __init__(self,client,left):
-        self.left=left
-        loop=client.loop
-        self.waiter=Future(loop)
-
-        if left<5:
-            timeout=0.1
-        else:
-            timeout=.08*left+0.6
-
-        self.timer=loop.call_later(timeout,self._cancel)
-
-    def __call__(self,users):
-        left=self.left-1
-        self.left=left
-        if left>0:
+class MassUserChunker(object):
+    __slots__ = ('last', 'left', 'timer', 'waiter',)
+    
+    def __init__(self, left):
+        self.left = left
+        self.waiter = Future(KOKORO)
+        self.last = now = monotonic()
+        self.timer = KOKORO.call_at(now+USER_CHUNK_TIMEOUT, type(self)._cancel, self)
+    
+    def __call__(self, event):
+        self.last = monotonic()
+        if event.index+1 != event.count:
             return False
-        self.waiter.set_result_if_pending(_spaceholder)
+        
+        self.left = left = self.left-1
+        if left > 0:
+            return False
+        
+        
+        self.waiter.set_result_if_pending(None)
         timer=self.timer
         if (timer is not None):
-            self.timer=None
+            self.timer = None
             timer.cancel()
-            
+        
         return True
     
     def cancel(self):
-        self.left=None
+        self.left = 0
         self.waiter.set_result_if_pending(None)
+        
         timer=self.timer
         if (timer is not None):
             self.timer=None
             timer.cancel()
     
     def _cancel(self):
-        self.left=0
-        self.waiter.set_result_if_pending(None)
-        self.timer=None
+        now = monotonic()
+        next_ = self.last + USER_CHUNK_TIMEOUT
+        if next_ > now:
+            self.timer = KOKORO.call_at(next_, type(self)._cancel, self)
+        else:
+            self.timer = None
+            self.waiter.cancel()
     
     def __await__(self):
         return self.waiter.__await__()
-    
+
 class Client(UserBase):
     __slots__ = (
         'guild_profiles', 'is_bot', 'partial', #default user
         'activities', 'status', 'statuses', #presence
         'email', 'flags', 'locale', 'mfa', 'premium_type', 'system', 'verified', # OAUTH 2
-        '__dict__', '_activity', '_gateway_pair', '_status', 'application',  'channels',  'events', 'gateway',
-        'guild_profiles', 'http', 'intents', 'loop', 'private_channels', 'ready_state', 'relationships', 'running',
-        'secret', 'shard_count', 'token', 'voice_clients')
+        '__dict__', '_activity', '_gateway_pair', '_status', '_user_chunker_nonce', 'application', 'channels',
+        'events', 'gateway', 'guild_profiles', 'http', 'intents', 'loop', 'private_channels', 'ready_state',
+        'relationships', 'running', 'secret', 'shard_count', 'token', 'voice_clients')
     
     def __new__(cls, token, secret=None, client_id=0, activity=ActivityUnknown, status=None, is_bot=True,
             shard_count=0, intents=-1, **kwargs):
@@ -273,6 +272,7 @@ class Client(UserBase):
         self._activity          = activity
         self.activities         = []
         self._gateway_pair      = ('',0.0)
+        self._user_chunker_nonce= 0
         self.private_channels   = {}
         self.voice_clients      = {}
         self.id                 = client_id
@@ -3697,84 +3697,70 @@ class Client(UserBase):
         else:
             Task(_with_error(self,self.events.ready(self)),self.loop)
 
-    async def _request_members2(self,guilds):
-        count=0
-        for guild in guilds:
-            count+=ceil(guild.user_count/1000.)
-
-        event=self.events.guild_user_chunk
-        waiter=event.default
-        if waiter is not None:
+    async def _request_members2(self, guilds):
+        event_handler = self.events.guild_user_chunk
+        
+        try:
+            waiter = event_handler.waiters.pop('0000000000000000')
+        except KeyError:
+            pass
+        else:
             waiter.cancel()
-
-        waiter=mass_user_chunker(self,count)
-        event.default=waiter
-
+        
+        event_handler.waiters['0000000000000000'] = waiter = MassUserChunker(len(guilds))
+        
         #we only want to request 75~ guilds per chunk request.
-        guild_ids=[]
-        data = {
-            'op'            : DiscordGateway.REQUEST_MEMBERS,
-            'd' : {
-                'guild_id'  : guild_ids,
-                'query'     : '',
-                'limit'     : 0,
-                'presences' : CACHE_PRESENCE,
-                    },
+        
+        sub_data = {
+            'guild_id'  : 0,
+            'query'     : '',
+            'limit'     : 0,
+            'presences' : CACHE_PRESENCE,
+            'nonce'     : '0000000000000000',
                 }
-
-        shard_count=self.shard_count
+        
+        data = {
+            'op'    : DiscordGateway.REQUEST_MEMBERS,
+            'd'     : sub_data
+                }
+        
+        shard_count = self.shard_count
         if shard_count:
             guilds_by_shards=[[] for x in range(shard_count)]
             for guild in guilds:
                 shard_index=(guild.id>>22)%shard_count
                 guilds_by_shards[shard_index].append(guild)
-
+            
+            gateways = self.gateway.gateways
             for index in range(shard_count):
                 guild_group=guilds_by_shards[index]
-                gateway=self.gateway.gateways[index]
+                gateway=gateways[index]
                 for guild in guild_group:
-                    guild_ids.append(guild.id)
-                    if len(guild_ids)==75:
-                        await gateway.send_as_json(data)
-                        guild_ids.clear()
-
-                if guild_ids:
+                    sub_data['guild_id'] = guild.id
                     await gateway.send_as_json(data)
-                    guild_ids.clear()
+        
         else:
-            gateway=self.gateway
+            gateway = self.gateway
             for guild in guilds:
-                guild_ids.append(guild.id)
-                if len(guild_ids)==75:
-                    await gateway.send_as_json(data)
-                    guild_ids.clear()
-
-            if guild_ids:
+                sub_data['guild_id'] = guild.id
                 await gateway.send_as_json(data)
-
-        del guild_ids
-        await waiter
-        event.default=None
-
-    async def _request_members(self,guild):
-        count=ceil(guild.user_count/1000.)
-
-        event=self.events.guild_user_chunk
-        if event.default is not None:
-            await event.default
-
-        waiter=mass_user_chunker(self,count)
-        guild_id=guild.id
+        
         try:
-            waiters=event.waiters[guild_id]
-        except KeyError:
-            waiters=event.waiters[guild_id]=[waiter]
-        else:
-            for waiter in waiters:
-                waiter.cancel()
-            waiters.clear()
-            waiters.append(waiter)
-
+            await waiter
+        except CancelledError:
+            try:
+                del event_handler.waiters['0000000000000000']
+            except KeyError:
+                pass
+    
+    async def _request_members(self, guild):
+        event_handler = self.events.guild_user_chunk
+        
+        self._user_chunker_nonce = nonce = self._user_chunker_nonce+1
+        nonce = nonce.__format__('0>16x')
+        
+        event_handler.waiters[nonce] = waiter = MassUserChunker(1)
+        
         data = {
             'op'            : DiscordGateway.REQUEST_MEMBERS,
             'd' : {
@@ -3782,72 +3768,61 @@ class Client(UserBase):
                 'query'     : '',
                 'limit'     : 0,
                 'presences' : CACHE_PRESENCE,
+                'nonce'     : nonce
                     },
                 }
-
-
+        
         gateway=self._gateway_for(guild)
         await gateway.send_as_json(data)
-
-        result = await waiter
-        if result is None:
-            del waiters[0]
-            if not waiters:
-                del event.waiters[guild_id]
-
-
-    async def request_member(self,guild,name,limit=1):
+        
+        try:
+            await waiter
+        except CancelledError:
+            try:
+                del event_handler.waiters[nonce]
+            except KeyError:
+                pass
+    
+    async def request_member(self, guild, name, limit=1):
         #do we really need these checks?
-        if limit>1000:
-            limit=1000
-        elif limit<1:
+        if limit > 100:
+            limit = 100
+        elif limit < 1:
             return []
+        
         if not 1<len(name)<33:
             return []
-
-        event=self.events.guild_user_chunk
-        if event.default is not None:
-            await event.default
-
-        waiter=single_user_chunker(self,limit)
-        guild_id=guild.id
-        try:
-            waiters=event.waiters[guild_id]
-        except KeyError:
-            waiters=event.waiters[guild_id]=[waiter]
-        else:
-            waiters.append(waiter)
-            await waiters[-2]
+        
+        event_handler = self.events.guild_user_chunk
+        
+        self._user_chunker_nonce = nonce = self._user_chunker_nonce+1
+        nonce = nonce.__format__('0>16x')
+        
+        event_handler.waiters[nonce] = waiter = SingleUserChunker()
         
         data = {
             'op'            : DiscordGateway.REQUEST_MEMBERS,
             'd' : {
-                'guild_id'  : guild_id,
+                'guild_id'  : guild.id,
                 'query'     : name,
                 'limit'     : limit,
                 'presences' : CACHE_PRESENCE,
+                'nonce'     : nonce,
                     },
                 }
-
+        
         gateway=self._gateway_for(guild)
-
-        kokoro=gateway.kokoro
-        if kokoro is None:
-            latency=1.0 # just a random timeout, we will not return anything anyways
-        else:
-            latency=kokoro.latency
-
-        waiter.start_timer(self,latency)
-
         await gateway.send_as_json(data)
-
-        result = await waiter
-        if result is None:
-            del waiters[0]
-            if not waiters:
-                del event.waiters[guild_id]
-            result=[]
-        return result
+        
+        try:
+            return await waiter
+        except CancelledError:
+            try:
+                del event_handler.waiters[nonce]
+            except KeyError:
+                pass
+            
+            return []
     
     async def disconnect(self):
         if not self.running:

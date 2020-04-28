@@ -1,15 +1,19 @@
-import os, re
+import re, pathlib
 from ast import literal_eval
 from setuptools import setup
 
-version_search_pattern=re.compile('^__version__[ ]*=[ ]*((?:\'[^\']+\')|(?:\"[^\"]+\"))[ ]*$',re.M)
-with open(os.path.join(os.path.split(__file__)[0],'hata','__init__.py')) as file:
-    parsed=version_search_pattern.search(file.read())
+HERE = pathlib.Path(__file__).parent
 
+# Lookup version
+version_search_pattern = re.compile('^__version__[ ]*=[ ]*((?:\'[^\']+\')|(?:\"[^\"]+\"))[ ]*$',re.M)
+parsed = version_search_pattern.search((HERE / 'hata' / '__init__.py').read_text())
 if parsed is None:
     raise RuntimeError('No version found at __init__.py')
 
 version=literal_eval(parsed.group(1))
+
+# Lookup readme
+README = (HERE / 'README.md').read_text()
 
 setup(
     name        = 'hata',
@@ -29,6 +33,8 @@ setup(
     author      = 'HuyaneMatsu',
     author_email= 're.ism.tm@gmail.com',
     description = 'Discord API wrapper in Python',
+    long_description = README,
+    long_description_content_type = 'text/markdown',
     classifiers = [
           'Programming Language :: Python :: 3.6',
           'Programming Language :: Python :: 3.7',

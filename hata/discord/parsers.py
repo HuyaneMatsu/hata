@@ -1983,18 +1983,24 @@ def GUILD_BAN_REMOVE__OPT(client,data):
 PARSER_DEFAULTS('GUILD_BAN_REMOVE',GUILD_BAN_REMOVE__CAL,GUILD_BAN_REMOVE__CAL,GUILD_BAN_REMOVE__OPT,GUILD_BAN_REMOVE__OPT)
 del GUILD_BAN_REMOVE__CAL, GUILD_BAN_REMOVE__OPT
 
+class GuildUserChunkEvent(object):
+    __slots__ = ('guild', 'users', 'nonce', 'index', 'count')
+    
+    def __repr__(self):
+        return f'<{self.__class__.__name__} guild={self.guild}, users={len(self.users)}, nonce={self.nonce!r}, index={self.index}, count={self.count}>'
+
 if CACHE_PRESENCE:
-    def GUILD_MEMBERS_CHUNK(client,data):
+    def GUILD_MEMBERS_CHUNK(client, data):
         guild_id=int(data['guild_id'])
         try:
             guild=GUILDS[guild_id]
         except KeyError:
             return
         
-        collected=[]
+        users=[]
         for user_data in data['members']:
-            user=User(user_data,guild)
-            collected.append(user)
+            user = User(user_data,guild)
+            users.append(user)
         
         try:
             presence_datas=data['presences']
@@ -2003,22 +2009,35 @@ if CACHE_PRESENCE:
         else:
             guild._apply_presences(presence_datas)
         
-        #this event is called at guild joining, and only 1 client joins at the same time
-        Task(client.events.guild_user_chunk(client,guild,collected), KOKORO)
+        event = GuildUserChunkEvent()
+        event.guild = guild
+        event.users = users
+        event.nonce = data.get('nonce')
+        event.index = data['chunk_index']
+        event.count = data['chunk_count']
+        
+        Task(client.events.guild_user_chunk(client, event), KOKORO)
 else:
-    def GUILD_MEMBERS_CHUNK(client,data):
+    def GUILD_MEMBERS_CHUNK(client, data):
         guild_id=int(data['guild_id'])
         try:
             guild=GUILDS[guild_id]
         except KeyError:
             return
         
-        collected=[]
+        users = []
         for user_data in data['members']:
-            user=User(user_data,guild)
-            collected.append(user)
-        #this event is called at guild joining, and only 1 client joins at the same time
-        Task(client.events.guild_user_chunk(client,guild,collected), KOKORO)
+            user = User(user_data,guild)
+            users.append(user)
+        
+        event = GuildUserChunkEvent()
+        event.guild = guild
+        event.users = users
+        event.nonce = data.get('nonce')
+        event.index = data['chunk_index']
+        event.count = data['chunk_count']
+        
+        Task(client.events.guild_user_chunk(client,event), KOKORO)
 
 PARSER_DEFAULTS('GUILD_MEMBERS_CHUNK',GUILD_MEMBERS_CHUNK,GUILD_MEMBERS_CHUNK,GUILD_MEMBERS_CHUNK,GUILD_MEMBERS_CHUNK)
 del GUILD_MEMBERS_CHUNK
@@ -2675,7 +2694,7 @@ EVENTS.add_default('guild_edit'                 , 2 , 'GUILD_UPDATE'            
 EVENTS.add_default('guild_delete'               , 3 , 'GUILD_DELETE'                    , )
 EVENTS.add_default('guild_ban_add'              , 3 , 'GUILD_BAN_ADD'                   , )
 EVENTS.add_default('guild_ban_delete'           , 3 , 'GUILD_BAN_REMOVE'                , )
-EVENTS.add_default('guild_user_chunk'           , 3 , 'GUILD_MEMBERS_CHUNK'             , )
+EVENTS.add_default('guild_user_chunk'           , 2 , 'GUILD_MEMBERS_CHUNK'             , )
 EVENTS.add_default('integration_update'         , 2 , 'GUILD_INTEGRATIONS_UPDATE'       , )
 EVENTS.add_default('role_create'                , 2 , 'GUILD_ROLE_CREATE'               , )
 EVENTS.add_default('role_delete'                , 3 , 'GUILD_ROLE_DELETE'               , )
@@ -3635,46 +3654,41 @@ class ReadyState(object):
             break
     
     __await__=__iter__
-    
 
-class ChunkQueue(EventHandlerBase):
-    __slots__=('default', 'waiters',)
+
+class ChunkWaiter(EventHandlerBase):
+    __slots__=('waiters',)
     __event_name__='guild_user_chunk'
     def __init__(self):
-        self.default=None
         self.waiters={}
-        
-    def __setevent__(self,func,guild_id):
-        try:
-            waiters=self.waiters[guild_id]
-        except KeyError:
-            self.waiters[guild_id]=waiters=[]
-        waiters.append(func)
-
-    def __delevent__(self,func,guild_id):
+    
+    # Interact directly with `self.waiters` instead.
+    def __setevent__(self, waiter, nonce):
         pass
-            
-    async def __call__(self,client,guild,collected):
-        if self.default is not None:
-            self.default(collected)
+    
+    def __delevent__(self, waiter, nonce):
+        pass
+    
+    async def __call__(self, client, event):
+        nonce = event.nonce
+        if nonce is None:
+            return
         
+        waiters = self.waiters
         try:
-            waiters=self.waiters[guild.id]
+            waiter = waiters[nonce]
         except KeyError:
             return
+        
+        if waiter(event):
+            del waiters[nonce]
 
-        if waiters[0](collected):
-            if len(waiters)==1:
-                del self.waiters[guild.id]
-            else:
-                del waiters[0]
-            
 
-async def default_error_event(client,event,err):
+async def default_error_event(client,event_name,err):
     extracted=[
         client.full_name,
         ' ignores occurred Exception at ',
-        event,
+        event_name,
         '\n'
             ]
     
@@ -3772,7 +3786,7 @@ class EventDescriptor(object):
         for name in EVENTS.defaults:
             object.__setattr__(self,name,DEFAULT_EVENT)
         object.__setattr__(self,'error',default_error_event)
-        object.__setattr__(self,'guild_user_chunk',ChunkQueue())
+        object.__setattr__(self,'guild_user_chunk',ChunkWaiter())
     
     def __call__(self,func=None,name=None,pass_to_handler=False,passed_name=None,overwrite=False):
         if func is None:
@@ -3838,7 +3852,7 @@ class EventDescriptor(object):
             delete(self,name)
             
         object.__setattr__(self,'error',default_error_event)
-        object.__setattr__(self,'guild_user_chunk',ChunkQueue())
+        object.__setattr__(self,'guild_user_chunk',ChunkWaiter())
     
     def __setattr__(self,name,value):
         parser_name=EVENTS.parsers.get(name,None)

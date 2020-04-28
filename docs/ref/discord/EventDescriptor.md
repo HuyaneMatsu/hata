@@ -313,14 +313,24 @@ of the changed attributes, what contains (`attribute name`, `old value`) items.
 
 Called when a [User](User.md) joins a [guild](Guild.md).
 
-### `guild_user_chunk(client,guild,collected)`
+### `guild_user_chunk(client, event)`
 
 Called when a chunk of [users](User.md) is received from a [guild](Guild.md).
 Used only at the case of `large` guilds. Also this event plays a big role when
 logging in, because it delays the ready state, till we get all the user chunks.
 
-This event has a default dispatcher called `ChunkQueue`. Overwriting it is
+This event has a default handler called `ChunkWaiter`. Overwriting it is
 not recommended.
+
+###### `GuildUserChunkEvent` structure
+
+| attribute name        | description                                       |
+|-----------------------|---------------------------------------------------|
+| guild                 | [Guild](Guild.md)                                 |
+| users                 | list of ([User](User.md) / [Client](Client.md))   |
+| nonce                 | str / None                                        |
+| index                 | int                                               |
+| count                 | int                                               |
 
 ### `guild_user_delete(client,guild,user,profile)`
 

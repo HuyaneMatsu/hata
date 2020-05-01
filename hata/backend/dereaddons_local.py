@@ -293,21 +293,33 @@ class weakposlist(list):
         value.position=new_position
         self.sort()
 
-class KeepType(type):
-    def __new__(cls, class_name, class_bases, class_dict):
-        class_count = len(class_bases)
-        if class_count!=1:
-            raise TypeError(f'`{cls.__name__}` should inherit exactly 1 type, got {class_count}: `{class_bases!r}`')
+class KeepType(object):
+    __slots__ = ('old_class')
+    _ignored_attr_names = {'__name__', '__qualname__', '__weakref__', '__dict__', '__slots__'}
+    
+    def __new__(cls, old_class, *, new_class=None):
+        self = object.__new__(cls)
+        self.old_class = old_class
         
-        klass = class_bases[0]
+        if new_class is None:
+            return self
         
-        if not issubclass(klass,object):
-            raise TypeError(f'`{cls.__name__}` can inherit only types, got `{klass!r}`')
+        return self(new_class)
+    
+    def __call__(self, new_class):
+        old_class = self.old_class
+        ignored_attr_names = self._ignored_attr_names
+        for name in dir(new_class):
+            if name in ignored_attr_names:
+                continue
+            
+            attr = getattr(new_class, name)
+            if hasattr(object, name) and (attr is getattr(object, name)):
+                continue
+            
+            setattr(old_class, name, attr)
         
-        for name, value in class_dict.items():
-            setattr(klass,name,value)
-        
-        return klass
+        return old_class
 
 _spaceholder=object()
 
@@ -318,7 +330,7 @@ class _multidict_items:
     def __len__(self):
         return len(self.parent)
     def __iter__(self):
-        for key,values in dict.items(self.parent):
+        for key, values in dict.items(self.parent):
             for value in values:
                 yield key,value
     

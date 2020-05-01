@@ -165,18 +165,34 @@ class UserOA2(UserBase):
         self.premium_type   = PremiumType.INSTANCES[data.get('premium_type',0)]
         self.locale         = parse_locale(data)
         self.system         = data.get('system',False)
-        
-    @property
-    def access_token(self):
-        return self.access.access_token
-
+    
     @property
     def partial(self):
         return False
-
+    
     @property
     def is_bot(self):
         return False
+    
+    # Reflect AO2Access
+    @property
+    def access_token(self):
+        return self.access.access_token
+    
+    @property
+    def redirect_url(self):
+        return self.access.redirect_url
+    
+    @property
+    def refresh_token(self):
+        return self.access.refresh_token
+    
+    @property
+    def scopes(self):
+        return self.access.scopes
+
+    def _renew(self, data):
+        self.access._renew(data)
 
 
 class Achievement(DiscordEntity):

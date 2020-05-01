@@ -81,7 +81,7 @@ The user's name.
 - type : [`premium type`](PremiumType.md)
 - default : `PremiumType.none`
 
-The type of Nitro subscription on a user's account
+The Nitro subscription type of the user's account.
 
 ### `system`
 

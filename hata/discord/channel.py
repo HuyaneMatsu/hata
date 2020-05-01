@@ -93,10 +93,9 @@ class ChannelBase(DiscordEntity, immortal=True):
                 user=channel.users[0]
             
             client.private_channels[user.id]=channel
-            client.channels[channel_id]=channel
         
         elif cls is ChannelGroup:
-            client.channels[channel_id]=channel
+            client.group_channels[channel_id]=channel
         
         return channel
 
@@ -1126,8 +1125,6 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         return f'Direct Message {self.users[0]:f} with {self.users[1]:f}'
 
     def _delete(self,client):
-        del client.channels[self.id]
-
         users=self.users
         if client is users[0]:
             user=users[1]
@@ -1163,7 +1160,6 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
             channel=object.__new__(cls)
             channel.id=channel_id
             CHANNELS[channel_id]=channel
-            client.channels[channel_id]=channel
             channel._finish_init(data,client,None)
             result=channel
         else:
@@ -1431,7 +1427,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         return self
     
     def _delete(self,client):
-        del client.channels[self.id]
+        del client.group_channels[self.id]
 
     def _update_no_return(self,data):
         name=data.get('name',None)
@@ -1517,7 +1513,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         channel=object.__new__(cls)
         channel.id=channel_id
         CHANNELS[channel_id]=channel
-        client.channels[channel_id]=channel
+        client.group_channels[channel_id]=channel
         channel._finish_init(data,client,None)
         return channel
 

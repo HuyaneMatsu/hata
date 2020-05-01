@@ -694,7 +694,7 @@ class DiscordGatewaySharder(object):
             return total/count
         
         return Kokoro.DEFAULT_LATENCY
-
+    
     async def send_as_json(self,data):
         websockets=[]
         for gateway in self.gateways:

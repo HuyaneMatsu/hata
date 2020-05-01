@@ -31,7 +31,7 @@ The afk timeout at the [`afk_channel`](#afk_channel). Can be 60, 300, 900,
 
 - type : `dict`
 - items : (`int`, [`guild channel`](ChannelGuildBase.md))
-    
+
 All the channel of the guilds with (`channel_id`, `Channel`) item pairs.
 
 ### `all_role`
@@ -173,7 +173,7 @@ because it is not sent with the guild's data.
 ### `max_presences`
 
 - type : `int`
-- default : 5000
+- default : 25000
 
 The maximal amount of presences for the guild.
 

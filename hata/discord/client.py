@@ -131,12 +131,162 @@ class MassUserChunker(object):
         return self.waiter.__await__()
 
 class Client(UserBase):
+    """
+    Creates a Client instance which can interact with the Discord API.
+    
+    Parameters
+    ----------
+    token : `str`
+        A valid Discord token, what the client can use to interact with the Discord API.
+    secret: `str`, optional
+        Client secret used when interacting with oauth2 endpoints.
+    client_id : `snowflake`, optional
+        When more `Client` is started up, it is recommended to define their id initially. The wrapper can detect the
+        clients' id-s only when they are logging in, so the wrapper  needs to check if a ``User`` alterego of the client
+        exists anywhere, and if does will replace it.
+    activity : ``Activity``, optional
+        The client's preferred activity.
+    status : `str` or ``Status``, optional
+        The client's preferred status.
+    is_bot : `bool`, optional
+        Whether the client is a bot user or a user account. Defaults to False.
+    shard_count : `int`, optional
+        The client's shard count. If passed as `0`, The client will launch up without sharding. If passed as `1`, the
+        client will use the recommended shard amount for it. At every other case, the Client will use the passed
+        amount.
+    intents : ``IntentFlag``, optional
+         By default the client will launch up using all the intent flags. Negative values will be interpretered as
+         using all the intents, meanwhile if passed as positive, non existing intent flags are removed.
+    **kwargs : keyword arguments
+        Additional predefined attributes for the client.
+    
+    Other Parameters
+    ----------------
+    name : `str`
+        The client's ``.name``.
+    discriminator : `int`
+        The client's ``.discriminator``.
+    avatar : `int`
+        The client's ``.avatar``.
+    has_animated_avatar : `bool`
+        The client's ``.has_animated_avatar``.
+    flags : ``UserFlag``
+        The client's ``.flags``.
+    
+    Raises
+    ------
+    TypeError
+        If any argument's type is bad.
+    ValueError
+        If an argument's type is good, but it's value is unacceptable.
+    
+    Attributes
+    ----------
+    id : `int`
+        The client's unique identificator number.
+    name : str
+        The client's username.
+    discriminator : `int`
+        The client's discriminator. Given to avoid overlapping names.
+    avatar : `int`
+        The client's avatar's hash in `uint128`. Set as `0` if the client has no avatar.
+    has_animated_avatar : `bool`
+        Whether the client's avatar is animated. If the client has no avatar, then this attribute is set as False.
+    guild_profiles : `dict` of (``Guild``, ``GuildPorfile``) items
+        A dictionary, which contains the client's guild profiles. If a client is member of a guild, then it should
+        have a respective guild profile accordingly.
+    is_bot : `bool`
+        Whether the client is a bot or a user account.
+    partial : `bool`
+        Partial clients have only their id set. If any other data is set, it might not be in sync with Discord.
+    activities : `list` of ``Acitvity`` instances
+        A list of the client's activities.
+    status : `Status`
+        The client's display status.
+    statuses : `dict` of (`str`, `str`) items
+        The client's statuses for each platform.
+    email : `str`
+        The client's email. Defaults to empty string.
+    flags : ``UserFlag``
+        The client's user flags.
+    locale : `str`
+        The preferred locale by the client.
+    mfa : `bool`
+        Whether the client has two factor authorization enabled on the account.
+    premium_type : ``PremiumType``
+        The Nitro subscription type of the client.
+    system : `bool`
+        Whether the client is an Official Discord System user (part of the urgent message system).
+    verified : `bool`
+        Whether the email of the client is verified.
+    application : ``Application``
+        The bot account's application. The application data of the client is requested menwhile it logs in.
+    events : ``EventDescriptor``
+        Contains the event handlers of the client. New event handlers can be added through it as well.
+    gateway : ``DiscordGateway`` or ``DiscordGatewaySharder``
+        The gateway of the client towards Discord. If the client uses sharding, then ``DiscordGatewaySharder`` is used
+        as gateway.
+    http : ``DiscordHTTPClient``
+        The http session of the client. Can be used as a normal http session, or for lower level interactions with the
+        Discord API.
+    intents : ``IntentFlag``
+        The intent flags of the client.
+    loop : ``EventThread``
+        The eventloop of the client. Every client uses the same eventloop.
+    private_channels : `dict` of (`int`, ``ChannelPrivate``) items
+        Stores the private channels of the client. The channels' other recipement' ids are the keys, meanwhile the
+        channels are the values.
+    group_channels : `dict` of (`int`, ``ChannelGroup``) items
+        The group channels of the client. They can be accessed by their id as the key.
+    ready_state : ``ReadyState`` or `None`
+        The client on login in fills up it's ready_state with Guild objects, which will have their members requested.
+    relationships : `dict` of (`int`, ``Relationship``) items
+        Stores the relationships of the client. The relationships' users' ids are the keys and the relationships
+        themselves are the values.
+    running : `bool`
+        Whether the client is running or not. When the client is stopped, this attribute is set as `False` what causes
+        it's heartbeats to stop and it's gateways to close and not reconnect.
+    secret : `str`
+        The client's secret used when interacting with oauth2 endpoints.
+    shard_count : `int`
+        The client's shardcount. Set as `0` if the is not using sharding.
+    token : `str`
+        The client's token.
+    voice_clients : `dict` of (`int`, ``VoiceClient``) items
+        Each bot can join a channel at every ``Guild`` and meanwhile they do, they have an active voice client for that
+        guild. This attribute stores these voice clients. They keys are the guilds' ids, meanwhile the values are
+        the voice clients.
+    _activity : ``Activity``
+        The client's preffered activity.
+    _gateway_pair : `tuple` (`str`, `float`)
+        An `url`, `time` pair used, when requesting gateway url. When the client launches with more shards, keep
+        requesting gateway url might take up most of the time, so we cache the generated url and the timestamp
+        of the request. If the last timestamp is within 1 minute of the last request, then we will just use the latest
+        generated url.
+    _status : ``Status``
+        The client's preferred status.
+    _user_chunker_nonce : `int`
+        The last nonce in int used for requesting guild user chunks. The default value is 0, what means the next
+        request will start at 1. Nonce 0 is allocated for the case, when all the guild's user is requested.
+    
+    See Also
+    --------
+    UserBase : The superclass of ``Client`` and of other user classes.
+    User : The default type of Discord users.
+    Webhook : Discord webhook entity.
+    WebhookRepr : Discord webhook's user representation.
+    UserOA2 : A user class with extended oauth2 attributes.
+    
+    Notes
+    --------
+    Client supports weakreferencig and dynamic attribute names as well for extension support.
+    """
     __slots__ = (
         'guild_profiles', 'is_bot', 'partial', #default user
         'activities', 'status', 'statuses', #presence
         'email', 'flags', 'locale', 'mfa', 'premium_type', 'system', 'verified', # OAUTH 2
-        '__dict__', '_activity', '_gateway_pair', '_status', '_user_chunker_nonce', 'application', 'channels',
-        'events', 'gateway', 'guild_profiles', 'http', 'intents', 'loop', 'private_channels', 'ready_state',
+        '__dict__', '_activity', '_gateway_pair', '_status', '_user_chunker_nonce', 'application', 'events',
+        'gateway', 'http', 'intents', 'loop', 'private_channels', 'ready_state', 'group_channels',
         'relationships', 'running', 'secret', 'shard_count', 'token', 'voice_clients')
     
     def __new__(cls, token, secret=None, client_id=0, activity=ActivityUnknown, status=None, is_bot=True,
@@ -163,7 +313,7 @@ class Client(UserBase):
         
         # activity
         if (not isinstance(activity, ActivityBase)) or (type(activity) is ActivityCustom):
-            raise TypeError(f'`activity` should have been passed as `{ActivityBase.__name__} instance (except {ActivityCustom.__name__}), got: {activity!r}.')
+            raise TypeError(f'`activity` should have been passed as `{ActivityBase.__name__} instance (except {ActivityCustom.__name__}), got: {activity.__class__.__name__}.')
         
         # status
         if (status is not None):
@@ -264,7 +414,6 @@ class Client(UserBase):
         self.intents            = intents
         self.running            = False
         self.relationships      = {}
-        self.channels           = {}
         self.guild_profiles     = {}
         self._status            = _status
         self.status             = Status.offline
@@ -273,6 +422,7 @@ class Client(UserBase):
         self.activities         = []
         self._gateway_pair      = ('',0.0)
         self._user_chunker_nonce= 0
+        self.group_channels     = {}
         self.private_channels   = {}
         self.voice_clients      = {}
         self.id                 = client_id
@@ -290,11 +440,22 @@ class Client(UserBase):
         
         return self
     
-    def _init_on_ready(self,data):
+    def _init_on_ready(self, data):
+        """
+        Fills up the client's instance attributes on login. If there is an already existing User object with the same
+        id, the client will replace it at channel participans, at ``USERS`` weakreference dictionary, at
+        ``guild.users`` and at permission overwrites. This replacing is avoidable, if at the creation of the client
+        the ``.client_id`` argument is set.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Data requested from Discord by the ``.client_login_static`` method.
+        """
         client_id           = int(data['id'])
         if self.id!=client_id:
             CLIENTS.update(self,client_id)
-
+        
         if CACHE_USER:
             try:
                 alterego        = USERS[client_id]
@@ -313,7 +474,7 @@ class Client(UserBase):
                                     overwrite.target=self
                     
                     for client in CLIENTS:
-                        if (client is not self) and client.running and (client.loop is not None):
+                        if (client is not self) and client.running:
                             for channel in client.channels.values():
                                 users=channel.users
                                 for index in range(users):
@@ -322,15 +483,15 @@ class Client(UserBase):
                                         continue
         else:
             for client in CLIENTS:
-                if (client is not self) and client.running and (client.loop is not None):
+                if (client is not self) and client.running:
                     for channel in client.channels.values():
                         users=channel.users
                         for index in range(users):
                             if users[index].id==client_id:
                                 users[index]=self
                                 continue
-
-                
+        
+      
         self.name           = data['username']
         self.discriminator  = int(data['discriminator'])
         avatar=data['avatar']
@@ -350,23 +511,73 @@ class Client(UserBase):
         self.flags          = UserFlag(data.get('flags',0))
         self.premium_type   = PremiumType.INSTANCES[data.get('premium_type',0)]
         self.locale         = parse_locale(data)
-
+        
         self.partial        = False
-
+        
         USERS[client_id]=self
-
+    
     _update_presence    = User._update_presence
     _update_presence_no_return = User._update_presence_no_return
-
+    
     @property
     def _platform(self):
+        """
+        Returns the client's local platform.
+        
+        Returns
+        -------
+        platform : `str`
+            The platform's name or empty string if the client's status is offline or invisible.
+            
+        Notes
+        -----
+        Custom client's status is always `'web'`, so other than `''` or `'web'` will not be returned.
+        """
         if self.status in (Status.offline,Status.invisible):
             return ''
         return 'web'
+    
+    async def client_edit(self, password=None, new_password=None, email=None, house=_spaceholder, name=None,
+            avatar=_spaceholder):
+        """
+        Edits the client. If an argument is not passed, it wont be edited. Every argument what refers to a user
+        account is not tested.
         
-    #house must be type  HypeSquadHouse
-    #avatar is bytes
-    async def client_edit(self,password=None,new_password=None,email=None,house=_spaceholder,name=None,avatar=_spaceholder):
+        Parameters
+        ----------
+        password : `str`
+            The actual password of the client. A must for user accounts.
+        new_password : `str`
+            User account only argument.
+        email : `str`
+            User account only argument.
+        house : ``HypesquadHouse`` or `None`
+            User account only argument.
+        name : `str`
+            The client's new name.
+        avatar : `bytes-like` or `None`
+            An `'jpg'`, `'png'`, `'webp'` image's raw data. If the client is premium account, then it can be
+            `'gif'` as well. By passing `None` you can remove the client's current avatar.
+        
+        Raises
+        ------
+        ValueError
+            - If ``password`` is not passed when the client is a user account.
+            - If the length of the ``name`` is not between 2 and 32.
+            - If ``avatar`` is passed as `bytes-like` and it's format is `'gif'`, meanwhile the user is not premium.
+            - If ``avatar`` is passed and it's format is not any of the expected ones.
+        TypeError
+            - If ``name`` was not passed as str instance.
+            - If ``avatar`` was not passed as `bytes-like` or as `None`.
+        ConnectionError
+            No internet connection.
+        DiscordException
+        
+        Notes
+        -----
+        The method's endpoint has long ratelimit reset, so consider using timeout and checking ratelimits with
+        ``RatelimitProxy``.
+        """
         data={}
         
         if (password is None):
@@ -375,17 +586,21 @@ class Client(UserBase):
         else:
             data['password']=password
 
-        if (name is not None):
+        if (name is None):
+            pass
+        elif isinstance(name,str):
             name_ln=len(name)
             if name_ln<2 or name_ln>32:
                 raise ValueError(f'The length of the name can be between 2-32, got {name_ln}')
             data['username']=name
+        else:
+            raise TypeError(f'`name` can be passed as type str, got {name.__class__.__name__}.')
         
         if avatar is _spaceholder:
             pass
         elif avatar is None:
             data['avatar']=None
-        else:
+        elif isinstance(avatar,(bytes,bytearray,memoryview)):
             avatar_data=bytes_to_base64(avatar)
             ext=ext_from_base64(avatar_data)
             if self.premium_type.value:
@@ -397,13 +612,15 @@ class Client(UserBase):
                         raise ValueError('Only premium users can have `gif` avatar!')
                     raise ValueError(f'Invalid image extension: `{ext}`')
             data['avatar']=avatar_data
+        else:
+            raise TypeError(f'`avatar` can be passed as `bytes-like` or None, got {avatar.__class__.__name__}.')
         
         if not self.is_bot:
             if (email is not None):
                 data['email']=email
             if (new_password is not None):
                 data['new_password']=new_password
-
+        
         data=await self.http.client_edit(data)
         self._update_no_return(data)
         
@@ -413,21 +630,52 @@ class Client(UserBase):
                 self.token=data['token']
             except KeyError:
                 pass
-
+        
         if house is _spaceholder:
             pass
         elif house is None:
             await self.hypesquad_house_leave()
         else:
             await self.hypesquad_house_change(house)
+    
+    async def client_edit_nick(self, guild, nick, reason=None):
+        """
+        Changes the client's nick at the specified Guild. A nick name's length can be between 1-32. An extra argument
+        reason is accepter as well, what will show zp at the respective guild's audit logs.
         
-    async def client_edit_nick(self,guild,nick,reason=None):
-        if (nick is not None):
+        Parameters
+        ----------
+        guild : ``Guild``
+            The guild where the client's nickname will be changed.
+        nick : `str` or `None`
+            The client's new nickname. Pass it as None or with length 0 to remove it.
+        reason : `str`, Optional
+            Will show up at the respective guild's audit logs.
+        
+        Raises
+        ------
+        ValueError
+            If the nick's length is over 32.
+        TypeError
+            If the nick is not None or str instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+        
+        Notes
+        -----
+        No request is done if the client's actual nickname at the guild is same as the method would change it too.
+        """
+        if (nick is None):
+            pass
+        elif isinstance(nick, str):
             nick_ln=len(nick)
             if nick_ln>32:
-                raise ValueError(f'The length of the nick can be between 1-32, got {nick_ln}')
+                raise ValueError(f'The length of the `nick` can be between 1-32, got {nick_ln}')
             if nick_ln==0:
                 nick=None
+        else:
+            raise TypeError(f'`nick` can be str instance, got {nick.__class__.__name__}')
         
         try:
             actual_nick=self.guild_profiles[guild].nick
@@ -452,11 +700,45 @@ class Client(UserBase):
             await self.http.client_edit_nick(guild.id,{'nick':nick},reason)
 
     async def client_connections(self):
+        """
+        Requests the client's connections. For a bot account this request will always return an empty list.
+        
+        Returns
+        -------
+        connections : `list` of ``Connection`` objects
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        """
         data = await self.http.client_connections()
         return [Connection(connection_data) for connection_data in data]
 
-    async def client_edit_presence(self,activity=None,status=None,afk=False):
-        if isinstance(status,str):
+    async def client_edit_presence(self, activity=None, status=None, afk=False):
+        """
+        Changes the client's presence (status and activity). If a parameter is not defined, it will not be changed.
+        
+        Parameters
+        ----------
+        activity : ``Activity``, Optional
+            The new activity of the Client.
+        status : `str` or ``Status``, Optional
+            The new status of the client.
+        afk : `bool`, Optional
+            Whether the client is afk or not (?).
+        
+        Raises
+        ------
+        TypeError:
+            - If the status is not `str` or ``Status`` instance.
+            - If activity is not ``ActivityBase`` instance, except ``ActivityCustom``.
+        ValueError:
+            - If the status `str` instance, but not any of the predefined ones.
+        """
+        if status is None:
+            status=self._status
+        elif isinstance(status,str):
             try:
                 status=Status.INSTANCES[status]
             except KeyError as err:
@@ -464,27 +746,26 @@ class Client(UserBase):
             self._status=status
         elif isinstance(status,Status):
             self._status=status
-        elif status is None:
-            status=self._status
         else:
-            raise TypeError(f'Invalid status type ({type(status)!r}), it must be str or {status!r}')
+            raise TypeError(f'`status` can be type `str` or `{Status.__name__}`, got {status.__class__.__name__}')
         
         status=status.value
         
         if activity is None:
             activity=self._activity
-        else:
+        elif isinstance(activity, ActivityBase) and (type(activity) is not ActivityCustom):
             self._activity=activity
+        else:
+            raise TypeError(f'`activity` should have been passed as `{ActivityBase.__name__} instance (except {ActivityCustom.__name__}), got: {activity.__class__.__name__}.')
         
         if activity is ActivityUnknown:
             activity=None
-
-        if activity is not None:
+        elif (activity is not None):
             if self.is_bot:
                 activity=activity.botdict()
             else:
                 activity=activity.hoomandict()
-
+        
         if status=='idle':
             since=int(time_now()*1000.)
         else:
@@ -499,10 +780,38 @@ class Client(UserBase):
                 'afk'   : afk,
                     },
                 }
-
+        
         await self.gateway.send_as_json(data)
-
-    async def activate_authorization_code(self,redirect_url,code,scopes):
+    
+    async def activate_authorization_code(self, redirect_url, code, scopes):
+        """
+        Activates a user's oauth2 code.
+        
+        Parameters
+        ----------
+        redirect_url : `str`
+            The url, where the activation page redirected to.
+        code : `str`
+            The code, what is included with the redirect url after a successfull activation.
+        scopes : `list` of `str`
+            A list of oauth2 scopes to request.
+        
+        Returns
+        -------
+        access : ``OA2Access`` or `None`
+            If the code, the redirect url or the scopes are invalid, the methods returns `None`.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        
+        See Also
+        --------
+        parse_oauth2_redirect_url : Parses `redirect_url` and the `code` from a full url.
+        
+        """
         data = {
             'client_id'     : self.id,
             'client_secret' : self.secret,
@@ -511,44 +820,119 @@ class Client(UserBase):
             'redirect_uri'  : redirect_url,
             'scope'         : ' '.join(scopes),
                 }
-
+        
         data = await self.http.oauth2_token(data)
         if len(data)==1:
             return
+        
         return AO2Access(data,redirect_url)
     
-    # Cannot grant (bug?):
-    # - 'activities.read'
-    # - 'activities.write'
-    # - 'applications.builds.upload'
-    
-    async def owners_access(self,scopes):
+    async def owners_access(self, scopes):
+        """
+        Similar to ``.activate_authorization_code``, but it requests the application's owner's access. It does not
+        requires the redirect_url and the code argument either.
+        
+        Parameters
+        ----------
+        scopes : `list` of `str`
+            A list of oauth2 scopes to request.
+        
+        Returns
+        -------
+        access : ``OA2Access``
+            The oauth2 access of the client's application's owner.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        
+        Notes
+        -----
+        Doesn't works if the client's application is owned by a team.
+        """
         data = {
             'client_id'     : self.id,
             'client_secret' : self.secret,
             'grant_type'    : 'client_credentials',
             'scope'         : ' '.join(scopes),
                 }
-
+        
         data = await self.http.oauth2_token(data)
         return AO2Access(data,'')
-
+    
     #needs `email` or/and `identify` scopes granted for more data
-    async def user_info(self,access):
+    async def user_info(self, access):
+        """
+        Request the a user's information with oauth2 access token. By default a bot account should be able to request
+        every public infomation about a user (but you do not need oauth2 for that). If the access token has email
+        or/and identify scopes, then more information should show up like this.
+        
+        Parameters
+        ----------
+        access : ``AO2Access`` or ``UserOA2``
+        
+        Returns
+        -------
+        oauth2_user : ``UserOA2``
+            The requested user object.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
         header=multidict_titled()
         header[AUTHORIZATION]=f'Bearer {access.access_token}'
         data = await self.http.user_info(header)
         return UserOA2(data,access)
-
-    #needs `connections` scope granted
-    async def user_connections(self,access):
+    
+    async def user_connections(self, access):
+        """
+        Requests a user's connections. This method will work only if the access token has the `'connections'` scope. At
+        the returned list includes the user's hidden connections as well.
+        
+        Parameters
+        ----------
+        access : ``AO2Access`` or ``UserOA2``
+        
+        Returns
+        -------
+        connections : `list` of ``Connection`` objects
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
         header=multidict_titled()
         header[AUTHORIZATION]=f'Bearer {access.access_token}'
         data = await self.http.user_connections(header)
         return [Connection(connection_data) for connection_data in data]
-
-    async def renew_access_token(self,access):
-        redirect_url=access.redirect_url
+    
+    async def renew_access_token(self, access):
+        """
+        Renews the access token of an ``OA2Access``.
+        
+        Parameters
+        ----------
+        access : ``AO2Access`` or ``UserOA2``
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        
+        Notes
+        -----
+        By default access tokens expire after one week.
+        """
+        
+        redirect_url = access.redirect_url
         if redirect_url:
             data = {
                 'client_id'     : self.id,
@@ -565,30 +949,61 @@ class Client(UserBase):
                 'grant_type'    : 'client_credentials',
                 'scope'         : ' '.join(access.scopes),
                     }
-
+        
         data = await self.http.oauth2_token(data)
-
+        
         access._renew(data)
     
-    #needs `guilds.join` scope granted
-    async def guild_user_add(self,guild,access_or_compuser,user=None,nick=None,roles=[],mute=False,deaf=False):
+    async def guild_user_add(self, guild, access_or_compuser, user=None, nick=None, roles=[], mute=False, deaf=False):
+        """
+        Adds the passed to the guild. The user must have granted you the `'guilds.join'` oauth2 scope.
+        
+        Parameters
+        ----------
+        guild : ``Guild``
+            The guild, where the user is going to be added.
+        access_or_compuser: ``OA2Access`` or ``UserOA2``
+            The access of the user, who will be addded.
+        user : ``User``, Optional
+            Defines which user will be added to the guild. The `access_or_compuser` must refer to this specified user.
+            This field is optional, if access is passed as an ``UserOA2`` object.
+        nick : `str`, Optional
+            The nickname, which with the user will be added.
+        roles : `list` of ``Role`` objects, Optional
+            The user will be added with the specified roles.
+        mute : `bool`, Optional
+            Whether the user should be added as muted.
+        deaf : `bool`, Optional
+            Whether the user should be added as deafen.
+        
+        Raises
+        ------
+        ValueError
+            - Nick was passed as `str` and it's length is over 32.
+        TypeError:
+            - If user was passed as None and `access_or_compuser` was passed as ``AO2Access``.
+            - If access_or_compuser was not passed as ``AO2Access``, neither ``UserOA2``.
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
         if type(access_or_compuser) is AO2Access:
             access=access_or_compuser
             if user is None:
-                raise TypeError('User can not be None if \'access_or_compuser\' is access')
+                raise TypeError('`user` can not be None if `access_or_compuser` is passed as `AO2Access`.')
         elif type(access_or_compuser) is UserOA2:
             access=access_or_compuser.access
             if user is None:
                 user=access_or_compuser
         else:
-            raise TypeError(f'Invalid access_or_compuser type, expected AO2Access or UserOA2, got {access_or_compuser.__class__.__name__}')
+            raise TypeError(f'Invalid `access_or_compuser` type, expected {AO2Access.__name__} or {UserOA2.__name__}, got {access_or_compuser.__class__.__name__}.')
         
         data={'access_token':access.access_token}
         if (nick is not None):
             nick_ln=len(nick)
             if nick_ln!=0:
                 if nick_ln>32:
-                    raise ValueError(f'The length of the nick can be between 1-32, got {nick_ln}')
+                    raise ValueError(f'The length of the nick can be between 1-32, got {nick!r}.')
                 data['nick']=nick
         
         if roles:
@@ -601,28 +1016,108 @@ class Client(UserBase):
             data['deaf']=deaf
         
         await self.http.guild_user_add(guild.id,user.id,data)
-
-    #needs `guilds` scope granted
-    async def user_guilds(self,access):
+    
+    async def user_guilds(self, access):
+        """
+        Requests a user's guilds with it's ``OA2Access``. The user must provide the `'guilds'` oauth2  scope for this
+        request to succeed.
+        
+        Parameters
+        ----------
+        access: ``OA2Access`` or ``UserOA2``
+            The access of the user, who's guilds will be requested.
+        
+        Returns
+        -------
+        guilds : `list of ``Guild`` objects
+            The guilds of the respective user. Not loaded guilds will show up as partial ones.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
         header=multidict_titled()
         header[AUTHORIZATION]=f'Bearer {access.access_token}'
         data = await self.http.user_guilds(header)
         return [PartialGuild(guild_data) for guild_data in data]
     
     async def achievement_get_all(self):
+        """
+        Requests all the achievements of the client's application and returns them.
+        
+        Returns
+        -------
+        achievements : `list` of ``Achievement`` objects
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
         data = await self.http.achievement_get_all(self.application.id)
         return [Achievement(achievement_data) for achievement_data in data]
     
-    async def achievement_get(self,achievement_id):
-        data = await self.http.achievement_get(self.application.id,achievement_id)
+    async def achievement_get(self, achievement_id):
+        """
+        Requests one of the client's achievements by it's id.
+        
+        Returns
+        -------
+        achievement : ``Achievement``
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
+        data = await self.http.achievement_get(self.application.id, achievement_id)
         return Achievement(data)
     
-    async def achievement_create(self,name,description,icon,secret=False,secure=False):
-        icon_data=bytes_to_base64(icon)
+    async def achievement_create(self, name, description, icon, secret=False, secure=False):
+        """
+        Creates an achievment for the client's application and returns it.
+        
+        Parameters
+        ----------
+        name : `str`
+            The achievement's name.
+        description : `str`
+            The achievement's description.
+        icon : `bytes-like`
+            The achievement's icon. Can have `'jpg'`, `'png'`, `'webp'` or `'gif'` format.
+        secret : `bool`, Optional
+            Secret achievements will *not* be shown to the user until they've unlocked them.
+        secure : `bool`, Optional
+            Secure achievements can only be set via HTTP calls from your server, not by a game client using the SDK.
+        
+        Returns
+        -------
+        achievement : ``Achievement``
+            The created achievement entity.
+        
+        Raises
+        ------
+        ValueError
+            If the ``icon``'s format is not any of the expected ones.
+        TypeError
+            If ``icon`` was not passed as `bytes-like`.
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
+        if isinstance(icon,(bytes, bytearray, memoryview)):
+            icon_data=bytes_to_base64(icon)
+        else:
+            raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon.__class__.__name__}.')
+        
         ext=ext_from_base64(icon_data)
         if ext not in VALID_ICON_FORMATS_EXTENDED:
             raise ValueError(f'Invalid icon type: {ext}')
-
+        
         data = {
             'name'          : {
                 'default'   : name,
@@ -638,41 +1133,119 @@ class Client(UserBase):
         data = await self.http.achievement_create(self.application.id,data)
         return Achievement(data)
     
-    async def achievement_edit(self,achievement,name=None,description=None,secret=None,secure=None,icon=_spaceholder):
+    async def achievement_edit(self, achievement, name=None ,description=None, secret=None, secure=None,
+            icon=_spaceholder):
+        """
+        Edits the passed achievemnt with the specified parameters. All parameter is optional.
+        
+        Parameters
+        ----------
+        achievement : ``Achievement``
+            The achievement, what will be edited.
+        name : `str`, Optional
+            The new name of the achievement.
+        description : `str`, Optional
+            The achievemnt's new description.
+        secret : `bool`, Optional
+            The achievement's new secret value.
+        secure : `bool`, Optional
+            The achievement's new secure value.
+        icon : `bytes-like`, Optional
+            The achievement's new icon.
+        
+        Returns
+        -------
+        achievemnt : ``Achievement``
+            After a successful edit, the passed achievement is updated and returned.
+        
+        Raises
+        ------
+        ValueError
+            If the ``icon``'s format is not any of the expected ones.
+        TypeError
+            If ``icon`` was not passed as `bytes-like`.
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
         data={}
+        
         if (name is not None):
             data['name'] = {
                 'default'   : name,
                     }
+        
         if (description is not None):
             data['description'] = {
                 'default'   : description,
                     }
+        
         if (secret is not None):
             data['secret']=secret
-            
+        
         if (secure is not None):
             data['secure']=secure
-            
-        if (icon is not _spaceholder):
+        
+        if (icon is _spaceholder):
+            pass
+        elif isinstance(icon,(bytes, bytearray, memoryview)):
             icon_data=bytes_to_base64(icon)
             ext=ext_from_base64(icon_data)
             if ext not in VALID_ICON_FORMATS_EXTENDED:
                 raise ValueError(f'Invalid icon type: {ext}')
             data['icon']=icon_data
+        else:
+            raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon.__class__.__name__}.')
         
         data = await self.http.achievement_edit(self.application.id,achievement.id,data)
         achievement._update_no_return(data)
         return achievement
     
-    async def achievement_delete(self,achievement):
+    async def achievement_delete(self, achievement):
+        """
+        Deletes the passed achievement.
+        
+        Parameters
+        ----------
+        achievement : ``Achievement``
+            The achievement to delete.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
         await self.http.achievement_delete(self.application.id,achievement.id)
-    
+    #
+    # This endpoint is unintentionally documented and will never work
     # https://github.com/discordapp/discord-api-docs/issues/1230
-    # unintentionally documented and will never work.
     
     # DiscordException UNAUTHORIZED (401): 401: Unauthorized
-    async def user_achievements(self,access):
+    async def user_achievements(self, access):
+        """
+        Requests the achievements of a user with it's oauth2 access.
+        
+        Parameters
+        ----------
+        access : ``OA2Access`` or ``UserOA2``
+            The access of the user, who's achievements will be requested.
+        
+        Returns
+        -------
+        achievements : `list` of ``Achievement`` objects
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        
+        Notes
+        -----
+        This endpoint is unintentionally documented and will never work. For reference:
+        ``https://github.com/discordapp/discord-api-docs/issues/1230``.
+        """
         header=multidict_titled()
         header[AUTHORIZATION]=f'Bearer {access.access_token}'
         
@@ -687,11 +1260,34 @@ class Client(UserBase):
     #     DiscordException NOT FOUND (404), code=10029: Unknown Entitlement
     # when updating non secure:
     #     DiscordException FORBIDDEN (403), code=40001: Unauthorized
-    async def user_achievement_update(self,user,achievement,percent_complete):
-        data={'percent_complete':percent_complete}
+    async def user_achievement_update(self, user, achievement, percent_complete):
+        """
+        Updates the `user`'s achievement with the given percentage. The  achevement should be `secure`. This
+        method only updates the achievement's percentage.
         
+        Parameters
+        ----------
+        user : ``User`` or ``Client``
+            The user, who's achievement will be updated.
+        achievement : ``Achievement``
+            The achievement, which's state will be updated
+        percent_complete : `int`
+            The completion percentage of the achievement.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        
+        Notes
+        -----
+        This endpoint cannot grant achievement, but can it even update them?. For reference:
+        ``https://github.com/discordapp/discord-api-docs/issues/1230``.
+        """
+        data={'percent_complete':percent_complete}
         await self.http.user_achievement_update(user.id,self.application.id,achievement.id,data)
-
+    
     #hooman only
     async def application_get(self,application_id):
         data = await self.http.application_get(application_id)
@@ -738,7 +1334,7 @@ class Client(UserBase):
                     pass
 
         self.relationships.clear()
-        for channel in self.channels.values():
+        for channel in self.group_channels.values():
             users=channel.users
             for index in range(users):
                 if users[index].id==client_id:
@@ -746,7 +1342,7 @@ class Client(UserBase):
                     continue
 
         self.private_channels.clear()
-        self.channels.clear()
+        self.group_channels.clear()
         self.application._fillup()
         self.events.clear()
         

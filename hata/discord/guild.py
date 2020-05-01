@@ -346,7 +346,7 @@ def PartialGuild(data):
     # icon will be set down
     # id is set up
     guild.is_large=False
-    guild.max_presences=5000
+    guild.max_presences=25000
     guild.max_users=250000
     guild.max_video_channel_users=25
     guild.message_notification=MessageNotificationLevel.only_mentions
@@ -620,7 +620,7 @@ class Guild(DiscordEntity, immortal=True):
             guild.icon=0
             guild.id=guild_id
             guild.is_large=False
-            guild.max_presences=5000
+            guild.max_presences=25000
             guild.max_users=250000
             guild.max_video_channel_users=25
             guild.message_notification=MessageNotificationLevel.only_mentions
@@ -1382,7 +1382,7 @@ class Guild(DiscordEntity, immortal=True):
         
         max_presences=data.get('max_presences',None)
         if max_presences is None:
-            max_presences=5000
+            max_presences=25000
         if self.max_presences!=max_presences:
             old['max_presences']=self.max_presences
             self.max_presences=max_presences
@@ -1520,7 +1520,7 @@ class Guild(DiscordEntity, immortal=True):
         self.max_users=data.get('max_members',250000)
         
         max_presences=data.get('max_presences',None)
-        self.max_presences=5000 if max_presences is None else max_presences
+        self.max_presences=25000 if max_presences is None else max_presences
         
         self.max_video_channel_users = data.get('max_video_channel_users', 25)
         

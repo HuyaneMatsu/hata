@@ -186,7 +186,7 @@ bots can request their application info.
 ### `channels`
 
 - type : `dict`
-- items : (`int`, [`Guild`](Guild.md))
+- items : (`int`, ([`ChannelPrivate`](ChannelPrivate.md) / [ChannelGroup](ChannelGroup.md))
 
 Stores all the [private](ChannelPrivate.md) and [group](ChannelGroup.md)
 [channels](CHANNEL_TYPES.md) of the client as `(channel_id, Channel)` pairs.

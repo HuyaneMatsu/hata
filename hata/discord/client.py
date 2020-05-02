@@ -540,7 +540,7 @@ class Client(UserBase):
     async def client_edit(self, password=None, new_password=None, email=None, house=_spaceholder, name=None,
             avatar=_spaceholder):
         """
-        Edits the client. If an argument is not passed, it wont be edited. Every argument what refers to a user
+        Edits the client. Only the provided parameters will be changed. Every argument what refers to a user
         account is not tested.
         
         Parameters
@@ -562,13 +562,13 @@ class Client(UserBase):
         Raises
         ------
         ValueError
-            - If ``password`` is not passed when the client is a user account.
-            - If the length of the ``name`` is not between 2 and 32.
-            - If ``avatar`` is passed as `bytes-like` and it's format is `'gif'`, meanwhile the user is not premium.
-            - If ``avatar`` is passed and it's format is not any of the expected ones.
+            - If `password` is not passed when the client is a user account.
+            - If the length of the `name` is not between 2 and 32.
+            - If `avatar` is passed as `bytes-like` and it's format is `'gif'`, meanwhile the user is not premium.
+            - If `avatar` is passed and it's format is not any of the expected ones.
         TypeError
-            - If ``name`` was not passed as str instance.
-            - If ``avatar`` was not passed as `bytes-like` or as `None`.
+            - If `name` was not passed as str instance.
+            - If `avatar` was not passed as `bytes-like` or as `None`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -1289,11 +1289,60 @@ class Client(UserBase):
         await self.http.user_achievement_update(user.id,self.application.id,achievement.id,data)
     
     #hooman only
-    async def application_get(self,application_id):
+    async def application_get(self, application_id):
+        """
+        Requst a specific application by it's id.
+        
+        Parameters
+        ----------
+        application_id : `int`
+            The `id` of the application to request.
+
+        Returns
+        -------
+        application : ``Application``
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        
+        Notes
+        -----
+        This endpoint does not support bot accounts.
+        """
         data = await self.http.application_get(application_id)
         return Application(data)
     
     def _delete(self):
+        """
+        Cleares up the client's references. By default this is not called when a client is stopped. This method should
+        be used when you want to get rid of every allocated objects by the client. Take care, local modules might still
+        have active references to the client or to some other objects, what could cause them to not garbage collect.
+        
+        Raises
+        ------
+        RuntimeError
+            If called when the client is still running.
+        
+        Examples
+        --------
+        >>> from hata import Client, GUILDS
+        >>> import gc
+        >>> TOKEN = 'a token goes here'
+        >>> client = Client(TOKEN)
+        >>> client.start()
+        >>> len(GUILDS)
+        4
+        >>> client.stop()
+        >>> client._delete()
+        >>> client = None
+        >>> gc.collect()
+        680
+        >>> len(GUILDS)
+        0
+        """
         if self.running:
             raise RuntimeError(f'{self.__class__.__name__}._delete called from a running client.')
 
@@ -1352,55 +1401,185 @@ class Client(UserBase):
         self._activity          = ActivityUnknown
         self.activities         = []
         self.ready_state        = None
-        
-    async def download_url(self,url):
-        async with self.http.get(url) as response:
-            return (await response.read())
-
-    async def download_attachment(self,attachment):
-        if attachment.proxy_url.startswith(CDN_ENDPOINT):
-            url=attachment.proxy_url
-        else:
-            url=attachment.url
-        async with self.http.get(url) as response:
-            return (await response.read())
-
-    #loggin
     
-    async def client_login_static(self):        
+    async def download_url(self,url):
+        """
+        Requests an url and returns the response's content. A shortcut option for doing a get request with the
+        client's http and reading it.
+        
+        Parameters
+        ----------
+        url : `str`
+            The url to request.
+
+        Returns
+        -------
+        response_data : `bytes`
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        """
+        
+        async with self.http.get(url) as response:
+            return (await response.read())
+
+    async def download_attachment(self, attachment):
+        """
+        Downloads an attachment object's file. This method always prefers the proxy url of the attachment if applicable.
+        
+        Parameters
+        ----------
+        attachment : ``Attachment``
+            The attachment object, which's file will be requested.
+        
+        Returns
+        -------
+        response_data : `bytes`
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
+        url = attachment.proxy_url
+        if (url is None) or (not url.startswith(CDN_ENDPOINT)):
+            url = attachment.url
+        async with self.http.get(url) as response:
+            return (await response.read())
+    
+    #loggin
+    async def client_login_static(self):
+        """
+        The first step at loggin in is requesting the client's user data. This method is also used to check whether
+        the token of the client is valid.
+        
+        Returns
+        -------
+        response_data : `dict` of (`str` : `Any`)
+            Decoded json data got from Discord.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        ConnectionRefusedError
+            When the token of the client is invalid.
+        DiscordException
+        """
         try:
             data = await self.http.client_user()
         except DiscordException as err:
             if err.response.status==401:
                 raise ConnectionRefusedError('Invalid token') from err
             raise
-            
+        
         return data
 
     #channels
 
-    async def channel_group_leave(self,channel):
+    async def channel_group_leave(self, channel):
+        """
+        Leaves the client from the specified group channel.
+        
+        Parameters
+        ----------
+        channel : ``ChannelGroup``
+            The channel to leave from.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
         await self.http.channel_group_leave(channel.id)
 
-    async def channel_group_user_add(self,channel,*users):
+    async def channel_group_user_add(self, channel, *users):
+        """
+        Adds the users to the given group channel.
+        
+        Parameters
+        ----------
+        channel : ``ChannelGroup``
+            The channel to add the `users` to.
+        *users : ``User`` or ``Client`` objects
+            The users to add to the `channel`.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
         for user in users:
             await self.http.channel_group_user_add(channel.id,user.id)
 
-    async def channel_group_user_delete(self,channel,*users):
+    async def channel_group_user_delete(self, channel, *users):
+        """
+        Removes the users from the given group channel.
+        
+        Parameters
+        ----------
+        channel : ``ChannelGroup``
+            The channel from where the `users` will be removed.
+        *users : ``User`` or ``Client`` objects
+            The users to remove from the `channel`.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
         for user in users:
             await self.http.channel_group_user_delete(channel.id,user.id)
 
-    async def channel_group_edit(self,channel,name=_spaceholder,icon=_spaceholder):
+    async def channel_group_edit(self, channel, name=_spaceholder, icon=_spaceholder):
+        """
+        Edits the given group channel. Only the provided parameters will be edited.
+        
+        Parameters
+        ----------
+        channel : ``ChannelGroup``
+            The channel to edit.
+        name : `None` or `str`, Optional
+            The new name of the channel. By passing `None` or an empty string you can remove the actual one.
+        icon : `None` or `bytes-like`, Optional
+            The new icon of the channel. By passing `None` your can remove the actual one.
+        
+        Raises
+        ------
+        TypeError
+            - If `name` is neither `None` or `str` instance.
+            - If `icon` is neither `None` or `bytes-like`.
+        ValueError
+            - If `name` is passed as `str`, but it's length is `1`, or over `100`.
+            - If `icon` is passed as `bytes-like`, but it's format is not a valid image format.
+        ConnectionError
+            No internet connection.
+        DiscordException
+        
+        Notes
+        -----
+        No request is done if no optional paremeter is provided.
+        """
         data={}
-
+        
         if (name is not _spaceholder):
-            if (name is not None):
+            if (name is None):
+                pass
+            elif isinstance(name, str):
                 name_ln=len(name)
                 if name_ln==1 or name_ln>100:
-                    raise ValueError(f'Channel\'s name\'s length can be between 2-100, got {name_ln}')
+                    raise ValueError(f'`channel`\'s `.name`\'s length can be between 2-100, got {name!r}.')
                 
                 if name_ln==0:
                     name=None
+            else:
+                raise TypeError(f'`name` can be `None` or `str` instance, got {name.__class__.__name__}.')
             
             data['name']=name
         
@@ -1408,7 +1587,7 @@ class Client(UserBase):
             pass
         elif icon is None:
             data['icon']=None
-        else:
+        elif isinstance(icon, (bytes, bytearray, memoryview)):
             icon_data=bytes_to_base64(icon)
             ext=ext_from_base64(icon_data)
             if ext not in VALID_ICON_FORMATS:
@@ -1417,16 +1596,59 @@ class Client(UserBase):
         
         if data:
             await self.http.channel_group_edit(channel.id,data)
-
+    
     #user only
-    async def channel_group_create(self,users):
+    async def channel_group_create(self, users):
+        """
+        Creates a group channel with the given users.
+        
+        Parameters
+        ----------
+        users : `list` of (``Usser`` or ``Client``) objects
+            The users to create the channel with.
+        
+        Returns
+        -------
+        channel : ``ChannelGroup``
+            The created group channel.
+        
+        Raises
+        ------
+        ValueError
+            If `users` contains less than 2 users.
+        ConnectionError
+            No internet connection.
+        DiscordException
+        
+        Notes
+        -----
+        This endpoint does not support bot accounts.
+        """
         if len(users)<2:
             raise ValueError('ChannelGroup must be created with 2 or more users')
+        
         data={'recipients':[user.id for user in users]}
         data=await self.http.channel_group_create(self.id,data)
         return ChannelGroup(data,self)
+    
+    async def channel_private_create(self, user):
+        """
+        Parameters
+        ----------
+        user : ``User`` or ``Client`` object
+            The user to create the private with.
         
-    async def channel_private_create(self,user):
+        Returns
+        -------
+        channel : ``ChannelPrivate``
+            The created private channel.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
         try:
             channel=self.private_channels[user.id]
         except KeyError:
@@ -1436,16 +1658,65 @@ class Client(UserBase):
 
     #returns an empty list for bots
     async def channel_private_get_all(self):
+        """
+        Request the client's private + group channels and returns them in a list. At the case of bot accounts the
+        request returns an empty list, so we skip it.
+        
+        Returns
+        -------
+        channnels : `list` of (``ChannelPrivate`` or ``ChannelGroup``) objects
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
         result=[]
-        if self.is_bot:
-            return result
-        data = await self.http.channel_private_get_all()
-        for channel_data in data:
-            channel=CHANNEL_TYPES[channel_data['type']](data,self)
-            result.append(channel)
+        if (not self.is_bot):
+            data = await self.http.channel_private_get_all()
+            for channel_data in data:
+                channel=CHANNEL_TYPES[channel_data['type']](data,self)
+                result.append(channel)
+        
         return result
 
-    async def channel_move(self,channel,visual_position,category=_spaceholder,lock_permissions=False,reason=None):
+    async def channel_move(self, channel, visual_position, category=_spaceholder, lock_permissions=False, reason=None):
+        """
+        Moves a guild channel to the given visual position under it's category, or guild. If the algorithm can not
+        place the channel exactly on that location, it will place it as close, as it can. If there is nothing to
+        move, then the request is skipped.
+        
+        Parameters
+        ----------
+        channel : ``ChannelGuildBase`` instance
+            The channel to be moved.
+        visual_position : `int`
+            The visual position where the channel should go.
+        category : `None` or ``ChannelGroup`` or ``Guild``, Optional
+            If not set, then the channel will keep it's current parent. If the argument is set ``Guild`` instance or to
+            `None`, then the  channel will be moved under the guild itself, Or if passed as ``ChannelCategory.md``,
+            then the channel will be moved under it.
+        lock_permissions : `bool`, Optional
+            If you want to sync the permissions with the new category set it to `True`. Defaults to `False`.
+        reason : `str`, Optional
+            Shows up at the respective guild's audit logs.
+        
+        Raises
+        ------
+        ValueError
+            - If the `channel` would be between guilds.
+            - If catgory channel would be moved under an other category.
+        TypeError
+            If `category` was not passed as `None`, or as ``Guild`` or ``ChannelCategory`` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+        
+        Notes
+        -----
+        This method also fixes the messy channel positions of Discord to an intuitive one.
+        """
         if category is _spaceholder:
             category=channel.category
         elif category is None:
@@ -1457,17 +1728,17 @@ class Client(UserBase):
             if category.guild is not channel.guild:
                 raise ValueError('Can not move channel between guilds!')
         else:
-            raise TypeError(f'Invalid type {channel!r}')
+            raise TypeError(f'Invalid type {channel.__class__.__name__}')
         
         if type(channel) is type(category):
             raise ValueError('Cant move category under category!')
         
         if channel.category is category and category.channels.index(channel)==visual_position:
             return #saved 1 request
-
+        
         #making sure
         visual_position=int(visual_position) 
-
+        
         #quality python code incoming :ok_hand:
         ordered=[]
         indexes=[0,0,0,0,0,0,0] #for the 7 channel type (type 1 and 3 wont be used)
@@ -1490,7 +1761,7 @@ class Client(UserBase):
             indexes[type_]=type_index+1
             
             ordered.append((index_0,index_1,type_index,channel_),)
-
+            
             if type_==4:
                 #reset type_indexes
                 indexes[0]=indexes[2]=indexes[5]=indexes[6]=0
@@ -1507,7 +1778,7 @@ class Client(UserBase):
                     type_=channel_.type
                     type_index=indexes[type_]
                     indexes[type_]=type_index+1
-
+                    
                     ordered.append((index_0,index_1,type_index,channel_),)
                     
                     #loop block end
@@ -1515,7 +1786,7 @@ class Client(UserBase):
                 #reseting inner
                 index_1=0
                 #loop ended
-                
+            
             #loop block end
             index_0=index_0+1
         #loop ended
@@ -1814,16 +2085,59 @@ class Client(UserBase):
 
         await self.http.channel_move(channel.guild.id,data,reason)
 
-    async def channel_edit(self,channel,name=None,topic=None,nsfw=None,slowmode=None,user_limit=None,bitrate=None,type_=128,reason=None):
+    async def channel_edit(self, channel, name=None, topic=None, nsfw=None, slowmode=None, user_limit=None,
+            bitrate=None, type_=128, reason=None):
+        """
+        Edits the given guild channel. Different channel types accept different parameters and they ignore the rest.
+        Only the passed parameters will be edited of the channel.
+        
+        Parameters
+        ----------
+        channel : ``ChannelGuildBase`` instance
+            The channel to edit.
+        name : `str`, Optional
+            The `channel`'s new name.
+        topic : `str`, Optional
+            The new topic of the `channel`.
+        nsfw : `bool`, Optional
+            Whether the `channel` will be nsfw or not.
+        slowmode : `int`, Optional
+            The new slowmode value of the `channel`.
+        user_limit : `int`, Optional
+            The new user limit of the `channel`.
+        bitrate : `int`, Optional
+            The new bitrate of the `channel`.
+        type_ : `int`, Optional
+            The `channel`'s new type value.
+        reason : `str`, Optional
+            Shows up at the respective guild's audit logs.
+        
+        Raises
+        ------
+        TypeError
+            - If the given `channel` is not ``ChannelGuildBase`` instance.
+            - If the given `channel`'s type cannot be changed, but the parameter is passed.
+        ValueError
+            - If `name`'s length is under 2 or over 100.
+            - If `topic`'s length is over 1024.
+            - If channel type is changed, but not to an expected one.
+            - If `slowmode` is not between 0 and 21600.
+            - If `bitrate` is not 8000-96000. 128000 max for vip, or 128000, 256000, 384000 max depending on premium
+                the premium tier of the respective guild.'
+            - If `user_limit` is negative or over 99.
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
         if not isinstance(channel,ChannelGuildBase):
-            raise ValueError(f'Only Guild channels can be edited with this method, got {channel!r}')
+            raise TypeError(f'Only Guild channels can be edited with this method, got {channel.__class__.__name__}.')
         
         data={}
         value=channel.type
         if (name is not None):
             name_ln=len(name)
             if name_ln<2 or name_ln>100:
-                raise ValueError(f'Invalid name length, can be between 2-100, got {name_ln}')
+                raise ValueError(f'Invalid `name` length, can be between 2-100, got {name_ln}')
             data['name']=name
         
         if value in (0,5):
@@ -1836,7 +2150,7 @@ class Client(UserBase):
         if type_<128:
             INTERCHANGE=channel.INTERCHANGE
             if len(INTERCHANGE)==1:
-                raise ValueError(f'You can not switch channel type of this channel type')
+                raise TypeError(f'You can not switch channel type of this channel type')
             if type_ not in INTERCHANGE:
                 raise ValueError(f'You can switch chanel type from {value} to {type_}')
             if type_!=value:
@@ -1845,71 +2159,227 @@ class Client(UserBase):
         if value in (0,5,6):
             if (nsfw is not None):
                 data['nsfw']=nsfw
-                
+        
         if value==0:
-            if slowmode is not None:
+            if (slowmode is not None):
                 if slowmode<0 or slowmode>21600:
                     raise ValueError(f'`slowmode` should be between 0 and 21600, got: {slowmode}.')
                 data['rate_limit_per_user']=slowmode
-
+        
         elif value==2:
             if bitrate<8000 or bitrate>channel.guild.bitrate_limit:
-                raise ValueError(f'Invalid bitrate {bitrate!r}, should be 8000-96000. 128000 max for vip, or 128000, 256000, 384000 max depends on premium tier.')
+                raise ValueError('`bitrate` should be 8000-96000. 128000 max for vip, or 128000, 256000, 384000 '
+                    f'max depending on premium tier, got {bitrate!r}.')
             data['bitrate']=bitrate
             
-            if user_limit is not None:
+            if (user_limit is not None):
                 if user_limit<0 or user_limit>99:
-                    raise ValueError(f'Invalid user_limit {user_limit!r}, should be 0 for unlimited or 1-99')
+                    raise ValueError(f'`user_limit` should be betwwen 0 and 99, got {user_limit!r}.')
                 data['user_limit']=user_limit
-
+        
         await self.http.channel_edit(channel.id,data,reason)
-
-    async def channel_create(self,guild,category=None,*args,reason=None,**kwargs):
-        data=cr_pg_channel_object(*args,**kwargs,bitrate_limit=guild.bitrate_limit)
-        data['parent_id']=category.id if type(category) is ChannelCategory else None
+    
+    async def channel_create(self, guild, category=None, *args, reason=None, **kwargs):
+        """
+        Creates a new channel at the given `given`. If the channel is successfully created returns it. The unused
+        parameters of the created channel's type are ignored.
+        
+        Parameters
+        ----------
+        guild : ``Guild``
+        category : ``ChannelCategory`` or ``Guild`` or `None`, Optional
+            The category of the created channel. If passed as `None`, so by default, the created channel's catetory
+            will be it's guild.
+        *args : Arguments
+            Additional arguments to describe the created channel.
+        reason : `str`, Optional
+            Shows up at the `guild`'s audit logs.
+        **kwargs : Keyword arguments
+            Additional keyword arguments to describe the created channel.
+        
+        Other Parameters
+        ----------------
+        name : `str`
+            The new channel's name.
+        type _ : `int` or ``ChannelGuildBase`` subclass
+            The new channel's type.
+        overwrites : `list` of ``cr_p_overwrite_object`` returns, Optional
+            A list of permission overwrites of the new channel. The list should contain json serializable permission
+            overwrites made by the ``cr_p_overwrite_object`` function.
+        topic : `str`, Optional
+            The created channel's topic.
+        nsfw : `bool`, Optional.
+            Whether the new channel should be masrked as nsfw.
+        slowmode : `int`, Optional
+            The new channel's slowmode value.
+        user_limit : `int`, Optional
+            The new channel's user limit.
+        bitrate : `int`, Optional
+            The new channel's bitrate.
+        
+        Returns
+        -------
+        channel : ``ChannelGuildBase`` instance
+            The created channel.
+        
+        Raises
+        ------
+        TypeError
+            - If `category` was not passed as `None`, or ``Guild`` neither as ``ChannelCategory`` instance.
+            - If `type_` was not passed as `int` or as ``ChannelGuildBase`` instance.
+        ValueError
+            - If `type_` was passed as `int`, but as negative or if there is no channel type for the given value.
+            - If `name`'s length is under 2 or over 100.
+            - If `topic`'s length is over 1024.
+            - If channel type is changed, but not to an expected one.
+            - If `slowmode` is not between 0 and 21600.
+            - If `bitrate` is not 8000-96000. 128000 max for vip, or 128000, 256000, 384000 max depending on premium
+                the premium tier of the respective guild.'
+            - If `user_limit` is negative or over 99.
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
+        if category is None:
+            category_id = None
+        elif type(category) is ChannelCategory:
+            category_id = category.id
+        elif type(category) is Guild:
+            category_id = None
+        else:
+            raise TypeError(f'For `category` type {category.__class__.__name__} is not acceptable.')
+        
+        data=cr_pg_channel_object(*args, **kwargs, bitrate_limit=guild.bitrate_limit, category_id=category_id)
         data = await self.http.channel_create(guild.id,data,reason)
         return CHANNEL_TYPES[data['type']](data,self,guild)
-
-    async def channel_delete(self,channel,reason=None):
+    
+    async def channel_delete(self, channel, reason=None):
+        """
+        Deletes the specified guild channel.
+        
+        Parameters
+        ----------
+        channel : ``ChannelGuildBase`` instance
+            The channel to delete.
+        reason : `str`, Optional
+            Shows up at the respective guild's audit logs.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        
+        Notes
+        -----
+        If a category channel is deleted, it's subchannels will not be removed, instead they will move under the guild.
+        """
         await self.http.channel_delete(channel.id,reason)
 
-    async def channel_follow(self,source_channel,target_channel):
+    async def channel_follow(self, source_channel, target_channel):
+        """
+        Follows the `source_channel` with the `target_channel`. Returns the webhook, what will crosspost the published
+        messages.
+        
+        Parameters
+        ----------
+        source_channel : ``ChannelText`` instance
+            The channel what will be followed. Must be an announcements (type 5) channel.
+        target_channel : ``ChannelText`` instance
+            The target channel where the webhook messages will be sent. Can be any guild text channel type.
+        
+        Returns
+        -------
+        webhook : ``Webhook``
+            The webhook what will crosspost the published messages. This webhook has no `.token` set.
+        
+        Raises
+        ------
+        TypeError
+            - If the `source_channel` is not an announcements channel.
+            - If the `target_channel` is not a guild text channel.
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
         if source_channel.type!=5:
-            raise ValueError(f'`source_channel` must be type 5, so news (announcements) channel, got `{source_channel}`')
+            raise TypeError(f'`source_channel` must be type 5 (announcements) channel, got `{source_channel}`.')
         if target_channel.type not in ChannelText.INTERCHANGE:
-            raise ValueError(f'`target_channel` must be type 0 or 5, so any guild text channel, got  `{target_channel}`')
-
+            raise TypeError(f'`target_channel` must be type 0 or 5 (any guild text channel), got  `{target_channel}`.')
+        
         data = {
             'webhook_channel_id': target_channel.id,
                 }
-
+        
         data = await self.http.channel_follow(source_channel.id,data)
         webhook = await Webhook._from_follow_data(data,source_channel,target_channel,self)
         return webhook
     
     #messages
     
-    async def message_logs(self,channel,limit=100,after=None,around=None,before=None):
+    async def message_logs(self, channel, limit=100, after=None, around=None, before=None):
+        """
+        Requests messages from the given text channel. The `after`, `around` and the `before` arguments are mutually
+        exclusive and they can be passed as `datetime` object or as an object's `id` or as an object with `.id`.
+        If there is at least 2 message overlap between the received and the loaded messages, the wrapper will chain
+        the channel's message history up. If this happens the channel will get on a queue to have it's messages again
+        limited to the default one, but requesting old messages more times, will cause it to extend.
+        
+        Parameters
+        ----------
+        channel : ``ChannelTextBase`` instance
+        limit : `int`, Optiomal
+            The amount of messages to request. Can be between 1 and 100.
+        after : `int` or `datetime` or Any type with `.id`, Optional
+            The timestamp after the requested messages were created.
+        around : `int` or `datetime` or Any type with `.id`, Optional
+            The timestamp around the requested messages were created.
+        before : `int` or `datetime` or Any type with `.id`, Optional
+            The timestamp before the requested messages were created.
+        
+        Returns
+        -------
+        messages : `list` of ``Message`` objects
+        
+        Raises
+        ------
+        TypeError
+            If `after`, `around` or `before` was passed with an unexpected type.
+        ValueError
+            If `limit` is under `1` or over `100`.
+        ConnectionError
+            No internet connection.
+        DiscordException
+        
+        See Also
+        --------
+        .message_logs_fromzero : Familiar to this method, but it requests only the newest messages of the channel and
+            makes sure they are chained up with the channel's message history.
+        .message_at_index : A toplevel method to get a message at the specified index at the given channel.
+            Usually used to load the channel's message history to that point.
+        .messages_till_index : A toplevel method to get all the messages till the specified index at the given channel.
+        .message_iterator : An iterator over a channel's message history.
+        """
         if limit<1 or limit>100:
-            raise ValueError(f'limit must be in <1,100>, got {limit}')
+            raise ValueError(f'limit must be in between 1 and 100, got {limit!r}.')
         
         data={'limit':limit}
         
         if (after is not None):
             data['after']=log_time_converter(after)
-            
+        
         if (around is not None):
             data['around']=log_time_converter(around)
-            
+        
         if (before is not None):
             data['before']=log_time_converter(before)
         
         data = await self.http.message_logs(channel.id,data)
         return channel._mc_process_chunk(data)
-
+    
     #if u have 0-1-2 messages at a channel, and you wanna store the messages.
     #the other wont store it, because it wont see anything what allows channeling
-    async def message_logs_fromzero(self,channel,limit=100):
+    async def message_logs_fromzero(self, channel, limit=100):
         if limit<1 or limit>100:
             raise ValueError(f'limit must be in <1,100>, got {limit}')
         
@@ -2632,13 +3102,12 @@ class Client(UserBase):
         data= await self.http.channel_pins(channel.id)
         return [Message.fromchannel(message_data,channel) for message_data in data]
 
-
     message_at_index=message_at_index
     messages_till_index=messages_till_index
-    def message_iterator(self,channel,chunksize=97):
-        return MessageIterator(self,channel,chunksize)
+    def message_iterator(self, channel, chunksize=97):
+        return MessageIterator(self, channel, chunksize)
 
-    async def typing(self,channel):
+    async def typing(self, channel):
         await self.http.typing(channel.id)
 
     #with context

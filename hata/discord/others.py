@@ -549,16 +549,17 @@ class Relationship(object):
         return f'<{self.__class__.__name__} {self.type.name} user={self.user.full_name}>'
 
 def log_time_converter(value):
-    if hasattr(value,'id'):
-        return value.id
-    
     if isinstance(value,int):
         return value
     
+    if not issubclass(value,type) and hasattr(value,'id'):
+        return value.id
+    
     if isinstance(value,datetime):
         return time_to_id(value)
-
-    raise TypeError(f'Expected Discord type with `.id`, `int` as snowfake, or a `datetime` object, got `{value!r}`')
+    
+    raise TypeError('Expected Discord type with `.id`, `int` as snowfake, or a `datetime` object, got '
+        f'`{value.__class__.__name__}`.')
 
 IS_ID_RP=re.compile('(\d{7,21})')
 IS_MENTION_RP=re.compile('@everyone|@here|<@[!&]?\d{7,21}>|<#\d{7,21}>')

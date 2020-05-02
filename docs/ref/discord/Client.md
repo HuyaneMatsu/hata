@@ -701,7 +701,7 @@ with the new category set it to `True`.
 - raises : `ValueError`
 
 Edits the [guild channel](ChannelGuildBase.md) with the given values.
-Different channal types accept different arguments, and they ignore the rest.
+Different channel types accept different arguments, and they ignore the rest.
 Important note to mention, that `Text channel` and `Guild news` both share
 the same [`ChannelText`](ChannelText.md) class.
 
@@ -779,7 +779,7 @@ it wont be deleted, they will move under the [guild](Guild.md) itself.
 
 - `awaitable`
 - returns : [`Webhook`](Webhook.md)
-- raises : `ValueError`
+- raises : `TypeError`
 
 Follows the `source_channel` with the `target_channel`. The `source_channel`
 must be channel type 1, so new (announcements) channel. The `target_channel`

@@ -444,7 +444,6 @@ def cr_p_overwrite_object(target,allow,deny):
         'type'  : 'role' if type(target) is Role else 'member',
             }
 
-
 ratelimit.Role = Role
 
 del ratelimit

@@ -3881,7 +3881,8 @@ class EventDescriptor(object):
         object.__setattr__(self,name,DEFAULT_EVENT)
         
         parser_name=EVENTS.parsers.get(name,None)
-        if (parser_name is None):
+        if (parser_name is None) or (not parser_name):
+            # parser name can be an empty string as well for internal events
             return
 
         parser_default=PARSER_DEFAULTS.all[parser_name]

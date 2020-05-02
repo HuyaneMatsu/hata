@@ -1873,28 +1873,32 @@ CHANNEL_TYPES = (
     ChannelStore,
         )
 
-def cr_pg_channel_object(name, type_, overwrites=None, topic=None, nsfw=False,
-        slowmode=0, bitrate=64000, user_limit=0, bitrate_limit=96000,
-        category_id=None):
+def cr_pg_channel_object(name, type_, overwrites=None, topic=None, nsfw=False, slowmode=0, bitrate=64000, user_limit=0,
+        bitrate_limit=96000, category_id=None):
     
     if type(type_) is int:
         if type_<0:
-            raise ValueError(f'`type_` cannot be negative value, got `{type_!r}`')
+            raise ValueError(f'`type_` cannot be negative value, got `{type_!r}`.')
         if type_>=len(CHANNEL_TYPES):
-            raise ValueError(f'`type_` exceeded the defined channel type limit. Limit: `{len(CHANNEL_TYPES)-1!r}`, got `{type_}`')
+            raise ValueError(f'`type_` exceeded the defined channel type limit. Limit: `{len(CHANNEL_TYPES)-1!r}`, '
+                f'got `{type_}`.')
         
         if not issubclass(CHANNEL_TYPES[type_],ChannelGuildBase):
-            raise ValueError(f'The function accepts only guild channel types, got `{type_!r}`')
+            raise TypeError(f'The function accepts type values refering to a {ChannelGuildBase.__name__}, meanwhile '
+                f'it refers to {CHANNEL_TYPES[type_].__name__}.')
         
         type_value=type_
     
     elif isinstance(type_,type) and issubclass(type_,ChannelBase):
         if not isinstance(type_,ChannelGuildBase):
-            raise ValueError(f'The function accepts only guild channel types, got `{type_!r}`')
+            raise TypeError(f'The function accepts only {ChannelGuildBase.__name__} instances, got {type_.__name__}.')
         type_value=type_.INTERCHANGE[0]
     
     else:
-        raise ValueError(f'\'type_\' argument should be int or Channel type, got {type!r}')
+        if not issubclass(type_,type):
+            type_ = type_.__class__
+        raise ValueError(f'`type_` argument should be `int` or `{ChannelGuildBase.__name__}` subclass, '
+            f'got {type.__name__}.')
     
     name_ln=len(name)
     if name_ln<2 or name_ln>100:
@@ -1932,11 +1936,12 @@ def cr_pg_channel_object(name, type_, overwrites=None, topic=None, nsfw=False,
     # any Guild Voice channel type
     if type_value in ChannelVoice.INTERCHANGE:
         if bitrate<8000 or bitrate>bitrate_limit:
-            raise ValueError(f'`bitrate` should be 8000-96000. 128000 max for vip, or 128000, 256000, 384000 max depends on premium tier. Got `{bitrate!r}`,')
+            raise ValueError(f'`bitrate` should be 8000-96000. 128000 max for vip, or 128000, 256000, 384000 max '
+                f'depending on premium tier. Got `{bitrate!r}`.')
         result['bitrate']=bitrate
-
+        
         if user_limit<0 or user_limit>99:
-            raise ValueError(f'`user_limit` should be 0 for unlimited or 1-99, got `{user_limit!r}`')
+            raise ValueError(f'`user_limit` should be 0 for unlimited or 1-99, got `{user_limit!r}`.')
         result['user_limit']=user_limit
     
     if type_value not in ChannelCategory.INTERCHANGE:

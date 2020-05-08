@@ -35,7 +35,7 @@ Each time, when all the loaded messages of the channel are iterated over, the
 The `chunksize` attribute tells, with how much we should extend the amount
 of loaded messages of the channel, when needed.
 
-`chunksize` is preferable `97`, because at that case the wrapper with only 1
+`chunksize` is preferably `97`, because at that case the wrapper with only 1
 request can extend the channel's [message history](ChannelTextBase.md#messages)
 with 97 messages. The wrapper chains up the messages to the already loaded
 ones, but for this it need to make sure, that it did not skip any of them, so

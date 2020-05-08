@@ -1,6 +1,6 @@
 # class `DefaultAvatar`
 
-Represents a default avatar of the user, if it has no avatars set.
+Represents a default avatar of a user. Default avatar is used, when the user has no avatar set.
 
 - source : [color.py](https://github.com/HuyaneMatsu/hata/blob/master/hata/discord/color.py)
                       
@@ -60,7 +60,7 @@ Returns the user's default avatar.
 
 ### `__init__(self,value,name,color)`
 
-Creates a [`DefaultAvatar`](DefaultAvatar.md) instance. Put's it into the
+Creates a [`DefaultAvatar`](DefaultAvatar.md) instance. Puts it into the
 classe's [`.INSTANCES`](#instances).
 
 ### `__str__`

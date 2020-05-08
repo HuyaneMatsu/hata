@@ -95,14 +95,14 @@ The hover text of the small asset.
 - type : `int` (unix time in milliseconds)
 - default : `0`
 
-Tells, when the status was created.
+When the status was created.
 
 ### `details`
 
 - type : `str`
 - default : `''` (empty string)
 
-Tells, what the player is currently doing.
+What the player is currently doing.
 
 > Bound to `ACTIVITY_FLAG&0b00000000000000010` (details).
 
@@ -118,7 +118,7 @@ The emoji used for [custom activity](ActivityCustom.md).
 ### `flags`
 
 - type : [`ActivityFlag`](ActivityFlag.md)
-- default : `ActivityFlag.none`
+- default : `ActivityFlag(0)`
 
 The flags of the activity.
 
@@ -151,7 +151,7 @@ The party's id, which in the player is.
 ### `party_max`
 
 - type : `int`
-- default : 0
+- default : `0`
 
 The party's maximal size, which in the player is.
 
@@ -160,7 +160,7 @@ The party's maximal size, which in the player is.
 ### `party_size`
 
 - type : `int`
-- default : 0
+- default : `0`
 
 The party's actual size, which in the player is.
 
@@ -180,7 +180,7 @@ Unique hash given for the match context.
 - type : `str`
 - default : `''` (empty string)
 
-Unique hash for Spectate button.
+Unique hash for spectate button.
 
 > Bound to `ACTIVITY_FLAG&0b0000000000100000` (secret).
 
@@ -189,7 +189,7 @@ Unique hash for Spectate button.
 - type : `str`
 - default : `''` (empty string)
 
-Unique hash for chat invites and Ask to Join.
+Unique hash for chat invites and ask to join.
 
 > Bound to `ACTIVITY_FLAG&0b0000000000100000` (secret).
 

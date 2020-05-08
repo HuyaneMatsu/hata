@@ -635,7 +635,7 @@ class ChooseMenu(object):
                 
                 selecter = self.selecter
                 try:
-                    choice = self.choices[0]
+                    choice = self.choices[self.selected]
                     channel = self.channel
                     if isinstance(choice, tuple):
                         await selecter(client, channel, message, *choice)

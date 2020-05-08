@@ -208,11 +208,10 @@ class DiscordGateway(object):
             return False
         
         if operation==self.RECONNECT:
-            for voice_client in self.client.voice_clients.values():
-                voice_client._freeze()
+            self.client._freeze_voice_for(self)
             await self._terminate()
             return True
-
+        
         if operation==self.INVALIDATE_SESSION:
             if data:
                 await sleep(5.,self.client.loop)
@@ -226,7 +225,7 @@ class DiscordGateway(object):
             return False
         
         client=self.client
-        Task(client.events.error(client,'DiscordWebsocket._special_operation',f'Unknown operation {operation}\nData: {data!r}'),client.loop)
+        Task(client.events.error(client,f'{self.__clas__.__name__}._special_operation',f'Unknown operation {operation}\nData: {data!r}'),client.loop)
         return False
         
     #general stuffs

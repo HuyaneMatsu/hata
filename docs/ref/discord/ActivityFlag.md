@@ -1,7 +1,7 @@
 # class `ActivityFlag`
 
 The flags of an activity provided by Discord. These flags supposed to
-describe, what the activity's payload includes.
+describe what the activity's payload includes.
 
 - Source : [activity.py](https://github.com/HuyaneMatsu/hata/blob/master/hata/discord/activity.py)
 

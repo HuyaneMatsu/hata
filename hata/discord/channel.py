@@ -7,7 +7,6 @@ from collections import deque
 from time import monotonic
 
 from ..backend.dereaddons_local import weakposlist
-from ..backend.futures import sleep
 
 from .bases import DiscordEntity
 from .client_core import CHANNELS
@@ -218,42 +217,14 @@ class ChannelBase(DiscordEntity, immortal=True):
             return self.id<other.id
         return NotImplemented
 
-async def _load_till(client,channel,index):
-    if index>=channel._mc_gc_limit:
-        if channel.messages.maxlen is not None:
-            channel._turn_gc_on_at=monotonic()+((channel._mc_gc_limit+100)<<2)
-            channel.messages=deque(channel.messages)
-            Q_on_GC.append(channel)
-        elif channel._turn_gc_on_at:
-            channel._turn_gc_on_at+=(index+100)<<2
-
-    while True:
-        ln=len(channel.messages)
-        loadto=index-ln
-        if loadto<0:
-            break
-        if loadto<98:
-            planed=loadto+3
-        else:
-            planed=100
-        
-        if ln>2:
-            result = await client.message_logs(channel,planed,before=channel.messages[ln-2].id)
-        else:
-            result = await client.message_logs_fromzero(channel,planed)
-        
-        if len(result)<planed:
-            channel.message_history_reached_end=True
-            raise IndexError
-
-        await sleep(0.1,client.loop) #sometimes deque can not keep up?
-
-
 #sounds funny, but this is a class
-#the chunksize is 97, because it means 1 request for _load_till
+#the chunksize is 97, because it means 1 request for _load_messages_till
 class MessageIterator(object):
     __slots__=('_index', '_permission', 'channel', 'chunksize', 'client',)
     def __init__(self,client,channel,chunksize=97):
+        if chunksize>97:
+            chunksize=97
+        
         self.client     = client
         self.channel    = channel
         self.chunksize  = chunksize
@@ -274,7 +245,7 @@ class MessageIterator(object):
             raise StopAsyncIteration
         
         try:
-            await _load_till(self.client,channel,index+self.chunksize)
+            await self.client._load_messages_till(channel,index+self.chunksize)
         except IndexError:
             pass
 
@@ -286,35 +257,6 @@ class MessageIterator(object):
     
     def __repr__(self):
         return f'<{self.__class__.__name__} of client {self.client.full_name}, at channel {self.channel.name!r} ({self.channel.id})>'
-    
-async def message_at_index(client,channel,index):
-    if index<len(channel.messages):
-        return channel.messages[index]
-
-    if channel.message_history_reached_end:
-        raise IndexError(index)
-
-    if not channel.cached_permissions_for(client).can_read_message_history:
-        raise PermissionError('Client cant read message history')
-    
-    await _load_till(client,channel,index)
-    return channel.messages[index]
-
-async def messages_till_index(client,channel,start=0,end=100):
-    if end>=len(channel.messages) and \
-           not channel.message_history_reached_end and \
-           channel.cached_permissions_for(client).can_read_message_history:
-        try:
-            await _load_till(client,channel,end)
-        except IndexError:
-            pass
-
-    result=[]
-    messages=channel.messages
-    for index in range(start,min(end,len(messages))):
-        result.append(messages[index])
-        
-    return result
 
 #searches the relative index of a message in a list
 def message_relativeindex(self,message_id):

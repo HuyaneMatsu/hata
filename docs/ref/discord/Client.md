@@ -312,8 +312,8 @@ for that guild. `.voice_clients` stores
 - default : [`ZEROUSER`](ZEROUSER.md)
 
 If the client is user account or
-[`update_application_info`](#update_application_infoself) was not called since
-stratup then returns  [`ZEROUSER`](ZEROUSER.md).
+[`update_application_info`](#update_application_infoself) was not called yet
+returns [`ZEROUSER`](ZEROUSER.md).
 
 If the bot's [application](Application.md) is owned by a team, then returns the
 [team's](Team.md) owner.
@@ -339,7 +339,7 @@ Returns the client's friends.
 - returns : `list`
 - values : [`Relationship`](Relationship.md)
 
-Returns the blocked users by the client.
+Returns the blocked relationships by the client.
 
 ### `received_requests`
 
@@ -832,7 +832,7 @@ Creates and returns a message at the given `channel`. If there is nothing to
 send, then returns `None`.
 
 - `content`, default : `None`. The content of the message.
-- `embed`, default : `None`. The embedned content sent with the message. It
+- `embed`, default : `None`. The embedded content sent with the message. It
 should be [`Embed`](Embed.md), [`EmbedCore`](EmbedCore.md), or any
 compatible type's instance.
 - `file`, default : `None`. [For details](#_create_file_formdatafile-staticmethod).
@@ -1103,8 +1103,8 @@ Deletes the guild. Only the guild's owner can perform this action.
 - `awaitable`
 - returns : [`partial Guild`](Guild.md)
 
-Creates a guild with the given attributes. A user account cant be member of
-100 guidls maximum and a user account can create a guild only if it is member
+Creates a guild with the given attributes. A user account can be member of
+100 guilds maximum and a bot account can create a guild only if it is member
 of less than 10 guilds.
 
 - `name`, can have length from 2 up to 100.
@@ -1132,19 +1132,21 @@ mentioned.
 - `ContentFilterLevel`, default : `ContentFilterLevel.disabled`. The
 [explicit content filter level](ContentFilterLevel.md) of the guild.
 
-### `guild_prune(self,guild,days,count=False,reason=None)`
+### `guild_prune(self, guild, days, roles=[], count=False, reason=None)`
 
 - `awaitable`
 - returns : `int` / `None`
 
 Kicks the members of the [guild](Guild.md), which were inactive since x days.
-`days` needs to be at least 1. If count is set to `True`, then returns how
-much user got pruned, but if the guild is large it will be set to `False`
-anyways. An addittional `reason` argumnet is passable, which will show up
+`days` needs to be at least 1. By default pruning will kick only the users
+without any roles, but you can define which roles to include.
+If count is set to `True`, then returns how much user got pruned, but if the
+guild is large it will be set to `False` anyways.
+An addittional `reason` argumnet is passable, which will show up
 the guild's audit logs. The method returns the number of pruned members or
 `None` if `count` is set to `False`
 
-### `guild_prune_estimate(self,guild,days)`
+### `guild_prune_estimate(self, guild, days, roles=[])`
 
 - `awaitable`
 - returns : `int`
@@ -1231,7 +1233,7 @@ because `guild_edit` dispatch event updates the guild's embed and
 - `awaitable`
 - returns : `None`
 
-Edits the guild's embed ith the given arguments. `enabled` can be `True` or
+Edits the guild's embed with the given arguments. `enabled` can be `True` or
 `False`, meanwhile `channel` can be `None` or [ChannelText](ChannelText.md).
 
 ### `guild_widget_get(self,guild_or_id)`
@@ -1267,8 +1269,8 @@ Requests, then returns the client's guilds.
 - returns : `([...], [...])`
 - values : [`VoiceRegion`](VoiceRegion.md)
 
-Requests the available voice regions for the client and returns two lists.
-The First contains all the regions and the second the optimal ones.
+Requests the available voice regions for the guild and returns two lists.
+The first contains all the regions and the second the optimal ones.
 
 ### `guild_sync_channels(self,guild)`
 
@@ -1276,7 +1278,7 @@ The First contains all the regions and the second the optimal ones.
 - returns : `None`
 
 Request all the channels of the [`guild`](Guild.md). If there is any desync
-between  the wrapper and Discord, it applies the changes to the guild.
+between the wrapper and Discord, it applies the changes to the guild.
 
 ### `guild_sync_roles(self,guild)`
 
@@ -1284,7 +1286,7 @@ between  the wrapper and Discord, it applies the changes to the guild.
 - `returns : `None`
 
 Request all the roles of the [`guild`](Guild.md). If there is any desync
-between  the wrapper and Discord, it applies the changes to the guild.
+between the wrapper and Discord, it applies the changes to the guild.
 
 ### `audit_logs(self,guild,limit=100,before=None,after=None,user=None,event=None)`
 
@@ -1292,7 +1294,7 @@ between  the wrapper and Discord, it applies the changes to the guild.
 - returns: [`AuditLog`](AuditLog.md)
 - raises : `ValueError`
 
-Request the audit logs of the guild and returns it. The `after`, `around` and
+Request the audit logs of the guild and returns them. The `after`, `around` and
 the `before` arguments can be a valid discord type with `id`, a
 [`snowflake`](https://github.com/discordapp/discord-api-docs/blob/master/docs/Reference.md#snowflakes)
 , or a `datetime` object. `event` argument should be
@@ -1653,7 +1655,7 @@ Edits the [`emoji`](Emoji.md) with the given arguments:
 
 - `name`, default : `None`. If set changes the emoji's name. Emoji name length
 can be between 2 and 32.
-- `roles`, default : `None`. A list of [roles](Role.md), with which the users
+- `roles`, default : `_spaceholder`. A list of [roles](Role.md), with which the users
 can use the emoji.
 - `reason`, default : `None`. Shows up at the [guild](Guild.md)'s audit logs.
 
@@ -1678,10 +1680,10 @@ audit logs.
 
 - `awaitable`
 - returns : [`Invite`](Invite.md)
-- raises : `ValueError`
+- raises : `TypeError`
 
 Creates an [invite](Invite.md) from the given channel. The channel cannot be
-[private](ChannelPrivate.md), [group](ChannelGroup.md) channel.
+[private](ChannelPrivate.md), [category](ChannelCategory.md) channel.
 
 - `max_age`, default : `0`. After how much time in seconds will the invite
 expire. `0` means it wont expire ever.
@@ -1787,7 +1789,7 @@ ignored at user color calculation.
 - `mentionable`, default : `None`.
 - `permissions`, default : `None`. [Permission](Permission.md) or any int
 instance object.
-- `position`, default : `0`. If changed moves the role. `@everyone` role is
+- `position`, default : `None`. If changed moves the role. `@everyone` role is
 position `0` and it is unmovable.
 - `reason`, default : `None`. Shows up at the [guild](Guild.md)'s audit logs.
 
@@ -1882,13 +1884,13 @@ Sends a friend request towards the [user](User.md).
 Updates the client's application info (`client.application`). By default it is
 not loaded so calling it on login is a good idea.
 
-### `hypesquad_house_change(self,house_id)`
+### `hypesquad_house_change(self, house)`
 
 - `awaitable`
 - returns : `None`
 - user account only, not tested
 
-Switches the hypesquad to the selected house id (?).
+Switches the `HypesquadHouse` of the client.
 
 ### `hypesquad_house_leave(self)`
 
@@ -1908,7 +1910,7 @@ Joins a voice client to the channel. If there is an already existing voice
 client at the [guild](Guild.md) it moves it.
 
 If not every library is installed, raises `RuntimeError`, or if the voice
-client fails to connect raises `TimeoutException`.
+client fails to connect raises `TimeoutError`.
 
 ### `request_member(self,guild,name,limit=1)`
 
@@ -1916,20 +1918,17 @@ client fails to connect raises `TimeoutException`.
 - returns : `list`
 - elements : [`User`](User.md) / [`Client`](Client.md)
 
-Requests `limit` (1-1000) amount of users with the given `name` (2-32 length)
-from the given [`guild`](Guild.md). This request might take longer, than
-others, because it uses the [client](Client.md)'s gateway's websocket and not
-it's http client. If no users are matched Discord does not returns anything,
-so the method returns an empty list only when the timeout occurs.
+Requests `limit` (1-100) amount of users with the given `name` (2-32 length)
+from the given [`guild`](Guild.md).
 
 ### `disconnect(self,channel)`
 
 - `awaitable`
 - returns : `None`
 
-Disconnects the client and closes it's wewbsocket and http client too. This
-might take even more than 1 minute, because bot accounts can not logout, so
-they need to wait for timeout.
+Disconnects the client and closes it's wewbsocket(s). Till the client goes
+offline, it might take even over than 1 minute. Because bot accounts can not
+logout, so they need to wait for timeout.
 
 ## Methods
 
@@ -1961,7 +1960,7 @@ Familiar to [`.start`](#startself), but instead of starting a client, it stops i
 - returns : `bool`
 - values : `True` / `False`
 
-Returns if the passed [user](User.md) is one of the bot's owners.
+Returns whether the passed [user](User.md) is one of the client's owners.
 
 ### `voice_client_for(self,message)`
 
@@ -1970,12 +1969,12 @@ Returns if the passed [user](User.md) is one of the bot's owners.
 Returns the voice client for the [message](Message.md)'s [guild](Guild.md) or
 `None`.
 
-### `get_guild(self,name)`
+### `get_guild(self, name, default=None)`
 
-- returns : `None` / [`Guild`](Guild.md)
+- returns : `default` / [`Guild`](Guild.md)
 
-Tries to find the [`guild`](Guild.md) by it's name. If there is no guild with
-the given nam returns `None`.
+Tries to find a [`guild`](Guild.md) by it's name. If there is no guild with
+the given name returns the passed default value.
 
 ### `get_ratelimits_of(self, group, limiter=None, keep_alive=False)`
 
@@ -2017,7 +2016,7 @@ The client uses this method to login with client token.
 ### `_create_file_form(data,file)` (staticmethod)
 
 - returns : `Formdata` / `None`
-- raises : `ValueError` / `TypeError`
+- raises : `ValueError`
 
 Creates a `multipart/form-data` form from the message + file data.
 If there is no files to send, will return `None`, to tell the caller, that
@@ -2096,7 +2095,7 @@ will keep receiving the data from Discord ([`_connect`](#_connectself-method)).
 ### `_connect(self)` (method)
 
 - `awaitable`
-- returns : `None`
+- returns : `bool`
 
 Receives the data from websocket, calls dispatch events, reconnects,
 disconnects.
@@ -2153,24 +2152,12 @@ Used only when user caching is disabled. Updates the client's
 Familiar to [`.update_profile_only`](#_update_profile_onlyselfdataguild-method),
 but it does not checks changes, so returns `None` instead of them.
 
-### `_freeze_voice(self)` (method)
-
-- returns : `None`
-
-Freezes all the [`.voice_clients`](#voice_clients) of the client.
-
 ### `_freeze_voice_for(self,gateway)` (method)
 
 - returns : `None`
 
 Freezes all the [`.voice_clients`](#voice_clients) of a specific `gateway`
 of the client.
-
-### `_unfreeze_voice(self)` (method)
-
-- returns : `None`
-
-Unfreezes all the [`.voice_clients`](#voice_clients) of the client.
 
 ### `_unfreeze_voice_for(self,gateway)` (method)
 

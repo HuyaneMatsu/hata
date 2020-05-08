@@ -191,14 +191,6 @@ contains (`attribute name`, `old value`) items.
 | premium_type              | [PremiumType](PremiumType.md)     |
 | verified                  | bool                              |
 
-###### `custom_status` structure
-
-| key           | value                         | default   |
-|---------------|-------------------------------|-----------|
-| text          | `str` / `None`                | `None`    |
-| expires_at    | `datetime` / `None`           | `None`    |
-| emoji         | [`Emoji`](Emoji.md) / `None`  | `None`    |
-
 ### `embed_update(client,message,result)`
 
 Called when only a [message](Message.md)'s embeds are updated and the message

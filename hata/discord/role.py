@@ -418,9 +418,8 @@ class PermOW(object):
             return True
         return True
     
-def cr_p_role_object(name, id_=None, color=Color(0), separated=False,
-        position=0, permissions=Permission(0), managed=False,
-        mentionable=False):
+def cr_p_role_object(name, id_=None, color=Color(0), separated=False, position=0, permissions=Permission(0),
+        managed=False, mentionable=False):
     
     if id_ is None:
         id_=random_id()

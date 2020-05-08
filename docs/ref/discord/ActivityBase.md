@@ -53,7 +53,7 @@ attribute.
 
 ## Magic methods
 
-### `__eq__`, `__ne__`
+### `__eq__`
 
 - returns : `bool`
 - values : `True` / `False`

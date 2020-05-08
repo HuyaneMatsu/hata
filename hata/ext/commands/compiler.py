@@ -1099,7 +1099,7 @@ def compile_parsed(converters):
                     if CACHE_USER:
                         by_name_part = [
                              'if len(guild.users)>REQUEST_OVER:',
-                            f'    found = await client.request_member(guild,part)',
+                            f'    found = await client.request_members(guild,part)',
                              '    if found:',
                             f'        {sub_var_name}=found[0]',
                              '    else:',
@@ -1109,7 +1109,7 @@ def compile_parsed(converters):
                                 ]
                     else:
                         by_name_part = [
-                            f'found = await client.request_member(guild,part)',
+                            f'found = await client.request_members(guild,part)',
                              'if found:',
                             f'    {sub_var_name}=found[0]',
                              'else:',
@@ -1122,7 +1122,7 @@ def compile_parsed(converters):
                             f'    {sub_var_name}=message.channel.get_user_like(part)',
                              'else:',
                              '    if len(guild.users)>REQUEST_OVER:',
-                            f'        found = await client.request_member(guild,part)',
+                            f'        found = await client.request_members(guild,part)',
                              '        if found:',
                             f'            {sub_var_name}=found[0]',
                              '        else:',
@@ -1135,7 +1135,7 @@ def compile_parsed(converters):
                              'if guild is None:',
                             f'    {sub_var_name}=message.channel.get_user_like(part)',
                              'else:',
-                            f'    found = await client.request_member(guild,part)',
+                            f'    found = await client.request_members(guild,part)',
                              '    if found:',
                             f'        {sub_var_name}=found[0]',
                              '    else:',

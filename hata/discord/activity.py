@@ -11,6 +11,18 @@ from .http import URLS
 PartialEmoji=NotImplemented
 
 class ActivityFlag(FlagBase):
+    """
+    The flags of an activity provided by Discord. These flags supposed to describe what the activity's payload
+    includes.
+    
+    There is one predefined activity created, because ``ActivitySpotify``-s always have the same flags.
+    
+    +-----------------------+-------------------+
+    | class attribute name  | value             |
+    +=======================+===================+
+    | spotify               | ActivityFlag(48)  |
+    +-----------------------+-------------------+
+    """
     __keys__ = {
         'INSTANCE'    : 0,
         'JOIN'        : 1,
@@ -25,6 +37,51 @@ class ActivityFlag(FlagBase):
 ActivityFlag.spotify = ActivityFlag(48)
 
 class ActivityBase(object):
+    """
+    Base class for activites. This class should not be instanced.
+    
+    Contains general methods used arround it's subclasses. And can be used for `isinstance` checks as well.
+    
+    Class Attributes
+    ----------------
+    DATA_SIZE_LIMIT : `int` = 0
+        Tells, over how much data an activity will be created as `activity_rich` over sub-activity types.
+    ACTIVITY_FLAG : `int` = 0b0000000000000000
+        Represents which attribute groups can the activity type have. These are:
+        
+        +----------------+--------------------+
+        | group name     | binary value       |
+        +================+====================+
+        | timestamps     | 0b0000000000000001 |
+        +----------------+--------------------+
+        | details        | 0b0000000000000010 |
+        +----------------+--------------------+
+        | state          | 0b0000000000000100 |
+        +----------------+--------------------+
+        | party          | 0b0000000000001000 |
+        +----------------+--------------------+
+        | asset          | 0b0000000000010000 |
+        +----------------+--------------------+
+        | secret         | 0b0000000000100000 |
+        +----------------+--------------------+
+        | url            | 0b0000000001000000 |
+        +----------------+--------------------+
+        | sync_id        | 0b0000000010000000 |
+        +----------------+--------------------+
+        | session_id     | 0b0000000100000000 |
+        +----------------+--------------------+
+        | flags          | 0b0000001000000000 |
+        +----------------+--------------------+
+        | application_id | 0b0000010000000000 |
+        +----------------+--------------------+
+        | emoji          | 0b0000100000000000 |
+        +----------------+--------------------+
+        | id             | 0b0001000000000000 |
+        +----------------+--------------------+
+        
+        These flags are not same as ``ActivityFlag`` and this value is neither `activity.flags`.
+
+    """
     __slots__=()
 
     DATA_SIZE_LIMIT = 0
@@ -45,13 +102,39 @@ class ActivityBase(object):
 
     @property
     def discord_side_id(self):
+        """
+        Returns the activity's Discord side id. If the activity implements id returns that, else returns it's
+        `CUSTOM_ID` class attribute.
+        
+        Returns
+        -------
+        activity_id : `str`
+        """
         if self.ACTIVITY_FLAG&0b0001000000000000:
             return self.id.__format__('0>16x')
         return self.CUSTOM_ID
     
     #this is for bots only, because bots can send only this 3 information!
     @classmethod
-    def create(cls,name,url='',type_=0):
+    def create(cls, name, url='', type_=0):
+        """
+        Returns an activity with the given attributes. `url` is for streaming activity only (right now only twitch is
+        supported). If called from subclass, `type` is set automatically. Bot account activities support only `name`,
+        `url` and `type` parameters, so this method does like that as well.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name of the activity.
+        url : `str`, Optional
+            The url of the activity. Only twitch urls are supported. ``ActivityStream`` only.
+        type_ : `int`
+            The type value of the activity. When called from subclasses, set automatically.
+        
+        Returns
+        -------
+        activity : ``ActivityBase`` instance.
+        """
         self=object.__new__(cls)
         
         if self.ACTIVITY_FLAG&0b0000000001000000: #for streaming only, twitch url only!
@@ -67,6 +150,13 @@ class ActivityBase(object):
         return self
 
     def botdict(self):
+        """
+        Converts the activity to json serializible dictionary, which can be sent with bot account to change activity.
+        
+        Returns
+        -------
+        activity_data : `dict` of (`str`, `Any`) items
+        """
         data = {
             'type':self.type,
                 }
@@ -85,6 +175,14 @@ class ActivityBase(object):
         return data
 
     def hoomandict(self):
+        """
+        Converts the activity to json serializible dictionary, which can (?) be sent with user account to change
+        activity.
+        
+        Returns
+        -------
+        activity_data : `dict` of (`str`, `Any`) items
+        """
         data=self.botdict()
         
         ACTIVITY_FLAG=self.ACTIVITY_FLAG
@@ -207,6 +305,13 @@ class ActivityBase(object):
         return data
     
     def fulldict(self):
+        """
+        Converts the whole activity to a dictionary.
+        
+        Returns
+        -------
+        activity_data : `dict` of (`str`, `Any`) items
+        """
         data=self.hoomandict()
 
         #receive only?
@@ -221,29 +326,111 @@ class ActivityBase(object):
 
     @property
     def created_at(self):
-        created=self.created
+        """
+        Returns, when the activity was created. If the creation time was not included, will return `None`.
+        
+        Returns
+        -------
+        created_at : `None` or `datetime`
+        """
+        created = self.created
         if created==0:
             return None
         
         return datetime.utcfromtimestamp(created/1000.)
     
     def __eq__(self,other):
-        if isinstance(other,ActivityBase):
+        """Compares whether the two ``ActivityBase`` instance's `.type` and `.id`."""
+        if isinstance(other, ActivityBase):
             return self.type==other.type and self.id==other.id
         return NotImplemented
 
-    def __ne__(self,other):
-        if isinstance(other,ActivityBase):
-            return self.type!=other.type or self.id!=other.id
-        return NotImplemented
-    
 class ActivityRich(ActivityBase):
-    __slots__=('application_id', 'asset_image_large', 'asset_image_small',
-        'asset_text_large', 'asset_text_small', 'created', 'details',
-        'emoji', 'flags', 'id', 'name', 'party_id', 'party_max',
-        'party_size', 'secret_join', 'secret_match', 'secret_spectate',
-        'session_id', 'state', 'sync_id', 'timestamp_end', 'timestamp_start',
-        'type', 'url',)
+    """
+    Represents a Discord rich activity. It can be used instead of any other activity type. By default used, when
+    an activity's data is received, what's length passes it's specific activity type's `DATA_SIZE_LIMIT`.
+    
+    Attributes
+    ----------
+    application_id : `int`
+        The id of the activity's application. Defaults to `0`.
+        > Bound to `ACTIVITY_FLAG&0b0000010000000000` (application_id).
+    asset_image_large : `str`
+        The id of the activity's large asset to display. Defaults to empty string.
+        > Bound to `ACTIVITY_FLAG&0b0000000000010000` (asset).
+    asset_image_small : `str`
+        The id of the activity's small asset to display. Defaults to empty string.
+        > Bound to `ACTIVITY_FLAG&0b0000000000010000` (asset).
+    asset_text_large : `str`
+        The hover text of the large asset. Defaults to empty string.
+        > Bound to `ACTIVITY_FLAG&0b0000000000010000` (asset).
+    asset_text_small : `str`
+        The hover text of the small asset. Defaults to empty string.
+        > Bound to `ACTIVITY_FLAG&0b0000000000010000` (asset).
+    created : `int`
+        When the status was created as Unix time in milliseconds. Defaults to `0`.
+    details : `str`
+        What the player is currently doing.
+        > Bound to `ACTIVITY_FLAG&0b00000000000000010` (details).
+    emoji : `None` or ``Emoji``
+        The emoji used for ``ActivityCustom``.
+        > Bound to `ACTIVITY_FLAG&0b0000100000000000` (emoji).
+    flags : ``ActivityFlag``
+        The flags of the activity. Defaults to `ActivityFlag(0)`
+        > Bound to `ACTIVITY_FLAG&0b0000001000000000` (flags).
+    id : `int`
+        The id of the activity. Defaults to `0`.
+        > Bound to `ACTIVITY_FLAG&0b0001000000000000` (id)
+    name : `str`
+        The activity's name.
+    party_id : `str`
+        The party's id, which in the player is. Defaults to empty string.
+        > Bound to `ACTIVITY_FLAG&0b0000000000001000` (party).
+    party_max : `int`
+        The party's maximal size, which in the player is. Defaults to `0`.
+        > Bound to `ACTIVITY_FLAG&0b0000000000001000` (party).
+    party_size : `int`
+        The party's actual size, which in the player is. Defaults to `0`.
+        > Bound to `ACTIVITY_FLAG&0b0000000000001000` (party).
+    secret_join : `str`
+        Unique hash given for the match context. Defaults to empty string.
+        > Bound to `ACTIVITY_FLAG&0b0000000000100000` (secret).
+    secret_match : `str`
+        Unique hash for spectate button. Defaults to empty string.
+        > Bound to `ACTIVITY_FLAG&0b0000000000100000` (secret).
+    secret_spectate : `str`
+        Unique hash for chat invites and ask to join. Defaults to empty string.
+        > Bound to `ACTIVITY_FLAG&0b0000000000100000` (secret).
+    session_id : `str`
+        The ``ActivitySpotify``'s session's id. Defaults to empty string.
+    state : `str` or `None`
+        The player's current party status. Defaults to `None`.
+        > Bound to `ACTIVITY_FLAG&0b0000000000000100` (state).
+    sync_id : `str`
+        The ID of the currently playing track. Used at ``ActivitySpotify``. Defaults to empty string.
+        > Bound to `ACTIVITY_FLAG&0b0000000010000000` (sync_id).
+    timestamp_end : `int`
+        The time when the activity ends as Unix time in milliseconds. Defaults to `0`.
+        > Bound to `ACTIVITY_FLAG&0b0000000000000001` (timestamps).
+    timestamp_start : `int`
+        The time when the activity starts as Unix time in milliseconds. Defaults to `0`.
+        > Bound to `ACTIVITY_FLAG&0b0000000000000001` (timestamps).
+    type : `int`
+        An integer, what represent the activity's type for Discord. Can be one of: `0`, `1`, `2`, `3`, `4`.
+    url : `str`
+        The url of the stream (Twitch only). Defaults to empty string.
+    Class Attributes
+    ----------------
+    DATA_SIZE_LIMIT : `int` = 16
+        Tells, over how much data an activity will be created as `activity_rich` over sub-activity types.
+    ACTIVITY_FLAG : `int` = 0b0001111111111111
+        Represents which attribute groups can the activity type have.
+    """
+    __slots__ = ('application_id', 'asset_image_large', 'asset_image_small', 'asset_text_large', 'asset_text_small',
+        'created', 'details', 'emoji', 'flags', 'id', 'name', 'party_id', 'party_max', 'party_size', 'secret_join',
+        'secret_match', 'secret_spectate', 'session_id', 'state', 'sync_id', 'timestamp_end', 'timestamp_start',
+        'type', 'url', )
+    
     DATA_SIZE_LIMIT = 16
     #timestamps     = 0b0000000000000001
     #details        = 0b0000000000000010
@@ -260,10 +447,27 @@ class ActivityRich(ActivityBase):
     #id             = 0b0001000000000000
     ACTIVITY_FLAG   = 0b0001111111111111
 
-    def __init__(self,data):
+    def __init__(self, data):
+        """
+        Creates an ``ActivityRich`` instance from received data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Activity data received from Discord.
+        """
         self._update_no_return(data)
 
-    def _update_no_return(self,data):
+    def _update_no_return(self, data):
+        """
+        Updates the activity by overwriting it's old attributes.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Data received from Discord.
+
+        """
         self.name=data['name']
         
         self.type=data['type']
@@ -347,14 +551,88 @@ class ActivityRich(ActivityBase):
     
     @property
     def color(self):
+        """
+        The color of the activity.
+        
+        Returns
+        -------
+        color : ``Color``
+        """
         try:
             return ACTIVITY_TYPES[self.type].color
         except KeyError:
             return ActivityUnknown.color
         
-    def _update(self,data):
+    def _update(self, data):
+        """
+        Updates the activity and returns the changes in a `dict` of (`attribute-name`, `old-value`) items.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Data received from Discord.
+        
+        Returns
+        -------
+        changes : `dict` of (`str`, `Any`) items
+            All item in the returned dict is optional.
+        
+        Returned Data Structure
+        -----------------------
+        +-----------------------+-----------------------+
+        | key                   | value                 |
+        +=======================+=======================+
+        | application_id        | `int`                 |
+        +-----------------------+-----------------------+
+        | asset_image_large     | `str`                 |
+        +-----------------------+-----------------------+
+        | asset_image_small     | `str`                 |
+        +-----------------------+-----------------------+
+        | asset_text_large      | `str`                 |
+        +-----------------------+-----------------------+
+        | asset_text_small      | `str`                 |
+        +-----------------------+-----------------------+
+        | created               | `int`                 |
+        +-----------------------+-----------------------+
+        | details               | `str`                 |
+        +-----------------------+-----------------------+
+        | emoji                 | ``Emoji`` / `None`    |
+        +-----------------------+-----------------------+
+        | flags                 | ``ActivityFlag``      |
+        +-----------------------+-----------------------+
+        | id                    | `int`                 |
+        +-----------------------+-----------------------+
+        | name                  | `str`                 |
+        +-----------------------+-----------------------+
+        | party_id              | `str`                 |
+        +-----------------------+-----------------------+
+        | party_max             | `int`                 |
+        +-----------------------+-----------------------+
+        | party_size            | `int`                 |
+        +-----------------------+-----------------------+
+        | secret_join           | `str`                 |
+        +-----------------------+-----------------------+
+        | secret_match          | `str`                 |
+        +-----------------------+-----------------------+
+        | secret_spectate       | `str`                 |
+        +-----------------------+-----------------------+
+        | session_id            | `str`                 |
+        +-----------------------+-----------------------+
+        | state                 | `str` / `None`        |
+        +-----------------------+-----------------------+
+        | sync_id               | `str`                 |
+        +-----------------------+-----------------------+
+        | timestamp_end         | `int`                 |
+        +-----------------------+-----------------------+
+        | timestamp_start       | `int`                 |
+        +-----------------------+-----------------------+
+        | type                  | `int`                 |
+        +-----------------------+-----------------------+
+        | url                   | `str`                 |
+        +-----------------------+-----------------------+
+        """
         old={}
-
+        
         name=data['name']
         if self.name!=name:
             old['name']=self.name
@@ -539,6 +817,9 @@ class ActivityRich(ActivityBase):
         return old
     
     def _fillup(self):
+        """
+        Called at the end of ``.create``, to fill up the missing attributes.
+        """
         self.application_id     = 0
         self.timestamp_end      = 0
         self.timestamp_start    = 0
@@ -560,32 +841,49 @@ class ActivityRich(ActivityBase):
         self.emoji              = None
         self.created            = 0
         self.id                 = 0
-
+    
     def __str__(self):
+        """Returns the activity's name."""
         return self.name
-
+    
     def __hash__(self):
+        """Returns the activity's hash value, what is equal to it's id."""
         return self.id
-
+    
     def __repr__(self):
-        return f'<{self.__class__.__name__} type={self.type} name=\'{self.name}\'>'
-
+        """Returs the activity's representation."""
+        return f'<{self.__class__.__name__} type={self.type}, name={self.name!r}>'
+    
     @property
     def start(self):
+        """
+        Returns when the activity was started, if applicable.
+        
+        Returns
+        -------
+        start : `None` or `datetime`
+        """
         timestamp_start=self.timestamp_start
         if timestamp_start==0:
             return None
-
+        
         return datetime.utcfromtimestamp(timestamp_start/1000.)
-
+    
     @property
     def end(self):
+        """
+        Returns when the activity ended, if applicable.
+        
+        Returns
+        -------
+        start : `None` or `datetime`
+        """
         timestamp_end=self.timestamp_end
         if timestamp_end==0:
             return None
-
+        
         return datetime.utcfromtimestamp(timestamp_end/1000.)
-
+    
     image_large_url=property(URLS.activity_asset_image_large_url)
     image_large_url_as=URLS.activity_asset_image_large_url_as
     image_small_url=property(URLS.activity_asset_image_small_url)

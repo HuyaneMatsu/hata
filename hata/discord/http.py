@@ -23,9 +23,9 @@ VALID_ICON_FORMATS   = ('jpg','jpeg','png','webp')
 VALID_ICON_SIZES     = {1<<x for x in range(4,13)}
 VALID_ICON_FORMATS_EXTENDED = (*VALID_ICON_FORMATS,'gif',)
 
-API_ENDPOINT='https://discordapp.com/api/v7' #v7 includes special error messages
+API_ENDPOINT='https://discord.com/api/v7' #v7 includes special error messages
 CDN_ENDPOINT='https://cdn.discordapp.com'
-DIS_ENDPOINT='https://discordapp.com'
+DIS_ENDPOINT='https://discord.com'
 
 @modulize
 class URLS:
@@ -230,9 +230,9 @@ class URLS:
 
     def webhook_url(webhook):
         return f'{API_ENDPOINT}/webhooks/{webhook.id}/{webhook.token}'
-
-    webhook_urlpattern=re.compile('(?:https://)?discordapp.com/api/(?:v\d/)?webhooks/([0-9]{17,21})/([a-zA-Z0-9\.\-\_]{60,68})(?:/.*)?')
-
+    
+    webhook_urlpattern=re.compile('(?:https://)?discord(?:app)?.com/api/(?:v\d/)?webhooks/([0-9]{17,21})/([a-zA-Z0-9\.\-\_]{60,68})(?:/.*)?')
+    
     def webhook_avatar_url(webhook):
         avatar=webhook.avatar
         if not avatar:
@@ -262,6 +262,15 @@ class URLS:
         return f'http://discord.gg/{invite.code}'
 
     def activity_asset_image_large_url(activity):
+        """
+        Returns the activity's large asset image's url. If the activity has no large asset image, then returns `None`.
+        
+        > Bound to `ACTIVITY_FLAG&0b0000010000010000` (application_id | asset).
+        
+        Returns
+        -------
+        url : `str` or `None`
+        """
         application_id=activity.application_id
         if not application_id:
             return None
@@ -272,7 +281,23 @@ class URLS:
 
         return f'{CDN_ENDPOINT}/app-assets/{application_id}/{asset_image_large}.png'
 
-    def activity_asset_image_large_url_as(activity,ext='png',size=None):
+    def activity_asset_image_large_url_as(activity, ext='png', size=None):
+        """
+        Returns the activity's large asset image's url. If the activity has no large asset image, then returns `None`.
+        
+        > Bound to `ACTIVITY_FLAG&0b0000010000010000` (application_id | asset).
+        
+        Parameters
+        ----------
+        ext : `str`, Optional
+            The extension of the url's image. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+        size : `int`, Optional.
+            The size of the url's image. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`, `1024`, `2048`, `4096`.
+            
+        Returns
+        -------
+        url : `str` or `None`
+        """
         application_id=activity.application_id
         if not application_id:
             return None
@@ -294,6 +319,15 @@ class URLS:
         return f'{CDN_ENDPOINT}/app-assets/{application_id}/{asset_image_large}.{ext}{end}'
         
     def activity_asset_image_small_url(activity):
+        """
+        Returns the activity's small asset image's url. If the activity has no small asset image, then returns `None`.
+        
+        > Bound to `ACTIVITY_FLAG&0b0000010000010000` (application_id | asset).
+        
+        Returns
+        -------
+        url : `str` or `None`
+        """
         application_id=activity.application_id
         if not application_id:
             return None
@@ -304,7 +338,23 @@ class URLS:
 
         return f'{CDN_ENDPOINT}/app-assets/{application_id}/{asset_image_small}.png'
 
-    def activity_asset_image_small_url_as(activity,ext='png',size=None):
+    def activity_asset_image_small_url_as(activity, ext='png', size=None):
+        """
+        Returns the activity's small asset image's url. If the activity has no small asset image, then returns `None`.
+        
+        > Bound to `ACTIVITY_FLAG&0b0000010000010000` (application_id | asset).
+        
+        Parameters
+        ----------
+        ext : `str`, Optional
+            The extension of the url's image. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+        size : `int`, Optional.
+            The size of the url's image. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`, `1024`, `2048`, `4096`.
+            
+        Returns
+        -------
+        url : `str` or `None`
+        """
         application_id=activity.application_id
         if not application_id:
             return None
@@ -324,7 +374,7 @@ class URLS:
             raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, and not {ext}.')
         
         return f'{CDN_ENDPOINT}/app-assets/{application_id}/{asset_image_small}.png'
-
+    
     def user_avatar_url(user):
         avatar=user.avatar
         if not avatar:
@@ -371,6 +421,13 @@ class URLS:
         return f'{CDN_ENDPOINT}/avatars/{user.id}/{start}{avatar:0>32x}.{ext}{end}'
 
     def default_avatar_url(default_avatar):
+        """
+        Returns the default avatar's url.
+        
+        Returns
+        -------
+        url : `str`
+        """
         return f'{CDN_ENDPOINT}/embed/avatars/{default_avatar.value}.png'
 
     def application_icon_url(application):

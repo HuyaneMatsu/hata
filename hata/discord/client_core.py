@@ -362,7 +362,7 @@ class Kokoro(object):
                 self.beat_task=None
             
             self.last_send=perf_counter()
-            
+    
     def start_beating(self):
         # case 1 : we are not running
         if not self.running:

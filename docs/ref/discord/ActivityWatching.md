@@ -119,11 +119,3 @@ Updates the activity and returns a `dict` with the changed values with
 - returns : `None`
 
 Updates the activity and returns `None`.
-
-### `_fillup(self)` (method)
-
-- returns : `None`
-
-Called at the end of [`.create`](#inherited-classmethods), to fill up the
-missing attributes.
-

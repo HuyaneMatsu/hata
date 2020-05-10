@@ -107,7 +107,7 @@ Returns the activity's `.status`'s and `.emoji`'s combined hash.
 
 - returns : `str`
 
-Returns [`.name`](#name).
+Returns the activity's display text.
 
 ### `__repr__(self)`
 
@@ -143,10 +143,4 @@ Updates the activity and returns a `dict` with the changed values with
 
 Updates the activity with the data sent by Discord.
 
-### `_fillup(self)` (method)
-
-- returns : `None`
-
-Called at the end of [`.create`](#inherited-classmethods), to fill up the
-missing attributes.
 

@@ -118,7 +118,7 @@ Returns the currently playing track's album url, if it has.
 - returns : `str`
 - defualt : `''` (empty string)
 
-Returns the track's artist, If it has more, they are separetd with `';'`.
+Returns the track's artist. If it has more, they are separated with `';'`.
 
 ### `artists`
 
@@ -219,11 +219,3 @@ Updates the activity and returns a `dict` with the changed values with
 - returns : `None`
 
 Updates the activity with the data sent by Discord.
-
-### `_fillup(self)` (method)
-
-- returns : `None`
-
-Called at the end of [`.create`](#inherited-classmethods), to fill up the
-missing attributes.
-

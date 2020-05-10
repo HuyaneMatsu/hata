@@ -290,9 +290,10 @@ class URLS:
         Parameters
         ----------
         ext : `str`, Optional
-            The extension of the url's image. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
         size : `int`, Optional.
-            The size of the url's image. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`, `1024`, `2048`, `4096`.
+            The preferred minimal size of the image's url. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`,
+            `1024`, `2048`, `4096`.
             
         Returns
         -------
@@ -347,9 +348,10 @@ class URLS:
         Parameters
         ----------
         ext : `str`, Optional
-            The extension of the url's image. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
         size : `int`, Optional.
-            The size of the url's image. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`, `1024`, `2048`, `4096`.
+            The preferred minimal size of the image's url. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`,
+            `1024`, `2048`, `4096`.
             
         Returns
         -------
@@ -373,7 +375,7 @@ class URLS:
         if ext not in VALID_ICON_FORMATS:
             raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, and not {ext}.')
         
-        return f'{CDN_ENDPOINT}/app-assets/{application_id}/{asset_image_small}.png'
+        return f'{CDN_ENDPOINT}/app-assets/{application_id}/{asset_image_small}.{ext}{end}'
     
     def user_avatar_url(user):
         avatar=user.avatar
@@ -431,13 +433,35 @@ class URLS:
         return f'{CDN_ENDPOINT}/embed/avatars/{default_avatar.value}.png'
 
     def application_icon_url(application):
+        """
+        Returns the application's icon's url.
+        
+        Returns
+        -------
+        url : `str`
+        """
         icon=application.icon
         if not icon:
             return None
             
         return f'{CDN_ENDPOINT}/app-icons/{application.id}/{icon:0>32x}.png'
         
-    def application_icon_url_as(application,ext='png',size=None):
+    def application_icon_url_as(application, ext='png', size=None):
+        """
+        Returns the application's icon's url.
+        
+        Parameters
+        ----------
+        ext : `str`, Optional
+            The extension of the icon's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+        size : `int`, Optional.
+            The preferred minimal size of the icon's url. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`,
+            `1024`, `2048`, `4096`.
+        
+        Returns
+        -------
+        url : `str` or `None`
+        """
         icon=application.icon
         if not icon:
             return None
@@ -455,13 +479,35 @@ class URLS:
         return f'{CDN_ENDPOINT}/app-icons/{application.id}/{icon:0>32x}.{ext}{end}'
 
     def application_cover_url(application):
+        """
+        Returns the application's cover's url.
+        
+        Returns
+        -------
+        url : `str`
+        """
         cover=application.cover
         if not cover:
             return None
         
         return f'{CDN_ENDPOINT}/app-assets/{application.id}/store/{cover:0>32x}.png'
         
-    def application_cover_url_as(application,ext='png',size=None):
+    def application_cover_url_as(application, ext='png', size=None):
+        """
+        Returns the application's cover's url.
+        
+        Parameters
+        ----------
+        ext : `str`, Optional
+            The extension of the icon's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+        size : `int`, Optional.
+            The preferred minimal size of the icon's url. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`,
+            `1024`, `2048`, `4096`.
+        
+        Returns
+        -------
+        url : `str` or `None`
+        """
         cover=application.cover
         if not cover:
             return None

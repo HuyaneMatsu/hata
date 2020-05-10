@@ -23,7 +23,7 @@ application by defualt. This application can be update by awaiting
 | owner                     | [User](User.md) / [Client](Client.md) / [Team](Team.md)   | ZEROUSER  |
 | primary_sku_id            | int                                                       | 0         |
 | rpc_origins               | list of str                                               | []        |
-| slug                      | str                                                       | ''        |
+| slug                      | str or NoneType                                           | None      |
 | summary                   | str                                                       | ''        |
 | verify_key                | str                                                       | ''        |
 

@@ -36,14 +36,12 @@ setup(
     long_description = README,
     long_description_content_type = 'text/markdown',
     classifiers = [
-          'Programming Language :: Python :: 3.6',
-          'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
             ],
     include_package_data = True,
     package_data = {
-        'hata.discord': [
-            'emojis.dnd',
-                ],
         'hata.discord.bin' : [
             'libopus-0.x64.dll',
             'libopus-0.x86.dll',

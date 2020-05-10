@@ -1,7 +1,7 @@
 # singleton `ActivityUnknown`
 
 `ActivityUnknown` represents if a user has no activity set. This activity type
-is not a valid Discord activity. `activity_unknown` is a singleton and member of 
+is not a valid Discord activity. `ActivityUnknown` is a singleton and member of 
 [`activity type`](ACTIVITY_TYPES.md) with type value of `-1`.
 
 - Source : [activity.py](https://github.com/HuyaneMatsu/hata/blob/master/hata/discord/activity.py)
@@ -121,9 +121,5 @@ Returns an `ActivityUnknown` instance. This method should be never used.
 - value : `{}` (always empty)
 
 ### `_update_no_return(self,data)` (method)
-
-- returns : `None`
-
-### `_fillup(self)` (method)
 
 - returns : `None`

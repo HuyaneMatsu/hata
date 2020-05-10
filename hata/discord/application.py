@@ -8,16 +8,67 @@ from .guild import PartialGuild
 from .client_core import TEAMS
 
 class Application(DiscordEntity):
+    """
+    Represents a Discord application with all of it's spice.
+    
+    When a ``Client`` is created, it starts it's life with an empty application by defualt. However when the client
+    logs in, it's application is requested, but it can be updated by ``Client.update_application_info`` anytime.
+    
+    Attributes
+    ----------
+    bot_public : `bool`.
+        Whether not only the application's owner can join the application's bot to guilds. Defaults to `False`
+    bot_require_code_grant : `bool`
+        Whether the application's bot will only join a guild, when completing the full `oauth2` code grant flow.
+        Defaults to `False`.
+    cover : `int`
+        The application's store cover image's hash in `uint128`. If the application is sold at Discord, this image
+        will be used at the store. Defaults to `0`.
+    description : `str`
+        The description of the application. Defaults to empty string.
+    guild : `None` / ``Guild``
+        If the application is a game sold on Discord, this field links it's respective guild. Defaults to `None`.
+    icon : `int`
+        The application's icon's hash as `uint128`. Defaults to `0`.
+    id : `int`
+        The application's id. Defaults to `0`. Meanwhile set as `0`, hashing the application will raise `RuntimeError`.
+    name : `str`
+        The name of the application. Defaults to empty string.
+    owner : ``User``, ``Client`` or ``Team``
+        The application's owner. Defaults to `ZEROUSER`
+    primary_sku_id : `int`
+        If the application is a game sold on Discord, this field will be the id of the created `Game SKU`.
+        Defaults to `0`.
+    rpc_origins : `list` of `str`
+        A list of `rpc` origin urls, if `rpc` is enabled.
+    slug : `str` or `None`
+        If this application is a game sold on Discord, this field will be the url slug that links to the store page.
+        Defaults to `None`.
+    summary : `str`
+        if this application is a game sold on Discord, this field will be the summary field for the store page of its
+        primary sku. Defautls to empty string.
+    verify_key : `str`
+        A base64 encoded key for the GameSDK's `GetTicket`. Defaults to empty string.
+    """
     __slots__ = ('bot_public', 'bot_require_code_grant', 'cover', 'description', 'guild', 'icon', 'name', 'owner',
         'primary_sku_id', 'rpc_origins', 'slug', 'summary', 'verify_key',)
     
-    def __init__(self,data=None):
+    def __init__(self, data=None):
+        """
+        Creates an application. If no data is given creates a partial one.
+        
+        Parameters
+        ----------
+        data : `None` or `dict` of (`str`, `Any`) items, Optional
+            Application data received from Discord or `None` to create a partial one.
+        """
         if data is None:
             self._fillup()
         else:
             self(data)
     
     def __hash__(self):
+        """Returns the application's hash value."""
         id_ = self.id
         if id_:
             return id_
@@ -26,9 +77,18 @@ class Application(DiscordEntity):
     
     @property
     def partial(self):
+        """
+        Returns whether the application is partial.
+        
+        An application if partial, if it's id is set as `0`.
+        Returns
+        -------
+        partial : `bool`
+        """
         return (self.id == 0)
     
     def __repr__(self):
+        """Returns the application's representation"""
         result = [
             '<',
             self.__class__.__name__,
@@ -48,9 +108,13 @@ class Application(DiscordEntity):
         return ''.join(result)
     
     def __str__(self):
+        """Returns the application's name."""
         return self.name
     
     def _fillup(self):
+        """
+        Fills up the application with it's default attributes.
+        """
         self.id=0
         self.name=''
         self.icon=0
@@ -63,10 +127,18 @@ class Application(DiscordEntity):
         self.verify_key=''
         self.guild=None
         self.primary_sku_id=0
-        self.slug=''
+        self.slug=None
         self.cover=0
     
-    def __call__(self,data):
+    def __call__(self, data):
+        """
+        Updates the application with the data received from Discord.
+        
+        Parameters
+        ----------
+        data : `None` or `dict` of (`str`, `Any`) items
+            Application data received from Discord.
+        """
         self.id=int(data['id'])
         self.name=data['name']
         
@@ -79,24 +151,24 @@ class Application(DiscordEntity):
             self.rpc_origins=data['rpc_origins']
         except KeyError:
             self.rpc_origins=[]
-            
+        
         self.bot_public=data['bot_public']
         self.bot_require_code_grant=data['bot_require_code_grant']
         self.summary=data['summary']
         self.verify_key=data['verify_key']
-
+        
         #TODO: do we get owner data if we request other application ?
         team_data=data['team']
         self.owner=User(data['owner']) if team_data is None else Team(team_data)
-
+        
         guild_id=data.get('guild_id',None)
         self.guild=None if guild_id is None else PartialGuild({'id':guild_id})
         
         primary_sku_id=data.get('primary_sku_id')
         self.primary_sku_id=0 if primary_sku_id is None else int(primary_sku_id)
-
-        self.slug=data.get('slug','')
-
+        
+        self.slug=data.get('slug',None)
+        
         cover=data.get('cover_image')
         self.cover=0 if cover is None else int(cover,16)
         
@@ -106,7 +178,7 @@ class Application(DiscordEntity):
     cover_url_as=URLS.application_cover_url_as
 
 class Team(DiscordEntity, immortal=True):
-    __slots__=('icon', 'members', 'name', 'owner',)
+    __slots__ = ('icon', 'members', 'name', 'owner',)
     def __new__(cls,data):
         team_id=int(data['id'])
         try:
@@ -152,7 +224,7 @@ class Team(DiscordEntity, immortal=True):
         return self.name
     
     def __repr__(self):
-        return f'<{self.__class__.__name__} owner={self.owner:f} total members : {len(self.members)}>'
+        return f'<{self.__class__.__name__} owner={self.owner:f} total members={len(self.members)}>'
     
 class TeamMember(object):
     __slots__=('permissions', 'state', 'user',)

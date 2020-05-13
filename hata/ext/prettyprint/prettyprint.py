@@ -1011,15 +1011,16 @@ def str_webhook(webhook,index=None,write_parents=True,**kwargs):
             
     return result
 
-def str_AuditLog(AuditLog,**kwargs):
+def str_AuditLog(audit_log,**kwargs):
     result=Pretty_block()
     
     result.append('AuditLog:')
-    result.append(f'- guild: {AuditLog.guild.name} ({AuditLog.guild.id})',1)
-    result.append(f'- included users: {len(AuditLog.users)}',1)
-    result.append(f'- included webhooks: {len(AuditLog.webhooks)}',1)
-    result.append(f'Entries: {len(AuditLog.logs)}',1)
-    for index,entry in enumerate(AuditLog.logs,1):
+    result.append(f'- guild: {audit_log.guild.name} ({audit_log.guild.id})',1)
+    result.append(f'- included users: {len(audit_log.users)}',1)
+    result.append(f'- included webhooks: {len(audit_log.webhooks)}',1)
+    result.append(f'- included integrations: {len(audit_log.integrations)}',1)
+    result.append(f'Entries: {len(audit_log.entries)}',1)
+    for index,entry in enumerate(audit_log.entries,1):
         result.append(str_AuditLogEntry(entry,index,**kwargs))
 
     return result

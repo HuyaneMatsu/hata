@@ -92,9 +92,7 @@ Returns the representation of the entry.
 
 ## Internal
 
-### `__init__(self,data,guild,webhooks,users)`
+### `__init__(self, parent, users)`
 
 Creates an [`AuditLogEntry`](AuditLogEntry.md) from the given entry
-data by `Discord` and from the creator [`AuditLog`](AuditLog.md)'s 
-[`.guild`](AuditLog.md#guild), [`.webhooks`](AuditLog.md#webhooks) and
-[`.users`](AuditLog.md#users).
+data by `Discord` and from the creator [`AuditLog`](AuditLog.md).

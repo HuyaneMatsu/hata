@@ -499,9 +499,9 @@ class URLS:
         Parameters
         ----------
         ext : `str`, Optional
-            The extension of the icon's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            The extension of the cover's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
         size : `int`, Optional.
-            The preferred minimal size of the icon's url. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`,
+            The preferred minimal size of the cover's url. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`,
             `1024`, `2048`, `4096`.
         
         Returns
@@ -525,13 +525,35 @@ class URLS:
         return f'{CDN_ENDPOINT}/app-assets/{application.id}/store/{cover:0>32x}.{ext}{end}'
     
     def team_icon_url(team):
+        """
+        Returns the team's icon's url.
+        
+        Returns
+        -------
+        url : `str`
+        """
         icon=team.icon
         if not icon:
             return None
         
         return f'{CDN_ENDPOINT}/team-icons/{team.id}/{icon:0>32x}.png'
         
-    def team_icon_url_as(team,ext='png',size=None):
+    def team_icon_url_as(team, ext='png', size=None):
+        """
+        Returns the team's icon's url.
+        
+        Parameters
+        ----------
+        ext : `str`, Optional
+            The extension of the icon's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+        size : `int`, Optional.
+            The preferred minimal size of the icon's url. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`,
+            `1024`, `2048`, `4096`.
+        
+        Returns
+        -------
+        url : `str` or `None`
+        """
         icon=team.icon
         if not icon:
             return None

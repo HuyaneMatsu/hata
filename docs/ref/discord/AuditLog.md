@@ -14,7 +14,7 @@ collections of these entries.
 
 The audit logs' respective [guild](Guild.md).
 
-### `logs`
+### `entries`
 
 - type : `list`
 - elements : [`AuditLogEntry`](AuditLogEntry.md)
@@ -46,19 +46,19 @@ values are the [`webhooks`](Webhook.md) themselves.
 
 - retutns : `list_iterator`
 
-Returns a list iterator over [`.logs`](#logs).
+Returns a list iterator over [`.entries`](#entries).
 
 ### `__reversed__(self)`
 
 - returns : `list_reverseiterator`
 
-Returns a reversed list iterator over [`.logs`](#logs).
+Returns a reversed list iterator over [`.entries`](#entries).
 
 ### `__len__(self)`
 
 - returns : `int`
 
-Returns the length of [`.logs`](#logs).
+Returns the length of [`.entries`](#entries).
 
 ### `__getitem__(self,index)`
 

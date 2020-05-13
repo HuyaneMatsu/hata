@@ -67,6 +67,7 @@ These can be accessed with their `value` as key.
 
 ### `__init__(self,value,name)`
 
+
 Creates a new [`AuditLogEvent`](AuditLogEvent.md) and stores
 it at the classe's [`.INSTANCES`](#instances).
 

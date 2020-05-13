@@ -18,7 +18,7 @@ class ActivityFlag(FlagBase):
     There is one predefined activity created, because ``ActivitySpotify``-s always have the same flags.
     
     +-----------------------+-------------------+
-    | class attribute name  | value             |
+    | Class attribute name  | value             |
     +=======================+===================+
     | spotify               | ActivityFlag(48)  |
     +-----------------------+-------------------+
@@ -370,7 +370,7 @@ class ActivityBase(object):
     @property
     def created_at(self):
         """
-        Returns when the activity was created. If the creation time was not included, will return `None`.
+        When the activity was created. If the creation time was not included, will return `None`.
         
         Returns
         -------

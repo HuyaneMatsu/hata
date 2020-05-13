@@ -1,6 +1,6 @@
 # class `TeamMembershipState`
 
-Represents a a [team member](TeamMember.md)'s state at the [team](Team.md).
+Represents a [team member](TeamMember.md)'s state at the [team](Team.md).
 
 - Source : [application.py](https://github.com/HuyaneMatsu/hata/blob/master/hata/discord/application.py)
 
@@ -31,9 +31,9 @@ There are 2 (+ spaceholder) predefined `TeamMembershipState`-s.
 - length : `3`
 - elements : [`TeamMembershipState`](TeamMembershipState.md)
 
-Stores the created [`RelationshipType`](RelationshipType.md) instances. This
-container is accessed when translating a Discord relationship type's value to
-it's representation.
+Stores the created [`TeamMembershipState`](TeamMembershipState.md) instances.
+This container is accessed when translating a Discord team membership state's
+value to it's representation.
 
 ## Magic methods
 

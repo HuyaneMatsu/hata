@@ -47,7 +47,7 @@ the API requests.
 The guild, what's audit logs the [`AuditLogIterator`](AuditLogIterator.md) going
 to request.
 
-### `logs`
+### `entries`
 
 - type : `list`
 - elements : [`AuditLogEntry`](AuditLogEntry.md)

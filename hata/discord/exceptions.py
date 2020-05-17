@@ -251,7 +251,9 @@ class ERROR_CODES:
     can_pin_message_at_its_own_channel = 50019
     invite_code_invalid_or_taken    = 50020
     cannot_execute_action_on_system_message = 50021
+    cannot_execute_action_on_this_channel_type = 50024
     oauth2_access_token_invalid     = 50025
+    invalid_recipients              = 50033
     message_too_old_to_bulk_delete  = 50034
     invalid_form_body               = 50035
     invite_accepted_where_application_bot_is_not_in = 50036

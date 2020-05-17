@@ -1230,6 +1230,10 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.guild_user_get),
             METH_GET, f'{API_ENDPOINT}/guilds/{guild_id}/members/{user_id}')
     
+    async def guild_user_search(self, guild_id, data):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.guild_user_search),
+            METH_GET, f'{API_ENDPOINT}/guilds/{guild_id}/members/search', params=data)
+    
     #hooman only
     async def user_get_profile(self,user_id):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.user_get_profile),

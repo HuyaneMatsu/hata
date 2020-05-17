@@ -15,7 +15,6 @@ from .user import User, PartialUser,USERS
 from .channel import CHANNEL_TYPES, ChannelGuildBase
 from .others import Relationship, Gift
 from .guild import EMOJI_UPDATE_NEW, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, Guild
-from .message import Message
 from .emoji import PartialEmoji
 from .role import Role
 from .exceptions import DiscordException
@@ -30,6 +29,8 @@ class event_system_core(object):
         self.parsers={}
     def add_default(self,name,value,parser):
         self.defaults[name]=value
+        if (type(parser) is not tuple):
+            parser = (parser,)
         self.parsers[name]=parser
     
     def get_argcount(self,name):
@@ -351,13 +352,14 @@ class PARSER_DEFAULTS(object):
             if event is DEFAULT_EVENT:
                 continue
             
-            parser_name = EVENTS.parsers[event_name]
-            if parser_name not in enabled_parsers:
-                continue
-            
-            parser_default=cls.all[parser_name]
-            parser_default.mention_count+=1
-            parser_default._recalculate()
+            parser_names = EVENTS.parsers[event_name]
+            for parser_name in parser_names:
+                if parser_name not in enabled_parsers:
+                    continue
+                
+                parser_default=cls.all[parser_name]
+                parser_default.mention_count+=1
+                parser_default._recalculate()
             
     
     @classmethod
@@ -387,13 +389,15 @@ class PARSER_DEFAULTS(object):
             if event is DEFAULT_EVENT:
                 continue
             
-            parser_name = EVENTS.parsers[event_name]
-            if parser_name not in enabled_parsers:
+            parser_names = EVENTS.parsers[event_name]
+            for parser_name in parser_names:
+                if parser_name not in enabled_parsers:
+                    continue
+                
+                parser_default=cls.all[parser_name]
+                parser_default.mention_count-=1
+                parser_default._recalculate()
                 continue
-            
-            parser_default=cls.all[parser_name]
-            parser_default.mention_count-=1
-            parser_default._recalculate()
     
     def add_mention(self,client):
         if client is None:
@@ -542,7 +546,7 @@ def MESSAGE_CREATE__CAL(client,data):
         guild_sync(client,data,('MESSAGE_CREATE',check_channel,channel_id))
         return
 
-    message=Message.new(data,channel)
+    message = channel._create_new_message(data)
     
     Task(client.events.message_create(client,message), KOKORO)
 
@@ -554,7 +558,7 @@ def MESSAGE_CREATE__OPT(client,data):
         guild_sync(client,data,('MESSAGE_CREATE',check_channel,channel_id))
         return
     
-    Message.new(data,channel)
+    channel._create_new_message(data)
 
 PARSER_DEFAULTS('MESSAGE_CREATE',MESSAGE_CREATE__CAL,MESSAGE_CREATE__CAL,MESSAGE_CREATE__OPT,MESSAGE_CREATE__OPT)
 del MESSAGE_CREATE__CAL, MESSAGE_CREATE__OPT
@@ -568,7 +572,7 @@ def MESSAGE_DELETE__CAL_SC(client,data):
         return
     
     message_id=int(data['id'])
-    message=channel._mc_pop(message_id)
+    message=channel._pop_message(message_id)
     if message is None:
         return
     
@@ -588,12 +592,12 @@ def MESSAGE_DELETE__CAL_MC(client,data):
         return
     
     message_id=int(data['id'])
-    message=channel._mc_pop(message_id)
+    message=channel._pop_message(message_id)
     if message is None:
         return
     
     for client_ in clients:
-        Task(client_.events.message_delete(client_,message),client_.loop)
+        Task(client_.events.message_delete(client_,message),KOKORO)
     
 def MESSAGE_DELETE__OPT_SC(client,data):
     channel_id=int(data['channel_id'])
@@ -604,7 +608,7 @@ def MESSAGE_DELETE__OPT_SC(client,data):
         return
     
     message_id=int(data['id'])
-    channel._mc_pop(message_id)
+    channel._pop_message(message_id)
 
 def MESSAGE_DELETE__OPT_MC(client,data):
     channel_id=int(data['channel_id'])
@@ -618,7 +622,7 @@ def MESSAGE_DELETE__OPT_MC(client,data):
         return
     
     message_id=int(data['id'])
-    channel._mc_pop(message_id)
+    channel._pop_message(message_id)
 
 PARSER_DEFAULTS('MESSAGE_DELETE',MESSAGE_DELETE__CAL_SC,MESSAGE_DELETE__CAL_MC,MESSAGE_DELETE__OPT_SC,MESSAGE_DELETE__OPT_MC)
 del MESSAGE_DELETE__CAL_SC, MESSAGE_DELETE__CAL_MC, MESSAGE_DELETE__OPT_SC, MESSAGE_DELETE__OPT_MC
@@ -632,9 +636,11 @@ def MESSAGE_DELETE_BULK__CAL_SC(client,data):
         return
     
     message_ids=[int(message_id) for message_id in data['ids']]
-    messages=channel._mc_pop_multiple(message_ids)
+    messages=channel._pop_multiple(message_ids)
     
-    Task(client.events.message_delete_multyple(client,channel,messages,message_ids), KOKORO)
+    event = client.events.message_delete
+    for message in messages:
+        Task(client.events.message_delete(client, message), KOKORO)
 
 def MESSAGE_DELETE_BULK__CAL_MC(client,data):
     channel_id=int(data['channel_id'])
@@ -650,10 +656,15 @@ def MESSAGE_DELETE_BULK__CAL_MC(client,data):
         return
     
     message_ids=[int(message_id) for message_id in data['ids']]
-    messages=channel._mc_pop_multiple(message_ids)
+    messages=channel._pop_multiple(message_ids)
     
     for client_ in clients:
-        Task(client_.events.message_delete_multyple(client_,channel,messages,message_ids),client_.loop)
+        event = client_.events.message_delete
+        if event is DEFAULT_EVENT:
+            continue
+        
+        for message in messages:
+            Task(event(client_, message), KOKORO)
 
 def MESSAGE_DELETE_BULK__OPT_SC(client,data):
     channel_id=int(data['channel_id'])
@@ -664,7 +675,7 @@ def MESSAGE_DELETE_BULK__OPT_SC(client,data):
         return
 
     message_ids=[int(message_id) for message_id in data['ids']]
-    channel._mc_pop_multiple(message_ids)
+    channel._pop_multiple(message_ids)
 
 def MESSAGE_DELETE_BULK__OPT_MC(client,data):
     channel_id=int(data['channel_id'])
@@ -678,7 +689,7 @@ def MESSAGE_DELETE_BULK__OPT_MC(client,data):
         return
 
     message_ids=[int(message_id) for message_id in data['ids']]
-    channel._mc_pop_multiple(message_ids)
+    channel._pop_multiple(message_ids)
 
 PARSER_DEFAULTS('MESSAGE_DELETE_BULK',MESSAGE_DELETE_BULK__CAL_SC,MESSAGE_DELETE_BULK__CAL_MC,MESSAGE_DELETE_BULK__OPT_SC,MESSAGE_DELETE_BULK__OPT_MC)
 del MESSAGE_DELETE_BULK__CAL_SC, MESSAGE_DELETE_BULK__CAL_MC, MESSAGE_DELETE_BULK__OPT_SC, MESSAGE_DELETE_BULK__OPT_MC
@@ -720,14 +731,14 @@ def MESSAGE_UPDATE__CAL_MC(client,data):
             return
         
         for client_ in clients:
-            Task(client_.events.message_edit(client_,message,old),client_.loop)
+            Task(client_.events.message_edit(client_,message,old), KOKORO)
     else:
         result=message._update_embed(data)
         if not result:
             return
             
         for client_ in clients:
-            Task(client_.events.embed_update(client_,message,result),client_.loop)
+            Task(client_.events.embed_update(client_,message,result), KOKORO)
 
 def MESSAGE_UPDATE__OPT_SC(client,data):
     message_id=int(data['id'])
@@ -790,7 +801,7 @@ def MESSAGE_REACTION_ADD__CAL_MC(client,data):
     message.reactions.add(emoji,user)
     
     for client_ in clients:
-        Task(client_.events.reaction_add(client_,message,emoji,user),client_.loop)
+        Task(client_.events.reaction_add(client_,message,emoji,user), KOKORO)
 
 def MESSAGE_REACTION_ADD__OPT_SC(client,data):
     message_id=int(data['message_id'])
@@ -852,7 +863,7 @@ def MESSAGE_REACTION_REMOVE_ALL__CAL_MC(client,data):
     
     message.reactions=type(old_reactions)(None)
     for client_ in clients:
-        Task(client_.events.reaction_clear(client_,message,old_reactions),client_.loop)
+        Task(client_.events.reaction_clear(client_,message,old_reactions),KOKORO)
     
 def MESSAGE_REACTION_REMOVE_ALL__OPT_SC(client,data):
     message_id=int(data['message_id'])
@@ -908,7 +919,7 @@ def MESSAGE_REACTION_REMOVE__CAL_MC(client,data):
     message.reactions.remove(emoji,user)
     
     for client_ in clients:
-        Task(client_.events.reaction_delete(client_,message,emoji,user),client_.loop)
+        Task(client_.events.reaction_delete(client_,message,emoji,user),KOKORO)
 
 def MESSAGE_REACTION_REMOVE__OPT_SC(client,data):
     message_id=int(data['message_id'])
@@ -970,7 +981,7 @@ def MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC(client,data):
         return
     
     for client_ in clients:
-        Task(client_.events.reaction_delete_emoji(client_,message,emoji,users),client_.loop)
+        Task(client_.events.reaction_delete_emoji(client_,message,emoji,users),KOKORO)
 
 def MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC(client,data):
     message_id=int(data['message_id'])
@@ -1062,7 +1073,7 @@ if CACHE_PRESENCE:
             if coro is DEFAULT_EVENT:
                 continue
             
-            Task(coro(client_,user,old),client_.loop)
+            Task(coro(client_,user,old),KOKORO)
             continue
     
     def PRESENCE_UPDATE__OPT(client,data):
@@ -1123,7 +1134,7 @@ if CACHE_USER:
         
         clients.send(user)
         for client_ in clients:
-            Task(client_.events.user_profile_edit(client_,user,old,guild),client_.loop)
+            Task(client_.events.user_profile_edit(client_,user,old,guild),KOKORO)
     
     def GUILD_MEMBER_UPDATE__OPT_SC(client,data):
         guild_id=int(data['guild_id'])
@@ -1249,7 +1260,7 @@ def CHANNEL_UPDATE__CAL_MC(client,data):
         return
     
     for client_ in clients:
-        Task(client_.events.channel_edit(client_,channel,old),client_.loop)
+        Task(client_.events.channel_edit(client_,channel,old),KOKORO)
 
 def CHANNEL_UPDATE__OPT_SC(client,data):
     channel_id=int(data['id'])
@@ -1390,7 +1401,7 @@ def CHANNEL_RECIPIENT_REMOVE__CAL_MC(client,data):
     
     for client_ in channel.clients:
         if (client_ is client) or (client_!=user):
-            Task(client_.events.channel_group_user_delete(client_,channel,user),client_.loop)
+            Task(client_.events.channel_group_user_delete(client_,channel,user),KOKORO)
 
 def CHANNEL_RECIPIENT_REMOVE__OPT(client,data):
     channel_id=int(data['channel_id'])
@@ -1473,7 +1484,7 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client,data):
                 if coro is DEFAULT_EVENT:
                     continue
                 
-                Task(coro(client,guild,emoji,old),client_.loop)
+                Task(coro(client,guild,emoji,old),KOKORO)
                 continue
                 
             if action==EMOJI_UPDATE_NEW:
@@ -1481,7 +1492,7 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client,data):
                 if coro is DEFAULT_EVENT:
                     continue
                 
-                Task(coro(client,guild,emoji),client_.loop)
+                Task(coro(client,guild,emoji),KOKORO)
                 continue
             
             if action==EMOJI_UPDATE_DELETE:
@@ -1489,7 +1500,7 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client,data):
                 if coro is DEFAULT_EVENT:
                     continue
                 
-                Task(coro(client,guild,emoji),client_.loop)
+                Task(coro(client,guild,emoji),KOKORO)
                 continue
             
             continue
@@ -1551,7 +1562,7 @@ def GUILD_MEMBER_ADD__CAL_MC(client,data):
     guild.user_count+=1
     
     for client_ in clients:
-        Task(client_.events.guild_user_add(client_,guild,user),client_.loop)
+        Task(client_.events.guild_user_add(client_,guild,user),KOKORO)
 
 if CACHE_USER:
     def GUILD_MEMBER_ADD__OPT_SC(client,data):
@@ -1658,7 +1669,7 @@ if CACHE_USER:
         guild.user_count-=1
         
         for client_ in clients:
-            Task(client_.events.guild_user_delete(client_,guild,user,profile),client_.loop)
+            Task(client_.events.guild_user_delete(client_,guild,user,profile),KOKORO)
     
     def GUILD_MEMBER_REMOVE__OPT_SC(client,data):
         guild_id=int(data['guild_id'])
@@ -1734,7 +1745,7 @@ else:
         guild.user_count-=1
         
         for client_ in clients:
-            Task(client_.events.guild_user_delete(client_,guild,user,None),client_.loop)
+            Task(client_.events.guild_user_delete(client_,guild,user,None),KOKORO)
     
     def GUILD_MEMBER_REMOVE__OPT_SC(client,data):
         guild_id=int(data['guild_id'])
@@ -1887,7 +1898,7 @@ def GUILD_UPDATE__CAL_MC(client,data):
         return
     
     for client_ in clients:
-        Task(client_.events.guild_edit(client_,guild,old),client_.loop)
+        Task(client_.events.guild_edit(client_,guild,old),KOKORO)
 
 def GUILD_UPDATE__OPT_SC(client,data):
     guild_id=int(data['guild_id'])
@@ -2086,7 +2097,7 @@ def GUILD_ROLE_CREATE__CAL_MC(client,data):
     role=Role(data['role'],guild)
     
     for client_ in clients:
-        Task(client_.events.role_create(client_,role),client_.loop)
+        Task(client_.events.role_create(client_,role),KOKORO)
 
 def GUILD_ROLE_CREATE__OPT_SC(client,data):
     guild_id=int(data['guild_id'])
@@ -2156,7 +2167,7 @@ def GUILD_ROLE_DELETE__CAL_MC(client, data):
     role._delete()
     
     for client_ in clients:
-        Task(client_.events.role_delete(client_,role, guild),client_.loop)
+        Task(client_.events.role_delete(client_,role, guild),KOKORO)
 
 def GUILD_ROLE_DELETE__OPT_SC(client, data):
     guild_id=int(data['guild_id'])
@@ -2246,7 +2257,7 @@ def GUILD_ROLE_UPDATE__CAL_MC(client,data):
         return
     
     for client_ in clients:
-        Task(client_.events.role_edit(client_,role,old),client_.loop)
+        Task(client_.events.role_edit(client_,role,old),KOKORO)
 
 def GUILD_ROLE_UPDATE__OPT_SC(client,data):
     guild_id=int(data['guild_id'])
@@ -2393,11 +2404,11 @@ def VOICE_STATE_UPDATE__CAL_MC(client,data):
                 pass
             else:
                 if result[1]=='l':
-                    Task(voice_client.disconnect(force=True,terminate=False),client_.loop)
+                    Task(voice_client.disconnect(force=True,terminate=False),KOKORO)
                 else:
                     voice_client.channel=result[0].channel
         
-        Task(client_.events.voice_state_update(client_,*result),client_.loop)
+        Task(client_.events.voice_state_update(client_,*result),KOKORO)
 
 def VOICE_STATE_UPDATE__OPT_SC(client,data):
     try:
@@ -2662,53 +2673,52 @@ del USER_GUILD_SETTINGS_UPDATE
 
 EVENTS=event_system_core()
 
-EVENTS.add_default('error'                      , 3 , ''                                , )
+EVENTS.add_default('error'                      , 3 , ()                                        , )
 
-EVENTS.add_default('ready'                      , 1 , 'READY'                           , )
-EVENTS.add_default('client_edit'                , 2 , 'USER_UPDATE'                     , )
-EVENTS.add_default('message_create'             , 2 , 'MESSAGE_CREATE'                  , )
-EVENTS.add_default('message_delete'             , 2 , 'MESSAGE_DELETE'                  , )
-EVENTS.add_default('message_delete_multyple'    , 4 , 'MESSAGE_DELETE_BULK'             , )
-EVENTS.add_default('message_edit'               , 3 , 'MESSAGE_UPDATE'                  , )
-EVENTS.add_default('embed_update'               , 3 , 'MESSAGE_UPDATE'                  , )
-EVENTS.add_default('reaction_add'               , 4 , 'MESSAGE_REACTION_ADD'            , )
-EVENTS.add_default('reaction_clear'             , 3 , 'MESSAGE_REACTION_REMOVE_ALL'     , )
-EVENTS.add_default('reaction_delete'            , 4 , 'MESSAGE_REACTION_REMOVE'         , )
-EVENTS.add_default('reaction_delete_emoji'      , 4 , 'MESSAGE_REACTION_REMOVE_EMOJI'   , )
-EVENTS.add_default('user_edit'                  , 3 , 'PRESENCE_UPDATE'                 , )
-EVENTS.add_default('user_presence_update'       , 3 , 'PRESENCE_UPDATE'                 , )
-EVENTS.add_default('user_profile_edit'          , 4 , 'GUILD_MEMBER_UPDATE'             , )
-EVENTS.add_default('channel_delete'             , 3 , 'CHANNEL_DELETE'                  , )
-EVENTS.add_default('channel_edit'               , 3 , 'CHANNEL_UPDATE'                  , )
-EVENTS.add_default('channel_create'             , 2 , 'CHANNEL_CREATE'                  , )
-EVENTS.add_default('channel_pin_update'         , 2 , 'CHANNEL_PINS_UPDATE'             , )
-EVENTS.add_default('channel_group_user_add'     , 3 , 'CHANNEL_RECIPIENT_ADD'           , )
-EVENTS.add_default('channel_group_user_delete'  , 3 , 'CHANNEL_RECIPIENT_REMOVE'        , )
-EVENTS.add_default('emoji_create'               , 2 , 'GUILD_EMOJIS_UPDATE'             , )
-EVENTS.add_default('emoji_delete'               , 3 , 'GUILD_EMOJIS_UPDATE'             , )
-EVENTS.add_default('emoji_edit'                 , 3 , 'GUILD_EMOJIS_UPDATE'             , )
-EVENTS.add_default('guild_user_add'             , 3 , 'GUILD_MEMBER_ADD'                , )
-EVENTS.add_default('guild_user_delete'          , 4 , 'GUILD_MEMBER_REMOVE'             , )
-EVENTS.add_default('guild_create'               , 2 , 'GUILD_CREATE'                    , )
-EVENTS.add_default('guild_edit'                 , 2 , 'GUILD_UPDATE'                    , )
-EVENTS.add_default('guild_delete'               , 3 , 'GUILD_DELETE'                    , )
-EVENTS.add_default('guild_ban_add'              , 3 , 'GUILD_BAN_ADD'                   , )
-EVENTS.add_default('guild_ban_delete'           , 3 , 'GUILD_BAN_REMOVE'                , )
-EVENTS.add_default('guild_user_chunk'           , 2 , 'GUILD_MEMBERS_CHUNK'             , )
-EVENTS.add_default('integration_update'         , 2 , 'GUILD_INTEGRATIONS_UPDATE'       , )
-EVENTS.add_default('role_create'                , 2 , 'GUILD_ROLE_CREATE'               , )
-EVENTS.add_default('role_delete'                , 3 , 'GUILD_ROLE_DELETE'               , )
-EVENTS.add_default('role_edit'                  , 3 , 'GUILD_ROLE_UPDATE'               , )
-EVENTS.add_default('webhook_update'             , 2 , 'WEBHOOKS_UPDATE'                 , )
-EVENTS.add_default('voice_state_update'         , 4 , 'VOICE_STATE_UPDATE'              , )
-EVENTS.add_default('typing'                     , 4 , 'TYPING_START'                    , )
-EVENTS.add_default('invite_create'              , 2 , 'INVITE_CREATE'                   , )
-EVENTS.add_default('invite_delete'              , 2 , 'INVITE_DELETE'                   , )
-EVENTS.add_default('relationship_add'           , 2 , 'RELATIONSHIP_ADD'                , )
-EVENTS.add_default('relationship_change'        , 3 , 'RELATIONSHIP_ADD'                , )
-EVENTS.add_default('relationship_delete'        , 2 , 'RELATIONSHIP_REMOVE'             , )
-EVENTS.add_default('gift_update'                , 3 , 'GIFT_CODE_UPDATE'                , )
-EVENTS.add_default('achievement'                , 2 , 'USER_ACHIEVEMENT_UPDATE'         , )
+EVENTS.add_default('ready'                      , 1 , 'READY'                                   , )
+EVENTS.add_default('client_edit'                , 2 , 'USER_UPDATE'                             , )
+EVENTS.add_default('message_create'             , 2 , 'MESSAGE_CREATE'                          , )
+EVENTS.add_default('message_delete'             , 2 , ('MESSAGE_DELETE', 'MESSAGE_DELETE_BULK') , )
+EVENTS.add_default('message_edit'               , 3 , 'MESSAGE_UPDATE'                          , )
+EVENTS.add_default('embed_update'               , 3 , 'MESSAGE_UPDATE'                          , )
+EVENTS.add_default('reaction_add'               , 4 , 'MESSAGE_REACTION_ADD'                    , )
+EVENTS.add_default('reaction_clear'             , 3 , 'MESSAGE_REACTION_REMOVE_ALL'             , )
+EVENTS.add_default('reaction_delete'            , 4 , 'MESSAGE_REACTION_REMOVE'                 , )
+EVENTS.add_default('reaction_delete_emoji'      , 4 , 'MESSAGE_REACTION_REMOVE_EMOJI'           , )
+EVENTS.add_default('user_edit'                  , 3 , 'PRESENCE_UPDATE'                         , )
+EVENTS.add_default('user_presence_update'       , 3 , 'PRESENCE_UPDATE'                         , )
+EVENTS.add_default('user_profile_edit'          , 4 , 'GUILD_MEMBER_UPDATE'                     , )
+EVENTS.add_default('channel_delete'             , 3 , 'CHANNEL_DELETE'                          , )
+EVENTS.add_default('channel_edit'               , 3 , 'CHANNEL_UPDATE'                          , )
+EVENTS.add_default('channel_create'             , 2 , 'CHANNEL_CREATE'                          , )
+EVENTS.add_default('channel_pin_update'         , 2 , 'CHANNEL_PINS_UPDATE'                     , )
+EVENTS.add_default('channel_group_user_add'     , 3 , 'CHANNEL_RECIPIENT_ADD'                   , )
+EVENTS.add_default('channel_group_user_delete'  , 3 , 'CHANNEL_RECIPIENT_REMOVE'                , )
+EVENTS.add_default('emoji_create'               , 2 , 'GUILD_EMOJIS_UPDATE'                     , )
+EVENTS.add_default('emoji_delete'               , 3 , 'GUILD_EMOJIS_UPDATE'                     , )
+EVENTS.add_default('emoji_edit'                 , 3 , 'GUILD_EMOJIS_UPDATE'                     , )
+EVENTS.add_default('guild_user_add'             , 3 , 'GUILD_MEMBER_ADD'                        , )
+EVENTS.add_default('guild_user_delete'          , 4 , 'GUILD_MEMBER_REMOVE'                     , )
+EVENTS.add_default('guild_create'               , 2 , 'GUILD_CREATE'                            , )
+EVENTS.add_default('guild_edit'                 , 2 , 'GUILD_UPDATE'                            , )
+EVENTS.add_default('guild_delete'               , 3 , 'GUILD_DELETE'                            , )
+EVENTS.add_default('guild_ban_add'              , 3 , 'GUILD_BAN_ADD'                           , )
+EVENTS.add_default('guild_ban_delete'           , 3 , 'GUILD_BAN_REMOVE'                        , )
+EVENTS.add_default('guild_user_chunk'           , 2 , 'GUILD_MEMBERS_CHUNK'                     , )
+EVENTS.add_default('integration_update'         , 2 , 'GUILD_INTEGRATIONS_UPDATE'               , )
+EVENTS.add_default('role_create'                , 2 , 'GUILD_ROLE_CREATE'                       , )
+EVENTS.add_default('role_delete'                , 3 , 'GUILD_ROLE_DELETE'                       , )
+EVENTS.add_default('role_edit'                  , 3 , 'GUILD_ROLE_UPDATE'                       , )
+EVENTS.add_default('webhook_update'             , 2 , 'WEBHOOKS_UPDATE'                         , )
+EVENTS.add_default('voice_state_update'         , 4 , 'VOICE_STATE_UPDATE'                      , )
+EVENTS.add_default('typing'                     , 4 , 'TYPING_START'                            , )
+EVENTS.add_default('invite_create'              , 2 , 'INVITE_CREATE'                           , )
+EVENTS.add_default('invite_delete'              , 2 , 'INVITE_DELETE'                           , )
+EVENTS.add_default('relationship_add'           , 2 , 'RELATIONSHIP_ADD'                        , )
+EVENTS.add_default('relationship_change'        , 3 , 'RELATIONSHIP_ADD'                        , )
+EVENTS.add_default('relationship_delete'        , 2 , 'RELATIONSHIP_REMOVE'                     , )
+EVENTS.add_default('gift_update'                , 3 , 'GIFT_CODE_UPDATE'                        , )
+EVENTS.add_default('achievement'                , 2 , 'USER_ACHIEVEMENT_UPDATE'                 , )
 
 def _check_name_should_break(name):
     if (name is None):
@@ -3814,20 +3824,21 @@ class EventDescriptor(object):
             setattr(self,name,func)
             return func
         
-        parser_name=EVENTS.parsers.get(name,None)
-        if (parser_name is None):
+        parser_names=EVENTS.parsers.get(name,None)
+        if (parser_names is None):
             raise AttributeError(f'Event name: \'{name}\' is invalid')
         
         if func is DEFAULT_EVENT:
             return func
         
-        parser_default=PARSER_DEFAULTS.all[parser_name]
         actual=getattr(self,name)
         if actual is DEFAULT_EVENT:
             object.__setattr__(self,name,func)
-            parser_default.add_mention(self.client_reference())
+            for parser_name in parser_names:
+                parser_default=PARSER_DEFAULTS.all[parser_name]
+                parser_default.add_mention(self.client_reference())
             return func
-    
+        
         if type(actual) is asynclist:
             actual.append(func)
             return func
@@ -3855,23 +3866,25 @@ class EventDescriptor(object):
         object.__setattr__(self,'guild_user_chunk',ChunkWaiter())
     
     def __setattr__(self,name,value):
-        parser_name=EVENTS.parsers.get(name,None)
-        if (parser_name is None):
+        parser_names=EVENTS.parsers.get(name,None)
+        if (parser_names is None):
             object.__setattr__(self,name,value)
             return
         
-        parser_default=PARSER_DEFAULTS.all[parser_name]
-        actual=getattr(self,name)
-        object.__setattr__(self,name,value)
-        if actual is DEFAULT_EVENT:
-            if value is DEFAULT_EVENT:
-                return
+        for parser_name in parser_names:
+            parser_default=PARSER_DEFAULTS.all[parser_name]
+            actual=getattr(self,name)
+            object.__setattr__(self,name,value)
+            if actual is DEFAULT_EVENT:
+                if value is DEFAULT_EVENT:
+                    continue
+                
+                parser_default.add_mention(self.client_reference())
+                continue
             
-            parser_default.add_mention(self.client_reference())
-            return
-        
-        if value is DEFAULT_EVENT:
-            parser_default.remove_mention(self.client_reference())
+            if value is DEFAULT_EVENT:
+                parser_default.remove_mention(self.client_reference())
+            continue
     
     def __delattr__(self,name):
         actual=getattr(self,name)
@@ -3880,13 +3893,14 @@ class EventDescriptor(object):
         
         object.__setattr__(self,name,DEFAULT_EVENT)
         
-        parser_name=EVENTS.parsers.get(name,None)
-        if (parser_name is None) or (not parser_name):
+        parser_names=EVENTS.parsers.get(name,None)
+        if (parser_names is None) or (not parser_names):
             # parser name can be an empty string as well for internal events
             return
-
-        parser_default=PARSER_DEFAULTS.all[parser_name]
-        parser_default.remove_mention(self.client_reference())
+        
+        for parser_name in parser_names:
+            parser_default=PARSER_DEFAULTS.all[parser_name]
+            parser_default.remove_mention(self.client_reference())
     
     def remove(self, func, name=None, by_type=False, count=-1):
         if count==0:
@@ -3931,12 +3945,13 @@ class EventDescriptor(object):
         
         object.__setattr__(self,name,DEFAULT_EVENT)
         
-        parser_name=EVENTS.parsers.get(name,None)
-        if (parser_name is None):
+        parser_names=EVENTS.parsers.get(name,None)
+        if (parser_names is None):
             return
-
-        parser_default=PARSER_DEFAULTS.all[parser_name]
-        parser_default.remove_mention(self.client_reference())
+        
+        for parser_name in parser_names:
+            parser_default=PARSER_DEFAULTS.all[parser_name]
+            parser_default.remove_mention(self.client_reference())
         return
 
 async def _with_error(client,task):

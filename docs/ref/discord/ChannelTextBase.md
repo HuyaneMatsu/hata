@@ -88,8 +88,8 @@ the message returns it, else returns `None`.
 The inputted message should be a partial message object only with an `id`
 attribute. If the channel's most recent message is older, then it returns the
 new message, if they are the same, returns the already existing one. If the new
-message is not so now, then it tries to find the message at the loaded messages
-of the channel. If it does fidns it returns it, else returns the new message.
+message is not so new, then it tries to find the message at the loaded messages
+of the channel. If it finds it, then returns it, else returns the new message.
 This method is used when we create a new message. if we find the message
 between the already loaded ones we save a message initialization.
 
@@ -106,7 +106,7 @@ instead.
 
 - returns : [`Message`](Message.md)
 
-This method gets caled if
+This method gets called if
 [`._mc_insert_new_message`](#_mc_insert_new_messagechannelmessage-method)
 sees that the message is older than it's first one, or if
 [`._mc_insert_old_message`](#_mc_insert_old_messagechannelmessage-method)

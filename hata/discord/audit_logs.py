@@ -435,7 +435,7 @@ class AuditLogIterator(object):
         return self
     
     async def __anext__(self):
-        """Yields the next entry of the audit lgo iterator"""
+        """Yields the next entry of the audit log iterator."""
         ln=len(self.entries)
         index=self._index
         

@@ -18,7 +18,7 @@ from .http import URLS
 from .permission import Permission
 from .activity import Activity, ActivityUnknown
 from .emoji import Emoji
-from .webhook import Webhook
+from .webhook import Webhook, WebhookRepr
 from .oauth2 import parse_preferred_locale, DEFAULT_LOCALE
 from .preconverters import preconvert_snowflake, preconvert_image_hash, preconvert_animated_image_hash, preconvert_str
 
@@ -1150,7 +1150,7 @@ class Guild(DiscordEntity, immortal=True):
         try:
             roles=user.guild_profiles[self].roles
         except KeyError:
-            if type(user) is Webhook and user.guild is self:
+            if type(user) in (Webhook, WebhookRepr) and user.guild is self:
                 return base
             return Permission.permission_none
         

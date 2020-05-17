@@ -321,76 +321,8 @@ class Message(DiscordEntity, immortal=True):
         'cross_mentions', 'cross_reference', 'edited', 'embeds', 'everyone_mention', 'flags', 'nonce', 'pinned',
         'reactions', 'role_mentions', 'tts', 'type', 'user_mentions',)
     
-    def __new__(cls,data,channel):
+    def __new__(cls, data, channel):
         raise RuntimeError(f'`{cls.__name__}` should not be created like this.')
-    
-    @classmethod
-    def new(cls,data,channel):
-        new=object.__new__(cls)
-        new.id=int(data['id'])
-        if channel._mc_gc_limit:
-            self=channel._mc_insert_new_message(new)
-            if new is self:
-                self._finish_init(data,channel)
-                if channel.message_history_reached_end:
-                    if (channel.messages.maxlen is not None) and len(channel.messages)==channel._mc_gc_limit:
-                        channel.message_history_reached_end=False
-            return self
-        new._finish_init(data,channel)
-        return new
-    
-    @classmethod
-    def old(cls,data,channel):
-        new=object.__new__(cls)
-        new.id=int(data['id'])
-        self=channel._mc_insert_old_message(new)
-        if new is self:
-            self._finish_init(data,channel)
-        return self
-    
-    #this is a safe method to not get duped messages.
-    #1st it tries to find it. If it finds nothing, return a new,
-    #w/o addding it to the channel history
-    @classmethod
-    def fromchannel(cls,data,channel):
-        message_id=int(data['id'])
-        message=MESSAGES.get(message_id)
-        if (message is not None):
-            return message
-        message=object.__new__(cls)
-        message.id=message_id
-        message._finish_init(data,channel)
-        return message
-    
-    #called, when we wanna know if the message existed before or not
-    @classmethod
-    def exists(cls,data,channel):
-        message_id=int(data['id'])
-        message,found=channel._mc_find(message_id)
-        if (message is None):
-            return message,True
-        
-        if not found:
-            return message,False
-        
-        message=object.__new__(cls)
-        message.id=message_id
-        message._finish_init(data,channel)
-        return message,False
-    
-    #we call this only if we know our message never existed
-    @classmethod
-    def onetime(cls,data,channel):
-        
-        message_id=int(data['id'])
-        message=MESSAGES.get(message_id)
-        if (message is not None):
-            return message
-        
-        message=object.__new__(cls)
-        message.id=message_id
-        message._finish_init(data,channel)
-        return message
     
     def _finish_init(self,data,channel):
         self.channel=channel

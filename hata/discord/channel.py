@@ -5,6 +5,7 @@ __all__ = ('ChannelBase', 'ChannelCategory', 'ChannelGroup', 'ChannelGuildBase',
 import re
 from collections import deque
 from time import monotonic
+from weakref import WeakSet
 
 from ..backend.dereaddons_local import weakposlist
 
@@ -16,39 +17,56 @@ from .message import Message, MESSAGES
 from .user import User, ZEROUSER
 from .role import PermOW
 from .client_core import GC_cycler
-from .webhook import Webhook
+from .webhook import Webhook, WebhookRepr
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_image_hash, preconvert_bool
 
 from . import webhook, message, ratelimit
 
 Client = NotImplemented
 
-Q_on_GC=deque()
+TURN_MESSAGE_LIMITING_ON = WeakSet()
 
-def GC_messages(cycler):
-    now=monotonic()
-    for index in reversed(range(len(Q_on_GC))):
-        channel=Q_on_GC[index]
-        if channel._turn_gc_on_at<now:
-            switch_to_limited(channel)
-            del Q_on_GC[index]
-
-GC_cycler.append(GC_messages)
-
-del GC_messages,GC_cycler
-
-def switch_to_limited(channel):
-    old=channel.messages
-    limit=channel._mc_gc_limit
-    if len(old)>limit:
-        channel.messages=deque((old[i] for i in range(limit)),maxlen=limit)
-    else:
-        channel.messages=deque(old,maxlen=limit)
-
-    channel._turn_gc_on_at=0.
-    channel.message_history_reached_end=False
+def turn_message_limiting_on(cycler):
+    """
+    Goes through all the channels inside of `Q_on_GC` and switches their message history to limited if their
+    time is over.
     
-def PartialChannel(data,partial_guild=None):
+    Parameters
+    ----------
+    cycler : `Cycler`
+        The cycler what calls this function every X seconds.
+    """
+    now = monotonic()
+    collected = []
+    for channel in TURN_MESSAGE_LIMITING_ON:
+        if channel._turn_message_keep_limit_on_at<now:
+            collected.append(channel)
+    
+    while collected:
+        channel = collected.pop()
+        TURN_MESSAGE_LIMITING_ON.remove(channel)
+        channel._switch_to_limited()
+
+GC_cycler.append(turn_message_limiting_on)
+
+del turn_message_limiting_on, GC_cycler
+
+def PartialChannel(data, partial_guild=None):
+    """
+    Creates a partial channel from partial channel data.
+    
+    Parameters
+    ----------
+    data : `None` or `dict` of (`str`, `Any`) items
+        Partial channel data received from Discord.
+    partial_guild : `None` or ``Guild``, Optional
+        A partial guild for the created channel.
+    
+    Returns
+    -------
+    channel : `None` or ``ChannelBase`` instance
+        The created partial channel, or `None`, if no data was received.
+    """
     if (data is None) or (not data):
         return None
     channel_id=int(data['id'])
@@ -56,25 +74,60 @@ def PartialChannel(data,partial_guild=None):
         return CHANNELS[channel_id]
     except KeyError:
         pass
-
+    
     try:
         cls=CHANNEL_TYPES[data['type']]
     except IndexError:
         return None
-
+    
     channel=cls._from_partial_data(data,channel_id,partial_guild)
     CHANNELS[channel_id]=channel
     
     return channel
-    
+
 class ChannelBase(DiscordEntity, immortal=True):
-    INTERCHANGE=(0,)
+    """
+    Base class for Discord channels.
     
-    def __new__(cls,data,client=None,guild=None):
+    Attributes
+    ----------
+    id : `int`
+        Unique identificator of the channel.
+    
+    Class Attributes
+    ----------------
+    INTERCHANGE : `tuple` of `int` = `(0,)`
+        Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
+        them.
+    
+    Notes
+    -----
+    Channels support weakreferencig.
+    """
+    INTERCHANGE = (0,)
+    
+    def __new__(cls, data, client, guild=None):
+        """
+        Creates a channel from the channel data received from Discord. If the channel already exists and it is partial,
+        then updates it.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Channel data reeceive from Discord.
+        client : ``Client``
+            The client, who received the channel's data.
+        guild : ``Guild``, Optional
+            The guild of the channel, if it has.
+        
+        Returns
+        -------
+        channel : ``ChannelGuildBase`` instance
+        """
         channel_id=int(data['id'])
         try:
-            channel=CHANNELS[channel_id]
-            update= (not channel.clients)
+            channel = CHANNELS[channel_id]
+            update = (not channel.clients)
         except KeyError:
             channel=object.__new__(cls)
             channel.id=channel_id
@@ -99,12 +152,50 @@ class ChannelBase(DiscordEntity, immortal=True):
         return channel
 
     def __repr__(self):
+        """Returns the reprsentation of the channel."""
         return f'<{self.__class__.__name__} id={self.id}, name={self.__str__()!r}>'
     
     def __str__(self):
+        """Returns the channel's name."""
         return ''
     
-    def __format__(self,code):
+    def __format__(self, code):
+        """
+        Formats the channel in a format string.
+        
+        Parameters
+        ----------
+        code : `str`
+            The option on based the result will be formatted.
+        
+        Returns
+        -------
+        channel : `str`
+        
+        Raises
+        ------
+        ValueError
+            Unknown format code.
+        
+        Examples
+        --------
+        >>> from hata import ChannelText, now_as_id
+        >>> channel = ChannelText.precreate(now_as_id(), name='GENERAL')
+        >>> channel
+        <ChannelText id=710506058560307200, name='GENERAL'>
+        >>> # no code stands for str(channel).
+        >>> f'{channel}'
+        'GENERAL'
+        >>> # 'd' stands for display name.
+        >>> f'{channel:d}'
+        'general'
+        >>> # 'm' stands for mention.
+        >>> f'{channel:m}'
+        '<#710506058560307200>'
+        >>> # 'c' stands for created at.
+        >>> f'{channel:c}'
+        '2020.05.14-14:57:24'
+        """
         if not code:
             return self.__str__()
         if code=='m':
@@ -117,17 +208,58 @@ class ChannelBase(DiscordEntity, immortal=True):
     
     @property
     def display_name(self):
+        """
+        The channel's display name.
+        
+        Returns
+        -------
+        display_name : `str`
+        """
         return ''
     
     @property
     def mention(self):
+        """
+        The channel's mention.
+        
+        Returns
+        -------
+        mention : `str`
+        """
         return f'<#{self.id}>'
     
     @property
     def partial(self):
+        """
+        Whether this channel is partial.
+        
+        A channel is partial if non of the running clients can see it.
+        
+        Returns
+        -------
+        is_partial : `bool`
+        """
         return (not self.clients)
     
-    def get_user(self,name,default=None):
+    def get_user(self, name, default=None):
+        """
+        Tries to find the a user with the given name at the channel. Returns the first matched one.
+        
+        The search order is the following:
+        - `full_name`
+        - `name`
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        default : `Any`, Optional
+            The value what is returned when no user was found. Defaults to `None`.
+        
+        Returns
+        -------
+        user : ``User``, ``Client`` or `None`
+        """
         if len(name)>37:
             return default
         users=self.users
@@ -152,7 +284,21 @@ class ChannelBase(DiscordEntity, immortal=True):
         
         return default
     
-    def get_user_like(self,name,default=None):
+    def get_user_like(self, name, default=None):
+        """
+        Searches a user, who's name starts with the given name and returns the first find.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        default : `Any`, Optional
+            The value what is returned when no user was found. Defaults to `None`.
+        
+        Returns
+        -------
+        user : ``User``, ``Client`` or `default`
+        """
         if not 1<len(name)<33:
             return default
         pattern=re.compile(re.escape(name),re.I)
@@ -162,7 +308,19 @@ class ChannelBase(DiscordEntity, immortal=True):
             return user
         return default
     
-    def get_users_like(self,name):
+    def get_users_like(self, name):
+        """
+        Searches the users, who's name starts with the given string.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        
+        Returns
+        -------
+        users : `list` of (``User`` or ``Client``) objects
+        """
         result=[]
         if not 1<len(name)<33:
             return result
@@ -175,10 +333,24 @@ class ChannelBase(DiscordEntity, immortal=True):
     
     @property
     def users(self):
+        """
+        The users who are can see this channel.
+        
+        Returns
+        -------
+        users : `list` of (``Client`` or ``User``) objects
+        """
         return []
     
     @property
     def clients(self):
+        """
+        The clients, who can access this channel.
+        
+        Returns
+        -------
+        clients : `list` of ``Client`` objects
+        """
         result=[]
         for user in self.users:
             if type(user) is User:
@@ -188,31 +360,37 @@ class ChannelBase(DiscordEntity, immortal=True):
     
     #for sorting channels
     def __gt__(self,other):
+        """Returns whether this channel's id is greater than the other's."""
         if isinstance(other,ChannelBase):
             return self.id>other.id
         return NotImplemented
     
     def __ge__(self,other):
+        """Returns whether this channel's id is greater or equal than the other's."""
         if isinstance(other,ChannelBase):
             return self.id>=other.id
         return NotImplemented
     
     def __eq__(self,other):
+        """Returns whether this channel's id is equal to the other's."""
         if isinstance(other,ChannelBase):
             return self.id==other.id
         return NotImplemented
     
     def __ne__(self,other):
+        """Returns whether this channel's id is not equal to the other's."""
         if isinstance(other,ChannelBase):
             return self.id!=other.id
         return NotImplemented
     
     def __le__(self,other):
+        """Returns whether this channel's id is less or equal than the other's."""
         if isinstance(other,ChannelBase):
             return self.id<=other.id
         return NotImplemented
     
     def __lt__(self,other):
+        """Returns whether this channel's id is less than the other's."""
         if isinstance(other,ChannelBase):
             return self.id<other.id
         return NotImplemented
@@ -220,35 +398,68 @@ class ChannelBase(DiscordEntity, immortal=True):
 #sounds funny, but this is a class
 #the chunksize is 97, because it means 1 request for _load_messages_till
 class MessageIterator(object):
-    __slots__=('_index', '_permission', 'channel', 'chunksize', 'client',)
-    def __init__(self,client,channel,chunksize=97):
-        if chunksize>97:
-            chunksize=97
+    """
+    An asynchronous message iterator over the given text channel.
+    
+    Attributes
+    ----------
+    _index : `int`
+        The index of the message, what will be yielded.
+    _can_read_history : `bool`
+        Tells the message iterator, whether it's client can not read the history if it's channel.
+    channel : ``ChannelTextBase`` instance
+        The channel, what's messages the message iterator will iterates over.
+    chunksize : `int`
+        The amount of messages, what the message iterator will extend it's channel's message history, each time, the
+        loaded messages are exhausted.
+    client : ``Client``
+        The client, who will do the api requests for requesting more messages.
+    """
+    __slots__ = ('_can_read_history', '_index', 'channel', 'chunksize', 'client',)
+    def __init__(self, client, channel, chunksize=99):
+        """
+        Creates a message iterator.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The client, who will do the api requests for requesting more messages.
+        channel : ``ChannelTextBase`` instance
+            The channel, what's messages the message iterator will iterates over.
+        chunksize : `int`, Optional
+            The amount of messages, what the message iterator will extend it's channel's message history, each time, the
+            loaded messages are exhausted. Limited to `97` as a maximal value.
+        """
+        if chunksize>99:
+            chunksize=99
         
         self.client     = client
         self.channel    = channel
         self.chunksize  = chunksize
         self._index     = 0
-        self._permission= not channel.cached_permissions_for(client).can_read_message_history
-        
+        self._can_read_history = not channel.cached_permissions_for(client).can_read_message_history
+    
     def __aiter__(self):
+        """Returns self and resets the `.index`."""
+        self._index = 0
         return self
     
     async def __anext__(self):
+        """Yields the next message of the iterator's channel."""
         channel=self.channel
         index=self._index
         if len(channel.messages)>index:
             self._index=index+1
             return channel.messages[index]
-
-        if channel.message_history_reached_end or self._permission:
+        
+        if channel.message_history_reached_end or self._can_read_history:
             raise StopAsyncIteration
         
         try:
-            await self.client._load_messages_till(channel,index+self.chunksize)
+            await self.client._load_messages_till(channel, index+self.chunksize)
         except IndexError:
             pass
-
+        
         if len(channel.messages)>index:
             self._index=index+1
             return channel.messages[index]
@@ -256,16 +467,33 @@ class MessageIterator(object):
         raise StopAsyncIteration
     
     def __repr__(self):
+        """Returns the representation of the message iterator."""
         return f'<{self.__class__.__name__} of client {self.client.full_name}, at channel {self.channel.name!r} ({self.channel.id})>'
 
 #searches the relative index of a message in a list
-def message_relativeindex(self,message_id):
+def message_relativeindex(messages, message_id):
+    """
+    Searches the relative index of the given message's id in a channel's message history. The returned index is
+    relative, because if the message with the given is not found, it should be at that specific index, if it would be
+    inside of the respeive channel's message history.
+    
+    Parameters
+    ----------
+    messages : `deque` of ``Message``
+        The message history of a channel.
+    message_id : `int`
+        A messages's id to search.
+    
+    Returns
+    -------
+    index : `int`
+    """
     bot=0
-    top=len(self)
+    top=len(messages)
     while True:
         if bot<top:
             half=(bot+top)>>1
-            if self[half].id>message_id:
+            if messages[half].id>message_id:
                 bot=half+1
             else:
                 top=half
@@ -273,245 +501,522 @@ def message_relativeindex(self,message_id):
         break
     return bot
 
+# Do not call any functions from this if you dunno anything about them!
+# The message history is basically sorted by message_id, what can be translated to real time.
+# The newer messages are at the start, meanwhile the olders at the end.
+# Do not try to delete not existing message's id, or it will cause desync.
+# Use pypy?
 class ChannelTextBase:
-#do not call any functions from this if u dunno anything about them!
-#the message history is basically sorted by message_id, what can be translated to real time
-#the newer messages are at the start meanwhile the olders at the end
-#do not try to delete not existing message's id, or it will cause desync
-#this class is propably slow as fork at cpython, use pypy?
-    MC_GC_LIMIT=10
-    __slots = ('_mc_gc_limit', '_turn_gc_on_at', 'message_history_reached_end', 'messages', )
-    def _mc_init(channel):
+    """
+    Baseclass of the messageable channel types.
+    
+    Atrributes
+    ----------
+    _message_keep_limit : `int`
+        The channel's own limit of how much messages it should keep before removing their reference.
+    _turn_message_keep_limit_on_at : `float`
+        The monotonic time, when the channel's message history should be turned back to limited. Defaults `0.0`.
+    message_history_reached_end : `bool`
+        Whether the channel's message's are loaded till their end. If the channel's messag history reache it's end
+        no requests will be requested to get older messages.
+    messages : `deque` of ``Message`` objects
+        The channel's message history.
+    
+    Class attributes
+    ----------------
+    MESSAGE_KEEP_LIMIT : `int` = 10
+        The default amount of messages to store at `.messages`.
+    """
+    MESSAGE_KEEP_LIMIT = 10
+    __slots__ = ()
+    __slots = ('_message_keep_limit', '_turn_message_keep_limit_on_at', 'message_history_reached_end', 'messages', )
+    
+    def _messageable_init(channel):
+        """
+        Sets the default values specific to text channels.
+        """
         #discord side bug: we cant check last message
         channel.message_history_reached_end=False
-        channel._turn_gc_on_at=0
-        limit=channel.MC_GC_LIMIT
-        channel._mc_gc_limit=limit
+        channel._turn_message_keep_limit_on_at=0
+        limit=channel.MESSAGE_KEEP_LIMIT
+        channel._message_keep_limit=limit
         channel.messages=deque(maxlen=limit)
     
-    def _get_mc_gc_limit(channel):
-        return channel._mc_gc_limit
+    def _get_message_keep_limit(channel):
+        """
+        Returns the channel's own limit of how much messages it should keep before removing their reference.
+        
+        Returns
+        -------
+        limit : `int`
+        """
+        return channel._message_keep_limit
     
-    def _set_mc_gc_limit(channel,limit):
-        if channel._mc_gc_limit==limit:
+    def _set_message_keep_limit(channel, limit):
+        """
+        Sets the channel's own limit of ho much messages it should keep before removing them.
+        
+        Parameters
+        ----------
+        limit : `int`
+            `.messages` new maximal length. Negative numbers are interpretered as `0`.
+        """
+        if channel._message_keep_limit==limit:
             return
         if limit<=0:
-            channel._mc_gc_limit=0
+            channel._message_keep_limit=0
             channel.messages=deque(maxlen=0)
             return
         
         old=channel.messages
         if len(old)>limit:
             channel.messages=deque((old[i] for i in range(limit)),maxlen=limit)
-        channel._mc_gc_limit=limit
-
-    mc_gc_limit=property(_get_mc_gc_limit,_set_mc_gc_limit)
-    del _get_mc_gc_limit, _set_mc_gc_limit
-
-    def _mc_find(channel,message_id):
-        if channel._mc_gc_limit!=0:
-            self=channel.messages
-            index=message_relativeindex(self,message_id)
-            if index!=len(self):
-                message=self[index]
+        channel._message_keep_limit=limit
+    
+    message_keep_limit=property(_get_message_keep_limit,_set_message_keep_limit)
+    del _get_message_keep_limit, _set_message_keep_limit
+    
+    def _create_new_message(self, data):
+        """
+        Creates a new message at the channel. If the message already exists inside of the channel's message history,
+        returns that instead.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Message data received from Discord.
+        
+        Returns
+        -------
+        message : ``Message``
+        """
+        message_id = int(data['id'])
+        
+        messages = self.messages
+        if messages:
+            message = messages[0]
+            last_message_id = message.id
+            if last_message_id < message_id:
+                pass
+            elif last_message_id == message_id:
+                return message
+            else:
+                return self._create_asynced_message(data, message_id, False)
+        
+        message = object.__new__(Message)
+        message.id = message_id
+        message._finish_init(data, self)
+        
+        if (self.messages.maxlen is not None) and len(messages)==self._message_keep_limit:
+            self.message_history_reached_end = False
+        
+        messages.appendleft(message)
+        return message
+    
+    def _create_old_message(self, data):
+        """
+        Creates an old message at the channel. If the message already exists inside of the channel's message history,
+        returns that instead.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Message data received from Discord.
+        
+        Returns
+        -------
+        message : ``Message``
+        
+        Notes
+        -----
+        The created message cannot be added to the channel's message history, if it has no more spaces.
+        """
+        message_id = int(data['id'])
+        
+        messages = self.messages
+        if messages:
+            if message_id > messages[-1].id:
+                return self._create_asynced_message(data, message_id, True)
+        
+        try:
+            message = MESSAGES[message_id]
+        except KeyError:
+            message = object.__new__(Message)
+            message.id = message_id
+            message._finish_init(data, self)
+        
+        self._increased_queue_size().append(message)
+        return message
+    
+    def _create_asynced_message(self, data, message_id, increase_queue_size):
+        """
+        This method gets called if ``._create_new_message`` sees that the message is older than it's first one,
+        or if ``._create_old_message`` sees that the message is newer than it's last. As the method's name says,
+        it tries to find the message by it's  `id` and insert to the right place if not exists. If it exists
+        returns the found one.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Message data received from Discord.
+        message_id : `int`
+            The id of the message.
+        increase_queue_size : `bool`
+            Whether the message's queue size should be increased if older messages are loaded.
+        
+        Returns
+        -------
+        message : ``Message``
+        """
+        messages = self.messages
+        index = message_relativeindex(messages, message_id)
+        if index != len(messages):
+            actual = messages[index]
+            if actual.id==message_id:
+                return actual
+        
+        if increase_queue_size:
+            messages = self._increased_queue_size()
+        else:
+            if (messages.maxlen is not None) and (messages.maxlen == len(messages)):
+                messages.pop()
+        
+        message = object.__new__(Message)
+        message.id = message_id
+        message._finish_init(data, self)
+        
+        messages.insert(index, message)
+        return message
+    
+    def _create_find_message(self, data, chained):
+        """
+        Tries to find whether the given message's data represents an existing message at the channel. If not, creates
+        it. This method also returns whether the message existed at the channel's message history.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            The message's data to find or create.
+        chained : `bool`
+            Whether the created message should be chained to the channel's message history's end, if not found.
+        
+        Returns
+        -------
+        message : ``Message``
+        found : `bool`
+        """
+        message_id = int(data['id'])
+        
+        if self._message_keep_limit!=0:
+            messages = self.messages
+            index = message_relativeindex(messages, message_id)
+            if index!=len(messages):
+                message = messages[index]
                 if message.id==message_id:
                     return message, True
         
-        message=MESSAGES.get(message_id)
-        return message,False
-    
-    #we always return the message, at the case of dupe, we return the original
-    def _mc_insert_new_message(channel,message):
-        self=channel.messages
-        if not self:
-            self.append(message)
-            return message
-    
-        last_message_id=self[0].id
-        if message.id>last_message_id:
-            self.appendleft(message)
-            return message
+        try:
+            message = MESSAGES[message_id]
+        except KeyError:
+            message = object.__new__(Message)
+            message.id=message_id
+            message._finish_init(data, self)
         
-        if message.id==last_message_id:
-            return self[0]
+        if chained:
+            self._increased_queue_size().append(message)
         
-        return channel._mc_insert_asynced_message(message)
+        return message, False
     
-    def _mc_insert_old_message(channel,message):
-        self=channel.messages
-        if self:
-            if message.id<self[-1]:
-                self.append(message)
-            else:
-                message=channel._mc_insert_asynced_message(message)
+    def _create_unknown_message(self, data):
+        """
+        Creates a message at the channel, what should not be linked to it's history. If the mesage exists at
+        `MESSAGES`, returns that instead.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            The message's data.
+        
+        Returns
+        -------
+        message : ``Message``
+        """
+        message_id = int(data['id'])
+        try:
+            message = MESSAGES[message_id]
+        except KeyError:
+            message = object.__new__(Message)
+            message.id = message_id
+            message._finish_init(data, self)
+        
+        return message
+    
+    def _increased_queue_size(self):
+        """
+        Increases the queue size of the channel's message history if needed and returns it.
+        
+        Returns
+        -------
+        messages : `deque`
+        """
+        messages = self.messages
+        if (messages.maxlen is None):
+            self._turn_message_keep_limit_on_at += 10.0
         else:
-            self.append(message)
-        return message
-    
-    def _mc_insert_asynced_message(channel,message):
-        self=channel.messages
-        index=message_relativeindex(self,message.id)
-        if index!=len(self):
-            actual=self[index]
-            if actual.id==message.id:
-                return actual
-        if self.maxlen is not None and self.maxlen==len(self):
-            self.pop()
-        self.insert(index,message)
-        return message
-
-    def _mc_pop(channel,message_id):
-        if channel._mc_gc_limit==0:
-            return MESSAGES.pop(message_id,None)
-        self=channel.messages
-        index=message_relativeindex(self,message_id)
-        if index==len(self):
-            return MESSAGES.pop(message_id,None)
-        message=self[index]
-        if message.id!=message_id:
-            return MESSAGES.pop(message_id,None)
+            if len(messages) == self._message_keep_limit:
+                self.messages = messages = deque(messages)
+                self._turn_message_keep_limit_on_at = monotonic() + 110.0
         
-        del self[index]
-        if channel._turn_gc_on_at:
-            if len(channel.messages)<channel._mc_gc_limit:
-                Q_on_GC.remove(channel)
-                channel._turn_gc_on_at=0.
-                switch_to_limited(channel)
+        return messages
+    
+    def _switch_to_limited(channel):
+        """
+        Switches a channel's `.messages` to limited from unlimited.
+        
+        Parameters
+        ----------
+        channel : ``ChannelTextBase`` instance.
+            The channel, what's `.messages` will be limited.
+        """
+        old=channel.messages
+        limit=channel._message_keep_limit
+        if len(old)>limit:
+            messages=deque((old[i] for i in range(limit)),maxlen=limit)
+        else:
+            messages=deque(old,maxlen=limit)
+        
+        channel.messages = messages
+        channel._turn_message_keep_limit_on_at=0.
+        channel.message_history_reached_end=False
+    
+    def _pop_message(self, delete_id):
+        """
+        Removes the specific message by it's id from the channel's message history and from `MESSAGES` as well.
+        
+        Parameters
+        ----------
+        delete_id : `int`
+            The message's id to delete from the channel's message history.
+        
+        Returns
+        -------
+        message : `None` or ``Message``
+        """
+        if self._message_keep_limit:
+            messages = self.messages
+            index = message_relativeindex(messages, delete_id)
+            if index != len(messages):
+                message = messages[index]
+                if message.id == delete_id:
+                    del messages[index]
+                    if self._turn_message_keep_limit_on_at:
+                        if len(messages) < self._message_keep_limit:
+                            try:
+                                TURN_MESSAGE_LIMITING_ON.remove(self)
+                            except KeyError:
+                                pass
+                            self._turn_message_keep_limit_on_at=0.
+                            self._switch_to_limited()
                     
-        return message
-
-    def _mc_pop_multiple(channel,message_ids):
-        self=channel.messages
-        message_ids.sort(reverse=True)
-        ln=len(self)
-        result=[]
-        if not ln:
-            return result
-
-        message_index=message_relativeindex(self,message_ids[0])
-        if message_index==ln:
-            return result
-
-        delete_index=0
-        delete_ln=len(message_ids)
+                    try:
+                        del MESSAGES[delete_id]
+                    except KeyError:
+                        pass
+                    
+                    return message
+        
+        return MESSAGES.pop(delete_id, None)
+    
+    def _pop_multiple(self, delete_ids):
+        """
+        Removes the given messages from the channel and from `MESSAGES` as well. Returns the found messages.
+        
+        Parameters
+        ----------
+        delete_ids : `list` of `int`
+            The messages' id to delete from the channel's message history.
+        
+        Returns
+        -------
+        messages : `list` of ``Message``
+        """
+        found = []
+        delete_ln = len(delete_ids)
+        if not delete_ln:
+            return found
+        
+        messages = self.messages
+        delete_ids.sort(reverse=True)
+        messages_ln = len(messages)
+        
+        messages_index = message_relativeindex(messages, delete_ids[0])
+        delete_index = 0
         
         while True:
-            message=self[message_index]
-            delete_id=message_ids[delete_index]
-            if message.id==delete_id:
-                del self[message_index]
-                result.append(message)
-                ln=ln-1
-                delete_index=delete_index+1
+            if delete_index == delete_ln:
+                break
+            
+            if messages_index == messages_ln:
+                while True:
+                    delete_id = delete_ids[delete_index]
+                    try:
+                        message = MESSAGES.pop(delete_id)
+                    except KeyError:
+                        pass
+                    else:
+                        found.append(message)
+                        
+                    delete_index +=1
+                    if delete_index == delete_ln:
+                        break
+                    
+                    continue
+                break
+            
+            message = messages[messages_index]
+            delete_id = delete_ids[delete_index]
+            message_id = message.id
+            
+            if message_id == delete_id:
+                del messages[messages_index]
+                try:
+                    del MESSAGES[delete_id]
+                except KeyError:
+                    pass
+                found.append(message)
                 
-                if delete_index==delete_ln:
-                    break
-                
-                if message_index==ln:
-                    while True:
-                        delete_id=message_ids[delete_index]
-                        try:
-                            message=MESSAGES[delete_id]
-                        except KeyError:
-                            pass
-                        else:
-                            result.append(message)
-                        delete_index=delete_index+1
-                        if delete_index==delete_ln:
-                            break
-                    break
-
+                messages_ln -= 1
+                delete_index += 1
                 continue
-
-            if message.id>delete_id:
-                message_index=message_index+1
-                if message_index==ln:
-                    break
+            
+            if message_id>delete_id:
+                messages_index += 1
                 continue
-
-            delete_index=delete_index+1
+            
+            delete_index += 1
             
             try:
-                message=MESSAGES[delete_id]
+                message = MESSAGES.pop(delete_id)
             except KeyError:
                 pass
             else:
-                result.append(message)
-            if delete_index==delete_ln:
-                break
-
-        if channel._turn_gc_on_at:
-            if len(channel.messages)<channel._mc_gc_limit:
-                Q_on_GC.remove(channel)
-                channel._turn_gc_on_at=0.
-                switch_to_limited(channel)
-                
-        return result
-    
-    def _mc_process_chunk(channel,data):
-        self=channel.messages
-        result=[]
-        index=0
-        limit=len(data)
-                
-        if limit<2:
-            if limit==1:
-                result.append(Message.fromchannel(data[0],channel))
-            return result
-
+                found.append(message)
+            
+            continue
         
-        message,exists=Message.exists(data[index],channel)
-        result.append(message)
+        if self._turn_message_keep_limit_on_at:
+            if len(messages) < self._message_keep_limit:
+                try:
+                    TURN_MESSAGE_LIMITING_ON.remove(self)
+                except KeyError:
+                    pass
+                self._turn_message_keep_limit_on_at=0.0
+                self._switch_to_limited()
+        
+        return found
+    
+    def _process_message_chunk(self, data):
+        """
+        Called with the response data after requesting older messages of a channel. It checks whether we can chain
+        the messages to the channel's history. If we can it chains them and removes the length limitation too if
+        needed.
+        
+        Parameters
+        ----------
+        data : `list` of (`dict` of (`str`, `Any`) items) elements
+            A list of message's data received from Discord.
+        
+        Returns
+        -------
+        received : `list` of ``Message`` objects
+        """
+        received = []
+        index = 0
+        limit = len(data)
+        
+        if index == limit:
+            return received
+        
+        message_data = data[index]
+        index +=1
+        message, exists = self._create_find_message(message_data, False)
+        received.append(message)
         
         if exists:
             while True:
                 if index==limit:
                     break
-                message,exists=Message.exists(data[index],channel)
-                result.append(message)
-                index+=1
+                
+                message_data = data[index]
+                index +=1
+                message, exists = self._create_find_message(message_data, True)
+                received.append(message)
+                
                 if exists:
                     continue
                 
-                self.append(message)
-                
                 while True:
-                    if index==limit:
+                    if index == limit:
                         break
-                    message=Message.onetime(data[index],channel)
-                    self.append(message)
-                    result.append(message)
-                    index+=1
+                    
+                    message_data = data[index]
+                    index +=1
+                    message = self._create_old_message(message_data)
+                    received.append(message)
+                    continue
+                
                 break
         else:
             while True:
                 if index==limit:
                     break
-                message=Message.onetime(data[index],channel)
-                result.append(message)
-                index+=1
-        return result
-    
-    def _mc_generator(channel,after,before,limit):
-        self=channel.messages
-        if not self:
-            return
-        after=message_relativeindex(self,after)
-        before=message_relativeindex(self,before)
-        while True:
-            if before==after or limit==0:
-                return
-            value=self[before]
-            yield value
-            before=before+1
-            limit=limit-1
+                
+                message_data = data[index]
+                index +=1
+                message = self._create_unknown_message(message_data)
+                received.append(message)
+                continue
+        
+        return received
 
 class ChannelGuildBase(ChannelBase):
+    """
+    Base class for guild channels.
+    
+    Attributes
+    ----------
+    id : `int`
+        Unique identificator of the channel.
+    _cache_perm : `dict` of (`int`, ``Permission``) items
+        A `user_id` to ``Permission`` relation mapping for caching permissions.
+    category : `None`, ``ChannelCategory`` or ``Guild``
+        The channel's category. If the channel is deleted, set to `None`.
+    guild : `None` or ``Guild``
+        The channel's guild. If the channel is deleted, set to `None`.
+    name : `str`
+        The channel's name.
+    overwrites : `list` of ``PermOW`` objects
+        The channel's permission overwrites.
+    position : `int`
+        The channel's position
+    
+    Class Attributes
+    ----------------
+    INTERCHANGE : `tuple` of `int` = `(0,)`
+        Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
+        them.
+    ORDER_GROUP : ˛int` = `0`
+        An order group what defined which guild channel type comes after the other one.
+    """
     __slots__ = ('_cache_perm', 'category', 'guild', 'name', 'overwrites', 'position', )
     
-    ORDER_GROUP=0
+    ORDER_GROUP = 0
     
-    def __gt__(self,other):
+    def __gt__(self, other):
+        """
+        Whether this channel has higher (visible) position than an other one in a guild.
+        If the other channel is not guild channel, then just compares their id.
+        """
         if isinstance(other, ChannelGuildBase):
             if self.ORDER_GROUP > other.ORDER_GROUP:
                 return True
@@ -532,6 +1037,10 @@ class ChannelGuildBase(ChannelBase):
         return NotImplemented
     
     def __ge__(self, other):
+        """
+        Whether this channel is same as the other one, or has higher (visible) position than an other one in a guild.
+        If the other channel is not guild channel, then just compares their id.
+        """
         if isinstance(other, ChannelGuildBase):
             if self.ORDER_GROUP > other.ORDER_GROUP:
                 return True
@@ -547,11 +1056,15 @@ class ChannelGuildBase(ChannelBase):
             return False
         
         if isinstance(other, ChannelBase):
-            return self.id >= other.id
+            return self.id > other.id
         
         return NotImplemented
     
-    def __le__(self,other):
+    def __le__(self, other):
+        """
+        Whether this channel is same as the other one, or has lower (visible) position than an other one in a guild.
+        If the other channel is not guild channel, then just compares their id.
+        """
         if isinstance(other, ChannelGuildBase):
             if self.ORDER_GROUP < other.ORDER_GROUP:
                 return True
@@ -567,11 +1080,15 @@ class ChannelGuildBase(ChannelBase):
             return False
         
         if isinstance(other, ChannelBase):
-            return self.id <= other.id
+            return self.id < other.id
         
         return NotImplemented
     
-    def __lt__(self,other):
+    def __lt__(self, other):
+        """
+        Whether this channel has lower (visible) position than an other one in a guild.
+        If the other channel is not guild channel, then just compares their id.
+        """
         if isinstance(other, ChannelGuildBase):
             if self.ORDER_GROUP < other.ORDER_GROUP:
                 return True
@@ -592,82 +1109,133 @@ class ChannelGuildBase(ChannelBase):
         return NotImplemented
 
     def _init_catpos(self,data,guild):
-        self.guild=guild
-        self.guild.all_channel[self.id]=self
+        """
+        Inicializes the `.category` and the `.position` of the channel. If a channel is under the ``Guild.md``,
+        and not in a category (category channels are all like these), then their `.category` is the ``Guild`` itself.
+        This method is used when we inicialize a guild channel.
         
-        parent_id=data.get('parent_id',None)
-
-        if parent_id is None:
-            self.category=guild
-        else:
-            self.category=guild.all_channel[int(parent_id)]
-
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Channel data received from Discord
+        guild : ``Guild``
+            The guild of the channel.
+        """
+        self.guild = guild
+        guild.all_channel[self.id] = self
         self.position=data.get('position',0)
-        self.category.channels.append(self)
-    
-    def _set_catpos(self,data):
-        position=data.get('position',0)
-        parent_id=data.get('parent_id',None)
-            
+        
+        parent_id = data.get('parent_id')
+        
         if parent_id is None:
-            if self.category is self.guild:
-                self.category.channels.switch(self,position)
-            else:
-                self.category.channels.remove(self)
-                self.category=self.guild
-                self.position=position
-                self.category.channels.append(self)
+            category = guild
         else:
-            parent_id=int(parent_id)
-            if self.category.id==parent_id:
-                self.category.channels.switch(self,position)
-            else:
-                self.category.channels.remove(self)
-                self.category=self.guild.all_channel[parent_id]
-                self.position=position
-                self.category.channels.append(self)
-                
-    def _update_catpos(self,data,old):
+            category = guild.all_channel[int(parent_id)]
+        self.category = category
+        category.channels.append(self)
+    
+    def _set_catpos(self, data):
+        """
+        Similar to the ``._init_catpos`` method, but this method applies the changes too, so moves the channel
+        between categories and moves the channel inside of the catgeory too, to keep the order.
+        
+        Called from `._update_no_return` when updating a guild channel.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Channel data received from Discord
+        """
         position=data.get('position',0)
         parent_id=data.get('parent_id',None)
         
+        guild = self.guild
         if parent_id is None:
-            category=self.guild
+            parent = guild
         else:
-            parent_id=int(parent_id)
-            category=self.guild.all_channel[parent_id]
-
-        if self.category is not category:
-            old['category']=self.category
-            old['position']=self.position
+            parent = guild.all_channel[int(parent_id)]
+        
+        category = self.category
+        if category is parent:
+            category.channels.switch(self,position)
+        else:
+            category.channels.remove(self)
             
-            self.category.channels.remove(self)
-            self.category=category
             self.position=position
-            self.category.channels.append(self)
-
-        elif self.position!=position:
+            self.category = category
+            category.channels.append(self)
+    
+    def _update_catpos(self,data,old):
+        """
+        Acts same as ``._set_catpos``, but it sets the modified attrbiutes' previous value to `old`.
+        
+        Called from `._update` when updating a guild channel.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Channel data received from Discord
+        old : `dict` of (`str`, `Any`) items
+            `attribute-name` - `old-value` relations containing the changes of caused by the update.
+        """
+        position=data.get('position',0)
+        parent_id=data.get('parent_id',None)
+        
+        guild =self.guild
+        if parent_id is None:
+            parent = guild
+        else:
+            parent = guild.all_channel[int(parent_id)]
+        
+        category = self.category
+        if category is parent:
+            if self.position!=position:
+                old['category']=self.category
+                category.channels.switch(self,position)
+        else:
+            old['category']=category
             old['position']=self.position
-            self.category.channels.switch(self,position)
+            category.channels.remove(self)
             
-    def _permissions_for(self,user):
-        guild=self.guild
+            self.position = position
+            self.category = category
+            category.channels.append(self)
+    
+    def _permissions_for(self, user):
+        """
+        Base permission calculator method. Subclasses call this first, then apply their channel type related changes.
+        
+        Parameters
+        ----------
+        user : ``UserBase`` instance
+            The user, who's permissions will be returned.
+        
+        Returns
+        -------
+        permission : ``Permission``
+        """
+        guild = self.guild
+        if guild is None:
+            return Permission.permission_none
+        
         default_role=guild.roles[0]
         base=default_role.permissions
         
         try:
-            roles=user.guild_profiles[guild].roles
+            roles = user.guild_profiles[guild].roles
         except KeyError:
-            if type(user) is Webhook and user.channel is self:
-                if self.overwrites:
-                    overwrite=self.overwrites[0]
-
+            if type(user) in (Webhook, WebhookRepr) and user.channel is self:
+                
+                overwrites = self.overwrites
+                if overwrites:
+                    overwrite = overwrites[0]
+                    
                     if overwrite.target is default_role:
                         base=(base&~overwrite.deny)|overwrite.allow
                 
-                return base
+                return Permission(base)
             
-            return Permission.none
+            return Permission.permission_none
         
         else:
             roles.sort()
@@ -675,32 +1243,59 @@ class ChannelGuildBase(ChannelBase):
                 base|=role.permissions
         
         if Permission.can_administrator(base):
-            return Permission.all
+            return Permission.permission_all
         
-        overwrites=self.overwrites
+        overwrites = self.overwrites
         if overwrites:
-            overwrite=overwrites[0]
-
+            overwrite = overwrites[0]
+            
             if overwrite.target is default_role:
                 base=(base&~overwrite.deny)|overwrite.allow
             
             for overwrite in overwrites:
                 if overwrite.target in roles or overwrite.target is user:
                     base=(base&~overwrite.deny)|overwrite.allow
-
-        return base
-
-    def permissions_for(self,user):
+        
+        return Permission(base)
+    
+    def permissions_for(self, user):
+        """
+        Returns the permissions for the given user at the channel.
+        
+        Parameters
+        ----------
+        user : ``UserBase`` instance
+        
+        Returns
+        -------
+        permission : ``Permission``
+        
+        See Also
+        --------
+        .cached_permissions_for : Cached permission calculator.
+        """
         if user==self.guild.owner:
             return Permission.permission_all
-
+        
         result=self._permissions_for(user)
-        if not Permission.can_view_channel(result):
+        if not result.can_view_channel:
             return Permission.permission_none
-
-        return Permission(result)
-
-    def _parse_overwrites(self,data):
+        
+        return result
+    
+    def _parse_overwrites(self, data):
+        """
+        Parses the permission overwrites from the given data and returns them.
+        
+        Parameters
+        ----------
+        data : `list` of (`dict` of (`str`, `Any`) items) elements
+            A list of permission overwrites' data.
+        
+        Returns
+        -------
+        overwrites : `list` of ``PermOW``
+        """
         overwrites=[]
         try:
             overwrites_data=data['permission_overwrites']
@@ -721,16 +1316,51 @@ class ChannelGuildBase(ChannelBase):
         return overwrites
     
     def __str__(self):
+        """Returns the channel's name."""
         return self.name
-
+    
     @property
     def users(self):
-        return [user for user in self.guild.users.values() if self.permissions_for(user).can_view_channel]
-
-    def get_user(self,name,default=None):
+        """
+        Returns the users, who can see this channel.
+        
+        Returns
+        -------
+        users : `list` of (``User`` or ``Client``) objects
+        """
+        guild = self.guild
+        if guild is None:
+            return []
+        return [user for user in guild.users.values() if self.permissions_for(user).can_view_channel]
+    
+    def get_user(self, name, default=None):
+        """
+        Tries to find the a user with the given name at the channel. Users, who cannot see the channel are ignored.
+        Returns the first matched one.
+        
+        The search order is the following:
+        - `full_name`
+        - `name`
+        - `nick`
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        default : `Any`, Optional
+            The value what is returned when no user was found. Defaults to `None`.
+        
+        Returns
+        -------
+        user : ``User``, ``Client`` or `default`
+        """
+        if self.guild is None:
+            return default
+        
         if len(name)>37:
             return default
-        users=self.users
+        
+        users = self.users
         
         if len(name)>6 and name[-5]=='#':
             try:
@@ -749,20 +1379,43 @@ class ChannelGuildBase(ChannelBase):
         for user in users:
             if user.name==name:
                 return user
-            
-        guild=self.guild
         
+        guild = self.guild
         for user in users:
-            if user.guild_profiles[guild].nick==name:
+            nick = user.guild_profiles[guild]
+            if nick is None:
+                continue
+            
+            if nick==name:
                 return user
         
         return default
 
-    def get_user_like(self,name,default=None):
+    def get_user_like(self, name ,default=None):
+        """
+        Searches a user, who's name starts with the given name and returns the first find. Users, who cannot see the
+        channel are ignored.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        default : `Any`, Optional
+            The value what is returned when no user was found. Defaults to `None`.
+        
+        Returns
+        -------
+        user : ``User``, ``Client`` or `default`
+        """
+        guild=self.guild
+        if guild is None:
+            return default
+        
         if not 1<len(name)<33:
             return default
+        
         pattern=re.compile(re.escape(name),re.I)
-        guild=self.guild
+        
         for user in guild.users.values():
             if not self.permissions_for(user).can_view_channel:
                 continue
@@ -777,12 +1430,29 @@ class ChannelGuildBase(ChannelBase):
         
         return default
     
-    def get_users_like(self,name):
-        result=[]
+    def get_users_like(self, name):
+        """
+        Searches the users, who's name starts with the given string. Users, who cannot see the channel are ignored.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        
+        Returns
+        -------
+        users : `list` of (``User`` or ``Client``) objects
+        """
+        result = []
+        guild=self.guild
+        if guild is None:
+            return result
+        
         if not 1<len(name)<33:
             return result
+        
         pattern=re.compile(re.escape(name),re.I)
-        guild=self.guild
+        
         for user in guild.users.values():
             if not self.permissions_for(user).can_view_channel:
                 continue
@@ -797,22 +1467,44 @@ class ChannelGuildBase(ChannelBase):
             result.append(user)
 
         return result
-
+    
     @property
     def clients(self):
+        """
+        The clients, who can access this channel.
+        
+        Returns
+        -------
+        clients : `list` of ``Client`` objects
+        """
         guild=self.guild
         if guild is None:
             return []
         return guild.clients
-
-    def cached_permissions_for(self,user):
+    
+    def cached_permissions_for(self, user):
+        """
+        Returns the permissions for the given user at the channel. If the user's permissions are not cached, calculates
+        and stores them first.
+        
+        Parameters
+        ----------
+        user : ``UserBase`` instance
+        
+        Returns
+        -------
+        permission : ``Permission``
+        
+        Notes
+        -----
+        Mainly designed for getting clients' permissions.
+        """
         try:
             return self._cache_perm[user.id]
         except KeyError:
             permissions=self.permissions_for(user)
             self._cache_perm[user.id]=permissions
             return permissions
-
 
 class ChannelText(ChannelGuildBase, ChannelTextBase):
     __slots__ = ('nsfw', 'slowmode', 'topic', 'type',) #guild text channel related
@@ -828,7 +1520,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         self._init_catpos(data,parent)
         self.overwrites=self._parse_overwrites(data)
 
-        self._mc_init()
+        self._messageable_init()
 
         self.topic=data.get('topic','')
         self.nsfw=data.get('nsfw',False)
@@ -837,7 +1529,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
     @classmethod
     def _from_partial_data(cls,data,channel_id,partial_guild):
         self=object.__new__(cls)
-        self._mc_init()
+        self._messageable_init()
         
         self._cache_perm= {}
         self.category   = None
@@ -938,21 +1630,21 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         
     def permissions_for(self,user):
         if user==self.guild.owner:
-            return Permission.permission_all_deny_voice
+            return Permission.permission_deny_voice
         
         result=self._permissions_for(user)
-        if not Permission.can_view_channel(result):
+        if not result.can_view_channel:
             return Permission.permission_none
         
         #text channels dont have voice permissions
-        result&=Permission.deny_voice
+        result&=Permission.permission_deny_voice
         
         if self.type and (not Permission.can_manage_messages(result)):
-            result=result&Permission.deny_text
+            result=result&Permission.permission_deny_text
             return Permission(result)
         
         if not Permission.can_send_messages(result):
-            result=result&Permission.deny_text
+            result=result&Permission.permission_deny_text
         
         return Permission(result)
 
@@ -1026,7 +1718,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
             channel.slowmode    = 0
             channel.topic       = ''
 
-            channel._mc_init()
+            channel._messageable_init()
             
             CHANNELS[channel_id]=channel
             
@@ -1051,12 +1743,12 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         self.users=[User(data['recipients'][0]),client]
         self.users.sort()
         
-        self._mc_init()
+        self._messageable_init()
 
     @classmethod
     def _from_partial_data(cls,data,channel_id,partial_guild):
         self=object.__new__(cls)
-        self._mc_init()
+        self._messageable_init()
         self.id         = channel_id
         #what data does this contain?
         self.users      = []
@@ -1131,7 +1823,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
             
             channel.users       = []
 
-            channel._mc_init()
+            channel._messageable_init()
             
             CHANNELS[channel_id]=channel
         
@@ -1190,13 +1882,13 @@ class ChannelVoice(ChannelGuildBase):
         self.category.channels.remove(self)
         self.category=None
         #safe delete
-
+        
         if self is guild.afk_channel:
             guild.afk_channel=None
-            
+        
         self.overwrites.clear()
         self._cache_perm.clear()
-        
+    
     def _update_no_return(self,data):
         self._cache_perm.clear()
         self._set_catpos(data)
@@ -1205,51 +1897,51 @@ class ChannelVoice(ChannelGuildBase):
         self.name=data['name']
         self.bitrate=data['bitrate']
         self.user_limit=data['user_limit']
-
+    
     def _update(self,data):
         self._cache_perm.clear()
         old={}
-
+        
         name=data['name']
         if self.name!=name:
             old['name']=self.name
             self.name=name
-                
+        
         bitrate=data['bitrate']
         if self.bitrate!=bitrate:
             old['bitarate']=self.bitrate
             self.bitrate=bitrate
-
+        
         user_limit=data['user_limit']
         if self.user_limit!=user_limit:
             old['user_limit']=self.user_limit
             self.user_limit=user_limit
-
+        
         overwrites=self._parse_overwrites(data)
         if self.overwrites!=overwrites:
             old['overwrites']=self.overwrites
             self.overwrites=overwrites
-
+        
         self._update_catpos(data,old)
         
         return old
-
+    
     def permissions_for(self,user):
         if user==self.guild.owner:
-            return Permission.permission_all_deny_text
+            return Permission.permission_deny_text
         
         result=self._permissions_for(user)
-        if not Permission.can_view_channel(result):
+        if not result.can_view_channel:
             return Permission.permission_none
-
+        
         #voice channels dont have text permissions
-        result&=Permission.deny_text
-
+        result&=Permission.permission_deny_text
+        
         if not Permission.can_connect(result):
-            result&=Permission.deny_voice_con
+            result&=Permission.permission_deny_voice_con
         
         return Permission(result)
-        
+    
     @property
     def voice_users(self):
         result=[]
@@ -1329,7 +2021,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
     type=3
 
     def _finish_init(self,data,client,parent):
-        self._mc_init()
+        self._messageable_init()
         
         name=data.get('name',None)
         self.name = '' if name is None else name
@@ -1352,7 +2044,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
     @classmethod
     def _from_partial_data(cls,data,channel_id,partial_guild):
         self=object.__new__(cls)
-        self._mc_init()
+        self._messageable_init()
         self.id         = channel_id
         # even if we get recipients, we will ignore them
         self.users      = []
@@ -1422,7 +2114,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         return old
 
     def __str__(self):
-        name=self.name
+        name = self.name
         if name:
             return name
         
@@ -1431,9 +2123,9 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
             return ', '.join([user.name for user in users])
         
         return 'Unnamed'
-
+    
     display_name=property(__str__)
-
+    
     def permissions_for(self,user):
         if self.owner==user:
             return Permission.permission_group_owner
@@ -1441,11 +2133,11 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
             return Permission.permission_group
         else:
             return Permission.permission_none
-
+    
     cached_permissions_for=permissions_for
     
     guild=ChannelPrivate.guild
-
+    
     @classmethod
     def _dispatch(cls,data,client):
         channel_id=int(data['id'])
@@ -1737,12 +2429,12 @@ class ChannelStore(ChannelGuildBase):
 
     def permissions_for(self,user):
         if user==self.guild.owner:
-            return Permission.permission_all_deny_both
+            return Permission.permission_deny_both
         
         result=self._permissions_for(user)
-        if not Permission.can_view_channel(result):
+        if not result.can_view_channel:
             return Permission.permission_none
-
+        
         #store channels do not have text and voice related permissions
         result&=Permission.deny_both
         
@@ -1908,3 +2600,4 @@ del webhook
 del URLS
 del ratelimit
 del DiscordEntity
+del WeakSet

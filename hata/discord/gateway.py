@@ -1,6 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
 import sys, zlib
-from time import time as time_now
+from time import time as time_now, monotonic
+from collections import deque
 
 try:
     import nacl.secret
@@ -10,20 +11,137 @@ else:
     SecretBox=nacl.secret.SecretBox
     del nacl
 
-from ..backend.futures import sleep, Task, future_or_timeout, WaitTillExc, WaitTillFirst, WaitTillAll
+from ..backend.futures import sleep, Task, future_or_timeout, WaitTillExc, WaitTillFirst, WaitTillAll, Future
 from ..backend.exceptions import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
 
 from .others import to_json, from_json
 from .activity import ActivityUnknown
 from .parsers import PARSERS
 from .guild import LARGE_LIMIT
-from .client_core import CACHE_PRESENCE, Kokoro
+from .client_core import CACHE_PRESENCE, Kokoro, KOKORO
 from .opus import SAMPLES_PER_FRAME
 from .exceptions import IntentError
 
+GATEWAY_RATELIMIT_LIMIT = 120
+GATEWAY_RATELIMIT_RESET = 60.0
+
+class GatewayRateLimiter(object):
+    """
+    Burst ratelimit handler for gateways, what operates on the clients' loop only.
+    
+    Attributes
+    ----------
+    queue : `deque` of `Future`
+        The queue of the ratelimit handler. It is filled up with futures, if the handler's limit is exhausted.
+        These futures are removed and their result is set, when the limit is reset.
+    remaining : `int`
+        The amount of requests which can be done, before the limit is exhausted.
+    resets_at : `float`
+        When the ratelimit of the respective gateway will be reset.
+    wakeupper : `None`  or `TimerHandle`
+        A handler what will reset the limiter's limit and ensure it's queue if nedded.
+    """
+    __slots__ = ('queue', 'remaining', 'resets_at', 'wakeupper', )
+    
+    def __init__(self):
+        """
+        Creates a gateway rate limiter.
+        """
+        self.remaining = GATEWAY_RATELIMIT_LIMIT
+        self.queue = deque()
+        self.wakeupper = None
+        self.resets_at = 0.0
+    
+    def __await__(self):
+        """
+        Awaits the ratelimit handler.
+        
+        Returns
+        -------
+        cancelled : `bool`
+            Whether the respective gateway was closed.
+        """
+        now = monotonic()
+        if now>=self.resets_at:
+            self.resets_at = now+GATEWAY_RATELIMIT_RESET
+            remaining = GATEWAY_RATELIMIT_LIMIT
+        else:
+            remaining = self.remaining
+        
+        if remaining:
+            self.remaining= remaining-1
+            return False
+        
+        if self.wakeupper is None:
+            self.wakeupper = KOKORO.call_at(self.resets_at, type(self).wakeup, self)
+        
+        future = Future(KOKORO)
+        self.queue.append(future)
+        return (yield from future)
+    
+    def wakeup(self):
+        """
+        Wakeups the waiting futures of the ``GatewayRateLimiter``.
+        """
+        queue = self.queue
+        remaining = GATEWAY_RATELIMIT_LIMIT
+        if queue:
+            while True:
+                if not queue:
+                    wakeupper = None
+                    break
+                
+                if not remaining:
+                    self.resets_at = resets_at = monotonic() + GATEWAY_RATELIMIT_RESET
+                    wakeupper = KOKORO.call_at(resets_at + GATEWAY_RATELIMIT_RESET, type(self).wakeup, self)
+                    break
+                
+                queue.popleft().set_result_if_pending(False)
+                remaining -=1
+        
+        else:
+            wakeupper = None
+        
+        self.wakeupper = wakeupper
+        self.remaining = remaining
+    
+    def cancel(self):
+        """
+        Cancels the ``GatewayRateLimiter``'s queue and it's `.wakeupper` if set.
+        """
+        queue = self.queue
+        while queue:
+            queue.popleft().set_result_if_pending(True)
+        
+        wakeupper = self.wakeupper
+        if (wakeupper is not None):
+            self.wakeupper = None
+            wakeupper.cancel()
+    
+    def __repr__(self):
+        result = [
+            '<',
+            self.__class__.__name__,
+                ]
+        
+        resets_at = self.resets_at
+        if resets_at <= monotonic():
+            remaining = GATEWAY_RATELIMIT_LIMIT
+        else:
+            result.append(' resets_at=')
+            result.append(repr(monotonic()))
+            result.append(' (monotnonic),')
+            
+            remaining = self.remaining
+        
+        result.append(' remaining=')
+        result.append(repr(remaining))
+        result.append('>')
+        
+        return ''.join(result)
+
 class DiscordGateway(object):
-    __slots__=('_buffer', '_decompresser', 'client', 'kokoro', 'loop',
-        'sequence', 'session_id', 'shard_id', 'websocket')
+    __slots__ = ('_buffer', '_decompresser', 'client', 'kokoro', 'loop', 'ratelimit_handler', 'sequence', 'session_id', 'shard_id', 'websocket')
     
     DISPATCH           = 0
     HEARTBEAT          = 1
@@ -38,17 +156,19 @@ class DiscordGateway(object):
     HELLO              = 10
     HEARTBEAT_ACK      = 11
     GUILD_SYNC         = 12
-
-    def __init__(self,client,shard_id=0):
+    
+    def __init__(self, client, shard_id=0):
         self.client         = client
         self.shard_id       = shard_id
         self.websocket      = None
         self._buffer        = bytearray()
         self._decompresser  = None
-        self.kokoro         = None
         self.loop           = None
         self.sequence       = None
         self.session_id     = None
+        
+        self.kokoro = None
+        self.ratelimit_handler = GatewayRateLimiter()
     
     async def start(self,loop):
         self.loop=loop
@@ -242,17 +362,23 @@ class DiscordGateway(object):
         if websocket is None:
             return
         
+        if await self.ratelimit_handler:
+            return
+        
         try:
             await websocket.send(to_json(data))
-        except ConnectionClosed as err:
+        except ConnectionClosed:
             pass
     
     async def close(self, code=1000):
         self.kokoro.cancel()
+        self.ratelimit_handler.cancel()
+        
         websocket=self.websocket
         if websocket is None:
             return
-        self.websocket=None
+        
+        self.websocket = None
         await websocket.close(code)
     
     def __repr__(self):
@@ -347,7 +473,7 @@ class DiscordGateway(object):
         await websocket.close(4000)
         
 class DiscordGatewayVoice(object):
-    __slots__ = ('client', 'kokoro', 'loop', 'websocket')
+    __slots__ = ('client', 'kokoro', 'loop', 'ratelimit_handler', 'websocket')
         
     IDENTIFY            = 0
     SELECT_PROTOCOL     = 1
@@ -362,11 +488,13 @@ class DiscordGatewayVoice(object):
     CLIENT_CONNECT      = 12
     CLIENT_DISCONNECT   = 13
 
-    def __init__(self,voice_client):
+    def __init__(self, voice_client):
         self.websocket  = None
         self.client     = voice_client
-        self.kokoro     = None
         self.loop       = None
+        
+        self.kokoro     = None
+        self.ratelimit_handler = GatewayRateLimiter()
     
     async def start(self,loop):
         self.loop=loop
@@ -395,6 +523,9 @@ class DiscordGatewayVoice(object):
     async def send_as_json(self,data):
         websocket=self.websocket
         if websocket is None:
+            return
+        
+        if await self.ratelimit_handler:
             return
         
         try:
@@ -481,15 +612,18 @@ class DiscordGatewayVoice(object):
         return kokoro.latency
     
     async def close(self, code=1000):
-        kokoro=self.kokoro
-        if kokoro is not None:
+        self.ratelimit_handler.cancel()
+        
+        kokoro = self.kokoro
+        if (kokoro is not None):
+            self.kokoro = None
             kokoro.cancel()
-            self.kokoro=None
         
         websocket=self.websocket
         if websocket is None:
             return
-        self.websocket=None
+        
+        self.websocket = None
         await websocket.close(code)
 
     def __repr__(self):
@@ -657,7 +791,7 @@ class DiscordGatewaySharder(object):
             tasks.append(task)
         
         done, pending = await WaitTillFirst(tasks,loop)
-
+        
         for task in tasks:
             task.cancel()
         
@@ -677,7 +811,7 @@ class DiscordGatewaySharder(object):
                 Task(gateway.close(),loop)
         
         return no_internet_stop
-        
+    
     @property
     def latency(self):
         total=0
@@ -695,41 +829,43 @@ class DiscordGatewaySharder(object):
         return Kokoro.DEFAULT_LATENCY
     
     async def send_as_json(self,data):
-        websockets=[]
-        for gateway in self.gateways:
-            websocket=gateway.websocket
-            if websocket is None:
-                continue
-            websockets.append(websocket)
-        
-        if not websockets:
-            return
-        
         data=to_json(data)
         
         tasks=[]
-        loop=self.loop
-        for websocket in websockets:
-            task=Task(websocket.send(data),loop)
+        for gateway in self.gateways:
+            task = Task(self._send_json(gateway, data), KOKORO)
             tasks.append(task)
         
-        done, pending = await WaitTillExc(tasks,loop)
+        done, pending = await WaitTillExc(tasks, KOKORO)
         
         for task in pending:
             task.cancel()
         
         for task in done:
             task.result()
+    
+    async def _send_json(gateway, data):
+        websocket = gateway.websocket
+        if websocket is None:
+            return
         
+        if await gateway.ratelimit_handler:
+            return
+        
+        try:
+            await websocket.send(data)
+        except ConnectionClosed:
+            pass
+    
     async def close(self, code=1000):
         tasks=[]
         loop=self.loop
         for gateway in self.gateways:
             task=Task(gateway.close(code),loop)
             tasks.append(task)
-            
+        
         await WaitTillAll(tasks,loop)
-
+    
     def __repr__(self):
         return f'<{self.__class__.__name__} client={self.client.full_name}, shard_count={self.client.shard_count}>'
 

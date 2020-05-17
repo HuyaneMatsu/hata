@@ -8,18 +8,18 @@ from os.path import split as splitpath
 from threading import current_thread
 
 from ..backend.dereaddons_local import multidict_titled, _spaceholder, methodize
-from ..backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, WaitTillFirst
+from ..backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, WaitTillFirst, WaitTillExc
 from ..backend.eventloop import EventThread
 from ..backend.formdata import Formdata
 from ..backend.hdrs import AUTHORIZATION
 
 from .others import Status, log_time_converter, DISCORD_EPOCH, VoiceRegion, ContentFilterLevel, PremiumType, \
-    MessageNotificationLevel, bytes_to_base64, ext_from_base64, now_as_id, to_json, VerificationLevel, \
-    RelationshipType, random_id
+    MessageNotificationLevel, bytes_to_base64, ext_from_base64, random_id, to_json, VerificationLevel, \
+    RelationshipType
 from .user import User, USERS, GuildProfile, UserBase, UserFlag
 from .emoji import Emoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, \
-    message_relativeindex, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES, Q_on_GC
+    message_relativeindex, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES
 from .guild import Guild, PartialGuild, GuildEmbed, GuildWidget, GuildFeature, GuildPreview
 from .http import DiscordHTTPClient, URLS, CDN_ENDPOINT, VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED
 from .role import Role
@@ -2438,7 +2438,7 @@ class Client(UserBase):
         """
         Requests messages from the given text channel. The `after`, `around` and the `before` arguments are mutually
         exclusive and they can be passed as `datetime` object or as an object's `id` or as an object with `.id`.
-        If there is at least 2 message overlap between the received and the loaded messages, the wrapper will chain
+        If there is at least 1 message overlap between the received and the loaded messages, the wrapper will chain
         the channel's message history up. If this happens the channel will get on a queue to have it's messages again
         limited to the default one, but requesting old messages more times, will cause it to extend.
         
@@ -2475,7 +2475,7 @@ class Client(UserBase):
             makes sure they are chained up with the channel's message history.
         .message_at_index : A toplevel method to get a message at the specified index at the given channel.
             Usually used to load the channel's message history to that point.
-        .messages_till_index : A toplevel method to get all the messages till the specified index at the given channel.
+        .messages_in_range : A toplevel method to get all the messages till the specified index at the given channel.
         .message_iterator : An iterator over a channel's message history.
         """
         if limit<1 or limit>100:
@@ -2493,7 +2493,7 @@ class Client(UserBase):
             data['before']=log_time_converter(before)
         
         data = await self.http.message_logs(channel.id,data)
-        return channel._mc_process_chunk(data)
+        return channel._process_message_chunk(data)
     
     #if u have 0-1-2 messages at a channel, and you wanna store the messages.
     #the other wont store it, because it wont see anything what allows channeling
@@ -2525,12 +2525,15 @@ class Client(UserBase):
         if limit<1 or limit>100:
             raise ValueError(f'limit must be in <1,100>, got {limit}')
         
-        data={'limit':limit,'before':now_as_id()}
-        data=await self.http.message_logs(channel.id,data)
+        data = {'limit':limit,'before':9223372036854775807}
+        data = await self.http.message_logs(channel.id,data)
         if data:
-            Message.new(data[0],channel)
-            return channel._mc_process_chunk(data)
-        return []
+            channel._create_new_message(data[0])
+            messages = channel._process_message_chunk(data)
+        else:
+            messages = []
+        
+        return messages
 
     async def message_get(self, channel, message_id):
         """
@@ -2554,7 +2557,7 @@ class Client(UserBase):
         DiscordException
         """
         data = await self.http.message_get(channel.id,message_id)
-        return Message.onetime(data,channel)
+        return channel._create_unknown_message(data)
     
     async def message_create(self, channel, content=None, embed=None, file=None, allowed_mentions=_spaceholder,
             tts=False, nonce=None):
@@ -2632,7 +2635,7 @@ class Client(UserBase):
             return None
         
         data = await self.http.message_create(channel.id, to_send)
-        return Message.new(data, channel)
+        return channel._create_new_message(data)
     
     @staticmethod
     def _create_file_form(data, file):
@@ -3379,7 +3382,7 @@ class Client(UserBase):
                                 else:
                                     author_id=int(author_id)
                         else:
-                            message_=Message.onetime(message_data,channel)
+                            message_=channel._create_unknown_message(message_data)
                             last_message_id=message_.id
                             
                             # Did we reach the after limit?
@@ -3574,8 +3577,8 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        data= await self.http.channel_pins(channel.id)
-        return [Message.fromchannel(message_data,channel) for message_data in data]
+        data = await self.http.channel_pins(channel.id)
+        return [channel._create_unknown_message(message_data) for message_data in data]
 
 
     async def _load_messages_till(self, channel, index):
@@ -3598,34 +3601,29 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        if index>=channel._mc_gc_limit:
-            if channel.messages.maxlen is not None:
-                channel._turn_gc_on_at=monotonic()+((channel._mc_gc_limit+100)<<2)
-                channel.messages=deque(channel.messages)
-                Q_on_GC.append(channel)
-            elif channel._turn_gc_on_at:
-                channel._turn_gc_on_at+=(index+100)<<2
-        
         while True:
-            ln=len(channel.messages)
-            loadto=index-ln
-            if loadto<0:
+            ln = len(channel.messages)
+            loadto = index-ln
+            
+            # we want to load it till the exact index, so if `loadto` is `0`, thats not enough!
+            if loadto < 0:
                 break
-            if loadto<98:
-                planed=loadto+3
-            else:
-                planed=100
             
-            if ln>2:
-                result = await self.message_logs(channel,planed,before=channel.messages[ln-2].id)
+            if loadto < 98:
+                planned = loadto+2
             else:
-                result = await self.message_logs_fromzero(channel,planed)
+                planned = 100
             
-            if len(result)<planed:
+            if ln:
+                result = await self.message_logs(channel, planned, before=channel.messages[ln-2].id)
+            else:
+                result = await self.message_logs_fromzero(channel,planned)
+            
+            if len(result)<planned:
                 channel.message_history_reached_end=True
-                raise IndexError
-    
-            await sleep(0.1,self.loop) #sometimes deque can not keep up?
+                raise IndexError(index)
+        
+        channel._turn_message_keep_limit_on_at += index
     
     async def message_at_index(self, channel, index):
         """
@@ -3653,8 +3651,9 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        if index<len(channel.messages):
-            return channel.messages[index]
+        messages = channel.messages
+        if index<len(messages):
+            return messages[index]
         
         if channel.message_history_reached_end:
             raise IndexError(index)
@@ -3663,9 +3662,10 @@ class Client(UserBase):
             raise PermissionError('Client can\'t read message history')
         
         await self._load_messages_till(channel,index)
+        # access it again, because it might be modified
         return channel.messages[index]
     
-    async def messages_till_index(self, channel, start=0, end=100):
+    async def messages_in_range(self, channel, start=0, end=100):
         """
         Returns a list of the message between the `start` - `end` area. If the client has no permission to request
         messages, or there are no messages at the given area returns an empty list.
@@ -3689,22 +3689,21 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        if end>=len(channel.messages) and \
-               not channel.message_history_reached_end and \
+        if end>=len(channel.messages) and (not channel.message_history_reached_end) and \
                channel.cached_permissions_for(self).can_read_message_history:
             try:
                 await self._load_messages_till(channel,end)
             except IndexError:
                 pass
-    
-        result=[]
-        messages=channel.messages
+        
+        result = []
+        messages = channel.messages
         for index in range(start,min(end,len(messages))):
             result.append(messages[index])
         
         return result
     
-    def message_iterator(self, channel, chunksize=97):
+    def message_iterator(self, channel, chunksize=99):
         """
         Returns an asynchronous message iterator over the given text channel.
         
@@ -3714,7 +3713,7 @@ class Client(UserBase):
             The channel from were the messages will be requested.
         chunksize : `int`, Optional
             The amount of messages to request when the currently loaded history is exhausted. For message chaining
-            it is preferably `97`.
+            it is preferably `99`.
         
         Returns
         -------
@@ -4989,9 +4988,9 @@ class Client(UserBase):
         audit_log_iterator : ``AuditLogIterator``
         """
         return AuditLogIterator(self, guild, user=user, event=event)
-
+    
     #users
-
+    
     async def user_edit(self, guild, user, nick=_spaceholder, deaf=None, mute=None, voice_channel=_spaceholder,
             roles=None, reason=None):
         """
@@ -5109,7 +5108,7 @@ class Client(UserBase):
         user : ``Client`` or ``User``
             The user from who the role will be removed.
         role : ``Role``
-            The role to remov from the user.
+            The role to remove from the user.
         reason : `str`, Optional
             Shows up at the respective guild's audit logs.
         
@@ -5132,7 +5131,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        user : ``Client`` / ``User``
+        user : ``Client`` or ``User``
             The user to move.
         voice_channel : ``ChannelVoice``
             The channel where the user will be moved.
@@ -5180,7 +5179,7 @@ class Client(UserBase):
         
         Returns
         -------
-        user : ``Client``or ``User``
+        user : ``Client`` or ``User``
         
         Raises
         ------
@@ -5205,7 +5204,7 @@ class Client(UserBase):
         
         Returns
         -------
-        user : ``Client``or ``User``
+        user : ``Client`` or ``User``
         
         Raises
         ------
@@ -5214,7 +5213,45 @@ class Client(UserBase):
         DiscordException
         """
         data = await self.http.guild_user_get(guild.id, user_id)
-        return User._create_and_update(data,guild)
+        return User._create_and_update(data, guild)
+    
+    async def guild_user_search(self, guild, query, limit=1):
+        """
+        Gets an user and it's profile at a guild by it's name. If the users are already loaded updates it.
+        
+        Parameters
+        ----------
+        guild : ``Guild``
+            The guild, where the user is.
+        query : `name`
+            The query string with what the user's name or nick should start.
+        limit : `int`, Optional
+            The maximal amount of users to return. Can bebetween `1` and `1000`. Defaults to `1`.
+        
+        Returns
+        -------
+        users : `list` of (``Client`` or ``User``)
+        
+        Raises
+        ------
+        ValueError
+            If limit is not between `1` and `1000`.
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
+        data = {'query': query}
+        
+        if limit == 1:
+            # default limit is `0`, so not needed to send it.
+            pass
+        elif limit > 0 and limit < 1000:
+            data['limit'] = limit
+        else:
+            raise ValueError('`limit` can be betwwen 1 and 1000, got `{limit}`')
+        
+        data = await self.http.guild_user_search(guild.id, data)
+        return [User._create_and_update(user_data, guild) for user_data in data]
     
     #integrations
     
@@ -5987,7 +6024,7 @@ class Client(UserBase):
             channel=webhook.channel
             if channel is None:
                 channel=ChannelText.precreate(int(data['channel_id']))
-            return Message.new(data,channel)
+            return channel._create_new_message(data)
     
     async def emoji_get(self, guild, emoji_id):
         """
@@ -7467,8 +7504,41 @@ class Client(UserBase):
         
         event_handler.waiters['0000000000000000'] = waiter = MassUserChunker(len(guilds))
         
-        #we only want to request 75~ guilds per chunk request.
+        shard_count = self.shard_count
+        if shard_count:
+            guilds_by_shards=[[] for x in range(shard_count)]
+            for guild in guilds:
+                shard_index=(guild.id>>22)%shard_count
+                guilds_by_shards[shard_index].append(guild)
+            
+            tasks = []
+            gateways = self.gateway.gateways
+            for index in range(shard_count):
+                task = Task(self._request_members_loop(gateways[index], guilds_by_shards[index]), KOKORO)
+                tasks.append(task)
+            
+            done, pending = await WaitTillExc(tasks, KOKORO)
+            for task in pending:
+                task.cancel()
+            
+            for task in done:
+                task.result()
+            
+        else:
+            await self._request_members_loop(self.gateway, guilds)
+            gateway = self.gateway
+
         
+        try:
+            await waiter
+        except CancelledError:
+            try:
+                del event_handler.waiters['0000000000000000']
+            except KeyError:
+                pass
+    
+    @staticmethod
+    async def _request_members_loop(gateway, guilds):
         sub_data = {
             'guild_id'  : 0,
             'query'     : '',
@@ -7482,34 +7552,10 @@ class Client(UserBase):
             'd'     : sub_data
                 }
         
-        shard_count = self.shard_count
-        if shard_count:
-            guilds_by_shards=[[] for x in range(shard_count)]
-            for guild in guilds:
-                shard_index=(guild.id>>22)%shard_count
-                guilds_by_shards[shard_index].append(guild)
-            
-            gateways = self.gateway.gateways
-            for index in range(shard_count):
-                guild_group=guilds_by_shards[index]
-                gateway=gateways[index]
-                for guild in guild_group:
-                    sub_data['guild_id'] = guild.id
-                    await gateway.send_as_json(data)
-        
-        else:
-            gateway = self.gateway
-            for guild in guilds:
-                sub_data['guild_id'] = guild.id
-                await gateway.send_as_json(data)
-        
-        try:
-            await waiter
-        except CancelledError:
-            try:
-                del event_handler.waiters['0000000000000000']
-            except KeyError:
-                pass
+        for guild in guilds:
+            sub_data['guild_id'] = guild.id
+            await gateway.send_as_json(data)
+            await sleep(0.6, KOKORO)
     
     async def _request_members(self, guild):
         """
@@ -7727,7 +7773,7 @@ class Client(UserBase):
             return user in application_owner.accepted
         return application_owner == user
     
-    def _update(self,data):
+    def _update(self, data):
         """
         Updates the client and returns it's old attribtes in a `dict` of (`attribute-name`, `old-value`) items.
         
@@ -7738,9 +7784,9 @@ class Client(UserBase):
         
         Returns
         -------
-        changes : `dict` of (`str`, `Any`) items
+        old : `dict` of (`str`, `Any`) items
             All item in the returned dict is optional.
-            
+        
         Returned Data Structure
         -----------------------
         +-----------------------+-------------------+

@@ -818,12 +818,13 @@ class RATELIMIT_GROUPS:
     guild_users                 = RatelimitGroup(LIMITER_GUILD)
     client_edit_nick            = RatelimitGroup()
     guild_user_delete           = RatelimitGroup(LIMITER_GUILD)
-    guild_user_get              = RatelimitGroup()
+    guild_user_get              = RatelimitGroup(LIMITER_GUILD)
     user_edit                   = GROUP_USER_MODIFY
     user_move                   = GROUP_USER_MODIFY
     guild_user_add              = RatelimitGroup(LIMITER_GUILD)
     user_role_delete            = GROUP_USER_ROLE_MODIFY
     user_role_add               = GROUP_USER_ROLE_MODIFY
+    guild_user_search           = RatelimitGroup(LIMITER_GUILD)
     guild_preview               = RatelimitGroup()
     guild_prune_estimate        = RatelimitGroup.unlimited()
     guild_prune                 = RatelimitGroup.unlimited()
@@ -875,7 +876,7 @@ del modulize
 ##INFO :
 ##    some endpoints might be off 1s
 ##    groups are not accurate now, because we use autogroups
-##    last group id: 96768
+##    last group id: 98560
 ##
 ##endpoint: https://cdn.discordapp.com/
 ##method  : GET
@@ -1442,8 +1443,8 @@ del modulize
 ##limits  :
 ##    group   : 69888
 ##    limit   : 5
-##    reset   : 2
-##    limiter : GLOBAL
+##    reset   : 1
+##    limiter : guild_id
 ##
 ##endpoint: /guilds/{guild_id}/members/{user_id}
 ##method  : PATCH
@@ -1461,6 +1462,16 @@ del modulize
 ##used at : guild_user_add
 ##limits  :
 ##    group   : 53760
+##    limit   : 10
+##    reset   : 10
+##    limiter : guild_id
+##
+##endpoint: /guilds/{guild_id}/members/search
+##method  : GET
+##auth    : bot
+##used at : guild_user_search
+##limits  :
+##    group   : 98560
 ##    limit   : 10
 ##    reset   : 10
 ##    limiter : guild_id

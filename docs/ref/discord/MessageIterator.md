@@ -80,7 +80,7 @@ Returns the representation of message iterator.
 The index of the next message to be returned at the [channel](#channel)'s
 [message history](ChannelTextBase.md#messages).
 
-### `_permission` (instance attribute)
+### `__can_read_history` (instance attribute)
 
 - type : `bool`
 

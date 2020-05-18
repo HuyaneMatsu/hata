@@ -400,7 +400,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            If any argument's type is bad.
+            If any argument's type is bad or if unexpected argument is passed.
         ValueError
             If an argument's type is good, but it's value is unacceptable.
         """
@@ -2235,13 +2235,13 @@ class Client(UserBase):
             - If the given `channel` is not ``ChannelGuildBase`` instance.
             - If the given `channel`'s type cannot be changed, but the parameter is passed.
         ValueError
-            - If `name`'s length is under 2 or over 100.
-            - If `topic`'s length is over 1024.
+            - If `name`'s length is under `2` or over `100`.
+            - If `topic`'s length is over `1024`.
             - If channel type is changed, but not to an expected one.
-            - If `slowmode` is not between 0 and 21600.
-            - If `bitrate` is not 8000-96000. 128000 max for vip, or 128000, 256000, 384000 max depending on premium
-                the premium tier of the respective guild.'
-            - If `user_limit` is negative or over 99.
+            - If `slowmode` is not between `0` and `21600`.
+            - If `bitrate` is not `8000`-`96000`. `128000` max for vip, or `128000`, `256000`, `384000` max depending
+                on the premium tier of the respective guild.
+            - If `user_limit` is negative or over `99`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -2329,10 +2329,10 @@ class Client(UserBase):
             Whether the new channel should be masrked as nsfw.
         slowmode : `int`, Optional
             The new channel's slowmode value.
-        user_limit : `int`, Optional
-            The new channel's user limit.
         bitrate : `int`, Optional
             The new channel's bitrate.
+        user_limit : `int`, Optional
+            The new channel's user limit.
         
         Returns
         -------
@@ -2346,13 +2346,13 @@ class Client(UserBase):
             - If `type_` was not passed as `int` or as ``ChannelGuildBase`` instance.
         ValueError
             - If `type_` was passed as `int`, but as negative or if there is no channel type for the given value.
-            - If `name`'s length is under 2 or over 100.
-            - If `topic`'s length is over 1024.
+            - If `name`'s length is under `2` or over `100`.
+            - If `topic`'s length is over `1024`.
             - If channel type is changed, but not to an expected one.
-            - If `slowmode` is not between 0 and 21600.
-            - If `bitrate` is not 8000-96000. 128000 max for vip, or 128000, 256000, 384000 max depending on premium
-                the premium tier of the respective guild.'
-            - If `user_limit` is negative or over 99.
+            - If `slowmode` is not between `0` and `21600`.
+            - If `bitrate` is not `8000`-`96000`. `128000` max for vip, or `128000`, `256000`, `384000` max depending
+                on the premium tier of the guild.
+            - If `user_limit` is negative or over `99`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -2499,7 +2499,7 @@ class Client(UserBase):
     #the other wont store it, because it wont see anything what allows channeling
     async def message_logs_fromzero(self, channel, limit=100):
         """
-        If the `channel` has 2 or less messages loaded use this method instead of ``.message_logs`` to request the
+        If the `channel` has `1` or less messages loaded use this method instead of ``.message_logs`` to request the
         newest messages there, because this method makes sure, the returned messages will be chained at the
         channel's message history.
         
@@ -2545,7 +2545,7 @@ class Client(UserBase):
             The channel from where we want to request the message.
         message_id : `int`
             The message's id.
-
+        
         Returns
         -------
         message : ``Message``
@@ -2580,7 +2580,7 @@ class Client(UserBase):
             Whether the message is text-to-speech.
         nonce : `str`, Optional
             Used for optimisting message sending. Will shop up at the message's data.
-
+        
         Returns
         -------
         message : ``Message`` or `None`
@@ -2592,7 +2592,7 @@ class Client(UserBase):
             - If `allowed_mentions` when correct type, but an invalid value would been sent.
             - If ivalid file type would be sent.
         ValueError
-            - If more than 10 files would be sent.
+            - If more than `10` files would be sent.
             - If `allowed_mentions` contains an element of invalid type.
         ConnectionError
             No internet connection.
@@ -2659,7 +2659,7 @@ class Client(UserBase):
         Raises
         ------
         ValueError
-            When more than 10 file is registered to send.
+            When more than `10` file is registered to send.
         
         Notes
         -----
@@ -5958,9 +5958,9 @@ class Client(UserBase):
             - If ivalid file type would be sent.
             - If `embed` was not passed as an embed like, or a `tuple`, `list` or `deque` of them.
         ValueError
-            - If more than 10 files would be sent.
+            - If more than `10` files would be sent.
             - If `allowed_mentions` contains an element of invalid type.
-            - If `name` was passed, but with legth under 1 or over 32.
+            - If `name` was passed, but with length under `1` or over `32`.
         ConnectionError
             No internet connection.
         DiscordException

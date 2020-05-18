@@ -1200,7 +1200,7 @@ else:
 PARSER_DEFAULTS('GUILD_MEMBER_UPDATE',GUILD_MEMBER_UPDATE__CAL_SC,GUILD_MEMBER_UPDATE__CAL_MC,GUILD_MEMBER_UPDATE__OPT_SC,GUILD_MEMBER_UPDATE__OPT_MC)
 del GUILD_MEMBER_UPDATE__CAL_SC, GUILD_MEMBER_UPDATE__CAL_MC, GUILD_MEMBER_UPDATE__OPT_SC, GUILD_MEMBER_UPDATE__OPT_MC
 
-def CHANNEL_DELETE__CAL(client,data):
+def CHANNEL_DELETE__CAL_SC(client, data):
     channel_id=int(data['id'])
     try:
         channel=CHANNELS[channel_id]
@@ -1208,12 +1208,39 @@ def CHANNEL_DELETE__CAL(client,data):
         guild_sync(client,data,None)
         return
     
-    guild = channel.guild
+    if isinstance(channel, ChannelGuildBase):
+        guild = channel.guild
+        if guild is None:
+            return
+        
+        channel._delete()
+    else:
+        channel._delete(client)
+        guild = None
     
-    channel._delete(client)
+    Task(client.events.channel_delete(client, channel, guild), KOKORO)
+
+def CHANNEL_DELETE__CAL_MC(client, data):
+    channel_id=int(data['id'])
+    try:
+        channel=CHANNELS[channel_id]
+    except KeyError:
+        guild_sync(client,data,None)
+        return
     
-    #we do this only for the source client, it is handled personally
-    Task(client.events.channel_delete(client,channel,guild), KOKORO)
+    if isinstance(channel, ChannelGuildBase):
+        guild = channel.guild
+        if guild is None:
+            return
+        
+        channel._delete()
+        
+        for client in guild.clients:
+            if (client.intents>>INTENT_GUILDS)&1:
+                Task(client.events.channel_delete(client, channel, guild), KOKORO)
+    else:
+        channel._delete(client)
+        Task(client.events.channel_delete(client, channel, None), KOKORO)
 
 def CHANNEL_DELETE__OPT(client,data):
     channel_id=int(data['id'])
@@ -1223,10 +1250,13 @@ def CHANNEL_DELETE__OPT(client,data):
         guild_sync(client,data,None)
         return
     
-    channel._delete(client)
+    if isinstance(channel, ChannelGuildBase):
+        channel._delete()
+    else:
+        channel._delete(client)
 
-PARSER_DEFAULTS('CHANNEL_DELETE',CHANNEL_DELETE__CAL,CHANNEL_DELETE__CAL,CHANNEL_DELETE__OPT,CHANNEL_DELETE__OPT)
-del CHANNEL_DELETE__CAL, CHANNEL_DELETE__OPT
+PARSER_DEFAULTS('CHANNEL_DELETE',CHANNEL_DELETE__CAL_SC,CHANNEL_DELETE__CAL_MC,CHANNEL_DELETE__OPT,CHANNEL_DELETE__OPT)
+del CHANNEL_DELETE__CAL_SC, CHANNEL_DELETE__CAL_MC, CHANNEL_DELETE__OPT
 
 def CHANNEL_UPDATE__CAL_SC(client,data):
     channel_id=int(data['id'])

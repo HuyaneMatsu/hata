@@ -213,7 +213,7 @@ class Role(DiscordEntity, immortal=True):
         guild=self.guild
         if guild is None:
             return #already deleted
-
+        
         self.guild=None
         
         del guild.roles[self.position]

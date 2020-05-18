@@ -169,13 +169,35 @@ class URLS:
         return  f'{API_ENDPOINT}/guilds/{guild.id}/widget.json'
 
     def channel_group_icon_url(channel):
+        """
+        Returns the group channel's icon's image's url. If the channel has no icon, then returns `None`.
+        
+        Returns
+        -------
+        url : `str` or `None`
+        """
         icon=channel.icon
         if not icon:
             return None
         
         return f'{CDN_ENDPOINT}/channel-icons/{channel.id}/{icon:0>32x}.png'
         
-    def channel_group_icon_url_as(channel,ext='png',size=None):
+    def channel_group_icon_url_as(channel, ext='png', size=None):
+        """
+        Returns the group channel's icon's image's url. If the channel has no icon, then returns `None`.
+        
+        Parameters
+        ----------
+        ext : `str`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+        size : `int`, Optional.
+            The preferred minimal size of the image's url. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`,
+            `1024`, `2048`, `4096`.
+        
+        Returns
+        -------
+        url : `str` or `None`
+        """
         icon=channel.icon
         if not icon:
             return None
@@ -190,7 +212,7 @@ class URLS:
             raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, and not {ext}.')
 
         return f'{CDN_ENDPOINT}/channel-icons/{channel.id}/{icon:0>32x}.{ext}{end}'
-
+    
     def emoji_url(emoji):
         if emoji.is_unicode_emoji():
             return None
@@ -280,7 +302,7 @@ class URLS:
             return None
 
         return f'{CDN_ENDPOINT}/app-assets/{application_id}/{asset_image_large}.png'
-
+    
     def activity_asset_image_large_url_as(activity, ext='png', size=None):
         """
         Returns the activity's large asset image's url. If the activity has no large asset image, then returns `None`.
@@ -294,7 +316,7 @@ class URLS:
         size : `int`, Optional.
             The preferred minimal size of the image's url. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`,
             `1024`, `2048`, `4096`.
-            
+        
         Returns
         -------
         url : `str` or `None`

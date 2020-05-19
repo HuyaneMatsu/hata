@@ -1,16 +1,29 @@
 # -*- coding: utf-8 -*-
-__all__ = ('EXTRA_EMBED_TYPES', 'Embed', 'EmbedAuthor', 'EmbedCore',
-    'EmbedField', 'EmbedFooter', 'EmbedImage', 'EmbedProvider',
-    'EmbedThumbnail', 'EmbedVideo', )
+__all__ = ('EXTRA_EMBED_TYPES', 'Embed', 'EmbedAuthor', 'EmbedCore', 'EmbedField', 'EmbedFooter', 'EmbedImage',
+    'EmbedProvider', 'EmbedThumbnail', 'EmbedVideo', )
 
 import re
 
 from .others import ROLE_MENTION_RP, USER_MENTION_RP, CHANNEL_MENTION_RP, parse_time, urlcutter
 from .color import Color
 
-EXTRA_EMBED_TYPES=('application_news', 'article', 'gifv', 'image', 'link', 'video')
+EXTRA_EMBED_TYPES = ('application_news', 'article', 'gifv', 'image', 'link', 'video')
 
-def _convert_content(content,message):
+def _convert_content(content, message):
+    """
+    Converts a content of a message by removing the reactions in it.
+    
+    Parameters
+    ----------
+    content : `str`
+        Content to convert.
+    message : ``Message``
+        The respective message of the content, based on what the reactions will be removed.
+    
+    Returns
+    -------
+    content : `str`
+    """
     escape=re.escape
     transformations = {
         '@everyone':'@\u200beveryone',
@@ -18,7 +31,7 @@ def _convert_content(content,message):
             }
     
     guild=message.channel.guild
-
+    
     if guild is None:
         users=message.channel.users
         for id_ in USER_MENTION_RP.findall(content):
@@ -65,15 +78,49 @@ def _convert_content(content,message):
         return re.compile("|".join(transformations)).sub(lambda mention:transformations[escape(mention.group(0))],content)
 
 class EmbedThumbnail(object):
-    __slots__=('height', 'proxy_url', 'url', 'width',)
-    def __init__(self,url):
+    """
+    Represents an embed's thumbnail.
+    
+    Attributes
+    ----------
+    height : `int`
+        The height of the thumbnail. Defaults to `0`.
+    proxy_url : `str` or `None`
+        A proxied url of the thumbnail.
+    url : `str` or `None`
+        The url of the thumbnail.
+    width : `int`
+        The width of the thumbnail. Defaults to `0`.
+    """
+    __slots__ = ('height', 'proxy_url', 'url', 'width',)
+    def __init__(self, url):
+        """
+        Creates an embed thumbnail with the given `url`.
+        
+        Parameters
+        ----------
+        url : `str`
+            The url of the thumbnail. Can be http(s) or attachment.
+        """
         self.url            = url
         self.proxy_url      = None
         self.height         = 0
         self.width          = 0
         
     @classmethod
-    def from_data(cls,data):
+    def from_data(cls, data):
+        """
+        Creates a embed thumbnail object from the data sent by Discord.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Embed thumbnail data received from Discord.
+        
+        Returns
+        -------
+        embed_thumbnail : ``EmbedThumbnail``
+        """
         self=object.__new__(cls)
         self.url            = data.get('url',None)
         self.proxy_url      = data.get('proxy_url',None)
@@ -83,14 +130,23 @@ class EmbedThumbnail(object):
         return self
     
     def to_data(self):
+        """
+        Converts the embed thumbnail to json serializable `dict` representing it.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`) items
+        """
         return {
             'url'           : self.url,
                 }
     
     def __len__(self):
+        """Returns the embed thumbnail's contents' length."""
         return 0
     
     def __repr__(self):
+        """Returns the representation of the embed thumbnail."""
         text = [
             '<',
             self.__class__.__name__,
@@ -115,7 +171,8 @@ class EmbedThumbnail(object):
         
         return ''.join(text)
     
-    def __eq__(self,other):
+    def __eq__(self, other):
+        """Returns whether the two embed thumbnails are equal."""
         if self.url is None:
             if other.url is not None:
                 return False
@@ -128,15 +185,45 @@ class EmbedThumbnail(object):
         return True
     
 class EmbedVideo(object):
-    __slots__=('height', 'url', 'width',)
-
+    """
+    Represents an embed's video.
+    
+    Embed videos cannot be sent, they are receive only.
+    
+    Attributes
+    ----------
+    height : `int`
+        The height of the video. Defaults to `0`.
+    url : `str` or `None`
+        The url of the video.
+    width : `int`
+        The width of the video. Defaults to `0`.
+    """
+    __slots__ = ('height', 'url', 'width',)
+    
     def __init__(self):
+        """
+        Creates a new embed video object. Because embed videos cannot be sent, it accepts no parameters and just creates
+        an empty embed video object with default attributes.
+        """
         self.url            = None
         self.height         = 0
         self.width          = 0
-
+    
     @classmethod
-    def from_data(cls,data):
+    def from_data(cls, data):
+        """
+        Creates an embed video object from the data sent by Discord.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Embed video data received from Discord.
+        
+        Returns
+        -------
+        embed_video : ``EmbedVideo``
+        """
         self=object.__new__(cls)
         self.url            = data.get('url',None)
         self.height         = data.get('height',0)
@@ -145,12 +232,23 @@ class EmbedVideo(object):
         return self
     
     def to_data(self):
+        """
+        Converts the embed video to json serializable `dict` representing it.
+        
+        Because embed videos cannot be sent, it always returns an empty `dict`.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`) items
+        """
         return {}
     
     def __len__(self):
+        """Returns the embed video's contents' length."""
         return 0
     
     def __repr__(self):
+        """Returns the representation of the embed video."""
         text = [
             '<',
             self.__class__.__name__,
@@ -175,7 +273,8 @@ class EmbedVideo(object):
         
         return ''.join(text)
     
-    def __eq__(self,other):
+    def __eq__(self, other):
+        """Returns whether the two embed videos are equal."""
         if self.url is None:
             if other.url is not None:
                 return False
@@ -188,15 +287,50 @@ class EmbedVideo(object):
         return True
     
 class EmbedImage(object):
-    __slots__=('height', 'proxy_url', 'url', 'width',)
-    def __init__(self,url):
+    """
+    Represents an embed's image.
+    
+    Attributes
+    ----------
+    height : `int`
+        The height of the image. Defaults to `0`.
+    proxy_url : `str` or `None`
+        A proxied url of the image.
+    url : `str` or `None`
+        The url of the iamge.
+    width : `int`
+        The width of the image. Defaults to `0`.
+    """
+    __slots__ = ('height', 'proxy_url', 'url', 'width',)
+    
+    def __init__(self, url):
+        """
+        Creates an embed image with the given `url`.
+        
+        Parameters
+        ----------
+        url : `str`
+            The url of the image. Can be http(s) or attachment.
+        """
         self.url            = url
         self.proxy_url      = None
         self.height         = 0
         self.width          = 0
-        
+    
     @classmethod
     def from_data(cls,data):
+        """
+        Creates an embed image object from the data sent by Discord.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Embed image data received from Discord.
+        
+        Returns
+        -------
+        embed_image : ``EmbedImage``
+        """
         self=object.__new__(cls)
         self.url            = data.get('url',None)
         self.proxy_url      = data.get('proxy_url',None)
@@ -206,14 +340,23 @@ class EmbedImage(object):
         return self
     
     def to_data(self):
+        """
+        Converts the embed image to json serializable `dict` representing it.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`) items
+        """
         return {
             'url'           : self.url,
                 }
     
     def __len__(self):
+        """Returns the embed image's contents' length."""
         return 0
     
     def __repr__(self):
+        """Returns the representation of the embed image."""
         text = [
             '<',
             self.__class__.__name__,
@@ -238,7 +381,8 @@ class EmbedImage(object):
         
         return ''.join(text)
     
-    def __eq__(self,other):
+    def __eq__(self, other):
+        """Returns whether the two embed images are equal."""
         if self.url is None:
             if other.url is not None:
                 return False
@@ -251,27 +395,57 @@ class EmbedImage(object):
         return True
     
 class EmbedProvider(object):
-    __slots__=('name', 'url',)
+    """
+    Represents an embed's povider.
+    
+    Embed providers cannot be sent, they are receive only.
+    
+    Attributes
+    ----------
+    name : `str` or `None`
+        The name of the provider.
+    url : `str` or `None`
+        The url of the provider.
+    """
+    __slots__ = ('name', 'url',)
     
     def __init__(self):
         self.name           = None
         self.url            = None
         
     @classmethod
-    def from_data(cls,data):
+    def from_data(cls, data):
+        """
+        Creates a new embed provider object. Because embed providers cannot be sent, it accepts no parameters and just
+        creates an empty embed provider object with default attributes.
+        """
         self=object.__new__(cls)
         self.name           = data.get('name',None)
         self.url            = data.get('url',None)
         
         return self
     
+    def to_data(self):
+        """
+        Converts the embed provider to json serializable `dict` representing it.
+        
+        Because embed provider cannot be sent, it always returns an empty `dict`.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`) items
+        """
+        return {}
+    
     def __len__(self):
+        """Returns the embed provider's contents' length."""
         name=self.name
         if name is None:
             return 0
         return len(name)
-        
+    
     def __repr__(self):
+        """Returns the representation of the embed provider."""
         text = [
             '<',
             self.__class__.__name__,
@@ -293,10 +467,8 @@ class EmbedProvider(object):
         
         return ''.join(text)
     
-    def to_data(self):
-        return {}
-        
-    def __eq__(self,other):
+    def __eq__(self, other):
+        """Returns whether the two embed providers are equal."""
         if self.name is None:
             if other.name is not None:
                 return False
@@ -318,15 +490,53 @@ class EmbedProvider(object):
         return True
     
 class EmbedAuthor(object):
-    __slots__=('icon_url', 'name', 'proxy_icon_url', 'url',)
-    def __init__(self,icon_url=None,name=None,url=None):
+    """
+    Represents an embed's author.
+    
+    Attributes
+    ----------
+    icon_url : `str` or `None`
+        Url of the author's icon.
+    name : `str` or `None`
+        The name of the author.
+    proxy_icon_url : `str` or `None`
+        A proxied url to the url of the author's icon.
+    url : `str` or `None`
+        The url of the author.
+    """
+    __slots__ = ('icon_url', 'name', 'proxy_icon_url', 'url',)
+    def __init__(self, icon_url=None, name=None, url=None):
+        """
+        Creates an embed author with the given parameters.
+        
+        Parameters
+        ----------
+        icon_url : `str`, Optional
+            An url of the author's icon. Can be http(s) or attachment.
+        name : `str`, Optional
+            The name of the author.
+        url : `str`, Optional
+            The url of the author.
+        """
         self.icon_url       = icon_url
         self.name           = name
         self.url            = url
         self.proxy_icon_url = None
     
     @classmethod
-    def from_data(cls,data):
+    def from_data(cls, data):
+        """
+        Creates an embed author object from the data sent by Discord.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Embed author data received from Discord.
+        
+        Returns
+        -------
+        embed_author : ``EmbedAuthor``
+        """
         self=object.__new__(cls)
         self.name           = data.get('name',None)
         self.url            = data.get('url',None)
@@ -336,6 +546,13 @@ class EmbedAuthor(object):
         return self
     
     def to_data(self):
+        """
+        Converts the embed author to json serializable `dict` representing it.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`) items
+        """
         result={}
     
         name=self.name
@@ -353,12 +570,14 @@ class EmbedAuthor(object):
         return result
 
     def __len__(self):
+        """Returns the embed author's contents' length."""
         name=self.name
         if name is None:
             return 0
         return len(self.name)
     
     def __repr__(self):
+        """Returns the representation of the embed author."""
         text = [
             '<',
             self.__class__.__name__,
@@ -390,7 +609,8 @@ class EmbedAuthor(object):
         
         return ''.join(text)
     
-    def __eq__(self,other):
+    def __eq__(self, other):
+        """Returns whether the two embed authors are equal."""
         if self.icon_url is None:
             if other.icon_url is not None:
                 return False
@@ -421,14 +641,49 @@ class EmbedAuthor(object):
         return True
     
 class EmbedFooter(object):
-    __slots__=('icon_url', 'proxy_icon_url', 'text',)
-    def __init__(self,text,icon_url=None):
+    """
+    Represents an embed's footer.
+    
+    Attributes
+    ----------
+    icon_url :`str` or `None`
+        Url of the embed footer's icon.
+    proxy_icon_url : `str` or `None`
+        A proxied url of the embed footer's icon.
+    text : `str`
+        The embed footer's text.
+    """
+    __slots__ = ('icon_url', 'proxy_icon_url', 'text',)
+    
+    def __init__(self, text, icon_url=None):
+        """
+        Creates an embed footer with the given parameters.
+        
+        Parameters
+        ----------
+        text : `str`
+            The footer's text.
+        icon_url : `str`, Optional
+            An url of the footer's icon. Can be http(s) or attachment.
+        """
         self.text           = text
         self.icon_url       = icon_url
         self.proxy_icon_url = None
-        
+    
     @classmethod
-    def from_data(cls,data):
+    def from_data(cls, data):
+        """
+        Creates an embed footer object from the data sent by Discord.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Embed footer data received from Discord.
+        
+        Returns
+        -------
+        embed_footer : ``EmbedFooter``
+        """
         self=object.__new__(cls)
         self.text           = data['text']
         self.icon_url       = data.get('icon_url',None)
@@ -437,6 +692,13 @@ class EmbedFooter(object):
         return self
     
     def to_data(self):
+        """
+        Converts the embed footer to json serializable `dict` representing it.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`) items
+        """
         result = {
             'text'          : self.text,
                 }
@@ -448,9 +710,11 @@ class EmbedFooter(object):
         return result
     
     def __len__(self):
+        """Returns the embed footer's contents' length."""
         return len(self.text)
     
     def __repr__(self):
+        """Returns the representation of the embed footer."""
         text = [
             '<',
             self.__class__.__name__,
@@ -471,8 +735,9 @@ class EmbedFooter(object):
         text.append('>')
         
         return ''.join(text)
-        
+    
     def __eq__(self,other):
+        """Returns whether the two embed footers are equal."""
         if self.icon_url is None:
             if other.icon_url is not None:
                 return False
@@ -486,16 +751,52 @@ class EmbedFooter(object):
             return False
         
         return True
-    
+
 class EmbedField(object):
-    __slots__=('inline', 'name', 'value',)
-    def __init__(self,name,value,inline=False):
+    """
+    Represents an embed's field.
+    
+    Attributes
+    ----------
+    inline : `bool`
+        Whether this field should display inline. Defaults to `False`.
+    name : `str`
+        The name of the field.
+    value : `str`
+        The value of the field.
+    """
+    __slots__ = ('inline', 'name', 'value',)
+    def __init__(self, name, value, inline=False):
+        """
+        Creates an embed field with the given parameters.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name of the field.
+        value : `str`
+            The value of the field.
+        inline : `bool`, Optional
+            Whether this field should display inline.
+        """
         self.name           = name
         self.value          = value
         self.inline         = inline
-        
+    
     @classmethod
-    def from_data(cls,data):
+    def from_data(cls, data):
+        """
+        Creates an embed field object from the data sent by Discord.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Embed field data received from Discord.
+        
+        Returns
+        -------
+        embed_field : ``EmbedField``
+        """
         self=object.__new__(cls)
         
         self.name           = data['name']
@@ -505,6 +806,13 @@ class EmbedField(object):
         return self
 
     def to_data(self):
+        """
+        Converts the embed field to json serializable `dict` representing it.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`) items
+        """
         result = {
             'name'          : self.name,
             'value'         : self.value,
@@ -517,12 +825,15 @@ class EmbedField(object):
         return result
     
     def __len__(self):
+        """Returns the embed field's contents' length."""
         return len(self.name)+len(self.value)
     
     def __repr__(self):
+        """Returns the representation of the embed field."""
         return f'<{self.__class__.__name__} length={self.__len__()}, inline={self.inline}>'
 
-    def __eq__(self,other):
+    def __eq__(self, other):
+        """Returns whether the two embed fields are equal."""
         if self.name!=other.name:
             return False
         
@@ -535,10 +846,64 @@ class EmbedField(object):
         return True
         
 class EmbedCore(object):
-    __slots__=('author', 'color', 'description', 'fields', 'footer', 'image',
-        'provider', 'thumbnail', 'timestamp', 'title', 'type', 'url', 'video',)
-
-    def __init__(self,title=None,description=None,color=None,url=None,timestamp=None,type_='rich'):
+    """
+    Represents Discord embedded content. There are two defined embed classes, the other one is ``Embed``.
+    
+    Each embed what is recevied from Discord is stored as ``EmbedCore`` object for better operation support. This
+    embed type is a valid embed type to send, but it is more cumbersome to build up, because it requires extra
+    imports and it is slower to serialize.
+    
+    Attributes
+    ----------
+    author : `None` or ``EmbedAuthor``
+        Author information.
+    color : `None`, `Color` or `int`
+        The color code of the embed. Passing `0` means black, not like at the case of roles.
+    description : `None` or `str`
+        The main content of the embed.
+    fields : `list` of ``EmbedField``
+        Fields' information.
+    footer : `None` or ``EmbedFooter``
+        Footer information.
+    image : `None` or ``EmbedImage``
+        Image information.
+    provider : `None` or ``EmbedProvider``
+        Provider information.
+    thumbnail : `None` or ``EmbedThumbnail``
+        Thumbnail information.
+    timestamp : `None` or `datetime`
+        Timestamp of the embed's content. Shows up next to the `footer` separated with a `'|'` character.
+    title : `None` or `str`
+        The title of the embed. Shows at the top with intense white characters.
+    type : `None` or `str`
+        The type of the embed. Can be one of `EXTRA_EMBED_TYPES`'s elements. Webhook embeds' type must be `'rich'`.
+    url : `None` or `str`
+        Url of the embed. If defined, the embed's `title` will show up as a hyper link pointing to the `url`.
+    video : `None` or `EmbedVideo`
+        Video information.
+    """
+    __slots__ = ('author', 'color', 'description', 'fields', 'footer', 'image', 'provider', 'thumbnail', 'timestamp',
+        'title', 'type', 'url', 'video',)
+    
+    def __init__(self, title=None, description=None, color=None, url=None, timestamp=None, type_='rich'):
+        """
+        Creates an embed core instance. Accepts the base parameters of the embed and sets the other ones as `None`.
+        
+        Parameters
+        ----------
+        title : `str`, Optional
+            The title of the embed. Shows at the top with intense white characters.
+        description : `str`, Optional
+            The main content of the embed.
+        color : ``Color`` or `int`, Optional
+            The color code of the embed. Passing `0` means black, not like at the case of roles.
+        url : `str`, Optional
+            Url of the embed. If defined, the embed's `title` will show up as a hyper link pointing to the `url`.
+        timestamp : `datetime`, optional
+            Timestamp of the embed's content. Shows up next to the `footer` separated with a `'|'` character.
+        type_ : `None` or `str`, Optional
+            The type of the embed. Defaults to `'rich'`.
+        """
         self.title          = title
         self.description    = description
         self.color          = color
@@ -554,7 +919,19 @@ class EmbedCore(object):
         self.fields         = []
     
     @classmethod
-    def from_data(cls,data):
+    def from_data(cls, data):
+        """
+        Creates an embed core object from the data sent by Discord.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Embed data received from Discord.
+        
+        Returns
+        -------
+        embed : ``EmbedCore``
+        """
         self=cls.__new__(cls)
         
         self.title          = data.get('title',None)
@@ -628,6 +1005,13 @@ class EmbedCore(object):
         return self
 
     def to_data(self):
+        """
+        Converts the embed core to json serializable `dict` representing it.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`) items
+        """
         data = {}
         
         type=self.type
@@ -675,7 +1059,25 @@ class EmbedCore(object):
         
         return data
 
-    def _update_sizes(self,data):
+    def _update_sizes(self, data):
+        """
+        Updates the size informations of the embed.
+        
+        Called when a ``Message`` is edited, but no `edited` timestamp is incuded with the data. Returns `0` if
+        received data does not contain images, if does, then `1`.
+        
+        This method tries to update the embed's `image`, `thumbnail` amd `video` with their sizes. If any of those is
+        not set already (for any reason), then it also creates them.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Embed data received from Discord.
+        
+        Returns
+        -------
+        changed : `int`
+        """
         changed=0
         try:
             image_data=data['image']
@@ -718,7 +1120,17 @@ class EmbedCore(object):
 
         return changed
 
-    def _update_sizes_no_return(self,data):
+    def _update_sizes_no_return(self, data):
+        """
+        Updates the size informations of the embed.
+
+        Familair to ``._update_sizes`` but it not checks whether the embed's images change, just updates them.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Embed data received from Discord.
+        """
         try:
             image_data=data['image']
         except KeyError:
@@ -756,6 +1168,7 @@ class EmbedCore(object):
                 video.width     = video_data.get('width',0)
 
     def __len__(self):
+        """Returns the embed's contents' length."""
         result=0
         
         title=self.title
@@ -787,9 +1200,11 @@ class EmbedCore(object):
         return result
     
     def __repr__(self):
+        """Returns the representation of the embed."""
         return f'<{self.__class__.__name__} length={self.__len__()}>'
     
     def __eq__(self,other):
+        """Returns whether the two embeds are equal."""
         if type(self) is not type(other):
             try:
                 other=other.source
@@ -901,10 +1316,24 @@ class EmbedCore(object):
             return False
         
         return True
-        
-
+    
     @property
     def contents(self):
+        """
+        Returns the embed's contents.
+        
+        The embeds contents are the following:
+        - `.title`
+        - `.description`
+        - `.author.name`
+        - `.footer.text`
+        - `.fields[n].name`
+        - `.fields[n].value`
+        
+        Returns
+        -------
+        contents : `list` of `str`
+        """
         result=[]
         
         title=self.title
@@ -931,7 +1360,21 @@ class EmbedCore(object):
 
         return result
 
-    def _clean_copy(self,message):
+    def _clean_copy(self, message):
+        """
+        Creates a clean copy of the embed by removing the mentions in it's contents.
+        
+        Called by ``Message.clean_embeds``.
+        
+        Parameters
+        ----------
+        message : ``Message``
+            The embed's respective message.
+        
+        Returns
+        -------
+        embed : ``EmbedCore``
+        """
         new=object.__new__(type(self))
         
         new.title           = self.title
@@ -948,12 +1391,43 @@ class EmbedCore(object):
         new.provider        = self.provider
         new.author          = self.author
         new.fields          = [type(field)(field.name,_convert_content(field.value,message),inline=field.inline) for field in self.fields]
-
-        return new
         
+        return new
+
 class Embed(object):
-    __slots__=('data',)
-    def __init__(self,title=None,description=None,color=None,url=None,timestamp=None,type_='rich'):
+    """
+    Represents Discord embedded content. There are two defined embed classes, the other one is ``EmbedCore``.
+    
+    Embeds are easier to build with this class than with the other, and faster to serialize, because it stores the
+    objects as raw serializable data, but it also means it has worse operation support, because it needs to convert
+    the raw data back.
+    
+    Attributes
+    ----------
+    data : `dict` of (`str`, `Any`) items
+        The raw data of the embed. It should not be accessed directly. There are several properties and methods to do
+        operations on them.
+    """
+    __slots__ = ('data',)
+    def __init__(self, title=None, description=None, color=None, url=None, timestamp=None, type_='rich'):
+        """
+        Creates an embed instance. Accepts the base parameters of the embed.
+        
+        Parameters
+        ----------
+        title : `str`, Optional
+            The title of the embed. Shows at the top with intense white characters.
+        description : `str`, Optional
+            The main content of the embed.
+        color : ``Color`` or `int`, Optional
+            The color code of the embed. Passing `0` means black, not like at the case of roles.
+        url : `str`, Optional
+            Url of the embed. If defined, the embed's `title` will show up as a hyper link pointing to the `url`.
+        timestamp : `datetime`, optional
+            Timestamp of the embed's content. Shows up next to the `footer` separated with a `'|'` character.
+        type_ : `None` or `str`, Optional
+            The type of the embed. Defaults to `'rich'`.
+        """
         self.data = data = {}
         
         if (title is not None):
@@ -973,8 +1447,18 @@ class Embed(object):
             
         if (type_ is not None):
             data['type']        = type_
-
+    
     def to_data(self):
+        """
+        Returns the embed's `.data`.
+        
+        This method is for compatibility with other embed-likes. When sending embed in message this method is called
+        for getting it's data.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`) items
+        """
         return self.data
     
     #author
@@ -992,10 +1476,33 @@ class Embed(object):
             del self.data['author']
         except KeyError:
             pass
-    author=property(_get_author, _set_author, _del_author)
+    author = property(_get_author, _set_author, _del_author)
     del _get_author, _set_author, _del_author
+    if (__init__.__doc__ is not None):
+        author.__doc__ = (
+        """
+        A get-set-del property for accessing the embed's author.
+        
+        Accepts and returns `None` or an ``EmbedAuthor`` object.
+        """)
     
-    def add_author(self,icon_url=None,name=None,url=None):
+    def add_author(self, icon_url=None, name=None, url=None):
+        """
+        Adds an ``EmbedAuthor`` to the embed with the given parameters.
+        
+        Parameters
+        ----------
+        icon_url : `str`, Optional
+            An url of the author's icon. Can be http(s) or attachment.
+        name : `str`, Optional
+            The name of the author.
+        url : `str`, Optional
+            The url of the author.
+        
+        Returns
+        -------
+        self : ``Embed``
+        """
         data = {}
 
         if (name is not None):
@@ -1009,7 +1516,7 @@ class Embed(object):
         
         self.data['author']=data
         return self
-
+    
     #color
     def _get_color(self):
         return self.data.get('color',None)
@@ -1022,7 +1529,14 @@ class Embed(object):
             pass
     color=property(_get_color, _set_color, _del_color)
     del _get_color, _set_color, _del_color
-
+    if (__init__.__doc__ is not None):
+        color.__doc__ = (
+        """
+        A get-set-del property for accessing the embed's color.
+        
+        Accepts and returns `None` or a ``Color`` (/ `int`) object.
+        """)
+    
     #description
     def _get_description(self):
         return self.data.get('description',None)
@@ -1035,7 +1549,14 @@ class Embed(object):
             pass
     description=property(_get_description, _set_description, _del_description)
     del _get_description, _set_description, _del_description
-
+    if (__init__.__doc__ is not None):
+        description.__doc__ = (
+        """
+        A get-set-del property for accessing the embed's description.
+        
+        Accepts and returns `None` or a `str` instance.
+        """)
+    
     #fields
     def _get_fields(self):
         try:
@@ -1044,21 +1565,55 @@ class Embed(object):
             self.data['fields']=field_datas=[]
         return _EmbedFieldsReflection(field_datas)
     def _set_fields(self,value):
+        data = self.data
+        try:
+            fields_data = data['fields']
+        except KeyError:
+            fields_data = data['fields'] = []
+        
         if type(value) is _EmbedFieldsReflection:
-            self.data['fields']=value.data
+            new_fiels_data = value.data
         else:
-            self.data=[field.to_data() if type(field) is EmbedField else field for field in value]
+            new_fiels_data = list(field.to_data() for field in value)
+        
+        fields_data.clear()
+        fields_data.extend(new_fiels_data)
+        
     def _del_fields(self):
         try:
-            field_datas=self.data.pop('fields')
+            field_datas=self.data['fields']
         except KeyError:
             pass
         else:
             field_datas.clear()
     fields=property(_get_fields, _set_fields, _del_fields)
     del _get_fields, _set_fields, _del_fields
+    if (__init__.__doc__ is not None):
+        fields.__doc__ = (
+        """
+        A get-set-del property for accessing the embed's fields.
+        
+        Accepts an `iterable` of ``EmbedField``objects. Meanwhile returns an ``_EmbedFieldsReflection`` instance,
+        through what the respective embed's fields can be modified directly.
+        """)
     
-    def add_field(self,name,value,inline=False):
+    def add_field(self, name, value, inline=False):
+        """
+        Adds an ``EmbedField`` to the end of the embed's fields.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name of the field.
+        value : `str`
+            The value of the field.
+        inline : `bool`, Optional
+            Whether this field should display inline.
+        
+        Returns
+        -------
+        self : ``Embed``
+        """
         data = {
             'name'  : name,
             'value' : value,
@@ -1073,9 +1628,24 @@ class Embed(object):
             self.data['fields']=[data]
         else:
             fields.append(data)
+        
         return self
 
-    def insert_field(self,index,name,value,inline=False):
+    def insert_field(self, index, name, value, inline=False):
+        """
+        Inserts an ``EmbedField`` to the embed's fields at the specified `index`.
+        
+        Parameters
+        ----------
+        index : `int`
+            The index before the field should be inserted.
+        name : `str`
+            The name of the field.
+        value : `str`
+            The value of the field.
+        inline : `bool`, Optional
+            Whether this field should display inline.
+        """
         data = {
             'name'  : name,
             'value' : value,
@@ -1083,37 +1653,117 @@ class Embed(object):
         
         if inline:
             data['inline']  = inline
-
+        
         try:
             fields=self.data['fields']
         except KeyError:
             self.data['fields']=[data]
         else:
             fields.insert(index,data)
-
-    def get_field(self,index):
+    
+    def get_field(self, index):
+        """
+        Returns the embed's field at the given `index`.
+        
+        Parameters
+        ----------
+        index : `int`
+            The index of the field.
+        
+        Returns
+        -------
+        embed_field : ``EmbedField``
+        
+        Raises
+        ------
+        IndexError
+            Index out of the fields' range.
+        """
         try:
             fields=self.data['fields']
         except KeyError:
-            raise IndexError(index) from None
-        field_data=fields[index]
+            raise IndexError('Index out of the fields\' range.') from None
+        
+        try:
+            field_data=fields[index]
+        except IndexError as err:
+            err.args = ('Index out of the fields\' range.', )
+            raise
+        
         return EmbedField.from_data(field_data)
-
-    def set_field(self,index,field):
+    
+    def append_field(self, field):
+        """
+        Appends the embed's fields with the given field.
+        
+        Parameters
+        ----------
+        field : ``EmbedField``
+            The field to append the embed's field with.
+        """
+        data = field.to_data()
+        
         try:
             fields=self.data['fields']
         except KeyError:
-            raise IndexError(index) from None
+            self.data['fields']=[data]
+        else:
+            fields.append(data)
+    
+    def set_field(self, index, field):
+        """
+        Sets the given ``EmbedField`` at the given `index` to the fields of the embed.
+        
+        Parameters
+        ----------
+        index : `int`
+            The index of the field to set.
+        field : ``EmbedField``
+            The embed field to set at the given `index`.
+        
+        Raises
+        ------
+        IndexError
+            Index out of the fields' range.
+        """
+        try:
+            fields=self.data['fields']
+        except KeyError:
+            raise IndexError('Index out of the fields\' range.') from None
+        
         field_data=field.to_data()
-        fields[index]=field_data
-
-    def del_field(self,index):
+        
+        try:
+            fields[index]=field_data
+        except IndexError as err:
+            err.args = ('Index out of the fields\' range.',)
+            raise
+    
+    def del_field(self, index):
+        """
+        Removes the field of the embed on the given index.
+        
+        Parameters
+        ----------
+        index : `int`
+            The index of the field to remove.
+        
+        Raises
+        ------
+        IndexError
+            Index out of the fields' range.
+        """
         try:
             fields=self.data['fields']
         except KeyError:
-            raise IndexError(index) from None
-        del fields[index]
-
+            raise IndexError('Index out of the fields\' range.') from None
+        
+        try:
+            del fields[index]
+        except IndexError as err:
+            err.args = ('Index out of the fields\' range.', )
+            raise
+    
     #footer
     def _get_footer(self):
         try:
@@ -1130,8 +1780,29 @@ class Embed(object):
             pass
     footer=property(_get_footer, _set_footer, _del_footer)
     del _get_footer, _set_footer, _del_footer
+    if (__init__.__doc__ is not None):
+        footer.__doc__ = (
+        """
+        A get-set-del property for accessing the embed's footer.
+        
+        Accepts and returns `None` or an ``EmbedFooter`` object.
+        """)
     
-    def add_footer(self,text,icon_url=None):
+    def add_footer(self, text, icon_url=None):
+        """
+        Adds an ``EmbedFooter`` to the embed with the given parameters.
+        
+        Parameters
+        ----------
+        text : `str`
+            The footer's text.
+        icon_url : `str`, Optional
+            An url of the footer's icon. Can be http(s) or attachment.
+        
+        Returns
+        -------
+        self : ``Embed``
+        """
         data = {
             'text'  : text,
                 }
@@ -1141,7 +1812,7 @@ class Embed(object):
         
         self.data['footer']=data
         return self
-
+    
     #image
     def _get_image(self):
         try:
@@ -1159,14 +1830,33 @@ class Embed(object):
     
     image=property(_get_image, _set_image, _del_image)
     del _get_image, _set_image, _del_image
+    if (__init__.__doc__ is not None):
+        image.__doc__ = (
+        """
+        A get-set-del property for accessing the embed's image.
+        
+        Accepts and returns `None` or an ``EmbedImage`` object.
+        """)
     
-    def add_image(self,url):
+    def add_image(self, url):
+        """
+        Adds an ``EmbedImage`` to the embed with the given `url`.
+        
+        Parameters
+        ----------
+        url : `str`
+            The url of the image. Can be http(s) or attachment.
+        
+        Returns
+        -------
+        self : ``Embed``
+        """
         data = {
             'url'   : url,
                 }
         self.data['image']  = data
         return self
-
+    
     #provider
     def _get_provider(self):
         try:
@@ -1181,8 +1871,16 @@ class Embed(object):
             pass
     provider=property(_get_provider, None, _del_provider)
     del _get_provider, _del_provider
-
-
+    if (__init__.__doc__ is not None):
+        provider.__doc__ = (
+        """
+        A get-del property for accessing the embed's provider.
+        
+        Returns `None` or an ``EmbedProvider`` object.
+        
+        Embed providers cannot be set, they are receive only.
+        """)
+    
     #thumbnail
     def _get_thumbnail(self):
         try:
@@ -1199,8 +1897,27 @@ class Embed(object):
             pass
     thumbnail=property(_get_thumbnail, _set_thumbnail, _del_thumbnail)
     del _get_thumbnail, _set_thumbnail, _del_thumbnail
+    if (__init__.__doc__ is not None):
+        thumbnail.__doc__ = (
+        """
+        A get-set-del property for accessing the embed's thumbnail.
+        
+        Accepts and returns `None` or an ``EmbedThumbnail`` object.
+        """)
     
-    def add_thumbnail(self,url):
+    def add_thumbnail(self, url):
+        """
+        Adds an ``EmbedThumbnail`` to the embed with the given `url`.
+        
+        Parameters
+        ----------
+        url : `str`
+            The url of the thumbnail. Can be http(s) or attachment.
+        
+        Returns
+        -------
+        self : ``Embed``
+        """
         data = {
             'url'   : url,
                 }
@@ -1224,7 +1941,14 @@ class Embed(object):
             pass
     timestamp=property(_get_timestamp, _set_timestamp, _del_timestamp)
     del _get_timestamp, _set_timestamp, _del_timestamp
-
+    if (__init__.__doc__ is not None):
+        timestamp.__doc__ = (
+        """
+        A get-set-del property for accessing the embed's timestamp.
+        
+        Accepts and returns `None` or a `datetime` object.
+        """)
+    
     #title
     def _get_title(self):
         return self.data.get('title',None)
@@ -1237,7 +1961,14 @@ class Embed(object):
             pass
     title=property(_get_title, _set_title, _del_title)
     del _get_title, _set_title, _del_title
-
+    if (__init__.__doc__ is not None):
+        title.__doc__ = (
+        """
+        A get-set-del property for accessing the embed's title.
+        
+        Accepts and returns `None` or a `str` instance.
+        """)
+    
     #type
     def _get_type(self):
         return self.data.get('type',None)
@@ -1250,7 +1981,14 @@ class Embed(object):
             pass
     type=property(_get_type, _set_type, _del_type)
     del _get_type, _set_type, _del_type
-
+    if (__init__.__doc__ is not None):
+        type.__doc__ = (
+        """
+        A get-set-del property for accessing the embed's type.
+        
+        Accepts and returns `None` or a `str` instance.
+        """)
+    
     #url
     def _get_url(self):
         return self.data.get('url',None)
@@ -1263,7 +2001,14 @@ class Embed(object):
             pass
     url=property(_get_url, _set_url, _del_url)
     del _get_url, _set_url, _del_url
-
+    if (__init__.__doc__ is not None):
+        url.__doc__ = (
+        """
+        A get-set-del property for accessing the embed's url.
+        
+        Accepts and returns `None` or a `str` instance.
+        """)
+    
     #video
     def _get_video(self):
         try:
@@ -1278,18 +2023,44 @@ class Embed(object):
             pass
     video=property(_get_video, None, _del_video)
     del _get_video, _del_video
-
+    if (__init__.__doc__ is not None):
+        video.__doc__ = (
+        """
+        A get-del property for accessing the embed's video.
+        
+        Returns `None` or an ``EmbedVideo`` object.
+        
+        Embed videos cannot be set, they are receive only.
+        """)
+    
     #rest
     def _get_source(self):
         return EmbedCore.from_data(self.data)
-    def _set_source(self,value):
-        self.data=value.to_data()
-    def _del_source(self,value):
-        self.data={}
+    def _set_source(self, value):
+        if type(value) is type(self):
+            data = value.data.copy()
+        else:
+            data = value.to_data()
+        self.data = data
+    def _del_source(self, value):
+        data = self.data
+        fields = data.get('fields')
+        data.clear()
+        if (fields is not None):
+            fields.clear()
+            data['fields'] = fields
     source=property(_get_source, _set_source, _del_source)
     del _get_source, _set_source, _del_source
+    if (__init__.__doc__ is not None):
+        source.__doc__ = (
+        """
+        A get-set-del property for accessing the embed's data.
+        
+        Returns an `EmbedCore` object and accepts any embed compatible objects.
+        """)
     
     def __len__(self):
+        """Returns the embed's contents' length."""
         data=self.data
         result=0
         
@@ -1338,13 +2109,30 @@ class Embed(object):
         return result
     
     def __repr__(self):
+        """Returns the representation of the embed."""
         return f'<{self.__class__.__name__} length={self.__len__()}>'
     
-    def __eq__(self,other):
+    def __eq__(self, other):
+        """Returns whether the two embeds are equal."""
         return self.source==other
     
     @property
     def contents(self):
+        """
+        Returns the embed's contents.
+        
+        The embeds contents are the following:
+        - `.title`
+        - `.description`
+        - `.author.name`
+        - `.footer.text`
+        - `.fields[n].name`
+        - `.fields[n].value`
+        
+        Returns
+        -------
+        contents : `list` of `str`
+        """
         data=self.data
         result=[]
         
@@ -1393,35 +2181,90 @@ class Embed(object):
         return result
 
 class _EmbedFieldsReflection(object):
-    __slots__=('data',)
-    def __init__(self,data):
+    """
+    A reflection of an `Embed` object's fields. The instances of this type allow direct modfications of their
+    respective embed's fields.
+    
+    Attributes
+    ----------
+    data : `list` of (`dict` of (`str`, `Any`) items)
+        Raw data containing the respective embed's fields.
+    """
+    __slots__ = ('data',)
+    def __init__(self, data):
+        """
+        Creates a ``_EmbedFieldsReflection`` object.
+        
+        Parameters
+        ----------
+        data : `list` of (`dict` of (`str`, `Any`) items)
+            Raw data containing the respective embed's fields.
+        """
         self.data=data
         
     def clear(self):
+        """
+        Removes all of the respective embed's fields.
+        """
         self.data.clear()
 
     def __len__(self):
+        """Returns how much fields the respective embed has."""
         return self.data.__len__()
     
     def __repr__(self):
-        return f'<{self.__class__.__name__} fields={self.data.__len__()}>'
+        """Returns the representation of the object."""
+        return f'<{self.__class__.__name__} length={self.data.__len__()}>'
     
-    def __getitem__(self,index):
+    def __getitem__(self, index):
+        """Returns the embed field on the given index."""
         return EmbedField.from_data(self.data[index])
     
     def __setitem__(self,index,field):
+        """Sets the given embed field object on the given index."""
         self.data[index]=field.to_data()
-
-    def __delitem__(self,index):
+    
+    def __delitem__(self, index):
+        """Deletes the field on the given index"""
         del self.data[index]
-
-    def append(self,field):
+    
+    def append(self, field):
+        """
+        Appends the respective embed's fields with the given field.
+        
+        Parameters
+        ----------
+        field : ``EmbedField``
+            The field to append the embed's field with.
+        """
         self.data.append(field.to_data())
-
-    def insert(self,index,field):
+    
+    def insert(self, index, field):
+        """
+        Inserts the given `field` to the respective embed's fields at the specified `index`.
+        
+        Parameters
+        ----------
+        index : `int`
+            The index before the field should be inserted.
+        field : ``EmbedField``
+            The field to insert.
+        """
         self.data.insert(index,field.to_data())
-
-    def add_field(self,name,value,inline=False):
+    
+    def add_field(self, name, value, inline=False):
+        """
+        Adds an ``EmbedField`` to the end of the respective embed's fields.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name of the field.
+        value : `str`
+            The value of the field.
+        inline : `bool`, Optional
+            Whether this field should display inline.
+        """
         data = {
             'name'  : name,
             'value' : value,
@@ -1429,10 +2272,24 @@ class _EmbedFieldsReflection(object):
         
         if inline:
             data['inline']  = inline
-
+        
         self.data.append(data)
-
-    def insert_field(self,index,name,value,inline=False):
+    
+    def insert_field(self, index, name, value, inline=False):
+        """
+        Inserts an ``EmbedField`` to the respective embed's fields at the specified `index`.
+        
+        Parameters
+        ----------
+        index : `int`
+            The index before the field should be inserted.
+        name : `str`
+            The name of the field.
+        value : `str`
+            The value of the field.
+        inline : `bool`, Optional
+            Whether this field should display inline.
+        """
         data = {
             'name'  : name,
             'value' : value,
@@ -1440,13 +2297,15 @@ class _EmbedFieldsReflection(object):
         
         if inline:
             data['inline']  = inline
-
+        
         self.data.insert(index,data)
-            
+    
     def __iter__(self):
+        """Iterates over the respective embed's fields."""
         for field_data in self.data:
             yield EmbedField.from_data(field_data)
-
+    
     def __reversed__(self):
+        """Reverse iterates over the respective embed's fields."""
         for field_data in reversed(self.data):
             yield EmbedField.from_data(field_data)

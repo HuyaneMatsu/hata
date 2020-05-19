@@ -7,6 +7,7 @@ from threading import Event, Lock
 from ..backend.futures import Future, Task, sleep, future_or_timeout
 from ..backend.exceptions import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
 
+from .client_core import KOKORO
 from .opus import OpusEncoder
 from .player import AudioPlayer, AudioSource, PCM_volume_transformer, PLAYER_DELAY
 from .reader import AudioReader
@@ -18,7 +19,7 @@ class VoiceClient(object):
         '_pref_volume', '_secret_box', '_sequence', '_session_id',
         '_set_speaking_task', '_source', '_timestamp', '_token', '_voice_port',
         'call_after', 'channel', 'client', 'connected', 'gateway', 'lock',
-        'loop', 'player', 'queue', 'reader', 'socket', 'sources', 'speaking')
+        'player', 'queue', 'reader', 'socket', 'sources', 'speaking')
 
     def __new__(cls,client,channel):
         #raise error at __new__
@@ -33,7 +34,6 @@ class VoiceClient(object):
         self.channel        = channel
         self.gateway        = DiscordGatewayVoice(self)
         self.socket         = None
-        self.loop           = client.loop
         self.client         = client
         self.connected      = Event() #this will be used at the AudioPlayer thread
         self.queue          = []
@@ -44,7 +44,7 @@ class VoiceClient(object):
         self.sources        = {}
         self.reader         = None
         
-        self._handshake_complete=Future(client.loop)
+        self._handshake_complete=Future(KOKORO)
         self._encoder       = OpusEncoder()
         self._sequence      = 0
         self._timestamp     = 0
@@ -61,8 +61,8 @@ class VoiceClient(object):
         self._freezed_resume= False
         
         client.voice_clients[channel.guild.id]=self
-        future=Future(self.loop)
-        Task(self._connect(waiter=future),self.loop)
+        future=Future(KOKORO)
+        Task(self._connect(waiter=future),KOKORO)
         return future
     
     #properties
@@ -109,7 +109,7 @@ class VoiceClient(object):
 
         self.speaking=value
         
-        task=Task(self.gateway._set_speaking(value),self.loop)
+        task=Task(self.gateway._set_speaking(value),KOKORO)
         self._set_speaking_task=task
         try:
             await task
@@ -139,7 +139,7 @@ class VoiceClient(object):
         player=self.player
         if player is None:
             self.player=AudioPlayer(self,source,)
-            Task(self.set_speaking(1),self.loop)
+            Task(self.set_speaking(1),KOKORO)
             return True
 
         self.queue.append(source)
@@ -154,21 +154,21 @@ class VoiceClient(object):
         return False
 
     def skip(self):
-        self.loop.create_task(self._play_next(True))
+        KOKORO.create_task(self._play_next(True))
 
     def pause(self):
         player=self.player
         if player is None:
             return
         player.resumed.clear()
-        Task(self.set_speaking(0),self.loop)
+        Task(self.set_speaking(0),KOKORO)
 
     def resume(self):
         player=self.player
         if player is None:
             return
         player.resumed.set()
-        Task(self.set_speaking(1),self.loop)
+        Task(self.set_speaking(1),KOKORO)
 
     def stop(self):
         self.queue.clear()
@@ -201,7 +201,7 @@ class VoiceClient(object):
     #connection related
     
     async def _connect(self,waiter=None):
-        await self.gateway.start(self.loop)
+        await self.gateway.start()
         tries=0
         while True:
             if tries==5:
@@ -222,7 +222,7 @@ class VoiceClient(object):
                 continue
 
             try:
-                task=Task(self.gateway.connect(),self.loop)
+                task=Task(self.gateway.connect(),KOKORO)
                 future_or_timeout(task,30.,)
                 await task
                 self.connected.clear()
@@ -233,7 +233,7 @@ class VoiceClient(object):
                 self.connected.set()
             except (OSError,TimeoutError,ConnectionError, ConnectionClosed,
                     WebSocketProtocolError, InvalidHandshake,ValueError):
-                await sleep(1+(tries<<1),self.loop)
+                await sleep(1+(tries<<1),KOKORO)
                 tries+=1
                 await self._terminate_handshake()
                 continue
@@ -253,7 +253,7 @@ class VoiceClient(object):
                             return
 
                     self.connected.clear()
-                    await sleep(5.,self.loop)
+                    await sleep(5.,KOKORO)
                     await self._terminate_handshake()
                     break
         
@@ -280,7 +280,7 @@ class VoiceClient(object):
             self.player=None
             player.done=True
             player.resumed.set()
-            await sleep(PLAYER_DELAY,self.loop)
+            await sleep(PLAYER_DELAY,KOKORO)
 
         reader=self.reader
         if reader is not None:
@@ -317,17 +317,17 @@ class VoiceClient(object):
     def _unfreeze(self):
         if not self._freezed:
             return
-        Task(self._unfreeze_task(),self.loop)
+        Task(self._unfreeze_task(),KOKORO)
         
     async def _unfreeze_task(self):
         if self.connected.is_set():
             await self._kill_ghost(self.client,self.channel)
-            await sleep(1.0,self.loop)
+            await sleep(1.0,KOKORO)
             self.client.voice_clients[self.channel.guild.id]=self
         
         self._freezed=False
 
-        self._handshake_complete=Future(self.loop)
+        self._handshake_complete=Future(KOKORO)
         self._sequence      = 0
         self._timestamp     = 0
         self._source        = 0
@@ -340,8 +340,8 @@ class VoiceClient(object):
         self._voice_port    = NotImplemented
         self._ip            = NotImplemented
         
-        future=Future(self.loop)
-        Task(self._connect(waiter=future),self.loop)
+        future=Future(KOKORO)
+        Task(self._connect(waiter=future),KOKORO)
         
         try:
             await future
@@ -354,7 +354,7 @@ class VoiceClient(object):
             return
         
         if self._freezed_resume:
-            await sleep(.6,self.loop)
+            await sleep(.6,KOKORO)
             self.resume()
 
     @classmethod
@@ -380,7 +380,7 @@ class VoiceClient(object):
                         source=self.queue.pop(0)
                         self.player=AudioPlayer(self,source)
                         if self.connected.is_set():
-                            Task(self.set_speaking(1),self.loop)
+                            Task(self.set_speaking(1),KOKORO)
                     
                     return False
 
@@ -388,19 +388,19 @@ class VoiceClient(object):
                     player.resumed.clear()
                     source=player.source
                     if source is not None:
-                        await sleep(PLAYER_DELAY,self.loop)
+                        await sleep(PLAYER_DELAY,KOKORO)
                         source.cleanup()
                     source=self.queue.pop(0)
                     player.source=source
                     player.resumed.set()
                     if self.connected.is_set():
-                        Task(self.set_speaking(1),self.loop)
+                        Task(self.set_speaking(1),KOKORO)
                     return False
                 
                 player.done=True
                 player.resumed.set()
                 if self.connected.is_set():
-                    Task(self.set_speaking(0),self.loop)
+                    Task(self.set_speaking(0),KOKORO)
                 return True
 
         if self.queue:
@@ -408,12 +408,12 @@ class VoiceClient(object):
             player.source=source
             player.resumed.set()
             if self.connected.is_set():
-                Task(self.set_speaking(1),self.loop)
+                Task(self.set_speaking(1),KOKORO)
             return False
         
         self.player=None
         if self.connected.is_set():
-            Task(self.set_speaking(0),self.loop)
+            Task(self.set_speaking(0),KOKORO)
         return True
 
     async def _start_handshake(self):

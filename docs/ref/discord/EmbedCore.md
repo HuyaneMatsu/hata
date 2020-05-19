@@ -137,7 +137,7 @@ Familiar to [`.update_sizes`](#_update_sizesselfdata-method), but returns
 
 - returns : [`EmbedCore`](EmbedCore.md)
 
-Called by a[`Message.clean_embeds`](Message.md#clean_embeds). Copies the source
+Called by [`Message.clean_embeds`](Message.md#clean_embeds). Copies the source
 embed, except of it's `description` and each [`EmbedField`](EmbedField.md),
 because it `cleans` them. Cleaning means it converts each mention to their
 display text form.

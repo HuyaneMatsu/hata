@@ -9,6 +9,7 @@ from ..backend.dereaddons_local import alchemy_incendiary
 from ..backend.futures import render_exc_to_list
 from ..backend.eventloop import EventThread
 
+from .client_core import KOKORO
 from .opus import FRAME_LENGTH, FRAME_SIZE, SAMPLES_PER_FRAME
 
 PLAYER_DELAY=FRAME_LENGTH/1000.0
@@ -297,7 +298,7 @@ class AudioPlayer(Thread):
                         voice_client.lock.acquire()
                     else:
                         with voice_client.lock:
-                            stop=voice_client.loop.create_task_threadsafe(voice_client.call_after(voice_client,lock=False)).syncwrap().wait()
+                            stop=KOKORO.create_task_threadsafe(voice_client.call_after(voice_client,lock=False)).syncwrap().wait()
                         if stop:
                             self.done=True
                             self.resumed.set()

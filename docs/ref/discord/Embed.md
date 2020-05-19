@@ -97,7 +97,7 @@ operations on them.
 
 | name          | type                                                      | access        | default   | specific methods                                          |
 |---------------|-----------------------------------------------------------|---------------|-----------|-----------------------------------------------------------|
-| author        | NoneType / [Embed_author](Embed_author.md)                | get-set-del   | None      | [add_author](#add_authorselficon_urlnonenamenoneurlnone)  |
+| author        | NoneType / [Embed_author](EmbedAuthor.md)                 | get-set-del   | None      | [add_author](#add_authorselficon_urlnonenamenoneurlnone)  |
 | color         | NoneType / int / [Color](Color.md)                        | get-set-del   | None      |                                                           |
 | description   | NoneType / str                                            | get-set-del   | None      |                                                           |
 | fields        | [_EmbedFieldsReflection](_EmbedFieldsReflection.md)       | get-set-del   |           | \* add / insert / get /set / del                          |

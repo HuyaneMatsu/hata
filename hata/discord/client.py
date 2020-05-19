@@ -1476,7 +1476,7 @@ class Client(UserBase):
                             overwrite.target=self
             
             for client in CLIENTS:
-                if (client is not self) and client.running and (client.loop is not None):
+                if (client is not self) and client.running:
                     for relationship in client.relationships:
                         if relationship.user is self:
                             relationship.user=alterego
@@ -2942,8 +2942,7 @@ class Client(UserBase):
             
             group.append(message_id)
             continue
-            
-        loop = self.loop
+        
         tasks = []
         
         delete_mass_task= None
@@ -2986,16 +2985,16 @@ class Client(UserBase):
                         if message_count==1:
                             if (delete_new_task is None):
                                 message_id=message_ids[0]
-                                delete_new_task = Task(self.http.message_delete(channel_id,message_id,None),loop)
+                                delete_new_task = Task(self.http.message_delete(channel_id,message_id,None), KOKORO)
                                 tasks.append(delete_new_task)
                         else:
-                            delete_mass_task = Task(self.http.message_delete_multiple(channel_id,{'messages':message_ids},None),loop)
+                            delete_mass_task = Task(self.http.message_delete_multiple(channel_id,{'messages':message_ids},None), KOKORO)
                             tasks.append(delete_mass_task)
                 
             if delete_old_task is None:
                 if message_group_old:
                     message_id=message_group_old.popleft()
-                    delete_old_task = Task(self.http.message_delete_b2wo(channel_id,message_id,reason),loop)
+                    delete_old_task = Task(self.http.message_delete_b2wo(channel_id,message_id,reason), KOKORO)
                     tasks.append(delete_old_task)
             
             if delete_new_task is None:
@@ -3008,7 +3007,7 @@ class Client(UserBase):
                 
                 if (group is not None):
                     message_id=message_group_old_own.popleft()
-                    delete_new_task = Task(self.http.message_delete(channel_id,message_id,reason),loop)
+                    delete_new_task = Task(self.http.message_delete(channel_id,message_id,reason), KOKORO)
                     tasks.append(delete_new_task)
             
             if not tasks:
@@ -3025,13 +3024,13 @@ class Client(UserBase):
                 # We will delete that message with old endpoint if not own, to make
                 # Sure it will not block the other endpoint for 2 minutes with any chance.
                 if own:
-                    delete_new_task = Task(self.http.message_delete(channel_id,message_id,None),loop)
+                    delete_new_task = Task(self.http.message_delete(channel_id,message_id,None), KOKORO)
                 else:
-                    delete_old_task = Task(self.http.message_delete_b2wo(channel_id,message_id,None),loop)
+                    delete_old_task = Task(self.http.message_delete_b2wo(channel_id,message_id,None), KOKORO)
                 
                 tasks.append(delete_old_task)
                 
-            done, pending = await WaitTillFirst(tasks,loop)
+            done, pending = await WaitTillFirst(tasks, KOKORO)
     
             for task in done:
                 tasks.remove(task)
@@ -3084,12 +3083,11 @@ class Client(UserBase):
                 delete_system[channel_id]=[message]
         
         tasks = []
-        loop = self.loop
         for messages in delete_system.values():
-            task=Task(self.message_delete_multiple(messages,reason),loop)
+            task=Task(self.message_delete_multiple(messages,reason), KOKORO)
             tasks.append(task)
         
-        await WaitTillAll(tasks,loop)
+        await WaitTillAll(tasks, KOKORO)
         
         exceptions = []
         for task in tasks:
@@ -3216,7 +3214,7 @@ class Client(UserBase):
                     'before': last_message_id,
                         }
                 
-                get_mass_task = Task(self.http.message_logs(channel_id,request_data),self.loop)
+                get_mass_task = Task(self.http.message_logs(channel_id,request_data), KOKORO)
                 tasks.append(get_mass_task)
             
             if (delete_mass_task is None):
@@ -3247,7 +3245,7 @@ class Client(UserBase):
                         if (delete_new_task is None):
                             # We collected 1 message -> We cannot use mass delete on this.
                             own,message_id=message_group_new.popleft()
-                            delete_new_task = Task(self.http.message_delete(channel_id,message_id,reason=reason),self.loop)
+                            delete_new_task = Task(self.http.message_delete(channel_id,message_id,reason=reason), KOKORO)
                             tasks.append(delete_new_task)
                     else:
                         message_ids=[]
@@ -3256,7 +3254,7 @@ class Client(UserBase):
                             own,message_id=message_group_new.popleft()
                             message_ids.append(message_id)
                         
-                        delete_mass_task = Task(self.http.message_delete_multiple(channel_id,{'messages':message_ids},reason=reason),self.loop)
+                        delete_mass_task = Task(self.http.message_delete_multiple(channel_id,{'messages':message_ids},reason=reason), KOKORO)
                         tasks.append(delete_mass_task)
                     
                     # After we checked what is at this group, lets move the others from it's end, if needed ofc
@@ -3291,13 +3289,13 @@ class Client(UserBase):
                 # Check old own messages only, mass delete speed is pretty good by itself.
                 if message_group_old_own:
                     message_id=message_group_old_own.popleft()
-                    delete_new_task = Task(self.http.message_delete(channel_id,message_id,reason=reason),self.loop)
+                    delete_new_task = Task(self.http.message_delete(channel_id,message_id,reason=reason), KOKORO)
                     tasks.append(delete_new_task)
             
             if (delete_old_task is None):
                 if message_group_old:
                     message_id=message_group_old.popleft()
-                    delete_old_task = Task(self.http.message_delete_b2wo(channel_id,message_id,reason=reason),self.loop)
+                    delete_old_task = Task(self.http.message_delete_b2wo(channel_id,message_id,reason=reason), KOKORO)
                     tasks.append(delete_old_task)
             
             if not tasks:
@@ -3314,15 +3312,15 @@ class Client(UserBase):
                 # We will delete that message with old endpoint if not own, to make
                 # Sure it will not block the other endpoint for 2 minutes with any chance.
                 if own:
-                    delete_new_task = Task(self.http.message_delete(channel_id,message_id,reason=reason),self.loop)
+                    delete_new_task = Task(self.http.message_delete(channel_id,message_id,reason=reason), KOKORO)
                     task=delete_new_task
                 else:
-                    delete_old_task = Task(self.http.message_delete_b2wo(channel_id,message_id,reason=reason),self.loop)
+                    delete_old_task = Task(self.http.message_delete_b2wo(channel_id,message_id,reason=reason), KOKORO)
                     task=delete_old_task
                 
                 tasks.append(task)
             
-            done, pending = await WaitTillFirst(tasks,self.loop)
+            done, pending = await WaitTillFirst(tasks, KOKORO)
             
             for task in done:
                 tasks.remove(task)
@@ -7318,7 +7316,7 @@ class Client(UserBase):
                 '.connect\n',
                     ]
             
-            await self.loop.render_exc_async(err,before,after)
+            await KOKORO.render_exc_async(err,before,after)
             return False
         
         if type(data) is not dict:
@@ -7330,10 +7328,10 @@ class Client(UserBase):
         
         self._init_on_ready(data)
         await self.client_gateway()
-        await self.gateway.start(self.loop)
+        await self.gateway.start()
         
         if self.is_bot:
-            task = Task(self.update_application_info(),self.loop)
+            task = Task(self.update_application_info(), KOKORO)
             if __debug__:
                 task.__silence__()
         
@@ -7343,7 +7341,7 @@ class Client(UserBase):
         
         self.running=True
         PARSER_DEFAULTS.register(self)
-        Task(self._connect(),self.loop)
+        Task(self._connect(), KOKORO)
         return True
     
     async def _connect(self):
@@ -7370,7 +7368,7 @@ class Client(UserBase):
                     self._freeze_voice()
                     while True:
                         try:
-                            await sleep(5.0,self.loop)
+                            await sleep(5.0, KOKORO)
                             self._gateway_pair=(self._gateway_pair[0],0.0)
                             try:
                                 await self.client_gateway()
@@ -7390,7 +7388,7 @@ class Client(UserBase):
                 f'{err!r}\n'
                     )
         except BaseException as err:
-            await self.loop.render_exc_async(err,[
+            await KOKORO.render_exc_async(err,[
                 'Unexpected exception occured at ',
                 repr(self),
                 '._connect\n',
@@ -7481,8 +7479,8 @@ class Client(UserBase):
         except CancelledError:
             pass
         else:
-            Task(_with_error(self,self.events.ready(self)),self.loop)
-
+            Task(_with_error(self,self.events.ready(self)), KOKORO)
+    
     async def _request_members2(self, guilds):
         """
         Requests the members of the client's guilds. Called after the client is started up and user aching is

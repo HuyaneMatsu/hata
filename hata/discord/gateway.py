@@ -141,7 +141,8 @@ class GatewayRateLimiter(object):
         return ''.join(result)
 
 class DiscordGateway(object):
-    __slots__ = ('_buffer', '_decompresser', 'client', 'kokoro', 'loop', 'ratelimit_handler', 'sequence', 'session_id', 'shard_id', 'websocket')
+    __slots__ = ('_buffer', '_decompresser', 'client', 'kokoro', 'ratelimit_handler', 'sequence', 'session_id',
+        'shard_id', 'websocket')
     
     DISPATCH           = 0
     HEARTBEAT          = 1
@@ -163,33 +164,30 @@ class DiscordGateway(object):
         self.websocket      = None
         self._buffer        = bytearray()
         self._decompresser  = None
-        self.loop           = None
         self.sequence       = None
         self.session_id     = None
         
         self.kokoro = None
         self.ratelimit_handler = GatewayRateLimiter()
     
-    async def start(self,loop):
-        self.loop=loop
+    async def start(self):
         kokoro=self.kokoro
         if kokoro is None:
-            self.kokoro = await Kokoro(self,loop)
+            self.kokoro = await Kokoro(self)
             return
 
         await kokoro.restart()
     
     async def run(self):
-        loop=self.loop
         client=self.client
         while True:
             try:
-                task=Task(self._connect(),loop)
+                task=Task(self._connect(),KOKORO)
                 future_or_timeout(task,30.,)
                 await task
                 while True:
                     if (await self._poll_event()):
-                        task=Task(self._connect(resume=True,),loop)
+                        task=Task(self._connect(resume=True,),KOKORO)
                         future_or_timeout(task,30.)
                         await task
 
@@ -212,7 +210,7 @@ class DiscordGateway(object):
                 if isinstance(err,ConnectionError): #no internet
                     return True
                 
-                await sleep(1.,self.loop)
+                await sleep(1.,KOKORO)
     
     #connecting, message receive and processing
     
@@ -231,7 +229,7 @@ class DiscordGateway(object):
             
             if not resume:
                 await self._identify()
-                self.loop.call_later(.2,self.client._unfreeze_voice_for,self,)
+                KOKORO.call_later(.2,self.client._unfreeze_voice_for,self,)
                 return
             
             await self._resume()
@@ -244,7 +242,7 @@ class DiscordGateway(object):
                 self.sequence=None
                 continue
             
-            self.loop.call_later(.2,self.client._unfreeze_voice_for,self,)
+            KOKORO.call_later(.2,self.client._unfreeze_voice_for,self,)
             return
 
     #w8s for the next event
@@ -296,7 +294,7 @@ class DiscordGateway(object):
             if PARSERS[event](client,data) is None:
                 return False
         except BaseException as err:
-            Task(client.events.error(client,event,err),client.loop)
+            Task(client.events.error(client,event,err),KOKORO)
             return False
         
         if event=='READY':
@@ -334,7 +332,7 @@ class DiscordGateway(object):
         
         if operation==self.INVALIDATE_SESSION:
             if data:
-                await sleep(5.,self.client.loop)
+                await sleep(5.,KOKORO)
                 await self.close()
                 return True
             
@@ -345,7 +343,7 @@ class DiscordGateway(object):
             return False
         
         client=self.client
-        Task(client.events.error(client,f'{self.__clas__.__name__}._special_operation',f'Unknown operation {operation}\nData: {data!r}'),client.loop)
+        Task(client.events.error(client,f'{self.__clas__.__name__}._special_operation',f'Unknown operation {operation}\nData: {data!r}'),KOKORO)
         return False
         
     #general stuffs
@@ -473,7 +471,7 @@ class DiscordGateway(object):
         await websocket.close(4000)
         
 class DiscordGatewayVoice(object):
-    __slots__ = ('client', 'kokoro', 'loop', 'ratelimit_handler', 'websocket')
+    __slots__ = ('client', 'kokoro', 'ratelimit_handler', 'websocket')
         
     IDENTIFY            = 0
     SELECT_PROTOCOL     = 1
@@ -491,18 +489,16 @@ class DiscordGatewayVoice(object):
     def __init__(self, voice_client):
         self.websocket  = None
         self.client     = voice_client
-        self.loop       = None
         
         self.kokoro     = None
         self.ratelimit_handler = GatewayRateLimiter()
     
-    async def start(self,loop):
-        self.loop=loop
+    async def start(self):
         kokoro=self.kokoro
         if kokoro is None:
-            self.kokoro = await Kokoro(self,loop)
+            self.kokoro = await Kokoro(self)
             return
-
+        
         await kokoro.restart()
     
     #connecting, message receive and processing
@@ -690,7 +686,7 @@ class DiscordGatewayVoice(object):
         packet=bytearray(70)
         packet[0:4]=voice_client._source.to_bytes(4,'big')
         voice_client.socket.sendto(packet,(voice_client._endpoint_ip,voice_client._voice_port))
-        received = await voice_client.loop.sock_recv(voice_client.socket,70)
+        received = await KOKORO.sock_recv(voice_client.socket,70)
         # the ip is ascii starting at the 4th byte and ending at the first null
         voice_client._ip=received[4:received.index(0,4)].decode('ascii')
         voice_client._port=int.from_bytes(received[-2:],'big')
@@ -730,7 +726,7 @@ class DiscordGatewayVoice(object):
                     timestamp=0
                 voice_client._timestamp=timestamp
                 
-                await sleep(0.02,voice_client.loop)
+                await sleep(0.02, KOKORO)
         
         await self._set_speaking(voice_client.speaking)
 
@@ -757,11 +753,10 @@ class DiscordGatewayVoice(object):
         await websocket.close(4000)
     
 class DiscordGatewaySharder(object):
-    __slots__=('client', 'loop', 'gateways',)
+    __slots__=('client', 'gateways',)
     
     def __init__(self,client):
         self.client     = client
-        self.loop       = None
         
         gateways        = []
         for shard_id in range(client.shard_count):
@@ -770,27 +765,25 @@ class DiscordGatewaySharder(object):
         
         self.gateways   = gateways
 
-    async def start(self,loop):
-        self.loop=loop
+    async def start(self):
         tasks=[]
         for gateway in self.gateways:
-            task=Task(gateway.start(loop),loop)
+            task=Task(gateway.start(), KOKORO)
             tasks.append(task)
         
-        await WaitTillExc(tasks,loop)
+        await WaitTillExc(tasks, KOKORO)
         
         for task in tasks:
             task.cancel()
         
     async def run(self):
         tasks=[]
-        loop=self.loop
         
         for gateway in self.gateways:
-            task=Task(gateway.run(),loop)
+            task=Task(gateway.run(), KOKORO)
             tasks.append(task)
         
-        done, pending = await WaitTillFirst(tasks,loop)
+        done, pending = await WaitTillFirst(tasks, KOKORO)
         
         for task in tasks:
             task.cancel()
@@ -807,8 +800,7 @@ class DiscordGatewaySharder(object):
                 websocket=gateway.websocket
                 if websocket is None:
                     continue
-                loop=self.loop
-                Task(gateway.close(),loop)
+                Task(gateway.close(),KOKORO)
         
         return no_internet_stop
     
@@ -859,12 +851,11 @@ class DiscordGatewaySharder(object):
     
     async def close(self, code=1000):
         tasks=[]
-        loop=self.loop
         for gateway in self.gateways:
-            task=Task(gateway.close(code),loop)
+            task=Task(gateway.close(code), KOKORO)
             tasks.append(task)
         
-        await WaitTillAll(tasks,loop)
+        await WaitTillAll(tasks, KOKORO)
     
     def __repr__(self):
         return f'<{self.__class__.__name__} client={self.client.full_name}, shard_count={self.client.shard_count}>'

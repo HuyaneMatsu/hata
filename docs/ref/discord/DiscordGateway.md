@@ -99,7 +99,7 @@ Starts the gateway and it's [`.kokoro`](#kokoro) on the given loop.
 
 Keeps the gateway receiving message and processing it. If the gateway needs to
 be reconnected, reconnects itself. If connecting cannot succeed, because there
-i no internet returns `True`, else returns `False` if the gateway's
+is no internet returns `True`, else returns `False` if the gateway's
 [`.client`](#client) is disconnected. If `True` is returned the client stops
 all other gateways too and tries to reconnect, when the internet is back,
 the client will launch back the gateways.
@@ -117,7 +117,7 @@ is no websocket, or the websocket is closed will not raise.
 - `awaitbale`
 - returns : `None`
 
-Cancels the gateway's [`.kokoro`](#kokoro) and closes it's [.`websocket`](#websocket)
+Cancels the gateway's [`.kokoro`](#kokoro) and closes it's [`.websocket`](#websocket)
 with the given args and kwargs.
 
 ## Magic methods
@@ -153,7 +153,7 @@ A buffer used to store not finished payloads received from Discord.
 - raises : `OSError` / `ConnectionError` / `ConnectionClosed` / `WebSocketProtocolError` / `InvalidHandshake` / `ValueError`
 
 Connects the gateway to Discord. If the connecting was successfull,
-will start it's [.`kokoro`](#kokoro) as well.
+will start it's [`.kokoro`](#kokoro) as well.
 
 ### `_poll_event(self)` (method)
 

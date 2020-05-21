@@ -123,7 +123,7 @@ it to `._code` and returns it as well.
 An instance attribute used for caching for the `.messages` property.
 Initally the `._messages` attribute is `None`, but when the `.messages`
 property is used for the first time, the messages will be parsed out
-from the resposne  and from it's data.
+from the resposne and from it's data.
 
 ### `_cr_messages` (method)
 

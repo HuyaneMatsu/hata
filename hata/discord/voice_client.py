@@ -473,7 +473,7 @@ class VoiceClient(object):
         if handshake_complete.done():
             #terminate the websocket and handle the reconnect loop if necessary.
             handshake_complete.clear()
-            await self.gateway.close(4000)
+            await self.gateway.terminate()
         else:
             handshake_complete.set_result(None)
 

@@ -16,6 +16,18 @@ BUILTIN_EMOJIS = {}
 UNICODE_TO_EMOJI = {}
 
 def PartialEmoji(data):
+    """
+    Creates an emoji from partial emoji data sent by Discord.
+    
+    Parameters
+    ----------
+    data : `dict` of (`str`, `Any`) items
+        Partial emoji data.
+    
+    Returns
+    -------
+    emoji : ``Emoji``
+    """
     emoji_id=data.get('id')
     if emoji_id is None:
         name=data['name']
@@ -46,9 +58,67 @@ def PartialEmoji(data):
     return emoji
     
 class Emoji(DiscordEntity, immortal=True):
+    """
+    Represents a Discord emoji. It can be custom or builtin (unicode) emoji as well. Builtin emojis are loaded when the
+    module is imported and they are stores at `BUILTIN_EMOJIS` dictionary. At `BUILTIN_EMOJIS` the keys are the
+    emoji's names, so it is easy to access any Discord unicode emoji like that.
+    
+    Custom emojis are loaded with ``Guild``-s on startup, but new partial custom emojis can be created later as well,
+    when a ``Message`` receives any reaction.
+    
+    Attributes
+    ----------
+    id : `int`
+        Unique identificator of the emoji.
+    animated : `bool`
+        Whether the emoji is animated.
+    available : `bool`
+        Whether the emoji is available.
+    guild : `None` or ``Guild``
+        The emoji's guild. Can be set as `None` if:
+        - If the emoji is a builtin (unicode).
+        - If the emoji's guild is unknown.
+        - If the emoji is deleted.
+    managed : `bool`
+        Whether the emoji is managed by an integration.
+    name : `int`
+        The emoji's name.
+    roles : `None` or `list` of ``Role`` objects
+        The set of roles for which the custom emoji is whitelisted to. If the emoji is not limited for specific roles,
+        then this value is set to `None`. If the emoji is a builtin (unicode) emoji, then this attribute is set to
+        `None` as  well.
+    unicode : `None` or `str`
+        At the case of custom emojis this attribute is always `None`, but at the case of builtin (unicode) emojis this
+        attribute stores the emoji's unicode representation.
+    user : ``User`` or ``Client``
+        The creator of the custom emoji. The emoji must be requested from Discord's API, or it's user will be just
+        the default `ZEROUSER`.
+        
+    See Also
+    --------
+    PartialEmoji : A function to create an emoji object from partial emoji data.
+    parse_emoji : Parses a partial emoji object out from text.
+    """
     __slots__ = ('animated', 'available', 'guild', 'managed', 'name', 'require_colons', 'roles', 'unicode', 'user', )
     
-    def __new__(cls,data,guild):
+    def __new__(cls, data, guild):
+        """
+        Creates a new emoji object from emoji data included with it's guild's. If the emoji already exists, picks that
+        up instead of creating a new one.
+        
+        This method can not create builtin (unicode) emojis. Those are created when the library is loaded.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Emoji data received from Discord.
+        guild : ``Guild``
+            The guild of the emoji.
+        
+        Returns
+        -------
+        emoji : ``Emoji``
+        """
         emoji_id=int(data['id'])
 
         try:
@@ -95,6 +165,36 @@ class Emoji(DiscordEntity, immortal=True):
     
     @classmethod
     def precreate(cls, emoji_id, **kwargs):
+        """
+        Precreates the emoji by creating a partial one with the given parameters. When the emoji is loaded
+        the precrated one will be picked up. If an already existing emoji would be precreated, returns that
+        instead and updates that only, if that is partial.
+        
+        Parameters
+        ----------
+        emoji_id : `snowflake`
+            The emoji's id.
+        **kwargs : keyword arguments
+            Additional predefined attributes for the emoji.
+        
+        Other Parameters
+        ----------------
+        name : `str`
+            The emoji's ``.name``. Can be between length `2` and `32`.
+        animated : `bool`
+            Whether the emoji is animated.
+        
+        Returns
+        -------
+        emoji : ``Emoji``
+        
+        Raises
+        ------
+        TypeError
+            If any argument's type is bad or if unexpected argument is passed.
+        ValueError
+            If an argument's type is good, but it's value is unacceptable.
+        """
         emoji_id = preconvert_snowflake(emoji_id, 'emoji_id')
         
         if kwargs:
@@ -146,12 +246,60 @@ class Emoji(DiscordEntity, immortal=True):
         return emoji
     
     def __str__(self):
+        """Returns the emoji's name."""
         return self.name
     
     def __repr__(self):
-        return f'<{self.__class__.__name__} id={self.id} name={self.name}>'
+        """Returns the emoji's representation."""
+        return f'<{self.__class__.__name__} id={self.id}, name={self.name!r}>'
     
-    def __format__(self,code):
+    def __format__(self, code):
+        """
+        Formats the emoji in a format string.
+        
+        Parameters
+        ----------
+        code : `str`
+            The option on based the result will be formatted.
+        
+        Returns
+        -------
+        emoji : `str`
+        
+        Raises
+        ------
+        ValueError
+            Unknown format code.
+        
+        Examples
+        --------
+        >>> from hata import Emoji, now_as_id, BUILTIN_EMOJIS
+        >>> emoji = Emoji.precreate(now_as_id(), name='nice')
+        >>> emoji
+        <Emoji id=712359434843586560, name='nice'>
+        >>> # no code stands for str(emoji)
+        >>> f'{emoji}'
+        'nice'
+        >>> # 'e' stads for emoji format.
+        >>> f'{emoji:e}'
+        '<:nice:712359434843586560>'
+        >>> # 'r' stands for reaction format.
+        >>> f'{emoji:r}'
+        'nice:712359434843586560'
+        >>> # 'c' stands for created at.
+        >>> f'{emoji:c}'
+        '2020.05.19-17:42:04'
+        >>> # The following works with builtin (unicode) emojis as well.
+        >>> emoji = BUILTIN_EMOJIS['heart']
+        >>> f'{emoji}'
+        'heart'
+        >>> f'{emoji:e}'
+        '❤️'
+        >>> f'{emoji:r}'
+        '❤️'
+        >>> f'{emoji:c}'
+        '2015.01.01-00:00:00'
+        """
         if not code:
             return self.name
         if code=='e':
@@ -171,22 +319,57 @@ class Emoji(DiscordEntity, immortal=True):
     
     @property
     def partial(self):
-        return (self.guild is None)
+        """
+        Returns whether the emoji is partial.
+        
+        Returns
+        -------
+        partial : `bool`
+        """
+        return (self.guild is None) and (self.unicode is not None)
     
     def is_custom_emoji(self):
+        """
+        Returns whether the emoji is a custom emoji.
+        
+        Returns
+        -------
+        is_custom_emoji : `bool`
+        """
         return self.id>=UNICODE_EMOJI_LIMIT
 
     def is_unicode_emoji(self):
+        """
+        Returns whether the emoji is a unicode emoji.
+        
+        Returns
+        -------
+        is_custom_emoji : `bool`
+        """
         return self.id<UNICODE_EMOJI_LIMIT
     
     @property
     def as_reaction(self):
+        """
+        Returns the emoji's reaction form, which is used by the Discord API at requests when working with reactions.
+        
+        Returns
+        -------
+        as_reaction : `str`
+        """
         if self.id<UNICODE_EMOJI_LIMIT:
             return self.unicode
         return f'{self.name}:{self.id}'
     
     @property
     def as_emoji(self):
+        """
+        Returns the emoji's emoji form. Should be used when sending an emoji within  a ``Message``.
+        
+        Returns
+        -------
+        as_emoji : `str`
+        """
         if self.id<UNICODE_EMOJI_LIMIT:
             return self.unicode
         if self.animated:
@@ -196,20 +379,42 @@ class Emoji(DiscordEntity, immortal=True):
     
     @property
     def created_at(self):
+        """
+        When the emoji was created. If the emoji is unicode emoji, then returns Discord epoch's start.
+        
+        Returns
+        -------
+        created_at : `datetime`
+        """
         return id_to_time(0 if self.id<UNICODE_EMOJI_LIMIT else self.id)
 
-    url=property(URLS.emoji_url)
-    url_as=URLS.emoji_url_as
+    url = property(URLS.emoji_url)
+    url_as = URLS.emoji_url_as
     
     def _delete(self):
-        del self.guild.emojis[self.id]
+        """
+        Removes the emoji's references.
+        
+        Used when the emoji is deleted.
+        """
+        guild = self.guild
+        if guild is None:
+            return
+        
+        del guild.emojis[self.id]
         self.roles = None
         self.guild = None
         self.available = False
         
-    def _update_no_return(self,data):
-        guild=self.guild
+    def _update_no_return(self, data):
+        """
+        Updates the emoji with overwriting it's old attributes.
         
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Emojis data received from Discord
+        """
         self.require_colons=data.get('require_colons',True)
         self.managed=data.get('managed',False)
         
@@ -224,9 +429,14 @@ class Emoji(DiscordEntity, immortal=True):
         try:
             role_ids=data['roles']
         except KeyError:
-            self.roles=None
+            roles=None
         else:
-            self.roles={guild.all_role[int(role_id)] for role_id in role_ids}
+            guild = self.guild
+            if guild is None:
+                roles = None
+            else:
+                roles={guild.all_role[int(role_id)] for role_id in role_ids}
+        self.roles = roles
         
         try:
             user_data=data['user']
@@ -237,25 +447,56 @@ class Emoji(DiscordEntity, immortal=True):
 
         self.available=data.get('available',True)
             
-    def _update(self,data):
-        guild=self.guild
+    def _update(self, data):
+        """
+        Updates the emoji and returns it's overwritten old attributes as a `dict` with a `attribute-name` - `old-value`
+        relation.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Emoji data received from Discord.
+        
+        Returns
+        -------
+        old : `dict` of (`str`, `Any`) items
+            All item in the returned dict is optional.
+        
+        Returned Data Structure
+        -----------------------
+        +-------------------+-------------------------------+
+        | Keys              | Values                        |
+        +===================+===============================+
+        | animated          | `bool`                        |
+        +-------------------+-------------------------------+
+        | available         | `bool`                        |
+        +-------------------+-------------------------------+
+        | managed           | `bool`                        |
+        +-------------------+-------------------------------+
+        | name              | `int`                         |
+        +-------------------+-------------------------------+
+        | require_colons    | `bool`                        |
+        +-------------------+-------------------------------+
+        | roles             | `None` or `set` of ``Role``   |
+        +-------------------+-------------------------------+
+        """
         old={}
         
-        require_colons=data.get('require_colons',False)
+        require_colons=data.get('require_colons',True)
         if self.require_colons!=require_colons:
             old['require_colons']=self.require_colons
             self.require_colons=require_colons
-            
+        
         managed=data.get('managed',False)
         if self.managed!=managed:
             old['managed']=self.managed
             self.managed=managed
-
+        
         animated=data.get('animated',False)
         if self.animated!=animated:
             old['animated']=self.animated
             self.animated=animated
-
+        
         name=data['name']
         if name is None:
             name=''
@@ -268,7 +509,11 @@ class Emoji(DiscordEntity, immortal=True):
         except KeyError:
             roles=None
         else:
-            roles={guild.all_role[int(role_id)] for role_id in role_ids}
+            guild = self.guild
+            if guild is None:
+                roles = None
+            else:
+                roles={guild.all_role[int(role_id)] for role_id in role_ids}
         
         if (self.roles is None):
             if (roles is not None):
@@ -293,19 +538,37 @@ class Emoji(DiscordEntity, immortal=True):
         if self.available!=available:
             old['available']=self.available
             self.available=available
-            
+        
         return old
 
 class reaction_mapping_line(set):
+    """
+    A `set` subclass which contains the users who reacted with the given ``Emoji`` on a ``Message``.
+    
+    Attributes
+    ----------
+    unknown : `int`
+        The amount of not known reacters.
+    """
     __slots__=('unknown',)
     
-    def __init__(self,unknown):
-        self.unknown=unknown
+    def __init__(self, unknown):
+        """
+        Creates a `reaction_mapping_line`.
+        
+        Parameters
+        ----------
+        unknown : `int`
+            The amount of not known reacters.
+        """
+        self.unknown = unknown
     
     def __len__(self):
+        """Returns the amount of users, who reacted with the given emoji on the respective message."""
         return set.__len__(self)+self.unknown
     
     def __repr__(self):
+        """Returns the representation of the container."""
         result=[self.__class__.__name__,'({']
         
         # set indexing is not public, so we need to do a check, like this
@@ -328,45 +591,88 @@ class reaction_mapping_line(set):
         return ''.join(result)
     
     @classmethod
-    def _full(cls,users):
+    def _full(cls, users):
+        """
+        Creates a new ``reaction_mapping_line`` with the given users with `.unknown` set to `0`.
+        
+        Parameters
+        ----------
+        users : `list` of (``User`` or ``Client``) objects
+            A `list`, which should already contain all the users of the reaction mapping line.
+
+        Returns
+        -------
+        self : ``reaction_mapping_line``
+        """
         self=set.__new__(cls)
-        set.__init__(self,users)
+        set.__init__(self, users)
         self.unknown=0
         return self
     
-    @staticmethod
-    def _relative_id_index(self,user_id):
-        bot=0
-        top=len(self)
-        while True:
-            if bot<top:
-                half=(bot+top)>>1
-                if self[half].id<user_id:
-                    bot=half+1
-                else:
-                    top=half
-                continue
-            break
-        return bot
-    
-    def update(self,users):
+    def update(self, users):
+        """
+        Updates the reaction mapping line with the given users.
+        
+        Parameters
+        ----------
+        users : `list` of (``User`` or ``Client``) objects
+            A `list` of users, who reacted on the respective `Message` with the respective ``Emoji``.
+        """
         ln_old=len(self)
         set.update(self,users)
         ln_new=len(self)
         self.unknown-=(ln_new-ln_old)
     
     def copy(self):
+        """
+        Copies the reaction mapping line.
+        
+        Returns
+        -------
+        new : ``reaction_mapping_line``
+        """
         new=set.__new__(type(self))
         set.__init__(new,self)
         new.unknown=self.unknown
         return new
     
     #executes an api request if we know we know all reacters
-    def filter_after(self,limit,after):
+    def filter_after(self, limit, after):
+        """
+        If we know all the reacters, then insctead of executing a Discord API request we filter the reacters locally
+        using this method.
+        
+        Parameters
+        ----------
+        limit : `int`
+            The maximal limit of the users to return.
+        after : `int`
+            Gets the users after this specified id.
+        
+        Returns
+        -------
+        users : `
+        """
         list_form=sorted(self)
-        index=self._relative_id_index(list_form,after+1) # do not include the specified id
+        
+        after = after+1 # do not include the specified id
+        
+        bot=0
+        top=len(list_form)
+        while True:
+            if bot<top:
+                half=(bot+top)>>1
+                if list_form[half].id<after:
+                    bot=half+1
+                else:
+                    top=half
+                continue
+            break
+        
+        index = bot
+        
         length=len(list_form)
-        result=[]
+        users=[]
         
         while True:
             if index==length:
@@ -375,14 +681,17 @@ class reaction_mapping_line(set):
             if limit<=0:
                 break
             
-            result.append(list_form[index])
+            users.append(list_form[index])
             index+=1
             limit-=1
             continue
         
-        return result
+        return users
     
     def clear(self):
+        """
+        Clears the reaction mapping line by removing every ``User`` object from it.
+        """
         clients=[]
         for user in self:
             if type(user) is User:
@@ -394,8 +703,24 @@ class reaction_mapping_line(set):
         set.update(self,clients)
 
 class reaction_mapping(dict):
-    __slots__=('fully_loaded',)
-    def __init__(self,data):
+    """
+    A `dict` subclass, which contains the reactions on a ``Message`` with (``Emoji``, ``reaction_mapping_line``)
+    items.
+    
+    Attributes
+    ----------
+    fully_loaded : `bool`
+        Whether the reaction mapping line is fully loaded.
+    """
+    __slots__ = ('fully_loaded',)
+    def __init__(self, data):
+        """
+        Fills the reaction mapping with the given data.
+        
+        Parameters
+        ----------
+        data : `None` or `dict` of (`str`, `Any`) items
+        """
         if (data is None) or (not data):
             self.fully_loaded=True
             return
@@ -404,9 +729,25 @@ class reaction_mapping(dict):
             self[PartialEmoji(line['emoji'])]=reaction_mapping_line(line.get('count',1))
     
     emoji_count = property(dict.__len__)
+    if (__init__ is not None):
+        emoji_count.__doc__ = (
+        """
+        The amount of different emojis, which were added on the reaction mapping's respective ``Message``.
+        
+        Returns
+        -------
+        emoji_count : `int`
+        """)
     
     @property
     def total_count(self):
+        """
+        The total amount reactions given on the reaction mapping's respective message.
+        
+        Returns
+        -------
+        total_count : `int`
+        """
         count=0
         for line in self.values():
             count+=set.__len__(line)
@@ -414,12 +755,25 @@ class reaction_mapping(dict):
         return count
     
     def clear(self):
+        """
+        Cleares the reaction mapping with clearing it's lines.
+        """
         for value in self.values():
             value.clear()
         if self.fully_loaded:
             self._full_check()
     
-    def add(self,emoji,user):
+    def add(self, emoji, user):
+        """
+        Adds a user to the reacters.
+        
+        Parameters
+        ----------
+        emoji : ``Emoji``
+            The reacted emoji.
+        user : ``User`` or ``Client``
+            The reacter user.
+        """
         try:
             line=self[emoji]
         except KeyError:
@@ -427,7 +781,17 @@ class reaction_mapping(dict):
             self[emoji]=line
         line.add(user)
     
-    def remove(self,emoji,user):
+    def remove(self, emoji, user):
+        """
+        Removes a user to the reacters.
+        
+        Parameters
+        ----------
+        emoji : ``Emoji``
+            The removed reacted emoji.
+        user : ``User`` or ``Client``
+            The removed reacter user.
+        """
         try:
             line=self[emoji]
         except KeyError:
@@ -455,7 +819,19 @@ class reaction_mapping(dict):
                 return
             del self[emoji]
     
-    def remove_emoji(self,emoji):
+    def remove_emoji(self, emoji):
+        """
+        Removes all the users who reacted with the given ``Emoji`` and then returns the stored line.
+        
+        Parameters
+        ----------
+        emoji : ``Emoji``
+            The emoji to remove.
+        
+        Returns
+        -------
+        line : `None` or ``reaction_mapping_line``
+        """
         line=self.pop(emoji,None)
         if line is None:
             return
@@ -467,6 +843,10 @@ class reaction_mapping(dict):
     
     #this function is called if an emoji loses all it's unknown reacters
     def _full_check(self):
+        """
+        Checks whether the reaction mapping is fully loaded, by checking it's values' `.unknown` and sets the current
+        state to `.fully_loaded`.
+        """
         for line in self.values():
             if line.unknown:
                 self.fully_loaded=False
@@ -475,15 +855,45 @@ class reaction_mapping(dict):
         self.fully_loaded=True
         
     #we call this when we get SOME reacters of an emoji
-    def _update_some_users(self,emoji,users):
+    def _update_some_users(self, emoji, users):
+        """
+        Called when some reacters of an emoji are updated.
+        
+        Parameters
+        ----------
+        emoji : ``Emoji``
+            The emoji, which's users' are updated.
+        users : `list` of (``User`` or ``Client``) objects
+            The added reacters.
+        """
         self[emoji].update(users)
         self._full_check()
         
-    def _update_all_users(self,emoji,users):
+    def _update_all_users(self, emoji, users):
+        """
+        Called when all the reacters of an emoji are updated of the reaction mapping.
+        
+        Parameters
+        ----------
+        emoji : ``Emoji``
+            The emoji, which's users' are updated.
+        users : `list` of (``User`` or ``Client``) objects
+            The added reacters.
+        """
         self[emoji]=reaction_mapping_line._full(users)
         self._full_check()
 
 def parse_emoji(text):
+    """
+    Tries to parse out an ``Emoji`` from the inputted text. This emoji can be custom and unicode emoji as well.
+    
+    If the parsing yields a custom emoji what is not loaded, the function will return an `untrusted` partial emoji,
+    what means it wont be stored at `EMOJIS`. If the parsing fails the function returns `None`.
+    
+    Returns
+    -------
+    emoji : `None` or ``Emoji``
+    """
     custom=EMOJI_RP.fullmatch(text)
     if custom is None:
         try:

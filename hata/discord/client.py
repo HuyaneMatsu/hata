@@ -921,7 +921,6 @@ class Client(UserBase):
         See Also
         --------
         parse_oauth2_redirect_url : Parses `redirect_url` and the `code` from a full url.
-        
         """
         data = {
             'client_id'     : self.id,
@@ -961,7 +960,7 @@ class Client(UserBase):
         
         Notes
         -----
-        Doesn't works if the client's application is owned by a team.
+        Does not work if the client's application is owned by a team.
         """
         data = {
             'client_id'     : self.id,
@@ -1042,7 +1041,6 @@ class Client(UserBase):
         -----
         By default access tokens expire after one week.
         """
-        
         redirect_url = access.redirect_url
         if redirect_url:
             data = {
@@ -1266,7 +1264,7 @@ class Client(UserBase):
         
         Returns
         -------
-        achievemnt : ``Achievement``
+        achievement : ``Achievement``
             After a successful edit, the passed achievement is updated and returned.
         
         Raises
@@ -1532,7 +1530,6 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         """
-        
         async with self.http.get(url) as response:
             return (await response.read())
 
@@ -7524,7 +7521,6 @@ class Client(UserBase):
             
         else:
             await self._request_members_loop(self.gateway, guilds)
-            gateway = self.gateway
 
         
         try:

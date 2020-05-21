@@ -41,7 +41,7 @@ The websocket client of the gateway.
 |-----------------------|-------|-------------------|---------------------------------------------------------------------------------------------------------------------------|
 | IDENTIFY              | 0     | send              | [`._identify`](#_identifyself-method)                                                                                     |
 | SELECT_PROTOCOL       | 1     | send              | [`._select_protocol`](#_select_protocolselfipport-method)                                                                 |
-| READY                 | 2     | receive           | [.`_initial_connection`](#_initial_connectionselfdata-method)                                                             |
+| READY                 | 2     | receive           | [`._initial_connection`](#_initial_connectionselfdata-method)                                                             |
 | HEARTBEAT             | 3     | send              | [`._beat`](#_beatself-method)                                                                                             |
 | SESSION_DESCRIPTION   | 4     | receive           | [`._received_message`](#_received_messageselfmessage-method)                                                              |
 | SPEAKING              | 5     | send /receive     | [`._set_speaking`](#_set_speakingselfis_speaking-method)<br>[.`_received_message`](#_received_messageselfmessage-method)  |
@@ -113,7 +113,7 @@ Returns the representation of the voice gateway.
 - returns : `bool`
 - raises : `TimeoutError` / `ConnectionClosed` / `WebSocketProtocolError` / `InvalidHandshake` / `ValueError`
 
-Waits for sockets from Discord If it did received one, it processes it.
+Waits for sockets from Discord, If it received one, processes it.
 
 ### `_received_message(self,message)` (method)
 

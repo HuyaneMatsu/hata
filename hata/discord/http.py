@@ -153,19 +153,25 @@ class URLS:
             raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, and not {ext}.')
 
         return f'{CDN_ENDPOINT}/banners/{guild.id}/{banner:0>32x}.{ext}{end}'
-
-
+    
     def guild_embed_url(guild,style='shield'):
         if URLS.style_pattern.match(style) is None:
             raise ValueError(f'Invalid style: {style!r}')
         return f'{API_ENDPOINT}/guilds/{guild.id}/embed.png?style={style}'
-
+    
     def guild_widget_url(guild,style='shield'):
         if URLS.style_pattern.match(style) is None:
             raise ValueError(f'Invalid style: {style!r}')
         return f'{API_ENDPOINT}/guilds/{guild.id}/widget.png?style={style}'
-
+    
     def guild_widget_json_url(guild):
+        """
+        Returns an url to requst a ``Guild``'s widget data.
+        
+        Returns
+        -------
+        url : `str`
+        """
         return  f'{API_ENDPOINT}/guilds/{guild.id}/widget.json'
 
     def channel_group_icon_url(channel):
@@ -214,6 +220,13 @@ class URLS:
         return f'{CDN_ENDPOINT}/channel-icons/{channel.id}/{icon:0>32x}.{ext}{end}'
     
     def emoji_url(emoji):
+        """
+        Returns the emoji's image's url. If the emoji is unicode emoji, then returns `None` instead.
+        
+        Returns
+        -------
+        url : `str` or `None`
+        """
         if emoji.is_unicode_emoji():
             return None
         
@@ -224,7 +237,23 @@ class URLS:
             
         return f'{CDN_ENDPOINT}/emojis/{emoji.id}.{ext}'
 
-    def emoji_url_as(emoji,ext=None,size=None):
+    def emoji_url_as(emoji, ext=None, size=None):
+        """
+        Returns the emoji's image's url. If the emoji is unicode emoji, then returns `None` instead.
+        
+        Parameters
+        ----------
+        ext : `str`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If emoji is
+            animated, it can `'gif'` as well.
+        size : `int`, Optional.
+            The preferred minimal size of the image's url. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`,
+            `1024`, `2048`, `4096`.
+        
+        Returns
+        -------
+        url : `str` or `None`
+        """
         if emoji.is_unicode_emoji():
             return None
 

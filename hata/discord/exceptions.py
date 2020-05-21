@@ -1,25 +1,70 @@
 ﻿# -*- coding: utf-8 -*-
-
-##| Code  | Meaning               | Behaviour     |
-##|-------|-----------------------|---------------|
-##| 200   | OK                    | return        |
-##| 201   | CREATED               | return        |
-##| 204   | NO CONTENT            | return        |
-##| 304   | NOT MODIFIED          | return        |
-##| 400   | BAD REQUEST           | raise         |
-##| 401   | UNAUTHORIZED          | raise         |
-##| 403   | FORBIDDEN             | raise         |
-##| 404   | NOT FOUND             | raise         |
-##| 405   | METHOD NOT ALLOWED    | raise         |
-##| 429   | TOO MANY REQUESTS     | ratelimited   |
-##| 500   | SERVER ERRROR         | retry         |
-##| 502   | GATEWAY UNAVAILABLE   | retry         |
-##| 5XX   | SERVER ERROR          | raise         |
-
 __all__ = ('DiscordException', 'ERROR_CODES', 'IntentError', )
 
 class DiscordException(Exception):
-    def __init__(self,response,data):
+    """
+    Represents an exception raised by Discord, when it respons with a not expected response code.
+    
+    Depending on Discord's reponse code, the http client's behaiours differently.
+    
+    +-------+-----------------------+---------------+
+    | Code  | Meaning               | Behaviour     |
+    +=======+=======================+===============+
+    | 200   | OK                    | return        |
+    +-------+-----------------------+---------------+
+    | 201   | CREATED               | return        |
+    +-------+-----------------------+---------------+
+    | 204   | NO CONTENT            | return        |
+    +-------+-----------------------+---------------+
+    | 304   | NOT MODIFIED          | return        |
+    +-------+-----------------------+---------------+
+    | 400   | BAD REQUEST           | raise         |
+    +-------+-----------------------+---------------+
+    | 401   | UNAUTHORIZED          | raise         |
+    +-------+-----------------------+---------------+
+    | 403   | FORBIDDEN             | raise         |
+    +-------+-----------------------+---------------+
+    | 404   | NOT FOUND             | raise         |
+    +-------+-----------------------+---------------+
+    | 405   | METHOD NOT ALLOWED    | raise         |
+    +-------+-----------------------+---------------+
+    | 429   | TOO MANY REQUESTS     | ratelimited   |
+    +-------+-----------------------+---------------+
+    | 500   | SERVER ERRROR         | \*retry       |
+    +-------+-----------------------+---------------+
+    | 502   | GATEWAY UNAVAILABLE   | \*retry       |
+    +-------+-----------------------+---------------+
+    | 5XX   | SERVER ERROR          | raise         |
+    +-------+-----------------------+---------------+
+    
+    > \* For five times a request can fail with `OsError` or return `501` / `502` response code. If the request fails
+    > with these cases for the fifth try and the last one resulted `501` or `502` response code, then
+    > ``DiscordException`` will be raised.
+    
+    Attributes
+    ----------
+    response : ``ClientResponse``
+        The http client reponse, what caused the error.
+    data : `Any`
+        Deserialized `json` response data if applicable.
+    _messages : `None` or `list` of `str`
+        Initally the `._messages` attribute is `None`, but when the `.messages` property is used for the first time,
+        the messages will be parsed out from the resposne and from it's data.
+    _code : `None` or `int`
+        Initially the `._code` attribute is set to `None`, but first time when the `.code` property is accessed, it is
+        parsed out. If the reponse data does not contains `code`, then this attribute is set to `0`.
+    """
+    def __init__(self, response, data):
+        """
+        Creates a new ``DiscordException``.
+        
+        Parameters
+        ----------
+        response : ``ClientResponse``
+            The http client reponse, what caused the error.
+        data : `Any`
+            Deserialized `json` response data if applicable.
+        """
         Exception.__init__(self)
         self.response=response
         self.data=data
@@ -28,12 +73,35 @@ class DiscordException(Exception):
     
     @property
     def messages(self):
+        """
+        Returns a list of the errors. The 0th element of the list is always a header line, what contains the
+        exception's name, the response's reason and it's status. If set, then also the Discord's internal error code
+        and it's message as well.
+        
+        Every other element at the list is optional. Those are extra errors included in the reponse's data.
+        
+        Returns
+        -------
+        messages : `list` of `str`
+        """
         messages=self._messages
         if messages is None:
-            return self._cr_messages()
+            messages = self._cr_messages()
         return messages
 
     def _cr_messages(self):
+        """
+        Generates the exception's messages from the causer response's headers. If the response's data contains `code`
+        or / and `message` as well, then it will complement the exception message's header line with those too.
+        
+        If the response's data contains additional errors too, then those will be parsed out, and added to the list.
+        
+        Saves the result to the `._messages` instance attribute and saves it as well.
+        
+        Returns
+        -------
+        messages : `list` of `str`
+        """
         messages=[]
         code=self.code
         message_parts=[]
@@ -163,20 +231,37 @@ class DiscordException(Exception):
         return messages
     
     def __repr__(self):
+        """Returns the representation of the object."""
         return '\n'.join(self.messages)
     
     __str__=__repr__
     
     @property
     def code(self):
+        """
+        Returns the Discord's internal exception code, if it is included in the response's data. If not, then returns
+        `0`.
+        
+        Returns
+        -------
+        error_code : `int`
+        """
         code=self._code
         if code is None:
-            return self._cr_code()
+            code = self._cr_code()
         return code
     
     def _cr_code(self):
-        if type(self.data) is dict:
-            code=self.data.get('code',0)
+        """
+        Parses out the Discord's inner exception code from the response's data. Sets it to `._code` and returns it as well.
+        
+        Returns
+        -------
+        error_code : `int`
+        """
+        data = self.data
+        if type(data) is dict:
+            code=data.get('code',0)
         else:
             code=0
         
@@ -185,10 +270,20 @@ class DiscordException(Exception):
     
     @property
     def status(self):
+        """
+        The exception's response's status.
+        
+        Returns
+        -------
+        status_code : `int`
+        """
         return self.response.status
 
 
 class ERROR_CODES:
+    """
+    Stores the possible json error codes received from Discord HTTP API requests.
+    """
     unknown_account         = 10001
     unknown_application     = 10002
     unknown_channel         = 10003
@@ -264,16 +359,38 @@ class ERROR_CODES:
     resource_overloaded     = 130000
 
 class IntentError(BaseException):
+    """
+    An intent error is raised by a ``DiscordGateway`` when a ``Client`` tries to log in with an invalid intent value.
+    
+    Attributes
+    ----------
+    code : `int`
+        Gateway close code sent by Discord.
+    
+    Class Attributes
+    ----------------
+    CODETABLE : `dict` of (`int`, `str`) items
+        A dictionary to store the descriptions for each intent related gateway close code.
+    """
     CODETABLE = {
         4013 : 'An invalid intent is one that is not meaningful and not documented.',
         4014 : 'A disallowed intent is one which you have not enabled for your bot or one that your bot is not whitelisted to use.',
             }
     
     def __init__(self, code):
+        """
+        Creates an intent error with the related gateway close error code.
+        
+        Parameters
+        ----------
+        code : `int`
+            Gateway close code.
+        """
         BaseException.__init__(self, code)
         self.code = code
     
     def __repr__(self):
+        """Returns the representation of the intent error."""
         result = [
             self.__class__.__name__,
             '(code=',

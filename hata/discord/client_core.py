@@ -560,7 +560,7 @@ class Kokoro(object):
                 client=gateway.client
                 if type(client) is Client:
                     client._freeze_voice_for(gateway)
-                Task(gateway.close(4000), KOKORO)
+                Task(gateway.terminate(), KOKORO)
                 break
             
             try:
@@ -573,7 +573,7 @@ class Kokoro(object):
                 client=gateway.client
                 if type(client) is Client:
                     client._freeze_voice_for(gateway)
-                Task(gateway.close(4000), KOKORO)
+                Task(gateway.terminate(), KOKORO)
                 break
             except CancelledError:
                 continue

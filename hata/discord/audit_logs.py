@@ -25,7 +25,7 @@ class AuditLogEvent(object):
     
     Class Attributes
     ----------------
-    INSTANCES : `dict` of (`int`, ``AuditLogEvent``) items.
+    INSTANCES : `dict` of (`int`, ``AuditLogEvent``) items
         Stores the predefined ``AuditLogEvent`` instances. These can be accessed with their `value` as key.
     
     Every predefined audit log event can be accessed as class attribute as well:

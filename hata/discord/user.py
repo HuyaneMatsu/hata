@@ -206,14 +206,39 @@ class UserBase(DiscordEntity, immortal=True):
     
     @property
     def full_name(self):
+        """
+        The user's name with it's discriminator.
+        
+        Returns
+        -------
+        full_name : `str`
+        """
         return f'{self.name}#{self.discriminator:0>4}'
     
     @property
     def mention(self):
+        """
+        The mention of the user.
+        
+        Returns
+        -------
+        mention : `str`
+        """
         return f'<@{self.id}>'
     
     @property
     def mention_nick(self):
+        """
+        The mention to the user's nick.
+        
+        Returns
+        -------
+        mention : `str`
+        
+        Notes
+        -----
+        It actually has nothing to do with the user's nickname > <.
+        """
         return f'<@!{self.id}>'
     
     avatar_url=property(URLS.user_avatar_url)
@@ -1025,56 +1050,6 @@ class User(UserBase):
             return
 
         profile._update_no_return(data,guild)
-
-    
-    if CACHE_PRESENCE:
-        @classmethod
-        def _from_GWU_data(cls,data):
-            user_id=int(data['id'])
-            try:
-                return USERS[user_id]
-            except KeyError:
-                pass
-            user=object.__new__(cls)
-            user.id=user_id
-            user.guild_profiles={}
-            user.is_bot=data.get('bot',False)
-            user.status=Status.INSTANCES[data['status']]
-            user.statuses={}
-            user.activities=[]
-            user.partial=False
-            user._update_no_return(data)
-            USERS[user_id]=user
-            return user
-    
-    elif CACHE_USER:
-        @classmethod
-        def _from_GWU_data(cls,data):
-            user_id=int(data['id'])
-            try:
-                return USERS[user_id]
-            except KeyError:
-                pass
-            user=object.__new__(cls)
-            user.id=user_id
-            user.guild_profiles={}
-            user.is_bot=data.get('bot',False)
-            user.partial=False
-            user._update_no_return(data)
-            USERS[user_id]=user
-            return user
-    
-    else:
-        @classmethod
-        def _from_GWU_data(cls,data):
-            user_id=int(data['id'])
-            user=object.__new__(cls)
-            user.id=user_id
-            user.guild_profiles={}
-            user.is_bot=data.get('bot',False)
-            user.partial=False
-            user._update_no_return(data)
-            return user
     
     if CACHE_PRESENCE:
         @classmethod

@@ -1268,18 +1268,17 @@ def str_GuildWidget(widget,**kwargs):
     result.append(f'Guild widget:')
     result.append(f'- guild : {widget.guild.name} ({widget.guild.id})',1)
     invite_url=widget.invite_url
-    if invite_url:
-        result.append(f'- invite_url : {invite_url}',1)
-    else:
-        result.append(f'- invite_url : *Not included*',1)
-    result.append(f'- presence_count : {widget.presence_count}',1)
+    if (invite_url is None):
+        invite_url = '*Not included*'
+    result.append(f'- invite_url : {invite_url}',1)
+    result.append(f'- online_count : {widget.online_count}',1)
     
     result.append(str_list(widget.users,name='user',**kwargs),1)
     result.append(str_list(widget.channels,name='channels',**kwargs),1)
     
     return result
 
-def str_GWUserReflection(GWU,index=None,**kwargs):
+def str_GuildWidgetUser(GWU,index=None,**kwargs):
     result=Pretty_block()
     if index is None:
         start=''
@@ -1297,7 +1296,7 @@ def str_GWUserReflection(GWU,index=None,**kwargs):
         
     return result
 
-def str_GWChannelReflection(GWC,index=None,**kwargs):
+def GuildWidgetChannel(GWC,index=None,**kwargs):
     result=Pretty_block()
     if index is None:
         start=''
@@ -1461,8 +1460,8 @@ PRETTY_PRINTERS['GuildEmbed']=str_GuildEmbed
 PRETTY_PRINTERS['User']=str_user
 PRETTY_PRINTERS['Client']=str_user
 PRETTY_PRINTERS['GuildWidget']=str_GuildWidget
-PRETTY_PRINTERS['GWUserReflection']=str_GWUserReflection
-PRETTY_PRINTERS['GWChannelReflection']=str_GWChannelReflection
+PRETTY_PRINTERS['GuildWidgetUser']=str_GuildWidgetUser
+PRETTY_PRINTERS['GWChannelReflection']=GuildWidgetChannel
 PRETTY_PRINTERS['Achievement']=str_achievement
 PRETTY_PRINTERS['Emoji']=str_emoji
 PRETTY_PRINTERS['GuildPreview']=str_guild_preview

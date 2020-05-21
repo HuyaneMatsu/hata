@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('GWChannelReflection', 'GWUserReflection', 'Guild', 'GuildEmbed', 'GuildFeature', 'GuildPreview',
+__all__ = ('GuildWidgetChannel', 'GuildWidgetUser', 'Guild', 'GuildEmbed', 'GuildFeature', 'GuildPreview',
     'GuildWidget', 'SystemChannelFlag', )
 
 import re
@@ -33,11 +33,79 @@ EMOJI_UPDATE_DELETE = 1
 EMOJI_UPDATE_EDIT   = 2
 
 class GuildFeature(object):
+    """
+    Represents the event type of an ``AuditLogEntry``.
+
+    Attributes
+    ----------
+    value : `int`
+        The Discord side identificator value of the guild feature.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`int`, ``GuildFeature``) items
+        Stores the predefined ``GuildFeature`` instances.
+    
+    Every predefined guild feature can be accessed as class attribute as well:
+    
+    +-------------------------------+-------------------------------+
+    | attribute name                | value                         |
+    +===============================+===============================+
+    | animated_icon                 | ANIMATED_ICON                 |
+    +-------------------------------+-------------------------------+
+    | banner                        | BANNER                        |
+    +-------------------------------+-------------------------------+
+    | commerce                      | COMMERCE                      |
+    +-------------------------------+-------------------------------+
+    | discoverable                  | DISCOVERABLE                  |
+    +-------------------------------+-------------------------------+
+    | enabled_discoverable_before   | ENABLED_DISCOVERABLE_BEFORE   |
+    +-------------------------------+-------------------------------+
+    | featurable                    | FEATURABLE                    |
+    +-------------------------------+-------------------------------+
+    | member_list_disabled          | MEMBER_LIST_DISABLED          |
+    +-------------------------------+-------------------------------+
+    | more_emoji                    | MORE_EMOJI                    |
+    +-------------------------------+-------------------------------+
+    | news                          | NEWS                          |
+    +-------------------------------+-------------------------------+
+    | partnered                     | PARTNERED                     |
+    +-------------------------------+-------------------------------+
+    | public                        | PUBLIC                        |
+    +-------------------------------+-------------------------------+
+    | public_disabled               | PUBLIC_DISABLED               |
+    +-------------------------------+-------------------------------+
+    | relay_enabled                 | RELAY_ENABLED                 |
+    +-------------------------------+-------------------------------+
+    | splash                        | INVITE_SPLASH                 |
+    +-------------------------------+-------------------------------+
+    | vanity                        | VANITY_URL                    |
+    +-------------------------------+-------------------------------+
+    | verified                      | VERIFIED                      |
+    +-------------------------------+-------------------------------+
+    | vip                           | VIP_REGIONS                   |
+    +-------------------------------+-------------------------------+
+    | welcome_screen                | WELCOME_SCREEN_ENABLED        |
+    +-------------------------------+-------------------------------+
+    """
     # class related
     INSTANCES={}
     
     @classmethod
-    def get(cls,value):
+    def get(cls, value):
+        """
+        Accessed to get a guild feature from `.INSTANCES` by it's `value`. If no predefined guild feature is found,
+        creates a new one.
+        
+        Parameters
+        ----------
+        value : `str`
+            The identificator value of the guild feature.
+        
+        Returns
+        -------
+        guild_feature : ``GuildFeature``
+        """
         try:
             guild_feature=cls.INSTANCES[value]
         except KeyError:
@@ -48,54 +116,79 @@ class GuildFeature(object):
     # object related
     __slots__=('value',)
     
-    def __init__(self,value):
+    def __init__(self, value):
+        """
+        Creates a new guild feature and stores it at `.INSTANCES`.
+        
+        Parameters
+        ----------
+        value : `str`
+            The identificator value of the guild feature.
+        """
         self.value=value
         self.INSTANCES[value]=self
     
     def __str__(self):
+        """Returns the guild feature's value."""
         return self.value
-
+    
     name=property(__str__)
+    if (__str__.__doc__ is not None):
+        name.__doc__ = (
+        """
+        Returns the guild feature's value.
+        
+        Returns
+        -------
+        `str`
+        """)
     
     def __repr__(self):
-        return f'{self.__class__.__name__}(name={self.name})'
-
-    def __gt__(self,other):
+        """Returns the representation of the guild feature."""
+        return f'{self.__class__.__name__}(value={self.value!r})'
+    
+    def __gt__(self, other):
+        """Whether this feature's value is greater than the other's."""
         if type(self) is type(other):
             return self.value>other.value
         if isinstance(other,str):
             return self.value>other
         return NotImplemented
-
-    def __ge__(self,other):
+    
+    def __ge__(self, other):
+        """Whether this feature's value is greater or equal than the other's."""
         if type(self) is type(other):
             return self.value>=other.value
         if isinstance(other,str):
             return self.value>=other
         return NotImplemented
-
-    def __eq__(self,other):
+    
+    def __eq__(self, other):
+        """Whether this feature's value is equal to the other's."""
         if type(self) is type(other):
             return self.value==other.value
         if isinstance(other,str):
             return self.value==other
         return NotImplemented
-
-    def __ne__(self,other):
+    
+    def __ne__(self, other):
+        """Whether this feature's value is not equal to the other's."""
         if type(self) is type(other):
             return self.value!=other.value
         if isinstance(other,str):
             return self.value!=other
         return NotImplemented
-
-    def __le__(self,other):
+    
+    def __le__(self, other):
+        """Whether this feature's value is lower or equal than the other's."""
         if type(self) is type(other):
             return self.value<=other.value
         if isinstance(other,str):
             return self.value<=other
         return NotImplemented
-
-    def __lt__(self,other):
+    
+    def __lt__(self, other):
+        """Whether this feature's value is lower than the other's."""
         if type(self) is type(other):
             return self.value<other.value
         if isinstance(other,str):
@@ -143,6 +236,22 @@ GuildFeature.vip                        = GuildFeature('VIP_REGIONS')
 GuildFeature.welcome_screen             = GuildFeature('WELCOME_SCREEN_ENABLED')
 
 class SystemChannelFlag(ReverseFlagBase):
+    """
+    The flags of a ``Guild``'s system channel.
+    
+    For Discord these flags tell, what ``MessageType`-s are not sent to the guild's system channel, but the wrapper
+    reverses this behaviour.
+    
+    There are also predefined ``SystemChannelFlag``-s:
+    
+    +-----------------------+-----------------------+
+    | Class attribute name  | value                 |
+    +=======================+=======================+
+    | NONE                  | ActivityFlag(0b11)    |
+    +-----------------------+-----------------------+
+    | ALL                   | ActivityFlag(0b00)    |
+    +-----------------------+-----------------------+
+    """
     __keys__ = {
         'welcome': 0,
         'boost' : 1,
@@ -150,10 +259,24 @@ class SystemChannelFlag(ReverseFlagBase):
     
     @property
     def none(self):
+        """
+        Whether the flag not allows any system messages at the respective system channel.
+        
+        Returns
+        -------
+        none : `bool`
+        """
         return self==self.NONE
     
     @property
     def all(self):
+        """
+        Whether the flag allows all the system messages at the respective system channel.
+        
+        Returns
+        -------
+        none : `bool`
+        """
         return self==self.ALL
     
     NONE    = NotImplemented
@@ -163,19 +286,53 @@ SystemChannelFlag.NONE  = SystemChannelFlag(0b11)
 SystemChannelFlag.ALL   = SystemChannelFlag(0b00)
 
 class GuildEmbed(object):
-    __slots__=('channel', 'enabled', 'guild',)
-    def __init__(self,data,guild):
+    """
+    Represents a guild's embed.
+    
+    Attributes
+    ----------
+    channel : ``Channeltext``
+        The respective guild's embed channel.
+    enabled : `bool`
+        Whether respective guild's embed is enabled.
+    guild : ``Guild``
+        The guild of the guild embed.
+    """
+    __slots__ = ('channel', 'enabled', 'guild',)
+    def __init__(self, data, guild):
+        """
+        Creates a new guild embed.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Guild embed data received from Discord.
+        guild : ``Guild``
+            The guild of the guild embed.
+        """
         self.guild  = guild
         self.enabled= guild.embed_enabled=data['enabled']
         channel_id=data['channel_id']
-        if channel_id is not None:
-            channel=guild.all_channel[int(channel_id)]
+        if (channel_id is not None):
+            channel=guild.all_channel.get(int(channel_id))
         else:
             channel=None
-        self.channel= guild.embed_channel=channel
+        self.channel = guild.embed_channel=channel
     
     @classmethod
-    def from_guild(cls,guild):
+    def from_guild(cls, guild):
+        """
+        Creates a guild embed directly from a ``Guild``.
+        
+        Parameters
+        ----------
+        guild : ``Guild``
+            The guild to create the guild embed from.
+        
+        Returns
+        -------
+        guild_embed : ``GuildEmbed``
+        """
         self=object.__new__(cls)
         self.enabled= guild.embed_enabled
         self.channel= guild.embed_channel
@@ -183,15 +340,42 @@ class GuildEmbed(object):
         return self
 
     def __repr__(self):
+        """Returns the representation of the guild embed."""
         return f'<{self.__class__.__name__} of guild {self.guild!r}>'
 
-class GWUserReflection(DiscordEntity):
-    __slots__ = ('activity_name', 'avatar_url', 'discrimintator', 'name', 'status')
+class GuildWidgetUser(DiscordEntity):
+    """
+    Represents an user object sent with a ``GuildWidget``'s data.
     
-    def __init__(self,data):
+    Attributes
+    ----------
+    id : `int`
+        The unique identificator number of the guild widget user. Can be between `0` and `99`.
+    activity_name : `None` or `str`
+        The guild widget user's activity's name if applicable.
+    avatar_url : `str` or `None`
+        The guild widget user's avatar url if applicable.
+    discriminator : `int`
+        The guild widget user's discriminator.
+    name : `str`
+        The guild widget user's name.
+    status : ``Status``
+        The guild widget user's status.
+    """
+    __slots__ = ('activity_name', 'avatar_url', 'discriminator', 'name', 'status')
+    
+    def __init__(self, data):
+        """
+        Creates a new guild widget user from the data received from Discord.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Guild widget user data received with ``GuildWidget``'s.
+        """
         self.name           = data['username']
         self.id             = int(data['id'])
-        self.discrimintator = int(data['discriminator'])
+        self.discriminator  = int(data['discriminator'])
         self.avatar_url     = data['avatar_url']
         self.status         = Status.INSTANCES[data['status']]
         try:
@@ -203,27 +387,102 @@ class GWUserReflection(DiscordEntity):
         
         self.activity_name  = activity_name
     
+    @property
+    def full_name(self):
+        """
+        The user's name with it's discriminator.
+        
+        Returns
+        -------
+        full_name : `str`
+        """
+        return f'{self.name}#{self.discriminator:0>4}'
+    
+    @property
+    def mention(self):
+        """
+        The mention of the user.
+        
+        Returns
+        -------
+        mention : `str`
+        """
+        return f'<@{self.id}>'
+    
+    @property
+    def mention_nick(self):
+        """
+        The mention to the user's nick.
+        
+        Returns
+        -------
+        mention : `str`
+        
+        Notes
+        -----
+        It actually has nothing to do with the user's nickname > <.
+        """
+        return f'<@!{self.id}>'
+    
     def __str__(self):
+        """Returns the name of the guild widget user."""
         return self.name
     
     def __repr__(self):
-        return f'<{self.__class__.__name__} name={self.name} ({self.id})>'
+        """Returns the representation of the guild widget user."""
+        return f'<{self.__class__.__name__} name={self.full_name!r} ({self.id})>'
 
-class GWChannelReflection(DiscordEntity):
+class GuildWidgetChannel(DiscordEntity):
+    """
+    Represents a ``GuildWidget``'s channel.
+    
+    Attributes
+    ----------
+    id : `int`
+        The unique identificator number of the guild widget channel.
+    name : `str`
+        The channel's name.
+    position : `int`
+        The channel's position.
+    """
     __slots__  = ('name', 'position')
     
-    def __init__(self,data):
+    def __init__(self, data):
+        """
+        Creates a new guild widget channel from the data received from Discord.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Guild widget channel data received with ``GuildWidget``'s.
+        """
         self.id = int(data['id'])
         self.name = data['name']
         self.position=data['name']
     
+    @property
+    def mention(self):
+        """
+        The channel's mention.
+        
+        Returns
+        -------
+        mention : `str`
+        """
+        return f'<#{self.id}>'
+    
     def __str__(self):
+        """Returns the guild widget channel's name."""
         return self.name
     
     def __repr__(self):
+        """Returns the guild widget channel's representation."""
         return f'<{self.__class__.__name__} name={self.name} ({self.id})>'
     
-    def __gt__(self,other):
+    def __gt__(self, other):
+        """
+        Whether this guild widget channel has greater (visible) position than the other at their respective guild.
+        """
         if type(self) is type(other):
             if self.position > other.position:
                 return True
@@ -231,10 +490,16 @@ class GWChannelReflection(DiscordEntity):
             if self.position == other.position:
                 if self.id > other.id:
                     return True
+            
+            return False
         
         return NotImplemented
     
-    def __ge__(self,other):
+    def __ge__(self, other):
+        """
+        Whether this guild widget channel has greater or equal (visible) position than the other at their respective
+        guild.
+        """
         if type(self) is type(other):
             if self.position > other.position:
                 return True
@@ -242,10 +507,16 @@ class GWChannelReflection(DiscordEntity):
             if self.position == other.position:
                 if self.id >= other.id:
                     return True
+            
+            return False
         
         return NotImplemented
     
-    def __le__(self,other):
+    def __le__(self, other):
+        """
+        Whether this guild widget channel has lower or equal (visible) position than the other at their respective
+        guild.
+        """
         if type(self) is type(other):
             if self.position < other.position:
                 return True
@@ -253,10 +524,15 @@ class GWChannelReflection(DiscordEntity):
             if self.position == other.position:
                 if self.id <= other.id:
                     return True
+            
+            return False
         
         return NotImplemented
     
-    def __lt__(self,other):
+    def __lt__(self, other):
+        """
+        Whether this guild widget channel has lower (visible) position than the other at their respective guild.
+        """
         if type(self) is type(other):
             if self.position < other.position:
                 return True
@@ -264,49 +540,111 @@ class GWChannelReflection(DiscordEntity):
             if self.position == other.position:
                 if self.id < other.id:
                     return True
+            
+            return False
         
         return NotImplemented
 
 class GuildWidget(object):
-    __slots__=('_cache', '_data', 'guild',)
-                 
-    def __init__(self,data):
-        self.guild=Guild._from_GW_data(data)
-        self._data=data
-        self._cache={}
+    """
+    Represents a ``Guild``'s widget.
     
-    json_url=property(URLS.guild_widget_json_url)
+    Attributes
+    ----------
+    _cache : `dict` of (`str`, `Any`) items
+        Internal cache used by cached properties.
+    _data : `dict` of (`str`, `Any`) items
+        The data sent by Discord and used by the cached properties of the guild widget instances.
+    guild : ``Guild``
+        The owner guild of the widget.
+    """
+    __slots__ = ('_cache', '_data', 'guild',)
+    
+    def __init__(self, data):
+        """
+        Creates a new guild widget.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            The requested guild widget data.
+        """
+        self.guild = Guild._from_GW_data(data)
+        self._data = data
+        self._cache = {}
+    
+    json_url = property(URLS.guild_widget_json_url)
     
     @property
     def id(self):
+        """
+        The unique identificator numbr of the guild widget's guild.
+        
+        Returns
+        -------
+        id : `int`
+        """
         return self.guild.id
     
     @property
     def name(self):
+        """
+        The name of the guild widget's guild.
+        
+        Returns
+        -------
+        name : `str`
+        """
         return self.guild.name
     
     @property
     def invite_url(self):
-        invite_url=self._data.get('instant_invite',None)
-        if invite_url is None:
-            return ''
-        return invite_url
+        """
+        The guild widget's invite url if applicable.
+        
+        Returns
+        -------
+        invite_url : `str` or `None`
+        """
+        return self._data.get('instant_invite',None)
     
     @property
-    def presence_count(self):
+    def online_count(self):
+        """
+        Estimated online count of the respective guild.
+        
+        Returns
+        -------
+        online_count : `int`
+        """
         return self._data['presence_count']
     
     @cached_property
     def users(self):
-        return [GWUserReflection(GWU_data) for GWU_data in self._data['members']]
+        """
+        Online users received with the guild widget.
+        
+        Returns
+        -------
+        users : `list` of ``GuildWidgetUser``
+        """
+        return [GuildWidgetUser(GWU_data) for GWU_data in self._data['members']]
 
     @cached_property
     def channels(self):
-        return [GWChannelReflection(GWC_data) for GWC_data in self._data['channels']]
+        """
+        Voice channels received with the guild widget.
+        
+        Returns
+        -------
+        users : `list` of ``GuildWidgetChannel``
+        """
+        return [GuildWidgetChannel(GWC_data) for GWC_data in self._data['channels']]
     
     def __repr__(self):
+        """Returns the representation of the guild widget."""
         return f'<{self.__class__.__name__} of guild {self.guild.name}>'
-    
+
 #we need to ignore client adding, because clients count to being not
 #partial. If a guild is not partial it wont get update on Guild.__new__
 def PartialGuild(data):
@@ -317,12 +655,22 @@ def PartialGuild(data):
         return GUILDS[guild_id]
     except KeyError:
         pass
-
+    
     guild=object.__new__(Guild)
     GUILDS[guild_id]=guild
     guild.id=guild_id
-    guild.available=not data.pop('unavailable',False)
-
+    
+    # do not use pop, at later versions the received data might be read-only.
+    try:
+        available = not data['unavailable']
+    except KeyError:
+        available = True
+        restricted_data_limit = 2
+    else:
+        restricted_data_limit = 3
+    
+    guild.available = available
+    
     # set default values
     guild._boosters = None
     guild._cache_perm={}
@@ -371,8 +719,8 @@ def PartialGuild(data):
     guild.webhooks_uptodate=False
     guild.widget_channel=None
     guild.widget_enabled=False
-
-    if len(data)<2:
+    
+    if len(data) < restricted_data_limit:
         guild.name=''
         guild.icon=0
         guild.has_animated_icon=False
@@ -382,7 +730,7 @@ def PartialGuild(data):
     
     guild.name=data.get('name','')
     
-    icon=data.get('icon',None)
+    icon=data.get('icon')
     if icon is None:
         guild.icon=0
         guild.has_animated_icon=False
@@ -393,7 +741,7 @@ def PartialGuild(data):
         guild.icon=int(icon,16)
         guild.has_animated_icon=False
     
-    splash=data.get('splash',None)
+    splash=data.get('splash')
     guild.splash=0 if splash is None else int(splash,16)
     
     guild.description=data.get('description',None)
@@ -437,7 +785,7 @@ class Guild(DiscordEntity, immortal=True):
             guild=object.__new__(cls)
             GUILDS[guild_id]=guild
             guild.id=guild_id
-
+            
             guild.clients=[]
             guild.users={}
             guild.emojis={}

@@ -119,6 +119,7 @@ class GatewayRateLimiter(object):
             wakeupper.cancel()
     
     def __repr__(self):
+        """Returns the gateway ratelimiter's representation."""
         result = [
             '<',
             self.__class__.__name__,
@@ -141,6 +142,61 @@ class GatewayRateLimiter(object):
         return ''.join(result)
 
 class DiscordGateway(object):
+    """
+    The gateway used by ``Client``-s to communicate with Discord with secure websocket.
+    
+    Attributes
+    ----------
+    _buffer : `bytearray`
+        A buffer used to store not finished received payloads.
+    _decompresser : `zlib.Decompress`
+        Zlib decompressor used to decompress the received data.
+    client : ``Client``
+        The owner client of the gateway.
+    kokoro : `None` or `Kokoro`
+        The heart of the gateway, sends beat-data at set intervals. If does not receives answer in time, restarts
+        the gateway.
+    ratelimit_handler : ``GatewayRateLimiter``
+        The ratelimit handler of the gateway.
+    sequence : `None` or `int`
+        Last sequence number received.
+    session_id : `None` or `str`
+        Last session id received at `READY`.
+    shard_id : `int`
+        The shard id of the gateway. If the respective client is not using sharding, it is set to `0` every time.
+    websocket : `None` or `WSClient`
+        The websocket client of the gateway.
+    
+    Class Attributes
+    ----------------
+    DISPATCH : `int` = `0`
+        Receive only, used at ``._received_message``.
+    HEARTBEAT : `int` = `1`
+        Send and receive, used at ``._beat`` and at ``._special_operation``.
+    IDENTIFY : `int` = `2`
+        Send only, used ``._identify``.
+    PRESENCE : `int` = `3`
+        Send only, used at ``Client.client_edit_presence``.
+    VOICE_STATE : `int` = `4`
+        Send only, used at ``._change_voice_state``
+    VOICE_PING : `int` = `5`
+        Removed.
+    RESUME : `int` = `6`
+        Send only, used at ``._resume``.
+    RECONNECT : `int` = `7`
+        Receive only, used at ``._special_operation``.
+    REQUEST_MEMBERS : `int` = `8`
+        Send only, used at ``Client._request_members_loop``, ``Client._request_members`` and at
+        ``Client.request_member``.
+    INVALIDATE_SESSION : `int` = `9`
+        Receive only, used at ``._special_operation``.
+    HELLO : `int` = `10`
+        Receive only, used at ``._special_operation``.
+    HEARTBEAT_ACK : `int` = `11`
+        Receive only, used at ``._special_operation``.
+    GUILD_SYNC : `int` = `12`
+        Send only, not used.
+    """
     __slots__ = ('_buffer', '_decompresser', 'client', 'kokoro', 'ratelimit_handler', 'sequence', 'session_id',
         'shard_id', 'websocket')
     
@@ -159,6 +215,16 @@ class DiscordGateway(object):
     GUILD_SYNC         = 12
     
     def __init__(self, client, shard_id=0):
+        """
+        Creates a gateway with it's default attributes.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The owner client of the gateway.
+        shard_id : `int`, Optional
+            The shard id of the gateway. Defaults to `0`, if the owner client does not use sharding.
+        """
         self.client         = client
         self.shard_id       = shard_id
         self.websocket      = None
@@ -171,6 +237,9 @@ class DiscordGateway(object):
         self.ratelimit_handler = GatewayRateLimiter()
     
     async def start(self):
+        """
+        Starts the gateway's `.kokoro`.
+        """
         kokoro=self.kokoro
         if kokoro is None:
             self.kokoro = await Kokoro(self)
@@ -179,6 +248,23 @@ class DiscordGateway(object):
         await kokoro.restart()
     
     async def run(self):
+        """
+        Keeps the gateway receiving message and processing it. If the gateway needs to be reconnected, reconnects
+        itself. If connecting cannot succeed, because there is no internet returns `True`. If the `.client` is
+        stopped, then returns `False`.
+        
+        If `True` is returned the respective client stops all other gateways as well and tries to reconnect. When
+        the internet is back the client will launch back the gateway.
+        
+        Returns
+        -------
+        no_internet_stop : `bool`
+        
+        Raises
+        ------
+        IntentError
+            The client tries to connect with bad or not acceptable intent values.
+        """
         client=self.client
         while True:
             try:
@@ -214,7 +300,24 @@ class DiscordGateway(object):
     
     #connecting, message receive and processing
     
-    async def _connect(self,resume=False):
+    async def _connect(self, resume=False):
+        """
+        Connects the gateway to Discord. If the connecting was successfull will start it's `.kokoro` as well.
+        
+        Parameters
+        ----------
+        resume : `bool`
+            Whether the gateway should try to resume the existing connection.
+        
+        Raises
+        ------
+        ConnectionError
+        OSError
+        ValueError
+        ConnectionClosed
+        InvalidHandshake
+        WebSocketProtocolError
+        """
         while True:
             self.kokoro.terminate()
             websocket=self.websocket
@@ -247,6 +350,19 @@ class DiscordGateway(object):
 
     #w8s for the next event
     async def _poll_event(self):
+        """
+        Waits for sockets from Discord till it collected a full one. If it did, decompresses and processes it.
+        Returns `True`, if the gateway should reconnect.
+        
+        Returns
+        -------
+        should_reconnect : `bool`
+        
+        Raises
+        ------
+        TimeoutError
+            If the gateways's `.kokoro` is not beating, meanwhile it should.
+        """
         websocket=self.websocket
         if websocket is None:
             return True
@@ -272,8 +388,26 @@ class DiscordGateway(object):
         except zlib.error as err:
             #we need a full reset
             return True
+    
+    async def _received_message(self, message):
+        """
+        Processes the message sent by Discord. If the message is `DISPATCH`, ensures the specific parser for it and
+        returns `False`. For every other operation code it calls ``._special_operation`` and returns that's return.
         
-    async def _received_message(self,message):
+        Parameters
+        ----------
+        message : `bytes`
+            The received message.
+        
+        Returns
+        -------
+        should_reconnect : `bool`
+        
+        Raises
+        ------
+        TimeoutError
+            If the gateways's `.kokoro` is not beating, meanwhile it should.
+        """
         # return True if we should reconnect
         message     = from_json(message)
 
@@ -304,7 +438,26 @@ class DiscordGateway(object):
 
         return False
 
-    async def _special_operation(self,operation,data):
+    async def _special_operation(self, operation, data):
+        """
+        Handles special operations (so everything except `DISPATCH`). Returns `True` if the gateway should reconnect.
+        
+        Parameters
+        ----------
+        operation : `int`
+            The gateway operation's code what the function will handle.
+        data : `dict` of (`str`, `Any`) items
+            Deserialized json data.
+        
+        Returns
+        -------
+        should_reconnect : `bool`
+        
+        Raises
+        ------
+        TimeoutError
+            If the gateways's `.kokoro` is not beating, meanwhile it should.
+        """
         kokoro=self.kokoro
 
         if operation==self.HELLO:
@@ -327,7 +480,7 @@ class DiscordGateway(object):
         
         if operation==self.RECONNECT:
             self.client._freeze_voice_for(self)
-            await self._terminate()
+            await self.terminate()
             return True
         
         if operation==self.INVALIDATE_SESSION:
@@ -350,12 +503,52 @@ class DiscordGateway(object):
     
     @property
     def latency(self):
-        kokoro=self.kokoro
+        """
+        The latency of the websocket in seconds. If no latency is recorded, will return `Kokoro.DEFAULT_LATENCY`.
+        
+        Returns
+        -------
+        latency : `float`
+        """
+        kokoro = self.kokoro
         if kokoro is None:
             return Kokoro.DEFAULT_LATENCY
         return kokoro.latency
     
-    async def send_as_json(self,data):
+    async def terminate(self):
+        """
+        Terminates the gateway's ``.kokoro`` and closes it's `.websocket`` with close code of `4000`.
+        """
+        self.kokoro.terminate()
+        websocket=self.websocket
+        if websocket is None:
+            return
+        self.websocket=None
+        await websocket.close(4000)
+    
+    async def close(self):
+        """
+        Cancels the gateway's ``.kokoro`` and closes it's `.websocket`` with close code of `1000`.
+        """
+        self.kokoro.cancel()
+        self.ratelimit_handler.cancel()
+        
+        websocket=self.websocket
+        if websocket is None:
+            return
+        
+        self.websocket = None
+        await websocket.close(1000)
+    
+    async def send_as_json(self, data):
+        """
+        Sends the data as json to Discord on the gateway's ``.websocket``. If there is no websocket, or the websocket
+        is closed will not raise.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items or `list` of `Any`
+        """
         websocket=self.websocket
         if websocket is None:
             return
@@ -368,23 +561,16 @@ class DiscordGateway(object):
         except ConnectionClosed:
             pass
     
-    async def close(self, code=1000):
-        self.kokoro.cancel()
-        self.ratelimit_handler.cancel()
-        
-        websocket=self.websocket
-        if websocket is None:
-            return
-        
-        self.websocket = None
-        await websocket.close(code)
-    
     def __repr__(self):
-        return f'<{self.__class__.__name__} client={self.client.full_name}, shard_id={self.shard_id}>'
+        """Returns the representation of the gateway."""
+        return f'<{self.__class__.__name__} client={self.client.full_name!r}, shard_id={self.shard_id}>'
     
     #special operations
     
     async def _identify(self):
+        """
+        Sends an `IDENTIFY` packet to Discord.
+        """
         client=self.client
         activity=client._activity
         if activity is ActivityUnknown:
@@ -432,6 +618,9 @@ class DiscordGateway(object):
         await self.send_as_json(data)
         
     async def _resume(self):
+        """
+        Sends a `RESUME` packet to Discord.
+        """
         data = {
             'op': self.RESUME,
             'd' : {
@@ -443,7 +632,21 @@ class DiscordGateway(object):
         
         await self.send_as_json(data)
 
-    async def _change_voice_state(self,guild_id,channel_id,self_mute=False,self_deaf=False):
+    async def _change_voice_state(self, guild_id, channel_id, self_mute=False, self_deaf=False):
+        """
+        Sends a `VOICE_STATE` packet to Discord.
+        
+        Parameters
+        ----------
+        guild_id : `int`
+            The voice client's guild's id.
+        channel_id : `int`
+            The voice client's channel's id.
+        self_mute : `bool`
+            Whether the voice client is muted.
+        self_deaf : `bool`
+            Whether the voice client is deafen.
+        """
         data = {
             'op': self.VOICE_STATE,
             'd' : {
@@ -456,21 +659,59 @@ class DiscordGateway(object):
         await self.send_as_json(data)
     
     async def _beat(self):
+        """
+        Sends a `VOICE_STATE` packet to Discord.
+        """
         data = {
             'op': self.HEARTBEAT,
             'd' : self.sequence,
                 }
         await self.send_as_json(data)
 
-    async def _terminate(self):
-        self.kokoro.terminate()
-        websocket=self.websocket
-        if websocket is None:
-            return
-        self.websocket=None
-        await websocket.close(4000)
-        
+
 class DiscordGatewayVoice(object):
+    """
+    The gateway used by ``VoiceClient``-s to communicate with Discord with secure websocket.
+    
+    Attributes
+    ----------
+    client : ``VoiceClient``
+        The owner voice client of the gateway.
+    kokoro : `None` or `Kokoro`
+        The heart of the gateway, sends beat-data at set intervals. If does not receives answer in time, restarts
+        the gateway.
+    ratelimit_handler : ``GatewayRateLimiter``
+        The ratelimit handler of the gateway.
+    websocket : `None` or `WSClient`
+        The websocket client of the gateway.
+    
+    Class Attributes
+    ----------------
+    IDENTIFY : `int` = `0`
+        Send only, used at ``._identify``.
+    SELECT_PROTOCOL : `int` = `1`
+        Send only, used at ``._select_protocol``.
+    READY : `int` = `2`
+        Receive only, used at ``._initial_connection``.
+    HEARTBEAT : `int` = `3`
+        Send only, used at ``._beat``.
+    SESSION_DESCRIPTION : `int` = `4`
+        Receive only, used at ``._received_message``.
+    SPEAKING : `int` = `5`
+        Send and receive, used at ``._set_speaking`` and at ``._received_message``.
+    HEARTBEAT_ACK : `int` = `6`
+        Receive only, used at ``._received_message``.
+    RESUME : `int` = `7`
+        Send only, used at ``._resume``.
+    HELLO : `int` = `8`
+        Receive only, used at ``._received_message``.
+    INVALIDATE_SESSION : `int` = `9`
+        Receive only, used at ``._received_message``.
+    CLIENT_CONNECT : `int` = `12`
+        Receive only, used at ``._received_message``.
+    CLIENT_DISCONNECT : `int` = `13`
+        Receive only, used at ``._received_message``.
+    """
     __slots__ = ('client', 'kokoro', 'ratelimit_handler', 'websocket')
         
     IDENTIFY            = 0
@@ -485,8 +726,16 @@ class DiscordGatewayVoice(object):
     INVALIDATE_SESSION  = 9
     CLIENT_CONNECT      = 12
     CLIENT_DISCONNECT   = 13
-
+    
     def __init__(self, voice_client):
+        """
+        Creates a voice gateway with it's default attributes.
+        
+        Parameters
+        ----------
+        client : ``VoiceClient``
+            The owner client of the gateway.
+        """
         self.websocket  = None
         self.client     = voice_client
         
@@ -494,6 +743,9 @@ class DiscordGatewayVoice(object):
         self.ratelimit_handler = GatewayRateLimiter()
     
     async def start(self):
+        """
+        Starts the gateway's `.kokoro`.
+        """
         kokoro=self.kokoro
         if kokoro is None:
             self.kokoro = await Kokoro(self)
@@ -503,10 +755,30 @@ class DiscordGatewayVoice(object):
     
     #connecting, message receive and processing
     
-    async def connect(self,resume=False):
+    async def connect(self, resume=False):
+        """
+        Connects the gateway to Discord. If the connecting was successfull, will start it's `.kokoro` as well.
+        
+        Parameters
+        ----------
+        resume : `bool`
+            Whether the gateway should try to resume the existing connection.
+        
+        Raises
+        ------
+        ConnectionError
+        OSError
+        ValueError
+        ConnectionClosed
+        InvalidHandshake
+        WebSocketProtocolError
+        """
         self.kokoro.terminate()
-        if self.websocket is not None and not self.websocket.closed:
-            await self.websocket.close(4000)
+        websocket=self.websocket
+        if (websocket is not None) and (not websocket.closed):
+            await websocket.close(4000)
+            self.websocket=None
+        
         gateway=f'wss://{self.client._endpoint}/?v=4'
         self.websocket = await self.client.client.http.connect_ws(gateway)
         self.kokoro.start_beating()
@@ -515,25 +787,33 @@ class DiscordGatewayVoice(object):
             await self._resume()
         else:
             await self._identify()
-
-    async def send_as_json(self,data):
-        websocket=self.websocket
-        if websocket is None:
-            return
-        
-        if await self.ratelimit_handler:
-            return
-        
-        try:
-            await websocket.send(to_json(data))
-        except ConnectionClosed:
-            pass
-
+    
     async def _poll_event(self):
+        """
+        Waits to receive a message from Discord, then calls ``._received_message``.
+        
+        Raises
+        ------
+        TimeoutError
+            If the gateways's `.kokoro` is not beating, meanwhile it should.
+        """
         message = await self.websocket.recv()
         await self._received_message(message)
     
-    async def _received_message(self,message):
+    async def _received_message(self, message):
+        """
+        Processes the message sent by Discord.
+        
+        Parameters
+        ----------
+        message : `bytes`
+            The received message.
+        
+        Raises
+        ------
+        TimeoutError
+            If the gateways's `.kokoro` is not beating, meanwhile it should.
+        """
         message=from_json(message)
         
         operation=message['op']
@@ -550,11 +830,11 @@ class DiscordGatewayVoice(object):
             #send a heartbeat immediately
             await kokoro.beat_now()
             return
-
+        
         if operation==self.HEARTBEAT_ACK:
             kokoro.answered()
             return
-
+        
         if operation==self.SESSION_DESCRIPTION:
             #data['mode'] is same as our default every time?
             self.client._secret_box=SecretBox(bytes(data['secret_key']))
@@ -602,12 +882,36 @@ class DiscordGatewayVoice(object):
     
     @property
     def latency(self):
+        """
+        The latency of the websocket in seconds. If no latency is recorded, will return `Kokoro.DEFAULT_LATENCY`.
+        
+        Returns
+        -------
+        latency : `float`
+        """
         kokoro=self.kokoro
         if kokoro is None:
             return Kokoro.DEFAULT_LATENCY
         return kokoro.latency
     
-    async def close(self, code=1000):
+    async def terminate(self):
+        """
+        Terminates the gateway's ``.kokoro`` and closes it's `.websocket`` with close code of `4000`.
+        """
+        kokoro=self.kokoro
+        if kokoro is not None:
+            kokoro.terminate()
+            
+        websocket=self.websocket
+        if websocket is None:
+            return
+        self.websocket=None
+        await websocket.close(4000)
+    
+    async def close(self):
+        """
+        Cancels the gateway's ``.kokoro`` and closes it's `.websocket`` with close code of `1000`.
+        """
         self.ratelimit_handler.cancel()
         
         kokoro = self.kokoro
@@ -620,14 +924,39 @@ class DiscordGatewayVoice(object):
             return
         
         self.websocket = None
-        await websocket.close(code)
-
+        await websocket.close(1000)
+    
+    async def send_as_json(self, data):
+        """
+        Sends the data as json to Discord on the gateway's ``.websocket``. If there is no websocket, or the websocket
+        is closed will not raise.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items or `list` of `Any`
+        """
+        websocket=self.websocket
+        if websocket is None:
+            return
+        
+        if await self.ratelimit_handler:
+            return
+        
+        try:
+            await websocket.send(to_json(data))
+        except ConnectionClosed:
+            pass
+    
     def __repr__(self):
+        """Returns the representation of the gateway."""
         return f'<{self.__class__.__name__} of {self.client}>'
     
     #special operations
 
     async def _identify(self):
+        """
+        Sends an `IDENTIFY` packet to Discord.
+        """
         voice_client=self.client
 
         data = {
@@ -642,6 +971,9 @@ class DiscordGatewayVoice(object):
         await self.send_as_json(data)
     
     async def _resume(self):
+        """
+        Sends a `RESUME` packet to Discord.
+        """
         voice_client=self.client
 
         data = {
@@ -654,7 +986,17 @@ class DiscordGatewayVoice(object):
                 }
         await self.send_as_json(data)
     
-    async def _select_protocol(self,ip,port):
+    async def _select_protocol(self, ip, port):
+        """
+        Sends a `SELECT_PROTOCOL` packet to Discord.
+        
+        Parameters
+        ----------
+        ip : `str`
+            The received ip of the voice client to use.
+        port : `int`
+            The received port of the voice client to use.
+        """
         data = {
             'op': self.SELECT_PROTOCOL,
             'd' : {
@@ -670,14 +1012,25 @@ class DiscordGatewayVoice(object):
         await self.send_as_json(data)
     
     async def _beat(self):
+        """
+        Sends a `HEARTBEAT` packet to Discord.
+        """
         data = {
             'op': self.HEARTBEAT,
             'd' : int(time_now()*1000),
                 }
         
         await self.send_as_json(data)
-
-    async def _initial_connection(self,data):
+    
+    async def _initial_connection(self, data):
+        """
+        Processes the data from `READY` operation and selects protocol with ``._select_protocol``.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received data from Discord.
+        """
         voice_client=self.client
         voice_client._source=data['ssrc']
         voice_client._voice_port=data['port']
@@ -688,12 +1041,17 @@ class DiscordGatewayVoice(object):
         voice_client.socket.sendto(packet,(voice_client._endpoint_ip,voice_client._voice_port))
         received = await KOKORO.sock_recv(voice_client.socket,70)
         # the ip is ascii starting at the 4th byte and ending at the first null
-        voice_client._ip=received[4:received.index(0,4)].decode('ascii')
-        voice_client._port=int.from_bytes(received[-2:],'big')
+        voice_client._ip = ip = received[4:received.index(0,4)].decode('ascii')
+        voice_client._port = port =int.from_bytes(received[-2:],'big')
         
-        await self._select_protocol(voice_client._ip,voice_client._port)
+        await self._select_protocol(ip, port)
         
     async def _send_silente_packet(self):
+        """
+        Sends silence packets to Discord on the gateway's voice client's socket.
+        
+        Used after connecting.
+        """
         await self._set_speaking(1)
         voice_client=self.client
         socket=voice_client.socket
@@ -730,7 +1088,15 @@ class DiscordGatewayVoice(object):
         
         await self._set_speaking(voice_client.speaking)
 
-    async def _set_speaking(self,is_speaking):
+    async def _set_speaking(self, is_speaking):
+        """
+        Sends a `SPEAKING` packet with given `is_speaking` state.
+        
+        Parameters
+        ----------
+        is_speaking : `bool`
+            Whether the voice client should show up as speaking and be able to send voice data or not.
+        """
         data = {
             'op':self.SPEAKING,
             'd' : {
@@ -740,32 +1106,42 @@ class DiscordGatewayVoice(object):
                 }
         
         await self.send_as_json(data)
-    
-    async def _terminate(self,):
-        kokoro=self.kokoro
-        if kokoro is not None:
-            kokoro.terminate()
-            
-        websocket=self.websocket
-        if websocket is None:
-            return
-        self.websocket=None
-        await websocket.close(4000)
-    
+
 class DiscordGatewaySharder(object):
-    __slots__=('client', 'gateways',)
+    """
+    Sharder gateway used to control more ``DiscordGateway``-s at the same time.
     
-    def __init__(self,client):
-        self.client     = client
+    Attributes
+    ----------
+    client : ``Client``
+        The owner client of the gateway.
+    gateways : `list` of ``DiscordGateway``
+        The controlled gateways.
+    """
+    __slots__ = ('client', 'gateways',)
+    
+    def __init__(self, client):
+        """
+        Creates a sharder gateway with it's default attributes.
         
-        gateways        = []
+        Parameters
+        ----------
+        client : ``Client``
+            The owner client of the gateway.
+        """
+        self.client = client
+        
+        gateways = []
         for shard_id in range(client.shard_count):
             gateway=DiscordGateway(client,shard_id)
             gateways.append(gateway)
         
-        self.gateways   = gateways
+        self.gateways = gateways
 
     async def start(self):
+        """
+        Starts the gateways of the sharder gateway.
+        """
         tasks=[]
         for gateway in self.gateways:
             task=Task(gateway.start(), KOKORO)
@@ -775,8 +1151,16 @@ class DiscordGatewaySharder(object):
         
         for task in tasks:
             task.cancel()
-        
+    
     async def run(self):
+        """
+        Runs the gateway sharder's gateways. If any of them returns, stops the rest as well. And if any of them
+        returned `True`, then returns `True`, else `False`.
+        
+        Returns
+        -------
+        no_internet_stop : `bool`
+        """
         tasks=[]
         
         for gateway in self.gateways:
@@ -790,7 +1174,7 @@ class DiscordGatewaySharder(object):
         
         while done:
             if done.pop().result():
-                no_internet_stop=True
+                no_internet_stop = True
                 break
         else:
             no_internet_stop = False
@@ -806,6 +1190,14 @@ class DiscordGatewaySharder(object):
     
     @property
     def latency(self):
+        """
+        The average latency of the gateways' websockets in seconds. If no latency was recorded, will return
+        `Kokoro.DEFAULT_LATENCY`.
+        
+        Returns
+        -------
+        latency : `float`
+        """
         total=0
         count=0
         for gateway in self.gateways:
@@ -820,7 +1212,36 @@ class DiscordGatewaySharder(object):
         
         return Kokoro.DEFAULT_LATENCY
     
-    async def send_as_json(self,data):
+    async def terminate(self):
+        """
+        Terminates the gateway sharder's gateways.
+        """
+        tasks=[]
+        for gateway in self.gateways:
+            task=Task(gateway.terminate(), KOKORO)
+            tasks.append(task)
+        
+        await WaitTillAll(tasks, KOKORO)
+    
+    async def close(self):
+        """
+        Cancels the gateway sharder's gateways.
+        """
+        tasks=[]
+        for gateway in self.gateways:
+            task=Task(gateway.close(), KOKORO)
+            tasks.append(task)
+        
+        await WaitTillAll(tasks, KOKORO)
+    
+    async def send_as_json(self, data):
+        """
+        Sends the data as json to Discord on the gateway's ``.websocket``.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items or `list` of `Any`
+        """
         data=to_json(data)
         
         tasks=[]
@@ -836,7 +1257,13 @@ class DiscordGatewaySharder(object):
         for task in done:
             task.result()
     
+    @staticmethod
     async def _send_json(gateway, data):
+        """
+        Internal function of the gateways sharder to send already converted data with it's gateways.
+        
+        If the given gateway has no websocket, or if it is closed, will not raise.
+        """
         websocket = gateway.websocket
         if websocket is None:
             return
@@ -849,14 +1276,6 @@ class DiscordGatewaySharder(object):
         except ConnectionClosed:
             pass
     
-    async def close(self, code=1000):
-        tasks=[]
-        for gateway in self.gateways:
-            task=Task(gateway.close(code), KOKORO)
-            tasks.append(task)
-        
-        await WaitTillAll(tasks, KOKORO)
-    
     def __repr__(self):
+        """Returns the representation of the gateway sharder."""
         return f'<{self.__class__.__name__} client={self.client.full_name}, shard_count={self.client.shard_count}>'
-

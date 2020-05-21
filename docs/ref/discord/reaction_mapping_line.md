@@ -1,8 +1,7 @@
 # class `reaction_mapping_line`
 
 A set, which contains the [users](User.md) who reacted with the given
-[`emoji`](Emoji.md) on a [message](Message.md). Stores the users ordered by
-their id.
+[`emoji`](Emoji.md) on a [message](Message.md).
 
 - source : [emoji.py](https://github.com/HuyaneMatsu/hata/blob/master/hata/discord/emoji.py)
 

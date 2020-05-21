@@ -543,24 +543,9 @@ class ChannelTextBase:
         channel.messages=deque(maxlen=limit)
     
     def _get_message_keep_limit(channel):
-        """
-        Returns the channel's own limit of how much messages it should keep before removing their reference.
-        
-        Returns
-        -------
-        limit : `int`
-        """
         return channel._message_keep_limit
     
     def _set_message_keep_limit(channel, limit):
-        """
-        Sets the channel's own limit of ho much messages it should keep before removing last.
-        
-        Parameters
-        ----------
-        limit : `int`
-            `.messages` new maximal length. Negative numbers are interpretered as `0`.
-        """
         if channel._message_keep_limit==limit:
             return
         if limit<=0:
@@ -576,7 +561,7 @@ class ChannelTextBase:
     message_keep_limit=property(_get_message_keep_limit,_set_message_keep_limit)
     del _get_message_keep_limit, _set_message_keep_limit
     # If opt level is under2, set docstring
-    if (message_keep_limit.__doc__ is not None):
+    if (_messageable_init.__doc__ is not None):
         message_keep_limit.__doc__ = (
         """
         A property for getting or setting how much message the channel can store before removing the last.
@@ -1670,7 +1655,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data received from Discord.
-            
+        
         Returns
         -------
         old : `dict` of (`str`, `Any`) items
@@ -1805,7 +1790,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         """
         Precreates the channel by creating a partial one with the given parameters. When the channel is loaded
         the precrated channel will be picked up. If an already existing channel would be precreated, returns that
-        instead an updates that only, if that is a partial channel.
+        instead and updates that only, if that is a partial channel.
         
         Parameters
         ----------
@@ -2157,7 +2142,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         """
         Precreates the channel by creating a partial one with the given parameters. When the channel is loaded
         the precrated channel will be picked up. If an already existing channel would be precreated, returns that
-        instead an updates that only, if that is a partial channel.
+        instead and updates that only, if that is a partial channel.
         
         Parameters
         ----------
@@ -2347,8 +2332,8 @@ class ChannelVoice(ChannelGuildBase):
     
     def _update(self,data):
         """
-        Updates the channel and returns it's overwritten old attributes as a `dict` with a `attribute-name` -`old-value`
-        relation.
+        Updates the channel and returns it's overwritten old attributes as a `dict` with a `attribute-name` -
+        `old-value` relation.
         
         Parameters
         ----------
@@ -2460,7 +2445,7 @@ class ChannelVoice(ChannelGuildBase):
         """
         Precreates the channel by creating a partial one with the given parameters. When the channel is loaded
         the precrated channel will be picked up. If an already existing channel would be precreated, returns that
-        instead an updates that only, if that is a partial channel.
+        instead and updates that only, if that is a partial channel.
         
         Parameters
         ----------
@@ -2856,7 +2841,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         """
         Precreates the channel by creating a partial one with the given parameters. When the channel is loaded
         the precrated channel will be picked up. If an already existing channel would be precreated, returns that
-        instead an updates that only, if that is a partial channel.
+        instead and updates that only, if that is a partial channel.
         
         Parameters
         ----------
@@ -3136,7 +3121,7 @@ class ChannelCategory(ChannelGuildBase):
         """
         Precreates the channel by creating a partial one with the given parameters. When the channel is loaded
         the precrated channel will be picked up. If an already existing channel would be precreated, returns that
-        instead an updates that only, if that is a partial channel.
+        instead and updates that only, if that is a partial channel.
         
         Parameters
         ----------
@@ -3430,7 +3415,7 @@ class ChannelStore(ChannelGuildBase):
         """
         Precreates the channel by creating a partial one with the given parameters. When the channel is loaded
         the precrated channel will be picked up. If an already existing channel would be precreated, returns that
-        instead an updates that only, if that is a partial channel.
+        instead and updates that only, if that is a partial channel.
         
         Parameters
         ----------

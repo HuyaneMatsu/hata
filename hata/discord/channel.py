@@ -20,7 +20,7 @@ from .client_core import GC_cycler
 from .webhook import Webhook, WebhookRepr
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_image_hash, preconvert_bool
 
-from . import webhook, message, ratelimit
+from . import webhook, message, ratelimit, http
 
 Client = NotImplemented
 
@@ -106,7 +106,7 @@ class ChannelBase(DiscordEntity, immortal=True):
     """
     INTERCHANGE = (0,)
     
-    def __new__(cls, data, client, guild=None):
+    def __new__(cls, data, client=None, guild=None):
         """
         Creates a channel from the channel data received from Discord. If the channel already exists and it is partial,
         then updates it.
@@ -115,8 +115,8 @@ class ChannelBase(DiscordEntity, immortal=True):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data reeceive from Discord.
-        client : ``Client``
-            The client, who received the channel's data.
+        client : ``Client``, Optional
+            The client, who received the channel's data, if any.
         guild : ``Guild``, Optional
             The guild of the channel, if it has.
         
@@ -135,8 +135,16 @@ class ChannelBase(DiscordEntity, immortal=True):
             update=True
         
         if update:
-            #make sure about this
-            channel._finish_init(data, client, guild)
+            # make sure about this
+            if issubclass(cls, ChannelGuildBase):
+                secondary_argument = guild
+            else:
+                secondary_argument = client
+            
+            assert (secondary_argument is not None), \
+                f'Secondary argument cannot be `None` when calling `channel._finish_init`.'
+            
+            channel._finish_init(data, secondary_argument)
         
         if cls is ChannelPrivate:
             if channel.users[0] is client:
@@ -286,7 +294,7 @@ class ChannelBase(DiscordEntity, immortal=True):
     
     def get_user_like(self, name, default=None):
         """
-        Searches a user, who's name starts with the given name and returns the first find.
+        Searches a user, who's name starts with the given string and returns the first find.
         
         Parameters
         ----------
@@ -1424,7 +1432,7 @@ class ChannelGuildBase(ChannelBase):
 
     def get_user_like(self, name ,default=None):
         """
-        Searches a user, who's name starts with the given name and returns the first find. Users, who cannot see the
+        Searches a user, who's name starts with the given string and returns the first find. Users, who cannot see the
         channel are ignored.
         
         Parameters
@@ -1463,7 +1471,7 @@ class ChannelGuildBase(ChannelBase):
     
     def get_users_like(self, name):
         """
-        Searches the users, who's name starts with the given string. Users, who cannot see the channel are ignored.
+        Searches the users, who's name start with the given string. Users, who cannot see the channel are ignored.
         
         Parameters
         ----------
@@ -1554,7 +1562,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
     ORDER_GROUP = 0
     INTERCHANGE = (0, 5,)
 
-    def _finish_init(self, data, client, guild):
+    def _finish_init(self, data, guild):
         """
         Finishes the channel's initialization with setting it's channel type specific attributes.
         
@@ -1562,8 +1570,6 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data recevied from Discord.
-        client : ``Client``
-            The client, who received the channel data.
         guild : ``Guild``
             The channel's guild.
         """
@@ -1941,7 +1947,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
     INTERCHANGE=(1,)
     type=1
     
-    def _finish_init(self, data, client, guild):
+    def _finish_init(self, data, client):
         """
         Finishes the channel's initialization with setting it's channel type specific attributes.
         
@@ -1951,8 +1957,6 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
             Channel data recevied from Discord.
         client : ``Client``
             The client, who received the channel data.
-        guild : `None`
-            Compabtility parameter with the other channel types.
         """
         self.users=[User(data['recipients'][0]),client]
         self.users.sort()
@@ -2124,7 +2128,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
             channel=object.__new__(cls)
             channel.id=channel_id
             CHANNELS[channel_id]=channel
-            channel._finish_init(data,client,None)
+            channel._finish_init(data,client)
             result=channel
         else:
             result=None #returning None is intended.
@@ -2224,7 +2228,7 @@ class ChannelVoice(ChannelGuildBase):
     INTERCHANGE = (2,)
     type = 2
 
-    def _finish_init(self, data, client, guild):
+    def _finish_init(self, data, guild):
         """
         Finishes the channel's initialization with setting it's channel type specific attributes.
         
@@ -2232,8 +2236,6 @@ class ChannelVoice(ChannelGuildBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data recevied from Discord.
-        client : ``Client``
-            The client, who received the channel data.
         guild : ``Guild``
             The channel's guild.
         """
@@ -2577,7 +2579,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
     INTERCHANGE = (3,)
     type = 3
 
-    def _finish_init(self, data, client, guild):
+    def _finish_init(self, data, client):
         """
         Finishes the channel's initialization with setting it's channel type specific attributes.
         
@@ -2587,8 +2589,6 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
             Channel data recevied from Discord.
         client : ``Client``
             The client, who received the channel data.
-        guild : `None`
-            Compabtility parameter with the other channel types.
         """
         self._messageable_init()
         
@@ -2830,7 +2830,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         channel.id=channel_id
         CHANNELS[channel_id]=channel
         client.group_channels[channel_id]=channel
-        channel._finish_init(data,client,None)
+        channel._finish_init(data, client)
         return channel
     
     icon_url = property(URLS.channel_group_icon_url)
@@ -2973,7 +2973,7 @@ class ChannelCategory(ChannelGuildBase):
     INTERCHANGE = (4,)
     type = 4
 
-    def _finish_init(self, data, client, guild):
+    def _finish_init(self, data, guild):
         """
         Finishes the channel's initialization with setting it's channel type specific attributes.
         
@@ -2981,8 +2981,6 @@ class ChannelCategory(ChannelGuildBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data recevied from Discord.
-        client : ``Client``
-            The client, who received the channel data.
         guild : ``Guild``
             The channel's guild.
         """
@@ -3231,7 +3229,7 @@ class ChannelStore(ChannelGuildBase):
     INTERCHANGE = (6,)
     type = 6
     
-    def _finish_init(self, data, client, guild):
+    def _finish_init(self, data, guild):
         """
         Finishes the channel's initialization with setting it's channel type specific attributes.
         
@@ -3239,8 +3237,6 @@ class ChannelStore(ChannelGuildBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data recevied from Discord.
-        client : ``Client``
-            The client, who received the channel data.
         guild : ``Guild``
             The channel's guild.
         """
@@ -3644,6 +3640,7 @@ message.ChannelText = ChannelText
 message.ChannelPrivate = ChannelPrivate
 message.ChannelGroup = ChannelGroup
 ratelimit.ChannelBase = ChannelBase
+http.ChannelGuildBase = ChannelGuildBase
 
 del message
 del webhook
@@ -3651,3 +3648,4 @@ del URLS
 del ratelimit
 del DiscordEntity
 del WeakSet
+del http

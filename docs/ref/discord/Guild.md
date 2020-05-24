@@ -5,7 +5,7 @@
 ## Instance attributes
 
 When a guild is loaded for first time, it might not have some attributes set
-to ther correct value. These are the following:
+to their correct value. These are the following:
 - [`embed_channel`](#embed_channel)  
 - [`embed_enabled`](#embed_enabled)
 - [`max_presences`](#max_presences)
@@ -72,7 +72,7 @@ The total number of users currently boosting the guild with their Nitro.
 - values : [`Guild Channels`](ChannelGuildBase.md)
 
 The guild's channel in sorted form. The channels under the
-[group channels](ChannelGroup.md) are not listed, but those are listen under
+[group category](ChannelCategory.md) are not listed, but those are listen under
 the category's `.channel` attribute.
 
 ### `clients`
@@ -80,7 +80,7 @@ the category's `.channel` attribute.
 - type : `list`
 - values : [`Client`](Client.md)
 
-A list of loaded cleints, which are the member of the guild. If the guild has
+A list of loaded clients, which are the member of the guild. If the guild has
 no clients, then it is partial.
 
 ### `content_filter`
@@ -326,8 +326,8 @@ voice state. The `voice_states` contains (`user_id`, `VoiceState`) items.
 - type : `dict`
 - items : (`int`, [`Webhook`](Webhook.md))
 
-If the webhooks of the guild are requeste, then they are stored at this
-attribute as (`user_id`, `VoiceState`) items. This container is updated only
+If the webhooks of the guild are requested, then they are stored at this
+attribute as (`user_id`, `Webhook`) items. This container is updated only
 on new request.
 
 ### `webhooks_uptodate`
@@ -353,7 +353,7 @@ The channel for the guild's widget.
 - values : `True` / `False`
 - defualt : `False`
 
-Wheter the guild widget is enabled. (Linked to
+Whether the guild widget is enabled. (Linked to
 [`widget_channel`](#widget_channel).)
 
 ## Properties
@@ -617,7 +617,7 @@ passed one.
 
 Tries to find all the users of the guild, who's name or nick starts like the
 passed one. The result is ordered on the same way as Discord orders them when
-calling [`Client.request_memebers`](Client.md/#request_memebers).
+calling [`Client.request_members`](Client.md#request_members).
 
 ### `get_emoji(self,name,default=`None`)`
 
@@ -722,7 +722,7 @@ match too.
 
 Tries to find the guild from the already existing ones. If it can not find it
 creates a new one. If the guild is partial (or freshly created) sets it's
-attributes from the passed `data`. If the the guild is not added to the
+attributes from the passed `data`. If the guild is not added to the
 client's guilds yet, then it adds the guild to them, and the client to the
 guilds's clients.
 
@@ -763,7 +763,7 @@ attributes in (attribute name, old value) pairs.
 - returns: `None` / `_spaceholder` / [`ChannelVoice`](ChannelVoice.md)
 
 Familiar to [`._update_voice_state`](#_update_voice_stateselfdatauser-method),
-but it returns only a reprezentation of the action. `None` is nothing
+but it returns only a representation of the action. `None` is nothing
 happened, `_spaceholder` at the case of leave, or the channel of the state
 anyways.
 

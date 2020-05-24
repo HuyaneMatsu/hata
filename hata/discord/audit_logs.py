@@ -881,10 +881,14 @@ def transform_nothing(name,data):
     change.after=data.get('new_value',None)
     return change
 
-def transform_avatar(name,data):
+def transform_avatar(name, data):
     change=AuditLogChange()
-    change.attr=name[:-5]
-
+    if name == 'splash_hash':
+        name = 'invite_splash'
+    else:
+        name = name[:-5]
+    change.attr = name
+    
     avatar=data.get('old_value',None)
     if avatar is None:
         avatar=0
@@ -1253,6 +1257,8 @@ class AuditLogChange(object):
     +---------------------------+-------------------------------------------+
     | id                        | `None` or `int`                           |
     +---------------------------+-------------------------------------------+
+    | invite_splash             | `None` or `tuple` (`bool`, `int`)         |
+    +---------------------------+-------------------------------------------+
     | inviter                   | `None`, ``User`` or ``Client``            |
     +---------------------------+-------------------------------------------+
     | mentionable               | `None` or `bool`                          |
@@ -1292,8 +1298,6 @@ class AuditLogChange(object):
     | separated                 | `None` or `bool`                          |
     +---------------------------+-------------------------------------------+
     | slowmode                  | `None` or `int`                           |
-    +---------------------------+-------------------------------------------+
-    | splash                    | `None` or `tuple` (`bool`, `int`)         |
     +---------------------------+-------------------------------------------+
     | system_channel            | `None` or ``ChannelText``                 |
     +---------------------------+-------------------------------------------+

@@ -81,10 +81,7 @@ class Webhook(UserBase):
             return True
         
         return False
-
-    avatar_url=property(URLS.webhook_avatar_url)
-    avatar_url_as=URLS.webhook_avatar_url_as
-
+    
     def __new__(cls,data):
         webhook_id=int(data['id'])
         try:
@@ -300,7 +297,7 @@ class Webhook(UserBase):
             guild.webhooks[webhook_id]=webhook
         
         USERS[webhook_id]=webhook
-
+        
         return webhook
 
 class WebhookRepr(UserBase):

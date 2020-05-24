@@ -77,7 +77,7 @@ class GuildFeature(object):
     +-------------------------------+-------------------------------+
     | relay_enabled                 | RELAY_ENABLED                 |
     +-------------------------------+-------------------------------+
-    | splash                        | INVITE_SPLASH                 |
+    | invite_splash                 | INVITE_SPLASH                 |
     +-------------------------------+-------------------------------+
     | vanity                        | VANITY_URL                    |
     +-------------------------------+-------------------------------+
@@ -209,7 +209,7 @@ class GuildFeature(object):
     public                      = NotImplemented
     public_disabled             = NotImplemented
     relay_enabled               = NotImplemented
-    splash                      = NotImplemented
+    invite_splash               = NotImplemented
     vanity                      = NotImplemented
     verified                    = NotImplemented
     vip                         = NotImplemented
@@ -229,7 +229,7 @@ GuildFeature.partnered                  = GuildFeature('PARTNERED')
 GuildFeature.public                     = GuildFeature('PUBLIC')
 GuildFeature.public_disabled            = GuildFeature('PUBLIC_DISABLED')
 GuildFeature.relay_enabled              = GuildFeature('RELAY_ENABLED')
-GuildFeature.splash                     = GuildFeature('INVITE_SPLASH')
+GuildFeature.invite_splash              = GuildFeature('INVITE_SPLASH')
 GuildFeature.vanity                     = GuildFeature('VANITY_URL')
 GuildFeature.verified                   = GuildFeature('VERIFIED')
 GuildFeature.vip                        = GuildFeature('VIP_REGIONS')
@@ -569,7 +569,7 @@ class GuildWidget(object):
         data : `dict` of (`str`, `Any`) items
             The requested guild widget data.
         """
-        self.guild = Guild._from_GW_data(data)
+        self.guild = Guild.precreate(int(data['id']), name=data['name'])
         self._data = data
         self._cache = {}
     
@@ -648,6 +648,19 @@ class GuildWidget(object):
 #we need to ignore client adding, because clients count to being not
 #partial. If a guild is not partial it wont get update on Guild.__new__
 def PartialGuild(data):
+    """
+    Creates a partial guild from partial guild data.
+    
+    Parameters
+    ----------
+    data : `None` or `dict` of (`str`, `Any`) items
+        Partial channel data received from Discord.
+    
+    Returns
+    -------
+    channel : `None` or ``Guild`` instance
+        The created partial guild, or `None`, if no data was received.
+    """
     if (data is None) or (not data):
         return None
     guild_id=int(data['id'])
@@ -707,7 +720,7 @@ def PartialGuild(data):
     guild.region=VoiceRegion.eu_central
     guild.roles=autoposlist()
     guild.rules_channel=None
-    # splash will be set down
+    # invite_splash will be set down
     guild.system_channel=None
     guild.system_channel_flags=SystemChannelFlag.NONE
     guild.user_count=1
@@ -724,7 +737,7 @@ def PartialGuild(data):
         guild.name=''
         guild.icon=0
         guild.has_animated_icon=False
-        guild.splash=0
+        guild.invite_splash=0
         guild.description=None
         return guild
     
@@ -741,8 +754,8 @@ def PartialGuild(data):
         guild.icon=int(icon,16)
         guild.has_animated_icon=False
     
-    splash=data.get('splash')
-    guild.splash=0 if splash is None else int(splash,16)
+    invite_splash=data.get('splash')
+    guild.invite_splash=0 if invite_splash is None else int(invite_splash,16)
     
     guild.description=data.get('description',None)
     
@@ -767,15 +780,148 @@ def PartialGuild(data):
 #discord does not sends `embed_channel`, `embed_enabled`, `widget_channel`,
 #`widget_enabled`, `max_presences`, `max_users` correctly and thats sad.
 class Guild(DiscordEntity, immortal=True):
+    """
+    Represents a Discord guild (or server).
+    
+    Attributes
+    ----------
+    _boosters : `None` or `list` of (``User`` or ``Client``) objects
+        Cached slot for the boosters of the guild.
+    _cache_perm : `dict` of (`int`, ``Permission``) items
+        A `user_id` to ``Permission`` relation mapping for caching permissions.
+    afk_channel : `None` or ``ChannelVoice``
+        The afk channel of the guild if it has.
+    afk_timeout : `int`
+        The afk timeout at the `afk_channel`. Can be `60`, `300`, `900`, `1800`, `3600` in seconds.
+    all_channel : `dict` of (`int`, ``ChannelGuildBase`` instance) items
+        The channels of the guild stored in `channel_id` - `channel` relation.
+    all_role : `dict` of (`int`, ``Role``) items
+        The roles of the guild stored in `role_id` - `role` relation.
+    available : `bool`
+        Whther the guild is avaiable.
+    banner : `int`
+        The guild's banner's hash in `uint128`. Set as `0` if it is has no banner.
+    booster_count : `int`
+        The total number of boosts of the guild.
+    channels : `weakposlist` of ``ChannelGuildBase`` instances
+        The guild's channel in sorted form. The channels under the ``ChannelCategory`` are not listed, but those are
+        listen under the category's `.channel` attribute.
+    clients : `list` of ``Client``
+        The loaded clients, who are the member of the guild. If no clients are member of a guild, it is partial.
+    content_filter : ``ContentFilterLevel``
+        The explicit content filter level of the guild.
+    description : `str` or `None`
+        Description of the guild. The guild must have `PUBLIC` feature.
+    discovery_splash : `int`
+        The guild's discovery splashe's hash in `uint128`. Set as `0` if it is has no discovery splash. The guild must
+        have `DISCOVERABLE` feature to have discovery splash.
+    embed_channel : `None` or ``ChannelText``
+        The channel to where the guild's embed widget will generate the invite to.
+    embed_enabled : `bool`
+        If the guild embeddable. Linked to `.embed_channel`.
+    emojis : `dict` of (`int`, ``Emoji``) items
+        The emojis of the guild stored in `emoji_id` - `emoji` relation.
+    features : `list` of ``GuildFeature``
+        The guild's features.
+    has_animated_icon : `bool`
+        Whether the guild has animated `.icon`.
+    icon : `int`
+        The guild's icon's hash in `uint128`. Set as `0` if it is has no icon.
+    invite_splash : `int`
+        The guild's invite splash's hash in `uint128`. Set as `0` if it is has no invite splash. The guild must have
+        `INVITE_SPLASH` feature.
+    is_large : `bool`
+        Whether the guild is considered as a large one.
+    max_presences : `int`
+        The maximal amount of presences for the guild.
+    max_users : `int`
+        The maximal amount of users for the guild.
+    max_video_channel_users : `int`
+        The maximal amaunt of users in a video channel(?).
+    message_notification : ``MessageNotificationLevel``
+        The message notification level of the guild.
+    mfa : ``MFA``
+        The required Multi-factor authentication level for the guild.
+    name : `str`
+        The name of the guild.
+    owner : ``User`` or ``Client``
+        The owner of the guild. At some cases it can be set as `ZEROUSER` as well.
+    preferred_locale : `str`
+        The preferred language of the guild. The guild must have `PUBLIC` feature, defaults to `'en-US'`.
+    premium_tier : `int`
+        The premium tier of the guild. More subs = higher tier.
+    public_updates_channel : `None` or ``ChannelText``
+        The channel where the guild's public upddates should go. The guild must have `PUBLIC` feature.
+    region : ``VoiceRegion``
+        The voice region of the guild.
+    roles : `autoposlist` of ``Role``
+        A list like container which stores the guild's roles in sorted form. The first role has the lowest position
+        and the last has the highest. The first role is `@everyone` every time and it can not be moved from position
+        `0` either.
+    rules_channel : `None` or ``ChannelText``
+        The channel where the rules of a public guild's should be. The guild must hav `PUBLIC` feature.
+    system_channel : `None` or ``ChannelText``
+        The channel where the system messages are sent.
+    system_channel_flags : ``SystemChannelFlag``
+        Describe which type of messages are sent automatically to the system channel.
+    user_count : `int`
+        The amount of users at the guild.
+    users : `dict` of (`int`, (``User`` or ``Client``)) items
+        The users at the guild stored within `user_id` - `user` relation.
+    vanity_code : `None` or `str`
+        The guild's vanity invite's code if it has.
+    verification_level : ``VerificationLevel``
+        The minimal verification needed to join to guild.
+    voice_states : `dict` of (`int`, ``VoiceState``) items
+        Each user at a voice channel is represented by a ``VoiceState`` object. voice state are stored in
+        `respecitve user's id` - `voice state` relation.
+    webhooks : `dict` of (`int`, ``Webhook``) items
+        The guild's webhooks if requested in `webhook_id` - `webhook` relation. This container is updated when a new
+        request is done.
+    webhooks_uptodate : `bool`
+        Whether the guild's `.webhooks` containr is up-to-date. If it is, then instead of requesting new webhooks, that
+        container is accessed.
+    widget_channel : `None` or ``ChannelText``
+        The channel for the guild's widget.
+    widget_enabled : `bool`
+        Whether the guild's widget is enabled. Linked to `.widget_channel`.
+    
+    Notes
+    -----
+    When a guild is loaded first time, some of it's attrbiutes might not reflect their real value. These are the
+    following:
+    - `.embed_channel`
+    - `.embed_enabled`
+    - `.max_presences`
+    - `.max_users`
+    - `.widget_channel`
+    - `.widget_enabled`
+    """
     __slots__ = ('_boosters', '_cache_perm', 'afk_channel', 'afk_timeout', 'all_channel', 'all_role', 'available',
         'banner', 'booster_count', 'channels', 'clients', 'content_filter', 'description', 'discovery_splash',
-        'embed_channel', 'embed_enabled', 'emojis', 'features', 'has_animated_icon', 'icon',  'is_large',
-        'max_presences', 'max_users', 'max_video_channel_users', 'message_notification', 'mfa', 'name', 'owner',
-        'preferred_locale', 'premium_tier', 'public_updates_channel', 'region', 'roles', 'rules_channel', 'splash',
+        'embed_channel', 'embed_enabled', 'emojis', 'features', 'has_animated_icon', 'icon', 'invite_splash',
+        'is_large', 'max_presences', 'max_users', 'max_video_channel_users', 'message_notification', 'mfa', 'name',
+        'owner', 'preferred_locale', 'premium_tier', 'public_updates_channel', 'region', 'roles', 'rules_channel',
         'system_channel', 'system_channel_flags', 'user_count', 'users', 'vanity_code', 'verification_level',
-        'voice_states', 'webhooks', 'webhooks_uptodate', 'widget_channel', 'widget_enabled',)
+        'voice_states', 'webhooks', 'webhooks_uptodate', 'widget_channel', 'widget_enabled')
     
-    def __new__(cls,data,client):
+    def __new__(cls, data, client):
+        """
+        Tries to find the guild from the already existing ones. If it can not find, creates a new one. If the found
+        guild is partial (or freshly created), sets it's attributes from the given `data`. If the the guild is not
+        added to the client's guild profiles yet, adds it, and the client to the guilds's `.clients` as well.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received guild data.
+        client : ``Client``
+            The client who received the guild's data.
+        
+        Returns
+        -------
+        guild : ``Guild``
+        """
         guild_id=int(data['id'])
         
         try:
@@ -798,6 +944,7 @@ class Guild(DiscordEntity, immortal=True):
             guild.webhooks={}
             guild.webhooks_uptodate=False
             guild._cache_perm={}
+            guild._boosters = None
             
             update=True
         
@@ -903,6 +1050,46 @@ class Guild(DiscordEntity, immortal=True):
 
     @classmethod
     def precreate(cls, guild_id, **kwargs):
+        """
+        Precreates the guild with the given parameters. Precreated guilds ar picked up when a guild's data is rceived
+        with the same id.
+        
+        First tries to find whether a guild exists with the given id. If it does and it is partial, updates it with the
+        given parameters, else it creates a new one.
+        
+        Parameters
+        ----------
+        guild_id : `snowflake`
+            The guild's id.
+        **kwargs : keyword arguments
+            Additional predefined attributes for the guild.
+        
+        Other Parameters
+        ----------------
+        name : `str`
+            The guild's ``.name``.
+        banner : `int`
+            The guild's ``.banner``.
+        invite_splash : `int`
+            The guild's ``.invite_splash``.
+        discovery_splash : `int`
+            The guild's ``.discovery_splash``.
+        icon : `int`
+            The guild's ``.icon``.
+        has_animated_icon : `bool`
+            Whether the guild's icon is animated.
+        
+        Returns
+        -------
+        guild : ``Guild``
+        
+        Raises
+        ------
+        TypeError
+            If any argument's type is bad or if unexpected argument is passed.
+        ValueError
+            If an argument's type is good, but it's value is unacceptable.
+        """
         guild_id = preconvert_snowflake(guild_id, 'guild_id')
         
         if kwargs:
@@ -916,7 +1103,7 @@ class Guild(DiscordEntity, immortal=True):
                 name = preconvert_str(name, 'name', 2, 100)
                 processable.append(('name', name))
             
-            for key in ('banner', 'splash', 'discovery_splash'):
+            for key in ('banner', 'invite_splash', 'discovery_splash'):
                 try:
                     value = kwargs.pop('key')
                 except KeyError:
@@ -981,7 +1168,7 @@ class Guild(DiscordEntity, immortal=True):
             guild.region=VoiceRegion.eu_central
             guild.roles=autoposlist()
             guild.rules_channel=None
-            guild.splash=0
+            guild.invite_splash=0
             guild.system_channel=None
             guild.system_channel_flags=SystemChannelFlag.NONE
             guild.user_count=1
@@ -1005,52 +1192,110 @@ class Guild(DiscordEntity, immortal=True):
         return guild
 
     def __str__(self):
+        """Returns the guild's name."""
         return self.name
 
     def __repr__(self):
-        return f'<{self.__class__.__name__} {self.name if self.clients else "Partial"} ({self.id})>'
+        """Returns the guild's representation."""
+        return f'<{self.__class__.__name__} name={self.name!r}, id={self.id}{"" if self.clients else " (partial)"}>'
     
-    def __format__(self,code):
+    def __format__(self, code):
+        """
+        Formats the guild in a format string.
+        
+        Parameters
+        ----------
+        code : `str`
+            The option on based the result will be formatted.
+        
+        Returns
+        -------
+        channel : `str`
+        
+        Raises
+        ------
+        ValueError
+            Unknown format code.
+        
+        Examples
+        --------
+        >>> from hata import Guild, now_as_id
+        >>> guild = Guild.precreate(now_as_id(), name='GrassGrass')
+        >>> guild
+        <Guild name='GrassGrass', id=713718885970345984 (partial)>
+        >>> # no code stands for str(guild).
+        >>> f'{guild}'
+        'GrassGrass'
+        >>> # 'c' stands for created at.
+        >>> f'{guild:c}'
+        '2020.05.23-11:44:02'
+        """
         if not code:
             return self.name
         if code=='c':
             return f'{self.created_at:%Y.%m.%d-%H:%M:%S}'
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
-
+    
     banner_url=property(URLS.guild_banner_url)
     banner_url_as=URLS.guild_banner_url_as
     icon_url=property(URLS.guild_icon_url)
     icon_url_as=URLS.guild_icon_url_as
-    splash_url=property(URLS.guild_splash_url)
-    splash_url_as=URLS.guild_splash_url_as
+    invite_splash_url=property(URLS.guild_invite_splash_url)
+    invite_splash_url_as=URLS.guild_invite_splash_url_as
     discovery_splash_url=property(URLS.guild_discovery_splash_url)
     discovery_splash_url_as=URLS.guild_discovery_splash_url_as
     embed_url=URLS.guild_embed_url
     widget_url=URLS.guild_widget_url
-
-    def _update_embed(self,data):
+    
+    def _update_embed(self, data):
+        """
+        On requesting a guild's embed it's respective attributes get updated.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Guild embed's data received from Discord.
+        """
         self.embed_enabled=data.get('enabled',False)
-
+        
         channel_id=data.get('id',None)
         if channel_id is None:
-            self.embed_channel=None
+            embed_channel=None
         else:
-            self.embed_channel=self.all_channel[int(channel_id)]
+            embed_channel=self.all_channel[int(channel_id)]
+        self.embed_channel = embed_channel
     
     @property
     def embed(self):
+        """
+        Returns the guild's embed based on the guild's current embed information.
+        
+        Returns
+        -------
+        guild_embed : ``GuildEmbed``
+        """
         return GuildEmbed.from_guild(self)
 
-    def _delete(self,client=None):
-        if client is not None:
-            try:
-                self.clients.remove(client)
-            except ValueError:
-                pass
-
+    def _delete(self, client):
+        """
+        When a client leaves (gets kicked or banned) from a guild, this method is called. If the guild loses it's last
+        active client, then the it's references are cleared.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The client, who left the guild.
+        """
+        clients = self.clients
+        
+        try:
+            self.clients.remove(client)
+        except ValueError:
+            pass
+        
         if self.clients:
             return
-
+        
         categories=self.channels
         for category_index in range(len(categories)-1,-1,-1):
             category=categories[category_index]
@@ -1058,30 +1303,87 @@ class Guild(DiscordEntity, immortal=True):
                 channels=category.channels
                 for channel_index in range(len(channels)-1,-1,-1):
                     channel=channels[channel_index]
-                    channel._delete(client)
-            category._delete(client)
-
+                    channel._delete()
+            category._delete()
+        
         for emoji in list(self.emojis.values()):
             emoji._delete()
-
+        
         self.voice_states.clear()
         
-        users=self.users
-
-        for user in list(users.values()):
+        users = self.users
+        for user in users.values():
             if type(user) is User:
                 del user.guild_profiles[self]
-            del self.users[user.id]
-
+        
+        users.clear()
+        
         roles=self.roles
         for index in range(len(roles)-1,-1,-1):
             roles[index]._delete()
-
+        
         self.webhooks.clear()
         self.webhooks_uptodate=False
         self._boosters=None
-
-    def _update_voice_state(self,data,user):
+    
+    def _update_voice_state(self, data, user):
+        """
+        Called by dispatch event. Updates the voice state of the `user` with the given `data`.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`)
+            Data received from Discord.
+        user : ``User`` or ``Client``
+            The user, who's voice state is updated.
+        
+        Returns
+        -------
+        changes : `None` or `tuple` (``VoiceState``, `str`, (`None` or `dict` of (`str`, `Any`) items))
+            If the user's ``VoiceState`` is already deleteted or updated the method returns `None`. If it is not, then
+            returns 3 objects, which describe what changed:
+            
+            +-------+-------------------+-------------------------------------------+
+            | Index | Respective name   | Type                                      |
+            +=======+===================+===========================================+
+            | 0     | voice_state       | ``VoiceState``                            |
+            +-------+-------------------+-------------------------------------------+
+            | 1     | action            | `str`                                     |
+            +-------+-------------------+-------------------------------------------+
+            | 2     | old               | `None` or `dict` of (`str`, `Any`) items  |
+            +-------+-------------------+-------------------------------------------+
+            
+            Action values can be the following:
+            +-------------------+-------+
+            | Respective name   | Value |
+            +===================+=======+
+            | leave             | `'l'` |
+            +-------------------+-------+
+            | join              | `'j'` |
+            +-------------------+-------+
+            | update            | `'u'` |
+            +-------------------+-------+
+            
+            If action value is update (`'u'`), then `old` is returned as a `dict` conatining the changed attributes in
+            `attribute-name` - `old-value` relation. All item at the returned dictionary is optional.
+            +---------------+-------------------+
+            | Keys          | Values            |
+            +===============+===================+
+            | channel       | ``ChannelVoice``  |
+            +---------------+-------------------+
+            | deaf          | `str`             |
+            +---------------+-------------------+
+            | mute          | `bool`            |
+            +---------------+-------------------+
+            | self_deaf     | `bool`            |
+            +---------------+-------------------+
+            | self_mute     | `bool`            |
+            +---------------+-------------------+
+            | self_stream   | `bool`            |
+            +---------------+-------------------+
+            | self_video    | `bool`            |
+            +---------------+-------------------+
+        """
         while True:
             channel_id=data.get('channel_id',None)
             if channel_id is None:
@@ -1092,9 +1394,9 @@ class Guild(DiscordEntity, immortal=True):
                 old=None
                 action='l'
                 break
-
+            
             channel=self.all_channel[int(channel_id)]
-
+            
             try:
                 state=self.voice_states[user.id]
             except KeyError:
@@ -1102,16 +1404,35 @@ class Guild(DiscordEntity, immortal=True):
                 old=None
                 action='j'
                 break
-
+            
             old=state._update(data,channel)
             if old:
                 action='u'
                 break
+            old = None
             return
-
-        return state,action,old
-
-    def _update_voice_state_restricted(self,data,user):
+        
+        return state, action, old
+    
+    def _update_voice_state_restricted(self, data, user):
+        """
+        Familiar to ``._update_voice_state``, but does not calculate changes and just returns a representation of the
+        action.
+        
+        Returns `None` if nothing happened, `_spaceholder` at the case of leave, or at the case of join or update the
+        channel.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`)
+            Data received from Discord.
+        user : ``User`` or ``Client``
+            The user, who's voice state is updated.
+        
+        Returns
+        -------
+        changes : `None`, `_spaceholder`, ``ChannelVoice``
+        """
         channel_id=data.get('channel_id',None)
         if channel_id is None:
             try:
@@ -1119,51 +1440,117 @@ class Guild(DiscordEntity, immortal=True):
             except KeyError:
                 return
             return _spaceholder
-
+        
         channel=self.all_channel[int(channel_id)]
-
+        
         try:
             state=self.voice_states[user.id]
         except KeyError:
             self.voice_states[user.id]=VoiceState(data,channel)
             return channel
-
+        
         state._update_no_return(data,channel)
         return channel
-
+    
     @property
     def text_channels(self):
+        """
+        Returns the text channels of the guild. Announcement channels are not included.
+        
+        Returns
+        -------
+        channels : `list` of ``ChannelText``
+        """
         return [channel for channel in self.all_channel.values() if channel.type==0]
 
     @property
     def voice_channels(self):
+        """
+        Returns the voice channels of the guild.
+        
+        Returns
+        -------
+        channels : `list` of ``ChannelVoice``
+        """
         return [channel for channel in self.all_channel.values() if channel.type==2]
 
     @property
     def category_channels(self):
+        """
+        Returns the category channels of the guild.
+        
+        Returns
+        -------
+        channels : `list` of ``ChannelCategory``
+        """
         return [channel for channel in self.all_channel.values() if channel.type==4]
 
     @property
-    def news_channels(self):
+    def announcement_channels(self):
+        """
+        Returns the announcemet channels of the guild.
+        
+        Returns
+        -------
+        channels : `list` of ``ChannelText``
+        """
         return [channel for channel in self.all_channel.values() if channel.type==5]
 
     @property
     def store_channels(self):
+        """
+        Returns the store channels of the guild.
+        
+        Returns
+        -------
+        channels : `list` of ``ChannelStore``
+        """
         return [channel for channel in self.all_channel.values() if channel.type==6]
 
     @property
     def messageable_channels(self):
+        """
+        Returns the message able channels of the guild.
+        
+        Returns
+        -------
+        channels : `list` of ``ChannelText``
+        """
         return [channel for channel in self.all_channel.values() if channel.type in (0,5)]
     
     @property
     def default_role(self):
+        """
+        Returns the default role of the guild (`@everyone`).
+        
+        Returns
+        -------
+        default_role : ``Role``
+        """
         return self.roles[0]
     
     @property
     def partial(self):
+        """
+        Returns whether the guild is partial.
+        
+        A guild is partial, if it has no active clients.
+        
+        Returns
+        -------
+        partial : `bool`
+        """
         return (not self.clients)
     
-    def _sync(self,data,client):
+    def _sync(self, data):
+        """
+        Syncs the guild with the requested guild data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received guild data.
+        """
         try:
             self.is_large=data['large']
         except KeyError:
@@ -1211,8 +1598,17 @@ class Guild(DiscordEntity, immortal=True):
 ##                voice_state._update_no_return(voice_state_data,channel)
 ##                new_voice_states[user.id]=voice_state
 
-    def _apply_presences(self,data):
-        users=self.users
+    def _apply_presences(self, data):
+        """
+        Applies the presences to the guild user's. Called when the guild is created or if a user chunk is received if
+        presence caching is enabled.
+        
+        Parameters
+        ----------
+        data : `list` of (`dict` of (`str`, `Any`) items)
+            Guild's users' presences' data.
+        """
+        users = self.users
         for presence in data:
             user_id=int(presence['user']['id'])
             try:
@@ -1223,50 +1619,59 @@ class Guild(DiscordEntity, immortal=True):
                 user.status=Status.INSTANCES[presence['status']]
                 user.statuses=presence['client_status']
                 user.activities=[Activity(activity_data) for activity_data in presence['activities']]
-
-    def _sync_channels(self,data,client):
+    
+    def _sync_channels(self, data):
+        """
+        Syncs the guild's channels with the given guild channel datas.
+        
+        Parameters
+        ----------
+        data `list` of (`dict` of (`str`, `Any`) items)
+            Received guild channel datas.
+        """
         channels=self.all_channel
         old_ids=set(channels)
-
+        
         later=[]
         for channel_data in data:
             channel_type=CHANNEL_TYPES[channel_data['type']]
             if channel_type is ChannelCategory:
                 #categories
-                channel=channel_type(channel_data,client,self)
+                channel=channel_type(channel_data,None,self)
                 channel_id=channel.id
                 try:
                     old_ids.remove(channel_id)
                 except KeyError:
-                    #new channel -> add to other clients too
-                    for client_ in self.clients:
-                        if client_ is not client:
-                            client_.channels[channel_id]=channel
+                    pass
                 else:
                     #old channel -> update
                     channel._update_no_return(channel_data)
             else:
                 later.append((channel_type,channel_data),)
         #non category channels
-        for channel_type,channel_data in later:
-            channel=channel_type(channel_data,client,self)
+        for channel_type, channel_data in later:
+            channel=channel_type(channel_data,None,self)
             channel_id=channel.id
             try:
                 old_ids.remove(channel_id)
             except KeyError:
-                #new channel -> add to other clients too
-                for client_ in self.clients:
-                    if client_ is not client:
-                        client_.channels[channel_id]=channel
+                pass
             else:
                 #old channel -> update
                 channel._update_no_return(channel_data)
         #deleting
         for channel_id in old_ids:
-            for client_ in self.clients:
-                channels[channel_id]._delete(client_)
-
-    def _sync_roles(self,data):
+            channels[channel_id]._delete()
+    
+    def _sync_roles(self, data):
+        """
+        Syncs the guild's roles with the given guild role datas.
+        
+        Parameters
+        ----------
+        data `list` of (`dict` of (`str`, `Any`) items)
+            Received guild role datas.
+        """
         roles=self.all_role
         old_ids=set(roles)
         #every new role can cause mass switchings at the role orders, can it mess up the order tho?
@@ -1282,7 +1687,26 @@ class Guild(DiscordEntity, immortal=True):
         for role_id in old_ids:
             roles[role_id]._delete()
 
-    def get_user(self,name,default=None):
+    def get_user(self, name, default=None):
+        """
+        Tries to find the a user with the given name at the guild. Returns the first matched one.
+        
+        The search order is the following:
+        - `full_name`
+        - `name`
+        - `nick`
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        default : `Any`, Optional
+            The value what is returned when no user was found. Defaults to `None`.
+        
+        Returns
+        -------
+        user : ``User``, ``Client`` or `default`
+        """
         if len(name)>37:
             return default
         users=self.users
@@ -1296,7 +1720,7 @@ class Guild(DiscordEntity, immortal=True):
                 for user in users.values():
                     if user.discriminator==discriminator and user.name==name:
                         return user
-
+        
         if len(name)>32:
             return default
         for user in users.values():
@@ -1309,8 +1733,22 @@ class Guild(DiscordEntity, immortal=True):
             if nick==name:
                 return user
         return default
-
-    def get_user_like(self,name,default=None):
+    
+    def get_user_like(self, name, default=None):
+        """
+        Searches a user, who's name or nick starts with the given string and returns the first find.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        default : `Any`, Optional
+            The value what is returned when no user was found. Defaults to `None`.
+        
+        Returns
+        -------
+        user : ``User``, ``Client`` or `default`
+        """
         if not 1<len(name)<33:
             return default
         pattern=re.compile(re.escape(name),re.I)
@@ -1325,7 +1763,19 @@ class Guild(DiscordEntity, immortal=True):
             return user
         return default
 
-    def get_users_like(self,name):
+    def get_users_like(self, name):
+        """
+        Searches the users, who's name or nick start with the given string.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        
+        Returns
+        -------
+        users : `list` of (``User`` or ``Client``) objects
+        """
         result=[]
         if not 1<len(name)<33:
             return result
@@ -1342,7 +1792,20 @@ class Guild(DiscordEntity, immortal=True):
             result.append(user)
         return result
 
-    def get_users_like_ordered(self,name):
+    def get_users_like_ordered(self, name):
+        """
+        Searches the users, who's name or nick start with the given string. At the orders them at the same ways, as
+        Discord orders them when requesting guild member chunk.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        
+        Returns
+        -------
+        users : `list` of (``User`` or ``Client``) objects
+        """
         to_sort=[]
         if not 1<len(name)<33:
             return to_sort
@@ -1369,7 +1832,21 @@ class Guild(DiscordEntity, immortal=True):
         to_sort.sort(key=lambda x:x[0])
         return [x[1] for x in to_sort]
 
-    def get_emoji(self,name,default=None):
+    def get_emoji(self, name, default=None):
+        """
+        Searches an emoji of the guild, what's name equals the given name.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        default : `Any`, Optional
+            The value what is returned when no emoji was found. Defaults to `None`.
+        
+        Returns
+        -------
+        emoji : ``Emoji`` or `default`
+        """
         emoji=EMOJI_NAME_RP.fullmatch(name)
         if emoji is None:
             return default
@@ -1379,7 +1856,21 @@ class Guild(DiscordEntity, immortal=True):
                 return emoji
         return default
     
-    def get_emoji_like(self,name,default=None):
+    def get_emoji_like(self, name, default=None):
+        """
+        Searches an emoji of the guild, whats name starts with the given string and returns the first find.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        default : `Any`, Optional
+            The value what is returned when no emoji was found. Defaults to `None`.
+        
+        Returns
+        -------
+        emoji : ``Emoji`` or `default`
+        """
         target_name_length=len(name)
         if target_name_length<2 or target_name_length>32:
             return default
@@ -1408,7 +1899,21 @@ class Guild(DiscordEntity, immortal=True):
         
         return accurate_emoji
     
-    def get_channel(self,name,default=None):
+    def get_channel(self, name, default=None):
+        """
+        Searches a channel of the guild, what's name equals the given name.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        default : `Any`, Optional
+            The value what is returned when no channel was found. Defaults to `None`.
+        
+        Returns
+        -------
+        channel : ``ChannelGuildBase`` instance or `default`
+        """
         if name.startswith('#'):
             name=name[1:]
         for channel in self.all_channel.values():
@@ -1420,6 +1925,20 @@ class Guild(DiscordEntity, immortal=True):
         return default
     
     def get_channel_like(self, name, default=None):
+        """
+        Searches a channel of the guild, whats name starts with the given string and returns the first find.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        default : `Any`, Optional
+            The value what is returned when no channel was found. Defaults to `None`.
+        
+        Returns
+        -------
+        channel : ``ChannelGuildBase`` instance or `default`
+        """
         if name.startswith('#'):
             name=name[1:]
         
@@ -1453,13 +1972,41 @@ class Guild(DiscordEntity, immortal=True):
         
         return accurate_channel
     
-    def get_role(self,name,default=None):
+    def get_role(self, name, default=None):
+        """
+        Searches a role of the guild, what's name equals the given name.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        default : `Any`, Optional
+            The value what is returned when no role was found. Defaults to `None`.
+        
+        Returns
+        -------
+        role : ``Role`` or `default`
+        """
         for role in self.all_role.values():
             if role.name==name:
                 return role
         return default
     
     def get_role_like(self, name, default=None):
+        """
+        Searches a role of the guild, whats name starts with the given string and returns the first find.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        default : `Any`, Optional
+            The value what is returned when no role was found. Defaults to `None`.
+        
+        Returns
+        -------
+        role : ``Role`` or `default`
+        """
         target_name_length = len(name)
         if target_name_length<2 or target_name_length>32:
             return default
@@ -1489,7 +2036,22 @@ class Guild(DiscordEntity, immortal=True):
         
         return accurate_role
     
-    def permissions_for(self,user):
+    def permissions_for(self, user):
+        """
+        Returns the permissions for the given user at the guild.
+        
+        Parameters
+        ----------
+        user : ``UserBase`` instance
+        
+        Returns
+        -------
+        permission : ``Permission``
+        
+        See Also
+        --------
+        .cached_permissions_for : Cached permission calculator.
+        """
         if user==self.owner:
             return Permission.permission_all
         
@@ -1511,7 +2073,23 @@ class Guild(DiscordEntity, immortal=True):
         
         return Permission(base)
     
-    def cached_permissions_for(self,user):
+    def cached_permissions_for(self, user):
+        """
+        Returns the permissions for the given user at the guild. If the user's permissions are not cached, calculates
+        and stores them first.
+        
+        Parameters
+        ----------
+        user : ``UserBase`` instance
+        
+        Returns
+        -------
+        permission : ``Permission``
+        
+        Notes
+        -----
+        Mainly designed for getting clients' permissions.
+        """
         try:
             return self._cache_perm[user.id]
         except KeyError:
@@ -1519,7 +2097,91 @@ class Guild(DiscordEntity, immortal=True):
             self._cache_perm[user.id]=permissions
             return permissions
     
-    def _update(self,data):
+    def _update(self, data):
+        """
+        Updates the guild and returns it's overwritten attributes as a `dict` with a `attribute-name` - `old-value`
+        relation.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Guild data received from Discord.
+        
+        Returns
+        -------
+        old : `dict` of (`str`, `Any`) items
+            All item in the returned dict is optional.
+        
+        Returned Data Structure
+        -----------------------
+        +---------------------------+-------------------------------+
+        | Keys                      | Values                        |
+        +===========================+===============================+
+        | afk_channel               | `None` or ``ChannelVoice`     |
+        +---------------------------+-------------------------------+
+        | afk_timeout               | `int`                         |
+        +---------------------------+-------------------------------+
+        | available                 | `bool`                        |
+        +---------------------------+-------------------------------+
+        | banner                    | `int`                         |
+        +---------------------------+-------------------------------+
+        | booster_count             | `int`                         |
+        +---------------------------+-------------------------------+
+        | content_filter            | ``ContentFilterLevel``        |
+        +---------------------------+-------------------------------+
+        | description               | `None` or `str`               |
+        +---------------------------+-------------------------------+
+        | discovery_splash          | `int`                         |
+        +---------------------------+-------------------------------+
+        | embed_channel             | `None` or ``ChannelText``     |
+        +---------------------------+-------------------------------+
+        | embed_enabled             | `bool`                        |
+        +---------------------------+-------------------------------+
+        | features                  | `list` of ``GuildFeature``    |
+        +---------------------------+-------------------------------+
+        | has_animated_icon         | `bool`                        |
+        +---------------------------+-------------------------------+
+        | icon                      | `int`                         |
+        +---------------------------+-------------------------------+
+        | invite_splash             | `int`                         |
+        +---------------------------+-------------------------------+
+        | max_presences             | `int`                         |
+        +---------------------------+-------------------------------+
+        | max_users                 | `int`                         |
+        +---------------------------+-------------------------------+
+        | max_video_channel_users   | `int`                         |
+        +---------------------------+-------------------------------+
+        | message_notification      | ``MessageNotificationLevel``  |
+        +---------------------------+-------------------------------+
+        | mfa                       | ``MFA``                       |
+        +---------------------------+-------------------------------+
+        | name                      | `str`                         |
+        +---------------------------+-------------------------------+
+        | owner                     | ``User`` or ``Client``        |
+        +---------------------------+-------------------------------+
+        | preferred_locale          | `str`                         |
+        +---------------------------+-------------------------------+
+        | premium_tier              | `int`                         |
+        +---------------------------+-------------------------------+
+        | public_updates_channel    | `None` or ``ChannelText``     |
+        +---------------------------+-------------------------------+
+        | region                    | ``VoiceRegion``               |
+        +---------------------------+-------------------------------+
+        | rules_channel             | `None` or ``ChannelText``     |
+        +---------------------------+-------------------------------+
+        | system_channel            | `None` or ``ChannelText``     |
+        +---------------------------+-------------------------------+
+        | system_channel_flags      | ``SystemChannelFlag``         |
+        +---------------------------+-------------------------------+
+        | vanity_code               | `None` or `str`               |
+        +---------------------------+-------------------------------+
+        | verification_level        | ``VerificationLevel``         |
+        +---------------------------+-------------------------------+
+        | widget_channel            | `None` or ``ChannelText``     |
+        +---------------------------+-------------------------------+
+        | widget_enabled            | `bool`                        |
+        +---------------------------+-------------------------------+
+        """
         old={}
         
         #ignoring 'roles'
@@ -1555,11 +2217,11 @@ class Guild(DiscordEntity, immortal=True):
             old['has_animated_icon']=self.has_animated_icon
             self.has_animated_icon=has_animated_icon
         
-        splash=data.get('splash',None)
-        splash=0 if splash is None else int(splash,16)
-        if self.splash!=splash:
-            old['splash']=self.splash
-            self.splash=splash
+        invite_splash=data.get('splash',None)
+        invite_splash=0 if invite_splash is None else int(invite_splash,16)
+        if self.invite_splash!=invite_splash:
+            old['invite_splash']=self.invite_splash
+            self.invite_splash=invite_splash
         
         discovery_splash=data.get('discovery_splash',None)
         discovery_splash=0 if discovery_splash is None else int(discovery_splash,16)
@@ -1571,12 +2233,12 @@ class Guild(DiscordEntity, immortal=True):
         if self.region is not region:
             old['region']=region
             self.region=region
-
+        
         afk_timeout=data['afk_timeout']
         if self.afk_timeout!=afk_timeout:
             old['afk_timeout']=self.afk_timeout
             self.afk_timeout=afk_timeout
-
+        
         verification_level=VerificationLevel.INSTANCES[data['verification_level']]
         if self.verification_level is not verification_level:
             old['verification_level']=self.verification_level
@@ -1586,22 +2248,22 @@ class Guild(DiscordEntity, immortal=True):
         if self.message_notification is not message_notification:
             old['message_notification']=self.message_notification
             self.message_notification=message_notification
-
+        
         mfa=MFA.INSTANCES[data['mfa_level']]
         if self.mfa!=mfa:
             old['mfa']=self.mfa
             self.mfa=mfa
-
+        
         content_filter=ContentFilterLevel.INSTANCES[data.get('explicit_content_filter',0)]
         if self.content_filter is not content_filter:
             old['content_filter']=self.content_filter
             self.content_filter=content_filter
-
+        
         available=not data.get('unavailable',False)
         if self.available!=available:
             old['available']=self.available
             self.available=available
-
+        
         try:
             features=data['features']
         except KeyError:
@@ -1612,7 +2274,7 @@ class Guild(DiscordEntity, immortal=True):
         if self.features!=features:
             old['features']=self.features
             self.features=features
-
+        
         system_channel_id=data['system_channel_id']
         if system_channel_id is None:
             system_channel=None
@@ -1643,7 +2305,7 @@ class Guild(DiscordEntity, immortal=True):
         if self.owner is not owner:
             old['owner']=self.owner
             self.owner=owner
-
+        
         afk_channel_id=data['afk_channel_id']
         if afk_channel_id is None:
             afk_channel=None
@@ -1652,22 +2314,22 @@ class Guild(DiscordEntity, immortal=True):
         if self.afk_channel is not afk_channel:
             old['afk_channel']=self.afk_channel
             self.afk_channel=afk_channel
-
+        
         widget_enabled=data.get('widget_enabled',False)
         if self.widget_enabled!=widget_enabled:
             old['widget_enabled']=self.widget_enabled
             self.widget_enabled=widget_enabled
-
+        
         widget_channel_id=data.get('widget_channel_id',None)
         if widget_channel_id is None:
             widget_channel=None
         else:
             widget_channel=self.all_channel[int(widget_channel_id)]
-
+        
         if self.widget_channel is not widget_channel:
             old['widget_channel']=self.widget_channel
             self.widget_channel=widget_channel
-
+        
         embed_enabled=data.get('embed_enabled',False)
         if self.embed_enabled!=embed_enabled:
             old['embed_enabled']=self.embed_enabled
@@ -1760,8 +2422,15 @@ class Guild(DiscordEntity, immortal=True):
         
         return old
     
-    def _update_no_return(self,data):
-
+    def _update_no_return(self, data):
+        """
+        Updates the guild and with overwriting it's old attributes.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Guild data received from Discord.
+        """
         #ignoring 'roles'
         #ignoring 'emojis'
         #ignoring 'members'
@@ -1782,8 +2451,8 @@ class Guild(DiscordEntity, immortal=True):
             self.icon=int(icon,16)
             self.has_animated_icon=False
         
-        splash=data.get('splash',None)
-        self.splash=0 if splash is None else int(splash,16)
+        invite_splash=data.get('splash',None)
+        self.invite_splash=0 if invite_splash is None else int(invite_splash,16)
         
         discovery_splash=data.get('discovery_splash',None)
         self.discovery_splash=0 if discovery_splash is None else int(discovery_splash,16)
@@ -1883,11 +2552,63 @@ class Guild(DiscordEntity, immortal=True):
 
         self.preferred_locale       = parse_preferred_locale(data)
 
-    def _update_emojis(self,data):
+    def _update_emojis(self, data):
+        """
+        Updates the emojis with the emojis' data received from Discord and returns all the changes broke down if any
+        for each emoji.
+        
+        Parameters
+        ----------
+        data : `list` of (`dict` of (`str`, `Any`) items)
+            Received emoji datas.
+        
+        Returns
+        -------
+        changes : `list` of `tuple` (`int`, ``Emoji``, (`None` or `dict` of (`str`, `Any`) items)))
+            The changes breaken down for each changed emoji. Each element of the list is a tuple of 3 elements:
+            +-------+-------------------+-----------------------------------------------+
+            | Index | Respective name   | Type                                          |
+            +=======+===================+===============================================+
+            | 0     | action            | `int`                                         |
+            +-------+-------------------+-----------------------------------------------+
+            | 1     | emoji             | ``Emoji``                                     |
+            +-------+-------------------+-----------------------------------------------+
+            | 2     | old               | `None` or `dict` of (`str`, `Any`) items      |
+            +-------+-------------------+-----------------------------------------------+
+            
+            Possible actions:
+            +-----------------------+-------+
+            | Respective name       | Value |
+            +=======================+=======+
+            | EMOJI_UPDATE_NEW      | `0`   |
+            +-----------------------+-------+
+            | EMOJI_UPDATE_DELETE   | `1`   |
+            +-----------------------+-------+
+            | EMOJI_UPDATE_EDIT     | `2`   |
+            +-----------------------+-------+
+            
+            If action is `EMOJI_UPDATE_EDIT`, then `old` is passed as a dictionary containing the changed attributes
+            in an `attribute-name` - `old-attribute` relation. Every item in `old` is optional.
+            +-------------------+-------------------------------+
+            | Keys              | Values                        |
+            +===================+===============================+
+            | animated          | `bool`                        |
+            +-------------------+-------------------------------+
+            | available         | `bool`                        |
+            +-------------------+-------------------------------+
+            | managed           | `bool`                        |
+            +-------------------+-------------------------------+
+            | name              | `int`                         |
+            +-------------------+-------------------------------+
+            | require_colons    | `bool`                        |
+            +-------------------+-------------------------------+
+            | roles             | `None` or `set` of ``Role``   |
+            +-------------------+-------------------------------+
+        """
         emojis=self.emojis
         changes=[]
         old_ids=set(emojis)
-
+        
         for emoji_data in data:
             emoji_id=int(emoji_data['id'])
             try:
@@ -1906,10 +2627,18 @@ class Guild(DiscordEntity, immortal=True):
             emoji=emojis[emoji_id]
             emoji._delete()
             changes.append((EMOJI_UPDATE_DELETE,emoji,None),)
-
+        
         return changes
-
-    def _sync_emojis(self,data):
+    
+    def _sync_emojis(self, data):
+        """
+        Syncs the emojis of the guild with the emoji datas.
+        
+        Parameters
+        ----------
+        data : `list` of (`dict` of (`str`, `Any`) items)
+            Received emoji datas.
+        """
         emojis=self.emojis
         old_ids=set(emojis)
 
@@ -1930,26 +2659,57 @@ class Guild(DiscordEntity, immortal=True):
     
     @property
     def emoji_limit(self):
+        """
+        The maximal amount of emojis, what the guild can have.
+        
+        Returns
+        -------
+        limit : `int`
+        """
         limit=(50,100,150,250)[self.premium_tier]
         if limit<200 and (GuildFeature.more_emoji in self.features):
             limit=200
         return limit
-
+    
     @property
     def bitrate_limit(self):
+        """
+        The maximal bitrate for the guild's voice channels.
+        
+        Returns
+        -------
+        limit : `int`
+        """
         limit=(96000,128000,256000,384000)[self.premium_tier]
         if limit<128000 and (GuildFeature.vip in self.features):
             limit=128000
         return limit
-
+    
     @property
     def upload_limit(self):
+        """
+        The maximal size of files, which can be uploaded to the guild's channels.
+        
+        Returns
+        -------
+        limit : `int`
+        """
         return (8388608,8388608,52428800,104857600)[self.premium_tier]
 
     widget_json_url=property(URLS.guild_widget_json_url)
-
+    
     @property
     def boosters(self):
+        """
+        The boosters of the guild sorted by their subscription date.
+        
+        These users are queried from the guild's `.users` dictionary, so make sure that is populated before accessing
+        the property.
+        
+        Returns
+        -------
+        boosters : `list` of (``User`` or ``Client``)
+        """
         boosters=self._boosters
         if boosters is None:
             if self.booster_count:
@@ -1969,28 +2729,47 @@ class Guild(DiscordEntity, immortal=True):
 
         return boosters
 
-    @classmethod
-    def _from_GW_data(cls,data):
-        guild_id=int(data['id'])
-        try:
-            return GUILDS[guild_id]
-        except KeyError:
-            pass
-        
-        guild=object.__new__(cls)
-        guild.id=guild_id
-        guild.clients=[]
-        guild.name=data['name']
-        
-        GUILDS[guild_id]=guild
-
-        return guild
-
 class GuildPreview(DiscordEntity):
-    __slots__ = ('description', 'discovery_splash', 'emojis', 'features', 'has_animated_icon', 'icon', 'name',
-        'online_count', 'splash', 'user_count', )
+    """
+    A preview of a public guild.
     
-    def __init__(self,data):
+    Attributes
+    ----------
+    description : `str` or `None`
+        Description of the guild. The guild must have `PUBLIC` feature.
+    discovery_splash : `int`
+        The guild's discovery splashe's hash in `uint128`. Set as `0` if it is has no discovery splash. The guild must
+        have `DISCOVERABLE` feature to have discovery splash.
+    emojis : `dict` of (`int`, ``Emoji``) items
+        The emojis of the guild stored in `emoji_id` - `emoji` relation.
+    features : `list` of ``GuildFeature``
+        The guild's features.
+    has_animated_icon : `bool`
+        Whether the guild has animated `.icon`.
+    icon : `int`
+        The guild's icon's hash in `uint128`. Set as `0` if it is has no icon.
+    invite_splash : `int`
+        The guild's invite splash's hash in `uint128`. Set as `0` if it is has no invite splash. The guild must have
+        `INVITE_SPLASH` feature.
+    name : `str`
+        The name of the guild.
+    online_count : `int`
+        Approximate amount of online users at the guild.
+    user_count : `int`
+        Approximate amount of users at the guild.
+    """
+    __slots__ = ('description', 'discovery_splash', 'emojis', 'features', 'has_animated_icon', 'icon', 'invite_splash',
+        'name', 'online_count', 'user_count', )
+    
+    def __init__(self, data):
+        """
+        Creates a guild preview from the requested guild preview data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received guild preview data.
+        """
         self.description = data.get('description',None)
         
         discovery_splash=data.get('discovery_splash',None)
@@ -2037,25 +2816,60 @@ class GuildPreview(DiscordEntity):
         
         self.online_count=data['approximate_presence_count']
         
-        splash=data.get('splash',None)
-        self.splash=0 if splash is None else int(splash,16)
+        invite_splash=data.get('splash',None)
+        self.invite_splash=0 if invite_splash is None else int(invite_splash,16)
         
         self.user_count=data['approximate_member_count']
     
     icon_url=property(URLS.guild_icon_url)
     icon_url_as=URLS.guild_icon_url_as
-    splash_url=property(URLS.guild_splash_url)
-    splash_url_as=URLS.guild_splash_url_as
+    invite_splash_url=property(URLS.guild_invite_splash_url)
+    invite_splash_url_as=URLS.guild_invite_splash_url_as
     discovery_splash_url=property(URLS.guild_discovery_splash_url)
     discovery_splash_url_as=URLS.guild_discovery_splash_url_as
     
     def __str__(self):
+        """Returns the respective guild's name."""
         return self.name
     
     def __repr__(self):
-        return f'<{self.__class__.__name__} {self.name} ({self.id})>'
+        """Returns the guild preview's representation."""
+        return f'<{self.__class__.__name__} name={self.name!r}, id={self.id}>'
     
     def __format__(self,code):
+        """
+        Formats the guild preview in a format string.
+        
+        Parameters
+        ----------
+        code : `str`
+            The option on based the result will be formatted.
+        
+        Returns
+        -------
+        channel : `str`
+        
+        Raises
+        ------
+        ValueError
+            Unknown format code.
+        
+        Examples
+        --------
+        >>> from hata import Client, KOKORO
+        >>> TOKEN = 'a token goes here'
+        >>> client = Client(TOKEN)
+        >>> guild_id = 302094807046684672
+        >>> guild_preview = KOKORO.run(client.guild_preview(guild_id))
+        >>> guild_preview
+        <GuildPreview name='MINECRAFT', id=302094807046684672>
+        >>> # no code stands for str(guild_preview).
+        >>> f'{guild_preview}'
+        'MINECRAFT'
+        >>> # 'c' stands for created at.
+        >>> f'{guild_preview:c}'
+        '2017.04.13-14:56:54'
+        """
         if not code:
             return self.name
         if code=='c':

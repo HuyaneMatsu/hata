@@ -1092,8 +1092,42 @@ class User(UserBase):
             return user
 
 class VoiceState(object):
-    __slots__=('channel', 'deaf', 'mute', 'self_deaf', 'self_mute', 'self_stream', 'self_video', 'session_id', 'user',)
+    """
+    Represents a user at ``ChannelVoice``.
+    
+    Attributes
+    ----------
+    channel : ``ChannelVoice``
+        The channel to where the user is connected to.
+    deaf : `bool`
+        Whether the user is deafen.
+    mute : `bool`
+        Whether the user is muted.
+    self_deaf : `bool`
+        Whether the user muted everyone else.
+    self_mute : `bool`
+        Whether the user muted itself.
+    self_stream : `bool`
+        Whether the user screen shares with the go live option.
+    self_video : `bool`
+        Whether the user sends video from a camera source.
+    session_id : `str`
+        The user's voice session id.
+    user : ``User`` or ``Client``
+        The voice state's respective user. If user caching is disabled it will be set as a partial user.
+    """
+    __slots__ = ('channel', 'deaf', 'mute', 'self_deaf', 'self_mute', 'self_stream', 'self_video', 'session_id', 'user',)
     def __init__(self, data, channel):
+        """
+        Creates a ``VoiceState`` object from the given data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Voice state data received from Discord.
+        channel : ``ChannelVoice``
+            The channel of the voice state.
+        """
         self.channel        = channel
         self.user           = PartialUser(int(data['user_id']))
         self.session_id     = data['session_id']
@@ -1106,9 +1140,52 @@ class VoiceState(object):
     
     @property
     def guild(self):
+        """
+        Returns the voice state's respective guild
+        
+        Returns
+        -------
+        guild : `None` or ``Guild``
+        """
         return self.channel.guild
     
-    def _update(self,data,channel):
+    def _update(self, data, channel):
+        """
+        Updates the voice state and returns it's overwritten attributes as a `dict` with a `attribute-name` -
+        `old-value` relation.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Voice state data received from Discord.
+        channel : ``ChannelVoice``
+            The channel of the voice state.
+        
+        Returns
+        -------
+        old : `dict` of (`str`, `Any`) items
+            All item in the returned dictionary is optional.
+        
+        Returned Data Structure
+        -----------------------
+        +---------------+-------------------+
+        | Keys          | Values            |
+        +===============+===================+
+        | channel       | ``ChannelVoice``  |
+        +---------------+-------------------+
+        | deaf          | `str`             |
+        +---------------+-------------------+
+        | mute          | `bool`            |
+        +---------------+-------------------+
+        | self_deaf     | `bool`            |
+        +---------------+-------------------+
+        | self_mute     | `bool`            |
+        +---------------+-------------------+
+        | self_stream   | `bool`            |
+        +---------------+-------------------+
+        | self_video    | `bool`            |
+        +---------------+-------------------+
+        """
         old={}
         
         if (self.channel is not channel):
@@ -1147,7 +1224,17 @@ class VoiceState(object):
         
         return old
     
-    def _update_no_return(self,data,channel):
+    def _update_no_return(self, data, channel):
+        """
+        Updates the voice state with overwriting it's old attributes.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Voice state data received from Discord.
+        channel : ``ChannelVoice``
+            The channel of the voice state.
+        """
         self.channel    = channel
         self.deaf       = data['deaf']
         self.mute       = data['mute']
@@ -1157,8 +1244,9 @@ class VoiceState(object):
         self.self_video = data['self_video']
     
     def __repr__(self):
-        return f'<{self.__class__.__name__} user={self.user.full_name} channel={self.channel!r}>'
-    
+        """Returns the voice state's representation."""
+        return f'<{self.__class__.__name__} user={self.user.full_name!r}, channel={self.channel!r}>'
+
 ZEROUSER = User._create_empty(0)
 
 del URLS

@@ -751,8 +751,8 @@ def str_guild(guild,index=None,**kwargs):
         result.append(f'- icon : {guild.icon_url}',1)
     if guild.banner:
         result.append(f'banner : {guild.banner_url}',1)
-    if guild.splash:
-        result.append(f'- splash : {guild.splash_url}',1)
+    if guild.invite_splash:
+        result.append(f'- invite_splash : {guild.invite_splash_url}',1)
     if guild.discovery_splash:
         result.append(f'- discovery splash : {guild.discovery_splash_url}',1)
     if not guild.clients or not guild.available:
@@ -1296,7 +1296,7 @@ def str_GuildWidgetUser(GWU,index=None,**kwargs):
         
     return result
 
-def GuildWidgetChannel(GWC,index=None,**kwargs):
+def str_GuildWidgetChannel(GWC,index=None,**kwargs):
     result=Pretty_block()
     if index is None:
         start=''
@@ -1461,7 +1461,7 @@ PRETTY_PRINTERS['User']=str_user
 PRETTY_PRINTERS['Client']=str_user
 PRETTY_PRINTERS['GuildWidget']=str_GuildWidget
 PRETTY_PRINTERS['GuildWidgetUser']=str_GuildWidgetUser
-PRETTY_PRINTERS['GWChannelReflection']=GuildWidgetChannel
+PRETTY_PRINTERS['GuildWidgetChannel']=str_GuildWidgetChannel
 PRETTY_PRINTERS['Achievement']=str_achievement
 PRETTY_PRINTERS['Emoji']=str_emoji
 PRETTY_PRINTERS['GuildPreview']=str_guild_preview

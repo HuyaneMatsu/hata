@@ -4155,16 +4155,16 @@ class Client(UserBase):
             guild=GUILDS[guild_id]
         except KeyError:
             data = await self.http.guild_get(guild_id)
-            channel_data = await self.http.guild_channels(guild_id)
-            data['channels']=channel_data
+            channel_datas = await self.http.guild_channels(guild_id)
+            data['channels']=channel_datas
             user_data = await self.http.guild_user_get(guild_id,self.id)
             data['members']=[user_data]
             guild=Guild(data,self)
         else:
             data = await self.http.guild_get(guild_id)
-            guild._sync(data,self)
-            channel_data = await self.http.guild_channels(guild_id)
-            guild._sync_channels(channel_data,self)
+            guild._sync(data)
+            channel_datas = await self.http.guild_channels(guild_id)
+            guild._sync_channels(channel_datas)
             
             user_data = await self.http.guild_user_get(guild_id,self.id)
             try:
@@ -4446,15 +4446,12 @@ class Client(UserBase):
         
         data = await self.http.guild_prune_estimate(guild.id,data)
         return data['pruned']
-
-    # splash is only available for guilds with INVITE_SPLASH feature.
-    # banner is only available for guilds with BANNER feature.
-    # rules_channel is available only for guilds with DISCOVERABLE feature?
-    async def guild_edit(self, guild, name=None, icon=_spaceholder, splash=_spaceholder, discovery_splash=_spaceholder,
-            banner=_spaceholder, afk_channel=_spaceholder, system_channel=_spaceholder, rules_channel=_spaceholder,
-            public_updates_channel=_spaceholder, owner=None,region=None, afk_timeout=None, verification_level=None,
-            content_filter=None, message_notification=None, description=_spaceholder, system_channel_flags=None,
-            reason=None):
+    
+    async def guild_edit(self, guild, name=None, icon=_spaceholder, invite_splash=_spaceholder,
+            discovery_splash=_spaceholder, banner=_spaceholder, afk_channel=_spaceholder, system_channel=_spaceholder,
+            rules_channel=_spaceholder, public_updates_channel=_spaceholder, owner=None, region=None, afk_timeout=None,
+            verification_level=None, content_filter=None, message_notification=None, description=_spaceholder,
+            system_channel_flags=None, reason=None):
         """
         Edis the guild with the given parameters.
         
@@ -4467,8 +4464,8 @@ class Client(UserBase):
         icon : `None` or `bytes-like`, Optional
             The new icon of the guild. Can be `'jpg'`, `'png'`, `'webp'` image's raw data. If the guild has
             `ANIMATED_ICON` feature, it can be `'gif'` as well. By passing `None` you can remove the current one.
-        splash : `None` or `bytes-like`, Optional
-            The new splash of the guild. Can be `'jpg'`, `'png'`, `'webp'` image's raw data. The guild must have
+        invite_splash : `None` or `bytes-like`, Optional
+            The new invite splash of the guild. Can be `'jpg'`, `'png'`, `'webp'` image's raw data. The guild must have
             `INVITE_SPLASH` feature. By passing it as `None` you can remove the current one.
         discovery_splash : `None` or `bytes-like`, Optional
             The new splash of the guild. Can be `'jpg'`, `'png'`, `'webp'` image's raw data. The guild must have
@@ -4481,10 +4478,10 @@ class Client(UserBase):
         system_channel : `None` or ``ChannelText`` object, Optional
             The new system channel of the guild. You can remove the current one by passing is as `None`.
         rules_channel : `None` or ``ChannelText`` object, Optional
-            The new rules channel of the guild. The guild must have `DISCOVERABLE` feature. You can remove the current
+            The new rules channel of the guild. The guild must have `PUBLIC` feature. You can remove the current
             one by passing is as `None`.
         public_updates_channel : `None` or ``ChannelText`` object, Optional
-            The new publi updates channel of the guild. The guild must have `DISCOVERABLE` feature. You can remove the
+            The new publi updates channel of the guild. The guild must have `PUBLIC` feature. You can remove the
             current one by passing is as `None`.
         owner : ``User`` or ``Client`` object, Optional
             The new owner of the guild. You must be the owner of the guild to transfer ownership.
@@ -4499,7 +4496,8 @@ class Client(UserBase):
         message_notification : ``MessageNotificationLevel``, Optional
             The new message notification level of the guild.
         description : `None` or `str` instance, Optional
-            The new description of the guild. By passing `None`, or an empty string you can remove the current one.
+            The new description of the guild. By passing `None`, or an empty string you can remove the current one. The
+            guild must have `PUBLIC` feaeture.
         system_channel_flags : ``SystemChannelFlag``, Optional
             The guild's system channel's new flags.
         reason : `str`, Optional
@@ -4508,14 +4506,15 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            - If `icon`, `splash`, `discovery_splash`, `banner` is neither `None` or `bytes-like`.
+            - If `icon`, `invite_splash`, `discovery_splash`, `banner` is neither `None` or `bytes-like`.
         ValueError
             - If name is shorter than 2 or longer than 100 characters.
-            - If `icon`, `splash`, `discovery_splash` or `banner` was passed as `bytes-like`, but it's format is not
-                any of the expected formats.
-            - If `discovery_splash`, `rules_channel` or `public_updates_channel` was passe meanwhile the guild has no
-                `DISCOVERABLE` feature.
-            - If `splash` was passed meanwhile the guild has no `INVITE_SPLASH` feature.
+            - If `icon`, `invite_splash`, `discovery_splash` or `banner` was passed as `bytes-like`, but it's format
+                is not any of the expected formats.
+            - If `discovery_splash` was passed meanwhile the guild has no `DISCOVERABLE` feature.
+            - If `rules_channel`, `description` or `public_updates_channel` was passed meanwhil the guild has no
+                `PUBLIC` feature.
+            - If `invite_splash` was passed meanwhile the guild has no `INVITE_SPLASH` feature.
             - If `banner` was passed meanwhile the guild has no `BANNER` feature.
             - If `owner` was passed meanwhile the client is not the owner of the guild.
             - If `afk_timeout` was passed and not as one of: `60, 300, 900, 1800, 3600`.
@@ -4558,19 +4557,19 @@ class Client(UserBase):
             else:
                 raise TypeError(f'`banner` can be passed as `bytes-like`, got {banner.__class__.__name__}.')
         
-        if (splash is not _spaceholder):
-            if GuildFeature.splash not in guild.features:
-                raise ValueError('The guild has no `SPLASH` feature')
-            if splash is None:
+        if (invite_splash is not _spaceholder):
+            if GuildFeature.invite_splash not in guild.features:
+                raise ValueError('The guild has no `INVITE_SPLASH` feature')
+            if invite_splash is None:
                  data['splash']=None
-            elif isinstance(splash, (bytes, bytearray, memoryview)):
-                splash_data=bytes_to_base64(splash)
-                ext=ext_from_base64(splash_data)
+            elif isinstance(invite_splash, (bytes, bytearray, memoryview)):
+                invite_splash_data=bytes_to_base64(invite_splash)
+                ext=ext_from_base64(invite_splash_data)
                 if ext not in VALID_ICON_FORMATS:
-                    raise ValueError(f'Invalid splash type: {ext!r}')
-                data['splash']=splash_data
+                    raise ValueError(f'Invalid invite splash type: {ext!r}')
+                data['splash']=invite_splash_data
             else:
-                raise TypeError(f'`splash` can be passed as `bytes-like`, got {splash.__class__.__name__}.')
+                raise TypeError(f'`invite_splash` can be passed as `bytes-like`, got {invite_splash.__class__.__name__}.')
         
         if (discovery_splash is not _spaceholder):
             if GuildFeature.discoverable not in guild.features:
@@ -4599,8 +4598,8 @@ class Client(UserBase):
             data['rules_channel_id']=None if rules_channel is None else rules_channel.id
         
         if (public_updates_channel is not _spaceholder):
-            if GuildFeature.discoverable not in guild.features:
-                raise ValueError('The guild has no `DISCOVERABLE` feature')
+            if GuildFeature.public not in guild.features:
+                raise ValueError('The guild has no `PUBLIC` feature')
             data['public_updates_channel_id']=None if public_updates_channel is None else public_updates_channel.id
         
         if (owner is not None):
@@ -4626,6 +4625,9 @@ class Client(UserBase):
             data['default_message_notifications']=message_notification.value
 
         if (description is not _spaceholder):
+            if GuildFeature.public not in guild.features:
+                raise ValueError('The guild has no `PUBLIC` feature')
+            
             if (description is not None) and (not description):
                 description = None
             data['description']=description
@@ -4890,7 +4892,7 @@ class Client(UserBase):
         DiscordException
         """
         data = await self.http.guild_channels(guild.id)
-        guild._sync_channels(data,self)
+        guild._sync_channels(data)
 
     async def guild_sync_roles(self, guild):
         """

@@ -99,8 +99,6 @@ The target user of this invite.
 
 Whether this invite only grants temporary membership.
 (I.e. they get kicked after they disconnect).
-            
-> Copied docs from Discord, actually ???.
 
 ### `user_count`
 

@@ -886,18 +886,76 @@ del version_l
 del sys
 
 class _ConnectorRefCounter(object):
+    """
+    Connector reference counter used by ``DiscordHTTPClient`` to limit the connector amount per loop to one.
+    
+    Attributes
+    ----------
+    connector : `TCPConnector`
+        The connector of the connector counter.
+    count : `int`
+        The amount of active ``DiscordHTTPClient`` with the specified connector.
+    """
     __slots__ = ('connector', 'count')
     def __init__(self, connector):
+        """
+        Creates a new connector referene counter with the given connector.
+        
+        Parameters
+        ----------
+        connector : `TCPConnector`
+            The connector to use on the respective loop.
+        """
         self.connector = connector
         self.count = 1
 
 class DiscordHTTPClient(HTTPClient):
-    __slots__=('connector', 'cookie_jar', 'global_lock', 'handlers', 'header',
-        'loop', 'proxy_auth', 'proxy_url',)
+    """
+    Http session for Discord clients. Implements low level access to Discord endpoints with their ratelimit and
+    re-try handling, but it can aslo be used as a normal http session.
+    
+    Attributes
+    ----------
+    connector : `TCPConnector`
+        TCP connector of the session. Each Discord Http client shares the same.
+    cookie_jar : `CookieJar`
+        Cookie storage of the session.
+    global_lock : `None` or `Future`
+        Waiter for Discord requests, set when the respective client gets limited globally.
+    handlers : `WeakMap` of ``RatelimitHandler``
+        Ratelimit handlers of the Discord requests.
+    headers : `multidict_titled`
+        Headers used by every every Discord request.
+    loop : ``EventThread``
+        The event loop of the http session.
+    proxy_auth :  `str` or `None`
+        Proxy authorization.
+    proxy_url : `str` or `None`
+        Proxy url.
+        
+    Class Attributes
+    ----------------
+    CONREFCOUNTS : `WeakKeyDictionary` of (`EventThread`, ``_ConnectorRefCounter``) items
+        Container to store the connector(s) for Discord http clients. One connector is used by each Discord http client
+        running on the same loop.
+    """
+    __slots__ = ('connector', 'cookie_jar', 'global_lock', 'handlers', 'headers', 'loop', 'proxy_auth', 'proxy_url',)
     
     CONREFCOUNTS = WeakKeyDictionary()
     
-    def __init__(self,client,proxy_url=None,proxy_auth=None):
+    def __init__(self, client, proxy_url=None, proxy_auth=None):
+        """
+        Creates a new Discord http client.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The owner client of the session.
+        proxy_auth :  `str`, Optional
+            Proxy authorization for the session's requests.
+        proxy_url : `str`, Optional
+            Proxy url for the session's requests.
+        """
         loop = client.loop
         
         try:
@@ -912,12 +970,12 @@ class DiscordHTTPClient(HTTPClient):
         
         HTTPClient.__init__(self, loop, proxy_url, proxy_auth, connector = connector)
         
-        header=multidict_titled()
-        header[USER_AGENT]=LIB_USER_AGENT
-        header[AUTHORIZATION]=f'Bot {client.token}' if client.is_bot else client.token
-        header[RATELIMIT_PRECISION]='millisecond'
+        headers=multidict_titled()
+        headers[USER_AGENT]=LIB_USER_AGENT
+        headers[AUTHORIZATION]=f'Bot {client.token}' if client.is_bot else client.token
+        headers[RATELIMIT_PRECISION]='millisecond'
         
-        self.header     = header
+        self.headers    = headers
         self.global_lock= None
         self.handlers   = WeakMap()
     
@@ -925,9 +983,13 @@ class DiscordHTTPClient(HTTPClient):
     __aexit__ = None
     
     async def close(self):
+        """
+        Closes the Discord http Client's connector.
+        """
         self.__del__()
     
     def __del__(self):
+        """Closes the Discord http Client's connector."""
         connector=self.connector
         if connector is None:
             return
@@ -942,27 +1004,59 @@ class DiscordHTTPClient(HTTPClient):
             connector_ref_counter.count = count = connector_ref_counter.count-1
             if count:
                 return
-                
+            
             del self.CONREFCOUNTS[self.loop]
         
         if not connector.closed:
             connector.close()
     
-    async def discord_request(self,handler,method,url,data=None,params=None,header=None,reason=None):
-        if header is None:
+    async def discord_request(self, handler, method, url, data=None, params=None, headers=None, reason=None):
+        """
+        Does a request towards Discord.
+        
+        Parameters
+        ----------
+        handler : ``RatelimitHandler``
+            Ratlimit handler for the request.
+        method : `str`
+            The method of the request.
+        url : `str`
+            The url to request.
+        data : `Any`, Optional
+            Payload to request with.
+        params : `Any`, Optional
+            Query parameters.
+        headers : `multidict_titled`, Optional
+            Headers to do the request with. If passed then the session's own headers wont be used.
+        reason : `str`, Optional
+            Shows up at the request's respective guild if applicable.
+        
+        Returns
+        -------
+        response_data : `Any`
+        
+        Raises
+        ------
+        TypeError
+            `data` or `params` type is bad, or they contain object(s) with bad type.
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
+        if headers is None:
             #normal request
-            header=self.header.copy()
+            headers=self.headers.copy()
             
             if type(data) in (dict,list):
-                header[CONTENT_TYPE]='application/json'
+                headers[CONTENT_TYPE]='application/json'
                 data=to_json(data)
             
             if reason is not None:
-                header[AUDIT_LOG_REASON]=quote(reason)
+                headers[AUDIT_LOG_REASON]=quote(reason)
         else:
             #bearer or webhook request
-            if type(data) in (dict,list) and CONTENT_TYPE not in header:
-                header[CONTENT_TYPE]='application/json'
+            if type(data) in (dict,list) and CONTENT_TYPE not in headers:
+                headers[CONTENT_TYPE]='application/json'
                 data=to_json(data)
         
         if handler.parent.group_id:
@@ -977,7 +1071,7 @@ class DiscordHTTPClient(HTTPClient):
             await handler.enter()
             with handler.ctx() as lock:
                 try:
-                    async with Request_CM(self._request(method,url,header,data,params)) as response:
+                    async with Request_CM(self._request(method,url,headers,data,params)) as response:
                         response_data = await response.text(encoding='utf-8')
                 except OSError as err:
                     if not try_again:
@@ -989,14 +1083,14 @@ class DiscordHTTPClient(HTTPClient):
                     try_again-=1
                     continue
                 
-                headers=response.headers
+                response_headers=response.headers
                 status=response.status
                 
-                if headers[CONTENT_TYPE]=='application/json':
+                if response_headers[CONTENT_TYPE]=='application/json':
                     response_data=from_json(response_data)
                 
                 if 199<status<305:
-                    lock.exit(headers)
+                    lock.exit(response_headers)
                     return response_data
                 
                 if status==429:
@@ -1012,7 +1106,7 @@ class DiscordHTTPClient(HTTPClient):
                     try_again-=1
                     continue
                 
-                lock.exit(headers)
+                lock.exit(response_headers)
                 raise DiscordException(response,response_data)
     
     #client
@@ -1074,27 +1168,27 @@ class DiscordHTTPClient(HTTPClient):
     #oauth2
     
     async def oauth2_token(self,data): #UNLIMITED
-        header=multidict_titled()
-        dict.__setitem__(header,CONTENT_TYPE,['application/x-www-form-urlencoded'])
+        headers=multidict_titled()
+        dict.__setitem__(headers,CONTENT_TYPE,['application/x-www-form-urlencoded'])
         
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.oauth2_token),
-            METH_POST, f'{DIS_ENDPOINT}/api/oauth2/token', data, header=header)
+            METH_POST, f'{DIS_ENDPOINT}/api/oauth2/token', data, headers=headers)
     
-    async def user_info(self,header):
+    async def user_info(self,headers):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.user_info),
-            METH_GET, f'{API_ENDPOINT}/users/@me', header=header)
+            METH_GET, f'{API_ENDPOINT}/users/@me', headers=headers)
     
-    async def user_connections(self,header):
+    async def user_connections(self,headers):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.user_connections),
-            METH_GET, f'{API_ENDPOINT}/users/@me/connections', header=header)
+            METH_GET, f'{API_ENDPOINT}/users/@me/connections', headers=headers)
     
     async def guild_user_add(self,guild_id,user_id,data):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.guild_user_add, guild_id),
             METH_PUT, f'{API_ENDPOINT}/guilds/{guild_id}/members/{user_id}', data)
     
-    async def user_guilds(self,header):
+    async def user_guilds(self,headers):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.user_guilds),
-            METH_GET, f'{API_ENDPOINT}/users/@me/guilds', header=header)
+            METH_GET, f'{API_ENDPOINT}/users/@me/guilds', headers=headers)
     
     #channel
     async def channel_private_create(self,data):
@@ -1369,7 +1463,7 @@ class DiscordHTTPClient(HTTPClient):
     
     async def guild_widget_get(self,guild_id):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.guild_widget_get),
-            METH_GET, f'{API_ENDPOINT}/guilds/{guild_id}/widget.json', header={})
+            METH_GET, f'{API_ENDPOINT}/guilds/{guild_id}/widget.json', headers=multidict_titled())
     
     async def guild_users(self,guild_id,data):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.guild_users, guild_id),
@@ -1484,11 +1578,11 @@ class DiscordHTTPClient(HTTPClient):
     
     async def webhook_get_token(self,webhook):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.webhook_get_token),
-            METH_GET, webhook.url, header={})
+            METH_GET, webhook.url, headers=multidict_titled())
     
     async def webhook_delete_token(self,webhook):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.webhook_delete_token),
-            METH_DELETE, webhook.url, header={})
+            METH_DELETE, webhook.url, headers=multidict_titled())
     
     async def webhook_delete(self,webhook_id):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.webhook_delete),
@@ -1496,7 +1590,7 @@ class DiscordHTTPClient(HTTPClient):
     
     async def webhook_edit_token(self,webhook,data):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.webhook_edit_token),
-            METH_PATCH, webhook.url, data, header={})
+            METH_PATCH, webhook.url, data, headers=multidict_titled())
     
     async def webhook_edit(self,webhook_id,data):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.webhook_edit),
@@ -1504,7 +1598,7 @@ class DiscordHTTPClient(HTTPClient):
     
     async def webhook_send(self,webhook,data,wait):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.webhook_send, webhook.id),
-            METH_POST, f'{webhook.url}?wait={wait:d}', data, header={})
+            METH_POST, f'{webhook.url}?wait={wait:d}', data, headers=multidict_titled())
     
     #user
     
@@ -1557,9 +1651,9 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.achievement_delete),
             METH_DELETE, f'{API_ENDPOINT}/applications/{application_id}/achievements/{achievement_id}')
     
-    async def user_achievements(self,application_id,header):
+    async def user_achievements(self,application_id,headers):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.user_achievements),
-            METH_GET, f'{API_ENDPOINT}/users/@me/applications/{application_id}/achievements', header=header)
+            METH_GET, f'{API_ENDPOINT}/users/@me/applications/{application_id}/achievements', headers=headers)
     
     async def user_achievement_update(self,user_id,application_id,achievement_id,data):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.user_achievement_update),

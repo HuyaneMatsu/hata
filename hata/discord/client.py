@@ -345,9 +345,10 @@ class Client(UserBase):
         'guild_profiles', 'is_bot', 'partial', #default user
         'activities', 'status', 'statuses', #presence
         'email', 'flags', 'locale', 'mfa', 'premium_type', 'system', 'verified', # OAUTH 2
-        '__dict__', '_activity', '_gateway_pair', '_status', '_user_chunker_nonce', 'application', 'events',
-        'gateway', 'http', 'intents', 'private_channels', 'ready_state', 'group_channels', 'relationships', 'running',
-        'secret', 'shard_count', 'token', 'voice_clients', )
+        '__dict__', '_activity', '_gateway_time', '_gateway_url', '_gateway_max_concurrency', '_status',
+        '_user_chunker_nonce', 'application', 'events', 'gateway', 'http', 'intents', 'private_channels',
+        'ready_state', 'group_channels', 'relationships', 'running', 'secret', 'shard_count', 'token',
+        'voice_clients', )
     
     loop = KOKORO
     
@@ -360,7 +361,8 @@ class Client(UserBase):
             A valid Discord token, what the client can use to interact with the Discord API.
         secret: `str`, optional
             Client secret used when interacting with oauth2 endpoints.
-        client_id : `snowflake`, optional
+        client_id : `int` ir `str`, optional
+            The client's `.id`. If passed as `str` will be converted to `int`.
             When more `Client` is started up, it is recommended to define their id initially. The wrapper can detect the
             clients' id-s only when they are logging in, so the wrapper  needs to check if a ``User`` alterego of the client
             exists anywhere, and if does will replace it.
@@ -382,16 +384,18 @@ class Client(UserBase):
         
         Other Parameters
         ----------------
-        name : `str`
+        name : `str`, Optional
             The client's ``.name``.
-        discriminator : `int`
-            The client's ``.discriminator``.
-        avatar : `int`
-            The client's ``.avatar``.
-        has_animated_avatar : `bool`
-            The client's ``.has_animated_avatar``.
-        flags : ``UserFlag``
-            The client's ``.flags``.
+        discriminator : `int` or `str` instance, Optional
+            The client's ``.discriminator``. Is accepted as `str` instacne as well and will be converted to `int`.
+        avatar : `int` or `str`, Optional
+            The client's ``.avatar``. If passed as `str` with base of 16, then will be converted to `int`. Animated
+            avatar hashes are accepted as well.
+        has_animated_avatar : `bool` or `int` instance (`0` or `1`), Optional
+            The client's ``.has_animated_avatar``. Can be other `int` instance, than `bool` as well, but their value
+            still cannot be other than `int`. Can not be passed without `avatar`.
+        flags : ``UserFlag`` or `int` instance, Optional
+            The client's ``.flags``. If not passed as ``UserFlag``, then will be converted to it.
         
         Returns
         -------
@@ -531,7 +535,9 @@ class Client(UserBase):
         self.statuses           = {}
         self._activity          = activity
         self.activities         = []
-        self._gateway_pair      = ('',0.0)
+        self._gateway_url       = ''
+        self._gateway_time      = -99.9
+        self._gateway_max_concurrency = 1
         self._user_chunker_nonce= 0
         self.group_channels     = {}
         self.private_channels   = {}
@@ -540,7 +546,7 @@ class Client(UserBase):
         self.partial            = True
         self.ready_state        = None
         self.application        = Application()
-        self.gateway            = DiscordGatewaySharder(self) if shard_count else DiscordGateway(self)
+        self.gateway            = (DiscordGatewaySharder if shard_count else DiscordGateway)(self)
         self.http               = DiscordHTTPClient(self)
         self.events             = EventDescriptor(self)
         
@@ -994,9 +1000,9 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        header=multidict_titled()
-        header[AUTHORIZATION]=f'Bearer {access.access_token}'
-        data = await self.http.user_info(header)
+        headers=multidict_titled()
+        headers[AUTHORIZATION]=f'Bearer {access.access_token}'
+        data = await self.http.user_info(headers)
         return UserOA2(data,access)
     
     async def user_connections(self, access):
@@ -1018,9 +1024,9 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        header=multidict_titled()
-        header[AUTHORIZATION]=f'Bearer {access.access_token}'
-        data = await self.http.user_connections(header)
+        headers=multidict_titled()
+        headers[AUTHORIZATION]=f'Bearer {access.access_token}'
+        data = await self.http.user_connections(headers)
         return [Connection(connection_data) for connection_data in data]
     
     async def renew_access_token(self, access):
@@ -1147,9 +1153,9 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        header=multidict_titled()
-        header[AUTHORIZATION]=f'Bearer {access.access_token}'
-        data = await self.http.user_guilds(header)
+        headers=multidict_titled()
+        headers[AUTHORIZATION]=f'Bearer {access.access_token}'
+        data = await self.http.user_guilds(headers)
         return [PartialGuild(guild_data) for guild_data in data]
     
     async def achievement_get_all(self):
@@ -1355,10 +1361,10 @@ class Client(UserBase):
         This endpoint is unintentionally documented and will never work. For reference:
         ``https://github.com/discordapp/discord-api-docs/issues/1230``.
         """
-        header=multidict_titled()
-        header[AUTHORIZATION]=f'Bearer {access.access_token}'
+        headers=multidict_titled()
+        headers[AUTHORIZATION]=f'Bearer {access.access_token}'
         
-        data = await self.http.user_achievements(self.application.id,header)
+        data = await self.http.user_achievements(self.application.id,headers)
         return [Achievement(achievement_data) for achievement_data in data]
     
     # https://github.com/discordapp/discord-api-docs/issues/1230
@@ -7146,9 +7152,9 @@ class Client(UserBase):
         ConnectionError
             No internet connection or if the request raised any ``DiscordException``.
         """
-        url,time=self._gateway_pair
+        time = self._gateway_time
         if time+60.>monotonic():
-            return url
+            return self._gateway_url
         
         try:
             if self.is_bot:
@@ -7179,7 +7185,9 @@ class Client(UserBase):
                     gateways.append(gateway)
         
         url=data['url']+'?encoding=json&v=6&compress=zlib-stream'
-        self._gateway_pair=(url,monotonic(),)
+        self._gateway_url = url
+        self._gateway_time = monotonic()
+        self._gateway_max_concurrency = data['session_start_limit'].get('max_concurrency', 1)
         
         return url
     
@@ -8004,7 +8012,7 @@ class Client(UserBase):
         -------
         relationships : `list` of ``Relationship`` objects
         """
-        type_=RelationshipType.received_request
+        type_=RelationshipType.pending_incoiming
         return [rs for rs in self.relationships.values() if rs.type is type_]
 
     @property
@@ -8016,7 +8024,7 @@ class Client(UserBase):
         -------
         relationships : `list` of ``Relationship`` objects
         """
-        type_=RelationshipType.sent_request
+        type_=RelationshipType.pending_outgoing
         return [rs for rs in self.relationships.values() if rs.type is type_]
     
     def _freeze_voice(self):

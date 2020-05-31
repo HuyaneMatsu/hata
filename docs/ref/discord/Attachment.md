@@ -1,6 +1,6 @@
 # class `Attachment`
 
-Represents an attachemnt of a [message](Message.md)
+Represents an attachment of a [message](Message.md)
 
 - Source : [message.py](https://github.com/HuyaneMatsu/hata/blob/master/hata/discord/message.py)
 

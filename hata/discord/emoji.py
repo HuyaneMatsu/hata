@@ -3,7 +3,7 @@ __all__ = ('BUILTIN_EMOJIS', 'Emoji', 'parse_emoji', 'reaction_mapping', 'reacti
 
 from .bases import DiscordEntity
 from .client_core import EMOJIS
-from .others import id_to_time, EMOJI_RP
+from .others import id_to_time, EMOJI_RP, DISCORD_EPOCH_START
 from .http import URLS
 from .user import User, ZEROUSER
 from .preconverters import preconvert_str, preconvert_bool, preconvert_snowflake
@@ -386,7 +386,13 @@ class Emoji(DiscordEntity, immortal=True):
         -------
         created_at : `datetime`
         """
-        return id_to_time(0 if self.id<UNICODE_EMOJI_LIMIT else self.id)
+        id_ = self.id
+        if id_ > UNICODE_EMOJI_LIMIT:
+            created_at = id_to_time(id_)
+        else:
+            created_at = DISCORD_EPOCH_START
+        
+        return created_at
 
     url = property(URLS.emoji_url)
     url_as = URLS.emoji_url_as

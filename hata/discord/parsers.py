@@ -6,7 +6,7 @@ from time import monotonic
 from weakref import WeakSet, ref as Weakreferer, WeakKeyDictionary
 
 from ..backend.futures import Future, Task, iscoroutinefunction as iscoro
-from ..backend.dereaddons_local import function, RemoveMeta, _spaceholder, MethodLike
+from ..backend.dereaddons_local import function, RemoveMeta, _spaceholder, MethodLike, NEEDS_DUMMY_INIT
 from ..backend.analyzer import CallableAnalyzer
 
 from .bases import FlagBase
@@ -3085,6 +3085,10 @@ class eventlist(list,metaclass=RemoveMeta, remove=['insert', 'sort', 'pop', 'rev
         
         return self
     
+    if NEEDS_DUMMY_INIT:
+        def __init__(self, *args, **kwargs):
+            pass
+    
     class _wrapper(object):
         __slots__=('parent', 'name', 'kwargs')
         def __init__(self, parent, name, kwargs):
@@ -3993,3 +3997,4 @@ async def _with_error(client,task):
 del RemoveMeta
 del datetime
 del FlagBase
+del NEEDS_DUMMY_INIT

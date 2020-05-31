@@ -368,7 +368,7 @@ class RatelimitHandler(object):
             self.wakeup()
             return
         
-        allocates =1
+        allocates = 1
         size = int(size)
         if size!=current_size:
             self.parent.size = size
@@ -407,7 +407,7 @@ class RatelimitHandler(object):
         if (drops is None):
             self.drops = RatelimitUnit(drop, allocates)
         else:
-            self.drops.update_with(drop, allocates)
+            drops.update_with(drop, allocates)
         
         wakeupper = self.wakeupper
         if wakeupper is None:
@@ -860,7 +860,7 @@ class RATELIMIT_GROUPS:
     relationship_create         = RatelimitGroup() # untested
     client_get_settings         = RatelimitGroup() # untested
     client_edit_settings        = RatelimitGroup() # untested
-    user_get                    = RatelimitGroup() # untested
+    user_get                    = RatelimitGroup()
     channel_group_create        = RatelimitGroup() # untested
     user_get_profile            = RatelimitGroup() # untested
     webhook_delete              = RatelimitGroup.unlimited()

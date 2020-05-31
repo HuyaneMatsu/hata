@@ -851,6 +851,10 @@ class basemethod(MethodLike):
     
     def __getattr__(self,name):
         return getattr(self.__func__,name)
+    
+    @property
+    def __doc__(self):
+        return self.func.__doc__
 
 class BaseMethodDescriptor(object):
     __slots__=('func',)
@@ -868,28 +872,36 @@ class BaseMethodDescriptor(object):
     
     def __delete__(self, obj):
         raise AttributeError('can\'t delete attribute')
-    
+
+# This 2 type can be function
 wrapper_descriptor=type(object.__ne__)
 method_descriptor=type(object.__format__)
 
-DO_NOT_MODULIZE_TYPES=(mappingproxy, getset_descriptor, wrapper_descriptor, method_descriptor)
+DO_NOT_MODULIZE_TYPES=[mappingproxy, getset_descriptor, ]
+
+if wrapper_descriptor is not function:
+    DO_NOT_MODULIZE_TYPES.append(wrapper_descriptor)
+
+if method_descriptor is not function:
+    DO_NOT_MODULIZE_TYPES.append(method_descriptor)
+
+DO_NOT_MODULIZE_TYPES = tuple(DO_NOT_MODULIZE_TYPES)
 
 del mappingproxy
 del getset_descriptor
 del wrapper_descriptor
 del method_descriptor
 
-DO_NOT_MODULIZE_NAMES=('__class__', '__module__', '__init_subclass__', '__doc__', '__subclasshook__')
-
 def modulize(klass):
     if not isinstance(klass,type):
         raise TypeError('Only types can be modulized')
     result=module(klass.__name__)
     for name in type.__dir__(klass):
-        if name in DO_NOT_MODULIZE_NAMES:
+        if name.startswith('__') and name.endswith('__') and name!='__doc__':
             continue
         value=type.__getattribute__(klass,name)
         if type(value) in DO_NOT_MODULIZE_TYPES:
+            print(type(value), value)
             continue
         module.__setattr__(result,name,value)
     return result
@@ -1141,10 +1153,28 @@ def isweakreferable(object_):
     
     return False
 
+# Test for pypy bug:
+# https://foss.heptapod.net/pypy/pypy/issues/3239
+class dummy_init_tester:
+    def __new__(cls, value):
+        return object.__new__(cls)
+    __init__ = object.__init__
+
+try:
+    dummy_init_tester(None)
+except TypeError:
+    NEEDS_DUMMY_INIT = True
+else:
+    NEEDS_DUMMY_INIT = False
+
 # speedup builtin stuff, Cpython is welcome
 class WeakReferer(weakref.ref):
     __slots__ = ()
-    __init__ = object.__init__
+    if NEEDS_DUMMY_INIT:
+        def __init__(self, *args, **kwargs):
+            pass
+    else:
+        __init__ = object.__init__
 
 weakref.ref = WeakReferer
 
@@ -1957,3 +1987,4 @@ class WeakMap(dict, metaclass=RemoveMeta, remove=['__setitem__', 'items', 'keys'
         return key
 
 del weakref
+del dummy_init_tester

@@ -16,6 +16,7 @@ from .emoji import reaction_mapping
 from .embed import EmbedCore, EXTRA_EMBED_TYPES
 from .webhook import WebhookRepr, PartialWebhook, WebhookType, Webhook
 from .role import Role
+from .preconverters import preconvert_flag, preconvert_bool, preconvert_snowflake, preconvert_str
 
 from . import ratelimit
 
@@ -30,6 +31,9 @@ ChannelPrivate  = NotImplemented
 ChannelGroup    = NotImplemented
 
 class MessageFlag(FlagBase):
+    """
+    Bitwise flags of a ``Message``.
+    """
     __keys__ = {
         'crossposted'           : 0,
         'is_crosspost'          : 1,
@@ -39,49 +43,113 @@ class MessageFlag(FlagBase):
             }
 
 class MessageActivityType(object):
+    """
+    Represents a ``MessageActivity``'s type.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the message activity type.
+    value : `int`
+        The Discord side identificator value of the message activity type.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `list` of ``MessageActivityType``
+        Stores the predefined ``MessageActivityType`` instances. These can be accessed with their `value` as index.
+    
+    Every predefind message activity type can be accessed as class attribute as well:
+    
+    +-----------------------+---------------+-------+
+    | Class attribute name  | name          | value |
+    +=======================+===============+=======+
+    | none                  | none          | 0     |
+    +-----------------------+---------------+-------+
+    | join                  | join          | 1     |
+    +-----------------------+---------------+-------+
+    | spectate              | spectate      | 2     |
+    +-----------------------+---------------+-------+
+    | listen                | listen        | 3     |
+    +-----------------------+---------------+-------+
+    | watch                 | watch         | 4     |
+    +-----------------------+---------------+-------+
+    | join_request          | join_request  | 5     |
+    +-----------------------+---------------+-------+
+    """
     # class related
     INSTANCES = [NotImplemented] * 6
     
     # object related
     __slots__=('name', 'value', )
     
-    def __init__(self,value,name):
+    def __init__(self, value, name):
+        """
+        Creates an ``MessageActivityType`` and stores it at the classe's `.INSTANCES` class attribute as well.
+        
+        Parameters
+        ----------
+        value : `int`
+            The Discord side identificator value of the message activity type.
+        name : `str`
+            The name of the message activity type.
+        """
         self.value=value
         self.name=name
-
+        
         self.INSTANCES[value]=self
-
+    
     def __str__(self):
+        """Returns the message activity type's name."""
         return self.name
-
+    
     def __int__(self):
+        """Returns the message activity type's value."""
         return self.value
-
+    
     def __repr__(self):
-        return f'{self.__class__.__name__}(value={self.value}, name=\'{self.name}\')'
+        """Returns the represnetation of the message activity type."""
+        return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r})'
+    
+    none         = NotImplemented
+    join         = NotImplemented
+    spectate     = NotImplemented
+    listen       = NotImplemented
+    watch        = NotImplemented
+    join_request = NotImplemented
 
-    none        = NotImplemented
-    join        = NotImplemented
-    spectate    = NotImplemented
-    listen      = NotImplemented
-    join_request= NotImplemented
-
-MessageActivityType.none           = MessageActivityType(0,'none')
-MessageActivityType.join           = MessageActivityType(1,'join')
-MessageActivityType.spectate       = MessageActivityType(2,'spectate')
-MessageActivityType.listen         = MessageActivityType(3,'listen')
-MessageActivityType.join_request   = MessageActivityType(5,'join_request')
-
-# MessageActivity 4 is missing, lets add it as unknown
-MessageActivityType(4,'unknown')
+MessageActivityType.none         = MessageActivityType(0, 'none')
+MessageActivityType.join         = MessageActivityType(1, 'join')
+MessageActivityType.spectate     = MessageActivityType(2, 'spectate')
+MessageActivityType.listen       = MessageActivityType(3, 'listen')
+MessageActivityType.watch        = MessageActivityType(4, 'watch')
+MessageActivityType.join_request = MessageActivityType(5, 'join_request')
 
 class MessageActivity(object):
+    """
+    Might be sent with a ``Message``, if it has rich presence-related chat embeds.
+    
+    Attributes
+    ----------
+    party_id : `str`
+        The message application's party's id. Can be empty string.
+    type : ``MessageActivityType``
+        The message application's type.
+    """
     __slots__ = ('party_id', 'type',)
-    def __init__(self,data):
+    def __init__(self, data):
+        """
+        Creates a new ``MessageActivity`` from message activity data included inside of a ``Message``'s data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Message activity data.
+        """
         self.party_id=data.get('party_id','')
         self.type=MessageActivityType.INSTANCES[data['type']]
 
     def __eq__(self,other):
+        """Returns whether the two message activitys are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -94,11 +162,40 @@ class MessageActivity(object):
         return True
     
     def __repr__(self):
+        """Returns the message activity's representation."""
         return f'<{self.__class__.__name__} type={self.type.name} ({self.type.value}), party_id={self.party_id!r}>'
     
 class Attachment(DiscordEntity):
+    """
+    Represents an attachment of a ``Message``.
+    
+    Attributes
+    ----------
+    id : `int`
+        The unique identificcator number of the attachment.
+    height : `int`
+        The height of the attachment if applicable. Defaults to `0`.
+    name : `str`
+        The name of th attachment.
+    proxy_url : `str`
+        Proxied url of the attachment.
+    size : `int`
+        The attachment's size in bytes,
+    url : `str`
+        The attachment's url.
+    width : `int`
+        The attachment's width if applicable. Defaults to `0`.
+    """
     __slots__ = ('height', 'name', 'proxy_url', 'size', 'url', 'width',)
-    def __init__(self,data):
+    def __init__(self, data):
+        """
+        Creates an attachment object from the attachment data included inside of a ``Message`'s.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received attachment data.
+        """
         self.name       = data['filename']
         self.id         = int(data['id'])
         self.proxy_url  = data['proxy_url']
@@ -108,6 +205,7 @@ class Attachment(DiscordEntity):
         self.width      = data.get('width',0)
     
     def __repr__(self):
+        """Returns the representation of the attachment."""
         result = [
             '<',self.__class__.__name__,
             ' id=',repr(self.id),
@@ -128,15 +226,40 @@ class Attachment(DiscordEntity):
         
 
 class MessageApplication(DiscordEntity):
+    """
+    Might be sent with a ``Message``, if it has rich presence-related chat embeds.
+    
+    Attributes
+    ----------
+    id : `int`
+        Unique identificator of the respective appliaction.
+    cover : `int`
+        The respective application's cover image's hash in `uin128` if applicable. Set as `0` if the application has
+        no cover.
+    description : `str`
+        The respective application's description.
+    icon : `int`
+        The respective application's icon's hash in `uint128` if applicable. Set as `0`, if th application has no icon.
+    name : `str`
+        The respective application's name.
+    """
     __slots__ = ('cover', 'description', 'icon', 'name',)
-    def __init__(self,data):
-        cover = data.get('cover_image',None)
-        self.cover      = 0 if cover is None else int(cover,16)
-        self.description= data['description']
-        icon=data['icon']
-        self.icon       = 0 if icon is None else int(icon,16)
-        self.id         = int(data['id'])
-        self.name       = data['name']
+    def __init__(self, data):
+        """
+        Creates a new ``MessageApplication`` from message application data included inside of a ``Message``'s data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Message application data.
+        """
+        cover = data.get('cover_image',)
+        self.cover = 0 if cover is None else int(cover,16)
+        self.description = data['description']
+        icon=data.get('icon')
+        self.icon = 0 if icon is None else int(icon,16)
+        self.id = int(data['id'])
+        self.name  = data['name']
     
     icon_url=property(URLS.application_icon_url)
     icon_url_as=URLS.application_icon_url_as
@@ -144,11 +267,28 @@ class MessageApplication(DiscordEntity):
     cover_url_as=URLS.application_cover_url_as
     
     def __repr__(self):
+        """Returns the represnetation of the message application."""
         return f'<{self.__class__.__name__} name={self.name!r}, id={self.id}>'
 
 class MessageReference(object):
+    """
+    A cross guild reference used as a ``Message``'s `.cross_reference` at crosspost messages.
+    
+    Attributes
+    ----------
+    _cache : `dict` of (`str`, `Any`) items
+        A dictionary used by the object's properties and cached properties.
+    """
     __slots__=('_cache',)
-    def __init__(self,data):
+    def __init__(self, data):
+        """
+        Creates a ``MessagReference`` from message reference data included inside of a ``Message``'s.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Message reference data.
+        """
         self._cache=cache={}
         
         try:
@@ -180,38 +320,76 @@ class MessageReference(object):
     
     @property
     def channel_id(self):
+        """
+        Returns the referenced message's channel's id. If no `channel_id` was received from Discord, returns `0`.
+        
+        Returns
+        -------
+        channel_id : `int`
+        """
         return self._cache['channel_id']
     
     @property
     def guild_id(self):
+        """
+        Returns the referenced message's guild's id. If no `guild_id` was received from Discord, then returns `0`.
+        
+        Returns
+        -------
+        guild_id : `int`
+        """
         return self._cache['guild_id']
     
     @property
     def message_id(self):
+        """
+        Returns the referenced message's id. If no `message_id` was received from Discord, then returns `0`.
+        
+        Returns
+        -------
+        message_id : `int`
+        """
         return self._cache['message_id']
     
     @cached_property
     def channel(self):
+        """
+        Tries to find the referenced message's channel and return it. If fails on any step, then returns `None`.
+        
+        Returns
+        -------
+        channel : `None` or ``ChannelText``
+        """
         channel_id=self._cache['channel_id']
         if channel_id==0:
             return None
         
         return CHANNELS.get(channel_id)
-
+    
     @cached_property
     def guild(self):
+        """
+        Tries to find the referenced message's guild and return it. If fails on any step, then returns `None`.
+        
+        Returns
+        -------
+        guild : `None` or ``Guild``
+        """
         guild_id=self._cache['guild_id']
         if guild_id==0:
             return None
         
         return GUILDS.get(guild_id)
-
+    
     @cached_property
     def message(self):
-        channel=self.channel
-        if channel is None:
-            return None
+        """
+        Tries to find the referenced message and return it. If fails on any step, then returns `None`.
         
+        Returns
+        -------
+        message : `None` or ``Message``
+        """
         message_id=self._cache['message_id']
         if message_id==0:
             return
@@ -219,11 +397,40 @@ class MessageReference(object):
         return MESSAGES.get(message_id)
     
     def __repr__(self):
+        """Returns the representation of the message reference."""
         return f'<{self.__class__.__name__} channel_id={self._cache["channel_id"]}, guild_id={self._cache["guild_id"]}, message_id={self._cache["message_id"]}>'
 
 class UnknownCrossMention(DiscordEntity):
+    """
+    Represents an unknown channel mentioned by a cross guild mention. These mentions are stored at ``Message``'s
+    `.cross_mentions` instance attribute.
+    
+    Attributes
+    ----------
+    id : `int`
+        The unique identificator number of the respective channel.
+    guild_id : `int`
+        The unique identificator number of the respective channel's guild.
+    name : `str`
+        The name of the respective channel.
+    type : `int`
+        The channel type value of the respective channel.
+    """
     __slots__ = ('guild_id', 'name', 'type',)
-    def __new__(cls,data):
+    def __new__(cls, data):
+        """
+        Tries to find the refernced channel by `id`. If it fails creates and returns an ``UnknownCrossMention``
+        instead.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Cross reference channel mention data.
+        
+        Returns
+        -------
+        channel : ``UnknownCrossMention`` or ``ChannelGuildBase`` instance
+        """
         channel_id=int(data['id'])
         try:
             channel=CHANNELS[channel_id]
@@ -233,43 +440,68 @@ class UnknownCrossMention(DiscordEntity):
             channel.guild_id=int(data['guild_id'])
             channel.type=data['type']
             channel.name=data['name']
-
+        
         return channel
-
+    
     def __gt__(self,other):
+        """Returns whether this unknown cross mention's id is greater than the other's."""
         if (type(other) is not UnknownCrossMention) or (not isinstance(other,ChannelBase)):
             return NotImplemented
         return self.id>other.id
-        
+    
     def __ge__(self,other):
+        """Returns whether this unknown cross mention's id is greater or equal to the other's."""
         if (type(other) is not UnknownCrossMention) or (not isinstance(other,ChannelBase)):
             return NotImplemented
         return self.id>=other.id
-
+    
     def __eq__(self,other):
+        """Returns whether this unknown cross mention's id is equal to the other's."""
         if (type(other) is not UnknownCrossMention) or (not isinstance(other,ChannelBase)):
             return NotImplemented
         return self.id==other.id
-
+    
     def __ne__(self,other):
+        """Returns whether this unknown cross mention's id is not equal to the other's."""
         if (type(other) is not UnknownCrossMention) or (not isinstance(other,ChannelBase)):
             return NotImplemented
         return self.id!=other.id
-
+    
     def __le__(self,other):
+        """Returns whether this unknown cross mention's id is less or equal to the other's."""
         if (type(other) is not UnknownCrossMention) or (not isinstance(other,ChannelBase)):
             return NotImplemented
         return self.id<=other.id
-
+    
     def __lt__(self,other):
+        """Returns whether this unknown cross mention's id is less than the other's."""
         if (type(other) is not UnknownCrossMention) or (not isinstance(other,ChannelBase)):
             return NotImplemented
         return self.id<other.id
-
+    
     def __str__(self):
+        """Returns the unknown cross mention's respective channel's name."""
         return self.name
-
-    def __format__(self,code):
+    
+    def __format__(self, code):
+        """
+        Formats the unknown corss mention ina format string. Check ``ChannelBase.__format__`` for availabl format
+        codes.
+        
+        Parameters
+        ----------
+        code : `str`
+            The option on based the result will be formatted.
+        
+        Returns
+        -------
+        unknow_cross_mention : `str`
+        
+        Raises
+        ------
+        ValueError
+            Unknown format code.
+        """
         if not code:
             return self.__str__()
         if code=='m':
@@ -279,13 +511,27 @@ class UnknownCrossMention(DiscordEntity):
         if code=='c':
             return f'{self.created_at:%Y.%m.%d-%H:%M:%S}'
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
-
+    
     @property
     def clients(self):
+        """
+        Returns the unknown cross mention's respective channel's clients, what is an empty `list` every time.
+        
+        Returns
+        -------
+        clients : `list` of ``Client``
+        """
         return []
     
     @property
     def display_name(self):
+        """
+        Returns the unknown cross mention's respective channel's display name.
+        
+        Returns
+        -------
+        display_name : `str`
+        """
         type_=self.type
         name=self.name
         # Text or Store
@@ -305,26 +551,124 @@ class UnknownCrossMention(DiscordEntity):
     
     @property
     def guild(self):
+        """
+        Returns the unknown cross mention's respective channel's guild, what is `None` every time.
+        
+        Returns
+        -------
+        guild : `None`
+        """
         return None
     
     @property
     def mention(self):
+        """
+        The unknown cross mention's respective channel's mention.
+        
+        Returns
+        -------
+        mention : `str`
+        """
         return f'<#{self.id}>'
     
     @property
     def partial(self):
+        """
+        Unknown cross mentions represent a partial channel, so this property returns `True` every time.
+        
+        Returns
+        -------
+        partial : `bool`
+        """
         return True
 
-        
 class Message(DiscordEntity, immortal=True):
+    """
+    Represents a message from Discord.
+    
+    id : `int`
+        The unique identificator number of the message.
+    _channel_mentions : `None` or `list` of (``UnknownCrossMention`` or ``ChannelBase`` instances)
+        Cache used by the ``.channel_mentions` property.
+    activity : `None` or ``MessageActivity``
+        Sent with rich presence related embeds.
+    application : `None` or ``MessageApplication``
+        Sent with rich presence related embeds.
+    attachments : `None` or `list` of ``Attachment``
+        Attachments sent with the message.
+    author : ``UserBase`` instance
+        The author of the message. Can be any user type and if not found, then set as `ZEROUSER`.
+    channel : ``ChannelTextBase`` instance
+        The channel where the message is sent.
+    content : `str`
+        The message's content.
+    cross_mentions : `None` or `list` of (``UnknownCrossMention`` or ``ChannelBase`` instances)
+        Cross guild channel mentions of a crosspost message if applicable. If a channel is not loaded by the wrapper,
+        then it will be represented with a ``UnknownCrossMention`` instead.
+    cross_reference : `None` or ``MessageReference``
+        Cross guild reference to the original message of crospost messages.
+    edited : `None` or `datetime`
+        The time when the message was edited, or `None` if it was not.
+        > Pinning or (un)supressing a mesage will not change it's edited value.
+    embeds : `None` or `list` of ``EmbedCore``
+        List of embeds included with the message if any.
+        > If a message contains links, then those embeds' might not be included with the source payload and those
+        > will be added only later.
+    everyone_mention : `bool`
+        Whether the message contains `@everyone` or `@here`.
+    flags : ``MessageFlag``
+        The message's flags.
+    nonce : `str` or `None`
+        A nonce that is used for optimistic message sending. If a message is created with a nonce, then it should
+        be shown up at the message's received payload as well.
+    pinned : `bool`
+        Whether the message is pinned.
+    reactions : ``reaction_mapping``
+        A dictionary like object, which contains the reactions on the message.
+    role_mentions : `None` or `list` of ``Role``
+        The mentioned roles by the message if any.
+    tts : `bool`
+        Whether the message is "text to speech".
+    type : ``MessageType``
+        The type of the message.
+    user_mentions : `None` or `list` of (``Client`` or ``User``)
+        The mentioned users by the message if any.
+    """
     __slots__ = ('_channel_mentions', 'activity', 'application', 'attachments', 'author', 'channel', 'content',
         'cross_mentions', 'cross_reference', 'edited', 'embeds', 'everyone_mention', 'flags', 'nonce', 'pinned',
         'reactions', 'role_mentions', 'tts', 'type', 'user_mentions',)
     
     def __new__(cls, data, channel):
+        """
+        A message should not be created with `.__new__` method, but should be created through a channel method, or
+        by ``Message.custom``.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Message data.
+        channel : ``ChanneltextBase`` instance
+            Source channel.
+        
+        Raises
+        ------
+        RuntimeError
+            Message should not be created like this.
+        """
         raise RuntimeError(f'`{cls.__name__}` should not be created like this.')
     
-    def _finish_init(self,data,channel):
+    def _finish_init(self, data, channel):
+        """
+        This method is called after a message object is created and it's id is set. Fills up the message's attributes
+        from the given message data and stores the message at `MESSAGES` weak value dictionary.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Message data.
+        channel : ``ChanneltextBase`` instance
+            Source channel.
+        """
         self.channel=channel
         guild=channel.guild
         webhook_id=data.get('webhook_id',None)
@@ -439,13 +783,116 @@ class Message(DiscordEntity, immortal=True):
                     role_mentions.sort()
                 else:
                     role_mentions=None
-                    
+            
             self.role_mentions=role_mentions
         
         MESSAGES[self.id]=self
         
     @BaseMethodDescriptor
     def custom(cls, base, validate=True, **kwargs):
+        """
+        Creates a custom message. If called as a method of a message, then the attribues of the created custom message
+        will default to that message's. Meanwhile if called as a classmethod, then the attributes of the created
+        custom message will default to the overall defaults.
+        
+        Parameters
+        ----------
+        validate : `bool`
+            Whether contradictory between the message's attributes should be checked. If there is any, `ValueError`
+           is raised.
+        **kwargs : keyword arguments
+            Additional attributes of the created message.
+        
+        Other Parameters
+        ----------------
+        activity : `None` or ``MessageActivity``, Optional
+            The `.activity` attribute the message.
+            If called as classmethod defaults to `None`.
+        application : `None` or ``MessageApplication``., Optional
+            The `.application` attribute the message.
+            If called as a classmethod defaults to `None`.
+        attachments : `None` or (`list` of ``Attachment``), Optional
+            The `.attachments` attribute of the message. If passed as an empty list, then will be as `None` instead.
+            If called as a classmethod defaults to `None`.
+        author : `None`, ``Client``, ``User``, ``Webhook`` or ``WebhookRepr``, Optional
+            The `.author` attribute of the message. If passed as `None` then it will be set as `ZEROUSER` instead.
+            If called as a classmethod, defaults to `ZEROUSER`.
+        channel : `ChannelTextBase` instance, Optional if called as method
+            The `.channel` attribute of the message.
+            If called as a clasmethod this attribute must be passed, or `TypeError` is raised.
+        content : `str`, Optional
+            The `.content` attribute of the message. Can be between length `0` and `2000`.
+            If called as a classmethod defaults to `''` (empty string).
+        cross_mentions : `None` or (`list` of (``UnknownCrossMetntion`` or ``ChannelGUildBase`` instances)), Optional
+            The `.cross_mentions` attribute of the message. If passed as an empty list, then will be set `None` instead.
+            If called as a classmethod defaults to `None`.
+        cross_reference : `None` or ``MessageReference``, Optional
+            The `.cross_reference` attribute of the message.
+            If called as a classmethod defaults to `None`.
+        edited : `None` or `datetime`, Optional.
+            The `.edited` attribute of the message.
+            If called as a classmethod, defaults to `None`.
+        embeds : `None` or (`list` of ( ``EmbedCore`` or any embed compatible)), Optional
+            The `.embeds` attribute of the message. If passed as an empty list, then is set as `None` instead. If
+            passed as list and it contains any embeds, which are not type ``EmbedCore``, then those will be converted
+            to ``EmbedCore`` as well.
+            If called as a classmethod defaults to `None`.
+        everyone_mention : `bool` or `int` instance (`0` or `1`), Optional
+            The `.everyone_mention` attribute of the message. Accepts other `int` instance as `bool` as well, but
+            their value still cannot be other than `0` or `1`.
+            If called as a classmethod, defaults to `False`.
+        flags : ``MessageFlag`` or `int`, Optional
+            The `.flags` attribute of the message. If passed as other `int` instances than ``MessageFlag``, then will
+            be converted to ``MessageFlag``.
+            If called as a classmethod defaults to `MesageFlag()`.
+        id : `int` or `str`, Optional
+            The `.id` attribute of the message. If passed as `str`, will be converted to `int`.
+            If called as a classmethod defaults to `0`.
+        id_ : `int` or `str`, Optional.
+            Alias of `id`.
+        message_id : `int` or `str`, Optional
+            Alias of `id`.
+        nonce : `None` or `str`, Optional.
+            The `.nonce` attribute of the message. If passed as `str` can be between length `0` and `32`.
+            If called as a classmethod defaults to `None`.
+        pinned :  : `bool` or `int` instance (`0` or `1`), Optional
+            The `.pinned` attribute of the message. Accepts other `int` instances as `bool` as well, but their value
+            still cannot be other than `0` or `1`.
+            If called as a classmethod, defaults to `False`.
+        reactions : `None` or ``reaction_mapping``, Optional.
+            The `.reactions` attribute of the message. If passed as `None` will be set as an empty
+            ``reaction_mapping``.
+            If called as a classmethod defaults to empty ``reaction_mapping``.
+        role_mentions : `None` or (`list` of ``Role``), Optional
+            The `.role_mentions` attribute of the message. If passed as an empty `list`, will be set as `None`
+            instead.
+            If called as a classmethod defaults to `None`.
+        tts :  : `bool` or `int` instance (`0` or `1`), Optional
+            The `.tts` attribute of the message. Accepts other `int` instances as `bool` as well, but their value
+            still cannot be other than `0` or `1`.
+            If called as a classmethod, defaults to `False`.
+        type : ``MessageType`` or `int`, Optional
+            The `.type` attribute of the message. If passed as `int`, it will be converted to it's wrapper side
+            ``MessageType`` representation.
+            If called as a classmethod defaults to ``Messagetype.default`
+        type_ : ``MesageType`` or `int`, Optional
+            Alias of ``type`.
+        user_mentions : `None` or (`list` of (``User`` or ``Client``)), Optional
+            The `.user_mentions` attribute of the message. If passed as an empty list will be set as `None` instead.
+            If called as a classmethod defaults to `None`.
+        
+        Returns
+        -------
+        message : ``Message``
+        
+        Raises
+        ------
+        TypeError
+            If any of the argument's type is incorrect.
+        ValueError
+            - If a passed argument's type is correct, but it's value is not.
+            - If `validate` is passed as `True` and there is a contradictory between the message's attributes.
+        """
         if (base is not None) and (type(base) is not cls):
             raise TypeError(f'`base` should be either `None`, or type `{cls.__name__}`, got `{base!r}`')
         
@@ -453,7 +900,7 @@ class Message(DiscordEntity, immortal=True):
             channel=kwargs.pop('channel')
         except KeyError:
             if base is None:
-                raise ValueError('Expected a passed `base`, or a passed `channel`, but got non of them.')
+                raise TypeError('Expected to be called as method, but was called as a classmethod and `channel` was not passed.')
             channel=base.channel
         else:
             if not isinstance(channel,ChannelTextBase):
@@ -514,7 +961,7 @@ class Message(DiscordEntity, immortal=True):
                 else:
                     # We should not have empty attachment list, lets fix it
                     attachments=None
-                    
+        
         try:
             author=kwargs.pop('author')
         except KeyError:
@@ -531,19 +978,18 @@ class Message(DiscordEntity, immortal=True):
                 pass
             else:
                 raise TypeError(
-                    f'`author` can be type `{User.__name__}` / `{Client.__name__}` / `{Webhook.__name__}` / '
+                    f'`author` can be type `None`, `{User.__name__}`, `{Client.__name__}`, `{Webhook.__name__}` or '
                     f'`{WebhookRepr.__name__}`, got `{author!r}`')
         
         try:
             content=kwargs.pop('content')
         except KeyError:
             if base is None:
-                content=''
+                content = ''
             else:
-                content=base.content
+                content = base.content
         else:
-            if (type(content) is not str):
-                raise TypeError(f'`content` should be type `str`, got `{content!r}`')
+            content = preconvert_str(content, 'content', 0, 2000)
         
         try:
             cross_reference=kwargs.pop('cross_reference')
@@ -594,41 +1040,24 @@ class Message(DiscordEntity, immortal=True):
             if (cross_reference is None) and (cross_mentions is not None):
                 raise ValueError('`cross_mentions` are supported, only if `cross_reference` is provided')
         
-        # simple goto in python, because flat is justice
-        message_id_found=True
-        while True:
+        for name in ('message_id', 'id', 'id_'):
             try:
-                message_id=kwargs.pop('message_id')
+                message_id = kwargs.pop('message_id')
             except KeyError:
-                pass
-            else:
-                break
+                continue
             
-            try:
-                message_id=kwargs.pop('id')
-            except KeyError:
-                pass
-            else:
-                break
-            
-            try:
-                message_id=kwargs.pop('id_')
-            except KeyError:
-                pass
-            else:
-                break
-            
-            message_id_found=False
+            message_id_found = True
             break
+        else:
+            message_id_found = False
         
         if message_id_found:
-            if (type(message_id) is not int) or (message_id<0) or (message_id>18446744073709551615):
-                raise TypeError(f'`id` should be type `int`, and can be between `0` and `18446744073709551615`, got `{message_id!r}`')
+            message_id = preconvert_snowflake(message_id, name)
         else:
             if base is None:
-                message_id=0
+                message_id = 0
             else:
-                message_id=base.id
+                message_id = base.id
         
         try:
             edited=kwargs.pop('edited')
@@ -690,14 +1119,7 @@ class Message(DiscordEntity, immortal=True):
             else:
                 everyone_mention=base.everyone_mention
         else:
-            if type(everyone_mention) is bool:
-                # We expect this
-                pass
-            elif (type(everyone_mention) is int) and (everyone_mention in (0,1)):
-                # Second attempt, lets accept `int` as `0` / `1` as well
-                everyone_mention=bool(everyone_mention)
-            else:
-                raise TypeError(f'`everyone_mention` should be type `bool`, got `{everyone_mention!r}`')
+            everyone_mention = preconvert_bool(everyone_mention, 'everyone_mention')
         
         try:
             flags=kwargs.pop('flags')
@@ -709,15 +1131,9 @@ class Message(DiscordEntity, immortal=True):
         else:
             if flags is None:
                 # Accept None, and then convert it.
-                flags=MessageFlag(0)
-            elif type(flags) is MessageFlag:
-                # We expect this
-                pass
-            elif (type(flags) is int) and (flags>=0) and (flags<=18446744073709551615):
-                # Accept int and then convert it as a second try
-                flags=MessageFlag(flags)
+                flags=MessageFlag()
             else:
-                raise TypeError(f'`flags` should be type `{MessageFlag.__name__}`, got `{flags!r}`')
+                flags = preconvert_flag(flags, 'flags', MessageFlag)
         
         if validate:
             if type(channel) is ChannelText:
@@ -748,26 +1164,22 @@ class Message(DiscordEntity, immortal=True):
                 nonce=None
             else:
                 nonce=base.nonce
-        else: # we need `is not in`
-            if (nonce is not None) and (type(nonce) not in (int,str)):
-                raise TypeError(f'`nonce` should be `None` or type `int` / `str`, got `{nonce}`')
-        
+        else:
+            if (nonce is not None):
+                if (type(nonce) is not str):
+                    raise TypeError(f'`nonce` should be `None` or type `str` instance, got `{nonce!r}`.')
+                if len(nonce) > 32:
+                    raise TypeError(f'`nonce`\'s length can be be maximum 32, got: `{nonce!r}`.')
+            
         try:
             pinned=kwargs.pop('pinned')
         except KeyError:
             if base is None:
-                pinned=False
+                pinned = False
             else:
                 pinned=base.pinned
         else:
-            if type(pinned) is bool:
-                # We expect this case
-                pass
-            elif (type(pinned) is int) and (pinned in (0,1)):
-                # As second attempt, lets accept `int` as `0` / `1` as well
-                pinned=bool(pinned)
-            else:
-                raise TypeError(f'`pinned` should be type `bool`, got `{pinned}`')
+            pinned = preconvert_bool(pinned, 'pinned')
         
         try:
             reactions=kwargs.pop('reactions')
@@ -826,33 +1238,18 @@ class Message(DiscordEntity, immortal=True):
             else:
                 tts=base.tts
         else:
-            if type(tts) is bool:
-                # We expect this case
-                pass
-            elif (type(tts) is int) and (tts in (0,1)):
-                # As second attempt, lets accept `int` as `0` / `1` as well
-                tts=bool(tts)
-            else:
-                raise TypeError(f'`tts` should be type `bool`, got `{tts}`')
+            tts = preconvert_bool(tts, 'tts')
         
-        type_found=True
-        while True:
+        for name in ('type_', 'type'):
             try:
                 type_=kwargs.pop('type')
             except KeyError:
-                pass
-            else:
-                break
-                
-            try:
-                type_=kwargs.pop('type_')
-            except KeyError:
-                pass
-            else:
-                break
+                continue
             
-            type_found=False
+            type_found = True
             break
+        else:
+            type_found = False
         
         if type_found:
             if type(type_) is MessageType:
@@ -862,7 +1259,7 @@ class Message(DiscordEntity, immortal=True):
                 # For second attemt, lets check int and it's value as well
                 type_=MessageType.INSTANCES[type_]
             else:
-                raise TypeError(f'`type` should be type `{MessageType.__name__}`, got `{type_!r}`')
+                raise TypeError(f'`{name}` should be type `{MessageType.__name__}`, got `{type_!r}`')
             
         else:
             if base is None:
@@ -884,12 +1281,15 @@ class Message(DiscordEntity, immortal=True):
             if (user_mentions is not None):
                 if (type(user_mentions) is not list):
                     raise TypeError(f'`user_mentions` should be type `list` of `{Client.__name__}` / `{User.__name__}`, got `{user_mentions!r}`')
-        
-                for user in user_mentions:
-                    if type(user) in (Client,User):
-                        continue
-                    
-                    raise TypeError(f'`user_mentions` contains at least 1 non `{Client.__name__}` or `{User.__name__}` object; `{user!r}`')
+                
+                if user_mentions:
+                    for user in user_mentions:
+                        if type(user) in (Client,User):
+                            continue
+                        
+                        raise TypeError(f'`user_mentions` contains at least 1 non `{Client.__name__}` or `{User.__name__}` object; `{user!r}`')
+                else:
+                    user_mentions = None
         
         # Check kwargs and raise TypeError if not every in used up
         if kwargs:
@@ -922,6 +1322,11 @@ class Message(DiscordEntity, immortal=True):
         return message
         
     def _parse_channel_mentions(self):
+        """
+        Looks up the ``.contents`` of the message and searches channel mentions in them. If non, then sets
+        `.channel_mentions` as `None`, else it sets it as a `list` of ``ChannelBase`` (and ``UnknownCrossMention``)
+        instances. Invalid channel mentions are ignored.
+        """
         content=self.content
         channel_mentions=[]
         channels=self.channel.guild.all_channel
@@ -951,26 +1356,129 @@ class Message(DiscordEntity, immortal=True):
     
     @property
     def channel_mentions(self):
-        result=self._channel_mentions
-        if result is _spaceholder:
-            return self._parse_channel_mentions()
-        return result
+        """
+        The mentioned channels by the message. If there is non, returns `None`.
+        
+        Returns
+        -------
+        channel_mentions : `None` or (`list` of (``Channelbase`` or ``UnknownCrossMentions`` instances))
+        """
+        channel_mentions = self._channel_mentions
+        if channel_mentions is _spaceholder:
+            channel_mentions = self._parse_channel_mentions()
+        return channel_mentions
     
     def __repr__(self):
-        return f'<{self.__class__.__name__} id={self.id}, ln={len(self)}, author={self.author:f}>'
+        """Returns the represnetation of the message."""
+        return f'<{self.__class__.__name__} id={self.id}, ln={len(self)}, author={self.author.full_name}>'
+    
+    __str__ = __repr__
     
     def __format__(self,code):
+        """
+        Formats the message in a format string.
+        
+        Parameters
+        ----------
+        code : `str`
+            The option on based the result will be formatted.
+        
+        Returns
+        -------
+        channel : `str`
+        
+        Raises
+        ------
+        ValueError
+            Unknown format code.
+        
+        Examples
+        --------
+        >>>> from hata import Message, ChannelText, now_as_id
+        >>>> message = Message.custom(content='Fluffy nekos', channel=ChannelText.precreate(now_as_id()))
+        >>>> message
+        <Message id=0, ln=12, author=#0000>
+        >>>> # No code stands for str(message), what is same as repr(message) for the time being.
+        >>>> f'{message}'
+        '<Message id=0, ln=12, author=#0000>'
+        >>>> # 'c' stands for created at.
+        >>>> f'{message:c}'
+        '2015.01.01-00:00:00'
+        >>>> # 'e' stands for edited.
+        >>>> f'{message:e}'
+        'never'
+        >>>> from datetime import datetime
+        >>>> message = message.custom(edited=datetime.now())
+        >>>> message
+        <Message id=0, ln=12, author=#0000>
+        >>>> f'{message:e}'
+        '2020.05.31-16:00:00'
+        """
         if not code:
-            return self.__repr__()
+            return self.__str__()
+        
         if code=='c':
             return f'{self.created_at:%Y.%m.%d-%H:%M:%S}'
+        
         if code=='e':
-            if self.edited:
-               return f'{self.edited:%Y.%m.%d-%H:%M:%S}'
-            return 'never'
+            edited = self.edited
+            if edited is None:
+                edited = 'never'
+            else:
+                edited = f'{edited:%Y.%m.%d-%H:%M:%S}'
+            return edited
+        
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
-    def _update(self,data):
+    def _update(self, data):
+        """
+        Updates the message and returns it's overwritten attributes as a `dict` with a `attribute-name` - `old-value`
+        relation.
+
+        A special case is if a message is (un)pinned or (un)suppressed , because then the returned dict is not going to
+        contain `'edited'`, only `'pinned'` or `'flags'`. If the embeds are (un)suppressed of the message, then the
+        returned dict might contain also an `'embeds'` key.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Message data received from Discord.
+        
+        Returns
+        -------
+        old : `dict` of (`str`, `Any`) items
+            All item in the returned dict is optional.
+        
+        Returned Data Structure
+        -----------------------
+        +-------------------+-----------------------------------------------------------------------+
+        | Keys              | Values                                                                |
+        +===================+=======================================================================+
+        | activity          | `None` or ``MessageActivity``                                         |
+        +-------------------+-----------------------------------------------------------------------+
+        | application       | `None` or ``MessageApplication``                                      |
+        +-------------------+-----------------------------------------------------------------------+
+        | attachments       | `None` or (`list` of ``Attachment``)                                  |
+        +-------------------+-----------------------------------------------------------------------+
+        | content           | `str                                                                  |
+        +-------------------+-----------------------------------------------------------------------+
+        | cross_mentions    | `None` or (`list` of (``ChannelBase`` or ``UnknowsCrossMention``))    |
+        +-------------------+-----------------------------------------------------------------------+
+        | edited            | `None`  or `datetime`                                                 |
+        +-------------------+-----------------------------------------------------------------------+
+        | embeds            | `None`  or `(list` of ``EmbedCore``)                                  |
+        +-------------------+-----------------------------------------------------------------------+
+        | flags             | `UserFlag`                                                            |
+        +-------------------+-----------------------------------------------------------------------+
+        | mention_everyone  | `bool`                                                                |
+        +-------------------+-----------------------------------------------------------------------+
+        | pinned            | `bool`                                                                |
+        +-------------------+-----------------------------------------------------------------------+
+        | user_mentions     | `None` or (`list` of (``User`` or ``Client``))                        |
+        +-------------------+-----------------------------------------------------------------------+
+        | role_mentions     | `None` or (`list` of ``Role``)                                        |
+        +-------------------+-----------------------------------------------------------------------+
+        """
         old={}
 
         pinned=data['pinned']
@@ -1170,17 +1678,17 @@ class Message(DiscordEntity, immortal=True):
                     old['role_mentions']=self.role_mentions
                     self.role_mentions=role_mentions
 
-        return old     
+        return old
     
-    @property
-    def guild(self):
-        return self.channel.guild
-
-    @property
-    def clean_content(self):
-        return self.type.convert(self)
-    
-    def _update_no_return(self,data):
+    def _update_no_return(self, data):
+        """
+        Updates the message with the given data by overwriting it's old attributes.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Message data received from Discord.
+        """
         self.pinned=data['pinned']
         
         flags=data.get('flags',0)
@@ -1291,9 +1799,25 @@ class Message(DiscordEntity, immortal=True):
             else:
                 self.role_mentions=None
         
-    def _update_embed(self,data):
-        # This function gets called if only the embeds of the message are
-        # updated. There can be 3 case:
+    def _update_embed(self, data):
+        """
+        After getting a message, it's embeds might be updated from links, or with image, video sizes. If it happens
+        this method is called.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Message data received from Discord.
+        
+        Returns
+        -------
+        change state: `int`
+            - `0` if no update took place, the embeds of the message might be suppressed already.
+            - `1` if sizes are updated.
+            - `2` if embed links are added.
+            - `3` if the message has less embeds than nefore. Caused by a bug?
+        """
+        # This function gets called if only the embeds of the message are updated. There can be 3 case:
         # 0 -> Nothing changed or the embeds are already suppressed.
         # 1 -> Only sizes are updated -> images showed up?
         # 2 -> New embeds appeard -> link.
@@ -1351,7 +1875,15 @@ class Message(DiscordEntity, immortal=True):
         
         return 2
 
-    def _update_embed_no_return(self,data):
+    def _update_embed_no_return(self, data):
+        """
+        Updates the message's embeds.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Message data received from Discord.
+        """
         embeds=self.embeds
         if embeds is None:
             ln1=0
@@ -1400,45 +1932,100 @@ class Message(DiscordEntity, immortal=True):
 
         for index in range(ln1,ln2):
             embeds.append(EmbedCore.from_data(embed_datas[index]))
+    
+    @property
+    def guild(self):
+        """
+        Returns the message's channel's guild.
         
+        Returns
+        -------
+        guild : `None` or ``Guild``
+        """
+        return self.channel.guild
+
+    @property
+    def clean_content(self):
+        """
+        Returns them message's clean content, what actually depends on the message's type. By default it is the
+        message's content with transformed mentions, but for differnt message types it means different things.
+        
+        Returns
+        -------
+        clean_content : `str`
+        
+        Notes
+        -----
+        The converting can not display join messages, call mesages and private channel names correctly.
+        """
+        return self.type.convert(self)
+    
     @property
     def contents(self):
-        result=[]
-        if self.content:
-            result.append(self.content)
+        """
+        A list of all of the contents sent in the message. It means the message's content if it has and the content of
+        the message's embeds.
         
-        if self.embeds is not None:
-            for embed in self.embeds:
-                result.extend(embed.contents)
+        Returns
+        -------
+        contents : `list` of `str`
+        """
+        contents = []
+        content = self.content
+        if content:
+            contents.append(content)
+        
+        embeds = self.embeds
+        if (embeds is not None):
+            for embed in embeds:
+                contents.extend(embed.contents)
 
-        return result
+        return contents
 
     @property
     def mentions(self):
-        result=[]
+        """
+        Returns a list of all the mentions sent at the message.
+        
+        Returns
+        -------
+        mentions : `list` of (`str` (`'everyone'`), ``User``, ``Client``, ``Role``, ``ChannelBase`` or
+                ``UnknownCrossMention``)
+        """
+        mentions = []
         if self.everyone_mention:
-            result.append(None)
+            mentions.append('everyone')
+        
+        user_mentions = self.user_mentions
+        if (user_mentions is not None):
+            mentions.extend(user_mentions)
+        
+        role_mentions = self.role_mentions
+        if (role_mentions is not None):
+            mentions.extend(role_mentions)
             
-        if self.user_mentions is not None:
-            result.extend(self.user_mentions)
-            
-        if self.role_mentions is not None:
-            result.extend(self.role_mentions)
-            
-        channel_mentions=self.channel_mentions
+        channel_mentions = self.channel_mentions
         if channel_mentions is not None:
-            result.extend(channel_mentions)
+            mentions.extend(channel_mentions)
 
-        return result  
+        return mentions
         
     def __len__(self):
+        """
+        Returns the length of the message, including of the non link typed embeds's.
+        
+        Returns
+        -------
+        length : `int`
+        """
         if self.type is MessageType.default:
             result=len(self.content)
         else:
             result=len(self.clean_content)
-
-        if self.embeds is not None:
-            for embed in self.embeds:
+        
+        embeds = self.embeds
+        if (embeds is not None):
+            for embed in embeds:
                 if embed.type in EXTRA_EMBED_TYPES:
                     break
                 result+=len(embed)
@@ -1446,17 +2033,44 @@ class Message(DiscordEntity, immortal=True):
 
     @property
     def clean_embeds(self):
-        result=[]
-        embeds=self.embeds
-        if embeds is None:
-            return result
-        for embed in embeds:
-            if embed.type in EXTRA_EMBED_TYPES:
-                continue
-            result.append(embed._clean_copy(self))
-        return result
+        """
+        Returns the message's not link typed embeds with converted content without mentions.
+        
+        Returns
+        -------
+        clean_emebds : `list` of ``EmbedCore``
+        
+        Notes
+        -----
+        Not changes the original embeds of the message.
+        """
+        clean_embeds = []
+        embeds = self.embeds
+        
+        if (embeds is not None):
+            for embed in embeds:
+                if embed.type in EXTRA_EMBED_TYPES:
+                    continue
+                
+                clean_embeds.append(embed._clean_copy(self))
+        
+        return clean_embeds
 
-    def did_react(self,emoji,user):
+    def did_react(self, emoji, user):
+        """
+        Returns whether the given user reacted with the given emoji on the mesage.
+        
+        Parameters
+        ----------
+        emoji : ``Emoji``
+            The reacted emoji.
+        user : ``User`` or ``Client``
+            The reacter.
+        
+        Returns
+        -------
+        did_react : `bool`
+        """
         try:
             reacters=self.reactions[emoji]
         except KeyError:
@@ -1464,27 +2078,98 @@ class Message(DiscordEntity, immortal=True):
         return (user in reacters)
 
 class MessageType(object):
+    """
+    Represnets a ``Message``'s type.
+    
+    Attributes
+    ----------
+    convert : `function`
+        The converter function of the message type, what tries to convert the message's content to it's Discord side
+        representation.
+    name : `str`
+        The name of the message type.
+    value : `int`
+        The Discord side identificator value of the message type.
+        
+    Class Attributes
+    ----------------
+    INSTANCES : `list` of ``MessageType``
+        Stores the predefined ``MessageType`` instances. These can be accessed with their `value` as index.
+    
+    Every predefind message type can be accessed as class attribute as well:
+    
+    +---------------------------+-----------------------------------+---------------------------+-------+
+    | Class attribute name      | convert                           | name                      | value |
+    +===========================+===================================+===========================+=======+
+    | default                   | convert_default                   | default                   | 0     |
+    +---------------------------+-----------------------------------+---------------------------+-------+
+    | add_user                  | convert_add_user                  | add_user                  | 1     |
+    +---------------------------+-----------------------------------+---------------------------+-------+
+    | remove_user               | convert_remove_user               | remove_user               | 2     |
+    +---------------------------+-----------------------------------+---------------------------+-------+
+    | call                      | convert_call                      | call                      | 3     |
+    +---------------------------+-----------------------------------+---------------------------+-------+
+    | channel_name_change       | convert_channel_name_change       | channel_name_change       | 4     |
+    +---------------------------+-----------------------------------+---------------------------+-------+
+    | channel_icon_change       | convert_channel_icon_change       | channel_icon_change       | 5     |
+    +---------------------------+-----------------------------------+---------------------------+-------+
+    | new_pin                   | convert_new_pin                   | new_pin                   | 6     |
+    +---------------------------+-----------------------------------+---------------------------+-------+
+    | welcome                   | convert_welcome                   | welcome                   | 7     |
+    +---------------------------+-----------------------------------+---------------------------+-------+
+    | new_guild_sub             | convert_new_guild_sub             | new_guild_sub             | 8     |
+    +---------------------------+-----------------------------------+---------------------------+-------+
+    | new_guild_sub_t1          | convert_new_guild_sub_t1          | new_guild_sub_t1          | 9     |
+    +---------------------------+-----------------------------------+---------------------------+-------+
+    | new_guild_sub_t2          | convert_new_guild_sub_t2          | new_guild_sub_t2          | 10    |
+    +---------------------------+-----------------------------------+---------------------------+-------+
+    | new_guild_sub_t3          | convert_new_guild_sub_t3          | new_guild_sub_t3          | 11    |
+    +---------------------------+-----------------------------------+---------------------------+-------+
+    | new_follower_channel      | convert_new_follower_channel      | new_follower_channel      | 12    |
+    +---------------------------+-----------------------------------+---------------------------+-------+
+    | stream                    | convert_stream                    | stream                    | 13    |
+    +---------------------------+-----------------------------------+---------------------------+-------+
+    | discovery_disqualified    | convert_discovery_disqualified    | discovery_disqualified    | 14    |
+    +---------------------------+-----------------------------------+---------------------------+-------+
+    | discovery_requalified     | convert_discovery_requalified     | discovery_requalified     | 15    |
+    +---------------------------+-----------------------------------+---------------------------+-------+
+    """
     # class related
     INSTANCES = [NotImplemented] * 16
     
     # object related
     __slots__ = ('convert', 'name', 'value', )
     
-    def __init__(self,value,name,converter):
+    def __init__(self, value, name, convert):
+        """
+        Creates an ``InviteTargetType`` and stores it at the classe's `.INSTANCES` class attribute as well.
+        
+        Parameters
+        ----------
+        value : `int`
+            The Discord side identificator value of the message type.
+        name : `str`
+            The name of the message type.
+        convert : `function`
+            The converter function of the message type.
+        """
         self.value  = value
         self.name   = name
-        self.convert= converter
-
+        self.convert= convert
+        
         self.INSTANCES[value]=self
-
+    
     def __str__(self):
+        """Returns teh message type's name."""
         return self.name
-
+    
     def __int__(self):
+        """Returns the message type's value."""
         return self.value
-
+    
     def __repr__(self):
-        return f'{self.__class__.__name__}(value={self.value}, name=\'{self.name}\')'
+        """Returns the representation of the message type."""
+        return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r}, covert={self.convert!r})'
     
     # predefined
     default                 = NotImplemented

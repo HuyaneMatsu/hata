@@ -9,7 +9,7 @@ except ImportError:
 
 from ...backend.dereaddons_local import multidict
 
-from ...discord.others import cchunkify
+from ...discord.others import cchunkify, DISCORD_EPOCH_START
 if (relativedelta is not None):
     from ...discord.others import elapsed_time
 from ...discord.permission import Permission
@@ -905,7 +905,7 @@ def str_invite(invite,index=None,write_parents=True,**kwargs):
         result.append(f'- uses : {uses}/{max_uses}',1)
     
     created_at=invite.created_at
-    if (created_at is not None):
+    if (created_at > DISCORD_EPOCH_START):
         result.append(f'- created at : {created_at:%Y.%m.%d-%H:%M:%S}',1)
         max_age=invite.max_age
         if (max_age is not None):
@@ -1124,15 +1124,12 @@ def str_integration(integration,index=None,**kwargs):
     result.append(f'- {"enabled" if integration.enabled else "disabled"}',1)
     result.append(f'- {"syncing" if integration.syncing else "not syncing"}',1)
     role=integration.role
-    if role is None:
-        result.append('- role: None',1)
+    result.append(f'- role : {role.name} ({role.id})',1)
+    guild=role.guild
+    if guild is None:
+        result.append('- role already deleted',1)
     else:
-        result.append(f'- role : {role.name} ({role.id})',1)
-        guild=role.guild
-        if guild is None:
-            result.append('- role already deleted',1)
-        else:
-            result.append(f'- guild : {guild.name} ({guild.id})',1)
+        result.append(f'- guild : {guild.name} ({guild.id})',1)
     result.append(f'- expire behavior : {integration.expire_behavior}',1)
     result.append(f'- expire grace period : {integration.expire_grace_period}',1)
     result.append(f'- user : {integration.user:f} ({integration.user.id}',1)

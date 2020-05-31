@@ -81,7 +81,9 @@ def parse_time(timestamp):
 
 def id_to_time(id_):
     return datetime.utcfromtimestamp(((id_>>22)+DISCORD_EPOCH)/1000.)
-        
+
+DISCORD_EPOCH_START = id_to_time(0)
+
 def time_to_id(time):
     return ((time.timestamp()*1000.).__int__()-DISCORD_EPOCH)<<22
 
@@ -417,7 +419,7 @@ Status.invisible= Status('invisible',3)
 
 class MessageNotificationLevel(object):
     # class related
-    INSTANCES = [NotImplemented] * 2
+    INSTANCES = [NotImplemented] * 4
     
     # object related
     __slots__=('name', 'value', )
@@ -438,11 +440,16 @@ class MessageNotificationLevel(object):
         return f'{self.__class__.__name__}(value={self.value}, name=\'{self.name}\')'
     
     # predefined
-    all_messages    = NotImplemented
-    only_mentions   = NotImplemented
-    
-MessageNotificationLevel.all_messages   = MessageNotificationLevel(0,'all_messages')
-MessageNotificationLevel.only_mentions  = MessageNotificationLevel(1,'only_mentions')
+    all_messages   = NotImplemented
+    only_mentions  = NotImplemented
+    no_messages    = NotImplemented
+    null           = NotImplemented
+
+MessageNotificationLevel.all_messages  = MessageNotificationLevel(0, 'all_messages')
+MessageNotificationLevel.only_mentions = MessageNotificationLevel(1, 'only_mentions')
+MessageNotificationLevel.no_messages   = MessageNotificationLevel(2, 'no_messages')
+MessageNotificationLevel.null          = MessageNotificationLevel(3, 'null')
+
 
 class MFA(object):
     # class related
@@ -505,7 +512,7 @@ PremiumType.nitro           = PremiumType(2,'nitro')
 
 class RelationshipType(object):
     #class related
-    INSTANCES = [NotImplemented] * 5
+    INSTANCES = [NotImplemented] * 6
     
     # object related
     __slots__=('name', 'value',)
@@ -526,17 +533,19 @@ class RelationshipType(object):
         return f'{self.__class__.__name__}(value={self.value}, name=\'{self.name}\')'
     
     # predefined
-    stranger        = NotImplemented
-    friend          = NotImplemented
-    blocked         = NotImplemented
-    received_request= NotImplemented
-    sent_request    = NotImplemented
+    stranger          = NotImplemented
+    friend            = NotImplemented
+    blocked           = NotImplemented
+    pending_incoiming = NotImplemented
+    pending_outgoing  = NotImplemented
+    implicit          = NotImplemented
 
-RelationshipType.stranger         = RelationshipType(0,'stranger')
-RelationshipType.friend           = RelationshipType(1,'friend')
-RelationshipType.blocked          = RelationshipType(2,'blocked')
-RelationshipType.received_request = RelationshipType(3,'received_request')
-RelationshipType.sent_request     = RelationshipType(4,'sent_request')
+RelationshipType.stranger          = RelationshipType(0, 'stranger')
+RelationshipType.friend            = RelationshipType(1, 'friend')
+RelationshipType.blocked           = RelationshipType(2, 'blocked')
+RelationshipType.pending_incoiming = RelationshipType(3, 'pending_incoiming')
+RelationshipType.pending_outgoing  = RelationshipType(4, 'pending_outgoing')
+RelationshipType.implicit          = RelationshipType(5, 'implicit')
 
 class Relationship(object):
     __slots__=('type', 'user',)

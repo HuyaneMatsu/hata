@@ -88,16 +88,47 @@ class SyncQue(object):
                 raise IndexError('The queue is empty')
             
             raise exception
-
+    
     wait=result
-
+    
     def __repr__(self):
         with self._lock:
-            results=self._results
-            maxlen=results.maxlen
-            exception=self._exception
-            return f'{self.__class__.__name__}([{", ".join([repr(element) for element in results])}]{"" if maxlen is None else f", maxlen={maxlen}"} {"" if exception is None else f", exception={exception}"})'
-
+            result = [
+                self.__class__.__name__,
+                '([',
+                    ]
+            
+            results = self._results
+            
+            limit = len(result)
+            if limit:
+                index = 0
+                while True:
+                    element = results[index]
+                    index +=1
+                    
+                    results.append(repr(element))
+                    if index == limit:
+                        break
+                    
+                    result.append(', ')
+                    continue
+            
+            result.append(']')
+            
+            maxlen = results.maxlen
+            if (maxlen is not None):
+                result.append(', maxlen=')
+                result.append(repr(maxlen))
+            
+            exception = self._exception
+            if (exception is not None):
+                result.append(' exception=')
+                result.append(str(exception))
+            
+            result.append(')')
+            return ''.join(result)
+    
     __str__=__repr__
 
     #deque operations
@@ -108,7 +139,7 @@ class SyncQue(object):
     
     def clear(self):
         self._results.clear()
-
+    
     def copy(self):
         with self._lock:
             new=object.__init__(type(self))
@@ -156,6 +187,12 @@ class ExecutorThread(Thread):
                 try:
                     result=func()
                 except BaseException as err:
+                    if isinstance(err, StopIteration):
+                        exception = RuntimeError(f'{err.__class__.__name__} cannot be raised to a Future')
+                        exception.__cause__ = err
+                        err = exception
+                        exception = None
+                    
                     future._loop.call_soon_threadsafe(type(future).set_exception_if_pending,future,err)
                 else:
                     future._loop.call_soon_threadsafe(type(future).set_result_if_pending,future,result)
@@ -163,7 +200,7 @@ class ExecutorThread(Thread):
                 
                 future  = None
                 func    = None
-                
+            
             except BaseException as err:
                 extracted=[
                     self.__class__.__name__,

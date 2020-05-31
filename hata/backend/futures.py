@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 __all__ = ('AsyncQue', 'CancelledError', 'Future', 'FutureAsyncWrapper', 'FutureG', 'FutureSyncWrapper', 'FutureWM',
-    'InvalidStateError', 'Lock', 'ScarletExecutor', 'Task', 'WaitTillAll', 'WaitTillExc', 'WaitTillFirst',
-    'enter_executor', 'future_or_timeout', 'gather', 'iscoroutine', 'iscoroutinefunction', 'shield', 'sleep', )
+    'InvalidStateError', 'Lock', 'ScarletExecutor', 'Task', 'WaitContinously', 'WaitTillAll', 'WaitTillExc',
+    'WaitTillFirst', 'enter_executor', 'future_or_timeout', 'gather', 'iscoroutine', 'iscoroutinefunction', 'shield',
+    'sleep', )
 
 import sys, reprlib, linecache
 from types import GeneratorType, CoroutineType, MethodType as method, FunctionType as function
@@ -431,7 +432,7 @@ class Future(object):
                 if exception is None:
                     return self._result
                 raise exception
-
+            
             if state is RETRIEVED:
                 exception=self._exception
                 if exception is None:
@@ -446,13 +447,13 @@ class Future(object):
     else:
         def result(self):
             state=self._state
-
+            
             if state is FINISHED:
                 exception=self._exception
                 if exception is None:
                     return self._result
                 raise exception
-
+            
             if state is CANCELLED:
                 raise CancelledError
             
@@ -1641,7 +1642,21 @@ class Task(Future):
                 Future.set_exception(self,exception)
             else:
                 try:
-                    if result._blocking:
+                    blocking = result._blocking
+                except AttributeError:
+                    if result is None:
+                        #Bare yield relinquishes control for one event loop iteration.
+                        self._loop.call_soon(self.__step)
+                    elif isinstance(result,GeneratorType):
+                        #Yielding a generator is just wrong.
+                        new_exception=RuntimeError(f'`yield` was used instead of `yield from` in {self.__class__.__name__} {self!r} with `{result!r}`')
+                        self._loop.call_soon(self.__step,new_exception)
+                    else:
+                        #Yielding something else is an error.
+                        new_exception=RuntimeError(f'{self.__class__.__name__} got bad yield: `{result!r}`')
+                        self._loop.call_soon(self.__step,new_exception)
+                else:
+                    if blocking:
                         if self._loop is not result._loop:
                             new_exception=RuntimeError(f'{self.__class__.__name__} {self!r} got a Future {result!r} attached to a different loop')
                             self._loop.call_soon(self.__step,new_exception)
@@ -1658,18 +1673,6 @@ class Task(Future):
                     else:
                         new_exception=RuntimeError(f'`yield` was used instead of `yield from` in task {self!r} with {result!r}')
                         self._loop.call_soon(self.__step,new_exception)
-                except AttributeError:
-                    if result is None:
-                        #Bare yield relinquishes control for one event loop iteration.
-                        self._loop.call_soon(self.__step)
-                    elif isinstance(result,GeneratorType):
-                        #Yielding a generator is just wrong.
-                        new_exception=RuntimeError(f'`yield` was used instead of `yield from` in {self.__class__.__name__} {self!r} with `{result!r}`')
-                        self._loop.call_soon(self.__step,new_exception)
-                    else:
-                        #Yielding something else is an error.
-                        new_exception=RuntimeError(f'{self.__class__.__name__} got bad yield: `{result!r}`')
-                        self._loop.call_soon(self.__step,new_exception)
             finally:
                 self._loop.current_task=None
                 self=None #said needed if exception occurs.
@@ -1677,7 +1680,7 @@ class Task(Future):
         def __step(self,exception=None):
             if self._state is not PENDING:
                 raise InvalidStateError.with_message(self,'__step',f'`{self.__class__.__name__}.__step` already done of {self!r}, exception={exception!r}')
-
+            
             if self._must_cancel:
                 exception=self._must_exception(exception)
             
@@ -1713,7 +1716,7 @@ class Task(Future):
                             self._must_cancel=False
                 else:
                     self._loop.call_soon(self.__step)
-
+            
             finally:
                 self._loop.current_task=None
                 self=None #said needed if exception occurs.
@@ -2094,14 +2097,14 @@ def shield(awaitable,loop):
     protected=loop.ensure_future(awaitable)
     if protected._state is not PENDING:
         return protected #already done, we can return
-
+    
     un_protected=Future(loop)
     protected._callbacks.append(_future_chainer(un_protected))
     un_protected._callbacks.append(_chain_remover(protected))
     return un_protected
 
 class WaitTillFirst(Future):
-    __slots__=('_callback')
+    __slots__ = ('_callback', )
     
     def __new__(cls,futures,loop):
         pending         = set(futures)
@@ -2117,10 +2120,11 @@ class WaitTillFirst(Future):
             for future in pending:
                 future.add_done_callback(callback)
             
-            self._state = PENDING
+            state = PENDING
         else:
-            self._state = FINISHED
+            state = FINISHED
         
+        self._state     = state
         self._result    = (done,pending)
         self._exception = None
         
@@ -2130,13 +2134,13 @@ class WaitTillFirst(Future):
         return self
     
     # `__repr__` is same as `Future.__repr__`
-
+    
     class _wait_callback(object):
         __slots__=('_parent',)
         
         def __init__(self,parent):
             self._parent=parent
-            
+        
         def __call__(self,future):
             parent=self._parent
             if parent is None:
@@ -2150,7 +2154,7 @@ class WaitTillFirst(Future):
             parent._state=FINISHED
             parent._loop._schedule_callbacks(parent)
             self._parent=None
-        
+    
     @property
     def futures_done(self):
         return self._result[0]
@@ -2181,7 +2185,7 @@ class WaitTillFirst(Future):
         def cancel(self):
             if self._state is not PENDING:
                 return 0
-                
+            
             self._callback._parent=None
             for future in self._result[1]:
                 future.cancel()
@@ -2213,14 +2217,14 @@ class WaitTillFirst(Future):
         
         if type(exception) is StopIteration:
              raise TypeError(f'{exception} cannot be raised to a {self.__class__.__name__}: {self!r}')
-            
+        
         self._callback._parent=None
         self._state     = FINISHED
         self._loop._schedule_callbacks(self)
-
+        
         if type(exception) is not TimeoutError:
             self._exception = exception
-        
+    
     def set_exception_if_pending(self,exception):
         if self._state is not PENDING:
             return 0
@@ -2234,7 +2238,7 @@ class WaitTillFirst(Future):
         self._callback._parent=None
         self._state     = FINISHED
         self._loop._schedule_callbacks(self)
-
+        
         if type(exception) is TimeoutError:
             return 2
             
@@ -2594,7 +2598,7 @@ class ScarletExecutor(object):
         
         def __init__(self,parent):
             self._parent=parent
-            
+        
         def __call__(self,future):
             parent=self._parent
             if parent is None:
@@ -2729,3 +2733,284 @@ class ScarletExecutor(object):
         result.append('>')
         
         return ''.join(result)
+
+class WaitContinously(WaitTillFirst):
+    __slots__ = ()
+    
+    def __new__(cls, futures, loop):
+        if (futures is None):
+            pending = set()
+        else:
+            pending = set(futures)
+        
+        done = deque()
+        
+        self = object.__new__(cls)
+        self._loop = loop
+        
+        callback = cls._wait_callback(self)
+        self._callback = callback
+        
+        if pending:
+            for future in pending:
+                future.add_done_callback(callback)
+            
+            state = PENDING
+        else:
+            state = FINISHED
+        
+        self._state = state
+        self._result = (done, pending)
+        self._exception = None
+        
+        self._callbacks = []
+        self._blocking = False
+        
+        return self
+    
+    # `__repr__` is same as `Future.__repr__`
+    
+    class _wait_callback(object):
+        __slots__ = ('_parent')
+        
+        def __init__(self, parent):
+            self._parent = parent
+        
+        def __call__(self, future):
+            parent = self._parent
+            if parent is None:
+                return
+            
+            done, pending = parent._result
+            
+            pending.remove(future)
+            done.append(future)
+            
+            if parent._state is PENDING:
+                parent._state = FINISHED
+                parent._loop._schedule_callbacks(parent)
+    
+    def add(self, future):
+        state = self._state
+        if state is PENDING:
+            if future.done():
+                self._result[0].append(future)
+                self._state = FINISHED
+                self._loop._schedule_callbacks(self)
+                return 2
+            
+            pending = self._result[1]
+            pending_count = len(pending)
+            pending.add(future)
+            if pending_count != pending:
+                future.add_done_callback(self._callback)
+            
+            return 1
+        
+        if state is FINISHED:
+            if (self._exception is not None):
+                return 0
+            
+            if future.done():
+                self._result[0].append(future)
+                return 2
+            
+            pending = self._result[1]
+            pending_count = len(pending)
+            pending.add(future)
+            if pending_count != len(pending):
+                future.add_done_callback(self._callback)
+            
+            self._state = PENDING
+            return 1
+        
+        if __debug__:
+            if state is RETRIEVED:
+                exception = self._exception
+                if (exception is not None):
+                    raise exception
+                
+                if future.done():
+                    self._result[0].append(future)
+                    self._state = FINISHED
+                    return 2
+                
+                pending = self._result[1]
+                pending_count = len(pending)
+                pending.add(future)
+                if pending_count != len(pending):
+                    future.add_done_callback(self._callback)
+                
+                self._state = PENDING
+                return 1
+        
+        return 0
+    
+    # `futures_done` same as `WaitTillFirst.futures_done`
+    # `futures_pending` same as `WaitTillFirst.futures.pending`
+    
+    def cancel(self):
+        self._callback._parent = None
+        pending = self._result[1]
+        if pending:
+            for future in pending:
+                future.cancel()
+            
+            # silence the exceptions of the done futures if debug is ON.
+            if __debug__:
+                done = self._result[0]
+                if done:
+                    for future in done:
+                        future.__silence__()
+            
+            result = 2
+        else:
+            result = 0
+        
+        state = self._state
+        if state is PENDING:
+            self._state = CANCELLED
+            self._loop._schedule_callbacks(self)
+        else:
+            if __debug__:
+                if state is FINISHED:
+                    self._state = RETRIEVED
+        
+        return result
+    
+    # `cancelled` is same as `Future.cancelled`
+    # `done` is same as `Future.done`
+    # `pending` is same as `Future.pending`
+    
+    def result(self):
+        state = self._state
+        
+        if state is FINISHED:
+            if __debug__:
+                self._state = RETRIEVED
+            
+            exception = self._exception
+            if (exception is not None):
+                raise exception
+            
+            done = self._result[0]
+            if done:
+                result = done[0]
+            else:
+                result = None
+            
+            return result
+        
+        if __debug__:
+            if state is RETRIEVED:
+                exception = self._exception
+                if (exception is not None):
+                    raise exception
+                
+                done = self._result[0]
+                if done:
+                    result = done[0]
+                else:
+                    result = None
+                
+                return result
+        
+        if state is CANCELLED:
+            raise CancelledError
+        
+        #PENDING
+        raise InvalidStateError(self,'result')
+    
+    def reset(self):
+        state = self._state
+        if state is FINISHED:
+            if (self._exception is not None):
+                return 0
+            
+            done, pending = self._result
+            if done:
+                del done[0]
+            
+            if (not done):
+                if pending:
+                    self._state = PENDING
+                else:
+                    return 0
+            
+            return 1
+        
+        if __debug__:
+            if state is RETRIEVED:
+                if (self._exception is not None):
+                    return 0
+                
+                done, pending = self._result
+                if done:
+                    del done[0]
+                
+                if (not done):
+                    if pending:
+                        self._state = PENDING
+                    else:
+                        return 0
+                
+                return 1
+        
+        if state is PENDING:
+            return 2
+        
+        return 0
+    
+    # `exception` is same as `Future.exception`
+    # `add_done_callback` is same as `Future.add_done_callback`
+    # `remove_done_callback` is same as `Future.remove_done_callback`
+    # `set_result` is same as `WaitTillFirst.set_result`
+    # `set_result_if_pending` is same as `WaitTillFirst.set_result_if_pending`
+    
+    def set_exception(self,exception):
+        if self._state is not PENDING:
+            raise InvalidStateError(self,'set_exception')
+        
+        if isinstance(exception,type):
+            exception=exception()
+        
+        if type(exception) is StopIteration:
+             raise TypeError(f'{exception} cannot be raised to a {self.__class__.__name__}: {self!r}')
+        
+        self._callback._parent=None
+        self._state = FINISHED
+        self._loop._schedule_callbacks(self)
+        
+        if type(exception) is not TimeoutError:
+            self._exception = exception
+    
+    def set_exception_if_pending(self,exception):
+        if self._state is not PENDING:
+            return 0
+        
+        if isinstance(exception,type):
+            exception=exception()
+        
+        if type(exception) is StopIteration:
+             raise TypeError(f'{exception} cannot be raised to a {self.__class__.__name__}: {self!r}')
+        
+        self._callback._parent=None
+        self._state = FINISHED
+        self._loop._schedule_callbacks(self)
+        
+        if type(exception) is TimeoutError:
+            return 2
+        
+        self._exception = exception
+        return 1
+    
+    # `__iter__` is same as `Future.__iter__`
+    # `__await__` is same as `Future.__await__`
+    # if __debug__:
+    #    `__del__` is same as `Future.__del__`
+    #    `__silence__` is same as `Future.__silence__`
+    #    `__silence_cb__` is same as `Future.__silence_cb__`
+    # `cancel_handles` is same as `Future.cancel_handles`
+    # `clear` same as `WaitTilLFirst.clear`.
+    # `syncwrap` is same as `Future.syncwrap`
+    # `asyncwrap` is same as `Future.asyncwrap`

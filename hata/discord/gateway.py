@@ -11,7 +11,7 @@ else:
     SecretBox=nacl.secret.SecretBox
     del nacl
 
-from ..backend.futures import sleep, Task, future_or_timeout, WaitTillExc, WaitTillFirst, WaitTillAll, Future
+from ..backend.futures import sleep, Task, future_or_timeout, WaitTillExc, WaitTillFirst, WaitTillAll, Future, WaitContinously
 from ..backend.exceptions import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
 
 from .others import to_json, from_json
@@ -244,10 +244,10 @@ class DiscordGateway(object):
         if kokoro is None:
             self.kokoro = await Kokoro(self)
             return
-
+    
         await kokoro.restart()
     
-    async def run(self):
+    async def run(self, waiter=None):
         """
         Keeps the gateway receiving message and processing it. If the gateway needs to be reconnected, reconnects
         itself. If connecting cannot succeed, because there is no internet returns `True`. If the `.client` is
@@ -255,6 +255,11 @@ class DiscordGateway(object):
         
         If `True` is returned the respective client stops all other gateways as well and tries to reconnect. When
         the internet is back the client will launch back the gateway.
+        
+        Parameters
+        -----------
+        waiter : `Future`, Optional
+            A waiter future what is set, when the gateway finished connecting and started polling events.
         
         Returns
         -------
@@ -271,12 +276,17 @@ class DiscordGateway(object):
                 task=Task(self._connect(),KOKORO)
                 future_or_timeout(task,30.,)
                 await task
+                
+                if (waiter is not None):
+                    waiter.set_result(None)
+                    waiter = None
+                
                 while True:
                     if (await self._poll_event()):
                         task=Task(self._connect(resume=True,),KOKORO)
                         future_or_timeout(task,30.)
                         await task
-
+            
             except (OSError, TimeoutError, ConnectionError, ConnectionClosed,
                     WebSocketProtocolError, InvalidHandshake, ValueError) as err:
                 if not client.running:
@@ -1137,7 +1147,7 @@ class DiscordGatewaySharder(object):
             gateways.append(gateway)
         
         self.gateways = gateways
-
+    
     async def start(self):
         """
         Starts the gateways of the sharder gateway.
@@ -1161,31 +1171,61 @@ class DiscordGatewaySharder(object):
         -------
         no_internet_stop : `bool`
         """
-        tasks=[]
+        max_concurrency = self.client._gateway_max_concurrency
+        gateways = self.gateways
         
-        for gateway in self.gateways:
-            task=Task(gateway.run(), KOKORO)
-            tasks.append(task)
+        index = 0
+        limit = len(gateways)
         
-        done, pending = await WaitTillFirst(tasks, KOKORO)
-        
-        for task in tasks:
-            task.cancel()
-        
-        while done:
-            if done.pop().result():
-                no_internet_stop = True
+        # At every step we add up to max_concurrency gateways to launch up. When a gateway is launched up, the waiter
+        # yields a `Future` and if the same amount of `Future` is yielded as gateway started up, then we do the next
+        # loop. An exception is, when the waiter yielded a `Task`, because t–en 1 of our gateway stopped with no
+        # internet stop, or it was stopped by the client, so we abort all the launching and return.
+        waiter = WaitContinously(None, KOKORO)
+        while True:
+            if index == limit:
                 break
-        else:
-            no_internet_stop = False
+            
+            left_from_bacth = 0
+            while True:
+                future = Future(KOKORO)
+                waiter.add(future)
+                
+                task = Task(gateways[index].run(future), KOKORO)
+                waiter.add(task)
+                
+                index +=1
+                left_from_bacth +=1
+                if index == limit:
+                    break
+                
+                if left_from_bacth == max_concurrency:
+                    break
+                
+                continue
+            
+            while True:
+                result = await waiter
+                waiter.reset()
+                
+                if type(result) is Future:
+                    left_from_bacth -=1
+                    
+                    if left_from_bacth:
+                        continue
+                    
+                    break
+                
+                no_internet_stop = result.result()
+                waiter.cancel()
+                return no_internet_stop
+            
+            continue
         
-        if no_internet_stop:
-            for gateway in self.gateways:
-                websocket=gateway.websocket
-                if websocket is None:
-                    continue
-                Task(gateway.close(),KOKORO)
+        result = await waiter
         
+        no_internet_stop = result.result()
+        waiter.cancel()
         return no_internet_stop
     
     @property

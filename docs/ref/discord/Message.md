@@ -105,8 +105,7 @@ If the message contains @everyone or @here.
 
 - type : [`MessageFlag`](MessageFlag.md)
 
-The message's flags. Right now it is used only to mark, if the message's 
-[`embeds`](#embeds) are suppressed or not.
+The message's flags.
 
 ### `id`
 
@@ -118,7 +117,7 @@ The message's unique identificator number.
 
 ### `nonce`
 
-- type : `int` / `str` / `NoneType`
+- type : `str` / `NoneType`
 - default : `None`
     
 A nonce that is used for optimistic message sending. (?)

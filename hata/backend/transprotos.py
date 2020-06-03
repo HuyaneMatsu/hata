@@ -94,7 +94,7 @@ class _SSLPipe(object):
         self.need_ssldata = False
         if data:
             self._incoming.write(data)
-
+        
         ssldata = []
         appdata = []
         try:
@@ -111,7 +111,7 @@ class _SSLPipe(object):
                 if only_handshake:
                     return ssldata,appdata
                 # Handshake done: execute the wrapped block
-
+            
             if state is WRAPPED:
                 # Main state: read data from SSL until close_notify
                 while True:
@@ -119,7 +119,7 @@ class _SSLPipe(object):
                     appdata.append(chunk)
                     if not chunk:  # close_notify
                         break
-
+            
             elif state is SHUTDOWN:
                 # Call shutdown() until it doesn't raise anymore.
                 self.ssl_object.unwrap()

@@ -211,7 +211,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         if code=='d':
             return self.display_name
         if code=='c':
-            return f'{self.created_at:%Y.%m.%d-%H:%M:%S}'
+            return self.created_at.__format__('%Y.%m.%d-%H:%M:%S')
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
     @property

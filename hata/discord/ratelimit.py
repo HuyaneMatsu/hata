@@ -53,6 +53,9 @@ def ratelimit_global(session,retry_after):
 
 GLOBALLY_LIMITED = 0x4000000000000000
 RATELIMIT_DROP_ROUND = 0.20
+MAXIMAL_UNLIMITED_PARARELLITY = -50
+UNLIMITED_SIZE_VALUE = -10000
+NO_SPECIFIC_RATELIMITER = 0
 
 LIMITER_CHANNEL     = 'channel_id'
 LIMITER_GUILD       = 'guild_id'
@@ -66,10 +69,10 @@ class RatelimitGroup(object):
     __auto_next_id = 105<<8
     __unlimited = None
     
-    def __new__(cls, limiter = LIMITER_GLOBAL):
+    def __new__(cls, limiter = LIMITER_GLOBAL, optimistic=False):
         self = object.__new__(cls)
         self.limiter = limiter
-        self.size = -1
+        self.size = (-1 if optimistic else 0)
         group_id = cls.__auto_next_id
         cls.__auto_next_id = group_id + (7<<8)
         self.group_id = group_id
@@ -82,7 +85,7 @@ class RatelimitGroup(object):
             return self
         
         self = object.__new__(cls)
-        self.size = 0
+        self.size = UNLIMITED_SIZE_VALUE
         self.group_id = 0
         self.limiter = LIMITER_UNLIMITED
         
@@ -209,7 +212,7 @@ class RatelimitUnit(object):
 
 class RatelimitHandler(object):
     __slots__ = ('__weakref__', 'active', 'drops', 'limiter_id', 'parent', 'queue', 'wakeupper', )
-    def __init__(self, parent, limiter_id=0):
+    def __init__(self, parent, limiter_id):
         self.parent     = parent
         
         limiter = parent.limiter
@@ -316,10 +319,13 @@ class RatelimitHandler(object):
     async def enter(self):
         size = self.parent.size
         if size < 1:
-            if size==0:
+            if size == UNLIMITED_SIZE_VALUE:
                 return
             
-            size = 1
+            if size == 0:
+                size = 1
+            else:
+                size = -size
         
         queue = self.queue
         if queue is None:
@@ -349,15 +355,27 @@ class RatelimitHandler(object):
     
     def exit(self, headers):
         current_size = self.parent.size
-        if current_size == 0:
+        if current_size == UNLIMITED_SIZE_VALUE:
             return
         
-        self.active = self.active-1
+        self.active -=1
         
+        optimistic = False
         while True:
             if (headers is not None):
                 size = headers.get(RATELIMIT_LIMIT,None)
-                if (size is not None):
+                if size is None:
+                    if current_size < 0:
+                        optimistic = True
+                        # A not so special case when the endpoint is not ratelimit yet.
+                        # If this happens, we increase the maximal size.
+                        size = current_size
+                        if size > MAXIMAL_UNLIMITED_PARARELLITY:
+                            size -=1
+                        
+                        break
+                else:
+                    size = int(size)
                     break
             
             wakeupper = self.wakeupper
@@ -369,9 +387,14 @@ class RatelimitHandler(object):
             return
         
         allocates = 1
-        size = int(size)
-        if size!=current_size:
+        
+        if size != current_size:
             self.parent.size = size
+            
+            if optimistic:
+                current_size = -current_size
+                size = -size
+            
             if size > current_size:
                 if current_size==-1:
                     current_size = 1
@@ -391,15 +414,18 @@ class RatelimitHandler(object):
                     can_free-=1
                     continue
         
-        delay1 = (
-            datetime.fromtimestamp(float(headers[RATELIMIT_RESET]),timezone.utc)-parsedate_to_datetime(headers[DATE])
-                ).total_seconds()
-        delay2 = float(headers[RATELIMIT_RESET_AFTER])
-        
-        if delay1 < delay2:
-            delay = delay1
+        if optimistic:
+            delay = 1.0
         else:
-            delay = delay2
+            delay1 = (
+                datetime.fromtimestamp(float(headers[RATELIMIT_RESET]),timezone.utc)-parsedate_to_datetime(headers[DATE])
+                    ).total_seconds()
+            delay2 = float(headers[RATELIMIT_RESET_AFTER])
+            
+            if delay1 < delay2:
+                delay = delay1
+            else:
+                delay = delay2
         
         drop = monotonic()+delay
         
@@ -444,7 +470,11 @@ class RatelimitHandler(object):
         # if exception occures, nothing is added to self.drops, but active is descreased by one,
         # so lets check active count as well.
         # also the first requests might set self.parent.size as well, to higher than 1 >.>
-        can_free = self.parent.size-self.active-self.count_drops()
+        size = self.parent.size
+        if size < 0:
+            size = -size
+        
+        can_free = size-self.active-self.count_drops()
         
         if can_free > queue_ln:
             can_free = queue_ln
@@ -623,7 +653,7 @@ class RatelimitProxy(object):
         return self._key.limiter_id
     
     def has_size_set(self):
-        return (self.group.size!=-1)
+        return (self.group.size > 0)
     
     @property
     def size(self):
@@ -655,10 +685,12 @@ class RatelimitProxy(object):
     def free_count(self):
         size = self.group.size
         if size < 1:
-            if size==0:
-                return size
-            
-            size = 1
+            if size == 0:
+                size = 1
+            elif size == UNLIMITED_SIZE_VALUE:
+                return 0
+            else:
+                size = -size
         
         handler = self.handler
         if handler is None:
@@ -746,7 +778,7 @@ class RATELIMIT_GROUPS:
     GROUP_USER_MODIFY           = RatelimitGroup(LIMITER_GUILD) # both has the same endpoint
     GROUP_USER_ROLE_MODIFY      = RatelimitGroup(LIMITER_GUILD)
     
-    oauth2_token                = RatelimitGroup.unlimited()
+    oauth2_token                = RatelimitGroup(optimistic=True)
     application_get             = RatelimitGroup() # untested
     achievement_get_all         = RatelimitGroup()
     achievement_create          = RatelimitGroup()
@@ -755,66 +787,66 @@ class RATELIMIT_GROUPS:
     achievement_edit            = RatelimitGroup()
     client_logout               = RatelimitGroup() # untested
     channel_delete              = RatelimitGroup.unlimited()
-    channel_group_leave         = RatelimitGroup() # untested; same as channel_delete?
+    channel_group_leave         = RatelimitGroup.unlimited() # untested; same as channel_delete?
     channel_edit                = RatelimitGroup(LIMITER_CHANNEL)
-    channel_group_edit          = RatelimitGroup() # untested; same as channel_edit?
-    channel_follow              = RatelimitGroup.unlimited()
-    invite_get_channel          = RatelimitGroup.unlimited()
+    channel_group_edit          = RatelimitGroup(LIMITER_CHANNEL, optimistic=True) # untested; same as channel_edit?
+    channel_follow              = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
+    invite_get_channel          = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
     invite_create               = RatelimitGroup()
-    message_logs                = RatelimitGroup.unlimited()
+    message_logs                = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
     message_create              = RatelimitGroup(LIMITER_CHANNEL)
     message_delete_multiple     = RatelimitGroup(LIMITER_CHANNEL)
     message_delete              = RatelimitGroup(LIMITER_CHANNEL)
     message_delete_b2wo         = RatelimitGroup(LIMITER_CHANNEL)
-    message_get                 = RatelimitGroup.unlimited()
+    message_get                 = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
     message_edit                = RatelimitGroup(LIMITER_CHANNEL)
-    message_mar                 = RatelimitGroup() # untested
+    message_mar                 = RatelimitGroup(optimistic=True) # untested
     message_crosspost           = RatelimitGroup(LIMITER_CHANNEL)
     reaction_clear              = GROUP_REACTION_MODIFY
     reaction_delete_emoji       = GROUP_REACTION_MODIFY
-    reaction_users              = RatelimitGroup.unlimited()
+    reaction_users              = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
     reaction_delete_own         = GROUP_REACTION_MODIFY
     reaction_add                = GROUP_REACTION_MODIFY
     reaction_delete             = GROUP_REACTION_MODIFY
     message_suppress_embeds     = RatelimitGroup()
-    permission_ow_delete        = RatelimitGroup.unlimited()
-    permission_ow_create        = RatelimitGroup.unlimited()
+    permission_ow_delete        = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
+    permission_ow_create        = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
     channel_pins                = RatelimitGroup()
     message_unpin               = GROUP_PIN_MODIFY
     message_pin                 = GROUP_PIN_MODIFY
-    channel_group_user_delete   = RatelimitGroup() # untested
-    channel_group_user_add      = RatelimitGroup() # untested
+    channel_group_user_delete   = RatelimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
+    channel_group_user_add      = RatelimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     typing                      = RatelimitGroup(LIMITER_CHANNEL)
-    webhook_get_channel         = RatelimitGroup.unlimited()
-    webhook_create              = RatelimitGroup.unlimited()
-    client_gateway_hooman       = RatelimitGroup() # untested
+    webhook_get_channel         = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
+    webhook_create              = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
+    client_gateway_hooman       = RatelimitGroup()
     client_gateway_bot          = RatelimitGroup()
     guild_create                = RatelimitGroup.unlimited()
     guild_delete                = RatelimitGroup.unlimited()
-    guild_get                   = RatelimitGroup.unlimited()
-    guild_edit                  = RatelimitGroup.unlimited()
+    guild_get                   = RatelimitGroup(LIMITER_GUILD, optimistic=True)
+    guild_edit                  = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     guild_mar                   = RatelimitGroup() # untested
-    audit_logs                  = RatelimitGroup.unlimited()
-    guild_bans                  = RatelimitGroup.unlimited()
-    guild_ban_delete            = RatelimitGroup.unlimited()
-    guild_ban_get               = RatelimitGroup.unlimited()
-    guild_ban_add               = RatelimitGroup.unlimited()
-    guild_channels              = RatelimitGroup.unlimited()
-    channel_move                = RatelimitGroup.unlimited()
-    channel_create              = RatelimitGroup.unlimited()
-    guild_embed_get             = RatelimitGroup.unlimited()
-    guild_embed_edit            = RatelimitGroup.unlimited()
-    guild_emojis                = RatelimitGroup.unlimited()
+    audit_logs                  = RatelimitGroup(LIMITER_GUILD, optimistic=True)
+    guild_bans                  = RatelimitGroup(LIMITER_GUILD, optimistic=True)
+    guild_ban_delete            = RatelimitGroup(LIMITER_GUILD, optimistic=True)
+    guild_ban_get               = RatelimitGroup(LIMITER_GUILD, optimistic=True)
+    guild_ban_add               = RatelimitGroup(LIMITER_GUILD, optimistic=True)
+    guild_channels              = RatelimitGroup(LIMITER_GUILD, optimistic=True)
+    channel_move                = RatelimitGroup(LIMITER_GUILD, optimistic=True)
+    channel_create              = RatelimitGroup(LIMITER_GUILD, optimistic=True)
+    guild_embed_get             = RatelimitGroup(LIMITER_GUILD, optimistic=True) # will be removed, do nto bother with testing
+    guild_embed_edit            = RatelimitGroup(LIMITER_GUILD, optimistic=True) # will be removed, do nto bother with testing
+    guild_emojis                = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     emoji_create                = RatelimitGroup(LIMITER_GUILD)
     emoji_delete                = RatelimitGroup(LIMITER_GUILD)
-    emoji_get                   = RatelimitGroup.unlimited()
+    emoji_get                   = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     emoji_edit                  = RatelimitGroup()
     integration_get_all         = RatelimitGroup() # untested
     integration_create          = RatelimitGroup() # untested
     integration_delete          = RatelimitGroup() # untested
     integration_edit            = RatelimitGroup() # untested
     integration_sync            = RatelimitGroup() # untested
-    invite_get_guild            = RatelimitGroup.unlimited()
+    invite_get_guild            = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     guild_users                 = RatelimitGroup(LIMITER_GUILD)
     client_edit_nick            = RatelimitGroup()
     guild_user_delete           = RatelimitGroup(LIMITER_GUILD)
@@ -826,49 +858,49 @@ class RATELIMIT_GROUPS:
     user_role_add               = GROUP_USER_ROLE_MODIFY
     guild_user_search           = RatelimitGroup(LIMITER_GUILD)
     guild_preview               = RatelimitGroup()
-    guild_prune_estimate        = RatelimitGroup.unlimited()
-    guild_prune                 = RatelimitGroup.unlimited()
-    guild_regions               = RatelimitGroup.unlimited()
-    guild_roles                 = RatelimitGroup.unlimited()
-    role_move                   = RatelimitGroup.unlimited()
+    guild_prune_estimate        = RatelimitGroup(LIMITER_GUILD, optimistic=True)
+    guild_prune                 = RatelimitGroup(LIMITER_GUILD, optimistic=True)
+    guild_regions               = RatelimitGroup(LIMITER_GUILD, optimistic=True)
+    guild_roles                 = RatelimitGroup(LIMITER_GUILD, optimistic=True)
+    role_move                   = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     role_create                 = RatelimitGroup(LIMITER_GUILD)
-    role_delete                 = RatelimitGroup.unlimited()
+    role_delete                 = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     role_edit                   = RatelimitGroup(LIMITER_GUILD)
-    vanity_get                  = RatelimitGroup.unlimited()
-    vanity_edit                 = RatelimitGroup.unlimited() # untested
-    webhook_get_guild           = RatelimitGroup.unlimited()
+    vanity_get                  = RatelimitGroup(LIMITER_GUILD, optimistic=True)
+    vanity_edit                 = RatelimitGroup(LIMITER_GUILD, optimistic=True) # untested
+    webhook_get_guild           = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     guild_widget_get            = RatelimitGroup.unlimited()
     hypesquad_house_leave       = RatelimitGroup() # untested
     hypesquad_house_change      = RatelimitGroup() # untested
     invite_delete               = RatelimitGroup.unlimited()
     invite_get                  = RatelimitGroup()
-    client_application_info     = RatelimitGroup.unlimited()
-    user_info                   = RatelimitGroup.unlimited()
-    client_user                 = RatelimitGroup.unlimited()
+    client_application_info     = RatelimitGroup(optimistic=True)
+    user_info                   = RatelimitGroup(optimistic=True)
+    client_user                 = RatelimitGroup(optimistic=True)
     client_edit                 = RatelimitGroup()
     user_achievements           = RatelimitGroup() # untested; has expected global ratelimit
     user_achievement_update     = RatelimitGroup()
-    channel_private_get_all     = RatelimitGroup.unlimited()
+    channel_private_get_all     = RatelimitGroup(optimistic=True)
     channel_private_create      = RatelimitGroup.unlimited()
-    client_connections          = RatelimitGroup.unlimited()
-    user_connections            = RatelimitGroup.unlimited()
+    client_connections          = RatelimitGroup(optimistic=True)
+    user_connections            = RatelimitGroup(optimistic=True)
     guild_get_all               = RatelimitGroup()
     user_guilds                 = RatelimitGroup()
     guild_leave                 = RatelimitGroup.unlimited()
-    relationship_friend_request = RatelimitGroup() # untested
-    relationship_delete         = RatelimitGroup() # untested
-    relationship_create         = RatelimitGroup() # untested
-    client_get_settings         = RatelimitGroup() # untested
-    client_edit_settings        = RatelimitGroup() # untested
+    relationship_friend_request = RatelimitGroup(optimistic=True) # untested
+    relationship_delete         = RatelimitGroup(optimistic=True) # untested
+    relationship_create         = RatelimitGroup(optimistic=True) # untested
+    client_get_settings         = RatelimitGroup(optimistic=True) # untested
+    client_edit_settings        = RatelimitGroup(optimistic=True) # untested
     user_get                    = RatelimitGroup()
-    channel_group_create        = RatelimitGroup() # untested
-    user_get_profile            = RatelimitGroup() # untested
+    channel_group_create        = RatelimitGroup(optimistic=True) # untested
+    user_get_profile            = RatelimitGroup(optimistic=True) # untested
     webhook_delete              = RatelimitGroup.unlimited()
     webhook_get                 = RatelimitGroup.unlimited()
-    webhook_edit                = RatelimitGroup.unlimited()
+    webhook_edit                = RatelimitGroup(LIMITER_WEBHOOK, optimistic=True)
     webhook_delete_token        = RatelimitGroup.unlimited()
     webhook_get_token           = RatelimitGroup.unlimited()
-    webhook_edit_token          = RatelimitGroup.unlimited()
+    webhook_edit_token          = RatelimitGroup(LIMITER_WEBHOOK, optimistic=True)
     webhook_send                = RatelimitGroup(LIMITER_WEBHOOK)
 
 del modulize

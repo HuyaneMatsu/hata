@@ -163,11 +163,14 @@ class Role(DiscordEntity, immortal=True):
         self.guild._cache_perm.clear()
         
     def __str__(self):
-        return self.name
-
+        name = self.name
+        if not name:
+            name = 'Partial'
+        return name
+    
     def __repr__(self):
-        return f'<{self.__class__.__name__} name={getattr(self,"name","partial")} ({self.id})>'
-
+        return f'<{self.__class__.__name__} name={self.name!r}, id={self.id}>'
+    
     def _update(self,data):
         old={}
         
@@ -175,7 +178,7 @@ class Role(DiscordEntity, immortal=True):
         if self.name!=name:
             old['name']=self.name
             self.name=name
-                
+        
         permissions=Permission(data['permissions'])
         if self.permissions!=permissions:
             old['permissions']=self.permissions
@@ -231,22 +234,22 @@ class Role(DiscordEntity, immortal=True):
                 profile.roles.remove(self)
             except ValueError:
                 pass
-
+    
     @property
     def is_default(self):
        return self.position==0
-
+    
     @property
     def mention(self):
         return f'<@&{self.id}>'
     
     def __format__(self,code):
         if not code:
-            return getattr(self,'name','Partial')
+            return self.__str__()
         if code=='m':
             return f'<@&{self.id}>'
         if code=='c':
-            return f'{self.created_at:%Y.%m.%d-%H:%M:%S}'
+            return self.created_at.__format__('%Y.%m.%d-%H:%M:%S')
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
     @property
@@ -256,11 +259,11 @@ class Role(DiscordEntity, immortal=True):
             return list(guild.users.values())
         role_id=self.id
         return [user for user in guild.users if self in user.guild_profiles[guild].roles]
-
+    
     @property
     def partial(self):
         return (self.guild is None)
-
+    
     def __gt__(self,other):
         if type(self) is type(other):
             if self.position > other.position:
@@ -320,23 +323,45 @@ class PermOW(object):
     def __init__(self,data):
         id_=int(data['id'])
         if data['type']=='role':
-            self.target=PartialRole(id_)
+            target=PartialRole(id_)
         else:
-            self.target=PartialUser(id_)
+            target=PartialUser(id_)
+        self.target = target
         self.allow=data['allow']
         self.deny=data['deny']
+    
+    @classmethod
+    def custom(cls, target, allow, deny):
+        """
+        Creates an overwrite object with teh given parameters.
         
+        Parameters
+        ----------
+        target : ``Role`` or ``UserBase`` instance
+        allow
+        deny
+
+        Returns
+        -------
+
+        """
+        self = object.__new__(cls)
+        self.target = target
+        self.allow = allow
+        self.deny = deny
+        return self
+    
     def __hash__(self):
         return self.target.id^self.allow^self.deny
     
     def __repr__(self):
         return f'<{self.__class__.__name__} target={self.target!r}>'
-
+    
     def keys(self):
         return Permission.__keys__.keys()
-
+    
     __iter__=keys
-
+    
     def values(self):
         allow=self.allow
         deny=self.deny
@@ -346,7 +371,7 @@ class PermOW(object):
             if (deny>>index)&1:
                 yield 'd'
             yield 'n'
-
+    
     def items(self):
         allow=self.allow
         deny=self.deny
@@ -356,7 +381,7 @@ class PermOW(object):
             if (deny>>index)&1:
                 yield key,'d'
             yield key,'n'
-
+    
     def __getitem__(self,key):
         index=Permission.__keys__[key]
         if (self.allow>>index)&1:
@@ -364,12 +389,23 @@ class PermOW(object):
         if (self.deny>>index)&1:
             return 'd'
         return 'n'
-
+    
     @property
     def type(self):
         if type(self.target) is Role:
             return 'role'
         return 'member'
+    
+    @property
+    def id(self):
+        """
+        Returns the permission overwrite's target's id.
+        
+        Returns
+        -------
+        id : `int`
+        """
+        return self.target.id
     
     def __lt__(self,other):
         if type(self) is not type(other):

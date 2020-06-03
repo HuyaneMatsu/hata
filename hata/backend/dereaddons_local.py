@@ -899,10 +899,11 @@ def modulize(klass):
     for name in type.__dir__(klass):
         if name.startswith('__') and name.endswith('__') and name!='__doc__':
             continue
+        
         value=type.__getattribute__(klass,name)
         if type(value) in DO_NOT_MODULIZE_TYPES:
-            print(type(value), value)
             continue
+        
         module.__setattr__(result,name,value)
     return result
     

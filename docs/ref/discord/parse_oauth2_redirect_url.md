@@ -1,11 +1,9 @@
-# def `parse_oauth2_redirect_url`
+# def `parse_oauth2_redirect_url` (function)
 
 Parses the `redirect_url` and the `code` out the whole `url`, that the user
 was redircted to after outh2 authorization.
 
 - Source : [oauth2.py](https://github.com/HuyaneMatsu/hata/blob/master/hata/discord/oauth2.py)
-
-## `cr_p_overwrite_object(url)` (function)
 
 - returns : `None` / `tuple` (`str`, `str`)
 

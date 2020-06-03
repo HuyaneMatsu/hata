@@ -157,9 +157,14 @@ class Emoji(DiscordEntity, immortal=True):
         try:
             role_ids=data['roles']
         except KeyError:
-            emoji.roles=None
+            roles=None
         else:
-            emoji.roles={guild.all_role[int(role_id)] for role_id in role_ids}
+            if role_ids:
+                roles={guild.all_role[int(role_id)] for role_id in role_ids}
+            else:
+                roles = None
+        
+        emoji.roles = roles
         
         return emoji
     
@@ -314,7 +319,7 @@ class Emoji(DiscordEntity, immortal=True):
                 return self.unicode
             return f'{self.name}:{self.id}'
         if code=='c':
-            return f'{self.created_at:%Y.%m.%d-%H:%M:%S}'
+            return self.created_at.__format__('%Y.%m.%d-%H:%M:%S')
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
     @property
@@ -441,7 +446,11 @@ class Emoji(DiscordEntity, immortal=True):
             if guild is None:
                 roles = None
             else:
-                roles={guild.all_role[int(role_id)] for role_id in role_ids}
+                if role_ids:
+                    roles={guild.all_role[int(role_id)] for role_id in role_ids}
+                else:
+                    roles = None
+        
         self.roles = roles
         
         try:
@@ -519,7 +528,10 @@ class Emoji(DiscordEntity, immortal=True):
             if guild is None:
                 roles = None
             else:
-                roles={guild.all_role[int(role_id)] for role_id in role_ids}
+                if role_ids:
+                    roles={guild.all_role[int(role_id)] for role_id in role_ids}
+                else:
+                    roles = None
         
         if (self.roles is None):
             if (roles is not None):

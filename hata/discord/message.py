@@ -1418,7 +1418,7 @@ class Message(DiscordEntity, immortal=True):
             return self.__str__()
         
         if code=='c':
-            return f'{self.created_at:%Y.%m.%d-%H:%M:%S}'
+            return self.created_at.__format__('%Y.%m.%d-%H:%M:%S')
         
         if code=='e':
             edited = self.edited

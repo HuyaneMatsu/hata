@@ -12,6 +12,7 @@ from ..backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, 
 from ..backend.eventloop import EventThread
 from ..backend.formdata import Formdata
 from ..backend.hdrs import AUTHORIZATION
+from ..backend.helpers import BasicAuth
 
 from .others import Status, log_time_converter, DISCORD_EPOCH, VoiceRegion, ContentFilterLevel, PremiumType, \
     MessageNotificationLevel, bytes_to_base64, ext_from_base64, random_id, to_json, VerificationLevel, \
@@ -22,7 +23,7 @@ from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelT
     message_relativeindex, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES
 from .guild import Guild, PartialGuild, GuildEmbed, GuildWidget, GuildFeature, GuildPreview
 from .http import DiscordHTTPClient, URLS, CDN_ENDPOINT, VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED
-from .role import Role
+from .role import Role, PermOW
 from .webhook import Webhook, PartialWebhook
 from .gateway import DiscordGateway, DiscordGatewaySharder
 from .parsers import EventDescriptor, _with_error, IntentFlag, PARSER_DEFAULTS
@@ -39,6 +40,7 @@ from .application import Application, Team
 from .ratelimit import RatelimitProxy
 from .preconverters import preconvert_snowflake, preconvert_animated_image_hash, preconvert_str, preconvert_bool, \
     preconvert_discriminator, preconvert_flag, preconvert_preinstanced_type
+from .permission import Permission
 
 from . import client_core, message, webhook, channel
 
@@ -937,7 +939,7 @@ class Client(UserBase):
             'scope'         : ' '.join(scopes),
                 }
         
-        data = await self.http.oauth2_token(data)
+        data = await self.http.oauth2_token(data, multidict_titled())
         if len(data)==1:
             return
         
@@ -969,13 +971,13 @@ class Client(UserBase):
         Does not work if the client's application is owned by a team.
         """
         data = {
-            'client_id'     : self.id,
-            'client_secret' : self.secret,
             'grant_type'    : 'client_credentials',
             'scope'         : ' '.join(scopes),
                 }
         
-        data = await self.http.oauth2_token(data)
+        headers = multidict_titled()
+        headers[AUTHORIZATION] = BasicAuth(str(self.id), self.secret).encode()
+        data = await self.http.oauth2_token(data, headers)
         return AO2Access(data,'')
     
     #needs `email` or/and `identify` scopes granted for more data
@@ -1065,7 +1067,7 @@ class Client(UserBase):
                 'scope'         : ' '.join(access.scopes),
                     }
         
-        data = await self.http.oauth2_token(data)
+        data = await self.http.oauth2_token(data, multidict_titled())
         
         access._renew(data)
     
@@ -5441,7 +5443,7 @@ class Client(UserBase):
             'deny'  : deny,
             'type'  : overwrite.type
                 }
-        await self.http.permission_ow_create(channel.id,overwrite.id,data,reason)
+        await self.http.permission_ow_create(channel.id,overwrite.target.id,data,reason)
     
     async def permission_ow_delete(self, channel, overwrite, reason=None):
         """
@@ -5462,8 +5464,8 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        await self.http.permission_ow_delete(channel.id,overwrite.id,reason)
-
+        await self.http.permission_ow_delete(channel.id,overwrite.target.id,reason)
+    
     async def permission_ow_create(self, channel, target, allow, deny, reason=None):
         """
         Creates a permission overwrite at the given channel.
@@ -5472,7 +5474,7 @@ class Client(UserBase):
         ----------
         channel : ``ChannelGuildBase`` instance
             The channel to what the permission ovrwrite will be added.
-        target : ``Client``, ``Role``, ``User``, ``UserOA2`` object
+        target : ``Role`` or ``UserBase`` instance
             The permission overwrite's target.
         allow : ``Permission``
             The permission overwrite's allowed permission's value.
@@ -5481,20 +5483,25 @@ class Client(UserBase):
         reason : `str`, Optional
             Shows up at the respective guild's audit logs.
         
+        Returns
+        -------
+        permission_overwrit : PermOW
+            A permission overwrite, what estimatedly is same as the one what Discord will create.
+        
         Raises
         ------
         TypeError
-            If `target` was not passed neither as ``Client``, ``Role``, ``User``, ``UserOA2`` object.
+            If `target` was not passed neither as ``Role`` or as ``UserBase`` instance.
         ConnectionError
             No internet connection.
         DiscordException
         """
         if type(target) is Role:
             type_='role'
-        elif type(target) in (User,Client,UserOA2):
+        elif isinstance(target, UserBase):
             type_='member'
         else:
-            raise TypeError(f'Target expected to be `Role` or `User` type, got {target.__class__.__name__}.')
+            raise TypeError(f'`target` can be either `{Role.__name__}` or `{UserBase.__name__}` instance, got {target.__class__.__name__}.')
         
         data = {
             'target': target.id,
@@ -5502,11 +5509,12 @@ class Client(UserBase):
             'deny'  : deny,
             'type'  : type_,
                 }
+        
         await self.http.permission_ow_create(channel.id,target.id,data,reason)
-    
+        return PermOW.custom(target, Permission(allow), Permission(deny))
     
     # Webhook management
-
+    
     async def webhook_create(self, channel, name, avatar=None):
         """
         Creates a webhook at the given channel.

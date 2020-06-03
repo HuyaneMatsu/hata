@@ -46,7 +46,7 @@ class BasicAuth(object):
         self.encoding=encoding
         
         return self
-
+    
     @classmethod
     def decode(cls, auth_header, encoding='latin1'):
         #Create a BasicAuth object from an Authorization HTTP header.
@@ -57,7 +57,7 @@ class BasicAuth(object):
             to_decode=split[1]
         else:
             raise ValueError('Could not parse authorization header.')
-
+        
         try:
             username,_,password=base64.b64decode(to_decode.encode('ascii')).decode(encoding).partition(':')
         except binascii.Error:
@@ -102,18 +102,20 @@ del _ipv4_pattern,_ipv6_pattern,re
 def is_ip_address(host):
     if host is None:
         return False
+    
     if isinstance(host, str):
         if _ipv4_regex.match(host) or _ipv6_regex.match(host):
             return True
         else:
             return False
-    elif isinstance(host, (bytes,bytearray,memoryview)):
+        
+    if isinstance(host, (bytes,bytearray,memoryview)):
         if _ipv4_regexb.match(host) or _ipv6_regexb.match(host):
             return True
         else:
             return False
-    else:
-        raise TypeError(f'{host} [{type(host)}] is not a str or bytes')
+    
+    raise TypeError(f'{host} [{type(host)}] is not a str or bytes')
 
 
 class EmptyTimer(object):

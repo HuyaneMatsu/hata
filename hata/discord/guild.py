@@ -1233,7 +1233,7 @@ class Guild(DiscordEntity, immortal=True):
         if not code:
             return self.name
         if code=='c':
-            return f'{self.created_at:%Y.%m.%d-%H:%M:%S}'
+            return self.created_at.__format__('%Y.%m.%d-%H:%M:%S')
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
     banner_url=property(URLS.guild_banner_url)

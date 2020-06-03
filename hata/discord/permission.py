@@ -38,7 +38,7 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
         'manage_emojis'         : 30,
         #'unused'               : 31,
         #rest is unused
-        }
+            }
 
     def handle_overwrite(self,allow,deny):
         #1st denies permissions, then allows

@@ -173,7 +173,7 @@ class UserBase(DiscordEntity, immortal=True):
             cls.top_role_at     = rich.top_role_at
             cls.can_use_emoji   = rich.can_use_emoji
             cls.has_higher_role_than    = rich.has_higher_role_than
-            cls.has_higher_role_than_at = rich.has_higher_role_than
+            cls.has_higher_role_than_at = rich.has_higher_role_than_at
         
         if 'activities' in cls.__slots__:
             cls.activity      = rich.activity
@@ -190,7 +190,7 @@ class UserBase(DiscordEntity, immortal=True):
     
     def __repr__(self):
         if self.partial:
-            return f'<{self.__class__.__name__} partial id={self.id}>'
+            return f'<{self.__class__.__name__} partial, id={self.id}>'
         return f'<{self.__class__.__name__} name={self.name}#{self.discriminator:0>4}, id={self.id}>'
     
     def __format__(self,code):
@@ -201,7 +201,7 @@ class UserBase(DiscordEntity, immortal=True):
         if code=='m':
             return self.mention
         if code=='c':
-            return f'{self.created_at:%Y.%m.%d-%H:%M:%S}'
+            return self.created_at.__format__('%Y.%m.%d-%H:%M:%S')
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
     @property

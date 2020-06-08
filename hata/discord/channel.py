@@ -9,7 +9,7 @@ from weakref import WeakSet
 
 from ..backend.dereaddons_local import weakposlist
 
-from .bases import DiscordEntity
+from .bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
 from .client_core import CHANNELS
 from .permission import Permission
 from .http import URLS
@@ -18,7 +18,7 @@ from .user import User, ZEROUSER
 from .role import PermOW
 from .client_core import GC_cycler
 from .webhook import Webhook, WebhookRepr
-from .preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_image_hash, preconvert_bool
+from .preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_bool
 
 from . import webhook, message, ratelimit, http
 
@@ -2556,8 +2556,10 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         The channel's message history.
     users : `list` of (``User`` or ``Client``) objects
         The channel's recipient.
-    icon : `int`
-        The channel's icon's hash in `uint128`. Set as `0` if it is has no icon.
+    icon_hash : `int`
+        The channel's icon's hash in `uint128`.
+    icon_type : ``iconType``
+        The channel's icon's type.
     name : `str`
         The channel's display name. Can be empty string if the channel has no name.
     owner : ``User`` or ``Client``
@@ -2574,7 +2576,9 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         The channel's Discord side type.
     """
     __slots__ = ('users', # private channel related
-        'icon', 'name', 'owner',) #group channel related
+        'name', 'owner',) #group channel related
+    
+    icon = IconSlot('icon', 'icon', URLS.channel_group_icon_url, URLS.channel_group_icon_url_as)
     
     INTERCHANGE = (3,)
     type = 3
@@ -2595,8 +2599,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         name=data.get('name',None)
         self.name = '' if name is None else name
         
-        icon=data.get('icon')
-        self.icon=0 if icon is None else int(icon,16)
+        self._set_icon(data)
         
         users = [User(user_data) for user_data in data['recipients']]
         users.sort()
@@ -2605,10 +2608,12 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         owner_id=int(data['owner_id'])
         for user in users:
             if user.id==owner_id:
-                self.owner=user
+                owner=user
                 break
         else:
-            self.owner=ZEROUSER
+            owner=ZEROUSER
+        
+        self.owner = owner
         
     @classmethod
     def _from_partial_data(cls, data, channel_id, partial_guild):
@@ -2635,8 +2640,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         # even if we get recipients, we will ignore them
         self.users      = []
         
-        icon=data.get('icon')
-        self.icon=0 if icon is None else int(icon,16)
+        self._set_icon(data)
         
         name=data.get('name',None)
         #should we transfer the recipients to name?
@@ -2645,7 +2649,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         self.owner=ZEROUSER
         
         return self
-    
+        
     def _delete(self, client):
         """
         Removes the channel's references.
@@ -2671,8 +2675,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         name=data.get('name',None)
         self.name = '' if name is None else name
         
-        icon=data.get('icon',None)
-        self.icon=0 if icon is None else int(icon,16)
+        self._set_icon(data)
         
         users = [User(user) for user in data['recipients']]
         users.sort()
@@ -2704,7 +2707,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         +---------------+---------------------------------------+
         | Keys          | Values                                |
         +===============+=======================================+
-        | icon          | `int`                                 |
+        | icon          | ``Icon``                              |
         +---------------+---------------------------------------+
         | name          | `str`                                 |
         +---------------+---------------------------------------+
@@ -2722,11 +2725,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
             old['name']=self.name
             self.name=name
         
-        icon=data.get('icon',None)
-        icon=0 if icon is None else int(icon,16)
-        if self.icon!=icon:
-            old['icon']=self.icon
-            self.icon=icon
+        self._update_icon(data, old)
         
         users = [User(user) for user in data['recipeents']]
         users.sort()
@@ -2833,9 +2832,6 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         channel._finish_init(data, client)
         return channel
     
-    icon_url = property(URLS.channel_group_icon_url)
-    icon_url_as = URLS.channel_group_icon_url_as
-    
     @classmethod
     def precreate(cls, channel_id, **kwargs):
         """
@@ -2883,13 +2879,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
                 name = preconvert_str(name, 'name', 2, 100)
                 processable.append(('name', name))
             
-            try:
-                icon = kwargs.pop('icon')
-            except KeyError:
-                pass
-            else:
-                icon = preconvert_image_hash(icon, 'icon')
-                processable.append(('icon', icon))
+            cls.icon.preconvert(kwargs, processable)
             
             try:
                 owner = kwargs.pop('owner')
@@ -2897,7 +2887,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
                 pass
             else:
                 if not isinstance(owner,(User,Client)):
-                    raise TypeError(f'`owner can be {User.__name__} or {Client.__name__} instance, got {owner.__class__.__name__}.')
+                    raise TypeError(f'`owner` can be {User.__name__} or {Client.__name__} instance, got {owner.__class__.__name__}.')
                 processable.append(('owner', owner))
             
             if kwargs:
@@ -2916,7 +2906,8 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
             channel.users = []
             
             channel.name = ''
-            channel.icon = 0
+            channel.icon_hash = 0
+            channel.icon_type = ICON_TYPE_NONE
             channel.owner = ZEROUSER
             
             channel._messageable_init()

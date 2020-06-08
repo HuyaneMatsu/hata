@@ -5,14 +5,14 @@ from datetime import datetime
 
 from ..backend.dereaddons_local import modulize
 
-from .bases import DiscordEntity, FlagBase
+from .bases import DiscordEntity, FlagBase, IconSlot, ICON_TYPE_NONE
 from .client_core import CACHE_USER, CACHE_PRESENCE, USERS
 from .others import parse_time, Status, DISCORD_EPOCH
 from .color import Color, DefaultAvatar
 from .activity import ActivityUnknown, Activity
 from .http import URLS
-from .preconverters import preconvert_snowflake, preconvert_animated_image_hash, preconvert_str, preconvert_bool, \
-    preconvert_discriminator, preconvert_flag
+from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool, preconvert_discriminator, \
+    preconvert_flag
 
 class UserFlag(FlagBase):
     __keys__ = {
@@ -161,7 +161,9 @@ class GuildProfile(object):
         return Color(0)
 
 class UserBase(DiscordEntity, immortal=True):
-    __slots__ = ('name', 'discriminator', 'avatar', 'has_animated_avatar',)
+    __slots__ = ('name', 'discriminator', )
+    
+    avatar = IconSlot('avatar', 'avatar', URLS.user_avatar_url,URLS.user_avatar_url_as)
     
     def __init_subclass__(cls):
         rich = cls.__rich__
@@ -240,9 +242,6 @@ class UserBase(DiscordEntity, immortal=True):
         It actually has nothing to do with the user's nickname > <.
         """
         return f'<@!{self.id}>'
-    
-    avatar_url=property(URLS.user_avatar_url)
-    avatar_url_as=URLS.user_avatar_url_as
     
     @property
     def default_avatar_url(self):
@@ -720,16 +719,7 @@ class User(UserBase):
                 discriminator = preconvert_discriminator(discriminator)
                 processable.append(('discriminator',discriminator))
             
-            try:
-                avatar = kwargs.pop('avatar')
-            except KeyError:
-                if 'has_animated_avatar' in kwargs:
-                    raise TypeError('`has_animated_avatar` was passed without passing `avatar`.')
-            else:
-                has_animated_avatar = kwargs.pop('has_animated_avatar', False)
-                avatar, has_animated_avatar = preconvert_animated_image_hash(avatar, has_animated_avatar, 'avatar', 'has_animated_avatar')
-                processable.append(('avatar', avatar))
-                processable.append(('has_animated_avatar',has_animated_avatar))
+            cls.avatar.preconvert(kwargs, processable)
             
             try:
                 is_bot = kwargs.pop('is_bot')
@@ -767,16 +757,7 @@ class User(UserBase):
         self.name=data['username']
         self.discriminator=int(data['discriminator'])
 
-        avatar=data.get('avatar')
-        if avatar is None:
-            self.avatar=0
-            self.has_animated_avatar=False
-        elif avatar.startswith('a_'):
-            self.avatar=int(avatar[2:],16)
-            self.has_animated_avatar=True
-        else:
-            self.avatar=int(avatar,16)
-            self.has_animated_avatar=False
+        self._set_avatar(data)
         
         self.flags = UserFlag(data.get('public_flags',0))
     
@@ -981,30 +962,13 @@ class User(UserBase):
         if self.name!=name:
             old['name']=self.name
             self.name=name
-
+        
         discriminator=int(data['discriminator'])
         if self.discriminator!=discriminator:
             old['discriminator']=self.discriminator
             self.discriminator=discriminator
-
-        avatar=data.get('avatar')
-        if avatar is None:
-            avatar=0
-            has_animated_avatar=False
-        elif avatar.startswith('a_'):
-            avatar=int(avatar[2:],16)
-            has_animated_avatar=True
-        else:
-            avatar=int(avatar,16)
-            has_animated_avatar=False
-                
-        if self.avatar!=avatar:
-            old['avatar']=self.avatar
-            self.avatar=avatar
-
-        if self.has_animated_avatar!=has_animated_avatar:
-            old['has_animated_avatar']=self.has_animated_avatar
-            self.has_animated_avatar=has_animated_avatar
+        
+        self._update_avatar(data, old)
         
         flags = data.get('public_flags',0)
         if self.flags != flags:
@@ -1059,8 +1023,8 @@ class User(UserBase):
             
             user.name = ''
             user.discriminator = 0
-            user.avatar = 0
-            user.has_animated_avatar = False
+            user.avatar_hash = 0
+            user.avatar_type = ICON_TYPE_NONE
             user.is_bot = False
             user.flags = UserFlag()
             
@@ -1081,8 +1045,8 @@ class User(UserBase):
             
             user.name = ''
             user.discriminator = 0
-            user.avatar = 0
-            user.has_animated_avatar=False
+            user.avatar_hash = 0
+            user.avatar_type = ICON_TYPE_NONE
             user.is_bot = False
             user.flags = UserFlag()
             
@@ -1255,3 +1219,4 @@ del CACHE_USER
 del CACHE_PRESENCE
 del DiscordEntity
 del FlagBase
+del IconSlot

@@ -4,9 +4,9 @@ __all__ = ('CACHE_PRESENCE', 'CACHE_USER', 'CHANNELS', 'CLIENTS', 'EMOJIS', 'GUI
 
 import sys
 from time import perf_counter
-from weakref import WeakValueDictionary
 from threading import current_thread
 
+from ..backend.dereaddons_local import WeakValueDictionary
 from ..backend.futures import Future, sleep, CancelledError, future_or_timeout, Task
 from ..backend.eventloop import EventThread
 

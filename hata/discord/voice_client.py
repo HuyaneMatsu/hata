@@ -21,14 +21,14 @@ class VoiceClient(object):
         'call_after', 'channel', 'client', 'connected', 'gateway', 'lock',
         'player', 'queue', 'reader', 'socket', 'sources', 'speaking')
 
-    def __new__(cls,client,channel):
+    def __new__(cls, client, channel):
         #raise error at __new__
         if SecretBox is None:
             raise RuntimeError('PyNaCl is not loaded')
-
+        
         if OpusEncoder is None:
             raise RuntimeError('Opus is not loaded')
-
+        
         self=object.__new__(cls)
         
         self.channel        = channel

@@ -4,11 +4,12 @@ __all__ = ( 'ActivityBase', 'ActivityCustom', 'ActivityFlag', 'ActivityGame', 'A
 
 from datetime import datetime
 
+from .others import DISCORD_EPOCH_START
 from .bases import FlagBase
 from .color import Color
 from .http import URLS
 
-PartialEmoji=NotImplemented
+PartialEmoji = NotImplemented
 
 class ActivityFlag(FlagBase):
     """
@@ -130,10 +131,6 @@ class ActivityBase(object):
         """Returns the acitvity's name."""
         return self.name
     
-    def __hash__(self):
-        """Returns the activity's hash value."""
-        return self.id
-    
     def __repr__(self):
         """Returns the activity's representation."""
         return f'<{self.__class__.__name__} name={self.name!r}>'
@@ -142,6 +139,7 @@ class ActivityBase(object):
         """Compares whether the two ``ActivityBase`` instance's `.type` and `.id`."""
         if isinstance(other, ActivityBase):
             return self.type==other.type and self.id==other.id
+        
         return NotImplemented
     
     @property
@@ -242,17 +240,17 @@ class ActivityBase(object):
             
             if timestamps_data:
                 data['timestamps']=timestamps_data
-            
+        
         if ACTIVITY_FLAG&0b0000000000000010:
             details=self.details
             if details:
                 data['details']=details
-
+        
         if ACTIVITY_FLAG&0b0000000000000100:
             state=self.state
             if state is not None:
                 data['state']=state
-
+        
         if self.ACTIVITY_FLAG&0b0000000000001000:
             party_data={}
             
@@ -377,8 +375,8 @@ class ActivityBase(object):
         created_at : `None` or `datetime`
         """
         created = self.created
-        if created==0:
-            return None
+        if created == 0:
+            return DISCORD_EPOCH_START
         
         return datetime.utcfromtimestamp(created/1000.)
 

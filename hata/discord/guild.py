@@ -7,7 +7,7 @@ import re
 from ..backend.dereaddons_local import autoposlist, cached_property, weakposlist, _spaceholder
 from ..backend.futures import Task
 
-from .bases import DiscordEntity, ReverseFlagBase
+from .bases import DiscordEntity, ReverseFlagBase, IconSlot, ICON_TYPE_NONE
 from .client_core import CACHE_PRESENCE, GUILDS
 from .others import EMOJI_NAME_RP, VoiceRegion, Status, VerificationLevel, MessageNotificationLevel, MFA, \
     ContentFilterLevel
@@ -20,7 +20,7 @@ from .activity import Activity, ActivityUnknown
 from .emoji import Emoji
 from .webhook import Webhook, WebhookRepr
 from .oauth2 import parse_preferred_locale, DEFAULT_LOCALE
-from .preconverters import preconvert_snowflake, preconvert_image_hash, preconvert_animated_image_hash, preconvert_str
+from .preconverters import preconvert_snowflake, preconvert_str
 
 from . import ratelimit
 
@@ -692,19 +692,19 @@ def PartialGuild(data):
     guild.all_channel={}
     guild.all_role={}
     #available set up
-    guild.banner=0
+    guild.banner_type = ICON_TYPE_NONE
+    guild.banner_hash = 0
     guild.booster_count=-1
     guild.channels=weakposlist()
     guild.clients=[]
     guild.content_filter=ContentFilterLevel.disabled
     # description will be set down
-    guild.discovery_splash=0
     guild.embed_channel=None
     guild.embed_enabled=False
     guild.emojis={}
     guild.features=[]
-    # has_animated_icon will be set down
-    # icon will be set down
+    # icon_type will be set down
+    # icon_hash will be set down
     # id is set up
     guild.is_large=False
     guild.max_presences=25000
@@ -720,7 +720,8 @@ def PartialGuild(data):
     guild.region=VoiceRegion.eu_central
     guild.roles=autoposlist()
     guild.rules_channel=None
-    # invite_splash will be set down
+    # invite_splash_type will be set down
+    # invite_splash_hash will be set down
     guild.system_channel=None
     guild.system_channel_flags=SystemChannelFlag.NONE
     guild.user_count=1
@@ -735,46 +736,36 @@ def PartialGuild(data):
     
     if len(data) < restricted_data_limit:
         guild.name=''
-        guild.icon=0
-        guild.has_animated_icon=False
-        guild.invite_splash=0
+        guild.icon_type = ICON_TYPE_NONE
+        guild.icon_hash = 0
+        guild.invite_splash_type = ICON_TYPE_NONE
+        guild.invite_splash_hash = 0
+        guild.discovery_splash_type = ICON_TYPE_NONE
+        guild.discovery_splash_hash = 0
         guild.description=None
-        return guild
-    
-    guild.name=data.get('name','')
-    
-    icon=data.get('icon')
-    if icon is None:
-        guild.icon=0
-        guild.has_animated_icon=False
-    elif icon.startswith('a_'):
-        guild.icon=int(icon[2:],16)
-        guild.has_animated_icon=True
     else:
-        guild.icon=int(icon,16)
-        guild.has_animated_icon=False
-    
-    invite_splash=data.get('splash')
-    guild.invite_splash=0 if invite_splash is None else int(invite_splash,16)
-    
-    guild.description=data.get('description',None)
-    
-    try:
-        verification_level=data['verification_level']
-    except KeyError:
-        pass
-    else:
-        guild.verification_level=VerificationLevel.INSTANCES[verification_level]
-    
-    try:
-        features=data['features']
-    except KeyError:
-        guild.features.clear()
-    else:
-        features=[GuildFeature.get(feature) for feature in features]
-        features.sort()
-        guild.features=features
+        guild.name=data.get('name','')
+        guild._set_icon(data)
+        guild._set_invite_splash(data)
+        guild._set_discovery_splash(data)
+        guild.description=data.get('description',None)
         
+        try:
+            verification_level=data['verification_level']
+        except KeyError:
+            pass
+        else:
+            guild.verification_level=VerificationLevel.INSTANCES[verification_level]
+        
+        try:
+            features=data['features']
+        except KeyError:
+            guild.features.clear()
+        else:
+            features=[GuildFeature.get(feature) for feature in features]
+            features.sort()
+            guild.features=features
+    
     return guild
 
 #discord does not sends `embed_channel`, `embed_enabled`, `widget_channel`,
@@ -799,8 +790,10 @@ class Guild(DiscordEntity, immortal=True):
         The roles of the guild stored in `role_id` - `role` relation.
     available : `bool`
         Whther the guild is avaiable.
-    banner : `int`
-        The guild's banner's hash in `uint128`. Set as `0` if it is has no banner.
+    banner_hash : `int`
+        The guild's banner's hash in `uint128`.
+    banner_type : ``IconType``
+        The guild's banner's type.
     booster_count : `int`
         The total number of boosts of the guild.
     channels : `weakposlist` of ``ChannelGuildBase`` instances
@@ -812,9 +805,11 @@ class Guild(DiscordEntity, immortal=True):
         The explicit content filter level of the guild.
     description : `str` or `None`
         Description of the guild. The guild must have `PUBLIC` feature.
-    discovery_splash : `int`
-        The guild's discovery splashe's hash in `uint128`. Set as `0` if it is has no discovery splash. The guild must
-        have `DISCOVERABLE` feature to have discovery splash.
+    discovery_splash_hash : `int`
+        The guild's discovery splashe's hash in `uint128`. The guild must have `DISCOVERABLE` feature to have
+        discovery splash.
+    discovery_splash_type : ``IconType``
+        The guild's discovery splashe's type.
     embed_channel : `None` or ``ChannelText``
         The channel to where the guild's embed widget will generate the invite to.
     embed_enabled : `bool`
@@ -823,13 +818,14 @@ class Guild(DiscordEntity, immortal=True):
         The emojis of the guild stored in `emoji_id` - `emoji` relation.
     features : `list` of ``GuildFeature``
         The guild's features.
-    has_animated_icon : `bool`
-        Whether the guild has animated `.icon`.
-    icon : `int`
-        The guild's icon's hash in `uint128`. Set as `0` if it is has no icon.
-    invite_splash : `int`
-        The guild's invite splash's hash in `uint128`. Set as `0` if it is has no invite splash. The guild must have
-        `INVITE_SPLASH` feature.
+    icon_hash : `int`
+        The guild's icon's hash in `uint128`.
+    icon_type : ``IconType``
+        The guild's icon's type.
+    invite_splash_hash : `int`
+        The guild's invite splashe's hash in `uint128`. The guild must have `INVITE_SPLASH` feature.
+    invite_splash_type : ``IconType``
+        The guild's invite splashe's type.
     is_large : `bool`
         Whether the guild is considered as a large one.
     max_presences : `int`
@@ -898,12 +894,17 @@ class Guild(DiscordEntity, immortal=True):
     - `.widget_enabled`
     """
     __slots__ = ('_boosters', '_cache_perm', 'afk_channel', 'afk_timeout', 'all_channel', 'all_role', 'available',
-        'banner', 'booster_count', 'channels', 'clients', 'content_filter', 'description', 'discovery_splash',
-        'embed_channel', 'embed_enabled', 'emojis', 'features', 'has_animated_icon', 'icon', 'invite_splash',
-        'is_large', 'max_presences', 'max_users', 'max_video_channel_users', 'message_notification', 'mfa', 'name',
-        'owner', 'preferred_locale', 'premium_tier', 'public_updates_channel', 'region', 'roles', 'rules_channel',
-        'system_channel', 'system_channel_flags', 'user_count', 'users', 'vanity_code', 'verification_level',
-        'voice_states', 'webhooks', 'webhooks_uptodate', 'widget_channel', 'widget_enabled')
+        'booster_count', 'channels', 'clients', 'content_filter', 'description', 'embed_channel', 'embed_enabled',
+        'emojis', 'features', 'has_animated_icon', 'is_large', 'max_presences', 'max_users', 'max_video_channel_users',
+        'message_notification', 'mfa', 'name', 'owner', 'preferred_locale', 'premium_tier', 'public_updates_channel',
+        'region', 'roles', 'rules_channel', 'system_channel', 'system_channel_flags', 'user_count', 'users',
+        'vanity_code', 'verification_level', 'voice_states', 'webhooks', 'webhooks_uptodate', 'widget_channel',
+        'widget_enabled')
+    
+    banner = IconSlot('banner', 'banner', URLS.guild_banner_url, URLS.guild_banner_url_as)
+    icon = IconSlot('icon', 'icon', URLS.guild_icon_url, URLS.guild_icon_url_as)
+    invite_splash = IconSlot('invite_splash', 'splash', URLS.guild_invite_splash_url, URLS.guild_invite_splash_url_as)
+    discovery_splash = IconSlot('discovery_splash', 'discovery_splash', URLS.guild_discovery_splash_url, URLS.guild_discovery_splash_url_as)
     
     def __new__(cls, data, client):
         """
@@ -1103,25 +1104,10 @@ class Guild(DiscordEntity, immortal=True):
                 name = preconvert_str(name, 'name', 2, 100)
                 processable.append(('name', name))
             
-            for key in ('banner', 'invite_splash', 'discovery_splash'):
-                try:
-                    value = kwargs.pop('key')
-                except KeyError:
-                    pass
-                else:
-                    value = preconvert_image_hash(value, key)
-                    processable.append((key, value))
-            
-            try:
-                icon = kwargs.pop('icon')
-            except KeyError:
-                if 'has_animated_icon' in kwargs:
-                    raise TypeError('`has_animated_icon` was passed without passing `icon`.')
-            else:
-                has_animated_icon = kwargs.pop('has_animated_icon', False)
-                icon, has_animated_icon = preconvert_animated_image_hash(icon, has_animated_icon, 'icon', 'has_animated_icon')
-                processable.append(('icon', icon))
-                processable.append(('has_animated_icon', has_animated_icon))
+            cls.icon.preconvert(kwargs, processable)
+            cls.banner.preconvert(kwargs, processable)
+            cls.invite_splash.preconvert(kwargs, processable)
+            cls.discovery_splash.preconvert(kwargs, processable)
             
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs}')
@@ -1140,19 +1126,22 @@ class Guild(DiscordEntity, immortal=True):
             guild.all_channel={}
             guild.all_role={}
             guild.available=False
-            guild.banner=0
+            guild.banner_hash = 0
+            guild.banner_type = ICON_TYPE_NONE
             guild.booster_count=-1
             guild.channels=weakposlist()
             guild.clients=[]
             guild.content_filter=ContentFilterLevel.disabled
             guild.description=None
-            guild.discovery_splash=0
+            guild.discovery_splash_hash = 0
+            guild.discovery_splash_type = ICON_TYPE_NONE
             guild.embed_channel=None
             guild.embed_enabled=False
             guild.emojis={}
             guild.features=[]
             guild.has_animated_icon=False
-            guild.icon=0
+            guild.icon_hash = 0
+            guild.icon_type = ICON_TYPE_NONE
             guild.id=guild_id
             guild.is_large=False
             guild.max_presences=25000
@@ -1168,7 +1157,8 @@ class Guild(DiscordEntity, immortal=True):
             guild.region=VoiceRegion.eu_central
             guild.roles=autoposlist()
             guild.rules_channel=None
-            guild.invite_splash=0
+            guild.invite_splash_hash = 0
+            guild.invite_splash_type = ICON_TYPE_NONE
             guild.system_channel=None
             guild.system_channel_flags=SystemChannelFlag.NONE
             guild.user_count=1
@@ -1190,11 +1180,11 @@ class Guild(DiscordEntity, immortal=True):
                 setattr(guild, *item)
         
         return guild
-
+    
     def __str__(self):
         """Returns the guild's name."""
         return self.name
-
+    
     def __repr__(self):
         """Returns the guild's representation."""
         return f'<{self.__class__.__name__} name={self.name!r}, id={self.id}{"" if self.clients else " (partial)"}>'
@@ -1236,14 +1226,6 @@ class Guild(DiscordEntity, immortal=True):
             return self.created_at.__format__('%Y.%m.%d-%H:%M:%S')
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
-    banner_url=property(URLS.guild_banner_url)
-    banner_url_as=URLS.guild_banner_url_as
-    icon_url=property(URLS.guild_icon_url)
-    icon_url_as=URLS.guild_icon_url_as
-    invite_splash_url=property(URLS.guild_invite_splash_url)
-    invite_splash_url_as=URLS.guild_invite_splash_url_as
-    discovery_splash_url=property(URLS.guild_discovery_splash_url)
-    discovery_splash_url_as=URLS.guild_discovery_splash_url_as
     embed_url=URLS.guild_embed_url
     widget_url=URLS.guild_widget_url
     
@@ -2123,7 +2105,7 @@ class Guild(DiscordEntity, immortal=True):
         +---------------------------+-------------------------------+
         | available                 | `bool`                        |
         +---------------------------+-------------------------------+
-        | banner                    | `int`                         |
+        | banner                    | ``Icon``                      |
         +---------------------------+-------------------------------+
         | booster_count             | `int`                         |
         +---------------------------+-------------------------------+
@@ -2131,7 +2113,7 @@ class Guild(DiscordEntity, immortal=True):
         +---------------------------+-------------------------------+
         | description               | `None` or `str`               |
         +---------------------------+-------------------------------+
-        | discovery_splash          | `int`                         |
+        | discovery_splash          | ``Icon``                      |
         +---------------------------+-------------------------------+
         | embed_channel             | `None` or ``ChannelText``     |
         +---------------------------+-------------------------------+
@@ -2139,11 +2121,9 @@ class Guild(DiscordEntity, immortal=True):
         +---------------------------+-------------------------------+
         | features                  | `list` of ``GuildFeature``    |
         +---------------------------+-------------------------------+
-        | has_animated_icon         | `bool`                        |
+        | icon                      | ``Icon``                      |
         +---------------------------+-------------------------------+
-        | icon                      | `int`                         |
-        +---------------------------+-------------------------------+
-        | invite_splash             | `int`                         |
+        | invite_splash             | ``Icon``                      |
         +---------------------------+-------------------------------+
         | max_presences             | `int`                         |
         +---------------------------+-------------------------------+
@@ -2198,36 +2178,10 @@ class Guild(DiscordEntity, immortal=True):
             old['name']=self.name
             self.name=name
         
-        icon=data.get('icon',None)
-        if icon is None:
-            icon=0
-            has_animated_icon=False
-        elif icon.startswith('a_'):
-            icon=int(icon[2:],16)
-            has_animated_icon=True
-        else:
-            icon=int(icon,16)
-            has_animated_icon=False
-        
-        if self.icon!=icon:
-            old['icon']=self.icon
-            self.icon=icon
-        
-        if self.has_animated_icon!=has_animated_icon:
-            old['has_animated_icon']=self.has_animated_icon
-            self.has_animated_icon=has_animated_icon
-        
-        invite_splash=data.get('splash',None)
-        invite_splash=0 if invite_splash is None else int(invite_splash,16)
-        if self.invite_splash!=invite_splash:
-            old['invite_splash']=self.invite_splash
-            self.invite_splash=invite_splash
-        
-        discovery_splash=data.get('discovery_splash',None)
-        discovery_splash=0 if discovery_splash is None else int(discovery_splash,16)
-        if self.discovery_splash!=discovery_splash:
-            old['discovery_splash']=self.discovery_splash
-            self.discovery_splash=discovery_splash
+        self._update_icon(data, old)
+        self._update_invite_splash(data, old)
+        self._update_discovery_splash(data, old)
+        self._update_banner(data, old)
         
         region=VoiceRegion.get(data['region'])
         if self.region is not region:
@@ -2378,12 +2332,6 @@ class Guild(DiscordEntity, immortal=True):
             elif self.vanity_code!=vanity_code:
                 old['vanity_code']=self.vanity_code
                 self.vanity_code=vanity_code
-
-        banner=data['banner']
-        banner=0 if banner is None else int(banner,16)
-        if self.banner!=banner:
-            old['banner']=self.banner
-            self.banner=banner
         
         max_users=data.get('max_members',250000)
         if self.max_users!=max_users:
@@ -2440,37 +2388,25 @@ class Guild(DiscordEntity, immortal=True):
         
         self.name=data['name']
         
-        icon=data.get('icon',None)
-        if icon is None:
-            self.icon=0
-            self.has_animated_icon=False
-        elif icon.startswith('a_'):
-            self.icon=int(icon[2:],16)
-            self.has_animated_icon=True
-        else:
-            self.icon=int(icon,16)
-            self.has_animated_icon=False
-        
-        invite_splash=data.get('splash',None)
-        self.invite_splash=0 if invite_splash is None else int(invite_splash,16)
-        
-        discovery_splash=data.get('discovery_splash',None)
-        self.discovery_splash=0 if discovery_splash is None else int(discovery_splash,16)
+        self._set_icon(data)
+        self._set_invite_splash(data)
+        self._set_discovery_splash(data)
+        self._set_banner(data)
         
         self.region=VoiceRegion.get(data['region'])
-            
+        
         self.afk_timeout=data['afk_timeout']
-                
+        
         self.verification_level=VerificationLevel.INSTANCES[data['verification_level']]
-
+        
         self.message_notification=MessageNotificationLevel.INSTANCES[data['default_message_notifications']]
-
+        
         self.mfa=MFA.INSTANCES[data['mfa_level']]
-
+        
         self.content_filter=ContentFilterLevel.INSTANCES[data.get('explicit_content_filter',0)]
 
         self.available=not data.get('unavailable',False)               
-
+        
         try:
             features=data['features']
         except KeyError:
@@ -2479,47 +2415,53 @@ class Guild(DiscordEntity, immortal=True):
             features=[GuildFeature.get(feature) for feature in features]
             features.sort()
             self.features=features
-            
+        
         system_channel_id=data['system_channel_id']
         if system_channel_id is None:
-            self.system_channel=None
+            system_channel=None
         else:
-            self.system_channel=self.all_channel[int(system_channel_id)]
-
+            system_channel=self.all_channel[int(system_channel_id)]
+        self.system_channel = system_channel
+        
         try:
-            self.system_channel_flags=SystemChannelFlag(data['system_channel_flags'])
+            system_channel_flags=SystemChannelFlag(data['system_channel_flags'])
         except KeyError:
-            self.system_channel_flags=SystemChannelFlag.ALL
+            system_channel_flags=SystemChannelFlag.ALL
+        self.system_channel_flags = system_channel_flags
         
         public_updates_channel_id=data.get('public_updates_channel_id',None)
         if public_updates_channel_id is None:
-            self.public_updates_channel=None
+            public_updates_channel=None
         else:
-            self.public_updates_channel=self.all_channel[int(public_updates_channel_id)]
+            public_updates_channel=self.all_channel[int(public_updates_channel_id)]
+        self.public_updates_channel = public_updates_channel
         
         self.owner=PartialUser(int(data['owner_id']))
         
         afk_channel_id=data['afk_channel_id']
         if afk_channel_id is None:
-            self.afk_channel=None
+            afk_channel=None
         else:
-            self.afk_channel=self.all_channel[int(afk_channel_id)]
+            afk_channel=self.all_channel[int(afk_channel_id)]
+        self.afk_channel = afk_channel
         
         self.widget_enabled=data.get('widget_enabled',False)
 
         widget_channel_id=data.get('widget_channel_id',None)
         if widget_channel_id is None:
-            self.widget_channel=None
+            widget_channel=None
         else:
-            self.widget_channel=self.all_channel[int(widget_channel_id)]
-
+            widget_channel=self.all_channel[int(widget_channel_id)]
+        self.widget_channel = widget_channel
+        
         self.embed_enabled=data.get('embed_enabled',False)
 
         embed_channel_id=data.get('embed_channel_id',None)
         if embed_channel_id is None:
-            self.embed_channel=None
+            embed_channel=None
         else:
-            self.embed_channel=self.all_channel[int(embed_channel_id)]
+            embed_channel=self.all_channel[int(embed_channel_id)]
+        self.embed_channel = embed_channel
         
         rules_channel_id=data.get('rules_channel_id',None)
         if rules_channel_id is None:
@@ -2530,9 +2472,6 @@ class Guild(DiscordEntity, immortal=True):
         self.description=data.get('description',None)
         
         self.vanity_code=data.get('vanity_url_code',None)
-            
-        banner=data['banner']
-        self.banner=0 if banner is None else int(banner,16)
         
         self.max_users=data.get('max_members',250000)
         
@@ -2737,20 +2676,23 @@ class GuildPreview(DiscordEntity):
     ----------
     description : `str` or `None`
         Description of the guild. The guild must have `PUBLIC` feature.
-    discovery_splash : `int`
-        The guild's discovery splashe's hash in `uint128`. Set as `0` if it is has no discovery splash. The guild must
-        have `DISCOVERABLE` feature to have discovery splash.
+    discovery_splash_hash : `int`
+        The guild's discovery splashe's hash in `uint128`. The guild must have `DISCOVERABLE` feature to have
+        discovery splash.
+    discovery_splash_type : ``Icontype``
+        The guild discovery splashe's type.
     emojis : `dict` of (`int`, ``Emoji``) items
         The emojis of the guild stored in `emoji_id` - `emoji` relation.
     features : `list` of ``GuildFeature``
         The guild's features.
-    has_animated_icon : `bool`
-        Whether the guild has animated `.icon`.
-    icon : `int`
-        The guild's icon's hash in `uint128`. Set as `0` if it is has no icon.
-    invite_splash : `int`
-        The guild's invite splash's hash in `uint128`. Set as `0` if it is has no invite splash. The guild must have
-        `INVITE_SPLASH` feature.
+    icon_hash : `int`
+        The guild's icon's hash in `uint128`.
+    icon_type : ``IconType``
+        The guild's icon's type.
+    invite_splash_hash : `int`
+        The guild's invite splashe's hash in `uint128`. The guild must have `INVITE_SPLASH` feature.
+    invite_splash_type : ``IconType``
+        the guild's invite splashe's type.
     name : `str`
         The name of the guild.
     online_count : `int`
@@ -2758,8 +2700,11 @@ class GuildPreview(DiscordEntity):
     user_count : `int`
         Approximate amount of users at the guild.
     """
-    __slots__ = ('description', 'discovery_splash', 'emojis', 'features', 'has_animated_icon', 'icon', 'invite_splash',
-        'name', 'online_count', 'user_count', )
+    __slots__ = ('description', 'emojis', 'features', 'name', 'online_count', 'user_count', )
+    
+    icon = IconSlot('icon', 'icon', URLS.guild_icon_url, URLS.guild_icon_url_as)
+    invite_splash = IconSlot('invite_splash', 'splash', URLS.guild_invite_splash_url, URLS.guild_invite_splash_url_as)
+    discovery_splash = IconSlot('discovery_splash', 'discovery_splash', URLS.guild_discovery_splash_url, URLS.guild_discovery_splash_url_as)
     
     def __init__(self, data):
         """
@@ -2772,8 +2717,7 @@ class GuildPreview(DiscordEntity):
         """
         self.description = data.get('description',None)
         
-        discovery_splash=data.get('discovery_splash',None)
-        self.discovery_splash=0 if discovery_splash is None else int(discovery_splash,16)
+        self._set_discovery_splash(data)
         
         emojis={}
         self.emojis=emojis
@@ -2799,16 +2743,7 @@ class GuildPreview(DiscordEntity):
             
             features.sort()
         
-        icon=data.get('icon',None)
-        if icon is None:
-            self.icon=0
-            self.has_animated_icon=False
-        elif icon.startswith('a_'):
-            self.icon=int(icon[2:],16)
-            self.has_animated_icon=True
-        else:
-            self.icon=int(icon,16)
-            self.has_animated_icon=False
+        self._set_icon(data)
         
         self.id=int(data['id'])
         
@@ -2816,17 +2751,9 @@ class GuildPreview(DiscordEntity):
         
         self.online_count=data['approximate_presence_count']
         
-        invite_splash=data.get('splash',None)
-        self.invite_splash=0 if invite_splash is None else int(invite_splash,16)
+        self._set_invite_splash(data)
         
         self.user_count=data['approximate_member_count']
-    
-    icon_url=property(URLS.guild_icon_url)
-    icon_url_as=URLS.guild_icon_url_as
-    invite_splash_url=property(URLS.guild_invite_splash_url)
-    invite_splash_url_as=URLS.guild_invite_splash_url_as
-    discovery_splash_url=property(URLS.guild_discovery_splash_url)
-    discovery_splash_url_as=URLS.guild_discovery_splash_url_as
     
     def __str__(self):
         """Returns the respective guild's name."""
@@ -2885,3 +2812,4 @@ del UserBase
 del ratelimit
 del DiscordEntity
 del ReverseFlagBase
+del IconSlot

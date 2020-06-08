@@ -11,6 +11,7 @@ from .webhook import Webhook
 from .role import PermOW
 from .integration import Integration
 from .guild import SystemChannelFlag
+from .bases import Icon
 
 class AuditLogEvent(object):
     """
@@ -881,7 +882,7 @@ def transform_nothing(name,data):
     change.after=data.get('new_value',None)
     return change
 
-def transform_avatar(name, data):
+def tranfrom_icon(name, data):
     change=AuditLogChange()
     if name == 'splash_hash':
         name = 'invite_splash'
@@ -889,31 +890,9 @@ def transform_avatar(name, data):
         name = name[:-5]
     change.attr = name
     
-    avatar=data.get('old_value',None)
-    if avatar is None:
-        avatar=0
-        has_animated_avatar=False
-    elif avatar.startswith('a_'):
-        avatar=int(avatar[2:],16)
-        has_animated_avatar=True
-    else:
-        avatar=int(avatar,16)
-        has_animated_avatar=False
+    change.before = Icon.from_base16_hash(data.get('old_value'))
     
-    change.before=(has_animated_avatar,avatar)
-    
-    avatar=data.get('new_value',None)
-    if avatar is None:
-        avatar=0
-        has_animated_avatar=False
-    elif avatar.startswith('a_'):
-        avatar=int(avatar[2:],16)
-        has_animated_avatar=True
-    else:
-        avatar=int(avatar,16)
-        has_animated_avatar=False
-    
-    change.after=(has_animated_avatar,avatar)
+    change.after  = Icon.from_base16_hash(data.get('new_value'))
     
     return change
 
@@ -1125,8 +1104,8 @@ TRANSFORMERS = {
     'afk_channel_id'        : transform_channel,
     'allow'                 : transform_permission,
     'application_id'        : transform_snowfalke,
-    'avatar_hash'           : transform_avatar,
-    'banner_hash'           : transform_avatar,
+    'avatar_hash'           : tranfrom_icon,
+    'banner_hash'           : tranfrom_icon,
     # bitrate (int)
     'channel_id'            : transform_channel,
     # code (str)
@@ -1135,13 +1114,13 @@ TRANSFORMERS = {
     # description (None or str)
     'default_message_notifications':transform_message_notification,
     'deny'                  : transform_permission,
-    'discovery_splash_hash' : transform_avatar,
+    'discovery_splash_hash' : tranfrom_icon,
     # enable_emoticons (bool)
     # expire_behavior (int)
     # expire_grace_period (int)
     'explicit_content_filter':transform_content_filter,
     'hoist'                 : transform_bool__separated,
-    'icon_hash'             : transform_avatar,
+    'icon_hash'             : tranfrom_icon,
     'id'                    : transform_snowfalke,
     'inviter_id'            : transform_user,
     # mentionable (bool)
@@ -1161,7 +1140,7 @@ TRANSFORMERS = {
     'rate_limit_per_user'   : transform_int__slowmode,
     'region'                : transform_region,
     'rules_channel_id'      : transform_channel,
-    'splash_hash'           : transform_avatar,
+    'splash_hash'           : tranfrom_icon,
     'system_channel_id'     : transform_channel,
     'system_channel_flags'  : transform_system_channel_flags,
     # temporary (bool)
@@ -1174,7 +1153,7 @@ TRANSFORMERS = {
     # widget_enabled (bool)
         }
 
-del transform_avatar
+del tranfrom_icon
 del transform_bool__separated
 del transform_channel
 del transform_color
@@ -1223,9 +1202,9 @@ class AuditLogChange(object):
     +---------------------------+-------------------------------------------+
     | application_id            | `None` or `int`                           |
     +---------------------------+-------------------------------------------+
-    | avatar                    | `None` or `tuple` (`bool`, `int`)         |
+    | avatar                    | `None` or ``Icon``                        |
     +---------------------------+-------------------------------------------+
-    | bannner                   | `None` or `tuple` (`bool`, `int`)         |
+    | bannner                   | `None` or ``Icon``                        |
     +---------------------------+-------------------------------------------+
     | bitrate                   | `None` or `int`                           |
     +---------------------------+-------------------------------------------+
@@ -1245,7 +1224,7 @@ class AuditLogChange(object):
     +---------------------------+-------------------------------------------+
     | deny                      | `None` or ``Permission``                  |
     +---------------------------+-------------------------------------------+
-    | discovery_splash          | `None` or `tuple` (`bool`, `int`)         |
+    | discovery_splash          | `None` or ``Icon``                        |
     +---------------------------+-------------------------------------------+
     | enable_emoticons          | `None` or `bool`                          |
     +---------------------------+-------------------------------------------+
@@ -1253,11 +1232,11 @@ class AuditLogChange(object):
     +---------------------------+-------------------------------------------+
     | expire_grace_period       | `None` or `int`                           |
     +---------------------------+-------------------------------------------+
-    | icon                      | `None` or `tuple` (`bool`, `int`)         |
+    | icon                      | `None` or ``Icon``                        |
     +---------------------------+-------------------------------------------+
     | id                        | `None` or `int`                           |
     +---------------------------+-------------------------------------------+
-    | invite_splash             | `None` or `tuple` (`bool`, `int`)         |
+    | invite_splash             | `None` or ``Icon``                        |
     +---------------------------+-------------------------------------------+
     | inviter                   | `None`, ``User`` or ``Client``            |
     +---------------------------+-------------------------------------------+

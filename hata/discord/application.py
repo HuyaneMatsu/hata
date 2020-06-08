@@ -1,7 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('Application', 'Team', 'TeamMember', 'TeamMembershipState', )
 
-from .bases import DiscordEntity
+from .bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
 from .http import URLS
 from .user import ZEROUSER, User
 from .guild import PartialGuild
@@ -21,15 +21,19 @@ class Application(DiscordEntity):
     bot_require_code_grant : `bool`
         Whether the application's bot will only join a guild, when completing the full `oauth2` code grant flow.
         Defaults to `False`.
-    cover : `int`
+    cover_hash : `int`
         The application's store cover image's hash in `uint128`. If the application is sold at Discord, this image
-        will be used at the store. Defaults to `0`.
+        will be used at the store.
+    cover_type : `IconType`
+        The application's store cover image's type.
     description : `str`
         The description of the application. Defaults to empty string.
     guild : `None` / ``Guild``
         If the application is a game sold on Discord, this field links it's respective guild. Defaults to `None`.
-    icon : `int`
-        The application's icon's hash as `uint128`. Defaults to `0`.
+    icon_hash : `int`
+        The application's icon's hash as `uint128`.
+    icon_type : `IconType`
+        The application's icon's type.
     id : `int`
         The application's id. Defaults to `0`. Meanwhile set as `0`, hashing the application will raise `RuntimeError`.
     name : `str`
@@ -50,8 +54,11 @@ class Application(DiscordEntity):
     verify_key : `str`
         A base64 encoded key for the GameSDK's `GetTicket`. Defaults to empty string.
     """
-    __slots__ = ('bot_public', 'bot_require_code_grant', 'cover', 'description', 'guild', 'icon', 'name', 'owner',
-        'primary_sku_id', 'rpc_origins', 'slug', 'summary', 'verify_key',)
+    __slots__ = ('bot_public', 'bot_require_code_grant', 'description', 'guild', 'name', 'owner', 'primary_sku_id',
+        'rpc_origins', 'slug', 'summary', 'verify_key',)
+    
+    cover = IconSlot('cover', 'cover_image', URLS.application_cover_url, URLS.application_cover_url_as, add_updater=False)
+    icon = IconSlot('icon', 'icon', URLS.application_icon_url, URLS.application_icon_url_as, add_updater=False)
     
     def __init__(self, data=None):
         """
@@ -117,7 +124,6 @@ class Application(DiscordEntity):
         """
         self.id=0
         self.name=''
-        self.icon=0
         self.description=''
         self.rpc_origins=[]
         self.bot_public=False
@@ -128,7 +134,10 @@ class Application(DiscordEntity):
         self.guild=None
         self.primary_sku_id=0
         self.slug=None
-        self.cover=0
+        self.cover_hash = 0
+        self.cover_type = ICON_TYPE_NONE
+        self.icon_hash = 0
+        self.icon_type = ICON_TYPE_NONE
     
     def __call__(self, data):
         """
@@ -141,9 +150,6 @@ class Application(DiscordEntity):
         """
         self.id=int(data['id'])
         self.name=data['name']
-        
-        icon=data.get('icon')
-        self.icon=0 if icon is None else int(icon,16)
         
         self.description=data['description']
         
@@ -169,13 +175,8 @@ class Application(DiscordEntity):
         
         self.slug=data.get('slug',None)
         
-        cover=data.get('cover_image')
-        self.cover=0 if cover is None else int(cover,16)
-        
-    icon_url=property(URLS.application_icon_url)
-    icon_url_as=URLS.application_icon_url_as
-    cover_url=property(URLS.application_cover_url)
-    cover_url_as=URLS.application_cover_url_as
+        self._set_cover(data)
+        self._set_icon(data)
 
 class Team(DiscordEntity, immortal=True):
     """
@@ -185,8 +186,10 @@ class Team(DiscordEntity, immortal=True):
     ----------
     id : `int`
         The unique identificator number of the team.
-    icon : `int`
+    icon_hash : `int`
         The team's icon's hash as `uint128`. Defaults to `0`.
+    icon_type : `IconType`
+        The team's icon's type.
     members : `list` of `TeamMember`
         The members of the team. Includes invited members as well.
     name : `str`
@@ -198,7 +201,10 @@ class Team(DiscordEntity, immortal=True):
     -----
     Team objects support weakreferencig.
     """
-    __slots__ = ('icon', 'members', 'name', 'owner',)
+    __slots__ = ('members', 'name', 'owner',)
+    
+    icon = IconSlot('icon', 'icon', URLS.team_icon_url, URLS.team_icon_url_as, add_updater = False)
+    
     def __new__(cls, data):
         """
         Creates a new ``Team`` instance from the data received from Discord.
@@ -222,8 +228,7 @@ class Team(DiscordEntity, immortal=True):
         #update every attribute
         team.name=data['name']
         
-        icon=data.get('icon')
-        team.icon=0 if icon is None else int(icon,16)
+        team._set_icon(data)
         
         team.members = members = [TeamMember(team_member_data) for team_member_data in data['members']]
         owner_id=int(data['owner_user_id'])
@@ -237,9 +242,6 @@ class Team(DiscordEntity, immortal=True):
         
         team.owner = user
         return team
-    
-    icon_url=property(URLS.team_icon_url)
-    icon_url_as=URLS.team_icon_url_as
     
     @property
     def invited(self):
@@ -272,7 +274,7 @@ class Team(DiscordEntity, immortal=True):
     def __repr__(self):
         """Returns the team's representation."""
         return f'<{self.__class__.__name__} owner={self.owner.full_name}, total count={len(self.members)}>'
-    
+
 class TeamMember(object):
     """
     Represents a team member of a ``Team``.
@@ -394,3 +396,5 @@ TeamMembershipState.INVITED     = TeamMembershipState(1,'INVITED')
 TeamMembershipState.ACCEPTED    = TeamMembershipState(2,'ACCEPTED')
 
 del URLS
+del DiscordEntity
+del IconSlot

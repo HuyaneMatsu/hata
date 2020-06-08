@@ -3,13 +3,12 @@ __all__ = ('EXTENSION_LOADER', 'ExtensionError', 'ExtensionLoader', )
 
 import sys
 from io import StringIO
-from weakref import WeakValueDictionary
 from importlib.util import find_spec, module_from_spec
 from importlib import reload as reload_module
 from threading import current_thread
 
 from ...backend.eventloop import EventThread
-from ...backend.dereaddons_local import alchemy_incendiary, HybridValueDictionary
+from ...backend.dereaddons_local import alchemy_incendiary, HybridValueDictionary, WeakValueDictionary
 from ...backend.futures import iscoroutinefunction as is_coro, Task
 from ...backend.analyzer import CallableAnalyzer
 

@@ -2,6 +2,7 @@
 from .activity import *
 from .application import *
 from .audit_logs import *
+from .bases import *
 from .channel import *
 from .client import *
 from .client_core import *
@@ -30,6 +31,7 @@ __all__ = (
     *activity.__all__           ,
     *application.__all__        ,
     *audit_logs.__all__         ,
+    *bases.__all__              ,
     *channel.__all__            ,
     *client.__all__             ,
     *client_core.__all__        ,

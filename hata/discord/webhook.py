@@ -3,9 +3,9 @@ __all__ = ('Webhook', 'WebhookRepr', 'WebhookType')
 
 from .http import URLS
 from .user import User, ZEROUSER, USERS, UserBase
-from .exceptions import DiscordException
-from .preconverters import preconvert_snowflake, preconvert_str, preconvert_preinstanced_type, \
-    preconvert_animated_image_hash
+from .exceptions import DiscordException, ERROR_CODES
+from .preconverters import preconvert_snowflake, preconvert_str, preconvert_preinstanced_type
+from .bases import ICON_TYPE_NONE, Icon
 
 from . import ratelimit
 
@@ -46,17 +46,17 @@ def PartialWebhook(webhook_id, token, type_=WebhookType.bot, channel=None):
     except KeyError:
         webhook=object.__new__(Webhook)
         
-        webhook.id      = webhook_id
+        webhook.id = webhook_id
         
-        webhook.name    = ''
-        webhook.discriminator=0
-        webhook.avatar  = 0
-        webhook.has_animated_avatar=False
+        webhook.name = ''
+        webhook.discriminator = 0
+        webhook.avatar_value = 0
+        webhook.avatar_type = ICON_TYPE_NONE
 
-        webhook.user    = ZEROUSER
+        webhook.user = ZEROUSER
         webhook.channel = channel
         
-        webhook.type=type_
+        webhook.type = type_
         
         USERS[webhook_id]=webhook
     
@@ -123,16 +123,7 @@ class Webhook(UserBase):
 
         self.discriminator=0
 
-        avatar=data.get('avatar')
-        if avatar is None:
-            self.avatar=0
-            self.has_animated_avatar=False
-        elif avatar.startswith('a_'):
-            self.avatar=int(avatar[2:],16)
-            self.has_animated_avatar=True
-        else:
-            self.avatar=int(avatar,16)
-            self.has_animated_avatar=False
+        self._set_avatar(data)
             
         try:
             user=data['user']
@@ -161,16 +152,7 @@ class Webhook(UserBase):
                     value = preconvert_str(value, key, *details)
                     processable.append((key, value))
             
-            try:
-                avatar = kwargs.pop('avatar')
-            except KeyError:
-                if 'has_animated_avatar' in kwargs:
-                    raise TypeError('`has_animated_avatar` was passed without passing `avatar`.')
-            else:
-                has_animated_avatar = kwargs.pop('has_animated_avatar', False)
-                avatar, has_animated_avatar = preconvert_animated_image_hash(avatar, has_animated_avatar, 'avatar', 'has_animated_avatar')
-                processable.append(('avatar', avatar))
-                processable.append(('has_animated_avatar',has_animated_avatar))
+            cls.avatar.precovert(kwargs, processable)
             
             for key, type_ in (
                     ('user', (User, Client,)),
@@ -208,8 +190,8 @@ class Webhook(UserBase):
             webhook.token   = ''
             webhook.name    = ''
             webhook.discriminator=0
-            webhook.avatar  = 0
-            webhook.has_animated_avatar=False
+            webhook.avatar_value = 0
+            webhook.avatar_type = ICON_TYPE_NONE
             webhook.user    = ZEROUSER
             webhook.channel = None
             webhook.type    = WebhookType.bot
@@ -249,44 +231,40 @@ class Webhook(UserBase):
     urlpattern=URLS.webhook_urlpattern
     
     @classmethod
-    async def _from_follow_data(cls,data,source_channel,target_channel,client):
+    async def _from_follow_data(cls, data, source_channel, target_channel, client):
         webhook_id=int(data['webhook_id'])
         
         guild=source_channel.guild
         if guild is None:
             try:
                 extra_data = await client.http.webhook_get(webhook_id)
-            except DiscordException:
-                #not lucky
-                name=''
-                avatar=0
-                has_animated_avatar=False
+            except DiscordException as err:
+                if err.code == ERROR_CODES.unknown_webhook:
+                    #not lucky
+                    name = ''
+                    avatar_type = ICON_TYPE_NONE
+                    avatar_hash = 0
+                else:
+                    raise
+            
             else:
-                name=data['name']
+                name = extra_data['name']
                 if name is None:
                     name=''
         
-                avatar=data.get('avatar')
-                if avatar is None:
-                    avatar=0
-                    has_animated_avatar=False
-                elif avatar.startswith('a_'):
-                    avatar=int(avatar[2:],16)
-                    has_animated_avatar=True
-                else:
-                    avatar=int(avatar,16)
-                    has_animated_avatar=False
+                avatar_type, avatar_hash = Icon.from_base16_hash(data.get('avatar'))
         else:
-            avatar      = guild.icon
-            name        = f'{guild.name} #{source_channel.name}'
-            has_animated_avatar=False
-            
+            # TODO: can it be animated if the guild's icon is animated?
+            avatar_hash = guild.icon_hash
+            avatar_type = guild.icon_type
+            name = f'{guild.name} #{source_channel.name}'
+        
         webhook=object.__new__(cls)
         webhook.id          = webhook_id
         webhook.name        = name
         webhook.discriminator=0
-        webhook.avatar      = avatar
-        webhook.has_animated_avatar=has_animated_avatar #will be always False
+        webhook.avatar_hash = avatar_hash
+        webhook.avatar_type = avatar_type
         webhook.channel     = target_channel
         webhook.token       = ''
         webhook.user        = client

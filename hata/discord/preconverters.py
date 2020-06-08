@@ -1,60 +1,6 @@
 # -*- coding: utf-8 -*-
 from .color import Color
 
-def preconvert_image_hash(value, name):
-    if value is None:
-        return 0
-    
-    if type(value) is int:
-        pass
-    elif isinstance(value,int):
-        value = int(value)
-    elif isinstance(value,str):
-        try:
-            value = int(value,16)
-        except ValueError as err:
-            raise ValueError(f'Cannot convert `{name}` value: {value!r} to `int` with base of 16.') from err
-    else:
-        raise TypeError(f'`{name}` can be `NoneType`, `str` or `int` type, got {value.__class__.__name__}.')
-    
-    if value<0 or value.bit_length()>128:
-        raise ValueError(f'`{name}` cannot be negative or longer than 128 bits, got {value!r}.')
-        
-    return value
-
-def preconvert_animated_image_hash(value, animated, name_1, name_2):
-    if (type(animated) is not bool):
-        # Edge case, animated is 0 or 1 ?
-        if isinstance(animated,int) and (animated in (0,1)):
-            animated = bool(animated)
-        else:
-            raise TypeError(f'`{name_2}` can be type `bool`, got {animated.__class__.__name__}.')
-    
-    if value is None:
-        return 0, False
-    
-    if type(value) is int:
-        pass
-    elif isinstance(value,int):
-        value = int(value)
-    elif isinstance(value,str):
-        if value.startswith('a_'):
-            value = value[2:]
-            animated = True
-        
-        try:
-            value = int(value,16)
-        except ValueError as err:
-            raise ValueError(f'Cannot convert `{name_1}` value: {value!r} to `int` with base of 16.') from err
-    
-    else:
-        raise TypeError(f'`{name_1}` can be `NoneType`, `str` or `int` type, got {value.__class__.__name__}.')
-    
-    if value<0 or value.bit_length()>128:
-        raise ValueError(f'`{name_1}` cannot be negative or longer than 128 bits, got {value!r}.')
-    
-    return value, animated
-
 def preconvert_snowflake(snowflake, name):
     if (type(snowflake) is int):
         pass

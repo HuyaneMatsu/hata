@@ -1,5 +1,10 @@
 ﻿# -*- coding: utf-8 -*-
+__all__ = ('ICON_TYPE_ANIMATED', 'ICON_TYPE_NONE', 'ICON_TYPE_STATIC', 'Icon', 'IconType', )
+
+import sys
+
 from ..backend.dereaddons_local import _spaceholder
+
 from .others import id_to_time
 
 class DiscordEntityMeta(type):
@@ -29,7 +34,7 @@ class DiscordEntityMeta(type):
         
         Notes
         -----
-        The creates instances are always slotted.
+        The created instances are always slotted.
         
         When more classes are inherited then use `__slots` at the secondary classes for adding additional member
         descriptors.
@@ -57,7 +62,9 @@ class DiscordEntityMeta(type):
                 final_slots.update(getattr(parent,f'_{parent.__name__}__slots',()))
                 index +=1
         
-        final_slots.update(class_attributes.get('__slots__',()))
+        slots = class_attributes.get('__slots__',)
+        if (slots is not None) and slots:
+            final_slots.update(slots)
         
         if immortal:
             for parent in class_parents:
@@ -65,6 +72,31 @@ class DiscordEntityMeta(type):
                     break
             else:
                 final_slots.add('__weakref__')
+        
+        if 'id' not in class_attributes:
+            final_slots.add('id')
+        
+        slotters = []
+        for attribute_item in class_attributes.items():
+            attribute_value = attribute_item[1]
+            
+            # Ignroe types.
+            if isinstance(attribute_value, type):
+                continue
+            
+            # Check the type, whether it has the correct method.
+            set_slot = getattr(type(attribute_value), '__set_slot__', None)
+            if set_slot is None:
+                continue
+            
+            # Queue up for future applications.
+            slotters.append(attribute_item)
+            continue
+        
+        # Apply slotters
+        while slotters:
+            attribute_name, slotter = slotters.pop()
+            type(slotter).__set_slot__(slotter, attribute_name, class_attributes, final_slots)
         
         class_attributes['__slots__'] = tuple(sorted(final_slots))
         
@@ -74,16 +106,22 @@ class DiscordEntity(object, metaclass = DiscordEntityMeta):
     """
     Base class for Discord entities.
     
-    Attributes
-    ----------
-    id : `int`
-        The entity's unique identificator number.
-    
     Notes
     -----
     Inherit it with passing `immortal = True` to make the subclass weakreferable.
     """
-    __slots__ = ('id', )
+    @property
+    def id(self):
+        """
+        Returns the discord entity's unique identificator number
+        
+        Returns
+        -------
+        id . `int`
+        """
+        return 0
+    
+    __slots__ = ()
     
     @property
     def created_at(self):
@@ -678,3 +716,489 @@ class ReverseFlagBase(FlagBase, baseclass=True):
                 new|=(1<<shift)
         
         return int.__new__(type(self),new)
+
+class IconType(object):
+    """
+    Represents a Discord icon's type.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the icon type.
+    value : `int`
+        The identificator value the icon type.
+        
+    Class Attributes
+    ----------------
+    Every predefind icon type can be accessed as class attribute as well:
+    
+    +-----------------------+---------------+-------+
+    | Class attribute name  | name          | value |
+    +=======================+===============+=======+
+    | NONE                  | NONE          | 0     |
+    +-----------------------+---------------+-------+
+    | STATIC                | STATIC        | 1     |
+    +-----------------------+---------------+-------+
+    | ANIMATED              | ANIMATED      | 2     |
+    +-----------------------+---------------+-------+
+    """
+    __slots__ = ('name', 'value', )
+    
+    def __init__(self, name, value):
+        """
+        Creates a new icon type with the given name and value.
+        
+        Parameters
+        ----------
+        name : `str`
+            The icon type's name.
+        value : `int`
+            The icon type's identificator value.
+        """
+        self.name = name
+        self.value = value
+    
+    def __str__(self):
+        """Returns the name of teh avatar type."""
+        return self.name
+    
+    def __int__(self):
+        """Returns the identificator value of the icon type."""
+        return self.value
+    
+    def __bool__(self):
+        """Returns whether the icon's type is set."""
+        if self.value:
+            boolean = True
+        else:
+            boolean = False
+        
+        return boolean
+    
+    def __repr__(self):
+        """Returns the icon type's representation."""
+        return f'{self.__class__.__name__}(name={self.name!r}, value={self.value!r})'
+    
+    def __hash__(self):
+        """Returns the icon type's hash, what equals to it's value."""
+        return self.value
+    
+    def __gt__(self, other):
+        """Returns whether this icon type's value is greater than the other's."""
+        if type(self) is type(other):
+            return self.value > other.value
+        
+        return NotImplemented
+    
+    def __ge__(self, other):
+        """Returns whether this icon type's value is greater or equal to the other's."""
+        if type(self) is type(other):
+            return self.value >= other.value
+        
+        return NotImplemented
+    
+    def __eq__(self, other):
+        """Returns whether this icon type's value is equal to the other's."""
+        if type(self) is type(other):
+            return self.value == other.value
+        
+        return NotImplemented
+    
+    def __ne__(self, other):
+        """Returns whether this icon type's value is not equal to the other's."""
+        if type(self) is type(other):
+            return self.value != other.value
+        
+        return NotImplemented
+    
+    def __le__(self, other):
+        """Returns whether this icon type's value is less or equal to the other's."""
+        if type(self) is type(other):
+            return self.value <= other.value
+        
+        return NotImplemented
+    
+    def __lt__(self, other):
+        """Returns whether this icon type's value is less than the other's."""
+        if type(self) is type(other):
+            return self.value < other.value
+        
+        return NotImplemented
+    
+    NONE = NotImplemented
+    STATIC = NotImplemented
+    ANIMATED = NotImplemented
+
+IconType.NONE     = ICON_TYPE_NONE     = IconType('NONE'     , 0 ,)
+IconType.STATIC   = ICON_TYPE_STATIC   = IconType('STATIC'   , 1 ,)
+IconType.ANIMATED = ICON_TYPE_ANIMATED = IconType('ANIMATED' , 2 ,)
+
+class Icon(object):
+    """
+    Represents a Discord Icon.
+    
+    Attributes
+    ----------
+    hash : `int`
+        The icon's hash value.
+    type : ``IconType``
+        The icon's type.
+    """
+    __slots__ = ('type', 'hash',)
+    
+    def __init__(self, icon_type, icon_hash):
+        """
+        Creates a new ``Icon`` object with teh given attributes.
+        
+        Parameters
+        ----------
+        icon_type : ``IconType``
+            The icon's type.
+        icon_hash : `int`
+            The icon's hash value.
+        """
+        self.type = icon_type
+        self.hash = icon_hash
+        
+    @property
+    def as_base16_hash(self):
+        """
+        Returns the discord side representtaion of the icon.
+        
+        Returns
+        -------
+        icon : `str` or `None`
+        """
+        icon_type = self.type
+        if icon_type is ICON_TYPE_NONE:
+            icon = None
+        else:
+            icon = self.hash.__format__('0>32x')
+            if icon_type is ICON_TYPE_ANIMATED:
+                icon = 'a_'+icon
+        
+        return icon
+    
+    hash_info_width = sys.hash_info.width
+    if hash_info_width == 32:
+        def __hash__(self):
+            """Returns the icon's hash."""
+            icon_type = self.type
+            if icon_type is ICON_TYPE_NONE:
+                hash_value = 0
+            else:
+                icon_hash = self.hash
+                hash_value = (icon_hash>>96)^((icon_hash>>64)&((1<<32)-1))^((icon_hash>>32)&((1<<32)-1))^(icon_hash&((1<<32)-1))
+                if icon_type is ICON_TYPE_ANIMATED:
+                    hash_value ^= ((1<<32)-1)
+            
+            return hash_value
+    
+    elif hash_info_width == 64:
+        def __hash__(self):
+            """Returns the icon's hash."""
+            icon_type = self.type
+            if icon_type is ICON_TYPE_NONE:
+                hash_value = 0
+            else:
+                icon_hash = self.hash
+                hash_value = (icon_hash>>64)^(icon_hash&((1<<64)-1))
+                if icon_type is ICON_TYPE_ANIMATED:
+                    hash_value ^= ((1<<64)-1)
+            return hash_value
+    
+    else:
+        def __hash__(self):
+            """Returns the icon's hash."""
+            icon_type = self.type
+            if icon_type is ICON_TYPE_NONE:
+                hash_value = 0
+            else:
+                hash_value = self.hash
+                if icon_type is ICON_TYPE_ANIMATED:
+                    hash_value ^= ((1<<128)-1)
+            
+            return hash_value
+    
+    del hash_info_width
+    
+    def __eq__(self, other):
+        """Returns whether the two icons are equal."""
+        if (type(self) is not type(other)):
+            return NotImplemented
+        
+        icon_type = self.type
+        if (icon_type is not other.type):
+            return False
+        
+        if icon_type is ICON_TYPE_NONE:
+            return True
+        
+        if self.hash == other.hash:
+            return True
+        
+        return False
+    
+    def __repr__(self):
+        """Returns the represnetation of the icon."""
+        return f'{self.__class__.__name__}(icon_type=ICON_TYPE_{self.type.name}, icon_hash={self.hash})'
+    
+    def __iter__(self):
+        """Unpacks the icon."""
+        yield self.type
+        yield self.hash
+    
+    def __len__(self):
+        """Lenght hinter (for unpacking if needed)."""
+        return 2
+    
+    @classmethod
+    def from_base16_hash(cls, icon):
+        """
+        Converts a discord icon hash value to an ``Icon`` object.
+        
+        Parameters
+        ----------
+        icon : `None` or `str`
+        
+        Returns
+        -------
+        self : ``Icon``
+        """
+        if icon is None:
+            icon_type = ICON_TYPE_NONE
+            icon_hash = 0
+        else:
+            if icon.startswith('a_'):
+                icon = icon[2:]
+                icon_type = ICON_TYPE_ANIMATED
+            else:
+                icon_type = ICON_TYPE_STATIC
+            icon_hash = int(icon, 16)
+        
+        self = object.__new__(cls)
+        self.type = icon_type
+        self.hash = icon_hash
+        return self
+
+
+class IconSlot(object):
+    """
+    Interal icon slotter to represent an icon of a discord entitiy.
+    
+    Attributes
+    ----------
+    internal_name : `str`
+        The internal name of the icon.
+    discord_side_name : `str`
+        The discord side name of the icon.
+    added_instance_atttributes : `tuple` of `str`
+        The added instance attribute's name by the icon slot.
+    added_class_attributes : `list` of `tuple` (`str`, `Any`)
+        The added class attributes by the icon slot.
+    
+    Class Attributes
+    ----------------
+    _compile_globals : `dict` of (`str`, `Any`)
+        Compile time globals for the generated functions.
+    """
+    __slots__ = ('internal_name', 'discord_side_name', 'added_instance_atttributes', 'added_class_attributes')
+    
+    _compile_globals = {
+        'ICON_TYPE_NONE'     : ICON_TYPE_NONE     ,
+        'ICON_TYPE_STATIC'   : ICON_TYPE_STATIC   ,
+        'ICON_TYPE_ANIMATED' : ICON_TYPE_ANIMATED ,
+        'Icon'               : Icon               ,
+            }
+    
+    def __new__(cls, internal_name, discord_side_name, url_property, url_as_method, add_updater=True):
+        """
+        Creates an ``IconSlot`` with the given parameters.
+        
+        Parameters
+        ----------
+        internal_name : `str`
+            The internal name of the icon.
+        discord_side_name : `str`
+            The discord side name of the icon.
+        url_property : `function`
+            A function what will be used as a property when accessing the icon' url.
+        url_as_method : `function`
+            A function what will be used a method when creating a formatted icon url.
+        add_updater : `bool`, Optional
+            Whether the icon slot should add updater methods to the class. Defaults to `True`.
+        
+        Returns
+        -------
+        self : ``IconSlot``
+        """
+        added_instance_atttribute_name_hash = internal_name+'_hash'
+        added_internal_attribute_name_type  = internal_name+'_type'
+        
+        added_class_attributes = [
+            (f'{internal_name}_url'    , property(url_property) ),
+            (f'{internal_name}_url_as' , url_as_method          ),
+                ]
+        
+        locals_ = {}
+        func_name = f'_set_{internal_name}'
+        exec(compile((
+            f'def {func_name}(self, data):\n'
+            f'    icon = data.get({discord_side_name!r})\n'
+            f''
+            f'    if icon is None:\n'
+            f'        icon_type = ICON_TYPE_NONE\n'
+            f'        icon_hash = 0\n'
+            f'    else:\n'
+            f'        if icon.startswith(\'a_\'):\n'
+            f'            icon = icon[2:]\n'
+            f'            icon_type = ICON_TYPE_ANIMATED\n'
+            f'        else:\n'
+            f'            icon_type = ICON_TYPE_STATIC\n'
+            f'        icon_hash = int(icon, 16)\n'
+            f''
+            f'    self.{added_internal_attribute_name_type} = icon_type\n'
+            f'    self.{added_instance_atttribute_name_hash} = icon_hash\n'
+                ),f'<{cls.__name__}>', 'exec', optimize=2), cls._compile_globals, locals_)
+        
+        added_class_attributes.append((func_name, locals_[func_name]),)
+        
+        if add_updater:
+            locals_ = {}
+            func_name = f'_update_{internal_name}'
+            exec(compile((
+                f'def {func_name}(self, data, old):\n'
+                f'    icon = data.get({discord_side_name!r})\n'
+                f''
+                f'    if icon is None:\n'
+                f'        icon_type = ICON_TYPE_NONE\n'
+                f'        icon_hash = 0\n'
+                f'    else:\n'
+                f'        if icon.startswith(\'a_\'):\n'
+                f'            icon = icon[2:]\n'
+                f'            icon_type = ICON_TYPE_ANIMATED\n'
+                f'        else:\n'
+                f'            icon_type = ICON_TYPE_STATIC\n'
+                f'        icon_hash = int(icon, 16)\n'
+                f''
+                f'    self_icon_type = self.{added_internal_attribute_name_type}\n'
+                f'    self_icon_hash = self.{added_instance_atttribute_name_hash}\n'
+                f'    if (self_icon_type is not icon_type) or (self_icon_hash != icon_hash):\n'
+                f'        old[{internal_name!r}] = Icon(self_icon_type, self_icon_hash)\n'
+                f'        self.{added_internal_attribute_name_type} = icon_type\n'
+                f'        self.{added_instance_atttribute_name_hash} = icon_hash\n'
+                    ),f'<{cls.__name__}>', 'exec', optimize=2), cls._compile_globals, locals_)
+            
+            added_class_attributes.append((func_name, locals_[func_name]),)
+        
+        self = object.__new__(cls)
+        self.internal_name = internal_name
+        self.discord_side_name = discord_side_name
+        self.added_instance_atttributes = (added_internal_attribute_name_type, added_instance_atttribute_name_hash)
+        self.added_class_attributes = added_class_attributes
+        return self
+    
+    def __set_slot__(self, attribute_name, class_attributes, class_slots):
+        """Applies the changes of the icon slot on the classe's attributes."""
+        
+        # Extend the slots of the class
+        class_slots.update(self.added_instance_atttributes)
+        
+        # Add the extra class attributes to the class
+        for name, value in self.added_class_attributes:
+            class_attributes[name] = value
+    
+    def __get__(self, obj, objtype=None):
+        """Returns self if called from class, meanwhile an Icon if called from an object."""
+        if obj is None:
+            return self
+        
+        icon_type_name, icon_hash_name = self.added_instance_atttributes
+        icon_type = getattr(obj, icon_type_name)
+        icon_hash = getattr(obj, icon_hash_name)
+        return Icon(icon_type, icon_hash)
+    
+    def __set__(self, obj, value):
+        """Can't set attribute."""
+        raise AttributeError('can\'t set attribute')
+    
+    def __delete__(self, obj):
+        """Can't delete attribute."""
+        raise AttributeError('can\'t delete attribute')
+    
+    def preconvert(self, kwargs, processable):
+        """
+        Used at proconverters to parse out from teh passed kwargs the icon of the entitiy.
+        
+        Parameters
+        ----------
+        kwargs : `dict` of (`str`, `Any`) items
+            Keyword arguments passed to the respective preconverter.
+        processable : `list` of `tuple` (`str`, `Any`)
+            A list of instance attributes which will be set when all the passed kwargs are validated.
+        
+        Raises
+        ------
+        TypeError
+            If any of expected value's type is invalid.
+        ValueError
+            If any of the expected value's type is valid, but it's value is not.
+        """
+        icon_type_name, icon_hash_name = self.added_instance_atttributes
+        try:
+            icon = kwargs.pop(self.internal_name)
+        except KeyError:
+            try:
+                icon_hash = kwargs.pop(icon_hash_name)
+            except KeyError:
+                return
+            
+            if type(icon_hash) is int:
+                pass
+            elif isinstance(icon_hash, int):
+                icon_hash = int(icon_hash)
+            else:
+                raise TypeError(f'`{icon_hash_name}` can be passed as `int` instance, got '
+                    f'{icon_hash.__class__.__name__}.')
+            
+            if icon_hash<0 or icon_hash.bit_length()>128:
+                raise ValueError(f'`{icon_hash_name}` cannot be negative or longer than 128 bits, got {icon_hash}.')
+            
+            try:
+                icon_type = kwargs.pop(icon_type_name)
+            except KeyError:
+                if icon_hash == 0:
+                    icon_type = ICON_TYPE_NONE
+                else:
+                    icon_type = ICON_TYPE_STATIC
+            else:
+                if (type(icon_type) is not IconType):
+                    raise TypeError(f'`{icon_type_name}` can be passed as `{IconType.__name__}` instance, got '
+                        f'{icon_type.__class__.__name__}.')
+            
+                if (icon_type is ICON_TYPE_NONE) and icon_hash:
+                    raise ValueError(f'If `{icon_type_name}` is passed as `ICON_TYPE_NONE`, then `{icon_hash_name}` '
+                        f'can be passed only as `0`, meanwhile got `{icon_hash}`.')
+            
+        else:
+            if icon is None:
+                icon_type = ICON_TYPE_NONE
+                icon_hash = 0
+            elif type(icon) is Icon:
+                icon_type = icon.type
+                icon_hash = icon.hash
+            elif isinstance(icon, str):
+                if icon.startswith('a_'):
+                    icon = icon[2:]
+                    icon_type = ICON_TYPE_ANIMATED
+                else:
+                    icon_type = ICON_TYPE_STATIC
+                icon_hash = int(icon, 16)
+            else:
+                raise TypeError(f'`{self.internal_name!r}` can be passed as `None`, `{Icon.__name__}` or as `str` '
+                    f'instance, got {icon.__class__.__name__}.')
+        
+        processable[icon_type_name] = icon_type
+        processable[icon_hash_name] = icon_hash
+
+del sys

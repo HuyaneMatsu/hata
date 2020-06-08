@@ -38,9 +38,10 @@ from .activity import ActivityUnknown, ActivityBase, ActivityCustom
 from .integration import Integration
 from .application import Application, Team
 from .ratelimit import RatelimitProxy
-from .preconverters import preconvert_snowflake, preconvert_animated_image_hash, preconvert_str, preconvert_bool, \
-    preconvert_discriminator, preconvert_flag, preconvert_preinstanced_type
+from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool, preconvert_discriminator, \
+    preconvert_flag, preconvert_preinstanced_type
 from .permission import Permission
+from .bases import ICON_TYPE_NONE
 
 from . import client_core, message, webhook, channel
 
@@ -247,10 +248,10 @@ class Client(UserBase):
         The client's username.
     discriminator : `int`
         The client's discriminator. Given to avoid overlapping names.
-    avatar : `int`
-        The client's avatar's hash in `uint128`. Set as `0` if the client has no avatar.
-    has_animated_avatar : `bool`
-        Whether the client's avatar is animated. If the client has no avatar, then this attribute is set as False.
+    avatar_hash : `int`
+        The client's avatar's hash in `uint128`.
+    avatar_type : `bool`
+        Whether the client's avatar's type.
     guild_profiles : `dict` of (``Guild``, ``GuildPorfile``) items
         A dictionary, which contains the client's guild profiles. If a client is member of a guild, then it should
         have a respective guild profile accordingly.
@@ -390,9 +391,12 @@ class Client(UserBase):
             The client's ``.name``.
         discriminator : `int` or `str` instance, Optional
             The client's ``.discriminator``. Is accepted as `str` instacne as well and will be converted to `int`.
-        avatar : `int` or `str`, Optional
-            The client's ``.avatar``. If passed as `str` with base of 16, then will be converted to `int`. Animated
-            avatar hashes are accepted as well.
+        avatar : `None`, ``Icon`` or `str`, Optional
+            The client's avatar. Mutually exclusive with `avatar_type` and `avatar_hash`.
+        avatar_type : ``Icontype``, Optional
+            The client's avatar's type. Mutually exclusive with `avatar_type`.
+        avatar_hash : `int`, Optional
+            The client's avatar hash. Mutually exclusive with `avatar`.
         has_animated_avatar : `bool` or `int` instance (`0` or `1`), Optional
             The client's ``.has_animated_avatar``. Can be other `int` instance, than `bool` as well, but their value
             still cannot be other than `int`. Can not be passed without `avatar`.
@@ -458,53 +462,42 @@ class Client(UserBase):
         
         # kwargs
         if kwargs:
+            processable = []
             # kwargs.name
             try:
                 name = kwargs.pop('name')
             except KeyError:
-                name = ''
+                pass
             else:
                 name = preconvert_str(name, 'name', 2, 32)
+                processable.append(('name', name))
             
             # kwargs.discriminator
             try:
                 discriminator = kwargs.pop('discriminator')
             except KeyError:
-                discriminator = 0
+                pass
             else:
                 discriminator = preconvert_discriminator(discriminator)
+                processable.append(('discriminator', discriminator))
             
-            # kwargs.avatar & kwargs.has_animated_avatar
-            try:
-                avatar = kwargs.pop('avatar')
-            except KeyError:
-                if 'has_animated_avatar' in kwargs:
-                    raise TypeError('`has_animated_avatar` was passed without passing `avatar`.')
-                
-                avatar = 0
-                has_animated_avatar = False
-                
-            else:
-                has_animated_avatar = kwargs.pop('has_animated_avatar', False)
-                avatar, has_animated_avatar = preconvert_animated_image_hash(avatar, has_animated_avatar, 'avatar', 'has_animated_avatar')
+            # kwargs.avatar & kwargs.avatar_type & kwargs.avatar_hash
+            cls.avatar.preconvert(kwargs, processable)
             
             # kwargs.flags
             try:
                 flags = kwargs.pop('flags')
             except KeyError:
-                flags = UserFlag()
+                pass
             else:
                 flags = preconvert_flag(flags, 'flags', UserFlag)
+                processable.append(('flags', flags))
             
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs}.')
         
         else:
-            name = ''
-            discriminator = 0
-            avatar = 0
-            has_animated_avatar = False
-            flags = UserFlag()
+            processable = None
         
         if (status is None):
             _status = Status.online
@@ -513,11 +506,11 @@ class Client(UserBase):
         
         self = object.__new__(cls)
         
-        self.name               = name
-        self.discriminator      = discriminator
-        self.avatar             = avatar
-        self.has_animated_avatar= has_animated_avatar
-        self.flags              = flags
+        self.name               = ''
+        self.discriminator      = 0
+        self.avatar_type        = ICON_TYPE_NONE
+        self.avatar_hash        = 0
+        self.flags              = UserFlag()
         self.mfa                = False
         self.system             = False
         self.verified           = False
@@ -551,6 +544,10 @@ class Client(UserBase):
         self.gateway            = (DiscordGatewaySharder if shard_count else DiscordGateway)(self)
         self.http               = DiscordHTTPClient(self)
         self.events             = EventDescriptor(self)
+        
+        if (processable is not None):
+            for item in processable:
+                setattr(self, *item)
         
         CLIENTS.append(self)
         
@@ -613,16 +610,7 @@ class Client(UserBase):
       
         self.name           = data['username']
         self.discriminator  = int(data['discriminator'])
-        avatar=data['avatar']
-        if avatar is None:
-            self.avatar     = 0
-            self.has_animated_avatar=False
-        elif avatar.startswith('a_'):
-            self.avatar     = int(avatar[2:],16)
-            self.has_animated_avatar=True
-        else:
-            self.avatar     = int(avatar,16)
-            self.has_animated_avatar=False
+        self._set_avatar(data)
         self.mfa            = data.get('mfa_enabled',False)
         self.system         = data.get('system',False)
         self.verified       = data.get('verified',False)
@@ -664,17 +652,17 @@ class Client(UserBase):
         
         Parameters
         ----------
-        password : `str`
+        password : `str`, Optional
             The actual password of the client. A must for user accounts.
-        new_password : `str`
+        new_password : `str`, Optional
             User account only argument.
-        email : `str`
+        email : `str`, Optional
             User account only argument.
-        house : ``HypesquadHouse`` or `None`
+        house : ``HypesquadHouse`` or `None`, Optional
             User account only argument.
-        name : `str`
+        name : `str`, Optional
             The client's new name.
-        avatar : `bytes-like` or `None`
+        avatar : `bytes-like` or `None`, Optional
             An `'jpg'`, `'png'`, `'webp'` image's raw data. If the client is premium account, then it can be
             `'gif'` as well. By passing `None` you can remove the client's current avatar.
         
@@ -2434,7 +2422,7 @@ class Client(UserBase):
                 }
         
         data = await self.http.channel_follow(source_channel.id,data)
-        webhook = await Webhook._from_follow_data(data,source_channel,target_channel,self)
+        webhook = await Webhook._from_follow_data(data, source_channel, target_channel, self)
         return webhook
     
     #messages
@@ -7837,24 +7825,7 @@ class Client(UserBase):
             old['discriminator']=self.discriminator
             self.discriminator=discriminator
 
-        avatar=data['avatar']
-        if avatar is None:
-            avatar=0
-            has_animated_avatar=False
-        elif avatar.startswith('a_'):
-            avatar=int(avatar[2:],16)
-            has_animated_avatar=True
-        else:
-            avatar=int(avatar,16)
-            has_animated_avatar=False
-                
-        if self.avatar!=avatar:
-            old['avatar']=self.avatar
-            self.avatar=avatar
-
-        if self.has_animated_avatar!=has_animated_avatar:
-            old['has_animated_avatar']=self.has_animated_avatar
-            self.has_animated_avatar=has_animated_avatar
+        self._update_avatar(data, old)
         
         email=data.get('email','')
         if self.email!=email:
@@ -7906,16 +7877,7 @@ class Client(UserBase):
         
         self.discriminator=int(data['discriminator'])
         
-        avatar=data['avatar']
-        if avatar is None:
-            self.avatar=0
-            self.has_animated_avatar=False
-        elif avatar.startswith('a_'):
-            self.avatar=int(avatar[2:],16)
-            self.has_animated_avatar=True
-        else:
-            self.avatar=int(avatar,16)
-            self.has_animated_avatar=False
+        self._set_avatar(data)
         
         self.system=data.get('system',False)
         

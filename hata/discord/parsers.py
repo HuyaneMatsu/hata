@@ -3,10 +3,14 @@ __all__ = ('eventlist', 'EventHandlerBase', 'EventWaitforBase', 'IntentFlag', )
 
 import sys, datetime
 from time import monotonic
-from weakref import WeakSet, ref as Weakreferer, WeakKeyDictionary
+try:
+    from _weakref import WeakSet
+except ImportError:
+    from weakref import WeakSet
 
 from ..backend.futures import Future, Task, iscoroutinefunction as iscoro
-from ..backend.dereaddons_local import function, RemoveMeta, _spaceholder, MethodLike, NEEDS_DUMMY_INIT
+from ..backend.dereaddons_local import function, RemovedDescriptor, _spaceholder, MethodLike, NEEDS_DUMMY_INIT, \
+    WeakKeyDictionary, WeakReferer
 from ..backend.analyzer import CallableAnalyzer
 
 from .bases import FlagBase
@@ -3054,8 +3058,23 @@ class EventListElement(object):
     def __repr__(self):
         return f'{self.__class__.__name__}({self.func!r}, {self.name!r}, kwargs={self.kwargs!r})'
 
-class eventlist(list,metaclass=RemoveMeta, remove=['insert', 'sort', 'pop', 'reverse', 'remove', 'sort', 'index',
-        'count', '__mul__', '__rmul__', '__imul__', '__add__', '__radd__', '__iadd__', '__setitem__','__contains__']):
+class eventlist(list):
+    
+    insert = RemovedDescriptor()
+    sort = RemovedDescriptor()
+    pop = RemovedDescriptor()
+    reverse = RemovedDescriptor()
+    remove = RemovedDescriptor()
+    index = RemovedDescriptor()
+    count = RemovedDescriptor()
+    __mul__ = RemovedDescriptor()
+    __rmul__ = RemovedDescriptor()
+    __imul__ = RemovedDescriptor()
+    __add__ = RemovedDescriptor()
+    __radd__ = RemovedDescriptor()
+    __iadd__ = RemovedDescriptor()
+    __setitem__ = RemovedDescriptor()
+    __contains__ = RemovedDescriptor()
     
     __slots__=('_supports_from_class', 'kwargs', 'type')
     
@@ -3825,7 +3844,7 @@ class EventDescriptor(object):
     __slots__=('client_reference',*sorted(EVENTS.defaults))
     
     def __init__(self,client):
-        client_reference=Weakreferer(client)
+        client_reference=WeakReferer(client)
         object.__setattr__(self,'client_reference',client_reference)
         for name in EVENTS.defaults:
             object.__setattr__(self,name,DEFAULT_EVENT)
@@ -3994,7 +4013,7 @@ async def _with_error(client,task):
     except BaseException as err:
         await client.events.error(client,repr(task),err)
 
-del RemoveMeta
+del RemovedDescriptor
 del datetime
 del FlagBase
 del NEEDS_DUMMY_INIT

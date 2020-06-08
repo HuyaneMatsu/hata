@@ -458,29 +458,29 @@ class AudioReader(Thread):
             source=self.client.sources[user_id]
         except KeyError:
             return result
-
+        
         with self.buffer_lock:
             try:
                 buffer=self.decoded[source]
             except KeyError:
                 return result
-
+            
             if not buffer:
                 return result
-
+            
             if fill:
                 frame=buffer[0]
                 result.append(frame.data)
                 timestamp=frame.timestamp
                 expected_timestamp=timestamp+SAMPLES_PER_FRAME
-
+                
                 index=0
                 limit=len(buffer)
                 
                 while True:
                     if index==limit:
                         break
-
+                    
                     frame=buffer[index]
                     timestamp=frame.timestamp
                     
@@ -493,7 +493,7 @@ class AudioReader(Thread):
                                 continue
                             
                             break
-
+                    
                     result.append(frame.data)
                     expected_timestamp=timestamp+SAMPLES_PER_FRAME
 

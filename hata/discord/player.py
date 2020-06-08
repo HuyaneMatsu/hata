@@ -154,6 +154,7 @@ class PCM_volume_transformer(AudioSource):
         original=self.original
         if original is None:
             return
+        
         original.cleanup()
 
     def read(self):
@@ -201,21 +202,21 @@ else:
     class YTaudio(PCM_volume_transformer):
         downloaded=True
         __slots__=('delete', 'original', 'title', 'url', 'volume',)
-
+        
         @staticmethod
         def _download(url):
-            data = YTdl.extract_info(url,download=True)
+            data = YTdl.extract_info(url, download=True)
             
             if 'entries' in data: #playlist
                 data=data['entries'][0]
-                
+            
             #if stream:filename=data['url']
             filename    = YTdl.prepare_filename(data)
-            original    = FFmpegPCMaudio(filename,options='-vn')
-
+            original    = FFmpegPCMaudio(filename, options='-vn')
+            
             return original,filename,data
         
-        async def __new__(cls,url,executor_id=0,delete_after=True):
+        async def __new__(cls, url, executor_id=0, delete_after=True):
             loop = current_thread()
             if not isinstance(loop,EventThread):
                 raise RuntimeError(f'{cls.__name__}({url!r},...) was called from a non {EventThread.__name__}: {loop!r}.')
@@ -235,10 +236,11 @@ else:
             self.url        = data.get('url')
             self.volume     = 1.0
             if delete_after:
-                self.delete = filename
+                delete = filename
             else:
-                self.delete = None
-
+                delete = None
+            self.delete = delete
+            
             return self
 
         def cleanup(self):
@@ -246,32 +248,32 @@ else:
             delete=self.delete
             if delete is None:
                 return
+            
+            self.delete=None
             try:
                 os.remove(delete)
             except (PermissionError,FileNotFoundError):
                 pass
-            self.delete=None
-    
-        
+
 class AudioPlayer(Thread):
-    __slots__=('client', 'connected', 'done', 'resumed', 'soure')
+    __slots__=('client', 'connected', 'done', 'resumed', 'source')
     
     def __init__(self,voice_client,source):
         Thread.__init__(self,daemon=True)
         self.source         = source
         self.client         = voice_client
-
+        
         self.done           = False
         self.resumed        = Event()
         self.resumed.set()    #we are not paused
-
+        
         Thread.start(self)
-
+    
     def run(self):
         voice_client=self.client
         start=perf_counter()
         loops=0
-
+        
         try:
             while True:
                 if not self.resumed.is_set():
@@ -279,7 +281,7 @@ class AudioPlayer(Thread):
                     start=perf_counter()
                     loops=0
                     continue
-
+                
                 #are we disconnected from voice?
                 if not voice_client.connected.is_set():
                     voice_client.connected.wait()
@@ -303,30 +305,30 @@ class AudioPlayer(Thread):
                             self.done=True
                             self.resumed.set()
                             break
-
+                    
                     continue
-
+                
                 sequence=voice_client._sequence
                 if sequence==65535:
                     sequence=0
                 else:
                     sequence=sequence+1
                 voice_client._sequence=sequence
-
+                
                 if self.source.NEEDS_ENCODE:
                     data=voice_client._encoder.encode(data)
-
+                
                 header=b''.join([
                     b'\x80x',
                     voice_client._sequence.to_bytes(2,'big'),
                     voice_client._timestamp.to_bytes(4,'big'),
                     voice_client._source.to_bytes(4,'big'),
                         ])
-
+                
                 nonce=header+b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
                 packet=bytearray(header)+voice_client._secret_box.encrypt(bytes(data),nonce).ciphertext
-
-
+                
+                
                 try:
                     voice_client.socket.sendto(packet,(voice_client._endpoint_ip,voice_client._voice_port))
                 except BlockingIOError:
@@ -336,7 +338,7 @@ class AudioPlayer(Thread):
                 if timestamp>4294967295:
                     timestamp=0
                 voice_client._timestamp=timestamp
-
+                
                 delay=PLAYER_DELAY+((start+PLAYER_DELAY*loops)-perf_counter())
                 if delay<.0:
                     continue

@@ -1,7 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('BaseMethodDescriptor', 'KeepType', 'KeyedReferer', 'RemoveMeta', 'WeakCallable', 'WeakMap', 'WeakReferer',
-    'alchemy_incendiary', 'any_to_any', 'cached_property', 'isweakreferable', 'listdifference', 'methodize',
-    'modulize', 'multidict', 'multidict_titled', 'titledstr', 'weakmethod', )
+__all__ = ('BaseMethodDescriptor', 'KeepType', 'KeyedReferer', 'RemovedDescriptor', 'WeakCallable', 'WeakKeyDictionary',
+    'WeakMap', 'WeakReferer', 'WeakValueDictionary', 'alchemy_incendiary', 'any_to_any', 'cached_property',
+    'isweakreferable', 'listdifference', 'methodize', 'modulize', 'multidict', 'multidict_titled', 'titledstr',
+    'weakmethod', )
 
 from types import \
     MethodType              as method, \
@@ -12,31 +13,46 @@ from types import \
 
 NoneType = type(None)
 
-import sys, weakref
+import sys
 
-class RemoveMeta(type):
-    def __new__(meta, name, bases, values, remove=None):
-        if (remove is not None) and remove:
-            for name_ in remove:
-                values[name_]=Removed(name_)
-        
-        return type.__new__(meta, name, bases, values)
+try:
+    from _weakref import ref as WeakrefType
+except ImportError:
+    from weakref import ref as WeakrefType
 
-class Removed:
+class RemovedDescriptor(object):
     __slots__=('name',)
-    def __init__(self,name):
-        self.name=name
+    def __init__(self,):
+        self.name = None
     
-    def __get__(self,obj,objtype=None):
+    def __set_name__(self, owner, name):
+        self.name = name
+    
+    def __get__(self, obj, objtype=None):
+        name = self.name
+        if name is None:
+            raise RuntimeError(f'{self.__class__.__name__} is not initialized correctly yet.')
+        
         if obj is None:
-            raise AttributeError(f"type object '{objtype.__name__}' has no attribute '{self.name}'")
-        raise AttributeError(f"'{obj.__class__.__name__}' object has no attribute '{self.name}'")
+            error_message = f'type object \'{objtype.__name__}\' has no attribute \'{name}\''
+        else:
+            error_message = f'\'{obj.__class__.__name__}\' object has no attribute \'{name}\''
+        
+        raise AttributeError(error_message)
     
     def __set__(self, obj, value):
-        raise AttributeError(self.name)
+        name = self.name
+        if name is None:
+            raise RuntimeError(f'{self.__class__.__name__} is not initialized correctly yet.')
+        
+        raise AttributeError(name)
     
-    def __delete__(self,obj):
-        raise AttributeError(self.name)
+    def __delete__(self, obj):
+        name = self.name
+        if name is None:
+            raise RuntimeError(f'{self.__class__.__name__} is not initialized correctly yet.')
+        
+        raise AttributeError(name)
 
 def any_to_any(v1,v2):
     for v in v1:
@@ -44,9 +60,20 @@ def any_to_any(v1,v2):
             return True
     return False
 
-class autoposlist(list, metaclass=RemoveMeta, remove=['extend', '__add__', '__iadd__', '__radd__', '__mul__',
-        '__imul__', '__rmul__', '__setitem__', 'insert', 'sort', 'reverse']):
+class autoposlist(list):
     __slots__=()
+    
+    extend = RemovedDescriptor()
+    __add__ = RemovedDescriptor()
+    __iadd__ = RemovedDescriptor()
+    __radd__ = RemovedDescriptor()
+    __mul__ = RemovedDescriptor()
+    __imul__ = RemovedDescriptor()
+    __rmul__ = RemovedDescriptor()
+    __setitem__ = RemovedDescriptor()
+    insert = RemovedDescriptor()
+    sort = RemovedDescriptor()
+    reverse = RemovedDescriptor()
     
     def __init__(self):
         list.__init__(self)
@@ -324,18 +351,18 @@ class KeepType(object):
 _spaceholder=object()
 
 class _multidict_items:
-    __slots__=('parent',)
+    __slots__=('_parent',)
     def __init__(self,parent):
-        self.parent=parent
+        self._parent=parent
     def __len__(self):
-        return len(self.parent)
+        return len(self._parent)
     def __iter__(self):
-        for key, values in dict.items(self.parent):
+        for key, values in dict.items(self._parent):
             for value in values:
                 yield key,value
     
     def __contains__(self,item):
-        parent=self.parent
+        parent=self._parent
         try:
             values=parent[item[0]]
         except KeyError:
@@ -347,10 +374,10 @@ class _multidict_values:
     __init__  = _multidict_items.__init__
     __len__   = _multidict_items.__len__
     def __iter__(self):
-        for values in dict.values(self.parent):
+        for values in dict.values(self._parent):
             yield from values
     def __contains__(self,value):
-        for values in dict.values(self.parent):
+        for values in dict.values(self._parent):
             if value in values:
                 return True
         return False
@@ -716,7 +743,7 @@ class code(object):
             return localz[imports]
         else:
             return tuple(localz[import_] for import_ in imports)
-                         
+     
     def dedent(self):
         for line in self._list:
             line._back-=1
@@ -795,6 +822,9 @@ class cached_property(object):
     
     def __set__(self, obj, value):
         raise AttributeError('can\'t set attribute')
+    
+    def __delete__(self, obj):
+        raise AttributeError('can\'t delete attribute')
 
 class alchemy_incendiary(object):
     __slots__=('args', 'func', 'kwargs',)
@@ -923,9 +953,19 @@ class methodize(object):
     def __delete__(self,obj):
         raise AttributeError('can\'t delete attribute')
 
-class sortedlist(list,metaclass=RemoveMeta, remove=['__setitem__', 'insert', 'sort', '__add__', '__radd__', '__iadd__',
-        '__mul__', '__rmul__', '__imul__', 'append', ]):
+class sortedlist(list):
     __slots__ = ('_reversed', )
+    
+    __setitem__ = RemovedDescriptor()
+    insert = RemovedDescriptor()
+    sort = RemovedDescriptor()
+    __add__ = RemovedDescriptor()
+    __radd__ = RemovedDescriptor()
+    __iadd__ = RemovedDescriptor()
+    __mul__ = RemovedDescriptor()
+    __rmul__ = RemovedDescriptor()
+    __imul__ = RemovedDescriptor()
+    append = RemovedDescriptor()
     
     def __init__(self,it=None,reverse=False):
         self._reversed=reverse
@@ -1169,7 +1209,7 @@ else:
     NEEDS_DUMMY_INIT = False
 
 # speedup builtin stuff, Cpython is welcome
-class WeakReferer(weakref.ref):
+class WeakReferer(WeakrefType):
     __slots__ = ()
     if NEEDS_DUMMY_INIT:
         def __init__(self, *args, **kwargs):
@@ -1177,16 +1217,12 @@ class WeakReferer(weakref.ref):
     else:
         __init__ = object.__init__
 
-weakref.ref = WeakReferer
-
 class KeyedReferer(WeakReferer):
     __slots__ = ('key', )
     def __new__(cls, obj, callback, key, ):
         self = WeakReferer.__new__(cls, obj, callback)
         self.key=key
         return self
-
-weakref.KeyedRef = KeyedReferer
 
 class WeakCallable(WeakReferer):
     __slots__ = ()
@@ -1231,236 +1267,216 @@ class weakmethod(WeakReferer, MethodLike):
         self.__func__ = method_.__func__
         return self
 
-class _HybridValueDictionaryCallback(object):
-    __slots__ = ('parent', )
+class _WeakValueDictionaryCallback(object):
+    __slots__ = ('_parent', )
     def __new__(cls, parent):
+        parent = WeakReferer(parent)
         self=object.__new__(cls)
-        self.parent=WeakReferer(parent)
+        self._parent = parent
         return self
     
     def __call__(self, reference):
-        parent = self.parent()
+        parent = self._parent()
         if parent is None:
             return
         
-        key=reference.key
         if parent._iterating:
-            parent._pending_removals.add(key)
+            parent._pending_removals.add(reference)
         else:
-            dict.__delitem__(parent,key)
+            try:
+                dict.__delitem__(parent, reference.key)
+            except KeyError:
+                pass
 
 class _HybridValueDictionaryKeyIterator(object):
-    __slots__ = ('parent',)
-    def __init__(self,parent):
-        self.parent = parent
+    __slots__ = ('_parent',)
+    def __init__(self, parent):
+        self._parent = parent
     
     def __iter__(self):
-        parent = self.parent
+        parent = self._parent
         parent._iterating +=1
         pending_removals = parent._pending_removals
         
         try:
-            for key, value in dict.items(parent):
-                if not value[0]:
-                    yield key
+            for key, (value_weakreferable, value_or_reference) in dict.items(parent):
+                if value_weakreferable and (value_or_reference() is None):
+                    pending_removals.add(value_or_reference)
                     continue
                 
-                if (value[1]() is not None):
-                    yield key
-                    continue
-                
-                pending_removals.add(key)
+                yield key
                 continue
         
         finally:
-            iterating = parent._iterating-1
-            parent._iterating = iterating
-            if iterating:
-                return
-            
-            while pending_removals:
-                key = pending_removals.pop()
-                dict.__delitem__(self,key)
+            parent._iterating -=1
+            parent._commit_removals()
     
-    def __contains__(self, key):
-        return (key in self.parent)
+    def __contains__(self, contains_key):
+        return (contains_key in self._parent)
     
     def __len__(self):
-        return len(self.parent)
+        return len(self._parent)
 
 class _HybridValueDictionaryValueIterator(object):
-    __slots__ = ('parent',)
-    def __init__(self,parent):
-        self.parent = parent
+    __slots__ = ('_parent',)
+    def __init__(self, parent):
+        self._parent = parent
     
     def __iter__(self):
-        parent = self.parent
+        parent = self._parent
         parent._iterating +=1
         pending_removals = parent._pending_removals
         
         try:
-            for key, (weakreferable, reference) in dict.items(parent):
-                if not weakreferable:
-                    yield reference
-                    continue
+            for key, (value_weakreferable, value_or_reference) in dict.items(parent):
+                if value_weakreferable:
+                    value = value_or_reference()
+                    if value is None:
+                        pending_removals.add(value_or_reference)
+                        continue
+                else:
+                    value = value_or_reference
                 
-                reference=reference()
-                if (reference is not None):
-                    yield reference
-                    continue
-                
-                pending_removals.add(key)
+                yield value
                 continue
         
         finally:
-            iterating = parent._iterating-1
-            parent._iterating = iterating
-            if iterating:
-                return
-            
-            while pending_removals:
-                key = pending_removals.pop()
-                dict.__delitem__(self,key)
+            parent._iterating -=1
+            parent._commit_removals()
     
-    def __contains__(self, value):
-        parent = self.parent
+    def __contains__(self, contains_value):
+        parent = self._parent
         pending_removals = parent._pending_removals
-        for key, (weakreferable, reference) in dict.items(parent):
-            if not weakreferable:
-                if reference!=value:
+        for key, (value_weakreferable, value_or_reference) in dict.items(parent):
+            if value_weakreferable:
+                value = value_or_reference()
+                if value is None:
+                    pending_removals.add(value_or_reference)
                     continue
-                
+            else:
+                value = value_or_reference
+            
+            if value == contains_value:
                 result=True
                 break
-            
-            reference=reference()
-            if (reference is not None):
-                if reference!=value:
-                    continue
-                
-                result=True
-                break
-            
-            pending_removals.add(key)
-            continue
         else:
             result=False
         
-        if parent._iterating:
-            return result
-        
-        while pending_removals:
-            key = pending_removals.pop()
-            dict.__delitem__(self,key)
+        parent._commit_removals()
         
         return result
     
     def __len__(self):
-        return len(self.parent)
-    
+        return len(self._parent)
+
 class _HybridValueDictionaryItemIterator(object):
-    __slots__ = ('parent',)
-    def __init__(self,parent):
-        self.parent = parent
+    __slots__ = ('_parent',)
+    def __init__(self, parent):
+        self._parent = parent
     
     def __iter__(self):
-        parent = self.parent
+        parent = self._parent
         parent._iterating +=1
         pending_removals = parent._pending_removals
         
         try:
-            for key, (weakreferable, reference) in dict.items(parent):
-                if not weakreferable:
-                    yield key, reference
-                    continue
+            for key, (value_weakreferable, value_or_reference) in dict.items(parent):
+                if value_weakreferable:
+                    value = value_or_reference()
+                    if value is None:
+                        pending_removals.add(key)
+                        continue
+                else:
+                    value = value_or_reference
                 
-                reference=reference()
-                if (reference is not None):
-                    yield key, reference
-                    continue
-                
-                pending_removals.add(key)
+                yield key, value
                 continue
         
         finally:
-            iterating = parent._iterating-1
-            parent._iterating = iterating
-            if iterating:
-                return
-            
-            while pending_removals:
-                key = pending_removals.pop()
-                dict.__delitem__(self,key)
+            parent._iterating -=1
+            parent._commit_removals()
     
-    def __contains__(self, item):
-        if not isinstance(item,tuple):
+    def __contains__(self, contains_item):
+        if not isinstance(contains_item, tuple):
             return False
         
-        if len(item)!=2:
+        if len(contains_item) != 2:
             return False
         
-        parent = self.parent
-        pending_removals = parent._pending_removals
-        item_key, item_value = item
+        parent = self._parent
+        contains_key, contains_value = contains_item
         
-        for key, (weakreferable, reference) in dict.items(parent):
-            if key!=item_key:
-                continue
-            
-            if not weakreferable:
-                if reference!=item_value:
-                    continue
-                    
-                result=True
-                break
+        value_pair = dict.get(parent, contains_key)
+        if value_pair is None:
+            return False
+        
+        value_weakreferable, value_or_reference = value_pair
+        if value_weakreferable:
+            value = value_or_reference()
+            if value is None:
+                if parent._iterating:
+                    parent._pending_removals.add(value_or_reference)
+                else:
+                    dict.__delitem__(parent, contains_key)
                 
-            reference=reference()
-            if (reference is not None):
-                if reference!=item_value:
-                    continue
-                
-                result=True
-                break
-            
-            pending_removals.add(key)
-            continue
+                return False
         else:
-            result=False
+            value = value_or_reference
         
-        if parent._iterating:
-            return result
-        
-        while pending_removals:
-            key = pending_removals.pop()
-            dict.__delitem__(self,key)
-        
-        return result
+        return (value == contains_value)
     
     def __len__(self):
-        return len(self.parent)
+        return len(self._parent)
 
 class HybridValueDictionary(dict):
     __slots__ = ('__weakref__', '_pending_removals', '_iterating', '_callback')
+    
+    MAX_RERP_ELEMENT_LIMIT  = 50
+    
+    def _commit_removals(self):
+        if self._iterating:
+            return
+        
+        pending_removals = self._pending_removals
+        while pending_removals:
+            value_reference = pending_removals.pop()
+            key = value_reference.key
+            try:
+                value_pair = dict.__getitem__(self, key)
+            except KeyError:
+                continue
+            
+            value_weakreferable, value_or_reference = value_pair
+            if (not value_weakreferable):
+                continue
+            
+            if (value_or_reference is not value_reference):
+                continue
+            
+            try:
+                dict.__delitem__(self, key)
+            except KeyError:
+                pass
+    
     # __class__ -> same
     
-    def __contains__(self, key):
-        value = dict.get(self,key,None)
-        if value is None:
+    def __contains__(self, contains_key):
+        value_pair = dict.get(self, contains_key, None)
+        if value_pair is None:
             return False
         
-        if not value[0]:
-            return True
+        value_weakreferable, value_or_reference = value_pair
         
-        reference = value[1]()
-        if (reference is not None):
-            return True
+        if value_weakreferable:
+            if value_or_reference() is None:
+                if self._iterating:
+                    self._pending_removals.add(value_or_reference)
+                else:
+                    dict.__delitem__(self, contains_key)
+                
+                return False
         
-        if self._iterating:
-            self._pending_removals.add(key)
-        else:
-            dict.__delitem__(self, key)
-        
-        return False
+        return True
     
     # __delattr__ -> same
     # __delitem__ -> same
@@ -1472,33 +1488,30 @@ class HybridValueDictionary(dict):
     # __getattribute__ -> same
     
     def __getitem__(self, key):
-        weakreferable, reference = dict.__getitem__(self,key)
-        if not weakreferable:
-            return reference
-        
-        reference = reference()
-        if (reference is not None):
-            return reference
-        
-        if self._iterating:
-            self._pending_removals.add(key)
+        value_weakreferable, value_or_reference = dict.__getitem__(self, key)
+        if value_weakreferable:
+            value = value_or_reference()
+            if value is None:
+                if self._iterating:
+                    self._pending_removals.add(value_or_reference)
+                else:
+                    dict.__delitem__(self, key)
+                
+                raise KeyError(key)
         else:
-            dict.__delitem__(self, key)
+            value = value_or_reference
         
-        raise KeyError(key)
+        return value
     
     # __gt__ -> same
     # __hash__ -> same
     
     def __init__(self,iterable=None):
-        self._pending_removals=set()
-        self._iterating=0
-        self._callback=_HybridValueDictionaryCallback(self)
-        if iterable is None:
-            return
-        
-        self.update(iterable)
-        return
+        self._pending_removals = set()
+        self._iterating = 0
+        self._callback = _WeakValueDictionaryCallback(self)
+        if (iterable is not None):
+            self.update(iterable)
     
     # __init_subclass__ -> same
     
@@ -1508,7 +1521,7 @@ class HybridValueDictionary(dict):
     # __le__ -> same
     
     def __len__(self):
-        return dict.__len__(self)-len(self._pending_removals)
+        return dict.__len__(self) - len(self._pending_removals)
     
     # __lt__ -> same
     # __ne__ -> same
@@ -1518,29 +1531,40 @@ class HybridValueDictionary(dict):
     
     def __repr__(self):
         result = [self.__class__.__name__,'({']
-        if self:
-            pending_removals=self._pending_removals
-            for key, (weakreferable, reference) in dict.items(self):
-                if weakreferable:
-                    reference = reference()
-                    if reference is None:
-                        pending_removals.add(key)
+        pending_removals = self._pending_removals
+        if dict.__len__(self) - len(pending_removals):
+            limit = self.MAX_RERP_ELEMENT_LIMIT
+            collected = 0
+            for key, (value_weakreferable, value_or_reference) in dict.items(self):
+                if value_weakreferable:
+                    value = value_or_reference()
+                    if value is None:
+                        pending_removals.add(value_or_reference)
                         continue
+                else:
+                    value = value_or_reference
                 
                 result.append(repr(key))
                 result.append(': ')
-                result.append(repr(reference))
+                result.append(repr(value))
                 result.append(', ')
-            
-            if len(result)>2:
-                result[-1]='})'
+                
+                collected +=1
+                if collected != limit:
+                    continue
+                
+                leftover = dict.__len__(self) - len(pending_removals) - collected
+                if leftover:
+                    result.append('...}, ')
+                    result.append(str(leftover))
+                    result.append(' truncated)')
+                else:
+                    result[-1] = '})'
+                break
             else:
-                result.append('})')
+                result[-1] = '})'
             
-            if not self._iterating:
-                while pending_removals:
-                    key = pending_removals.pop()
-                    dict.__delitem__(self, key)
+            self._commit_removals()
         else:
             result.append('})')
         
@@ -1550,13 +1574,13 @@ class HybridValueDictionary(dict):
     
     def __setitem__(self, key, value):
         if isweakreferable(value):
-            weakreferable = True
-            reference = KeyedReferer(value,self._callback,key)
+            value_weakreferable = True
+            value_or_reference = KeyedReferer(value, self._callback, key)
         else:
-            weakreferable = False
-            reference = value
+            value_weakreferable = False
+            value_or_reference = value
         
-        dict.__setitem__(self, key, (weakreferable, reference), )
+        dict.__setitem__(self, key, (value_weakreferable, value_or_reference), )
     
     # __sizeof__ -> same
     
@@ -1570,123 +1594,126 @@ class HybridValueDictionary(dict):
     
     def copy(self):
         new = dict.__new__(type(self))
-        new._iterating = False
+        new._iterating = 0
         new._pending_removals = set()
-        callback = _HybridValueDictionaryCallback(new)
+        callback = _WeakValueDictionaryCallback(new)
         new._callback = callback
         
         pending_removals = self._pending_removals
         
-        for key, value in dict.items(self):
-            if value[0]:
-                value = value[1]()
-                
+        for key, (value_weakreferable, value_or_reference) in dict.items(self):
+            if value_weakreferable:
+                value = value_or_reference()
                 if (value is None):
-                    pending_removals.add(key)
+                    pending_removals.add(value_or_reference)
                     continue
                 
-                value = (True, KeyedReferer(value, callback, key), )
+                value_or_reference = KeyedReferer(value, callback, key)
             
-            dict.__setitem__(new, key, value)
+            dict.__setitem__(new, key, (value_weakreferable, value_or_reference))
             continue
         
-        if not self._iterating:
-            while pending_removals:
-                key = pending_removals.pop()
-                dict.__delitem__(self, key)
+        self._commit_removals()
         
         return new
     
     def get(self, key, default=None):
-        value = dict.get(self,default,None)
-        if value is None:
+        value_pair = dict.get(self, key, default)
+        if value_pair is default:
             return default
         
-        if not value[0]:
-            return value[1]
+        value_weakreferable, value_or_reference = value_pair
         
-        reference = value[1]()
-        if (reference is not None):
-            return reference
-        
-        if self._iterating:
-            self._pending_removals.add(key)
+        if value_weakreferable:
+            value = value_or_reference()
+            if value is None:
+                if self._iterating:
+                    self._pending_removals.add(value_or_reference)
+                else:
+                    dict.__delitem__(self, key)
+                
+                return default
         else:
-            dict.__delitem__(self, key)
+            value = value_or_reference
         
-        return default
-
+        return value
+    
     def items(self):
         return _HybridValueDictionaryItemIterator(self)
     
     def keys(self):
         return _HybridValueDictionaryKeyIterator(self)
     
+    # need goto for better codestyle
     def pop(self, key, default=_spaceholder):
-        value = dict.pop(self, key, _spaceholder)
-        if (value is not _spaceholder):
-            if not value[0]:
-                return value[1]
+        value_pair = dict.pop(self, key, _spaceholder)
+        
+        if (value_pair is not default):
+            value_weakreferable, value_or_reference = value_pair
             
-            reference = value[1]()
-            if (reference is not None):
-                return reference
+            if (not value_weakreferable):
+                return value_or_reference
+            
+            value = value_or_reference()
+            if (value is not None):
+                return value
             
             if self._iterating:
-                self._pending_removals.add(key)
+                self._pending_removals.add(value_or_reference)
             else:
                 dict.__delitem__(self, key)
         
         if default is _spaceholder:
             raise KeyError(key)
+        
         return default
     
     def popitem(self):
         while dict.__len__(self):
-            key, value = dict.popitem(self)
-            if not value[0]:
-                return key, value[1]
-            
-            value = value[1]()
-            if (value is not None):
-                return key, value
-            
-            if self._iterating:
-                self._pending_removals.add(key)
+            key, (value_weakreferable, value_or_reference) = dict.popitem(self)
+            if value_weakreferable:
+                value = value_or_reference()
+                if value is None:
+                    if self._iterating:
+                        self._pending_removals.add(value_or_reference)
+                    else:
+                        dict.__delitem__(self, key)
+                    
+                    continue
             else:
-                dict.__delitem__(self, key)
-            
-            continue
+                value = value_or_reference
+                
+            return key, value
         
         raise KeyError('popitem(): dictionary is empty.')
     
     def setdefault(self, key, default=None):
-        value = dict.get(self, key, None)
-        if (value is not None):
-            if not value[0]:
-                return value[1]
+        value_pair = dict.get(self, key, None)
+        if (value_pair is not None):
+            value_weakreferable, value_or_reference = value_pair
+            if (not value_weakreferable):
+                return value_or_reference
             
-            reference = value[1]()
-            if (reference is not None):
-                return reference
+            value = value_or_reference()
+            if (value is not None):
+                return value
         
-        self[key]=default
+        self[key] = default
         return default
     
     def update(self, other):
-        if hasattr(type(other),'items'):
+        if hasattr(type(other), 'items'):
             for key, value in other.items():
-                self[key]=value
+                self[key] = value
             return
         
-        if hasattr(type(other),'keys') and hasattr(type(other),'__getitem__'):
+        if hasattr(type(other), 'keys') and hasattr(type(other), '__getitem__'):
             for key in other.keys():
                 value = other[key]
-                self[key]=value
+                self[key] = value
             return
         
-        
-        if hasattr(type(other),'__iter__'):
+        if hasattr(type(other), '__iter__'):
             index = -1
             for item in other:
                 index = index+1
@@ -1731,62 +1758,890 @@ class HybridValueDictionary(dict):
     def values(self):
         return _HybridValueDictionaryValueIterator(self)
 
-class _WeakMapCallback(object):
-    __slots__ = ('parent', )
+class _WeakValueDictionaryKeyIterator(object):
+    __slots__ = ('_parent',)
+    def __init__(self, parent):
+        self._parent = parent
+    
+    def __iter__(self):
+        parent = self._parent
+        parent._iterating +=1
+        pending_removals = parent._pending_removals
+        
+        try:
+            for key, value_reference in dict.items(parent):
+                if (value_reference() is None):
+                    pending_removals.add(value_reference)
+                    continue
+                
+                yield key
+                continue
+        
+        finally:
+            parent._iterating -=1
+            parent._commit_removals()
+    
+    def __contains__(self, key):
+        return (key in self._parent)
+    
+    def __len__(self):
+        return len(self._parent)
+
+class _WeakValueDictionaryValueIterator(object):
+    __slots__ = ('_parent',)
+    def __init__(self, parent):
+        self._parent = parent
+    
+    def __iter__(self):
+        parent = self._parent
+        parent._iterating +=1
+        pending_removals = parent._pending_removals
+        
+        try:
+            for key, value_reference in dict.items(parent):
+                value = value_reference()
+                if (value is None):
+                    pending_removals.add(value_reference)
+                    continue
+                
+                yield value
+                continue
+        
+        finally:
+            parent._iterating -=1
+            parent._commit_removals()
+    
+    def __contains__(self, contains_value):
+        parent = self._parent
+        pending_removals = parent._pending_removals
+        for key, value_reference in dict.items(parent):
+            value = value_reference()
+            if (value is None):
+                pending_removals.add(value_reference)
+                continue
+            
+            if value == contains_value:
+                result = True
+                break
+        
+        else:
+            result = False
+        
+        parent._commit_removals()
+        
+        return result
+    
+    def __len__(self):
+        return len(self._parent)
+
+class _WeakValueDictionaryItemIterator(object):
+    __slots__ = ('_parent',)
+    def __init__(self,parent):
+        self._parent = parent
+    
+    def __iter__(self):
+        parent = self._parent
+        parent._iterating +=1
+        pending_removals = parent._pending_removals
+        
+        try:
+            for key, value_reference in dict.items(parent):
+                value = value_reference()
+                if (value is None):
+                    pending_removals.add(value_reference)
+                    continue
+                
+                yield key, value
+                continue
+        
+        finally:
+            parent._iterating -=1
+            parent._commit_removals()
+    
+    def __contains__(self, contains_item):
+        if not isinstance(contains_item, tuple):
+            return False
+        
+        if len(contains_item) != 2:
+            return False
+        
+        parent = self._parent
+        
+        contains_key, contains_value = contains_item
+        
+        value_reference = dict.get(parent, contains_key)
+        if value_reference is None:
+            return False
+        
+        value = value_reference()
+        if value is None:
+            if parent._iterating:
+                parent._pending_removals.add(value_reference)
+            else:
+                dict.__delitem__(parent, contains_key)
+            
+            return False
+        
+        return (value == contains_value)
+    
+    def __len__(self):
+        return len(self._parent)
+
+class WeakValueDictionary(dict):
+    __slots__ = ('__weakref__', '_pending_removals', '_iterating', '_callback')
+    
+    MAX_RERP_ELEMENT_LIMIT  = 50
+    
+    def _commit_removals(self):
+        if self._iterating:
+            return
+        
+        pending_removals = self._pending_removals
+        while pending_removals:
+            value_reference = pending_removals.pop()
+            key = value_reference.key
+            try:
+                actual_value_reference = dict.__getitem__(self, key)
+            except KeyError:
+                continue
+            
+            if (actual_value_reference is not value_reference):
+                continue
+            
+            try:
+                dict.__delitem__(self, key)
+            except KeyError:
+                pass
+    
+    # __class__ -> same
+    
+    def __contains__(self, key):
+        value_reference = dict.get(self, key, None)
+        if value_reference is None:
+            return False
+        
+        value = value_reference()
+        if (value is not None):
+            return True
+        
+        if self._iterating:
+            self._pending_removals.add(value_reference)
+        else:
+            dict.__delitem__(self, key)
+        
+        return False
+    
+    # __delattr__ -> same
+    # __delitem__ -> same
+    # __dir__ -> same
+    # __doc__ -> same
+    # __eq__ -> same
+    # __format__ -> same
+    # __ge__ -> same
+    # __getattribute__ -> same
+    
+    def __getitem__(self, key):
+        value_reference = dict.__getitem__(self, key)
+        value = value_reference()
+        if (value is not None):
+            return value
+        
+        if self._iterating:
+            self._pending_removals.add(value_reference)
+        else:
+            dict.__delitem__(self, key)
+        
+        raise KeyError(key)
+    
+    # __gt__ -> same
+    # __hash__ -> same
+    
+    def __init__(self, iterable=None):
+        self._pending_removals=set()
+        self._iterating=0
+        self._callback = _WeakValueDictionaryCallback(self)
+        if (iterable is not None):
+            self.update(iterable)
+    
+    # __init_subclass__ -> same
+    
+    def __iter__(self):
+        return iter(_WeakValueDictionaryKeyIterator(self))
+    
+    # __le__ -> same
+    
+    def __len__(self):
+        return dict.__len__(self) - len(self._pending_removals)
+    
+    # __lt__ -> same
+    # __ne__ -> same
+    # __new__ -> same
+    # __reduce__ -> we do not care
+    # __redue_ex__ -> we do not care
+    
+    def __repr__(self):
+        result = [self.__class__.__name__, '({']
+        
+        pending_removals = self._pending_removals
+        if dict.__len__(self) - len(pending_removals):
+            limit = self.MAX_RERP_ELEMENT_LIMIT
+            collected = 0
+            for key, value_reference in dict.items(self):
+                value = value_reference()
+                if (value is None):
+                    pending_removals.add(value_reference)
+                    continue
+                
+                result.append(repr(key))
+                result.append(': ')
+                result.append(repr(value))
+                result.append(', ')
+                
+                collected +=1
+                if collected != limit:
+                    continue
+                
+                leftover = dict.__len__(self) - len(pending_removals) - collected
+                if leftover:
+                    result.append('...}, ')
+                    result.append(str(leftover))
+                    result.append(' truncated)')
+                else:
+                    result[-1] = '})'
+                break
+            else:
+                result[-1] = '})'
+            
+            self._commit_removals()
+        else:
+            result.append('})')
+        
+        return ''.join(result)
+    
+    #__setattr__ -> same
+    
+    def __setitem__(self, key, value):
+        dict.__setitem__(self, key, KeyedReferer(value, self._callback, key))
+    
+    # __sizeof__ -> same
+    
+    __str__ = __repr__
+    
+    # __subclasshook__ -> same
+    
+    def clear(self):
+        dict.clear(self)
+        self._pending_removals.clear()
+    
+    def copy(self):
+        new = dict.__new__(type(self))
+        new._pending_removals = set()
+        callback = _WeakValueDictionaryCallback(new)
+        new._callback = callback
+        
+        pending_removals = self._pending_removals
+        
+        for key, value_reference in dict.items(self):
+            value = value_reference()
+            if value is None:
+                pending_removals.add(value_reference)
+                continue
+            
+            dict.__setitem__(new, key, KeyedReferer(value, callback, key))
+            continue
+        
+        self._commit_removals()
+        
+        return new
+    
+    def get(self, key, default=None):
+        value_reference = dict.get(self, key, default)
+        if value_reference is default:
+            return default
+        
+        value = value_reference()
+        if (value is not None):
+            return value
+        
+        if self._iterating:
+            self._pending_removals.add(value_reference)
+        else:
+            dict.__delitem__(self, key)
+        
+        return default
+    
+    def items(self):
+        return _WeakValueDictionaryItemIterator(self)
+    
+    def keys(self):
+        return _WeakValueDictionaryKeyIterator(self)
+    
+    def pop(self, key, default=_spaceholder):
+        value_reference = dict.pop(self, key, _spaceholder)
+        if (value_reference is not _spaceholder):
+            value = value_reference()
+            if (value is not None):
+                return value
+            
+            if self._iterating:
+                self._pending_removals.add(value_reference)
+            else:
+                dict.__delitem__(self, key)
+        
+        if default is _spaceholder:
+            raise KeyError(key)
+        
+        return default
+    
+    def popitem(self):
+        while dict.__len__(self):
+            key, value_reference = dict.popitem(self)
+            value = value_reference()
+            if (value is not None):
+                return key, value
+            
+            if self._iterating:
+                self._pending_removals.add(value_reference)
+            else:
+                dict.__delitem__(self, key)
+            
+            continue
+        
+        raise KeyError('popitem(): dictionary is empty.')
+    
+    def setdefault(self, key, default):
+        value_reference = dict.get(self, key, _spaceholder)
+        if (value_reference is not _spaceholder):
+            value = value_reference()
+            if (value is not None):
+                return value
+        
+        self[key] = default
+        return default
+    
+    def update(self, other):
+        if hasattr(type(other), 'items'):
+            for key, value in other.items():
+                self[key] = value
+            return
+        
+        if hasattr(type(other), 'keys') and hasattr(type(other), '__getitem__'):
+            for key in other.keys():
+                value = other[key]
+                self[key] = value
+            return
+        
+        if hasattr(type(other), '__iter__'):
+            index = -1
+            for item in other:
+                index = index+1
+                
+                try:
+                    iterator=iter(item)
+                except TypeError:
+                    raise TypeError(f'Cannot convert dictionary update sequence element #{index} to a sequence.') from None
+                
+                try:
+                    key = next(iterator)
+                except StopIteration:
+                    raise ValueError(f'Dictionary update sequence element #{index} has length {0}; 2 is required.') from None
+                
+                try:
+                    value = next(iterator)
+                except StopIteration:
+                    raise ValueError(f'Dictionary update sequence element #{index} has length {1}; 2 is required.') from None
+                
+                try:
+                    next(iterator)
+                except StopIteration:
+                    self[key] = value
+                    continue
+                
+                length = 3
+                for _ in iterator:
+                    length +=1
+                    if length>9000:
+                        break
+                
+                if length>9000:
+                    length='OVER 9000!'
+                else:
+                    length=repr(length)
+                
+                raise ValueError(f'Dictionary update sequence element #{index} has length {length}; 2 is required.')
+            return
+        
+        raise TypeError(f'{other.__class__.__name__!r} object is not iterable')
+    
+    def values(self):
+        return _WeakValueDictionaryValueIterator(self)
+
+class _WeakKeyDictionaryCallback(object):
+    __slots__ = ('_parent', )
     def __new__(cls, parent):
-        self = object.__new__(cls)
-        self.parent = WeakReferer(parent)
+        parent = WeakReferer(parent)
+        self=object.__new__(cls)
+        self._parent = parent
         return self
     
     def __call__(self, reference):
-        parent = self.parent()
+        parent = self._parent()
         if parent is None:
             return
         
         if parent._iterating:
             parent._pending_removals.add(reference)
         else:
-            dict.__delitem__(parent,reference)
+            try:
+                dict.__delitem__(parent, reference)
+            except KeyError:
+                pass
 
-class _WeakMapIterator(object):
-    __slots__ = ('parent', )
-    def __init__(self, parent):
-        self.parent=parent
+class _WeakKeyDictionaryKeyIterator(object):
+    __slots__ = ('_parent',)
+    def __init__(self,parent):
+        self._parent = parent
     
     def __iter__(self):
-        parent = self.parent
+        parent = self._parent
+        parent._iterating +=1
+        pending_removals = parent._pending_removals
+        
+        try:
+            for key_reference in dict.keys(parent):
+                key = key_reference()
+                if (key is None):
+                    pending_removals.add(key_reference)
+                    continue
+                
+                yield key
+                continue
+        
+        finally:
+            parent._iterating -=1
+            parent._commit_removals()
+    
+    def __contains__(self, contains_key):
+        return (contains_key in self._parent)
+    
+    def __len__(self):
+        return len(self._parent)
+
+class _WeakKeyDictionaryValueIterator(object):
+    __slots__ = ('_parent',)
+    def __init__(self,parent):
+        self._parent = parent
+    
+    def __iter__(self):
+        parent = self._parent
+        parent._iterating +=1
+        pending_removals = parent._pending_removals
+        
+        try:
+            for key_reference, value in dict.items(parent):
+                if (key_reference() is None):
+                    pending_removals.add(key_reference)
+                    continue
+                
+                yield value
+                continue
+        
+        finally:
+            parent._iterating -=1
+            parent._commit_removals()
+    
+    def __contains__(self, contains_value):
+        parent = self._parent
+        pending_removals = parent._pending_removals
+        for key_reference, value in dict.items(parent):
+            if (key_reference() is None):
+                pending_removals.add(key_reference)
+                continue
+            
+            if value == contains_value:
+                result = True
+                break
+        
+        else:
+            result = False
+        
+        parent._commit_removals()
+        
+        return result
+    
+    def __len__(self):
+        return len(self._parent)
+
+class _WeakKeyDictionaryItemIterator(object):
+    __slots__ = ('_parent',)
+    def __init__(self,parent):
+        self._parent = parent
+    
+    def __iter__(self):
+        parent = self._parent
+        parent._iterating +=1
+        pending_removals = parent._pending_removals
+        
+        try:
+            for key_reference, value in dict.items(parent):
+                key = key_reference()
+                if (key is None):
+                    pending_removals.add(key_reference)
+                    continue
+                
+                yield key, value
+                continue
+        
+        finally:
+            parent._iterating -=1
+            parent._commit_removals()
+    
+    def __contains__(self, contains_item):
+        if not isinstance(contains_item, tuple):
+            return False
+        
+        if len(contains_item) != 2:
+            return False
+        
+        contains_key, contains_value = contains_item
+        
+        try:
+            contains_key_reference = WeakReferer(contains_key)
+        except TypeError:
+            return False
+        
+        value = dict.get(self._parent, contains_key_reference)
+        if value is None:
+            return False
+        
+        return (value == contains_value)
+    
+    def __len__(self):
+        return len(self._parent)
+
+class WeakKeyDictionary(dict):
+    __slots__ = ('__weakref__', '_pending_removals', '_iterating', '_callback')
+    
+    MAX_RERP_ELEMENT_LIMIT  = 50
+    
+    def _commit_removals(self):
+        if self._iterating:
+            return
+        
+        pending_removals = self._pending_removals
+        while pending_removals:
+            key_reference = pending_removals.pop()
+            
+            try:
+                dict.__delitem__(self, key_reference)
+            except KeyError:
+                return
+        
+    # __class__ -> same
+    
+    def __contains__(self, key):
+        try:
+            key = WeakReferer(key)
+        except TypeError:
+            return False
+        
+        return dict.__contains__(self, key)
+    
+    # __delattr__ -> same
+    
+    def __delitem__(self, key):
+        dict.__delitem__(self, WeakReferer(key))
+    
+    # __dir__ -> same
+    # __doc__ -> same
+    # __eq__ -> same
+    # __format__ -> same
+    # __ge__ -> same
+    # __getattribute__ -> same
+
+    def __getitem__(self, key):
+        return dict.__getitem__(self, WeakReferer(key))
+    
+    # __gt__ -> same
+    # __hash__ -> same
+    
+    def __init__(self,iterable=None):
+        self._pending_removals=set()
+        self._iterating=0
+        self._callback = _WeakKeyDictionaryCallback(self)
+        if iterable is None:
+            return
+        
+        self.update(iterable)
+        return
+    
+    # __init_subclass__ -> same
+    
+    def __iter__(self):
+        return iter(_WeakKeyDictionaryKeyIterator(self))
+    
+    # __le__ -> same
+    
+    def __len__(self):
+        return dict.__len__(self) - len(self._pending_removals)
+    
+    # __lt__ -> same
+    # __ne__ -> same
+    # __new__ -> same
+    # __reduce__ -> we do not care
+    # __redue_ex__ -> we do not care
+    
+    def __repr__(self):
+        result = [self.__class__.__name__, '({']
+        
+        pending_removals = self._pending_removals
+        if dict.__len__(self) - len(pending_removals):
+            limit = self.MAX_RERP_ELEMENT_LIMIT
+            collected = 0
+            for key_reference, value in dict.items(self):
+                key = key_reference()
+                if (key is None):
+                    pending_removals.add(key_reference)
+                    continue
+                
+                result.append(repr(key))
+                result.append(': ')
+                result.append(repr(value))
+                result.append(', ')
+                
+                collected +=1
+                if collected != limit:
+                    continue
+                
+                leftover = dict.__len__(self) - len(pending_removals) - collected
+                if leftover:
+                    result.append('...}, ')
+                    result.append(str(leftover))
+                    result.append(' truncated)')
+                else:
+                    result[-1] = '})'
+                break
+            else:
+                result[-1] = '})'
+            
+            self._commit_removals()
+            
+        else:
+            result.append('})')
+        
+        return ''.join(result)
+    
+    #__setattr__ -> same
+    
+    def __setitem__(self, key, value):
+        dict.__setitem__(self, WeakReferer(key, self._callback), value)
+    
+    # __sizeof__ -> same
+    
+    __str__ = __repr__
+    
+    # __subclasshook__ -> same
+    
+    def clear(self):
+        dict.clear(self)
+        self._pending_removals.clear()
+    
+    def copy(self):
+        new = dict.__new__(type(self))
+        new._pending_removals = set()
+        callback = _WeakKeyDictionaryCallback(new)
+        new._callback = callback
+        
+        pending_removals = self._pending_removals
+        
+        for key_reference, value in dict.items(self):
+            key = key_reference()
+            if key is None:
+                pending_removals.add(key_reference)
+                continue
+            
+            dict.__setitem__(new, WeakReferer(key, callback), value)
+            continue
+        
+        self._commit_removals()
+        
+        return new
+    
+    def get(self, key, default=None):
+        return dict.get(self, WeakReferer(key), default)
+    
+    def items(self):
+        return _WeakKeyDictionaryItemIterator(self)
+    
+    def keys(self):
+        return _WeakKeyDictionaryKeyIterator(self)
+    
+    def pop(self, key, default=_spaceholder):
+        try:
+            key_reference = WeakReferer(key)
+        except TypeError:
+            raise KeyError(key) from None
+        
+        value = dict.pop(self, key_reference, _spaceholder)
+        if (value is not _spaceholder):
+            return value
+        
+        if default is _spaceholder:
+            raise KeyError(key)
+        
+        return default
+    
+    def popitem(self):
+        while dict.__len__(self):
+            key_reference, value = dict.popitem(self)
+            key = key_reference()
+            
+            if (key is not None):
+                return key, value
+            
+            if self._iterating:
+                self._pending_removals.add(key_reference)
+            else:
+                dict.__delitem__(self, key_reference)
+            
+            continue
+        
+        raise KeyError('popitem(): dictionary is empty.')
+    
+    def setdefault(self, key, default=None):
+        value = dict.get(self, key, _spaceholder)
+        if (value is not _spaceholder):
+            return value
+        
+        self[key] = default
+        return default
+    
+    def update(self, other):
+        if hasattr(type(other), 'items'):
+            for key, value in other.items():
+                self[key] = value
+            return
+        
+        if hasattr(type(other), 'keys') and hasattr(type(other), '__getitem__'):
+            for key in other.keys():
+                value = other[key]
+                self[key] = value
+            return
+        
+        if hasattr(type(other),'__iter__'):
+            index = -1
+            for item in other:
+                index = index+1
+                
+                try:
+                    iterator=iter(item)
+                except TypeError:
+                    raise TypeError(f'Cannot convert dictionary update sequence element #{index} to a sequence.') from None
+                
+                try:
+                    key = next(iterator)
+                except StopIteration:
+                    raise ValueError(f'Dictionary update sequence element #{index} has length {0}; 2 is required.') from None
+                
+                try:
+                    value = next(iterator)
+                except StopIteration:
+                    raise ValueError(f'Dictionary update sequence element #{index} has length {1}; 2 is required.') from None
+                
+                try:
+                    next(iterator)
+                except StopIteration:
+                    self[key] = value
+                    continue
+                
+                length = 3
+                for _ in iterator:
+                    length +=1
+                    if length>9000:
+                        break
+                
+                if length>9000:
+                    length='OVER 9000!'
+                else:
+                    length=repr(length)
+                
+                raise ValueError(f'Dictionary update sequence element #{index} has length {length}; 2 is required.')
+            return
+        
+        raise TypeError(f'{other.__class__.__name__!r} object is not iterable')
+    
+    def values(self):
+        return _WeakKeyDictionaryValueIterator(self)
+
+class _WeakMapCallback(object):
+    __slots__ = ('_parent', )
+    def __new__(cls, parent):
+        parent = WeakReferer(parent)
+        self = object.__new__(cls)
+        self._parent = parent
+        return self
+    
+    def __call__(self, reference):
+        parent = self._parent()
+        if parent is None:
+            return
+        
+        if parent._iterating:
+            parent._pending_removals.add(reference)
+        else:
+            try:
+                dict.__delitem__(parent, reference)
+            except KeyError:
+                pass
+
+class _WeakMapIterator(object):
+    __slots__ = ('_parent', )
+    def __init__(self, parent):
+        self._parent=parent
+    
+    def __iter__(self):
+        parent = self._parent
         parent._iterating +=1
         pending_removals = parent._pending_removals
         
         try:
             for reference in dict.__iter__(parent):
                 key = reference()
-                if (key is not None):
-                    yield key
+                if (key is None):
+                    pending_removals.add(reference)
                     continue
                 
-                pending_removals.add(reference)
+                yield key
                 continue
         
         finally:
-            iterating = parent._iterating-1
-            parent._iterating = iterating
-            if iterating:
-                return
-            
-            while pending_removals:
-                reference = pending_removals.pop()
-                dict.__delitem__(self, reference)
+            parent._iterating -=1
+            parent._commit_removals()
     
     def __contains__(self, key):
-        return (key in self.parent)
+        return (key in self._parent)
     
     def __len__(self):
-        return len(self.parent)
+        return len(self._parent)
 
-class WeakMap(dict, metaclass=RemoveMeta, remove=['__setitem__', 'items', 'keys', 'popitem', 'setdefault', 'update',
-        'values', ]):
+class WeakMap(dict):
     __slots__ = ('__weakref__', '_pending_removals', '_iterating', '_callback')
+    
+    MAX_RERP_ELEMENT_LIMIT = 50
+    
+    def _commit_removals(self):
+        if self._iterating:
+            return
+        
+        pending_removals = self._pending_removals
+        while pending_removals:
+            reference = pending_removals.pop()
+            
+            try:
+                dict.__delitem__(self, reference)
+            except KeyError:
+                pass
+    
     # __class__ -> same
     
     def __contains__(self, key):
@@ -1794,7 +2649,7 @@ class WeakMap(dict, metaclass=RemoveMeta, remove=['__setitem__', 'items', 'keys'
             reference = WeakReferer(key)
         except TypeError:
             return False
-    
+        
         return dict.__contains__(self, reference)
     
     # __delattr__ -> same
@@ -1813,7 +2668,7 @@ class WeakMap(dict, metaclass=RemoveMeta, remove=['__setitem__', 'items', 'keys'
     
     # __dir__ -> same
     # __doc__ -> same
-    # __eq__ -> same
+    # __eq__ > same
     # __format__ -> same
     # __ge__ -> same
     # __getattribute__ -> same
@@ -1833,11 +2688,8 @@ class WeakMap(dict, metaclass=RemoveMeta, remove=['__setitem__', 'items', 'keys'
         self._pending_removals=set()
         self._iterating=0
         self._callback=_WeakMapCallback(self)
-        if iterable is None:
-            return
-        
-        self.update(iterable)
-        return
+        if (iterable is not None):
+            self.update(iterable)
     
     # __init_subclass__ -> same
     
@@ -1847,7 +2699,7 @@ class WeakMap(dict, metaclass=RemoveMeta, remove=['__setitem__', 'items', 'keys'
     # __le__ -> same
     
     def __len__(self):
-        return dict.__len__(self)-len(self._pending_removals)
+        return dict.__len__(self) - len(self._pending_removals)
     
     # __lt__ -> same
     # __ne__ -> same
@@ -1856,9 +2708,11 @@ class WeakMap(dict, metaclass=RemoveMeta, remove=['__setitem__', 'items', 'keys'
     # __redue_ex__ -> we do not care
     
     def __repr__(self):
-        result = [self.__class__.__name__,'({']
-        if self:
-            pending_removals=self._pending_removals
+        result = [self.__class__.__name__, '({']
+        if dict.__len__(self) - len(self._pending_removals):
+            limit = self.MAX_RERP_ELEMENT_LIMIT
+            collected = 0
+            pending_removals = self._pending_removals
             for reference in dict.__iter__(self):
                 key = reference()
                 if (key is None):
@@ -1867,24 +2721,30 @@ class WeakMap(dict, metaclass=RemoveMeta, remove=['__setitem__', 'items', 'keys'
                 
                 result.append(repr(key))
                 result.append(', ')
-                continue
-            
-            if len(result)>2:
-                result[-1]='})'
+                
+                collected +=1
+                if collected != limit:
+                    continue
+                
+                leftover = dict.__len__(self) - len(pending_removals) - collected
+                if leftover:
+                    result.append('...}, ')
+                    result.append(str(leftover))
+                    result.append(' truncated)')
+                else:
+                    result[-1] = '})'
+                break
             else:
-                result.append('})')
+                result[-1] = '})'
             
-            if not self._iterating:
-                while pending_removals:
-                    reference = pending_removals.pop()
-                    dict.__delitem__(self, reference)
+            self._commit_removals()
         else:
             result.append('})')
         
         return ''.join(result)
     
     # __setattr__ -> same
-    # __setitem__ -> removed
+    __setitem__ = RemovedDescriptor()
     # __sizeof__ -> same
     
     __str__ = __repr__
@@ -1913,10 +2773,7 @@ class WeakMap(dict, metaclass=RemoveMeta, remove=['__setitem__', 'items', 'keys'
             dict.__setitem__(new, reference, reference)
             continue
         
-        if not self._iterating:
-            while pending_removals:
-                reference = pending_removals.pop()
-                dict.__delitem__(self, reference)
+        self._commit_removals()
         
         return new
     
@@ -1926,8 +2783,8 @@ class WeakMap(dict, metaclass=RemoveMeta, remove=['__setitem__', 'items', 'keys'
         except TypeError:
             return default
         
-        real_reference = dict.get(self, reference, None)
-        if real_reference is None:
+        real_reference = dict.get(self, reference, reference)
+        if real_reference is reference:
             return default
         
         real_key = real_reference()
@@ -1941,8 +2798,8 @@ class WeakMap(dict, metaclass=RemoveMeta, remove=['__setitem__', 'items', 'keys'
         
         return default
     
-    # items -> removed
-    # keys -> removed
+    items = RemovedDescriptor()
+    keys = RemovedDescriptor()
     
     def pop(self, key, default=_spaceholder):
         try:
@@ -1951,41 +2808,36 @@ class WeakMap(dict, metaclass=RemoveMeta, remove=['__setitem__', 'items', 'keys'
             pass
         else:
             real_reference = dict.pop(self, reference, _spaceholder)
-            if (real_reference is not default):
+            if (real_reference is not _spaceholder):
                 real_key = real_reference()
-                if (real_key is None):
-                    if self._iterating:
-                        self._pending_removals.add(real_reference)
-                    else:
-                        dict.__delitem__(self, real_reference)
-                else:
+                if (real_key is not None):
                     return real_key
+                
+                if self._iterating:
+                    self._pending_removals.add(real_reference)
+                else:
+                    dict.__delitem__(self, real_reference)
         
         if default is _spaceholder:
             raise KeyError(key)
-        else:
-            return default
+        
+        return default
     
-    # popitem -> removed
-    # setdefault -> removed
-    # update -> removed
-    # values -> removed
+    popitem = RemovedDescriptor()
+    setdefault = RemovedDescriptor()
+    update = RemovedDescriptor()
+    values = RemovedDescriptor()
     
     def set(self, key):
         reference = WeakReferer(key, self._callback)
         real_reference = dict.get(self, reference, None)
         if (real_reference is not None):
             real_key = real_reference()
-            if real_key is None:
-                if self._iterating:
-                    self._pending_removals.add(real_reference)
-                else:
-                    dict.__delitem__(self, real_reference)
-            else:
+            if (real_key is not None):
                 return real_key
         
         dict.__setitem__(self, reference, reference)
         return key
 
-del weakref
+del WeakrefType
 del dummy_init_tester

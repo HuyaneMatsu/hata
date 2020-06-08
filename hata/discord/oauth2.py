@@ -5,7 +5,7 @@ import re
 from datetime import datetime
 from time import time as time_now
 
-from .bases import DiscordEntity
+from .bases import DiscordEntity, IconSlot
 from .http import URLS
 from .integration import Integration
 from .others import PremiumType
@@ -133,7 +133,7 @@ class Connection(DiscordEntity):
         Possible visibility values
         +-------+-------------------------------+
         | value | description                   |
-        +======+===========================+
+        +=======+===============================+
         | 0     | Visible only for the user.    |
         +-------+-------------------------------+
         | 1     | Visible to everyone.          |
@@ -177,10 +177,47 @@ SCOPES={v:v for v in ('activities.read', 'activities.write', 'applications.build
 # rest of scopes is ignorable
 
 class AO2Access(object):
+    """
+    Represents a Discord oauth2 access object, what is returned by ``Client.activate_authorization_code`` if
+    activating the authorization code went successfully.
+    
+    Attributes
+    ----------
+    access_token : `str`
+        Token used for `Bearer` authorazitions, when requesting OAuth2 data about the respective user.
+    created_at : `datetime`
+        The time when the access was last created or renewed.
+    expires_in : `int`
+        The time in seconds after this access expires.
+    redirect_url : `str`
+        The redirect url with what the user granted the authorization code for the oauth2 scopes for the application.
+        > Can be empty string if application's onwer's access was requested.
+    refresh_token : `str`
+        The token used to renew the access token.
+        > Can be empty string if application's onwer's access was requested.
+    scopes : `list` of `str`
+        A list of the scopes, what the user granted with the access token.
+    
+    Class Attributes
+    ----------------
+    TOKEN_TYPE : `str` = `'Bearer'`
+        The access token's type.
+    """
     TOKEN_TYPE='Bearer'
     
     __slots__ = ('access_token', 'created_at', 'expires_in', 'redirect_url', 'refresh_token', 'scopes',)
-    def __init__(self,data,redirect_url):
+    def __init__(self, data, redirect_url):
+        """
+        Creates an ``OA2Access``.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received acces data.
+        redirect_url : `str`
+            The redirect url with what the user granted the authorization code for the oauth2 scopes for the
+            application.
+        """
         self.redirect_url=redirect_url
         self.access_token=data['access_token']
         self.refresh_token=data.get('refresh_token','')
@@ -193,10 +230,19 @@ class AO2Access(object):
                 pass
         self.created_at=datetime.now() #important for renewing
         
-    def _renew(self,data):
+    def _renew(self, data):
+        """
+        Renews the access with the given data.
+        
+        Parameters
+        ----------
+        data : `None` or (`dict` of (`str`, `Any`))
+            Requested access data.
+        """
         self.created_at=datetime.now()
         if data is None:
             return
+        
         self.access_token=data['access_token']
         self.refresh_token=data.get('refresh_token','')
         self.expires_in=data['expires_in']
@@ -209,29 +255,53 @@ class AO2Access(object):
                 pass
     
     def __repr__(self):
+        """Returns the representation of the achievement."""
         return f'<{self.__class__.__name__} {"active" if (self.created_at.timestamp()+self.expires_in > time_now()) else "expired"}, access_token={self.access_token!r}, scopes count={len(self.scopes)}>'
-        
-        
-class UserOA2(UserBase):
-    __slots__ = ('access', 'email', 'flags', 'locale', 'mfa', 'premium_type', 'system', 'verified', )
 
-    def __init__(self,data,access):
+
+class UserOA2(UserBase):
+    """
+    Represents a Discord user with extra personal informations. If a ``UserOA2`` is  created it will NOT overwrite the
+    already existing user with the same ID, if exists.
+    
+    Attributes
+    ----------
+
+    id : `int`
+        The user's unique identificator number.
+    name : str
+        The user's username.
+    discriminator : `int`
+        The user's discriminator. Given to avoid overlapping names.
+    avatar_hash : `int`
+        The user's avatar's hash in `uint128`.
+    avatar_type : `bool`
+        The user's avatar's type.
+    email : `str`
+        The user's email. Defaults to empty string.
+    flags : ``UserFlag``
+        The user's user flags.
+    locale : `str`
+        The preferred locale by the user.
+    mfa : `bool`
+        Whether the user has two factor authorization enabled on the account.
+    premium_type : ``PremiumType``
+        The Nitro subscription type of the user.
+    system : `bool`
+        Whether the user is an Official Discord System user (part of the urgent message system).
+    verified : `bool`
+        Whether the email of the user is verified.
+    """
+    __slots__ = ('access', 'email', 'flags', 'locale', 'mfa', 'premium_type', 'system', 'verified', )
+    
+    def __init__(self, data, access):
         self.access         = access
         self.id             = int(data['id'])
         self.name           = data['username']
         self.discriminator  = int(data['discriminator'])
-
-        avatar=data.get('avatar')
-        if avatar is None:
-            self.avatar     = 0
-            self.has_animated_avatar=False
-        elif avatar.startswith('a_'):
-            self.avatar     = int(avatar[2:],16)
-            self.has_animated_avatar=True
-        else:
-            self.avatar     = int(avatar,16)
-            self.has_animated_avatar=False
-
+        
+        self._set_avatar(data)
+        
         self.mfa            = data.get('mfa_enabled',False)
         self.verified       = data.get('verified',False)
         self.email          = data.get('email','')
@@ -248,44 +318,123 @@ class UserOA2(UserBase):
     
     @property
     def partial(self):
+        """
+        Returns whether the oauth2 user object is partial.
+        
+        Returns
+        -------
+        partial : `bool` = `False`
+        """
         return False
     
     @property
     def is_bot(self):
+        """
+        Returns whether the oauth2 user represents a bot account.
+        
+        Returns
+        -------
+        is_bot : `bool` = `False`
+        """
         return False
     
     # Reflect AO2Access
     @property
     def access_token(self):
+        """
+        Returns the oauth2 user's access's token.
+        
+        Returns
+        -------
+        access_token : `str`
+        """
         return self.access.access_token
     
     @property
     def redirect_url(self):
+        """
+        Returns the oauth2 user's access's redirect url.
+        
+        Returns
+        -------
+        redirect_url : `str`
+        """
         return self.access.redirect_url
     
     @property
     def refresh_token(self):
+        """
+        Returns the oauth2 user's access's refresh token.
+        
+        Returns
+        -------
+        refresh_token : `str`
+        """
         return self.access.refresh_token
     
     @property
     def scopes(self):
+        """
+        Returns the oauth2 user's access's scopes.
+        
+        Returns
+        -------
+        scopes : `list` of `str`
+        """
         return self.access.scopes
 
     def _renew(self, data):
+        """
+        Renews the oauth2 user's access with the given data.
+        
+        Parameters
+        ----------
+        data : `None` or (`dict` of (`str`, `Any`))
+            Requested access data.
+        """
         self.access._renew(data)
 
 
 class Achievement(DiscordEntity):
-    __slots__ = ('application_id', 'description', 'icon', 'name', 'secret', 'secure',)
+    """
+    Represents a Discord achievement created at Developer portal.
     
-    def __init__(self,data):
+    Attributes
+    ----------
+    id : `int`
+        The achievement's unique identificator number.
+    application_id : `int`
+        The achievement's respective application's id.
+    description : `str`
+        The description of the achievement.
+    name : `str`
+        The name of the achievement.
+    secret : `bool`
+        Secret achievements will *not* be shown to the user until they've unlocked them.
+    secure : `bool`
+        Secure achievements can only be set via HTTP calls from your server, not by a game client using the SDK.
+    icon_hash : `int`
+        The achievement's icon's hash. Achievements always have icon.
+    icon_type : ``IconType``
+        The achievement's icon's type.
+    """
+    __slots__ = ('application_id', 'description', 'name', 'secret', 'secure',)
+    
+    icon = IconSlot('icon', 'icon_hash', URLS.achievement_icon_url, URLS.achievement_icon_url_as)
+    
+    def __init__(self, data):
+        """
+        Creates an achievement with the given data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received achievement data.
+        """
         self.application_id=int(data['application_id'])
         self.id=int(data['id'])
-
+        
         self._update_no_return(data)
-
-    icon_url=property(URLS.achievement_icon_url)
-    icon_url_as=URLS.achievement_icon_url_as
     
     def __repr__(self):
         """Returns the achievement's represnetation."""
@@ -302,7 +451,37 @@ class Achievement(DiscordEntity):
             return self.created_at.__format__('%Y.%m.%d-%H:%M:%S')
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
-    def _update(self,data):
+    def _update(self, data):
+        """
+        Updates the achievement and returns it's overwritten attributes as a `dict` with a `attribute-name` - `old-value`
+        relation.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Achievement data received from Discord.
+            
+        Returns
+        -------
+        old : `dict` of (`str`, `Any`) items
+            All item in the returned dict is optional.
+        
+        Returned Data Structure
+        -----------------------
+        +---------------+-----------+
+        | Keys          | Values    |
+        +===============+===========+
+        | name          | `str`     |
+        +---------------+-----------+
+        | description   | `str`     |
+        +---------------+-----------+
+        | secret        | `bool`    |
+        +---------------+-----------+
+        | secure        | `bool`    |
+        +---------------+-----------+
+        | icon          | ``Icon``  |
+        +---------------+-----------+
+        """
         old={}
         
         name=data['name']['default']
@@ -325,25 +504,29 @@ class Achievement(DiscordEntity):
             old['secure']=self.secure
             self.secure=secure
         
-        icon=data.get('icon_hash')
-        icon=0 if icon is None else int(icon,16)
-        if self.icon!=icon:
-            old['icon']=icon
-            self.icon=icon
+        self._update_icon(data, old)
         
         return old
     
-    def _update_no_return(self,data):
+    def _update_no_return(self, data):
+        """
+        Updates the achievement with overwriting it's old attributes.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Achievement data received from Discord.
+        """
         self.name=data['name']['default']
         self.description=data['description']['default']
         
         self.secret=data['secret']
         self.secure=data['secure']
         
-        icon=data.get('icon_hash')
-        self.icon=0 if icon is None else int(icon,16)
+        self._set_icon(data)
 
 del UserBase
 del re
 del URLS
 del DiscordEntity
+del IconSlot

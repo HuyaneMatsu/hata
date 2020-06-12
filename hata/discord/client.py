@@ -15,8 +15,7 @@ from ..backend.hdrs import AUTHORIZATION
 from ..backend.helpers import BasicAuth
 
 from .others import Status, log_time_converter, DISCORD_EPOCH, VoiceRegion, ContentFilterLevel, PremiumType, \
-    MessageNotificationLevel, bytes_to_base64, ext_from_base64, random_id, to_json, VerificationLevel, \
-    RelationshipType
+    MessageNotificationLevel, bytes_to_base64, ext_from_base64, random_id, to_json, VerificationLevel, RelationshipType
 from .user import User, USERS, GuildProfile, UserBase, UserFlag
 from .emoji import Emoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, \
@@ -327,7 +326,7 @@ class Client(UserBase):
         The last nonce in int used for requesting guild user chunks. The default value is 0, what means the next
         request will start at 1. Nonce 0 is allocated for the case, when all the guild's user is requested.
     
-    Class attributes
+    Class Attributes
     ----------------
     loop : ``EventThread``
         The eventloop of the client. Every client uses the same one.
@@ -2430,7 +2429,7 @@ class Client(UserBase):
     async def message_logs(self, channel, limit=100, after=None, around=None, before=None):
         """
         Requests messages from the given text channel. The `after`, `around` and the `before` arguments are mutually
-        exclusive and they can be passed as `datetime` object or as an object's `id` or as an object with `.id`.
+        exclusive and they can be passed as `int`, or as a ``DiscordEntitiy`` instance or as a `datetime` object.
         If there is at least 1 message overlap between the received and the loaded messages, the wrapper will chain
         the channel's message history up. If this happens the channel will get on a queue to have it's messages again
         limited to the default one, but requesting old messages more times, will cause it to extend.
@@ -2441,11 +2440,11 @@ class Client(UserBase):
             The channel from where we want to request the messages.
         limit : `int`, Optiomal
             The amount of messages to request. Can be between 1 and 100.
-        after : `int` or `datetime` or Any type with `.id`, Optional
+        after : `int`, ``DiscordEntity`` or `datetime`, Optional
             The timestamp after the requested messages were created.
-        around : `int` or `datetime` or Any type with `.id`, Optional
+        around : `int`, ``DiscordEntity`` or `datetime`, Optional
             The timestamp around the requested messages were created.
-        before : `int` or `datetime` or Any type with `.id`, Optional
+        before : `int`, ``DiscordEntity`` or `datetime`, Optional
             The timestamp before the requested messages were created.
         
         Returns
@@ -3097,16 +3096,16 @@ class Client(UserBase):
         
     async def message_delete_sequence(self, channel, after=None, before=None, limit=None, filter=None, reason=None):
         """
-        Deletes messages between an intervallum determined by `before` and `after`. They can be passed as `datetime`
-        object or as an object's `id` or as an object with `.id`.
+        Deletes messages between an intervallum determined by `before` and `after`. They can be passed as `int`, or as
+        a ``DiscordEntitiy`` instance or as a `datetime` object.
         
         Parameters
         ----------
         channel : ``ChannelTextBase`` instance
             The channel, where the deletion should take place.
-        after : `int` or `datetime` or Any type with `.id`, Optional
+        after : `int`, ``DiscordEntity`` or `datetime`, Optional
             The timestamp after the messages were created, which will be deleted.
-        before : `int` or `datetime` or Any type with `.id`, Optional
+        before : `int`, ``DiscordEntity`` or `datetime`, Optional
             The timestamp before the messages were created, which will be deleted.
         limit : `int`, Optional
             The maximal amount of messages to delete.
@@ -3870,7 +3869,7 @@ class Client(UserBase):
             The emoji, what's reacters will be requested.
         limit : `int`
             The amount of users to request. Can be between `1` and `100`. Defaults to 25 by Discord.
-        after : `int` or `datetime` or Any type with `.id`, Optional
+        after : `int`, ``DiscordEntity`` or `datetime`, Optional
             The timestamp after the message's reacters were created.
         
         Returns
@@ -4912,8 +4911,8 @@ class Client(UserBase):
     async def audit_logs(self, guild, limit=100, before=None, after=None, user=None, event=None,):
         """
         Request a batch of audit logs of the guild and returns them. The `after`, `around` and the `before` arguments
-        are mutually exclusive and they can be passed as `datetime` object or as an object's `id` or as an object
-        with `.id`.
+        are mutually exclusive and they can be passed as `int`, or as a ``DiscordEntitiy`` instance or as a `datetime`
+        object.
         
         Parameters
         ----------
@@ -4921,9 +4920,9 @@ class Client(UserBase):
             The guild, what's audit logs will be requested.
         limit : `int`, Optional
             The amount of audit logs to request. Can b between 1 and 100. Defaults to 100.
-        before : `int` or `datetime` or Any type with `.id`, Optional
+        before : `int`, ``DiscordEntity` or `datetime`, Optional
             The timestamp before the audit log entries wer created.
-        after : `int` or `datetime` or Any type with `.id`, Optional
+        after : `int`, ``DiscordEntity`` or `datetime`, Optional
             The timestamp after the audit log entries wer created.
         user : ``Client`` or ``User`` object, Optional
             Whether the audit logs should be filtered only to those, which were created by the given user.

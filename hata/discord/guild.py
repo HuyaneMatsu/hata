@@ -49,7 +49,7 @@ class GuildFeature(object):
     Every predefined guild feature can be accessed as class attribute as well:
     
     +-------------------------------+-------------------------------+
-    | attribute name                | value                         |
+    | Class attribute name          | value                         |
     +===============================+===============================+
     | animated_icon                 | ANIMATED_ICON                 |
     +-------------------------------+-------------------------------+
@@ -140,7 +140,7 @@ class GuildFeature(object):
         
         Returns
         -------
-        `str`
+        name : `str`
         """)
     
     def __repr__(self):
@@ -545,7 +545,7 @@ class GuildWidgetChannel(DiscordEntity):
         
         return NotImplemented
 
-class GuildWidget(object):
+class GuildWidget(DiscordEntity):
     """
     Represents a ``Guild``'s widget.
     
@@ -578,7 +578,7 @@ class GuildWidget(object):
     @property
     def id(self):
         """
-        The unique identificator numbr of the guild widget's guild.
+        The unique identificator number of the guild widget's guild.
         
         Returns
         -------

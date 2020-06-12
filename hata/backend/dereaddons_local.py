@@ -601,19 +601,7 @@ class titledstr(str):
             value=str(value)
         value=value.title()
         return str.__new__(cls,value)
-
-    @classmethod
-    def bypass_titling(cls,value='',encoding=sys.getdefaultencoding(),errors='strict'):
-        if type(value) is cls:
-            return value
-        if isinstance(value,(bytes, bytearray, memoryview)):
-            value=str(value,encoding,errors)
-        elif isinstance(value,str):
-            pass
-        else:
-            value=str(value)
-        return str.__new__(cls,value)
-
+    
     def title(self):
         return self
 

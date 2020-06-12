@@ -9,9 +9,10 @@ from ..backend.http import HTTPClient, Request_CM
 from ..backend.connector import TCPConnector
 from ..backend.hdrs import METH_PATCH, METH_GET, METH_DELETE, METH_POST, METH_PUT, CONTENT_TYPE, USER_AGENT, \
     AUTHORIZATION
+from ..backend.py_quote import quote
 
 from .exceptions import DiscordException, ERROR_CODES
-from .others import to_json, from_json, quote, Discord_hdrs
+from .others import to_json, from_json, Discord_hdrs
 from .ratelimit import ratelimit_global, RATELIMIT_GROUPS, RatelimitHandler, NO_SPECIFIC_RATELIMITER
 from .bases import ICON_TYPE_NONE, ICON_TYPE_STATIC
 
@@ -1243,7 +1244,7 @@ class DiscordHTTPClient(HTTPClient):
                 data=to_json(data)
             
             if reason is not None:
-                headers[AUDIT_LOG_REASON]=quote(reason)
+                headers[AUDIT_LOG_REASON]=quote(reason, safe='\ ')
         else:
             #bearer or webhook request
             if type(data) in (dict,list) and CONTENT_TYPE not in headers:

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__all__ = ('GuildProfile', 'User', 'UserBase', 'UserFlag', 'VoiceState', 'ZEROUSER')
+__all__ = ('GuildProfile', 'User', 'UserBase', 'UserFlag', 'VoiceState', 'ZEROUSER', )
 
 from datetime import datetime
 
@@ -13,6 +13,8 @@ from .activity import ActivityUnknown, Activity
 from .http import URLS
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool, preconvert_discriminator, \
     preconvert_flag
+
+from . import others
 
 class UserFlag(FlagBase):
     __keys__ = {
@@ -1213,6 +1215,8 @@ class VoiceState(object):
 
 ZEROUSER = User._create_empty(0)
 
+others.PartialUser = PartialUser
+
 del URLS
 del modulize
 del CACHE_USER
@@ -1220,3 +1224,4 @@ del CACHE_PRESENCE
 del DiscordEntity
 del FlagBase
 del IconSlot
+del others

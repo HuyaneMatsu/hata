@@ -1,6 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
 #https://github.com/squeaky-pl/zenchmarks/blob/master/vendor/yarl/__init__.py
-from functools import partial
 from ipaddress import ip_address
 from urllib.parse import SplitResult, parse_qsl, urljoin, urlsplit, urlunsplit
 
@@ -525,7 +524,6 @@ class URL:
         if query is None:
             query = ''
         elif hasattr(query,'__getitem__') and hasattr(query,'keys'):
-            quoter = partial(quote, safe='/?:@', qs=True)
             lst = []
             for k, v in query.items():
                 if isinstance(v, str):
@@ -538,15 +536,14 @@ class URL:
                     v = 'null'
                 else:
                     raise TypeError(f'Invalid variable type: mapping value should be str or int, got {v!r}')
-                lst.append(f'{quoter(k)}={quoter(v)}')
+                lst.append(f'{quote(k, safe="/?:@", qs=True)}={quote(v, safe="/?:@", qs=True)}')
             query = '&'.join(lst)
         elif isinstance(query, str):
             query = quote(query, safe='/?:@', protected='=&+', qs=True)
         elif isinstance(query, (bytes, bytearray, memoryview)):
             raise TypeError("Invalid query type: bytes, bytearray andmemoryview are forbidden")
         elif hasattr(query,'__getitem__'):
-            quoter = partial(quote, safe='/?:@', qs=True)
-            query = '&'.join(f'{quoter(k)}={quoter(v)}' for k, v in query)
+            query = '&'.join(f'{quote(k, safe="/?:@", qs=True)}={quote(v, safe="/?:@", qs=True)}' for k, v in query)
         else:
             raise TypeError('Invalid query type: only str, mapping or sequence of (str, str) pairs is allowed')
         path = self._val.path

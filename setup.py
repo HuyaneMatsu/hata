@@ -38,7 +38,7 @@ setup(
     classifiers = [
         'Development Status :: 5 - Production/Stable',
         
-        'License :: OSI Approved :: MIT License',
+        'License :: OSI Approved :: Apache Software License',
         
         'Intended Audience :: Developers',
         
@@ -51,7 +51,7 @@ setup(
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
-        
+        v
         "Topic :: Communications :: Chat",
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',

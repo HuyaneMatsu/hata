@@ -135,6 +135,10 @@ class ActivityBase(object):
         """Returns the activity's representation."""
         return f'<{self.__class__.__name__} name={self.name!r}>'
     
+    def __hash__(self):
+        """Returns the activity's hash value."""
+        return self.id
+    
     def __eq__(self,other):
         """Compares whether the two ``ActivityBase`` instance's `.type` and `.id`."""
         if isinstance(other, ActivityBase):

@@ -11,8 +11,7 @@ RESERVED            = f'{GEN_DELIMS}{SUB_DELIMS}'
 UNRESERVED          = f'{ascii_letters}{digits}-._~'
 ALLOWED             = f'{UNRESERVED}{SUB_DELIMS_WO_QS}'
 
-
-def quote(value,safe='',protected='',qs=False):
+def quote(value, safe='', protected='', qs=False):
     if value is None:
         return None
     if not isinstance(value, str):
@@ -47,21 +46,21 @@ def quote(value,safe='',protected='',qs=False):
                     result.extend(pct)
                 pct=b''
             continue
-        elif char==ord('%'):
+        elif char==b'%'[0]:
             pct=bytearray()
             pct.append(char)
             continue
-
+        
         if qs:
-            if char==ord(' '):
-                result.append(ord('+'))
+            if char== b' '[0]:
+                result.append(b'+'[0])
                 continue
         if char in bsafe:
             result.append(char)
             continue
-
+        
         result.extend((f'%{char:02X}').encode('ascii'))
-
+    
     return result.decode('ascii')
 
 

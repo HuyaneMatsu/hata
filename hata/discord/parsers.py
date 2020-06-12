@@ -15,7 +15,7 @@ from ..backend.analyzer import CallableAnalyzer
 
 from .bases import FlagBase
 from .client_core import CACHE_USER, CACHE_PRESENCE, CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO
-from .user import User, PartialUser,USERS
+from .user import User, PartialUser, USERS
 from .channel import CHANNEL_TYPES, ChannelGuildBase
 from .others import Relationship, Gift
 from .guild import EMOJI_UPDATE_NEW, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, Guild
@@ -26,23 +26,69 @@ from .invite import Invite
 
 utcfromtimestamp=datetime.datetime.utcfromtimestamp
 
-class event_system_core(object):
+class EVENT_SYSTEM_CORE(object):
+    """
+    Stores expected argcount amount and event-parser name relations.
+    
+    Attributes
+    ----------
+    defaults : `dict` of (`str`, `int`) items
+        Event name - expected argument count relation for checking whether the passed event expects the correct amount
+        of arguments.
+    parsers : `dict` of (`str`, `tuple` (`str`, `str`)) items
+        Event name - tuple of parser names relation for checking which parser is used when an event is added.
+    """
     __slots__=('defaults', 'parsers',)
     def __init__(self):
-        self.defaults={}
-        self.parsers={}
-    def add_default(self,name,value,parser):
-        self.defaults[name]=value
+        """
+        Creates an ``EVENT_SYSTEM_CORE`` instance. This method is called only once, when creating
+        `hata.discord.parsers.EVENTS`.
+        """
+        self.defaults = {}
+        self.parsers = {}
+    
+    def add_default(self, name, value, parser):
+        """
+        Adds a new event-name argcount parser names relation to the event system core instance.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name of the event.
+        value : `int`
+            The amount of arguments what the parser passes the respective event.
+        parser : `str` or (`tuple` of `str`)
+            The name of parsers, which might call the respective event.
+        """
+        self.defaults[name] = value
         if (type(parser) is not tuple):
             parser = (parser,)
-        self.parsers[name]=parser
+        self.parsers[name] = parser
     
-    def get_argcount(self,name):
+    def get_argcount(self, name):
+        """
+        Returns the amount of arguments, what the parsers would pass to the respective event.
+        
+        Parameters
+        ----------
+        name : `str`
+            The event's name.
+        
+        Returns
+        -------
+        argcount : `int`
+            The amount of arguments, what to the respective event would be passed.
+        
+        Raises
+        ------
+        LookupError
+            There is no event defined with the specific name.
+        """
         try:
-            value=self.defaults[name]
+            argcount = self.defaults[name]
         except KeyError:
             raise LookupError(f'Invalid Event name: `{name!r}`.') from None
-        return value
+        return argcount
 
 
 INTENT_GUILDS             = 0
@@ -154,6 +200,75 @@ GLOBAL_INTENT_EVENTS = (
         )
 
 class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
+    """
+    An `int` subclass representing the intents to receive specific events. The wrapper picks these up as well and
+    optimizes the dispatch events' parsers.
+    
+    Each flag specifies which parser's dispatch event is received from Discord. Not mentioned parsers do not depend
+    on intent flags and they are expected to be received independently.
+    
+    +---------------------------+---------------+-----------------------+-----------------------------------+
+    | Intent flag position's    | Shift value   | Intent name           | Coresponding parser               |
+    | respective name           |               |                       |                                   |
+    +===========================+===============+=======================+===================================+
+    | INTENT_GUILDS             | 0             | guilds                | GUILD_CREATE                      |
+    |                           |               |                       | GUILD_DELETE                      |
+    |                           |               |                       | GUILD_UPDATE                      |
+    |                           |               |                       | GUILD_ROLE_CREATE                 |
+    |                           |               |                       | GUILD_ROLE_UPDATE                 |
+    |                           |               |                       | GUILD_ROLE_DELETE                 |
+    |                           |               |                       | CHANNEL_CREATE                    |
+    |                           |               |                       | CHANNEL_UPDATE                    |
+    |                           |               |                       | CHANNEL_DELETE                    |
+    |                           |               |                       | CHANNEL_PINS_UPDATE               |
+    +---------------------------+---------------+-----------------------+-----------------------------------+
+    | INTENT_GUILD_USERS        | 1             | guild_users           | GUILD_MEMBER_ADD                  |
+    |                           |               |                       | GUILD_MEMBER_UPDATE               |
+    |                           |               |                       | GUILD_MEMBER_REMOVE               |
+    +---------------------------+---------------+-----------------------+-----------------------------------+
+    | INTENT_GUILD_BANS         | 2             | guild_bans            | GUILD_BAN_ADD                     |
+    |                           |               |                       | GUILD_BAN_REMOVE                  |
+    +---------------------------+---------------+-----------------------+-----------------------------------+
+    | INTENT_GUILD_EMOJIS       | 3             | guild_emojis          | GUILD_EMOJIS_UPDATE               |
+    +---------------------------+---------------+-----------------------+-----------------------------------+
+    | INTENT_GUILD_INTEGRATIONS | 4             | guild_integrations    | GUILD_INTEGRATIONS_UPDATE         |
+    +---------------------------+---------------+-----------------------+-----------------------------------+
+    | INTENT_GUILD_WEBHOOKS     | 5             | guild_webhooks        | WEBHOOKS_UPDATE                   |
+    +---------------------------+---------------+-----------------------+-----------------------------------+
+    | INTENT_GUILD_INVITES      | 6             | guild_invites         | INVITE_CREATE                     |
+    |                           |               |                       | INVITE_DELETE                     |
+    +---------------------------+---------------+-----------------------+-----------------------------------+
+    | INTENT_GUILD_VOICE_STATES | 7             | guild_voice_states    | VOICE_STATE_UPDATE                |
+    +---------------------------+---------------+-----------------------+-----------------------------------+
+    | INTENT_GUILD_PRESENCES    | 8             | guild_presences       | PRESENCE_UPDATE                   |
+    +---------------------------+---------------+-----------------------+-----------------------------------+
+    | INTENT_GUILD_MESSAGES     | 9             | guild_messages        | MESSAGE_CREATE                    |
+    +---------------------------+---------------+-----------------------+-----------------------------------+
+    |                           |               |                       | MESSAGE_UPDATE                    |
+    |                           |               |                       | MESSAGE_DELETE                    |
+    |                           |               |                       | MESSAGE_DELETE_BULK               |
+    +---------------------------+---------------+-----------------------+-----------------------------------+
+    | INTENT_GUILD_REACTIONS    | 10            | guild_reactions       | MESSAGE_REACTION_ADD              |
+    |                           |               |                       | MESSAGE_REACTION_REMOVE           |
+    |                           |               |                       | MESSAGE_REACTION_REMOVE_ALL       |
+    |                           |               |                       | MESSAGE_REACTION_REMOVE_EMOJI     |
+    +---------------------------+---------------+-----------------------+-----------------------------------+
+    | INTENT_GUILD_TYPINGS      | 11            | guild_typings         | TYPING_START                      |
+    +---------------------------+---------------+-----------------------+-----------------------------------+
+    | INTENT_DIRECT_MESSAGES    | 12            | direct_messages       | CHANNEL_CREATE                    |
+    |                           |               |                       | CHANNEL_PINS_UPDATE               |
+    |                           |               |                       | MESSAGE_CREATE                    |
+    |                           |               |                       | MESSAGE_UPDATE                    |
+    |                           |               |                       | MESSAGE_DELETE                    |
+    +---------------------------+---------------+-----------------------+-----------------------------------+
+    | INTENT_DIRECT_REACTIONS   | 13            | direct_reactions      | MESSAGE_REACTION_ADD              |
+    |                           |               |                       | MESSAGE_REACTION_REMOVE           |
+    |                           |               |                       | MESSAGE_REACTION_REMOVE_ALL       |
+    |                           |               |                       | MESSAGE_REACTION_REMOVE_EMOJI     |
+    +---------------------------+---------------+-----------------------+-----------------------------------+
+    | INTENT_DIRECT_TYPINGS     | 14            | direct_typings        | TYPING_START                      |
+    +---------------------------+---------------+-----------------------+-----------------------------------+
+    """
     __keys__ = {
         'guilds'            : INTENT_GUILDS,
         'guild_users'       : INTENT_GUILD_USERS,
@@ -173,37 +288,89 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
             }
     
     def __new__(cls, int_ = -1):
-        if not isinstance(int_,int):
+        """
+        Creates a new ``IntentFlag`` instance from the passed `int_`. If any invalid intent flag is passed, those
+        will be removed. If the wrapper is started up without presence caching, then `.guild_presences` will be
+        set to `False` by default.
+        
+        Parameters
+        ----------
+        int_ : `int` instance, Optional
+            The value what will be converted ``IntentFlag`` instance. If not passed or passed as a negative value,
+            then returns an ``IntentFlag`` what contains all the enabled flags.
+        
+        Returns
+        -------
+        inetnt_flag : ``IntentFlag``
+        
+        Raises
+        ------
+        TypeError
+            If `int_` was not passed as `int` instance.
+        
+        Notes
+        -----
+        The defaultly created intent flags contain the privileged gateway intents, so if you have those disabled, or
+        if those are not allowed for you, then make sure, you specify them.
+        """
+        if not isinstance(int_, int):
             raise TypeError(f'{cls.__name__} expected `int` instance, got `{int_!r}')
         
-        new=0
+        inetnt_flag = 0
         if int_ < 0:
             for value in cls.__keys__.values():
-                new = new|(1<<value)
+                inetnt_flag = inetnt_flag|(1<<value)
             
             # If presence cache is disabled, disable presence updates
             if not CACHE_PRESENCE:
-                new = new^(1<<INTENT_GUILD_PRESENCES)
+                inetnt_flag = inetnt_flag^(1<<INTENT_GUILD_PRESENCES)
         else:
             for value in cls.__keys__.values():
                 if (int_>>value)&1:
-                    new = new|(1<<value)
+                    inetnt_flag = inetnt_flag|(1<<value)
             
             # If presence cache is disabled, disable presence updates
             if not CACHE_PRESENCE:
-                if (new>>INTENT_GUILD_PRESENCES)&1:
-                    new = new^(1<<INTENT_GUILD_PRESENCES)
+                if (inetnt_flag>>INTENT_GUILD_PRESENCES)&1:
+                    inetnt_flag = inetnt_flag^(1<<INTENT_GUILD_PRESENCES)
         
-        return int.__new__(cls,new)
+        return int.__new__(cls, inetnt_flag)
     
     def iterate_parser_names(self):
+        """
+        Yields every parser's name, what the intent flag allows to be received.
+
+        Yields
+        ------
+        parser_name : `str`
+        """
         for shift in self.__keys__.values():
             if (self>>shift)&1:
                 yield from INTENT_EVENTS[shift]
         
         yield from GLOBAL_INTENT_EVENTS
 
-def filter_clients(clients,flag):
+def filter_clients(clients, flag_shift):
+    """
+    Filters the clients whether their intents allows the specific flag.
+    
+    First yields the first client from `clients` what allows the specified flag. If non, then yields `None`.
+    If a `None` or not the expected client was yielded, then the generator should be closed.
+    
+    If the correct client was yielded, then the generator is used at a for loop yielding all the clients from `clients`
+    which allow the specified flag including the firstly yielded one.
+    
+    Parameters
+    ----------
+    clients : `list` of ``Client``
+        The clients to filter.
+    flag_shift : `int`
+        The intent flag's shift based on what the clients will be filtered.
+    
+    yields
+    -------
+    client : ``Client`` or `None`
+    """
     index=0
     limit=len(clients)
     
@@ -213,7 +380,7 @@ def filter_clients(clients,flag):
             return
         
         client=clients[index]
-        if (client.intents>>flag)&1:
+        if (client.intents>>flag_shift)&1:
             yield client
             break
         
@@ -228,26 +395,57 @@ def filter_clients(clients,flag):
             return
         
         client=clients[index]
-        if (client.intents>>flag)&1:
+        if (client.intents>>flag_shift)&1:
             yield client
         
         index=index+1
         continue
 
-def filter_clients_or_me(clients,flag,me):
+def filter_clients_or_me(clients, flag_shift, me):
+    """
+    Filters the clients whether their intents allow the specific flag. This filter is used, when the clients receive
+    the respective event for themselves even if they have the intent disabled.
+    
+    First yields the first client from `clients` what allows the specified flag.
+    
+    If non of the clients allow it, then yields `me` (so the source client), what received the event, then expects
+    a `user` to be yielded back. At the end when the generator is iterated over inside of a for loop, then it yields
+    `me` again (expect if `me` is not the same as the back yielded `user`, but that should not happen, but making sure).
+    
+    If any of the source clients allow the specified intent flag, then yields the first client what allows it.
+    If not the correct client was yielded back, then the generator should be closed. Meanwhile if the correct client
+    was yielded, then the generator expects a `user` to be yielded back. After it, the generator is used inside
+    of a for loop yielding all the clients from `clients` which allow the specified intent flag including the firstly
+    yielded one. At the end yields the received `user` if it is type ``Client`` and it's specified intent flag is not
+    allowed.
+    
+    Parameters
+    ----------
+    clients : `list` of ``Client``
+        The clients to filter.
+    flag_shift : `int`
+        The intent flag's shift based on what the clients will be filtered.
+    me : ``Client``
+        The source client, what received the respective event.
+    
+    yields
+    -------
+    client : ``Client`` or `None`
+    """
     index=0
     limit=len(clients)
     
     while True:
         if index==limit:
             # If non of the clients have the intent, then yield `me`
-            yield me
+            user = yield me
             yield
-            yield me
+            if user is me:
+                yield me
             return
         
         client=clients[index]
-        if (client.intents>>flag)&1:
+        if (client.intents>>flag_shift)&1:
             user = yield client
             break
         
@@ -264,7 +462,7 @@ def filter_clients_or_me(clients,flag,me):
             break
         
         client=clients[index]
-        if (client.intents>>flag)&1:
+        if (client.intents>>flag_shift)&1:
             yield client
         
         index=index+1
@@ -274,12 +472,26 @@ def filter_clients_or_me(clients,flag,me):
     if type(user) is User:
         return
     
-    if (user.intents>>flag)&1:
+    if (user.intents>>flag_shift)&1:
         return
     
     yield user
 
-def first_client(clients,flag):
+def first_client(clients, flag_shift):
+    """
+    Returns the first client what allows the specified intent flag. If no client allows it, then returns `None`.
+    
+    Parameters
+    ----------
+    clients : `list` of ``Client``
+        A list of client to search from.
+    flag_shift : `int`
+        The intent flag's shift based on what the clients will be filtered.
+    
+    Returns
+    -------
+    client : ``Client`` or `None`
+    """
     index=0
     limit=len(clients)
     
@@ -288,14 +500,30 @@ def first_client(clients,flag):
             return None
         
         client=clients[index]
-        if (client.intents>>flag)&1:
+        if (client.intents>>flag_shift)&1:
             return client
             break
         
         index=index+1
         continue
 
-def first_client_or_me(clients,flag,me):
+def first_client_or_me(clients, flag_shift, me):
+    """
+    Returns the first client what allows the specified intent flag. If non of the clients allow it, then returns `me`.
+    
+    Parameters
+    ----------
+    clients : `list` of ``Client``
+        A list of client to search from.
+    flag_shift : `int`
+        The intent flag's shift based on what the clients will be filtered.
+    me : ``Client``
+        The source client, what received the respective event.
+    
+    Returns
+    -------
+    client : ``Client``
+    """
     index=0
     limit=len(clients)
     
@@ -304,7 +532,7 @@ def first_client_or_me(clients,flag,me):
             return me
         
         client=clients[index]
-        if (client.intents>>flag)&1:
+        if (client.intents>>flag_shift)&1:
             return client
             break
         
@@ -314,6 +542,42 @@ def first_client_or_me(clients,flag,me):
 PARSERS={}
 
 class PARSER_DEFAULTS(object):
+    """
+    Stores the parsers for each dispatch events.
+    
+    Each dispatch event calls it coresponding parser, what can be 1 of up to 4 different parsers depending what is the
+    optimal way of parsing that specific event. The called parser depends on the running client's intent values and
+    whether they have a handler for the respective event. The parser are changed on change, so do not worry, there are
+    no useless checks done every time a dispatch event is received.
+    
+    Attributes
+    ----------
+    name : `str`
+        The parser's name also known as the dispatch event's.
+    cal_sc : `function`
+        Single client parser what calculates the differences between the previous and the current state and calls
+        the client's event.
+    cal_mc : `function`
+        Multy client parser what calculates the differences between the previous and the current state and calls
+        the clients' events.
+    opt_sc : `function`
+        Single client optimalized parser.
+    opt_mc : `function`
+        Multy client optimalized parsers.
+    mention_count : `int`
+        How much events of the running clients expect to be called by the respective parser. Used for `opt` - `cal`
+        optimalizations.
+    client_count : `int`
+        How much running clients expect the respective parser to call their events. Used in `sc` - `mc` optimalization.
+    
+    Class Attributes
+    ----------------
+    all : `dict` of (`str`, `PARSER_DEFAULTS`) items
+        A `dict` containing all the parser defaults in `parser name` - `parser default` relation
+    registered : `WeakSet`
+        A weakreference set of all the running clients, which' events are included in the parser optimalization
+        process.
+    """
     all={}
     registered=WeakSet()
     
@@ -504,7 +768,7 @@ def READY(client,data):
         pass
     else:
         for relationship_data in relationship_datas:
-            Relationship(client,PartialUser(int(relationship_data['id'])),relationship_data)
+            Relationship(client, relationship_data, int(relationship_data['id']))
     
     try:
         channel_private_datas=data['private_channels']
@@ -2597,9 +2861,7 @@ def RELATIONSHIP_ADD__CAL(client,data):
     except KeyError:
         old_relationship=None
     
-    user=PartialUser(user_id)
-    
-    new_relationship=Relationship(client,user,data)
+    new_relationship=Relationship(client, data, user_id)
     
     if old_relationship is None:
         coro=client.events.relationship_add(client,new_relationship)
@@ -2614,9 +2876,7 @@ def RELATIONSHIP_ADD__OPT(client,data):
     except KeyError:
         pass
     
-    user=PartialUser(user_id)
-    
-    Relationship(client,user,data)
+    Relationship(client, data, user_id)
 
 PARSER_DEFAULTS('RELATIONSHIP_ADD',RELATIONSHIP_ADD__CAL,RELATIONSHIP_ADD__CAL,RELATIONSHIP_ADD__OPT,RELATIONSHIP_ADD__OPT)
 del RELATIONSHIP_ADD__CAL, RELATIONSHIP_ADD__OPT
@@ -2624,12 +2884,11 @@ del RELATIONSHIP_ADD__CAL, RELATIONSHIP_ADD__OPT
 def RELATIONSHIP_REMOVE__CAL(client,data):
     user_id=int(data['id'])
     try:
-        old_relationship=client.user.relations.pop(user_id)
+        old_relationship = client.relationships.pop(user_id)
     except KeyError:
-        coro=client.events.unknown_relationship(client,'relationship_delete',data,)
-    else:
-        coro=client.events.relationship_delete(client,old_relationship)
-    Task(coro, KOKORO)
+        return
+    
+    Task(client.events.relationship_delete(client,old_relationship), KOKORO)
 
 def RELATIONSHIP_REMOVE__OPT(client,data):
     user_id=int(data['id'])
@@ -2705,7 +2964,7 @@ PARSER_DEFAULTS('USER_GUILD_SETTINGS_UPDATE',USER_GUILD_SETTINGS_UPDATE,USER_GUI
 del USER_GUILD_SETTINGS_UPDATE
 
 
-EVENTS=event_system_core()
+EVENTS=EVENT_SYSTEM_CORE()
 
 EVENTS.add_default('error'                      , 3 , ()                                        , )
 
@@ -3049,17 +3308,70 @@ class _EventCreationManager(object):
             raise ValueError('\n'.join(collected)) from None
         
 class EventListElement(object):
-    __slots__= ('name', 'kwargs', 'func', )
-    def __init__(self,func,name,kwargs):
+    """
+    Represents an element of an ``eventlist``.
+    
+    Attributes
+    ----------
+    func : `callable`
+        The event of the event-list element.
+    name : `None` or `str`
+        Alternative name to use instead of `func`'s.
+    kwargs : `None` or `dict` of (`str`, `Any`) items
+        Additional kwargs for `func`.
+    """
+    __slots__ = ('func', 'name', 'kwargs', )
+    def __init__(self, func, name, kwargs):
+        """
+        Creates a ``EventListElement` from the given parameters.
+        
+        Parameters
+        ----------
+        func : `callable`
+            The event of the eventlist element.
+        name : `None` or `str`
+            Alternative name to use instead of `func`'s.
+        kwargs : `None` or `dict` of (`str`, `Any`) items
+            Additional kwargs for `func`.
+        """
         self.func  = func
         self.name  = name
         self.kwargs= kwargs
     
     def __repr__(self):
+        """Returns the representation of the eeventlist element."""
         return f'{self.__class__.__name__}({self.func!r}, {self.name!r}, kwargs={self.kwargs!r})'
-
-class eventlist(list):
     
+    def __len__(self):
+        """Additional information for unpacking if needed."""
+        return 3
+    
+    def __iter__(self):
+        """Unpacks the eventlist element."""
+        yield self.func
+        yield self.name
+        yield self.kwargs
+    
+class eventlist(list):
+    """
+    Represents a container to store events before adding them to a client. Some extension classes might support this
+    class as well.
+    
+    Attributes
+    ----------
+    _supports_from_class : `bool`
+        If `type_` was passed when creating an eventlist and the it supports creation with a `from_class` class method.
+    kwargs : `None` or `dict` of (`str`, `Any`) items
+        Keyword arguments used for each element when extending teh client's events with the event-list.
+    type : `None` or `type`
+        If `type_` was passed when creating the eventlist, then each added element is prevaidated with the given type
+        before adding them. Some extension classes might support behaviour.
+    
+    Notes
+    -----
+    Hata's `commands` extension class supports collecting commands in ``eventlist`` and prevalidating as well with
+    passing `type_` as `Command`.
+    """
     insert = RemovedDescriptor()
     sort = RemovedDescriptor()
     pop = RemovedDescriptor()
@@ -3076,10 +3388,29 @@ class eventlist(list):
     __setitem__ = RemovedDescriptor()
     __contains__ = RemovedDescriptor()
     
-    __slots__=('_supports_from_class', 'kwargs', 'type')
+    __slots__ = ('_supports_from_class', 'kwargs', 'type')
     
     def __new__(cls, iterable=None, type_=None, **kwargs):
+        """
+        Creates a new eventlist from the the given parameters.
         
+        Parameters
+        ----------
+        iterable : `iterable`, Optional
+            An iterable of events to extend the eventlist with.
+        type_ : `type`, Optional
+            A type to validate each added element to the eventlist.
+        **kwargs : Keyword arguments
+            Additional keyword arguments to be used when adding each element.
+        
+        Raises
+        ------
+        TypeError
+            If `type_` was passed as not as `type` instance, or if it has no `from_kwargs` method.
+        ValueError
+            - If `iterable` was passed as ``eventlist`` and it's `.type` attribute is different.
+            - If `iterable` was not passed as type ``eventlist`` and any of it's element's format is incorrect.
+        """
         if (type_ is None):
             supports_from_class = False
         else:
@@ -3087,7 +3418,7 @@ class eventlist(list):
                 raise TypeError(f'`type_` should be `type` instance, got `{type!r}`.')
             
             if not hasattr(type_,'from_kwargs'):
-                raise ValueError('The passed `type_` has no method called `from_kwargs`.')
+                raise TypeError('The passed `type_` has no method called `from_kwargs`.')
             
             supports_from_class = hasattr(type_,'from_class')
         
@@ -3109,25 +3440,82 @@ class eventlist(list):
             pass
     
     class _wrapper(object):
-        __slots__=('parent', 'name', 'kwargs')
+        """
+        When a parent ``eventlist`` is called and `func` was not passed (so only keyword arguments were), if any, then
+        an instance of this class is returned. It's main purpose is to enable using ``eventlist`` as a decorator with
+        allowing passing additional keyword arguments at the same time.
+        
+        Attributes
+        ----------
+        parent : ``eventlist``
+            The owner eventlist.
+        name : `str` or `None`
+            Passed `name` keyword argument, when the wrapper was created.
+        kwargs : `None` or `dict` of (`str`, `Any`) items
+            Additionally passed keyword arguments when the wrapper was created.
+        """
+        __slots__ = ('parent', 'name', 'kwargs')
         def __init__(self, parent, name, kwargs):
+            """
+            Creates an instance from the given parameters.
+            
+            Parameters
+            ----------
+            parent : ``eventlist``
+                The owner eventlist.
+            name : `str` or `None`
+                Passed `name` keyword argument, when the wrapper was created by the parent ``eventlist``.
+            kwargs : `None` or `dict` of (`str`, `Any`) items
+                Additionally passed keyword arguments when the wrapper was created by it's parent.
+            """
             self.parent=parent
             self.name=name
             self.kwargs=kwargs
         
-        def __call__(self,func):
+        def __call__(self, func):
+            """
+            Calling an ``eventlist``'s wrapper enables to add the given `func` to be added to the parent ``eventlist``.
+            
+            Parameters
+            ----------
+            func : `callable`
+                The function to add to the parent ``eventlist``.
+            
+            Returns
+            -------
+            func : `callable`
+                The function if the parent  ``eventlist`` has no `.type` set. If it has then an instance of that type.
+            """
             parent=self.parent
             type_ = parent.type
-                
-            if type_ is None:
-                element = EventListElement(func,self.name,self.kwargs)
-            else:
-                element = func = type_.from_kwargs(func,self.name,self.kwargs)
             
-            list.append(self.parent,element)
+            if type_ is None:
+                element = EventListElement(func, self.name, self.kwargs)
+            else:
+                element = func = type_.from_kwargs(func, self.name, self.kwargs)
+            
+            list.append(self.parent, element)
             return func
     
-    def from_class(self,klass):
+    def from_class(self, klass):
+        """
+        Allows the ``eventlist`` to be able to capture a class and create an element from it's attributes.
+        
+        Parameters
+        ----------
+        klass : `type`
+            The class to capture.
+        
+        Returns
+        -------
+        element : `callable`
+            The created instance from the eventlist's `.type`.
+        
+        Raises
+        ------
+        TypeError
+            If the eventlist has no `.type` set, or if it's `.type` is not supporting this method.
+        """
         type_=self.type
         if not self._supports_from_class:
             if type_ is None:
@@ -3145,16 +3533,45 @@ class eventlist(list):
         list.append(self,element)
         return element
     
-    def extend(self,iterable):
+    def extend(self, iterable):
+        """
+        Extends the ``eventlist`` with the given `iterable`.
+        
+        Parameters
+        ----------
+        iterable : `iterable`
+            An iterable of events to extend the eventlist with.
+        
+        Raises
+        ------
+        ValueError
+            - If `iterable` was passed as ``eventlist`` and it's `.type` attribute is different.
+            - If `iterable` was not passed as type ``eventlist`` and any of it's element's format is incorrect.
+        """
         if type(iterable) is type(self):
             if self.type is not iterable.type:
                 raise ValueError(f'Extensing {self.__class__.__name__} with an other object of the same type, but with a different type, own: `{self.type!r}`, other\'s: `{iterable.type!r}`.')
         else:
-            iterable=_convert_unsafe_event_iterable(iterable,self.type)
+            iterable=_convert_unsafe_event_iterable(iterable, self.type)
         
-        list.extend(self,iterable)
+        list.extend(self, iterable)
     
-    def unextend(self,iterable):
+    def unextend(self, iterable):
+        """
+        Unextends the eventlist with the given `iterable`.
+        
+        Parameters
+        ----------
+        iterable : `iterable`
+            An iterable of events to unextend the eventlist with.
+        
+        Raises
+        ------
+        ValueError
+            - If `iterable` was passed as ``eventlist`` and it's `.type` attribute is different.
+            - If `iterable` was not passed as type ``eventlist`` and any of it's element's format is incorrect.
+            - If any of the passed elements is not at the ``eventlist``. At this case error is raised only at the end.
+        """
         if type(iterable) is not type(self):
             iterable=_convert_unsafe_event_iterable(iterable,self.type)
         else:
@@ -3170,8 +3587,34 @@ class eventlist(list):
         
         if collected:
             raise ValueError('\n'.join(collected))
-    
-    def __call__(self,func=None,name=None,**kwargs):
+        
+    def __call__(self, func=None, name=None, **kwargs):
+        """
+        Adds the given `func` to the ``eventlist`` with the other given keyword arguments. If `func` is not passed,
+        then returns a ``._wrapper` to allow using the ``eventlist`` as a decorator with still passing keyword
+        arguments.
+        
+        Parameters
+        ----------
+        func : `callable`, Optional
+            The event to be added to the eventlist.
+        name : `str` or `None`
+            A name to be used instead of the passed `func`'s when adding it.
+        **kwargs : Keyword arguments
+            Additionally passed keyword arguments to be used when the passed `func` is used up.
+        
+        Returns
+        -------
+        func : `callable`
+            - If `func` was passed and the eventlist has no `.type` then returns the passed `func`.
+            - If `func` was passed and the eventlist has `.type` set, then returns an instance of that.
+            - If `func` was not passed, then returns a ``._wrapper`` instance.
+        
+        Raises
+        ------
+        TypeError
+            If `name` was pased with incorrect type.
+        """
         if (name is not None):
             if type(name) is not str:
                 raise TypeError(f'`name` should be `None`, or type `str`, got `{name!r}`.')
@@ -3199,7 +3642,24 @@ class eventlist(list):
         list.append(self,element)
         return func
         
-    def remove(self,func,name=None):
+    def remove(self, func, name=None):
+        """
+        Removes an element of the eventlist.
+        
+        Parameters
+        ----------
+        func : `callable`
+            The function to remove.
+        name : `str`, Optional
+            The name of the function to remove.
+
+        Raises
+        ------
+        TypeError
+            If `name` was passed with incorrect type.
+        ValueError
+            If the passed `func` - `name` combination was not found.
+        """
         if (name is not None):
             if type(name) is not str:
                 raise TypeError(f'`name` should be `None`, or type `str`, got `{name!r}`.')
@@ -3231,6 +3691,7 @@ class eventlist(list):
         raise ValueError(f'Did not find any element, what matched the passed func={func!r}, name={name!r} combination.')
     
     def __repr__(self):
+        """Returns the representation of the eventlist."""
         result=[self.__class__.__name__,'([']
         
         limit=list.__len__(self)
@@ -3264,6 +3725,14 @@ class eventlist(list):
         return ''.join(result)
     
     def add_kwargs(self, **kwargs):
+        """
+        Adds keyword arguments to the ``eventlist`'s.
+        
+        Parameters
+        ----------
+        **kwargs : Keyword arguments
+            KeyWord arguments to extend the ``eventlist``'s with.
+        """
         if not kwargs:
             return
         
@@ -3274,6 +3743,14 @@ class eventlist(list):
             own_kwargs.update(kwargs)
     
     def remove_kwargs(self, *names):
+        """
+        Removes keyword arguments of the ``eventlist`` by their name.
+        
+        Parameters
+        ----------
+        *names : Arguemnts
+            Keyword argument's name added to the ``eventlist``.
+        """
         if not names:
             return
         
@@ -3291,6 +3768,9 @@ class eventlist(list):
             self.kwargs = None
     
     def clear_kwargs(self):
+        """
+        Clears the kwargs of the eventlist.
+        """
         self.kwargs = None
 
 # this class is a placeholder for the `with` statemnet support

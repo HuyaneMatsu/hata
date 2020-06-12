@@ -5,7 +5,7 @@ import sys
 
 from ..backend.dereaddons_local import _spaceholder
 
-from .others import id_to_time
+id_to_time = NotImplemented
 
 class DiscordEntityMeta(type):
     """

@@ -1,11 +1,10 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('Relationship', 'ContentFilterLevel', 'DISCORD_EPOCH', 'FriendRequestFlag', 'Gift', 'HypesquadHouse', 'MFA',
-    'MessageNotificationLevel', 'PremiumType', 'RelationshipType', 'Status', 'Theme', 'Unknown', 'VerificationLevel',
-    'VoiceRegion', 'cchunkify', 'chunkify', 'filter_content', 'id_to_time', 'is_id', 'is_mention', 'is_role_mention',
-    'is_user_mention', 'now_as_id', 'random_id', 'time_to_id', )
+__all__ = ('ContentFilterLevel', 'DISCORD_EPOCH', 'FriendRequestFlag', 'Gift', 'HypesquadHouse', 'MFA',
+    'MessageNotificationLevel', 'PremiumType', 'Relationship', 'RelationshipType', 'Status', 'Theme', 'Unknown',
+    'VerificationLevel', 'VoiceRegion', 'cchunkify', 'chunkify', 'filter_content', 'id_to_time', 'is_id', 'is_mention',
+    'is_role_mention', 'is_user_mention', 'now_as_id', 'random_id', 'time_to_id', )
 
 import random, re, sys
-from urllib.parse import _ALWAYS_SAFE_BYTES as ALWAYS_SAFE_BYTES, Quoter
 from datetime import datetime
 from base64 import b64encode
 from time import time as time_now
@@ -18,21 +17,34 @@ except ImportError:
 
 from ..backend.dereaddons_local import titledstr, modulize
 
-#preparing encoding
-safe='/ '.encode('ascii','ignore')
-ALWAYS_SAFE_BYTES+=safe
-QUOTER=Quoter(safe)
-del safe,Quoter
-def quote(text):
-    #text must be str
-    text=text.encode('utf-8','strict')
-    if not text.rstrip(ALWAYS_SAFE_BYTES):
-        return text.decode()
-    return ''.join([QUOTER[char] for char in text])
+from .bases import DiscordEntity
+
+from . import bases
+
+PartialUser = NotImplemented
 
 #base64 conversions
 
-def bytes_to_base64(data,ext=None):
+def bytes_to_base64(data, ext=None):
+    """
+    Converts a bytes image to a base64 one.
+    
+    Parameter
+    ----------
+    data : `bytes-like`
+        Image data.
+    ext : `str`, Optional
+        The extension of the image. If not passed, then it is lookued up from the given data.
+    
+    Returns
+    -------
+    base64 : `str`
+    
+    Raises
+    ------
+    ValueError
+        If `ext` was not given and the given `data`'s image format is not any of the expected ones.
+    """
     if ext is None:
         if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
             ext='image/png'
@@ -45,8 +57,20 @@ def bytes_to_base64(data,ext=None):
     return ''.join(['data:',ext,';base64,',b64encode(data).decode('ascii')])
 
 def ext_from_base64(data):
-    return data[11:data.find(';',11)]
+    """
+    Returns the extension of a base64 image.
     
+    Parameters
+    ----------
+    data : `str`
+        Base64 image data.
+    
+    Returns
+    -------
+    ext : `str`
+    """
+    return data[11:data.find(';',11)]
+
 DISCORD_EPOCH=1420070400000
 # example dates:
 # "2016-03-31T19:15:39.954000+00:00"
@@ -59,10 +83,37 @@ DISCORD_EPOCH=1420070400000
 PARSE_TIME_RP=re.compile('(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d{3})?)?.*')
 
 def parse_time(timestamp):
+    """
+    Parses the given timestamp.
+    
+    The expected timestamp formats are the following:
+        - `2019-04-28T15:14:38+00:00`
+        - `2019-07-17T18:52:50.758993+00:00`
+        - `2019-07-17T18:52:50.758000+00:00`
+        
+    Discord might give timestamps with different accuracy, so we use an optimal middle way at parsing them.
+    Some events depend on timestamp accuracy, so we really do not want to be wrong about them, or it might cause
+    same internal derpage.
+    
+    If parsing a timestamp failed, the start of the discord epoch is returned and an error message is given at
+    `sys.stderr`.
+    
+    Parameters
+    ----------
+    timestamp : `str`
+    
+    Returns
+    -------
+    time : `datetime`
+    
+    Notes
+    -----
+    I already noted that timestamp formats are inconsistent, but even our baka Chiruno could have fix it...
+    """
     parsed=PARSE_TIME_RP.fullmatch(timestamp)
     if parsed is None:
-        sys.stderr.write(f'Cannot parse timestamp: `{timestamp}`, returning` None`\n')
-        return None
+        sys.stderr.write(f'Cannot parse timestamp: `{timestamp}`, returning `DISCORD_EPOCH_START`\n')
+        return DISCORD_EPOCH_START
     
     year    = int(parsed.group(1))
     month   = int(parsed.group(2))
@@ -80,40 +131,130 @@ def parse_time(timestamp):
     return datetime(year, month, day, hour, minute, second, micro)
 
 def id_to_time(id_):
+    """
+    Converts the given id to datetime.
+    
+    Parameters
+    ----------
+    id_ : `int`
+        Unique identificator number of a Discord entity.
+    
+    Returns
+    -------
+    time : `datetime`
+    """
     return datetime.utcfromtimestamp(((id_>>22)+DISCORD_EPOCH)/1000.)
 
 DISCORD_EPOCH_START = id_to_time(0)
 
 def time_to_id(time):
+    """
+    Converts the given time to it's respective discord identitifactor number.
+    
+    Parameters
+    ----------
+    time : `datetime`
+    
+    Returns
+    -------
+    id_ `int`
+    """
     return ((time.timestamp()*1000.).__int__()-DISCORD_EPOCH)<<22
 
 def random_id():
+    """
+    Generates a random Discord identificator number what's datetime value did not surpass the current time.
+    
+    Returns
+    -------
+    id_ `int`
+    """
     return (((time_now()*1000.).__int__()-DISCORD_EPOCH)<<22)+(random.random()*4194304.).__int__()
 
 def to_json(data):
+    """
+    Converts the given object to json.
+    
+    Parameters
+    ----------
+    data : `Any`
+    
+    Returns
+    -------
+    json : `str`
+    
+    Raises
+    ------
+    TypeError
+        If the given object is /or contains an object with a non convertable type.
+    """
     return dump_to_json(data,separators=(',',':'),ensure_ascii=True)
 
 class VerificationLevel(object):
+    """
+    Represents Discord's verification level.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the verification level.
+    value : `int`
+        The discord side identificator value of the verification level.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `list` of ``VerificationLevel``
+        Stores the predefined ``VerificationLevel`` instances. These can be accessed with their `value` as index.
+    
+    Every predefind verification level can be accessed as class attribute as well:
+    
+    +-----------------------+-----------+-------+
+    | Class attribute name  | name      | value |
+    +=======================+===========+=======+
+    | none                  | none      | 0     |
+    +-----------------------+-----------+-------+
+    | low                   | low       | 1     |
+    +-----------------------+-----------+-------+
+    | medium                | medium    | 2     |
+    +-----------------------+-----------+-------+
+    | high                  | high      | 3     |
+    +-----------------------+-----------+-------+
+    | extreme               | extreme   | 4     |
+    +-----------------------+-----------+-------+
+    """
     # class related
     INSTANCES = [NotImplemented] * 5
     
     # object related
     __slots__=('name', 'value',)
     
-    def __init__(self,value,name):
+    def __init__(self, value, name):
+        """
+        Creates an ``VerificationLevel`` and stores it at the classe's `.INSTANCES` class attribute as well.
+        
+        Parameters
+        ----------
+        value : `int`
+            The Discord side identificator value of the verification level.
+        name : `str`
+            The name of the verification level.
+        """
         self.value=value
         self.name=name
         
         self.INSTANCES[value]=self
-
+    
     def __str__(self):
+        """Returns the name of the verification level."""
         return self.name
-
+    
     def __int__(self):
+        """Returns the value of the verificaiton level."""
         return self.value
-
+    
     def __repr__(self):
-        return f'{self.__class__.__name__}(value={self.value}, name=\'{self.name}\')'
+        """Returns the representation of the verificaiton level."""
+        return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r})'
     
     # predefined
     none    = NotImplemented
@@ -129,11 +270,95 @@ VerificationLevel.high     = VerificationLevel(3,'high')
 VerificationLevel.extreme  = VerificationLevel(4,'extreme')
 
 class VoiceRegion(object):
+    """
+    Represents Discord's voice regions.
+    
+    Attributes
+    ----------
+    custom : `bool`
+        Whether the voice region is custom (used for events, etc.).
+    deprecated : `bool`
+        Whether the voice region is deprecated.
+    id : `str`
+        The unique identificator of the voice region.
+    name : `str`
+        The name of the voice region.
+    vip : `bool`
+        Whether the voice region can be used only by guilds with `VIP_REGIONS` feature.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`str`, ``VoiceRegion``) items
+        Stores the created ``VoiceRegion`` instances.
+    
+    Each predefined voice region is also stored as a class attribute:
+    
+    +-----------------------+---------------+-------------------+---------------+-----------+-----------+
+    | Class attribute name  | id            | name              | deprecated    | vip       | custom    |
+    +=======================+===============+===================+===============+===========+===========+
+    | brazil                | brazil        | Brazil            | False         | False     | False     |
+    +-----------------------+---------------+-------------------+---------------+-----------+-----------+
+    | dubai                 | dubai         | Dubai             | False         | False     | False     |
+    +-----------------------+---------------+-------------------+---------------+-----------+-----------+
+    | eu_central            | eu-central    | Central Europe    | False         | False     | False     |
+    +-----------------------+---------------+-------------------+---------------+-----------+-----------+
+    | eu_west               | eu-west       | Western Europe    | False         | False     | False     |
+    +-----------------------+---------------+-------------------+---------------+-----------+-----------+
+    | europe                | europe        | Europe            | False         | False     | False     |
+    +-----------------------+---------------+-------------------+---------------+-----------+-----------+
+    | hongkong              | hongkong      | Hong Kong         | False         | False     | False     |
+    +-----------------------+---------------+-------------------+---------------+-----------+-----------+
+    | india                 | india         | India             | False         | False     | False     |
+    +-----------------------+---------------+-------------------+---------------+-----------+-----------+
+    | japan                 | japan         | Japan             | False         | False     | False     |
+    +-----------------------+---------------+-------------------+---------------+-----------+-----------+
+    | russia                | russia        | Russia            | False         | False     | False     |
+    +-----------------------+---------------+-------------------+---------------+-----------+-----------+
+    | singapore             | singapore     | Singapore         | False         | False     | False     |
+    +-----------------------+---------------+-------------------+---------------+-----------+-----------+
+    | southafrica           | southafrica   | South Africa      | False         | False     | False     |
+    +-----------------------+---------------+-------------------+---------------+-----------+-----------+
+    | sydney                | sydney        | Sydney            | False         | False     | False     |
+    +-----------------------+---------------+-------------------+---------------+-----------+-----------+
+    | us_central            | us-central    | US Central        | False         | False     | False     |
+    +-----------------------+---------------+-------------------+---------------+-----------+-----------+
+    | us_east               | us-east       | US East           | False         | False     | False     |
+    +-----------------------+---------------+-------------------+---------------+-----------+-----------+
+    | us_south              | us-south      | US South          | False         | False     | False     |
+    +-----------------------+---------------+-------------------+---------------+-----------+-----------+
+    | us_west               | us-west       | US West           | False         | False     | False     |
+    +-----------------------+---------------+-------------------+---------------+-----------+-----------+
+    | amsterdam             | amsterdam     | Amsterdam         | True          | False     | False     |
+    +-----------------------+---------------+-------------------+---------------+-----------+-----------+
+    | frankfurt             | frankfurt     | Frankfurt         | True          | False     | False     |
+    +-----------------------+---------------+-------------------+---------------+-----------+-----------+
+    | london                | london        | London            | True          | False     | False     |
+    +-----------------------+---------------+-------------------+---------------+-----------+-----------+
+    | vip_us_east           | vip-us-east   | VIP US West       | False         | True      | False     |
+    +-----------------------+---------------+-------------------+---------------+-----------+-----------+
+    | vip_us_west           | vip-us-west   | VIP US East       | False         | True      | False     |
+    +-----------------------+---------------+-------------------+---------------+-----------+-----------+
+    | vip_amsterdam         | vip-amsterdam | VIP Amsterdam     | True          | True      | False     |
+    +-----------------------+---------------+-------------------+---------------+-----------+-----------+
+    """
     # class related
     INSTANCES = {}
     
     @classmethod
-    def get(cls,id_):
+    def get(cls, id_):
+        """
+        Accessed to get a voice region from `.INSTANCES` by it's `id`. If no already defined voice region is found,
+        a new ONE is created.
+        
+        Parameters
+        ----------
+        id_ : `str`
+            The identificator of the voice region.
+        
+        Returns
+        -------
+        voice_region : ``VoiceRegion``
+        """
         try:
             voice_region=cls.INSTANCES[id_]
         except KeyError:
@@ -142,7 +367,21 @@ class VoiceRegion(object):
         return voice_region
     
     @classmethod
-    def _from_id(cls,id_):
+    def _from_id(cls, id_):
+        """
+        Creates a voice region from the given id and stores it at classe's `.INSTANCES`.
+        
+        Called by `.get` when no voice region was found with the given id.
+        
+        Parameters
+        ----------
+        id_ : `str`
+            The identificator of the voice region.
+        
+        Returns
+        -------
+        voice_region : ``VoiceRegion``
+        """
         name_parts      = id_.split('-')
         for index in range(len(name_parts)):
             name_part=name_parts[index]
@@ -164,7 +403,21 @@ class VoiceRegion(object):
         return self
         
     @classmethod
-    def from_data(cls,data):
+    def from_data(cls, data):
+        """
+        Creates a voice region from the given data and stores it at the classe's `.INSTANCES`.
+        
+        If the voice region already exsists returns that instead.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received voice region data.
+
+        Returns
+        -------
+        self : ``VoiceRegion``
+        """
         id_=data['id']
         try:
             return cls.INSTANCES[id_]
@@ -184,7 +437,21 @@ class VoiceRegion(object):
     # object related
     __slots__=('custom', 'deprecated', 'id', 'name', 'vip',)
     
-    def __init__(self,name,id_,deprecated,vip):
+    def __init__(self, name, id_, deprecated, vip):
+        """
+        Creates a new voice region with the given parameters and stores it at the classe's `.INSTANCES`.
+        
+        Parameters
+        ----------
+        deprecated : `bool`
+            Whether the voice region is deprecated.
+        id_ : `str`
+            The unique identificator of the voice region.
+        name : `str`
+            The name of the voice region.
+        vip : `bool`
+            Whether the voice region can be used only by guilds with `VIP_REGIONS` feature.
+        """
         self.name           = name
         self.id             = id_
         self.deprecated     = deprecated
@@ -193,9 +460,11 @@ class VoiceRegion(object):
         self.INSTANCES[id_] = self
     
     def __str__(self):
-        return self.id
+        """Returns the voice region's name."""
+        return self.name
     
     def __repr__(self):
+        """Returns the representation of the voice region."""
         return f'<{self.__class__.__name__} name={self.name!r} id={self.id!r}>'
     
     # predefined
@@ -254,26 +523,69 @@ VoiceRegion.vip_us_west     = VoiceRegion('VIP US East',    'vip-us-east',  Fals
 VoiceRegion.vip_amsterdam   = VoiceRegion('VIP Amsterdam',  'vip-amsterdam',True,   True)
 
 class ContentFilterLevel(object):
+    """
+    Represents Discord's content filter level.
+    
+    Attributes
+    ----------
+    value : `int`
+        The Discord side identificator value of the content filter level.
+    name : `str`
+        The name of the content filter level.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `list` of ``ContentFilterLevel``
+        Stores the predefined content filter levels. This container is accessed when translating a Discord side
+        identificator of a content filter level. The identificator value is used as an index to get it's wrapper side
+        representation.
+    
+    Every predefined content filter level is also stored as a class attribute:
+    
+    +-----------------------+-----------+-------+
+    | Class attribute name  | name      | value |
+    +=======================+===========+=======+
+    | disabled              | disabled  | 0     |
+    +-----------------------+-----------+-------+
+    | no_role               | no_role   | 1     |
+    +-----------------------+-----------+-------+
+    | everyone              | everyone  | 2     |
+    +-----------------------+-----------+-------+
+    """
     # class related
     INSTANCES = [NotImplemented] * 3
     
     # object related
     __slots__=('name', 'value', )
     
-    def __init__(self,value,name):
+    def __init__(self, value, name):
+        """
+        Creates a new content filter level instance with the given parameters and stores it at the classe's
+        `.INSTANCES` class attribute.
+        
+        Parameters
+        ----------
+        value : `int`
+            The Discord side identificator value of the content filter level.
+        name : `str`
+            The name of the content filter level.
+        """
         self.value=value
         self.name=name
-
+        
         self.INSTANCES[value]=self
-
+    
     def __str__(self):
+        """Returns the content filter level's name."""
         return self.name
-
+    
     def __int__(self):
+        """Returns the content filter level's value."""
         return self.value
-
+    
     def __repr__(self):
-        return f'{self.__class__.__name__}(value={self.value}, name=\'{self.name}\')'
+        """Returns the representation of the content filter level."""
+        return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r})'
     
     # predefined
     disabled    = NotImplemented
@@ -285,26 +597,70 @@ ContentFilterLevel.no_role  = ContentFilterLevel(1,'no_role')
 ContentFilterLevel.everyone = ContentFilterLevel(2,'everyone')
 
 class HypesquadHouse(object):
+    """
+    Represents Discord's hypesquad house.
+    
+    Attributes
+    ----------
+    value : `int`
+        The Discord side identificator value of the hypesquad house.
+    name : `str`
+        The name of the hypesquad house.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `list` of ``HypesquadHouse``
+        Stores the predefined hypesquad houses. This container is accessed when converting Discord side hypesquad
+        house's value to it's wrapper side representation.
+    
+    Every predefined hypesquad house can also be accessed as class attribute:
+    
+    +-----------------------+---------------+-------+
+    | Class attribute name  | name          | value |
+    +=======================+===============+=======+
+    | none                  | none          | 0     |
+    +-----------------------+---------------+-------+
+    | bravery               | bravery       | 1     |
+    +-----------------------+---------------+-------+
+    | brilliance            | brilliance    | 2     |
+    +-----------------------+---------------+-------+
+    | balance               | balance       | 3     |
+    +-----------------------+---------------+-------+
+    """
     # class related
     INSTANCES = [NotImplemented] * 4
     
     #object related
     __slots__=('name', 'value', )
     
-    def __init__(self,value,name):
+    def __init__(self, value, name):
+        """
+        Creates a hypeaquad house instance with the given parameters and stores it at the classe's
+        `.INSTANCES` class attribute as well.
+        
+        Parameters
+        ----------
+        value : `int`
+            The Discord side identificator value of the hypesquad house.
+        name : `str`
+            The name of the hypesquad house.
+        """
         self.value=value
         self.name=name
 
         self.INSTANCES[value]=self
 
     def __str__(self):
+        """Returns the hypesquad house's name."""
         return self.name
 
     def __int__(self):
+        """Returns the hypesquad house's value."""
         return self.value
 
     def __repr__(self):
-        return f'{self.__class__.__name__}(value={self.value}, name=\'{self.name}\')'
+        """Returns the representation of the hypesquad house."""
+        return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r})'
     
     # predefined
     none        = NotImplemented
@@ -319,90 +675,203 @@ HypesquadHouse.balance      = HypesquadHouse(3,'balance')
 
 
 class Status(object):
+    """
+    Represents a Discord user's status.
+    
+    Attributes
+    ----------
+    position : `int`
+        Internal position of the status for sorting purposes.
+    value : `str`
+        The identificator value of the status.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`str`, ``Status``) items
+        A container what stores the predefined statuses in `value` - `status relation. This container is acccessed
+        when translating status value to ``Status`` object.
+    
+    Each predefined status also can be accessed as a class attribute:
+    
+    +-----------------------+-----------+-----------+
+    | Class attribute name  | position  | value     |
+    +=======================+===========+===========+
+    | online                | 0         | idle      |
+    +-----------------------+-----------+-----------+
+    | idle                  | 1         | idle      |
+    +-----------------------+-----------+-----------+
+    | dnd                   | 2         | dnd       |
+    +-----------------------+-----------+-----------+
+    | offline               | 3         | offline   |
+    +-----------------------+-----------+-----------+
+    | invisible             | 3         | invisible |
+    +-----------------------+-----------+-----------+
+    """
     # class related
     INSTANCES = {}
     
     # object related
-    __slots__=('position', 'value', )
+    __slots__ = ('position', 'value', )
     
-    def __init__(self,value,position):
+    def __init__(self, value, position):
+        """
+        Creates a new status and stores it at the classe's `.INSTANCES` class attribute.
+        
+        Parameters
+        ----------
+        value : `str`
+            The identificator value of the status.
+        position : `int`
+            Internal position of the status for sorting purposes.
+        """
         self.value=value
         self.position=position
         self.INSTANCES[value]=self
 
     def __str__(self):
+        """Returns the status's value."""
         return self.value
     
-    name=property(__str__)
+    name = property(__str__)
+    if (__str__.__doc__ is not None):
+        name.__doc__ = (
+        """
+        Returns the statuse's value.
+        
+        This property is mainly for compatibility purposes.
+        
+        Returns
+        -------
+        value : `str`
+        """)
     
     def __repr__(self):
+        """Returns the representation of the status."""
         return f'<{self.__class__.__name__} value={self.value!r}>'
-
-    def __gt__(self,other):
+    
+    def __gt__(self, other):
+        """Returns whether this statuse's position is greater than the other's."""
         if type(self) is type(other):
-            return self.position>other.position
-        if isinstance(other,str):
+            pass
+        elif isinstance(other,str):
             try:
                 other=type(self).INSTANCES[other]
             except KeyError:
                 return NotImplemented
-            return self.position>other.position
-        return NotImplemented
-
+        else:
+            return NotImplemented
+        
+        if self.position > other.position:
+            return True
+        
+        return False
+    
     def __ge__(self,other):
+        """Returns whether this statuse's position is greater than the other's or whether the two status is equal."""
         if type(self) is type(other):
-            return self.position>=other.position
-        if isinstance(other,str):
+            pass
+        elif isinstance(other, str):
             try:
                 other=type(self).INSTANCES[other]
             except KeyError:
                 return NotImplemented
-            return self.position>=other.position
-        return NotImplemented
-
+        else:
+            return NotImplemented
+        
+        self_position = self.position
+        other_position = other.position
+        if self_position > other_position:
+            return True
+        
+        if self_position < other_position:
+            return False
+        
+        if self.value == other.value:
+            return True
+        
+        return False
+    
     def __eq__(self,other):
+        """Returns whether the two status is equal."""
         if type(self) is type(other):
-            return self.position==other.position
-        if isinstance(other,str):
+            pass
+        elif isinstance(other, str):
             try:
                 other=type(self).INSTANCES[other]
             except KeyError:
                 return NotImplemented
-            return self.position==other.position
-        return NotImplemented
-
+        else:
+            return NotImplemented
+    
+        if self.position != other.position:
+            return False
+        
+        if self.value == other.value:
+            return True
+        
+        return False
+    
     def __ne__(self,other):
+        """Returns whether the two status is not equal."""
         if type(self) is type(other):
-            return self.position!=other.position
-        if isinstance(other,str):
+            pass
+        elif isinstance(other, str):
             try:
                 other=type(self).INSTANCES[other]
             except KeyError:
                 return NotImplemented
-            return self.position!=other.position
-        return NotImplemented
-
-    def __le__(self,other):
+        else:
+            return NotImplemented
+        
+        if self.position != other.position:
+            return True
+            
+        if self.value == other.value:
+            return False
+        
+        return True
+    
+    def __le__(self, other):
+        """Returns whether this statuse's position is less than the other's or whether the two status is equal."""
         if type(self) is type(other):
-            return self.position<=other.position
-        if isinstance(other,str):
+            pass
+        elif isinstance(other, str):
             try:
                 other=type(self).INSTANCES[other]
             except KeyError:
                 return NotImplemented
-            return self.position<=other.position
-        return NotImplemented
-
-    def __lt__(self,other):
+        else:
+            return NotImplemented
+        
+        self_position = self.position
+        other_position = other.position
+        if self_position < other_position:
+            return True
+        
+        if self_position > other_position:
+            return False
+        
+        if self.value == other.value:
+            return True
+        
+        return False
+    
+    def __lt__(self ,other):
+        """Returns whether this statuse's position is less than the other's."""
         if type(self) is type(other):
-            return self.position<other.position
-        if isinstance(other,str):
+            pass
+        elif isinstance(other, str):
             try:
                 other=type(self).INSTANCES[other]
             except KeyError:
                 return NotImplemented
-            return self.position<other.position
-        return  NotImplemented
+        else:
+            return NotImplemented
+        
+        if self.position < other.position:
+            return True
+        
+        return False
     
     # predefined
     online      = NotImplemented
@@ -418,26 +887,70 @@ Status.offline  = Status('offline',3)
 Status.invisible= Status('invisible',3)
 
 class MessageNotificationLevel(object):
+    """
+    Represents the default message notificaiton level of a ``Guild``.
+    
+    Attributes
+    ----------
+    value : `int`
+        The Discord side identificator value of the message notificaiton level.
+    name : `str`
+        The name of the message notificaiton level.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `list` of ``MessageNotificationLevel``
+        Stores the predefined message notification levels. This container is accessed when translating message
+        notification level's value to it's representation.
+    
+    Each predefined message notificaiton level can also be accessed as a class attribute:
+    
+    +-----------------------+---------------+-------+
+    | Class attribute name  | name          | value |
+    +=======================+===============+=======+
+    | all_messages          | all_messages  | 0     |
+    +-----------------------+---------------+-------+
+    | only_mentions         | only_mentions | 1     |
+    +-----------------------+---------------+-------+
+    | no_message            | no_messages   | 2     |
+    +-----------------------+---------------+-------+
+    | null                  | null          | 3     |
+    +-----------------------+---------------+-------+
+    """
     # class related
     INSTANCES = [NotImplemented] * 4
     
     # object related
     __slots__=('name', 'value', )
     
-    def __init__(self,value,name):
+    def __init__(self, value, name):
+        """
+        Creates a new message notifcaiton object with the given parameters and stores it at the classe's
+        `.INSTANCES` class attribute.
+        
+        Parameters
+        ----------
+        value : `int`
+            The Discord side identificator value of the message notificaiton level.
+        name : `str`
+            The name of the message notificaiton level.
+        """
         self.value=value
         self.name=name
 
         self.INSTANCES[value]=self
-
+    
     def __str__(self):
+        """Returns the message notification level's name."""
         return self.name
-
+    
     def __int__(self):
+        """Returns the message notificaiton level's value."""
         return self.value
-
+    
     def __repr__(self):
-        return f'{self.__class__.__name__}(value={self.value}, name=\'{self.name}\')'
+        """Returns the message notification level's representaion."""
+        return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r})'
     
     # predefined
     all_messages   = NotImplemented
@@ -452,26 +965,65 @@ MessageNotificationLevel.null          = MessageNotificationLevel(3, 'null')
 
 
 class MFA(object):
+    """
+    Represents Discord's Multi-Factor Authentication's levels.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the MFA level.
+    value : `int`
+        The Discord side identificator value of the MFA level.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `list` of ``MFA``
+        Stores the predefined MFA level. This container is accessed when converting an MFA level's value to
+        it's wrapper side representation.
+    
+    Each predefined MFA can also be accessed as class attribute:
+    
+    +-----------------------+-----------+-------+
+    | Class attribute name  | name      | value |
+    +=======================+===========+=======+
+    | none                  | none      | 0     |
+    +-----------------------+-----------+-------+
+    | elevated              | elevated  | 1     |
+    +-----------------------+-----------+-------+
+    """
     # class related
     INSTANCES = [NotImplemented] * 2
     
     # object related
     __slots__=('name', 'value', )
     
-    def __init__(self,value,name):
+    def __init__(self, value, name):
+        """
+        Creates a new MFA level and stores it at the classe's `.INSTANCES.` class attribute.
+        
+        Parameters
+        ----------
+        value : `int`
+            The Discord side identificator value of the MFA level.
+        name : `str`
+            The name of the MFA level.
+        """
         self.value=value
         self.name=name
 
         self.INSTANCES[value]=self
 
     def __str__(self):
+        """Returns the name of the MFA level."""
         return self.name
 
     def __int__(self):
+        """Returns the value of the MFA level."""
         return self.value
 
     def __repr__(self):
-        return f'{self.__class__.__name__}(value={self.value}, name=\'{self.name}\')'
+        """Returns the representation of the MFA level."""
+        return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r})'
 
     none    = NotImplemented
     elevated= NotImplemented
@@ -480,26 +1032,67 @@ MFA.none    = MFA(0,'none')
 MFA.elevated= MFA(1,'elevated')
 
 class PremiumType(object):
+    """
+    Represents Discord's premium types.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the premium type.
+    value : `int`
+        The Discord side identificator value of the premium type.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `list` of ``PremiumType``
+        A container what stores the predefined premium types and also is accessed when translating their identificator
+        value to their representation.
+    
+    Each predefined premium type can also be accessed as class attribute:
+    
+    +-----------------------+---------------+-------+
+    | Class attribute name  | name          | value |
+    +=======================+===============+=======+
+    | none                  | none          | 0     |
+    +-----------------------+---------------+-------+
+    | nitro_classic         | nitro_classic | 1     |
+    +-----------------------+---------------+-------+
+    | nitro                 | nitro         | 2     |
+    +-----------------------+---------------+-------+
+    """
     # class related
     INSTANCES = [NotImplemented] * 3
     
     # object related
     __slots__=('name', 'value',)
-    values={}
-    def __init__(self,value,name):
+    
+    def __init__(self, value, name):
+        """
+        Creates a new ``PremiumType`` instance and also stores it at the classe's `.INSTANCES` class attribute.
+        
+        Parameters
+        ----------
+        value : `int`
+            The Discord side identificator value of the premium type.
+        name : `str`
+            The name of the premium type.
+        """
         self.value=value
         self.name=name
 
         self.INSTANCES[value]=self
-
+    
     def __str__(self):
+        """Returns the name of the premium type."""
         return self.name
-
+    
     def __int__(self):
+        """Returns the value of the premium type."""
         return self.value
-
+    
     def __repr__(self):
-        return f'{self.__class__.__name__}(value={self.value}, name=\'{self.name}\')'
+        """Returns the representation of the premium type."""
+        return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r})'
     
     # predefined
     none            = NotImplemented
@@ -511,26 +1104,74 @@ PremiumType.nitro_classic   = PremiumType(1,'nitro_classic')
 PremiumType.nitro           = PremiumType(2,'nitro')
 
 class RelationshipType(object):
+    """
+    Represents a ``Relationship``'s type.
+    
+    Attributes
+    ----------
+    name : `str`
+        The relationship type's name.
+    value : `int`
+        The Discord side identificator value of the relationship type.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `list` of ``RelationshipType``
+        The predefined relation types stored in a list, so they can be accessed with their respective value as index.
+        This behaviour is used to translate their Disord side value to their representation.
+    
+    Each predefined relationship type can also be accessed as class attribute:
+    
+    +-----------------------+-------------------+-------+
+    | Class attribute name  | name              | value |
+    +=======================+===================+=======+
+    | stranger              | stranger          | 0     |
+    +-----------------------+-------------------+-------+
+    | friend                | friend            | 1     |
+    +-----------------------+-------------------+-------+
+    | blocked               | blocked           | 2     |
+    +-----------------------+-------------------+-------+
+    | pending_incoiming     | pending_incoiming | 3     |
+    +-----------------------+-------------------+-------+
+    | pending_outgoing      | pending_outgoing  | 4     |
+    +-----------------------+-------------------+-------+
+    | implicit              | implicit          | 5     |
+    +-----------------------+-------------------+-------+
+    """
     #class related
     INSTANCES = [NotImplemented] * 6
     
     # object related
     __slots__=('name', 'value',)
     
-    def __init__(self,value,name):
+    def __init__(self, value, name):
+        """
+        Creates a new relation type instance with the given parameters and also stores it at the classe's `.INSTANCES`
+        class attribute.
+        
+        Parameters
+        ----------
+        value : `int`
+            The Discord side identificator value of the relationship type.
+        name : `str`
+            The relationship type's name.
+        """
         self.value=value
         self.name=name
 
         self.INSTANCES[value]=self
 
     def __str__(self):
+        """Returns the name of the relationship type."""
         return self.name
 
     def __int__(self):
+        """Returns the identificator value of the relationship type."""
         return self.value
 
     def __repr__(self):
-        return f'{self.__class__.__name__}(value={self.value}, name=\'{self.name}\')'
+        """Returns the representation of the relationship type."""
+        return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r})'
     
     # predefined
     stranger          = NotImplemented
@@ -548,26 +1189,67 @@ RelationshipType.pending_outgoing  = RelationshipType(4, 'pending_outgoing')
 RelationshipType.implicit          = RelationshipType(5, 'implicit')
 
 class Relationship(object):
+    """
+    Represents a Discord relationship.
+    
+    Attrbiutes
+    ----------
+    type : ``RelationshipType``
+        The relationship's type.
+    user : ``User`` or ``Client`` instance
+        The target user of the relationship.
+    """
     __slots__=('type', 'user',)
-    def __init__(self,client,user,data):
-        self.user=user
-        self.type=RelationshipType.INSTANCES[data['type']]
-        client.relationships[user.id]=self
+    def __init__(self, client, data, user_id):
+        """
+        Creates a relationship instance with the given parameters.
         
+        Parameters
+        ----------
+        client : ``Client``
+            The client, who's relationship is created.
+        data : `dict` of (`str`, `Any`)
+            Relationship data.
+        user_id : `int`
+            The relationship's target user's id.
+        """
+        self.user = PartialUser(user_id)
+        self.type = RelationshipType.INSTANCES[data['type']]
+        client.relationships[user_id] = self
+    
     def __repr__(self):
-        return f'<{self.__class__.__name__} {self.type.name} user={self.user.full_name}>'
+        """Returns the representation of the relationship."""
+        return f'<{self.__class__.__name__} {self.type.name} user={self.user.full_name!r}>'
 
 def log_time_converter(value):
+    """
+    Converts the given value to it's snowflake representation.
+    
+    Parameters
+    ----------
+    value : `int`, ``DiscordEntity`` instance or `datetime`
+        If the value is given as `int`, returns it. If given as a ``DiscordEntity``, then returns it's id and if it
+        is given as a `datetime` object, then converts that to snowfalke then returns it.
+    
+    Returns
+    -------
+    snowfalke : `int`
+    
+    Raises
+    ------
+    TypeError
+        If the given `value`'s type is not any of the expected ones.
+    """
     if isinstance(value,int):
         return value
     
-    if not issubclass(value,type) and hasattr(value,'id'):
+    if isinstance(value, DiscordEntity):
         return value.id
     
-    if isinstance(value,datetime):
+    if type(value) is datetime:
         return time_to_id(value)
     
-    raise TypeError('Expected Discord type with `.id`, `int` as snowfake, or a `datetime` object, got '
+    raise TypeError(f'Expected `int`, `{DiscordEntity.__name__}` instance, or a `datetime` object, got '
         f'`{value.__class__.__name__}`.')
 
 IS_ID_RP=re.compile('(\d{7,21})')
@@ -582,28 +1264,120 @@ EMOJI_NAME_RP=re.compile(':{0,1}([a-zA-Z0-9_\\-~]{1,32}):{0,1}')
 FILTER_RP=re.compile('("(.+?)"|\S+)')
 
 def is_id(text):
+    """
+    Returns whether the given text is a valid snowflake.
+    
+    Parameters
+    ----------
+    text : `str`
+    
+    Returns
+    -------
+    result : `bool`
+    """
     return IS_ID_RP.fullmatch(text) is not None
 
 def is_mention(text):
+    """
+    Returns whether the given text is a mention.
+    
+    Parameters
+    ----------
+    text : `str`
+    
+    Returns
+    -------
+    result : `bool`
+    """
     return IS_MENTION_RP.fullmatch(text) is not None
 
 def is_user_mention(text):
+    """
+    Returns whether the given text mentions a user.
+    
+    Parameters
+    ----------
+    text : `str`
+    
+    Returns
+    -------
+    result : `str`
+    """
     return USER_MENTION_RP.fullmatch(text) is not None
 
 def is_channel_mention(text):
+    """
+    Returns whether the given text mentions a channel.
+    
+    Parameters
+    ----------
+    text : `str`
+
+    Returns
+    -------
+    result : `bool`
+    """
     return CHANNEL_MENTION_RP.fullmatch(text) is not None
 
 def is_role_mention(text):
+    """
+    Returns whether the given text mentions a role.
+    
+    Parameters
+    ----------
+    text : `str`
+
+    Returns
+    -------
+    result : `bool`
+    """
     return ROLE_MENTION_RP.fullmatch(text) is not None
 
 def now_as_id():
+    """
+    Returns the current time as a Discord snowflake.
+
+    Returns
+    -------
+    snowflake : `int`
+    """
     return ((time_now()*1000.)-DISCORD_EPOCH).__int__()<<22
 
-#thanks Pythonic#6090 for the simple design
 def filter_content(content):
+    """
+    Filters the given content to parts separated with spaces. Parts surrounded with `"` character will count as one
+    even if they contain spaces.
+    
+    Parameters
+    ----------
+    content : `str`
+    
+    Returns
+    -------
+    parts : `list` of `str`
+    """
     return [match[1] or match[0] for match in FILTER_RP.findall(content)]
 
-def chunkify(lines,limit=2000):
+def chunkify(lines, limit=2000):
+    """
+    Creates chunks of strings from the given lines.
+    
+    Parameters
+    ----------
+    lines : `list` of `str`
+        Lines of text to be chunkified.
+    limit : `int`, Optional
+        The maximal length of a generated chunk.
+    
+    Returns
+    -------
+    result : `list` of `str`
+    
+    Raises
+    ------
+    ValueError`
+        If limit is less than `500`.
+    """
     if limit<500:
         raise ValueError(f'Minimal limit should be at least 500, got {limit!r}.')
     
@@ -651,7 +1425,28 @@ def chunkify(lines,limit=2000):
     
     return result
 
-def cchunkify(lines,lang='',limit=2000):
+def cchunkify(lines, lang='', limit=2000):
+    """
+    Creates code block chunks from the given lines.
+    
+    Parameters
+    ----------
+    lines : `list` of `str`
+        Lines of text to be chunkified.
+    lang : `str`, Optional
+        Language prefix of the codeblock.
+    limit : `int`, Optional
+        The maximal length of a generated chunk.
+    
+    Returns
+    -------
+    result : `list` of `str`
+    
+    Raises
+    ------
+    ValueError`
+        If limit is less than `500`.
+    """
     if limit<500:
         raise ValueError(f'Minimal limit should be at least 500, got {limit!r}.')
     
@@ -711,126 +1506,256 @@ def cchunkify(lines,lang='',limit=2000):
 
 if (relativedelta is not None):
     __all__=(*__all__,'elapsed_time')
-    def elapsed_time(obj,limit=3,names=('years','months','days','hours','minutes','seconds')):
-        if type(obj) is datetime:
-            delta=relativedelta(datetime.utcnow(),obj)
-        elif type(obj) is relativedelta:
-            delta=obj
+    def elapsed_time(delta, limit=3, names=(
+            ('year', 'years',),
+            ('month', 'months'),
+            ('day', 'days', ),
+            ('hour', 'hours'),
+            ('minute', 'minutes'),
+            ('second', 'seconds'),)):
+        """
+        Generates an elapsed time formula from the given time delta.
+        
+        Parameters
+        ----------
+        delta : `datetime` or `relativedelta`
+            The time delta. If given as `datetime`, then the delta will be based on the difference between the given
+            datetime and the actual time. If given as `relativedelta`, then that will be used directly.
+        limit : `int`, Optional
+            The maximal amount of connected time units. Defaults to `3`.
+        names : `iterable` of `tuple` (`str`, `str`), Optional
+            The names of the time units starting from years. Each element of the iterable should yield a `tuple` of two
+            `str` elements. The first should be always the singular form of the time unit's name and the second the
+            plural. Defaults to the time units' names in engrisssh.
+        
+        Returns
+        -------
+        result : `None` or `str`
+        
+        Raises
+        ------
+        TypeError
+            If delta was neither passed as `datetime` or as `relativedelta` instance.
+        """
+        if type(delta) is datetime:
+            delta = relativedelta(datetime.utcnow(),delta)
+        elif type(delta) is relativedelta:
+            pass
         else:
-            raise TypeError(f'Expected, relativedelta or datetime, got {obj!r}')
+            raise TypeError(f'Expected, `relativedelta` or `datetime`, got {delta.__class__.__name__}.')
+        
+        parts = []
+        for value, name_pair in zip((delta.years, delta.months, delta.days, delta.hours, delta.minutes, delta.seconds), names):
+            if limit == 0:
+                break
             
-        values=(delta.years,delta.months,delta.days,delta.hours,delta.minutes,delta.seconds)
-        result=[]
-        is_higher=None
-        for index in range(6):
-            value=values[index]
-            if is_higher is not None:
-                result.append(value)
-                continue
-            if value:
-                is_higher=index
-                result.append(value)
-
-        del result[limit:]
-
-        text=[]
-        for value,name in zip(result,names[is_higher:]):
             if value<0:
-                value=-value
-            text.append(f'{value} {name}')
-        return ', '.join(text)
+                 value = -value
+            elif value == 0:
+                continue
+            
+            parts.append(str(value))
+            parts.append(' ')
+            
+            if value == 1:
+                name = name_pair[0]
+            else:
+                name = name_pair[1]
+            
+            parts.append(name)
+            parts.append(', ')
+            
+            limit -=1
+        
+        if parts:
+            del parts[-1]
+            result = ''.join(parts)
+        else:
+            result = None
+        
+        return result
 
-
-class Unknown(object):
-    __slots__=('id', 'name', 'type', )
+class Unknown(DiscordEntity):
+    """
+    Represents a not found object when creating an ``AuditLog``.
     
-    def __init__(self,type_,id_,name=''):
+    Attributes
+    ----------
+    id : `int`
+        The entitiy's unique identificator number.
+    name : `str`
+        The entity's name.
+    type : `str`
+        The entity's respective type's respective name.
+        
+        Can be one of:
+        - `'Channel'`
+        - `'Emoji'`
+        - `'Integration'`
+        - `'Invite'`
+        - `'Message'`
+        - `'Role'`
+        - `'User'`
+        - `'Webhook'`
+    """
+    __slots__=('name', 'type', )
+    
+    def __init__(self, type_, id_, name=None):
+        """
+        Creates a new ``Unknown`` object from the given parameters.
+        
+        Parameters
+        ----------
+        type_ : `str`
+            The entity's respective type's respective name.
+        id_ : `int`
+            The entitiy's unique identificator number.
+        name : `str`, Optional
+            The name of the entity if applicable. If not, `type_` will be used as name instead.
+        """
         self.type=type_
         self.id=id_
-        if name:
-            self.name=name
-        else:
-            self.name=type_
+        if name is None:
+            name = type_
+        self.name = name
     
     def __repr__(self):
-        return f'<{self.__class__.__name__} type={self.type} id={self.id} name=\'{self.name}\'>'
-
-    def __gt__(self,other):
-        try:
-            other_id=other.id
-        except AttributeError:
-            return NotImplemented
-        
-        if self.name in other.__class__.__name__:
-            return self.id>other_id
-        
-        return NotImplemented
-        
-    def __ge__(self,other):
-        try:
-            other_id=other.id
-        except AttributeError:
-            return NotImplemented
-        
-        if self.name in other.__class__.__name__:
-            return self.id>=other_id
-        
-        return NotImplemented
+        """Returns the representation of the entity."""
+        return f'<{self.__class__.__name__} type={self.type} id={self.id} name={self.name!r}>'
     
-    def __eq__(self,other):
-        try:
-            other_id=other.id
-        except AttributeError:
+    def __gt__(self, other):
+        """Returns whether this entity's respective type matches with the other's and it's id is greater than the
+        other's."""
+        if type(other) is type(self):
+            if self.type != other.type:
+                return NotImplemented
+        elif isinstance(other, DiscordEntity):
+            if self.type not in other.__class__.__name__:
+                return NotImplemented
+        else:
             return NotImplemented
         
-        if self.name in other.__class__.__name__:
-            return self.id==other_id
+        return (self.id > other.id)
+    
+    def __ge__(self ,other):
+        """Returns whether this entity's respective type matches with the other's and it's id is greater or equal to
+        the other's."""
+        if type(other) is type(self):
+            if self.type != other.type:
+                return NotImplemented
+        elif isinstance(other, DiscordEntity):
+            if self.type not in other.__class__.__name__:
+                return NotImplemented
+        else:
+            return NotImplemented
         
-        return NotImplemented
+        return (self.id >= other.id)
+    
+    def __eq__(self, other):
+        """Returns whether this entity's respective type matches with the other's and it's id equals to the other's."""
+        if type(other) is type(self):
+            if self.type != other.type:
+                return NotImplemented
+        elif isinstance(other, DiscordEntity):
+            if self.type not in other.__class__.__name__:
+                return NotImplemented
+        else:
+            return NotImplemented
+        
+        return (self.id == other.id)
     
     def __ne__(self,other):
-        try:
-            other_id=other.id
-        except AttributeError:
+        """Returns whether this entity's respective type matches with the other's and it's id not equals to the
+        other's."""
+        if type(other) is type(self):
+            if self.type != other.type:
+                return NotImplemented
+        elif isinstance(other, DiscordEntity):
+            if self.type not in other.__class__.__name__:
+                return NotImplemented
+        else:
             return NotImplemented
         
-        if self.name in other.__class__.__name__:
-            return self.id!=other_id
-        
-        return NotImplemented
+        return (self.id != other.id)
     
     def __le__(self,other):
-        try:
-            other_id=other.id
-        except AttributeError:
+        """Returns whether this entity's respective type matches with the other's and it's id is less or equal to
+        the other's."""
+        if type(other) is type(self):
+            if self.type != other.type:
+                return NotImplemented
+        elif isinstance(other, DiscordEntity):
+            if self.type not in other.__class__.__name__:
+                return NotImplemented
+        else:
             return NotImplemented
         
-        if self.name in other.__class__.__name__:
-            return self.id<=other_id
-        
-        return NotImplemented
+        return (self.id <= other.id)
     
     def __lt__(self,other):
-        try:
-            other_id=other.id
-        except AttributeError:
+        """Returns whether this entity's respective type matches with the other's and it's id is less than the
+        other's."""
+        if type(other) is type(self):
+            if self.type != other.type:
+                return NotImplemented
+        elif isinstance(other, DiscordEntity):
+            if self.type not in other.__class__.__name__:
+                return NotImplemented
+        else:
             return NotImplemented
         
-        if self.name in other.__class__.__name__:
-            return self.id<other_id
-        
-        return NotImplemented
-
-    @property
-    def created_at(self):
-        return id_to_time(self.id)
+        return (self.id < other.id)
 
 class FriendRequestFlag(object):
+    """
+    Represents the friend request flags of a user.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the friend request flag.
+    value : `int`
+        Internal identificator value of the friend request flag used for lookup.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `list` of `FriendRequestFlag`
+        A container to store the predefined friend request flags. This container is accessed by ``.decode`` what
+        translates the friend request flags' value to their wrapper side representation.
+    
+    Every predefined friend request flag can also be accessed as class attribute:
+    
+    +---------------------------+---------------------------+-------+
+    | Class attribute name      | name                      | value |
+    +===========================+===========================+=======+
+    | none                      | none                      | 0     |
+    +---------------------------+---------------------------+-------+
+    | mutual_guilds             | mutual_guilds             | 1     |
+    +---------------------------+---------------------------+-------+
+    | mutual_friends            | mutual_friends            | 2     |
+    +---------------------------+---------------------------+-------+
+    | mutual_guilds_and_friends | mutual_guilds_and_friends | 3     |
+    +---------------------------+---------------------------+-------+
+    | all                       | all                       | 4     |
+    +---------------------------+---------------------------+-------+
+    """
     # class related
     INSTANCES = [NotImplemented] * 5
     
     @classmethod
-    def decode(cls,data):
+    def decode(cls, data):
+        """
+        Converts the friend request flag data sent by Discord to it's wrapper side representation.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `bool`)
+            Received friend request flag data.
+        
+        Returns
+        -------
+        friend_request_flag : ``FriendRequestFlag``
+        """
         if data is None:
             return cls.none
         
@@ -846,42 +1771,55 @@ class FriendRequestFlag(object):
         return cls.INSTANCES[key]
     
     # object related
-    __slots__=('name', 'value',)
+    __slots__ = ('name', 'value',)
     
-    def __init__(self,value,name):
+    def __init__(self, value, name):
+        """
+        Creates a new friend request flag instance and stores it at the classe's `.INSTANCES` class attribute.
+        
+        Parameters
+        ----------
+        value : `int`
+            Internal identificator value of the friend request flag used for lookup.
+        name : `str`
+            The name of the friend request flag.
+        """
         self.value=value
         self.name=name
 
         self.INSTANCES[value]=self
-
+    
     def __str__(self):
+        """Returns the name of the friend request flag."""
         return self.name
-
+    
     def __int__(self):
+        """Returns the value of the friend request flag."""
         return self.value
-
+    
     def __repr__(self):
-        return f'{self.__class__.__name__}(value={self.value}, name=\'{self.name}\')'
+        """Returns the representation of the friend request flag."""
+        return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r})'
     
     def encode(self):
-        value=self.value
-        if value==0:
-            return {}
+        """
+        Returns the friend request flag's Discord side representation.
         
-        if value==1:
-            return {'mutual_guilds': True}
+        Returns
+        -------
+        result : `dict` of (`str`, `bool`) items
+        """
+        value = self.value
+        result = {}
+        if (value>>2)&1:
+            result['all'] = True
+        else:
+            if (value>>1)&1:
+                result['mutual_friends'] = True
+            if value&1:
+                result['mutual_guilds'] = True
         
-        if value==2:
-            return {'mutual_friends': True}
-        
-        if value==3:
-            return {'mutual_guilds': True, 'mutual_friends': True}
-        
-        if value==4:
-            return {'all': True}
-        
-        # should not happen
-        return {}
+        return result
     
     # predefined
     none                        = NotImplemented
@@ -897,23 +1835,66 @@ FriendRequestFlag.mutual_guilds_and_friends = FriendRequestFlag(3,'mutual_guilds
 FriendRequestFlag.all                       = FriendRequestFlag(4,'all')
 
 class Theme(object):
+    """
+    Represents a user's theme.
+    
+    Attributes
+    ----------
+    value : `str`
+        The discord side identificator value of the theme.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`str`, ``Theme``) items
+        Stores the predefined themes in `value` - `theme` relation. This container is accessed when converting a theme
+        to it's representation.
+    
+    Each predefined theme instance can also be accessed as class attribute:
+    
+    +-----------------------+-----------+
+    | Class attribute name  | value     |
+    +=======================+===========+
+    | dark                  | dark      |
+    +-----------------------+-----------+
+    | light                 | light     |
+    +-----------------------+-----------+
+    """
     INSTANCES = {}
     
     __slots__=('value',)
     values={}
-    def __init__(self,value):
+    def __init__(self, value):
+        """
+        Creates a new theme with the given value and stores it at the classe's `.INSTANCES` class attribute.
+        
+        Parameters
+        ----------
+        value : `str`
+            The discord side identificator value of the theme.
+        """
         self.value=value
         self.INSTANCES[value]=self
 
     def __str__(self):
+        """Returns the theme's value."""
         return self.value
 
     def __repr__(self):
+        """Returns the theme's representation."""
         return f'<{self.__class__.__name__} value={self.value!r}>'
     
-    @property
-    def name(self):
-        return self.value
+    name = property(__str__)
+    if (__str__.__doc__ is not None):
+        name.__doc__ = (
+        """
+        Returns the theme's value.
+        
+        This property is mainly for compatibility purposes.
+        
+        Returns
+        -------
+        value : `str`
+        """)
     
     dark    = NotImplemented
     light   = NotImplemented
@@ -922,23 +1903,52 @@ Theme.dark  = Theme('dark')
 Theme.light = Theme('light')
 
 class Gift(object):
-    __slots__=('uses', 'code')
-    def __init__(self,data):
+    """
+    Represents a Discord gift.
+    
+    Attributes
+    ----------
+    code : `str`
+        The code of the gift.
+    uses : `int`
+        The amount how much time the gift can be used.
+    """
+    __slots__ = ('code', 'uses', )
+    def __init__(self, data):
+        """
+        Creates a new ``Gift`` object from the given data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Gift data received from Discord.
+        """
         self.uses=data['uses']
         self.code=data['code']
 
 @modulize
 class Discord_hdrs:
     #to receive
-    AUDIT_LOG_REASON=titledstr('X-Audit-Log-Reason')
-    RATELIMIT_REMAINING=titledstr('X-Ratelimit-Remaining')
-    RATELIMIT_RESET=titledstr('X-Ratelimit-Reset')
-    RATELIMIT_RESET_AFTER=titledstr('X-Ratelimit-Reset-After')
-    RATELIMIT_LIMIT=titledstr('X-Ratelimit-Limit')
+    AUDIT_LOG_REASON = titledstr('X-Audit-Log-Reason')
+    RATELIMIT_REMAINING = titledstr('X-Ratelimit-Remaining')
+    RATELIMIT_RESET = titledstr('X-Ratelimit-Reset')
+    RATELIMIT_RESET_AFTER = titledstr('X-Ratelimit-Reset-After')
+    RATELIMIT_LIMIT = titledstr('X-Ratelimit-Limit')
     #to send
-    RATELIMIT_PRECISION=titledstr.bypass_titling('X-RateLimit-Precision')
+    RATELIMIT_PRECISION = titledstr('X-RateLimit-Precision')
 
 def urlcutter(url):
+    """
+    Cuts down the given url to a more suitable length.
+    
+    Parameters
+    ----------
+    url : `str`
+    
+    Returns
+    -------
+    result : `str`
+    """
     if len(url)<50:
         return url
     
@@ -968,7 +1978,7 @@ def urlcutter(url):
         if position==len(url):
             break
         positions.append(position)
-
+    
     from_start=0
     from_end=0
     top_limit=len(url)
@@ -1016,5 +2026,9 @@ def urlcutter(url):
         
     return f'{url[:from_start]}...{url[top_limit-from_end-1:]}'
 
-del re, titledstr, modulize
+bases.id_to_time =id_to_time
 
+del re
+del titledstr
+del modulize
+del bases

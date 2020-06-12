@@ -285,18 +285,7 @@ class WebhookRepr(UserBase):
         self.id=webhook_id
         self.discriminator=0
         self.name=data['username']
-        
-        avatar=data.get('avatar')
-        if avatar is None:
-            self.avatar=0
-            self.has_animated_avatar=False
-        elif avatar.startswith('a_'):
-            self.avatar=int(avatar[2:],16)
-            self.has_animated_avatar=True
-        else:
-            self.avatar=int(avatar,16)
-            self.has_animated_avatar=False
-        
+        self._set_avatar(data)
         self.type=type_
         self.channel = channel
     

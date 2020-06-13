@@ -50,9 +50,9 @@ def PartialWebhook(webhook_id, token, type_=WebhookType.bot, channel=None):
         
         webhook.name = ''
         webhook.discriminator = 0
-        webhook.avatar_value = 0
+        webhook.avatar_hash = 0
         webhook.avatar_type = ICON_TYPE_NONE
-
+        
         webhook.user = ZEROUSER
         webhook.channel = channel
         
@@ -102,7 +102,7 @@ class Webhook(UserBase):
             return None
         
         webhook_id = int(result.group(1))
-        webhook_token = result.group(0)
+        webhook_token = result.group(2)
         
         return PartialWebhook(webhook_id,webhook_token)
 
@@ -190,7 +190,7 @@ class Webhook(UserBase):
             webhook.token   = ''
             webhook.name    = ''
             webhook.discriminator=0
-            webhook.avatar_value = 0
+            webhook.avatar_hash = 0
             webhook.avatar_type = ICON_TYPE_NONE
             webhook.user    = ZEROUSER
             webhook.channel = None

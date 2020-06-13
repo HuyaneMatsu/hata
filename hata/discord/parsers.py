@@ -561,9 +561,9 @@ class PARSER_DEFAULTS(object):
         Multy client parser what calculates the differences between the previous and the current state and calls
         the clients' events.
     opt_sc : `function`
-        Single client optimalized parser.
+        Single client optimized parser.
     opt_mc : `function`
-        Multy client optimalized parsers.
+        Multy client optimized parsers.
     mention_count : `int`
         How much events of the running clients expect to be called by the respective parser. Used for `opt` - `cal`
         optimalizations.
@@ -582,7 +582,28 @@ class PARSER_DEFAULTS(object):
     registered=WeakSet()
     
     __slots__=('mention_count', 'client_count', 'cal_sc', 'name', 'opt_sc', 'cal_mc', 'opt_mc',)
-    def __init__(self,name,cal_sc,cal_mc,opt_sc,opt_mc):
+    def __init__(self, name, cal_sc, cal_mc, opt_sc, opt_mc):
+        """
+        Creates a new parser defaults object with the given name and with the given parsers.
+        
+        The created parser defaults are stored at teh classe's `.all` attribute and also the default parser, so
+        `opt_sc` is set to the global `PARSERS` variable.
+        
+        Parameters
+        ----------
+        name : `str`
+            The parser's name also known as the dispatch event's.
+        cal_sc : `function`
+            Single client parser what calculates the differences between the previous and the current state and calls
+            the client's event.
+        cal_mc : `function`
+            Multy client parser what calculates the differences between the previous and the current state and calls
+            the clients' events.
+        opt_sc : `function`
+            Single client optimized parser.
+        opt_mc : `function`
+            Multy client optimized parsers.
+        """
         self.name=name
         self.cal_sc=cal_sc
         self.cal_mc=cal_mc
@@ -594,7 +615,15 @@ class PARSER_DEFAULTS(object):
         PARSERS[name]=opt_sc
     
     @classmethod
-    def register(cls,client):
+    def register(cls, client):
+        """
+        Registers the given client as a running one. It means it's used events will be registered and their
+        change will be handled to optimize the used parsers.
+        
+        Parameters
+        ----------
+        client : ``Client``
+        """
         registered=cls.registered
         if client in registered:
             return
@@ -631,7 +660,15 @@ class PARSER_DEFAULTS(object):
             
     
     @classmethod
-    def unregister(cls,client):
+    def unregister(cls, client):
+        """
+        Unregisters the given client, so it's event be unregistered and their change will not be handled anymore to
+        optimize the used parsers.
+        
+        Parameters
+        ----------
+        client : ``Client``
+        """
         registered=cls.registered
         if client not in registered:
             return
@@ -667,7 +704,14 @@ class PARSER_DEFAULTS(object):
                 parser_default._recalculate()
                 continue
     
-    def add_mention(self,client):
+    def add_mention(self, client):
+        """
+        If the client is already registered, mentions the respective parser defaults and optimizes the used parsers.
+        
+        Parameters
+        ----------
+        client : ``Client``
+        """
         if client is None:
             return
         
@@ -676,7 +720,15 @@ class PARSER_DEFAULTS(object):
         self.mention_count+=1
         self._recalculate()
     
-    def remove_mention(self,client):
+    def remove_mention(self, client):
+        """
+        If the client is registered to the parser defaults, removes it's mention from the respective parser defaults
+        and optimizes the used parsers.
+        
+        Parameters
+        ----------
+        client : ``Client``
+        """
         if client is None:
             return
         
@@ -686,45 +738,100 @@ class PARSER_DEFAULTS(object):
         self._recalculate()
         
     def _recalculate(self):
+        """
+        Chooses the optimal parsers for each dispatch event.
+        """
         mention_count=self.mention_count
         client_count=self.client_count
         
         if mention_count==0:
             if client_count<2:
-                parser=self.opt_sc
+                parser = self.opt_sc
             else:
-                parser=self.opt_mc
+                parser = self.opt_mc
         else:
             if client_count<2:
-                parser=self.cal_sc
+                parser = self.cal_sc
             else:
-                parser=self.cal_mc
+                parser = self.cal_mc
         
         PARSERS[self.name]=parser
 
-SYNC_REQUESTS={}
+SYNC_REQUESTS = {}
 
-async def sync_task(queue_id,coro,queue):
+async def sync_task(queue_id, coro, queue):
+    """
+    Syncer task ensured if a guild related dispatch event fails, when any expected entity mentioned by it was not
+    found.
+    
+    Parameters
+    ----------
+    queue_id : `int`
+        The respective guild's id to identify queued up unhandled dispatch event when desync happened.
+    coro : `coroutine`
+        ``Client.guild_sync`` coroutine.
+    queue : `list` of `tuple` (``Client``, `Any`, (`str` or `tuple` (`str`, `function`, `Any`)))
+        A queue of parsers to call with the specified arguments.
+        
+        First element of the queue is always the respective client of the received dispatch event. The second is the
+        payload of the dispatch event, meanwhile the third can be the name of it (parser name case), or a `tuple` of
+        3 elements (checker case), where the first is the name of the parser, the second is a checker and the third is
+        an additonal value to check with.
+        
+        At the parser name case, the parser will be called at every case, meanwhile at the checker case, the checker
+        will be called with the synced guild and with the passed value, and then the parser will be called only, if the
+        the checker returned `True`.
+    """
     try:
         guild = await coro
-    except DiscordException:
+    except (DiscordException, ConnectionError):
         return
+    else:
+        for client, data, parser_and_checker in queue:
+            if type(parser_and_checker) is str:
+                PARSERS[parser_and_checker](client,data)
+                continue
+            
+            parser_name, checker, value = parser_and_checker
+            if checker(guild,value):
+                PARSERS[parser_name](client,data)
     finally:
         del SYNC_REQUESTS[queue_id]
 
-    for client,data,parser_and_checker in queue:
-        if type(parser_and_checker) is str:
-            PARSERS[parser_and_checker](client,data)
-            continue
-
-        parser_name,checker,value=parser_and_checker
-        if checker(guild,value):
-            PARSERS[parser_name](client,data)
-
-def check_channel(guild,channel_id):
+def check_channel(guild, channel_id):
+    """
+    Checks whether the given guild has a channel with the specified id.
+    
+    This function is a checker used at guild syncing.
+    
+    Parameters
+    ----------
+    guild : ``Guild``
+    channel_id : `int`
+    """
     return (channel_id in guild.all_channel)
 
-def guild_sync(client,data,parser_and_checker):
+def guild_sync(client, data, parser_and_checker):
+    """
+    Syncer function what is called when any expected entity mentioned by a dispatch event's parser was not found.
+    
+    Looks up whether the given guild has already a syncer task, if it has not, then creates a new ``sync_task`` for it.
+    If `parser_and_checker` is given as not `None`, then the respective failed parser will be called when the syncer
+    finished.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The respective client of the dispatch event.
+    data : `Any`
+        The payload of the dispatch event.
+    parser_and_checker : `None` or `str` or `tuple` (`str`, `function`, `Any`)
+        - Is passed as `None` if only the syncer task should run.
+        - Is passed as `str`, if the respective parser should be called when syncing is done.
+        - Is passed as `tuple` of 3 elements : `str`, `function`, `Any`; if the respective parser's calling is bound to
+            a condition. The passed `function` should contain the condition and accept the respective guild and the
+            third value (the type `Any` one) as arguments and return the condition's result.
+    """
     try:
         guild_id=int(data['guild_id'])
     except KeyError:
@@ -734,7 +841,7 @@ def guild_sync(client,data,parser_and_checker):
         queue=SYNC_REQUESTS[guild_id]
     except KeyError:
         queue=[]
-        Task(sync_task(guild_id,client.guild_sync(guild_id),queue), KOKORO)
+        Task(sync_task(guild_id, client.guild_sync(guild_id), queue), KOKORO)
         SYNC_REQUESTS[guild_id]=queue
     
     if parser_and_checker is None:
@@ -3014,18 +3121,65 @@ EVENTS.add_default('gift_update'                , 3 , 'GIFT_CODE_UPDATE'        
 EVENTS.add_default('achievement'                , 2 , 'USER_ACHIEVEMENT_UPDATE'                 , )
 
 def _check_name_should_break(name):
+    """
+    Checks whether the passed `name` is type `str`.
+    
+    Used inside of ``check_name`` to check whether the given variable is usable, so we should stop checking
+    other alternative cases.
+    
+    Parameters
+    ----------
+    name : `Any`
+    
+    Returns
+    -------
+    should_break : `bool`
+        If non empty `str` is received returns `True`, meanwhile if `None` or empty `str` is received `False`.
+    
+    Raises
+    ------
+    TypeError
+        If `name` was not passed as `None`, or type `str`.
+    """
     if (name is None):
         return False
         
     if type(name) is not str:
-        raise TypeError(f'`name` should be type `str`, got `{name!r}`.')
+        raise TypeError(f'`name` should be `None` or type `str`, got `{name.__class__.__name__}`.')
         
     if name:
         return True
     
     return False
     
-def check_name(func,name):
+def check_name(func, name):
+    """
+    Tries to find the given `func`'s preferred name. The check order is the following:
+    - Passed `name` argument.
+    - `func.__event_name__`.
+    - `func.__name__`.
+    - `func.__class__.__name__`.
+    
+    If any of these is set (or passed at the case of `name`) as `None` or as an empty string, then those are ignored.
+    
+    Parameters
+    ----------
+    func : `callable`
+        The function, what preferred name we are looking for.
+    name : `None` or `str`
+        A directly gvien name value by the user. Defaults to `None` by caller (or at least sit should).
+    
+    Returns
+    -------
+    name : `str`
+        The preffered name of `func` with lower case characters only.
+    
+    Raises
+    ------
+    TypeError
+        - If a checked name is not `None` or `str` instance.
+        - If a metaclass was given.
+    """
     while True:
         if _check_name_should_break(name):
             break
@@ -3047,18 +3201,56 @@ def check_name(func,name):
             if _check_name_should_break(name):
                 break
         
-        raise TypeError('The class must have \'__name__\' attribute and metaclasses are not allowed')
+        raise TypeError(f'Metaclasses are not allowed, got {func!r}.')
     
     if not name.islower():
         name=name.lower()
     return name
 
 def check_argcount_and_convert(func, expected, errormsg=None):
+    """
+    If needed converts the given `func` to an async callable and then checks whether it expects the specified
+    amount of non reserved positional arguments.
+    
+    `func` can be either:
+    - An async `callable`.
+    - A class with non async `__new__` (neither `__init__` of course) accepting no non reserved paremeters,
+        meanwhile it's `__call__` is async. This is the convert (or instance) case and it causes the final argument
+        count check to be applied on the type's `__call__`.
+    - A class with async `__new__`.
+    
+    After the callable was choosed, then the amount of positional arguments are checked what it expects. Reserved
+    arguments, like `self` are ignored and if the callable accepts keyword only argument, then it is a no-go.
+    
+    If every check passed, then at the convert case instances the type and returns that, meanwhile at the other cases
+    it returns the received `func`.
+    
+    Parameters
+    ----------
+    func : `callable`
+        The callable, what's type and argument count will checked.
+    expected : `int`
+        The amount of arguments, what would be passed to the given `func` when called at the future.
+    errormsg : `str`, Optional
+        A specified error message with what a `TypeError` will be raised at the end, if the given `func` is not async
+        and neither cannot be converted to an async callable.
+    
+    Returns
+    -------
+    func : `callable`
+    
+    Raises
+    ------
+    TypeError
+        - If `func` was not given as callable.
+        - If `func` is not as async and neither cannot be converted to an async one.
+        - If `func` expects less or more non reserved positional arguments as `expected` is.
+    """
     analyzer = CallableAnalyzer(func)
     if analyzer.is_async():
         min_, max_ = analyzer.get_non_reserved_positional_argument_range()
         if min_>expected:
-            raise ValueError(f'`{func!r}` excepts at least `{min_!r}` non reserved arguments, meanwhile the event expects to pass `{expected!r}`.')
+            raise TypeError(f'`{func!r}` excepts at least `{min_!r}` non reserved arguments, meanwhile the event expects to pass `{expected!r}`.')
         
         if min_==expected:
             return func
@@ -3070,7 +3262,7 @@ def check_argcount_and_convert(func, expected, errormsg=None):
         if analyzer.accepts_args():
             return func
         
-        raise ValueError(f'`{func!r}` expects maximum `{max_!r}` non reserved arguments  meanwhile the event expects to pass `{expected!r}`.')
+        raise TypeError(f'`{func!r}` expects maximum `{max_!r}` non reserved arguments  meanwhile the event expects to pass `{expected!r}`.')
     
     if analyzer.can_instance_to_async_callable():
         sub_analyzer=CallableAnalyzer(func.__call__, as_method=True)
@@ -3078,7 +3270,7 @@ def check_argcount_and_convert(func, expected, errormsg=None):
             min_, max_ = sub_analyzer.get_non_reserved_positional_argument_range()
             
             if min_>expected:
-                raise ValueError(f'After instancing `{func!r}` would still except at least `{min_!r}` non reserved arguments, meanwhile the event expects to pass `{expected!r}`.')
+                raise TypeError(f'After instancing `{func!r}` would still except at least `{min_!r}` non reserved arguments, meanwhile the event expects to pass `{expected!r}`.')
             
             if min_==expected:
                 func = analyzer.instance_to_async_callable()
@@ -3093,7 +3285,7 @@ def check_argcount_and_convert(func, expected, errormsg=None):
                 func = analyzer.instance_to_async_callable()
                 return func
             
-            raise ValueError(f'After instancing `{func!r}` would still expects maximum `{max_!r}` non reserved arguments  meanwhile the event expects to pass `{expected!r}`.')
+            raise TypeError(f'After instancing `{func!r}` would still expects maximum `{max_!r}` non reserved arguments  meanwhile the event expects to pass `{expected!r}`.')
             
             func = analyzer.instance_to_async_callable()
             return func
@@ -3101,7 +3293,7 @@ def check_argcount_and_convert(func, expected, errormsg=None):
     if errormsg is None:
         errormsg=f'Not async callable type, or cannot be instance to async: `{func!r}`.'
     
-    raise ValueError(errormsg)
+    raise TypeError(errormsg)
 
 def compare_converted(converted,non_converted):
     # function, both should be functions

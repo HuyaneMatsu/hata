@@ -551,7 +551,7 @@ class URLS:
         """
         return f'{API_ENDPOINT}/webhooks/{webhook.id}/{webhook.token}'
     
-    webhook_urlpattern=re.compile('(?:https://)?discord(?:app)?.com/api/(?:v\d/)?webhooks/([0-9]{17,21})/([a-zA-Z0-9\.\-\_]{60,68})(?:/.*)?')
+    webhook_urlpattern=re.compile('(?:https://)?discord(?:app)?.com/api/(?:v\d/)?webhooks/([0-9]{17,21})/([a-zA-Z0-9\.\-\_%]{60,68})(?:/.*)?')
     
     def invite_url(invite):
         """

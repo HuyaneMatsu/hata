@@ -834,8 +834,8 @@ class RATELIMIT_GROUPS:
     guild_channels              = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     channel_move                = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     channel_create              = RatelimitGroup(LIMITER_GUILD, optimistic=True)
-    guild_embed_get             = RatelimitGroup(LIMITER_GUILD, optimistic=True) # will be removed, do nto bother with testing
-    guild_embed_edit            = RatelimitGroup(LIMITER_GUILD, optimistic=True) # will be removed, do nto bother with testing
+    guild_embed_get             = RatelimitGroup(LIMITER_GUILD, optimistic=True) # will be removed, do not bother with testing
+    guild_embed_edit            = RatelimitGroup(LIMITER_GUILD, optimistic=True) # will be removed, do not bother with testing
     guild_emojis                = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     emoji_create                = RatelimitGroup(LIMITER_GUILD)
     emoji_delete                = RatelimitGroup(LIMITER_GUILD)

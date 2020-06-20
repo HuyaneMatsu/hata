@@ -561,9 +561,9 @@ class ChannelTextBase:
             channel.messages=deque(maxlen=0)
             return
         
-        old=channel.messages
-        if len(old)>limit:
-            channel.messages=deque((old[i] for i in range(limit)),maxlen=limit)
+        old_messages=channel.messages
+        if len(old_messages)>limit:
+            channel.messages=deque((old_messages[i] for i in range(limit)),maxlen=limit)
         channel._message_keep_limit=limit
     
     message_keep_limit=property(_get_message_keep_limit,_set_message_keep_limit)
@@ -779,12 +779,12 @@ class ChannelTextBase:
         channel : ``ChannelTextBase`` instance.
             The channel, what's `.messages` will be limited.
         """
-        old=channel.messages
+        old_messages=channel.messages
         limit=channel._message_keep_limit
-        if len(old)>limit:
-            messages=deque((old[i] for i in range(limit)),maxlen=limit)
+        if len(old_messages)>limit:
+            messages=deque((old_messages[i] for i in range(limit)),maxlen=limit)
         else:
-            messages=deque(old,maxlen=limit)
+            messages=deque(old_messages,maxlen=limit)
         
         channel.messages = messages
         channel._turn_message_keep_limit_on_at=0.
@@ -1166,9 +1166,9 @@ class ChannelGuildBase(ChannelBase):
             self.category = category
             category.channels.append(self)
     
-    def _update_catpos(self,data,old):
+    def _update_catpos(self, data, old_attributes):
         """
-        Acts same as ``._set_catpos``, but it sets the modified attrbiutes' previous value to `old`.
+        Acts same as ``._set_catpos``, but it sets the modified attrbiutes' previous value to `old_attributes`.
         
         Called from `._update` when updating a guild channel.
         
@@ -1176,7 +1176,7 @@ class ChannelGuildBase(ChannelBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data received from Discord
-        old : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `Any`) items
             `attribute-name` - `old-value` relations containing the changes of caused by the update.
         """
         position=data.get('position',0)
@@ -1191,11 +1191,11 @@ class ChannelGuildBase(ChannelBase):
         category = self.category
         if category is parent:
             if self.position!=position:
-                old['category']=self.category
+                old_attributes['category']=self.category
                 category.channels.switch(self,position)
         else:
-            old['category']=category
-            old['position']=self.position
+            old_attributes['category']=category
+            old_attributes['position']=self.position
             category.channels.remove(self)
             
             self.position = position
@@ -1652,7 +1652,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         self.nsfw=data.get('nsfw',False)
         self.slowmode=int(data.get('rate_limit_per_user',0))
     
-    def _update(self,data):
+    def _update(self, data):
         """
         Updates the channel and returns it's overwritten attributes as a `dict` with a `attribute-name` - `old-value`
         relation.
@@ -1664,7 +1664,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         
         Returns
         -------
-        old : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `Any`) items
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -1690,41 +1690,41 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         +---------------+-----------------------------------+
         """
         self._cache_perm.clear()
-        old={}
+        old_attributes = {}
         
         type_=data['type']
         if self.type!=type_:
-            old['type']=self.type
+            old_attributes['type']=self.type
             self.type=type_
         
         name=data['name']
         if self.name!=name:
-            old['name']=self.name
+            old_attributes['name']=self.name
             self.name=name
         
         topic=data.get('topic','')
         if self.topic!=topic:
-            old['topic']=self.topic
+            old_attributes['topic']=self.topic
             self.topic=topic
         
         nsfw=data.get('nsfw',False)
         if self.nsfw!=nsfw:
-            old['nsfw']=self.nsfw
+            old_attributes['nsfw']=self.nsfw
             self.nsfw=nsfw
         
         slowmode=int(data.get('rate_limit_per_user',0))
         if self.slowmode!=slowmode:
-            old['slowmode']=self.slowmode
+            old_attributes['slowmode']=self.slowmode
             self.slowmode=slowmode
         
         overwrites=self._parse_overwrites(data)
         if self.overwrites!=overwrites:
-            old['overwrites']=self.overwrites
+            old_attributes['overwrites']=self.overwrites
             self.overwrites=overwrites
         
-        self._update_catpos(data,old)
+        self._update_catpos(data, old_attributes)
         
-        return old
+        return old_attributes
     
     def _delete(self):
         """
@@ -2028,8 +2028,8 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
     
     def _update(self, data):
         """
-        Updates the channel and returns it's overwritten old attributes as a `dict` with a `attribute-name` -`old-value`
-        relation.
+        Updates the channel and returns it's overwritten old attributes as a `dict` with a `attribute-name` -
+        `old-value` relation.
         
         This method is just for compability with the other channel types, what means it always returns an empty
         `dict`.
@@ -2041,7 +2041,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
             
         Returns
         -------
-        old : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `Any`) items
             Always empty.
         """
         return {}
@@ -2344,7 +2344,7 @@ class ChannelVoice(ChannelGuildBase):
             
         Returns
         -------
-        old : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `Any`) items
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -2366,31 +2366,31 @@ class ChannelVoice(ChannelGuildBase):
         +---------------+-----------------------------------+
         """
         self._cache_perm.clear()
-        old={}
+        old_attributes = {}
         
         name=data['name']
         if self.name!=name:
-            old['name']=self.name
+            old_attributes['name']=self.name
             self.name=name
         
         bitrate=data['bitrate']
         if self.bitrate!=bitrate:
-            old['bitarate']=self.bitrate
+            old_attributes['bitarate']=self.bitrate
             self.bitrate=bitrate
         
         user_limit=data['user_limit']
         if self.user_limit!=user_limit:
-            old['user_limit']=self.user_limit
+            old_attributes['user_limit']=self.user_limit
             self.user_limit=user_limit
         
         overwrites=self._parse_overwrites(data)
         if self.overwrites!=overwrites:
-            old['overwrites']=self.overwrites
+            old_attributes['overwrites']=self.overwrites
             self.overwrites=overwrites
         
-        self._update_catpos(data,old)
+        self._update_catpos(data, old_attributes)
         
-        return old
+        return old_attributes
     
     def permissions_for(self, user):
         """
@@ -2689,8 +2689,8 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
     
     def _update(self, data):
         """
-        Updates the channel and returns it's overwritten old attributes as a `dict` with a `attribute-name` -`old-value`
-        relation.
+        Updates the channel and returns it's overwritten old attributes as a `dict` with a `attribute-name` -
+        `old-value` relation.
         
         Parameters
         ----------
@@ -2699,7 +2699,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
             
         Returns
         -------
-        old : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `Any`) items
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -2716,22 +2716,22 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         | users         | `list` of (``User`` or ``Client``)    |
         +---------------+---------------------------------------+
         """
-        old={}
+        old_attributes = {}
         
         name=data.get('name',None)
         if name is None:
             name=''
         if self.name!=name:
-            old['name']=self.name
+            old_attributes['name']=self.name
             self.name=name
         
-        self._update_icon(data, old)
+        self._update_icon(data, old_attributes)
         
         users = [User(user) for user in data['recipeents']]
         users.sort()
         
         if self.users!=users:
-            old['users']=self.users
+            old_attributes['users']=self.users
             self.users=users
         
         owner_id=int(data['owner_id'])
@@ -2742,10 +2742,10 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
                     break
             else:
                 owner=ZEROUSER
-            old['owner']=self.owner
+            old_attributes['owner']=self.owner
             self.owner=owner
         
-        return old
+        return old_attributes
 
     def __str__(self):
         """Returns the channel's name."""
@@ -3053,7 +3053,7 @@ class ChannelCategory(ChannelGuildBase):
             
         Returns
         -------
-        old : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `Any`) items
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -3069,21 +3069,21 @@ class ChannelCategory(ChannelGuildBase):
         +---------------+-----------------------------------+
         """
         self._cache_perm.clear()
-        old={}
+        old_attributes = {}
 
         name=data['name']
         if self.name!=name:
-            old['name']=self.name
+            old_attributes['name']=self.name
             self.name=name
 
         overwrites=self._parse_overwrites(data)
         if self.overwrites!=overwrites:
-            old['overwrites']=self.overwrites
+            old_attributes['overwrites']=self.overwrites
             self.overwrites=overwrites
 
-        self._update_catpos(data,old)
+        self._update_catpos(data, old_attributes)
         
-        return old
+        return old_attributes
     
     def _delete(self):
         """
@@ -3309,7 +3309,7 @@ class ChannelStore(ChannelGuildBase):
             
         Returns
         -------
-        old : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `Any`) items
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -3329,26 +3329,26 @@ class ChannelStore(ChannelGuildBase):
         +---------------+-----------------------------------+
         """
         self._cache_perm.clear()
-        old={}
+        old_attributes = {}
         
         name=data['name']
         if self.name!=name:
-            old['name']=self.name
+            old_attributes['name']=self.name
             self.name=name
         
         nsfw=data.get('nsfw',False)
         if self.nsfw!=nsfw:
-            old['nsfw']=self.nsfw
+            old_attributes['nsfw']=self.nsfw
             self.nsfw=nsfw
         
         overwrites=self._parse_overwrites(data)
         if self.overwrites!=overwrites:
-            old['overwrites']=self.overwrites
+            old_attributes['overwrites']=self.overwrites
             self.overwrites=overwrites
         
-        self._update_catpos(data,old)
+        self._update_catpos(data, old_attributes)
         
-        return old
+        return old_attributes
     
     def _delete(self):
         """

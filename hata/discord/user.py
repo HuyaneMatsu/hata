@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__all__ = ('GuildProfile', 'User', 'UserBase', 'UserFlag', 'VoiceState', 'ZEROUSER', )
+__all__ = ('ActivityChange', 'GuildProfile', 'User', 'UserBase', 'UserFlag', 'VoiceState', 'ZEROUSER', )
 
 from datetime import datetime
 
@@ -79,7 +79,7 @@ class GuildProfile(object):
             else:
                 self.joined_at=parse_time(joined_at_data)
     
-    def _update_no_return(self,data,guild):
+    def _update_no_return(self, data, guild):
         self.nick=data.get('nick',None)
         
         roles=self.roles
@@ -99,11 +99,39 @@ class GuildProfile(object):
             boosts_since=parse_time(boosts_since)
         self.boosts_since=boosts_since
     
-    def _update(self,data,guild):
-        old={}
+    def _update(self, data, guild):
+        """
+        Updates the guild profile and returns it's changed attributes in a `dict` within `attribute-name` - `old-value`
+        relation.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Data received from Discord.
+        guild : ``Guild``
+            The owner guild of the role.
+        
+        Returns
+        -------
+        old_attributes : `dict` of (`str`, `Any`) items
+            All item in the returned dict is optional.
+        
+        Returned Data Structure
+        -----------------------
+        +-------------------+-----------------------+
+        | Keys              | Values                |
+        +===================+=======================+
+        | boosts_since      | `None` or `datetime`  |
+        +-------------------+-----------------------+
+        | nick              | `None` or `str`       |
+        +-----------------------+-------------------+
+        | roles             | `list` of ``Role``    |
+        +-------------------+-----------------------+
+        """
+        old_attributes = {}
         nick=data.get('nick',None)
         if self.nick!=nick:
-            old['nick']=self.nick
+            old_attributes['nick']=self.nick
             self.nick=nick
         
         roles=[]
@@ -121,7 +149,7 @@ class GuildProfile(object):
         own_roles = self.roles
         own_roles.sort()
         if own_roles!=roles:
-            old['roles']=self.roles
+            old_attributes['roles']=self.roles
             self.roles=roles
         
         boosts_since=data.get('premium_since',None)
@@ -130,17 +158,17 @@ class GuildProfile(object):
         
         if (self.boosts_since is None):
             if boosts_since is not None:
-                old['boosts_since']=None
+                old_attributes['boosts_since']=None
                 self.boosts_since=boosts_since
         else:
             if (boosts_since is None):
-                old['boosts_since']=self.boosts_since
+                old_attributes['boosts_since']=self.boosts_since
                 self.boosts_since=None
             elif (self.boosts_since!=boosts_since):
-                old['boosts_since']=self.boosts_since
+                old_attributes['boosts_since']=self.boosts_since
                 self.boosts_since=boosts_since
         
-        return old
+        return old_attributes
     
     def get_top_role(self, default=None):
         roles = self.roles
@@ -566,7 +594,6 @@ class UserBase(DiscordEntity, immortal=True):
             
             return False
 
-
 class User(UserBase):
     if CACHE_PRESENCE:
         __slots__=('guild_profiles', 'is_bot', 'flags', 'partial', #default User
@@ -869,19 +896,19 @@ class User(UserBase):
         self.guild_profiles.clear()
 
     #if CACHE_PRESENCE is False, this should be never called from this class
-    def _update_presence(self,data):
-        old={}
+    def _update_presence(self, data):
+        old_attributes={}
         
         statuses=data['client_status']
         if self.statuses!=statuses:
-            old['statuses']=self.statuses
+            old_attributes['statuses']=self.statuses
             self.statuses=statuses
-
+            
             status=data['status']
             if self.status.value!=status:
-                old['status']=self.status
+                old_attributes['status']=self.status
                 self.status=Status.INSTANCES[status]
-            
+        
         activity_datas=data['activities']
         if activity_datas:
             should_pass=False
@@ -890,39 +917,47 @@ class User(UserBase):
 
             if old_activities:
                 for activity_data in activity_datas:
-                    activitiy_type=activity_data['type']
+                    activity_type=activity_data['type']
                     for index in range(len(old_activities)):
                         activity=old_activities[index]
-                        if type(activity) is dict:
+                        if type(activity) is ActivityChange:
                             continue
-                        if activitiy_type==activity.type:
-                            if activity_data['id']!=activity.discord_side_id:
-                                continue
-                            changes=activity._update(activity_data)
-                            if changes:
-                                should_pass=True
-                                changes['activity']=activity
-                                old_activities[index]=changes
-                            new_activities.append(activity)
-                            break
+                        
+                        if activity_type != activity.type:
+                            continue
+                        
+                        if activity_data['id']!=activity.discord_side_id:
+                            continue
+                        
+                        activity_old_attributes = activity._update(activity_data)
+                        if activity_old_attributes:
+                            should_pass=True
+                            activity_change = ActivityChange()
+                            activity_change.activity = activity
+                            activity_change.old_attributes = activity_old_attributes
+                            
+                            old_activities[index] = activity_change
+                        
+                        new_activities.append(activity)
+                        break
                     else:
                         should_pass=True
                         new_activities.append(Activity(activity_data))
-                            
+                        
             else:
                 should_pass=True
                 for activity_data in activity_datas:
                     new_activities.append(Activity(activity_data))
-
+            
             if should_pass:
-                old['activities']=old_activities
-                
+                old_attributes['activities']=old_activities
+            
         elif self.activities:
-            old['activities']=self.activities
+            old_attributes['activities']=self.activities
             self.activities=[]
-
-        return old
-
+        
+        return old_attributes
+    
     def _update_presence_no_return(self,data):
         self.status=Status.INSTANCES[data['status']]
         
@@ -936,13 +971,13 @@ class User(UserBase):
         if activity_datas:
             old_activities=self.activities
             self.activities=new_activities=[]
-
+            
             if old_activities:
                 for activity_data in activity_datas:
-                    activitiy_type=activity_data['type']
+                    activity_type=activity_data['type']
                     for index in range(len(old_activities)):
                         activity=old_activities[index]
-                        if activitiy_type==activity.type:
+                        if activity_type==activity.type:
                             if activity_data['id']!=activity.discord_side_id:
                                 continue
                             activity._update_no_return(activity_data)
@@ -957,27 +992,55 @@ class User(UserBase):
         elif self.activities:
             self.activities.clear()
     
-    def _update(self,data):
-        old={}
+    def _update(self, data):
+        """
+        Updates the user and returns it's overwritten attributes as a `dict` with a `attribute-name` - `old-value`
+        relation.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            User data received from Discord.
+        
+        Returns
+        -------
+        old_attributes : `dict` of (`str`, `Any`) items
+            All item in the returned dict is optional.
+        
+        Returned Data Structure
+        -----------------------
+        +---------------+---------------+
+        | Keys          | Values        |
+        +===============+===============+
+        | avatar        | ``Icon``      |
+        +---------------+---------------+
+        | discriminator | `int          |
+        +---------------+---------------+
+        | flags         | ``UserFlag``  |
+        +---------------+---------------+
+        | name          | `str`         |
+        +---------------+---------------+
+        """
+        old_attributes = {}
         
         name=data['username']
         if self.name!=name:
-            old['name']=self.name
+            old_attributes['name']=self.name
             self.name=name
         
         discriminator=int(data['discriminator'])
         if self.discriminator!=discriminator:
-            old['discriminator']=self.discriminator
+            old_attributes['discriminator']=self.discriminator
             self.discriminator=discriminator
         
-        self._update_avatar(data, old)
+        self._update_avatar(data, old_attributes)
         
         flags = data.get('public_flags',0)
         if self.flags != flags:
-            data['flags']=self.flags
+            old_attributes['flags']=self.flags
             self.flags = UserFlag(flags)
         
-        return old
+        return old_attributes
     
     @classmethod
     def _update_profile(cls,data,guild):
@@ -1057,9 +1120,88 @@ class User(UserBase):
             
             return user
 
+class ActivityChange(object):
+    """
+    Represents an updated activity with storing the activity's and it's old updated attributes in a `dict`.
+    
+    Attributes
+    ----------
+    activity : ``ActivityBase`` instance
+        The updated activity
+    old_attributes : `dict` of (`str`, `Any`) items
+        The changed attributes of the activity in `attribute-name` - `old-value` relation. Can conatin any of the
+        following items:
+        
+        +-----------------------+-----------------------+
+        | Keys                  | Values                |
+        +=======================+=======================+
+        | application_id        | `int`                 |
+        +-----------------------+-----------------------+
+        | asset_image_large     | `str`                 |
+        +-----------------------+-----------------------+
+        | asset_image_small     | `str`                 |
+        +-----------------------+-----------------------+
+        | asset_text_large      | `str`                 |
+        +-----------------------+-----------------------+
+        | asset_text_small      | `str`                 |
+        +-----------------------+-----------------------+
+        | created               | `int`                 |
+        +-----------------------+-----------------------+
+        | details               | `str`                 |
+        +-----------------------+-----------------------+
+        | emoji                 | `None` or ``Emoji``   |
+        +-----------------------+-----------------------+
+        | flags                 | ``ActivityFlag``      |
+        +-----------------------+-----------------------+
+        | id                    | `int`                 |
+        +-----------------------+-----------------------+
+        | name                  | `str`                 |
+        +-----------------------+-----------------------+
+        | party_id              | `str`                 |
+        +-----------------------+-----------------------+
+        | party_max             | `int`                 |
+        +-----------------------+-----------------------+
+        | party_size            | `int`                 |
+        +-----------------------+-----------------------+
+        | secret_join           | `str`                 |
+        +-----------------------+-----------------------+
+        | secret_match          | `str`                 |
+        +-----------------------+-----------------------+
+        | secret_spectate       | `str`                 |
+        +-----------------------+-----------------------+
+        | session_id            | `str`                 |
+        +-----------------------+-----------------------+
+        | state                 | `None` or `str`       |
+        +-----------------------+-----------------------+
+        | sync_id               | `str`                 |
+        +-----------------------+-----------------------+
+        | timestamp_end         | `int`                 |
+        +-----------------------+-----------------------+
+        | timestamp_start       | `int`                 |
+        +-----------------------+-----------------------+
+        | type                  | `int`                 |
+        +-----------------------+-----------------------+
+        | url                   | `str`                 |
+        +-----------------------+-----------------------+
+    """
+    __slots__ = ('activity', 'old_attributes',)
+    
+    def __repr__(self):
+        """Returns the representation of the activity change."""
+        return f'<{self.__class__.__name__} activity={self.activity!r} changes count={len(self.old_attributes)}>'
+    
+    def __len__(self):
+        """Helper for unpacking if needed."""
+        return 2
+    
+    def __iter__(self):
+        """Unpacks the activity change."""
+        yield self.activity
+        yield self.old_attributes
+
 class VoiceState(object):
     """
-    Represents a user at ``ChannelVoice``.
+    Represents a user at a ``ChannelVoice``.
     
     Attributes
     ----------
@@ -1129,7 +1271,7 @@ class VoiceState(object):
         
         Returns
         -------
-        old : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `Any`) items
             All item in the returned dictionary is optional.
         
         Returned Data Structure
@@ -1152,43 +1294,43 @@ class VoiceState(object):
         | self_video    | `bool`            |
         +---------------+-------------------+
         """
-        old={}
+        old_attributes = {}
         
         if (self.channel is not channel):
-            old['channel']=self.channel
+            old_attributes['channel']=self.channel
             self.channel=channel
         
         deaf=data['deaf']
         if self.deaf!=deaf:
-            old['deaf']=self.deaf
+            old_attributes['deaf']=self.deaf
             self.deaf=deaf
         
         mute=data['mute']
         if self.mute!=mute:
-            old['mute']=self.mute
+            old_attributes['mute']=self.mute
             self.mute=mute
         
         self_deaf=data['self_deaf']
         if self.self_deaf!=self_deaf:
-            old['self_deaf']=self.self_deaf
+            old_attributes['self_deaf']=self.self_deaf
             self.self_deaf=self_deaf
         
         self_video=data['self_video']
         if self.self_video!=self_video:
-            old['self_video']=self.self_video
+            old_attributes['self_video']=self.self_video
             self.self_video=self_video
         
         self_stream = data.get('self_stream', False)
         if self.self_stream != self_stream:
-            old['self_stream'] = self.self_stream
+            old_attributes['self_stream'] = self.self_stream
             self.self_stream = self_stream
         
         self_mute=data['self_mute']
         if self.self_mute!=self_mute:
-            old['self_mute']=self.self_mute
+            old_attributes['self_mute']=self.self_mute
             self.self_mute=self_mute
         
-        return old
+        return old_attributes
     
     def _update_no_return(self, data, channel):
         """

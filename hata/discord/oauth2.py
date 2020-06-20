@@ -463,7 +463,7 @@ class Achievement(DiscordEntity):
             
         Returns
         -------
-        old : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `Any`) items
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -482,31 +482,31 @@ class Achievement(DiscordEntity):
         | icon          | ``Icon``  |
         +---------------+-----------+
         """
-        old={}
+        old_attributes = {}
         
         name=data['name']['default']
         if self.name!=name:
-            old['name']=self.name
+            old_attributes['name']=self.name
             self.name=name
         
         description=data['description']['default']
         if self.description!=description:
-            old['description']=self.description
+            old_attributes['description']=self.description
             self.description=description
         
         secret=data['secret']
         if self.secret!=secret:
-            old['secret']=self.secret
+            old_attributes['secret']=self.secret
             self.secret=secret
         
         secure=data['secure']
         if self.secure!=secure:
-            old['secure']=self.secure
+            old_attributes['secure']=self.secure
             self.secure=secure
         
-        self._update_icon(data, old)
+        self._update_icon(data, old_attributes)
         
-        return old
+        return old_attributes
     
     def _update_no_return(self, data):
         """

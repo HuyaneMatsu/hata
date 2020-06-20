@@ -16,7 +16,7 @@ from ..backend.helpers import BasicAuth
 
 from .others import Status, log_time_converter, DISCORD_EPOCH, VoiceRegion, ContentFilterLevel, PremiumType, \
     MessageNotificationLevel, bytes_to_base64, ext_from_base64, random_id, to_json, VerificationLevel, RelationshipType
-from .user import User, USERS, GuildProfile, UserBase, UserFlag
+from .user import User, USERS, GuildProfile, UserBase, UserFlag, PartialUser
 from .emoji import Emoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, \
     message_relativeindex, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES
@@ -296,7 +296,8 @@ class Client(UserBase):
     group_channels : `dict` of (`int`, ``ChannelGroup``) items
         The group channels of the client. They can be accessed by their id as the key.
     ready_state : ``ReadyState`` or `None`
-        The client on login in fills up it's ready_state with Guild objects, which will have their members requested.
+        The client on login in fills up it's `.ready_state` with ``Guild`` objects, which will have their members
+        requested.
     relationships : `dict` of (`int`, ``Relationship``) items
         Stores the relationships of the client. The relationships' users' ids are the keys and the relationships
         themselves are the values.
@@ -315,6 +316,8 @@ class Client(UserBase):
         the voice clients.
     _activity : ``Activity``
         The client's preffered activity.
+    _additional_owner_ids : `None` or `set` of `int`
+        Additional users' (as id) to be passed by the ``.is_owner`` check.
     _gateway_pair : `tuple` (`str`, `float`)
         An `url`, `time` pair used, when requesting gateway url. When the client launches with more shards, keep
         requesting gateway url might take up most of the time, so we cache the generated url and the timestamp
@@ -347,15 +350,15 @@ class Client(UserBase):
         'guild_profiles', 'is_bot', 'partial', #default user
         'activities', 'status', 'statuses', #presence
         'email', 'flags', 'locale', 'mfa', 'premium_type', 'system', 'verified', # OAUTH 2
-        '__dict__', '_activity', '_gateway_time', '_gateway_url', '_gateway_max_concurrency', '_status',
-        '_user_chunker_nonce', 'application', 'events', 'gateway', 'http', 'intents', 'private_channels',
+        '__dict__', '_additional_owner_ids', '_activity', '_gateway_time', '_gateway_url', '_gateway_max_concurrency',
+        '_status', '_user_chunker_nonce', 'application', 'events', 'gateway', 'http', 'intents', 'private_channels',
         'ready_state', 'group_channels', 'relationships', 'running', 'secret', 'shard_count', 'token',
         'voice_clients', )
     
     loop = KOKORO
     
     def __new__(cls, token, secret=None, client_id=0, activity=ActivityUnknown, status=None, is_bot=True,
-            shard_count=0, intents=-1, **kwargs):
+            shard_count=0, intents=-1, additional_owners=None, **kwargs):
         """
         Parameters
         ----------
@@ -427,7 +430,7 @@ class Client(UserBase):
         elif isinstance(secret,str):
             secret = str(secret)
         else:
-            raise TypeError(f'`secret` can be passed as `str` instance, got {secret!r}.')
+            raise TypeError(f'`secret` can be passed as `str` instance, got `{secret.__class__.__name__}`.')
         
         # client_id
         client_id = preconvert_snowflake(client_id, 'client_id')
@@ -451,13 +454,43 @@ class Client(UserBase):
         elif isinstance(shard_count, int):
             shard_count = int(shard_count)
         else:
-            raise TypeError(f'`shard_count` should have been passed as `int` instance, got {shard_count!r}.')
+            raise TypeError(f'`shard_count` should have been passed as `int` instance, got {shard_count.__class__.__name__}.')
         
         if shard_count<0:
             raise ValueError(f'`shard_count` can be passed only as non negative `int`, got {shard_count!r}.')
         
         # intents
         intents = preconvert_flag(intents, 'intents', IntentFlag)
+        
+        # additonal owners
+        if additional_owners is None:
+            additional_owner_ids = None
+        else:
+            iter_ = getattr(additional_owners, '__iter__', None)
+            if iter_ is None:
+                raise TypeError('`additional_owners` should have been passed as `iterable`, got '
+                    f'{additional_owners.__class__.__name__}.')
+            
+            additional_owner_ids = set()
+            
+            index = 1
+            for additional_owner in iter_(additional_owners):
+                index+=1
+                if not isinstance(additional_owner,(int,UserBase)):
+                    raise TypeError(f'User {index} at `additional_owners`  was not passed neither as `int` or as '
+                        f'`{UserBase.__name__}` instance, got {additional_owner.__class__.__name__}')
+                
+                if type(additional_owner) is int:
+                    pass
+                elif isinstance(additional_owner, int):
+                    additional_owner = int(additional_owner)
+                else:
+                    additional_owner = additional_owner.id
+                
+                additional_owner_ids.add(additional_owner)
+            
+            if (not additional_owner_ids):
+                additional_owner_ids = None
         
         # kwargs
         if kwargs:
@@ -529,6 +562,7 @@ class Client(UserBase):
         self.statuses           = {}
         self._activity          = activity
         self.activities         = []
+        self._additional_owner_ids = additional_owner_ids
         self._gateway_url       = ''
         self._gateway_time      = -99.9
         self._gateway_max_concurrency = 1
@@ -7769,12 +7803,135 @@ class Client(UserBase):
         """
         application_owner=self.application.owner
         if type(application_owner) is Team:
-            return user in application_owner.accepted
-        return application_owner == user
+            if user in application_owner.accepted:
+                return True
+        else:
+            if application_owner == user:
+                return True
+        
+        additional_owner_ids = self._additional_owner_ids
+        if (additional_owner_ids is not None) and (user.id in additional_owner_ids):
+            return True
+        
+        return False
+    
+    def add_additional_owners(self, *users):
+        """
+        Adds additional users to be passed at the ``.is_owner`` check.
+        
+        Parameters
+        ----------
+        *users : `int` or ``UserBase`` instances
+            The `.id` of the a user or the user itself to be added.
+        
+        Raises
+        ------
+        TypeError
+            A user was passed with invalid type.
+        """
+        limit = len(users)
+        if limit == 0:
+            return
+        
+        index = 0
+        while True:
+            user = users[index]
+            index +=1
+            if not isinstance(user,(int,UserBase)):
+                raise TypeError(f'User {index} was not passed neither as `int` or as `{UserBase.__name__}` instance, '
+                    f'got {user.__class__.__name__}.')
+            
+            if index==limit:
+                break
+        
+        additional_owner_ids = self._additional_owner_ids
+        if additional_owner_ids is None:
+            additional_owner_ids = self._additional_owner_ids = set()
+        
+        for user in users:
+            if type(user) is int:
+                pass
+            elif isinstance(user, int):
+                user = int(user)
+            else:
+                user = user.id
+            
+            additional_owner_ids.add(user)
+    
+    def remove_additional_owners(self, *users):
+        """
+        Removes additonal owners added by the ``.add_additional_owners`` method.
+        
+        Parameters
+        ----------
+        *users : `int` or ``UserBase`` instances
+            The `.id` of the a user or the user itself to be removed.
+        
+        Raises
+        ------
+        TypeError
+            A user was passed with invalid type.
+        """
+        limit = len(users)
+        if limit == 0:
+            return
+        
+        index = 0
+        while True:
+            user = users[index]
+            index +=1
+            if not isinstance(user,(int,UserBase)):
+                raise TypeError(f'User {index} was not passed neither as `int` or as `{UserBase.__name__}` instance, '
+                    f'got {user.__class__.__name__}.')
+            
+            if index==limit:
+                break
+        
+        additional_owner_ids = self._additional_owner_ids
+        if additional_owner_ids is None:
+            additional_owner_ids = self._additional_owner_ids = set()
+        
+        for user in users:
+            if type(user) is int:
+                pass
+            elif isinstance(user, int):
+                user = int(user)
+            else:
+                user = user.id
+            
+            try:
+                additional_owner_ids.remove(user)
+            except KeyError:
+                pass
+    
+    @property
+    def owners(self):
+        """
+        Returns the owners of the client.
+        
+        Returns
+        -------
+        owners : `set` of (``Client`` or ``User``)
+        """
+        owners = set()
+        
+        application_owner = self.application.owner
+        if type(application_owner) is Team:
+            owners.update(application_owner.accepted)
+        else:
+            owners.add(application_owner)
+        
+        additional_owner_ids = self._additional_owner_ids
+        if (additional_owner_ids is not None):
+            for user_id in additional_owner_ids:
+                user = PartialUser(user_id)
+                owners.add(user)
+        
+        return owners
     
     def _update(self, data):
         """
-        Updates the client and returns it's old attribtes in a `dict` of (`attribute-name`, `old-value`) items.
+        Updates the client and returns it's old attribtes in a `dict` with `attribute-name`, `old-value` relation.
         
         Parameters
         ----------
@@ -7783,7 +7940,7 @@ class Client(UserBase):
         
         Returns
         -------
-        old : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `Any`) items
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -7791,15 +7948,13 @@ class Client(UserBase):
         +-----------------------+-------------------+
         | Keys                  | Values            |
         +=======================+===================+
-        | avatar                | `int`             |
+        | avatar                | ``Icon``          |
         +-----------------------+-------------------+
         | discriminator         | `int`             |
         +-----------------------+-------------------+
         | email                 | `str`             |
         +-----------------------+-------------------+
         | flags                 | ``UserFlag``      |
-        +-----------------------+-------------------+
-        | has_animated_avatar   | `bool`            |
         +-----------------------+-------------------+
         | locale                | `str              |
         +-----------------------+-------------------+
@@ -7812,56 +7967,56 @@ class Client(UserBase):
         | verified              | `bool`            |
         +-----------------------+-------------------+
         """
-        old={}
+        old_attributes = {}
             
         name=data['username']
         if self.name!=name:
-            old['name']=self.name
+            old_attributes['name']=self.name
             self.name=name
                 
         discriminator=int(data['discriminator'])
         if self.discriminator!=discriminator:
-            old['discriminator']=self.discriminator
+            old_attributes['discriminator']=self.discriminator
             self.discriminator=discriminator
 
-        self._update_avatar(data, old)
+        self._update_avatar(data, old_attributes)
         
         email=data.get('email','')
         if self.email!=email:
-            old['email']=self.email
+            old_attributes['email']=self.email
             self.email=email
         
         premium_type=PremiumType.INSTANCES[data.get('premium_type',0)]
         if self.premium_type is not premium_type:
-            old['premium_type']=premium_type
+            old_attributes['premium_type']=premium_type
             self.premium_type=premium_type
         
         system=data.get('system',False)
         if self.system!=system:
-            old['system']=self.system
+            old_attributes['system']=self.system
             self.system=system
         
         verified=data.get('verified',False)
         if self.verified!=verified:
-            old['verified']=self.verified
+            old_attributes['verified']=self.verified
             self.verified=verified
         
         mfa=data.get('mfa_enabled',False)
         if self.mfa!=mfa:
-            old['mfa']=self.mfa
+            old_attributes['mfa']=self.mfa
             self.mfa=mfa
 
         flags=UserFlag(data.get('flags',0))
         if self.flags!=flags:
-            old['flags']=self.flags
+            old_attributes['flags']=self.flags
             self.flags=flags
 
         locale=parse_locale(data)
         if self.locale!=locale:
-            old['locale']=self.locale
+            old_attributes['locale']=self.locale
             self.locale=locale
 
-        return old
+        return old_attributes
 
     def _update_no_return(self,data):
         """
@@ -7895,7 +8050,7 @@ class Client(UserBase):
     def _update_profile_only(self, data, guild):
         """
         Used only when user caching is disabled. Updates the client's guild profile for the given guild and returns
-        the changes in a `dict` of (`attribute-name`, `old-value`) items.
+        the changed old attributes in a `dict` with `attribute-name`, `old-value` relation.
         
         Parameters
         ----------
@@ -7906,7 +8061,7 @@ class Client(UserBase):
         
         Returns
         -------
-        changes : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `Any`) items
             All item in the returned dict is optional.
         
         Returned Data Structure

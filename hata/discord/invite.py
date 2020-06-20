@@ -293,7 +293,7 @@ class Invite(object):
         
         Returns
         -------
-        old : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `Any`) items
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -306,20 +306,20 @@ class Invite(object):
         | user_count    | `int`     |
         +---------------+-----------+
         """
-        old={}
+        old_attributes = {}
         try:
             online_count=data['approximate_presence_count']
             if self.online_count!=online_count:
-                old['online_count']=self.online_count
+                old_attributes['online_count']=self.online_count
                 self.online_count=online_count
 
             user_count=data['approximate_member_count']
             if self.user_count!=user_count:
-                old['user_count']=self.user_count
+                old_attributes['user_count']=self.user_count
                 self.user_count=user_count
         except KeyError:
             pass
         
-        return old
+        return old_attributes
 
 del URLS

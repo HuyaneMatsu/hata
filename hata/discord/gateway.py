@@ -617,9 +617,6 @@ class DiscordGateway(object):
                         },
                     },
                 }
-
-        if not client.is_bot:
-            data['d']['synced_guilds']=[]
         
         shard_count=client.shard_count
         if shard_count:

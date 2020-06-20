@@ -149,18 +149,34 @@ class Role(DiscordEntity, immortal=True):
         
         return role
 
-    def _update_no_return(self,data):
+    def _update_no_return(self, data):
+        guild = self.guild
+        if guild is None:
+            return
+        
+        clear_permission_cache = False
+        
         position=data['position']
         if self.position!=position:
-            self.guild.roles.switch(self,position)
-            
+            guild.roles.switch(self,position)
+            clear_permission_cache = True
+        
         self.name=data['name']
-        self.permissions=Permission(data['permissions'])
+        permissions = Permission(data['permissions'])
+        if self.permissions != permissions:
+            self.permissions = permissions
+            clear_permission_cache = True
+        
         self.color=Color(data['color'])
         self.separated=data['hoist']
         self.managed=data['managed']
         self.mentionable=data['mentionable']
         self.guild._cache_perm.clear()
+        
+        if clear_permission_cache:
+            guild._cache_perm.clear()
+            for channel in guild.all_channel.values():
+                channel._cache_perm.clear()
         
     def __str__(self):
         name = self.name
@@ -171,46 +187,91 @@ class Role(DiscordEntity, immortal=True):
     def __repr__(self):
         return f'<{self.__class__.__name__} name={self.name!r}, id={self.id}>'
     
-    def _update(self,data):
-        old={}
+    def _update(self, data):
+        """
+        Updates the role with the given `data` and returns it's overwritten attributes as a `dict` with a
+        `attribute-name` - `old-value` relation.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Role data received from Discord.
+        
+        Returns
+        -------
+        old_attributes : `dict` of (`str`, `Any`) items
+            All item in the returned dict is optional.
+        
+        Returned Data Structure
+        -----------------------
+        +---------------+-------------------+
+        | Keys          | Values            |
+        +===============+===================+
+        | color         | ``Color``         |
+        +---------------+-------------------+
+        | managed       | `bool`            |
+        +---------------+-------------------+
+        | mentionable   | `bool`            |
+        +---------------+-------------------+
+        | name          | `str`             |
+        +---------------+-------------------+
+        | permissions   | ``Permission``    |
+        +---------------+-------------------+
+        | position      | `int`             |
+        +---------------+-------------------+
+        | separated     | `bool`            |
+        +---------------+-------------------+
+        """
+        old_attributes = {}
+        guild = self.guild
+        if guild is None:
+            return old_attributes
+        
+        clear_permission_cache = False
+        
+        position=data['position']
+        if self.position!=position:
+            old_attributes['position']=self.position
+            guild.roles.switch(self,position)
+            clear_permission_cache = True
         
         name=data['name']
         if self.name!=name:
-            old['name']=self.name
+            old_attributes['name']=self.name
             self.name=name
         
         permissions=Permission(data['permissions'])
         if self.permissions!=permissions:
-            old['permissions']=self.permissions
+            old_attributes['permissions']=self.permissions
             self.permissions=permissions
-
+            clear_permission_cache = True
+        
         color=data['color']
         if self.color!=color:
-            old['color']=self.color
+            old_attributes['color']=self.color
             self.color=Color(color)
-
+        
         separated=data['hoist']
         if self.separated!=separated:
-            old['separated']=self.separated
+            old_attributes['separated']=self.separated
             self.separated=separated
 
         managed=data['managed']
         if self.managed!=managed:
-            old['managed']=self.managed
+            old_attributes['managed']=self.managed
             self.managed=managed
-
+        
         mentionable=data['mentionable']
         if self.mentionable!=mentionable:
-            old['mentionable']=self.mentionable
+            old_attributes['mentionable']=self.mentionable
             self.mentionable=mentionable
         
-        position=data['position']
-        if self.position!=position:
-            old['position']=self.position
-            self.guild.roles.switch(self,position)
+        if clear_permission_cache:
+            guild._cache_perm.clear()
+            for channel in guild.all_channel.values():
+                channel._cache_perm.clear()
         
-        self.guild._cache_perm.clear()
-        return old
+        return old_attributes
 
     def _delete(self):
         guild=self.guild
@@ -223,6 +284,8 @@ class Role(DiscordEntity, immortal=True):
         del guild.all_role[self.id]
         
         guild._cache_perm.clear()
+        for channel in guild.all_channel.values():
+            channel._cache_perm.clear()
         
         for user in guild.users.values():
             try:
@@ -333,17 +396,20 @@ class PermOW(object):
     @classmethod
     def custom(cls, target, allow, deny):
         """
-        Creates an overwrite object with teh given parameters.
+        Creates an overwrite object with the given parameters.
         
         Parameters
         ----------
         target : ``Role`` or ``UserBase`` instance
-        allow
-        deny
-
+            The target entity of the overwrite.
+        allow : ``Permission``
+            The allowed permissions by the overtwrite.
+        deny : ``Permission``
+            The denied permission by the overwrite.
+        
         Returns
         -------
-
+        self : ``PermOW``
         """
         self = object.__new__(cls)
         self.target = target

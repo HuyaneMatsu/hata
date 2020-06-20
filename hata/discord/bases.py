@@ -1067,7 +1067,7 @@ class IconSlot(object):
             locals_ = {}
             func_name = f'_update_{internal_name}'
             exec(compile((
-                f'def {func_name}(self, data, old):\n'
+                f'def {func_name}(self, data, old_attributes):\n'
                 f'    icon = data.get({discord_side_name!r})\n'
                 f''
                 f'    if icon is None:\n'
@@ -1084,7 +1084,7 @@ class IconSlot(object):
                 f'    self_icon_type = self.{added_internal_attribute_name_type}\n'
                 f'    self_icon_hash = self.{added_instance_atttribute_name_hash}\n'
                 f'    if (self_icon_type is not icon_type) or (self_icon_hash != icon_hash):\n'
-                f'        old[{internal_name!r}] = Icon(self_icon_type, self_icon_hash)\n'
+                f'        old_attributes[{internal_name!r}] = Icon(self_icon_type, self_icon_hash)\n'
                 f'        self.{added_internal_attribute_name_type} = icon_type\n'
                 f'        self.{added_instance_atttribute_name_hash} = icon_hash\n'
                     ),f'<{cls.__name__}>', 'exec', optimize=2), cls._compile_globals, locals_)

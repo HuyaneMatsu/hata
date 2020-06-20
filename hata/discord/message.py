@@ -1,6 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('Attachment', 'Message', 'MessageActivity', 'MessageActivityType', 'MessageApplication', 'MessageFlag',
-    'MessageReference', 'MessageType', 'UnknownCrossMention', )
+__all__ = ('Attachment', 'EMBED_UPDATE_EMBED_ADD', 'EMBED_UPDATE_EMBED_REMOVE', 'EMBED_UPDATE_NONE',
+    'EMBED_UPDATE_SIZE_UPDATE', 'Message', 'MessageActivity', 'MessageActivityType', 'MessageApplication',
+    'MessageFlag', 'MessageReference', 'MessageType', 'UnknownCrossMention', )
 
 import re
 from datetime import datetime
@@ -581,6 +582,11 @@ class UnknownCrossMention(DiscordEntity):
         partial : `bool`
         """
         return True
+
+EMBED_UPDATE_NONE = 0
+EMBED_UPDATE_SIZE_UPDATE = 1
+EMBED_UPDATE_EMBED_ADD = 2
+EMBED_UPDATE_EMBED_REMOVE = 3
 
 class Message(DiscordEntity, immortal=True):
     """
@@ -1446,7 +1452,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        old : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `Any`) items
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -1462,7 +1468,7 @@ class Message(DiscordEntity, immortal=True):
         +-------------------+-----------------------------------------------------------------------+
         | content           | `str                                                                  |
         +-------------------+-----------------------------------------------------------------------+
-        | cross_mentions    | `None` or (`list` of (``ChannelBase`` or ``UnknowsCrossMention``))    |
+        | cross_mentions    | `None` or (`list` of (``ChannelBase`` or ``UnknownCrossMention``))    |
         +-------------------+-----------------------------------------------------------------------+
         | edited            | `None`  or `datetime`                                                 |
         +-------------------+-----------------------------------------------------------------------+
@@ -1479,17 +1485,17 @@ class Message(DiscordEntity, immortal=True):
         | role_mentions     | `None` or (`list` of ``Role``)                                        |
         +-------------------+-----------------------------------------------------------------------+
         """
-        old={}
+        old_attributes = {}
 
         pinned=data['pinned']
         if self.pinned!=pinned:
-            old['pinned']=self.pinned
+            old_attributes['pinned']=self.pinned
             self.pinned=pinned
 
         flags=data.get('flags',0)
         flag_difference=self.flags^flags
         if flag_difference:
-            old['flags'] = self.flags
+            old_attributes['flags'] = self.flags
             self.flags = MessageFlag(flags)
             
             if MessageFlag(flag_difference).embeds_suppressed:
@@ -1501,35 +1507,35 @@ class Message(DiscordEntity, immortal=True):
                 
                 if self.embeds is None:
                     if (embeds is not None):
-                        old['embeds']=None
+                        old_attributes['embeds']=None
                         self.embeds=embeds
                 else:
                     if embeds is None:
-                        old['embeds']=self.embeds
+                        old_attributes['embeds']=self.embeds
                         self.embeds=None
                     elif self.embeds!=embeds:
-                        old['embeds']=self.embeds
+                        old_attributes['embeds']=self.embeds
                         self.embeds=embeds
         
         #at the case of pin update edited is None
         edited_timestamp=data['edited_timestamp']
         if edited_timestamp is None:
-            return old
+            return old_attributes
         
         edited=parse_time(edited_timestamp)
         if self.edited==edited:
-            return old
+            return old_attributes
         
-        old['edited']=self.edited
+        old_attributes['edited']=self.edited
         self.edited=edited
-
+        
         try:
             application=MessageApplication(data['application'])
         except KeyError:
             application=None
         
         if self.application!=application:
-            old['application']=self.application
+            old_attributes['application']=self.application
             self.application=self.application
         
         try:
@@ -1541,19 +1547,19 @@ class Message(DiscordEntity, immortal=True):
         
         if self.activity is None:
             if (activity is not None):
-                old['activity']=None
+                old_attributes['activity']=None
                 self.activity=activity
         else:
             if activity is None:
-                old['activity']=self.activity
+                old_attributes['activity']=self.activity
                 self.activity=None
             elif self.activity!=activity:
-                old['activity']=self.activity
+                old_attributes['activity']=self.activity
                 self.activity=activity
                     
         everyone_mention=data.get('mention_everyone',False)
         if self.everyone_mention!=everyone_mention:
-            old['everyone_mention']=self.everyone_mention
+            old_attributes['everyone_mention']=self.everyone_mention
             self.everyone_mention=everyone_mention
 
         #ignoring tts
@@ -1568,14 +1574,14 @@ class Message(DiscordEntity, immortal=True):
         
         if self.attachments is None:
             if (attachments is not None):
-                old['attachments']=None
+                old_attributes['attachments']=None
                 self.attachments=attachments
         else:
             if attachments is None:
-                old['attachments']=self.attachments
+                old_attributes['attachments']=self.attachments
                 self.attachments=None
             elif self.attachments!=attachments:
-                old['attachments']=self.attachments
+                old_attributes['attachments']=self.attachments
                 self.attachments=attachments
         
         embed_datas=data['embeds']
@@ -1586,19 +1592,19 @@ class Message(DiscordEntity, immortal=True):
         
         if self.embeds is None:
             if (embeds is not None):
-                old['embeds']=None
+                old_attributes['embeds']=None
                 self.embeds=embeds
         else:
             if embeds is None:
-                old['embeds']=self.embeds
+                old_attributes['embeds']=self.embeds
                 self.embeds=None
             elif self.embeds!=embeds:
-                old['embeds']=self.embeds
+                old_attributes['embeds']=self.embeds
                 self.embeds=embeds
             
         content=data['content']
         if self.content!=content:
-            old['content']=self.content
+            old_attributes['content']=self.content
             self.content=content
 
         user_mention_datas=data['mentions']
@@ -1613,18 +1619,18 @@ class Message(DiscordEntity, immortal=True):
 
         if self.user_mentions is None:
             if (user_mentions is not None):
-                old['user_mentions']=None
+                old_attributes['user_mentions']=None
                 self.user_mentions=user_mentions
         else:
             if user_mentions is None:
-                old['user_mentions']=self.user_mentions
+                old_attributes['user_mentions']=self.user_mentions
                 self.user_mentions=None
             elif self.user_mentions!=user_mentions:
-                old['user_mentions']=self.user_mentions
+                old_attributes['user_mentions']=self.user_mentions
                 self.user_mentions=user_mentions
         
         if guild is None:
-            return old
+            return old_attributes
 
         self._channel_mentions=_spaceholder
 
@@ -1637,15 +1643,15 @@ class Message(DiscordEntity, immortal=True):
 
         if self.cross_mentions is None:
             if (cross_mentions is not None):
-                old['cross_mentions']=None
+                old_attributes['cross_mentions']=None
                 self.cross_mentions=cross_mentions
         else:
             if cross_mentions is None:
-                old['cross_mentions']=self.cross_mentions
+                old_attributes['cross_mentions']=self.cross_mentions
                 self.cross_mentions=None
             else:
                 if self.cross_mentions!=cross_mentions:
-                    old['cross_mentions']=self.cross_mentions
+                    old_attributes['cross_mentions']=self.cross_mentions
                     self.cross_mentions=cross_mentions
         
         try:
@@ -1667,18 +1673,18 @@ class Message(DiscordEntity, immortal=True):
 
         if self.role_mentions is None:
             if (role_mentions is not None):
-                old['role_mentions']=None
+                old_attributes['role_mentions']=None
                 self.role_mentions=role_mentions
         else:
             if role_mentions is None:
-                old['role_mentions']=self.role_mentions
+                old_attributes['role_mentions']=self.role_mentions
                 self.role_mentions=None
             else:
                 if self.role_mentions!=role_mentions:
-                    old['role_mentions']=self.role_mentions
+                    old_attributes['role_mentions']=self.role_mentions
                     self.role_mentions=role_mentions
 
-        return old
+        return old_attributes
     
     def _update_no_return(self, data):
         """
@@ -1811,11 +1817,20 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        change state: `int`
-            - `0` if no update took place, the embeds of the message might be suppressed already.
-            - `1` if sizes are updated.
-            - `2` if embed links are added.
-            - `3` if the message has less embeds than nefore. Caused by a bug?
+        change_state: `int`
+            Possible values:
+            
+            +---------------------------+-------+
+            | Respective name           | Value |
+            +===========================+=======+
+            | EMBED_UPDATE_NONE         | 0     |
+            +---------------------------+-------+
+            | EMBED_UPDATE_SIZE_UPDATE  | 1     |
+            +---------------------------+-------+
+            | EMBED_UPDATE_EMBED_ADD    | 2     |
+            +---------------------------+-------+
+            | EMBED_UPDATE_EMBED_REMOVE | 3     |
+            +---------------------------+-------+
         """
         # This function gets called if only the embeds of the message are updated. There can be 3 case:
         # 0 -> Nothing changed or the embeds are already suppressed.
@@ -1838,42 +1853,43 @@ class Message(DiscordEntity, immortal=True):
         if ln1==0:
             if ln2==0:
                 # No change
-                return 0
+                return EMBED_UPDATE_NONE
             
             # New embeds are added
             self.embeds=[EmbedCore.from_data(embed_data) for embed_data in embed_datas]
-            return 2
+            return EMBED_UPDATE_EMBED_ADD
         
         if ln2<ln1:
             # Embeds are removed, should not happen, except if the message was suppressed.
             if self.flags.embeds_suppressed:
                 self.embeds=None
                 # Embeds are suppressed, message_edit was already called. Return 0.
-                return 0
+                return EMBED_UPDATE_NONE
             
             # We have less embeds as we had, should not happen. Return 3.
             if ln2==0:
                 self.embeds=None
             else:
                 self.embeds=[EmbedCore.from_data(embed_data) for embed_data in embed_datas]
-            return 3
+            return EMBED_UPDATE_EMBED_REMOVE
         
         if ln1==0:
             embeds=[]
             self.embeds=embeds
         else:
-            changed=0
+            change_state = EMBED_UPDATE_NONE
             for index in range(ln1):
                 embed_data=embed_datas[index]
-                changed|=embeds[index]._update_sizes(embed_data)
+                if embeds[index]._update_sizes(embed_data):
+                    change_state = EMBED_UPDATE_SIZE_UPDATE
             
             if ln1==ln2:
-                return changed
+                return change_state
         
         for index in range(ln1,ln2):
             embeds.append(EmbedCore.from_data(embed_datas[index]))
         
-        return 2
+        return EMBED_UPDATE_EMBED_ADD
 
     def _update_embed_no_return(self, data):
         """

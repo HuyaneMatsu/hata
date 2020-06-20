@@ -179,7 +179,7 @@ class ActivityBase(object):
         activity_id : `str`
         """
         if self.ACTIVITY_FLAG&0b0001000000000000:
-            return self.id.__format__('0>16x')
+            return self.id.__format__('x')
         return self.CUSTOM_ID
     
     @classmethod
@@ -398,7 +398,7 @@ class ActivityBase(object):
 
         Returns
         -------
-        changes : `dict`
+        old_attributes : `dict`
             Always empty.
         """
         return {}
@@ -649,13 +649,13 @@ class ActivityRich(ActivityBase):
         
         Returns
         -------
-        changes : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `Any`) items
             All item in the returned dict is optional.
         
         Returned Data Structure
         -----------------------
         +-----------------------+-----------------------+
-        | key                   | value                 |
+        | Keys                  | Values                |
         +=======================+=======================+
         | application_id        | `int`                 |
         +-----------------------+-----------------------+
@@ -671,7 +671,7 @@ class ActivityRich(ActivityBase):
         +-----------------------+-----------------------+
         | details               | `str`                 |
         +-----------------------+-----------------------+
-        | emoji                 | ``Emoji`` / `None`    |
+        | emoji                 | ``4None` or ``Emoji`` |
         +-----------------------+-----------------------+
         | flags                 | ``ActivityFlag``      |
         +-----------------------+-----------------------+
@@ -693,7 +693,7 @@ class ActivityRich(ActivityBase):
         +-----------------------+-----------------------+
         | session_id            | `str`                 |
         +-----------------------+-----------------------+
-        | state                 | `str` / `None`        |
+        | state                 | `None` or `str`       |
         +-----------------------+-----------------------+
         | sync_id               | `str`                 |
         +-----------------------+-----------------------+
@@ -706,16 +706,16 @@ class ActivityRich(ActivityBase):
         | url                   | `str`                 |
         +-----------------------+-----------------------+
         """
-        old={}
+        old_attributes = {}
         
         name=data['name']
         if self.name!=name:
-            old['name']=self.name
+            old_attributes['name']=self.name
             self.name=name
         
         type_=data['type']
         if self.type!=type_:
-            old['type']=self.type
+            old_attributes['type']=self.type
             self.type=type_
         
         try:
@@ -724,7 +724,7 @@ class ActivityRich(ActivityBase):
             application_id=0
             
         if self.application_id!=application_id:
-            old['application_id']=self.application_id
+            old_attributes['application_id']=self.application_id
             self.application_id=application_id
             
         try:
@@ -737,29 +737,29 @@ class ActivityRich(ActivityBase):
             timestamp_start=timestamp_data.get('start',0)
             
         if self.timestamp_end!=timestamp_end:
-            old['timestamp_end']=self.timestamp_end
+            old_attributes['timestamp_end']=self.timestamp_end
             self.timestamp_end=timestamp_end
         
         if self.timestamp_start!=timestamp_start:
-            old['timestamp_start']=self.timestamp_start
+            old_attributes['timestamp_start']=self.timestamp_start
             self.timestamp_start=timestamp_start
 
         details=data.get('details','')
         if self.details!=details:
-            old['details']=self.details
+            old_attributes['details']=self.details
             self.details=details
 
         state=data.get('state',None)
         if (self.state is None):
             if (state is not None):
-                old['state']=None
+                old_attributes['state']=None
                 self.state=state
         else:
             if (state is None):
-                old['state']=self.state
+                old_attributes['state']=self.state
                 self.state=None
             elif (self.state!=state):
-                old['state']=self.state
+                old_attributes['state']=self.state
                 self.state=state
         
         try:
@@ -775,15 +775,15 @@ class ActivityRich(ActivityBase):
                 party_size=party_max=0
                 
         if self.party_id!=party_id:
-            old['party_id']=self.party_id
+            old_attributes['party_id']=self.party_id
             self.party_id=party_id
             
         if self.party_size!=party_size:
-            old['party_size']=self.party_size
+            old_attributes['party_size']=self.party_size
             self.party_size=party_size
             
         if self.party_max!=party_max:
-            old['party_max']=self.party_max
+            old_attributes['party_max']=self.party_max
             self.party_max=party_max
 
         try:
@@ -800,19 +800,19 @@ class ActivityRich(ActivityBase):
             asset_text_small=asset_data.get('small_text','')
             
         if self.asset_image_large!=asset_image_large:
-            old['asset_image_large']=self.asset_image_large
+            old_attributes['asset_image_large']=self.asset_image_large
             self.asset_image_large=asset_image_large
             
         if self.asset_image_small!=asset_image_small:
-            old['asset_image_small']=self.asset_image_small
+            old_attributes['asset_image_small']=self.asset_image_small
             self.asset_image_small=asset_image_small
             
         if self.asset_text_large!=asset_text_large:
-            old['asset_text_large']=self.asset_text_large
+            old_attributes['asset_text_large']=self.asset_text_large
             self.asset_text_large=asset_text_large
             
         if self.asset_text_small!=asset_text_small:
-            old['asset_text_small']=self.asset_text_small
+            old_attributes['asset_text_small']=self.asset_text_small
             self.asset_text_small=asset_text_small
             
         try:
@@ -827,35 +827,35 @@ class ActivityRich(ActivityBase):
             secret_match=secret_data.get('match','')
         
         if self.secret_join!=secret_join:
-            old['secret_join']=self.secret_join
+            old_attributes['secret_join']=self.secret_join
             self.secret_join=self.secret_join
             
         if self.secret_spectate!=secret_spectate:
-            old['secret_spectate']=self.secret_spectate
+            old_attributes['secret_spectate']=self.secret_spectate
             self.secret_spectate=secret_spectate
             
         if self.secret_match!=secret_match:
-            old['secret_match']=self.secret_match
+            old_attributes['secret_match']=self.secret_match
             self.secret_match=secret_match
 
         url=data.get('url','')
         if self.url!=url:
-            old['url']=self.url
+            old_attributes['url']=self.url
             self.url=url
 
         sync_id=data.get('sync_id','')
         if self.sync_id!=sync_id:
-            old['sync_id']=self.sync_id
+            old_attributes['sync_id']=self.sync_id
             self.sync_id=sync_id
                 
         session_id=data.get('session_id','')
         if self.session_id!=session_id:
-            old['session_id']=self.session_id
+            old_attributes['session_id']=self.session_id
             self.session_id=session_id
         
         flags=ActivityFlag(data.get('flags',0))
         if self.flags!=flags:
-            old['flags']=self.flags
+            old_attributes['flags']=self.flags
             self.flags=flags
 
         emoji_data=data.get('emoji',None)
@@ -866,19 +866,19 @@ class ActivityRich(ActivityBase):
         
         if (self.emoji is None):
             if (emoji is not None):
-                old['emoji']=None
+                old_attributes['emoji']=None
                 self.emoji=emoji
         else:
             if (emoji is None):
-                old['emoji']=self.emoji
+                old_attributes['emoji']=self.emoji
                 self.emoji=None
             elif self.emoji!=emoji:
-                old['emoji']=self.emoji
+                old_attributes['emoji']=self.emoji
                 self.emoji=emoji
         
         created=data.get('created_at',0)
         if self.created!=created:
-            old['created']=created
+            old_attributes['created']=created
             self.created=created
     
         if ACTIVITY_TYPES[self.type].ACTIVITY_FLAG&0b0001000000000000:
@@ -886,10 +886,10 @@ class ActivityRich(ActivityBase):
         else:
             id_=0
         if self.id!=id_:
-            old['id']=self.id
+            old_attributes['id']=self.id
             self.id=id_
         
-        return old
+        return old_attributes
     
     @classmethod
     def create(cls, name, url='', type_=0):
@@ -1127,7 +1127,7 @@ class ActivityGame(ActivityBase):
         
         Returns
         -------
-        changes : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `Any`) items
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -1150,11 +1150,11 @@ class ActivityGame(ActivityBase):
         | timestamp_start       | `int`                 |
         +-----------------------+-----------------------+
         """
-        old={}
+        old_attributes = {}
         
         name=data['name']
         if self.name!=name:
-            old['name']=self.name
+            old_attributes['name']=self.name
             self.name=name
         
         try:
@@ -1163,7 +1163,7 @@ class ActivityGame(ActivityBase):
             application_id=0
         
         if self.application_id!=application_id:
-            old['application_id']=self.application_id
+            old_attributes['application_id']=self.application_id
             self.application_id=application_id
         
         try:
@@ -1176,29 +1176,29 @@ class ActivityGame(ActivityBase):
             timestamp_start=timestamp_data.get('start',0)
         
         if self.timestamp_end!=timestamp_end:
-            old['timestamp_end']=self.timestamp_end
+            old_attributes['timestamp_end']=self.timestamp_end
             self.timestamp_end=timestamp_end
         
         if self.timestamp_start!=timestamp_start:
-            old['timestamp_start']=self.timestamp_start
+            old_attributes['timestamp_start']=self.timestamp_start
             self.timestamp_start=timestamp_start
         
         flags=ActivityFlag(data.get('flags',0))
         if self.flags!=flags:
-            old['flags']=self.flags
+            old_attributes['flags']=self.flags
             self.flags=flags
         
         id_=int(data['id'],base=16)
         if self.id!=id_:
-            old['id']=self.id
+            old_attributes['id']=self.id
             self.id=id_
         
         created=data.get('created_at',0)
         if self.created!=created:
-            old['created']=self.created
+            old_attributes['created']=self.created
             self.created=created
         
-        return old
+        return old_attributes
     
     @classmethod
     def create(cls, name):
@@ -1396,7 +1396,7 @@ class ActivityStream(ActivityBase):
         
         Returns
         -------
-        changes : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `Any`) items
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -1429,16 +1429,16 @@ class ActivityStream(ActivityBase):
         | url                   | `str`                 |
         +-----------------------+-----------------------+
         """
-        old={}
+        old_attributes = {}
         
         name=data['name']
         if self.name!=name:
-            old['name']=self.name
+            old_attributes['name']=self.name
             self.name=name
         
         details=data.get('details','')
         if self.details!=details:
-            old['details']=self.details
+            old_attributes['details']=self.details
             self.details=details
         
         try:
@@ -1455,52 +1455,52 @@ class ActivityStream(ActivityBase):
             asset_text_small=asset_data.get('small_text','')
         
         if self.asset_image_large!=asset_image_large:
-            old['asset_image_large']=self.asset_image_large
+            old_attributes['asset_image_large']=self.asset_image_large
             self.asset_image_large=asset_image_large
         
         if self.asset_image_small!=asset_image_small:
-            old['asset_image_small']=self.asset_image_small
+            old_attributes['asset_image_small']=self.asset_image_small
             self.asset_image_small=asset_image_small
         
         if self.asset_text_large!=asset_text_large:
-            old['asset_text_large']=self.asset_text_large
+            old_attributes['asset_text_large']=self.asset_text_large
             self.asset_text_large=asset_text_large
         
         if self.asset_text_small!=asset_text_small:
-            old['asset_text_small']=self.asset_text_small
+            old_attributes['asset_text_small']=self.asset_text_small
             self.asset_text_small=asset_text_small
         
         url=data.get('url','')
         if self.url!=url:
-            old['url']=self.url
+            old_attributes['url']=self.url
             self.url=url
         
         sync_id=data.get('sync_id','')
         if self.sync_id!=sync_id:
-            old['sync_id']=self.sync_id
+            old_attributes['sync_id']=self.sync_id
             self.sync_id=sync_id
             
         session_id=data.get('session_id','')
         if self.session_id!=session_id:
-            old['session_id']=self.session_id
+            old_attributes['session_id']=self.session_id
             self.session_id=session_id
         
         flags=ActivityFlag(data.get('flags',0))
         if self.flags!=flags:
-            old['flags']=self.flags
+            old_attributes['flags']=self.flags
             self.flags=flags
         
         id_=int(data['id'],base=16)
         if self.id!=id_:
-            old['id']=self.id
+            old_attributes['id']=self.id
             self.id=id_
         
         created=data.get('created_at',0)
         if self.created!=created:
-            old['created']=self.created
+            old_attributes['created']=self.created
             self.created=created
         
-        return old
+        return old_attributes
     
     @classmethod
     def create(cls, name, url=''):
@@ -1707,7 +1707,7 @@ class ActivitySpotify(ActivityBase):
         
         Returns
         -------
-        changes : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `Any`) items
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -1750,11 +1750,11 @@ class ActivitySpotify(ActivityBase):
         | timestamp_start       | `int`                 |
         +-----------------------+-----------------------+
         """
-        old={}
+        old_attributes = {}
         
         name=data['name']
         if self.name!=name:
-            old['name']=self.name
+            old_attributes['name']=self.name
             self.name=name
             
         try:
@@ -1767,29 +1767,29 @@ class ActivitySpotify(ActivityBase):
             timestamp_start=timestamp_data.get('start',0)
             
         if self.timestamp_end!=timestamp_end:
-            old['timestamp_end']=self.timestamp_end
+            old_attributes['timestamp_end']=self.timestamp_end
             self.timestamp_end=timestamp_end
             
         if self.timestamp_start!=timestamp_start:
-            old['timestamp_start']=self.timestamp_start
+            old_attributes['timestamp_start']=self.timestamp_start
             self.timestamp_start=timestamp_start
 
         details=data.get('details','')
         if self.details!=details:
-            old['details']=self.details
+            old_attributes['details']=self.details
             self.details=details
 
         state=data.get('state',None)
         if (self.state is None):
             if (state is not None):
-                old['state']=None
+                old_attributes['state']=None
                 self.state=state
         else:
             if (state is None):
-                old['state']=self.state
+                old_attributes['state']=self.state
                 self.state=None
             elif (self.state!=state):
-                old['state']=self.state
+                old_attributes['state']=self.state
                 self.state=state
         
         try:
@@ -1805,15 +1805,15 @@ class ActivitySpotify(ActivityBase):
                 party_size=party_max=0
                 
         if self.party_id!=party_id:
-            old['party_id']=self.party_id
+            old_attributes['party_id']=self.party_id
             self.party_id=party_id
             
         if self.party_size!=party_size:
-            old['party_size']=self.party_size
+            old_attributes['party_size']=self.party_size
             self.party_size=party_size
             
         if self.party_max!=party_max:
-            old['party_max']=self.party_max
+            old_attributes['party_max']=self.party_max
             self.party_max=party_max
 
         try:
@@ -1830,37 +1830,37 @@ class ActivitySpotify(ActivityBase):
             asset_text_small=asset_data.get('small_text','')
             
         if self.asset_image_large!=asset_image_large:
-            old['asset_image_large']=self.asset_image_large
+            old_attributes['asset_image_large']=self.asset_image_large
             self.asset_image_large=asset_image_large
             
         if self.asset_image_small!=asset_image_small:
-            old['asset_image_small']=self.asset_image_small
+            old_attributes['asset_image_small']=self.asset_image_small
             self.asset_image_small=asset_image_small
             
         if self.asset_text_large!=asset_text_large:
-            old['asset_text_large']=self.asset_text_large
+            old_attributes['asset_text_large']=self.asset_text_large
             self.asset_text_large=asset_text_large
             
         if self.asset_text_small!=asset_text_small:
-            old['asset_text_small']=self.asset_text_small
+            old_attributes['asset_text_small']=self.asset_text_small
             self.asset_text_small=asset_text_small
 
         sync_id=data.get('sync_id','')
         if self.sync_id!=sync_id:
-            old['sync_id']=self.sync_id
+            old_attributes['sync_id']=self.sync_id
             self.sync_id=sync_id
                 
         session_id=data.get('session_id','')
         if self.session_id!=session_id:
-            old['session_id']=self.session_id
+            old_attributes['session_id']=self.session_id
             self.session_id=session_id
         
         created=data.get('created_at',0)
         if self.created!=created:
-            old['created']=self.created
+            old_attributes['created']=self.created
             self.created=created
         
-        return old
+        return old_attributes
 
     @classmethod
     def create(cls, name,):
@@ -2090,7 +2090,7 @@ class ActivityWatching(ActivityBase):
         
         Returns
         -------
-        changes : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `Any`) items
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -2105,24 +2105,24 @@ class ActivityWatching(ActivityBase):
         | name                  | `str`                 |
         +-----------------------+-----------------------+
         """
-        old={}
+        old_attributes = {}
         
         name=data['name']
         if self.name!=name:
-            old['name']=self.name
+            old_attributes['name']=self.name
             self.name=name
         
         id_=int(data['id'],base=16)
         if self.id!=id_:
-            old['id']=self.id
+            old_attributes['id']=self.id
             self.id=id_
         
         created=data.get('created_at',0)
         if self.created!=created:
-            old['created']=self.created
+            old_attributes['created']=self.created
             self.created=created
         
-        return old
+        return old_attributes
 
     @classmethod
     def create(cls, name,):
@@ -2289,19 +2289,19 @@ class ActivityCustom(ActivityBase):
         | state                 | `str` / `None`        |
         +-----------------------+-----------------------+
         """
-        old={}
+        old_attributes = {}
         
         state=data.get('state',None)
         if (self.state is None):
             if (state is not None):
-                old['state']=None
+                old_attributes['state']=None
                 self.state=state
         else:
             if (state is None):
-                old['state']=self.state
+                old_attributes['state']=self.state
                 self.state=None
             elif (self.state!=state):
-                old['state']=self.state
+                old_attributes['state']=self.state
                 self.state=state
                 
         emoji_data=data.get('emoji',None)
@@ -2312,22 +2312,22 @@ class ActivityCustom(ActivityBase):
         
         if (self.emoji is None):
             if (emoji is not None):
-                old['emoji']=None
+                old_attributes['emoji']=None
                 self.emoji=emoji
         else:
             if (emoji is None):
-                old['emoji']=self.emoji
+                old_attributes['emoji']=self.emoji
                 self.emoji=None
             elif self.emoji!=emoji:
-                old['emoji']=self.emoji
+                old_attributes['emoji']=self.emoji
                 self.emoji=emoji
         
         created=data.get('created_at',0)
         if self.created!=created:
-            old['created']=self.created
+            old_attributes['created']=self.created
             self.created=created
         
-        return old
+        return old_attributes
 
 ACTIVITY_TYPES = (
     ActivityGame,

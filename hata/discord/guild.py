@@ -1332,7 +1332,7 @@ class Guild(DiscordEntity, immortal=True):
             +-------+-------------------+-------------------------------------------+
             | 1     | action            | `str`                                     |
             +-------+-------------------+-------------------------------------------+
-            | 2     | old               | `None` or `dict` of (`str`, `Any`) items  |
+            | 2     | olold_attributes  | `None` or `dict` of (`str`, `Any`) items  |
             +-------+-------------------+-------------------------------------------+
             
             Action values can be the following:
@@ -1346,8 +1346,8 @@ class Guild(DiscordEntity, immortal=True):
             | update            | `'u'` |
             +-------------------+-------+
             
-            If action value is update (`'u'`), then `old` is returned as a `dict` conatining the changed attributes in
-            `attribute-name` - `old-value` relation. All item at the returned dictionary is optional.
+            If action value is update (`'u'`), then `old_attributes` is returned as a `dict` conatining the changed
+            attributes in `attribute-name` - `old-value` relation. All item at the returned dictionary is optional.
             +---------------+-------------------+
             | Keys          | Values            |
             +===============+===================+
@@ -1373,7 +1373,7 @@ class Guild(DiscordEntity, immortal=True):
                     state=self.voice_states.pop(user.id)
                 except KeyError:
                     return
-                old=None
+                old_attributes = None
                 action='l'
                 break
             
@@ -1383,18 +1383,18 @@ class Guild(DiscordEntity, immortal=True):
                 state=self.voice_states[user.id]
             except KeyError:
                 state=self.voice_states[user.id]=VoiceState(data,channel)
-                old=None
+                old_attributes = None
                 action='j'
                 break
             
-            old=state._update(data,channel)
-            if old:
+            old_attributes = state._update(data,channel)
+            if old_attributes:
                 action='u'
                 break
-            old = None
+            old_attributes = None
             return
         
-        return state, action, old
+        return state, action, old_attributes
     
     def _update_voice_state_restricted(self, data, user):
         """
@@ -2091,7 +2091,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        old : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `Any`) items
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -2162,7 +2162,7 @@ class Guild(DiscordEntity, immortal=True):
         | widget_enabled            | `bool`                        |
         +---------------------------+-------------------------------+
         """
-        old={}
+        old_attributes = {}
         
         #ignoring 'roles'
         #ignoring 'emojis'
@@ -2175,47 +2175,47 @@ class Guild(DiscordEntity, immortal=True):
         
         name=data['name']
         if self.name!=name:
-            old['name']=self.name
+            old_attributes['name']=self.name
             self.name=name
         
-        self._update_icon(data, old)
-        self._update_invite_splash(data, old)
-        self._update_discovery_splash(data, old)
-        self._update_banner(data, old)
+        self._update_icon(data, old_attributes)
+        self._update_invite_splash(data, old_attributes)
+        self._update_discovery_splash(data, old_attributes)
+        self._update_banner(data, old_attributes)
         
         region=VoiceRegion.get(data['region'])
         if self.region is not region:
-            old['region']=region
+            old_attributes['region']=region
             self.region=region
         
         afk_timeout=data['afk_timeout']
         if self.afk_timeout!=afk_timeout:
-            old['afk_timeout']=self.afk_timeout
+            old_attributes['afk_timeout']=self.afk_timeout
             self.afk_timeout=afk_timeout
         
         verification_level=VerificationLevel.INSTANCES[data['verification_level']]
         if self.verification_level is not verification_level:
-            old['verification_level']=self.verification_level
+            old_attributes['verification_level']=self.verification_level
             self.verification_level=verification_level
 
         message_notification=MessageNotificationLevel.INSTANCES[data['default_message_notifications']]
         if self.message_notification is not message_notification:
-            old['message_notification']=self.message_notification
+            old_attributes['message_notification']=self.message_notification
             self.message_notification=message_notification
         
         mfa=MFA.INSTANCES[data['mfa_level']]
         if self.mfa!=mfa:
-            old['mfa']=self.mfa
+            old_attributes['mfa']=self.mfa
             self.mfa=mfa
         
         content_filter=ContentFilterLevel.INSTANCES[data.get('explicit_content_filter',0)]
         if self.content_filter is not content_filter:
-            old['content_filter']=self.content_filter
+            old_attributes['content_filter']=self.content_filter
             self.content_filter=content_filter
         
         available=not data.get('unavailable',False)
         if self.available!=available:
-            old['available']=self.available
+            old_attributes['available']=self.available
             self.available=available
         
         try:
@@ -2226,7 +2226,7 @@ class Guild(DiscordEntity, immortal=True):
             features=[GuildFeature.get(feature) for feature in features]
             features.sort()
         if self.features!=features:
-            old['features']=self.features
+            old_attributes['features']=self.features
             self.features=features
         
         system_channel_id=data['system_channel_id']
@@ -2235,7 +2235,7 @@ class Guild(DiscordEntity, immortal=True):
         else:
             system_channel=self.all_channel[int(system_channel_id)]
         if self.system_channel is not system_channel:
-            old['system_channel']=self.system_channel
+            old_attributes['system_channel']=self.system_channel
             self.system_channel=system_channel
         
         try:
@@ -2243,7 +2243,7 @@ class Guild(DiscordEntity, immortal=True):
         except KeyError:
             system_channel_flags=SystemChannelFlag.ALL
         if self.system_channel_flags!=system_channel_flags:
-            old['system_channel_flags']=self.system_channel_flags
+            old_attributes['system_channel_flags']=self.system_channel_flags
             self.system_channel_flags=system_channel_flags
         
         public_updates_channel_id=data.get('public_updates_channel_id',None)
@@ -2252,12 +2252,12 @@ class Guild(DiscordEntity, immortal=True):
         else:
             public_updates_channel=self.all_channel[int(public_updates_channel_id)]
         if self.public_updates_channel is not public_updates_channel:
-            old['public_updates_channel']=self.public_updates_channel
+            old_attributes['public_updates_channel']=self.public_updates_channel
             self.public_updates_channel=public_updates_channel
         
         owner=PartialUser(int(data['owner_id']))
         if self.owner is not owner:
-            old['owner']=self.owner
+            old_attributes['owner']=self.owner
             self.owner=owner
         
         afk_channel_id=data['afk_channel_id']
@@ -2266,12 +2266,12 @@ class Guild(DiscordEntity, immortal=True):
         else:
             afk_channel=self.all_channel[int(afk_channel_id)]
         if self.afk_channel is not afk_channel:
-            old['afk_channel']=self.afk_channel
+            old_attributes['afk_channel']=self.afk_channel
             self.afk_channel=afk_channel
         
         widget_enabled=data.get('widget_enabled',False)
         if self.widget_enabled!=widget_enabled:
-            old['widget_enabled']=self.widget_enabled
+            old_attributes['widget_enabled']=self.widget_enabled
             self.widget_enabled=widget_enabled
         
         widget_channel_id=data.get('widget_channel_id',None)
@@ -2281,12 +2281,12 @@ class Guild(DiscordEntity, immortal=True):
             widget_channel=self.all_channel[int(widget_channel_id)]
         
         if self.widget_channel is not widget_channel:
-            old['widget_channel']=self.widget_channel
+            old_attributes['widget_channel']=self.widget_channel
             self.widget_channel=widget_channel
         
         embed_enabled=data.get('embed_enabled',False)
         if self.embed_enabled!=embed_enabled:
-            old['embed_enabled']=self.embed_enabled
+            old_attributes['embed_enabled']=self.embed_enabled
             self.embed_enabled=embed_enabled
 
         embed_channel_id=data.get('embed_channel_id',None)
@@ -2295,7 +2295,7 @@ class Guild(DiscordEntity, immortal=True):
         else:
             embed_channel=self.all_channel[int(embed_channel_id)]
         if self.embed_channel is not embed_channel:
-            old['embed_channel']=self.embed_channel
+            old_attributes['embed_channel']=self.embed_channel
             self.embed_channel=embed_channel
         
         rules_channel_id=data.get('rules_channel_id',None)
@@ -2304,71 +2304,71 @@ class Guild(DiscordEntity, immortal=True):
         else:
             rules_channel=self.all_channel[int(rules_channel_id)]
         if self.rules_channel is not rules_channel:
-            old['rules_channel']=self.rules_channel
+            old_attributes['rules_channel']=self.rules_channel
             self.rules_channel=rules_channel
         
         description=data.get('description',None)
         if self.description is None:
             if (description is not None):
-                old['description']=None
+                old_attributes['description']=None
                 self.description=description
         else:
             if description is None:
-                old['description']=self.description
+                old_attributes['description']=self.description
                 self.description=None
             elif self.description!=description:
-                old['description']=self.description
+                old_attributes['description']=self.description
                 self.description=description
         
         vanity_code=data.get('vanity_url_code',None)
         if self.vanity_code is None:
             if vanity_code is not None:
-                old['vanity_code']=None
+                old_attributes['vanity_code']=None
                 self.vanity_code=vanity_code
         else:
             if vanity_code is None:
-                old['vanity_code']=self.vanity_code
+                old_attributes['vanity_code']=self.vanity_code
                 self.vanity_code=None
             elif self.vanity_code!=vanity_code:
-                old['vanity_code']=self.vanity_code
+                old_attributes['vanity_code']=self.vanity_code
                 self.vanity_code=vanity_code
         
         max_users=data.get('max_members',250000)
         if self.max_users!=max_users:
-            old['max_users']=self.max_users
+            old_attributes['max_users']=self.max_users
             self.max_users=max_users
         
         max_presences=data.get('max_presences',None)
         if max_presences is None:
             max_presences=25000
         if self.max_presences!=max_presences:
-            old['max_presences']=self.max_presences
+            old_attributes['max_presences']=self.max_presences
             self.max_presences=max_presences
         
         max_video_channel_users = data.get('max_video_channel_users', 25)
         if self.max_video_channel_users!=max_video_channel_users:
-            old['max_video_channel_users'] = self.max_video_channel_users
+            old_attributes['max_video_channel_users'] = self.max_video_channel_users
             self.max_video_channel_users = max_video_channel_users
         
         premium_tier=data['premium_tier']
         if self.premium_tier!=premium_tier:
-            old['premium_tier']=self.premium_tier
+            old_attributes['premium_tier']=self.premium_tier
             self.premium_tier=premium_tier
 
         booster_count=data.get('premium_subscription_count',None)
         if booster_count is None:
             booster_count=0
         if self.booster_count!=booster_count:
-            old['booster_count']=self.booster_count
+            old_attributes['booster_count']=self.booster_count
             self.booster_count=booster_count
             self._boosters=None
 
         preferred_locale=parse_preferred_locale(data)
         if self.preferred_locale!=preferred_locale:
-            old['preferred_locale']=self.preferred_locale
+            old_attributes['preferred_locale']=self.preferred_locale
             self.preferred_locale=preferred_locale
         
-        return old
+        return old_attributes
     
     def _update_no_return(self, data):
         """
@@ -2512,7 +2512,7 @@ class Guild(DiscordEntity, immortal=True):
             +-------+-------------------+-----------------------------------------------+
             | 1     | emoji             | ``Emoji``                                     |
             +-------+-------------------+-----------------------------------------------+
-            | 2     | old               | `None` or `dict` of (`str`, `Any`) items      |
+            | 2     | old_attributes    | `None` or `dict` of (`str`, `Any`) items      |
             +-------+-------------------+-----------------------------------------------+
             
             Possible actions:
@@ -2526,8 +2526,8 @@ class Guild(DiscordEntity, immortal=True):
             | EMOJI_UPDATE_EDIT     | `2`   |
             +-----------------------+-------+
             
-            If action is `EMOJI_UPDATE_EDIT`, then `old` is passed as a dictionary containing the changed attributes
-            in an `attribute-name` - `old-attribute` relation. Every item in `old` is optional.
+            If action is `EMOJI_UPDATE_EDIT`, then `old_attributes` is passed as a dictionary containing the changed
+            attributes in an `attribute-name` - `old-value` relation. Every item in `old_attributes` is optional.
             +-------------------+-------------------------------+
             | Keys              | Values                        |
             +===================+===============================+
@@ -2557,9 +2557,9 @@ class Guild(DiscordEntity, immortal=True):
                 emojis[emoji_id]=emoji
                 changes.append((EMOJI_UPDATE_NEW,emoji,None),)
             else:
-                old=emoji._update(emoji_data)
-                if old:
-                    changes.append((EMOJI_UPDATE_EDIT,emoji,old),)
+                old_attributes = emoji._update(emoji_data)
+                if old_attributes:
+                    changes.append((EMOJI_UPDATE_EDIT,emoji,old_attributes),)
                 old_ids.remove(emoji_id)
         
         for emoji_id in old_ids:

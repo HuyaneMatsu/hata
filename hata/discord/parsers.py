@@ -23,6 +23,7 @@ from .emoji import PartialEmoji
 from .role import Role
 from .exceptions import DiscordException
 from .invite import Invite
+from .message import EMBED_UPDATE_NONE
 
 utcfromtimestamp=datetime.datetime.utcfromtimestamp
 
@@ -901,11 +902,11 @@ PARSER_DEFAULTS('RESUMED',RESUMED,RESUMED,RESUMED,RESUMED)
 del RESUMED
 
 def USER_UPDATE__CAL(client,data):
-    old=client._update(data)
-    if not old:
+    old_attributes = client._update(data)
+    if not old_attributes:
         return
     
-    Task(client.events.client_edit(client,old), KOKORO)
+    Task(client.events.client_edit(client,old_attributes), KOKORO)
 
 def USER_UPDATE__OPT(client,data):
     client._update_no_return(data)
@@ -1076,17 +1077,17 @@ def MESSAGE_UPDATE__CAL_SC(client,data):
         return
     
     if 'edited_timestamp' in data:
-        old=message._update(data)
-        if not old:
+        old_attributes = message._update(data)
+        if not old_attributes:
             return
         
-        Task(client.events.message_edit(client,message,old), KOKORO)
+        Task(client.events.message_edit(client,message,old_attributes), KOKORO)
     else:
-        result=message._update_embed(data)
-        if not result:
+        change_state = message._update_embed(data)
+        if change_state == EMBED_UPDATE_NONE:
             return
         
-        Task(client.events.embed_update(client,message,result), KOKORO)
+        Task(client.events.embed_update(client, message, change_state), KOKORO)
 
 def MESSAGE_UPDATE__CAL_MC(client,data):
     message_id=int(data['id'])
@@ -1101,12 +1102,12 @@ def MESSAGE_UPDATE__CAL_MC(client,data):
         return
     
     if 'edited_timestamp' in data:
-        old=message._update(data)
-        if not old:
+        old_attributes = message._update(data)
+        if not old_attributes:
             return
         
         for client_ in clients:
-            Task(client_.events.message_edit(client_,message,old), KOKORO)
+            Task(client_.events.message_edit(client_,message,old_attributes), KOKORO)
     else:
         result=message._update_embed(data)
         if not result:
@@ -1395,13 +1396,13 @@ if CACHE_PRESENCE:
         
         while True:
             if user_data:
-                old=user._update(user_data)
-                if old:
+                old_attributes = user._update(user_data)
+                if old_attributes:
                     presence=False
                     break
             
-            old=user._update_presence(data)
-            if old:
+            old_attributes = user._update_presence(data)
+            if old_attributes:
                 presence=True
                 break
             
@@ -1412,7 +1413,7 @@ if CACHE_PRESENCE:
         else:
             coro=client.events.user_edit
         
-        Task(coro(client,user,old), KOKORO)
+        Task(coro(client,user,old_attributes), KOKORO)
     
     def PRESENCE_UPDATE__CAL_MC(client,data):
         user_data=data['user']
@@ -1424,13 +1425,13 @@ if CACHE_PRESENCE:
         
         while True:
             if user_data:
-                old=user._update(user_data)
-                if old:
+                old_attributes=user._update(user_data)
+                if old_attributes:
                     presence=False
                     break
-                
-            old=user._update_presence(data)
-            if old:
+            
+            old_attributes=user._update_presence(data)
+            if old_attributes:
                 presence=True
                 break
             
@@ -1448,7 +1449,7 @@ if CACHE_PRESENCE:
             if coro is DEFAULT_EVENT:
                 continue
             
-            Task(coro(client_,user,old),KOKORO)
+            Task(coro(client_,user,old_attributes),KOKORO)
             continue
     
     def PRESENCE_UPDATE__OPT(client,data):
@@ -1482,13 +1483,13 @@ if CACHE_USER:
             guild_sync(client,data,'GUILD_MEMBER_UPDATE')
             return
         
-        user,old=User._update_profile(data,guild)
+        user, old_attributes = User._update_profile(data,guild)
         
-        if not old:
+        if not old_attributes:
             return
         
-        Task(client.events.user_profile_edit(client,user,old,guild), KOKORO)
-
+        Task(client.events.user_profile_edit(client, user, guild, old_attributes), KOKORO)
+    
     def GUILD_MEMBER_UPDATE__CAL_MC(client,data):
         guild_id=int(data['guild_id'])
         try:
@@ -1502,14 +1503,14 @@ if CACHE_USER:
             clients.close()
             return
         
-        user,old=User._update_profile(data,guild)
+        user, old_attributes = User._update_profile(data,guild)
         
-        if not old:
+        if not old_attributes:
             return
         
         clients.send(user)
         for client_ in clients:
-            Task(client_.events.user_profile_edit(client_,user,old,guild),KOKORO)
+            Task(client_.events.user_profile_edit(client_, user, guild, old_attributes),KOKORO)
     
     def GUILD_MEMBER_UPDATE__OPT_SC(client,data):
         guild_id=int(data['guild_id'])
@@ -1547,12 +1548,12 @@ else:
             guild_sync(client,data,'GUILD_MEMBER_UPDATE')
             return
         
-        old=client._update_profile_only(data,guild)
+        old_attributes = client._update_profile_only(data,guild)
         
-        if not old:
+        if not old_attributes:
             return
         
-        Task(client.events.user_profile_edit(client,client,old,guild), KOKORO)
+        Task(client.events.user_profile_edit(client, client, guild, old_attributes), KOKORO)
 
     GUILD_MEMBER_UPDATE__CAL_MC=GUILD_MEMBER_UPDATE__CAL_SC
 
@@ -1641,11 +1642,11 @@ def CHANNEL_UPDATE__CAL_SC(client,data):
         guild_sync(client,data,None)
         return
     
-    old=channel._update(data)
-    if not old:
+    old_attributes = channel._update(data)
+    if not old_attributes:
         return
     
-    Task(client.events.channel_edit(client,channel,old), KOKORO)
+    Task(client.events.channel_edit(client,channel,old_attributes), KOKORO)
 
 def CHANNEL_UPDATE__CAL_MC(client,data):
     channel_id=int(data['id'])
@@ -1660,12 +1661,12 @@ def CHANNEL_UPDATE__CAL_MC(client,data):
         clients.close()
         return
     
-    old=channel._update(data)
-    if not old:
+    old_attributes = channel._update(data)
+    if not old_attributes:
         return
     
     for client_ in clients:
-        Task(client_.events.channel_edit(client_,channel,old),KOKORO)
+        Task(client_.events.channel_edit(client_,channel,old_attributes),KOKORO)
 
 def CHANNEL_UPDATE__OPT_SC(client,data):
     channel_id=int(data['id'])
@@ -1837,13 +1838,13 @@ def GUILD_EMOJIS_UPDATE__CAL_SC(client,data):
     if not changes:
         return
     
-    for action, emoji, old in changes:
+    for action, emoji, old_attributes in changes:
         if action==EMOJI_UPDATE_EDIT:
             coro=client.events.emoji_edit
             if coro is DEFAULT_EVENT:
                 continue
             
-            Task(coro(client,emoji,old), KOKORO)
+            Task(coro(client,emoji,old_attributes), KOKORO)
             continue
             
         if action==EMOJI_UPDATE_NEW:
@@ -1883,13 +1884,13 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client,data):
         return
     
     for client_ in clients:
-        for action, emoji, old in changes:
+        for action, emoji, old_attributes in changes:
             if action==EMOJI_UPDATE_EDIT:
                 coro=client_.events.emoji_edit
                 if coro is DEFAULT_EVENT:
                     continue
                 
-                Task(coro(client,guild,emoji,old),KOKORO)
+                Task(coro(client,guild,emoji,old_attributes),KOKORO)
                 continue
                 
             if action==EMOJI_UPDATE_NEW:
@@ -2279,11 +2280,11 @@ def GUILD_UPDATE__CAL_SC(client,data):
         guild_sync(client,data,None)
         return
     
-    old=guild._update(data)
-    if not old:
+    old_attributes = guild._update(data)
+    if not old_attributes:
         return
     
-    Task(client.events.guild_edit(client,guild,old), KOKORO)
+    Task(client.events.guild_edit(client,guild,old_attributes), KOKORO)
 
 def GUILD_UPDATE__CAL_MC(client,data):
     guild_id=int(data['guild_id'])
@@ -2298,12 +2299,12 @@ def GUILD_UPDATE__CAL_MC(client,data):
         clients.close()
         return
     
-    old=guild._update(data)
-    if not old:
+    old_attributes = guild._update(data)
+    if not old_attributes:
         return
     
     for client_ in clients:
-        Task(client_.events.guild_edit(client_,guild,old),KOKORO)
+        Task(client_.events.guild_edit(client_,guild,old_attributes),KOKORO)
 
 def GUILD_UPDATE__OPT_SC(client,data):
     guild_id=int(data['guild_id'])
@@ -2400,9 +2401,26 @@ PARSER_DEFAULTS('GUILD_BAN_REMOVE',GUILD_BAN_REMOVE__CAL,GUILD_BAN_REMOVE__CAL,G
 del GUILD_BAN_REMOVE__CAL, GUILD_BAN_REMOVE__OPT
 
 class GuildUserChunkEvent(object):
+    """
+    Represents a processed `GUILD_MEMBERS_CHUNK` dispatch event.
+    
+    Attributes
+    ----------
+    guild : ``Guild``
+        The guild what received the user chunk.
+    users : `list` of (``User`` or ``Client``)
+        The received users.
+    nonce : `None` or `str`
+        A nonce to identify guild user chunk response.
+    index : `int`
+        The index of the received chunk response (0 <= index < count).
+    count : `int`
+        The total number of chunk responses what Discord sends for the respective gateway.
+    """
     __slots__ = ('guild', 'users', 'nonce', 'index', 'count')
     
     def __repr__(self):
+        """Returns the representation of the guild user chunk event."""
         return f'<{self.__class__.__name__} guild={self.guild}, users={len(self.users)}, nonce={self.nonce!r}, index={self.index}, count={self.count}>'
 
 if CACHE_PRESENCE:
@@ -2630,11 +2648,11 @@ def GUILD_ROLE_UPDATE__CAL_SC(client,data):
         guild_sync(client,data,None)
         return
     
-    old=role._update(data['role'])
-    if not old:
+    old_attributes = role._update(data['role'])
+    if not old_attributes:
         return
     
-    Task(client.events.role_edit(client,role,old), KOKORO)
+    Task(client.events.role_edit(client,role,old_attributes), KOKORO)
 
 def GUILD_ROLE_UPDATE__CAL_MC(client,data):
     guild_id=int(data['guild_id'])
@@ -2657,12 +2675,12 @@ def GUILD_ROLE_UPDATE__CAL_MC(client,data):
         guild_sync(client,data,None)
         return
     
-    old=role._update(data['role'])
-    if not old:
+    old_attributes=role._update(data['role'])
+    if not old_attributes:
         return
     
     for client_ in clients:
-        Task(client_.events.role_edit(client_,role,old),KOKORO)
+        Task(client_.events.role_edit(client_,role,old_attributes),KOKORO)
 
 def GUILD_ROLE_UPDATE__OPT_SC(client,data):
     guild_id=int(data['guild_id'])
@@ -3037,15 +3055,12 @@ def GIFT_CODE_UPDATE__OPT(client,data):
 PARSER_DEFAULTS('GIFT_CODE_UPDATE',GIFT_CODE_UPDATE__CAL,GIFT_CODE_UPDATE__CAL,GIFT_CODE_UPDATE__OPT,GIFT_CODE_UPDATE__OPT)
 del GIFT_CODE_UPDATE__CAL, GIFT_CODE_UPDATE__OPT
 
-#hooman only event, needs futher testing, there is no real documentation on this
-def USER_ACHIEVEMENT_UPDATE__CAL(client,data):
-    Task(client.events.achievement(client,data), KOKORO)
-
-def USER_ACHIEVEMENT_UPDATE__OPT(client,data):
+#hooman only event
+def USER_ACHIEVEMENT_UPDATE(client, data):
     pass
 
-PARSER_DEFAULTS('USER_ACHIEVEMENT_UPDATE',USER_ACHIEVEMENT_UPDATE__CAL,USER_ACHIEVEMENT_UPDATE__CAL,USER_ACHIEVEMENT_UPDATE__OPT,USER_ACHIEVEMENT_UPDATE__OPT)
-del USER_ACHIEVEMENT_UPDATE__CAL, USER_ACHIEVEMENT_UPDATE__OPT
+PARSER_DEFAULTS('USER_ACHIEVEMENT_UPDATE', USER_ACHIEVEMENT_UPDATE, USER_ACHIEVEMENT_UPDATE, USER_ACHIEVEMENT_UPDATE, USER_ACHIEVEMENT_UPDATE)
+del USER_ACHIEVEMENT_UPDATE
 
 #hooman only event
 def MESSAGE_ACK(client,data):
@@ -3118,7 +3133,6 @@ EVENTS.add_default('relationship_add'           , 2 , 'RELATIONSHIP_ADD'        
 EVENTS.add_default('relationship_change'        , 3 , 'RELATIONSHIP_ADD'                        , )
 EVENTS.add_default('relationship_delete'        , 2 , 'RELATIONSHIP_REMOVE'                     , )
 EVENTS.add_default('gift_update'                , 3 , 'GIFT_CODE_UPDATE'                        , )
-EVENTS.add_default('achievement'                , 2 , 'USER_ACHIEVEMENT_UPDATE'                 , )
 
 def _check_name_should_break(name):
     """
@@ -3139,7 +3153,7 @@ def _check_name_should_break(name):
     Raises
     ------
     TypeError
-        If `name` was not passed as `None`, or type `str`.
+        If `name` was not passed as `None` or type `str`.
     """
     if (name is None):
         return False
@@ -3322,7 +3336,37 @@ def compare_converted(converted,non_converted):
     #meow?
     raise TypeError(f'Expected function, method or a callable object, got {non_converted!r}')
 
-def _convert_unsafe_event_iterable(iterable,type_=None):
+def _convert_unsafe_event_iterable(iterable, type_=None):
+    """
+    Converts an iterable to a list of ``EventListElement``-s. This function is called to generate a ``eventlist``
+    compatible `list` to avoid handling the same cases everywhere.
+    
+    `iterable`'s element's can be:
+    - ``EventListElement`` instance.
+    - `type_` instance if given.
+    - `tuple` of `1`-`3` elements (`func`, `name`, `kwargs`).
+    - `dict` of keyword arguments, what contains at least 1 key: `'func'`.
+    - `func` itself.
+    
+    Parameters
+    ----------
+    iterable : `iterable`
+        The iterable, what's elements will be checked.
+    type_ : `None `or `type`
+        If `type_` was passed, then each element is prevaidated with the given type. Some extension classes might
+        support behaviour.
+        
+        The given `type_` should implement a `from_kwargs` constructor.
+    
+    Returns
+    -------
+    result : `list` of (``EventListElement`` or ``type_``)
+    
+    Raises
+    ------
+    ValueError
+        If an element of the received iterable does not macthes any of the expected formats.
+    """
     result=[]
     for element in iterable:
         if type(element) is EventListElement:
@@ -3375,26 +3419,84 @@ def _convert_unsafe_event_iterable(iterable,type_=None):
                 kwargs=None
             
             if type_ is None:
-                element = EventListElement(element,name,kwargs)
+                element = EventListElement(func,name,kwargs)
             else:
-                element = type_.from_kwargs(element,name,kwargs)
+                element = type_.from_kwargs(func,name,kwargs)
             
         result.append(element)
         continue
         
     return result
 
-class _EventCreationManager(object):
-    __slots__=('parent', '_supports_from_class')
+class _EventHandlerManager(object):
+    """
+    Gives a decorator functionality to an event handler, because 'rich' event handlers still can not be used a
+    decorator, their `__call__` is already allocated for handling their respective event.
     
-    def __init__(self,parent):
+    This class is familiar to ``eventlist``, but it directly works with the respective event handler giving an
+    easy API to do operations with it.
+    
+    Attributes
+    ----------
+    parent : `Any`
+        The ``_EventHandlerManager``'s parent event handler.
+    _supports_from_class : `bool`
+        Whether `.parent` implements `__setevent_from_class__` method.
+    """
+    __slots__ = ('parent', '_supports_from_class')
+    
+    def __init__(self, parent):
+        """
+        Creates an ``_EventHandlerManager`` from the given event handler.
+        
+        The `parent` event handler should implement the following methods:
+        - `.__setevent__(func, name, **kwargs)`
+        - `.__delvent__(func, name)`
+        And optionally:
+        - `.__setevent_from_class__(klass)`
+        
+        Parameters
+        ----------
+        parent : `Any`
+        """
         self.parent=parent
         self._supports_from_class = hasattr(type(parent),'__setevent_from_class__')
-        
+    
     def __repr__(self):
+        """Returns the representation of the event handler manager."""
         return f'<{self.__class__.__name__} of {self.parent!r}>'
     
-    def __call__(self,func=None,name=None,**kwargs):
+    def __call__(self, func=None, name=None, **kwargs):
+        """
+        Adds the given `func` to the event handler manager's parent. If `func` is not passed, then returns a
+        ``._wrapper` to allow using the manager as a decorator with still passing keyword arguments.
+        
+        Parameters
+        ----------
+        func : `callable`, Optional
+            The event to be added to the respective event handler.
+        name : `str` or `None`
+            A name to be used instead of the passed `func`'s.
+        **kwargs : Keyword arguments
+            Additionally passed keyword arguments to be passed with the given `func`to the event handler.
+        
+        Returns
+        -------
+        func : `callable`
+            - The created instance by the respective event handler.
+            - If `func` was not passed, then returns a ``._wrapper`` instance.
+        
+        Adds the given `func` to the ``eventlist`` with the other given keyword arguments.
+        
+        Parameters
+        ----------
+        func : `callable`, Optional
+            The event to be added to the eventlist.
+        name : `str` or `None`
+            A name to be used instead of the passed `func`'s when adding it.
+        **kwargs : Keyword arguments
+            Additionally passed keyword arguments to be used when the passed `func` is used up.
+        """
         if func is None:
             return self._wrapper(self,name,kwargs)
         
@@ -3403,31 +3505,105 @@ class _EventCreationManager(object):
         func=self.parent.__setevent__(func,name,**kwargs)
         return func
     
-    def from_class(self,klass):
+    def from_class(self, klass):
+        """
+        Allows the event handler manager to be able to capture a class and create add it to the parent event handler
+        from it's attributes.
+        
+        Parameters
+        ----------
+        klass : `type`
+            The class to capture.
+        
+        Returns
+        -------
+        func : `callable`
+            The created instance by the respective event handler.
+        
+        Raises
+        ------
+        TypeError
+            If the parent of the event handler manager has no support for `.from_class`.
+        """
         if not self._supports_from_class:
             raise TypeError(f'`.from_class` is not supported by `{self.parent!r}`.')
         
         return self.parent.__setevent_from_class__(klass)
         
-    def remove(self,func,name=None,**kwargs):
+    def remove(self,func, name=None, **kwargs):
         name=check_name(func,name)
         
         self.parent.__delevent__(func,name,**kwargs)
     
     class _wrapper(object):
-        __slots__=('parent', 'name', 'kwargs')
-        def __init__(self,parent,name,kwargs):
+        """
+        When the parent ``_EventHandlerManager`` is called and `func` was not passed (so only keyword arguments were
+        if any), then an instance of this class is returned to allow using ``_EventHandlerManager`` as a decorator with
+        allowing passing additional keyword arguments at the same time.
+        
+        Attributes
+        ----------
+        parent : ``_EventHandlerManager``
+            The owner event handler manager.
+        name : `str` or `None`
+            Passed `name` keyword argument, when the wrapper was created.
+        kwargs : `None` or `dict` of (`str`, `Any`) items
+            Additionally passed keyword arguments when the wrapper was created.
+        """
+        __slots__ = ('parent', 'name', 'kwargs')
+        def __init__(self, parent, name, kwargs):
+            """
+            Creates an instance from the given parameters.
+            
+            Parameters
+            ----------
+            parent : ``_EventHandlerManager``
+                The owner event handler manager.
+            name : `str` or `None`
+                Passed `name` keyword argument, when the wrapper was created.
+            kwargs : `None` or `dict` of (`str`, `Any`) items
+                Additionally passed keyword arguments when the wrapper was created.
+            """
             self.parent=parent
             self.name=name
             self.kwargs=kwargs
         
-        def __call__(self,func,):
-            return self.parent(func,self.name,**self.kwargs)
+        def __call__(self, func,):
+            """
+            Calls the wrapper's parent event handler manager with the given `func` and with the stored up name and
+            with the other stored keyword arguments.
+            
+            Parameters
+            ----------
+            func : `callable`
+                The function to added to the parent event handler manager's event handler.
+            
+            Returns
+            -------
+            func : `callable`
+                The created instance by the respective event handler.
+            """
+            return self.parent(func, self.name, **self.kwargs)
     
-    def __getattr__(self,name):
-        return getattr(self.parent,name)
+    def __getattr__(self, name):
+        """Returns the attribute of the event handler manager's parent."""
+        return getattr(self.parent, name)
     
-    def extend(self,iterable):
+    def extend(self, iterable):
+        """
+        Extends the respective event handler with the given iterable of events.
+        
+        Parameters
+        ----------
+        iterable : `iterable`
+        
+        Raises
+        ------
+        TypeError
+            - If `iterable` was passed as ``eventlist`` and it's `.type` attribute is not accepted by the parent
+                event handler.
+            - If `iterable` was not passed as type ``eventlist`` and any of it's element's format is incorrect.
+        """
         if type(iterable) is eventlist:
             type_=iterable.type
             if (type_ is not None):
@@ -3455,7 +3631,23 @@ class _EventCreationManager(object):
             else:
                 parent.__setevent__(func,name,**kwargs)
     
-    def unextend(self,iterable):
+    def unextend(self, iterable):
+        """
+        Unextends the respective event handler with the given `iterable`.
+        
+        Parameters
+        ----------
+        iterable : `iterable`
+        
+        Raises
+        ------
+        ValueError
+            - If `iterable` was passed as ``eventlist`` and it's `.type` attribute not accepted by the parent
+                event handler.
+            - If `iterable` was not passed as type ``eventlist`` and any of it's element's format is incorrect.
+            - If any of the passed element is not stored by the parent event handler. At this case error is raised
+                only at the end.
+        """
         if type(iterable) is eventlist:
             type_=iterable.type
             if (type_ is not None):
@@ -3633,7 +3825,7 @@ class eventlist(list):
     
     class _wrapper(object):
         """
-        When a parent ``eventlist`` is called and `func` was not passed (so only keyword arguments were), if any, then
+        When a parent ``eventlist`` is called and `func` was not passed (so only keyword arguments were if any), then
         an instance of this class is returned. It's main purpose is to enable using ``eventlist`` as a decorator with
         allowing passing additional keyword arguments at the same time.
         
@@ -3666,7 +3858,7 @@ class eventlist(list):
         
         def __call__(self, func):
             """
-            Calling an ``eventlist``'s wrapper enables to add the given `func` to be added to the parent ``eventlist``.
+            Calling an ``eventlist``'s wrapper adds the given `func` to it's parent ``eventlist``.
             
             Parameters
             ----------
@@ -3968,26 +4160,114 @@ class eventlist(list):
 # this class is a placeholder for the `with` statemnet support
 # also for the `shortcut` propery as well.
 class EventHandlerBase(object):
+    """
+    Base class for event handlers.
+    """
     __slots__=()
     
     # subclasses should overwrite it
     async def __call__(self, *args):
-        return
+        """
+        The method what will be called by the respective parser. The first received argument is always a ``Client``
+        meanwhile the rest depends on the dispatch event.
+        
+        Parameters
+        ----------
+        *args : Additional positional arguments
+        """
+        pass
 
     # subclasses should overwrite it
     def __setevent__(self, func, name):
+        """
+        Adds the specified event to the event handler. Subclasses might add additional keyword arguments as well.
+        
+        Parameters
+        ----------
+        func : `callable`
+            The callable to be added.
+        name : `str` or `None`
+            The name of the event to use over the `func`'s.
+        
+        Returns
+        -------
+        func : `callable`
+            The created event.
+        """
         pass
 
     # subclasses should overwrite it
     def __delevent__(self, func, name):
+        """
+        Removes the specified event from the event handler. Subclasses might add additional keyword arguments as well.
+        
+        Parameters
+        ----------
+        func : `callable`
+            The callable to be removed.
+        name : `str` or `None`
+            The name of the event when searching for `func`. When `func` was added with `name` passed as non `None`,
+            then here `name` should be passed with the same name.
+        
+        Raises
+        ------
+        ValueError
+            The event handler not contains the given `func` - `name` combination.
+        """
         pass
 
     @property
     def shortcut(self):
-        return _EventCreationManager(self)
+        """
+        Shortucts the event handler's event adding and removing functionality to make those operations easier.
+        
+        Returns
+        -------
+        event_handler_manager : ``_EventHandlerManager``
+        """
+        return _EventHandlerManager(self)
 
 class EventWaitforMeta(type):
+    """
+    Metaclass for `waitfor` events handlers
+    
+    The defaultly supported events are the following:
+    - `message_create`
+    - `message_edit`
+    - `message_delete`
+    - `channel_create`
+    - `channel_edit`
+    - `channel_delete`
+    - `role_create`
+    - `role_edit`
+    - `role_delete`
+    - `guild_delete`
+    - `guild_edit`
+    - `emoji_edit`
+    - `emoji_delete`
+    - `reaction_add`
+    - `reaction_delete`
+    
+    See Also
+    --------
+    EventWaitforBase : Base class to inherit instead of metaclassing ``EventWaitforMeta``.
+    """
     def __call__(cls, *args, **kwargs):
+        """
+        Instances the type.
+        
+        Autoadds a `.waitfors` instance attribute to them and also sets it as a `WeakKeyDictionary`, so you would not
+        need to bother with that.
+        
+        Parameters
+        ----------
+        *args : Additional positional arguments
+        **kwargs : Additional keyword arguments
+        
+        Returns
+        -------
+        object_ : `Any`
+        """
         object_ = cls.__new__(cls, *args, **kwargs)
         if type(object_) is not cls:
             return object_
@@ -4010,8 +4290,8 @@ class EventWaitforMeta(type):
     _call_waitfors['message_create'] = _call_message_create
     del _call_message_create
     
-    async def _call_message_edit(self, client, message, old):
-        args = (client, message, old)
+    async def _call_message_edit(self, client, message, old_attributes):
+        args = (client, message, old_attributes)
         channel = message.channel
         self._run_waitfors_for(channel, args)
         guild = channel.guild
@@ -4044,13 +4324,13 @@ class EventWaitforMeta(type):
     _call_waitfors['channel_create'] = _call_channel_create
     del _call_channel_create
     
-    async def _call_channel_edit(self, client, channel, old):
-        args = (client, channel, old)
+    async def _call_channel_edit(self, client, channel, old_attributes):
+        args = (client, channel, old_attributes)
         self._run_waitfors_for(channel, args)
         guild = channel.guild
         if guild is None:
             return
-        self._run_waitfors_for(guild, old)
+        self._run_waitfors_for(guild, old_attributes)
     
     _call_waitfors['channel_edit'] = _call_channel_edit
     del _call_channel_edit
@@ -4073,8 +4353,8 @@ class EventWaitforMeta(type):
     _call_waitfors['role_create'] = _call_role_create
     del _call_role_create
     
-    async def _call_role_edit(self, client, role, old):
-        args = (client, role, old)
+    async def _call_role_edit(self, client, role, old_attributes):
+        args = (client, role, old_attributes)
         self._run_waitfors_for(role, args)
         guild = role.guild
         self._run_waitfors_for(guild, args)
@@ -4097,8 +4377,8 @@ class EventWaitforMeta(type):
     _call_waitfors['guild_delete'] = _call_guild_delete
     del _call_guild_delete
     
-    async def _call_guild_edit(self, client, guild, old):
-        args = (client, guild, old)
+    async def _call_guild_edit(self, client, guild, old_attributes):
+        args = (client, guild, old_attributes)
         self._run_waitfors_for(guild, args)
     
     _call_waitfors['guild_edit'] = _call_guild_edit
@@ -4112,8 +4392,8 @@ class EventWaitforMeta(type):
     _call_waitfors['emoji_create'] = _call_emoji_create
     del _call_emoji_create
     
-    async def _call_emoji_edit(self, client, emoji, old):
-        args = (client, emoji, old)
+    async def _call_emoji_edit(self, client, emoji, old_attributes):
+        args = (client, emoji, old_attributes)
         self._run_waitfors_for(emoji, args)
         guild = emoji.guild
         self._run_waitfors_for(guild, args)
@@ -4144,11 +4424,37 @@ class EventWaitforMeta(type):
     del _call_reaction_delete
 
 class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
+    """
+    Base class for event handlers, which implement waiting for a specified action to occure.
+    
+    Attrbiutes
+    ----------
+    waitfors : `WeakValueDictionary`
+        An autoadded container to store `entity` - `async callable` pairs.
+    
+    Class Attributes
+    ----------------
+    __event_name__ : `None` or `str` = `None`
+        Predefined name to what the event handler will be added.
+    call_waitfors : `None` or `async callable` = `None`
+        An added method to subclasses to ensure the waitfors if overwrite `__call__` is overwritten. Subclasses can
+        also overwrite `call_waitfors` method as well.
+    """
     __slots__ = ('waitfors', )
     __event_name__ = None
     call_waitfors = None
     
     def append(self, target, waiter):
+        """
+        Adds a new relation to `.waitfors`.
+        
+        When the respective event is received with the specified `target` entity, then `waiter` will be ensured.
+        
+        Parameters
+        ----------
+        target : ``DiscordEntity`` instance
+        waiter : `async callable`
+        """
         try:
             actual=self.waitfors[target]
             if type(actual) is asynclist:
@@ -4160,7 +4466,15 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         except KeyError:
             self.waitfors[target]=waiter
     
-    def remove(self, target, waiter,):
+    def remove(self, target, waiter):
+        """
+        Removes the specified relation from `.waitfors`.
+        
+        Parameters
+        ----------
+        target : ``DiscordEntity`` instance
+        waiter : `async callable`
+        """
         try:
             container=self.waitfors.pop(target)
         except KeyError:
@@ -4181,6 +4495,26 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         self.waitfors[target]=container
     
     def get_waiter(self, target, waiter, by_type=False, is_method=False):
+        """
+        Looks up whether any of the given `target` - `waiter` relation is stored inside of `.waiters` and if there is any,
+        then returns the first find. If non, then returns `None`.
+        
+        Parameters
+        ----------
+        target : ``DiscordEntitiy`` instance
+            The target entity.
+        waiter : `Any`
+            The waiter. `by_type` and `is_method` overwrite the behaviour of checking it.
+        by_type : `bool`, Optional
+            Whether `waiter` was given as the type of the real waiter. Defaults to `False`.
+        is_method : `bool`, Optional
+            Whether the real waiter is a method-like, and you want to check it's "self". Applied before `by_type` and
+            defaults to `False`.
+        
+        Returns
+        -------
+        waiter : `Any`
+        """
         try:
             element = self.waitfors[target]
         except KeyError:
@@ -4226,6 +4560,26 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
                     return None
 
     def get_waiters(self, target, waiter, by_type=False, is_method=False):
+        """
+        Looks up the waiters of `target` - `waiter` relation stored inside of `.waiters` and returns all the matched
+        one.
+        
+        Parameters
+        ----------
+        target : ``DiscordEntitiy`` instance
+            The target entity.
+        waiter : `Any`
+            The waiter. `by_type` and `is_method` overwrite the behaviour of checking it.
+        by_type : `bool`, Optional
+            Whether `waiter` was given as the type of the real waiter. Defaults to `False`.
+        is_method : `bool`, Optional
+            Whether the real waiter is a method-like, and you want to check it's "self". Applied before `by_type` and
+            defaults to `False`.
+        
+        Returns
+        -------
+        waiters : `list` of `Any`
+        """
         result = []
         
         try:
@@ -4267,9 +4621,19 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         
         return result
     
-    def _run_waitfors_for(self, key, args):
+    def _run_waitfors_for(self, target, args):
+        """
+        Runs the waitfors of the given target.
+        
+        Parameters
+        ----------
+        target : ``DiscordEntitiy`` instance
+            The target entity.
+        args : `tuple` of `Any`
+            Arguments to ensure the watfors with.
+        """
         try:
-            event=self.waitfors[key]
+            event=self.waitfors[target]
         except KeyError:
             pass
         else:
@@ -4279,114 +4643,198 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
             else:
                 Task(event(*args), KOKORO)
         
-def EventWaitforMeta__new__(cls, class_name, class_bases, class_dict):
-    for base in class_bases:
+def EventWaitforMeta__new__(cls, class_name, class_parents, class_attributes):
+    """
+    Subclasses `EventWaitforBase``.
+    
+    Parameters
+    ----------
+    class_name : `str`
+        The created classe's name.
+    class_parents : `tuple` of `type` instances
+        The superclasses of the creates type.
+    class_attributes : `dict` of (`str`, `Any`) items
+        The class attributes of the created type.
+    
+    Returns
+    -------
+    type : ``EventWaitforMeta`` instance
+        The created type.
+    
+    Raises
+    ------
+    TypeError
+        - If the class do not inherits ``EventWaitforBase``.
+        - If `.__event_name__` was not set or was no set correctly. (Note that if was not ste, then the classe's name
+            is used instead.)
+        - If there is no predeifned `call_waitfors` for the class and it does not defines one either.
+    """
+    for base in class_parents:
         if issubclass(base,EventWaitforBase):
             break
     else:
         raise TypeError(f'`{cls.__name__} should be only the metaclass of `{EventWaitforBase.__name__}`.')
     
-    event_name = class_dict.get('__event_name__')
+    event_name = class_attributes.get('__event_name__')
     if event_name is None:
         event_name = class_name
     
     if event_name not in EVENTS.parsers:
-        raise ValueError(f'`{class_name}.__event_name__` is not set, or not set correctly.')
+        raise TypeError(f'`{class_name}.__event_name__` is not set, or not set correctly.')
     
-    if (class_dict.get('call_waitfors') is None):
+    if (class_attributes.get('call_waitfors') is None):
         try:
             call_waitfors = cls._call_waitfors[event_name]
         except KeyError:
             raise TypeError(f'The following event name: `{event_name!r}` has no auto `call_waitfor` added. Please define one.')
         
-        class_dict['call_waitfors'] = call_waitfors
+        class_attributes['call_waitfors'] = call_waitfors
         
         try:
-            call = class_dict.get('__call__')
+            call = class_attributes.get('__call__')
         except KeyError:
             call = None
         
         if (call is None) or (call is EventHandlerBase.__call__):
-            class_dict['__call__'] = call_waitfors
+            class_attributes['__call__'] = call_waitfors
     
-    return type.__new__(cls, class_name, class_bases, class_dict)
+    return type.__new__(cls, class_name, class_parents, class_attributes)
 
 EventWaitforMeta.__new__  = EventWaitforMeta__new__
 del EventWaitforMeta__new__
 
+READY_STATE_TIMEOUT = 2.0
+
 class ReadyState(object):
-    __slots__=('counter', 'guilds', 'last_guild', 'last_ready', 'waiter', )
-    def __init__(self,client,guild_datas):
-        self.waiter     = Future(KOKORO)
-        self.guilds     = []
-        self.counter    = guild_datas.__len__()
+    """
+    Client on login in fill up their `.ready_state` with ``Guild`` objects, which will have their members requested.
+    
+    Attributes
+    ----------
+    guild_left_counter : `int`
+        The amount of guild, what's data is expected to be receiveed.
+    ready_left_counter : `int`
+        The amount of ready events, for which the ready state should wait.
+    guilds : `list of ``Guild``
+        A list of guilds, which members will be requested
+    last_guild : `float`
+        The time when the last guild's data was received.
+    last_ready : `float`
+        The time when the last shard got a ready event.
+    wakeupper : `Future`
+        A Future what wakes up the `__await__` generator of the ready state.
+    """
+    __slots__ = ('guild_left_counter', 'ready_left_counter', 'guilds', 'last_guild', 'last_ready', 'wakeupper', )
+    def __init__(self, client, guild_datas):
+        """
+        Creates a ready state.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The parent client.
+        guild_datas : `list` of `Any`
+            Received guilds' datas.
+        """
+        self.wakeupper = Future(KOKORO)
+        self.guilds = []
+        self.guild_left_counter = len(guild_datas)
+        
+        ready_left_counter = client.shard_count
+        if ready_left_counter < 2:
+            ready_left_counter = 0
+        else:
+            ready_left_counter -=1
+        self.ready_left_counter = ready_left_counter
+        
         now=monotonic()
         self.last_guild = now
-        if client.shard_count<2:
-            now=now-1.0
         self.last_ready = now
     
-    def shard_ready(self,guild_datas):
-        self.last_ready = monotonic()
-        self.counter   += guild_datas.__len__()
+    def shard_ready(self, guild_datas):
+        """
+        Sets the ready state's `.last_ready` to the current time and increases it's `.guild_left_counter` by the
+        length of the given data.
         
+        Parameters
+        ----------
+        guild_datas : `list` of `Any`
+            Received guild datas.
+        """
+        self.last_ready = monotonic()
+        self.ready_left_counter -=1
+        self.guild_left_counter += len(guild_datas)
+    
     if CACHE_PRESENCE:
-        def feed(self,guild):
+        def feed(self, guild):
             if guild.is_large:
                 self.guilds.append(guild)
             
-            counter=self.counter=self.counter+1
-            if counter:
-                self.last_guild=monotonic()
-                return
-            
-            last_ready=self.last_ready
-            self.last_guild=last_ready
-            waiter=self.waiter
-            waiter._loop.call_at(last_ready+1.0,waiter.__class__.set_result_if_pending,waiter,None)
+            self.last_guild = monotonic()
+            guild_left_counter = self.guild_left_counter = self.guild_left_counter-1
+            if (not guild_left_counter) and (not self.ready_left_counter):
+                self.wakeupper.set_result_if_pending(True)
     
     elif CACHE_USER:
-        def feed(self,guild):
+        def feed(self, guild):
             self.guilds.append(guild)
             
-            counter=self.counter=self.counter+1
-            if counter:
-                self.last_guild=monotonic()
-                return
-            
-            last_ready=self.last_ready
-            self.last_guild=last_ready
-            waiter=self.waiter
-            waiter._loop.call_at(last_ready+1.0,waiter.__class__.set_result_if_pending,waiter,None)
-                
+            self.last_guild = monotonic()
+            guild_left_counter = self.guild_left_counter = self.guild_left_counter-1
+            if (not guild_left_counter) and (not self.ready_left_counter):
+                self.wakeupper.set_result_if_pending(True)
+    
     else:
-        def feed(self,guild):
-            counter=self.counter=self.counter+1
-            if counter:
-                self.last_guild=monotonic()
-                return
-            
-            last_ready=self.last_ready
-            self.last_guild=last_ready
-            waiter=self.waiter
-            waiter._loop.call_at(last_ready+1.0,waiter.__class__.set_result_if_pending,waiter,None)
+        def feed(self, guild):
+            self.last_guild = monotonic()
+            guild_left_counter = self.guild_left_counter = self.guild_left_counter-1
+            if (not guild_left_counter) and (not self.ready_left_counter):
+                self.wakeupper.set_result_if_pending(True)
+    
+    if (shard_ready.__doc__ is not None):
+        feed.__doc__ = (
+        """
+        Feeds the given `guild` to the ready state. Sets the last received guild's time to the current time and ends
+        the ready state if there are no more guilds to receive.
+        
+        Parameters
+        ----------
+        guild : ``Guild``
+        """)
     
     def __iter__(self):
-        waiter=self.waiter
-        last_guild=self.last_guild
+        """
+        Waits till the ready state receives all of it's shards and guilds, or till timeout occures.
+        """
+        wakeupper = self.wakeupper
+        
+        last_guild = self.last_guild
+        last_shard = self.last_ready
+        if last_guild > last_shard:
+            last_wakeup = last_guild
+        else:
+            last_wakeup = last_shard
         
         while True:
+            wakeupper._loop.call_at(last_wakeup+READY_STATE_TIMEOUT, wakeupper.__class__.set_result_if_pending, wakeupper, False)
+            last = yield from wakeupper
+            if last:
+                break
             
-            waiter._loop.call_at(last_guild+1.0,waiter.__class__.set_result_if_pending,waiter,None)
-            yield from waiter
-            waiter.clear()
+            wakeupper.clear()
             
-            new_guild=self.last_guild
-            if new_guild>last_guild:
-                last_guild=new_guild
-                continue
+            last_guild = self.last_guild
+            last_shard = self.last_ready
+            if last_guild > last_shard:
+                next_wakeup = last_guild
+            else:
+                next_wakeup = last_shard
             
-            break
+            if next_wakeup == last_wakeup:
+                break
+            
+            last_wakeup = next_wakeup
+            continue
     
     __await__=__iter__
 
@@ -4399,12 +4847,35 @@ class ChunkWaiter(EventHandlerBase):
     
     # Interact directly with `self.waiters` instead.
     def __setevent__(self, waiter, nonce):
-        pass
+        """
+        Raises
+        ------
+        RuntimeError
+            Interact with self.waiters instead.
+        """
+        raise RuntimeError('Interact with self.waiters instead.')
     
     def __delevent__(self, waiter, nonce):
-        pass
+        """
+        Raises
+        ------
+        RuntimeError
+            Interact with self.waiters instead.
+        """
+        raise RuntimeError('Interact with self.waiters instead.')
     
     async def __call__(self, client, event):
+        """
+        Ensures that the chunk waiter for the specifed nonce is called and if it returns `True` it is removed from the
+        waiters.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The cleint, who received the respective dispatch event.
+        event : ``GuildUserChunkEvent``
+            The received guild user chunk event.
+        """
         nonce = event.nonce
         if nonce is None:
             return
@@ -4419,11 +4890,23 @@ class ChunkWaiter(EventHandlerBase):
             del waiters[nonce]
 
 
-async def default_error_event(client,event_name,err):
+async def default_error_event(client, name, err):
+    """
+    Defaults error event for client. Renders the given exception to `sys.stderr`.
+    
+    Parameters
+    ----------
+    client : ``client``
+        The client who caught the error.
+    name : `str`
+        Identificator name of the palce where the error occured.
+    err : `Any`
+        The caught exception. Can be given as non `BaseException` instance as well.
+    """
     extracted=[
         client.full_name,
         ' ignores occurred Exception at ',
-        event_name,
+        name,
         '\n'
             ]
     
@@ -4431,26 +4914,43 @@ async def default_error_event(client,event_name,err):
         await KOKORO.render_exc_async(err,extracted)
         return
     
-    if type(err) is str:
-        extracted.append(err)
-    else:
-        extracted.append(err.__repr__())
+    if not isinstance(err,str):
+        err=repr(err)
+    extracted.append(err)
     
     sys.stderr.write(''.join(extracted))
 
 class asynclist(list):
+    """
+    Container used by parsers to call more events and by waitfor events to call more waiters.
+    """
     __slots__ = ('_attribute_cache')
     
-    def __init__(self,iterable=None):
-        self._attribute_cache={}
-        if iterable is not None:
-            list.extend(self,iterable)
+    def __init__(self, iterable=None):
+        """
+        Creates a new asynclist from the given iterable.
+        
+        Parameters
+        ----------
+        iterable : `iterable`, Optional
+        """
+        if (iterable is not None):
+            list.extend(self, iterable)
     
-    async def __call__(self,*args):
+    async def __call__(self, *args):
+        """
+        Ensures the contained async callables on the client's loop.
+        
+        Parameters
+        ----------
+        *args : Additional position arguments
+            Arguments to call with the contained async callables.
+        """
         for coro in self:
             Task(coro(*args), KOKORO)
     
     def __repr__(self):
+        """Returns the asynclist's representation."""
         result = [
             self.__class__.__name__,
             '([']
@@ -4472,50 +4972,480 @@ class asynclist(list):
         return ''.join(result)
         
     def __getattr__(self, name):
-        if not isinstance(name,str):
-            raise TypeError(f'attribute name must be string, not `{type(name).__name__}`')
-        
-        attribute = self._attribute_cache.get(name,_spaceholder)
-        if attribute is not _spaceholder:
-            return attribute
+        """Gets the given attribute from the elements of the asynclist."""
+        if not isinstance(name, str):
+            raise TypeError(f'Attribute name must be string, not `{type(name).__name__}`.')
         
         for coro in self:
             attribute = getattr(coro,name,_spaceholder)
             if attribute is _spaceholder:
                 continue
             
-            self._attribute_cache[name]=attribute
             return attribute
         
-        raise AttributeError(f'`{self.__class__.__name__}` object has no attribte `{name}`')
-    
-    def __delitem__(self,index):
-        list.__delitem__(self,index)
-        self._attribute_cache.clear()
-    
-    def clear(self):
-        list.clear(self)
-        self._attribute_cache.clear()
-    
-    def append(self,object_):
-        list.append(self,object_)
-        self._attribute_cache.clear()
-    
-    def extend(self,iterable):
-        self._attribute_cache.clear()
-        list.extend(self,iterable)
-    
-    def insert(self,index,object_):
-        list.insert(self,index,object_)
-        self._attribute_cache.clear()
+        raise AttributeError(f'`{self.__class__.__name__}` object has no attribte `{name}`.')
     
 async def DEFAULT_EVENT(*args):
+    """
+    Default event handler what is set under events if there is no specified event handler to use.
+    
+    Parameters
+    ----------
+    *args : Positional arguments
+    """
     pass
     
 class EventDescriptor(object):
+    """
+    After a client gets a dispatch event from Discord, it's parser might ensure an event. These events are stored
+    inside of a ``EventDescriptor`` and can be accessed through `client.events`.
+    
+    Each added event should be an async callable accepting a predifind amount of positional arguments.
+    
+    Attributes
+    ----------
+    client_reference : `WeakReferer`
+        Weak reference to the parent client to avoid reference loops.
+    
+    Additonal event Attributes
+    ----------------
+    channel_create(client: Client, channel: ChannelBase)
+        Called when a channel is created.
+        
+        > At hata wrapper this event is called only the first time when a private (or group) channel is created.
+    
+    channel_delete(client: Client, channel: ChannelBase)
+        Called when a channel is deleted.
+    
+    channel_edit(client: Client, channel: Channel, old_attributes: dict)
+        Called when a channel is edited. The passed `old_attributes` argument contains the channel's overwritten
+        attributes in `attribute-name` - `old-value` relation.
+        
+        Every item in `old_attributes` is optional and it's items can be any of the following:
+        
+        +---------------+---------------------------------------+
+        | Keys          | Values                                |
+        +===============+=======================================+
+        | bitrate       | `int`                                 |
+        +---------------+---------------------------------------+
+        | category      | ``ChannelCategory`` or ``Guild``      |
+        +---------------+---------------------------------------+
+        | icon          | ``Icon``                              |
+        +---------------+---------------------------------------+
+        | name          | `str`                                 |
+        +---------------+---------------------------------------+
+        | nsfw          | `bool`                                |
+        +---------------+---------------------------------------+
+        | overwrites    | `list` of ``PermOW``                  |
+        +---------------+---------------------------------------+
+        | owner         | ``User`` or ``Client``                |
+        +---------------+---------------------------------------+
+        | position      | `int`                                 |
+        +---------------+---------------------------------------+
+        | slowmode      | `int`                                 |
+        +---------------+---------------------------------------+
+        | topic         | `str`                                 |
+        +---------------+---------------------------------------+
+        | type          | `int`                                 |
+        +---------------+---------------------------------------+
+        | user_limit    | `int`                                 |
+        +---------------+---------------------------------------+
+        | users         | `list` of (``User`` or ``Client``)    |
+        +---------------+---------------------------------------+
+    
+    channel_group_user_add(client: Client, channel: ChannelGroup, user: UserBase):
+        Called when a user is added to a group channel.
+    
+    channel_group_user_delete(client: Client, channel: ChanneGroup, user: UserBase):
+        Called when a user is removed from a group channel.
+    
+    channel_pin_update(client: Client, channel: ChannelTextBase):
+        Called when a channel's pins are updated.
+    
+    client_edit(client: Client, old_attributes: dict):
+        Called when the client is edited. The passed `old_attributes` argument contains the client's overwritten
+        attributes in `attribute-name` - `old-value` relation.
+        
+        Every item in `old_attributes` is optional and it's items can be any of the following:
+        
+        +-----------------------+-------------------+
+        | Keys                  | Values            |
+        +=======================+===================+
+        | avatar                | ``Icon``          |
+        +-----------------------+-------------------+
+        | discriminator         | `int`             |
+        +-----------------------+-------------------+
+        | email                 | `str`             |
+        +-----------------------+-------------------+
+        | flags                 | ``UserFlag``      |
+        +-----------------------+-------------------+
+        | locale                | `str              |
+        +-----------------------+-------------------+
+        | mfa                   | `bool`            |
+        +-----------------------+-------------------+
+        | name                  | `str              |
+        +-----------------------+-------------------+
+        | premium_type          | ``PremiumType``   |
+        +-----------------------+-------------------+
+        | verified              | `bool`            |
+        +-----------------------+-------------------+
+    
+    embed_update(client: Client, message: Message, change_state: int):
+        Called when a mesasge is not edited, only it's embeds are updated.
+        
+        Possible `change_state` values:
+        
+        +---------------------------+-------+
+        | Respective name           | Value |
+        +===========================+=======+
+        | EMBED_UPDATE_NONE         | 0     |
+        +---------------------------+-------+
+        | EMBED_UPDATE_SIZE_UPDATE  | 1     |
+        +---------------------------+-------+
+        | EMBED_UPDATE_EMBED_ADD    | 2     |
+        +---------------------------+-------+
+        | EMBED_UPDATE_EMBED_REMOVE | 3     |
+        +---------------------------+-------+
+        
+        > At the case of `EMBED_UPDATE_NONE` the event is of cource not called.
+    
+    emoji_create(client: Client, emoji: Emoji):
+        Called when an emoji is created at a guild.
+    
+    emoji_delete(client: Client, emoji: Emoji, guild: Guild):
+        Called when an emoji is deleted.
+        
+        > Deleted emoji's `.guild` attribute is set to `None`.
+        
+    emoji_edit(client : Client, emoji: Emoji, old_attributes: dict):
+        Called when an emoji is edited. The passed `old_attributes` argument contains the emoji's overwritten
+        attributes in `attribute-name` - `old-value` relation.
+        
+        Every item in `old_attributes` is optional and it's items can be any of the following:
+        
+        +-------------------+-------------------------------+
+        | Keys              | Values                        |
+        +===================+===============================+
+        | animated          | `bool`                        |
+        +-------------------+-------------------------------+
+        | available         | `bool`                        |
+        +-------------------+-------------------------------+
+        | managed           | `bool`                        |
+        +-------------------+-------------------------------+
+        | name              | `int`                         |
+        +-------------------+-------------------------------+
+        | require_colons    | `bool`                        |
+        +-------------------+-------------------------------+
+        | roles             | `None` or `set` of ``Role``   |
+        +-------------------+-------------------------------+
+    
+    error(client: Client, name: str, err: Any):
+        Called when an unexpected error happens. Mostly the user itself should define where it is called, because
+        it is not Discord event bound, but an internal event.
+        
+        The `name` argument should be a `str` what tell where the error occured, and `err` should be a `BaseException`
+        instance or an error message (can be other as type `str` as well.)
+        
+        This event has a default handler called ``default_error_event``, what writes an error message to `sys.stderr`.
+    
+    gift_update(client: Client, gift: Gift):
+        Called when a gift code is sent to a channel.
+    
+    guild_ban_add(client: Client, guild:Guild, user:UseBase):
+        Called when a user is banned from a guild.
+    
+    guild_ban_delete(client: Client, guild: Guild, user:UseBase):
+        Called when a user is unbanned at a guild.
+    
+    guild_create(client: Client, guild: Guild):
+        Called when a client joins or creates a guild.
+    
+    guild_delete(client: Client, guild: Guild, profile: GuildProfile):
+        Called when the guild is deleted or just the client left (kicked or banned as well) from it. The `profile`
+        argument is the client's respective guild profile for the guild.
+    
+    guild_edit(client: Client, guild: Guild, old_attributes: dict):
+        Called when a guild is edited. The passed `old_attributes` argument contains the guild's overwritten attributes
+        in `attribute-name` - `old-value` relation.
+        
+        Every item in `old_attributes` is optional and it's items can be any of the following:
+        
+        +---------------------------+-------------------------------+
+        | Keys                      | Values                        |
+        +===========================+===============================+
+        | afk_channel               | `None` or ``ChannelVoice`     |
+        +---------------------------+-------------------------------+
+        | afk_timeout               | `int`                         |
+        +---------------------------+-------------------------------+
+        | available                 | `bool`                        |
+        +---------------------------+-------------------------------+
+        | banner                    | ``Icon``                      |
+        +---------------------------+-------------------------------+
+        | booster_count             | `int`                         |
+        +---------------------------+-------------------------------+
+        | content_filter            | ``ContentFilterLevel``        |
+        +---------------------------+-------------------------------+
+        | description               | `None` or `str`               |
+        +---------------------------+-------------------------------+
+        | discovery_splash          | ``Icon``                      |
+        +---------------------------+-------------------------------+
+        | embed_channel             | `None` or ``ChannelText``     |
+        +---------------------------+-------------------------------+
+        | embed_enabled             | `bool`                        |
+        +---------------------------+-------------------------------+
+        | features                  | `list` of ``GuildFeature``    |
+        +---------------------------+-------------------------------+
+        | icon                      | ``Icon``                      |
+        +---------------------------+-------------------------------+
+        | invite_splash             | ``Icon``                      |
+        +---------------------------+-------------------------------+
+        | max_presences             | `int`                         |
+        +---------------------------+-------------------------------+
+        | max_users                 | `int`                         |
+        +---------------------------+-------------------------------+
+        | max_video_channel_users   | `int`                         |
+        +---------------------------+-------------------------------+
+        | message_notification      | ``MessageNotificationLevel``  |
+        +---------------------------+-------------------------------+
+        | mfa                       | ``MFA``                       |
+        +---------------------------+-------------------------------+
+        | name                      | `str`                         |
+        +---------------------------+-------------------------------+
+        | owner                     | ``User`` or ``Client``        |
+        +---------------------------+-------------------------------+
+        | preferred_locale          | `str`                         |
+        +---------------------------+-------------------------------+
+        | premium_tier              | `int`                         |
+        +---------------------------+-------------------------------+
+        | public_updates_channel    | `None` or ``ChannelText``     |
+        +---------------------------+-------------------------------+
+        | region                    | ``VoiceRegion``               |
+        +---------------------------+-------------------------------+
+        | rules_channel             | `None` or ``ChannelText``     |
+        +---------------------------+-------------------------------+
+        | system_channel            | `None` or ``ChannelText``     |
+        +---------------------------+-------------------------------+
+        | system_channel_flags      | ``SystemChannelFlag``         |
+        +---------------------------+-------------------------------+
+        | vanity_code               | `None` or `str`               |
+        +---------------------------+-------------------------------+
+        | verification_level        | ``VerificationLevel``         |
+        +---------------------------+-------------------------------+
+        | widget_channel            | `None` or ``ChannelText``     |
+        +---------------------------+-------------------------------+
+        | widget_enabled            | `bool`                        |
+        +---------------------------+-------------------------------+
+    
+    guild_user_add(client: Client, guild: Guild, user: UserBase):
+        Called when a user jois a guild.
+    
+    guild_user_chunk(client: Client, event: GuildUserChunkEvent):
+        Called when a client receives a chunk of users from Discord requested by through it's gateway.
+        
+        The event has a default handler called ``ChunkWaiter``.
+    
+    guild_user_delete(client: Client, guild: Guild, user: UserBase, profile: GuildProfile):
+        Called when a user left (kicked or banned counts as well) from a guild. The `profile` argument is the user's
+        respective guild profile for the guild.
+    
+    integration_update(client, Client, guild: Guild):
+        Called when an ``Integration`` of a guild is updated.
+        
+        > No integration data is included with the received dispatch event, so it cannot be passed to the event
+        > handler either.
+    
+    invite_create(client: Client, invite: Invite):
+        Called when an invite is created  at a guild.
+    
+    invite_delete(client: Client, invite: Invite):
+        Called when an invite is deleted at a guild.
+    
+    message_create(client: Client, message: Message):
+        Called when a message is sent to any of the client's text channels.
+    
+    message_delete(client: Client, message: Message):
+        Called when a loaded message is deleted.
+    
+    message_edit(client: Client, message: Message, old_attributes: dict):
+        Called when a loaded message is edited. The passed `old_attributes` argument contains the message's overwritten
+        attributes in `attribute-name` - `old-value` relation.
+        
+        Every item in `old_attributes` is optional and it's items can be any of the following:
+        
+        +-------------------+-----------------------------------------------------------------------+
+        | Keys              | Values                                                                |
+        +===================+=======================================================================+
+        | activity          | `None` or ``MessageActivity``                                         |
+        +-------------------+-----------------------------------------------------------------------+
+        | application       | `None` or ``MessageApplication``                                      |
+        +-------------------+-----------------------------------------------------------------------+
+        | attachments       | `None` or (`list` of ``Attachment``)                                  |
+        +-------------------+-----------------------------------------------------------------------+
+        | content           | `str                                                                  |
+        +-------------------+-----------------------------------------------------------------------+
+        | cross_mentions    | `None` or (`list` of (``ChannelBase`` or ``UnknownCrossMention``))    |
+        +-------------------+-----------------------------------------------------------------------+
+        | edited            | `None`  or `datetime`                                                 |
+        +-------------------+-----------------------------------------------------------------------+
+        | embeds            | `None`  or `(list` of ``EmbedCore``)                                  |
+        +-------------------+-----------------------------------------------------------------------+
+        | flags             | `UserFlag`                                                            |
+        +-------------------+-----------------------------------------------------------------------+
+        | mention_everyone  | `bool`                                                                |
+        +-------------------+-----------------------------------------------------------------------+
+        | pinned            | `bool`                                                                |
+        +-------------------+-----------------------------------------------------------------------+
+        | user_mentions     | `None` or (`list` of (``User`` or ``Client``))                        |
+        +-------------------+-----------------------------------------------------------------------+
+        | role_mentions     | `None` or (`list` of ``Role``)                                        |
+        +-------------------+-----------------------------------------------------------------------+
+        
+        A special case is if a message is (un)pinned or (un)suppressed, because then the `old_attributes` argument is
+        not going to contain `edited`, only `pinned` or `flags`. If the embeds are (un)suppressed of the message, then
+        `old_attributes` might contain also `embeds`.
+    
+    reaction_add(client: Client, message: Message, emoji: Emoji, user: User):
+        Called when a user reacts on a message with the given emoji.
+    
+    reaction_clear(client: Client, message: Message, old_reactions: reaction_mapping):
+        Called when the reactions of a message are cleared. The passed `old_reactions` argument are the old reactions
+        of the message.
+    
+    reaction_delete(client: Client, message: Message, emoji: Emoji, user: UserBase):
+        Called when a user removes it's reaction from a message.
+    
+    reaction_delete_emoji(client: Client, message: Message, users: reaction_mapping_line):
+        Called when all the reactions of a specified emoji are removed from a message. The passed `users` argument
+        are the old reacter users of the given emoji.
+    
+    ready(client: Client):
+        Called when the client finishes logging in. The event might be called more times, because the clients might
+        dis- and reconnect.
+    
+    relationship_add(client: Client, new_relationship: Relationship):
+        Called when the client gets a new relationship independetly from it's type.
+    
+    relationship_change(client: Client, old_relationship: Relationship, new_relationship: Relationship):
+        Called when one of the client's relationships change.
+    
+    relationship_delete(client: Client, old_relationship: Relationship):
+        Called when a relationship of a client is removed.
+    
+    role_create(client: Client, role: Role):
+        Called whne a role is created at a guild.
+    
+    role_delete(client: Client, role: Role, guild: Guild):
+        Called when a role is deleted from a guild.
+        
+        > Deleted role's `.guild` attrbiute is set as `None`.
+    
+    typing(client: Client, channel: ChannelTextBase, user: UserBase, timestamp: datetime):
+        Called when a user is typing at a channel. The `timestamp` argument represents when the typing started.
+        
+        > However a typing requests stands for 8 seconds, but the official Discord client usually just spams it.
+    
+    user_edit(client: Client, user: User, old_attributes: dict):
+        Called when a user is edited This event not includes guild profile changes. The passed `old_attributes`
+        argument contains the message's overwritten attributes in `attribute-name` - `old-value` relation.
+        
+        Every item in `old_attributes` is optional and it's items can be any of the following:
+        
+        +---------------+---------------+
+        | Keys          | Values        |
+        +===============+===============+
+        | avatar        | ``Icon``      |
+        +---------------+---------------+
+        | discriminator | `int          |
+        +---------------+---------------+
+        | flags         | ``UserFlag``  |
+        +---------------+---------------+
+        | name          | `str`         |
+        +---------------+---------------+
+    
+    user_presence_update(client: Client, user: UserBase, old_attributes: dict):
+        Called when a user's presence is updated.
+        
+        The passed `old_attributes` argument contain the user's changed presence related attributes in `attribute-name`
+        - `old-value` relation. An exception from this is `activities`. If an activity is not removed, but updated, then
+        it will show up as an ``ActivityChange`` instance.
+        
+        +---------------+-------------------------------------------------------+
+        | Keys          | Values                                                |
+        +===============+=======================================================+
+        | activities    | `list` of (``ActivityBase`` or ``ActivityChange``)    |
+        +---------------+-------------------------------------------------------+
+        | status        | ``Status``                                            |
+        +---------------+-------------------------------------------------------+
+        | statuses      | `dict` of (`str`, `str`) items                        |
+        +---------------+-------------------------------------------------------+
+        
+    user_profile_edit(client : Client, user: UserBase, guild: Guild, old_attributes: dict):
+        Called when a user's ``GuildProfile`` is updated. The passed `old_attributes` argument contains the message's
+        overwritten attributes in `attribute-name` - `old-value` relation.
+        
+        Every item in `old_attributes` is optional and it's items can be any of the following:
+        
+        +-------------------+-----------------------+
+        | Keys              | Values                |
+        +===================+=======================+
+        | boosts_since      | `None` or `datetime`  |
+        +-------------------+-----------------------+
+        | nick              | `None` or `str`       |
+        +-----------------------+-------------------+
+        | roles             | `list` of ``Role``    |
+        +-------------------+-----------------------+
+    
+    voice_state_update(client: Client, state: VoiceState, action: str, old_attributes: Union[None, dict]):
+        Called when a voice state is updated inside of a ``ChannelVoice``.
+        
+        The `action` argument can be any of the following:
+        
+        +-------------------+-------+
+        | Respective name   | Value |
+        +===================+=======+
+        | leave             | `'l'` |
+        +-------------------+-------+
+        | join              | `'j`' |
+        +-------------------+-------+
+        | update            | `'u'` |
+        +-------------------+-------+
+    
+        If `action` is given as `'u'`, then the `old_attributes` argument will be given as a `dict` with the voice
+        state's updated attributes within `attribute-name` - `old-attribute` relation.
+        
+        Every item in `old_attributes` is optional and they can be the following:
+        
+        +---------------+-------------------+
+        | Keys          | Values            |
+        +===============+===================+
+        | channel       | ``ChannelVoice``  |
+        +---------------+-------------------+
+        | deaf          | `str`             |
+        +---------------+-------------------+
+        | mute          | `bool`            |
+        +---------------+-------------------+
+        | self_deaf     | `bool`            |
+        +---------------+-------------------+
+        | self_mute     | `bool`            |
+        +---------------+-------------------+
+        | self_stream   | `bool`            |
+        +---------------+-------------------+
+        | self_video    | `bool`            |
+        +---------------+-------------------+
+    
+    webhook_update(client: Client, channel: ChannelGuildBase):
+        Called when a webhook of a channel is updated. Discord not provides further details tho.
+    """
     __slots__=('client_reference',*sorted(EVENTS.defaults))
     
-    def __init__(self,client):
+    def __init__(self, client):
+        """
+        Creates an ``EventDescriptor`` for the given client.
+        
+        Parameters
+        ----------
+        client : ``Client``
+        """
         client_reference=WeakReferer(client)
         object.__setattr__(self,'client_reference',client_reference)
         for name in EVENTS.defaults:
@@ -4523,23 +5453,36 @@ class EventDescriptor(object):
         object.__setattr__(self,'error',default_error_event)
         object.__setattr__(self,'guild_user_chunk',ChunkWaiter())
     
-    def __call__(self,func=None,name=None,pass_to_handler=False,passed_name=None,overwrite=False):
-        if func is None:
-            return self._wrapper(self,(name,pass_to_handler,passed_name),)
+    def __call__(self, func=None, name=None, overwrite=False):
+        """
+        Adds the given `func` to the event descriptor as en event handler.
         
-        if pass_to_handler:
-            if name is None:
-                raise ValueError('\'name\' can not be None if `pass_to_handler` is set to True')
-            
-            if passed_name is None:
-                passed_name=check_name(func,None)
-            
-            if (not passed_name.islower()):
-                passed_name=passed_name.lower()
-            
-            event_handler=getattr(self,name)
-            func=event_handler.__setevent__(func,passed_name)
-            return func
+        Parameters
+        ----------
+        func : `callable`, Optional
+            The async callable to add as an event handler.
+        name : `None` or `str`, Optional
+            A name to be used instead of the passed `func`'s when adding it.
+        overwrite : `bool`, Optional
+            Whether the passed `func` should overwrite the already added ones with the same name or extend them.
+        
+        Returns
+        -------
+        func : `callable`
+            The added callable or ``._wrapper` if `func` was not given.
+        
+        Raises
+        ------
+        AttributeError
+            Invalid event name.
+        TypeError
+            - If `func` was not given as callable.
+            - If `func` is not as async and neither cannot be converted to an async one.
+            - If `func` expects less or more non reserved positional arguments as `expected` is.
+            - If `name` was not passed as `None` or type `str`.
+        """
+        if func is None:
+            return self._wrapper(self, (name,overwrite))
         
         name=check_name(func,name)
         argcount=EVENTS.get_argcount(name)
@@ -4551,7 +5494,7 @@ class EventDescriptor(object):
         
         parser_names=EVENTS.parsers.get(name,None)
         if (parser_names is None):
-            raise AttributeError(f'Event name: \'{name}\' is invalid')
+            raise AttributeError(f'Event name: {name!r} is invalid.')
         
         if func is DEFAULT_EVENT:
             return func
@@ -4575,14 +5518,63 @@ class EventDescriptor(object):
         return func
     
     class _wrapper(object):
-        __slots__=('parent', 'args',)
-        def __init__(self,parent,args):
-            self.parent=parent
-            self.args=args
-        def __call__(self,func):
-            return self.parent(func,*self.args)
-
+        """
+        When the parent ``EventDescriptor`` is called without passing `func`, then a instance of this class is
+        returned to enable using ``EventDescriptor`` as a decorator with passing additional keyword arguments at the
+        same time.
+        
+        Attributes
+        ----------
+        parent : ``EventDescriptor``
+            The owner event descriptor.
+        args: `tuple` of `Any`
+            Additonal keyword arguments (in order) passed when the wrapper was created.
+        """
+        __slots__ = ('parent', 'args',)
+        def __init__(self, parent, args):
+            """
+            Creates an instance from the given parameters.
+            
+            Parameters
+            ----------
+            parent : ``EventDescriptor``
+                The owner event descriptor.
+            args: `tuple` of `Any`
+                Additonal keyword arguments (in order) passed when the wrapper was created.
+            """
+            self.parent = parent
+            self.args = args
+        
+        def __call__(self, func):
+            """
+            Adds the given `func` to the parent event handler with the stored up arguments.
+            
+            Parameters
+            ----------
+            func : `callable`
+                The event handler to add to the event descriptor.
+            
+            Returns
+            -------
+            func : `callable`
+                The added callable.
+            
+            Raises
+            ------
+            AttributeError
+                Invalid event name.
+            TypeError
+                - If `func` was not given as callable.
+                - If `func` is not as async and neither cannot be converted to an async one.
+                - If `func` expects less or more non reserved positional arguments as `expected` is.
+                - If `name` was not passed as `None` or type `str`.
+            """
+            return self.parent(func, *self.args)
+    
     def clear(self):
+        """
+        Cleares the ``EventDescriptor`` to the same state as it were just created.
+        """
         delete=type(self).__delattr__
         for name in EVENTS.defaults:
             delete(self,name)
@@ -4590,7 +5582,22 @@ class EventDescriptor(object):
         object.__setattr__(self,'error',default_error_event)
         object.__setattr__(self,'guild_user_chunk',ChunkWaiter())
     
-    def __setattr__(self,name,value):
+    def __setattr__(self, name, value):
+        """
+        Sets the given event handler under the speciifed event name. Updates the respective event's parser(s) if needed.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name of the event.
+        value : `callable`
+            The event handler.
+        
+        Raises
+        ------
+        AttributeError
+            The ``EventDescriptor`` has no attribute named as the given `name`.
+        """
         parser_names=EVENTS.parsers.get(name,None)
         if (parser_names is None):
             object.__setattr__(self,name,value)
@@ -4611,8 +5618,21 @@ class EventDescriptor(object):
                 parser_default.remove_mention(self.client_reference())
             continue
     
-    def __delattr__(self,name):
-        actual=getattr(self,name)
+    def __delattr__(self, name):
+        """
+        Removes the event with switching it to `DEFAULT_EVENT`, and updates the event's parser if needed.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name of the event.
+        
+        Raises
+        ------
+        AttributeError
+            The ``EventDescriptor`` has no attribute named as the given `name`.
+        """
+        actual=getattr(self, name)
         if actual is DEFAULT_EVENT:
             return
         
@@ -4628,12 +5648,30 @@ class EventDescriptor(object):
             parser_default.remove_mention(self.client_reference())
     
     def remove(self, func, name=None, by_type=False, count=-1):
-        if count==0:
+        """
+        Removes the given event handler from the the event descriptor.
+        
+        Parameters
+        ----------
+        func : `Any`
+            The event handler to remove.
+        name : `str`, Optional
+            The event's name.
+        by_type : `bool`, Optional
+            Whether `func` was given as the type of the real event handler. Defaults to `False`.
+        count : `int`, Optional
+            The maximal amount of the same events to remove. Negative numbers count as unlimited. Defaults to `-1`.
+        """
+        if count==0 or name=='client':
             return
         
         name=check_name(func,name)
         
-        actual=getattr(self,name)
+        try:
+            actual=getattr(self,name)
+        except AttributeError:
+            return
+        
         if actual is DEFAULT_EVENT:
             return
         
@@ -4679,7 +5717,17 @@ class EventDescriptor(object):
             parser_default.remove_mention(self.client_reference())
         return
 
-async def _with_error(client,task):
+async def _with_error(client, task):
+    """
+    Runs the given awaitable and if it raises, calls `client.events.error` with the exception.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The client, who's `client.events.error` will be called.
+    task : `awaitable`
+        The awaitable to run.
+    """
     try:
         await task
     except BaseException as err:

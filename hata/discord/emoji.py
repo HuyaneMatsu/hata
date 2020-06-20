@@ -474,7 +474,7 @@ class Emoji(DiscordEntity, immortal=True):
         
         Returns
         -------
-        old : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `Any`) items
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -495,28 +495,28 @@ class Emoji(DiscordEntity, immortal=True):
         | roles             | `None` or `set` of ``Role``   |
         +-------------------+-------------------------------+
         """
-        old={}
+        old_attributes = {}
         
         require_colons=data.get('require_colons',True)
         if self.require_colons!=require_colons:
-            old['require_colons']=self.require_colons
+            old_attributes['require_colons']=self.require_colons
             self.require_colons=require_colons
         
         managed=data.get('managed',False)
         if self.managed!=managed:
-            old['managed']=self.managed
+            old_attributes['managed']=self.managed
             self.managed=managed
         
         animated=data.get('animated',False)
         if self.animated!=animated:
-            old['animated']=self.animated
+            old_attributes['animated']=self.animated
             self.animated=animated
         
         name=data['name']
         if name is None:
             name=''
         if self.name!=name:
-            old['name']=self.name
+            old_attributes['name']=self.name
             self.name=name
         
         try:
@@ -535,14 +535,14 @@ class Emoji(DiscordEntity, immortal=True):
         
         if (self.roles is None):
             if (roles is not None):
-                old['roles']=None
+                old_attributes['roles']=None
                 self.roles=roles
         else:
             if (roles is None):
-                old['roles']=self.roles
+                old_attributes['roles']=self.roles
                 self.roles=None
             elif self.roles!=roles:
-                old['roles']=self.roles
+                old_attributes['roles']=self.roles
                 self.roles=roles
         
         try:
@@ -554,10 +554,10 @@ class Emoji(DiscordEntity, immortal=True):
         
         available=data.get('available',True)
         if self.available!=available:
-            old['available']=self.available
+            old_attributes['available']=self.available
             self.available=available
         
-        return old
+        return old_attributes
 
 class reaction_mapping_line(set):
     """

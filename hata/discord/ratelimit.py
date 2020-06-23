@@ -29,26 +29,84 @@ RATELIMIT_LIMIT         = Discord_hdrs.RATELIMIT_LIMIT
 #parsing time
 #email.utils.parsedate_to_datetime
 def parsedate_to_datetime(data):
+    """
+    Parsers header date to `datetime`.
+    
+    Parameters
+    ----------
+    data : `multidict_titled`
+
+    Returns
+    -------
+    date : `datetime`
+    """
     *dtuple, tz = _parsedate_tz(data)
     if tz is None:
-        return datetime(*dtuple[:6])
-    return datetime(*dtuple[:6],tzinfo=timezone(timedelta(seconds=tz)))
+        date = datetime(*dtuple[:6])
+    else:
+        date = datetime(*dtuple[:6],tzinfo=timezone(timedelta(seconds=tz)))
+    return date
 
 class global_lock_canceller:
-    __slots__=('session',)
-    def __init__(self,session):
-        self.session=session
-    def __call__(self,future):
-        self.session.global_lock=None
+    """
+    Cancels the global lock on a discord http session by setting it as `None` causing all the new requests to not be
+    globally locked.
+    
+    The already waiting requests are free'd up by the source `Future`, what's callback this is.
+    
+    Attributes
+    ----------
+    session : ``DiscordHTTPClient``
+        The globally locked http session.
+    """
+    __slots__ = ('session',)
+    def __init__(self, session):
+        """
+        Creates a new global lock canceller.
+        
+        Parameters
+        ----------
+        session : ``DiscordHTTPClient``
+            The globally locked http session.
+        """
+        self.session = session
+    
+    def __call__(self, future):
+        """
+        Cancels the global lock of the respective discord http session by setting it as `None`.
+        
+        Parameters
+        ----------
+        future : `Future`
+            The global locker of the session.
+        """
+        self.session.global_lock = None
 
-def ratelimit_global(session,retry_after):
-    future=session.global_lock
-    if future is not None:
-        return future
-    future=Future(session.loop)
-    future.add_done_callback(global_lock_canceller(session))
-    session.global_lock=future
-    future._loop.call_later(retry_after,future.__class__.set_result_if_pending,future,None)
+def ratelimit_global(session, retry_after):
+    """
+    Applies global lock on the given session.
+    
+    If the session is already globally locked, return it's waiter future.
+    
+    Parameters
+    ----------
+    session : ``DiscordHTTPClient``
+        The session to be globally locked.
+    retry_after : `float`
+        The time for what the session is locked for.
+    
+    Returns
+    -------
+    future : `Future`
+        Waiter future till the global lock is over.
+    """
+    future = session.global_lock
+    if (future is None):
+        future=Future(KOKORO)
+        future.add_done_callback(global_lock_canceller(session))
+        session.global_lock=future
+        KOKORO.call_later(retry_after,Future.set_result_if_pending,future,None)
+    
     return future
 
 GLOBALLY_LIMITED = 0x4000000000000000
@@ -64,12 +122,77 @@ LIMITER_GLOBAL      = 'global'
 LIMITER_UNLIMITED   = 'unlimited'
 
 class RatelimitGroup(object):
+    """
+    Represents a ratelimit group of one endpoint or of more endpoints sharing the same one.
+    
+    Attributes
+    ----------
+    group_id : `int`
+        The ratelimit group's group id is like it's identificator number, what makes each ratelimit group unique.
+    limiter : `str`
+        Identificator name by what is the ratelimit group limited.
+        
+        Possible values:
+        +-------------------+-------------------+
+        | Respective name   | Value             |
+        +===================+===================+
+        | LIMITER_CHANNEL   | `'channel_id'`    |
+        +-------------------+-------------------+
+        | LIMITER_GUILD     | `'guild_id'`      |
+        +-------------------+-------------------+
+        | LIMITER_WEBHOOK   | `'webhook_id'`    |
+        +-------------------+-------------------+
+        | LIMITER_GLOBAL    | `'global'`        |
+        +-------------------+-------------------+
+        | LIMITER_UNLIMITED | `'unlimited'`     |
+        +-------------------+-------------------+
+    
+    size : `int`
+        The maximal amount of requests, which can be executed per limiter till the respective ratelimit reset.
+        
+        Set as `0` by default, what indicates, that the size of the group is not known yet. At this case the
+        ratelimits are adjusted by the first request's response.
+        
+        Can be set as a negative number as well if the ratelimits are optimisitic, so the ratelimit group is not
+        limited yet, but this behaviour might change at the future. If a request is done through an optimistic
+        ratelimit group and no ratelimit information is received then the ratelimit size is descreased, increasing
+        the possible active requests, up to `MAXIMAL_UNLIMITED_PARARELLITY`'s value what is -50 by default. However
+        if ratelimit information is received, then the size of the group is corrected to positive. Note that the size
+        is descresed only by `1` each time, because Discord might not send ratelimit information even tho, an endpoint
+        is limited.
+    """
     __slots__ = ('group_id', 'limiter', 'size', )
     
     __auto_next_id = 105<<8
     __unlimited = None
     
     def __new__(cls, limiter = LIMITER_GLOBAL, optimistic=False):
+        """
+        Creates a new ratelimit group.
+        
+        Parameters
+        ----------
+        limiter : `str`, Optional
+            Identificator name by what is the ratelimit group limited. Defaults to `LIMITER_GLOBAL`.
+            
+            Possible values:
+            +-------------------+-------------------+
+            | Respective name   | Value             |
+            +===================+===================+
+            | LIMITER_CHANNEL   | `'channel_id'`    |
+            +-------------------+-------------------+
+            | LIMITER_GUILD     | `'guild_id'`      |
+            +-------------------+-------------------+
+            | LIMITER_WEBHOOK   | `'webhook_id'`    |
+            +-------------------+-------------------+
+            | LIMITER_GLOBAL    | `'global'`        |
+            +-------------------+-------------------+
+            | LIMITER_UNLIMITED | `'unlimited'`     |
+            +-------------------+-------------------+
+        
+        optimistic : `bool`, Optional
+            Whether teh ratelimit group is optimistic.
+        """
         self = object.__new__(cls)
         self.limiter = limiter
         self.size = (-1 if optimistic else 0)
@@ -80,6 +203,15 @@ class RatelimitGroup(object):
     
     @classmethod
     def unlimited(cls):
+        """
+        Creates a not limited ratelimit group.
+        
+        Uses ``.__unlimited`` to cache this instance, because it is enough to have only 1 unlimited one.
+        
+        Returns
+        -------
+        self : ``RatelimitGroup``
+        """
         self = cls.__unlimited
         if (self is not None):
             return self
@@ -93,9 +225,11 @@ class RatelimitGroup(object):
         return self
     
     def __hash__(self):
+        """Hash of a ratelimit group equals to it's group_id."""
         return self.group_id
     
     def __repr__(self):
+        """Returns the representation of the ratelimit group."""
         result = [
             '<',
             self.__class__.__name__,
@@ -118,14 +252,51 @@ class RatelimitGroup(object):
         return ''.join(result)
 
 class RatelimitUnit(object):
+    """
+    Represents a chained ratelimit unit storing how much request is already done till the next reset, what is
+    also stored by it.
+    
+    Attributes
+    ----------
+    allocates : `int`
+        The amount of done requests till next ratelimit reset.
+    drop : `float`
+        The time of the next ratelimit reset in monotonic time.
+    next : `None` or ``RatelimitUnit``
+        The next ratelimit unit on the chain. It can happen that requests are done between two reset and we would need
+        to store multiple ratelimit units and using a chain is still better than allocating a list every time.
+    """
     __slots__ = ('allocates', 'drop', 'next')
     
     def __init__(self, drop, allocates):
+        """
+        Creates a new ratelimit unit.
+        
+        Parameters
+        ----------
+        allocates : `int`
+            The amount of done requests till next ratelimit reset.
+        drop : `float`
+            The time of the next ratelimit reset in monotonic time.
+        """
         self.drop = drop
         self.allocates = allocates
         self.next = None
     
     def update_with(self, drop, allocates):
+        """
+        Updates the ratelimit unit with the given `drop` and `allocates` information.
+        
+        If the given `drop` is within `RATELIMIT_DROP_ROUND` (so 0.20s by default), then the two drop and allocate will
+        be merged, using the earlier `drop` value and summing the two `allocates`.
+        
+        Parameters
+        ----------
+        allocates : `int`
+            The amount of done requests till next ratelimit reset.
+        drop : `float`
+            The time of the next ratelimit reset in monotonic time.
+        """
         actual_drop = self.drop
         new_drop_max = drop+RATELIMIT_DROP_ROUND
         if new_drop_max < actual_drop:
@@ -179,6 +350,7 @@ class RatelimitUnit(object):
         return
         
     def __repr__(self):
+        """Returns the representation of the ratelimit unit."""
         result = [
             '<',
             self.__class__.__name__,

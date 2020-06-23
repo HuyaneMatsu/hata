@@ -9,7 +9,7 @@ from ..backend.exceptions import ConnectionClosed, WebSocketProtocolError, Inval
 
 from .client_core import KOKORO
 from .opus import OpusEncoder
-from .player import AudioPlayer, AudioSource, PCM_volume_transformer, PLAYER_DELAY
+from .player import AudioPlayer, AudioSource, PCMVolumeTransformer, PLAYER_DELAY
 from .reader import AudioReader
 from .gateway import DiscordGatewayVoice, SecretBox
 
@@ -68,22 +68,22 @@ class VoiceClient(object):
     #properties
     def _get_volume(self):
         return self._pref_volume
-
+    
     def _set_volume(self,value):
         if value<0.:
             value=0.
         elif value>2.:
             value=2.
         self._pref_volume=value
-
+        
         player=self.player
         if player is None:
             return
-
+        
         source=player.source
-        if isinstance(source,PCM_volume_transformer):
+        if isinstance(source,PCMVolumeTransformer):
             source.volume=self._pref_volume
-
+    
     volume=property(_get_volume,_set_volume)
     del _get_volume,_set_volume
 
@@ -133,7 +133,7 @@ class VoiceClient(object):
         if not isinstance(source,AudioSource):
             raise TypeError(f'Expected {AudioSource.__name__} instance, received {source}')
 
-        if isinstance(source,PCM_volume_transformer):
+        if isinstance(source,PCMVolumeTransformer):
             source.volume=self._pref_volume
 
         player=self.player
@@ -143,12 +143,12 @@ class VoiceClient(object):
             return True
 
         self.queue.append(source)
-        if source.downloaded:
-            if player.source.downloaded and player.source.title==source.title:
+        if source.TEMPORARY:
+            if player.source.TEMPORARY and player.source.title==source.title:
                 player.source.delete=None
             for index in range(len(self.queue)-2,-1,-1):
                 element=self.queue[index]
-                if element.downloaded and element.title==source.title:
+                if element.TEMPORARY and element.title==source.title:
                     element.delete=None
 
         return False

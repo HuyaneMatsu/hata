@@ -1,5 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('eventlist', 'EventHandlerBase', 'EventWaitforBase', 'IntentFlag', )
+__all__ = ('EventBase', 'EventHandlerBase', 'EventWaitforBase', 'GuildUserChunkEvent', 'IntentFlag',
+    'ReactionAddEvent', 'ReactionDeleteEvent', 'eventlist', )
 
 import sys, datetime
 from time import monotonic
@@ -21,7 +22,7 @@ from .others import Relationship, Gift
 from .guild import EMOJI_UPDATE_NEW, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, Guild
 from .emoji import PartialEmoji
 from .role import Role
-from .exceptions import DiscordException
+from .exceptions import DiscordException, ERROR_CODES
 from .invite import Invite
 from .message import EMBED_UPDATE_NONE
 
@@ -849,6 +850,28 @@ def guild_sync(client, data, parser_and_checker):
         return
     queue.append((client,data,parser_and_checker),)
 
+class EventBase(object):
+    """
+    Base class for events.
+    """
+    __slots__ = ()
+    
+    def __new__(cls, *args, **kwargs):
+        raise RuntimeError(f'Create {cls.__name__} with `object.__new__(cls)` and asign variables from outside.')
+    
+    def __repr__(self):
+        """Retrurns the event's representation."""
+        return f'<{self.__class__.__name__}>'
+    
+    def __len__(self):
+        """Helper for unpacking if needed."""
+        return 0
+    
+    def __iter__(self):
+        """Unpacks the event."""
+        return
+        yield # This is intentional. Python stuff... Do not ask, just accept.
+
 #we dont call ready from this function directly
 def READY(client,data):
     ready_state=client.ready_state
@@ -1146,6 +1169,103 @@ def MESSAGE_UPDATE__OPT_MC(client,data):
 PARSER_DEFAULTS('MESSAGE_UPDATE',MESSAGE_UPDATE__CAL_SC,MESSAGE_UPDATE__CAL_MC,MESSAGE_UPDATE__OPT_SC,MESSAGE_UPDATE__OPT_MC)
 del MESSAGE_UPDATE__CAL_SC, MESSAGE_UPDATE__CAL_MC, MESSAGE_UPDATE__OPT_SC, MESSAGE_UPDATE__OPT_MC
 
+class ReactionAddEvent(EventBase):
+    """
+    Represents a processed `MESSAGE_REACTION_ADD` dispatch event.
+    
+    Attributes
+    ----------
+    message : ``Message``
+        The message on what the reaction is added.
+    emoji : ``Emoji``
+        The emoji used as reaction.
+    user : ``User`` or ``Client``
+        The user who added the reaction.
+    
+    Class Attributes
+    ----------------
+    DELETE_REACTION_OK : `int` = `0`
+        Returned by ``.delete_reaction_with`` when the client has permission to execute the reaction remove.
+    DELETE_REACTION_PERM : `int` = `1`
+        Returned by ``.delete_reaction_with`` when the client has no permission to execute the reaction remove.
+    DELETE_REACTION_NOT_ADDED : `int` = `2`
+        Returned by ``.delete_reaction_with`` when the client has permission to execute the reaction remove, but
+        it cannot, because the reaction is not added on the respective message. Not applicable for
+        ``ReactionAddEvent``.
+    """
+    __slots__ = ('message', 'emoji', 'user')
+    
+    def __repr__(self):
+        """Returns the representation of the event."""
+        return (f'<{self.__class__.__name__} message={self.message!r}, emoji={self.emoji!r}, '
+            f'user={self.user.full_name!r}>')
+    
+    def __len__(self):
+        """Helper for unpacking if needed."""
+        return 3
+    
+    def __iter__(self):
+        """Unpacks the event."""
+        yield self.message
+        yield self.emoji
+        yield self.user
+    
+    def delete_reaction_with(self, client):
+        """
+        Removes the added reaction.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The client, who will execute the action.
+        
+        Returns
+        -------
+        result : `int`
+            The identificator number of the action what will be executed.
+            
+            Can be one of the following:
+            +-----------------------+-------+
+            | Respective name       | Value |
+            +=======================+=======+
+            | DELETE_REACTION_OK    | 0     |
+            +-----------------------+-------+
+            | DELETE_REACTION_PERM  | 1     |
+            +-----------------------+-------+
+        """
+        if self.message.channel.cached_permissions_for(client).can_manage_messages:
+            Task(_delete_reaction_with_task(self, client), KOKORO)
+            result = self.DELETE_REACTION_OK
+        else:
+            result = self.DELETE_REACTION_PERM
+        
+        return result
+    
+    DELETE_REACTION_OK = 0
+    DELETE_REACTION_PERM = 1
+    DELETE_REACTION_NOT_ADDED = 2
+    
+async def _delete_reaction_with_task(reaction_add_event, client):
+    try:
+        await client.reaction_delete(reaction_add_event.message, reaction_add_event.emoji, reaction_add_event.user)
+    except BaseException as err:
+        
+        if isinstance(err, ConnectionError):
+            # no internet
+            return
+        
+        if isinstance(err, DiscordException):
+            if err.code in (
+                    ERROR_CODES.unknown_message, # message deleted
+                    ERROR_CODES.unknown_channel, # channel deleted
+                    ERROR_CODES.invalid_access, # client removed
+                    ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                        ):
+                return
+        
+        await client.events.error(client, f'_delete_reaction_with_task called from {reaction_add_event!r}', err)
+        return
+
 def MESSAGE_REACTION_ADD__CAL_SC(client,data):
     message_id=int(data['message_id'])
     message=MESSAGES.get(message_id)
@@ -1157,7 +1277,12 @@ def MESSAGE_REACTION_ADD__CAL_SC(client,data):
     emoji=PartialEmoji(data['emoji'])
     message.reactions.add(emoji,user)
     
-    Task(client.events.reaction_add(client,message,emoji,user), KOKORO)
+    event = object.__new__(ReactionAddEvent)
+    event.message = message
+    event.emoji = emoji
+    event.user = user
+    
+    Task(client.events.reaction_add(client, event), KOKORO)
 
 def MESSAGE_REACTION_ADD__CAL_MC(client,data):
     message_id=int(data['message_id'])
@@ -1176,8 +1301,13 @@ def MESSAGE_REACTION_ADD__CAL_MC(client,data):
     emoji=PartialEmoji(data['emoji'])
     message.reactions.add(emoji,user)
     
+    event = object.__new__(ReactionAddEvent)
+    event.message = message
+    event.emoji = emoji
+    event.user = user
+    
     for client_ in clients:
-        Task(client_.events.reaction_add(client_,message,emoji,user), KOKORO)
+        Task(client_.events.reaction_add(client_, event), KOKORO)
 
 def MESSAGE_REACTION_ADD__OPT_SC(client,data):
     message_id=int(data['message_id'])
@@ -1219,6 +1349,7 @@ def MESSAGE_REACTION_REMOVE_ALL__CAL_SC(client,data):
         return
     
     message.reactions=type(old_reactions)(None)
+    
     Task(client.events.reaction_clear(client,message,old_reactions), KOKORO)
 
 def MESSAGE_REACTION_REMOVE_ALL__CAL_MC(client,data):
@@ -1264,6 +1395,64 @@ def MESSAGE_REACTION_REMOVE_ALL__OPT_MC(client,data):
 PARSER_DEFAULTS('MESSAGE_REACTION_REMOVE_ALL',MESSAGE_REACTION_REMOVE_ALL__CAL_SC,MESSAGE_REACTION_REMOVE_ALL__CAL_MC,MESSAGE_REACTION_REMOVE_ALL__OPT_SC,MESSAGE_REACTION_REMOVE_ALL__OPT_MC)
 del MESSAGE_REACTION_REMOVE_ALL__CAL_SC, MESSAGE_REACTION_REMOVE_ALL__CAL_MC, MESSAGE_REACTION_REMOVE_ALL__OPT_SC, MESSAGE_REACTION_REMOVE_ALL__OPT_MC
 
+
+class ReactionDeleteEvent(ReactionAddEvent):
+    """
+    Represents a processed `MESSAGE_REACTION_REMOVE` dispatch event.
+    
+    Attributes
+    ----------
+    message : ``Message``
+        The message from what the reaction was removed.
+    emoji : ``Emoji``
+        The removed emoji.
+    user : ``User`` or ``Client``
+        The user who's reaction was removed.
+    
+    Class Attributes
+    ----------------
+    DELETE_REACTION_OK : `int` = `0`
+        Returned by ``.delete_reaction_with`` when the client has permission to execute the reaction remove. Not
+        applicable on ``ReactionDeleteEvent``.
+    DELETE_REACTION_PERM : `int` = `1`
+        Returned by ``.delete_reaction_with`` when the client has no permission to execute the reaction remove.
+    DELETE_REACTION_NOT_ADDED : `int` = `2`
+        Returned by ``.delete_reaction_with`` when the client has permission to execute the reaction remove, but
+        it cannot, because the reaction is not added on the respective message.
+    """
+    __slots__ = ReactionAddEvent.__slots__
+    
+    def delete_reaction_with(self, client):
+        """
+        Removes the added reaction. Because the event is ``ReactionDeleteEvent``, it will not remvoe any reaction, but
+        only check the permissions.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The client, who will execute the action.
+        
+        Returns
+        -------
+        result : `int`
+            The identificator number of the action what will be executed.
+            
+            Can be one of the following:
+            +---------------------------+-------+
+            | Respective name           | Value |
+            +===========================+=======+
+            | DELETE_REACTION_PERM      | 1     |
+            +---------------------------+-------+
+            | DELETE_REACTION_NOT_ADDED | 2     |
+            +---------------------------+-------+
+        """
+        if self.message.channel.cached_permissions_for(client).can_manage_messages:
+            result = self.DELETE_REACTION_NOT_ADDED
+        else:
+            result = self.DELETE_REACTION_PERM
+        
+        return result
+
 def MESSAGE_REACTION_REMOVE__CAL_SC(client,data):
     message_id=int(data['message_id'])
     message=MESSAGES.get(message_id)
@@ -1275,7 +1464,12 @@ def MESSAGE_REACTION_REMOVE__CAL_SC(client,data):
     emoji=PartialEmoji(data['emoji'])
     message.reactions.remove(emoji,user)
     
-    Task(client.events.reaction_delete(client,message,emoji,user), KOKORO)
+    event = object.__new__(ReactionDeleteEvent)
+    event.message = message
+    event.emoji = emoji
+    event.user = user
+    
+    Task(client.events.reaction_delete(client,event), KOKORO)
 
 def MESSAGE_REACTION_REMOVE__CAL_MC(client,data):
     message_id=int(data['message_id'])
@@ -1294,8 +1488,13 @@ def MESSAGE_REACTION_REMOVE__CAL_MC(client,data):
     emoji=PartialEmoji(data['emoji'])
     message.reactions.remove(emoji,user)
     
+    event = object.__new__(ReactionDeleteEvent)
+    event.message = message
+    event.emoji = emoji
+    event.user = user
+    
     for client_ in clients:
-        Task(client_.events.reaction_delete(client_,message,emoji,user),KOKORO)
+        Task(client_.events.reaction_delete(client_, event),KOKORO)
 
 def MESSAGE_REACTION_REMOVE__OPT_SC(client,data):
     message_id=int(data['message_id'])
@@ -2400,7 +2599,7 @@ def GUILD_BAN_REMOVE__OPT(client,data):
 PARSER_DEFAULTS('GUILD_BAN_REMOVE',GUILD_BAN_REMOVE__CAL,GUILD_BAN_REMOVE__CAL,GUILD_BAN_REMOVE__OPT,GUILD_BAN_REMOVE__OPT)
 del GUILD_BAN_REMOVE__CAL, GUILD_BAN_REMOVE__OPT
 
-class GuildUserChunkEvent(object):
+class GuildUserChunkEvent(EventBase):
     """
     Represents a processed `GUILD_MEMBERS_CHUNK` dispatch event.
     
@@ -2422,6 +2621,18 @@ class GuildUserChunkEvent(object):
     def __repr__(self):
         """Returns the representation of the guild user chunk event."""
         return f'<{self.__class__.__name__} guild={self.guild}, users={len(self.users)}, nonce={self.nonce!r}, index={self.index}, count={self.count}>'
+    
+    def __len__(self):
+        """Helper for unpacking if needed."""
+        return 5
+    
+    def __iter__(self):
+        """Unpacks the guild user chunk event."""
+        yield self.guild
+        yield self.users
+        yield self.nonce
+        yield self.index
+        yield self.count
 
 if CACHE_PRESENCE:
     def GUILD_MEMBERS_CHUNK(client, data):
@@ -2443,7 +2654,7 @@ if CACHE_PRESENCE:
         else:
             guild._apply_presences(presence_datas)
         
-        event = GuildUserChunkEvent()
+        event = object.__new__(GuildUserChunkEvent)
         event.guild = guild
         event.users = users
         event.nonce = data.get('nonce')
@@ -2464,7 +2675,7 @@ else:
             user = User(user_data,guild)
             users.append(user)
         
-        event = GuildUserChunkEvent()
+        event = object.__new__(GuildUserChunkEvent)
         event.guild = guild
         event.users = users
         event.nonce = data.get('nonce')
@@ -3096,9 +3307,9 @@ EVENTS.add_default('message_create'             , 2 , 'MESSAGE_CREATE'          
 EVENTS.add_default('message_delete'             , 2 , ('MESSAGE_DELETE', 'MESSAGE_DELETE_BULK') , )
 EVENTS.add_default('message_edit'               , 3 , 'MESSAGE_UPDATE'                          , )
 EVENTS.add_default('embed_update'               , 3 , 'MESSAGE_UPDATE'                          , )
-EVENTS.add_default('reaction_add'               , 4 , 'MESSAGE_REACTION_ADD'                    , )
+EVENTS.add_default('reaction_add'               , 2 , 'MESSAGE_REACTION_ADD'                    , )
 EVENTS.add_default('reaction_clear'             , 3 , 'MESSAGE_REACTION_REMOVE_ALL'             , )
-EVENTS.add_default('reaction_delete'            , 4 , 'MESSAGE_REACTION_REMOVE'                 , )
+EVENTS.add_default('reaction_delete'            , 2 , 'MESSAGE_REACTION_REMOVE'                 , )
 EVENTS.add_default('reaction_delete_emoji'      , 4 , 'MESSAGE_REACTION_REMOVE_EMOJI'           , )
 EVENTS.add_default('user_edit'                  , 3 , 'PRESENCE_UPDATE'                         , )
 EVENTS.add_default('user_presence_update'       , 3 , 'PRESENCE_UPDATE'                         , )
@@ -4409,16 +4620,16 @@ class EventWaitforMeta(type):
     _call_waitfors['emoji_delete'] = _call_emoji_delete
     del _call_emoji_delete
     
-    async def _call_reaction_add(self, client, message, emoji, user):
-        args = (client, message, emoji, user)
-        self._run_waitfors_for(message, args)
+    async def _call_reaction_add(self, client, event):
+        args = (client, event)
+        self._run_waitfors_for(event.message, args)
     
     _call_waitfors['reaction_add'] = _call_reaction_add
     del _call_reaction_add
     
-    async def _call_reaction_delete(self, client, message, emoji, user):
-        args = (client, message, emoji, user)
-        self._run_waitfors_for(message, args)
+    async def _call_reaction_delete(self, client, event):
+        args = (client, event)
+        self._run_waitfors_for(event.message, args)
     
     _call_waitfors['reaction_delete'] = _call_reaction_delete
     del _call_reaction_delete
@@ -5304,14 +5515,14 @@ class EventDescriptor(object):
         not going to contain `edited`, only `pinned` or `flags`. If the embeds are (un)suppressed of the message, then
         `old_attributes` might contain also `embeds`.
     
-    reaction_add(client: Client, message: Message, emoji: Emoji, user: User):
+    reaction_add(client: Client, event: ReactionAddEvent):
         Called when a user reacts on a message with the given emoji.
     
     reaction_clear(client: Client, message: Message, old_reactions: reaction_mapping):
         Called when the reactions of a message are cleared. The passed `old_reactions` argument are the old reactions
         of the message.
     
-    reaction_delete(client: Client, message: Message, emoji: Emoji, user: UserBase):
+    reaction_delete(client: Client, event: ReactionDeleteEvent):
         Called when a user removes it's reaction from a message.
     
     reaction_delete_emoji(client: Client, message: Message, users: reaction_mapping_line):

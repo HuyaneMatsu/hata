@@ -102,14 +102,14 @@ class ChannelBase(DiscordEntity, immortal=True):
     
     Notes
     -----
-    Channels support weakreferencig.
+    Channels support weakreferencing.
     """
     INTERCHANGE = (0,)
     
     def __new__(cls, data, client=None, guild=None):
         """
-        Creates a channel from the channel data received from Discord. If the channel already exists and it is partial,
-        then updates it.
+        Creates a channel from the channel data received from Discord. If the channel already exists and if it is
+        partial, then updates it.
         
         Parameters
         ----------

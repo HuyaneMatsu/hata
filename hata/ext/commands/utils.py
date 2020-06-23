@@ -168,16 +168,17 @@ class Pagination(object):
         client.events.reaction_delete.append(message, self)
         return self
     
-    async def __call__(self, client, message, emoji, user):
-        if user.is_bot or (emoji not in self.EMOJIS):
+    async def __call__(self, client, event):
+        if event.user.is_bot:
             return
         
-        if self.channel.cached_permissions_for(client).can_manage_messages:
-            if not message.did_react(emoji,user):
-                return
-            
-            Task(self._reaction_delete(emoji,user),client.loop)
+        if (event.emoji not in self.EMOJIS):
+            return
         
+        if (event.delete_reaction_with(client) == event.DELETE_REACTION_NOT_ADDED):
+            return
+        
+        emoji = event.emoji
         task_flag=self.task_flag
         if task_flag!=GUI_STATE_READY:
             if task_flag==GUI_STATE_SWITCHING_PAGE:
@@ -200,7 +201,7 @@ class Pagination(object):
             if emoji is self.CANCEL:
                 self.task_flag=GUI_STATE_CANCELLED
                 try:
-                    await client.message_delete(message)
+                    await client.message_delete(self.message)
                 except BaseException as err:
                     self.cancel()
                     
@@ -244,7 +245,7 @@ class Pagination(object):
         self.task_flag=GUI_STATE_SWITCHING_PAGE
         
         try:
-            await client.message_edit(message,embed=self.pages[page])
+            await client.message_edit(self.message,embed=self.pages[page])
         except BaseException as err:
             self.task_flag=GUI_STATE_CANCELLED
             self.cancel()
@@ -270,7 +271,7 @@ class Pagination(object):
             self.cancel()
             
             try:
-                await client.message_delete(message)
+                await client.message_delete(self.message)
             except BaseException as err:
                 
                 if isinstance(err,ConnectionError):
@@ -375,28 +376,6 @@ class Pagination(object):
         result.append(')>')
         
         return ''.join(result)
-    
-    async def _reaction_delete(self,emoji,user):
-        client=self.client
-        try:
-            await client.reaction_delete(self.message,emoji,user)
-        except BaseException as err:
-            
-            if isinstance(err,ConnectionError):
-                # no internet
-                return
-            
-            if isinstance(err,DiscordException):
-                if err.code in (
-                        ERROR_CODES.unknown_message, # message deleted
-                        ERROR_CODES.unknown_channel, # channel deleted
-                        ERROR_CODES.invalid_access, # client removed
-                        ERROR_CODES.invalid_permissions, # permissions changed meanwhile
-                            ):
-                    return
-            
-            await client.events.error(client,f'{self!r}._reaction_delete',err)
-            return
 
 
 class ChooseMenu(object):
@@ -540,23 +519,23 @@ class ChooseMenu(object):
         embed.add_footer(f'Page {current_page}/{page_limit}, {start} - {end} / {limit}, selected: {selected+1}')
         return embed
     
-    async def __call__(self,client,message,emoji,user):
-        if user.is_bot or (emoji not in (self.EMOJIS if len(self.choices)>10 else self.EMOJIS_RESTRICTED)):
+    async def __call__(self,client,event):
+        if event.user.is_bot:
+            return
+        
+        if (event.emoji not in (self.EMOJIS if len(self.choices)>10 else self.EMOJIS_RESTRICTED)):
             return
         
         client=self.client
         message=self.message
         
-        if self.channel.cached_permissions_for(client).can_manage_messages:
-            if not message.did_react(emoji,user):
-                return
-            
-            Task(self._reaction_delete(emoji,user),client.loop)
+        if (event.delete_reaction_with(client) == event.DELETE_REACTION_NOT_ADDED):
+            return
         
         task_flag=self.task_flag
         if task_flag!=GUI_STATE_READY:
             if task_flag==GUI_STATE_SWITCHING_PAGE:
-                if emoji is self.CANCEL:
+                if event.emoji is self.CANCEL:
                     self.task_flag=GUI_STATE_CANCELLING
                 return
             
@@ -564,6 +543,7 @@ class ChooseMenu(object):
             return
         
         while True:
+            emoji = event.emoji
             if emoji is self.UP:
                 selected = self.selected-1
                 break
@@ -705,28 +685,6 @@ class ChooseMenu(object):
         self.task_flag=GUI_STATE_READY
         self.timeouter.set_timeout(self.timeout)
     
-    async def _reaction_delete(self,emoji,user):
-        client=self.client
-        try:
-            await client.reaction_delete(self.message,emoji,user)
-        except BaseException as err:
-            
-            if isinstance(err,ConnectionError):
-                # no internet
-                return
-            
-            if isinstance(err,DiscordException):
-                if err.code in (
-                        ERROR_CODES.unknown_message, # message deleted
-                        ERROR_CODES.unknown_channel, # channel deleted
-                        ERROR_CODES.invalid_access, # client removed
-                        ERROR_CODES.invalid_permissions, # permissions changed meanwhile
-                            ):
-                    return
-            
-            await client.events.error(client,f'{self!r}._reaction_delete',err)
-            return
-    
     async def _canceller(self,exception,):
         client=self.client
         message=self.message
@@ -835,13 +793,12 @@ class WaitAndContinue(object):
                 return
                 
             if len(args)==1:
-                self.future.set_result_if_pending(args[0],)
-            else:
-                self.future.set_result_if_pending(args,)
+                args=args[0]
         
         else:
             args=(*args,result,)
-            self.future.set_result_if_pending(args,)
+        
+        self.future.set_result_if_pending(args,)
         
         self.cancel()
         
@@ -871,14 +828,14 @@ class WaitAndContinue(object):
         
         return Task(canceller(self,None),self.future._loop)
 
-def wait_for_reaction(client,message,check,timeout):
-    future=Future(client.loop)
-    WaitAndContinue(future,check,message,client.events.reaction_add,timeout)
+def wait_for_reaction(client, message, check, timeout):
+    future = Future(KOKORO)
+    WaitAndContinue(future, check, message ,client.events.reaction_add, timeout)
     return future
 
-def wait_for_message(client,channel,check,timeout):
-    future=Future(client.loop)
-    WaitAndContinue(future,check,channel,client.events.message_create,timeout)
+def wait_for_message(client, channel, check, timeout):
+    future=Future(KOKORO)
+    WaitAndContinue(future, check, channel, client.events.message_create, timeout)
     return future
 
 class prefix_by_guild(dict):
@@ -1045,10 +1002,9 @@ class Cooldown(MethodLike):
         return self
     
     def __call__(self,client,message,*args):
-        loop=client.loop
-        value=self.checker(self,message,loop)
+        value=self.checker(self,message,KOKORO)
         if value:
-            return self.handler(client,message,self.__name__,value-loop.time())
+            return self.handler(client,message,self.__name__,value-KOKORO.time())
         
         return self.__func__(client,message,*args)
     

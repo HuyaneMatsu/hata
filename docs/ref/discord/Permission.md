@@ -1,6 +1,6 @@
 # class `Permission`
 
-Represents Disocrd permissions.
+Represents Discord permissions.
 
 - Source : [permission.py](https://github.com/HuyaneMatsu/hata/blob/master/hata/discord/permission.py)
 

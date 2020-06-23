@@ -34,9 +34,9 @@ class RemovedDescriptor(object):
             raise RuntimeError(f'{self.__class__.__name__} is not initialized correctly yet.')
         
         if obj is None:
-            error_message = f'type object \'{objtype.__name__}\' has no attribute \'{name}\''
+            error_message = f'type object {objtype.__name__!r} has no attribute {name!r}'
         else:
-            error_message = f'\'{obj.__class__.__name__}\' object has no attribute \'{name}\''
+            error_message = f'{obj.__class__.__name__!r} object has no attribute {name!r}'
         
         raise AttributeError(error_message)
     

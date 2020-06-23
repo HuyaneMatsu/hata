@@ -648,7 +648,7 @@ class ReverseFlagBase(FlagBase, baseclass=True):
         for name, shift in self.__keys__.items():
             yield name, ((self>>shift)&1)^1
     
-    def __contains__(self,key):
+    def __contains__(self, key):
         """Returns whether the specific flag of the given name is enabled."""
         try:
             position=self.__keys__[key]
@@ -951,6 +951,9 @@ class Icon(object):
     def __len__(self):
         """Lenght hinter (for unpacking if needed)."""
         return 2
+    
+    def __bool__(self):
+        return (self.type is not ICON_TYPE_NONE)
     
     @classmethod
     def from_base16_hash(cls, icon):

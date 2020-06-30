@@ -47,8 +47,8 @@ async def separate(client, message, *args):
 
 @NekoBot.commands
 async def avatar(client, message, user : Converter('user', flags=ConverterFlag.user_default.update_by_keys(everywhere=True), default_code='message.author')):
-    color = user.avatar&0xffffff
-    if color==0:
+    color = user.avatar_hash&0xffffff
+    if not color:
         color = user.default_avatar.color
     
     url=user.avatar_url_as(size=4096)

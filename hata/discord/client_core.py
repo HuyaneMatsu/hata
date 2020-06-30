@@ -1,6 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('CACHE_PRESENCE', 'CACHE_USER', 'CHANNELS', 'CLIENTS', 'EMOJIS', 'GUILDS', 'INTEGRATIONS', 'KOKORO',
-    'MESSAGES', 'ROLES', 'TEAMS', 'USERS', 'start_clients', 'stop_clients', )
+__all__ = ('CACHE_PRESENCE', 'CACHE_USER', 'CHANNELS', 'CLIENTS', 'EMOJIS', 'GUILDS', 'DISCOVERY_CATEGORIES',
+    'INTEGRATIONS', 'KOKORO', 'MESSAGES', 'ROLES', 'TEAMS', 'USERS', 'start_clients', 'stop_clients', )
 
 import sys
 from time import perf_counter
@@ -352,6 +352,7 @@ MESSAGES    = WeakValueDictionary()
 ROLES       = WeakValueDictionary()
 TEAMS       = WeakValueDictionary()
 USERS       = WeakValueDictionary()
+DISCOVERY_CATEGORIES = WeakValueDictionary()
 
 def start_clients():
     """

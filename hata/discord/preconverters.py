@@ -34,7 +34,7 @@ def preconvert_snowflake(snowflake, name):
     else:
         raise TypeError(f'`{name}` can be passed as `int` or `str` instance, got {snowflake.__class__.__name__}.')
     
-    if snowflake < 0 or snowflake.bit_length()>64:
+    if snowflake < 0 or snowflake>((1<<64)-1):
         raise ValueError(f'`{name}` can be only uint64, got {snowflake!r}.')
     
     return snowflake
@@ -214,7 +214,7 @@ def preconvert_flag(flag, name, type_):
     else:
         raise TypeError(f'`{name}` can be passed as `{type_.__name__}` instance, got {flag.__class__.__name__}.')
     
-    if flag < 0 or flag.bit_length()>64:
+    if flag < 0 or flag>((1<<64)-1):
         raise ValueError(f'`{name}` can be only uint64, got {flag!r}.')
     
     return flag

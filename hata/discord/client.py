@@ -6,8 +6,9 @@ from time import monotonic, time as time_now
 from collections import deque
 from os.path import split as splitpath
 from threading import current_thread
+from math import inf
 
-from ..backend.dereaddons_local import multidict_titled, _spaceholder, methodize
+from ..backend.dereaddons_local import multidict_titled, _spaceholder, methodize, basemethod
 from ..backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, WaitTillFirst, WaitTillExc
 from ..backend.eventloop import EventThread
 from ..backend.formdata import Formdata
@@ -20,7 +21,8 @@ from .user import User, USERS, GuildProfile, UserBase, UserFlag, PartialUser
 from .emoji import Emoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, \
     message_relativeindex, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES
-from .guild import Guild, PartialGuild, GuildEmbed, GuildWidget, GuildFeature, GuildPreview
+from .guild import Guild, PartialGuild, GuildEmbed, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
+    DiscoveryCategory
 from .http import DiscordHTTPClient, URLS, CDN_ENDPOINT, VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED
 from .role import Role, PermOW
 from .webhook import Webhook, PartialWebhook
@@ -31,12 +33,12 @@ from .invite import Invite
 from .message import Message
 from .oauth2 import Connection, parse_locale, DEFAULT_LOCALE, AO2Access, UserOA2, Achievement
 from .exceptions import DiscordException, IntentError, ERROR_CODES
-from .client_core import CLIENTS, CACHE_USER, CACHE_PRESENCE, KOKORO, GUILDS
+from .client_core import CLIENTS, CACHE_USER, CACHE_PRESENCE, KOKORO, GUILDS, DISCOVERY_CATEGORIES
 from .voice_client import VoiceClient
 from .activity import ActivityUnknown, ActivityBase, ActivityCustom
 from .integration import Integration
 from .application import Application, Team
-from .ratelimit import RatelimitProxy
+from .ratelimit import RatelimitProxy, RATELIMIT_GROUPS
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool, preconvert_discriminator, \
     preconvert_flag, preconvert_preinstanced_type
 from .permission import Permission
@@ -235,6 +237,367 @@ class MassUserChunker(object):
         """
         return self.waiter.__await__()
 
+class DiscoveryCategoryRequestCacher(object):
+    """
+    Cacher for storing ``Client``'s requests.
+    
+    Attributes
+    ----------
+    _active_request : `bool`
+        Whether there is an active request.
+    _last_update : `float`
+        The last time when the cache was updated
+    _waiter : `Future` or `None`
+        Waiter to avoid concurrent calls.
+    cached : `Any`
+        Last result.
+    func : `callable`
+        Async callable, what's yields are cached.
+    timeout : `float`
+        The time interval between what the requests should be done.
+    """
+    __slots__ = ('_active_request', '_last_update', '_waiter', 'cached', 'func', 'timeout',)
+    def __init__(self, func, timeout, cached=_spaceholder):
+        """
+        Creates a ``DiscoveryCategoryRequestCacher`` instance.
+        
+        Parameters
+        ----------
+        timeout : `float`
+            The time after new request should be executed.
+        func : `callable`
+            Async callable, what's yields would be cached.
+        cached : `Any`, Optional
+            Whether there should be an available cache by default.
+        """
+        self.func = func
+        self.timeout = timeout
+        self.cached = cached
+        self._waiter = None
+        self._active_request = False
+        self._last_update = -inf
+    
+    def __get__(self, client, type_=None):
+        if client is None:
+            return self
+        
+        return basemethod(self.__class__.execute, self, client)
+    
+    def __set__(self, obj, value):
+        raise AttributeError('can\'t set attribute')
+    
+    def __delete__(self, obj):
+        raise AttributeError('can\'t delete attribute')
+    
+    async def execute(self, client):
+        """
+        Executes the request and returns''s it's result or raises.
+        
+        Returns
+        -------
+        result : `Any`
+        
+        Raises
+        ------
+        ConnectionError
+            If there is no internet connection, or there is no available cached result.
+        DiscordException
+        """
+        if (monotonic() - self.timeout) < self._last_update:
+            if self._active_request:
+                waiter = self._waiter
+                if waiter is None:
+                    waiter = self._waiter = Future(KOKORO)
+                
+                result = await waiter
+            else:
+                result = self.cached
+            
+            return result
+        
+        self._active_request = True
+        try:
+            result = await self.func(client)
+        except ConnectionError as err:
+            result = self.cached
+            if (result is _spaceholder):
+                waiter = self._waiter
+                if (waiter is not None):
+                    self._waiter = None
+                    waiter.set_exception(err)
+                
+                raise
+        
+        except BaseException as err:
+            waiter = self._waiter
+            if (waiter is not None):
+                self._waiter = None
+                waiter.set_exception(err)
+            
+            raise
+        
+        else:
+            self._last_update = monotonic()
+        
+        finally:
+            self._active_request = False
+        
+        waiter = self._waiter
+        if (waiter is not None):
+            self._waiter = None
+            waiter.set_result(result)
+        
+        return result
+    
+    def __repr__(self):
+        """Returns the cacher's representation."""
+        result = [
+            self.__class__.__name__,
+            '(func=',
+            repr(self.func),
+            ', timeout=',
+            repr(self.timeout),
+                ]
+        
+        cached = self.cached
+        if (cached is not _spaceholder):
+            result.append(' cached=')
+            result.append(repr(cached))
+        
+        result.append(')')
+        
+        return ''.join(result)
+    
+    __call__ = execute
+
+class TimedCacheUnit(object):
+    """
+    Timed cache unit used at keyed request cachers.
+    
+    Attrbiutes
+    ----------
+    result : `str`
+        The cached response object.
+    creation_time : `float`
+        The monotonic time when the last resposne was received.
+    last_usage_time : `float`
+        The monotnonic time when this unit was last tiem used.
+    """
+    __slots__ = ('creation_time', 'last_usage_time', 'result')
+    def __repr__(self):
+        """Returns the timed cache unit's representation."""
+        return (f'<{self.__class__.__name__} creation_time={self.creation_time!r}, last_usage_time='
+                f'{self.last_usage_time!r}, result={self.result!r}>')
+
+class DiscoveryTermRequestCacher(object):
+    """
+    Cacher for storing ``Client'' requests. Also uses other clients, if the source client's ratelimits are already
+    exhausted.
+    
+    Attributes
+    ----------
+    _last_cleanup : `float`
+        The last time when a cleanup was done.
+    _minimal_cleanup_interval : `float`
+        The minimal time what needs to pass between cleanups.
+    _ratelimit_proxy_args : `tuple` (``RatelimitGroup``, (``DiscordEntity`` or `None`))
+        Ratelimit proxy arguments used when looking up the ratelimits of clients.
+    _waiters : `dict` of (`str`, `
+        Waiters for requests already being done.
+    cached : `dict`
+        Already cached responses.
+    func : `callable`
+        Async callable, what's yields are cached.
+    timeout : `float`
+        The timeout after the new request should be done insated of using the already cached response.
+    """
+    __slots__ =('_last_cleanup', '_minimal_cleanup_interval', '_ratelimit_proxy_args', '_waiters', 'cached', 'func', 'timeout')
+    def __init__(self, func, timeout, ratelimit_group, ratelimit_limiter=None,):
+        """
+        Creates a new ``DiscoveryTermRequestCacher`` object with the given parameters.
+        
+        Parameters
+        ----------
+        func : `callable`
+            Async callable, what's yields are cached.
+        timeout : `float`
+            The timeout after the new request should be done insated of using the already cached response.
+        ratelimit_group : ``RatelimitGroup``
+            Ratelimit group of the respective request.
+        ratelimit_limiter : ``DiscordEntity``, Optional
+            Retelimit limiter fo the respective request.
+        """
+        self.func = func
+        self.timeout = timeout
+        self.cached = {}
+        self._ratelimit_proxy_args = (ratelimit_group, ratelimit_limiter)
+        self._waiters = {}
+        minimal_cleanup_interval = timeout / 10.0
+        if minimal_cleanup_interval < 1800.0:
+            minimal_cleanup_interval = 1800.0
+        
+        self._minimal_cleanup_interval = minimal_cleanup_interval
+        self._last_cleanup = -inf
+    
+    def __get__(self, client, type_=None):
+        if client is None:
+            return self
+        
+        return basemethod(self.__class__.execute, self, client)
+    
+    def __set__(self, obj, value):
+        raise AttributeError('can\'t set attribute')
+    
+    def __delete__(self, obj):
+        raise AttributeError('can\'t delete attribute')
+    
+    async def execute(self, client, arg):
+        """
+        Executes the request and returns''s it's result or raises.
+        
+        Returns
+        -------
+        result : `Any`
+        
+        Raises
+        ------
+        ConnectionError
+            If there is no internet connection, or there is no available cached result.
+        TypeError
+            The given `arg` was not passed as `str` instance.
+        DiscordException
+        """
+        # First check arg
+        arg_type = arg.__class__
+        if arg_type is str:
+            pass
+        elif issubclass(arg_type, str):
+            arg = str(arg)
+        else:
+            raise TypeError(f'The argument can be given as `str` instance, got {arg_type.__class__}.')
+        
+        # First check cache
+        try:
+            unit = self.cached[arg]
+        except KeyError:
+            unit = None
+        else:
+            now = monotonic()
+            if self.timeout + unit.creation_time > now:
+                unit.last_usage_time = now
+                return unit.result
+        
+        # Second check actual request
+        try:
+            waiter = self._waiters[arg]
+        except KeyError:
+            pass
+        else:
+            if waiter is None:
+                self._waiters[arg] = waiter = Future(KOKORO)
+            
+            return await waiter
+        
+        # No actual request is being done, so mark that we are doing a request.
+        self._waiters[arg] = None
+        
+        # Search client with free ratelimits.
+        free_count = RatelimitProxy(client, *self._ratelimit_proxy_args).free_count
+        if not free_count:
+            requester = client
+            for client_ in CLIENTS:
+                if client_ is client:
+                    continue
+                
+                free_count = RatelimitProxy(client_, *self._ratelimit_proxy_args).free_count
+                if free_count:
+                    requester = client_
+                    break
+                
+                continue
+            
+            # If there is no client with free count do not care about the reset times, because probably only 1 client
+            # forces requests anyways, so that's ratelimits will reset first as well.
+            client = requester
+        
+        # Do the request
+        try:
+            result = await self.func(client, arg)
+        except ConnectionError as err:
+            if (unit is None):
+                waiter = self._waiters.pop(arg)
+                if (waiter is not None):
+                    waiter.set_exception(err)
+                
+                raise
+            
+            unit.last_usage_time = monotonic()
+            result = unit.result
+        
+        except BaseException as err:
+            waiter = self._waiters.pop(arg, None)
+            if (waiter is not None):
+                waiter.set_exception(err)
+            
+            raise
+        
+        else:
+            if unit is None:
+                self.cached[arg] = unit = TimedCacheUnit()
+            
+            now = monotonic()
+            unit.last_usage_time = now
+            unit.creation_time = now
+            unit.result = result
+        
+        finally:
+            # Do cleanup if needed
+            now = monotonic()
+            if self._last_cleanup + self._minimal_cleanup_interval < now:
+                self._last_cleanup = now
+                
+                cleanup_till = now - self.timeout
+                collected = []
+                
+                cached = self.cached
+                for cached_arg, cached_unit in cached.items():
+                    if cached_unit.last_usage_time < cleanup_till:
+                        collected.append(cached_arg)
+                
+                for cached_arg in collected:
+                    del cached[cached_arg]
+        
+        waiter = self._waiters.pop(arg)
+        if (waiter is not None):
+            waiter.set_result(result)
+        
+        return result
+    
+    def __repr__(self):
+        """Returns the cacher's representation."""
+        result = [
+            self.__class__.__name__,
+            '(func=',
+            repr(self.func),
+            ', timeout=',
+            repr(self.timeout),
+                ]
+        
+        ratelimit_group, ratelimit_limiter = self._ratelimit_proxy_args
+        
+        result.append(', ratelimit_group=')
+        result.append(repr(ratelimit_group))
+        
+        if (ratelimit_limiter is not None):
+            result.append(', ratelimit_limiter=')
+            result.append(repr(ratelimit_limiter))
+        
+        result.append(')')
+        
+        return ''.join(result)
+    
+    __call__ = execute
+
 class Client(UserBase):
     """
     Discord client class used to interact with the Discord API.
@@ -318,11 +681,13 @@ class Client(UserBase):
         The client's preffered activity.
     _additional_owner_ids : `None` or `set` of `int`
         Additional users' (as id) to be passed by the ``.is_owner`` check.
-    _gateway_pair : `tuple` (`str`, `float`)
-        An `url`, `time` pair used, when requesting gateway url. When the client launches with more shards, keep
-        requesting gateway url might take up most of the time, so we cache the generated url and the timestamp
-        of the request. If the last timestamp is within 1 minute of the last request, then we will just use the latest
-        generated url.
+    _gateway_url : `str`
+        Cached up gateway url, what is invalidated after `1` minute. Used to avoid unnecessary requests when launching
+        up more shards.
+    _gateway_time : `float`
+        The last timestamp when `._gateway_url` was updated.
+    _gateway_max_concurrency : `int`
+        The max amount of shards, which can be launched at the same time.
     _status : ``Status``
         The client's preferred status.
     _user_chunker_nonce : `int`
@@ -605,42 +970,47 @@ class Client(UserBase):
         if self.id!=client_id:
             CLIENTS.update(self,client_id)
         
-        if CACHE_USER:
-            try:
-                alterego        = USERS[client_id]
-            except KeyError:
-                pass
-            else:
-                if alterego is not self:
-                    #we already exists, we need to go tru everthing and replace ourself.
-                    guild_profiles=alterego.guild_profiles
-                    self.guild_profiles=guild_profiles
-                    for guild in guild_profiles:
-                        guild.users[client_id]=self
-                        for channel in guild.channels:
-                            for overwrite in channel.overwrites:
-                                if overwrite.target is alterego:
-                                    overwrite.target=self
-                    
-                    for client in CLIENTS:
-                        if (client is not self) and client.running:
-                            for channel in client.channels.values():
-                                users=channel.users
-                                for index in range(users):
-                                    if users[index].id==client_id:
-                                        users[index]=self
-                                        continue
-        else:
+        # GOTO
+        while True:
+            if CACHE_USER:
+                try:
+                    alterego        = USERS[client_id]
+                except KeyError:
+                    # Go Out
+                    break
+                else:
+                    if alterego is not self:
+                        #we already exists, we need to go tru everthing and replace ourself.
+                        guild_profiles=alterego.guild_profiles
+                        self.guild_profiles=guild_profiles
+                        for guild in guild_profiles:
+                            guild.users[client_id] = self
+                            for channel in guild.channels:
+                                for overwrite in channel.overwrites:
+                                    if overwrite.target is alterego:
+                                        overwrite.target=self
+            
+            # This part should run at both case, except when there is no alterego detected when caching users.
             for client in CLIENTS:
-                if (client is not self) and client.running:
-                    for channel in client.channels.values():
-                        users=channel.users
-                        for index in range(users):
-                            if users[index].id==client_id:
-                                users[index]=self
-                                continue
+                if (client is self) or (not client.running):
+                    continue
+                
+                for channel in client.group_channels.values():
+                    users = channel.users
+                    for index in range(len(users)):
+                        if users[index].id == client_id:
+                            users[index] = self
+                            break
+                
+                for channel in client.private_channels.values():
+                    users = channel.users
+                    for index in range(len(users)):
+                        if users[index].id == client_id:
+                            users[index] = self
+                            break
+            
+            break
         
-      
         self.name           = data['username']
         self.discriminator  = int(data['discriminator'])
         self._set_avatar(data)
@@ -1614,9 +1984,9 @@ class Client(UserBase):
             raise
         
         return data
-
+    
     #channels
-
+    
     async def channel_group_leave(self, channel):
         """
         Leaves the client from the specified group channel.
@@ -1633,7 +2003,7 @@ class Client(UserBase):
         DiscordException
         """
         await self.http.channel_group_leave(channel.id)
-
+    
     async def channel_group_user_add(self, channel, *users):
         """
         Adds the users to the given group channel.
@@ -4480,7 +4850,7 @@ class Client(UserBase):
             discovery_splash=_spaceholder, banner=_spaceholder, afk_channel=_spaceholder, system_channel=_spaceholder,
             rules_channel=_spaceholder, public_updates_channel=_spaceholder, owner=None, region=None, afk_timeout=None,
             verification_level=None, content_filter=None, message_notification=None, description=_spaceholder,
-            system_channel_flags=None, reason=None):
+            system_channel_flags=None, add_feature=None, remove_feature=None, reason=None):
         """
         Edis the guild with the given parameters.
         
@@ -4529,6 +4899,10 @@ class Client(UserBase):
             guild must have `PUBLIC` feaeture.
         system_channel_flags : ``SystemChannelFlag``, Optional
             The guild's system channel's new flags.
+        add_feature : (`str`, ``GuildFeature``) or (`iterable` of (`str`, ``GuildFeature``)), Optional
+            Guild feature(s) to add to the guild.
+        remove_feature : (`str`, ``GuildFeature``) or (`iterable` of (`str`, ``GuildFeature``)), Optional
+            Guild feature(s) to remove from the guild's.
         reason : `str`, Optional
             Shows up at the guild's audit logs.
         
@@ -4536,6 +4910,8 @@ class Client(UserBase):
         ------
         TypeError
             - If `icon`, `invite_splash`, `discovery_splash`, `banner` is neither `None` or `bytes-like`.
+            - If `add_feature` or `remove_feature` was not given neither as `str`, as ``GuildFeature`` or as as
+                `iterable` of `str` or ``GuildFeature`` instances.
         ValueError
             - If name is shorter than 2 or longer than 100 characters.
             - If `icon`, `invite_splash`, `discovery_splash` or `banner` was passed as `bytes-like`, but it's format
@@ -4649,10 +5025,10 @@ class Client(UserBase):
         
         if (content_filter is not None):
             data['explicit_content_filter']=content_filter.value
-
+        
         if (message_notification is not None):
             data['default_message_notifications']=message_notification.value
-
+        
         if (description is not _spaceholder):
             if GuildFeature.public not in guild.features:
                 raise ValueError('The guild has no `PUBLIC` feature')
@@ -4660,9 +5036,66 @@ class Client(UserBase):
             if (description is not None) and (not description):
                 description = None
             data['description']=description
-
+        
         if (system_channel_flags is not None):
             data['system_channel_flags']=system_channel_flags
+        
+        if (add_feature is not None) or (remove_feature is not None):
+            features = set(feature.value for feature in guild.features)
+            
+            for container, operation, variable_name in (
+                        (add_feature, set.add, 'add_feature', ),
+                        (remove_feature, set.remove, 'remove_feature', ),
+                    ):
+                
+                if container is None:
+                    continue
+                
+                # GOTO
+                while True:
+                    type_ = type(container)
+                    if type_ is GuildFeature:
+                        feature = add_feature.value
+                    elif type_ is str:
+                        feature = add_feature
+                    elif issubclass(type_, str):
+                        feature = str(add_feature)
+                    elif hasattr(type_, '__iter__'):
+                        index = 0
+                        for feature in container:
+                            type_ = type(feature)
+                            if type_ is GuildFeature:
+                                feature = feature.value
+                            elif type_ is str:
+                                feature = feature
+                            elif issubclass(type_, str):
+                                feature = str(feature)
+                            else:
+                                raise TypeError(f'`{variable_name}` was given as `iterable` so it expected to have '
+                                    f'`str` or `{GuildFeature.__name__}` elements, but as element {index!r} got '
+                                    f'{type_.__name__}.')
+                            
+                            try:
+                                operation(features, feature)
+                            except KeyError:
+                                pass
+                            
+                            index +=1
+                            continue
+                        
+                        break
+                    else:
+                        raise TypeError(f'`{variable_name}` can be given as `str`, as `{GuildFeature.__name__}` or as '
+                            f'`iterable` of `str` or `{GuildFeature.__name__}`, got {type_.__name__}.')
+                    
+                    try:
+                        operation(features, feature)
+                    except KeyError:
+                        pass
+                    
+                    break
+            
+            data['features'] = features
         
         await self.http.guild_edit(guild.id,data,reason)
 
@@ -4806,8 +5239,306 @@ class Client(UserBase):
             raise
         
         return GuildWidget(data)
+    
+    async def guild_discovery_get(self, guild):
+        """
+        Requests and returns the guild's discovery metadata.
         
-    async def guild_users(self,guild):
+        The client must have `manage_guild` permission to execute this method.
+        
+        Parameters
+        ----------
+        guild : ``Guild``
+            The guild what's disoovery will be requested.
+        
+        Returns
+        -------
+        guild_discovery : ``GuildDiscovery``
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
+        guild_discovery_data = await self.http.guild_discovery_get(guild.id)
+        return GuildDiscovery(guild_discovery_data, guild)
+    
+    async def guild_discovery_edit(self, guild_or_discovery, primary_category=_spaceholder, keywords=_spaceholder,
+            emoji_discovery=_spaceholder):
+        """
+        Edits the guild's discovery metadata.
+        
+        The client must have `manage_guild` permission to execute this method.
+        
+        Parameters
+        ----------
+        guild_or_discovery : ``Guild`` or ``GuildDiscovery``
+            The guild what's discovery metadata will be edited or an existing discovery metadata object.
+        primary_category : `None` or ``DiscoveryCategory`` or `int`, Optional
+            The guild discovery's new primary category's id. Can be given as a ``DiscoveryCategory`` object as well.
+            If given as `None`, then resets the guild discovery's primary category id to it's default, what is `0`.
+        keywords : `None` or (`iterable` of `str`), Optional
+            The guild discovery's new keywords. Can be given as `None` to reset to the default value, what is `None`,
+            or as an `iterable` of strings.
+        emoji_discovery : `None`, `bool` or `int` (`0`, `1`), Optional
+            Whether the guild info should be shown when the respective guild's emojis are clicked. If passed as `None`
+            then will reset the guild discovery's `emoji_discovery` value to it's default, what is `True`.
+        
+        Returns
+        -------
+        guild_discovery : ``GuildDiscovery``
+            Updated guild discovery object.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        TypeError
+            - If `guild_or_discovery` was neither passed as type ``Guild`` or ``GuildDiscovery``.
+            - If `primary_category_id` was not given neither as `None`, `int` or as ``DiscoveryCategory`` instance.
+            - If `keywords` was not passed neither as `None` or `iterable` of `str`.
+            - If `emoji_discovery` was not passed neither as `None`, `bool` or `int` (`0`, `1`).
+        ValueError
+            - If `primary_category_id` was given as not primary ``DiscoveryCategory`` object.
+            - If `emoji_discovery` was given as `int` instance, but not as `0` or `1`.
+        DiscordException
+        """
+        if type(guild_or_discovery) is Guild:
+            guild_id = guild_or_discovery.id
+        elif type(guild_or_discovery) is GuildDiscovery:
+            guild_id = guild_or_discovery.guild.id
+        else:
+            raise TypeError(f'`guild_or_discovery` can be `{Guild.__name__}` or `{GuildDiscovery.__name__}` instance, '
+                f'got {guild_or_discovery.__class__.__name__}.')
+        
+        data = {}
+        
+        if (primary_category is not _spaceholder):
+            if (primary_category is None):
+                primary_category_id = None
+            else:
+                primary_category_type = primary_category.__class__
+                if primary_category_type is DiscoveryCategory:
+                    # If name is set means that we should know whether the category is loaded, or just it's `.id`
+                    # is known.
+                    if (primary_category.name and (not primary_category.primary)):
+                        raise ValueError(f'The given `primary_category_id` was not given as a primary '
+                            f'`{DiscoveryCategory.__name__}`, got {primary_category!r}.')
+                    primary_category_id = primary_category.id
+                elif primary_category_type is int:
+                    primary_category_id = primary_category
+                elif issubclass(primary_category_type, int):
+                    primary_category_id = int(primary_category)
+                else:
+                    raise TypeError(f'`primary_category` can be given as `None`, `int` instance, or as '
+                        f'`{DiscoveryCategory.__name__}` object, got {primary_category_type.__name__}.')
+            
+            data['primary_category_id'] = primary_category_id
+        
+        if (keywords is not _spaceholder):
+            if (keywords is None):
+                pass
+            elif (not isinstance(keywords,str)) and hasattr(type(keywords),'__iter__'):
+                keywords_processed = set()
+                index = 0
+                for keyword in keywords:
+                    if (type(keyword) is str):
+                        pass
+                    elif isinstance(keyword,str):
+                        keyword = str(keyword)
+                    else:
+                        raise TypeError(f'`keywords` can be `None` or `iterable` of `str`. Got `iterable`, but it\'s '
+                            f'elemnet at index {index} is not `str` instance, got {keyword.__class__.__name__}.')
+                    
+                    keywords_processed.add(keyword)
+                    index +=1
+                
+                keywords = keywords_processed
+            else:
+                raise TypeError(f'`keywords` can be `None` or `iterable` of `str`. Got {keywords.__class__.__name__}.')
+        
+            data['keywords'] = keywords
+        
+        if (emoji_discovery is not _spaceholder):
+            if (emoji_discovery is None) or (type(emoji_discovery) is bool):
+                pass
+            elif isinstance(emoji_discovery, int):
+                if emoji_discovery == 0:
+                    emoji_discovery = False
+                elif emoji_discovery == 1:
+                    emoji_discovery = True
+                else:
+                    raise ValueError(f'`emoji_discovery` was given as `int` instance, but not as `0`, or `1`, got '
+                        f'{emoji_discovery!r}.')
+            else:
+                raise TypeError(f'`emoji_discovery` can be given as `None`, `bool` or as `int` instance as `0` or '
+                    f'`1`, got {emoji_discovery.__class__.__name__}.')
+            
+            data['emoji_discoverability_enabled'] = emoji_discovery
+        
+        guild_discovery_data = await self.http.guild_discovery_edit(guild_id, data)
+        if type(guild_or_discovery) is Guild:
+            guild_discovery = GuildDiscovery(guild_discovery_data, guild_or_discovery)
+        else:
+            guild_discovery = guild_or_discovery
+            guild_discovery._update_no_return(guild_discovery_data)
+        
+        return guild_discovery
+    
+    async def guild_discovery_add_subcategory(self, guild_or_discovery, category):
+        """
+        Adds a discovery subcategory to the guild.
+        
+        The client must have `manage_guild` permission to execute this method.
+        
+        Parameters
+        ----------
+        guild_or_discovery : ``Guild`` or ``GuildDiscovery``
+            The guild to what the discovery subcategory will be added.
+        category : ``DiscoveryCategory`` or `int`
+            The discovery category or it's id what will be added as a subcategory.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        TypeError
+            - If `guild_or_discovery` was neither passed as type ``Guild`` or ``GuildDiscovery``.
+            - If `category` was not passed neither as ``DiscoveryCategory`` or as `int` instance.
+        DiscordException
+        
+        Notes
+        -----
+        A guild can have maximum `5` discovery subcategories.
+        
+        If `guild_or_discovery` was given as ``GuildDiscovery``, then it will be updated.
+        """
+        if type(guild_or_discovery) is Guild:
+            guild_id = guild_or_discovery.id
+        elif type(guild_or_discovery) is GuildDiscovery:
+            guild_id = guild_or_discovery.guild.id
+        else:
+            raise TypeError(f'`guild_or_discovery` can be `{Guild.__name__}` or `{GuildDiscovery.__name__}` instance, '
+                f'got {guild_or_discovery.__class__.__name__}.')
+        
+        category_type = category.__class__
+        if category_type is DiscoveryCategory:
+            category_id = category.id
+        elif category_type is int:
+            category_id = category
+        elif issubclass(category_type, int):
+            category_id = int(category)
+        else:
+            raise TypeError(f'`category` can be given either as `int` or as `{DiscoveryCategory.__name__} instance, '
+                f'got {category_type.__name__}.')
+        
+        await self.http.guild_discovery_add_subcategory(guild_id, category_id)
+        
+        if type(guild_or_discovery) is GuildDiscovery:
+            guild_or_discovery.sub_categories.add(category_id)
+    
+    async def guild_discovery_delete_subcategory(self, guild_or_discovery, category):
+        """
+        Removes a discovery subcategory of the guild.
+        
+        The client must have `manage_guild` permission to execute this method.
+        
+        Parameters
+        ----------
+        guild_or_discovery : ``Guild`` or ``GuildDiscovery``
+            The guild to what the discovery subcategory will be removed from.
+        category : ``DiscoveryCategory`` or `int`
+            The discovery category or it's id what will be removed from the subcategories.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        TypeError
+            - If `guild_or_discovery` was neither passed as type ``Guild`` or ``GuildDiscovery``.
+            - If `category` was not passed neither as ``DiscoveryCategory`` or as `int` instance.
+        DiscordException
+        
+        Notes
+        -----
+        A guild can have maximum `5` discovery subcategories.
+        
+        If `guild_or_discovery` was given as ``GuildDiscovery``, then it will be updated.
+        """
+        if type(guild_or_discovery) is Guild:
+            guild_id = guild_or_discovery.id
+        elif type(guild_or_discovery) is GuildDiscovery:
+            guild_id = guild_or_discovery.guild.id
+        else:
+            raise TypeError(f'`guild_or_discovery` can be `{Guild.__name__}` or `{GuildDiscovery.__name__}` instance, '
+                f'got {guild_or_discovery.__class__.__name__}.')
+        
+        category_type = category.__class__
+        if category_type is DiscoveryCategory:
+            category_id = category.id
+        elif category_type is int:
+            category_id = category
+        elif issubclass(category_type, int):
+            category_id = int(category)
+        else:
+            raise TypeError(f'`category` can be given either as `int` or as `{DiscoveryCategory.__name__} instance, '
+                f'got {category_type.__name__}.')
+        
+        await self.http.guild_discovery_delete_subcategory(guild_id, category_id)
+        
+        if type(guild_or_discovery) is GuildDiscovery:
+            try:
+                guild_or_discovery.sub_categories.remove(category_id)
+            except KeyError:
+                pass
+    
+    async def discovery_categories(self):
+        """
+        Returns a list of discovery categories, which can be used when editing guild discovery.
+        
+        Returns
+        -------
+        discovery_categories : `list` of ``DiscoveryCategory``
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
+        discovery_category_datas = await self.http.discovery_categories()
+        return [DiscoveryCategory.from_data(discovery_category_data) for discovery_category_data in discovery_category_datas]
+    
+    # Add cached, so even tho the first request fails with `ConnectionError` will not be raised.
+    discovery_categories = DiscoveryCategoryRequestCacher(discovery_categories, 3600.0,
+        cached=list(DISCOVERY_CATEGORIES.values()))
+    
+    async def discovery_validate_term(self, term):
+        """
+        Checks whether the given discovery search term is valid.
+        
+        Parameters
+        ----------
+        term : `str`
+        
+        Returns
+        -------
+        valid : `bool`
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
+        data = await self.http.discovery_validate_term({'term': term})
+        return data['valid']
+    
+    discovery_validate_term = DiscoveryTermRequestCacher(discovery_validate_term, 86400.0,
+        RATELIMIT_GROUPS.discovery_validate_term)
+    
+    async def guild_users(self, guild):
         """
         Requests all the users of the guild and returns them.
         
@@ -4842,7 +5573,7 @@ class Client(UserBase):
                 break
             data['after']=user_datas[999]['user']['id']
         return result
-
+    
     async def guild_get_all(self):
         """
         Requests all the guilds of the client.
@@ -5532,7 +6263,7 @@ class Client(UserBase):
                 }
         
         await self.http.permission_ow_create(channel.id,target.id,data,reason)
-        return PermOW.custom(target, Permission(allow), Permission(deny))
+        return PermOW.custom(target, allow, deny)
     
     # Webhook management
     
@@ -6773,7 +7504,7 @@ class Client(UserBase):
             if position==0:
                 raise ValueError(f'Role cannot be moved to position `0`.')
         
-        data=guild.roles.change_on_switch(role,position,key=lambda role,pos:{'id':role.id,'position':pos})
+        data = guild.roles.change_on_switch(role, position, key=lambda role, pos:{'id':role.id,'position':pos})
         if not data:
             return
         
@@ -7405,7 +8136,7 @@ class Client(UserBase):
                     while True:
                         try:
                             await sleep(5.0, KOKORO)
-                            self._gateway_pair=(self._gateway_pair[0],0.0)
+                            self._gateway_time = -99.9
                             try:
                                 await self.client_gateway()
                             except (OSError,ConnectionError,):
@@ -8318,3 +9049,5 @@ del re
 del URLS
 del message
 del webhook
+del RATELIMIT_GROUPS
+del DISCOVERY_CATEGORIES

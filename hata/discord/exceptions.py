@@ -308,6 +308,7 @@ class ERROR_CODES:
     unknown_branch          = 10032
     unknown_redistributable = 10036
     unknown_gift_code       = 10038
+    unknown_discovery_category = 10059
     
     bots_not_allowed        = 20001
     only_bots_allowed       = 20002
@@ -334,6 +335,7 @@ class ERROR_CODES:
     max_invites             = 30016 # 1000
     max_animated_emoji      = 30018
     not_enough_guild_members = 30029
+    max_guild_discovery_categories = 30030 # 5
     
     unauthorized            = 40001
     email_verification_required = 40002

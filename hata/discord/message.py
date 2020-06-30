@@ -6,7 +6,7 @@ __all__ = ('Attachment', 'EMBED_UPDATE_EMBED_ADD', 'EMBED_UPDATE_EMBED_REMOVE', 
 import re
 from datetime import datetime
 
-from ..backend.dereaddons_local import any_to_any, autoposlist, cached_property, _spaceholder, BaseMethodDescriptor
+from ..backend.dereaddons_local import any_to_any, where, cached_property, _spaceholder, BaseMethodDescriptor
 
 from .bases import DiscordEntity, FlagBase
 from .http import URLS
@@ -20,8 +20,6 @@ from .role import Role
 from .preconverters import preconvert_flag, preconvert_bool, preconvert_snowflake, preconvert_str
 
 from . import ratelimit
-
-where=autoposlist.where
 
 Client          = NotImplemented
 ChannelBase     = NotImplemented
@@ -2399,7 +2397,6 @@ del convert_discovery_requalified
 
 ratelimit.Message = Message
 
-del autoposlist
 del URLS
 del ratelimit
 del DiscordEntity

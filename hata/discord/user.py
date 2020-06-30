@@ -50,6 +50,21 @@ else:
     def PartialUser(user_id):
         return User._create_empty(user_id)
 
+if (Color.__doc__ is not None):
+    PartialUser.__doc__ = (
+    """
+    Creates a partial user from the given `user_id`. If the user already exists returns that instead.
+    
+    Parameters
+    ----------
+    user_id : `int`
+        The unique identificator number of the user.
+    
+    Returns
+    -------
+    user : ``Client`` or ``User``
+    """)
+
 class GuildProfile(object):
     __slots__ = ('boosts_since', 'joined_at', 'nick', 'roles',)
     
@@ -124,7 +139,7 @@ class GuildProfile(object):
         | boosts_since      | `None` or `datetime`  |
         +-------------------+-----------------------+
         | nick              | `None` or `str`       |
-        +-----------------------+-------------------+
+        +-------------------+-----------------------+
         | roles             | `list` of ``Role``    |
         +-------------------+-----------------------+
         """

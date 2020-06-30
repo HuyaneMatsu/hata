@@ -1562,6 +1562,22 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.user_edit, guild_id),
             METH_PATCH, f'{API_ENDPOINT}/guilds/{guild_id}/members/{user_id}', data, reason=reason)
     
+    async def guild_discovery_get(self, guild_id):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.guild_discovery_get, guild_id),
+            METH_GET, f'{API_ENDPOINT}/guilds/{guild_id}/discovery-metadata')
+    
+    async def guild_discovery_edit(self, guild_id, data):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.guild_discovery_edit, guild_id),
+            METH_PATCH, f'{API_ENDPOINT}/guilds/{guild_id}/discovery-metadata', data)
+    
+    async def guild_discovery_add_subcategory(self, guild_id, category_id):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.guild_discovery_add_subcategory, guild_id),
+            METH_POST, f'{API_ENDPOINT}/guilds/{guild_id}/discovery-categories/{category_id}')
+    
+    async def guild_discovery_delete_subcategory(self, guild_id, category_id):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.guild_discovery_delete_subcategory, guild_id),
+            METH_DELETE, f'{API_ENDPOINT}/guilds/{guild_id}/discovery-categories/{category_id}')
+    
     #hooman only
     async def guild_mar(self,guild_id,data):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.guild_mar, guild_id),
@@ -1855,6 +1871,14 @@ class DiscordHTTPClient(HTTPClient):
     async def application_get(self, application_id):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.application_get, NO_SPECIFIC_RATELIMITER),
             METH_GET, f'{API_ENDPOINT}/applications/{application_id}')
+    
+    async def discovery_categories(self):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.discovery_categories, NO_SPECIFIC_RATELIMITER),
+            METH_GET, f'{API_ENDPOINT}/discovery/categories')
+    
+    async def discovery_validate_term(self, data):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.discovery_validate_term, NO_SPECIFIC_RATELIMITER),
+            METH_GET, f'{API_ENDPOINT}/discovery/valid-term', params=data)
 
 del re
 del modulize

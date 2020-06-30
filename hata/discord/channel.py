@@ -7,7 +7,7 @@ from collections import deque
 from time import monotonic
 from weakref import WeakSet
 
-from ..backend.dereaddons_local import weakposlist
+from ..backend.dereaddons_local import autoposlist
 
 from .bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
 from .client_core import CHANNELS
@@ -1109,7 +1109,7 @@ class ChannelGuildBase(ChannelBase):
         
         return NotImplemented
 
-    def _init_catpos(self,data,guild):
+    def _init_catpos(self, data, guild):
         """
         Inicializes the `.category` and the `.position` of the channel. If a channel is under the ``Guild.md``,
         and not in a category (category channels are all like these), then their `.category` is the ``Guild`` itself.
@@ -1124,14 +1124,15 @@ class ChannelGuildBase(ChannelBase):
         """
         self.guild = guild
         guild.all_channel[self.id] = self
-        self.position=data.get('position',0)
         
-        parent_id = data.get('parent_id')
+        self.position = data.get('position',0)
         
-        if parent_id is None:
+        category_id = data.get('parent_id')
+        if category_id is None:
             category = guild
         else:
-            category = guild.all_channel[int(parent_id)]
+            category = guild.all_channel[int(category_id)]
+        
         self.category = category
         category.channels.append(self)
     
@@ -1147,24 +1148,29 @@ class ChannelGuildBase(ChannelBase):
         data : `dict` of (`str`, `Any`) items
             Channel data received from Discord
         """
-        position=data.get('position',0)
-        parent_id=data.get('parent_id',None)
-        
         guild = self.guild
-        if parent_id is None:
-            parent = guild
+        if guild is None:
+            return
+        
+        new_category_id = data.get('parent_id',None)
+        if new_category_id is None:
+            new_category = guild
         else:
-            parent = guild.all_channel[int(parent_id)]
+            new_category = guild.all_channel[int(new_category_id)]
+        
+        position=data.get('position',0)
         
         category = self.category
-        if category is parent:
-            category.channels.switch(self,position)
+        if category is new_category:
+            if self.position != position:
+                self.position = position
+                category.channels.sort()
         else:
             category.channels.remove(self)
             
-            self.position=position
-            self.category = category
-            category.channels.append(self)
+            self.position = position
+            self.category = new_category
+            new_category.channels.append(self)
     
     def _update_catpos(self, data, old_attributes):
         """
@@ -1179,28 +1185,33 @@ class ChannelGuildBase(ChannelBase):
         old_attributes : `dict` of (`str`, `Any`) items
             `attribute-name` - `old-value` relations containing the changes of caused by the update.
         """
-        position=data.get('position',0)
-        parent_id=data.get('parent_id',None)
+        guild = self.guild
+        if guild is None:
+            return
         
-        guild =self.guild
-        if parent_id is None:
-            parent = guild
+        new_category_id = data.get('parent_id',None)
+        if new_category_id is None:
+            new_category = guild
         else:
-            parent = guild.all_channel[int(parent_id)]
+            new_category = guild.all_channel[int(new_category_id)]
+        
+        position=data.get('position',0)
         
         category = self.category
-        if category is parent:
-            if self.position!=position:
-                old_attributes['category']=self.category
-                category.channels.switch(self,position)
+        if category is new_category:
+            if self.position != position:
+                old_attributes['position'] = self.position
+                self.position = position
+                category.channels.sort()
         else:
-            old_attributes['category']=category
-            old_attributes['position']=self.position
+            old_attributes['category'] = category
+            old_attributes['position'] = self.position
+            
             category.channels.remove(self)
             
             self.position = position
             self.category = category
-            category.channels.append(self)
+            new_category.channels.append(self)
     
     def _permissions_for(self, user):
         """
@@ -1800,7 +1811,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         
         Parameters
         ----------
-        channel_id : `snowflake`
+        channel_id : `int` or `str`
             The channel's id.
         **kwargs : keyword arguments
             Additional predefined attributes for the channel.
@@ -2150,7 +2161,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         
         Parameters
         ----------
-        channel_id : `snowflake`
+        channel_id : `int` or `str`
             The channel's id.
         **kwargs : keyword arguments
             Additional predefined attributes for the channel.
@@ -2451,7 +2462,7 @@ class ChannelVoice(ChannelGuildBase):
         
         Parameters
         ----------
-        channel_id : `snowflake`
+        channel_id : `int` or `str`
             The channel's id.
         **kwargs : keyword arguments
             Additional predefined attributes for the channel.
@@ -2841,7 +2852,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         
         Parameters
         ----------
-        channel_id : `snowflake`
+        channel_id : `int` or `str`
             The channel's id.
         **kwargs : keyword arguments
             Additional predefined attributes for the channel.
@@ -2945,7 +2956,7 @@ class ChannelCategory(ChannelGuildBase):
         The channel's permission overwrites.
     position : `int`
         The channel's position.
-    channels : `weakposlist`
+    channels : `autoposlist`
         A list like datatype to store the category's channels in order.
     
     Class Attributes
@@ -2981,7 +2992,7 @@ class ChannelCategory(ChannelGuildBase):
         self._init_catpos(data, guild)
         self.overwrites=self._parse_overwrites(data)
         
-        self.channels=weakposlist()
+        self.channels=autoposlist()
     
     @classmethod
     def _from_partial_data(cls, data, channel_id, partial_guild):
@@ -3006,7 +3017,7 @@ class ChannelCategory(ChannelGuildBase):
         
         self._cache_perm= {}
         self.category   = None
-        self.channels   = weakposlist()
+        self.channels   = autoposlist()
         self.guild      = partial_guild
         self.id         = channel_id
         self.name       = data.get('name','')
@@ -3114,7 +3125,7 @@ class ChannelCategory(ChannelGuildBase):
         
         Parameters
         ----------
-        channel_id : `snowflake`
+        channel_id : `int` or `str`
             The channel's id.
         **kwargs : keyword arguments
             Additional predefined attributes for the channel.
@@ -3406,7 +3417,7 @@ class ChannelStore(ChannelGuildBase):
         
         Parameters
         ----------
-        channel_id : `snowflake`
+        channel_id : `int` or `str`
             The channel's id.
         **kwargs : keyword arguments
             Additional predefined attributes for the channel.
@@ -3631,6 +3642,7 @@ message.ChannelText = ChannelText
 message.ChannelPrivate = ChannelPrivate
 message.ChannelGroup = ChannelGroup
 ratelimit.ChannelBase = ChannelBase
+ratelimit.ChannelGuildBase = ChannelGuildBase
 http.ChannelGuildBase = ChannelGuildBase
 
 del message

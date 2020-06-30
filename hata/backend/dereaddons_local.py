@@ -61,7 +61,10 @@ def any_to_any(v1,v2):
     return False
 
 class autoposlist(list):
-    __slots__=()
+    """
+    Represents an autopositioned list.
+    """
+    __slots__ = ()
     
     extend = RemovedDescriptor()
     __add__ = RemovedDescriptor()
@@ -72,253 +75,176 @@ class autoposlist(list):
     __rmul__ = RemovedDescriptor()
     __setitem__ = RemovedDescriptor()
     insert = RemovedDescriptor()
-    sort = RemovedDescriptor()
     reverse = RemovedDescriptor()
     
     def __init__(self):
         list.__init__(self)
     
     def append(self,value):
-        index=value.position
-        ln=len(self)
+        """
+        Adds the given element to the list.
+        
+        Parameters
+        ----------
+        value : `Any`
+        """
+        list.insert(self,self.relative_index(value),value)
+    
+    def relative_index(self, value):
+        """
+        Retunrs on which the given `value` would be inserted into the list.
+        
+        Parameters
+        ----------
+        value : `Any`
+        
+        Returns
+        -------
+        relative_index : `int`
+        """
+        bot = 0
+        top = len(self)
+        
         while True:
-            if index==ln:
-                break
-            self[index].position+=1
-            index+=1
-        list.insert(self,value.position,value)
-
-    def append_unchecked(self,value):
-        list.insert(self,self.index(value),value)
-
-    def append_halfchecked(self,value):
-        index=self.index(value)
-        list.insert(self,index,value)
-        ln=len(self)
-        last_position=value.position
-        while True:
-            index+=1
-            if index>=ln:
-                break
-            value=self[index]
-            position=value.position
-            if position!=last_position:
-                break
-            last_position+=1
-            value.position=last_position
-            
-    def index(self,value):
-        bot=0
-        top=len(self)
-        if not top:
-            return 0
-        while True:
-            if bot<top:
-                half=(bot+top)>>1
-                if self[half].position<value.position:
-                    bot=half+1
+            if bot < top:
+                half = (bot+top)>>1
+                if self[half] < value:
+                    bot = half+1
                 else:
-                    top=half
+                    top = half
                 continue
             return bot
-
-    def remove(self,value):
-        index=self.index(value)
-        if self[index]==value:
+    
+    def index(self, value):
+        """
+        Returns the exact index of the given `value`, or `-1` if it is not in the list.
+        
+        Parameters
+        ----------
+        value : `Any`
+            Any object with `.position` attribute.
+        
+        Returns
+        -------
+        index : `int`
+        
+        Raises
+        ------
+        ValueError
+            The given `value` is not in the list.
+        """
+        index = self.relative_index(value)
+        if (index == len(self)) or (self[index] != value):
+            raise ValueError(f'{value!r} is not in the {self.__class__.__name__}.')
+        
+        return index
+    
+    def remove(self, value):
+        """
+        Removes the given value from the list.
+        
+        Parameters
+        ----------
+        value : `Any`
+            Any object with `.position` attribute.
+        
+        Notes
+        -----
+        if the given `value` is not in the list, `ValueError` will not be raised.
+        """
+        index = self.relative_index(value)
+        if (index != len(self)) and (self[index] == value):
             del self[index]
-        else:
-            raise ValueError(f'Searched for {value}, but found {self[index]}')
-    def __contains__(self,value):
-        return self[self.index(value)]==value
-    def change_on_switch(self,value,new_position,key=None):
+    
+    def __contains__(self, value):
+        """Returns whether the given value is in the list."""
+        return (self.index(value) != -1)
+    
+    def change_on_switch(self, value, new_position, key=None):
+        """
+        Calcualtes the changes if the given `value` would be moved to an another position.
+        
+        Parameters
+        ----------
+        value : `Any`
+            The object, whatt would be moved.
+        new_position : `int`
+            The new position of the value.
+        key : `None` or `callable`
+            A special callable what would be used to used to build each element of the result.
+        
+        Returns
+        -------
+        result : `list` of (`tuple` (`int`, `Any`)) or `callable` returns
+            The changed positons.
+        
+        Raises
+        ------
+        ValueError
+            The given `value` is not in the list.
+        """
         ln=len(self)
-        if new_position>=ln:
-            new_position=ln-1
-        elif new_position<0:
-            new_position=0
-        old_position=value.position
-        if self[old_position]!=value:
-            raise ValueError('The object is not in the list')
-        result=[]
-        if new_position==old_position:
+        
+        old_position = self.relative_index(value)
+        if (old_position == ln) or (self[old_position] != value):
+            raise ValueError(f'{value!r} is not in the {self.__class__.__name__}.')
+        
+        if new_position >= ln:
+            new_position = ln-1
+        elif new_position < 0:
+            new_position = 0
+        
+        result = []
+        if new_position == old_position:
             return result
-        if new_position<old_position:
-            index=new_position
-            limit=old_position
-            change=+1
-        else:
-            index=old_position+1
-            limit=new_position+1
-            change=-1
-        if key is None:
-            while True:
-                actual=self[index]
-                result.append((actual,actual.position+change),)
-                index+=1
-                if index==limit:
-                    break
-            if change>0:
-                result.insert(0,(value,new_position),)
-            else:
-                result.append((value,new_position),)
-        else:
-            while True:
-                 actual=self[index]
-                 result.append(key(actual,actual.position+change),)
-                 index+=1
-                 if index==limit:
-                     break
-            if change>0:
-                result.insert(0,key(value,new_position),)
-            else:
-                result.append(key(value,new_position),)
-        return result
-    def __delitem__(self,index):
-        list.__delitem__(self,index)
-        ln=len(self)
-        while True:
-            if index==ln:
-                break
-            self[index].position-=1
-            index+=1
-
-    def switch(self,value,new_position):
-        #discord dev safe
-        value.position=new_position
-        list.sort(self)
         
-##        ln=len(self)
-##        old_position=value.position
-##        if old_position<0 or old_position>=ln:
-##            raise IndexError(old_position)
-##        if new_position<0 or new_position>=ln:
-##            raise IndexError(new_position)
-##        if new_position==old_position:
-##            return
-##        if new_position<old_position:
-##            index=new_position
-##            limit=old_position
-##            change=+1
-##        else:
-##            index=old_position+1
-##            limit=new_position+1
-##            change=-1
-##        while True:
-##            if index==limit:
-##                break
-##            self[index].position+=change
-##            index+=1
-##        list.pop(self,old_position)
-##        value.position=new_position
-##        list.insert(self,new_position,value)
-    def pop(self,index=None):
-        if index is None:
-            return list.pop(self)
-        value=list.pop(self,index)
-        ln=len(self)
+        if new_position < old_position:
+            index = new_position
+            limit = old_position
+            change = +1
+        
+        else:
+            index = old_position+1
+            limit = new_position+1
+            change = -1
+        
         while True:
-            self[index].position-=1
-            index+=1
-            if index==ln:
+            actual = self[index]
+            index += 1
+            
+            position = index+change
+            if key is None:
+                element = (actual, position)
+            else:
+                element = key(actual, position)
+            
+            result.append(element)
+            
+            if index == limit:
                 break
-        return value
-    def change_on_remove(self,value,key=None):
-        index=self.index(value)
-        if self[index]==value:
-            return self._change_on_del(index,key)
-        else:
-            raise ValueError(f'Searched for {self[index]}, but found {value}')
-    def change_on_del(self,index,key=None):
-        if index<0 or index>=len(self):
-            raise ValueError('List index out of range.')
-        return self._change_on_del(index,key)
-    def change_on_pop(self,index=None,key=None):
-        if index is None:
-            #index=len(self)-1
-            return []
-        if index<0 or index>=len(self):
-            raise ValueError('List index out of range.')
-        return self._change_on_del(index,key)
-    def _change_on_del(self,index,key):
-        result=[]
-        index+=1
-        ln=len(self)
-        if key:
-            while True:
-                if index==ln:
-                    break
-                value=self[index]
-                result.append(key(value,value.position-1))
-                index+=1
-
-        else:
-            while True:
-                if index==ln:
-                    break
-                value=self[index]
-                result.append((value,value.position-1),)
-                index+=1
-
-        return result
-    def change_on_append(self,value,key=None):
-        position=value.position
-        ln=len(self)
-        result=[]
-        if position>ln:
-            position=ln
+            
+            continue
+        
         if key is None:
-            while True:
-                result.append((value,position),)
-                if position==ln:
-                    break
-                value=self[position]
-                position+=1
+            element = (value, new_position)
         else:
-            while True:
-                result.append(key(value,position))
-                if position==ln:
-                    break
-                value=self[position]
-                position+=1
-                
+            element = key(value, new_position)
+        
+        if change > 0:
+            result.index(0, element)
+        else:
+            result.append(element)
+        
         return result
-    
-    def where(self,key):
-        for value in self:
-            if key(value):
-                return value
+
+def where(self, key):
+    for value in self:
+        if key(value):
+            break
+    else:
         raise LookupError(key)
-
-class weakposlist(list):
-    __slots__   = autoposlist.__slots__
-    __init__    = autoposlist.__init__
-    def index(self,value):
-        bot=0
-        top=len(self)
-        if not top:
-            return 0
-        while True:
-            if bot<top:
-                half=(bot+top)>>1
-                if self[half]<value:
-                    bot=half+1
-                else:
-                    top=half
-                continue
-            return bot
-    append      = autoposlist.append_unchecked
-    remove      = autoposlist.remove
-    __contains__= autoposlist.__contains__
-    where       = autoposlist.where
-
-    #no append_unchecked(self,value)
-        
-    #list's __delitem__(self,index)
-    #list's pop(self,index=None)
     
-    def switch(self,value,new_position):
-        value.position=new_position
-        self.sort()
+    return value
 
 class KeepType(object):
     __slots__ = ('old_class')
@@ -856,7 +782,7 @@ class MethodLike(metaclass=SubCheckType):
         raise TypeError(f'Expected a method like, got {instance!r}')
 
 class basemethod(MethodLike):
-    __slots__=('__base__', '__func__', '__self__', )
+    __slots__ = ('__base__', '__func__', '__self__', )
     __reserved_argcount__=2
     
     def __init__(self, func, cls, base):

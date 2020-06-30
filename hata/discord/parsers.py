@@ -2089,7 +2089,7 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client,data):
                 if coro is DEFAULT_EVENT:
                     continue
                 
-                Task(coro(client,guild,emoji,old_attributes),KOKORO)
+                Task(coro(client,emoji,old_attributes),KOKORO)
                 continue
                 
             if action==EMOJI_UPDATE_NEW:

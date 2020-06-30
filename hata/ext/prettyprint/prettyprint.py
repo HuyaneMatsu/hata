@@ -15,6 +15,7 @@ if (relativedelta is not None):
 from ...discord.permission import Permission
 from ...discord.user import ZEROUSER
 from ...discord.message import MessageType
+from ...discord.role import Role
 
 #testerfile for events
 #later embeds will be added in plan
@@ -846,10 +847,15 @@ def str_PermOW(overwrite,index=None,detailed=True,**kwargs):
         
     result.append(f'{start}Permission overwrite:')
     target=overwrite.target
-    if overwrite.type=='member':
-        result.append(f'- target: user "{target:f}" ({target.id})',1)
+    if type(target) is Role:
+        entity_type_name = 'role'
+        entity_name = target.name
     else:
-        result.append(f'- target: role "{target.name}" ({target.id})',1)
+        entity_type_name = 'user'
+        entity_name = target.full_name
+    
+    result.append(f'- target: {entity_type_name} {entity_name!r} ({target.id})',1)
+    
     allow=overwrite.allow
     deny=overwrite.deny
     if detailed:

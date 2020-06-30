@@ -13,15 +13,73 @@ from ...discord.guild import Guild
 from ...discord.permission import Permission
 from ...discord.role import Role
 from ...discord.channel import ChannelBase
+from ...discord.bases import instance_or_id_to_instance, instance_or_id_to_snowflake
 
 from .compiler import parse, COMMAND_CALL_SETTING_2ARGS, COMMAND_CALL_SETTING_3ARGS, COMMAND_CALL_SETTING_USE_PARSER
 
 COMMAND_RP=re.compile(' *([^ \t\\n]*) *(.*)')
 
+AUTO_DASH_MAIN_CHAR = '-'
+AUTO_DASH_APPLICABLES = ('-', '_')
+
+assert (len(AUTO_DASH_APPLICABLES)==0) or (AUTO_DASH_APPLICABLES != AUTO_DASH_APPLICABLES[0]), (
+    f'`AUTO_DASH_MAIN_CHAR` (AUTO_DASH_MAIN_CHAR={AUTO_DASH_MAIN_CHAR!r} is not `AUTO_DASH_APPLICABLES[0]` '
+    f'(AUTO_DASH_APPLICABLES={AUTO_DASH_APPLICABLES!r}!)')
+
+def generate_alters_for(name):
+    chars = []
+    pattern = []
+    for char in name:
+        if char in AUTO_DASH_APPLICABLES:
+            if chars:
+                pattern.append(''.join(chars))
+                chars.clear()
+            
+            pattern.append(None)
+            continue
+        
+        chars.append(char)
+        continue
+    
+    if chars:
+        pattern.append(''.join(chars))
+        chars.clear()
+    
+    alters = []
+    if len(pattern) == 1:
+        alters.append(pattern[0])
+    
+    else:
+        generated = [[]]
+        for part in pattern:
+            if (part is not None):
+                for generated_sub in generated:
+                    generated_sub.append(part)
+                continue
+            
+            count = len(generated)
+            for _ in range(len(AUTO_DASH_APPLICABLES)-1):
+                for index in range(count):
+                    generated_sub = generated[index]
+                    generated_sub = generated_sub.copy()
+                    generated.append(generated_sub)
+            
+            index = 0
+            for char in AUTO_DASH_APPLICABLES:
+                for _ in range(count):
+                    generated_sub = generated[index]
+                    generated_sub.append(char)
+                    
+                    index+=1
+        
+        connected = [''.join(generated_sub) for generated_sub in generated]
+        alters.extend(connected)
+    
+    return alters
+
 class Command(object):
-    __slots__ = ( '_call_setting', '_category_hint', '_check_failure_handler',
-        '_checks', '_parser', '_parser_failure_handler', 'aliases', 'category',
-        'command', 'description', 'name', )
+    __slots__ = ( '_alters', '_call_setting', '_category_hint', '_check_failure_handler', '_checks', '_parser',
+        '_parser_failure_handler', 'aliases', 'category', 'command', 'description', 'name', )
     
     @classmethod
     def from_class(cls, klass, kwargs=None):
@@ -133,50 +191,48 @@ class Command(object):
         
         name = check_name(command,name)
         
-        while True:
-            if aliases is None:
-                aliases_processed=None
-                break
+        # Check aliases
+        aliases_checked = []
+        
+        if (aliases is not None):
+            aliases_type = aliases.__class__
+            if issubclass(aliases_type, str) or (not hasattr(aliases_type, '__iter__')):
+                raise TypeError(f'`aliases` should have be passed as an `iterable` of `str`, got '
+                    f'{aliases_type.__class__}.')
             
-            aliases_processed=[]
-            if isinstance(aliases,str) or (not hasattr(type(aliases),'__iter__')):
-                raise TypeError(f'`aliases` should have be passed as an `iterable` of `str`, got `{aliases!r}`.')
-            
+            index = 1
             for alias in aliases:
-                if type(alias) is not str:
-                    raise TypeError(f'`aliases` should have be passed as an `iterable` of `str`, meanwhile has at least 1 non `str` element: `{alias!r}`.')
+                alias_type = alias.__class__
+                if alias_type is str:
+                    pass
+                elif issubclass(alias_type, str):
+                    alias = str(alias)
+                else:
+                    raise TypeError(f'Element {index} of `aliases` should have been `str` instacne, meanwhile got '
+                        f'{alias_type.__name__}.')
                 
-                if not alias.islower():
-                    alias=alias.lower()
-                
-                aliases_processed.append(alias)
-            
-            if not aliases_processed:
-                aliases_processed=None
-            
-            aliases_processed.sort()
-            
-            index=len(aliases_processed)-1
-            last=aliases_processed[index]
-            
-            while True:
-                index=index-1
-                if index<0:
-                    break
-                
-                new=aliases_processed[index]
-                if last==new:
-                    del aliases_processed[index]
-                    continue
-                
-                last=new
-                continue
-                
-            if aliases_processed:
-                break
-            
-            aliases_processed=None
-            break
+                aliases_checked.append(alias)
+        
+        alters = set()
+        alters_sub = generate_alters_for(name)
+        name = alters_sub[0]
+        alters.update(alters_sub)
+        
+        aliases = set()
+        for alias in aliases_checked:
+            alters_sub = generate_alters_for(alias)
+            aliases.add(alters_sub[0])
+            alters.update(alters_sub)
+        
+        try:
+            aliases.remove(name)
+        except KeyError:
+            pass
+        
+        if aliases:
+            aliases = sorted(aliases)
+        else:
+            aliases = None
         
         if description is None:
             description=getattr(command,'__doc__',None)
@@ -240,9 +296,10 @@ class Command(object):
         self=object.__new__(cls)
         self.command        = command
         self.name           = name
-        self.aliases        = aliases_processed
+        self.aliases        = aliases
         self.description    = description
         self.category       = category
+        self._alters        = alters
         self._call_setting  = call_setting
         self._category_hint = category_hint
         self._checks        = checks_processed
@@ -630,42 +687,6 @@ class checks:
         
         raise TypeError(f'`permissions` should have been passed as a `Permission` object or as an `int` instance, got `{permissions!r}`.')
     
-    def _convert_guild(guild):
-        if type(guild) is Guild:
-            return guild.id
-        
-        if isinstance(guild,int):
-            if type(guild) is not int:
-                guild=int(guild)
-            
-            return guild
-        
-        raise TypeError(f'`guild` should have been passed as a `Guild` object or as an `int` instance, got `{guild!r}`.')
-    
-    def _convert_role(role):
-        if type(role) is Role:
-            return role
-        
-        if isinstance(role,int):
-            if type(role) is not int:
-                role=int(role)
-            
-            return Role.precreate(role)
-        
-        raise TypeError(f'`role` should have been passed as a `Role` object or as an `int` instance, got `{role!r}`.')
-    
-    def _convert_channel(channel):
-        if isinstance(channel,ChannelBase):
-            return channel.id
-        
-        if isinstance(channel,int):
-            if type(channel) is not int:
-                channel=int(channel)
-            
-            return channel
-        
-        raise TypeError(f'`channel` should have been passed as a `ChannelBase` or as `int` instance, got `{channel!r}`.')
-    
     class _check_base(object):
         __slots__ = ('fail_identificator',)
         def __init__(self, fail_identificator=None):
@@ -714,7 +735,7 @@ class checks:
     class has_role(_check_base):
         __slots__ = ('role', )
         def __init__(self, role, fail_identificator=None):
-            self.role = checks._convert_role(role)
+            self.role = instance_or_id_to_instance(role, Role)
             self.fail_identificator = checks._convert_fail_identificator(fail_identificator)
         
         def __call__(self, client, message):
@@ -739,7 +760,7 @@ class checks:
         def __init__(self, roles, fail_identificator=None):
             roles_processed = set()
             for role in roles:
-                role = checks._convert_role(role)
+                role = instance_or_id_to_instance(role, Role)
                 roles_processed.add(role)
             
             self.roles = roles_processed
@@ -915,8 +936,8 @@ class checks:
     
     class is_guild(_check_base):
         __slots__ = ('guild_id', )
-        def __init__(self, guild_id, fail_identificator=None):
-            guild_id = checks._covert_guild(guild_id)
+        def __init__(self, guild, fail_identificator=None):
+            guild_id = instance_or_id_to_snowflake(guild, Guild)
             fail_identificator = checks._convert_fail_identificator(fail_identificator)
             
             self.guild_id = guild_id
@@ -937,7 +958,7 @@ class checks:
         def __init__(self, guild_ids, fail_identificator=None):
             guild_ids_processed = set()
             for guild in guild_ids:
-                guild_id = checks._covert_guild(guild)
+                guild_id = instance_or_id_to_snowflake(guild, Guild)
                 guild_ids.add(guild_id)
             
             fail_identificator = checks._convert_fail_identificator(fail_identificator)
@@ -985,7 +1006,7 @@ class checks:
     class is_channel(_check_base):
         __slots__ = ('channel_id', )
         def __init__(self, channel, fail_identificator=None):
-            channel_id = checks._covert_guild(channel)
+            channel_id = instance_or_id_to_snowflake(channel, ChannelBase)
             fail_identificator = checks._convert_fail_identificator(fail_identificator)
             
             self.channel_id = channel_id
@@ -1002,7 +1023,7 @@ class checks:
         def __init__(self, channels, fail_identificator=None):
             channel_ids = set()
             for channel in channels:
-                channel_id = checks._covert_guild(channel)
+                channel_id = instance_or_id_to_snowflake(channel, ChannelBase)
                 channel_ids.add(channel_id)
             
             fail_identificator = checks._convert_fail_identificator(fail_identificator)
@@ -1366,17 +1387,9 @@ class CommandProcesser(EventWaitforBase):
         
         commands=self.commands
         for command in category.commands:
-            name=command.name
-            other_command=commands.get(name)
-            if other_command is command:
-                del commands[name]
-            
-            aliases=command.aliases
-            if aliases is None:
-                continue
-            
-            for name in aliases:
-                other_command=commands.get(name)
+            alters = command._alters
+            for name in alters:
+                other_command = commands.get(name)
                 if other_command is command:
                     del commands[name]
     
@@ -1505,43 +1518,44 @@ class CommandProcesser(EventWaitforBase):
         commands=self.commands
         name=command.name
         
-        would_overwrite=commands.get(name)
+        would_overwrite = commands.get(name)
         if (would_overwrite is not None) and (would_overwrite.name!=name):
             raise ValueError(f'The command would overwrite an alias of an another one: `{would_overwrite}`.'
                 'If you intend to overwrite an another command please overwrite it with it\'s default name.')
         
-        aliases=command.aliases
-        if (aliases is not None):
-            for alias in aliases:
-                try:
-                    overwrites=commands[alias]
-                except KeyError:
-                    continue
-                
-                if overwrites is would_overwrite:
-                    continue
-                
-                error_message_parts = [
-                    'Alias `',
-                    repr(alias),
-                    '` would overwrite an other command; `',
-                    repr(overwrites),
-                    '`.'
-                        ]
-                
-                if (would_overwrite is not None):
-                    error_message_parts.append(' The command already overwrites an another one with the same name: `')
-                    error_message_parts.append(repr(would_overwrite))
-                    error_message_parts.append('`.')
-                
-                raise ValueError(''.join(error_message_parts))
+        alters=command._alters
+        for alter in alters:
+            try:
+                overwrites=commands[alter]
+            except KeyError:
+                continue
+            
+            if overwrites is would_overwrite:
+                continue
+            
+            error_message_parts = [
+                'Alter `',
+                repr(alter),
+                '` would overwrite an other command; `',
+                repr(overwrites),
+                '`.',
+                    ]
+            
+            if (would_overwrite is not None):
+                error_message_parts.append(' The command already overwrites an another one with the same name: `')
+                error_message_parts.append(repr(would_overwrite))
+                error_message_parts.append('`.')
+            
+            raise ValueError(''.join(error_message_parts))
         
         if (would_overwrite is not None):
-            aliases=would_overwrite.aliases
-            if (aliases is not None):
-                for alias in aliases:
-                    if commands[alias] is would_overwrite:
-                        del commands[alias]
+            alters = would_overwrite._alters
+            for alter in alters:
+                if commands[alter] is would_overwrite:
+                    try:
+                        del commands[alter]
+                    except KeyError:
+                        pass
             
             category=would_overwrite.category
             if (category is not None):
@@ -1553,12 +1567,11 @@ class CommandProcesser(EventWaitforBase):
         category.commands.add(command)
         if not category_added:
             self.categories.add(category)
-        commands[name]=command
         
-        aliases=command.aliases
-        if (aliases is not None):
-            for alias in aliases:
-                commands[alias]=command
+        # Alters contain `command.name` as well, so skip that case.
+        alters = command._alters
+        for alter in alters:
+            commands[alter]=command
         
         return command
     
@@ -1567,64 +1580,67 @@ class CommandProcesser(EventWaitforBase):
             raise TypeError(f'Case should have been `str`, or can be `None` if `func` is passed as `Command` instance. Got `{name!r}`.')
         
         if type(func) is Command:
-            commands=self.commands
+            commands = self.commands
+            if (name is None):
+                name_alters = None
+            else:
+                name_alters = generate_alters_for(name)
+                name = name_alters[0]
+            
             if (name is None) or (name==func.name):
-                found_names=[]
+                found_alters = []
                 
-                name=func.name
-                try:
-                    command=commands[name]
-                except KeyError:
-                    pass
-                else:
-                    if command is func:
-                        found_names.append(name)
+                for alter in func._alters:
+                    try:
+                        command = commands[alter]
+                    except KeyError:
+                        pass
+                    else:
+                        if command is func:
+                            found_alters.append(name)
                 
-                aliases=func.aliases
-                if (aliases is not None):
-                    for name in aliases:
-                        try:
-                            command=commands[name]
-                        except KeyError:
-                            pass
-                        else:
-                            if command is func:
-                                found_names.append(name)
-                
-                if not found_names:
+                if not found_alters:
                     raise ValueError(f'The passed command `{func!r}` is not added with any of it\'s own names as a command.')
                 
-                for name in found_names:
-                    del commands[name]
-                    
-                category=self.get_category(func.name)
+                for alter in found_alters:
+                    try:
+                        del commands[alter]
+                    except KeyError:
+                        pass
+                
+                category = func.category
                 if (category is not None):
                     category.commands.remove(func)
                 
                 return
             
-            aliases=func.aliases
+            aliases = func.aliases
             if (aliases is None):
-                raise ValueError(f'The passed name `{name!r}` is not the name, neither an alias of the command `{func!r}`')
+                raise ValueError(f'The passed name `{name!r}` is not the name, neither an alias of the command `{func!r}`.')
+            
+            if name not in aliases:
+                raise ValueError(f'The passed name `{name!r}` is not the name, neither an alias of the command `{func!r}`.')
             
             try:
-                position=aliases.index(name)
-            except ValueError:
-                raise ValueError(f'The passed name `{name!r}` is not the name, neither an alias of the command `{func!r}`')
-            
-            try:
-                command=commands[name]
+                command = commands[name]
             except KeyError:
                 raise ValueError(f'At the passed name `{name!r}` there is no command removed, so it cannot be deleted either.')
             
             if func is not command:
                 raise ValueError(f'At the specified name `{name!r}` there is a different command added already.')
             
-            del aliases[position]
+            aliases.remove(name)
             if not aliases:
-                func.aliases=None
+                func.aliases = None
             
-            del commands[name]
+            func._alters.difference_update(name_alters)
+            
+            for alter in name_alters:
+                try:
+                    del commands[alter]
+                except KeyError:
+                    pass
+            
             return
             
         if name is None:
@@ -1651,13 +1667,19 @@ class CommandProcesser(EventWaitforBase):
             
             raise ValueError(f'The passed `{name!r}` ({func!r}) is not the same as the already loaded one: `{self.command_error!r}`')
         
+        commands = self.commands
         try:
-            command=self.commands[name]
+            command = commands[name]
         except KeyError:
             raise ValueError(f'The passed `{name!r}` is not added as a command right now.') from None
         
         if compare_converted(command.command,func):
-            del self.commands[name]
+            for alter in command._alters:
+                try:
+                    del commands[alter]
+                except KeyError:
+                    pass
+            
             return
         
         raise ValueError(f'The passed `{name!r}` (`{func!r}`) command is not the same as the already loaded one: `{command!r}`')

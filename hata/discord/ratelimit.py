@@ -14,12 +14,13 @@ from ..backend.hdrs import DATE
 from .client_core import KOKORO
 from .others import Discord_hdrs
 
-ChannelBase = NotImplemented
-Message     = NotImplemented
-Role        = NotImplemented
-Webhook     = NotImplemented
-WebhookRepr = NotImplemented
-Guild       = NotImplemented
+ChannelBase      = NotImplemented
+ChannelGuildBase = NotImplemented
+Message          = NotImplemented
+Role             = NotImplemented
+Webhook          = NotImplemented
+WebhookRepr      = NotImplemented
+Guild            = NotImplemented
 
 RATELIMIT_RESET         = Discord_hdrs.RATELIMIT_RESET
 RATELIMIT_RESET_AFTER   = Discord_hdrs.RATELIMIT_RESET_AFTER
@@ -383,14 +384,51 @@ class RatelimitUnit(object):
         return ''.join(result)
 
 class RatelimitHandler(object):
+    """
+    Handles a request's ratelimit.
+    
+    Attributes
+    ----------
+    active : `int`
+        The amount of active requests with the same `limiter_id` and with the same `parent`.
+    drops : `None` or `RatelimitUnit`
+        The already used up ratelimits.
+    limiter_id : `int`
+        The `id` of the Discord Entity based on what the handler is limiter.
+    parent : ``RatelimitGroup``
+        The ratelimit group of the ratelimit handler.
+    queue : `None` or (`deque` of `Future`)
+        Queue of `Future` objects of waiting requests.
+    wakeupper : `None` or `TimerHandle`
+        Wakeupups the ratelimit handler, when it's ratelimits are reset.
+    
+    Notes
+    -----
+    ``RatelimitHandler`` supports weakreferencing for garbage collecting purposing.
+    """
     __slots__ = ('__weakref__', 'active', 'drops', 'limiter_id', 'parent', 'queue', 'wakeupper', )
     def __init__(self, parent, limiter_id):
+        """
+        Creates a new ratelimit handler.
+        
+        New ratelimit handlers have `.queue` set to `None` not because it does not need `.queue` attribute, like the
+        `.drops` or `.wakeupper` one, but because this ratelimit handler might be used just to look up an already
+        existing one with the same `.limiter_id` and `.parent`, so creating an another `deque` and then collecting it
+        would be just waste of resources.
+        
+        Parameters
+        ----------
+        parent : ``RatelimitGroup``
+            The ratelimit group of the ratelimit handler.
+        limiter_id : `int`
+            The `id` of the Discord Entity based on what the handler is limiter.
+        """
         self.parent     = parent
         
         limiter = parent.limiter
         if limiter is LIMITER_UNLIMITED:
             limiter_id = 0
-        elif limiter is LIMITER_UNLIMITED:
+        elif limiter is LIMITER_GLOBAL:
             limiter_id = GLOBALLY_LIMITED
         
         self.limiter_id = limiter_id
@@ -400,6 +438,14 @@ class RatelimitHandler(object):
         self.wakeupper  = None
     
     def copy(self):
+        """
+        Copies the ratelimit handler. Only the `.parent` and the `.limiter_id` attributes are copied, because those
+        are enough to describe it and will not cause missbehaviour.
+        
+        Returns
+        -------
+        new : ``RatelimitHandler``
+        """
         new = object.__new__(type(self))
         new.parent      = self.parent
         new.limiter_id  = self.limiter_id
@@ -410,6 +456,7 @@ class RatelimitHandler(object):
         return new
     
     def __repr__(self):
+        """Returns the representation of the ratelimit handler."""
         result = [
             '<',
             self.__class__.__name__,
@@ -455,6 +502,7 @@ class RatelimitHandler(object):
         return ''.join(result)
     
     def __bool__(self):
+        """Retunrs whether the ratelimit handler is active."""
         if self.active:
             return True
         
@@ -467,7 +515,8 @@ class RatelimitHandler(object):
         
         return False
     
-    def __eq__(self,other):
+    def __eq__(self, other):
+        """Returns whether the two ratelimit handler has the same `.limiter_id` and `.parent`."""
         if self.limiter_id!=other.limiter_id:
             return False
         
@@ -476,7 +525,8 @@ class RatelimitHandler(object):
         
         return True
     
-    def __ne__(self,other):
+    def __ne__(self, other):
+        """Returns whether the two ratelimit handler has different `.limiter_id` or `.parent`."""
         if self.limiter_id!=other.limiter_id:
             return True
         
@@ -486,9 +536,15 @@ class RatelimitHandler(object):
         return False
     
     def __hash__(self):
+        """Hashes the ratelimit handler."""
         return self.parent.group_id+self.limiter_id
     
     async def enter(self):
+        """
+        Waits till a respective can be started.
+        
+        Should be called before the ratelimit handler is used inside of it's context manager.
+        """
         size = self.parent.size
         if size < 1:
             if size == UNLIMITED_SIZE_VALUE:
@@ -526,6 +582,17 @@ class RatelimitHandler(object):
         self.active = self.active+1
     
     def exit(self, headers):
+        """
+        Called by the ratelimit handler's context manager (``RatelimitHandlerCTX``) when a respective request is done.
+        
+        Calculates the ratelimits based on the given `headers`. Handles first request, optimistic ratelimit handling
+        and changed ratelimit sizes as well.
+        
+        Parameters
+        ----------
+        headers : `None` or `multidict_titled`
+            Response headers
+        """
         current_size = self.parent.size
         if current_size == UNLIMITED_SIZE_VALUE:
             return
@@ -621,7 +688,12 @@ class RatelimitHandler(object):
         self.wakeupper = wakeupper
     
     def wakeup(self):
-        # add some delay, so we wont need to wakeup that much time
+        """
+        Called by `.wakeupper` when the handler's ratelimits are dropped.
+        
+        Checks whether there are waiting requests to start and starts the maximal amount what the ratelimits allow.
+        If there are still ratelimits left, then sets an another wakeupper.
+        """
         drops = self.drops
         if (drops is None):
             wakeupper = None
@@ -658,9 +730,23 @@ class RatelimitHandler(object):
             continue
     
     def ctx(self):
+        """
+        Context manager for ratelimit handler.
+        
+        Returns
+        -------
+        ctx : ``RatelimitHandlerCTX``
+        """
         return RatelimitHandlerCTX(self)
     
     def count_drops(self):
+        """
+        Counts how much request is already used up.
+        
+        Returns
+        -------
+        result : `int`
+        """
         drops = self.drops
         result = 0
         while (drops is not None):
@@ -671,19 +757,51 @@ class RatelimitHandler(object):
         return result
 
 class RatelimitHandlerCTX(object):
+    """
+    Context manager of a ``RatelimitHandler``.
+    
+    When the ``RatelimitHandlerCTX`` is exited by it's ``.exit`` or by it's ``.__exit__`` for the first time, then
+    calls it's parent's ``.exit`` indicate that the request is done.
+    
+    Attributes
+    ----------
+    parent : ``RatelimitHandler``
+        The owner ratelimit handler.
+    exited : `bool`
+        Whether the context manager was exited already.
+    """
     __slots__ = ('parent', 'exited', )
-    def __init__(self,parent):
+    def __init__(self, parent):
+        """
+        Creates a new ratelimit handler context manager.
+        
+        Parameters
+        ----------
+        parent : ``RatelimitHandler``
+            The owner ratelimit handler.
+        """
         self.parent = parent
         self.exited = False
     
     def exit(self, headers):
+        """
+        Marks the context manager as it was already exited and exists's its parent with the given `headers` as well.
+        
+        Parameters
+        ----------
+        headers : `None` or `multidict_titled`
+            Response headers.
+        """
+        assert not self.exited, '`RatelimitHandlerCTX.exit` was already called.'
         self.exited = True
         self.parent.exit(headers)
     
     def __enter__(self):
+        """Enters the conext manager returning itself."""
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """Exists the context manager and if the context manager was not exited yet, exists it's parent as well."""
         if self.exited:
             return
         
@@ -691,15 +809,72 @@ class RatelimitHandlerCTX(object):
         self.parent.exit(None)
 
 class RatelimitProxy(object):
+    """
+    A proxy towards a ratelimit.
+    
+    Attributes
+    ----------
+    _handler : None` or (`WeakReferer` to ``RatelimitHandler``)
+        Reference to the actual ratelimit handler of the `client` with the specfiied `group` and `limiter`.
+    _key : ``RatelimitHandler``
+        Ratelimit handler used to lookup the active one.
+    client : ``Client``
+        Who's ratelimits will be looked up.
+    group : ``RatelimitGroup``
+        The proxy's ratelimit group to pull additional information.
+    """
     __slots__ = ('_handler', '_key', 'client', 'group',)
     def __new__(cls, client, group, limiter=None, keep_alive=False):
-        if type(group) is not RatelimitGroup:
-            raise TypeError(f'group should be type `{RatelimitGroup.__name__}`, got `{group!r}`.')
+        """
+        Creates a new ratelimit proxy.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            Who's ratelimits will be looked up.
+        group : ``RatelimitGroup``
+            The proxy's ratelimit group to pull additional information.
+        limiter : ``DiscordEntity`` instance, Optional
+            What's ratelimits will be looked up.
+            
+            The accepted types depend on the group's limiter:
+            +-----------------------+-----------------------------------------------------------------------+
+            | Respective limiter    |   Accepted values                                                     |
+            +=======================+=======================================================================+
+            | LIMITER_CHANNEL       | ``ChannelBase``, ``Message``                                          |
+            +-----------------------+-----------------------------------------------------------------------+
+            | LIMITER_GUILD         | ``Guild``, ``ChannelGuildBase``, ``Message``, ``Role``, ``Webhook``,  |
+            |                       | ``WebhookRepr``                                                       |
+            +-----------------------+-----------------------------------------------------------------------+
+            | LIMITER_WEBHOOK       | ``Webhook``, ``WebhookRepr``                                          |
+            +-----------------------+-----------------------------------------------------------------------+
+            | LIMITER_GLOBAL        | `Any`                                                                 |
+            +-----------------------+-----------------------------------------------------------------------+
+            | LIMITER_UNLIMITED     | `Any`                                                                 |
+            +-----------------------+-----------------------------------------------------------------------+
+            
+            Note that at the case of `LIMITER_GUILD` partial objects will yield `.guild` as `None` so `ValueError`
+            will still be raised.
+        keep_alive : `bool`, Optional
+            Whether the ratelimit proxy should keep alive the respective ratelimit handler. Defaults to `False`.
+        
+        Raises
+        ------
+        RuntimeError
+            If the given `group`'s limiter is not any of the predefined ones. Note that limiters are comapred by memory
+            address and not by value.
+        TypeError
+            If `group` was not given as ``RatelimitGroup`` instance.
+        ValueError
+            If the given `limiter` cannot be casted to `limiter_id` with the specified `group` .
+        """
+        if (type(group) is not RatelimitGroup):
+            raise TypeError(f'`group` should be type `{RatelimitGroup.__name__}`, got {group}.__class__.__name__.')
         
         while True:
             group_limiter = group.limiter
             if group_limiter is LIMITER_GLOBAL:
-                limiter_id = GLOBALLY_LIMITED
+                limiter_id = 0
                 break
             
             elif group_limiter is LIMITER_UNLIMITED:
@@ -707,29 +882,32 @@ class RatelimitProxy(object):
                 break
             
             elif group_limiter is LIMITER_CHANNEL:
-                if isinstance(limiter, ChannelBase):
-                    limiter_id = limiter.id
-                    break
-                
-                if type(limiter) is Message:
-                    limiter_id = limiter.channel.id
-                    break
-            
-            elif group_limiter is LIMITER_GUILD:
-                if isinstance(limiter, Guild):
-                    limiter_id = limiter.id
-                    break
-                
-                if isinstance(limiter, ChannelBase) or (type(limiter) in (Message, Role, Webhook, WebhookRepr)):
-                    guild = limiter.guild
-                    if (guild is not None):
-                        limiter_id = group.id
+                if (limiter is not None):
+                    if isinstance(limiter, ChannelBase):
+                        limiter_id = limiter.id
+                        break
+                    
+                    if type(limiter) is Message:
+                        limiter_id = limiter.channel.id
                         break
             
+            elif group_limiter is LIMITER_GUILD:
+                if (limiter is not None):
+                    if isinstance(limiter, Guild):
+                        limiter_id = limiter.id
+                        break
+                    
+                    if isinstance(limiter, ChannelGuildBase) or (type(limiter) in (Message, Role, Webhook, WebhookRepr)):
+                        guild = limiter.guild
+                        if (guild is not None):
+                            limiter_id = limiter.id
+                            break
+            
             elif group_limiter is LIMITER_WEBHOOK:
-                if type(limiter) in (Webhook, WebhookRepr):
-                    limiter_id = limiter.id
-                    break
+                if (limiter is not None):
+                    if type(limiter) in (Webhook, WebhookRepr):
+                        limiter_id = limiter.id
+                        break
             
             else:
                 raise RuntimeError(f'`{group!r}.limiter` is not any of the defined limit groups.')
@@ -737,6 +915,7 @@ class RatelimitProxy(object):
             raise ValueError(f'Cannot cast ratelimit group\'s: `{group!r}` ratelimit_id of: `{limiter!r}`.')
         
         key = RatelimitHandler(group, limiter_id)
+        
         if keep_alive:
             key = client.http.handlers.set(key)
             handler = WeakReferer(key)
@@ -751,24 +930,73 @@ class RatelimitProxy(object):
         return self
     
     def is_limited_by_channel(self):
+        """
+        Returns whether the represented ratelimit group is limited by channel id.
+        
+        Returns
+        -------
+        is_limited_by_channel : `bool`
+        """
         return (self.group.limiter is LIMITER_CHANNEL)
     
     def is_limited_by_guild(self):
+        """
+        Returns whether the represented ratelimit group is limited by guild id.
+        
+        Returns
+        -------
+        is_limited_by_guild : `bool`
+        """
         return (self.group.limiter is LIMITER_GUILD)
     
     def is_limited_by_webhook(self):
+        """
+        Returns whether the represented ratelimit group is limited by webhook id.
+        
+        Returns
+        -------
+        is_limited_by_webhook : `bool`
+        """
         return (self.group.limiter is LIMITER_WEBHOOK)
     
     def is_limited_globally(self):
+        """
+        Returns whether the represented ratelimit group is limited globally,
+        
+        Returns
+        -------
+        is_limited_globally : `bool`
+        """
         return (self.group.limiter is LIMITER_GLOBAL)
     
     def is_unlimited(self):
+        """
+        Returns whether the represented ratelimit group is unlimited,
+        
+        Returns
+        -------
+        is_unlimited : `bool`
+        """
         return (self.group.limiter is LIMITER_UNLIMITED)
     
     def is_alive(self):
+        """
+        Returns whether the respective client has the represented ratelimit handler is alive.
+        
+        Returns
+        -------
+        is_alive : `bool`
+        """
         return (self.handler is not None)
     
     def has_info(self):
+        """
+        Returns whether the represented ratelimit handler now stores any ratelimit onformation.
+        
+        Returns
+        -------
+        has_info : `bool`
+        """
         handler = self.handler
         if handler is None:
             return False
@@ -820,19 +1048,58 @@ class RatelimitProxy(object):
     keep_alive = property(_get_keep_alive, _set_keep_alive)
     del _get_keep_alive, _set_keep_alive
     
+    if (__new__.__doc__ is not None):
+        keep_alive.__doc__ = (
+        """
+        Get-set property for accessing whether the ratelimit proxy should keep alive the respective ratelimit handler.
+        
+        Accepts and returns `bool`.
+        """)
+    
     @property
     def limiter_id(self):
+        """
+        Returns the the represneted ratelimit handler's `.limiter_id`.
+        
+        Returns
+        -------
+        limiter_id : `int`
+        """
         return self._key.limiter_id
     
     def has_size_set(self):
+        """
+        Returns whether the represented ratelimit group size is already set.
+        
+        Not only not used ratelimit groups, but still optimistic or unlimited ratelimit groups fall under this
+        category as well.
+        
+        Returns
+        -------
+        has_size_set : `bool`
+        """
         return (self.group.size > 0)
     
     @property
     def size(self):
+        """
+        Returns the represented ratelimit group's size.
+        
+        Returns
+        -------
+        size : `int`
+        """
         return self.group.size
     
     @property
     def handler(self):
+        """
+        Returns the client's represented active handler if applicable.
+        
+        Returns
+        -------
+        handler : `None` or ``RatelimitHandler``
+        """
         handler = self._handler
         if (handler is not None):
             handler = handler()
@@ -847,6 +1114,13 @@ class RatelimitProxy(object):
     
     @property
     def used_count(self):
+        """
+        Returns how much requests are used up or already done right now.
+        
+        Returns
+        -------
+        count : `int`
+        """
         handler = self.handler
         if handler is None:
             return 0
@@ -855,6 +1129,15 @@ class RatelimitProxy(object):
     
     @property
     def free_count(self):
+        """
+        Returns how much requests can be done towards the represented ratelimit.
+        
+        If the ratelimit proxy represents an unlimited endpoint, then `0` is returned.
+        
+        Returns
+        -------
+        free_count : `int`
+        """
         size = self.group.size
         if size < 1:
             if size == 0:
@@ -872,6 +1155,13 @@ class RatelimitProxy(object):
     
     @property
     def waiting_count(self):
+        """
+        Returns how much requests are waiting in queue by the represented ratelimit.
+        
+        Returns
+        -------
+        count : `int`
+        """
         handler = self.handler
         if handler is None:
             return 0
@@ -883,9 +1173,13 @@ class RatelimitProxy(object):
         return len(queue)
     
     def __hash__(self):
+        """Hashes the ratelimit proxy."""
         return self.group.group_id^self._key.limiter_id
     
     class _wait_till_limits_expire_callback(object):
+        """
+        `WeakReferer` callback used at ``.wait_till_limits_expire`` for waking it up.
+        """
         __slots__ = ('future')
         def __init__(self, future):
             self.future = future
@@ -898,6 +1192,19 @@ class RatelimitProxy(object):
                 loop.wakeup()
     
     async def wait_till_limits_expire(self):
+        """
+        Waits till the represented ratelimits expire.
+        
+        Raises
+        ------
+        RuntimeError
+            If the method is called meanwhile `keap_alive` is `True`.
+        
+        Notes
+        -----
+        The waiting is implemented with weakreference callback, so the coroutine returns when the source callback is
+        garbage collected. This also means waiting on the exact same limit multiple times causes missbehaviour.
+        """
         handler = self._handler
         
         while True:
@@ -921,6 +1228,16 @@ class RatelimitProxy(object):
     
     @property
     def next_reset_at(self):
+        """
+        Returns when the next ratelimit reset will happen of the represented ratelimit handler.
+        
+        If there is no active ratelimit handler represented or if the handler has has 0 used up limits, then returns
+        `0.0`. if there is any, then returns it in `monotonic` time.
+        
+        Returns
+        -------
+        next_reset_at : `float`
+        """
         handler = self.handler
         if handler is None:
             return 0.0
@@ -933,6 +1250,13 @@ class RatelimitProxy(object):
     
     @property
     def next_reset_after(self):
+        """
+        Familiar to ``.next_reset_at`` but it instead returns how time is left till next reset instead.
+        
+        Returns
+        -------
+        next_reset_after : `float`
+        """
         handler = self.handler
         if handler is None:
             return 0.0
@@ -942,7 +1266,7 @@ class RatelimitProxy(object):
             return 0.0
         
         return drops[0].drop-monotonic()
-    
+
 @modulize
 class RATELIMIT_GROUPS:
     GROUP_REACTION_MODIFY       = RatelimitGroup(LIMITER_CHANNEL)
@@ -991,6 +1315,8 @@ class RATELIMIT_GROUPS:
     typing                      = RatelimitGroup(LIMITER_CHANNEL)
     webhook_get_channel         = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
     webhook_create              = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
+    discovery_categories        = RatelimitGroup()
+    discovery_validate_term     = RatelimitGroup()
     client_gateway_hooman       = RatelimitGroup()
     client_gateway_bot          = RatelimitGroup()
     guild_create                = RatelimitGroup.unlimited()
@@ -1006,6 +1332,10 @@ class RATELIMIT_GROUPS:
     guild_channels              = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     channel_move                = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     channel_create              = RatelimitGroup(LIMITER_GUILD, optimistic=True)
+    guild_discovery_delete_subcategory = RatelimitGroup(LIMITER_GUILD, optimistic=True)
+    guild_discovery_add_subcategory = RatelimitGroup(LIMITER_GUILD, optimistic=True)
+    guild_discovery_get         = RatelimitGroup(LIMITER_GUILD, optimistic=True)
+    guild_discovery_edit        = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     guild_embed_get             = RatelimitGroup(LIMITER_GUILD, optimistic=True) # will be removed, do not bother with testing
     guild_embed_edit            = RatelimitGroup(LIMITER_GUILD, optimistic=True) # will be removed, do not bother with testing
     guild_emojis                = RatelimitGroup(LIMITER_GUILD, optimistic=True)
@@ -1080,7 +1410,7 @@ del modulize
 ##INFO :
 ##    some endpoints might be off 1s
 ##    groups are not accurate now, because we use autogroups
-##    last group id: 98560
+##    last group id: 102144
 ##
 ##endpoint: https://cdn.discordapp.com/
 ##method  : GET
@@ -1420,6 +1750,26 @@ del modulize
 ##used at : webhook_create
 ##limits  : unlimited
 ##
+##endpoint: /discovery/categories
+##method  : GET
+##auth    : bot
+##used at : discovery_categories
+##limits  :
+##    group   : 100352
+##    limit   : 10
+##    reset   : 120
+##    limiter : GLOBAL
+##
+##endpoint: /discovery/valid-term
+##method  : GET
+##auth    : bot
+##used at : discovery_validate_term
+##limits  :
+##    group   : 102144
+##    limit   : 10
+##    reset   : 10
+##    limiter : GLOBAL
+##
 ##endpoint: /gateway
 ##method  : GET
 ##auth    : user
@@ -1512,6 +1862,30 @@ del modulize
 ##method  : POST
 ##auth    : bot
 ##used at : channel_create
+##limits  : unlimited
+##
+##endpoint: /guilds/{guild_id}/discovery-categories/{category_id}
+##method  : DELETE
+##auth    : bot
+##used at : guild_discovery_delete_subcategory
+##limits  : unlimited
+##
+##endpoint: /guilds/{guild_id}/discovery-categories/{category_id}
+##method  : POST
+##auth    : bot
+##used at : guild_discovery_add_subcategory
+##limits  : unlimited
+##
+##endpoint: /guilds/{guild_id}/discovery-metadata
+##method  : GET
+##auth    : bot
+##used at : guild_discovery_get
+##limits  : unlimited
+##
+##endpoint: /guilds/{guild_id}/discovery-metadata
+##method  : PATCH
+##auth    : bot
+##used at : guild_discovery_edit
 ##limits  : unlimited
 ##
 ##endpoint: /guilds/{guild_id}/embed

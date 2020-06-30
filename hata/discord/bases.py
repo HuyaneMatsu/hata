@@ -1,5 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('ICON_TYPE_ANIMATED', 'ICON_TYPE_NONE', 'ICON_TYPE_STATIC', 'Icon', 'IconType', )
+__all__ = ('ICON_TYPE_ANIMATED', 'ICON_TYPE_NONE', 'ICON_TYPE_STATIC', 'Icon', 'IconType',
+    'instance_or_id_to_instance', 'instance_or_id_to_snowflake', )
 
 import sys
 
@@ -1164,7 +1165,7 @@ class IconSlot(object):
                 raise TypeError(f'`{icon_hash_name}` can be passed as `int` instance, got '
                     f'{icon_hash.__class__.__name__}.')
             
-            if icon_hash<0 or icon_hash.bit_length()>128:
+            if icon_hash<0 or icon_hash>((1<<128)-1):
                 raise ValueError(f'`{icon_hash_name}` cannot be negative or longer than 128 bits, got {icon_hash}.')
             
             try:
@@ -1203,5 +1204,107 @@ class IconSlot(object):
         
         processable[icon_type_name] = icon_type
         processable[icon_hash_name] = icon_hash
+
+def instance_or_id_to_instance(obj, type_):
+    """
+    Converts the given `obj` to it's `type_` representation.
+    
+    Parameters
+    ----------
+    obj : `int`, `str` or`type_` instance
+        The object to convert.
+    type_ : `type`
+        The type to convert.
+    
+    Returns
+    -------
+    instance : `type`
+    
+    Raises
+    ------
+    TypeError
+        If `obj` was not given neither as `type_`, `str` or `int` instance.
+    ValueError
+        If `obj` was given as `str` or as `int` instance, but not as a valid snowflake, so `type_` cannot be precreated with it.
+    
+    Notes
+    -----
+    The given `type_` must have a `.precreate` function`.
+    """
+    obj_type = obj.__class__
+    if issubclass(obj_type, type_):
+        instance = obj
+    else:
+        if obj_type is int:
+            snowflake = obj
+        elif issubclass(obj_type, str):
+            if 6<len(obj)<18 and obj.isdigit():
+                snowflake = int(obj)
+            else:
+                raise ValueError(f'`obj` was given as `str` instance, but not as a valid snowflake, got {obj!r}.')
+        
+        elif issubclass(obj_type, int):
+            snowflake = int(obj)
+        else:
+            raise TypeError(f'`obj` can be given either as {type_.__name__} instance, or as `int` or `str` '
+                f'representing a snowflake, got {obj_type.__name__}.')
+        
+        if snowflake < 0 or snowflake>((1<<64)-1):
+            raise ValueError(f'`obj` was given either as `int` or as `str` instance, but not as represneting a '
+                f'`uint64`, got {obj!r}.')
+    
+        instance = type_.precreate(snowflake)
+    
+    return instance
+
+def instance_or_id_to_snowflake(obj, type_):
+    """
+    Validates the given `obj` whether it is instance of the given `type_`, or is a valid snowflake representation.
+    
+    Parameters
+    ----------
+    obj : `int`, `str` or`type_` instance
+        The object to validate.
+    type_ : `type`
+        Expected type.
+    
+    Returns
+    -------
+    snowflake : `int`
+    
+    Raises
+    ------
+    TypeError
+        If `obj` was not given neither as `type_`, `str` or `int` instance.
+    ValueError
+        If `obj` was given as `str` or as `int` instance, but not as a valid snowflake.
+    
+    Notes
+    -----
+    The given `type_`'s instances must have a `.id` attribute.
+    """
+    obj_type = obj.__class__
+    if issubclass(obj_type, type_):
+        snowflake = obj.id
+    else:
+        if obj_type is int:
+            snowflake = obj
+        elif issubclass(obj_type, str):
+            if 6<len(obj)<18 and obj.isdigit():
+                snowflake = int(obj)
+            else:
+                raise ValueError(f'`obj` was given as `str` instance, but not as a valid snowflake, got {obj!r}.')
+        
+        elif issubclass(obj_type, int):
+            snowflake = int(obj)
+        else:
+            raise TypeError(f'`obj` can be given either as {type_.__name__} instance, or as `int` or `str` '
+                f'representing a snowflake, got {obj_type.__name__}.')
+        
+        if snowflake < 0 or snowflake>((1<<64)-1):
+            raise ValueError(f'`obj` was given either as `int` or as `str` instance, but not as represneting a '
+                f'`uint64`, got {obj!r}.')
+    
+    return snowflake
 
 del sys

@@ -213,7 +213,7 @@ class Webhook(UserBase):
         if channel is None:
             return
         return channel.guild
-
+    
     def _delete(self):
         channel=self.channel
         if channel is None:

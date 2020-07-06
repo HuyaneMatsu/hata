@@ -485,7 +485,7 @@ class OpusDecoder(object):
         buffer_ptr = ctypes.cast(buffer, ctypes.POINTER(ctypes.c_int16))
         
         end = opus.opus_decode(self._decoder, data, len(data), buffer_ptr, frame_size, True)
-        return bytes(buffer_ptr[:(end*CHANNELS)])
+        return bytes(buffer[:((end<<1)*CHANNELS)])
 
 del ModuleType
 

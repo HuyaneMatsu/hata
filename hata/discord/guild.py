@@ -1338,7 +1338,7 @@ class Guild(DiscordEntity, immortal=True):
             +-------+-------------------+-------------------------------------------+
             | 1     | action            | `str`                                     |
             +-------+-------------------+-------------------------------------------+
-            | 2     | olold_attributes  | `None` or `dict` of (`str`, `Any`) items  |
+            | 2     | old_attributes    | `None` or `dict` of (`str`, `Any`) items  |
             +-------+-------------------+-------------------------------------------+
             
             Action values can be the following:

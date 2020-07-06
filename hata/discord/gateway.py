@@ -269,6 +269,9 @@ class DiscordGateway(object):
         ------
         IntentError
             The client tries to connect with bad or not acceptable intent values.
+        InvalidToken
+            When the client's token is invalid.
+        DiscordException
         """
         client=self.client
         while True:
@@ -327,6 +330,9 @@ class DiscordGateway(object):
         ConnectionClosed
         InvalidHandshake
         WebSocketProtocolError
+        InvalidToken
+            When the client's token is ivnalid
+        DiscordException
         """
         while True:
             self.kokoro.terminate()
@@ -849,7 +855,7 @@ class DiscordGatewayVoice(object):
                 kokoro.start_beating()
                 await self._beat()
             
-            await self._send_silente_packet()
+            await self._set_speaking(self.client.speaking)
             return
         
         if kokoro.beater is None:
@@ -959,13 +965,13 @@ class DiscordGatewayVoice(object):
         return f'<{self.__class__.__name__} of {self.client}>'
     
     #special operations
-
+    
     async def _identify(self):
         """
         Sends an `IDENTIFY` packet to Discord.
         """
         voice_client=self.client
-
+        
         data = {
             'op': self.IDENTIFY,
             'd' : {
@@ -1052,49 +1058,7 @@ class DiscordGatewayVoice(object):
         voice_client._port = port =int.from_bytes(received[-2:],'big')
         
         await self._select_protocol(ip, port)
-        
-    async def _send_silente_packet(self):
-        """
-        Sends silence packets to Discord on the gateway's voice client's socket.
-        
-        Used after connecting.
-        """
-        await self._set_speaking(1)
-        voice_client=self.client
-        socket=voice_client.socket
-        if socket is not None:
-            for x in range(5):
-                sequence=voice_client._sequence
-                if sequence==65535:
-                    sequence=0
-                else:
-                    sequence=sequence+1
-                voice_client._sequence=sequence
-
-                header=b''.join([
-                    b'\x80x',
-                    voice_client._sequence.to_bytes(2,'big'),
-                    voice_client._timestamp.to_bytes(4,'big'),
-                    voice_client._source.to_bytes(4,'big'),
-                        ])
-
-                nonce=header+b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-                packet=bytearray(header)+voice_client._secret_box.encrypt(b'\xf8\xff\xfe',nonce).ciphertext
-
-                try:
-                    voice_client.socket.sendto(packet,(voice_client._endpoint_ip,voice_client._voice_port))
-                except BlockingIOError:
-                    pass
-
-                timestamp=voice_client._timestamp+SAMPLES_PER_FRAME
-                if timestamp>4294967295:
-                    timestamp=0
-                voice_client._timestamp=timestamp
-                
-                await sleep(0.02, KOKORO)
-        
-        await self._set_speaking(voice_client.speaking)
-
+    
     async def _set_speaking(self, is_speaking):
         """
         Sends a `SPEAKING` packet with given `is_speaking` state.
@@ -1167,6 +1131,14 @@ class DiscordGatewaySharder(object):
         Returns
         -------
         no_internet_stop : `bool`
+        
+        Raises
+        ------
+        IntentError
+            The client tries to connect with bad or not acceptable intent values.
+        InvalidToken
+            When the client's token is invalid.
+        DiscordException
         """
         max_concurrency = self.client._gateway_max_concurrency
         gateways = self.gateways
@@ -1183,7 +1155,7 @@ class DiscordGatewaySharder(object):
             if index == limit:
                 break
             
-            left_from_bacth = 0
+            left_from_batch = 0
             while True:
                 future = Future(KOKORO)
                 waiter.add(future)
@@ -1192,23 +1164,28 @@ class DiscordGatewaySharder(object):
                 waiter.add(task)
                 
                 index +=1
-                left_from_bacth +=1
+                left_from_batch +=1
                 if index == limit:
                     break
                 
-                if left_from_bacth == max_concurrency:
+                if left_from_batch == max_concurrency:
                     break
                 
                 continue
             
             while True:
-                result = await waiter
+                try:
+                    result = await waiter
+                except:
+                    waiter.cancel()
+                    raise
+                
                 waiter.reset()
                 
                 if type(result) is Future:
-                    left_from_bacth -=1
+                    left_from_batch -=1
                     
-                    if left_from_bacth:
+                    if left_from_batch:
                         continue
                     
                     break
@@ -1219,7 +1196,11 @@ class DiscordGatewaySharder(object):
             
             continue
         
-        result = await waiter
+        try:
+            result = await waiter
+        except:
+            waiter.cancel()
+            raise
         
         no_internet_stop = result.result()
         waiter.cancel()

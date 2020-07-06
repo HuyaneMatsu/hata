@@ -32,7 +32,7 @@ from .audit_logs import AuditLog, AuditLogIterator
 from .invite import Invite
 from .message import Message
 from .oauth2 import Connection, parse_locale, DEFAULT_LOCALE, AO2Access, UserOA2, Achievement
-from .exceptions import DiscordException, IntentError, ERROR_CODES
+from .exceptions import DiscordException, IntentError, ERROR_CODES, InvalidToken
 from .client_core import CLIENTS, CACHE_USER, CACHE_PRESENCE, KOKORO, GUILDS, DISCOVERY_CATEGORIES
 from .voice_client import VoiceClient
 from .activity import ActivityUnknown, ActivityBase, ActivityCustom
@@ -684,10 +684,15 @@ class Client(UserBase):
     _gateway_url : `str`
         Cached up gateway url, what is invalidated after `1` minute. Used to avoid unnecessary requests when launching
         up more shards.
+    _gateway_requesting : `bool`
+        Whether the client alredy requests it's gateway.
     _gateway_time : `float`
         The last timestamp when `._gateway_url` was updated.
     _gateway_max_concurrency : `int`
         The max amount of shards, which can be launched at the same time.
+    _gateway_waiter : `None` or `Future`
+        When client gateway is being requested multiple times at the same time, this future is set and awaited at the
+        secondary requests.
     _status : ``Status``
         The client's preferred status.
     _user_chunker_nonce : `int`
@@ -715,10 +720,10 @@ class Client(UserBase):
         'guild_profiles', 'is_bot', 'partial', #default user
         'activities', 'status', 'statuses', #presence
         'email', 'flags', 'locale', 'mfa', 'premium_type', 'system', 'verified', # OAUTH 2
-        '__dict__', '_additional_owner_ids', '_activity', '_gateway_time', '_gateway_url', '_gateway_max_concurrency',
-        '_status', '_user_chunker_nonce', 'application', 'events', 'gateway', 'http', 'intents', 'private_channels',
-        'ready_state', 'group_channels', 'relationships', 'running', 'secret', 'shard_count', 'token',
-        'voice_clients', )
+        '__dict__', '_additional_owner_ids', '_activity', '_gateway_requesting', '_gateway_time', '_gateway_url',
+        '_gateway_max_concurrency', '_gateway_waiter', '_status', '_user_chunker_nonce', 'application', 'events',
+        'gateway', 'http', 'intents', 'private_channels', 'ready_state', 'group_channels', 'relationships', 'running',
+        'secret', 'shard_count', 'token', 'voice_clients', )
     
     loop = KOKORO
     
@@ -931,6 +936,8 @@ class Client(UserBase):
         self._gateway_url       = ''
         self._gateway_time      = -99.9
         self._gateway_max_concurrency = 1
+        self._gateway_requesting = False
+        self._gateway_waiter    = None
         self._user_chunker_nonce= 0
         self.group_channels     = {}
         self.private_channels   = {}
@@ -1972,16 +1979,25 @@ class Client(UserBase):
         ------
         ConnectionError
             No internet connection.
-        ConnectionRefusedError
-            When the token of the client is invalid.
         DiscordException
+        InvalidToken
+            When the token of the client is invalid.
         """
-        try:
-            data = await self.http.client_user()
-        except DiscordException as err:
-            if err.response.status==401:
-                raise ConnectionRefusedError('Invalid token') from err
-            raise
+        while True:
+            try:
+                data = await self.http.client_user()
+            except DiscordException as err:
+                status = err.status
+                if status == 401:
+                    raise InvalidToken() from err
+                
+                if status >= 500:
+                    sleep(2.5, KOKORO)
+                    continue
+                
+                raise
+            
+            break
         
         return data
     
@@ -2043,7 +2059,7 @@ class Client(UserBase):
         """
         for user in users:
             await self.http.channel_group_user_delete(channel.id,user.id)
-
+    
     async def channel_group_edit(self, channel, name=_spaceholder, icon=_spaceholder):
         """
         Edits the given group channel. Only the provided parameters will be edited.
@@ -7911,43 +7927,85 @@ class Client(UserBase):
         ------
         ConnectionError
             No internet connection or if the request raised any ``DiscordException``.
+        InvalidToken
+            When the client's token is invalid.
+        DiscordException
         """
         time = self._gateway_time
-        if time+60.>monotonic():
+        if time+60. > monotonic():
             return self._gateway_url
         
+        if self._gateway_requesting:
+            gateway_waiter = self._gateway_waiter
+            if gateway_waiter is None:
+                gateway_waiter = self._gateway_waiter = Future(KOKORO)
+            
+            return await gateway_waiter
+        
+        self._gateway_requesting = True
+        
         try:
+            http = self.http
             if self.is_bot:
-                data = await self.http.client_gateway_bot()
+                func = http.client_gateway_bot
             else:
-                data = await self.http.client_gateway_hooman()
-        except DiscordException as err:
-            raise ConnectionError from err
+                func = http.client_gateway_hooman
+            
+            while True:
+                try:
+                    data = await func()
+                except DiscordException as err:
+                    status = err.status
+                    if status == 401:
+                        await self.disconnect()
+                        raise InvalidToken() from err
+                    
+                    if status >= 500:
+                        sleep(2.5, KOKORO)
+                        continue
+                    
+                    raise
+                
+                break
+            
+            #if shard count is 1, lets auto detect shard count
+            
+            if not self.running:
+                old_shard_count=self.shard_count
+                if old_shard_count==1:
+                    shard_count = data['shards']
+                    
+                    if old_shard_count==0:
+                        return #cannot change
+                    
+                    if shard_count<old_shard_count:
+                        return #cannot go down
+                    
+                    self.shard_count=shard_count
+                    
+                    gateways=self.gateway.gateways
+                    for shard_id in range(old_shard_count,shard_count):
+                        gateway=DiscordGateway(self,shard_id)
+                        gateways.append(gateway)
+            
+            url=data['url']+'?encoding=json&v=6&compress=zlib-stream'
+            self._gateway_url = url
+            self._gateway_time = monotonic()
+            self._gateway_max_concurrency = data['session_start_limit'].get('max_concurrency', 1)
+        except BaseException as err:
+            self._gateway_requesting = False
+            gateway_waiter = self._gateway_waiter
+            if (gateway_waiter is not None):
+                self._gateway_waiter = None
+                gateway_waiter.set_exception(err)
+            
+            raise
         
-        #if shard count is 1, lets auto detect shard count
-        
-        if not self.running:
-            old_shard_count=self.shard_count
-            if old_shard_count==1:
-                shard_count=data['shards']
-                
-                if old_shard_count==0:
-                    return #cannot change
-                
-                if shard_count<old_shard_count:
-                    return #cannot go down
-                
-                self.shard_count=shard_count
-                
-                gateways=self.gateway.gateways
-                for shard_id in range(old_shard_count,shard_count):
-                    gateway=DiscordGateway(self,shard_id)
-                    gateways.append(gateway)
-        
-        url=data['url']+'?encoding=json&v=6&compress=zlib-stream'
-        self._gateway_url = url
-        self._gateway_time = monotonic()
-        self._gateway_max_concurrency = data['session_start_limit'].get('max_concurrency', 1)
+        self._gateway_requesting = False
+        gateway_waiter = self._gateway_waiter
+        if (gateway_waiter is not None):
+            self._gateway_waiter = None
+            gateway_waiter.set_result(url)
         
         return url
     
@@ -8068,16 +8126,15 @@ class Client(UserBase):
         try:
             data = await self.client_login_static()
         except BaseException as err:
-            if type(err) is ConnectionError and err.args[0]=='Invalid adress':
+            if isinstance(err, ConnectionError) and err.args[0]=='Invalid adress':
                 after=(
-                    'Connection failed, could not connect to Discord.\n'
-                    'Please check your internet connection / has Python rights '
-                    'to use it?\n'
+                    'Connection failed, could not connect to Discord.\n Please check your internet connection / has '
+                    'Python rights to use it?\n'
                         )
             else:
                 after=None
-                
-            before=[
+            
+            before = [
                 'Exception occured at calling ',
                 self.__class__.__name__,
                 '.connect\n',
@@ -8139,17 +8196,17 @@ class Client(UserBase):
                             self._gateway_time = -99.9
                             try:
                                 await self.client_gateway()
-                            except (OSError,ConnectionError,):
+                            except ConnectionError:
                                 continue
                             else:
                                 break
-                        except (GeneratorExit,CancelledError) as err:
+                        except (GeneratorExit, CancelledError) as err:
                             sys.stderr.write(
                                 f'Ignoring unexpected outer Task or coroutine cancellation at {self!r}._connect as'
                                 f'{err!r}.\nThe client will reconnect.\n')
                             continue
                     continue
-        except IntentError as err:
+        except (IntentError, InvalidToken) as err:
             sys.stderr.write(
                 f'{err.__class__.__name__} occured, at {self!r}._connect:\n'
                 f'{err!r}\n'

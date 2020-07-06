@@ -14,7 +14,16 @@ from .opus import OpusDecoder, SAMPLES_PER_FRAME
 
 EMPTY_VOICE_DATA=b'\x00'*3840
 
-def insert_packet(buffer,packet):
+def insert_packet(buffer, packet):
+    """
+    Inserts the given packet to the buffer at it's place. It is not guaranteed that the packet is received always as
+    the last one, so they are sorted by their timestamp.
+    
+    Parameters
+    ----------
+    buffer : `deque`
+    packet : ``VoicePacket``
+    """
     timestamp=packet.timestamp
     
     top=len(buffer)
@@ -40,17 +49,41 @@ def insert_packet(buffer,packet):
     buffer.insert(bot,packet)
     
 class Array_uint_32b(object): #TODO : ask python to implement arrays already
-    __slots__=('_data', '_offset', '_limit')
-    def __init__(self,data,offset,limit):
+    """
+    Implements an uint32 array casted on bytes.
+    
+    Attributes
+    ----------
+    _data : `bytes`
+        The source `bytes` object.
+    _offset : `int`
+        The first byte what is inside of the array.
+    _limit : `int`
+        The first byte, what is not inside of the array after `._offset`.
+    """
+    __slots__ = ('_data', '_offset', '_limit')
+    def __init__(self, data, offset, limit):
+        """
+        Creates a new uint32 array from the given parameters.
+        
+        Parameters
+        ----------
+        data : `bytes`
+            The source `bytes` object.
+        offset : `int`
+            The first byte what is inside of the array.
+        limit : `int`
+            The first byte, what is not inside of the array after `._offset`.
+        """
         self._data  = data
         self._offset= offset
         self._limit = limit
-
+    
     def __len__(self):
         limit   = self._limit
         offset  = self._offset
         value   = (limit-offset)>>2
-
+        
         return value
     
     def __getitem__(self,index):

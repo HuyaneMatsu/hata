@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
-__all__ = ('DownloadError', 'LocalAudio', 'YTAudio', )
+__all__ = ('DownloadError', 'LocalAudio', 'YTAudio')
 
-import os, sys, subprocess, audioop, shlex
+import os, sys, subprocess, shlex
 from threading import Event, Thread, current_thread
 from time import perf_counter, sleep as blocking_sleep
+from audioop import mul as audio_mul
+from pathlib import Path
 
 from ..backend.dereaddons_local import alchemy_incendiary
 from ..backend.futures import render_exc_to_list
@@ -16,6 +18,7 @@ PLAYER_DELAY=FRAME_LENGTH/1000.0
 
 del FRAME_LENGTH
 
+DEFAULT_EXECUTABLE = 'ffmpeg'
 
 if os.name=='nt':
     SUBPROCESS_STARTUP_INFO=subprocess.STARTUPINFO()
@@ -23,7 +26,7 @@ if os.name=='nt':
     SUBPROCESS_STARTUP_INFO.wShowWindow=subprocess.SW_HIDE
 else:
     SUBPROCESS_STARTUP_INFO=None
-            
+
 class AudioSource(object):
     """
     Base class for audio sources.
@@ -32,14 +35,10 @@ class AudioSource(object):
     ----------------
     NEEDS_ENCODE : `bool` = `True`
         Whether the source is not opus encoded.
-    TEMPORARY : `bool` = `False`
-        Whether the audio's source is a temporary file.
     """
     __slots__ = ()
     
     NEEDS_ENCODE = True
-    
-    TEMPORARY = False
     
     def read(self):
         """
@@ -53,8 +52,8 @@ class AudioSource(object):
         -------
         audio_data : `bytes` or `None`
         """
-        return b''
-
+        return None
+    
     def cleanup(self):
         """
         Cleans up the allocated resources by the audio source.
@@ -62,23 +61,37 @@ class AudioSource(object):
         > Subclasses should overwrite it.
         """
         pass
-
+    
     def __del__(self):
         """Cleans up the audio source if ``.cleanup`` was not called for any reason."""
         self.cleanup()
-
-    def parse_title(self):
+    
+    @property
+    def title(self):
         """
-        Parses and returns the audio source's title.
+        Spaceholder method for title attribute.
         
-        > Subclasses should overwrite it.
+        Always returns an empty string.
         
         Returns
         -------
         title : `str`
         """
-        return 'Unknown'
+        return ''
     
+    @property
+    def path(self):
+        """
+        Spaceholder method for path attribute.
+        
+        Always returns `None`.
+        
+        Returns
+        -------
+        path : `None`
+        """
+        return None
+
 class PCMAudio(AudioSource):
     """
     Represents raw 16-bit 48KHz stereo PCM audio source.
@@ -92,8 +105,6 @@ class PCMAudio(AudioSource):
     ----------------
     NEEDS_ENCODE : `bool` = `True`
         Whether the source is not opus encoded.
-    TEMPORARY : `bool` = `False`
-        Whether the audio's source is a temporary file.
     """
     __slots__=('stream',)
 
@@ -124,12 +135,12 @@ class PCMAudio(AudioSource):
         -------
         audio_data : `bytes` or `None`
         """
-        result=self.stream.read(FRAME_SIZE)
-        if len(result)!=FRAME_SIZE:
-            return None
+        result = self.stream.read(FRAME_SIZE)
+        if (result is not None) and len(result)!=FRAME_SIZE:
+            result = None
         return result
 
-class FFmpegPCMAudio(AudioSource):
+class LocalAudio(AudioSource):
     """
     Represents an ffmpeg pcm audio.
     
@@ -137,37 +148,35 @@ class FFmpegPCMAudio(AudioSource):
     
     Attributes
     ----------
+    _process_args : `tuple` ((`list` of `str`),  (`None` or `file-like`))
+        Arguments and the stdin used to open the postprocess when postprocess happens.
+    _stdout : `_io.BufferedReader`
+        Stdout of `.process`.
+    path : `str` or `None`
+        The audio source's path if applicable. Defaults to `None`.
     process : `subprocess.Popen`
         The ffmpeg or the avconv subprocess.
-    source : `str`
-        The source audio file's path.
-    stdout : `_io.BufferedReader`
-        Stdout of the `.process`.
+    title : `str`
+        The audio source's title if applicable. Defaults to empty string.
     
     Class Attributes
     ----------------
     NEEDS_ENCODE : `bool` = `True`
         Whether the source is not opus encoded.
-    TEMPORARY : `bool` = `False`
-        Whether the audio's source is a temporary file.
     """
-    __slots__ = ('process', 'source', 'stdout',)
-    
-    #use __new__, so __del__ wont run
-    def __new__(cls, source, executable='ffmpeg', pipe=False, stderr=None, before_options=(), options=(),):
+    @staticmethod
+    def _create_process_preprocess(source, executable, pipe, before_options, options):
         """
-        Creates a new ``FFmpegPCMAudio`` instance.
+        Creates a a subprocess instance to the given source.
         
         Parameters
         ----------
-        source : `str`
-            The source audio file's path.
+        source : `str`, `Path` or `file-like`
+            The source audio file's path or `file-like` if `pipe` is `True`.
         executable : `str`
             The executable's name to use. Defaults to `'ffmpeg'`.
         pipe : `bool`
             Whether the source is passed to stdin.
-        stderr : `file-like`
-            Stdout for the
         before_options : `str` or (`iterable` of `str`)
             Extra arguments passed before the `-i` flag.
         options : `str` or (`iterable` of `str`)
@@ -175,7 +184,85 @@ class FFmpegPCMAudio(AudioSource):
         
         Returns
         -------
-        self : ``FFmpegPCMAudio``
+        args : `list` of `str`
+            Subprocess arguments.
+        stdin : `None or `file-like`
+            Input for the postprocess.
+        
+        Raises
+        ------
+        TypeError
+            - If `pipe` was given as `True` meanwhile `source` was not given as a `file-like` supporting `.fileno()`
+                method.
+            - If `pipe` was given as `False`, meanwhile `source` was not given as `str` or `Path` instance.
+        ValueError
+            - Executable as not found.
+            - Popen failed.
+        """
+        if pipe:
+            try:
+                fileno_function = source.__class__.fileno
+            except AttributeError as err:
+                raise TypeError('The given `source` not supports `.fileno()` method') from err
+            try:
+                fileno_function(source)
+            except TypeError as err:
+                raise TypeError('The given `source` not supports `.fileno()` method') from err
+        else:
+            source_type = source.__class__
+            if source_type is str:
+                pass
+            elif issubclass(source_type, Path):
+                source = str(source)
+            elif issubclass(source_type, str):
+                source = str(source)
+            else:
+                raise TypeError(f'The given `source` should be given as `str` or as `Path` instance, got {source_type}.')
+        
+        args = [executable]
+        
+        if (before_options is not None):
+            if isinstance(before_options,str):
+                before_options = shlex.split(before_options)
+            
+            args.extend(before_options)
+        
+        args.append('-i')
+        args.append('-' if pipe else source)
+        args.append('-f')
+        args.append('s16le')
+        args.append('-ar')
+        args.append('48000')
+        args.append('-ac')
+        args.append('2')
+        args.append('-loglevel')
+        args.append('panic')
+        
+        if (options is not None):
+            if isinstance(options, str):
+                options = shlex.split(options)
+            
+            args.extend(options)
+        
+        args.append('pipe:1')
+        
+        return args, (source if pipe else None)
+    
+    @staticmethod
+    def _create_process(args, stdin):
+        """
+        Creates subprocess. This method should never run on an `EventThread`.
+        
+        Paremeters
+        ----------
+        args : `list` of `str`
+            Subprocess arguments.
+        stdin : `None or `file-like`
+            Input for the postprocess.
+        
+        Returns
+        -------
+        process : `subprocess.Popen`
         
         Raises
         ------
@@ -183,50 +270,89 @@ class FFmpegPCMAudio(AudioSource):
             - Executable as not found.
             - Popen failed.
         """
-        if isinstance(before_options,str):
-            before_options=shlex.split(before_options)
-        
-        if isinstance(options,str):
-            options=shlex.split(options)
-        
-        args = [
-            executable,
-            *before_options,
-            '-i',
-            '-' if pipe else source,
-            '-f',
-            's16le',
-            '-ar',
-            '48000',
-            '-ac',
-            '2',
-            '-loglevel',
-            'panic',
-            *options,
-            'pipe:1',
-                ]
-        
-        if pipe:
-            stdin=source
-        else:
-            stdin=None
-        
         try:
-            process = subprocess.Popen(args, stdin=stdin, stdout=subprocess.PIPE, stderr=stderr,
+            process = subprocess.Popen(args, stdin=stdin, stdout=subprocess.PIPE,
                 startupinfo=SUBPROCESS_STARTUP_INFO)
         except FileNotFoundError:
-            raise ValueError(f'{executable} was not found.') from None
+            raise ValueError(f'{args[0]} was not found.') from None
         except subprocess.SubprocessError as err:
             raise ValueError(f'Popen failed: {err.__class__.__name__}: {err}') from err
         
-        self=object.__new__(cls)
+        return process
+    
+    def postprocess(self):
+        """
+        Creates the process of the audio player.
         
-        self.source     = source
-        self.process    = process
-        self.stdout     = process.stdout
-
+        Raises
+        ------
+        ValueError
+            - Executable as not found.
+            - Popen failed.
+        """
+        process = self.process
+        if process is None:
+            process = self._create_process(*self._process_args)
+            self.process = process
+            self._stdout = process.stdout
+    
+    __slots__ = ('_process_args', '_stdout', 'path', 'process', 'title', )
+    
+    #use __new__, so __del__ wont run
+    async def __new__(cls, source, executable=DEFAULT_EXECUTABLE, pipe=False, before_options=None,
+            options=None, title=None):
+        """
+        Creates a new ``FFmpegPCMAudio`` instance.
+        
+        Parameters
+        ----------
+        source : `str` or `file-like`
+            The source audio file's path or `file-like` if `pipe` is `True`.
+        executable : `str`, Optional
+            The executable's name to use. Defaults to `'ffmpeg'`.
+        pipe : `bool`, Optional
+            Whether the source is passed to stdin. Defaults to `False`
+        before_options : `str` or (`iterable` of `str`), Optional
+            Extra arguments passed before the `-i` flag.
+        options : `str` or (`iterable` of `str`), Optional
+            Extra arguments passed after the `-i` flag.
+        
+        Returns
+        -------
+        self : ``LocalAudio``
+        
+        Raises
+        ------
+        TypeError
+            - If `pipe` was given as `True` meanwhile `source` was not given as a `file-like` supporting `.fileno()`
+                method.
+            - If `pipe` was given as `False`, meanwhile `source` was not given as `str` or `Path` instance.
+        """
+        args = cls._create_process_preprocess(source, executable, pipe, before_options, options)
+        
+        self = object.__new__(cls)
+        self._process_args = args
+        self.process = None
+        self._stdout = None
+        
+        if pipe:
+            path = None
+            if title is None:
+                title = getattr(source, 'name', None)
+                if title is None:
+                    title = ''
+                else:
+                    title = os.path.splitext(title)[0].replace('_', ' ')
+        else:
+            path = source
+            if title is None:
+                title = os.path.splitext(os.path.basename(path))[0].replace('_', ' ')
+        
+        self.path = path
+        self.title = title
+        
         return self
-        
+    
     def read(self):
         """
         Reads 20ms audio data.
@@ -237,157 +363,35 @@ class FFmpegPCMAudio(AudioSource):
         -------
         audio_data : `bytes` or `None`
         """
-        result=self.stdout.read(FRAME_SIZE)
-        if len(result)!=FRAME_SIZE:
-            return None
+        stdout = self._stdout
+        if stdout is None:
+            result = None
+        else:
+            try:
+                result = stdout.read(FRAME_SIZE)
+            except ValueError:
+                result = None
+            else:
+                if len(result) != FRAME_SIZE:
+                    result = None
+        
         return result
-
+    
     def cleanup(self):
         """
         Closes ``.process`.`
         """
-        process=self.process
+        process = self.process
         if process is None:
             return
-
+        
         process.kill()
         if process.poll() is None:
             process.communicate()
-
-        self.process=None
-
-    def parse_title(self):
-        """
-        Parses and returns the audio source's title.
         
-        Returns
-        -------
-        title : `str`
-        """
-        _,name=os.path.split(self.source)
-        index=name.rfind('.')
-        if index<0:
-            return name
-        return name[:index]
-    
-class PCMVolumeTransformer(AudioSource):
-    """
-    Volume transformer what wraps an other ``AudioSource`` instance.
-    
-    Attributes
-    ----------
-    original : ``AudioSource`` instance
-        The wrapped audio source.
-    volume : `float`
-        The volume multiplier.
-    
-    Class Attributes
-    ----------------
-    NEEDS_ENCODE : `bool` = `True`
-        Whether the source is not opus encoded.
-    TEMPORARY : `bool` = `False`
-        Whether the audio's source is a temporary file.
-    """
-    __slots__ = ('original', 'title', 'volume',)
-    
-    def __new__(cls, original):
-        """
-        Creates a new `PCMVolumeTransformer` from the given audio source.
-        
-        Parameters
-        ----------
-        original : ``AudioSource`` instance.
-            The audio source to wrap.
-        
-        Returns
-        -------
-        self : ``PCMVolumeTransformer``
-        
-        Raises
-        ------
-        TypeError
-            `original` is not `AudioSource` instance.
-        ValueError
-            `original` is opus encoded.
-        """
-        if not isinstance(original, AudioSource):
-            raise TypeError(f'`original` can be `{AudioSource.__name__}` instance, got {original.__class__.__name__}.')
-        
-        if not original.NEEDS_ENCODE:
-            raise ValueError('`original` must not be Opus encoded.')
-        
-        self = object.__new__(cls)
-        
-        self.original   = original
-        self.volume     = 1.0 #max volume is 2.0
-        self.title      = original.parse_title()
-        
-        return self
-    
-    def cleanup(self):
-        """
-        Cleans up ``.original`.
-        """
-        original = self.original
-        if original is None:
-            return
-        
-        original.cleanup()
-    
-    def read(self):
-        """
-        Reads ``.original`` and transforms it's volume.
-        
-        Indicates end of stream by returning zero `None`.
-        
-        Returns
-        -------
-        audio_data : `bytes` or `None`
-        """
-        audio_data = self.original.read()
-        if (audio_data is not None):
-            audio_data = audioop.mul(audio_data, 2, self.volume)
-        
-        return audio_data
-    
-    def parse_title(self):
-        """
-        Returns the original audio source's title.
-        
-        Returns
-        -------
-        title : `str`
-        """
-        return self.original.parse_title()
-
-async def LocalAudio(path):
-    """
-    Provides an easy async way to open a local audio file.
-    
-    Parameters
-    ----------
-    path : `str`
-        Path of the audio file.
-    
-    Returns
-    -------
-    audio_source : ``PCMVolumeTransformer``
-    
-    Raises
-    ------
-    RuntimeError
-        Was not called from an `EventThread`.
-    ValueError
-        - Executable as not found.
-        - Popen failed.
-    """
-    loop = current_thread()
-    if not isinstance(loop,EventThread):
-        raise RuntimeError(f'LocalAudio({path!r},...) was called from a non {EventThread.__name__}: {loop!r}.')
-        
-    source = await loop.run_in_executor(alchemy_incendiary(FFmpegPCMAudio,(path,)))
-    return PCMVolumeTransformer(source)
-
+        self._stdout = None
+        self.process = None
+ 
 try:
     import youtube_dl
 except ImportError:
@@ -411,8 +415,8 @@ else:
         'default_search'    : 'auto',
         'source_address'    : '0.0.0.0',
             })
-        
-    class YTAudio(PCMVolumeTransformer):
+    
+    class YTAudio(LocalAudio):
         """
         Represents an audio sourced downloaded from youtube.
         
@@ -420,26 +424,28 @@ else:
         
         Attributes
         ----------
+        _process_args : `tuple` ((`list` of `str`),  (`None` or `file-like`))
+            Arguments and the stdin used to open the postprocess when postprocess happens.
+        _stdout : `_io.BufferedReader`
+            Stdout of `.process`.
+        path : `str` or `None`
+            The audio source's path if applicable. Defaults to `None`.
         process : `subprocess.Popen`
             The ffmpeg or the avconv subprocess.
-        source : `str`
-            The source audio file's path.
-        stdout : `_io.BufferedReader`
-            Stdout of the `.process`.
-        
+        title : `str`
+            The audio source's title if applicable. Defaults to empty string.
+        url : `str`
+            The source url of the downloaded audio.
         Class Attributes
         ----------------
         NEEDS_ENCODE : `bool` = `True`
             Whether the source is not opus encoded.
-        TEMPORARY : `bool` = `True`
-            Whether the audio's source is a temporary file.
         """
-        TEMPORARY = True
         
-        __slots__=('delete', 'original', 'title', 'url', 'volume',)
+        __slots__ = ('url', )
         
         @staticmethod
-        def _download(url):
+        def _preprocess(cls, url, stream):
             """
             Downloads the audio source by the given url or title.
             
@@ -451,24 +457,35 @@ else:
             
             Returns
             -------
-            original : ``FFmpegPCMAudio``
-                Audio stream source.
-            filename : `str`
+            path : `str`
                 The title of the dowloaded audio.
-            data : `dict` of
+            data : `dict` of (`str`, `Any`)
+                All extracted data by YTDL.
+            args : `list` of `str`
+                Subprocess arguments.
+            
+            Raises
+            ------
+            DownloadError
+                Downloading the audio source failed.
             """
-            data = YTdl.extract_info(url, download=True)
+            data = YTdl.extract_info(url, download=(not stream))
             
             if 'entries' in data: #playlist
-                data=data['entries'][0]
+                data = data['entries'][0]
             
-            #if stream:filename=data['url']
-            filename = YTdl.prepare_filename(data)
-            original = FFmpegPCMAudio(filename, options=('-vn',))
+            if stream:
+                path = data['url']
+                before_options = ('-reconnect', '1', '-reconnect_streamed', '1', '-reconnect_delay_max', '3', )
+            else:
+                path = YTdl.prepare_filename(data)
+                before_options = None
             
-            return original,filename,data
+            args = cls._create_process_preprocess(path, DEFAULT_EXECUTABLE, False, before_options, ('-vn',))
+            
+            return path, data, args
         
-        async def __new__(cls, url, executor_id=None, delete_after=True):
+        async def __new__(cls, url, stream=True):
             """
             Creates a new ``YTAudio`` instance.
             
@@ -476,10 +493,8 @@ else:
             ----------
             url : `str`
                 The url or the title of the video.
-            executor_id : `int`, Optional
-                Id of an executor to use. Two executor with the same id cannot run and `ReferenceError` is raised.
-            delete_after : `bool`
-                Whether the temporary file should be deleted after it finished playing.
+            stream : `bool`
+                Whether the audio should be streamed.
             
             Returns
             -------
@@ -491,55 +506,27 @@ else:
                 Downloading the audio source failed.
             PermissionError
                 The given file started to be played at the same time by an other player as well.
-            ReferenceError
-                There is an already running executor with the given id.
-            RuntimeError
-                Was not called from an `EventThread`.
-            ValueError
-                - Executable as not found.
-                - Popen failed.
+            TypeError
+                - If `pipe` was given as `True` meanwhile `source` was not given as a `file-like` supporting `.fileno()`
+                    method.
+                - If `pipe` was given as `False`, meanwhile `source` was not given as `str` or `Path` instance.
             """
             loop = current_thread()
-            if not isinstance(loop,EventThread):
-                raise RuntimeError(f'{cls.__name__}({url!r},...) was called from a non {EventThread.__name__}: {loop!r}.')
-            
-            func = alchemy_incendiary(cls._download,(url,))
-            
-            if (executor_id is None):
-                future=loop.run_in_executor(func)
+            if isinstance(loop, EventThread):
+                path, data, args = await loop.run_in_executor(alchemy_incendiary(cls._preprocess,(cls, url, stream)))
             else:
-                future=loop.run_in_id_executor(func,executor_id)
+                path, data, args = cls._preprocess(cls, url, stream)
             
-            original, filename, data = await future
-            
-            #create self only at the end, so the `__del__` wont pick it up
+            # Create self only at the end, so the `__del__` wont pick it up
             self=object.__new__(cls)
-            self.original   = original
+            self._process_args = args
+            self.process    = None
+            self._stdout    = None
+            self.path       = path
             self.title      = data.get('title')
             self.url        = data.get('url')
-            self.volume     = 1.0
-            if delete_after:
-                delete = filename
-            else:
-                delete = None
-            self.delete = delete
             
             return self
-        
-        def cleanup(self):
-            """
-            Cleans up ``.original`` and removes the ``YTAudio's file if given.
-            """
-            self.original.cleanup()
-            delete=self.delete
-            if delete is None:
-                return
-            
-            self.delete=None
-            try:
-                os.remove(delete)
-            except (PermissionError,FileNotFoundError):
-                pass
 
 class AudioPlayer(Thread):
     """
@@ -580,10 +567,34 @@ class AudioPlayer(Thread):
         
         Thread.start(self)
     
+    @staticmethod
+    async def _run_call_after(voice_client):
+        """
+        Called when playing an ``AudioSource`` of the audio player finished.
+        
+        Parameters
+        ----------
+        voice_client : ``VoiceClient``
+            The parent voice client of the ``AudioPlayer``.
+        
+        Returns
+        -------
+        should_stop : `bool`
+            Whether the player should stop.
+        """
+        lock = voice_client.lock
+        if lock.locked():
+            await lock
+        else:
+            async with lock:
+                await voice_client.call_after(voice_client)
+    
     def run(self):
         voice_client=self.client
         start=perf_counter()
         loops=0
+        
+        source = None
         
         try:
             while True:
@@ -601,33 +612,56 @@ class AudioPlayer(Thread):
                     continue
                 
                 loops+=1
-                data=self.source.read()
+                
+                new_source = self.source
+                if (new_source is None):
+                    if (source is not None):
+                        source.cleanup()
+                        source = None
+                    
+                    self.resumed.clear()
+                    continue
+                
+                if (new_source is not source):
+                    if (source is not None):
+                        source.cleanup()
+                        source = None
+                    
+                    source = new_source
+                    new_source = None
+                    source.postprocess()
+                
+                data = source.read()
                 
                 if self.done or (data is None):
                     self.resumed.clear()
-                    self.source.cleanup()
-                    self.source=None
-                    if voice_client.lock.locked():
-                        voice_client.lock.acquire()
-                    else:
-                        with voice_client.lock:
-                            stop=KOKORO.create_task_threadsafe(voice_client.call_after(voice_client,lock=False)).syncwrap().wait()
-                        if stop:
-                            self.done=True
-                            self.resumed.set()
-                            break
+                    source.cleanup()
+                    self.source = source = None
                     
+                    KOKORO.create_task_threadsafe(self._run_call_after(voice_client)).syncwrap().wait()
+                    
+                    source = self.source
+                    if (source is None):
+                        self.done = True
+                        self.resumed.set()
+                        break
+                    
+                    source.postprocess()
                     continue
                 
                 sequence=voice_client._sequence
                 if sequence==65535:
                     sequence=0
                 else:
-                    sequence=sequence+1
+                    sequence+=1
                 voice_client._sequence=sequence
                 
-                if self.source.NEEDS_ENCODE:
-                    data=voice_client._encoder.encode(data)
+                if source.NEEDS_ENCODE:
+                    pref_volume = voice_client._pref_volume
+                    if (pref_volume != 1.0):
+                        data = audio_mul(data, 2, pref_volume)
+                    
+                    data = voice_client._encoder.encode(data)
                 
                 header=b''.join([
                     b'\x80x',
@@ -639,12 +673,11 @@ class AudioPlayer(Thread):
                 nonce=header+b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
                 packet=bytearray(header)+voice_client._secret_box.encrypt(bytes(data),nonce).ciphertext
                 
-                
                 try:
                     voice_client.socket.sendto(packet,(voice_client._endpoint_ip,voice_client._voice_port))
                 except BlockingIOError:
                     pass
-
+                
                 timestamp=voice_client._timestamp+SAMPLES_PER_FRAME
                 if timestamp>4294967295:
                     timestamp=0
@@ -655,6 +688,15 @@ class AudioPlayer(Thread):
                     continue
                 blocking_sleep(delay)
         except BaseException as err:
+            voice_client.player = None
+            self.done = True
+            self.resumed.set()
+            if (source is not None):
+                source.cleanup()
+                source = None
+            
+            self.source = None
+            
             extracted=[
                 'Exception occured at \n',
                 repr(self),
@@ -663,7 +705,5 @@ class AudioPlayer(Thread):
             render_exc_to_list(err,extend=extracted)
             sys.stderr.write(''.join(extracted))
             
+        else:
             voice_client.player=None
-            self.done=True
-            self.resumed.set()
-            self.source.cleanup()

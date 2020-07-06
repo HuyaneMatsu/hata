@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('DiscordException', 'ERROR_CODES', 'IntentError', )
+__all__ = ('DiscordException', 'ERROR_CODES', 'IntentError', 'InvalidToken',)
 
 class DiscordException(Exception):
     """
@@ -308,6 +308,7 @@ class ERROR_CODES:
     unknown_branch          = 10032
     unknown_redistributable = 10036
     unknown_gift_code       = 10038
+    unknown_guild_template  = 10057
     unknown_discovery_category = 10059
     
     bots_not_allowed        = 20001
@@ -463,3 +464,8 @@ class IntentError(BaseException):
             result.append(description)
         
         return ''.join(result)
+
+class InvalidToken(BaseException):
+    def __init__(self):
+        BaseException.__init__(self,'Invalid token, please update it, then start the client again.')
+    

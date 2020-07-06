@@ -147,7 +147,7 @@ class MessageActivity(object):
         self.party_id=data.get('party_id','')
         self.type=MessageActivityType.INSTANCES[data['type']]
 
-    def __eq__(self,other):
+    def __eq__(self, other):
         """Returns whether the two message activitys are equal."""
         if type(self) is not type(other):
             return NotImplemented
@@ -2112,44 +2112,48 @@ class MessageType(object):
     
     Every predefind message type can be accessed as class attribute as well:
     
-    +---------------------------+-----------------------------------+---------------------------+-------+
-    | Class attribute name      | convert                           | name                      | value |
-    +===========================+===================================+===========================+=======+
-    | default                   | convert_default                   | default                   | 0     |
-    +---------------------------+-----------------------------------+---------------------------+-------+
-    | add_user                  | convert_add_user                  | add_user                  | 1     |
-    +---------------------------+-----------------------------------+---------------------------+-------+
-    | remove_user               | convert_remove_user               | remove_user               | 2     |
-    +---------------------------+-----------------------------------+---------------------------+-------+
-    | call                      | convert_call                      | call                      | 3     |
-    +---------------------------+-----------------------------------+---------------------------+-------+
-    | channel_name_change       | convert_channel_name_change       | channel_name_change       | 4     |
-    +---------------------------+-----------------------------------+---------------------------+-------+
-    | channel_icon_change       | convert_channel_icon_change       | channel_icon_change       | 5     |
-    +---------------------------+-----------------------------------+---------------------------+-------+
-    | new_pin                   | convert_new_pin                   | new_pin                   | 6     |
-    +---------------------------+-----------------------------------+---------------------------+-------+
-    | welcome                   | convert_welcome                   | welcome                   | 7     |
-    +---------------------------+-----------------------------------+---------------------------+-------+
-    | new_guild_sub             | convert_new_guild_sub             | new_guild_sub             | 8     |
-    +---------------------------+-----------------------------------+---------------------------+-------+
-    | new_guild_sub_t1          | convert_new_guild_sub_t1          | new_guild_sub_t1          | 9     |
-    +---------------------------+-----------------------------------+---------------------------+-------+
-    | new_guild_sub_t2          | convert_new_guild_sub_t2          | new_guild_sub_t2          | 10    |
-    +---------------------------+-----------------------------------+---------------------------+-------+
-    | new_guild_sub_t3          | convert_new_guild_sub_t3          | new_guild_sub_t3          | 11    |
-    +---------------------------+-----------------------------------+---------------------------+-------+
-    | new_follower_channel      | convert_new_follower_channel      | new_follower_channel      | 12    |
-    +---------------------------+-----------------------------------+---------------------------+-------+
-    | stream                    | convert_stream                    | stream                    | 13    |
-    +---------------------------+-----------------------------------+---------------------------+-------+
-    | discovery_disqualified    | convert_discovery_disqualified    | discovery_disqualified    | 14    |
-    +---------------------------+-----------------------------------+---------------------------+-------+
-    | discovery_requalified     | convert_discovery_requalified     | discovery_requalified     | 15    |
-    +---------------------------+-----------------------------------+---------------------------+-------+
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | Class attribute name & name               | convert                                           | value |
+    +===========================================+===================================================+=======+
+    | default                                   | convert_default                                   | 0     |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | add_user                                  | convert_add_user                                  | 1     |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | remove_user                               | convert_remove_user                               | 2     |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | call                                      | convert_call                                      | 3     |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | channel_name_change                       | convert_channel_name_change                       | 4     |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | channel_icon_change                       | convert_channel_icon_change                       | 5     |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | new_pin                                   | convert_new_pin                                   | 6     |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | welcome                                   | convert_welcome                                   | 7     |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | new_guild_sub                             | convert_new_guild_sub                             | 8     |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | new_guild_sub_t1                          | convert_new_guild_sub_t1                          | 9     |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | new_guild_sub_t2                          | convert_new_guild_sub_t2                          | 10    |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | new_guild_sub_t3                          | convert_new_guild_sub_t3                          | 11    |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | new_follower_channel                      | convert_new_follower_channel                      | 12    |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | stream                                    | convert_stream                                    | 13    |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | discovery_disqualified                    | convert_discovery_disqualified                    | 14    |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | discovery_requalified                     | convert_discovery_requalified                     | 15    |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | discovery_grace_period_initial_warning    | convert_discovery_grace_period_initial_warning    | 16    |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | discovery_grace_period_final_warning      | convert_discovery_grace_period_final_warning      | 17    |
+    +-------------------------------------------+---------------------------------------------------+-------+
     """
     # class related
-    INSTANCES = [NotImplemented] * 16
+    INSTANCES = [NotImplemented] * 18
     
     # object related
     __slots__ = ('convert', 'name', 'value', )
@@ -2186,22 +2190,24 @@ class MessageType(object):
         return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r}, covert={self.convert!r})'
     
     # predefined
-    default                 = NotImplemented
-    add_user                = NotImplemented
-    remove_user             = NotImplemented
-    call                    = NotImplemented
-    channel_name_change     = NotImplemented
-    channel_icon_change     = NotImplemented
-    new_pin                 = NotImplemented
-    welcome                 = NotImplemented
-    new_guild_sub           = NotImplemented
-    new_guild_sub_t1        = NotImplemented
-    new_guild_sub_t2        = NotImplemented
-    new_guild_sub_t3        = NotImplemented
-    new_follower_channel    = NotImplemented
-    stream                  = NotImplemented
-    discovery_disqualified  = NotImplemented
-    discovery_requalified   = NotImplemented
+    default = NotImplemented
+    add_user = NotImplemented
+    remove_user = NotImplemented
+    call = NotImplemented
+    channel_name_change = NotImplemented
+    channel_icon_change = NotImplemented
+    new_pin = NotImplemented
+    welcome = NotImplemented
+    new_guild_sub = NotImplemented
+    new_guild_sub_t1 = NotImplemented
+    new_guild_sub_t2 = NotImplemented
+    new_guild_sub_t3 = NotImplemented
+    new_follower_channel = NotImplemented
+    stream = NotImplemented
+    discovery_disqualified = NotImplemented
+    discovery_requalified = NotImplemented
+    discovery_grace_period_initial_warning = NotImplemented
+    discovery_grace_period_final_warning = NotImplemented
 
 def convert_default(self):
     escape=re.escape
@@ -2349,34 +2355,48 @@ def convert_new_follower_channel(self):
     else:
         guild_name=guild.name
     
-    return f'{self.author.name} has added {guild_name} #{channel.name} to this channel. Its most important updates will show up here.'
+    return (f'{self.author.name} has added {guild_name} #{channel.name} to this channel. Its most important updates '
+        'will show up here.')
 
 #TODO
 def convert_stream(self):
     return ''
 
 def convert_discovery_disqualified(self):
-    return 'This server has been removed from Server Discovery because it no longer passes all the requirements. Check `Server Settings` for more details.'
+    return ('This server has been removed from Server Discovery because it no longer passes all the requirements. '
+        'Check `Server Settings` for more details.')
 
 def convert_discovery_requalified(self):
     return 'This server is eligible for Server Discovery again and has been automatically relisted!'
 
-MessageType.default               = MessageType(0   , 'default'                 , convert_default               , )
-MessageType.add_user              = MessageType(1   , 'add_user'                , convert_add_user              , )
-MessageType.remove_user           = MessageType(2   , 'remove_user'             , convert_remove_user           , )
-MessageType.call                  = MessageType(3   , 'call'                    , convert_call                  , )
-MessageType.channel_name_change   = MessageType(4   , 'channel_name_change'     , convert_channel_name_change   , )
-MessageType.channel_icon_change   = MessageType(5   , 'channel_icon_change'     , convert_channel_icon_change   , )
-MessageType.new_pin               = MessageType(6   , 'new_pin'                 , convert_new_pin               , )
-MessageType.welcome               = MessageType(7   , 'welcome'                 , convert_welcome               , )
-MessageType.new_guild_sub         = MessageType(8   , 'new_guild_sub'           , convert_new_guild_sub         , )
-MessageType.new_guild_sub_t1      = MessageType(9   , 'new_guild_sub_t1'        , convert_new_guild_sub_t1      , )
-MessageType.new_guild_sub_t2      = MessageType(10  , 'new_guild_sub_t2'        , convert_new_guild_sub_t2      , )
-MessageType.new_guild_sub_t3      = MessageType(11  , 'new_guild_sub_t3'        , convert_new_guild_sub_t3      , )
-MessageType.new_follower_channel  = MessageType(12  , 'new_follower_channel'    , convert_new_follower_channel  , )
-MessageType.stream                = MessageType(13  , 'stream'                  , convert_stream                , )
-MessageType.discovery_disqualified= MessageType(14  , 'discovery_disqualified'  , convert_discovery_disqualified, )
-MessageType.discovery_requalified = MessageType(15  , 'discovery_requalified'   , convert_discovery_requalified , )
+#TODO
+def convert_discovery_grace_period_initial_warning(self):
+    return ''
+
+#TODO
+def convert_discovery_grace_period_final_warning(self):
+    return ''
+    
+MessageType.default = MessageType(0, 'default', convert_default)
+MessageType.add_user = MessageType(1, 'add_user', convert_add_user)
+MessageType.remove_user = MessageType(2, 'remove_user', convert_remove_user)
+MessageType.call = MessageType(3, 'call', convert_call)
+MessageType.channel_name_change = MessageType(4, 'channel_name_change', convert_channel_name_change)
+MessageType.channel_icon_change = MessageType(5, 'channel_icon_change', convert_channel_icon_change)
+MessageType.new_pin = MessageType(6, 'new_pin', convert_new_pin)
+MessageType.welcome = MessageType(7, 'welcome', convert_welcome)
+MessageType.new_guild_sub = MessageType(8, 'new_guild_sub', convert_new_guild_sub)
+MessageType.new_guild_sub_t1 = MessageType(9, 'new_guild_sub_t1', convert_new_guild_sub_t1)
+MessageType.new_guild_sub_t2 = MessageType(1, 'new_guild_sub_t2', convert_new_guild_sub_t2)
+MessageType.new_guild_sub_t3 = MessageType(11, 'new_guild_sub_t3', convert_new_guild_sub_t3)
+MessageType.new_follower_channel = MessageType(12, 'new_follower_channel', convert_new_follower_channel)
+MessageType.stream = MessageType(13, 'stream', convert_stream)
+MessageType.discovery_disqualified = MessageType(14, 'discovery_disqualified', convert_discovery_disqualified)
+MessageType.discovery_requalified = MessageType(15, 'discovery_requalified', convert_discovery_requalified)
+MessageType.discovery_grace_period_initial_warning = MessageType(16, 'discovery_grace_period_initial_warning',
+    convert_discovery_grace_period_initial_warning)
+MessageType.discovery_grace_period_final_warning = MessageType(17, 'discovery_grace_period_final_warning',
+    convert_discovery_grace_period_final_warning)
 
 del convert_default
 del convert_add_user

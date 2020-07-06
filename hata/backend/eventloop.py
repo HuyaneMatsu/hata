@@ -1058,7 +1058,7 @@ class EventThread(Executor,Thread,metaclass=EventThreadType):
             extracted=before
         else:
             # ignore exception cases
-            extracted=[before.__repr__()]
+            extracted=[repr(before)]
         
         render_exc_to_list(exception,extend=extracted)
         

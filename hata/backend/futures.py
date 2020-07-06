@@ -234,7 +234,7 @@ def render_exc_to_list(exception,extend=None):
         cause_exception = exception.__cause__
         if (cause_exception is not None):
             exception = cause_exception
-            rason_type = 1
+            reason_type = 1
             continue
         
         context_exception = exception.__context__

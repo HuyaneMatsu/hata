@@ -2981,7 +2981,7 @@ def VOICE_STATE_UPDATE__CAL_SC(client,data):
         user=User(data['member'],guild)
     except KeyError:
         user=User(data['user'])
-    result=guild._update_voice_state(data,user)
+    result = guild._update_voice_state(data, user)
     
     if result is None:
         return
@@ -3130,9 +3130,12 @@ del VOICE_STATE_UPDATE__CAL_SC, VOICE_STATE_UPDATE__CAL_MC, VOICE_STATE_UPDATE__
 
 def VOICE_SERVER_UPDATE(client,data):
     try:
-        voice_client_id=int(data['guild_id'])
+        voice_client_id = data['guild_id']
     except KeyError:
-        voice_client_id=int(data['channel_id'])
+        voice_client_id = data['channel_id']
+    
+    voice_client_id = int(voice_client_id)
+    
     try:
         voice_client=client.voice_clients[voice_client_id]
     except KeyError:

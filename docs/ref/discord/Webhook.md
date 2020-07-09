@@ -173,7 +173,7 @@ Valid sizes: 16, 32, 64, 128, 256, 512, 1024, 2048, 4096.
 - returns : [`Webhook`](Webhook.md)
 
 Tries to get the webhook from the existing ones, then update it. If the webhook
-is not exisint yet, then it will create a new one and fill it's attributes from
+is not exising yet, then it will create a new one and fill it's attributes from
 the data.
 
 ### `_update_no_return(self,data)` (method)

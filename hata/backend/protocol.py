@@ -1321,7 +1321,11 @@ class ProtocolBase(object):
                     return self.read_chunked_encoded(decompresser)
             
             if (length is not None) and (length>0):
-                return self._read_exactly(length)
+                decompresser = self._decompresser_for(message.encoding)
+                if decompresser is None:
+                    return self._read_exactly(length)
+                else:
+                    return self.read_exactly_encoded(length, decompresser)
         
         if (type(message) is RawRequestMessage) and (message.meth == METH_CONNECT):
             message.upgraded = True
@@ -1413,7 +1417,11 @@ class ProtocolBase(object):
         result = b''.join(chunks)
         chunks.clear()
         return result
-        
+    
+    def read_exactly_encoded(self, length, decompressobj):
+        chunk = yield from self._read_exactly(length)
+        return decompressobj.decompress(chunk)
+    
     def read_chunked_encoded(self, decompressobj):
         collected = []
         while True:

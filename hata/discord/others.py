@@ -253,7 +253,7 @@ class VerificationLevel(object):
     
     def __init__(self, value, name):
         """
-        Creates an ``VerificationLevel`` and stores it at the classe's `.INSTANCES` class attribute as well.
+        Creates a ``VerificationLevel`` and stores it at the classe's `.INSTANCES` class attribute as well.
         
         Parameters
         ----------

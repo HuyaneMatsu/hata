@@ -1,53 +1,27 @@
 # -*- coding: utf-8 -*-
 import sys
-from threading import Thread, Lock
+from threading import Thread
 from select import select
 from socket import error as SocketError
 from collections import deque
 
+from ..backend.dereaddons_local import WeakReferer
 from ..backend.futures import render_exc_to_list
 
-from .opus import OpusDecoder, SAMPLES_PER_FRAME
+from .opus import OpusDecoder, opus
+from .player import AudioSource
 
 #poll is not on windows, but if u want i can add an optimized case for linux
 #it is just dumb, how much times i need to copy data instead of slicing it with memoryview
 
-EMPTY_VOICE_DATA=b'\x00'*3840
+if opus is None:
+    DECODER = None
+else:
+    DECODER = OpusDecoder()
 
-def insert_packet(buffer, packet):
-    """
-    Inserts the given packet to the buffer at it's place. It is not guaranteed that the packet is received always as
-    the last one, so they are sorted by their timestamp.
-    
-    Parameters
-    ----------
-    buffer : `deque`
-    packet : ``VoicePacket``
-    """
-    timestamp=packet.timestamp
-    
-    top=len(buffer)
-    bot=0
-    while True:
-        if bot<top:
-            half=(bot+top)>>1
-            if buffer[half].timestamp>timestamp:
-                bot=half+1
-            else:
-                top=half
-            continue
-        break
+EMPTY_VOICE_FRAME_ENCODED = b'\xf8\xff\xfe'
+EMPTY_VOICE_FRAME_DECODED = b'\x00'*3840
 
-    if bot==len(buffer):
-        buffer.append(packet)
-        return
-    
-    other=buffer[bot]
-    if other.timestamp==timestamp:
-        return
-
-    buffer.insert(bot,packet)
-    
 class Array_uint_32b(object): #TODO : ask python to implement arrays already
     """
     Implements an uint32 array casted on bytes.
@@ -80,13 +54,15 @@ class Array_uint_32b(object): #TODO : ask python to implement arrays already
         self._limit = limit
     
     def __len__(self):
+        """Returns the array's length"""
         limit   = self._limit
         offset  = self._offset
         value   = (limit-offset)>>2
         
         return value
     
-    def __getitem__(self,index):
+    def __getitem__(self, index):
+        """Returns the element of the array at the given index."""
         index   = index<<2
         offset  = self._offset+index
         value   = int.from_bytes(self._data[offset:offset+4],'big')
@@ -94,6 +70,7 @@ class Array_uint_32b(object): #TODO : ask python to implement arrays already
         return value
     
     def __iter__(self):
+        """Iterated over the array's elements."""
         data    = self._data
         offset  = self._offset
         limit   = self._limit
@@ -105,92 +82,68 @@ class Array_uint_32b(object): #TODO : ask python to implement arrays already
             yield value
             
             offset=offset+4
-    
+
 class PacketBase(object):
+    """
+    Base class for packet subclasses.
+    """
     __slots__=()
 
-    def __gt__(self,other):
-        if isinstance(other,PacketBase):
-            return self.timestamp<other.timestamp
-        return NotImplemented
-
-    def __ge__(self,other):
-        if isinstance(other,PacketBase):
-            if self.timestamp<other.timestamp:
-                return True
-            if self.timestamp!=other.timestamp:
-                return False
-            if type(self) is not type(other):
-                return False
-            #TODO?
-            return True
-        return NotImplemented
-    
-    def __eq__(self,other):
-        if isinstance(other,PacketBase):
-            if self.timestamp!=other.timestamp:
-                return False
-            if type(self) is not type(other):
-                return False
-            #TODO?
-            return True
-        return NotImplemented
-
-    def __ne__(self,other):
-        if isinstance(other,PacketBase):
-            if self.timestamp!=other.timestamp:
-                return True
-            if type(self) is not type(other):
-                return True
-            #TODO
-            return False
-        return NotImplemented
-    
-    def __le__(self,other):
-        if isinstance(other,PacketBase):
-            if self.timestamp<other.timestamp:
-                return True
-            if self.timestamp!=other.timestamp:
-                return False
-            if type(self) is not type(other):
-                return False
-            #TODO?
-            return True
-        return NotImplemented
-        
-    def __lt__(self,other):
-        if isinstance(other,PacketBase):
-            return self.timestamp<other.timestamp
-        return NotImplemented
-
-    @property
-    def timestamp(self):
-        return 0
-
 class VoicePacket(PacketBase):
-    __slots__=('data', 'timestamp')
-
-    def __init__(self,data,timestamp):
-        self.data       = data
-        self.timestamp  = timestamp
+    """
+    Represents a voice packet.
+    
+    Attributes
+    ----------
+    decoded : `str`
+    """
+    __slots__ = ('decoded', 'encoded')
+    
+    def __init__(self, data):
+        """
+        Creates a new ``VoicePacket`` from the given data.
         
+        Parameters
+        ----------
+        data : `bytes`
+            Not yet decoded voice data.
+        """
+        self.encoded    = data
+        self.decoded    = None
+    
     def __repr__(self):
-        return f'<{self.__class__.__name__} timestamp={self.timestamp}, size={len(self.data)}>'
+        """ Returns the voice packet's representation."""
+        return (f'<{self.__class__.__name__} decoded={self.decoded is not None}>')
 
+# http://www.rfcreader.com/#rfc3550_line548
 class RTPPacket(PacketBase):
+    """
+    Represents an RTP packet: http://www.rfcreader.com/#rfc3550_line548.
+    
+    Attributes
+    ----------
+    _data : `bytes`
+        The raw data of the packet on what it is casted on.
+    _offset1 : `int`
+        Offset of the received data marking the end of the CSRC identifiers and the start of the encrypted data.
+    _offset2 : `int`
+        Offset of the descrypted data marking the end of the extensions (?) and the start of the descrypted data.
+    _decrypted : `bytes`
+        Descrypted data of the RTP packet.
+    """
     __slots__=('_data', '_offset1', '_offset2', '_decrypted',)
-
-    def __init__(self,data,voice_client):
+    
+    def __init__(self, data, voice_client):
         self._data=data
         offset=12
         cc=self.cc
         if cc:
             offset=offset+(cc<<2)
-        self._offset1=offset
+        self._offset1 = offset
         
-        nonce=data[:12]+b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-        decrypted=voice_client._secret_box.decrypt(data[offset:],nonce)
-        self._decrypted=decrypted
+        nonce = data[:12]+b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+        decrypted = voice_client._secret_box.decrypt(data[offset:],nonce)
+        self._decrypted = decrypted
         
         if self.extended:
             extension=int.from_bytes(decrypted[2:4],'big')
@@ -199,11 +152,11 @@ class RTPPacket(PacketBase):
             offset=0
         
         self._offset2=offset
-        
+    
     @property
     def data(self):
         return memoryview(self._data)[self._offset1:]
-
+    
     @property
     def decrypted(self):
         return memoryview(self._decrypted)[self._offset2:]
@@ -211,7 +164,7 @@ class RTPPacket(PacketBase):
     @property
     def csrcs(self):
         return Array_uint_32b(self._data,12,self._offset1)
-
+    
     @property
     def extension_profile(self):
         if not self.extended:
@@ -219,64 +172,64 @@ class RTPPacket(PacketBase):
         
         profile=int.from_bytes(self._decrypted[0:2],'big')
         return profile
-
+    
     @property
     def extension_length(self):
         if not self.extended:
             return 0
-
+        
         length=int.from_bytes(self._decrypted[2:4],'big')
         return length
-
+    
     @property
     def extension_values(self):
         limit=self._offset2
         if limit<=4:
             return None
         return Array_uint_32b(self._decrypted,4,limit)
-        
+    
     @property
     def version(self):
         return self._data[0]>>6
-
+    
     @property
     def padding(self):
         return (self._data[0]&0b00100000)>>5
-
+    
     @property
     def extended(self):
         return (self._data[0]&0b00010000)>>4
-
+    
     @property
     def cc(self):
         return self._data[0]&0b00001111
-
+    
     @property
     def marker(self):
         return (self._data[1]&0b10000000)>>7
-
+    
     @property
     def payload(self):
         return self._data[1]&0b01111111
-
+    
     @property
     def timestamp(self):
         return int.from_bytes(self._data[4:8],'big')
-
+    
     @property
-    def ssrc(self):
+    def source(self):
         return int.from_bytes(self._data[8:12],'big')
-
+    
     @property
     def sequence(self):
         return int.from_bytes(self._data[2:4],'big')
-
+    
     @property
     def header(self):
         return memoryview(self._data)[:12]
 
     def __repr__(self):
-        return f'<{self.__class__.__name__} timestamp={self.timestamp}, ssrc={self.ssrc}, sequence={self.sequence}, size={len(self.data)}>'
+        return f'<{self.__class__.__name__} timestamp={self.timestamp}, source={self.source}, sequence={self.sequence}, size={len(self.data)}>'
 
 #NOT USED
 
@@ -305,7 +258,7 @@ class RTPPacket(PacketBase):
 ##        return self._data[0]&0b00011111
 ##
 ##    @property
-##    def ssrc(self):
+##    def source(self):
 ##        return int.from_bytes(self._data[4:8],'big')
 ##
 ##class _RPReport(self):
@@ -315,7 +268,7 @@ class RTPPacket(PacketBase):
 ##        self._offset= offset
 ##
 ##    @property
-##    def ssrc(self):
+##    def source(self):
 ##        offset=self._offset
 ##        return int.from_bytes(self._data[offset:offset+4],'big')
 ##
@@ -472,157 +425,262 @@ class RTPPacket(PacketBase):
 ##            
 ##            offset=offset+24
 
-class AudioReader(Thread):
-    __slots__=('client', 'done', 'socket', 'decoder', 'decoded', 'buffer_lock')
-    def __init__(self,voice_client):
-        Thread.__init__(self,daemon=True)
-        self.client     = voice_client
-        self.done       = False
-        self.socket     = NotImplemented
-        self.decoded    = {}
-        self.buffer_lock= Lock()
-        self.decoder    = OpusDecoder()
-        self.start()
-
-    def get_audio_frames_for(self,user,flush=True,fill=True):
-        user_id=user.id
-        result=[]
+class AudioStream(AudioSource):
+    """
+    Represents a received audio stream from Discord.
+    
+    Attributes
+    ----------
+    auto_decode : `bool`
+        Whether the stream should decode the frames as received.
+    buffer : `deque` of `VoicePacket`
+        A queue of received voice packets.
+    done : `bool`
+        Whether the audio stream is stopped.
+    client : `WeakReferer`
+        Weakreference to the parent ``AudioReader`` to avoid reference loops.
+    source : `None` or `int`
+        Identificator value of the respective user.
+    user : ``User`` or ``Client``
+        The user, who's audio is received.
+    yield_decoded : `bool`
+        Whether the audio stream should yield encoded data.
+    """
+    __slots__ = ('auto_decode', 'buffer', 'client', 'done', 'source', 'user', 'yield_decoded')
+    
+    def __init__(self, voice_client, user, *, auto_decode=False, yield_decoded=False):
+        """
+        Creates a new audio stream instance.
+        
+        Parameters
+        ----------
+        voice_client : ``VoiceClient``
+            Parent ``AudioReader`` instance.
+        user : ``User`` or ``Client``
+            The user, who's audio is received.
+        auto_decode : `bool`
+            Whether the received packets should be auto decoded.
+        yield_decoded : `bool`
+            Whether the audio stream should yield decoded data.
+        """
         try:
-            source=self.client.sources[user_id]
+            audio_source = voice_client._audio_sources[user.id]
         except KeyError:
-            return result
+            audio_source = None
         
-        with self.buffer_lock:
-            try:
-                buffer=self.decoded[source]
-            except KeyError:
-                return result
-            
-            if not buffer:
-                return result
-            
-            if fill:
-                frame=buffer[0]
-                result.append(frame.data)
-                timestamp=frame.timestamp
-                expected_timestamp=timestamp+SAMPLES_PER_FRAME
-                
-                index=0
-                limit=len(buffer)
-                
-                while True:
-                    if index==limit:
-                        break
-                    
-                    frame=buffer[index]
-                    timestamp=frame.timestamp
-                    
-                    if timestamp<expected_timestamp:
-                        
-                        while True:
-                            result.append(EMPTY_VOICE_DATA)
-                            expected_timestamp=expected_timestamp+SAMPLES_PER_FRAME
-                            if expected_timestamp<timestamp:
-                                continue
-                            
-                            break
-                    
-                    result.append(frame.data)
-                    expected_timestamp=timestamp+SAMPLES_PER_FRAME
-
-                    index=index+1
-                    continue
-
-            else:
-                index=0
-                limit=len(buffer)
-                while True:
-                    
-                    frame=buffer[index]
-                    result.append(frame.data)
-
-                    index=index+1
-                    if index==limit:
-                        break
-                    
-                    continue
-
-            if flush:
-                buffer.clear()
-        
-        return result
-        
+        self.client = voice_client
+        self.buffer = deque()
+        self.auto_decode = auto_decode
+        self.yield_decoded = yield_decoded
+        self.done = False
+        self.user = user
+        self.source = audio_source
         
     def stop(self):
-        self.done=True
-        self.client.reader=None
+        """
+        Stops the audio stream by marking it as done and unlinks it as well.
+        """
+        if self.done:
+            return
+        
+        self.done = True
+        self.client._unlink_audio_stream(self)
+    
+    cleanup = stop
+    
+    @property
+    def NEEDS_ENCODE(self):
+        """
+        Returns whether the audio stream needs encoding when streaming to an audio player.
+        
+        Returns
+        -------
+        needs_encode : `bool`
+        """
+        return self.yield_decoded
+    
+    def feed(self, packet):
+        """
+        Adds the given packet to the buffer of the audio stream.
+        
+        Parameters
+        ----------
+        packet : ``VoicePacket``
+        """
+        self.buffer.append(packet)
+        
+        if self.auto_decode:
+            if packet.decoded is None:
+                packet.decoded = DECODER.decode(packet.encoded)
+    
+    def read(self):
+        """
+        Reads a frame from the audio stream's buffer.
+        
+        With yielding `None` indicates end of stream.
+        
+        Returns
+        -------
+        frame : `None` or `bytes`
+        """
+        buffer = self.buffer
+        if buffer:
+            packet = buffer.popleft()
+            if self.yield_decoded:
+                data = packet.decoded
+                if data is None:
+                    data = DECODER.decode(packet.encoded)
+            else:
+                data = packet.encoded
+        
+        else:
+            if self.done:
+                data = None
+            else:
+                if self.yield_decoded:
+                    data = EMPTY_VOICE_FRAME_DECODED
+                else:
+                    data = EMPTY_VOICE_FRAME_ENCODED
+        
+        return data
+    
+    @property
+    def title(self):
+        """
+        Returns the title of the audio stream.
+        
+        Returns
+        -------
+        title : `str`
+        """
+        return f'{self.__class__.__name__} from {self.user.full_name!r}'
+
+class AudioReader(Thread):
+    """
+    Audio reader of a ``VoiceClient``.
+    
+    Attributes
+    ----------
+    audio_streams : `dict` of (`int`, (``AudioStream`` or (`list` of ``AudioStream``))) items
+        `source` - ``AudioStream`` relation to store the receiving audio streams.
+    client : ``VoiceClient``
+        The parent voice client.
+    done : `bool`
+        Whether the audio reader is done receing and should stop.
+    """
+    __slots__ = ('audio_streams', 'client', 'done', )
+    
+    def __init__(self, voice_client):
+        """
+        Creates an ``AudioReader`` instance bound to the given voice client.
+        
+        Parameters
+        ----------
+        voice_client : ``VoiceClient``
+            The parent voice client.
+        """
+        Thread.__init__(self, daemon=True)
+        self.client = voice_client
+        self.done = False
+        self.audio_streams = {}
+        self.start()
     
     def run(self):
-        empty=[]
-
-        voice_client=self.client
+        empty = []
+        
+        voice_client = self.client
         try:
             if not voice_client.connected.is_set():
                 voice_client.connected.wait()
-
+            
             socket=voice_client.socket
-            socketlist=[socket]
+            socketlist = [socket]
             while True:
-
+                
                 if self.done:
                     break
                 
                 if not voice_client.connected.is_set():
                     voice_client.connected.wait()
-                    socket=voice_client.socket
-                    socketlist=[socket]
-
-                ready,_,err=select(socketlist,empty,socketlist,0.01)
+                    socket = voice_client.socket
+                    socketlist = [socket]
+                
+                ready, _, err = select(socketlist, empty, socketlist, 0.01)
                 if not ready:
                     continue
                 
                 try:
-                    data=socket.recv(4096)
+                    data = socket.recv(4096)
                 except SocketError as err:
-                    if err.errno==10038: #NOT SOCKET, lets do a circle
+                    if err.errno == 10038: #NOT SOCKET, lets do a circle
                         continue
                     raise
                 
                 try:
-                    if data[1]!=120:
+                    if data[1] != 120:
                         #not voice data, we dont care
                         continue
                     
-                    packet=RTPPacket(data,voice_client)
-
-                    voice_data=self.decoder.decode(bytes(packet.decrypted))
-                    voice_packet=VoicePacket(voice_data,packet.timestamp)
-                    
-                    with self.buffer_lock:
-                        source=packet.ssrc
-                        try:
-                            buffer=self.decoded[source]
-                        except KeyError:
-                            buffer=deque()
-                            self.decoded[source]=buffer
-
-                        insert_packet(buffer,voice_packet)
-                        
+                    packet = RTPPacket(data, voice_client)
+                    source = packet.source
+                    try:
+                        audio_stream = self.audio_streams[source]
+                    except KeyError:
+                        pass
+                    else:
+                        voice_packet = VoicePacket(bytes(packet.decrypted))
+                        if type(audio_stream) is list:
+                            for audio_stream in audio_stream:
+                                audio_stream.feed(voice_packet)
+                        else:
+                            audio_stream.feed(voice_packet)
+                
                 except BaseException as err:
                     extracted=[
                         'Exception occured at decoding voice packet at\n',
-                        self.__repr__(),
+                        repr(self),
                         '\n',
                             ]
                     render_exc_to_list(err,extend=extracted)
                     sys.stderr.write(''.join(extracted))
-                
+        
         except BaseException as err:
             extracted=[
                 'Exception occured at\n',
-                self.__repr__(),
+                repr(self),
                 '.run\n',
                     ]
             render_exc_to_list(err,extend=extracted)
             sys.stderr.write(''.join(extracted))
+        
+        self.stop()
+    
+    def stop(self):
+        """
+        Stops the streams of the audio player.
+        """
+        self.done = True
+        
+        voice_client = self.client
+        if voice_client.reader is self:
+            voice_client.reader = None
+        
+        audio_streams = self.audio_streams
+        if audio_streams:
+            collected_audio_streams = []
+            for audio_stream in audio_streams.values():
+                if type(audio_stream) is list:
+                    collected_audio_streams.extend(audio_stream)
+                else:
+                    collected_audio_streams.append(audio_stream)
+            
+            audio_streams.clear()
+            
+            while collected_audio_streams:
+                audio_stream = collected_audio_streams.pop()
+                audio_stream.stop()
+    
+    __del__ = stop
 
+del opus
+del OpusDecoder

@@ -27,6 +27,18 @@ assert (len(AUTO_DASH_APPLICABLES)==0) or (AUTO_DASH_APPLICABLES != AUTO_DASH_AP
     f'(AUTO_DASH_APPLICABLES={AUTO_DASH_APPLICABLES!r}!)')
 
 def generate_alters_for(name):
+    """
+    Generates alternative command names from the given one.
+    
+    Parameters
+    ----------
+    name : `str`
+        A command's or an aliase's name.
+
+    Returns
+    -------
+    alters : `list` of `str`
+    """
     chars = []
     pattern = []
     for char in name:
@@ -78,13 +90,114 @@ def generate_alters_for(name):
     return alters
 
 class Command(object):
+    """
+    Represents a command object stored by a ``CommandProcesser`` in it's `.commands` and by a ``Category`` in it's
+    ``.commands`` instance attribute.
+    
+    Attributes
+    ----------
+    aliases : `None` or `list` of `str`
+        The aliases of the command stored at a sorted list. If it has no alises, this attribute will be set as `None`.
+    category : `None` or ``Category``
+        The commands's owner category.
+    command : `async-callable`
+        The async callable added as the command itself.
+    description : `Any`
+        Description added to the command. If no description is provided, then it will check the commands's `.__doc__`
+        attribute for it. If the description is a string instance, then it will be normalized with the
+        ``normalize_description`` function. If it ends up as an empty string, then `None` will be set as the
+        description.
+    name : `str`
+        The command's name.
+        
+        > Always lower case.
+    _alters : `set` of `str`
+        Alternative name, whith what the command can be called.
+    _call_setting : `int`
+        An `int` flag, what defines, how the command should be called.
+        
+        Possible values:
+        +-----------------------------------+-------+
+        | Respective name                   | value |
+        +===================================+=======+
+        | COMMAND_CALL_SETTING_2ARGS        | 0     |
+        +-----------------------------------+-------+
+        | COMMAND_CALL_SETTING_3ARGS        | 1     |
+        +-----------------------------------+-------+
+        | COMMAND_CALL_SETTING_USE_PARSER   | 2     |
+        +-----------------------------------+-------+
+    _category_hint : `str` or `None`
+        Hint for the command processer under which category should the give command go. If set as `None`, means that
+        the command will go under the default category of the command processer.
+    _check_failure_handler : `Any`
+        The internal slot used by the ``.check_failure_handler`` property. Defaults to `None`.
+    _checks : `None` or (`list` of ``_check_base`` instances)
+        The internal slot used by the ``.checks`` property. Defaults to `None`.
+    _parser : `None`
+        The generated parser function for parsing the arguments to pass to the command. Defaults to `None`.
+    _parser_failure_handler : `Any`
+        The internal slot used by the ``.parser_failure_handler`` property. Defaults to `None`.
+    """
     __slots__ = ( '_alters', '_call_setting', '_category_hint', '_check_failure_handler', '_checks', '_parser',
         '_parser_failure_handler', 'aliases', 'category', 'command', 'description', 'name', )
     
     @classmethod
     def from_class(cls, klass, kwargs=None):
-        if not isinstance(klass,type):
-            raise TypeError(f'Expected `type` instance, got `{klass!r}`.')
+        """
+        The method used, when creating a `Command` object from a class.
+        
+        > Extra `kwargs` are supported as well for the usecase.
+        
+        Parameters
+        ----------
+        klass : `type`
+            The class, from what's attributes the command will be created.
+            
+            The expected attrbiutes of the given `klass` are the following:
+            - name : `str` or `None`
+                If was not defined, or was defined as `None`, the classe's name will be used.
+            - command : `async-callable`
+                If no `command` attribute was defined, then a attribute of the `name`'s value be checked as well.
+            - description : `Any`
+                If no description was provided, then the classe's `.__doc__` will be picked up.
+            - aliases : `None` or (`iterable` of str`)
+            - category : `None`, ``Category`` or `str`
+            - checks : `None` or (`iterable` of ``_check_base``)
+                If no checks were provided, then the classe's `.checks_` attribute will be checked as well.
+            - check_failure_handler : `None` or `async-callable`
+            - parser_failure_handler : `None` or `async-callable`
+        
+        kwargs, `None` or `dict` of (`str`, `Any`) items, Optional
+            Additional keyword arguments.
+            
+            The expected keyword arguemnts are the following:
+            - description
+            - category
+            - checks
+            - check_failure_handler
+            - parser_failure_handler
+        
+        Returns
+        -------
+        command : ``Command``
+        
+        Raises
+        ------
+        TypeError
+            - If `klass` was not given as `type` instance.
+            - `kwargs` was not given as `None` and not all of it's items were used up.
+            - `aliases` were not passed as `None` or as `iterable` of `str`.
+            - `category` was not given as `None, `str`, or as ``Category`` instance.
+            - If `checks` was not given as `None` or as `iterable` of ``_check_base`` instances.
+            - If `check_failure_handler` or `parser_failure_handler` was not given as `None` but neither as async
+                callable or as a callable instanceable to async, or if it (or the resulted) callable accepts less or
+                more non reserved positional arguments as `5`.
+        ValueError
+            - If `command` attribute is missing.
+        """
+        klass_type = klass.__class__
+        if not issubclass(klass_type, type):
+            raise TypeError(f'Expected `type` instance, got {klass_type.__name__}.')
         
         name = getattr(klass,'name',None)
         if name is None:
@@ -93,9 +206,6 @@ class Command(object):
         command = getattr(klass,'command',None)
         if command is None:
             while True:
-                if type(name) is not str:
-                    break
-                
                 command = getattr(klass,name,None)
                 if (command is not None):
                     break
@@ -161,12 +271,43 @@ class Command(object):
                     pass
             
             if kwargs:
-                raise TypeError(f'`{cls.__name__}.from_class` did not use up some kwargs: `{list(kwargs)!r}`.')
+                raise TypeError(f'`{cls.__name__}.from_class` did not use up some kwargs: `{kwargs!r}`.')
         
         return cls(command, name, description, aliases, category, checks_, check_failure_handler, parser_failure_handler)
     
     @classmethod
     def from_kwargs(cls, command, name, kwargs):
+        """
+        Called when a command is created before adding it to a ``CommandProcesser``.
+        
+        Parameters
+        ----------
+        command : `async-callable`
+            The async callable added as the command itself.
+        name : `str` or `None`
+            The name to be used instead of the passed `command`'s.
+        kwargs : `None` or `dict` of (`str`, `Any`) items.
+            Additional keyword arguments.
+            
+            The expected keyword arguments are the following:
+            - description : `Any`
+            - aliases : `None` or (`iterable` of str`)
+            - category : `None`, ``Category`` or `str`
+            - checks : `None` or (`iterable` of ``_check_base``)
+            - check_failure_handler : `None` or `async-callable`
+            - parser_failure_handler : `None` or `async-callable`
+        
+        Returns
+        -------
+        TypeError
+            - `kwargs` was not given as `None` and not all of it's items were used up.
+            - `aliases` were not passed as `None` or as `iterable` of `str`.
+            - `category` was not given as `None, `str`, or as ``Category`` instance.
+            - If `checks` was not given as `None` or as `iterable` of ``_check_base`` instances.
+            - If `check_failure_handler` or `parser_failure_handler` was not given as `None` but neither as async
+                callable or as a callable instanceable to async, or if it (or the resulted) callable accepts less or
+                more non reserved positional arguments as `5`.
+        """
         if (kwargs is None) or (not kwargs):
             description = None
             aliases = None
@@ -183,12 +324,85 @@ class Command(object):
             parser_failure_handler = kwargs.pop('parser_failure_handler',None)
             
             if kwargs:
-                raise TypeError(f'type `{cls.__name__}` not uses: `{list(kwargs)!r}`.')
+                raise TypeError(f'type `{cls.__name__}` not uses: `{kwargs!r}`.')
         
         return cls(command, name, description, aliases, category, checks_, check_failure_handler, parser_failure_handler)
     
     def __new__(cls, command, name, description, aliases, category, checks_, check_failure_handler, parser_failure_handler):
+        """
+        Creates a new ``Command`` object.
         
+        Parameters
+        ----------
+        command : `async-callable`
+            The async callable added as the command itself.
+        name : `str` or `None`
+            The name to be used instead of the passed `command`'s.
+        description : `Any`
+            Description added to the command. If no description is provided, then it will check the commands's
+            `.__doc__` attribute for it. If the description is a string instance, then it will be normalized with the
+            ``normalize_description`` function. If it ends up as an empty string, then `None` will be set as the
+            description.
+        aliases : `None` or (`iterable` of `str`)
+            The aliases of the command.
+        category : `None`, ``Category`` or `str` instance
+            The category of the command. Can be given as the category itself, or as a category's name. If given as
+            `None`, then the command will go under the command processer's default category.
+        checks_ : `None` or (`iterable` of ``_check_base`` instances)
+            Checks, which need to pass to the command to be called.
+        check_failure_handler : `None` or `async-callable`
+            Is ensured, when a check returns a non negative number.
+            
+            If given as an `async-callable`, then it should accept 5 arguments:
+            
+            +-----------------------+---------------+
+            | Respective name       | Type          |
+            +=======================+===============+
+            | client                | ``Client``    |
+            +-----------------------+---------------+
+            | message               | ``Message``   |
+            +-----------------------+---------------+
+            | command               | ``Command``   |
+            +-----------------------+---------------+
+            | content               | `str`         |
+            +-----------------------+---------------+
+            | fail_identificator    | `int`         |
+            +-----------------------+---------------+
+        
+        parser_failure_handler : `None` or `async-callable`
+            Called when the command uses a parser to parse it's arguments, but it cannot parse out all the required
+            ones.
+            
+            If given as an `async-callable`, then it should accept 5 arguments:
+            
+            +-----------------------+-------------------+
+            | Respective name       | Type              |
+            +=======================+===================+
+            | client                | ``Client``        |
+            +-----------------------+-------------------+
+            | message               | ``Message``       |
+            +-----------------------+-------------------+
+            | command               | ``Command``       |
+            +-----------------------+-------------------+
+            | content               | `str`             |
+            +-----------------------+-------------------+
+            | args                  | `list` of `Any`   |
+            +-----------------------+-------------------+
+        
+        Returns
+        -------
+        command : ``Command``
+        
+        Raises
+        ------
+        TypeError
+            - `aliases` were not passed as `None` or as `iterable` of `str`.
+            - `category` was not given as `None, `str`, or as ``Category`` instance.
+            - If `checks_` was not given as `None` or as `iterable` of ``_check_base`` instances.
+            - If `check_failure_handler` or `parser_failure_handler` was not given as `None` but neither as async
+                callable or as a callable instanceable to async, or if it (or the resulted) callable accepts less or
+                more non reserved positional arguments as `5`.
+        """
         name = check_name(command,name)
         
         # Check aliases
@@ -197,7 +411,7 @@ class Command(object):
         if (aliases is not None):
             aliases_type = aliases.__class__
             if issubclass(aliases_type, str) or (not hasattr(aliases_type, '__iter__')):
-                raise TypeError(f'`aliases` should have be passed as an `iterable` of `str`, got '
+                raise TypeError(f'`aliases` should have be passed as `None` or as an `iterable` of `str`, got '
                     f'{aliases_type.__class__}.')
             
             index = 1
@@ -208,7 +422,7 @@ class Command(object):
                 elif issubclass(alias_type, str):
                     alias = str(alias)
                 else:
-                    raise TypeError(f'Element {index} of `aliases` should have been `str` instacne, meanwhile got '
+                    raise TypeError(f'Element {index} of `aliases` should have been `str` instance, meanwhile got '
                         f'{alias_type.__name__}.')
                 
                 aliases_checked.append(alias)
@@ -240,29 +454,47 @@ class Command(object):
         if (description is not None) and isinstance(description,str):
             description=normalize_description(description)
         
-        if type(category) is Category:
-            category_hint=category.name
-            category=category
-        elif (type(category) is str) or (category is None):
-            category_hint=category
-            category=None
+        if category is None:
+            category_hint = None
         else:
-            raise TypeError(f'`category should be type `str` or `{Category.__name__}`, got {category!r}`.')
+            category_type = category.__class__
+            if category_type is Category:
+                category_hint = category.name
+                category = category
+            elif category_type is str:
+                category_hint = category
+                category = None
+            elif issubclass(category_type, str):
+                category = str(category)
+                category_hint = category
+                category = None
+            else:
+                raise TypeError(f'`category` should be `None`, type `str` or `{Category.__name__}`, got '
+                    f'{category_type.__name__}.')
         
         if checks_ is None:
             checks_processed=None
         else:
-            checks_processed = []
-            
-            for check in checks_:
-                if not isinstance(check, checks._check_base):
-                    raise TypeError(f'`checks` should be `checks._check_base` instances, meanwhile received `{check!r}`.')
+            checks_type = checks_.__class__
+            if hasattr(checks_type, '__iter__'):
+                checks_processed = []
                 
-                checks_processed.append(check)
-                continue
-            
-            if not checks_processed:
-                checks_processed=None
+                index = 1
+                for check in checks_:
+                    check_type = check.__class__
+                    if issubclass(check_type, checks._check_base):
+                        checks_processed.append(check)
+                        index +=1
+                        continue
+                    
+                    raise TypeError(f'`checks` element {index} was not given as `{checks._check_base.__name__}`, got '
+                        f'`{check_type.__name__}`.')
+                
+                if not checks_processed:
+                    checks_processed=None
+            else:
+                raise TypeError(f'`checks_` should have been given as `None` or as `iterable` of '
+                    f'`{checks._check_base.__name__}` instances, got {checks_type.__name__}.')
         
         if check_failure_handler is None:
             if (category is not None):

@@ -613,7 +613,7 @@ class Client(UserBase):
     avatar_hash : `int`
         The client's avatar's hash in `uint128`.
     avatar_type : `bool`
-        Whether the client's avatar's type.
+        The client's avatar's type.
     guild_profiles : `dict` of (``Guild``, ``GuildPorfile``) items
         A dictionary, which contains the client's guild profiles. If a client is member of a guild, then it should
         have a respective guild profile accordingly.
@@ -621,7 +621,7 @@ class Client(UserBase):
         Whether the client is a bot or a user account.
     partial : `bool`
         Partial clients have only their id set. If any other data is set, it might not be in sync with Discord.
-    activities : `list` of ``Acitvity`` instances
+    activities : `list` of ``AcitvityBase`` instances
         A list of the client's activities.
     status : `Status`
         The client's display status.
@@ -677,7 +677,7 @@ class Client(UserBase):
         Each bot can join a channel at every ``Guild`` and meanwhile they do, they have an active voice client for that
         guild. This attribute stores these voice clients. They keys are the guilds' ids, meanwhile the values are
         the voice clients.
-    _activity : ``Activity``
+    _activity : ``ActivityBase`` instance
         The client's preffered activity.
     _additional_owner_ids : `None` or `set` of `int`
         Additional users' (as id) to be passed by the ``.is_owner`` check.
@@ -741,7 +741,7 @@ class Client(UserBase):
             When more `Client` is started up, it is recommended to define their id initially. The wrapper can detect the
             clients' id-s only when they are logging in, so the wrapper  needs to check if a ``User`` alterego of the client
             exists anywhere, and if does will replace it.
-        activity : ``Activity``, optional
+        activity : ``ActivityBase``, optional
             The client's preferred activity.
         status : `str` or ``Status``, optional
             The client's preferred status.
@@ -762,16 +762,13 @@ class Client(UserBase):
         name : `str`, Optional
             The client's ``.name``.
         discriminator : `int` or `str` instance, Optional
-            The client's ``.discriminator``. Is accepted as `str` instacne as well and will be converted to `int`.
+            The client's ``.discriminator``. Is accepted as `str` instance as well and will be converted to `int`.
         avatar : `None`, ``Icon`` or `str`, Optional
             The client's avatar. Mutually exclusive with `avatar_type` and `avatar_hash`.
         avatar_type : ``Icontype``, Optional
             The client's avatar's type. Mutually exclusive with `avatar_type`.
         avatar_hash : `int`, Optional
             The client's avatar hash. Mutually exclusive with `avatar`.
-        has_animated_avatar : `bool` or `int` instance (`0` or `1`), Optional
-            The client's ``.has_animated_avatar``. Can be other `int` instance, than `bool` as well, but their value
-            still cannot be other than `int`. Can not be passed without `avatar`.
         flags : ``UserFlag`` or `int` instance, Optional
             The client's ``.flags``. If not passed as ``UserFlag``, then will be converted to it.
         
@@ -1158,23 +1155,23 @@ class Client(UserBase):
     async def client_edit_nick(self, guild, nick, reason=None):
         """
         Changes the client's nick at the specified Guild. A nick name's length can be between 1-32. An extra argument
-        reason is accepter as well, what will show zp at the respective guild's audit logs.
+        reason is accepted as well, what will show zp at the respective guild's audit logs.
         
         Parameters
         ----------
         guild : ``Guild``
             The guild where the client's nickname will be changed.
         nick : `str` or `None`
-            The client's new nickname. Pass it as None or with length 0 to remove it.
+            The client's new nickname. Pass it as `None` or with length `0` to remove it.
         reason : `str`, Optional
             Will show up at the respective guild's audit logs.
         
         Raises
         ------
         ValueError
-            If the nick's length is over 32.
+            If the nick's length is over `32`.
         TypeError
-            If the nick is not None or str instance.
+            If the nick is not `None` or `str` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -1238,7 +1235,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        activity : ``Activity``, Optional
+        activity : ``ActivityBase`` instance, Optional
             The new activity of the Client.
         status : `str` or ``Status``, Optional
             The new status of the client.

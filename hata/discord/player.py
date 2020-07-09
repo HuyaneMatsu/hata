@@ -91,6 +91,14 @@ class AudioSource(object):
         path : `None`
         """
         return None
+    
+    def postprocess(self):
+        """
+        Called before the audio of the source would be played.
+        
+        This method can be implemented as blocking.
+        """
+        pass
 
 class PCMAudio(AudioSource):
     """
@@ -107,7 +115,7 @@ class PCMAudio(AudioSource):
         Whether the source is not opus encoded.
     """
     __slots__=('stream',)
-
+    
     def __new__(cls, stream):
         """
         Creates a new ``PCMAudio`` source.
@@ -142,7 +150,7 @@ class PCMAudio(AudioSource):
 
 class LocalAudio(AudioSource):
     """
-    Represents an ffmpeg pcm audio.
+    Represents a ffmpeg pcm audio.
     
     You must have the ffmpeg or avconv executable in your path environment variable in order for this to work.
     
@@ -251,7 +259,7 @@ class LocalAudio(AudioSource):
     @staticmethod
     def _create_process(args, stdin):
         """
-        Creates subprocess. This method should never run on an `EventThread`.
+        Creates the subprocess of the audio source. This method should never run on an `EventThread`.
         
         Paremeters
         ----------
@@ -302,7 +310,7 @@ class LocalAudio(AudioSource):
     async def __new__(cls, source, executable=DEFAULT_EXECUTABLE, pipe=False, before_options=None,
             options=None, title=None):
         """
-        Creates a new ``FFmpegPCMAudio`` instance.
+        Creates a new ``LocalAudio`` instance.
         
         Parameters
         ----------
@@ -667,14 +675,14 @@ class AudioPlayer(Thread):
                     b'\x80x',
                     voice_client._sequence.to_bytes(2,'big'),
                     voice_client._timestamp.to_bytes(4,'big'),
-                    voice_client._source.to_bytes(4,'big'),
+                    voice_client._audio_source.to_bytes(4,'big'),
                         ])
                 
                 nonce=header+b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
                 packet=bytearray(header)+voice_client._secret_box.encrypt(bytes(data),nonce).ciphertext
                 
                 try:
-                    voice_client.socket.sendto(packet,(voice_client._endpoint_ip,voice_client._voice_port))
+                    voice_client.socket.sendto(packet,(voice_client._endpoint_ip, voice_client._audio_port))
                 except BlockingIOError:
                     pass
                 

@@ -11,7 +11,7 @@ else:
     SecretBox=nacl.secret.SecretBox
     del nacl
 
-from ..backend.futures import sleep, Task, future_or_timeout, WaitTillExc, WaitTillFirst, WaitTillAll, Future, WaitContinously
+from ..backend.futures import sleep, Task, future_or_timeout, WaitTillExc, WaitTillAll, Future, WaitContinously
 from ..backend.exceptions import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
 
 from .others import to_json, from_json
@@ -19,7 +19,6 @@ from .activity import ActivityUnknown
 from .parsers import PARSERS
 from .guild import LARGE_LIMIT
 from .client_core import CACHE_PRESENCE, Kokoro, KOKORO
-from .opus import SAMPLES_PER_FRAME
 from .exceptions import IntentError
 
 GATEWAY_RATELIMIT_LIMIT = 120
@@ -724,6 +723,10 @@ class DiscordGatewayVoice(object):
         Receive only, used at ``._received_message``.
     CLIENT_DISCONNECT : `int` = `13`
         Receive only, used at ``._received_message``.
+    VIDEO_SESSION_DESCRIPTION : `int` = `14`
+        Receive only. Not used.
+    VIDEO_SINK : `int` = `15`
+        Receive and send, not used.
     """
     __slots__ = ('client', 'kokoro', 'ratelimit_handler', 'websocket')
         
@@ -739,6 +742,8 @@ class DiscordGatewayVoice(object):
     INVALIDATE_SESSION  = 9
     CLIENT_CONNECT      = 12
     CLIENT_DISCONNECT   = 13
+    VIDEO_SESSION_DESCRIPTION = 14
+    VIDEO_SINK          = 15
     
     def __init__(self, voice_client):
         """
@@ -759,12 +764,11 @@ class DiscordGatewayVoice(object):
         """
         Starts the gateway's `.kokoro`.
         """
-        kokoro=self.kokoro
+        kokoro = self.kokoro
         if kokoro is None:
             self.kokoro = await Kokoro(self)
-            return
-        
-        await kokoro.restart()
+        else:
+            await kokoro.restart()
     
     #connecting, message receive and processing
     
@@ -835,7 +839,7 @@ class DiscordGatewayVoice(object):
         except KeyError:
             data=None
         
-        kokoro=self.kokoro
+        kokoro = self.kokoro
         
         if operation==self.HELLO:
             #sowwy, but we need to ignore these or we will keep getting timeout
@@ -874,22 +878,22 @@ class DiscordGatewayVoice(object):
         if operation==self.SPEAKING:
             user_id=int(data['user_id'])
             source=data['ssrc']
-            self.client.sources[user_id]=source
+            self.client._update_audio_source(user_id, source)
             return
         
         if operation==self.CLIENT_CONNECT:
             user_id=int(data['user_id'])
-            source=data['audio_ssrc']
-            self.client.sources[user_id]=source
+            audio_source = data['audio_ssrc']
+            #video_source = data['video_ssrc']
+            self.client._update_audio_source(user_id, audio_source)
             return
         
         if operation==self.CLIENT_DISCONNECT:
             user_id=int(data['user_id'])
-            try:
-                del self.client.sources[user_id]
-            except KeyError:
-                pass
+            self.client._remove_audio_source(user_id)
             return
+        
+        # Ignore VIDEO_SESSION_DESCRIPTION and VIDEO_SINK for now
     
     # general stuffs
     
@@ -1045,19 +1049,36 @@ class DiscordGatewayVoice(object):
             Received data from Discord.
         """
         voice_client=self.client
-        voice_client._source=data['ssrc']
-        voice_client._voice_port=data['port']
+        voice_client._audio_source=data['ssrc']
+        voice_client._audio_port=data['port']
         voice_client._endpoint_ip=data['ip']
         
         packet=bytearray(70)
-        packet[0:4]=voice_client._source.to_bytes(4,'big')
-        voice_client.socket.sendto(packet,(voice_client._endpoint_ip,voice_client._voice_port))
+        packet[0:4]=voice_client._audio_source.to_bytes(4,'big')
+        voice_client.socket.sendto(packet,(voice_client._endpoint_ip,voice_client._audio_port))
         received = await KOKORO.sock_recv(voice_client.socket,70)
         # the ip is ascii starting at the 4th byte and ending at the first null
         voice_client._ip = ip = received[4:received.index(0,4)].decode('ascii')
         voice_client._port = port =int.from_bytes(received[-2:],'big')
         
         await self._select_protocol(ip, port)
+        await self._client_connect()
+    
+    async def _client_connect(self):
+        """
+        Sends a `CLIENT_CONNECT` packet to Discord.
+        """
+        voice_client = self.client
+        data = {
+            'op': self.CLIENT_CONNECT,
+            'd': {
+                'audio_ssrc': voice_client._audio_source,
+                'video_ssrc': voice_client._video_source,
+                'rtx_ssrc': 0,
+                    }
+                }
+        
+        await self.send_as_json(data)
     
     async def _set_speaking(self, is_speaking):
         """

@@ -138,7 +138,7 @@ class ConnectionKey(object):
         return True
     
     def __hash__(self):
-        return hash(self.host) ^ (self.port << 17) ^ (self.is_ssl << 16) ^ hash(self.ssl) ^ hash(self.proxy_auth) ^ hash(self.proxy_url)
+        return hash(self.host) ^ (self.port << 17) ^ hash(self.is_ssl) ^ hash(self.ssl) ^ hash(self.proxy_auth) ^ hash(self.proxy_url)
 
 class RequestInfo(object):
     __slots__=('headers', 'method', 'real_url', 'url',)

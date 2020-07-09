@@ -1,4 +1,4 @@
-# class `guild_profile`
+# class `GuildProfile`
 
 Represents a user's profile at a guild.
 

@@ -28,7 +28,7 @@ content back.
 
 ```py
 #imports
-from hataimport Embed, ReuAsyncIO
+from hata import Embed, ReuAsyncIO
 
 #building the embed
 embed=Embed()

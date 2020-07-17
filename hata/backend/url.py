@@ -4,7 +4,7 @@ from ipaddress import ip_address
 from urllib.parse import SplitResult, parse_qsl, urljoin, urlsplit, urlunsplit
 
 from .dereaddons_local import multidict,cached_property
-from .py_quote import quote,unquote
+from .quote import quote, unquote
 
 DEFAULT_PORTS = {
     'http'  : 80,

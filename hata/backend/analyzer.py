@@ -103,8 +103,8 @@ class Argument(object):
         return False
 
 class CallableAnalyzer(object):
-    __slots__ = ('args_argument', 'arguments', 'callable', 'instance_to_async',
-        'kwargs_argument', 'method_allocation', 'real_function', )
+    __slots__ = ('args_argument', 'arguments', 'callable', 'instance_to_async', 'kwargs_argument', 'method_allocation',
+        'real_function', )
     
     def __repr__(self):
         result=[]
@@ -193,7 +193,7 @@ class CallableAnalyzer(object):
                 while True:
                     real_function = callable_.__new__
                     if not callable(real_function):
-                        raise ValueError(f'`{callable_!r}.__new__` should be callable, got `{real_function!r}`')
+                        raise TypeError(f'`{callable_!r}.__new__` should be callable, got `{real_function!r}`')
                     
                     if real_function is not object.__new__:
                         if is_coro(real_function):
@@ -217,7 +217,7 @@ class CallableAnalyzer(object):
                     
                     real_function = callable_.__init__
                     if not callable(real_function):
-                        raise ValueError(f'`{callable_!r}.__init__` should be callable, got `{real_function!r}`')
+                        raise TypeError(f'`{callable_!r}.__init__` should be callable, got `{real_function!r}`')
                     
                     if real_function is not object.__init__:
                         if hasattr(callable_,'__call__'):

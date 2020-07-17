@@ -445,6 +445,11 @@ class AudioStream(AudioSource):
         The user, who's audio is received.
     yield_decoded : `bool`
         Whether the audio stream should yield encoded data.
+    
+    Class Attributes
+    ----------------
+    REPEATABLE : `bool` = `False`
+        Whether the source can be repeated after it is exhausted once.
     """
     __slots__ = ('auto_decode', 'buffer', 'client', 'done', 'source', 'user', 'yield_decoded')
     

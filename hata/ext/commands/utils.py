@@ -4,6 +4,8 @@ __all__ = ('ChooseMenu', 'Cooldown', 'GUI_STATE_CANCELLED', 'GUI_STATE_CANCELLIN
     'ReactionAddWaitfor', 'ReactionDeleteWaitfor', 'multievent', 'prefix_by_guild', 'wait_for_message',
     'wait_for_reaction', )
 
+from time import monotonic
+
 from ...backend.dereaddons_local import MethodLike
 from ...backend.futures import Task, Future
 
@@ -36,18 +38,17 @@ class multievent(object):
             event.remove(target, waiter)
 
 class Timeouter(object):
-    __slots__=('loop', 'handler', 'owner', 'timeout')
-    def __init__(self,loop,owner,timeout):
-        self.loop=loop
+    __slots__ = ('handler', 'owner', 'timeout')
+    def __init__(self,owner,timeout):
         self.owner=owner
         self.timeout=timeout
-        self.handler=loop.call_later(timeout,self.__step,self)
+        self.handler=KOKORO.call_later(timeout,self.__step,self)
     
     @staticmethod
     def __step(self):
         timeout=self.timeout
         if timeout>0.0:
-            self.handler=self.loop.call_later(timeout,self.__step,self)
+            self.handler=KOKORO.call_later(timeout,self.__step,self)
             self.timeout=0.0
             return
         
@@ -62,7 +63,7 @@ class Timeouter(object):
         if canceller is None:
             return
         owner.canceller=None
-        Task(canceller(owner,TimeoutError()),self.loop)
+        Task(canceller(owner,TimeoutError()),KOKORO)
         
         
     def cancel(self):
@@ -86,20 +87,20 @@ class Timeouter(object):
             handler.cancel()
             return
         
-        now=self.loop.time()
+        now=monotonic()
         next_step=self.handler.when
         
         planed_end=now+value
         if planed_end<next_step:
             handler.cancel()
-            self.handler=self.loop.call_at(planed_end,self.__step,self)
+            self.handler=KOKORO.call_at(planed_end,self.__step,self)
             return
         
         self.timeout=planed_end-next_step
         
     def get_expiration_delay(self):
-        return self.handler.when-self.loop.time()+self.timeout
-        
+        return self.handler.when-monotonic()+self.timeout
+
 GUI_STATE_READY          = 0
 GUI_STATE_SWITCHING_PAGE = 1
 GUI_STATE_CANCELLING     = 2
@@ -107,17 +108,100 @@ GUI_STATE_CANCELLED      = 3
 GUI_STATE_SWITCHING_CTX  = 4
 
 class Pagination(object):
+    """
+    A builtin option to display paginated messages, allowsing the users moving between the pages with arrow emojis.
+    The class allows modifications and closing it's representations for every user. Also works at private channels.
+    
+    Picks up on reaction additions and on reaction deletions as well and removes the added reactions on if has
+    permission, which might be missing, like in DM-s.
+    
+    Attributes
+    ----------
+    canceller : `None` or `function`
+        The function called when the ``Pagination`` is cancelled or when it expires. This is a onetime use and after
+        it was used, is set as `None`.
+    channel : ``ChannelTextBase`` instance
+        The channel wehre the ``Pagination`` is executed.
+    client : ``Client``
+        The client who executes the ``Pagination``.
+    message : `None` or ``Message``
+        The message on what the ``Pagination`` is executed.
+    page : `int`
+        The current page's index.
+    pages : `indexable`
+        An indexable container, what stores the displayable ``Embed``-s.
+    task_flag : `int`
+        A flag to store the state of the ``Pagination``.
+        
+        Possible values:
+        +---------------------------+-------+-----------------------------------------------------------------------+
+        | Respective name           | Value | Description                                                           |
+        +===========================+=======+=======================================================================+
+        | GUI_STATE_READY           | 0     | The Pagination does nothing an it is ready to be used.                |
+        +---------------------------+-------+-----------------------------------------------------------------------+
+        | GUI_STATE_SWITCHING_PAGE  | 1     | The Pagination is currently chaning it's page.                        |
+        +---------------------------+-------+-----------------------------------------------------------------------+
+        | GUI_STATE_CANCELLING      | 2     | The pagination is currently chaning it's page, but it was cancelled   |
+        |                           |       | meanwhile.                                                            |
+        +---------------------------+-------+-----------------------------------------------------------------------+
+        | GUI_STATE_CANCELLED       | 3     | The pagination is, or is being cancelled right now.                   |
+        +---------------------------+-------+-----------------------------------------------------------------------+
+        | GUI_STATE_SWITCHING_CTX   | 4     | The Pagination is switching context. Not used by the default class,   |
+        |                           |       | but expected.                                                         |
+        +---------------------------+-------+-----------------------------------------------------------------------+
+    timeout : `float`
+        The timeout of the ``Pagination`` in seconds.
+    timeouter : `None` or ``Timeouter``
+        Executes the timing out feature on the ``Pagination``.
+    
+    Class Attributes
+    ----------------
+    LEFT2 : ``Emoji`` = `BUILTIN_EMOJIS['track_previous']`
+        The emoji used to move to the first page.
+    LEFT : ``Emoji`` = `BUILTIN_EMOJIS['arrow_backward']`
+        The emoji used to move to the previous page.
+    RIGHT : ``Emoji`` = `BUILTIN_EMOJIS['arrow_forward'`
+        The emoji used to move on the next page.
+    RIGHT2 : ``Emoji`` = `BUILTIN_EMOJIS['track_next']`
+        The emoji used to move on the last page.
+    CANCEL : ``Emoji`` = `BUILTIN_EMOJIS['x']`
+        The emoji used to cancel the ``Pagination``
+    EMOJIS : `tuple` (`Emoji`, `Emoji`, `Emoji`, `Emoji`, `Emoji`) = `(LEFT2, LEFT, RIGHT, RIGHT2, CANCEL,)`
+        The emojis to add on the respective message in order.
+    """
     LEFT2   = BUILTIN_EMOJIS['track_previous']
     LEFT    = BUILTIN_EMOJIS['arrow_backward']
     RIGHT   = BUILTIN_EMOJIS['arrow_forward']
     RIGHT2  = BUILTIN_EMOJIS['track_next']
     CANCEL  = BUILTIN_EMOJIS['x']
-    EMOJIS  = (LEFT2,LEFT,RIGHT,RIGHT2,CANCEL,)
+    EMOJIS  = (LEFT2, LEFT, RIGHT, RIGHT2, CANCEL,)
     
-    __slots__=('canceller', 'channel', 'client', 'message', 'page', 'pages',
-        'task_flag', 'timeout', 'timeouter')
+    __slots__ = ('canceller', 'channel', 'client', 'message', 'page', 'pages', 'task_flag', 'timeout', 'timeouter')
     
-    async def __new__(cls,client,channel,pages,timeout=240.,message=None):
+    async def __new__(cls, client, channel, pages, timeout=240., message=None):
+        """
+        Creates a new pagination with the given parameters.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The client who will execute the ``Pagination``.
+        channel : ``ChannelTextBase`` instance
+            The channel wehre the ``Pagination`` will be executed.
+        pages : `indexable`
+            An indexable container, what stores the displayable ``Embed``-s.
+        timeout : `float`, Optional
+            The timeout of the ``Pagination`` in seconds. Defaults to `240.0`.
+        
+        message : `None` or ``Message``, Optional
+            The message on what the ``Pagination`` will be executed. If not given a new message will be cretaed.
+            Defaults to `None`.
+        
+        Returns
+        -------
+        pagination : `Mone` or ``Pagination``
+            If `pages` is an empty container, returns `None`.
+        """
         if not pages:
             return None
         
@@ -163,12 +247,22 @@ class Pagination(object):
             
             raise
         
-        self.timeouter=Timeouter(client.loop,self,timeout=timeout)
+        self.timeouter=Timeouter(self,timeout=timeout)
         client.events.reaction_add.append(message, self)
         client.events.reaction_delete.append(message, self)
         return self
     
     async def __call__(self, client, event):
+        """
+        Called when a reeaction is added or removed from the respective message.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The client who executes the ``Pagination``
+        event : ``ReactionAddEvent``, ``ReactionDeleteEvent``
+            The received event.
+        """
         if event.user.is_bot:
             return
         
@@ -293,7 +387,21 @@ class Pagination(object):
         self.task_flag=GUI_STATE_READY
         self.timeouter.set_timeout(self.timeout)
     
-    async def _canceller(self,exception,):
+    async def _canceller(self, exception,):
+        """
+        Used when the ``Pagination`` is cancelled.
+        
+        First of all removes the Pagination ,so it will not wait for reaction events, then sets the ``.task_flag``
+        of the ``Pagination`` to `GUI_STATE_CANCELLED`.
+        
+        If `exception` is given as `TimeoutError`, then removes the ``Pagination``'s reactions from the respective
+        message.
+        
+        Parameters
+        ----------
+        exception : `None` or ``BaseException``
+            Exception to cancel the ``Pagination`` with.
+        """
         client=self.client
         message=self.message
         
@@ -337,20 +445,29 @@ class Pagination(object):
             timeouter.cancel()
         #we do nothing
     
-    def cancel(self,exception=None):
-        canceller=self.canceller
+    def cancel(self, exception=None):
+        """
+        Cancels the pagination, if it is not cancelled yet.
+        
+        Parameters
+        ----------
+        exception : `None` or ``BaseException``
+            Exception to cancel the pagination with. Defaults to `None`
+        """
+        canceller = self.canceller
         if canceller is None:
             return
         
         self.canceller=None
         
-        timeouter=self.timeouter
-        if timeouter is not None:
+        timeouter = self.timeouter
+        if (timeouter is not None):
             timeouter.cancel()
         
-        return Task(canceller(self,exception),self.client.loop)
+        return Task(canceller(self,exception),KOKORO)
     
     def __repr__(self):
+        """Returns the pagination's representation."""
         result = [
             '<', self.__class__.__name__,
             ' client=', repr(self.client),
@@ -446,12 +563,12 @@ class ChooseMenu(object):
                     return self
             
             raise
-            
-        self.timeouter=Timeouter(client.loop,self,timeout=timeout)
+        
+        self.timeouter=Timeouter(self,timeout=timeout)
         client.events.reaction_add.append(message, self)
         client.events.reaction_delete.append(message, self)
         return self
-
+    
     def _render_embed(self):
         selected = self.selected
         choices = self.choices
@@ -740,7 +857,7 @@ class ChooseMenu(object):
         if timeouter is not None:
             timeouter.cancel()
         
-        return Task(canceller(self,None),self.client.loop)
+        return Task(canceller(self,None), KOKORO)
 
     def __repr__(self):
         result = [
@@ -783,7 +900,7 @@ class WaitAndContinue(object):
         self.check=check
         self.event=event
         self.target=target
-        self.timeouter=Timeouter(future._loop,self,timeout)
+        self.timeouter=Timeouter(self,timeout)
         event.append(target, self)
     
     async def __call__(self, client, *args):
@@ -944,16 +1061,144 @@ class _CD_unit(object):
         return f'{self.__class__.__name__}(expires_at={self.expires_at}, uses_left={self.uses_left})'
 
 class Cooldown(MethodLike):
-    __async_call__=True
+    """
+    Helper class for implement cooldowns.
+    
+    > Rework planned.
+    
+    Examples
+    --------
+    
+    **Using a cooldown handler example:**
+    
+    ```py
+    from hata import DiscordException, CancelledError, sleep
+    from hata.commands. import Cooldown
+    
+    class CooldownHandler:
+        __slots__=('cache',)
+        
+        def __init__(self):
+            self.cache = {}
+        
+        async def __call__(self, client, message, command, time_left):
+            user_id = message.author.id
+            try:
+                notification, waiter = self.cache[user_id]
+            except KeyError:
+                pass
+            else:
+                if notification.channel is message.channel:
+                    try:
+                        await client.message_edit(notification,
+                            f'**{message.author:f}** please cool down, {time_left:.0f} seconds left!')
+                    except DiscordException:
+                        pass
+                    return
+                
+                waiter.cancel()
+            
+            try:
+                notification = await client.message_create(message.channel,
+                    f'**{message.author:f}** please cool down, {time_left:.0f} seconds left!')
+            except DiscordException:
+                return
+            
+            waiter = client.loop.create_task(self.waiter(client, user_id, notification)
+            self.cache[user_id] = (notification, waiter)
+    
+        async def waiter(self, client, user_id, notification):
+            try:
+                await sleep(30.)
+            except CancelledError:
+                pass
+            del self.cache[user_id]
+            try:
+                await client.message_delete(notification)
+            except DiscordException:
+                pass
+    
+    @Bot.commands
+    @Cooldown('user', 30., handler=CooldownHandler())
+    async def ping(client, message):
+        await client.message_create(message.channel, f'{client.gateway.latency.:.0f} ms')
+    ```
+    
+    **Using shared cooldowns:**
+
+    ```py
+    from hata import Embed
+    from hata.ext.commandsi mport Converter, ConverterFlag
+    
+    @Bot.commands
+    @Cooldown('user', 60., limit=3, weight=2, handler=CooldownHandler())
+    async def avatar(client, message, user : Converter('user', flags=ConverterFlag.user_default.update_by_keys(everywhere=True), default_code='message.author')):
+        url = user.avatar_url_as(size=4096)
+        embed = Embed(f'{user:f}\'s avatar', url=url)
+        embed.add_image(url)
+        await client.message_create(message.channel, embed=embed)
+    
+    @Bot.commands
+    @avatar.shared(weight=1)
+    async def myavatar(client, message):
+        url = message.author.avatar_url_as(size=4096)
+        embed = Embed('Your avatar', url=url)
+        embed.add_image(url)
+        await client.message_create(message.channel, embed=embed)
+    ```
+    
+    Attributes
+    ----------
+    __func__ : `async-callable`
+        The wrapped function
+    __name__ : `str`
+        The wrapped function's name.
+    cache : `dict` of (``DiscordEntity``, ``_CD_unit``) items
+        Cache to remember how much use of the given entity are exhausted already.
+    checker : `function`
+        Checks after how much time the given entity can use again the respective command.
+    handler : `None` or `async-callable`
+        A function what is called when the command is on cooldown.
+        
+        The following arguments are passed to it::
+        
+        +-------------------+-------------------+
+        | Respective name   | Type              |
+        +===================+===================+
+        | client            | ``Client``        |
+        +-------------------+-------------------+
+        | message           | ``Message``       |
+        +-------------------+-------------------+
+        | function_name     | `str`             |
+        +-------------------+-------------------+
+        | time_left         | `float`           |
+        +-------------------+-------------------+
+    
+    limit : `int`
+        The amount of how much times the command can be called within a set duration before going on cooldown.
+    reset : `float`
+        The time after the cooldown resets.
+    weight : `int`
+        The weight of the command.
+    
+    Class attributes
+    ----------------
+    __wrapper__ : `int` = `1`
+        Hinter for type ``Command``, that ``Cooldown`` is just a wrapper.
+    """
     __wrapper__=1
     
-    __slots__=('__func__', '__name__', 'cache', 'checker', 'handler', 'limit',
-        'reset', 'weight',)
+    __slots__ = ('__func__', '__name__', 'cache', 'checker', 'handler', 'limit', 'reset', 'weight',)
     
-    async def _default_handler(client,message,command,time_left):
-        return
-    
-    def __new__(cls,for_,reset,limit=1,weight=1,handler=_default_handler,name=None,func=None):
+    def __new__(cls, for_, reset, limit=1, weight=1, handler=None, name=None, func=None):
+        for_type = for_.__class__
+        if for_type is str:
+            pass
+        elif issubclass(for_, str):
+            for_ = str(for_)
+        else:
+            raise TypeError(f'`for_` can be given as `str` instance, got {for_type.__name__}.')
+        
         if 'user'.startswith(for_):
             checker=cls._check_user
         elif 'channel'.startswith(for_):
@@ -986,37 +1231,40 @@ class Cooldown(MethodLike):
             name=name.lower()
         
         if func is None:
-            self.__name__=name
-            self.__func__=DEFAULT_EVENT
+            self.__name__ = name
+            self.__func__ = DEFAULT_EVENT
             return self._wrapper
         
-        self.__name__=check_name(func,name)
+        self.__name__ = check_name(func,name)
         self.__func__ = func
         return self
     
     def _wrapper(self,func):
         name=self.__name__
         if (name is None) or (not name):
-            self.__name__=check_name(func,None)
+            self.__name__ = check_name(func,None)
         self.__func__ = func
         return self
     
-    def __call__(self,client,message,*args):
-        value=self.checker(self,message,KOKORO)
+    async def __call__(self,client,message,*args):
+        value = self.checker(self,message)
         if value:
-            return self.handler(client,message,self.__name__,value-KOKORO.time())
+            handler = self.handler
+            if (handler is not None):
+                return await handler(client,message,self.__name__,value-monotonic())
         
-        return self.__func__(client,message,*args)
+        return await self.__func__(client,message,*args)
     
     def shared(source,weight=0,name=None,func=None):
-        self        = object.__new__(type(source))
-        self.checker= source.checker
-        self.reset  = source.reset
-        self.cache  = source.cache
         if type(weight) is not int:
             weight=int(weight)
         if not weight:
             weight = source.weight
+        
+        self        = object.__new__(type(source))
+        self.checker= source.checker
+        self.reset  = source.reset
+        self.cache  = source.cache
         self.weight = weight
         self.limit  = source.limit+source.weight-weight
         self.handler= source.handler
@@ -1034,19 +1282,20 @@ class Cooldown(MethodLike):
     
     @property
     def __doc__(self):
+        """Returns the wrapped function's docstring."""
         return getattr(self.__func__,'__doc__',None)
     
     @staticmethod
-    def _check_user(self,message,loop):
+    def _check_user(self,message):
         id_=message.author.id
         
         cache=self.cache
         try:
             unit=cache[id_]
         except KeyError:
-            at_=loop.time()+self.reset
+            at_=monotonic()+self.reset
             cache[id_]=_CD_unit(at_,self.limit)
-            loop.call_at(at_,cache.__delitem__,id_)
+            KOKORO.call_at(at_,dict.__delitem__,cache,id_)
             return 0.
         
         left=unit.uses_left
@@ -1056,16 +1305,16 @@ class Cooldown(MethodLike):
         return unit.expires_at
     
     @staticmethod
-    def _check_channel(self,message,loop):
+    def _check_channel(self,message):
         id_=message.channel.id
         
         cache=self.cache
         try:
             unit=cache[id_]
         except KeyError:
-            at_=loop.time()+self.reset
+            at_=monotonic()+self.reset
             cache[id_]=_CD_unit(at_,self.limit)
-            loop.call_at(at_,cache.__delitem__,id_)
+            KOKORO.call_at(at_,dict.__delitem__,cache,id_)
             return 0.
         
         left=unit.uses_left
@@ -1076,7 +1325,7 @@ class Cooldown(MethodLike):
     
     #returns -1. if non guild
     @staticmethod
-    def _check_guild(self,message,loop):
+    def _check_guild(self, message):
         channel=message.channel
         if channel.type in (1,3):
             return -1.
@@ -1087,9 +1336,9 @@ class Cooldown(MethodLike):
         try:
             unit=cache[id_]
         except KeyError:
-            at_=loop.time()+self.reset
+            at_=monotonic()+self.reset
             cache[id_]=_CD_unit(at_,self.limit)
-            loop.call_at(at_,cache.__delitem__,id_)
+            KOKORO.call_at(at_,dict.__delitem__,cache, id_)
             return 0.
         
         left=unit.uses_left

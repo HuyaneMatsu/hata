@@ -241,6 +241,8 @@ GuildFeature.verified                   = GuildFeature('VERIFIED')
 GuildFeature.vip                        = GuildFeature('VIP_REGIONS')
 GuildFeature.welcome_screen             = GuildFeature('WELCOME_SCREEN_ENABLED')
 
+COMMUNITY_FEATURES = {GuildFeature.community, GuildFeature.discoverable, GuildFeature.public}
+
 class SystemChannelFlag(ReverseFlagBase):
     """
     The flags of a ``Guild``'s system channel.
@@ -810,10 +812,9 @@ class Guild(DiscordEntity, immortal=True):
     content_filter : ``ContentFilterLevel``
         The explicit content filter level of the guild.
     description : `str` or `None`
-        Description of the guild. The guild must have `PUBLIC` feature.
+        Description of the guild. The guild must be a Community guild.
     discovery_splash_hash : `int`
-        The guild's discovery splashe's hash in `uint128`. The guild must have `DISCOVERABLE` feature to have
-        discovery splash.
+        The guild's discovery splashe's hash in `uint128`. The guild must be a discoverable.
     discovery_splash_type : ``IconType``
         The guild's discovery splashe's type.
     embed_channel : `None` or ``ChannelText``
@@ -849,11 +850,11 @@ class Guild(DiscordEntity, immortal=True):
     owner : ``User`` or ``Client``
         The owner of the guild. At some cases it can be set as `ZEROUSER` as well.
     preferred_locale : `str`
-        The preferred language of the guild. The guild must have `PUBLIC` feature, defaults to `'en-US'`.
+        The preferred language of the guild. The guild must be a Community guild, defaults to `'en-US'`.
     premium_tier : `int`
         The premium tier of the guild. More subs = higher tier.
     public_updates_channel : `None` or ``ChannelText``
-        The channel where the guild's public upddates should go. The guild must have `PUBLIC` feature.
+        The channel where the guild's public upddates should go. The guild must be a Community guild.
     region : ``VoiceRegion``
         The voice region of the guild.
     roles : `autoposlist` of ``Role``
@@ -861,7 +862,7 @@ class Guild(DiscordEntity, immortal=True):
         and the last has the highest. The first role is `@everyone` every time and it can not be moved from position
         `0` either.
     rules_channel : `None` or ``ChannelText``
-        The channel where the rules of a public guild's should be. The guild must hav `PUBLIC` feature.
+        The channel where the rules of a public guild's should be. The guild must be a Community guild.
     system_channel : `None` or ``ChannelText``
         The channel where the system messages are sent.
     system_channel_flags : ``SystemChannelFlag``

@@ -260,10 +260,6 @@ class DiscordGateway(object):
         waiter : `Future`, Optional
             A waiter future what is set, when the gateway finished connecting and started polling events.
         
-        Returns
-        -------
-        no_internet_stop : `bool`
-        
         Raises
         ------
         IntentError
@@ -284,15 +280,24 @@ class DiscordGateway(object):
                     waiter = None
                 
                 while True:
-                    if (await self._poll_event()):
+                    task = Task(self._poll_event(), KOKORO)
+                    future_or_timeout(task, 60.)
+                    try:
+                        should_reconnect = await task
+                    except TimeoutError:
+                        # timeout, no internet probably
+                        return
+                    
+                    if should_reconnect:
                         task=Task(self._connect(resume=True,),KOKORO)
-                        future_or_timeout(task,30.)
+                        future_or_timeout(task, 30.)
                         await task
             
             except (OSError, TimeoutError, ConnectionError, ConnectionClosed,
                     WebSocketProtocolError, InvalidHandshake, ValueError) as err:
+                
                 if not client.running:
-                    return False
+                    return
                 
                 if isinstance(err,ConnectionClosed):
                     code = err.code
@@ -306,7 +311,7 @@ class DiscordGateway(object):
                     continue
                 
                 if isinstance(err,ConnectionError): #no internet
-                    return True
+                    return
                 
                 await sleep(1.,KOKORO)
     
@@ -385,7 +390,7 @@ class DiscordGateway(object):
         buffer=self._buffer
         try:
             while True:
-                message=await websocket.recv()
+                message = await websocket.recv()
                 if len(message)>=4 and message[-4:]==b'\x00\x00\xff\xff':
                     if buffer:
                         buffer.extend(message)
@@ -1149,10 +1154,6 @@ class DiscordGatewaySharder(object):
         Runs the gateway sharder's gateways. If any of them returns, stops the rest as well. And if any of them
         returned `True`, then returns `True`, else `False`.
         
-        Returns
-        -------
-        no_internet_stop : `bool`
-        
         Raises
         ------
         IntentError
@@ -1211,21 +1212,17 @@ class DiscordGatewaySharder(object):
                     
                     break
                 
-                no_internet_stop = result.result()
                 waiter.cancel()
-                return no_internet_stop
-            
+                result.result()
+                
             continue
         
         try:
             result = await waiter
-        except:
+        finally:
             waiter.cancel()
-            raise
         
-        no_internet_stop = result.result()
-        waiter.cancel()
-        return no_internet_stop
+        result.result()
     
     @property
     def latency(self):

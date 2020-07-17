@@ -16,13 +16,14 @@ from ..backend.hdrs import AUTHORIZATION
 from ..backend.helpers import BasicAuth
 
 from .others import Status, log_time_converter, DISCORD_EPOCH, VoiceRegion, ContentFilterLevel, PremiumType, \
-    MessageNotificationLevel, bytes_to_base64, ext_from_base64, random_id, to_json, VerificationLevel, RelationshipType
+    MessageNotificationLevel, image_to_base64, random_id, to_json, VerificationLevel, \
+    RelationshipType, get_image_extension
 from .user import User, USERS, GuildProfile, UserBase, UserFlag, PartialUser
 from .emoji import Emoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, \
     message_relativeindex, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES
 from .guild import Guild, PartialGuild, GuildEmbed, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
-    DiscoveryCategory
+    DiscoveryCategory, COMMUNITY_FEATURES
 from .http import DiscordHTTPClient, URLS, CDN_ENDPOINT, VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED
 from .role import Role, PermOW
 from .webhook import Webhook, PartialWebhook
@@ -277,7 +278,7 @@ class DiscoveryCategoryRequestCacher(object):
         self._active_request = False
         self._last_update = -inf
     
-    def __get__(self, client, type_=None):
+    def __get__(self, client, type_):
         if client is None:
             return self
         
@@ -439,7 +440,7 @@ class DiscoveryTermRequestCacher(object):
         self._minimal_cleanup_interval = minimal_cleanup_interval
         self._last_cleanup = -inf
     
-    def __get__(self, client, type_=None):
+    def __get__(self, client, type_):
         if client is None:
             return self
         
@@ -1110,24 +1111,24 @@ class Client(UserBase):
         else:
             raise TypeError(f'`name` can be passed as type str, got {name.__class__.__name__}.')
         
-        if avatar is _spaceholder:
-            pass
-        elif avatar is None:
-            data['avatar']=None
-        elif isinstance(avatar,(bytes,bytearray,memoryview)):
-            avatar_data=bytes_to_base64(avatar)
-            ext=ext_from_base64(avatar_data)
-            if self.premium_type.value:
-                if ext not in VALID_ICON_FORMATS_EXTENDED:
-                    raise ValueError(f'Invalid image extension: `{ext}`')
+        if (avatar is not _spaceholder):
+            if avatar is None:
+                avatar_data = None
             else:
-                if ext not in VALID_ICON_FORMATS:
-                    if ext=='gif':
-                        raise ValueError('Only premium users can have `gif` avatar!')
-                    raise ValueError(f'Invalid image extension: `{ext}`')
-            data['avatar']=avatar_data
-        else:
-            raise TypeError(f'`avatar` can be passed as `bytes-like` or None, got {avatar.__class__.__name__}.')
+                avatar_type = avatar.__class__
+                if not issubclass(avatar_type, (bytes, bytearray, memoryview)):
+                    raise TypeError(f'`avatar` can be passed as `bytes-like` or None, got {avatar_type.__name__}.')
+            
+                extension = get_image_extension(avatar)
+                if extension not in VALID_ICON_FORMATS_EXTENDED:
+                    raise ValueError(f'Invalid image extension: `{extension}`.')
+                
+                if (not self.premium_type.value) and (extension == 'gif'):
+                    raise ValueError('Only premium users can have `gif` avatar!')
+                
+                avatar_data = image_to_base64(avatar)
+            
+            data['avatar'] = avatar_data
         
         if not self.is_bot:
             if (email is not None):
@@ -1135,7 +1136,7 @@ class Client(UserBase):
             if (new_password is not None):
                 data['new_password']=new_password
         
-        data=await self.http.client_edit(data)
+        data = await self.http.client_edit(data)
         self._update_no_return(data)
         
         if not self.is_bot:
@@ -1621,14 +1622,15 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        if isinstance(icon,(bytes, bytearray, memoryview)):
-            icon_data=bytes_to_base64(icon)
-        else:
-            raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon.__class__.__name__}.')
+        icon_type = icon.__class__
+        if not issubclass(icon_type, (bytes, bytearray, memoryview)):
+            raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon_type.__name__}.')
         
-        ext=ext_from_base64(icon_data)
-        if ext not in VALID_ICON_FORMATS_EXTENDED:
-            raise ValueError(f'Invalid icon type: {ext}')
+        extension = get_image_extension(icon)
+        if extension not in VALID_ICON_FORMATS_EXTENDED:
+            raise ValueError(f'Invalid icon type: `{extension}`.')
+        
+        icon_data = image_to_base64(icon)
         
         data = {
             'name'          : {
@@ -1698,16 +1700,16 @@ class Client(UserBase):
         if (secure is not None):
             data['secure']=secure
         
-        if (icon is _spaceholder):
-            pass
-        elif isinstance(icon,(bytes, bytearray, memoryview)):
-            icon_data=bytes_to_base64(icon)
-            ext=ext_from_base64(icon_data)
-            if ext not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Invalid icon type: {ext}')
-            data['icon']=icon_data
-        else:
-            raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon.__class__.__name__}.')
+        if (icon is not _spaceholder):
+            icon_type = icon.__class__
+            if not issubclass(icon_type, (bytes, bytearray, memoryview)):
+                raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon_type.__name__}.')
+            
+            extension = get_image_extension(icon)
+            if extension not in VALID_ICON_FORMATS_EXTENDED:
+                raise ValueError(f'Invalid icon type: `{extension}`.')
+            
+            data['icon'] = image_to_base64(icon)
         
         data = await self.http.achievement_edit(self.application.id,achievement.id,data)
         achievement._update_no_return(data)
@@ -2103,18 +2105,21 @@ class Client(UserBase):
             
             data['name']=name
         
-        if icon is _spaceholder:
-            pass
-        elif icon is None:
-            data['icon']=None
-        elif isinstance(icon, (bytes, bytearray, memoryview)):
-            icon_data=bytes_to_base64(icon)
-            ext=ext_from_base64(icon_data)
-            if ext not in VALID_ICON_FORMATS:
-                raise ValueError(f'Invalid icon type: {ext}')
-            data['icon']=icon_data
-        else:
-            raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon.__class__.__name__}.')
+        if (icon is not _spaceholder):
+            if icon is None:
+                icon_data = None
+            else:
+                icon_type = icon.__class__
+                if not issubclass(icon_type, (bytes, bytearray, memoryview)):
+                    raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon_type.__name__}.')
+            
+                extension = get_image_extension(icon)
+                if extension not in VALID_ICON_FORMATS:
+                    raise ValueError(f'Invalid icon type: `{extension}`.')
+                
+                icon_data = image_to_base64(icon)
+            
+            data['icon'] = icon_data
         
         if data:
             await self.http.channel_group_edit(channel.id,data)
@@ -4740,20 +4745,22 @@ class Client(UserBase):
         if name_ln<2 or name_ln>100:
             raise ValueError(f'Guild\'s name\'s length can be between 2-100, got {name_ln}')
         
-        if (icon is None):
-            pass
-        elif isinstance(icon, (bytes, bytearray, memoryview)):
-            icon=bytes_to_base64(icon)
-            ext=ext_from_base64(icon)
-            if ext not in VALID_ICON_FORMATS:
-                raise ValueError(f'Invalid icon type: {ext}')
-        
+        if icon is None:
+            icon_data = None
         else:
-            raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon.__class__.__name__}.')
+            icon_type = icon.__class__
+            if not issubclass(icon_type, (bytes, bytearray, memoryview)):
+                raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon_type.__name__}.')
+            
+            extension = get_image_extension(icon)
+            if extension not in VALID_ICON_FORMATS:
+                raise ValueError(f'Invalid icon type: `{extension}`.')
+            
+            icon_data = image_to_base64(icon)
         
         data = {
             'name'                          : name,
-            'icon'                          : icon,
+            'icon'                          : icon_data,
             'region'                        : region.id,
             'verification_level'            : verification_level.value,
             'default_message_notifications' : message_notification_level.value,
@@ -4890,10 +4897,10 @@ class Client(UserBase):
         system_channel : `None` or ``ChannelText`` object, Optional
             The new system channel of the guild. You can remove the current one by passing is as `None`.
         rules_channel : `None` or ``ChannelText`` object, Optional
-            The new rules channel of the guild. The guild must have `PUBLIC` feature. You can remove the current
+            The new rules channel of the guild. The guild must be a Community guild. You can remove the current
             one by passing is as `None`.
         public_updates_channel : `None` or ``ChannelText`` object, Optional
-            The new publi updates channel of the guild. The guild must have `PUBLIC` feature. You can remove the
+            The new public updates channel of the guild. The guild must be a Community guild. You can remove the
             current one by passing is as `None`.
         owner : ``User`` or ``Client`` object, Optional
             The new owner of the guild. You must be the owner of the guild to transfer ownership.
@@ -4909,7 +4916,7 @@ class Client(UserBase):
             The new message notification level of the guild.
         description : `None` or `str` instance, Optional
             The new description of the guild. By passing `None`, or an empty string you can remove the current one. The
-            guild must have `PUBLIC` feaeture.
+            guild must be a Community guild.
         system_channel_flags : ``SystemChannelFlag``, Optional
             The guild's system channel's new flags.
         add_feature : (`str`, ``GuildFeature``) or (`iterable` of (`str`, ``GuildFeature``)), Optional
@@ -4929,9 +4936,9 @@ class Client(UserBase):
             - If name is shorter than 2 or longer than 100 characters.
             - If `icon`, `invite_splash`, `discovery_splash` or `banner` was passed as `bytes-like`, but it's format
                 is not any of the expected formats.
-            - If `discovery_splash` was passed meanwhile the guild has no `DISCOVERABLE` feature.
-            - If `rules_channel`, `description` or `public_updates_channel` was passed meanwhil the guild has no
-                `PUBLIC` feature.
+            - If `discovery_splash` was gvien meanwhile teh guild is not discoverable.
+            - If `rules_channel`, `description` or `public_updates_channel` was passed meanwhile the guild is not
+                Community guild.
             - If `invite_splash` was passed meanwhile the guild has no `INVITE_SPLASH` feature.
             - If `banner` was passed meanwhile the guild has no `BANNER` feature.
             - If `owner` was passed meanwhile the client is not the owner of the guild.
@@ -4945,64 +4952,83 @@ class Client(UserBase):
         if (name is not None):
             name_ln=len(name)
             if name_ln<2 or name_ln>100:
-                raise ValueError(f'Guild\'s name\'s length can be between 2-100, got {name_ln}')
+                raise ValueError(f'Guild\'s name\'s length can be between 2-100, got {name_ln}: {name!r}.')
             data['name']=name
         
         if (icon is not _spaceholder):
             if icon is None:
-                data['icon']=None
-            elif isinstance(icon, (bytes, bytearray, memoryview)):
-                icon_data=bytes_to_base64(icon)
-                ext=ext_from_base64(icon_data)
-                if ext not in (VALID_ICON_FORMATS_EXTENDED if (GuildFeature.animated_icon in guild.features) else VALID_ICON_FORMATS):
-                    raise ValueError(f'Invalid icon type: {ext}')
-                data['icon']=icon_data
+                icon_data = None
             else:
-                raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon.__class__.__name__}.')
+                icon_type = icon.__class__
+                if not issubclass(icon_type, (bytes, bytearray, memoryview)):
+                    raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon_type.__name__}.')
+                
+                extension = get_image_extension(icon)
+                if extension not in (VALID_ICON_FORMATS_EXTENDED if (GuildFeature.animated_icon in guild.features) else VALID_ICON_FORMATS):
+                    raise ValueError(f'Invalid icon type: `{extension}`.')
+                
+                icon_data = image_to_base64(icon)
+            
+            data['icon'] = icon_data
         
         if (banner is not _spaceholder):
             if GuildFeature.banner not in guild.features:
-                raise ValueError('The guild has no `BANNER` feature')
+                raise ValueError('The guild has no `BANNER` feature.')
             
             if banner is None:
-                 data['banner']=None
-            elif isinstance(banner, (bytes, bytearray, memoryview)):
-                banner_data=bytes_to_base64(banner)
-                ext=ext_from_base64(banner_data)
-                if ext not in VALID_ICON_FORMATS:
-                    raise ValueError(f'Invalid banner type: {ext}')
-                data['banner']=banner_data
+                banner_data = None
             else:
-                raise TypeError(f'`banner` can be passed as `bytes-like`, got {banner.__class__.__name__}.')
+                banner_type = banner.__class__
+                if not issubclass(banner_type, (bytes, bytearray, memoryview)):
+                    raise TypeError(f'`banner` can be passed as `bytes-like`, got {banner_type.__name__}.')
+                
+                extension = get_image_extension(banner)
+                if extension not in VALID_ICON_FORMATS:
+                    raise ValueError(f'Invalid banner type: `{extension}`.')
+                
+                banner_data = image_to_base64(banner)
+            
+            data['banner'] = banner_data
         
         if (invite_splash is not _spaceholder):
             if GuildFeature.invite_splash not in guild.features:
-                raise ValueError('The guild has no `INVITE_SPLASH` feature')
+                raise ValueError('The guild has no `INVITE_SPLASH` feature.')
+            
             if invite_splash is None:
-                 data['splash']=None
-            elif isinstance(invite_splash, (bytes, bytearray, memoryview)):
-                invite_splash_data=bytes_to_base64(invite_splash)
-                ext=ext_from_base64(invite_splash_data)
-                if ext not in VALID_ICON_FORMATS:
-                    raise ValueError(f'Invalid invite splash type: {ext!r}')
-                data['splash']=invite_splash_data
+                invite_splash_data = None
             else:
-                raise TypeError(f'`invite_splash` can be passed as `bytes-like`, got {invite_splash.__class__.__name__}.')
+                invite_splash_type = invite_splash.__class__
+                if not issubclass(invite_splash_type, (bytes, bytearray, memoryview)):
+                    raise TypeError(f'`invite_splash` can be passed as `bytes-like`, got '
+                        f'{invite_splash_type.__name__}.')
+                
+                extension = get_image_extension(invite_splash)
+                if extension not in VALID_ICON_FORMATS:
+                    raise ValueError(f'Invalid invite splash type: `{extension}`.')
+                
+                invite_splash_data = image_to_base64(invite_splash)
+                
+            data['splash'] = invite_splash_data
         
         if (discovery_splash is not _spaceholder):
             if GuildFeature.discoverable not in guild.features:
-                raise ValueError('The guild has no `DISCOVERABLE` feature')
+                raise ValueError('The guild is not discoverable and `discovery_splash` was given.')
             
             if discovery_splash is None:
-                 data['discovery_splash']=None
-            elif isinstance(discovery_splash, (bytes, bytearray, memoryview)):
-                discovery_splash_data=bytes_to_base64(banner)
-                ext=ext_from_base64(discovery_splash_data)
-                if ext not in VALID_ICON_FORMATS:
-                    raise ValueError(f'Invalid discovery_splash type: {ext}')
-                data['discovery_splash']=discovery_splash_data
+                discovery_splash_data = None
             else:
-                raise TypeError(f'`discovery_splash` can be passed as `bytes-like`, got {discovery_splash.__class__.__name__}.')
+                discovery_splash_type = discovery_splash.__class__
+                if not issubclass(discovery_splash_type, (bytes, bytearray, memoryview)):
+                    raise TypeError(f'`discovery_splash` can be passed as `bytes-like`, got '
+                        f'{discovery_splash_type.__name__}.')
+                
+                extension = get_image_extension(discovery_splash)
+                if extension not in VALID_ICON_FORMATS:
+                    raise ValueError(f'Invalid discovery_splash type: `{extension}`.')
+                
+                discovery_splash_data = image_to_base64(discovery_splash)
+            
+            data['discovery_splash'] = discovery_splash_data
         
         if (afk_channel is not _spaceholder):
             data['afk_channel_id']=None if afk_channel is None else afk_channel.id
@@ -5011,13 +5037,13 @@ class Client(UserBase):
             data['system_channel_id']=None if system_channel is None else system_channel.id
         
         if (rules_channel is not _spaceholder):
-            if GuildFeature.discoverable not in guild.features:
-                raise ValueError('The guild has no `DISCOVERABLE` feature')
+            if not COMMUNITY_FEATURES&guild.features:
+                raise ValueError('The guild is not Community guild and `rules_channel` was given.')
             data['rules_channel_id']=None if rules_channel is None else rules_channel.id
         
         if (public_updates_channel is not _spaceholder):
-            if GuildFeature.public not in guild.features:
-                raise ValueError('The guild has no `PUBLIC` feature')
+            if not COMMUNITY_FEATURES&guild.features:
+                raise ValueError('The guild is not Community guild and `public_updates_channel` was given.')
             data['public_updates_channel_id']=None if public_updates_channel is None else public_updates_channel.id
         
         if (owner is not None):
@@ -5043,8 +5069,8 @@ class Client(UserBase):
             data['default_message_notifications']=message_notification.value
         
         if (description is not _spaceholder):
-            if GuildFeature.public not in guild.features:
-                raise ValueError('The guild has no `PUBLIC` feature')
+            if not COMMUNITY_FEATURES&guild.features:
+                raise ValueError('The guild is not Community guild and `description` was given.')
             
             if (description is not None) and (not description):
                 description = None
@@ -6316,18 +6342,18 @@ class Client(UserBase):
         
         data={'name':name}
         
-        if (avatar is None):
-            pass
-        elif isinstance(avatar, (bytes, bytearray, memoryview)):
-            avatar_data=bytes_to_base64(avatar)
-            ext=ext_from_base64(avatar_data)
-            if ext not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Invalid icon type: {ext}')
-            data['avatar']=avatar_data
-        else:
-            raise TypeError(f'`icon` can be passed as `bytes-like`, got {avatar.__class__.__name__}.')
+        if (avatar is not None):
+            avatar_type = avatar.__class__
+            if not issubclass(avatar_type, (bytes, bytearray, memoryview)):
+                raise TypeError(f'`icon` can be passed as `bytes-like`, got {avatar_type.__name__}.')
+            
+            extension = get_image_extension(avatar)
+            if extension not in VALID_ICON_FORMATS_EXTENDED:
+                raise ValueError(f'Invalid icon type: `{extension}`.')
+            
+            data['avatar'] = image_to_base64(avatar)
         
-        data = await self.http.webhook_create(channel.id,data)
+        data = await self.http.webhook_create(channel.id, data)
         return Webhook(data)
 
     async def webhook_get(self, webhook_id):
@@ -6616,18 +6642,21 @@ class Client(UserBase):
             
             data['name']=name
         
-        if (avatar is _spaceholder):
-            pass
-        elif (avatar is None):
-            data['avatar']=None
-        elif isinstance(avatar, (bytes, bytearray, memoryview)):
-            avatar_data=bytes_to_base64(avatar)
-            ext=ext_from_base64(avatar_data)
-            if ext not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Invalid icon type: {ext}')
-            data['avatar']=avatar_data
-        else:
-            raise TypeError(f'`icon` can be passed as `bytes-like`, got {avatar.__class__.__name__}.')
+        if (avatar is not _spaceholder):
+            if avatar is None:
+                avatar_data = None
+            else:
+                avatar_type = avatar.__class__
+                if not issubclass(avatar_type, (bytes, bytearray, memoryview)):
+                    raise TypeError(f'`icon` can be passed as `bytes-like`, got {avatar_type.__name__}.')
+            
+                extension = get_image_extension(avatar)
+                if extension not in VALID_ICON_FORMATS_EXTENDED:
+                    raise ValueError(f'Invalid icon type: `{extension}`.')
+                
+                avatar_data = image_to_base64(avatar)
+            
+            data['avatar'] = avatar_data
         
         if (channel is not None):
             data['channel_id']=channel.id
@@ -6676,18 +6705,21 @@ class Client(UserBase):
             
             data['name']=name
         
-        if (avatar is _spaceholder):
-            pass
-        elif (avatar is None):
-            data['avatar']=None
-        elif isinstance(avatar, (bytes, bytearray, memoryview)):
-            avatar_data=bytes_to_base64(avatar)
-            ext=ext_from_base64(avatar_data)
-            if ext not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Invalid icon type: {ext}')
-            data['avatar']=avatar_data
-        else:
-            raise TypeError(f'`icon` can be passed as `bytes-like`, got {avatar.__class__.__name__}.')
+        if (avatar is not _spaceholder):
+            if avatar is None:
+                avatar_data = None
+            else:
+                avatar_type = avatar.__class__
+                if not issubclass(avatar_type, (bytes, bytearray, memoryview)):
+                    raise TypeError(f'`icon` can be passed as `bytes-like`, got {avatar_type.__name__}.')
+                
+                extension = get_image_extension(avatar)
+                if extension not in VALID_ICON_FORMATS_EXTENDED:
+                    raise ValueError(f'Invalid icon type: `{extension}`.')
+                
+                avatar_data = image_to_base64(avatar)
+            
+            data['avatar'] = avatar_data
         
         if not data:
             return #save 1 request
@@ -6874,7 +6906,7 @@ class Client(UserBase):
         -----
         Only some characters can be in the emoji's name, so every other character is filtered out.
         """
-        image=bytes_to_base64(image)
+        image=image_to_base64(image)
         name=''.join(_VALID_NAME_CHARS.findall(name))
         
         name_ln=len(name)
@@ -7994,7 +8026,7 @@ class Client(UserBase):
             gateway_waiter = self._gateway_waiter
             if (gateway_waiter is not None):
                 self._gateway_waiter = None
-                gateway_waiter.set_exception(err)
+                gateway_waiter.set_exception_if_pending(err)
             
             raise
         
@@ -8002,7 +8034,7 @@ class Client(UserBase):
         gateway_waiter = self._gateway_waiter
         if (gateway_waiter is not None):
             self._gateway_waiter = None
-            gateway_waiter.set_result(url)
+            gateway_waiter.set_result_if_pending(url)
         
         return url
     
@@ -8172,18 +8204,26 @@ class Client(UserBase):
         try:
             while True:
                 try:
-                    no_internet_stop = await self.gateway.run()
-                except (GeneratorExit,CancelledError) as err:
+                    await self.gateway.run()
+                except (GeneratorExit, CancelledError) as err:
                     # For now only here. These errors occured randomly for me since I made the wrapper, only once-once,
                     # and it was not the wrapper causing them, so it is time to say STOP.
                     # I also know `GeneratorExit` will show up as RuntimeError, but it is already a RuntimeError.
                     self._freeze_voice()
-                    sys.stderr.write(
-                        f'Ignoring unexpected outer Task or coroutine cancellation at {self!r}._connect as {err!r}.\n'
-                        'The client will reconnect.\n')
+                    try:
+                        await KOKORO.render_exc_async(err,[
+                            'Ignoring unexpected outer Task or coroutine cancellation at ',
+                            repr(self),
+                            '._connect:\n',
+                                ],)
+                    except (GeneratorExit, CancelledError) as err:
+                        sys.stderr.write(
+                            f'Ignoring unexpected outer Task or coroutine cancellation at {self!r}._connect as '
+                            f'{err!r} meanwhile rendering an exception for the same reason.\n The client will '
+                            f'reconnect.\n')
                     continue
                 else:
-                    if not no_internet_stop:
+                    if not self.running:
                         break
                     
                     self._freeze_voice()
@@ -8198,9 +8238,17 @@ class Client(UserBase):
                             else:
                                 break
                         except (GeneratorExit, CancelledError) as err:
-                            sys.stderr.write(
-                                f'Ignoring unexpected outer Task or coroutine cancellation at {self!r}._connect as'
-                                f'{err!r}.\nThe client will reconnect.\n')
+                            try:
+                                await KOKORO.render_exc_async(err,[
+                                    'Ignoring unexpected outer Task or coroutine cancellation at ',
+                                    repr(self),
+                                    '._connect:\n',
+                                        ],)
+                            except (GeneratorExit, CancelledError) as err:
+                                sys.stderr.write(
+                                    f'Ignoring unexpected outer Task or coroutine cancellation at {self!r}._connect as '
+                                    f'{err!r} meanwhile rendering an exception for the same reason.\n The client will '
+                                    f'reconnect.\n')
                             continue
                     continue
         except (IntentError, InvalidToken) as err:
@@ -8481,7 +8529,7 @@ class Client(UserBase):
         """
         if not self.running:
             return
-
+        
         self.running=False
         shard_count=self.shard_count
         if shard_count:

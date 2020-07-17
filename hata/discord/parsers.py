@@ -4643,8 +4643,8 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
     
     Attrbiutes
     ----------
-    waitfors : `WeakValueDictionary`
-        An autoadded container to store `entity` - `async callable` pairs.
+    waitfors : `WeakValueDictionary` of (``DiscordEntity``, `asnyc-callable`) items
+        An autoadded container to store `entity` - `async-callable` pairs.
     
     Class Attributes
     ----------------

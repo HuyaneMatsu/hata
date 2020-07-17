@@ -9,7 +9,7 @@ from ..backend.http import HTTPClient, Request_CM
 from ..backend.connector import TCPConnector
 from ..backend.hdrs import METH_PATCH, METH_GET, METH_DELETE, METH_POST, METH_PUT, CONTENT_TYPE, USER_AGENT, \
     AUTHORIZATION
-from ..backend.py_quote import quote
+from ..backend.quote import quote
 
 from .exceptions import DiscordException, ERROR_CODES
 from .others import to_json, from_json, Discord_hdrs

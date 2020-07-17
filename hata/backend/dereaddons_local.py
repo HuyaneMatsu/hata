@@ -28,7 +28,7 @@ class RemovedDescriptor(object):
     def __set_name__(self, owner, name):
         self.name = name
     
-    def __get__(self, obj, objtype=None):
+    def __get__(self, obj, objtype):
         name = self.name
         if name is None:
             raise RuntimeError(f'{self.__class__.__name__} is not initialized correctly yet.')
@@ -724,7 +724,7 @@ class cached_property(object):
         self.func = func
         self.__name__ = func.__name__
     
-    def __get__(self, obj, objtype=None):
+    def __get__(self, obj, objtype):
         if obj is None:
             return self
         value = obj._cache.get(self.__name__,_spaceholder)

@@ -65,8 +65,19 @@ class VoiceClient(object):
         this attribute is set to the ``._play_next`` function of the voice client (plays the next audio at the voice
         clients's ``.queue`` as expected.
         
-        This attribute of the client can be modified freely. To it `1` argument is passed, the respective
-        ``VoiceClient`` itself.
+        This attribute of the client can be modified freely. To it `2` arguments are passed:
+         +------------------+---------------------------+
+         | Respective name  | Type                      |
+         +==================+===========================+
+         | client           | ``VoiceClient``           |
+         +------------------+---------------------------+
+         | last_source      | `None` or ``AudioSource`` |
+         +------------------+---------------------------+
+         
+         The ``VoiceClient`` also includes some other predefined function for setting as `call_after`:
+         - ``._loop_actual``
+         - ``._loop_queue``
+     
     channel : ``ChannelVoice``
         The channel where the voice client currently is.
     client : ``Client``
@@ -152,7 +163,7 @@ class VoiceClient(object):
         self.connected      = Event() #this will be used at the AudioPlayer thread
         self.queue          = []
         self.player         = None
-        self.call_after     = type(self)._play_next
+        self.call_after     = cls._play_next
         self.speaking       = 0
         self.lock           = Lock(KOKORO)
         self.reader         = None
@@ -675,13 +686,19 @@ class VoiceClient(object):
                 task=Task(self.gateway.connect(),KOKORO)
                 future_or_timeout(task,30.,)
                 await task
+                
                 self.connected.clear()
                 while True:
-                    await self.gateway._poll_event()
+                    task = Task(self.gateway._poll_event(), KOKORO)
+                    future_or_timeout(task, 60.)
+                    await task
+                    
                     if self._secret_box is not None:
                         break
+                    
                 self.connected.set()
-            except (OSError,TimeoutError,ConnectionError, ConnectionClosed, WebSocketProtocolError, InvalidHandshake,
+                
+            except (OSError, TimeoutError, ConnectionError, ConnectionClosed, WebSocketProtocolError, InvalidHandshake,
                     ValueError) as err:
                 
                 if isinstance(err, ConnectionClosed) and (err.code == 4014):
@@ -700,7 +717,9 @@ class VoiceClient(object):
             tries=0
             while True:
                 try:
-                    await self.gateway._poll_event()
+                    task = Task(self.gateway._poll_event(), KOKORO)
+                    future_or_timeout(task, 60.)
+                    await task
                 except (OSError, TimeoutError, ConnectionClosed, WebSocketProtocolError,) as err:
                     
                     if isinstance(err, ConnectionClosed) and (err.code in (1000, 1006, 4014)):
@@ -867,13 +886,21 @@ class VoiceClient(object):
         Familiar to `.skip`, but it return when the operation id done.
         """
         async with self.lock:
-            await self._play_next()
+            await self._play_next(self, None)
     
-    async def _play_next(self):
+    @staticmethod
+    async def _play_next(self, last_source):
         """
         Starts to play the next audio object on ``.queue`` and cancels the actual one if applicable.
 
         Should be used inside of ``.lock``to ensure that the voice client is not modified pararelly.
+        
+        Parameters
+        ----------
+        self : ``VoiceClient``
+            The respective voice client.
+        last_source : `None` or ``AudioSource`` instance
+            The audio what was played.
         """
         player = self.player
         queue = self.queue
@@ -906,6 +933,62 @@ class VoiceClient(object):
         player.resumed.set()
         if self.connected.is_set():
             Task(self.set_speaking(1), KOKORO)
+        return
+    
+    @staticmethod
+    async def _loop_actual(self, last_source):
+        """
+        Repeats the last played audio if applicable.
+        
+        Should be used inside of ``.lock``to ensure that the voice client is not modified pararelly.
+        
+        Parameters
+        ----------
+        self : ``VoiceClient``
+            The respective voice client.
+        last_source : `None` or ``AudioSource`` instance
+            The audio what was played.
+        """
+        if (last_source is None) or (not last_source.REPEATABLE):
+            await self._play_next(self, None)
+            return
+        
+        player = self.player
+        if player is None:
+            # Should not happen, lol
+            self.player = AudioPlayer(self, last_source)
+        elif player.done:
+            # If we skipped the audio, `player.don`e is set as `True`, so we do not want to repeat.
+            await self._play_next(self, None)
+            return
+        else:
+            # The audio was over.
+            player.source = last_source
+            player.resumed.set()
+        
+        if self.connected.is_set():
+            Task(self.set_speaking(1), KOKORO)
+    
+    @staticmethod
+    async def _loop_queue(self, last_source):
+        """
+        Puts the last played audio back on the voice client's queue.
+        
+        Should be used inside of ``.lock``to ensure that the voice client is not modified pararelly.
+        
+        Parameters
+        ----------
+        self : ``VoiceClient``
+            The respective voice client.
+        last_source : `None` or ``AudioSource`` instance
+            The audio what was played.
+        """
+        player = self.player
+        if ((player is None) or (not player.done)) and ((last_source is not None) and last_source.REPEATABLE):
+            # The last source was not skipped an we can repeat it.
+            self.queue.append(last_source)
+        
+        await self._play_next(self, None)
         return
     
     async def _start_handshake(self):

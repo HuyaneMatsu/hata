@@ -1407,6 +1407,27 @@ class Embed(object):
     data : `dict` of (`str`, `Any`) items
         The raw data of the embed. It should not be accessed directly. There are several properties and methods to do
         operations on them.
+    
+    Examples
+    --------
+    Example of using local embed file:
+        
+        ```py
+        # Imports
+        from hata import Embed, ReuAsyncIO
+        
+        # Building the embed
+        embed = Embed()
+        embed.add_image('attachment://image.png')
+        
+        # Sending the message
+        with (await ReuAsyncIO('some_file_path')) as file:
+            await client.message_create(channel, embed=embed, file=('image.png', file))
+        ```
+        
+        Note that you should use async io wrappers, but one which do not closes on `.close` either, but it resets
+        itself instead, because if the request fails, the io would be closed and the request could not be done the
+        second time.
     """
     __slots__ = ('data',)
     def __init__(self, title=None, description=None, color=None, url=None, timestamp=None, type_='rich'):

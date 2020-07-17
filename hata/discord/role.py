@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('PermOW', 'Role', 'cr_p_overwrite_object', 'cr_p_role_object', )
+__all__ = ('PermOW', 'Role', 'RoleManagerType', 'cr_p_overwrite_object', 'cr_p_role_object', )
 
 from .bases import DiscordEntity
 from .client_core import ROLES
@@ -11,6 +11,8 @@ from .preconverters import preconvert_snowflake, preconvert_str, preconvert_colo
     preconvert_flag
 
 from . import ratelimit
+
+PartialIntegration = NotImplemented
 
 def PartialRole(role_id):
     """
@@ -37,7 +39,8 @@ def PartialRole(role_id):
     role.guild=None
     role.separated=False
     # id is set up
-    role.managed=False
+    role.manager_type=ROLE_MANAGER_TYPE_NONE
+    role.manager_id = 0
     role.mentionable=False
     role.name=''
     role.permissions=Permission.permission_none
@@ -46,6 +49,134 @@ def PartialRole(role_id):
     ROLES[role_id]=role
     
     return role
+
+class RoleManagerType(object):
+    """
+    Represents a managed role's manager type.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the role manager type.
+    value : `int`
+        The identificator value the role manager type.
+    
+    Class Attributes
+    ----------------
+    Every predefind role manager type can be accessed as class attribute as well:
+    
+    +-----------------------+---------------+-------+
+    | Class attribute name  | name          | value |
+    +=======================+===============+=======+
+    | NONE                  | NONE          | 0     |
+    +-----------------------+---------------+-------+
+    | UNSET                 | UNSET         | 1     |
+    +-----------------------+---------------+-------+
+    | UNKNOWN               | UNKNOWN       | 2     |
+    +-----------------------+---------------+-------+
+    | BOT                   | BOT           | 3     |
+    +-----------------------+---------------+-------+
+    | BOOSTER               | BOOSTER       | 4     |
+    +-----------------------+---------------+-------+
+    | INTEGRATION           | INTEGRATION   | 5     |
+    +-----------------------+---------------+-------+
+    """
+    __slots__ = ('name', 'value', )
+    
+    def __init__(self, name, value):
+        """
+        Creates a new role manager type with the given name and value.
+        
+        Parameters
+        ----------
+        name : `str`
+            The icon role manager's name.
+        value : `int`
+            The role manager type's identificator value.
+        """
+        self.name = name
+        self.value = value
+    
+    def __str__(self):
+        """Returns the name of the role manager type."""
+        return self.name
+    
+    def __int__(self):
+        """Returns the identificator value of the role manager type."""
+        return self.value
+    
+    def __bool__(self):
+        """Returns whether the role manager's type is set."""
+        if self.value:
+            boolean = True
+        else:
+            boolean = False
+        
+        return boolean
+    
+    def __repr__(self):
+        """Returns the role manager type's representation."""
+        return f'{self.__class__.__name__}(name={self.name!r}, value={self.value!r})'
+    
+    def __hash__(self):
+        """Returns the role manager type's hash, what equals to it's value."""
+        return self.value
+    
+    def __gt__(self, other):
+        """Returns whether this role manager type's value is greater than the other's."""
+        if type(self) is type(other):
+            return self.value > other.value
+        
+        return NotImplemented
+    
+    def __ge__(self, other):
+        """Returns whether this role manager type's value is greater or equal to the other's."""
+        if type(self) is type(other):
+            return self.value >= other.value
+        
+        return NotImplemented
+    
+    def __eq__(self, other):
+        """Returns whether this role manager type's value is equal to the other's."""
+        if type(self) is type(other):
+            return self.value == other.value
+        
+        return NotImplemented
+    
+    def __ne__(self, other):
+        """Returns whether this role manager type's value is not equal to the other's."""
+        if type(self) is type(other):
+            return self.value != other.value
+        
+        return NotImplemented
+    
+    def __le__(self, other):
+        """Returns whether this role manager type's value is less or equal to the other's."""
+        if type(self) is type(other):
+            return self.value <= other.value
+        
+        return NotImplemented
+    
+    def __lt__(self, other):
+        """Returns whether this role manager type's value is less than the other's."""
+        if type(self) is type(other):
+            return self.value < other.value
+        
+        return NotImplemented
+    
+    NONE = NotImplemented
+    UNSET = NotImplemented
+    UNKNOWN = NotImplemented
+    BOT = NotImplemented
+    BOOSTER = NotImplemented
+    INTEGRATION = NotImplemented
+
+RoleManagerType.NONE        = ROLE_MANAGER_TYPE_NONE        = RoleManagerType('NONE'        , 0 ,)
+RoleManagerType.UNSET       = ROLE_MANAGER_TYPE_UNSET       = RoleManagerType('UNSET'       , 1 ,)
+RoleManagerType.UNKNOWN     = ROLE_MANAGER_TYPE_UNKNOWN     = RoleManagerType('UNKNOWN'     , 2 ,)
+RoleManagerType.BOT         = ROLE_MANAGER_TYPE_BOT         = RoleManagerType('BOT'         , 3 ,)
+RoleManagerType.BOOSTER     = ROLE_MANAGER_TYPE_BOOSTER     = RoleManagerType('BOOSTER'     , 4 ,)
+RoleManagerType.INTEGRATION = ROLE_MANAGER_TYPE_INTEGRATION = RoleManagerType('INTEGRATION' , 5 ,)
 
 class Role(DiscordEntity, immortal=True):
     """
@@ -63,8 +194,10 @@ class Role(DiscordEntity, immortal=True):
         `None`.
     separated : `bool`
         Users show up in separated groups by their highest `separated` role.
-    managed : `bool`
-        Whether the role is managed by an integration.
+    manager_id : `int`
+        If the role is managed, then it's manager's id if applicable. Defaults to `0`.
+    manager_type : `RoleManagerType`
+        But what type of entitiy is the role managed.
     mentionable : `bool`
         Whether the role can be mentioned.
     name : `str`
@@ -74,7 +207,8 @@ class Role(DiscordEntity, immortal=True):
     position : `int`
         The role's position.
     """
-    __slots__ = ('color', 'guild', 'separated', 'managed', 'mentionable', 'name', 'permissions', 'position',)
+    __slots__ = ('color', 'guild', 'separated', 'manager_id', 'manager_type', 'mentionable', 'name', 'permissions',
+        'position',)
     
     def __new__(cls, data, guild):
         """
@@ -116,13 +250,19 @@ class Role(DiscordEntity, immortal=True):
             role.permissions=Permission(data['permissions'])
             
             role.separated=data.get('hoist',False)
-            role.managed=data.get('managed',False)
+            
+            if data.get('managed',False):
+                role._set_managed(data)
+            else:
+                role.manager_id = 0
+                role.manager_type = ROLE_MANAGER_TYPE_NONE
+            
             role.mentionable=data.get('mentionable',False)
             
             guild.roles.append(role)
         
         return role
-
+    
     @classmethod
     def precreate(cls, role_id, **kwargs):
         """
@@ -141,8 +281,10 @@ class Role(DiscordEntity, immortal=True):
         ----------------
         name : `str`
             The role's ``.name``.
-        managed : `bool`
-            The role's ``.managed``.
+        manager_id : `None`, `int` or `str`
+            The role's manager's id.
+        manager_type : `RoleManagerType`
+            The role's ``.manager_type``.
         mentionable : `bool
             The role's ``.mentionable``.
         separated : `bool`
@@ -178,7 +320,7 @@ class Role(DiscordEntity, immortal=True):
                 name = preconvert_str(name, 'name', 2, 32)
                 processable.append(('name',name))
             
-            for key in ('managed', 'mentionable', 'separated',):
+            for key in ('mentionable', 'separated',):
                 try:
                     value = kwargs.pop(key)
                 except KeyError:
@@ -211,6 +353,22 @@ class Role(DiscordEntity, immortal=True):
                 color = preconvert_color(color)
                 processable.append(('color',color))
             
+            try:
+                manager_type = kwargs.pop('manager_type')
+            except KeyError:
+                try:
+                    manager_id = kwargs.pop('manager_id')
+                except KeyError:
+                    pass
+                else:
+                    raise ValueError(f'`manager_type` was not given, meanwhile `manager_id` was. Received values: '
+                        f'manager_id: {manager_id!r}')
+            else:
+                manager_type_type = manager_type.__class__
+                if manager_type_type is not RoleManagerType:
+                    raise TypeError(f'`manager_type` can be given as `{RoleManagerType.__class__}` insatnce, got '
+                        f'{manager_type_type.__name__}')
+                
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs}')
         
@@ -226,7 +384,7 @@ class Role(DiscordEntity, immortal=True):
             role.color      = Color()
             role.guild      = None
             role.separated  = False
-            role.managed    = False
+            role.manager_type = ROLE_MANAGER_TYPE_NONE
             role.mentionable= False
             role.name       = ''
             role.permissions= Permission.permission_none
@@ -241,7 +399,53 @@ class Role(DiscordEntity, immortal=True):
                 setattr(role, *item)
         
         return role
-
+    
+    def _set_managed(self, data):
+        """
+        Called when the role's manager_type is `ROLE_MANAGER_TYPE_UNSET` for trying to set the role's ``.manager_type``
+        and ``.manager_id``.
+        
+        data : `dict` of (`str`, `Any`) items
+            Role data received from Discord.
+        """
+        while True:
+            try:
+                tags = data['tags']
+            except KeyError:
+                manager_id = 0
+                manager_type = ROLE_MANAGER_TYPE_UNSET
+                break
+            
+            try:
+                manager_id = tags['bot']
+            except KeyError:
+                pass
+            else:
+                manager_id = int(manager_id)
+                manager_type = ROLE_MANAGER_TYPE_BOT
+                break
+            
+            if 'premium_subscriber' in tags:
+                manager_id = 0
+                manager_type = ROLE_MANAGER_TYPE_BOOSTER
+                break
+            
+            try:
+                manager_id = data['integration']
+            except KeyError:
+                pass
+            else:
+                manager_id = int(manager_id)
+                manager_type = ROLE_MANAGER_TYPE_INTEGRATION
+                break
+            
+            manager_id = 0
+            manager_type = ROLE_MANAGER_TYPE_UNKNOWN
+            break
+        
+        self.manager_id = manager_id
+        self.manager_type = manager_type
+        
     def _update_no_return(self, data):
         """
         Updates the role with the given `data` with overwriting it's old attributes.
@@ -271,7 +475,10 @@ class Role(DiscordEntity, immortal=True):
         
         self.color=Color(data['color'])
         self.separated=data['hoist']
-        self.managed=data['managed']
+        
+        if self.manager_type is ROLE_MANAGER_TYPE_UNSET:
+            self._set_managed(data)
+        
         self.mentionable=data['mentionable']
         self.guild._cache_perm.clear()
         
@@ -360,7 +567,10 @@ class Role(DiscordEntity, immortal=True):
         if self.separated!=separated:
             old_attributes['separated']=self.separated
             self.separated=separated
-
+        
+        if self.manager_type is ROLE_MANAGER_TYPE_UNSET:
+            self._set_managed(data)
+        
         managed=data['managed']
         if self.managed!=managed:
             old_attributes['managed']=self.managed
@@ -486,6 +696,45 @@ class Role(DiscordEntity, immortal=True):
             users= [user for user in guild.users.values() if self in user.guild_profiles[guild].roles]
         
         return users
+    
+    @property
+    def managed(self):
+        """
+        Returns whether the role is managed.
+        
+        Returns
+        -------
+        managed: `bool`
+        """
+        return (self.manager_type is not ROLE_MANAGER_TYPE_NONE)
+    
+    @property
+    def manager(self):
+        """
+        Returns the manager entity of the role if applicable.
+        
+        Returns
+        -------
+        manager : `None`, ``User``, ``Client`` or ``Integration``
+        """
+        manager_type = self.manager_type
+        if manager_type is ROLE_MANAGER_TYPE_NONE:
+            manager = None
+        
+        elif manager_type is ROLE_MANAGER_TYPE_BOT:
+            manager = PartialUser(self.manager_id)
+            
+            # `Partialuser` sets newly created users' `.is_bot` attribute as `False`.
+            if not manager.is_bot :
+                manager.is_bot = True
+        
+        elif manager_type is ROLE_MANAGER_TYPE_INTEGRATION:
+            manager = PartialIntegration(self.manager_id, role=self)
+        
+        else:
+            manager = None
+        
+        return manager
     
     @property
     def partial(self):

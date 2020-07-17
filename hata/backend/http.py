@@ -12,7 +12,7 @@ from .hdrs import CONTENT_LENGTH, AUTHORIZATION, METH_HEAD, LOCATION, URI, METH_
 from .websocket import WSClient
 from . import websocket
 
-DEFAULT_TIMEOUT=20.
+DEFAULT_TIMEOUT=60.
 
 class HTTPClient(object):
     __slots__=('loop','connector','proxy_url','proxy_auth', 'cookie_jar')

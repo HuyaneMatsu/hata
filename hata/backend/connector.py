@@ -112,7 +112,11 @@ class Connection(object):
     
     @property
     def closed(self):
-        return (self.protocol.transport is None)
+        protocol = self.protocol
+        if protocol is None:
+            return True
+        
+        return (protocol.transport is None)
 
 
 class ConnectorBase(object):

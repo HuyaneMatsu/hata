@@ -35,10 +35,13 @@ class AudioSource(object):
     ----------------
     NEEDS_ENCODE : `bool` = `True`
         Whether the source is not opus encoded.
+    REPEATABLE : `bool` = `False`
+        Whether the source can be repeated after it is exhausted once.
     """
     __slots__ = ()
     
     NEEDS_ENCODE = True
+    REPEATABLE = False
     
     def read(self):
         """
@@ -113,6 +116,8 @@ class PCMAudio(AudioSource):
     ----------------
     NEEDS_ENCODE : `bool` = `True`
         Whether the source is not opus encoded.
+    REPEATABLE : `bool` = `False`
+        Whether the source can be repeated after it is exhausted once.
     """
     __slots__=('stream',)
     
@@ -171,7 +176,11 @@ class LocalAudio(AudioSource):
     ----------------
     NEEDS_ENCODE : `bool` = `True`
         Whether the source is not opus encoded.
+    REPEATABLE : `bool` = `True`
+        Whether the source can be repeated after it is exhausted once.
     """
+    REPEATABLE = True
+    
     @staticmethod
     def _create_process_preprocess(source, executable, pipe, before_options, options):
         """
@@ -448,6 +457,8 @@ else:
         ----------------
         NEEDS_ENCODE : `bool` = `True`
             Whether the source is not opus encoded.
+        REPEATABLE : `bool` = `True`
+            Whether the source can be repeated after it is exhausted once.
         """
         
         __slots__ = ('url', )
@@ -551,7 +562,7 @@ class AudioPlayer(Thread):
     source : ``AudioSource`` instance
         The audio source what the player reads each 20 ms.
     """
-    __slots__=('client', 'done', 'resumed', 'source')
+    __slots__ = ('client', 'done', 'resumed', 'source')
     
     def __init__(self, voice_client, source):
         """
@@ -576,7 +587,7 @@ class AudioPlayer(Thread):
         Thread.start(self)
     
     @staticmethod
-    async def _run_call_after(voice_client):
+    async def _run_call_after(voice_client, last_source):
         """
         Called when playing an ``AudioSource`` of the audio player finished.
         
@@ -584,6 +595,8 @@ class AudioPlayer(Thread):
         ----------
         voice_client : ``VoiceClient``
             The parent voice client of the ``AudioPlayer``.
+        last_source : ``AudioSource``
+            The play played audio.
         
         Returns
         -------
@@ -595,7 +608,7 @@ class AudioPlayer(Thread):
             await lock
         else:
             async with lock:
-                await voice_client.call_after(voice_client)
+                await voice_client.call_after(voice_client, last_source)
     
     def run(self):
         voice_client=self.client
@@ -644,9 +657,9 @@ class AudioPlayer(Thread):
                 if self.done or (data is None):
                     self.resumed.clear()
                     source.cleanup()
-                    self.source = source = None
+                    self.source = None
                     
-                    KOKORO.create_task_threadsafe(self._run_call_after(voice_client)).syncwrap().wait()
+                    KOKORO.create_task_threadsafe(self._run_call_after(voice_client, source)).syncwrap().wait()
                     
                     source = self.source
                     if (source is None):

@@ -216,7 +216,7 @@ class DiscordException(Exception):
         
         if code:
             message_parts.append(f', code=')
-            message_parts.append(code.__repr__())
+            message_parts.append(repr(code))
 
         if message_base:
             message_parts.append(': ')
@@ -253,7 +253,8 @@ class DiscordException(Exception):
     
     def _cr_code(self):
         """
-        Parses out the Discord's inner exception code from the response's data. Sets it to `._code` and returns it as well.
+        Parses out the Discord's inner exception code from the response's data. Sets it to `._code` and returns it as
+        well.
         
         Returns
         -------
@@ -384,6 +385,7 @@ class ERROR_CODES:
     invalid_gift_redemption_exhausted = 50050
     invalid_gift_redemption_owned = 50051
     invalid_gift_self_redemption = 50054
+    cannot_delete_community_channel = 50074
     invalid_gift_redemption_subscription_managed = 100021
     invalid_gift_redemption_subscription_incompatible = 100023
     invalid_gift_redemption_invoice_open = 100024

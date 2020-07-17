@@ -216,7 +216,7 @@ class WebSocketCommonProtocol(ProtocolBase):
             exception=ConnectionClosed(1002,err)
             self.fail_connection(1002)
         
-        except (ConnectionError, EOFError) as err:
+        except (ConnectionError, EOFError, TimeoutError) as err:
             exception=ConnectionClosed(1006,err)
             self.fail_connection(1006)
         
@@ -378,9 +378,10 @@ class WebSocketCommonProtocol(ProtocolBase):
     async def close_connection(self):
         try:
             # Wait for the data transfer phase to complete.
-            if self.transfer_data_task is not None:
+            transfer_data_task = self.transfer_data_task
+            if (transfer_data_task is not None):
                 try:
-                    await self.transfer_data_task
+                    await transfer_data_task
                 except (CancelledError,TimeoutError):
                     pass
             
@@ -429,9 +430,10 @@ class WebSocketCommonProtocol(ProtocolBase):
 
     def fail_connection(self, code=1006, reason=''):
         #cancel transfer_data_task if the opening handshake succeeded
-        if self.transfer_data_task is not None:
-            self.transfer_data_task.cancel()
-
+        transfer_data_task = self.transfer_data_task
+        if transfer_data_task is not None:
+            transfer_data_task.cancel()
+        
         #send a close frame when the state is OPEN and the connection is not
         #broken
         if code!=1006 and self.state is OPEN:

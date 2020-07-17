@@ -768,7 +768,7 @@ class EventThreadCTXManager(object):
             thread.selector = None
 
 class EventThreadRunDescriptor(object):
-    def __get__(self, obj, type_=None):
+    def __get__(self, obj, type_):
         if obj is None:
             return self
         

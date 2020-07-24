@@ -6,14 +6,15 @@ __all__ = ('ChooseMenu', 'Cooldown', 'GUI_STATE_CANCELLED', 'GUI_STATE_CANCELLIN
 
 from time import monotonic
 
-from ...backend.dereaddons_local import MethodLike
 from ...backend.futures import Task, Future
 
-from ...discord.parsers import check_name, DEFAULT_EVENT, EventWaitforBase
+from ...discord.parsers import EventWaitforBase
 from ...discord.emoji import BUILTIN_EMOJIS
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.client_core import KOKORO
 from ...discord.embed import Embed
+
+from .command import CommandWrapper
 
 class ReactionAddWaitfor(EventWaitforBase):
     __slots__ = ()
@@ -1060,7 +1061,35 @@ class _CD_unit(object):
     def __repr__(self):
         return f'{self.__class__.__name__}(expires_at={self.expires_at}, uses_left={self.uses_left})'
 
-class Cooldown(MethodLike):
+class CooldownWrapper(CommandWrapper):
+    def shared(self, weight=0, func=None):
+        weight_type = weight.__class__
+        if weight_type is int:
+            pass
+        elif issubclass(weight_type, int):
+            weight = int(weight)
+        else:
+            raise TypeError(f'`weight` can be given as `int` instance, got {weight_type.__name__}.')
+        
+        source_wrapper = self.wrapper
+        if weight == 0:
+            weight = source_wrapper.weight
+        
+        new_wrapper = object.__new__(type(self))
+        new_wrapper.checker= source_wrapper.checker
+        new_wrapper.reset  = source_wrapper.reset
+        new_wrapper.cache  = source_wrapper.cache
+        new_wrapper.weight = weight
+        new_wrapper.limit  = source_wrapper.limit+source_wrapper.weight-weight
+        
+        if func is None:
+            wrapper = source_wrapper._wrapper(new_wrapper, self.handler)
+        else:
+            wrapper = CooldownWrapper(func, new_wrapper, self.handler)
+        
+        return wrapper
+
+class Cooldown(object):
     """
     Helper class for implement cooldowns.
     
@@ -1149,48 +1178,21 @@ class Cooldown(MethodLike):
     
     Attributes
     ----------
-    __func__ : `async-callable`
-        The wrapped function
-    __name__ : `str`
-        The wrapped function's name.
     cache : `dict` of (``DiscordEntity``, ``_CD_unit``) items
         Cache to remember how much use of the given entity are exhausted already.
     checker : `function`
         Checks after how much time the given entity can use again the respective command.
-    handler : `None` or `async-callable`
-        A function what is called when the command is on cooldown.
-        
-        The following arguments are passed to it::
-        
-        +-------------------+-------------------+
-        | Respective name   | Type              |
-        +===================+===================+
-        | client            | ``Client``        |
-        +-------------------+-------------------+
-        | message           | ``Message``       |
-        +-------------------+-------------------+
-        | function_name     | `str`             |
-        +-------------------+-------------------+
-        | time_left         | `float`           |
-        +-------------------+-------------------+
-    
     limit : `int`
         The amount of how much times the command can be called within a set duration before going on cooldown.
     reset : `float`
         The time after the cooldown resets.
     weight : `int`
         The weight of the command.
-    
-    Class attributes
-    ----------------
-    __wrapper__ : `int` = `1`
-        Hinter for type ``Command``, that ``Cooldown`` is just a wrapper.
     """
-    __wrapper__=1
+    __slots__ = ('cache', 'checker', 'limit', 'reset', 'weight',)
     
-    __slots__ = ('__func__', '__name__', 'cache', 'checker', 'handler', 'limit', 'reset', 'weight',)
-    
-    def __new__(cls, for_, reset, limit=1, weight=1, handler=None, name=None, func=None):
+    def __new__(cls, for_, reset, limit=1, weight=1, handler=None, func=None):
+        # Validate float.
         for_type = for_.__class__
         if for_type is str:
             pass
@@ -1198,92 +1200,74 @@ class Cooldown(MethodLike):
             for_ = str(for_)
         else:
             raise TypeError(f'`for_` can be given as `str` instance, got {for_type.__name__}.')
-        
+    
         if 'user'.startswith(for_):
-            checker=cls._check_user
+            checker = cls._check_user
         elif 'channel'.startswith(for_):
-            checker=cls._check_channel
+            checker = cls._check_channel
         elif 'guild'.startswith(for_):
-            checker=cls._check_guild
+            checker = cls._check_guild
         else:
             raise ValueError(f'\'for_\' can be \'user\', \'channel\' or \'guild\', got {for_!r}')
         
-        self=object.__new__(cls)
-        self.checker=checker
-        self.handler=handler
+        reset_type = reset.__class__
+        if (reset_type is not float):
+            try:
+                __float__ = getattr(reset_type, '__float__')
+            except AttributeError:
+                raise TypeError(f'The given reset is no `float`, neither other numeric convertable to it, got '
+                    f'{reset_type.__name__}.')
+            
+            reset = __float__(reset)
+            
+        limit_type = limit.__class__
+        if limit_type is int:
+            pass
+        elif issubclass(limit_type, int):
+            limit = int(limit)
+        else:
+            raise TypeError(f'`limit` can be given as `int` instance, got {limit_type.__name__}.')
         
-        if type(reset) is not float:
-            reset=float(reset)
+        weight_type = weight.__class__
+        if weight_type is int:
+            pass
+        elif issubclass(weight_type, int):
+            weight = int(weight)
+        else:
+            raise TypeError(f'`weight` can be given as `int` instance, got {weight_type.__name__}.')
         
-        self.reset=reset
-        
-        self.cache={}
-        
-        if type(weight) is not int:
-            weight=int(weight)
-        self.weight=weight
-        
-        if type(limit) is not int:
-            limit=int(limit)
-        self.limit=limit-weight
-        
-        if (name is not None) and (not name.islower()):
-            name=name.lower()
-        
-        if func is None:
-            self.__name__ = name
-            self.__func__ = DEFAULT_EVENT
-            return self._wrapper
-        
-        self.__name__ = check_name(func,name)
-        self.__func__ = func
-        return self
-    
-    def _wrapper(self,func):
-        name=self.__name__
-        if (name is None) or (not name):
-            self.__name__ = check_name(func,None)
-        self.__func__ = func
-        return self
-    
-    async def __call__(self,client,message,*args):
-        value = self.checker(self,message)
-        if value:
-            handler = self.handler
-            if (handler is not None):
-                return await handler(client,message,self.__name__,value-monotonic())
-        
-        return await self.__func__(client,message,*args)
-    
-    def shared(source,weight=0,name=None,func=None):
-        if type(weight) is not int:
-            weight=int(weight)
-        if not weight:
-            weight = source.weight
-        
-        self        = object.__new__(type(source))
-        self.checker= source.checker
-        self.reset  = source.reset
-        self.cache  = source.cache
+        self = object.__new__(cls)
+        self.checker = checker
+        self.reset = reset
         self.weight = weight
-        self.limit  = source.limit+source.weight-weight
-        self.handler= source.handler
-        
-        if (name is not None) and (not name.islower()):
-            name=name.lower()
+        self.limit = limit-weight
+        self.cache = {}
         
         if func is None:
-            self.__name__=name
-            self.__func__=DEFAULT_EVENT
-            return self._wrapper
+            wrapper = self._wrapper(self, handler)
+        else:
+            wrapper = CooldownWrapper(func, self, handler)
         
-        self.__name__=check_name(func,name)
-        self.__func__ = func
+        return wrapper
     
-    @property
-    def __doc__(self):
-        """Returns the wrapped function's docstring."""
-        return getattr(self.__func__,'__doc__',None)
+    class _wrapper(object):
+        __slots__ = ('parent', 'handler')
+        def __init__(self, parent, handler):
+            self.parent = parent
+            self.handler = handler
+        
+        def __call__(self, func):
+            return CooldownWrapper(func, self.parent, self.handler)
+    
+    async def __call__(self, client, message):
+        value = self.checker(self, message)
+        if not value:
+            yield True
+            return
+        
+        yield False
+        yield value-monotonic()
+        return
     
     @staticmethod
     def _check_user(self,message):
@@ -1346,5 +1330,3 @@ class Cooldown(MethodLike):
             unit.uses_left=left-self.weight
             return 0.
         return unit.expires_at
-
-del MethodLike

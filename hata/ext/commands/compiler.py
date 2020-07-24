@@ -1378,7 +1378,6 @@ def compile_parsed(converters):
 
 class ContentParser(object):
     __slots__ = ('__func__', '_call_setting', '_is_method', '_parser', '_parser_failure_handler', )
-    __wrapper__ = 1
     __async_call__= True
     
     def __new__(cls, func=None, parser_failure_handler=None, is_method=False):

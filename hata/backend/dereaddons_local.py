@@ -766,9 +766,9 @@ class MethodLike(metaclass=SubCheckType):
     __slots__=()
     def __init_subclass__(cls):
         cls.__subclasses__.add(cls)
-
+    
     __reserved_argcount__=1
-
+    
     @classmethod
     def get_reserved_argcount(cls,instance):
         klass=type(instance)
@@ -798,7 +798,7 @@ class basemethod(MethodLike):
     
     @property
     def __doc__(self):
-        return self.func.__doc__
+        return self.__func__.__doc__
 
 class BaseMethodDescriptor(object):
     __slots__=('func',)
@@ -818,10 +818,10 @@ class BaseMethodDescriptor(object):
         raise AttributeError('can\'t delete attribute')
 
 # This 2 type can be function
-wrapper_descriptor=type(object.__ne__)
-method_descriptor=type(object.__format__)
+wrapper_descriptor = type(object.__ne__)
+method_descriptor = type(object.__format__)
 
-DO_NOT_MODULIZE_TYPES=[mappingproxy, getset_descriptor, ]
+DO_NOT_MODULIZE_TYPES = [mappingproxy, getset_descriptor, ]
 
 if wrapper_descriptor is not function:
     DO_NOT_MODULIZE_TYPES.append(wrapper_descriptor)
@@ -836,20 +836,88 @@ del getset_descriptor
 del wrapper_descriptor
 del method_descriptor
 
+def _modulize_function(old, globals_, source_module, module_name, module_path):
+    if old.__module__ != source_module:
+        return old
+    
+    new = function(old.__code__, globals_, old.__name__, old.__defaults__, old.__closure__)
+    new.__module__ = module_path
+    qualname = old.__qualname__
+    if (qualname is not None) and (len(qualname) > len(module_name)) and qualname[len(module_name)] =='.' and \
+            qualname.startswith(module_name):
+        new.__qualname__ = qualname[len(module_name)+1:]
+    
+    return new
+
+def _modulize_type(klass, globals_, source_module, module_name, module_path):
+    if klass.__module__ != source_module:
+        return
+    
+    qualname = klass.__qualname__
+    if (qualname is None) or (len(qualname) <= len(module_name)) or qualname[len(module_name)] != '.' \
+            or not qualname.startswith(module_name):
+        return
+    
+    klass.__qualname__ = qualname[len(module_name)+1:]
+    klass.__module__ = module_path
+    
+    for name in dir(klass):
+        value = getattr(klass, name)
+        
+        value_type = value.__class__
+        if value_type is function:
+            value = _modulize_function(value, globals_, source_module, module_name, module_path)
+            setattr(klass, name, value)
+        
+        if issubclass(value_type, type):
+            _modulize_type(value, globals_, source_module, module_name, module_path)
+
 def modulize(klass):
     if not isinstance(klass,type):
         raise TypeError('Only types can be modulized')
-    result=module(klass.__name__)
+    
+    source_module = klass.__module__
+    module_name = klass.__name__
+    module_path = f'{klass.__module__}.{module_name}'
+    try:
+        result_module = sys.modules['module_path']
+    except KeyError:
+        result_module = module(module_name)
+        sys.modules[module_path] = result_module
+        globals_ = result_module.__dict__
+        globals_['__builtins__'] = __builtins__
+    else:
+        globals_ = result_module.__dict__
+        collected_names = []
+        for name in globals_.keys():
+            if name.startswith('__') and name.endswith('__'):
+                continue
+            
+            collected_names.append(name)
+        
+        for name in collected_names:
+            del globals_[name]
+        
+        globals_['__doc__'] = None
+    
     for name in type.__dir__(klass):
         if name.startswith('__') and name.endswith('__') and name!='__doc__':
             continue
         
-        value=type.__getattribute__(klass,name)
-        if type(value) in DO_NOT_MODULIZE_TYPES:
+        value = type.__getattribute__(klass,name)
+        value_type = type(value)
+        if value_type in DO_NOT_MODULIZE_TYPES:
             continue
         
-        module.__setattr__(result,name,value)
-    return result
+        if value_type is function:
+            value = _modulize_function(value, globals_, source_module, module_name, module_path)
+        
+        if issubclass(value_type, type):
+            _modulize_type(value, globals_, source_module, module_name, module_path)
+        
+        module.__setattr__(result_module, name, value)
+    
+    return result_module
     
 class methodize(object):
     __slots__=('klass',)
@@ -1571,11 +1639,6 @@ class HybridValueDictionary(dict):
             value = value_or_reference()
             if (value is not None):
                 return value
-            
-            if self._iterating:
-                self._pending_removals.add(value_or_reference)
-            else:
-                dict.__delitem__(self, key)
         
         if default is _spaceholder:
             raise KeyError(key)
@@ -1588,11 +1651,6 @@ class HybridValueDictionary(dict):
             if value_weakreferable:
                 value = value_or_reference()
                 if value is None:
-                    if self._iterating:
-                        self._pending_removals.add(value_or_reference)
-                    else:
-                        dict.__delitem__(self, key)
-                    
                     continue
             else:
                 value = value_or_reference
@@ -1996,11 +2054,6 @@ class WeakValueDictionary(dict):
             value = value_reference()
             if (value is not None):
                 return value
-            
-            if self._iterating:
-                self._pending_removals.add(value_reference)
-            else:
-                dict.__delitem__(self, key)
         
         if default is _spaceholder:
             raise KeyError(key)
@@ -2013,11 +2066,6 @@ class WeakValueDictionary(dict):
             value = value_reference()
             if (value is not None):
                 return key, value
-            
-            if self._iterating:
-                self._pending_removals.add(value_reference)
-            else:
-                dict.__delitem__(self, key)
             
             continue
         

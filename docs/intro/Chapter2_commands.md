@@ -158,9 +158,8 @@ Each type has it's name at the parser and also 2 more value is supported
 | -             | 'content'     |
 | -             | 'rest'        |
 
-When you add a command, you can also specify it's parameters by calling the
-decorator and using keyword arguments. Like this is how you can add a command
-with a different name:
+When you add a command, you can also specify it's parameters by calling the decorator and using keyword arguments.
+Like this is how you can add a command with a different name:
 
 ```py
 @NekoBot(name='print')
@@ -169,6 +168,7 @@ async def print_(client, message, content):
 ```
 
 Or add checks for the command:
+
 ```py
 from hata.ext.commands import checks
 
@@ -176,27 +176,19 @@ from hata.ext.commands import checks
 async def owner(client, message):
     await client.message_create(message.channel, f'My masuta is {client.owner:f} !')
 ```
-On this way `check_failure_handler` and `parser_failure_handler` can be added
-as well for cases, when checks or the parser fails.
+
+If you want to run a specified code when a check fails, you can also add a handler to it:
+
 ```
-FAIL_IDENTIFICATOR_NO_OWNER = 1
+async def owner_only_handler(client, message, command, check):
+    await client.message_create(message.channel, f'You must be the owner of the bot to use the `{command}` command.')
 
-async def on_check_fail(client, message, command, content, fail_identificator):
-    if fail_identificator==FAIL_IDENTIFICATOR_NO_OWNER:
-        await client.message_create(message.channel, f'You must be the owner of the bot to use the `{command.name}` command.')
-
-@NekoBot.commands(checks=[checks.owner_only(fail_identificator=FAIL_IDENTIFICATOR_NO_OWNER)], check_failure_handler=on_check_fail)
+@NekoBot.commands(checks=[checks.owner_only(handler=owner_only_handler)])
 async def owner(client, message):
     await client.message_create(message.channel, f'My masuta is {client.owner:f} !')
 ```
-By default when a check fails the check failure handler wont be called, only if
-`fail_identificator` is specified. This is how you can check which check
-failed within the check failure handler, or generate a specific message.
 
-The `check_failure_handler` is always ensured with 4 arguments, the `client`
-itself, the `message`, the `Command` object what was called, the `content`
-of the message after the command's name an before the linebreak and with
-the `fail_identificator` what can be only non negative int.
+If a command uses an argument parser, then `parser_failure_handler` might be called, what can be also defined:
 
 ```py
 async def on_parse_fail(client, message, command, content, args):
@@ -213,8 +205,7 @@ async def choose(client, message, emojis : Converter('emoji', amount=2)):
     emoji = random.choice(emojis)
     await client.message_create(message.channel, f'I choose {emoji:e} !')
 ```
-`parser_failure_handler` is familiar to the check failure handler, but
-as the last argument it will get a list of the succesfully parsed arguments.
+
 ```py
 @NekoBot.commands(aliases=['pong'])
 async def ping(client, message):

@@ -19,7 +19,7 @@ from .activity import ActivityUnknown
 from .parsers import PARSERS
 from .guild import LARGE_LIMIT
 from .client_core import CACHE_PRESENCE, Kokoro, KOKORO
-from .exceptions import IntentError
+from .exceptions import DiscordGatewayException
 
 GATEWAY_RATELIMIT_LIMIT = 120
 GATEWAY_RATELIMIT_RESET = 60.0
@@ -262,8 +262,8 @@ class DiscordGateway(object):
         
         Raises
         ------
-        IntentError
-            The client tries to connect with bad or not acceptable intent values.
+        DiscordGatewayException
+            The client tries to connect with bad or not acceptable intent or shard value.
         InvalidToken
             When the client's token is invalid.
         DiscordException
@@ -304,8 +304,8 @@ class DiscordGateway(object):
                     if code in (1000,1006):
                         continue
                     
-                    if code in (4013, 4014):
-                        raise IntentError(code) from err
+                    if code in DiscordGatewayException.CODETABLE:
+                        raise DiscordGatewayException(code) from err
                 
                 if isinstance(err,TimeoutError):
                     continue
@@ -346,8 +346,8 @@ class DiscordGateway(object):
                 self.websocket=None
             
             self._decompresser=zlib.decompressobj()
-            gateway = await self.client.client_gateway()
-            self.websocket = await self.client.http.connect_ws(gateway)
+            gateway_url = await self.client.client_gateway_url()
+            self.websocket = await self.client.http.connect_ws(gateway_url)
             self.kokoro.start_beating()
             
             if not resume:
@@ -1135,6 +1135,25 @@ class DiscordGatewaySharder(object):
         
         self.gateways = gateways
     
+    def reshard(self):
+        """
+        Modifes the shard amount of the gateway sharder.
+        
+        > Should be called only if every shard is down.
+        """
+        gateways = self.gateways
+        
+        old_shard_count = len(gateways)
+        new_shard_count = self.client.shard_count
+        if new_shard_count > old_shard_count:
+            for shard_id in range(old_shard_count, new_shard_count):
+                gateway = DiscordGateway(self, shard_id)
+                gateways.append(gateway)
+        
+        elif new_shard_count < old_shard_count:
+            for _ in range(new_shard_count, old_shard_count):
+                gateways.pop()
+        
     async def start(self):
         """
         Starts the gateways of the sharder gateway.
@@ -1156,8 +1175,8 @@ class DiscordGatewaySharder(object):
         
         Raises
         ------
-        IntentError
-            The client tries to connect with bad or not acceptable intent values.
+        DiscordGatewayException
+            The client tries to connect with bad or not acceptable intent or shard value.
         InvalidToken
             When the client's token is invalid.
         DiscordException

@@ -8,8 +8,6 @@ from cute_commands import cute_commands
 OWO_RP = re.compile('owo|uwu|0w0', re.I)
 AYY_RP = re.compile('ay+', re.I)
 
-FAIL_IDENTIFICATOR_NO_OWNER = 1
-
 TOKEN = ''
 NekoBot = Client(TOKEN)
 
@@ -72,12 +70,10 @@ async def choose(client, message, emojis : Converter('emoji', amount=2)):
     emoji = random.choice(emojis)
     await client.message_create(message.channel, f'I choose {emoji:e} !')
 
+async def owner_only_handler(client, message, command, check):
+    await client.message_create(message.channel, f'You must be the owner of the bot to use the `{command}` command.')
 
-async def on_check_fail(client, message, command, content, fail_identificator):
-    if fail_identificator==FAIL_IDENTIFICATOR_NO_OWNER:
-        await client.message_create(message.channel, f'You must be the owner of the bot to use the `{command.name}` command.')
-
-@NekoBot.commands(checks=[checks.owner_only(fail_identificator=FAIL_IDENTIFICATOR_NO_OWNER)], check_failure_handler=on_check_fail)
+@NekoBot.commands(checks=[checks.owner_only(handler=owner_only_handler)])
 async def owner(client, message):
     await client.message_create(message.channel, f'My masuta is {client.owner:f} !')
 

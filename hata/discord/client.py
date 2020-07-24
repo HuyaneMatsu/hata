@@ -24,7 +24,8 @@ from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelT
     message_relativeindex, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES
 from .guild import Guild, PartialGuild, GuildEmbed, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
     DiscoveryCategory, COMMUNITY_FEATURES
-from .http import DiscordHTTPClient, URLS, CDN_ENDPOINT, VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED
+from .http import DiscordHTTPClient, URLS, CDN_ENDPOINT
+from .http.URLS import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED
 from .role import Role, PermOW
 from .webhook import Webhook, PartialWebhook
 from .gateway import DiscordGateway, DiscordGatewaySharder
@@ -33,7 +34,7 @@ from .audit_logs import AuditLog, AuditLogIterator
 from .invite import Invite
 from .message import Message
 from .oauth2 import Connection, parse_locale, DEFAULT_LOCALE, AO2Access, UserOA2, Achievement
-from .exceptions import DiscordException, IntentError, ERROR_CODES, InvalidToken
+from .exceptions import DiscordException, DiscordGatewayException, ERROR_CODES, InvalidToken
 from .client_core import CLIENTS, CACHE_USER, CACHE_PRESENCE, KOKORO, GUILDS, DISCOVERY_CATEGORIES
 from .voice_client import VoiceClient
 from .activity import ActivityUnknown, ActivityBase, ActivityCustom
@@ -749,9 +750,7 @@ class Client(UserBase):
         is_bot : `bool`, optional
             Whether the client is a bot user or a user account. Defaults to False.
         shard_count : `int`, optional
-            The client's shard count. If passed as `0`, The client will launch up without sharding. If passed as `1`, the
-            client will use the recommended shard amount for it. At every other case, the Client will use the passed
-            amount.
+            The client's shard count. If passed as lower as the recommended one, will reshard itself.
         intents : ``IntentFlag``, optional
              By default the client will launch up using all the intent flags. Negative values will be interpretered as
              using all the intents, meanwhile if passed as positive, non existing intent flags are removed.
@@ -826,6 +825,10 @@ class Client(UserBase):
         
         if shard_count<0:
             raise ValueError(f'`shard_count` can be passed only as non negative `int`, got {shard_count!r}.')
+        
+        # Default to `0`
+        if shard_count == 1:
+            shard_count = 0
         
         # intents
         intents = preconvert_flag(intents, 'intents', IntentFlag)
@@ -932,7 +935,7 @@ class Client(UserBase):
         self.activities         = []
         self._additional_owner_ids = additional_owner_ids
         self._gateway_url       = ''
-        self._gateway_time      = -99.9
+        self._gateway_time      = -inf
         self._gateway_max_concurrency = 1
         self._gateway_requesting = False
         self._gateway_waiter    = None
@@ -7941,16 +7944,13 @@ class Client(UserBase):
     
     async def client_gateway(self):
         """
-        Requests the client's gateway url. To avoid unreasoned requests when sharding, if this request was done at the
-        last `60` seconds then return the last generated url.
+        Requests the gateway information for the client.
         
-        If the method is called, when the client logs in and it's `shard_count` is set to `1`, then this method will
-        set the shard count of the client to the suggested amount by Discord.
+        Only `1` request can be done at a time and every other will yield the result of first started one.
         
         Returns
         -------
-        websocket_url : `str`
-            The url to what the gateways' webscoket will be connected.
+        data : `dict` of (`str`, `Any`) items
         
         Raises
         ------
@@ -7960,10 +7960,6 @@ class Client(UserBase):
             When the client's token is invalid.
         DiscordException
         """
-        time = self._gateway_time
-        if time+60. > monotonic():
-            return self._gateway_url
-        
         if self._gateway_requesting:
             gateway_waiter = self._gateway_waiter
             if gateway_waiter is None:
@@ -7997,29 +7993,6 @@ class Client(UserBase):
                 
                 break
             
-            #if shard count is 1, lets auto detect shard count
-            
-            if not self.running:
-                old_shard_count=self.shard_count
-                if old_shard_count==1:
-                    shard_count = data['shards']
-                    
-                    if old_shard_count==0:
-                        return #cannot change
-                    
-                    if shard_count<old_shard_count:
-                        return #cannot go down
-                    
-                    self.shard_count=shard_count
-                    
-                    gateways=self.gateway.gateways
-                    for shard_id in range(old_shard_count,shard_count):
-                        gateway=DiscordGateway(self,shard_id)
-                        gateways.append(gateway)
-            
-            url=data['url']+'?encoding=json&v=6&compress=zlib-stream'
-            self._gateway_url = url
-            self._gateway_time = monotonic()
             self._gateway_max_concurrency = data['session_start_limit'].get('max_concurrency', 1)
         except BaseException as err:
             self._gateway_requesting = False
@@ -8034,9 +8007,84 @@ class Client(UserBase):
         gateway_waiter = self._gateway_waiter
         if (gateway_waiter is not None):
             self._gateway_waiter = None
-            gateway_waiter.set_result_if_pending(url)
+            gateway_waiter.set_result_if_pending(data)
         
-        return url
+        return data
+    
+    async def client_gateway_url(self):
+        """
+        Requests the client's gateway url. To avoid unreasoned requests when sharding, if this request was done at the
+        last `60` seconds then returns the last generated url.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection or if the request raised any ``DiscordException``.
+        InvalidToken
+            When the client's token is invalid.
+        DiscordException
+        
+        Returns
+        -------
+        gateway_url : `str`
+            The url to what the gateways' webscoket will be connected.
+        """
+        if self._gateway_time > (monotonic()+60.0):
+            return self._gateway_url
+        
+        data = await self.client_gateway()
+        self._gateway_url = gateway_url = data['url']+'?encoding=json&v=6&compress=zlib-stream'
+        self._gateway_time = monotonic()
+        
+        return gateway_url
+    
+    async def client_gateway_reshard(self, force=False):
+        """
+        Reshards the client. And also updates it's gatewas url as a sidenote.
+        
+        > Should be called only if every shard is down.
+        
+        Parameters
+        ----------
+        force : `bool`
+            Whether the the client should reshard to lower amount of shards if needed.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection or if the request raised any ``DiscordException``.
+        InvalidToken
+            When the client's token is invalid.
+        DiscordException
+        """
+        data = await self.client_gateway()
+        self._gateway_url = data['url']+'?encoding=json&v=6&compress=zlib-stream'
+        self._gateway_time = monotonic()
+        
+        old_shard_count = self.shard_count
+        if old_shard_count == 0:
+            old_shard_count = 1
+        
+        new_shard_count = data['shards']
+        
+        # Do we have more shards already?
+        if (not force) and (old_shard_count >= new_shard_count):
+            return
+        
+        if new_shard_count == 1:
+            new_shard_count = 0
+        
+        self.shard_count = new_shard_count
+        
+        gateway = self.gateway
+        if type(gateway) is DiscordGateway:
+            if new_shard_count:
+                self.gateway = DiscordGatewaySharder(self)
+        else:
+            if new_shard_count:
+                gateway.reshard()
+            else:
+                self.gateway = DiscordGateway(self)
     
     #user account only
     async def hypesquad_house_change(self, house):
@@ -8180,7 +8228,7 @@ class Client(UserBase):
             return False
         
         self._init_on_ready(data)
-        await self.client_gateway()
+        await self.client_gateway_reshard()
         await self.gateway.start()
         
         if self.is_bot:
@@ -8222,6 +8270,20 @@ class Client(UserBase):
                             f'{err!r} meanwhile rendering an exception for the same reason.\n The client will '
                             f'reconnect.\n')
                     continue
+                
+                except DiscordGatewayException as err:
+                    if err.code in DiscordGatewayException.RESHARD_ERROR_CODES:
+                        sys.stderr.write(
+                            f'{err.__class__.__name__} occured, at {self!r}._connect:\n'
+                            f'{err!r}\n'
+                            f'The client will reshard itself and reconnect.\n'
+                                )
+                        
+                        await self.client_gateway_reshard(force=True)
+                        continue
+                    
+                    raise
+                
                 else:
                     if not self.running:
                         break
@@ -8230,9 +8292,9 @@ class Client(UserBase):
                     while True:
                         try:
                             await sleep(5.0, KOKORO)
-                            self._gateway_time = -99.9
                             try:
-                                await self.client_gateway()
+                                # We are down, why not reshard instantly?
+                                await self.client_gateway_reshard()
                             except ConnectionError:
                                 continue
                             else:
@@ -8251,20 +8313,22 @@ class Client(UserBase):
                                     f'reconnect.\n')
                             continue
                     continue
-        except (IntentError, InvalidToken) as err:
-            sys.stderr.write(
-                f'{err.__class__.__name__} occured, at {self!r}._connect:\n'
-                f'{err!r}\n'
-                    )
         except BaseException as err:
-            await KOKORO.render_exc_async(err,[
-                'Unexpected exception occured at ',
-                repr(self),
-                '._connect\n',
-                    ],
-                'If you can reproduce this bug, Please send me a message or open an issue whith your code, and with '
-                'every detail how to reproduce it.\n'
-                'Thanks!\n')
+            if isinstance(err, InvalidToken) or \
+                    (isinstance(err, DiscordGatewayException) and err.code in DiscordGatewayException.INTENT_ERROR_CODES):
+                sys.stderr.write(
+                    f'{err.__class__.__name__} occured, at {self!r}._connect:\n'
+                    f'{err!r}\n'
+                        )
+            else:
+                await KOKORO.render_exc_async(err,[
+                    'Unexpected exception occured at ',
+                    repr(self),
+                    '._connect\n',
+                        ],
+                    'If you can reproduce this bug, Please send me a message or open an issue whith your code, and with '
+                    'every detail how to reproduce it.\n'
+                    'Thanks!\n')
         
         finally:
             try:

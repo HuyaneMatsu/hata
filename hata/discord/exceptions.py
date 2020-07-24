@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('DiscordException', 'ERROR_CODES', 'IntentError', 'InvalidToken',)
+__all__ = ('DiscordException', 'DiscordGatewayException', 'ERROR_CODES', 'InvalidToken',)
 
 class DiscordException(Exception):
     """
@@ -415,7 +415,7 @@ class ERROR_CODES:
     
     resource_overloaded     = 130000
 
-class IntentError(BaseException):
+class DiscordGatewayException(BaseException):
     """
     An intent error is raised by a ``DiscordGateway`` when a ``Client`` tries to log in with an invalid intent value.
     
@@ -427,9 +427,16 @@ class IntentError(BaseException):
     Class Attributes
     ----------------
     CODETABLE : `dict` of (`int`, `str`) items
-        A dictionary to store the descriptions for each intent related gateway close code.
+        A dictionary to store the descriptions for each gateway close code.
+    INTENT_ERROR_CODES : `tuple` (`str`, `str`) = (`4013`, `4014`)
+        Close codes of intent errors.
+    RESHARD_ERROR_CODES : `tuple` (`int`,) = (`4011`,)
     """
+    INTENT_ERROR_CODES = (4013, 4014)
+    RESHARD_ERROR_CODES = (4011,)
+    
     CODETABLE = {
+        4011 : 'A gateway would have handled too many guilds, resharding is required.',
         4013 : 'An invalid intent is one that is not meaningful and not documented.',
         4014 : 'A disallowed intent is one which you have not enabled for your bot or one that your bot is not whitelisted to use.',
             }

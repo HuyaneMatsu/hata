@@ -3,17 +3,12 @@ __all__ = ('Category', 'Command', 'CommandProcesser', 'checks', 'normalize_descr
 
 import re, reprlib
 
-from ...backend.dereaddons_local import sortedlist, modulize
+from ...backend.dereaddons_local import sortedlist, modulize, NEEDS_DUMMY_INIT
 from ...backend.futures import Task
 from ...backend.analyzer import CallableAnalyzer
 
 from ...discord.others import USER_MENTION_RP
 from ...discord.parsers import EventWaitforBase, compare_converted, check_name, check_argcount_and_convert
-from ...discord.guild import Guild
-from ...discord.permission import Permission
-from ...discord.role import Role
-from ...discord.channel import ChannelBase
-from ...discord.bases import instance_or_id_to_instance, instance_or_id_to_snowflake
 from ...discord.client_core import KOKORO
 
 from .compiler import parse, COMMAND_CALL_SETTING_2ARGS, COMMAND_CALL_SETTING_3ARGS, COMMAND_CALL_SETTING_USE_PARSER
@@ -26,6 +21,46 @@ AUTO_DASH_APPLICABLES = ('-', '_')
 assert (len(AUTO_DASH_APPLICABLES)==0) or (AUTO_DASH_APPLICABLES != AUTO_DASH_APPLICABLES[0]), (
     f'`AUTO_DASH_MAIN_CHAR` (AUTO_DASH_MAIN_CHAR={AUTO_DASH_MAIN_CHAR!r} is not `AUTO_DASH_APPLICABLES[0]` '
     f'(AUTO_DASH_APPLICABLES={AUTO_DASH_APPLICABLES!r}!)')
+
+class CommandWrapper(object):
+    """
+    Command wrapper what can be used for rich checks, which might return values to call their handler with.
+    
+    Attributes
+    ----------
+    wrapped : `async-callable`
+        The wrapped function of the command.
+    wrapper : `async-callable`
+        Rich check, w
+    """
+    __slots__ = ('wrapped', 'wrapper', 'handler', )
+    def __new__(cls, wrapped, wrapper, handler):
+        """
+        Creates a new ``CommandWrapper`` instance.
+        
+        Parameters
+        ----------
+        wrapped : `async-callable`
+            The wrapped function.
+        wrapper : `Any`
+            A wrapper for the function.
+        handler : None` or `async-callable`
+            handler
+        
+        Returns
+        -------
+        self : ``CommandWrapper``
+        """
+        self = object.__new__(cls)
+        self.wrapped = wrapped
+        self.wrapper = wrapper
+        self.handler = handler
+        return self
+    
+    def __repr__(self):
+        """Returns the command wrapper's representation."""
+        return (f'{self.__class__.__name__}(wrapped={self.wrapped!r}, wrapper={self.wrapper!r}, '
+            f'handler={self.handler!r})')
 
 def generate_alters_for(name):
     """
@@ -136,17 +171,17 @@ class Command(object):
     _category_hint : `str` or `None`
         Hint for the command processer under which category should the give command go. If set as `None`, means that
         the command will go under the default category of the command processer.
-    _check_failure_handler : `Any`
-        The internal slot used by the ``.check_failure_handler`` property. Defaults to `None`.
     _checks : `None` or (`list` of ``_check_base`` instances)
         The internal slot used by the ``.checks`` property. Defaults to `None`.
     _parser : `None`
         The generated parser function for parsing the arguments to pass to the command. Defaults to `None`.
     _parser_failure_handler : `Any`
         The internal slot used by the ``.parser_failure_handler`` property. Defaults to `None`.
+    _wrappers : `None`, `Any`, `list` of `async-callable`
+        Additional wrappers, which run before the command is executed.
     """
-    __slots__ = ( '_alters', '_call_setting', '_category_hint', '_check_failure_handler', '_checks', '_parser',
-        '_parser_failure_handler', 'aliases', 'category', 'command', 'description', 'name', )
+    __slots__ = ( '_alters', '_call_setting', '_category_hint', '_checks', '_parser', '_parser_failure_handler',
+        '_wrappers', 'aliases', 'category', 'command', 'description', 'name',)
     
     @classmethod
     def from_class(cls, klass, kwargs=None):
@@ -171,7 +206,6 @@ class Command(object):
             - category : `None`, ``Category`` or `str`
             - checks : `None` or (`iterable` of ``_check_base``)
                 If no checks were provided, then the classe's `.checks_` attribute will be checked as well.
-            - check_failure_handler : `None` or `async-callable`
             - parser_failure_handler : `None` or `async-callable`
         
         kwargs, `None` or `dict` of (`str`, `Any`) items, Optional
@@ -181,7 +215,6 @@ class Command(object):
             - description
             - category
             - checks
-            - check_failure_handler
             - parser_failure_handler
         
         Returns
@@ -196,9 +229,6 @@ class Command(object):
             - `aliases` were not passed as `None` or as `iterable` of `str`.
             - `category` was not given as `None, `str`, or as ``Category`` instance.
             - If `checks` was not given as `None` or as `iterable` of ``_check_base`` instances.
-            - If `check_failure_handler` or `parser_failure_handler` was not given as `None` but neither as async
-                callable or as a callable instanceable to async, or if it (or the resulted) callable accepts less or
-                more non reserved positional arguments as `5`.
         ValueError
             - If `.command` attribute is missing of the class.
         """
@@ -232,8 +262,6 @@ class Command(object):
         if checks_ is None:
             checks_=getattr(klass,'checks_',None)
         
-        check_failure_handler=getattr(klass,'check_failure_handler',None)
-        
         parser_failure_handler=getattr(klass,'parser_failure_handler',None)
         
         if (kwargs is not None) and kwargs:
@@ -261,14 +289,6 @@ class Command(object):
                 except KeyError:
                     pass
             
-            if (check_failure_handler is None):
-                check_failure_handler = kwargs.pop('check_failure_handler', None)
-            else:
-                try:
-                    del kwargs['check_failure_handler']
-                except KeyError:
-                    pass
-            
             if (parser_failure_handler is None):
                 parser_failure_handler = kwargs.pop('parser_failure_handler', None)
             else:
@@ -280,7 +300,7 @@ class Command(object):
             if kwargs:
                 raise TypeError(f'`{cls.__name__}.from_class` did not use up some kwargs: `{kwargs!r}`.')
         
-        return cls(command, name, description, aliases, category, checks_, check_failure_handler, parser_failure_handler)
+        return cls(command, name, description, aliases, category, checks_, parser_failure_handler)
     
     @classmethod
     def from_kwargs(cls, command, name, kwargs):
@@ -301,7 +321,6 @@ class Command(object):
             - aliases : `None` or (`iterable` of str`)
             - category : `None`, ``Category`` or `str`
             - checks : `None` or (`iterable` of ``_check_base``)
-            - check_failure_handler : `None` or `async-callable`
             - parser_failure_handler : `None` or `async-callable`
         
         Returns
@@ -311,31 +330,26 @@ class Command(object):
             - `aliases` were not passed as `None` or as `iterable` of `str`.
             - `category` was not given as `None, `str`, or as ``Category`` instance.
             - If `checks` was not given as `None` or as `iterable` of ``_check_base`` instances.
-            - If `check_failure_handler` or `parser_failure_handler` was not given as `None` but neither as async
-                callable or as a callable instanceable to async, or if it (or the resulted) callable accepts less or
-                more non reserved positional arguments as `5`.
         """
         if (kwargs is None) or (not kwargs):
             description = None
             aliases = None
             category = None
             checks_ = None
-            check_failure_handler = None
             parser_failure_handler = None
         else:
             description = kwargs.pop('description',None)
             aliases = kwargs.pop('aliases',None)
             category = kwargs.pop('category',None)
             checks_ = kwargs.pop('checks',None)
-            check_failure_handler = kwargs.pop('check_failure_handler',None)
             parser_failure_handler = kwargs.pop('parser_failure_handler',None)
             
             if kwargs:
                 raise TypeError(f'type `{cls.__name__}` not uses: `{kwargs!r}`.')
         
-        return cls(command, name, description, aliases, category, checks_, check_failure_handler, parser_failure_handler)
+        return cls(command, name, description, aliases, category, checks_, parser_failure_handler)
     
-    def __new__(cls, command, name, description, aliases, category, checks_, check_failure_handler, parser_failure_handler):
+    def __new__(cls, command, name, description, aliases, category, checks_, parser_failure_handler):
         """
         Creates a new ``Command`` object.
         
@@ -357,24 +371,6 @@ class Command(object):
             `None`, then the command will go under the command processer's default category.
         checks_ : `None` or (`iterable` of ``_check_base`` instances)
             Checks to deside in which circumstances the command should be called.
-        check_failure_handler : `None` or `async-callable`
-            Is ensured, when a check returns a non negative number.
-            
-            If given as an `async-callable`, then it should accept 5 arguments:
-            
-            +-----------------------+---------------+
-            | Respective name       | Type          |
-            +=======================+===============+
-            | client                | ``Client``    |
-            +-----------------------+---------------+
-            | message               | ``Message``   |
-            +-----------------------+---------------+
-            | command               | ``Command``   |
-            +-----------------------+---------------+
-            | content               | `str`         |
-            +-----------------------+---------------+
-            | fail_identificator    | `int`         |
-            +-----------------------+---------------+
         
         parser_failure_handler : `None` or `async-callable`
             Called when the command uses a parser to parse it's arguments, but it cannot parse out all the required
@@ -406,10 +402,19 @@ class Command(object):
             - `aliases` were not passed as `None` or as `iterable` of `str`.
             - `category` was not given as `None, `str`, or as ``Category`` instance.
             - If `checks_` was not given as `None` or as `iterable` of ``_check_base`` instances.
-            - If `check_failure_handler` or `parser_failure_handler` was not given as `None` but neither as async
-                callable or as a callable instanceable to async, or if it (or the resulted) callable accepts less or
-                more non reserved positional arguments as `5`.
         """
+        
+        wrappers = None
+        while isinstance(command, CommandWrapper):
+            if wrappers is None:
+                wrappers = command
+            elif type(wrappers) is list:
+                wrappers.append(command)
+            else:
+                wrappers = [wrappers, command]
+            
+            command = command.wrapped
+        
         name = check_name(command,name)
         
         # Check aliases
@@ -480,35 +485,12 @@ class Command(object):
                     f'{category_type.__name__}.')
         
         checks_processed = validate_checks(checks_)
-
-        if check_failure_handler is None:
-            if (category is not None):
-                check_failure_handler = category._check_failure_handler
-        else:
-            check_failure_handler = check_argcount_and_convert(check_failure_handler, 5,
-                '`check_failure_handler` expected 5 arguments (client, message, command, content, fail_identificator).')
         
         if (parser_failure_handler is not None):
             parser_failure_handler = check_argcount_and_convert(parser_failure_handler, 5,
                 '`parser_failure_handler` expected 5 arguments (client, message, command, content, args).')
         
-        if getattr(command,'__wrapper__',0):
-            wrapped = True
-            original = command
-            while True:
-                wrapper = command
-                command = command.__func__
-                if getattr(command,'__wrapper__',0):
-                    continue
-                break
-        else:
-            wrapped = False
-        
         command, call_setting, parser = parse(command)
-        
-        if wrapped:
-            wrapper.__func__=command
-            command=original
         
         self=object.__new__(cls)
         self.command        = command
@@ -520,8 +502,8 @@ class Command(object):
         self._call_setting  = call_setting
         self._category_hint = category_hint
         self._checks        = checks_processed
-        self._check_failure_handler = check_failure_handler
         self._parser        = parser
+        self._wrappers      = wrappers
         self._parser_failure_handler = parser_failure_handler
         
         return self
@@ -552,11 +534,6 @@ class Command(object):
             result.append(', checks=')
             result.append(repr(checks))
         
-            check_failure_handler=self._check_failure_handler
-            if (check_failure_handler is not None):
-                result.append(', check_failure_handler=')
-                result.append(repr(check_failure_handler))
-        
         result.append(', category=')
         result.append(repr(self.category))
         
@@ -575,6 +552,10 @@ class Command(object):
         result.append('>')
         
         return ''.join(result)
+    
+    def __str__(self):
+        """Returns the command's name."""
+        return self.name
     
     def _get_checks(self):
         checks = self._checks
@@ -603,50 +584,6 @@ class Command(object):
         type or element type is given.
         
         By deleting it removes the command's checks.
-        """)
-    
-    def _get_check_failure_handler(self):
-        return self._check_failure_handler
-    
-    def _set_check_failure_handler(self,check_failure_handler):
-        if (check_failure_handler is not None):
-            check_failure_handler = check_argcount_and_convert(check_failure_handler, 5,
-                '`check_failure_handler` expected 5 arguments (client, message, command, content, fail_identificator).')
-        
-        self._check_failure_handler=check_failure_handler
-    
-    def _del_check_failure_handler(self):
-        self._check_failure_handler = self.category._check_failure_handler
-    
-    check_failure_handler = property(_get_check_failure_handler, _set_check_failure_handler, _del_check_failure_handler)
-    del _get_check_failure_handler, _set_check_failure_handler, _del_check_failure_handler
-    
-    if (__new__.__doc__ is not None):
-        check_failure_handler.__doc__ = ("""
-        Get-set-del property for accessing the check failure handler of the ``Command``.
-        
-        When getting it, returns actual check failure handler of the command, what can be `None` or an
-        `async-callable`.
-        
-        When setting it, accepts `None` or an `async-callable`, what accepts the following 5 arguments:
-        +-----------------------+---------------+
-        | Respective name       | Type          |
-        +=======================+===============+
-        | client                | ``Client``    |
-        +-----------------------+---------------+
-        | message               | ``Message``   |
-        +-----------------------+---------------+
-        | command               | ``Command``   |
-        +-----------------------+---------------+
-        | content               | `str`         |
-        +-----------------------+---------------+
-        | fail_identificator    | `int`         |
-        +-----------------------+---------------+
-        
-        Note that if the given value's type is incorrect or if it accepts wrong amount of non-reserved positional
-        arguments, `TypeError` is raised.
-        
-        When deleting it removes the command's check failure handler.
         """)
     
     def _get_parser_failure_handler(self):
@@ -698,9 +635,8 @@ class Command(object):
         The command has the following run process:
         
         Calls the command's category's checks, then the command's checks. If a check passes, the next check is called,
-        till there are no checks left or till one fails. If a check fails with a specified fail identificator, then
-        command's `check_failure_handler` will be ensured if applicable, however if the default fail identificator
-        is returned, then no handler will be called.
+        till there are no checks left or till one fails. If a check fails, then it `.handler` will be ensured if
+        applicable.
         
         At the next step the call options of the command are checked, and if needed the command's parser is ensured.
         If the parser could not parse out all the required arguments, then the command's `parser_failure_handler` is
@@ -741,37 +677,63 @@ class Command(object):
             checks = category._checks
             if (checks is not None):
                 for check in checks:
-                    fail_identificator = await check(client, message)
-                    if fail_identificator == CHECK_PASSED:
+                    if await check(client, message):
                         continue
                     
-                    if fail_identificator == CHECK_FAIL_DEFAULT:
+                    handler = check.handler
+                    if (handler is None):
                         return COMMAND_CHECKS_FAILED
                     
-                    check_failure_handler=self._check_failure_handler
-                    if check_failure_handler is None:
-                        return COMMAND_CHECKS_FAILED
-                    
-                    await check_failure_handler(client, message, self, content, fail_identificator)
+                    await handler(client, message, self, check)
                     return COMMAND_CHECKS_HANDLED
         
         checks = self._checks
         if (checks is not None):
             for check in checks:
-                fail_identificator = await check(client, message)
-                if fail_identificator == CHECK_PASSED:
+                if await check(client, message):
                     continue
                 
-                if fail_identificator == CHECK_FAIL_DEFAULT:
+                handler = check.handler
+                if (handler is None):
                     return COMMAND_CHECKS_FAILED
                 
-                check_failure_handler=self._check_failure_handler
-                if check_failure_handler is None:
-                    return COMMAND_CHECKS_FAILED
-                
-                await check_failure_handler(client, message, self, content, fail_identificator)
+                await handler(client, message, self, check)
                 return COMMAND_CHECKS_HANDLED
-            
+        
+        command_wrapper = self._wrappers
+        if (command_wrapper is not None):
+            if type(command_wrapper) is list:
+                for command_wrapper in command_wrapper:
+                    gen = command_wrapper.wrapper(client, message)
+                    result = await gen.asend(None)
+                    if result:
+                        gen.aclose()
+                    else:
+                        handler = command_wrapper.handler
+                        if (handler is None):
+                            gen.aclose()
+                        else:
+                            args = []
+                            async for arg in gen:
+                                args.append(arg)
+                            await handler(client, message, self, *args)
+                        return
+            else:
+                gen = command_wrapper.wrapper(client, message)
+                result = await gen.asend(None)
+                if result:
+                    gen.aclose()
+                else:
+                    handler = command_wrapper.handler
+                    if (handler is None):
+                        gen.aclose()
+                    else:
+                        args = []
+                        async for arg in gen:
+                            args.append(arg)
+                        await handler(client, message, self, *args)
+                    return COMMAND_PARSER_FAILED
+        
         call_setting = self._call_setting
         if call_setting == COMMAND_CALL_SETTING_USE_PARSER:
             passed, args = await self._parser(client, message, content)
@@ -831,36 +793,28 @@ class Command(object):
             checks = category._checks
             if (checks is not None):
                 for check in checks:
-                    fail_identificator = await check(client, message)
-                    if fail_identificator == -2:
+                    if await check(client, message):
                         continue
                     
-                    if fail_identificator == CHECK_FAIL_DEFAULT:
+                    handler = check.handler
+                    if (handler is None):
                         return COMMAND_CHECKS_FAILED
                     
-                    check_failure_handler = self._check_failure_handler
-                    if check_failure_handler is None:
-                        return COMMAND_CHECKS_FAILED
-                    
-                    await check_failure_handler(client, message, self, content, fail_identificator)
+                    await handler(client, message, self, check)
                     return COMMAND_CHECKS_HANDLED
                     
                 
         checks = self._checks
         if (checks is not None):
             for check in checks:
-                fail_identificator = await check(client, message)
-                if fail_identificator == CHECK_PASSED:
+                if await check(client, message):
                     continue
                 
-                if fail_identificator == CHECK_FAIL_DEFAULT:
+                handler = check.handler
+                if (handler is None):
                     return COMMAND_CHECKS_FAILED
                 
-                check_failure_handler=self._check_failure_handler
-                if check_failure_handler is None:
-                    return COMMAND_CHECKS_FAILED
-                
-                await check_failure_handler(client, message, self, content, fail_identificator)
+                await handler(client, message, self, check)
                 return COMMAND_CHECKS_HANDLED
         
         return COMMAND_CHECKS_SUCCEEDED
@@ -895,8 +849,7 @@ class Command(object):
             checks = category._checks
             if (checks is not None):
                 for check in checks:
-                    fail_identificator = await check(client, message)
-                    if fail_identificator == CHECK_PASSED:
+                    if await check(client, message):
                         continue
                     
                     return COMMAND_CHECKS_FAILED
@@ -904,8 +857,7 @@ class Command(object):
         checks = self._checks
         if (checks is not None):
             for check in checks:
-                fail_identificator = await check(client, message)
-                if fail_identificator == CHECK_PASSED:
+                if await check(client, message):
                     continue
                 
                 return COMMAND_CHECKS_FAILED
@@ -923,6 +875,8 @@ class Command(object):
         message : ``Message``
             The message with what the checks will be called.
         
+        Returns
+        -------
         result : `int`
             Returns an identificator number depending how the command execution went.
             
@@ -938,8 +892,7 @@ class Command(object):
         checks = self._checks
         if (checks is not None):
             for check in checks:
-                fail_identificator = await check(client, message)
-                if fail_identificator == CHECK_PASSED:
+                if await check(client, message):
                     continue
                 
                 return COMMAND_CHECKS_FAILED
@@ -991,7 +944,16 @@ class Command(object):
     
     def __getattr__(self, name):
         """Tries to return the attribute of the command's function."""
-        return getattr(self.command, name)
+        wrappers = self._wrappers
+        if wrappers is None:
+            obj = self.command
+        else:
+            if type(wrappers) is list:
+                obj = wrappers[0]
+            else:
+                obj = wrappers
+        
+        return getattr(obj, name)
     
     def __gt__(self, other):
         """Returns whether this command's name is greater than the other's"""
@@ -1084,94 +1046,97 @@ def normalize_description(text):
     
     return '\n'.join(lines)
 
-CHECK_PASSED = -2
-CHECK_FAIL_DEFAULT = -1
-
-def validate_checks(checks_):
-    """
-    Validates the given checks.
-    
-    checks_ : `None` or (`iterable` of ``_check_base`` instances), Optional
-        Checks to define in which circumstances a command should be called.
-        
-    Returns
-    -------
-    checks_processed : `None` or `list` of ``_check_base``
-        Will never return an empty list.
-    
-    Raises
-    ------
-    TypeError
-        If `checks_` was not given as `None` or as `iterable` of ``_check_base`` instances.
-    """
-    if checks_ is None:
-        checks_processed = None
-    else:
-        checks_type = checks_.__class__
-        if hasattr(checks_type, '__iter__'):
-            checks_processed = []
-            
-            index = 1
-            for check in checks_:
-                check_type = check.__class__
-                if issubclass(check_type, checks._check_base):
-                    checks_processed.append(check)
-                    index +=1
-                    continue
-                
-                raise TypeError(f'`checks` element {index} was not given as `{checks._check_base.__name__}`, got '
-                    f'`{check_type.__name__}`.')
-            
-            if not checks_processed:
-                checks_processed=None
-        else:
-            raise TypeError(f'`checks_` should have been given as `None` or as `iterable` of '
-                f'`{checks._check_base.__name__}` instances, got {checks_type.__name__}.')
-        
-        if not checks_processed:
-            checks_processed = None
-    
-    return checks_processed
-
 @modulize
 class checks:
-    def _convert_fail_identificator(fail_identificator):
+    from ...discord.bases import instance_or_id_to_instance, instance_or_id_to_snowflake
+    from ...discord.guild import Guild
+    from ...discord.permission import Permission
+    from ...discord.role import Role
+    from ...discord.channel import ChannelBase
+    from ...discord.parsers import check_argcount_and_convert
+    
+    def validate_checks(checks_):
         """
-        Validates the given `fail_identificator`.
+        Validates the given checks.
         
-        Parameters
-        ----------
-        fail_identificator : `None` or `int` instance
-            The fail identificator to validate.
-        
+        checks_ : `None` or (`iterable` of ``_check_base`` instances), Optional
+            Checks to define in which circumstances a command should be called.
+            
         Returns
         -------
-        fail_identificator : `int`
-            Returns `1` if was given as `None`.
+        checks_processed : `None` or `list` of ``_check_base``
+            Will never return an empty list.
         
         Raises
         ------
         TypeError
-            `fail_identificator` was not given neither as `None` or `int` instance.
-        ValueError
-            `fail_identificator` was given as a negative integer.
+            If `checks_` was not given as `None` or as `iterable` of ``_check_base`` instances.
         """
-        if fail_identificator is None:
-            return 1
-        
-        fail_identificator_type = fail_identificator.__class__
-        if fail_identificator_type is int:
-            pass
-        elif issubclass(fail_identificator_type, int):
-            fail_identificator = int(fail_identificator)
+        if checks_ is None:
+            checks_processed = None
         else:
-            raise TypeError(f'`fail_identificator` should have been passed as `int` instance, got '
-                f'{fail_identificator_type.__name__}.')
+            checks_type = checks_.__class__
+            if hasattr(checks_type, '__iter__'):
+                checks_processed = []
+                
+                index = 1
+                for check in checks_:
+                    check_type = check.__class__
+                    if issubclass(check_type, _check_base):
+                        checks_processed.append(check)
+                        index +=1
+                        continue
+                    
+                    raise TypeError(f'`checks` element {index} was not given as `{_check_base.__name__}`, got '
+                        f'`{check_type.__name__}`.')
+                
+                if not checks_processed:
+                    checks_processed=None
+            else:
+                raise TypeError(f'`checks_` should have been given as `None` or as `iterable` of '
+                    f'`{_check_base.__name__}` instances, got {checks_type.__name__}.')
+            
+            if not checks_processed:
+                checks_processed = None
         
-        if fail_identificator<0:
-            raise ValueError(f'`fail_identificator` value was passed as a negative number: `{fail_identificator!r}`.')
+        return checks_processed
+    
+    def _convert_handler(handler):
+        """
+        Validates the given handler.
         
-        return fail_identificator
+        Parameters
+        ----------
+        handler : `None` or `async-callable` or instanceable to `async-callable`
+            The handler to convert.
+            
+            If the handler is `async-callable` or if it would be instanced to it, then it should accept the following
+            arguments:
+            +-------------------+---------------------------+
+            | Respective name   | Type                      |
+            +===================+===========================+
+            | client            | ``Client``                |
+            +-------------------+---------------------------+
+            | message           | ``Message``               |
+            +-------------------+---------------------------+
+            | command           | ``Command``               |
+            +-------------------+---------------------------+
+            | check             | ``_check_base`` instance  |
+            +-------------------+---------------------------+
+        
+        Returns
+        -------
+        handler : `None` or `async-callable`
+        
+        Raises
+        ------
+        TypeError
+            If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
+        """
+        if (handler is not None):
+            handler = check_argcount_and_convert(handler, 4, '`handler` expects to pass 4 arguments (client, '
+                'message, command, check).')
+        return handler
     
     def _convert_permissions(permissions):
         """
@@ -1208,29 +1173,41 @@ class checks:
         
         Attributes
         ----------
-        fail_identificator : `int`
-            Fail identificator to return when the check failed.
+        handler : `None` or `async-callable`
+            An async callable what will be called when the check fails.
         """
-        __slots__ = ('fail_identificator',)
-        def __new__(cls, fail_identificator=None):
+        __slots__ = ('handler',)
+        def __new__(cls, handler=None):
             """
             Creates a check with the given paramteres.
             
             Paramaters
             ----------
-            fail_identificator : `None` or `int`
-                An identificator to return when the check failed.
+            handler : `None` or `async-callable` or instanceable to `async-callable`
+                Will be called when the check fails.
+                
+                If the handler is `async-callable` or if it would be instanced to it, then it should accept the
+                following arguments:
+                +-------------------+---------------------------+
+                | Respective name   | Type                      |
+                +===================+===========================+
+                | client            | ``Client``                |
+                +-------------------+---------------------------+
+                | message           | ``Message``               |
+                +-------------------+---------------------------+
+                | command           | ``Command``               |
+                +-------------------+---------------------------+
+                | check             | ``_check_base`` instance  |
+                +-------------------+---------------------------+
             
             Raises
             ------
             TypeError
-                `fail_identificator` was not given neither as `None` or `int` instance.
-            ValueError
-                `fail_identificator` was given as a negative integer.
+                If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
             """
-            fail_identificator = checks._convert_fail_identificator(fail_identificator)
+            handler = _convert_handler(handler)
             self = object.__new__(cls)
-            self.fail_identificator = fail_identificator
+            self.handler = handler
             return self
         
         async def __call__(self, client, message):
@@ -1248,10 +1225,10 @@ class checks:
             
             Returns
             -------
-            identificator : `int`
-                Returns whether the check passed. If did not pass, returns the check's ``.fail_identificator``.
+            passed : `bool`
+                Whether the check passed.
             """
-            return CHECK_PASSED
+            return True
         
         def __repr__(self):
             """Returns the check's representation."""
@@ -1268,7 +1245,7 @@ class checks:
                     name=slots[index]
                     index=index+1
                     # case of `_is_async`
-                    if name.starswih('_'):
+                    if name.startswith('_'):
                         continue
                     
                     # case of `channel_id`, `guild_id`
@@ -1289,17 +1266,20 @@ class checks:
                     result.append(', ')
                     continue
             
-            fail_identificator = self.fail_identificator
-            
-            if fail_identificator != CHECK_FAIL_DEFAULT:
+            handler = self.handler
+            if (handler is not None):
                 if limit:
                     result.append(', ')
-                result.append('fail_identificator=')
-                result.append(repr(fail_identificator))
+                result.append('handler=')
+                result.append(repr(handler))
             
             result.append(')')
             
             return ''.join(result)
+        
+        if NEEDS_DUMMY_INIT:
+            def __init__(self, *args, **kwargs):
+                pass
     
     class has_role(_check_base):
         """
@@ -1307,13 +1287,13 @@ class checks:
         
         Attributes
         ----------
-        fail_identificator : `int`
-            Fail identificator to return when the check failed.
+        handler : `None` or `async-callable`
+            An async callable what will be called when the check fails.
         role : ``Role``
             The role, what the user should have.
         """
         __slots__ = ('role', )
-        def __new__(cls, role, fail_identificator=None):
+        def __new__(cls, role, handler=None):
             """
             Creates a check, what will validate whether the a received message of a client passes the given condition.
             
@@ -1321,25 +1301,38 @@ class checks:
             ----------
             role : `str`, `int` or ``Role``
                 The role what the message's author should have.
-            fail_identificator : `None` or `int`
-                An identificator to return when the check failed.
+            handler : `None` or `async-callable` or instanceable to `async-callable`
+                Will be called when the check fails.
+                
+                If the handler is `async-callable` or if it would be instanced to it, then it should accept the
+                following arguments:
+                +-------------------+---------------------------+
+                | Respective name   | Type                      |
+                +===================+===========================+
+                | client            | ``Client``                |
+                +-------------------+---------------------------+
+                | message           | ``Message``               |
+                +-------------------+---------------------------+
+                | command           | ``Command``               |
+                +-------------------+---------------------------+
+                | check             | ``_check_base`` instance  |
+                +-------------------+---------------------------+
             
             Raises
             ------
             TypeError
                 - If `role` was not given neither as ``Role``, `str` or `int` instance.
-                - `fail_identificator` was not given neither as `None` or `int` instance.
+                - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
             ValueError
-                - If `role` was given as `str` or as `int` instance, but not as a valid snowflake, so ``Role``
+                If `role` was given as `str` or as `int` instance, but not as a valid snowflake, so ``Role``
                     instance cannot be precreated with it.
-                - `fail_identificator` was given as a negative integer.
             """
             role = instance_or_id_to_instance(role, Role)
-            fail_identificator = checks._convert_fail_identificator(fail_identificator)
+            handler = _convert_handler(handler)
             
             self = object.__new__(cls)
             self.role = role
-            self.fail_identificator = fail_identificator
+            self.handler = handler
             return self
         
         async def __call__(self, client, message):
@@ -1355,13 +1348,13 @@ class checks:
             
             Returns
             -------
-            identificator : `int`
-                Returns whether the check passed. If did not pass, returns the check's ``.fail_identificator``.
+            passed : `bool`
+                Whether the check passed.
             """
             if message.author.has_role(self.role):
-                return CHECK_PASSED
+                return True
             
-            return self.fail_identificator
+            return False
     
     class owner_or_has_role(has_role):
         """
@@ -1369,8 +1362,8 @@ class checks:
         
         Attributes
         ----------
-        fail_identificator : `int`
-            Fail identificator to return when the check failed.
+        handler : `None` or `async-callable`
+            An async callable what will be called when the check fails.
         role : ``Role``
             The role, what the user should have.
         """
@@ -1387,17 +1380,17 @@ class checks:
             
             Returns
             -------
-            identificator : `int`
-                Returns whether the check passed. If did not pass, returns the check's ``.fail_identificator``.
+            passed : `bool`
+                Whether the check passed.
             """
             user = message.author
             if user.has_role(self.role):
-                return CHECK_PASSED
+                return True
             
             if client.is_owner(user):
-                return CHECK_PASSED
+                return True
             
-            return self.fail_identificator
+            return False
     
     class has_any_role(_check_base):
         """
@@ -1405,13 +1398,13 @@ class checks:
         
         Attributes
         ----------
-        fail_identificator : `int`
-            Fail identificator to return when the check failed.
+        handler : `None` or `async-callable`
+            An async callable what will be called when the check fails.
         roles : `set` of ``Role``
             The roles from what the user should have at least 1.
         """
         __slots__ = ('roles', )
-        def __new__(cls, roles, fail_identificator=None):
+        def __new__(cls, roles, handler=None):
             """
             Creates a check, what will validate whether the a received message of a client passes the given condition.
             
@@ -1419,19 +1412,32 @@ class checks:
             ----------
             roles : `iterable` of (`str`, `int` or ``Role``)
                 Role from what the message's author should have at least 1.
-            fail_identificator : `None` or `int`
-                An identificator to return when the check failed.
+            handler : `None` or `async-callable` or instanceable to `async-callable`
+                The handler to convert.
+                
+                If the handler is `async-callable` or if it would be instanced to it, then it should accept the
+                following arguments:
+                +-------------------+---------------------------+
+                | Respective name   | Type                      |
+                +===================+===========================+
+                | client            | ``Client``                |
+                +-------------------+---------------------------+
+                | message           | ``Message``               |
+                +-------------------+---------------------------+
+                | command           | ``Command``               |
+                +-------------------+---------------------------+
+                | check             | ``_check_base`` instance  |
+                +-------------------+---------------------------+
             
             Raises
             ------
             TypeError
                 - If `roles` was not given as an `iterable`.
                 - If an element of `roles` was not given neither as ``Role``, `str` or `int` instance.
-                - `fail_identificator` was not given neither as `None` or `int` instance.
+                - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
             ValueError
-                - If an element of `roles` was given as `str` or as `int` instance, but not as a valid snowflake, so
+                If an element of `roles` was given as `str` or as `int` instance, but not as a valid snowflake, so
                     ``Role`` instance cannot be precreated with it.
-                - `fail_identificator` was given as a negative integer.
             """
             roles_type = roles.__class__
             if not hasattr(roles_type,'__iter__'):
@@ -1445,7 +1451,7 @@ class checks:
             
             self = object.__new__(cls)
             self.roles = roles_processed
-            self.fail_identificator = checks._convert_fail_identificator(fail_identificator)
+            self.handler = _convert_handler(handler)
             return self
         
         async def __call__(self, client, message):
@@ -1461,14 +1467,14 @@ class checks:
             
             Returns
             -------
-            identificator : `int`
-                Returns whether the check passed. If did not pass, returns the check's ``.fail_identificator``.
+            passed : `bool`
+                Whether the check passed.
             """
             user=message.author
             if user.has_role(self.roles):
-                return CHECK_PASSED
+                return True
             
-            return self.fail_identificator
+            return False
     
     class owner_or_has_any_role(has_any_role):
         """
@@ -1476,8 +1482,8 @@ class checks:
         
         Attributes
         ----------
-        fail_identificator : `int`
-            Fail identificator to return when the check failed.
+        handler : `None` or `async-callable`
+            An async callable what will be called when the check fails.
         roles : `set` of ``Role``
             The roles from what the user should have at least 1.
         """
@@ -1494,18 +1500,18 @@ class checks:
             
             Returns
             -------
-            identificator : `int`
-                Returns whether the check passed. If did not pass, returns the check's ``.fail_identificator``.
+            passed : `bool`
+                Whether the check passed.
             """
             user=message.author
             for role in self.roles:
                 if user.has_role(role):
-                    return CHECK_PASSED
+                    return True
             
             if client.is_owner(user):
-                return CHECK_PASSED
+                return True
             
-            return self.fail_identificator
+            return False
     
     class guild_only(_check_base):
         """
@@ -1513,8 +1519,8 @@ class checks:
         
         Attributes
         ----------
-        fail_identificator : `int`
-            Fail identificator to return when the check failed.
+        handler : `None` or `async-callable`
+            An async callable what will be called when the check fails.
         """
         __slots__ = ()
         
@@ -1531,13 +1537,13 @@ class checks:
             
             Returns
             -------
-            identificator : `int`
-                Returns whether the check passed. If did not pass, returns the check's ``.fail_identificator``.
+            passed : `bool`
+                Whether the check passed.
             """
             if (message.guild is not None):
-                return CHECK_PASSED
+                return True
             
-            return self.fail_identificator
+            return False
     
     class private_only(_check_base):
         """
@@ -1545,8 +1551,8 @@ class checks:
         
         Attributes
         ----------
-        fail_identificator : `int`
-            Fail identificator to return when the check failed.
+        handler : `None` or `async-callable`
+            An async callable what will be called when the check fails.
         """
         __slots__ = ()
         async def __call__(self, client, message):
@@ -1562,13 +1568,13 @@ class checks:
             
             Returns
             -------
-            identificator : `int`
-                Returns whether the check passed. If did not pass, returns the check's ``.fail_identificator``.
+            passed : `bool`
+                Whether the check passed.
             """
             if (message.guild is None):
-                return CHECK_PASSED
+                return True
             
-            return self.fail_identificator
+            return False
     
     class owner_only(_check_base):
         """
@@ -1576,8 +1582,8 @@ class checks:
         
         Attributes
         ----------
-        fail_identificator : `int`
-            Fail identificator to return when the check failed.
+        handler : `None` or `async-callable`
+            An async callable what will be called when the check fails.
         """
         __slots__ = ()
         async def __call__(self, client, message):
@@ -1593,13 +1599,13 @@ class checks:
             
             Returns
             -------
-            identificator : `int`
-                Returns whether the check passed. If did not pass, returns the check's ``.fail_identificator``.
+            passed : `bool`
+                Whether the check passed.
             """
             if client.is_owner(message.author):
-                return CHECK_PASSED
+                return True
             
-            return self.fail_identificator
+            return False
     
     class guild_owner(_check_base):
         """
@@ -1607,8 +1613,8 @@ class checks:
         
         Attributes
         ----------
-        fail_identificator : `int`
-            Fail identificator to return when the check failed.
+        handler : `None` or `async-callable`
+            An async callable what will be called when the check fails.
         """
         __slots__ = ()
         async def __call__(self, client, message):
@@ -1624,17 +1630,17 @@ class checks:
             
             Returns
             -------
-            identificator : `int`
-                Returns whether the check passed. If did not pass, returns the check's ``.fail_identificator``.
+            passed : `bool`
+                Whether the check passed.
             """
             guild = message.channel.guild
             if guild is None:
-                return self.fail_identificator
+                return False
             
             if guild.owner==message.author:
-                return CHECK_PASSED
+                return True
             
-            return self.fail_identificator
+            return False
     
     class owner_or_guild_owner(guild_owner):
         """
@@ -1642,8 +1648,8 @@ class checks:
         
         Attributes
         ----------
-        fail_identificator : `int`
-            Fail identificator to return when the check failed.
+        handler : `None` or `async-callable`
+            An async callable what will be called when the check fails.
         """
         __slots__ = ()
         async def __call__(self, client, message):
@@ -1659,21 +1665,21 @@ class checks:
             
             Returns
             -------
-            identificator : `int`
-                Returns whether the check passed. If did not pass, returns the check's ``.fail_identificator``.
+            passed : `bool`
+                Whether the check passed.
             """
             guild = message.channel.guild
             if guild is None:
-                return self.fail_identificator
+                return False
             
             user = message.author
             if guild.owner==user:
-                return CHECK_PASSED
+                return True
             
             if client.is_owner(user):
-                return CHECK_PASSED
+                return True
             
-            return self.fail_identificator
+            return False
     
     class has_permissions(_check_base):
         """
@@ -1681,13 +1687,13 @@ class checks:
         
         Attributes
         ----------
-        fail_identificator : `int`
-            Fail identificator to return when the check failed.
+        handler : `None` or `async-callable`
+            An async callable what will be called when the check fails.
         permissions : ``Permission``
             The permission what the message's author should have at message's channel.
         """
         __slots__ = ('permissions', )
-        def __new__(cls, permissions, fail_identificator=None):
+        def __new__(cls, permissions, handler=None):
             """
             Creates a check, what will validate whether the a received message of a client passes the given condition.
             
@@ -1695,23 +1701,35 @@ class checks:
             ----------
             permissions : ``Permission`` or `in` instance
                 The permisison, what the message's author should have at the message's channel.
-            fail_identificator : `None` or `int`
-                An identificator to return when the check failed.
+            handler : `None` or `async-callable` or instanceable to `async-callable`
+                The handler to convert.
+                
+                If the handler is `async-callable` or if it would be instanced to it, then it should accept the
+                following arguments:
+                +-------------------+---------------------------+
+                | Respective name   | Type                      |
+                +===================+===========================+
+                | client            | ``Client``                |
+                +-------------------+---------------------------+
+                | message           | ``Message``               |
+                +-------------------+---------------------------+
+                | command           | ``Command``               |
+                +-------------------+---------------------------+
+                | check             | ``_check_base`` instance  |
+                +-------------------+---------------------------+
             
             Raises
             ------
             TypeError
                 - `permissions` was not given as `int` instance.
-                - `fail_identificator` was not given neither as `None` or `int` instance.
-            ValueError
-                `fail_identificator` was given as a negative integer.
+                - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
             """
-            permissions = checks._convert_permissions(permissions)
-            fail_identificator = checks._convert_fail_identificator(fail_identificator)
+            permissions = _convert_permissions(permissions)
+            handler = _convert_handler(handler)
             
             self = object.__new__(cls)
             self.permissions = permissions
-            self.fail_identificator = fail_identificator
+            self.handler = handler
             return self
         
         async def __call__(self, client, message):
@@ -1727,13 +1745,13 @@ class checks:
             
             Returns
             -------
-            identificator : `int`
-                Returns whether the check passed. If did not pass, returns the check's ``.fail_identificator``.
+            passed : `bool`
+                Whether the check passed.
             """
             if message.channel.permissions_for(message.author)>=self.permissions:
-                return CHECK_PASSED
+                return True
             
-            return self.fail_identificator
+            return False
     
     class owner_or_has_permissions(has_permissions):
         """
@@ -1742,8 +1760,8 @@ class checks:
         
         Attributes
         ----------
-        fail_identificator : `int`
-            Fail identificator to return when the check failed.
+        handler : `None` or `async-callable`
+            An async callable what will be called when the check fails.
         permissions : ``Permission``
             The permission what the message's author should have at message's channel.
         """
@@ -1760,17 +1778,17 @@ class checks:
             
             Returns
             -------
-            identificator : `int`
-                Returns whether the check passed. If did not pass, returns the check's ``.fail_identificator``.
+            passed : `bool`
+                Whether the check passed.
             """
-            user=message.author
+            user = message.author
             if message.channel.permissions_for(user)>=self.permissions:
-                return CHECK_PASSED
+                return True
             
             if client.is_owner(user):
-                return CHECK_PASSED
+                return True
             
-            return self.fail_identificator
+            return False
     
     class has_guild_permissions(_check_base):
         """
@@ -1778,13 +1796,13 @@ class checks:
         
         Attributes
         ----------
-        fail_identificator : `int`
-            Fail identificator to return when the check failed.
+        handler : `None` or `async-callable`
+            An async callable what will be called when the check fails.
         permissions : ``Permission``
             The permission what the message's author should have at message's guild.
         """
         __slots__ = ('permissions', )
-        def __new__(cls, permissions, fail_identificator=None):
+        def __new__(cls, permissions, handler=None):
             """
             Creates a check, what will validate whether the a received message of a client passes the given condition.
             
@@ -1792,23 +1810,35 @@ class checks:
             ----------
             permissions : ``Permission`` or `in` instance
                 The permisison, what the message's author should have at the message's guild.
-            fail_identificator : `None` or `int`
-                An identificator to return when the check failed.
+            handler : `None` or `async-callable` or instanceable to `async-callable`
+                The handler to convert.
+                
+                If the handler is `async-callable` or if it would be instanced to it, then it should accept the
+                following arguments:
+                +-------------------+---------------------------+
+                | Respective name   | Type                      |
+                +===================+===========================+
+                | client            | ``Client``                |
+                +-------------------+---------------------------+
+                | message           | ``Message``               |
+                +-------------------+---------------------------+
+                | command           | ``Command``               |
+                +-------------------+---------------------------+
+                | check             | ``_check_base`` instance  |
+                +-------------------+---------------------------+
             
             Raises
             ------
             TypeError
                 - `permissions` was not given as `int` instance.
-                - `fail_identificator` was not given neither as `None` or `int` instance.
-            ValueError
-                `fail_identificator` was given as a negative integer.
+                - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
             """
-            permissions = checks._convert_permissions(permissions)
-            fail_identificator = checks._convert_fail_identificator(fail_identificator)
+            permissions = _convert_permissions(permissions)
+            handler = _convert_handler(handler)
             
             self = object.__new__(cls)
             self.permissions = permissions
-            self.fail_identificator = fail_identificator
+            self.handler = handler
             return self
         
         async def __call__(self, client, message):
@@ -1824,17 +1854,17 @@ class checks:
             
             Returns
             -------
-            identificator : `int`
-                Returns whether the check passed. If did not pass, returns the check's ``.fail_identificator``.
+            passed : `bool`
+                Whether the check passed.
             """
             guild = message.channel.guild
             if guild is None:
-                return self.fail_identificator
+                return False
             
             if guild.permissions_for(message.author)>=self.permissions:
-                return CHECK_PASSED
+                return True
             
-            return self.fail_identificator
+            return False
     
     class owner_or_has_guild_permissions(has_permissions):
         """
@@ -1843,8 +1873,8 @@ class checks:
         
         Attributes
         ----------
-        fail_identificator : `int`
-            Fail identificator to return when the check failed.
+        handler : `None` or `async-callable`
+            An async callable what will be called when the check fails.
         permissions : ``Permission``
             The permission what the message's author should have at message's guild.
         """
@@ -1862,22 +1892,22 @@ class checks:
             
             Returns
             -------
-            identificator : `int`
-                Returns whether the check passed. If did not pass, returns the check's ``.fail_identificator``.
+            passed : `bool`
+                Whether the check passed.
             """
             guild = message.channel.guild
             if guild is None:
-                return self.fail_identificator
+                return False
             
-            if guild.permissions_for(message.author)>=self.permissions:
-                return 0
+            user = message.author
             
-            return self.fail_identificator
+            if guild.permissions_for(user)>=self.permissions:
+                return True
             
             if client.is_owner(user):
-                return CHECK_PASSED
+                return True
             
-            return self.fail_identificator
+            return False
     
     class client_has_permissions(_check_base):
         """
@@ -1885,13 +1915,13 @@ class checks:
         
         Attributes
         ----------
-        fail_identificator : `int`
-            Fail identificator to return when the check failed.
+        handler : `None` or `async-callable`
+            An async callable what will be called when the check fails.
         permissions : ``Permission``
             The permission what the client should have at message's channel.
         """
         __slots__ = ('permissions', )
-        def __new__(cls, permissions, fail_identificator=None):
+        def __new__(cls, permissions, handler=None):
             """
             Creates a check, what will validate whether the a received message of a client passes the given condition.
             
@@ -1899,23 +1929,35 @@ class checks:
             ----------
             permissions : ``Permission`` or `in` instance
                 The permisison, what the client should have at the message's channel.
-            fail_identificator : `None` or `int`
-                An identificator to return when the check failed.
+            handler : `None` or `async-callable` or instanceable to `async-callable`
+                The handler to convert.
+                
+                If the handler is `async-callable` or if it would be instanced to it, then it should accept the
+                following arguments:
+                +-------------------+---------------------------+
+                | Respective name   | Type                      |
+                +===================+===========================+
+                | client            | ``Client``                |
+                +-------------------+---------------------------+
+                | message           | ``Message``               |
+                +-------------------+---------------------------+
+                | command           | ``Command``               |
+                +-------------------+---------------------------+
+                | check             | ``_check_base`` instance  |
+                +-------------------+---------------------------+
             
             Raises
             ------
             TypeError
                 - `permissions` was not given as `int` instance.
-                - `fail_identificator` was not given neither as `None` or `int` instance.
-            ValueError
-                `fail_identificator` was given as a negative integer.
+                - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
             """
-            permissions = checks._convert_permissions(permissions)
-            fail_identificator = checks._convert_fail_identificator(fail_identificator)
+            permissions = _convert_permissions(permissions)
+            handler = _convert_handler(handler)
             
             self = object.__new__(cls)
             self.permissions = permissions
-            self.fail_identificator = fail_identificator
+            self.handler = handler
             return self
         
         async def __call__(self, client, message):
@@ -1931,13 +1973,13 @@ class checks:
             
             Returns
             -------
-            identificator : `int`
-                Returns whether the check passed. If did not pass, returns the check's ``.fail_identificator``.
+            passed : `bool`
+                Whether the check passed.
             """
             if message.channel.cached_permissions_for(client)>=self.permissions:
-                return CHECK_PASSED
+                return True
             
-            return self.fail_identificator
+            return False
     
     class client_has_guild_permissions(_check_base):
         """
@@ -1945,13 +1987,13 @@ class checks:
         
         Attributes
         ----------
-        fail_identificator : `int`
-            Fail identificator to return when the check failed.
+        handler : `None` or `async-callable`
+            An async callable what will be called when the check fails.
         permissions : ``Permission``
             The permission what the client should have at message's guild.
         """
         __slots__ = ('permissions', )
-        def __new__(cls, permissions, fail_identificator=None):
+        def __new__(cls, permissions, handler=None):
             """
             Creates a check, what will validate whether the a received message of a client passes the given condition.
             
@@ -1959,23 +2001,35 @@ class checks:
             ----------
             permissions : ``Permission`` or `in` instance
                 The permisison, what the client should have at the message's guild.
-            fail_identificator : `None` or `int`
-                An identificator to return when the check failed.
+            handler : `None` or `async-callable` or instanceable to `async-callable`
+                The handler to convert.
+                
+                If the handler is `async-callable` or if it would be instanced to it, then it should accept the
+                following arguments:
+                +-------------------+---------------------------+
+                | Respective name   | Type                      |
+                +===================+===========================+
+                | client            | ``Client``                |
+                +-------------------+---------------------------+
+                | message           | ``Message``               |
+                +-------------------+---------------------------+
+                | command           | ``Command``               |
+                +-------------------+---------------------------+
+                | check             | ``_check_base`` instance  |
+                +-------------------+---------------------------+
             
             Raises
             ------
             TypeError
                 - `permissions` was not given as `int` instance.
-                - `fail_identificator` was not given neither as `None` or `int` instance.
-            ValueError
-                `fail_identificator` was given as a negative integer.
+                - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
             """
-            permissions = checks._convert_permissions(permissions)
-            fail_identificator = checks._convert_fail_identificator(fail_identificator)
+            permissions = _convert_permissions(permissions)
+            handler = _convert_handler(handler)
             
             self = object.__new__(cls)
             self.permissions = permissions
-            self.fail_identificator = fail_identificator
+            self.handler = handler
             return self
         
         async def __call__(self, client, message):
@@ -1991,17 +2045,17 @@ class checks:
             
             Returns
             -------
-            identificator : `int`
-                Returns whether the check passed. If did not pass, returns the check's ``.fail_identificator``.
+            passed : `bool`
+                Whether the check passed.
             """
             guild = message.channel.guild
             if guild is None:
-                return self.fail_identificator
+                return False
             
             if guild.cached_permissions_for(client)>=self.permissions:
-                return CHECK_PASSED
+                return True
             
-            return self.fail_identificator
+            return False
     
     class is_guild(_check_base):
         """
@@ -2009,13 +2063,13 @@ class checks:
         
         Attributes
         ----------
-        fail_identificator : `int`
-            Fail identificator to return when the check failed.
+        handler : `None` or `async-callable`
+            An async callable what will be called when the check fails.
         guild_id : `int`
             The respective guild's id.
         """
         __slots__ = ('guild_id', )
-        def __new__(cls, guild, fail_identificator=None):
+        def __new__(cls, guild, handler=None):
             """
             Creates a check, what will validate whether the a received message of a client passes the given condition.
             
@@ -2023,24 +2077,37 @@ class checks:
             ----------
             guild : `str`, `int` or ``Guild``
                 The guild where the message should be sent.
-            fail_identificator : `None` or `int`
-                An identificator to return when the check failed.
+            handler : `None` or `async-callable` or instanceable to `async-callable`
+                The handler to convert.
+                
+                If the handler is `async-callable` or if it would be instanced to it, then it should accept the
+                following arguments:
+                +-------------------+---------------------------+
+                | Respective name   | Type                      |
+                +===================+===========================+
+                | client            | ``Client``                |
+                +-------------------+---------------------------+
+                | message           | ``Message``               |
+                +-------------------+---------------------------+
+                | command           | ``Command``               |
+                +-------------------+---------------------------+
+                | check             | ``_check_base`` instance  |
+                +-------------------+---------------------------+
             
             Raises
             ------
             TypeError
                 - If `guild` was not given neither as ``Guild``, `str` or `int` instance.
-                - `fail_identificator` was not given neither as `None` or `int` instance.
+                - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
             ValueError
-                - If `guild` was given as `str` or as `int` instance, but not as a valid snowflake.
-                - `fail_identificator` was given as a negative integer.
+                If `guild` was given as `str` or as `int` instance, but not as a valid snowflake.
             """
             guild_id = instance_or_id_to_snowflake(guild, Guild)
-            fail_identificator = checks._convert_fail_identificator(fail_identificator)
+            handler = _convert_handler(handler)
             
             self = object.__new__(cls)
             self.guild_id = guild_id
-            self.fail_identificator = fail_identificator
+            self.handler = handler
             return self
         
         async def __call__(self, client, message):
@@ -2056,17 +2123,17 @@ class checks:
             
             Returns
             -------
-            identificator : `int`
-                Returns whether the check passed. If did not pass, returns the check's ``.fail_identificator``.
+            passed : `bool`
+                Whether the check passed.
             """
             guild = message.channel.guild
             if guild is None:
-                return self.fail_identificator
+                return False
             
             if (guild.id==self.guild_id):
-                return CHECK_PASSED
+                return True
             
-            return self.fail_identificator
+            return False
         
     class is_any_guild(_check_base):
         """
@@ -2074,13 +2141,13 @@ class checks:
         
         Attributes
         ----------
-        fail_identificator : `int`
-            Fail identificator to return when the check failed.
+        handler : `None` or `async-callable`
+            An async callable what will be called when the check fails.
         guild_ids : `set of `int`
             The respective guilds' ids.
         """
         __slots__ = ('guild_ids', )
-        def __new__(cls, guilds, fail_identificator=None):
+        def __new__(cls, guilds, handler=None):
             """
             Creates a check, what will validate whether the a received message of a client passes the given condition.
             
@@ -2088,18 +2155,31 @@ class checks:
             ----------
             guilds : `iterable` of (`str`, `int` or ``Guild``)
                 Guilds to where the message should be sent.
-            fail_identificator : `None` or `int`
-                An identificator to return when the check failed.
+            handler : `None` or `async-callable` or instanceable to `async-callable`
+                The handler to convert.
+                
+                If the handler is `async-callable` or if it would be instanced to it, then it should accept the
+                following arguments:
+                +-------------------+---------------------------+
+                | Respective name   | Type                      |
+                +===================+===========================+
+                | client            | ``Client``                |
+                +-------------------+---------------------------+
+                | message           | ``Message``               |
+                +-------------------+---------------------------+
+                | command           | ``Command``               |
+                +-------------------+---------------------------+
+                | check             | ``_check_base`` instance  |
+                +-------------------+---------------------------+
             
             Raises
             ------
             TypeError
                 - If `guilds` was not given as an `iterable`.
                 - If an element of `guilds` was not given neither as ``Guild``, `str` or `int` instance.
-                - `fail_identificator` was not given neither as `None` or `int` instance.
+                - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
             ValueError
-                - If an element of `guilds` was given as `str` or as `int` instance, but not as a valid snowflake.
-                - `fail_identificator` was given as a negative integer.
+                If an element of `guilds` was given as `str` or as `int` instance, but not as a valid snowflake.
             """
             guild_type = guilds.__class__
             if not hasattr(guild_type,'__iter__'):
@@ -2111,11 +2191,11 @@ class checks:
                 guild_id = instance_or_id_to_snowflake(guild, Guild)
                 guild_ids_processed.add(guild_id)
             
-            fail_identificator = checks._convert_fail_identificator(fail_identificator)
+            handler = _convert_handler(handler)
             
             self = object.__new__(cls)
             self.guild_ids = guild_ids_processed
-            self.fail_identificator = fail_identificator
+            self.handler = handler
             return self
         
         async def __call__(self, client, message):
@@ -2131,17 +2211,17 @@ class checks:
             
             Returns
             -------
-            identificator : `int`
-                Returns whether the check passed. If did not pass, returns the check's ``.fail_identificator``.
+            passed : `bool`
+                Whether the check passed.
             """
             guild = message.channel.guild
             if guild is None:
-                return self.fail_identificator
+                return False
             
             if (guild.id in self.guild_ids):
-                return CHECK_PASSED
+                return True
             
-            return self.fail_identificator
+            return False
     
     class custom(_check_base):
         """
@@ -2149,13 +2229,13 @@ class checks:
         
         Attributes
         ----------
-        fail_identificator : `int`
-            Fail identificator to return when the check failed.
+        handler : `None` or `async-callable`
+            An async callable what will be called when the check fails.
         function : `callable`
             The custom check's function.
         """
         __slots__ = ('_is_async', 'function')
-        def __new__(cls, function, fail_identificator=None):
+        def __new__(cls, function, handler=None):
             """
             Creates a check, what will validate whether the a received message of a client passes the given condition.
             
@@ -2163,17 +2243,29 @@ class checks:
             ----------
             function : `callable`
                 The custom check what should pass.
-            fail_identificator : `None` or `int`
-                An identificator to return when the check failed.
+            handler : `None` or `async-callable` or instanceable to `async-callable`
+                The handler to convert.
+                
+                If the handler is `async-callable` or if it would be instanced to it, then it should accept the
+                following arguments:
+                +-------------------+---------------------------+
+                | Respective name   | Type                      |
+                +===================+===========================+
+                | client            | ``Client``                |
+                +-------------------+---------------------------+
+                | message           | ``Message``               |
+                +-------------------+---------------------------+
+                | command           | ``Command``               |
+                +-------------------+---------------------------+
+                | check             | ``_check_base`` instance  |
+                +-------------------+---------------------------+
             
             Raises
             ------
             TypeError
                 - If `function` was not given as an `callable`.
                 - `function` accepts more or less non reserved positional non default arguments.
-                - `fail_identificator` was not given neither as `None` or `int` instance.
-            ValueError
-                - `fail_identificator` was given as a negative integer.
+                - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
             
             Notes
             -----
@@ -2186,12 +2278,12 @@ class checks:
                     f'non default arguments, meanwhile it accepts `{non_reserved_positional_argument_count}`.')
             
             is_async = analyzer.is_async()
-            fail_identificator = checks._convert_fail_identificator(fail_identificator)
+            handler = _convert_handler(handler)
             
             self = object.__new__(cls)
             self.function = function
             self._is_async = is_async
-            self.fail_identificator = fail_identificator
+            self.handler = handler
             return self
         
         async def __call__(self, client, message):
@@ -2207,8 +2299,8 @@ class checks:
             
             Returns
             -------
-            identificator : `int`
-                Returns whether the check passed. If did not pass, returns the check's ``.fail_identificator``.
+            passed : `bool`
+                Whether the check passed.
             """
             try:
                 result = self.function(client, message)
@@ -2216,15 +2308,15 @@ class checks:
                     result = await result
             except BaseException as err:
                 Task(client.events.error(client,repr(self),err), KOKORO)
-                return self.fail_identificator
+                return False
             
             if result is None:
-                return self.fail_identificator
+                return False
             
             if isinstance(result, int) and result:
-                return CHECK_PASSED
+                return True
             
-            return self.fail_identificator
+            return False
     
     class is_channel(_check_base):
         """
@@ -2232,13 +2324,13 @@ class checks:
         
         Attributes
         ----------
-        fail_identificator : `int`
-            Fail identificator to return when the check failed.
+        handler : `None` or `async-callable`
+            An async callable what will be called when the check fails.
         channel_id : `int`
             The respective channel's id.
         """
         __slots__ = ('channel_id', )
-        def __new__(cls, channel, fail_identificator=None):
+        def __new__(cls, channel, handler=None):
             """
             Creates a check, what will validate whether the a received message of a client passes the given condition.
             
@@ -2246,24 +2338,37 @@ class checks:
             ----------
             channel : `str`, `int` or ``ChannelBase``
                 The channel where the message should be sent.
-            fail_identificator : `None` or `int`
-                An identificator to return when the check failed.
+            handler : `None` or `async-callable` or instanceable to `async-callable`
+                The handler to convert.
+                
+                If the handler is `async-callable` or if it would be instanced to it, then it should accept the
+                following arguments:
+                +-------------------+---------------------------+
+                | Respective name   | Type                      |
+                +===================+===========================+
+                | client            | ``Client``                |
+                +-------------------+---------------------------+
+                | message           | ``Message``               |
+                +-------------------+---------------------------+
+                | command           | ``Command``               |
+                +-------------------+---------------------------+
+                | check             | ``_check_base`` instance  |
+                +-------------------+---------------------------+
             
             Raises
             ------
             TypeError
                 - If `channel` was not given neither as ``ChannelBase``, `str` or `int` instance.
-                - `fail_identificator` was not given neither as `None` or `int` instance.
+                - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
             ValueError
-                - If `channel` was given as `str` or as `int` instance, but not as a valid snowflake.
-                - `fail_identificator` was given as a negative integer.
+                If `channel` was given as `str` or as `int` instance, but not as a valid snowflake.
             """
             channel_id = instance_or_id_to_snowflake(channel, ChannelBase)
-            fail_identificator = checks._convert_fail_identificator(fail_identificator)
+            handler = _convert_handler(handler)
             
             self = object.__new__(cls)
             self.channel_id = channel_id
-            self.fail_identificator = fail_identificator
+            self.handler = handler
             return self
         
         async def __call__(self, client, message):
@@ -2279,13 +2384,13 @@ class checks:
             
             Returns
             -------
-            identificator : `int`
-                Returns whether the check passed. If did not pass, returns the check's ``.fail_identificator``.
+            passed : `bool`
+                Whether the check passed.
             """
             if (message.channel.id==self.channel_id):
-                return CHECK_PASSED
+                return True
             
-            return self.fail_identificator
+            return False
         
     class is_any_channel(_check_base):
         """
@@ -2293,13 +2398,13 @@ class checks:
         
         Attributes
         ----------
-        fail_identificator : `int`
-            Fail identificator to return when the check failed.
+        handler : `None` or `async-callable`
+            An async callable what will be called when the check fails.
         channel_ids : `set of `int`
             The respective channels' ids.
         """
         __slots__ = ('channel_ids', )
-        def __new__(cls, channels, fail_identificator=None):
+        def __new__(cls, channels, handler=None):
             """
             Creates a check, what will validate whether the a received message of a client passes the given condition.
             
@@ -2307,18 +2412,31 @@ class checks:
             ----------
             channels : `iterable` of (`str`, `int` or ``ChannelBase``)
                 Channels to where the message should be sent.
-            fail_identificator : `None` or `int`
-                An identificator to return when the check failed.
+            handler : `None` or `async-callable` or instanceable to `async-callable`
+                The handler to convert.
+                
+                If the handler is `async-callable` or if it would be instanced to it, then it should accept the
+                following arguments:
+                +-------------------+---------------------------+
+                | Respective name   | Type                      |
+                +===================+===========================+
+                | client            | ``Client``                |
+                +-------------------+---------------------------+
+                | message           | ``Message``               |
+                +-------------------+---------------------------+
+                | command           | ``Command``               |
+                +-------------------+---------------------------+
+                | check             | ``_check_base`` instance  |
+                +-------------------+---------------------------+
             
             Raises
             ------
             TypeError
                 - If `channels` was not given as an `iterable`.
                 - If an element of `channels` was not given neither as ``ChannelBase``, `str` or `int` instance.
-                - `fail_identificator` was not given neither as `None` or `int` instance.
+                - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
             ValueError
-                - If an element of `channels` was given as `str` or as `int` instance, but not as a valid snowflake.
-                - `fail_identificator` was given as a negative integer.
+                If an element of `channels` was given as `str` or as `int` instance, but not as a valid snowflake.
             """
             channels_type = channels.__class__
             if not hasattr(channels_type,'__iter__'):
@@ -2330,11 +2448,11 @@ class checks:
                 channel_id = instance_or_id_to_snowflake(channel, ChannelBase)
                 channel_ids_processed.add(channel_id)
             
-            fail_identificator = checks._convert_fail_identificator(fail_identificator)
+            handler = _convert_handler(handler)
             
             self = object.__new__(cls)
             self.channel_ids = channel_ids_processed
-            self.fail_identificator = fail_identificator
+            self.handler = handler
             return self
         
         async def __call__(self, client, message):
@@ -2350,13 +2468,15 @@ class checks:
             
             Returns
             -------
-            identificator : `int`
-                Returns whether the check passed. If did not pass, returns the check's ``.fail_identificator``.
+            passed : `bool`
+                Whether the check passed.
             """
             if (message.channel.id in self.channel_ids):
-                return CHECK_PASSED
+                return True
             
-            return self.fail_identificator
+            return False
+
+from .command.checks import validate_checks
 
 class Category(object):
     """
@@ -2367,8 +2487,6 @@ class Category(object):
     
     Attributes
     ----------
-    _check_failure_handler : `Any`
-        The internal slot used by the ``.check_failure_handler`` property. Defaults to `None`.
     _checks : `None` or (`list` of ``_check_base`` instances)
         The internal slot used by the ``.checks`` property. Defaults to `None`.
     commands : `sortedist` of ``Command``
@@ -2378,9 +2496,9 @@ class Category(object):
     name : `None` or `str`
         The name of the category. Only a command processer's default category can have it's name as `None`.
     """
-    __slots__ = ('_check_failure_handler', '_checks', 'commands', 'description', 'name', )
+    __slots__ = ('_checks', 'commands', 'description', 'name', )
     
-    def __new__(cls, name, checks_=None, check_failure_handler=None, description=None):
+    def __new__(cls, name, checks_=None, description=None):
         """
         Creates a new category with the given parameters.
         
@@ -2390,24 +2508,6 @@ class Category(object):
             The name of the category. Only a command processer's default category can have it's name as `None`.
         checks_ : `None` or (`iterable` of ``_check_base`` instances), Optional
             Checks to define in which circumstances a command should be called.
-        check_failure_handler : `None` or `async-callable`, Optional
-            Is ensured, when a check returns a non negative number.
-            
-            If given as an `async-callable`, then it should accept 5 arguments:
-            
-            +-----------------------+---------------+
-            | Respective name       | Type          |
-            +=======================+===============+
-            | client                | ``Client``    |
-            +-----------------------+---------------+
-            | message               | ``Message``   |
-            +-----------------------+---------------+
-            | command               | ``Command``   |
-            +-----------------------+---------------+
-            | content               | `str`         |
-            +-----------------------+---------------+
-            | fail_identificator    | `int`         |
-            +-----------------------+---------------+
         description : `Any`
             Optional description for the category. Defaults to `None`.
         
@@ -2418,16 +2518,9 @@ class Category(object):
         Raises
         ------
         TypeError
-            - If `checks_` was not given as `None` or as `iterable` of ``_check_base`` instances.
-            - If `check_failure_handler` or was not given as `None` but neither as async callable or as a callable
-                instanceable to async, or if it (or the resulted) callable accepts less or more non reserved positional
-                arguments as `5`.
+            If `checks_` was not given as `None` or as `iterable` of ``_check_base`` instances.
         """
         checks_processed = validate_checks(checks_)
-        
-        if (check_failure_handler is not None):
-            check_failure_handler = check_argcount_and_convert(check_failure_handler, 5, '`check_failure_handler` '
-                'expected 5 arguments (client, message, command, content, fail_identificator).')
         
         if (description is not None) and isinstance(description,str):
             description=normalize_description(description)
@@ -2436,7 +2529,6 @@ class Category(object):
         self.name=name
         self.commands=sortedlist()
         self._checks = checks_processed
-        self._check_failure_handler = check_failure_handler
         self.description=description
         return self
     
@@ -2469,63 +2561,6 @@ class Category(object):
         By deleting it removes the command's checks.
         """)
     
-    def _get_check_failure_handler(self):
-        return self._check_failure_handler
-    
-    def _set_check_failure_handler(self, check_failure_handler):
-        if (check_failure_handler is not None):
-            check_failure_handler = check_argcount_and_convert(check_failure_handler, 5, '`check_failure_handler` '
-                'expected 5 arguments (client, message, command, content, fail_identificator).')
-        
-        actual_check_failure_handler=self._check_failure_handler
-        self._check_failure_handler=check_failure_handler
-        
-        for command in self.commands:
-            if command._check_failure_handler is actual_check_failure_handler:
-                command._check_failure_handler=check_failure_handler
-    
-    def _del_check_failure_handler(self):
-        actual_check_failure_handler=self._check_failure_handler
-        if actual_check_failure_handler is None:
-            return
-        
-        self._check_failure_handler=None
-        
-        for command in self.commands:
-            if command._check_failure_handler is actual_check_failure_handler:
-                command._check_failure_handler=None
-    
-    check_failure_handler=property(_get_check_failure_handler, _set_check_failure_handler, _del_check_failure_handler)
-    del _get_check_failure_handler, _set_check_failure_handler, _del_check_failure_handler
-    
-    if (__new__.__doc__ is not None):
-        check_failure_handler.__doc__ = ("""
-        Get-set-del property for accessing the check failure handler of the ``Category``.
-        
-        When getting it, returns actual check failure handler of the category, what can be `None` or an
-        `async-callable`.
-        
-        When setting it, accepts `None` or an `async-callable`, what accepts the following 5 arguments:
-        +-----------------------+---------------+
-        | Respective name       | Type          |
-        +=======================+===============+
-        | client                | ``Client``    |
-        +-----------------------+---------------+
-        | message               | ``Message``   |
-        +-----------------------+---------------+
-        | command               | ``Command``   |
-        +-----------------------+---------------+
-        | content               | `str`         |
-        +-----------------------+---------------+
-        | fail_identificator    | `int`         |
-        +-----------------------+---------------+
-        
-        Note that if the given value's type is incorrect or if it accepts wrong amount of non-reserved positional
-        arguments, `TypeError` is raised.
-        
-        When deleting it removes the command's check failure handler.
-        """)
-    
     async def run_checks(self, client, message):
         """
         Runs all the checks of the category and returns whtether every of them passed.
@@ -2552,8 +2587,7 @@ class Category(object):
         checks=self._checks
         if (checks is not None):
             for check in checks:
-                fail_identificator = await check(client, message)
-                if fail_identificator==CHECK_PASSED:
+                if await check(client, message):
                     continue
                 
                 return COMMAND_CHECKS_FAILED
@@ -2620,8 +2654,6 @@ class Category(object):
         result.append(repr(len(self.commands)))
         result.append(', checks=')
         result.append(repr(self._checks))
-        result.append(', check_failure_handler=')
-        result.append(repr(self.check_failure_handler))
         result.append('>')
         
         return ''.join(result)
@@ -2949,7 +2981,7 @@ class CommandProcesser(EventWaitforBase):
         > If given as not `None` or `str` instance, raises `TypeError`.
         """)
     
-    def create_category(self, name, checks=None, check_failure_handler=None, description=None):
+    def create_category(self, name, checks=None, description=None):
         """
         Creates a category with the given parameters.
         
@@ -2959,24 +2991,6 @@ class CommandProcesser(EventWaitforBase):
             The name of the category. Only a command processer's default category can have it's name as `None`.
         checks : `None` or (`iterable` of ``_check_base`` instances), Optional
             Checks to define in which circumstances a command should be called.
-        check_failure_handler : `None` or `async-callable`, Optional
-            Is ensured, when a check returns a non negative number.
-            
-            If given as an `async-callable`, then it should accept 5 arguments:
-            
-            +-----------------------+---------------+
-            | Respective name       | Type          |
-            +=======================+===============+
-            | client                | ``Client``    |
-            +-----------------------+---------------+
-            | message               | ``Message``   |
-            +-----------------------+---------------+
-            | command               | ``Command``   |
-            +-----------------------+---------------+
-            | content               | `str`         |
-            +-----------------------+---------------+
-            | fail_identificator    | `int`         |
-            +-----------------------+---------------+
         description : `Any`
             Optional description for the category. Defaults to `None`.
         
@@ -2987,10 +3001,7 @@ class CommandProcesser(EventWaitforBase):
         Raises
         ------
         TypeError
-            - If `checks_` was not given as `None` or as `iterable` of ``_check_base`` instances.
-            - If `check_failure_handler` or was not given as `None` but neither as async callable or as a callable
-                instanceable to async, or if it (or the resulted) callable accepts less or more non reserved positional
-                arguments as `5`.
+            If `checks_` was not given as `None` or as `iterable` of ``_check_base`` instances.
         ValueError
             - If a category exists with the given name.
         """
@@ -2998,7 +3009,7 @@ class CommandProcesser(EventWaitforBase):
         if (category is not None):
             raise ValueError(f'There is already a category added with that name: `{name!r}`')
         
-        category=Category(name,checks,check_failure_handler,description)
+        category=Category(name,checks,description)
         self.categories.add(category)
         return category
     
@@ -3159,7 +3170,7 @@ class CommandProcesser(EventWaitforBase):
         self.get_prefix_for = get_prefix_for
         self._ignorecase = ignorecase
     
-    def __setevent__(self, func, name, description=None, aliases=None, category=None, checks=None, check_failure_handler=None, parser_failure_handler=None):
+    def __setevent__(self, func, name, description=None, aliases=None, category=None, checks=None, parser_failure_handler=None):
         """
         Method used to add commands to the command procseer.
         
@@ -3188,24 +3199,6 @@ class CommandProcesser(EventWaitforBase):
             The category for the command. Defaults to `None`
         checks : `None` or (`iterable` of ``_check_base`` instances)
             Checks to deside in which circumstances the command should be called. Defaults to `None`.
-        check_failure_handler : `None` or `async-callable`
-            Is ensured, when a check returns a non negative number. Defaults to `None`.
-            
-            If given as an `async-callable`, then it should accept 5 arguments:
-            
-            +-----------------------+---------------+
-            | Respective name       | Type          |
-            +=======================+===============+
-            | client                | ``Client``    |
-            +-----------------------+---------------+
-            | message               | ``Message``   |
-            +-----------------------+---------------+
-            | command               | ``Command``   |
-            +-----------------------+---------------+
-            | content               | `str`         |
-            +-----------------------+---------------+
-            | fail_identificator    | `int`         |
-            +-----------------------+---------------+
         
         parser_failure_handler : `None` or `async-callable`
             Called when the command uses a parser to parse it's arguments, but it cannot parse out all the required
@@ -3238,9 +3231,6 @@ class CommandProcesser(EventWaitforBase):
             - `aliases` were not passed as `None` or as `iterable` of `str`.
             - `category` was not given as `None, `str`, or as ``Category`` instance.
             - If `checks_` was not given as `None` or as `iterable` of ``_check_base`` instances.
-            - If `check_failure_handler` or `parser_failure_handler` was not given as `None` but neither as async
-                callable or as a callable instanceable to async, or if it (or the resulted) callable accepts less or
-                more non reserved positional arguments as `5`.
         ValueError
             - If `category` was given as ``Category`` instance and the command processer already has a category
                 with the same name as the `category`'s.
@@ -3280,7 +3270,7 @@ class CommandProcesser(EventWaitforBase):
         
         # called first
         
-        command = Command(func, name, description, aliases, category, checks, check_failure_handler, parser_failure_handler)
+        command = Command(func, name, description, aliases, category, checks, parser_failure_handler)
         self._add_command(command)
         return command
         
@@ -3304,7 +3294,6 @@ class CommandProcesser(EventWaitforBase):
             - category : `None`, ``Category`` or `str`
             - checks : `None` or (`iterable` of ``_check_base``)
                 If no checks were provided, then the classe's `.checks_` attribute will be checked as well.
-            - check_failure_handler : `None` or `async-callable`
             - parser_failure_handler : `None` or `async-callable`
         
         Returns
@@ -3319,9 +3308,6 @@ class CommandProcesser(EventWaitforBase):
             - `aliases` were not passed as `None` or as `iterable` of `str`.
             - `category` was not given as `None, `str`, or as ``Category`` instance.
             - If `checks` was not given as `None` or as `iterable` of ``_check_base`` instances.
-            - If `check_failure_handler` or `parser_failure_handler` was not given as `None` but neither as async
-                callable or as a callable instanceable to async, or if it (or the resulted) callable accepts less or
-                more non reserved positional arguments as `5`.
         ValueError
             - If `.command` attribute is missing of the class.
         """
@@ -3639,10 +3625,12 @@ class CommandProcesser(EventWaitforBase):
                         checks = self._invalid_command_checks
                         if (checks is not None):
                             for check in checks:
-                                fail_identificator = await check(client, message)
-                                if fail_identificator == CHECK_PASSED:
+                                if await check(client, message):
                                     continue
                                 
+                                handler = check.handler
+                                if (handler is not None):
+                                    handler(client, message, command, check)
                                 break
                             else:
                                 await command_error(client, message, command, content, err)
@@ -3669,10 +3657,12 @@ class CommandProcesser(EventWaitforBase):
                     checks = self._invalid_command_checks
                     if (checks is not None):
                         for check in checks:
-                            fail_identificator = await check(client, message)
-                            if fail_identificator == CHECK_PASSED:
+                            if await check(client, message):
                                 continue
                             
+                            handler = check.handler
+                            if (handler is not None):
+                                handler(client, message, command_name, check)
                             return
                     
                     await invalid_command(client,message,command_name,content)
@@ -3687,10 +3677,12 @@ class CommandProcesser(EventWaitforBase):
                     checks = self._invalid_command_checks
                     if (checks is not None):
                         for check in checks:
-                            fail_identificator = await check(client, message)
-                            if fail_identificator == CHECK_PASSED:
+                            if await check(client, message):
                                 continue
                             
+                            handler = check.handler
+                            if (handler is not None):
+                                handler(client, message, command, check)
                             break
                         else:
                             await command_error(client, message, command_name, content, err)
@@ -3708,10 +3700,12 @@ class CommandProcesser(EventWaitforBase):
                     checks = self._invalid_command_checks
                     if (checks is not None):
                         for check in checks:
-                            fail_identificator = await check(client, message)
-                            if fail_identificator == CHECK_PASSED:
+                            if await check(client, message):
                                 continue
                             
+                            handler = check.handler
+                            if (handler is not None):
+                                handler(client, message, command_name, check)
                             return
                     
                     await invalid_command(client, message, command_name, content)
@@ -3952,3 +3946,4 @@ class CommandProcesser(EventWaitforBase):
         """)
 
 del modulize
+del NEEDS_DUMMY_INIT

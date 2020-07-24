@@ -20,13 +20,13 @@ from .futures import shield, Task
 from .hdrs import HOST, METH_GET, AUTHORIZATION, PROXY_AUTHORIZATION, METH_CONNECT
 from .reqrep import ClientRequest, Fingerprint, SSL_ALLOWED_TYPES
 from .exceptions import ProxyError
-from .helpers import is_ip_address, CeilTimeout
+from .helpers import is_ip_address
 from .websocket import ProtocolBase
 
 KEEP_ALIVE_TIMEOUT = 15.0
     
 class Connection(object):
-    __slots__=('callbacks', 'connector', 'key', 'loop', 'protocol',)
+    __slots__ = ('callbacks', 'connector', 'key', 'loop', 'protocol',)
     def __init__(self,connector,key,protocol,loop):
         self.connector  = connector
         self.key        = key
@@ -213,13 +213,13 @@ class ConnectorBase(object):
             self.connections.clear()
             self.acquired.clear()
     
-    async def connect(self,request,timeout):
+    async def connect(self, request):
         #Get from pool or create new connection.
-        key=request.connection_key
+        key = request.connection_key
         
         protocol = self.get_protocol(key)
         if protocol is None:
-            protocol = await self.create_connection(request,timeout)
+            protocol = await self.create_connection(request)
             if self.closed:
                 protocol.close()
                 raise ConnectionError('Connector is closed.')
@@ -286,7 +286,7 @@ class ConnectorBase(object):
             if self.cleanup_handle is None:
                 self.cleanup_handle = self.loop.call_later_weak(KEEP_ALIVE_TIMEOUT, self._cleanup,)
     
-    async def create_connection(self,request,timeout):
+    async def create_connection(self, request):
         #not implemented
         pass
 
@@ -395,10 +395,8 @@ class HostInfoCont(object):
         return f'<{self.__class__.__name__} addrs={self.addrs!r}, index={self.index!r}, timestamp={self.timestamp!r}>'
     
 class TCPConnector(ConnectorBase):
-    __slots__=('acquired', 'acquired_per_host', 'cached_hosts',
-        'closed', 'force_close', 'connections', 'cookies',
-        'dns_events', 'family', 'local_addr', 'loop',
-        'ssl', 'use_dns_cache', 'waiters',)
+    __slots__ = ('acquired', 'acquired_per_host', 'cached_hosts', 'closed', 'force_close', 'connections', 'cookies',
+        'dns_events', 'family', 'local_addr', 'loop', 'ssl', 'use_dns_cache', 'waiters',)
     #TCP connector.
     #fingerprint - Pass the binary md5, sha1, or sha256
     #    digest of the expected certificate in DER format to verify
@@ -406,7 +404,6 @@ class TCPConnector(ConnectorBase):
     #    https://en.wikipedia.org/wiki/Transport_Layer_Security#Certificate_pinning
     #family - socket address family
     #local_addr - local tuple of (host, port) to bind socket to
-    #conn_timeout - (optional) Connect timeout.
     #force_close - Set to True to force close and do reconnect
     #    after each request (and between redirects).
 
@@ -447,16 +444,15 @@ class TCPConnector(ConnectorBase):
         return HostInfoCont(host, infos,)
     
     async def resolver_task(self, key,):
-        
         try:
             event = self.dns_events[key]
         except KeyError:
             event = Task(self.resolve(*key, family=self.family), self.loop)
-            self.dns_events[key]= event
+            self.dns_events[key] = event
             try:
                 hostinfo = await event
-            except:
-                raise
+            except BaseException as err:
+                return err
             else:
                 self.cached_hosts[key] = hostinfo
             finally:
@@ -476,26 +472,27 @@ class TCPConnector(ConnectorBase):
         
         key = (host, port)
         try:
-            value = self.cached_hosts[key]
+            host_infos = self.cached_hosts[key]
         except KeyError:
             pass
         else:
-            expired = value.expired
+            expired = host_infos.expired
             if expired:
                 task = shield(self.resolver_task(key), self.loop)
             
-            addrs = value.next_addrs()
+            addrs = host_infos.next_addrs()
             for hostinfo in addrs:
                 yield hostinfo
             
             if expired:
-                try:
-                    value = await task
-                except OSError as err:
-                    raise ConnectionError(request.connection_key,err) from err
+                host_infos = await task
+                if (type(host_infos) is not HostInfoCont):
+                    if isinstance(host_infos, OSError):
+                        raise ConnectionError(request.connection_key, host_infos) from host_infos
+                    else:
+                        raise host_infos
                 
-                new_addrs = value.next_addrs()
-                for hostinfo in new_addrs:
+                for hostinfo in host_infos.next_addrs():
                     if hostinfo in addrs:
                         continue
                     
@@ -505,21 +502,23 @@ class TCPConnector(ConnectorBase):
         
         task = shield(self.resolver_task(key), self.loop)
         
-        try:
-            value = await task
-        except OSError as err:
-            raise ConnectionError(request.connection_key,err) from err
+        host_infos = await task
+        if (type(host_infos) is not HostInfoCont):
+            if isinstance(host_infos, OSError):
+                raise ConnectionError(request.connection_key, host_infos) from host_infos
+            else:
+                raise host_infos
         
-        for hostinfo in value.next_addrs():
+        for hostinfo in host_infos.next_addrs():
             yield hostinfo
     
-    async def create_connection(self,request,timeout):
+    async def create_connection(self, request):
         #Has same keyword arguments as BaseEventLoop.create_connection.
         
         if request.proxy_url:
-            _,protocol = await self.create_proxy_connection(request,timeout)
+            _,protocol = await self.create_proxy_connection(request)
         else:
-            _,protocol = await self.create_direct_connection(request,timeout)
+            _,protocol = await self.create_direct_connection(request)
 
         return protocol
     
@@ -577,7 +576,7 @@ class TCPConnector(ConnectorBase):
         if isinstance(self.ssl,Fingerprint):
             return self.ssl
     
-    async def create_direct_connection(self,request,timeout):
+    async def create_direct_connection(self, request):
         
         sslcontext  = self.get_ssl_context(request)
         fingerprint = self.get_fingerprint(request)
@@ -586,16 +585,15 @@ class TCPConnector(ConnectorBase):
         
         async for host_info in self.resolve_host_iterator(request):
             try:
-                with CeilTimeout(self.loop,timeout):
-                    transport, protocol = await self.loop.create_connection(ProtocolBase(self.loop),
-                        host_info.host, host_info.port,
-                        ssl = sslcontext,
-                        family = host_info.family,
-                        proto = host_info.proto,
-                        flags = host_info.flags,
-                        local_addr = self.local_addr,
-                        server_hostname = (host_info.hostname if sslcontext else None),
-                            )
+                transport, protocol = await self.loop.create_connection(ProtocolBase(self.loop),
+                    host_info.host, host_info.port,
+                    ssl = sslcontext,
+                    family = host_info.family,
+                    proto = host_info.proto,
+                    flags = host_info.flags,
+                    local_addr = self.local_addr,
+                    server_hostname = (host_info.hostname if sslcontext else None),
+                        )
             except ssl_errors as err:
                 err.key=request.connection_key
                 raise
@@ -618,7 +616,7 @@ class TCPConnector(ConnectorBase):
         raise last_error
     
 
-    async def create_proxy_connection(self,request,timeout):
+    async def create_proxy_connection(self,request):
         headers=multidict_titled()
         
         headers[HOST]=request.headers[HOST]
@@ -626,7 +624,7 @@ class TCPConnector(ConnectorBase):
         proxy_request=ClientRequest(METH_GET,request.proxy_url,self.loop,headers=headers,auth=request.proxy_auth,ssl=request.ssl)
         
         # create connection to proxy server
-        transport, protocol = await self.create_direct_connection(proxy_request,timeout)
+        transport, protocol = await self.create_direct_connection(proxy_request)
         
         # Many HTTP proxies has buggy keepalive support.  Let's not
         # reuse connection but close it after processing every
@@ -669,11 +667,10 @@ class TCPConnector(ConnectorBase):
                     transport.close()
 
                 try:
-                    with CeilTimeout(self.loop,timeout):
-                        transport, protocol= await self.loop.create_connection(ProtocolBase(self.loop),
-                            ssl=sslcontext,
-                            sock=rawsock,
-                            server_hostname=request.host,)
+                    transport, protocol= await self.loop.create_connection(ProtocolBase(self.loop),
+                        ssl=sslcontext,
+                        sock=rawsock,
+                        server_hostname=request.host,)
                 except ssl_errors as err:
                     err.key=request.connection_key
                     raise

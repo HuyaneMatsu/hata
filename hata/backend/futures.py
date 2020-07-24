@@ -408,20 +408,20 @@ class Future(object):
         def cancel(self):
             if self._state is not PENDING:
                 return 0
-                
+            
             self._state=CANCELLED
             self._loop._schedule_callbacks(self)
             return 1
             
     def cancelled(self):
         return (self._state is CANCELLED)
-            
+    
     def done(self):
         return (self._state is not PENDING)
-
+    
     def pending(self):
         return (self._state is PENDING)
-
+    
     if __debug__:
         def result(self):
             state=self._state

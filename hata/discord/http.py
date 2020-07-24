@@ -14,24 +14,26 @@ from ..backend.quote import quote
 from .exceptions import DiscordException, ERROR_CODES
 from .others import to_json, from_json, Discord_hdrs
 from .ratelimit import ratelimit_global, RATELIMIT_GROUPS, RatelimitHandler, NO_SPECIFIC_RATELIMITER
-from .bases import ICON_TYPE_NONE, ICON_TYPE_STATIC
 
 AUDIT_LOG_REASON    = Discord_hdrs.AUDIT_LOG_REASON
 RATELIMIT_PRECISION = Discord_hdrs.RATELIMIT_PRECISION
 
-#this file contains every link needed to communicate with discord
-VALID_ICON_FORMATS   = ('jpg','jpeg','png','webp')
-VALID_ICON_SIZES     = {1<<x for x in range(4,13)}
-VALID_ICON_FORMATS_EXTENDED = (*VALID_ICON_FORMATS,'gif',)
 
-API_ENDPOINT='https://discord.com/api/v7' #v7 includes special error messages
-CDN_ENDPOINT='https://cdn.discordapp.com'
-DIS_ENDPOINT='https://discord.com'
 
 ChannelGuildBase = NotImplemented
 
 @modulize
 class URLS:
+    VALID_ICON_FORMATS   = ('jpg','jpeg','png','webp')
+    VALID_ICON_SIZES     = {1<<x for x in range(4,13)}
+    VALID_ICON_FORMATS_EXTENDED = (*VALID_ICON_FORMATS,'gif',)
+    
+    API_ENDPOINT='https://discord.com/api/v7' #v7 includes special error messages
+    CDN_ENDPOINT='https://cdn.discordapp.com'
+    DIS_ENDPOINT='https://discord.com'
+    
+    from .bases import ICON_TYPE_NONE, ICON_TYPE_STATIC
+    
     style_pattern=re.compile('(^shield$)|(^banner[1-4]$)')
     #returns a URL that allows the client to jump to this message
     #guild is guild's id, or @me if there is no guild
@@ -365,7 +367,7 @@ class URLS:
         ValueError
             If `style` was not passed as any of the expected values.
         """
-        if URLS.style_pattern.match(style) is None:
+        if style_pattern.match(style) is None:
             raise ValueError(f'Invalid style: {style!r}')
         
         return f'{API_ENDPOINT}/guilds/{guild.id}/embed.png?style={style}'
@@ -388,7 +390,7 @@ class URLS:
         ValueError
             If `style` was not passed as any of the expected values.
         """
-        if URLS.style_pattern.match(style) is None:
+        if style_pattern.match(style) is None:
             raise ValueError(f'Invalid style: {style!r}')
         
         return f'{API_ENDPOINT}/guilds/{guild.id}/widget.png?style={style}'
@@ -1064,6 +1066,9 @@ class URLS:
                 prefix = 'a_'
         
         return f'{CDN_ENDPOINT}/app-assets/{achievement.application_id}/achievements/{achievement.id}/icons/{prefix}{achievement.icon_hash:0>32x}.{ext}{end}'
+
+
+from .http.URLS import API_ENDPOINT, CDN_ENDPOINT, DIS_ENDPOINT
 
 implement=sys.implementation
 version_l=['Discordclient (HuyaneMatsu) Python (',implement.name,' ',str(implement.version[0]),'.',str(implement.version[1]),' ']

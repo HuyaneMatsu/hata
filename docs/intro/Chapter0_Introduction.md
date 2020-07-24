@@ -19,9 +19,6 @@ works. This introduction will drive you through some common use cases,
 until you have enough knowledge of the wrapper to be able to make more advanced and complex features and automate
 command creation.
 
-If you want to check
-[references](../ref), we got them too.
-
 ### About Hata
 
 Similarly to other wrappers hata runs the clients in an asynchronous environment

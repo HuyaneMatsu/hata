@@ -786,10 +786,10 @@ class EventThreadRunDescriptor(object):
         raise AttributeError('can\'t delete attribute')
 
 class EventThreadType(type):
-    def __call__(cls,daemon=False,name=None):
+    def __call__(cls, daemon=False, name=None, **kwargs):
         obj=Thread.__new__(cls)
-        cls.__init__(obj)
-        Thread.__init__(obj,daemon=daemon,name=name)
+        cls.__init__(obj, **kwargs)
+        Thread.__init__(obj, daemon=daemon, name=name)
         obj.ctx=EventThreadCTXManager(obj)
         Thread.start(obj)
         obj.ctx.waiter.wait()
@@ -803,8 +803,8 @@ class EventThread(Executor,Thread,metaclass=EventThreadType):
         '_scheduled', '_ssock', 'ctx', 'current_task', 'running', 'selector',
         'should_run', 'transports',)
     
-    def __init__(self):
-        Executor.__init__(self)
+    def __init__(self, keep_executor_count=1):
+        Executor.__init__(self, keep_executor_count)
         self.should_run = True
         self.running    = False
         self.selector   = DefaultSelector()
@@ -820,7 +820,7 @@ class EventThread(Executor,Thread,metaclass=EventThreadType):
         
         self._ssock=None
         self._csock=None
-
+    
     def __repr__(self):
         result=['<',self.__class__.__name__,'(',self._name]
         self.is_alive() # easy way to get ._is_stopped set when appropriate
@@ -1537,7 +1537,7 @@ class EventThread(Executor,Thread,metaclass=EventThreadType):
     def _sock_connect_cb(self,future,sock,address):
         if future.done():
             return
-
+        
         try:
             err_number=sock.getsockopt(module_socket.SOL_SOCKET,module_socket.SO_ERROR)
             if err_number!=0:
@@ -1549,7 +1549,7 @@ class EventThread(Executor,Thread,metaclass=EventThreadType):
             future.set_exception(err)
         else:
             future.set_result(None)
-
+    
     #await it
     def sock_recv(self,sock,n):
         future=Future(self)

@@ -35,10 +35,13 @@ class AudioSource(object):
     ----------------
     NEEDS_ENCODE : `bool` = `True`
         Whether the source is not opus encoded.
+    REPEATABLE : `bool` = `False`
+        Whether the source can be repeated after it is exhausted once.
     """
     __slots__ = ()
     
     NEEDS_ENCODE = True
+    REPEATABLE = False
     
     def read(self):
         """
@@ -91,6 +94,14 @@ class AudioSource(object):
         path : `None`
         """
         return None
+    
+    def postprocess(self):
+        """
+        Called before the audio of the source would be played.
+        
+        This method can be implemented as blocking.
+        """
+        pass
 
 class PCMAudio(AudioSource):
     """
@@ -105,9 +116,11 @@ class PCMAudio(AudioSource):
     ----------------
     NEEDS_ENCODE : `bool` = `True`
         Whether the source is not opus encoded.
+    REPEATABLE : `bool` = `False`
+        Whether the source can be repeated after it is exhausted once.
     """
     __slots__=('stream',)
-
+    
     def __new__(cls, stream):
         """
         Creates a new ``PCMAudio`` source.
@@ -142,7 +155,7 @@ class PCMAudio(AudioSource):
 
 class LocalAudio(AudioSource):
     """
-    Represents an ffmpeg pcm audio.
+    Represents a ffmpeg pcm audio.
     
     You must have the ffmpeg or avconv executable in your path environment variable in order for this to work.
     
@@ -163,7 +176,11 @@ class LocalAudio(AudioSource):
     ----------------
     NEEDS_ENCODE : `bool` = `True`
         Whether the source is not opus encoded.
+    REPEATABLE : `bool` = `True`
+        Whether the source can be repeated after it is exhausted once.
     """
+    REPEATABLE = True
+    
     @staticmethod
     def _create_process_preprocess(source, executable, pipe, before_options, options):
         """
@@ -251,7 +268,7 @@ class LocalAudio(AudioSource):
     @staticmethod
     def _create_process(args, stdin):
         """
-        Creates subprocess. This method should never run on an `EventThread`.
+        Creates the subprocess of the audio source. This method should never run on an `EventThread`.
         
         Paremeters
         ----------
@@ -302,7 +319,7 @@ class LocalAudio(AudioSource):
     async def __new__(cls, source, executable=DEFAULT_EXECUTABLE, pipe=False, before_options=None,
             options=None, title=None):
         """
-        Creates a new ``FFmpegPCMAudio`` instance.
+        Creates a new ``LocalAudio`` instance.
         
         Parameters
         ----------
@@ -440,6 +457,8 @@ else:
         ----------------
         NEEDS_ENCODE : `bool` = `True`
             Whether the source is not opus encoded.
+        REPEATABLE : `bool` = `True`
+            Whether the source can be repeated after it is exhausted once.
         """
         
         __slots__ = ('url', )
@@ -543,7 +562,7 @@ class AudioPlayer(Thread):
     source : ``AudioSource`` instance
         The audio source what the player reads each 20 ms.
     """
-    __slots__=('client', 'done', 'resumed', 'source')
+    __slots__ = ('client', 'done', 'resumed', 'source')
     
     def __init__(self, voice_client, source):
         """
@@ -568,7 +587,7 @@ class AudioPlayer(Thread):
         Thread.start(self)
     
     @staticmethod
-    async def _run_call_after(voice_client):
+    async def _run_call_after(voice_client, last_source):
         """
         Called when playing an ``AudioSource`` of the audio player finished.
         
@@ -576,6 +595,8 @@ class AudioPlayer(Thread):
         ----------
         voice_client : ``VoiceClient``
             The parent voice client of the ``AudioPlayer``.
+        last_source : ``AudioSource``
+            The play played audio.
         
         Returns
         -------
@@ -587,7 +608,7 @@ class AudioPlayer(Thread):
             await lock
         else:
             async with lock:
-                await voice_client.call_after(voice_client)
+                await voice_client.call_after(voice_client, last_source)
     
     def run(self):
         voice_client=self.client
@@ -636,9 +657,9 @@ class AudioPlayer(Thread):
                 if self.done or (data is None):
                     self.resumed.clear()
                     source.cleanup()
-                    self.source = source = None
+                    self.source = None
                     
-                    KOKORO.create_task_threadsafe(self._run_call_after(voice_client)).syncwrap().wait()
+                    KOKORO.create_task_threadsafe(self._run_call_after(voice_client, source)).syncwrap().wait()
                     
                     source = self.source
                     if (source is None):
@@ -667,14 +688,14 @@ class AudioPlayer(Thread):
                     b'\x80x',
                     voice_client._sequence.to_bytes(2,'big'),
                     voice_client._timestamp.to_bytes(4,'big'),
-                    voice_client._source.to_bytes(4,'big'),
+                    voice_client._audio_source.to_bytes(4,'big'),
                         ])
                 
                 nonce=header+b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
                 packet=bytearray(header)+voice_client._secret_box.encrypt(bytes(data),nonce).ciphertext
                 
                 try:
-                    voice_client.socket.sendto(packet,(voice_client._endpoint_ip,voice_client._voice_port))
+                    voice_client.socket.sendto(packet,(voice_client._endpoint_ip, voice_client._audio_port))
                 except BlockingIOError:
                     pass
                 

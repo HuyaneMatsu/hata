@@ -23,7 +23,7 @@ from .dereaddons_local import multidict_titled
 from .futures import Task, CancelledError
 from .hdrs import METH_POST_ALL, METH_CONNECT, SET_COOKIE, CONTENT_LENGTH, CONNECTION, ACCEPT, ACCEPT_ENCODING, \
     HOST, TRANSFER_ENCODING, COOKIE, CONTENT_ENCODING, AUTHORIZATION, CONTENT_TYPE
-from .helpers import BasicAuth, EmptyTimer
+from .helpers import BasicAuth
 from .multipart import MimeType, create_payload, payload_superclass
 from .formdata import Formdata
 from .protocol import StreamWriter
@@ -138,7 +138,7 @@ class ConnectionKey(object):
         return True
     
     def __hash__(self):
-        return hash(self.host) ^ (self.port << 17) ^ (self.is_ssl << 16) ^ hash(self.ssl) ^ hash(self.proxy_auth) ^ hash(self.proxy_url)
+        return hash(self.host) ^ (self.port << 17) ^ hash(self.is_ssl) ^ hash(self.ssl) ^ hash(self.proxy_auth) ^ hash(self.proxy_url)
 
 class RequestInfo(object):
     __slots__=('headers', 'method', 'real_url', 'url',)
@@ -159,13 +159,10 @@ class ClientRequest(object):
     
     _default_encoding='utf-8'
     
-    __slots__=('auth', 'body', 'chunked', 'compression', 'encoding', 'headers',
-        'length', 'loop', 'method', 'original_url', 'proxy_auth', 'proxy_url',
-        'response', 'ssl', 'timer', 'url', 'writer',)
+    __slots__ = ('auth', 'body', 'chunked', 'compression', 'encoding', 'headers', 'length', 'loop', 'method',
+        'original_url', 'proxy_auth', 'proxy_url', 'response', 'ssl', 'url', 'writer',)
     
-    def __init__(self,method,url,loop,headers=None,data=None,params=None,
-                 cookies=None,auth=None,proxy_url=None,proxy_auth=None,
-                 timer=None,ssl=None):
+    def __init__(self, loop, method, url, headers=None, data=None, params=None, cookies=None, auth=None, proxy_url=None, proxy_auth=None, ssl=None):
         
         url=url.extend_query(params)
         
@@ -174,10 +171,6 @@ class ClientRequest(object):
         self.method         = method
         self.encoding       = self._default_encoding
         self.loop           = loop
-        if timer is None:
-            self.timer      = EmptyTimer()
-        else:
-            self.timer      = timer
         self.ssl            = ssl
          
         #create for later
@@ -364,7 +357,7 @@ class ClientRequest(object):
             else:
                 if isinstance(self.body,(bytes,bytearray)):
                     self.body=(self.body,)
-
+                
                 for chunk in self.body:
                     await writer.write(chunk)
             
@@ -384,8 +377,8 @@ class ClientRequest(object):
             connection.protocol.set_exception(err)
         finally:
             self.writer = None
-
-    async def send(self,connection):
+    
+    async def send(self, connection):
         # Specify request target:
         # - CONNECT request must send authority form URI
         # - not CONNECT proxy must send absolute form URI
@@ -406,30 +399,28 @@ class ClientRequest(object):
         if (self.method in METH_POST_ALL) and (CONTENT_TYPE not in self.headers):
             self.headers[CONTENT_TYPE]='application/octet-stream'
         
-        
         connection_type=self.headers.get(CONNECTION)
-           
+        
         if ((connection_type is None) or (not connection_type)) and (not self.keep_alive()):
             connection_type='close'
-                
+        
         if (connection_type is not None):
             self.headers[CONNECTION]=connection_type
-        
         
         protocol.write_http_request(self.method, path, self.headers)
         
         self.writer = Task(self.write_bytes(writer,connection),self.loop)
         
-        self.response=ClientResponse(self.method,self.original_url,self.loop,self.writer,self.timer)
+        self.response=ClientResponse(self.loop, self.method, self.original_url, self.writer)
         return self.response
-
+    
     async def close(self):
         if self.writer:
             try:
                 await self.writer
             finally:
                 self.writer=None
-
+    
     def terminate(self):
         if self.writer:
             if self.loop.running:
@@ -437,17 +428,16 @@ class ClientRequest(object):
             self.writer=None
 
 class ClientResponse:
-    __slots__=('_released', 'body', 'closed', 'connection', 'payload_waiter',
-        'cookies', 'headers', 'history', 'loop', 'method', 'status', 'timer', 'url', 'writer', 'raw_message')
+    __slots__=('_released', 'body', 'closed', 'connection', 'payload_waiter', 'cookies', 'headers', 'history', 'loop',
+        'method', 'status', 'url', 'writer', 'raw_message')
        
-    def __init__(self,method,url,loop,writer,timer):
+    def __init__(self, loop, method, url, writer):
+        self.loop           = loop
         self.method         = method
         self.url            = url
-        self.loop           = loop
         
         self.writer         = writer
         self.closed         = False # to allow __del__ for non-initialized properly response
-        self.timer          = timer
         self.cookies        = SimpleCookie()
         self._released      = False
         
@@ -488,16 +478,15 @@ class ClientResponse:
         self.connection=connection
         protocol=connection.protocol
         
-        with self.timer:
-            self.raw_message = message = await protocol.set_payload_reader(protocol.read_http_response())
-            protocol.handle_payload_waiter_cancellation()
-            payload_reader = protocol.get_payload_reader_task(message)
-            if (payload_reader is None):
-                payload_waiter = None
-                self._response_eof(None)
-            else:
-                payload_waiter = protocol.set_payload_reader(payload_reader)
-                payload_waiter.add_done_callback(self._response_eof)
+        self.raw_message = message = await protocol.set_payload_reader(protocol.read_http_response())
+        protocol.handle_payload_waiter_cancellation()
+        payload_reader = protocol.get_payload_reader_task(message)
+        if (payload_reader is None):
+            payload_waiter = None
+            self._response_eof(None)
+        else:
+            payload_waiter = protocol.set_payload_reader(payload_reader)
+            payload_waiter.add_done_callback(self._response_eof)
         
         #response status
         self.status     = message.status

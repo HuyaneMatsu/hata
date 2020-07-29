@@ -10,7 +10,7 @@ from ..backend.exceptions import ConnectionClosed, WebSocketProtocolError, Inval
 from .client_core import KOKORO
 from .opus import OpusEncoder
 from .player import AudioPlayer, AudioSource, PLAYER_DELAY
-from .reader import AudioReader
+from .reader import AudioReader, AudioStream
 from .gateway import DiscordGatewayVoice, SecretBox
 from .channel import ChannelVoice
 
@@ -20,6 +20,14 @@ class VoiceClient(object):
     
     Attributes
     ----------
+    _audio_port : `int`
+        The port, where the voice client should send the audio data.
+    _audio_source : `int`
+        An identificator sent by Discord what should be sent back with every voice packet.
+    _audio_sources : `dict` of (`int`, `int`) items
+        `user_id` - `audio_source` mapping used by ``AudioStream``-s.
+    _audio_streams : `None` or `dict` of (`int`, (``AudioStream`` or (`list` of ``AudioStream``)) items
+        `user_id` - ``AudioStream``(s) mapping for linking ``AudioStream`` to their respective user..
     _encoder : ``OpusEncoder``
         Encode not opus encoded audio data.
     _endpoint : `None` or `str`
@@ -46,22 +54,30 @@ class VoiceClient(object):
         The session id of the voice client's owner client's shard.
     _set_speaking_task : `None` or `Task`
         Synchronization task for the `.set_speaking` coroutine.
-    _source : `int`
-        An identificator sent by Discord what should be sent back with every voice packet.
     _timestamp : `int`
         A timestamp identificaotr to tell Discord how much frames we sent to it.
     _token : `str`
         Token received by the voice client's owner client's gateway. Used to authorize the voice client.
-    _voice_port : `int`
-        The port, where the voice client should send the audio data.
+    _video_source : `int`
+        An identificator sent by Discord what should be sent back with every video packet.
     call_after : `callable` (`awaitable`)
         A coroutine function what is awaited, when the voice clients's current audio finishes playing. By default
         this attribute is set to the ``._play_next`` function of the voice client (plays the next audio at the voice
         clients's ``.queue`` as expected.
-
-        This attribute of the client can be modified freely. To it `1` argument is passed, the respective
-        ``VoiceClient`` itself.
-    
+        
+        This attribute of the client can be modified freely. To it `2` arguments are passed:
+         +------------------+---------------------------+
+         | Respective name  | Type                      |
+         +==================+===========================+
+         | client           | ``VoiceClient``           |
+         +------------------+---------------------------+
+         | last_source      | `None` or ``AudioSource`` |
+         +------------------+---------------------------+
+         
+         The ``VoiceClient`` also includes some other predefined function for setting as `call_after`:
+         - ``._loop_actual``
+         - ``._loop_queue``
+     
     channel : ``ChannelVoice``
         The channel where the voice client currently is.
     client : ``Client``
@@ -84,16 +100,15 @@ class VoiceClient(object):
         The socket through what the ``VoiceClient`` sends the voice data to Discord. Created by the ``._create_socket``
         method, when the client's gateway receives response after connecting. If the client leaves the voice channel,
         then the socket is closed and set back to `None`.
-    sources : `dict` of (`int`, `int`) items
-        `user_id`, `ssrc` mapping used by `.reader`.
     speaking : `int`
         Whether the client is showed by Discord as `speaking`, then this attribute should is set as `1`. Can be modified, with the
         ``.set_speaking``, however it is always adjusted to the voice client's current playing state.
     """
-    __slots__ = ('_encoder', '_endpoint', '_endpoint_ip', '_freezed', '_freezed_resume', '_handshake_complete', '_ip',
-        '_port', '_pref_volume', '_secret_box', '_sequence', '_session_id', '_set_speaking_task', '_source',
-        '_timestamp', '_token', '_voice_port', 'call_after', 'channel', 'client', 'connected', 'gateway', 'guild',
-        'lock', 'player', 'queue', 'reader', 'socket', 'sources', 'speaking', )
+    __slots__ = ('_audio_port', '_audio_source', '_audio_sources', '_audio_streams', '_encoder', '_endpoint',
+        '_endpoint_ip', '_freezed', '_freezed_resume', '_handshake_complete', '_ip', '_port', '_pref_volume',
+        '_secret_box', '_sequence', '_session_id', '_set_speaking_task', '_timestamp', '_token', '_video_source',
+        'call_after', 'channel', 'client', 'connected', 'gateway', 'guild', 'lock', 'player', 'queue', 'reader',
+        'socket', 'speaking', )
     
     def __new__(cls, client, channel):
         """
@@ -148,27 +163,29 @@ class VoiceClient(object):
         self.connected      = Event() #this will be used at the AudioPlayer thread
         self.queue          = []
         self.player         = None
-        self.call_after     = type(self)._play_next
+        self.call_after     = cls._play_next
         self.speaking       = 0
         self.lock           = Lock(KOKORO)
-        self.sources        = {}
         self.reader         = None
         
         self._handshake_complete = Future(KOKORO)
         self._encoder       = OpusEncoder()
         self._sequence      = 0
         self._timestamp     = 0
-        self._source        = 0
+        self._audio_source  = 0
+        self._video_source  = 0
         self._pref_volume   = 1.0
         self._set_speaking_task = None
         self._endpoint      = None
         self._port          = None
         self._endpoint_ip   = None
         self._secret_box    = None
-        self._voice_port    = None
+        self._audio_port    = None
         self._ip            = None
         self._freezed       = False
         self._freezed_resume= False
+        self._audio_sources = {}
+        self._audio_streams = None
         
         client.voice_clients[guild.id] = self
         waiter = Future(KOKORO)
@@ -243,19 +260,240 @@ class VoiceClient(object):
         finally:
             self._set_speaking_task=None
     
-    def listen(self):
+    def listen_to(self, user, **kwargs):
         """
-        If the client has a ``.reader`` returns that, else created a new one.
+        Creates an audio stream for the given user.
+        
+        Parameters
+        ----------
+        user : ``UserBase`` instance
+            The user, who's voice will be captured.
+        **kwargs : Keyword arguments
+            Additional keyword arguments.
+        
+        Other Parameters
+        ----------------
+        auto_decode : `bool`
+            Whether the received packets should be auto decoded.
+        yield_decoded : `bool`
+            Whether the audio stream should yield encoded data.
         
         Returns
         -------
-        reader : ``AudioReader``
+        audio_stream : ``AudioStream``
         """
+        stream =  AudioStream(self, user, **kwargs)
+        self._link_audio_stream(stream)
+        return stream
+    
+    def _link_audio_stream(self, stream):
+        """
+        Links the given ``AudioStream`` to self causing to start receiving audio.
+        
+        Parameters
+        ----------
+        stream : ``AudioStream``
+        """
+        voice_client_audio_streams = self._audio_streams
+        if voice_client_audio_streams is None:
+            voice_client_audio_streams = self._audio_streams = {}
+        
+        user_id = stream.user.id
+        try:
+            voice_client_actual_stream = voice_client_audio_streams[user_id]
+        except KeyError:
+            voice_client_audio_streams[user_id] = stream
+        else:
+            if type(voice_client_actual_stream) is list:
+                voice_client_actual_stream.append(stream)
+            else:
+                voice_client_audio_streams[user_id] = [voice_client_actual_stream, stream]
+        
+        source = stream.source
+        if (source is not None):
+            reader = self.reader
+            if reader is None:
+                reader = self.reader = AudioReader(self)
+            
+            reader_audio_streams = reader.audio_streams
+            try:
+                reader_actual_stream = reader_audio_streams[source]
+            except KeyError:
+                reader_audio_streams[source] = stream
+            else:
+                if type(reader_actual_stream) is list:
+                    reader_actual_stream.append(stream)
+                else:
+                    reader_audio_streams[source] = [reader_actual_stream, stream]
+    
+    def _unlink_audio_stream(self, audio_stream):
+        """
+        Unlinks the given audio stream from teh voice client causing it to stop receiving audio.
+        
+        Parameters
+        ----------
+        audio_stream : ``AudioStream``
+        """
+        voice_client_audio_streams = self._audio_streams
+        if (voice_client_audio_streams is not None):
+            user_id = audio_stream.user.id
+            try:
+                voice_client_actual_stream = voice_client_audio_streams[user_id]
+            except KeyError:
+                pass
+            else:
+                if type(voice_client_actual_stream) is list:
+                    try:
+                        voice_client_actual_stream.remove(audio_stream)
+                    except ValueError:
+                        pass
+                    else:
+                        if len(voice_client_actual_stream) == 1:
+                            voice_client_audio_streams[user_id] = voice_client_actual_stream[0]
+                else:
+                    if voice_client_actual_stream is audio_stream:
+                        del voice_client_audio_streams[user_id]
+        
+        reader = self.reader
+        if (reader is not None):
+            source = audio_stream.source
+            if (source is not None):
+                reader_audio_streams = reader.audio_streams
+                try:
+                    reader_actual_stream = reader_audio_streams[source]
+                except KeyError:
+                    pass
+                else:
+                    if type(reader_actual_stream) is list:
+                        try:
+                            reader_actual_stream.remove(audio_stream)
+                        except ValueError:
+                            pass
+                        else:
+                            if len(reader_actual_stream) == 1:
+                                reader_audio_streams[source] = reader_actual_stream[0]
+                    else:
+                        if reader_actual_stream is audio_stream:
+                            del reader_audio_streams[source]
+                        
+                        if (not reader_audio_streams):
+                            self.reader = None
+                            reader.stop()
+    
+    def _remove_audio_source(self, user_id):
+        """
+        Unlinks the audio streams's source listening to the given user (id), causing the affected audio stream(s)
+        to stop receiving audio data at the meanwhile.
+        
+        Parameters
+        ----------
+        user_id : `int`
+            The respective user's id.
+        """
+        voice_sources = self._audio_sources
+        try:
+            voice_source = voice_sources.pop(user_id)
+        except KeyError:
+            return
+        
+        audio_streams = self._audio_streams
+        if (audio_streams is None):
+            return
+        
+        try:
+            voice_client_actual_stream = audio_streams[user_id]
+        except KeyError:
+            return
+        
+        reader = self.reader
+        if (reader is None):
+            return
+        
+        try:
+            del reader.audio_streams[voice_source]
+        except KeyError:
+            pass
+    
+    def _update_audio_source(self, user_id, audio_source):
+        """
+        Updates (or adds) an `user-id` - `audio-source` relation to the voice client causing the affected audio
+        streams to listen to their new source.
+        
+        Parameters
+        ----------
+        user_id : `int`
+            The respective user's id.
+        audio_source : `int`
+            Audio source identitifcator of the user.
+        """
+        voice_sources = self._audio_sources
+        try:
+            old_audio_source = voice_sources.pop(user_id)
+        except KeyError:
+            # Should not happen if it is an update, onyl if it is an add
+            pass
+        else:
+            # Should happen if it is an update
+            if audio_source == old_audio_source:
+                # Should double happen if it is an update
+                return
+            
+            reader = self.reader
+            if (reader is not None):
+                reader_audio_streams = reader.audio_streams
+                try:
+                    del reader_audio_streams[old_audio_source]
+                except KeyError:
+                    pass
+        
+        voice_sources[user_id] = audio_source
+        
+        streams = self._audio_streams
+        if streams is None:
+            return
+        
+        try:
+            voice_client_actual_stream = streams[user_id]
+        except KeyError:
+            return
+        
+        # Link source
+        if type(voice_client_actual_stream) is list:
+            for stream in voice_client_actual_stream:
+                stream.source = audio_source
+        else:
+            voice_client_actual_stream.source = audio_source
+        
+        # Add the sources to reader
         reader = self.reader
         if reader is None:
-            self.reader = reader = AudioReader(self)
+            reader = self.reader = AudioReader(self)
         
-        return reader
+        reader_audio_streams = reader.audio_streams
+        try:
+            reader_actual_stream = reader_audio_streams[audio_source]
+        except KeyError:
+            # This should happen
+            if type(voice_client_actual_stream) is list:
+                reader_new_stream = voice_client_actual_stream.copy()
+            else:
+                reader_new_stream = voice_client_actual_stream
+            reader_audio_streams[audio_source] = reader_new_stream
+        else:
+            # Should not happen
+            if type(reader_actual_stream) is list:
+                if type(voice_client_actual_stream) is list:
+                    reader_actual_stream.extend(voice_client_actual_stream)
+                else:
+                    reader_actual_stream.append(voice_client_actual_stream)
+            else:
+                reader_new_stream = [reader_actual_stream]
+                if type(voice_client_actual_stream) is list:
+                    reader_new_stream.extend(voice_client_actual_stream)
+                else:
+                    reader_new_stream.append(voice_client_actual_stream)
+                
+                reader_audio_streams[audio_source] = reader_new_stream
     
     async def move_to(self, channel):
         """
@@ -310,11 +548,38 @@ class VoiceClient(object):
         
         return False
     
-    def skip(self):
+    def skip(self, index=0):
         """
-        Skips the currently played audio if applicable.
+        Skips the currently played audio at the given index and returns it.
+        
+        Skipping nothing yields to returning `None`.
+        
+        Parameters
+        ----------
+        index : `int`
+            The index of the audio to skip. Defaults to `0`, what causes the currently playing source to skipped.
+        
+        Returns
+        -------
+        source : `None` or ``AudioSource`` instance
         """
-        KOKORO.create_task(self.play_next())
+        if index == 0:
+            KOKORO.create_task(self.play_next())
+            player = self.player
+            if player is None:
+                source = None
+            else:
+                source = player.source
+        elif index < 0:
+            source = None
+        else:
+            queue = self.queue
+            if index > len(queue):
+                source = None
+            else:
+                source = queue.pop(index-1)
+        
+        return source
     
     def pause(self):
         """
@@ -421,13 +686,19 @@ class VoiceClient(object):
                 task=Task(self.gateway.connect(),KOKORO)
                 future_or_timeout(task,30.,)
                 await task
+                
                 self.connected.clear()
                 while True:
-                    await self.gateway._poll_event()
+                    task = Task(self.gateway._poll_event(), KOKORO)
+                    future_or_timeout(task, 60.)
+                    await task
+                    
                     if self._secret_box is not None:
                         break
+                    
                 self.connected.set()
-            except (OSError,TimeoutError,ConnectionError, ConnectionClosed, WebSocketProtocolError, InvalidHandshake,
+                
+            except (OSError, TimeoutError, ConnectionError, ConnectionClosed, WebSocketProtocolError, InvalidHandshake,
                     ValueError) as err:
                 
                 if isinstance(err, ConnectionClosed) and (err.code == 4014):
@@ -446,7 +717,9 @@ class VoiceClient(object):
             tries=0
             while True:
                 try:
-                    await self.gateway._poll_event()
+                    task = Task(self.gateway._poll_event(), KOKORO)
+                    future_or_timeout(task, 60.)
+                    await task
                 except (OSError, TimeoutError, ConnectionClosed, WebSocketProtocolError,) as err:
                     
                     if isinstance(err, ConnectionClosed) and (err.code in (1000, 1006, 4014)):
@@ -557,14 +830,15 @@ class VoiceClient(object):
         self._handshake_complete=Future(KOKORO)
         self._sequence      = 0
         self._timestamp     = 0
-        self._source        = 0
+        self._audio_source  = 0
+        self._video_source  = 0
         
         self._set_speaking_task=None
         self._endpoint      = None
         self._port          = None
         self._endpoint_ip   = None
         self._secret_box    = None
-        self._voice_port    = None
+        self._audio_port    = None
         self._ip            = None
         
         future=Future(KOKORO)
@@ -597,9 +871,6 @@ class VoiceClient(object):
             The owner client of the ghost connection.
         channel : ``ChannelVoice``
             The channel where the ghost voice client is connected to.
-        Returns
-        -------
-
         """
         try:
             voice_client = await cls(client, channel)
@@ -615,13 +886,21 @@ class VoiceClient(object):
         Familiar to `.skip`, but it return when the operation id done.
         """
         async with self.lock:
-            await self._play_next()
+            await self._play_next(self, None)
     
-    async def _play_next(self):
+    @staticmethod
+    async def _play_next(self, last_source):
         """
         Starts to play the next audio object on ``.queue`` and cancels the actual one if applicable.
 
         Should be used inside of ``.lock``to ensure that the voice client is not modified pararelly.
+        
+        Parameters
+        ----------
+        self : ``VoiceClient``
+            The respective voice client.
+        last_source : `None` or ``AudioSource`` instance
+            The audio what was played.
         """
         player = self.player
         queue = self.queue
@@ -654,6 +933,62 @@ class VoiceClient(object):
         player.resumed.set()
         if self.connected.is_set():
             Task(self.set_speaking(1), KOKORO)
+        return
+    
+    @staticmethod
+    async def _loop_actual(self, last_source):
+        """
+        Repeats the last played audio if applicable.
+        
+        Should be used inside of ``.lock``to ensure that the voice client is not modified pararelly.
+        
+        Parameters
+        ----------
+        self : ``VoiceClient``
+            The respective voice client.
+        last_source : `None` or ``AudioSource`` instance
+            The audio what was played.
+        """
+        if (last_source is None) or (not last_source.REPEATABLE):
+            await self._play_next(self, None)
+            return
+        
+        player = self.player
+        if player is None:
+            # Should not happen, lol
+            self.player = AudioPlayer(self, last_source)
+        elif player.done:
+            # If we skipped the audio, `player.don`e is set as `True`, so we do not want to repeat.
+            await self._play_next(self, None)
+            return
+        else:
+            # The audio was over.
+            player.source = last_source
+            player.resumed.set()
+        
+        if self.connected.is_set():
+            Task(self.set_speaking(1), KOKORO)
+    
+    @staticmethod
+    async def _loop_queue(self, last_source):
+        """
+        Puts the last played audio back on the voice client's queue.
+        
+        Should be used inside of ``.lock``to ensure that the voice client is not modified pararelly.
+        
+        Parameters
+        ----------
+        self : ``VoiceClient``
+            The respective voice client.
+        last_source : `None` or ``AudioSource`` instance
+            The audio what was played.
+        """
+        player = self.player
+        if ((player is None) or (not player.done)) and ((last_source is not None) and last_source.REPEATABLE):
+            # The last source was not skipped an we can repeat it.
+            self.queue.append(last_source)
+        
+        await self._play_next(self, None)
         return
     
     async def _start_handshake(self):

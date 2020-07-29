@@ -2,7 +2,7 @@
 __all__ = ('HTTPClient', )
 from .dereaddons_local import multidict_titled
 
-from .helpers import TimeoutHandle, CeilTimeout, tcp_nodelay
+from .helpers import Timeout, tcp_nodelay
 from .url import URL
 from .reqrep import ClientRequest, SSL_ALLOWED_TYPES
 from .connector import TCPConnector
@@ -12,7 +12,7 @@ from .hdrs import CONTENT_LENGTH, AUTHORIZATION, METH_HEAD, LOCATION, URI, METH_
 from .websocket import WSClient
 from . import websocket
 
-DEFAULT_TIMEOUT=20.
+DEFAULT_TIMEOUT=60.
 
 class HTTPClient(object):
     __slots__=('loop','connector','proxy_url','proxy_auth', 'cookie_jar')
@@ -32,28 +32,24 @@ class HTTPClient(object):
         history         = []
         url             = URL(url)
         proxy_url       = self.proxy_url
-        timer_obj       = TimeoutHandle(self.loop,DEFAULT_TIMEOUT)
-        timer_handler   = timer_obj.start()
-        timer           = timer_obj.timer()
         
         try:
-            with timer:
+            with Timeout(self.loop, DEFAULT_TIMEOUT):
                 while True:
                     cookies=self.cookie_jar.filter_cookies(url)
                     
                     if proxy_url:
                         proxy_url=URL(proxy_url)
                     
-                    request=ClientRequest(method,url,self.loop,headers,data,params,
-                        cookies,None,proxy_url,self.proxy_auth,timer)
+                    request = ClientRequest(self.loop, method, url, headers, data, params, cookies, None, proxy_url,
+                        self.proxy_auth)
                     
-                    with CeilTimeout(self.loop,DEFAULT_TIMEOUT):
-                        connection = await self.connector.connect(request,DEFAULT_TIMEOUT)
+                    connection = await self.connector.connect(request)
                     
-                    tcp_nodelay(connection.transport,True)
+                    tcp_nodelay(connection.transport, True)
                     
                     try:
-                        response=await request.send(connection)
+                        response = await request.send(connection)
                         try:
                             await response.start(connection)
                         except:
@@ -107,23 +103,14 @@ class HTTPClient(object):
                         continue
 
                     break
-
-            # register connection
-            if response.connection is None:
-                timer_handler.cancel()
-            else:
-                response.connection.add_callback(timer_handler.cancel)
-
+            
             response.history=tuple(history)
             return response
         except BaseException:
-            timer_obj.close()
             raise
         
-    async def _request2(self, method, url, headers=None, params=None,
-            data=None, auth=None, redirects=10, read_until_eof=True,
-            proxy_url=None, proxy_auth=None, timeout=DEFAULT_TIMEOUT,
-            ssl=None):
+    async def _request2(self, method, url, headers=None, params=None, data=None, auth=None, redirects=10, read_until_eof=True,
+            proxy_url=None, proxy_auth=None, timeout=DEFAULT_TIMEOUT, ssl=None):
 
         # Transform headers to multidict_titled
         headers = multidict_titled(headers)
@@ -142,23 +129,19 @@ class HTTPClient(object):
         
         history         = []
         url             = URL(url)
-        timer_obj       = TimeoutHandle(self.loop,timeout)
-        timer_handler   = timer_obj.start()
-        timer           = timer_obj.timer()
 
         try:
-            with timer:
+            with Timer(self.loop, timeout):
                 while True:
                     cookies=self.cookie_jar.filter_cookies(url)
 
                     if proxy_url:
                         proxy_url=URL(proxy_url)
 
-                    request=ClientRequest(method,url,self.loop,headers,data,params,
-                        cookies,auth,proxy_url,proxy_auth,timer,ssl)
+                    request = ClientRequest(self.loop, method, url, headers, data, params, cookies, auth, proxy_url,
+                          proxy_auth, ssl)
                     
-                    with CeilTimeout(self.loop,timeout):
-                        connection=await self.connector.connect(request,timeout)
+                    connection=await self.connector.connect(request)
 
                     tcp_nodelay(connection.transport,True)
 

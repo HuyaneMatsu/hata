@@ -768,7 +768,7 @@ def str_guild(guild,index=None,**kwargs):
     result.append(f'- available : {guild.available}',1)
     result.append(f'- max users : {guild.max_users}',1)
     result.append(f'- max presences : {guild.max_presences}',1)
-    result.append(f'- max video channel users . {guild.max_video_channel_users}',1)
+    result.append(f'- max video channel users : {guild.max_video_channel_users}',1)
     result.append(f'- preferred locale : {guild.preferred_locale}',1)
     
     description=guild.description

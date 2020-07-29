@@ -648,35 +648,35 @@ def parse(func):
     elif analyzer.can_instance_to_async_callable():
         real_analyzer=CallableAnalyzer(func.__call__, as_method=True)
         if not real_analyzer.is_async():
-            raise ValueError(f'Not async callable type, or cannot be instanced to async: `{func!r}`.')
+            raise TypeError(f'Not async callable type, or cannot be instanced to async: `{func!r}`.')
         should_instance=True
     else:
-        raise ValueError(f'Not async callable type, or cannot be instanced to async: `{func!r}`.')
+        raise TypeError(f'Not async callable type, or cannot be instanced to async: `{func!r}`.')
     
     keyword_only_argument_count = real_analyzer.get_non_default_keyword_only_argument_count()
     if keyword_only_argument_count:
-        raise ValueError(f'The passed callable: `{real_analyzer.real_func!r}` accepts keyword only arguments.')
+        raise ValueError(f'The passed callable: `{real_analyzer.real_function!r}` accepts keyword only arguments.')
     
     arguments = real_analyzer.get_non_reserved_positional_arguments()
     args_argument = real_analyzer.args_argument
     
     argument_count = len(arguments)
     if argument_count<2:
-        raise ValueError(f'The passed callable: `{real_analyzer.real_func!r}` should accept at least 2 arguments, `client` an `message` (args ignored).')
+        raise ValueError(f'The passed callable: `{real_analyzer.real_function!r}` should accept at least 2 arguments, `client` an `message` (args ignored).')
     
     client_argument = arguments[0]
     if client_argument.has_default:
-        raise ValueError(f'The passed callable: `{real_analyzer.real_func!r}` has default argument set as it\'s first not reserved, meanwhile it should not have.')
+        raise ValueError(f'The passed callable: `{real_analyzer.real_function!r}` has default argument set as it\'s first not reserved, meanwhile it should not have.')
     
     if client_argument.has_annotation and client_argument.annoation is not Client:
-        raise ValueError(f'The passed callable: `{real_analyzer.real_func!r}` has annotation at the client\'s argument slot, what is not `{Client.__name__}`.')
+        raise ValueError(f'The passed callable: `{real_analyzer.real_function!r}` has annotation at the client\'s argument slot, what is not `{Client.__name__}`.')
     
     message_argument = arguments[1]
     if message_argument.has_default:
-        raise ValueError(f'The passed callable: `{real_analyzer.real_func!r}` has default argument set as it\'s first not reserved, meanwhile it should not have.')
+        raise ValueError(f'The passed callable: `{real_analyzer.real_function!r}` has default argument set as it\'s first not reserved, meanwhile it should not have.')
     
     if message_argument.has_annotation and message_argument.annoation is not Message:
-        raise ValueError(f'The passed callable: `{real_analyzer.real_func!r}` has annotation at the message\'s argument slot what is not `{Message.__name__}`.')
+        raise ValueError(f'The passed callable: `{real_analyzer.real_function!r}` has annotation at the message\'s argument slot what is not `{Message.__name__}`.')
     
     parsed_arguments = []
     
@@ -700,7 +700,7 @@ def parse(func):
                 try:
                     type_ = ANNOTATION_TO_TYPE_TO_NAME[annotation]
                 except KeyError:
-                    raise ValueError(f'The passed callable `{real_analyzer.real_func!r}` has annotation to type `{annotation!r}`, which is not supported.')
+                    raise ValueError(f'The passed callable `{real_analyzer.real_function!r}` has annotation to type `{annotation!r}`, which is not supported.')
                 
                 try:
                     meta = ParserMeta.INSTANCES[type_]
@@ -1378,7 +1378,6 @@ def compile_parsed(converters):
 
 class ContentParser(object):
     __slots__ = ('__func__', '_call_setting', '_is_method', '_parser', '_parser_failure_handler', )
-    __wrapper__ = 1
     __async_call__= True
     
     def __new__(cls, func=None, parser_failure_handler=None, is_method=False):

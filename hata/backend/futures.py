@@ -408,20 +408,20 @@ class Future(object):
         def cancel(self):
             if self._state is not PENDING:
                 return 0
-                
+            
             self._state=CANCELLED
             self._loop._schedule_callbacks(self)
             return 1
             
     def cancelled(self):
         return (self._state is CANCELLED)
-            
+    
     def done(self):
         return (self._state is not PENDING)
-
+    
     def pending(self):
         return (self._state is PENDING)
-
+    
     if __debug__:
         def result(self):
             state=self._state
@@ -1580,7 +1580,7 @@ class Task(Future):
         if self._state is not PENDING:
             raise InvalidStateError(self,'set_exception')
     
-        if (self._fut_waiter is None) or self._fut_waiter.pending():
+        if (self._fut_waiter is None) or self._fut_waiter.cancel():
             self._must_cancel=True
 
         if isinstance(exception,type):
@@ -1590,23 +1590,23 @@ class Task(Future):
              raise TypeError(f'{exception} cannot be raised to a {self.__class__.__name__}: {self!r}')
         
         self._exception = exception
-
+    
     def set_exception_if_pending(self,exception):
         if self._state is not PENDING:
             return 0
         
-        if (self._fut_waiter is None) or self._fut_waiter.pending():
+        if (self._fut_waiter is None) or self._fut_waiter.cancel():
             self._must_cancel=True
-
+        
         if isinstance(exception,type):
             exception=exception()
-            
+        
         if type(exception) is StopIteration:
              raise TypeError(f'{exception} cannot be raised to a {self.__class__.__name__}: {self!r}')
         
         self._exception = exception
         return 1
-
+    
     def clear(self):
         raise RuntimeError(f'{self.__class__.__name__} does not support `.clear` operation')
     
@@ -1757,7 +1757,7 @@ class AsyncQue(object):
         if waiter is None:
             self._results.append(element)
         else:
-            waiter.set_result(element)
+            waiter.set_result_if_pending(element)
             self._waiter=None
     
     def set_exception(self,exception):
@@ -1766,9 +1766,9 @@ class AsyncQue(object):
         
         waiter=self._waiter
         if waiter is not None:
-            waiter.set_exception(exception)
             self._waiter=None
-    
+            waiter.set_exception_if_pending(exception)
+            
     async def result(self):
         if self._results:
             return self._results.popleft()

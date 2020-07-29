@@ -3,11 +3,9 @@ __all__ = ('ActivityChange', 'GuildProfile', 'User', 'UserBase', 'UserFlag', 'Vo
 
 from datetime import datetime
 
-from ..backend.dereaddons_local import modulize
-
 from .bases import DiscordEntity, FlagBase, IconSlot, ICON_TYPE_NONE
 from .client_core import CACHE_USER, CACHE_PRESENCE, USERS
-from .others import parse_time, Status, DISCORD_EPOCH
+from .others import parse_time, Status, DISCORD_EPOCH_START
 from .color import Color, DefaultAvatar
 from .activity import ActivityUnknown, Activity
 from .http import URLS
@@ -17,6 +15,9 @@ from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool
 from . import others
 
 class UserFlag(FlagBase):
+    """
+    Represents a user's flags.
+    """
     __keys__ = {
         'discord_employee'          :  0,
         'discord_partner'           :  1,
@@ -66,50 +67,108 @@ if (Color.__doc__ is not None):
     """)
 
 class GuildProfile(object):
+    """
+    Represents a user's profile at a guild.
+    
+    Attributes
+    ----------
+    boosts_since : `None` or `datetime`
+        Since when the user uses it's Nitro to boost the respective guild. If the user does not boost the guild, this
+        attribute is set to `None`.
+    joined_at : `None` or `datetime`
+        The date, since the user is the member of the guild. If this field was not included with the initial data, then
+        it is set to `None`.
+    nick : `None` or `str`
+        The user's nick at the guild if it has.
+    roles : `list` of ``Role``
+        The user's roles at the guild.
+        
+        > Feel free to use `.sort()` on it.
+    """
     __slots__ = ('boosts_since', 'joined_at', 'nick', 'roles',)
     
     @property
     def created_at(self):
-        joined_at=self.joined_at
-        if joined_at is None:
-            return datetime.utcfromtimestamp(DISCORD_EPOCH)
-        return joined_at
+        """
+        Returns ``.joined_at`` if set, else the Discord epoch in datetime.
+        
+        Returns
+        -------
+        created_at : `datetime`
+        """
+        created_at = self.joined_at
+        if created_at is None:
+            created_at = DISCORD_EPOCH_START
+        return created_at
     
-    def __init__(self,data,guild):
-        self.roles=[]
+    def __init__(self, data, guild):
+        """
+        Creates a ``GuildProfile`` instance from the received guild profile data and from it's respective guild.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received guild profile data.
+        guild : ``Guild``
+            The guild profile's respective guild.
+        """
+        self.roles = []
         try:
-            joined_at_data=data['joined_at']
+            joined_at_data = data['joined_at']
         except KeyError:
-            self.joined_at=None
+            joined_at = None
         else:
-            self.joined_at=parse_time(joined_at_data)
+            joined_at = parse_time(joined_at_data)
+        
+        self.joined_at = joined_at
+        
         self._update_no_return(data,guild)
     
-    def _set_joined(self,data):
+    def _set_joined(self, data):
+        """
+        Sets ``.joined_at`` of the guild profile if it is not set yet.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received guild profile data.
+        """
         if self.joined_at is None:
             try:
-                joined_at_data=data['joined_at']
+                joined_at_data = data['joined_at']
             except KeyError:
-                self.joined_at=None
+                joined_at=None
             else:
-                self.joined_at=parse_time(joined_at_data)
+                joined_at=parse_time(joined_at_data)
+            
+            self.joined_at = joined_at
     
     def _update_no_return(self, data, guild):
-        self.nick=data.get('nick',None)
+        """
+        Updates the guild profile with overwriting it's old attributes.
         
-        roles=self.roles
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received guild profile data.
+        guild : ``Guild``
+            The guild profile's respective guild.
+        """
+        self.nick = data.get('nick',None)
+        
+        roles = self.roles
         roles.clear()
         
         guild_roles=guild.all_role
         for role_id in data['roles']:
-            role_id=int(role_id)
+            role_id = int(role_id)
             try:
-                role=guild_roles[role_id]
+                role = guild_roles[role_id]
             except KeyError:
                 continue
             roles.append(role)
         
-        boosts_since=data.get('premium_since',None)
+        boosts_since = data.get('premium_since',None)
         if (boosts_since is not None):
             boosts_since=parse_time(boosts_since)
         self.boosts_since=boosts_since
@@ -186,6 +245,18 @@ class GuildProfile(object):
         return old_attributes
     
     def get_top_role(self, default=None):
+        """
+        Returns the top role of the guild profile. If the profile has no roles, then returns the `default`'s value.
+        
+        Parameters
+        ----------
+        default : `Any`, Optional
+            Default value to return if the respective user has no roles at the respective guild. Defaults to `None`.
+        
+        Returns
+        -------
+        top_role : ``Role`` or `default`
+        """
         roles = self.roles
         if not roles:
             return default
@@ -195,6 +266,13 @@ class GuildProfile(object):
     
     @property
     def color(self):
+        """
+        Returns the color of the respective user at the respective guild.
+        
+        Returns
+        -------
+        color : ``Color``
+        """
         roles = self.roles
         if roles:
             roles.sort()
@@ -203,19 +281,37 @@ class GuildProfile(object):
                 if color:
                     return color
         
-        return Color(0)
+        return Color()
 
 class UserBase(DiscordEntity, immortal=True):
+    """
+    Base class for user instances.
+    
+    id : `int`
+        The client's unique identificator number.
+    name : str
+        The client's username.
+    discriminator : `int`
+        The client's discriminator. Given to avoid overlapping names.
+    avatar_hash : `int`
+        The client's avatar's hash in `uint128`.
+    avatar_type : `bool`
+        The client's avatar's type.
+    
+    Notes
+    -----
+    Instances of this class are weakreferable.
+    """
     __slots__ = ('name', 'discriminator', )
     
-    avatar = IconSlot('avatar', 'avatar', URLS.user_avatar_url,URLS.user_avatar_url_as)
+    avatar = IconSlot('avatar', 'avatar', URLS.user_avatar_url, URLS.user_avatar_url_as)
     
     def __init_subclass__(cls):
+        """Replaces some methods of the subclasses depending on their instance attributes."""
         rich = cls.__rich__
         if 'guild_profiles' in cls.__slots__:
             cls.color_at        = rich.color_at
             cls.name_at         = rich.name_at
-            cls.mentioned_in    = rich.mentioned_in
             cls.has_role        = rich.has_role
             cls.top_role_at     = rich.top_role_at
             cls.can_use_emoji   = rich.can_use_emoji
@@ -231,16 +327,67 @@ class UserBase(DiscordEntity, immortal=True):
         # webhook type
         if hasattr(cls,'guild'):
             cls.can_use_emoji = rich.can_use_emoji__w_guild
-        
+    
     def __str__(self):
+        """Returns the user's name."""
         return self.name
     
     def __repr__(self):
+        """Returns the user's representation."""
+        result = [
+            '<',
+            self.__class__.__name__,
+                ]
+        
         if self.partial:
-            return f'<{self.__class__.__name__} partial, id={self.id}>'
-        return f'<{self.__class__.__name__} name={self.name}#{self.discriminator:0>4}, id={self.id}>'
+            result.append(' partial')
+        else:
+            result.append(' name=')
+            result.append(repr(self.full_name))
+        
+        result.append(', id=')
+        result.append(repr(self.id))
+        result.append('>')
+        
+        return ''.join(result)
     
-    def __format__(self,code):
+    def __format__(self, code):
+        """
+        Formats the user in a format string.
+        
+        Parameters
+        ----------
+        code : `str`
+            The option on based the result will be formatted.
+        
+        Returns
+        -------
+        user : `str`
+        
+        Raises
+        ------
+        ValueError
+            Unknown format code.
+        
+        Examples
+        --------
+        >>> from hata import User, now_as_id
+        >>> user = User.precreate(now_as_id(), name='Neko', discriminator=2012)
+        >>> user
+        <User partial, id=730233383967260672>
+        >>> # no code stands for str(user).
+        >>> f'{user}'
+        'Neko'
+        >>> # 'f' stands for full name
+        >>> f'{user:f}'
+        'Neko#2012'
+        >>> # 'm' stands for mention.
+        >>> f'{user:m}'
+        '<@730233383967260672>'
+        >>> # 'c' stands for created at.
+        >>> f'{user:c}'
+        '2020.07.08-01:26:45'
+        """
         if not code:
             return self.name
         if code=='f':
@@ -290,86 +437,211 @@ class UserBase(DiscordEntity, immortal=True):
     
     @property
     def default_avatar_url(self):
+        """
+        Returns the user's default avatar's url.
+        
+        Returns
+        -------
+        default_avatar_url : `str`
+        """
         return DefaultAvatar.INSTANCES[self.discriminator%DefaultAvatar.COUNT].url
     
     @property
     def default_avatar(self):
+        """
+        Returns the user's default avatar.
+        
+        Returns
+        -------
+        default_avatar : ``DefaultAvatar``
+        """
         return DefaultAvatar.INSTANCES[self.discriminator%DefaultAvatar.COUNT]
     
     #for sorting users
-    def __gt__(self,other):
+    def __gt__(self, other):
+        """Returns whether the user's id is greater than the other's."""
         if isinstance(other,UserBase):
             return self.id>other.id
         return NotImplemented
     
-    def __ge__(self,other):
+    def __ge__(self, other):
+        """Returns whether the user's id is greater or equal to the other."""
         if isinstance(other,UserBase):
             return self.id>=other.id
         return NotImplemented
     
-    def __eq__(self,other):
+    def __eq__(self, other):
+        """Return whether the user's id is equal to the other."""
         if isinstance(other,UserBase):
             return self.id==other.id
         return NotImplemented
     
-    def __ne__(self,other):
+    def __ne__(self, other):
+        """Returns whether the user's id is different as the other's."""
         if isinstance(other,UserBase):
             return self.id!=other.id
         return NotImplemented
     
-    def __le__(self,other):
+    def __le__(self, other):
+        """Returns whether the user's id is less or equal to the other."""
         if isinstance(other,UserBase):
             return self.id<=other.id
         return NotImplemented
     
-    def __lt__(self,other):
+    def __lt__(self, other):
+        """Returns whether the user's id is less than the other's."""
         if isinstance(other,UserBase):
             return self.id<other.id
         return NotImplemented
     
     @property
     def activities(self):
+        """
+        Returns the user's activities.
+        
+        Returns
+        -------
+        activities : `list` of ``ActivityBase`` instances
+        """
         return []
     
     @property
     def status(self):
+        """
+        Returns the user's display status.
+        
+        Returns
+        -------
+        status  ``Status``
+        """
         return Status.offline
     
     @property
     def statuses(self):
+        """
+        Returns the user's statuses for each platform.
+        
+        Returns
+        -------
+        statuses : `dict` of (`str`, `str`) items
+        """
         return {}
     
     @property
     def guild_profiles(self):
+        """
+        Returns a dictionary, which contains the user's guild profiles. If the user is member of a guild, then it should
+        have a respective guild profile accordingly.
+        
+        Returns
+        -------
+        guild_profiles : `dict` of (``Guild``, ``GuildPorfile``) items
+        """
         return {}
     
     @property
     def is_bot(self):
+        """
+        Returns whether the user is a bot or a user account.
+        
+        Returns
+        -------
+        is_bot : `bool`
+        """
         return False
     
     @property
     def flags(self):
+        """
+        Returns the user's flags.
+        
+        Returns
+        -------
+        flags : ``UserFlag``
+        """
         return UserFlag()
     
     @property
     def partial(self):
+        """
+        Returns whether the user is partial. Partial users have only their ``.id`` set and every other field might not
+        reflect the reality.
+        
+        Returns
+        -------
+        partial : `bool`
+        """
         return True
     
     @property
     def activity(self):
-        return  ActivityUnknown
+        """
+        Returns the user's top activity if applicable. If not, returns ``ActivityUnknown``.
+        
+        Returns
+        -------
+        activtiy : ``ActivityBase`` instance
+        """
+        return ActivityUnknown
     
     @property
     def platform(self):
+        """
+        Returns the user's top statuse's platform. If the user is offline it will return an empty string.
+        
+        Returns
+        -------
+        platform : `str`
+        """
         return ''
 
-    def color_at(self,guild):
-        return Color(0)
+    def color_at(self, guild):
+        """
+        Returns the user's color at the given guild.
+        
+        Parameters
+        ----------
+        guild : `None` or ``Guild``
+            The guild, where the user's color will be checked.
+            
+            > Can be given as `None`.
 
-    def name_at(self,guild):
+        Returns
+        -------
+        color : ``Color``
+        """
+        return Color()
+
+    def name_at(self, guild):
+        """
+        Returns the user's name at the given guild.
+        
+        Parameters
+        ----------
+        guild : `None` or ``Guild``
+            The guild, where the user's nick will be checked.
+            
+            > Can be given as `None`.
+
+        Returns
+        -------
+        name : `str`
+        """
         return self.name
     
     def mentioned_in(self, message):
+        """
+        Returns whether the user is mentioned at a given message.
+        
+        Parameters
+        ----------
+        message : ``Message``
+            The message, what's mentions will be checked.
+        
+        Returns
+        -------
+        mentioned : `bool`
+        """
         if message.everyone_mention:
             return True
         
@@ -392,27 +664,111 @@ class UserBase(DiscordEntity, immortal=True):
         
         return False
     
-    def has_role(self,role):
+    def has_role(self, role):
+        """
+        Returns whether the user has the given role.
+        
+        Parameters
+        ----------
+        role : ``Role``
+            The role what will be checked.
+
+        Returns
+        -------
+        has_role : `bool`
+        """
         return False
     
     def top_role_at(self, guild, default=None):
+        """
+        Returns the top role of the user at the given guild.
+        
+        Parameters
+        ----------
+        guild : ``Guild`` or `None`
+            The guild where the user's top role will be looked up.
+            
+            > Can be given as `None`.
+        default : `Any`
+            If the user is not a member of the guild, or if has no roles there, zhen the given default value is returned.
+            Defaults to `None`.
+        
+        Returns
+        -------
+        top_role ``Role`` or `default`
+        """
         return default
     
     def can_use_emoji(self, emoji):
+        """
+        Returns whether the user can use the given emoji.
+        
+        Parameters
+        ----------
+        emoji : ``Emoji``
+            The emoji to check.
+        
+        Returns
+        -------
+        can_use_emoji : `bool`
+        """
         if emoji.is_unicode_emoji():
             return True
         
         return False
     
     def has_higher_role_than(self, role):
+        """
+        Returns whether the user has higher role than the given role at it's respective guild.
+        
+        If the user is the owner of the guild, then returns `True` even if it has lower role.
+        
+        Parameters
+        ----------
+        role : ``Role``
+            The role to check.
+        
+        Returns
+        -------
+        has_higher_role_than : `bool`
+        """
         return False
     
-    def has_higher_role_than_at(self, role, guild):
+    def has_higher_role_than_at(self, user, guild):
+        """
+        Returns whether the user has higher role as the other one at the given guild.
+        
+        Parameters
+        ----------
+        user : ``User``
+            The other user to check.
+        guild : ``Guild`` or `None`
+            The guild where the users' top roles will be checked.
+            
+            > Can be given as `None`.
+        
+        Returns
+        -------
+        has_higher_role_than_at : `bool`
+        """
         return False
     
-    @modulize
     class __rich__:
         def color_at(self, guild):
+            """
+            Returns the user's color at the given guild.
+            
+            Parameters
+            ----------
+            guild : `None` or ``Guild``
+                The guild, where the user's color will be checked.
+                
+                > Can be given as `None`.
+    
+            Returns
+            -------
+            color : ``Color``
+            """
             if (guild is not None):
                 try:
                     profile=self.guild_profiles[guild]
@@ -421,9 +777,23 @@ class UserBase(DiscordEntity, immortal=True):
                 else:
                     return profile.color
             
-            return Color(0)
+            return Color()
         
-        def name_at(self,guild):
+        def name_at(self, guild):
+            """
+            Returns the user's name at the given guild.
+            
+            Parameters
+            ----------
+            guild : `None` or ``Guild``
+                The guild, where the user's nick will be checked.
+                
+                > Can be given as `None`.
+    
+            Returns
+            -------
+            name : `str`
+            """
             if (guild is not None):
                 try:
                     profile=self.guild_profiles[guild]
@@ -436,32 +806,15 @@ class UserBase(DiscordEntity, immortal=True):
             
             return self.name
 
-        def mentioned_in(self,message):
-            if message.everyone_mention:
-                return True
-            
-            user_mentions=message.user_mentions
-            if user_mentions is not None and self in user_mentions:
-                return True
-            
-            role_mentions=message.role_mentions
-            if role_mentions is not None:
-                # if channel is deleted, it's guild is None
-                guild = message.channel.guild
-                if guild is not None:
-                    try:
-                        profile=self.guild_profiles[guild]
-                    except KeyError:
-                        return False
-                    
-                    for role in profile.roles:
-                        if role in role_mentions:
-                            return True
-            
-            return False
-
         @property
         def activity(self):
+            """
+            Returns the user's top activity if applicable. If not, returns ``ActivityUnknown``.
+            
+            Returns
+            -------
+            activtiy : ``ActivityBase`` instance
+            """
             activities=self.activities
             if activities:
                 return activities[0]
@@ -469,6 +822,13 @@ class UserBase(DiscordEntity, immortal=True):
 
         @property
         def platform(self):
+            """
+            Returns the user's top statuse's platform. If the user is offline it will return `an empty string.
+            
+            Returns
+            -------
+            platform : `str`
+            """
             statuses=self.statuses
             if statuses:
                 status=self.status.value
@@ -478,6 +838,18 @@ class UserBase(DiscordEntity, immortal=True):
             return ''
         
         def has_role(self,role):
+            """
+            Returns whether the user has the given role.
+            
+            Parameters
+            ----------
+            role : ``Role``
+                The role what will be checked.
+    
+            Returns
+            -------
+            has_role : `bool`
+            """
             # if role is deleted, it's guild is None
             guild = role.guild
             if guild is None:
@@ -491,6 +863,23 @@ class UserBase(DiscordEntity, immortal=True):
             return (role in profile.roles)
         
         def top_role_at(self, guild, default=None):
+            """
+            Returns the top role of the user at the given guild.
+            
+            Parameters
+            ----------
+            guild : ``Guild`` or `None`
+                The guild where the user's top role will be looked up.
+                
+                > Can be given as `None`.
+            default : `Any`
+                If the user is not a member of the guild, or if has no roles there, the given default value is returned.
+                Defaults to `None`.
+            
+            Returns
+            -------
+            top_role ``Role`` or `default`
+            """
             if (guild is not None):
                 try:
                     profile = self.guild_profiles[guild]
@@ -502,6 +891,18 @@ class UserBase(DiscordEntity, immortal=True):
             return default
         
         def can_use_emoji(self, emoji):
+            """
+            Returns whether the user can use the given emoji.
+            
+            Parameters
+            ----------
+            emoji : ``Emoji``
+                The emoji to check.
+            
+            Returns
+            -------
+            can_use_emoji : `bool`
+            """
             if emoji.is_unicode_emoji():
                 return True
             
@@ -526,7 +927,20 @@ class UserBase(DiscordEntity, immortal=True):
             
             return True
         
+        # For ``UserBase`` subclasses with `.guild` instance attribute
         def can_use_emoji__w_guild(self, emoji):
+            """
+            Returns whether the user can use the given emoji.
+            
+            Parameters
+            ----------
+            emoji : ``Emoji``
+                The emoji to check.
+            
+            Returns
+            -------
+            can_use_emoji : `bool`
+            """
             if emoji.is_unicode_emoji():
                 return True
             
@@ -545,6 +959,20 @@ class UserBase(DiscordEntity, immortal=True):
             return False
         
         def has_higher_role_than(self, role):
+            """
+            Returns whether the user has higher role than the given role at it's respective guild.
+            
+            If the user is the owner of the guild, then returns `True` even if the role check fails.
+            
+            Parameters
+            ----------
+            role : ``Role``
+                The role to check.
+            
+            Returns
+            -------
+            has_higher_role_than : `bool`
+            """
             guild = role.guild
             if guild is None:
                 return False
@@ -567,6 +995,22 @@ class UserBase(DiscordEntity, immortal=True):
             return False
         
         def has_higher_role_than_at(self, user, guild):
+            """
+            Returns whether the user has higher role as the other one at the given guild.
+            
+            Parameters
+            ----------
+            user : ``User``
+                The other user to check.
+            guild : ``Guild`` or `None`
+                The guild where the users' top roles will be checked.
+                
+                > Can be given as `None`.
+            
+            Returns
+            -------
+            has_higher_role_than_at : `bool`
+            """
             if (guild is None):
                 return False
             
@@ -610,14 +1054,50 @@ class UserBase(DiscordEntity, immortal=True):
             return False
 
 class User(UserBase):
-    if CACHE_PRESENCE:
-        __slots__=('guild_profiles', 'is_bot', 'flags', 'partial', #default User
-            'activities', 'status', 'statuses') #Presence
-    else:
-        __slots__=('guild_profiles', 'is_bot', 'flags', 'partial') #default User
+    if (UserBase.__doc__ is not None): __doc__ = ''.join([
+    """
+    Represents a Discord user.
+    
+    id : `int`
+        The user's unique identificator number.
+    name : str
+        The user's name.
+    discriminator : `int`
+        The user's discriminator. Given to avoid overlapping names.
+    avatar_hash : `int`
+        The user's avatar's hash in `uint128`.
+    avatar_type : `bool`
+        The user's avatar's type.
+    guild_profiles : `dict` of (``Guild``, ``GuildPorfile``) items
+        A dictionary, which contains the user's guild profiles. If a user is member of a guild, then it should
+        have a respective guild profile accordingly.
+    is_bot : `bool`
+        Whether the user is a bot or a user account.
+    flags : ``UserFlag``
+        The user's user flags.
+    partial : `bool`
+        Partial users have only their `.id` set and every other field might not reflect the reality.""", """
+    activities : `list` of ``AcitvityBase`` instances
+        A list of the client's activities.
+    status : `Status`
+        The user's display status.
+    statuses : `dict` of (`str`, `str`) items
+        The user's statuses for each platform.
+    """ if CACHE_PRESENCE else "", """
+    
+    Notes
+    -----
+    Instances of this class are weakreferable.
+    """])
     
     if CACHE_PRESENCE:
-        def __new__(cls,data,guild=None):
+        __slots__ = ('guild_profiles', 'is_bot', 'flags', 'partial', #default User
+            'activities', 'status', 'statuses', ) #Presence
+    else:
+        __slots__ = ('guild_profiles', 'is_bot', 'flags', 'partial', ) #default User
+    
+    if CACHE_PRESENCE:
+        def __new__(cls, data, guild=None):
             try:
                 user_data=data['user']
                 member_data=data
@@ -658,7 +1138,7 @@ class User(UserBase):
             return user
             
     elif CACHE_USER:
-        def __new__(cls,data,guild=None):
+        def __new__(cls, data, guild=None):
             try:
                 user_data=data['user']
                 member_data=data
@@ -696,7 +1176,7 @@ class User(UserBase):
             return user
     
     else:
-        def __new__(cls,data,guild=None):
+        def __new__(cls, data, guild=None):
             try:
                 user_data=data['user']
                 member_data=data
@@ -718,9 +1198,42 @@ class User(UserBase):
             
             return user
     
+    if (UserBase.__doc__ is not None):
+        __new__.__doc__ = (
+        """
+        First tries to find the user by id. If fails, then creates a new ``User`` object. If guild was given
+        and the given data contains member data as well, then it will create a respective guild profile for the user
+        too.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received user data.
+        guild : ``Guild`` or `None`, Optional
+            A respective guild from where the user data was received. It is picked up if the given data includes
+            guild member data as well.
+        
+        Returns
+        -------
+        user : ``User`` or ``Client``
+        """)
+    
     if (not CACHE_PRESENCE):
         @staticmethod
-        def _bypass_no_cache(data,guild):
+        def _bypass_no_cache(data, guild):
+            """
+            Sets a ``Client``'s guild profile.
+            
+            > Only available when user or presence caching is disabled.
+            
+            Parameters
+            ----------
+            data : `dict`
+                Received user data.
+            guild : ``Guild``
+                A respective guild from where the user data was received. Picked up if the given data includes
+                guild member data as well.
+            """
             user_data=data['user']
             member_data=data
             
@@ -742,6 +1255,44 @@ class User(UserBase):
     
     @classmethod
     def precreate(cls, user_id, **kwargs):
+        """
+        Precreates a user by creating a partial one with the given parameters. When the user is loaded, the precreated
+        one is picked up and is updated. If an already existing user would be precreated, returns that instead of
+        creating a new one, and updates it only, if it is still a partial one.
+        
+        Parameters
+        ----------
+        user_id : `int` or `str`
+            The user's id.
+        **kwargs : keyword arguments
+            Additional predefined attributes for the user.
+        
+        Other Parameters
+        ----------------
+        name : `str`, Optional
+            The user's ``.name``.
+        discriminator : `int` or `str` instance, Optional
+            The user's ``.discriminator``. Is accepted as `str` instance as well and will be converted to `int`.
+        avatar : `None`, ``Icon`` or `str`, Optional
+            The user's avatar. Mutually exclusive with `avatar_type` and `avatar_hash`.
+        avatar_type : ``Icontype``, Optional
+            The user's avatar's type. Mutually exclusive with `avatar_type`.
+        avatar_hash : `int`, Optional
+            The user's avatar hash. Mutually exclusive with `avatar`.
+        flags : ``UserFlag`` or `int` instance, Optional
+            The user's ``.flags``. If not passed as ``UserFlag``, then will be converted to it.
+        
+        Returns
+        -------
+        user : ``User`` or ``Client``
+        
+        Raises
+        ------
+        TypeError
+            If any argument's type is bad or if unexpected argument is passed.
+        ValueError
+            If an argument's type is good, but it's value is unacceptable.
+        """
         user_id = preconvert_snowflake(user_id, 'user_id')
         
         if kwargs:
@@ -797,7 +1348,15 @@ class User(UserBase):
         
         return user
     
-    def _update_no_return(self,data):
+    def _update_no_return(self, data):
+        """
+        Updates the user with the given data by overwriting it's old attributes.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            User data received from Discord.
+        """
         self.name=data['username']
         self.discriminator=int(data['discriminator'])
 
@@ -807,16 +1366,16 @@ class User(UserBase):
     
     if CACHE_PRESENCE:
         @classmethod
-        def _create_and_update(cls,data,guild=None):
+        def _create_and_update(cls, data, guild=None):
             try:
                 user_data=data['user']
                 member_data=data
             except KeyError:
                 user_data=data
                 member_data=None
-                
+            
             user_id=int(user_data['id'])
-
+            
             try:
                 user=USERS[user_id]
             except KeyError:
@@ -828,11 +1387,11 @@ class User(UserBase):
                 user.activities=[]
                 
                 USERS[user_id]=user
-
+            
             user.partial=False
             user.is_bot=user_data.get('bot',False)
             user._update_no_return(user_data)
-
+            
             if member_data is not None and guild is not None:
                 try:
                     profile=user.guild_profiles[guild]
@@ -842,7 +1401,7 @@ class User(UserBase):
                 else:
                     profile._set_joined(member_data)
                     profile._update_no_return(member_data,guild)
-        
+            
             return user
         
     elif CACHE_USER:
@@ -854,9 +1413,9 @@ class User(UserBase):
             except KeyError:
                 user_data=data
                 member_data=None
-                
+            
             user_id=int(user_data['id'])
-
+            
             try:
                 user=USERS[user_id]
             except KeyError:
@@ -865,11 +1424,11 @@ class User(UserBase):
                 user.guild_profiles={}
                 
                 USERS[user_id]=user
-
+            
             user.partial=False
             user.is_bot=user_data.get('bot',False)
             user._update_no_return(user_data)
-
+            
             if member_data is not None and guild is not None:
                 try:
                     profile=user.guild_profiles[guild]
@@ -879,12 +1438,12 @@ class User(UserBase):
                 else:
                     profile._set_joined(member_data)
                     profile._update_no_return(member_data,guild)
-        
+            
             return user
         
     else:
         @classmethod
-        def _create_and_update(cls,data,guild=None):
+        def _create_and_update(cls, data, guild=None):
             try:
                 user_data=data['user']
                 member_data=data
@@ -905,13 +1464,67 @@ class User(UserBase):
                 user.guild_profiles[guild]=GuildProfile(member_data,guild)
         
             return user
-       
+    
+    if (UserBase.__doc__ is not None):
+        __new__.__doc__ = (
+        """
+        Creates a user with the given data. If the user already exists, updates it.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received user data.
+        guild : ``Guild`` or `None`, Optional
+            A respective guild from where the user data was received. Picked up if the given data includes
+            guild member data as well.
+        
+        Returns
+        -------
+        user : ``User`` or ``Client``
+        """)
+    
     def _delete(self):
+        """
+        Deletes the user from it's guilds.
+        """
         #we cannot full delete a user, because of the mentions, so we delete it only from the guilds
-        self.guild_profiles.clear()
-
+        guild_profiles = self.guild_profiles
+        while guild_profiles:
+            guild, profile = guild_profiles.popitem()
+            try:
+                del guild.users[self.id]
+            except KeyError:
+                pass
+    
     #if CACHE_PRESENCE is False, this should be never called from this class
     def _update_presence(self, data):
+        """
+        Updates the user's presence and returns it's overwritten attributes as a `dict` with a `attribute-name` -
+        `old-value` relation. An exception from this is `activities`. If an activity is not removed, but updated, then
+        it will show up as an ``ActivityChange`` instance.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received guild member data.
+        
+        Returns
+        -------
+        old_attributes : `dict` of (`str`, `Any`) items
+            All item in the returned dict is optional.
+        
+        Returned Data Structure
+        -----------------------
+        +---------------+-------------------------------------------------------+
+        | Keys          | Values                                                |
+        +===============+=======================================================+
+        | activities    | `list` of (``ActivityBase`` or ``ActivityChange``)    |
+        +---------------+-------------------------------------------------------+
+        | status        | ``Status``                                            |
+        +---------------+-------------------------------------------------------+
+        | statuses      | `dict` of (`str`, `str`) items                        |
+        +---------------+-------------------------------------------------------+
+        """
         old_attributes={}
         
         statuses=data['client_status']
@@ -973,7 +1586,15 @@ class User(UserBase):
         
         return old_attributes
     
-    def _update_presence_no_return(self,data):
+    def _update_presence_no_return(self, data):
+        """
+        Updates the user's presences with the given data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received guild member data.
+        """
         self.status=Status.INSTANCES[data['status']]
         
         try:
@@ -1058,7 +1679,38 @@ class User(UserBase):
         return old_attributes
     
     @classmethod
-    def _update_profile(cls,data,guild):
+    def _update_profile(cls, data, guild):
+        """
+        First tries to find the user, then it's respective guild profile for the given guild to update it.
+        
+        If the method cannot find the user, or the respective guild profile, then creates them.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received guild member data.
+        guild : ``Guild``
+            The respective guild of the profile to update.
+
+        Returns
+        -------
+        user : ``user`` or ``Client``
+            The respective user.
+        old_attributes : `dict` of (`str`, `Any`) items
+            The changed attributes of the respective guild profile as a `dict` with `attribute-name` - `old-attribute`
+            relation.
+            
+            The possible keys and valus within `old_attributes` are all optional and they can be any of the following:
+            +-------------------+-----------------------+
+            | Keys              | Values                |
+            +===================+=======================+
+            | boosts_since      | `None` or `datetime`  |
+            +-------------------+-----------------------+
+            | nick              | `None` or `str`       |
+            +-------------------+-----------------------+
+            | roles             | `list` of ``Role``    |
+            +-------------------+-----------------------+
+        """
         user_id=int(data['user']['id'])
         
         try:
@@ -1072,21 +1724,35 @@ class User(UserBase):
         except KeyError:
             user.guild_profiles[guild]=GuildProfile(data,guild)
             guild.users[user_id]=user
-            return user,{}
+            return user, {}
 
         profile._set_joined(data)
-        return user,profile._update(data,guild)
+        return user, profile._update(data,guild)
     
     @classmethod
-    def _update_profile_no_return(cls,data,guild):
+    def _update_profile_no_return(cls, data, guild):
+        """
+        First tries to find the user, then it's respective guild profile for the given guild to update it.
+        
+        If the method cannot find the user, or the respective guild profile, then creates them.
+        
+        Not like ``._update_profile``, this method not calculates changes.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received guild member data.
+        guild : ``Guild``
+            The respective guild of the profile to update.
+        """
         user_id=int(data['user']['id'])
-
+        
         try:
             user=USERS[user_id]
         except KeyError:
             cls(data,guild)
             return
-
+        
         try:
             profile=user.guild_profiles[guild]
         except KeyError:
@@ -1134,10 +1800,21 @@ class User(UserBase):
             user.partial = True
             
             return user
+    
+    if (UserBase.__doc__ is not None):
+        _create_empty.__doc__ = (
+        """
+        Creates a user instance with the given `user_id` and with the default user attributes.
+        
+        Parameters
+        ----------
+        user_id : `int`
+            The user's id.
+        """)
 
 class ActivityChange(object):
     """
-    Represents an updated activity with storing the activity's and it's old updated attributes in a `dict`.
+    Represents an updated activity with storing the activity and it's old updated attributes in a `dict`.
     
     Attributes
     ----------
@@ -1375,7 +2052,6 @@ ZEROUSER = User._create_empty(0)
 others.PartialUser = PartialUser
 
 del URLS
-del modulize
 del CACHE_USER
 del CACHE_PRESENCE
 del DiscordEntity

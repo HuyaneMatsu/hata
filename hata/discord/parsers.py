@@ -4643,8 +4643,8 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
     
     Attrbiutes
     ----------
-    waitfors : `WeakValueDictionary`
-        An autoadded container to store `entity` - `async callable` pairs.
+    waitfors : `WeakValueDictionary` of (``DiscordEntity``, `asnyc-callable`) items
+        An autoadded container to store `entity` - `async-callable` pairs.
     
     Class Attributes
     ----------------
@@ -5605,7 +5605,7 @@ class EventDescriptor(object):
         | boosts_since      | `None` or `datetime`  |
         +-------------------+-----------------------+
         | nick              | `None` or `str`       |
-        +-----------------------+-------------------+
+        +-------------------+-----------------------+
         | roles             | `list` of ``Role``    |
         +-------------------+-----------------------+
     

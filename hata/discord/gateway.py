@@ -11,7 +11,7 @@ else:
     SecretBox=nacl.secret.SecretBox
     del nacl
 
-from ..backend.futures import sleep, Task, future_or_timeout, WaitTillExc, WaitTillFirst, WaitTillAll, Future, WaitContinously
+from ..backend.futures import sleep, Task, future_or_timeout, WaitTillExc, WaitTillAll, Future, WaitContinously
 from ..backend.exceptions import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
 
 from .others import to_json, from_json
@@ -19,8 +19,7 @@ from .activity import ActivityUnknown
 from .parsers import PARSERS
 from .guild import LARGE_LIMIT
 from .client_core import CACHE_PRESENCE, Kokoro, KOKORO
-from .opus import SAMPLES_PER_FRAME
-from .exceptions import IntentError
+from .exceptions import DiscordGatewayException
 
 GATEWAY_RATELIMIT_LIMIT = 120
 GATEWAY_RATELIMIT_RESET = 60.0
@@ -261,14 +260,10 @@ class DiscordGateway(object):
         waiter : `Future`, Optional
             A waiter future what is set, when the gateway finished connecting and started polling events.
         
-        Returns
-        -------
-        no_internet_stop : `bool`
-        
         Raises
         ------
-        IntentError
-            The client tries to connect with bad or not acceptable intent values.
+        DiscordGatewayException
+            The client tries to connect with bad or not acceptable intent or shard value.
         InvalidToken
             When the client's token is invalid.
         DiscordException
@@ -285,29 +280,38 @@ class DiscordGateway(object):
                     waiter = None
                 
                 while True:
-                    if (await self._poll_event()):
+                    task = Task(self._poll_event(), KOKORO)
+                    future_or_timeout(task, 60.)
+                    try:
+                        should_reconnect = await task
+                    except TimeoutError:
+                        # timeout, no internet probably
+                        return
+                    
+                    if should_reconnect:
                         task=Task(self._connect(resume=True,),KOKORO)
-                        future_or_timeout(task,30.)
+                        future_or_timeout(task, 30.)
                         await task
             
             except (OSError, TimeoutError, ConnectionError, ConnectionClosed,
                     WebSocketProtocolError, InvalidHandshake, ValueError) as err:
+                
                 if not client.running:
-                    return False
+                    return
                 
                 if isinstance(err,ConnectionClosed):
                     code = err.code
                     if code in (1000,1006):
                         continue
                     
-                    if code in (4013, 4014):
-                        raise IntentError(code) from err
+                    if code in DiscordGatewayException.CODETABLE:
+                        raise DiscordGatewayException(code) from err
                 
                 if isinstance(err,TimeoutError):
                     continue
                 
                 if isinstance(err,ConnectionError): #no internet
-                    return True
+                    return
                 
                 await sleep(1.,KOKORO)
     
@@ -342,8 +346,8 @@ class DiscordGateway(object):
                 self.websocket=None
             
             self._decompresser=zlib.decompressobj()
-            gateway = await self.client.client_gateway()
-            self.websocket = await self.client.http.connect_ws(gateway)
+            gateway_url = await self.client.client_gateway_url()
+            self.websocket = await self.client.http.connect_ws(gateway_url)
             self.kokoro.start_beating()
             
             if not resume:
@@ -386,7 +390,7 @@ class DiscordGateway(object):
         buffer=self._buffer
         try:
             while True:
-                message=await websocket.recv()
+                message = await websocket.recv()
                 if len(message)>=4 and message[-4:]==b'\x00\x00\xff\xff':
                     if buffer:
                         buffer.extend(message)
@@ -724,6 +728,10 @@ class DiscordGatewayVoice(object):
         Receive only, used at ``._received_message``.
     CLIENT_DISCONNECT : `int` = `13`
         Receive only, used at ``._received_message``.
+    VIDEO_SESSION_DESCRIPTION : `int` = `14`
+        Receive only. Not used.
+    VIDEO_SINK : `int` = `15`
+        Receive and send, not used.
     """
     __slots__ = ('client', 'kokoro', 'ratelimit_handler', 'websocket')
         
@@ -739,6 +747,8 @@ class DiscordGatewayVoice(object):
     INVALIDATE_SESSION  = 9
     CLIENT_CONNECT      = 12
     CLIENT_DISCONNECT   = 13
+    VIDEO_SESSION_DESCRIPTION = 14
+    VIDEO_SINK          = 15
     
     def __init__(self, voice_client):
         """
@@ -759,12 +769,11 @@ class DiscordGatewayVoice(object):
         """
         Starts the gateway's `.kokoro`.
         """
-        kokoro=self.kokoro
+        kokoro = self.kokoro
         if kokoro is None:
             self.kokoro = await Kokoro(self)
-            return
-        
-        await kokoro.restart()
+        else:
+            await kokoro.restart()
     
     #connecting, message receive and processing
     
@@ -835,7 +844,7 @@ class DiscordGatewayVoice(object):
         except KeyError:
             data=None
         
-        kokoro=self.kokoro
+        kokoro = self.kokoro
         
         if operation==self.HELLO:
             #sowwy, but we need to ignore these or we will keep getting timeout
@@ -874,22 +883,22 @@ class DiscordGatewayVoice(object):
         if operation==self.SPEAKING:
             user_id=int(data['user_id'])
             source=data['ssrc']
-            self.client.sources[user_id]=source
+            self.client._update_audio_source(user_id, source)
             return
         
         if operation==self.CLIENT_CONNECT:
             user_id=int(data['user_id'])
-            source=data['audio_ssrc']
-            self.client.sources[user_id]=source
+            audio_source = data['audio_ssrc']
+            #video_source = data['video_ssrc']
+            self.client._update_audio_source(user_id, audio_source)
             return
         
         if operation==self.CLIENT_DISCONNECT:
             user_id=int(data['user_id'])
-            try:
-                del self.client.sources[user_id]
-            except KeyError:
-                pass
+            self.client._remove_audio_source(user_id)
             return
+        
+        # Ignore VIDEO_SESSION_DESCRIPTION and VIDEO_SINK for now
     
     # general stuffs
     
@@ -1045,19 +1054,36 @@ class DiscordGatewayVoice(object):
             Received data from Discord.
         """
         voice_client=self.client
-        voice_client._source=data['ssrc']
-        voice_client._voice_port=data['port']
+        voice_client._audio_source=data['ssrc']
+        voice_client._audio_port=data['port']
         voice_client._endpoint_ip=data['ip']
         
         packet=bytearray(70)
-        packet[0:4]=voice_client._source.to_bytes(4,'big')
-        voice_client.socket.sendto(packet,(voice_client._endpoint_ip,voice_client._voice_port))
+        packet[0:4]=voice_client._audio_source.to_bytes(4,'big')
+        voice_client.socket.sendto(packet,(voice_client._endpoint_ip,voice_client._audio_port))
         received = await KOKORO.sock_recv(voice_client.socket,70)
         # the ip is ascii starting at the 4th byte and ending at the first null
         voice_client._ip = ip = received[4:received.index(0,4)].decode('ascii')
         voice_client._port = port =int.from_bytes(received[-2:],'big')
         
         await self._select_protocol(ip, port)
+        await self._client_connect()
+    
+    async def _client_connect(self):
+        """
+        Sends a `CLIENT_CONNECT` packet to Discord.
+        """
+        voice_client = self.client
+        data = {
+            'op': self.CLIENT_CONNECT,
+            'd': {
+                'audio_ssrc': voice_client._audio_source,
+                'video_ssrc': voice_client._video_source,
+                'rtx_ssrc': 0,
+                    }
+                }
+        
+        await self.send_as_json(data)
     
     async def _set_speaking(self, is_speaking):
         """
@@ -1109,6 +1135,25 @@ class DiscordGatewaySharder(object):
         
         self.gateways = gateways
     
+    def reshard(self):
+        """
+        Modifes the shard amount of the gateway sharder.
+        
+        > Should be called only if every shard is down.
+        """
+        gateways = self.gateways
+        
+        old_shard_count = len(gateways)
+        new_shard_count = self.client.shard_count
+        if new_shard_count > old_shard_count:
+            for shard_id in range(old_shard_count, new_shard_count):
+                gateway = DiscordGateway(self, shard_id)
+                gateways.append(gateway)
+        
+        elif new_shard_count < old_shard_count:
+            for _ in range(new_shard_count, old_shard_count):
+                gateways.pop()
+        
     async def start(self):
         """
         Starts the gateways of the sharder gateway.
@@ -1128,14 +1173,10 @@ class DiscordGatewaySharder(object):
         Runs the gateway sharder's gateways. If any of them returns, stops the rest as well. And if any of them
         returned `True`, then returns `True`, else `False`.
         
-        Returns
-        -------
-        no_internet_stop : `bool`
-        
         Raises
         ------
-        IntentError
-            The client tries to connect with bad or not acceptable intent values.
+        DiscordGatewayException
+            The client tries to connect with bad or not acceptable intent or shard value.
         InvalidToken
             When the client's token is invalid.
         DiscordException
@@ -1190,21 +1231,17 @@ class DiscordGatewaySharder(object):
                     
                     break
                 
-                no_internet_stop = result.result()
                 waiter.cancel()
-                return no_internet_stop
-            
+                result.result()
+                
             continue
         
         try:
             result = await waiter
-        except:
+        finally:
             waiter.cancel()
-            raise
         
-        no_internet_stop = result.result()
-        waiter.cancel()
-        return no_internet_stop
+        result.result()
     
     @property
     def latency(self):

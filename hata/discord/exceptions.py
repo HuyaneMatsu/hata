@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('DiscordException', 'ERROR_CODES', 'IntentError', 'InvalidToken',)
+__all__ = ('DiscordException', 'DiscordGatewayException', 'ERROR_CODES', 'InvalidToken',)
 
 class DiscordException(Exception):
     """
@@ -216,7 +216,7 @@ class DiscordException(Exception):
         
         if code:
             message_parts.append(f', code=')
-            message_parts.append(code.__repr__())
+            message_parts.append(repr(code))
 
         if message_base:
             message_parts.append(': ')
@@ -253,7 +253,8 @@ class DiscordException(Exception):
     
     def _cr_code(self):
         """
-        Parses out the Discord's inner exception code from the response's data. Sets it to `._code` and returns it as well.
+        Parses out the Discord's inner exception code from the response's data. Sets it to `._code` and returns it as
+        well.
         
         Returns
         -------
@@ -384,6 +385,7 @@ class ERROR_CODES:
     invalid_gift_redemption_exhausted = 50050
     invalid_gift_redemption_owned = 50051
     invalid_gift_self_redemption = 50054
+    cannot_delete_community_channel = 50074
     invalid_gift_redemption_subscription_managed = 100021
     invalid_gift_redemption_subscription_incompatible = 100023
     invalid_gift_redemption_invoice_open = 100024
@@ -413,7 +415,7 @@ class ERROR_CODES:
     
     resource_overloaded     = 130000
 
-class IntentError(BaseException):
+class DiscordGatewayException(BaseException):
     """
     An intent error is raised by a ``DiscordGateway`` when a ``Client`` tries to log in with an invalid intent value.
     
@@ -425,9 +427,16 @@ class IntentError(BaseException):
     Class Attributes
     ----------------
     CODETABLE : `dict` of (`int`, `str`) items
-        A dictionary to store the descriptions for each intent related gateway close code.
+        A dictionary to store the descriptions for each gateway close code.
+    INTENT_ERROR_CODES : `tuple` (`str`, `str`) = (`4013`, `4014`)
+        Close codes of intent errors.
+    RESHARD_ERROR_CODES : `tuple` (`int`,) = (`4011`,)
     """
+    INTENT_ERROR_CODES = (4013, 4014)
+    RESHARD_ERROR_CODES = (4011,)
+    
     CODETABLE = {
+        4011 : 'A gateway would have handled too many guilds, resharding is required.',
         4013 : 'An invalid intent is one that is not meaningful and not documented.',
         4014 : 'A disallowed intent is one which you have not enabled for your bot or one that your bot is not whitelisted to use.',
             }

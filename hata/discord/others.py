@@ -23,9 +23,55 @@ from . import bases
 
 PartialUser = NotImplemented
 
-#base64 conversions
+def endswith_xFFxD9(data):
+    """
+    Checks whether the given data endswith `b'\xD9\xFF'` ignoring empty bytes at the end of it.
+    
+    Parameters
+    ----------
+    data : `bytes-like`
+    
+    Returns
+    -------
+    result : `bool`
+    """
+    index = len(data)-1
+    while index > 1:
+        actual = data[index]
+        if actual == b'\xD9'[0] and data[index-1] == b'\xFF'[0]:
+            return True
+        
+        if actual:
+            return False
+        
+        index -=1
+        continue
+        
+def get_image_extension(data):
+    """
+    Gets the given raw image data's extension and returns it.
+    
+    Parameters
+    ----------
+    data : `bytes-like`
+        Image data.
+    
+    Returns
+    -------
+    extension_name : `str`
+    """
+    if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
+        extension_name = 'png'
+    elif data.startswith(b'\xFF\xD8') and endswith_xFFxD9(data):
+        extension_name = 'jpeg'
+    elif data.startswith(b'\x47\x49\x46\x38\x37\x61') or data.startswith(b'\x47\x49\x46\x38\x39\x61'):
+        extension_name = 'gif'
+    else:
+        raise ValueError('Unsupported image type given.')
+    
+    return extension_name
 
-def bytes_to_base64(data, ext=None):
+def image_to_base64(data):
     """
     Converts a bytes image to a base64 one.
     
@@ -33,8 +79,6 @@ def bytes_to_base64(data, ext=None):
     ----------
     data : `bytes-like`
         Image data.
-    ext : `str`, Optional
-        The extension of the image. If not passed, then it is lookued up from the given data.
     
     Returns
     -------
@@ -45,31 +89,16 @@ def bytes_to_base64(data, ext=None):
     ValueError
         If `ext` was not given and the given `data`'s image format is not any of the expected ones.
     """
-    if ext is None:
-        if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
-            ext='image/png'
-        elif data.startswith(b'\xFF\xD8') and data.rstrip(b'\0').endswith(b'\xFF\xD9'):
-            ext='image/jpeg'
-        elif data.startswith(b'\x47\x49\x46\x38\x37\x61') or data.startswith(b'\x47\x49\x46\x38\x39\x61'):
-            ext='image/gif'
-        else:
-            raise ValueError('Unsupported image type given')
-    return ''.join(['data:',ext,';base64,',b64encode(data).decode('ascii')])
-
-def ext_from_base64(data):
-    """
-    Returns the extension of a base64 image.
+    if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
+        extension_value = 'image/png'
+    elif data.startswith(b'\xFF\xD8') and endswith_xFFxD9(data):
+        extension_value = 'image/jpeg'
+    elif data.startswith(b'\x47\x49\x46\x38\x37\x61') or data.startswith(b'\x47\x49\x46\x38\x39\x61'):
+        extension_value = 'image/gif'
+    else:
+        raise ValueError('Unsupported image type given.')
     
-    Parameters
-    ----------
-    data : `str`
-        Base64 image data.
-    
-    Returns
-    -------
-    ext : `str`
-    """
-    return data[11:data.find(';',11)]
+    return ''.join(['data:', extension_value, ';base64,', b64encode(data).decode('ascii')])
 
 DISCORD_EPOCH=1420070400000
 # example dates:
@@ -253,7 +282,7 @@ class VerificationLevel(object):
     
     def __init__(self, value, name):
         """
-        Creates an ``VerificationLevel`` and stores it at the classe's `.INSTANCES` class attribute as well.
+        Creates a ``VerificationLevel`` and stores it at the classe's `.INSTANCES` class attribute as well.
         
         Parameters
         ----------

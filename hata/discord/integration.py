@@ -3,16 +3,54 @@ __all__ = ('Integration', )
 
 from .bases import DiscordEntity
 from .client_core import INTEGRATIONS
-from .user import User
-from .others import parse_time
+from .user import User, ZEROUSER
+from .others import parse_time, DISCORD_EPOCH_START
 from .role import PartialRole
+
+from . import role
+
+def PartialIntegration(integration_id, role=None):
+    """
+    Creates an integartion with the given id.
+    
+    If the integration already exists, returns that instead.
+    
+    Parameters
+    ----------
+    integration_id : `int`
+        The unique identificator number of the integration.
+    role : ``Role``, Optional
+        The role of the integration.
+    
+    Returns
+    -------
+    integration : ``Integration``
+    """
+    try:
+        integration = INTEGRATIONS[integration_id]
+    except KeyError:
+        integration = object.__new__(Integration)
+        integration.id = integration_id
+        integration.name = ''
+        integration.type = ''
+        integration.enabled = False
+        integration.syncing = False
+        integration.role = role
+        integration.expire_behavior = 0
+        integration.expire_grace_period = 0
+        integration.user = ZEROUSER
+        integration.account_id = ''
+        integration.account_name = ''
+        integration.synced_at = DISCORD_EPOCH_START
+    
+    return integration
 
 class Integration(DiscordEntity, immortal=True):
     """
     Represents a Discord Integration.
     
     id : `int`
-        The unique identificator numbr of the integration.
+        The unique identificator number of the integration.
     account_id : `str`
         The integration's respective account's identificator.
     account_name : `str`
@@ -30,7 +68,7 @@ class Integration(DiscordEntity, immortal=True):
     synced_at : `datetime`
         When the integration was last synced.
     syncing : `bool`
-        Is the integration syncing.
+        Whether the integration syncing.
     type : `str`
         The type of the intgation (`'twitch'`, `'youtube'`, etc).
     user : ``Client`` or ``User``
@@ -74,6 +112,17 @@ class Integration(DiscordEntity, immortal=True):
         
         return integration
     
+    @property
+    def partial(self):
+        """
+        Reuturns whether the integration is partial.
+        
+        Returns
+        -------
+        partial : `bool`
+        """
+        return (self.expire_grace_period == 0)
+    
     def __str__(self):
         """Returns the integration's name."""
         return self.name
@@ -82,4 +131,8 @@ class Integration(DiscordEntity, immortal=True):
         """Returns the integration's representation."""
         return f'<{self.__class__.__name__} type={self.type}, id={self.id}, user={self.user.full_name!r}>'
 
+# Scopes
+role.PartialIntegration = PartialIntegration
+
 del DiscordEntity
+del role

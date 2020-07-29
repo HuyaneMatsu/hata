@@ -11,7 +11,7 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
     
     +-----------------------+-------------------+
     | Respective name       | Bitwise position  |
-    +-======================+===================+
+    +=======================+===================+
     | create_instant_invite |  0                |
     +-----------------------+-------------------+
     | kick_users            |  1                |
@@ -95,7 +95,7 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
     +---------------------------+-----------------------------------------------+
     | permission_deny_text      | 0b11111111111111011000011111111111            |
     +---------------------------+-----------------------------------------------+
-    | permission_deny_voice     | 0b11111100000011111111111011111111            |
+    | permission_deny_voice     | 0b11111100000011111111110011111111            |
     +---------------------------+-----------------------------------------------+
     | permission_deny_voice_con | 0b11101100000011111111111011101111            |
     +---------------------------+-----------------------------------------------+
@@ -176,7 +176,7 @@ Permission.permission_private_bot   = Permission(0b00000000000001101100110001000
 Permission.permission_group         = Permission(0b00000000000001111100010001000000)
 Permission.permission_group_owner   = Permission(0b00000000000001111100110001000010)
 Permission.permission_deny_text     = Permission(0b11111111111111011000011111111111)
-Permission.permission_deny_voice    = Permission(0b11111100000011111111111011111111) #~voice
+Permission.permission_deny_voice    = Permission(0b11111100000011111111110011111111) #~voice
 Permission.permission_deny_voice_con= Permission(0b11101100000011111111111011101111) #~voice - manage_roles - manage_channel
 Permission.permission_deny_both     = Permission(Permission.permission_deny_text&Permission.permission_deny_voice)
 

@@ -1818,15 +1818,15 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         
         Other Parameters
         ----------------
-        name : `str`
+        name : `str`, Optional
             The channel's ``.name``.
-        topic : `str`
+        topic : `str`, Optional
             The channel's ``.topic``.
-        slowmode : `int`
+        slowmode : `int`, Optional
             The channel's ``.slowmode``.
-        type : `int`
+        type : `int`, Optional
             The channel's ``.type``.
-        nsfw : `int`
+        nsfw : `int`, Optional
             Whether the channel is marked as nsfw.
         
         Returns
@@ -2469,11 +2469,11 @@ class ChannelVoice(ChannelGuildBase):
         
         Other Parameters
         ----------------
-        name : `str`
+        name : `str`, Optional
             The channel's ``.name``.
-        bitrate : `int`
+        bitrate : `int`, Optional
             The channel's ``.bitrate``.
-        user_limit : `user_limit`
+        user_limit : `int`, Optional
             The channel's ``.user_limit``.
         
         Returns
@@ -2859,11 +2859,11 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         
         Other Parameters
         ----------------
-        name : `str`
+        name : `str`, Optional
             The channel's ``.name``.
-        icon : `int`
+        icon : `int`, Optional
             The channel's ``.icon``.
-        owner : ``User`` or ``Client
+        owner : ``User`` or ``Client, Optional
             The channel's ``.owner``.
         
         Returns
@@ -3132,7 +3132,7 @@ class ChannelCategory(ChannelGuildBase):
         
         Other Parameters
         ----------------
-        name : `str`
+        name : `str`, Optional
             The channel's ``.name``.
         
         Returns
@@ -3424,9 +3424,9 @@ class ChannelStore(ChannelGuildBase):
         
         Other Parameters
         ----------------
-        name : `str`
+        name : `str`, Optional
             The channel's ``.name``.
-        nsfw : `int`
+        nsfw : `int`, Optional
             Whether the channel is marked as nsfw.
         
         Returns

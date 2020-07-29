@@ -13,23 +13,63 @@ ChannelText = NotImplemented
 Client = NotImplemented
 
 class WebhookType(object):
-    __slots__=('name', 'value')
+    """
+    Represents a webhook's type.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the webhook type.
+    value : `int`
+        The discord side identificator value of the webhook type.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `list` of ``WebhookType``
+        Stores the predefined ``WebhookType`` instances. These can be accessed with their `value` as index.
+    
+    Every predefind webhook type can be accessed as class attribute as well:
+    
+    +-----------------------+-----------+-------+
+    | Class attribute name  | name      | value |
+    +=======================+===========+=======+
+    | none                  | NONE      | 0     |
+    +-----------------------+-----------+-------+
+    | bot                   | BOT       | 1     |
+    +-----------------------+-----------+-------+
+    | server                | SERVER    | 2     |
+    +-----------------------+-----------+-------+
+    """
+    __slots__ = ('name', 'value')
     INSTANCES = [NotImplemented] * 3
     
-    def __init__(self,value,name):
-        self.value=value
-        self.name=name
-
+    def __init__(self, value, name):
+        """
+        Creates a new ``WebhookType`` instance and stores it at the classe's `.INSTANCES` class attribute as well.
+        
+        Parameters
+        ----------
+        value : `int`
+            The discord side identificator value of the webhook type.
+        name : `str`
+            The name of the webhook type.
+        """
+        self.value = value
+        self.name = name
+        
         self.INSTANCES[value]=self
     
     def __str__(self):
+        """Returns the webhook type's name."""
         return self.name
     
     def __int__(self):
+        """Returns the webhook type's value."""
         return self.value
     
     def __repr__(self):
-        return f'{self.__class__.__name__}(value={self.value}, name=\'{self.name}\')'
+        """Returns the webhook type's representation."""
+        return f'{self.__class__.__name__}(value={self.value}, name={self.name!r})'
     
     # prefened
     none        = NotImplemented
@@ -41,6 +81,25 @@ WebhookType.bot     = WebhookType(1,'BOT')
 WebhookType.server  = WebhookType(2,'SERVER')
 
 def PartialWebhook(webhook_id, token, type_=WebhookType.bot, channel=None):
+    """
+    Creates a partial webhook from the given parameters. If the webhook with the given `webhook_id` already exists,
+    then returns that instead.
+    
+    Parameters
+    ----------
+    webhook_id : `int`
+        The identificator number of the webhook.
+    token : `str`
+        The token of the webhook.
+    type_ : ``WebhookType``, Optional
+        The webhook's type. Defaults to `WebhookType.bot`.
+    channel : ``ChannelText`` or `None`, Optional
+        The channel of the webhook. Defaults to `None`.
+    
+    Returns
+    -------
+    webhook : ``Webhook``
+    """
     try:
         webhook=USERS[webhook_id]
     except KeyError:
@@ -60,19 +119,63 @@ def PartialWebhook(webhook_id, token, type_=WebhookType.bot, channel=None):
         
         USERS[webhook_id]=webhook
     
-    webhook.token   = token
+    webhook.token = token
     return webhook
 
 
 class Webhook(UserBase):
+    """
+    Represents a Discord webhook. At some cases it might be used as webhook's user represetation.
+    
+    Attributes
+    ----------
+    id : `int`
+        The webhook's unique identificator number.
+    name : str
+        The webhook's username.
+    discriminator : `int`
+        The webhook's discriminator. Given to avoid overlapping names.
+    avatar_hash : `int`
+        The webhook's avatar's hash in `uint128`.
+    avatar_type : `bool`
+        The webhook's avatar's type.
+    channel : `None` or ``ChannelText``
+        The channel, where the webhook is going to send it's messages.
+    token : `str`
+        The webhooks's token. You need an `id` and a `token` to send webhook message.
+    type : ``WebhookType``
+        The webhook's type.
+    user : ``Client`` or ``User``
+        The creator of the webhook, or `ZEROUSER` if unknown.
+    
+    Notes
+    -----
+    Instances of this class are weakreferable.
+    """
     __slots__ = ('channel', 'token', 'type', 'user', ) #default webhook
 
     @property
     def is_bot(self):
+        """
+        Webhooks are always bots.
+        
+        Returns
+        -------
+        is_bot : `bool`
+        """
         return True
 
     @property
     def partial(self):
+        """
+        Returns whether the webhook is partial.
+        
+        A webhook is partial, if it's respective guild is unknown.
+        
+        Returns
+        -------
+        partial : `bool`
+        """
         channel = self.channel
         if channel is None:
             return True
@@ -82,7 +185,20 @@ class Webhook(UserBase):
         
         return False
     
-    def __new__(cls,data):
+    def __new__(cls, data):
+        """
+        Tries to get the webhook from the existing ones, then update it. If no webhook was found, creates a new one and
+        fills it's attributes from the data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received webhook data.
+        
+        Returns
+        -------
+        webhook : ``Webhook``
+        """
         webhook_id=int(data['id'])
         try:
             webhook=USERS[webhook_id]
@@ -94,9 +210,22 @@ class Webhook(UserBase):
         webhook._update_no_return(data)
         webhook.type=WebhookType.INSTANCES[data['type']]
         return webhook
-
+    
     @classmethod
-    def from_url(cls,url):
+    def from_url(cls, url):
+        """
+        Tries to parse the webhook's `id` and `token` from the given `url`. If succeeds, returns a partial webhook.
+        If parsing fails, returns `None`.
+        
+        Parameters
+        ----------
+        url : `str`
+            The url of the webhook.
+        
+        Returns
+        -------
+        webhook : `None` or ``Webhook``
+        """
         result=cls.urlpattern.fullmatch(url)
         if result is None:
             return None
@@ -104,36 +233,78 @@ class Webhook(UserBase):
         webhook_id = int(result.group(1))
         webhook_token = result.group(2)
         
-        return PartialWebhook(webhook_id,webhook_token)
-
-    def _update_no_return(self,data):
-        self.channel=channel=ChannelText.precreate(int(data['channel_id']))
+        return PartialWebhook(webhook_id, webhook_token)
+    
+    def _update_no_return(self, data):
+        """
+        Updates the webhook with the given data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received webhook data.
+        """
+        self.channel = channel = ChannelText.precreate(int(data['channel_id']))
         if channel.clients:
             channel.guild.webhooks[self.id]=self
-
+        
         token=data.get('token')
-        if token is not None:
+        if (token is not None):
             self.token=token
 
         name=data['name']
         if name is None:
-            self.name=''
-        else:
-            self.name=name
+            name=''
+        
+        self.name=name
 
         self.discriminator=0
 
         self._set_avatar(data)
             
         try:
-            user=data['user']
+            user_data=data['user']
         except KeyError:
-            self.user=ZEROUSER
+            user=ZEROUSER
         else:
-            self.user=User(user)
-
+            user=User(user_data)
+        self.user = user
+    
     @classmethod
     def precreate(cls, webhook_id, **kwargs):
+        """
+        Precreates the webhook by creating a partial one with the given parameters. When the webhook will be loaded,
+        the prerceated one will be picked up and will be updated. If an already existing webhook would be precreated,
+        it will be updated with the given parameters only if it is a partial one.
+        
+        Parameters
+        ----------
+        webhook_id : `int` or `str`
+            The webhook's id.
+        **kwargs : keyword arguments
+            Additional predefined attributes for the webhook.
+        
+        Other Parameters
+        ----------------
+        name : `str`, Optional
+            The webhook's ``.name``.
+        token : `str`, Optional
+            The webhook's ``.token``.
+        avatar : `None`, ``Icon`` or `str`, Optional
+            The webhooks's avatar. Mutually exclusive with `avatar_type` and `avatar_hash`.
+        avatar_type : ``Icontype``, Optional
+            The webhooks's avatar's type. Mutually exclusive with `avatar_type`.
+        avatar_hash : `int`, Optional
+            The webhooks's avatar hash. Mutually exclusive with `avatar`.
+        user : ``Client`` or ``User``, Optional
+            The webhook's ``.user``.
+        channel : ``ChannelText``, Optional
+            The webhook's ``.channel``.
+        
+        Returns
+        -------
+        webhook : ``Webhook``
+        """
         webhook_id = preconvert_snowflake(webhook_id, 'webhook_id')
         
         if kwargs:
@@ -209,12 +380,22 @@ class Webhook(UserBase):
 
     @property
     def guild(self):
-        channel=self.channel
+        """
+        Returns the webhook's guild if applicable.
+        
+        Returns
+        -------
+        guild : `None` or ``Guild``
+        """
+        channel = self.channel
         if channel is None:
             return
         return channel.guild
     
     def _delete(self):
+        """
+        Removes the webhook's references.
+        """
         channel=self.channel
         if channel is None:
             return
@@ -232,6 +413,26 @@ class Webhook(UserBase):
     
     @classmethod
     async def _from_follow_data(cls, data, source_channel, target_channel, client):
+        """
+        Creates the webhook, what executes cross-posts.
+        
+        This method is ensured after following a channel.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received webhook data.
+        source_channel : ``ChannelText`` instance
+            The followed channel.
+        target_channel : ``ChannelText`` instance
+            The target channel where the webhook messages will be sent.
+        client : ``Client``
+            The client who created the webhook.
+        
+        Returns
+        -------
+        webhook : ``Webhook``
+        """
         webhook_id=int(data['webhook_id'])
         
         guild=source_channel.guild
@@ -251,7 +452,7 @@ class Webhook(UserBase):
                 name = extra_data['name']
                 if name is None:
                     name=''
-        
+                
                 avatar_type, avatar_hash = Icon.from_base16_hash(data.get('avatar'))
         else:
             # TODO: can it be animated if the guild's icon is animated?
@@ -279,9 +480,47 @@ class Webhook(UserBase):
         return webhook
 
 class WebhookRepr(UserBase):
-    __slots__=('type', 'channel')
+    """
+    Represents a Discord webhook's user representation.
     
-    def __init__(self,data,webhook_id,type_,channel):
+    Attributes
+    ----------
+    id : `int`
+        The webhook representation's unique identificator number.
+    name : str
+        The webhook representation's username.
+    discriminator : `int`
+        The webhook representation's discriminator. Given to avoid overlapping names.
+    avatar_hash : `int`
+        The webhook representation's avatar's hash in `uint128`.
+    avatar_type : `bool`
+        The webhook representation's avatar's type.
+    channel : `None` or ``ChannelText``
+        The channel, where the webhook is going to send it's messages.
+    type : ``WebhookType``
+        The webhook's type.
+    
+    Notes
+    -----
+    Instances of the type support weakreferencing.
+    """
+    __slots__ = ('type', 'channel')
+    
+    def __init__(self, data, webhook_id, type_, channel):
+        """
+        Creates a webhook representation.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Included user data.
+        webhook_id : `int`
+            The respective webhook's identificator number.
+        type_ : ``WebhookType``
+            The respective webhook's type.
+        channel : ``ChannelText``
+            The respective webhook's channel.
+        """
         self.id=webhook_id
         self.discriminator=0
         self.name=data['username']
@@ -291,18 +530,46 @@ class WebhookRepr(UserBase):
     
     @property
     def webhook(self):
+        """
+        Creates a partial webhook from the webhook data included with the webhook representation.
+        
+        Returns
+        -------
+        webhook : ``Webhook``
+        """
         return PartialWebhook(self.id, '', self.type, self.channel)
     
     @property
     def partial(self):
+        """
+        Webhook representations are not partial.
+        
+        Returns
+        -------
+        partial : `bool`
+        """
         return False
     
     @property
     def is_bot(self):
+        """
+        Webhook representations are always bot.
+        
+        Returns
+        -------
+        is_bot : `bool`
+        """
         return True
     
     @property
     def guild(self):
+        """
+        Returns the webhook representation's guild if applicable.
+        
+        Returns
+        -------
+        guild : ``Guild`` or `None`
+        """
         return self.channel.guild
 
 ratelimit.Webhook = Webhook

@@ -760,7 +760,7 @@ class IconType(object):
         self.value = value
     
     def __str__(self):
-        """Returns the name of teh avatar type."""
+        """Returns the name of the avatar type."""
         return self.name
     
     def __int__(self):
@@ -849,7 +849,7 @@ class Icon(object):
     
     def __init__(self, icon_type, icon_hash):
         """
-        Creates a new ``Icon`` object with teh given attributes.
+        Creates a new ``Icon`` object with the given attributes.
         
         Parameters
         ----------
@@ -1132,7 +1132,7 @@ class IconSlot(object):
     
     def preconvert(self, kwargs, processable):
         """
-        Used at proconverters to parse out from teh passed kwargs the icon of the entitiy.
+        Used at proconverters to parse out from the passed kwargs the icon of the entitiy.
         
         Parameters
         ----------
@@ -1218,14 +1218,15 @@ def instance_or_id_to_instance(obj, type_):
     
     Returns
     -------
-    instance : `type`
+    instance : `type_`
     
     Raises
     ------
     TypeError
         If `obj` was not given neither as `type_`, `str` or `int` instance.
     ValueError
-        If `obj` was given as `str` or as `int` instance, but not as a valid snowflake, so `type_` cannot be precreated with it.
+        If `obj` was given as `str` or as `int` instance, but not as a valid snowflake, so `type_` cannot be precreated
+        with it.
     
     Notes
     -----

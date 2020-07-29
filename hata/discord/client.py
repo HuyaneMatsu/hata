@@ -16,14 +16,16 @@ from ..backend.hdrs import AUTHORIZATION
 from ..backend.helpers import BasicAuth
 
 from .others import Status, log_time_converter, DISCORD_EPOCH, VoiceRegion, ContentFilterLevel, PremiumType, \
-    MessageNotificationLevel, bytes_to_base64, ext_from_base64, random_id, to_json, VerificationLevel, RelationshipType
+    MessageNotificationLevel, image_to_base64, random_id, to_json, VerificationLevel, \
+    RelationshipType, get_image_extension
 from .user import User, USERS, GuildProfile, UserBase, UserFlag, PartialUser
 from .emoji import Emoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, \
     message_relativeindex, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES
 from .guild import Guild, PartialGuild, GuildEmbed, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
-    DiscoveryCategory
-from .http import DiscordHTTPClient, URLS, CDN_ENDPOINT, VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED
+    DiscoveryCategory, COMMUNITY_FEATURES
+from .http import DiscordHTTPClient, URLS, CDN_ENDPOINT
+from .http.URLS import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED
 from .role import Role, PermOW
 from .webhook import Webhook, PartialWebhook
 from .gateway import DiscordGateway, DiscordGatewaySharder
@@ -32,7 +34,7 @@ from .audit_logs import AuditLog, AuditLogIterator
 from .invite import Invite
 from .message import Message
 from .oauth2 import Connection, parse_locale, DEFAULT_LOCALE, AO2Access, UserOA2, Achievement
-from .exceptions import DiscordException, IntentError, ERROR_CODES, InvalidToken
+from .exceptions import DiscordException, DiscordGatewayException, ERROR_CODES, InvalidToken
 from .client_core import CLIENTS, CACHE_USER, CACHE_PRESENCE, KOKORO, GUILDS, DISCOVERY_CATEGORIES
 from .voice_client import VoiceClient
 from .activity import ActivityUnknown, ActivityBase, ActivityCustom
@@ -277,7 +279,7 @@ class DiscoveryCategoryRequestCacher(object):
         self._active_request = False
         self._last_update = -inf
     
-    def __get__(self, client, type_=None):
+    def __get__(self, client, type_):
         if client is None:
             return self
         
@@ -439,7 +441,7 @@ class DiscoveryTermRequestCacher(object):
         self._minimal_cleanup_interval = minimal_cleanup_interval
         self._last_cleanup = -inf
     
-    def __get__(self, client, type_=None):
+    def __get__(self, client, type_):
         if client is None:
             return self
         
@@ -613,7 +615,7 @@ class Client(UserBase):
     avatar_hash : `int`
         The client's avatar's hash in `uint128`.
     avatar_type : `bool`
-        Whether the client's avatar's type.
+        The client's avatar's type.
     guild_profiles : `dict` of (``Guild``, ``GuildPorfile``) items
         A dictionary, which contains the client's guild profiles. If a client is member of a guild, then it should
         have a respective guild profile accordingly.
@@ -621,7 +623,7 @@ class Client(UserBase):
         Whether the client is a bot or a user account.
     partial : `bool`
         Partial clients have only their id set. If any other data is set, it might not be in sync with Discord.
-    activities : `list` of ``Acitvity`` instances
+    activities : `list` of ``AcitvityBase`` instances
         A list of the client's activities.
     status : `Status`
         The client's display status.
@@ -677,7 +679,7 @@ class Client(UserBase):
         Each bot can join a channel at every ``Guild`` and meanwhile they do, they have an active voice client for that
         guild. This attribute stores these voice clients. They keys are the guilds' ids, meanwhile the values are
         the voice clients.
-    _activity : ``Activity``
+    _activity : ``ActivityBase`` instance
         The client's preffered activity.
     _additional_owner_ids : `None` or `set` of `int`
         Additional users' (as id) to be passed by the ``.is_owner`` check.
@@ -741,16 +743,14 @@ class Client(UserBase):
             When more `Client` is started up, it is recommended to define their id initially. The wrapper can detect the
             clients' id-s only when they are logging in, so the wrapper  needs to check if a ``User`` alterego of the client
             exists anywhere, and if does will replace it.
-        activity : ``Activity``, optional
+        activity : ``ActivityBase``, optional
             The client's preferred activity.
         status : `str` or ``Status``, optional
             The client's preferred status.
         is_bot : `bool`, optional
             Whether the client is a bot user or a user account. Defaults to False.
         shard_count : `int`, optional
-            The client's shard count. If passed as `0`, The client will launch up without sharding. If passed as `1`, the
-            client will use the recommended shard amount for it. At every other case, the Client will use the passed
-            amount.
+            The client's shard count. If passed as lower as the recommended one, will reshard itself.
         intents : ``IntentFlag``, optional
              By default the client will launch up using all the intent flags. Negative values will be interpretered as
              using all the intents, meanwhile if passed as positive, non existing intent flags are removed.
@@ -762,16 +762,13 @@ class Client(UserBase):
         name : `str`, Optional
             The client's ``.name``.
         discriminator : `int` or `str` instance, Optional
-            The client's ``.discriminator``. Is accepted as `str` instacne as well and will be converted to `int`.
+            The client's ``.discriminator``. Is accepted as `str` instance as well and will be converted to `int`.
         avatar : `None`, ``Icon`` or `str`, Optional
             The client's avatar. Mutually exclusive with `avatar_type` and `avatar_hash`.
         avatar_type : ``Icontype``, Optional
             The client's avatar's type. Mutually exclusive with `avatar_type`.
         avatar_hash : `int`, Optional
             The client's avatar hash. Mutually exclusive with `avatar`.
-        has_animated_avatar : `bool` or `int` instance (`0` or `1`), Optional
-            The client's ``.has_animated_avatar``. Can be other `int` instance, than `bool` as well, but their value
-            still cannot be other than `int`. Can not be passed without `avatar`.
         flags : ``UserFlag`` or `int` instance, Optional
             The client's ``.flags``. If not passed as ``UserFlag``, then will be converted to it.
         
@@ -828,6 +825,10 @@ class Client(UserBase):
         
         if shard_count<0:
             raise ValueError(f'`shard_count` can be passed only as non negative `int`, got {shard_count!r}.')
+        
+        # Default to `0`
+        if shard_count == 1:
+            shard_count = 0
         
         # intents
         intents = preconvert_flag(intents, 'intents', IntentFlag)
@@ -934,7 +935,7 @@ class Client(UserBase):
         self.activities         = []
         self._additional_owner_ids = additional_owner_ids
         self._gateway_url       = ''
-        self._gateway_time      = -99.9
+        self._gateway_time      = -inf
         self._gateway_max_concurrency = 1
         self._gateway_requesting = False
         self._gateway_waiter    = None
@@ -1113,24 +1114,24 @@ class Client(UserBase):
         else:
             raise TypeError(f'`name` can be passed as type str, got {name.__class__.__name__}.')
         
-        if avatar is _spaceholder:
-            pass
-        elif avatar is None:
-            data['avatar']=None
-        elif isinstance(avatar,(bytes,bytearray,memoryview)):
-            avatar_data=bytes_to_base64(avatar)
-            ext=ext_from_base64(avatar_data)
-            if self.premium_type.value:
-                if ext not in VALID_ICON_FORMATS_EXTENDED:
-                    raise ValueError(f'Invalid image extension: `{ext}`')
+        if (avatar is not _spaceholder):
+            if avatar is None:
+                avatar_data = None
             else:
-                if ext not in VALID_ICON_FORMATS:
-                    if ext=='gif':
-                        raise ValueError('Only premium users can have `gif` avatar!')
-                    raise ValueError(f'Invalid image extension: `{ext}`')
-            data['avatar']=avatar_data
-        else:
-            raise TypeError(f'`avatar` can be passed as `bytes-like` or None, got {avatar.__class__.__name__}.')
+                avatar_type = avatar.__class__
+                if not issubclass(avatar_type, (bytes, bytearray, memoryview)):
+                    raise TypeError(f'`avatar` can be passed as `bytes-like` or None, got {avatar_type.__name__}.')
+            
+                extension = get_image_extension(avatar)
+                if extension not in VALID_ICON_FORMATS_EXTENDED:
+                    raise ValueError(f'Invalid image extension: `{extension}`.')
+                
+                if (not self.premium_type.value) and (extension == 'gif'):
+                    raise ValueError('Only premium users can have `gif` avatar!')
+                
+                avatar_data = image_to_base64(avatar)
+            
+            data['avatar'] = avatar_data
         
         if not self.is_bot:
             if (email is not None):
@@ -1138,7 +1139,7 @@ class Client(UserBase):
             if (new_password is not None):
                 data['new_password']=new_password
         
-        data=await self.http.client_edit(data)
+        data = await self.http.client_edit(data)
         self._update_no_return(data)
         
         if not self.is_bot:
@@ -1158,23 +1159,23 @@ class Client(UserBase):
     async def client_edit_nick(self, guild, nick, reason=None):
         """
         Changes the client's nick at the specified Guild. A nick name's length can be between 1-32. An extra argument
-        reason is accepter as well, what will show zp at the respective guild's audit logs.
+        reason is accepted as well, what will show zp at the respective guild's audit logs.
         
         Parameters
         ----------
         guild : ``Guild``
             The guild where the client's nickname will be changed.
         nick : `str` or `None`
-            The client's new nickname. Pass it as None or with length 0 to remove it.
+            The client's new nickname. Pass it as `None` or with length `0` to remove it.
         reason : `str`, Optional
             Will show up at the respective guild's audit logs.
         
         Raises
         ------
         ValueError
-            If the nick's length is over 32.
+            If the nick's length is over `32`.
         TypeError
-            If the nick is not None or str instance.
+            If the nick is not `None` or `str` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -1238,7 +1239,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        activity : ``Activity``, Optional
+        activity : ``ActivityBase`` instance, Optional
             The new activity of the Client.
         status : `str` or ``Status``, Optional
             The new status of the client.
@@ -1624,14 +1625,15 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        if isinstance(icon,(bytes, bytearray, memoryview)):
-            icon_data=bytes_to_base64(icon)
-        else:
-            raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon.__class__.__name__}.')
+        icon_type = icon.__class__
+        if not issubclass(icon_type, (bytes, bytearray, memoryview)):
+            raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon_type.__name__}.')
         
-        ext=ext_from_base64(icon_data)
-        if ext not in VALID_ICON_FORMATS_EXTENDED:
-            raise ValueError(f'Invalid icon type: {ext}')
+        extension = get_image_extension(icon)
+        if extension not in VALID_ICON_FORMATS_EXTENDED:
+            raise ValueError(f'Invalid icon type: `{extension}`.')
+        
+        icon_data = image_to_base64(icon)
         
         data = {
             'name'          : {
@@ -1701,16 +1703,16 @@ class Client(UserBase):
         if (secure is not None):
             data['secure']=secure
         
-        if (icon is _spaceholder):
-            pass
-        elif isinstance(icon,(bytes, bytearray, memoryview)):
-            icon_data=bytes_to_base64(icon)
-            ext=ext_from_base64(icon_data)
-            if ext not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Invalid icon type: {ext}')
-            data['icon']=icon_data
-        else:
-            raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon.__class__.__name__}.')
+        if (icon is not _spaceholder):
+            icon_type = icon.__class__
+            if not issubclass(icon_type, (bytes, bytearray, memoryview)):
+                raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon_type.__name__}.')
+            
+            extension = get_image_extension(icon)
+            if extension not in VALID_ICON_FORMATS_EXTENDED:
+                raise ValueError(f'Invalid icon type: `{extension}`.')
+            
+            data['icon'] = image_to_base64(icon)
         
         data = await self.http.achievement_edit(self.application.id,achievement.id,data)
         achievement._update_no_return(data)
@@ -2106,18 +2108,21 @@ class Client(UserBase):
             
             data['name']=name
         
-        if icon is _spaceholder:
-            pass
-        elif icon is None:
-            data['icon']=None
-        elif isinstance(icon, (bytes, bytearray, memoryview)):
-            icon_data=bytes_to_base64(icon)
-            ext=ext_from_base64(icon_data)
-            if ext not in VALID_ICON_FORMATS:
-                raise ValueError(f'Invalid icon type: {ext}')
-            data['icon']=icon_data
-        else:
-            raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon.__class__.__name__}.')
+        if (icon is not _spaceholder):
+            if icon is None:
+                icon_data = None
+            else:
+                icon_type = icon.__class__
+                if not issubclass(icon_type, (bytes, bytearray, memoryview)):
+                    raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon_type.__name__}.')
+            
+                extension = get_image_extension(icon)
+                if extension not in VALID_ICON_FORMATS:
+                    raise ValueError(f'Invalid icon type: `{extension}`.')
+                
+                icon_data = image_to_base64(icon)
+            
+            data['icon'] = icon_data
         
         if data:
             await self.http.channel_group_edit(channel.id,data)
@@ -4743,20 +4748,22 @@ class Client(UserBase):
         if name_ln<2 or name_ln>100:
             raise ValueError(f'Guild\'s name\'s length can be between 2-100, got {name_ln}')
         
-        if (icon is None):
-            pass
-        elif isinstance(icon, (bytes, bytearray, memoryview)):
-            icon=bytes_to_base64(icon)
-            ext=ext_from_base64(icon)
-            if ext not in VALID_ICON_FORMATS:
-                raise ValueError(f'Invalid icon type: {ext}')
-        
+        if icon is None:
+            icon_data = None
         else:
-            raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon.__class__.__name__}.')
+            icon_type = icon.__class__
+            if not issubclass(icon_type, (bytes, bytearray, memoryview)):
+                raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon_type.__name__}.')
+            
+            extension = get_image_extension(icon)
+            if extension not in VALID_ICON_FORMATS:
+                raise ValueError(f'Invalid icon type: `{extension}`.')
+            
+            icon_data = image_to_base64(icon)
         
         data = {
             'name'                          : name,
-            'icon'                          : icon,
+            'icon'                          : icon_data,
             'region'                        : region.id,
             'verification_level'            : verification_level.value,
             'default_message_notifications' : message_notification_level.value,
@@ -4893,10 +4900,10 @@ class Client(UserBase):
         system_channel : `None` or ``ChannelText`` object, Optional
             The new system channel of the guild. You can remove the current one by passing is as `None`.
         rules_channel : `None` or ``ChannelText`` object, Optional
-            The new rules channel of the guild. The guild must have `PUBLIC` feature. You can remove the current
+            The new rules channel of the guild. The guild must be a Community guild. You can remove the current
             one by passing is as `None`.
         public_updates_channel : `None` or ``ChannelText`` object, Optional
-            The new publi updates channel of the guild. The guild must have `PUBLIC` feature. You can remove the
+            The new public updates channel of the guild. The guild must be a Community guild. You can remove the
             current one by passing is as `None`.
         owner : ``User`` or ``Client`` object, Optional
             The new owner of the guild. You must be the owner of the guild to transfer ownership.
@@ -4912,7 +4919,7 @@ class Client(UserBase):
             The new message notification level of the guild.
         description : `None` or `str` instance, Optional
             The new description of the guild. By passing `None`, or an empty string you can remove the current one. The
-            guild must have `PUBLIC` feaeture.
+            guild must be a Community guild.
         system_channel_flags : ``SystemChannelFlag``, Optional
             The guild's system channel's new flags.
         add_feature : (`str`, ``GuildFeature``) or (`iterable` of (`str`, ``GuildFeature``)), Optional
@@ -4932,9 +4939,9 @@ class Client(UserBase):
             - If name is shorter than 2 or longer than 100 characters.
             - If `icon`, `invite_splash`, `discovery_splash` or `banner` was passed as `bytes-like`, but it's format
                 is not any of the expected formats.
-            - If `discovery_splash` was passed meanwhile the guild has no `DISCOVERABLE` feature.
-            - If `rules_channel`, `description` or `public_updates_channel` was passed meanwhil the guild has no
-                `PUBLIC` feature.
+            - If `discovery_splash` was gvien meanwhile teh guild is not discoverable.
+            - If `rules_channel`, `description` or `public_updates_channel` was passed meanwhile the guild is not
+                Community guild.
             - If `invite_splash` was passed meanwhile the guild has no `INVITE_SPLASH` feature.
             - If `banner` was passed meanwhile the guild has no `BANNER` feature.
             - If `owner` was passed meanwhile the client is not the owner of the guild.
@@ -4948,64 +4955,83 @@ class Client(UserBase):
         if (name is not None):
             name_ln=len(name)
             if name_ln<2 or name_ln>100:
-                raise ValueError(f'Guild\'s name\'s length can be between 2-100, got {name_ln}')
+                raise ValueError(f'Guild\'s name\'s length can be between 2-100, got {name_ln}: {name!r}.')
             data['name']=name
         
         if (icon is not _spaceholder):
             if icon is None:
-                data['icon']=None
-            elif isinstance(icon, (bytes, bytearray, memoryview)):
-                icon_data=bytes_to_base64(icon)
-                ext=ext_from_base64(icon_data)
-                if ext not in (VALID_ICON_FORMATS_EXTENDED if (GuildFeature.animated_icon in guild.features) else VALID_ICON_FORMATS):
-                    raise ValueError(f'Invalid icon type: {ext}')
-                data['icon']=icon_data
+                icon_data = None
             else:
-                raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon.__class__.__name__}.')
+                icon_type = icon.__class__
+                if not issubclass(icon_type, (bytes, bytearray, memoryview)):
+                    raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon_type.__name__}.')
+                
+                extension = get_image_extension(icon)
+                if extension not in (VALID_ICON_FORMATS_EXTENDED if (GuildFeature.animated_icon in guild.features) else VALID_ICON_FORMATS):
+                    raise ValueError(f'Invalid icon type: `{extension}`.')
+                
+                icon_data = image_to_base64(icon)
+            
+            data['icon'] = icon_data
         
         if (banner is not _spaceholder):
             if GuildFeature.banner not in guild.features:
-                raise ValueError('The guild has no `BANNER` feature')
+                raise ValueError('The guild has no `BANNER` feature.')
             
             if banner is None:
-                 data['banner']=None
-            elif isinstance(banner, (bytes, bytearray, memoryview)):
-                banner_data=bytes_to_base64(banner)
-                ext=ext_from_base64(banner_data)
-                if ext not in VALID_ICON_FORMATS:
-                    raise ValueError(f'Invalid banner type: {ext}')
-                data['banner']=banner_data
+                banner_data = None
             else:
-                raise TypeError(f'`banner` can be passed as `bytes-like`, got {banner.__class__.__name__}.')
+                banner_type = banner.__class__
+                if not issubclass(banner_type, (bytes, bytearray, memoryview)):
+                    raise TypeError(f'`banner` can be passed as `bytes-like`, got {banner_type.__name__}.')
+                
+                extension = get_image_extension(banner)
+                if extension not in VALID_ICON_FORMATS:
+                    raise ValueError(f'Invalid banner type: `{extension}`.')
+                
+                banner_data = image_to_base64(banner)
+            
+            data['banner'] = banner_data
         
         if (invite_splash is not _spaceholder):
             if GuildFeature.invite_splash not in guild.features:
-                raise ValueError('The guild has no `INVITE_SPLASH` feature')
+                raise ValueError('The guild has no `INVITE_SPLASH` feature.')
+            
             if invite_splash is None:
-                 data['splash']=None
-            elif isinstance(invite_splash, (bytes, bytearray, memoryview)):
-                invite_splash_data=bytes_to_base64(invite_splash)
-                ext=ext_from_base64(invite_splash_data)
-                if ext not in VALID_ICON_FORMATS:
-                    raise ValueError(f'Invalid invite splash type: {ext!r}')
-                data['splash']=invite_splash_data
+                invite_splash_data = None
             else:
-                raise TypeError(f'`invite_splash` can be passed as `bytes-like`, got {invite_splash.__class__.__name__}.')
+                invite_splash_type = invite_splash.__class__
+                if not issubclass(invite_splash_type, (bytes, bytearray, memoryview)):
+                    raise TypeError(f'`invite_splash` can be passed as `bytes-like`, got '
+                        f'{invite_splash_type.__name__}.')
+                
+                extension = get_image_extension(invite_splash)
+                if extension not in VALID_ICON_FORMATS:
+                    raise ValueError(f'Invalid invite splash type: `{extension}`.')
+                
+                invite_splash_data = image_to_base64(invite_splash)
+                
+            data['splash'] = invite_splash_data
         
         if (discovery_splash is not _spaceholder):
             if GuildFeature.discoverable not in guild.features:
-                raise ValueError('The guild has no `DISCOVERABLE` feature')
+                raise ValueError('The guild is not discoverable and `discovery_splash` was given.')
             
             if discovery_splash is None:
-                 data['discovery_splash']=None
-            elif isinstance(discovery_splash, (bytes, bytearray, memoryview)):
-                discovery_splash_data=bytes_to_base64(banner)
-                ext=ext_from_base64(discovery_splash_data)
-                if ext not in VALID_ICON_FORMATS:
-                    raise ValueError(f'Invalid discovery_splash type: {ext}')
-                data['discovery_splash']=discovery_splash_data
+                discovery_splash_data = None
             else:
-                raise TypeError(f'`discovery_splash` can be passed as `bytes-like`, got {discovery_splash.__class__.__name__}.')
+                discovery_splash_type = discovery_splash.__class__
+                if not issubclass(discovery_splash_type, (bytes, bytearray, memoryview)):
+                    raise TypeError(f'`discovery_splash` can be passed as `bytes-like`, got '
+                        f'{discovery_splash_type.__name__}.')
+                
+                extension = get_image_extension(discovery_splash)
+                if extension not in VALID_ICON_FORMATS:
+                    raise ValueError(f'Invalid discovery_splash type: `{extension}`.')
+                
+                discovery_splash_data = image_to_base64(discovery_splash)
+            
+            data['discovery_splash'] = discovery_splash_data
         
         if (afk_channel is not _spaceholder):
             data['afk_channel_id']=None if afk_channel is None else afk_channel.id
@@ -5014,13 +5040,13 @@ class Client(UserBase):
             data['system_channel_id']=None if system_channel is None else system_channel.id
         
         if (rules_channel is not _spaceholder):
-            if GuildFeature.discoverable not in guild.features:
-                raise ValueError('The guild has no `DISCOVERABLE` feature')
+            if not COMMUNITY_FEATURES&guild.features:
+                raise ValueError('The guild is not Community guild and `rules_channel` was given.')
             data['rules_channel_id']=None if rules_channel is None else rules_channel.id
         
         if (public_updates_channel is not _spaceholder):
-            if GuildFeature.public not in guild.features:
-                raise ValueError('The guild has no `PUBLIC` feature')
+            if not COMMUNITY_FEATURES&guild.features:
+                raise ValueError('The guild is not Community guild and `public_updates_channel` was given.')
             data['public_updates_channel_id']=None if public_updates_channel is None else public_updates_channel.id
         
         if (owner is not None):
@@ -5046,8 +5072,8 @@ class Client(UserBase):
             data['default_message_notifications']=message_notification.value
         
         if (description is not _spaceholder):
-            if GuildFeature.public not in guild.features:
-                raise ValueError('The guild has no `PUBLIC` feature')
+            if not COMMUNITY_FEATURES&guild.features:
+                raise ValueError('The guild is not Community guild and `description` was given.')
             
             if (description is not None) and (not description):
                 description = None
@@ -6319,18 +6345,18 @@ class Client(UserBase):
         
         data={'name':name}
         
-        if (avatar is None):
-            pass
-        elif isinstance(avatar, (bytes, bytearray, memoryview)):
-            avatar_data=bytes_to_base64(avatar)
-            ext=ext_from_base64(avatar_data)
-            if ext not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Invalid icon type: {ext}')
-            data['avatar']=avatar_data
-        else:
-            raise TypeError(f'`icon` can be passed as `bytes-like`, got {avatar.__class__.__name__}.')
+        if (avatar is not None):
+            avatar_type = avatar.__class__
+            if not issubclass(avatar_type, (bytes, bytearray, memoryview)):
+                raise TypeError(f'`icon` can be passed as `bytes-like`, got {avatar_type.__name__}.')
+            
+            extension = get_image_extension(avatar)
+            if extension not in VALID_ICON_FORMATS_EXTENDED:
+                raise ValueError(f'Invalid icon type: `{extension}`.')
+            
+            data['avatar'] = image_to_base64(avatar)
         
-        data = await self.http.webhook_create(channel.id,data)
+        data = await self.http.webhook_create(channel.id, data)
         return Webhook(data)
 
     async def webhook_get(self, webhook_id):
@@ -6619,18 +6645,21 @@ class Client(UserBase):
             
             data['name']=name
         
-        if (avatar is _spaceholder):
-            pass
-        elif (avatar is None):
-            data['avatar']=None
-        elif isinstance(avatar, (bytes, bytearray, memoryview)):
-            avatar_data=bytes_to_base64(avatar)
-            ext=ext_from_base64(avatar_data)
-            if ext not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Invalid icon type: {ext}')
-            data['avatar']=avatar_data
-        else:
-            raise TypeError(f'`icon` can be passed as `bytes-like`, got {avatar.__class__.__name__}.')
+        if (avatar is not _spaceholder):
+            if avatar is None:
+                avatar_data = None
+            else:
+                avatar_type = avatar.__class__
+                if not issubclass(avatar_type, (bytes, bytearray, memoryview)):
+                    raise TypeError(f'`icon` can be passed as `bytes-like`, got {avatar_type.__name__}.')
+            
+                extension = get_image_extension(avatar)
+                if extension not in VALID_ICON_FORMATS_EXTENDED:
+                    raise ValueError(f'Invalid icon type: `{extension}`.')
+                
+                avatar_data = image_to_base64(avatar)
+            
+            data['avatar'] = avatar_data
         
         if (channel is not None):
             data['channel_id']=channel.id
@@ -6679,18 +6708,21 @@ class Client(UserBase):
             
             data['name']=name
         
-        if (avatar is _spaceholder):
-            pass
-        elif (avatar is None):
-            data['avatar']=None
-        elif isinstance(avatar, (bytes, bytearray, memoryview)):
-            avatar_data=bytes_to_base64(avatar)
-            ext=ext_from_base64(avatar_data)
-            if ext not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Invalid icon type: {ext}')
-            data['avatar']=avatar_data
-        else:
-            raise TypeError(f'`icon` can be passed as `bytes-like`, got {avatar.__class__.__name__}.')
+        if (avatar is not _spaceholder):
+            if avatar is None:
+                avatar_data = None
+            else:
+                avatar_type = avatar.__class__
+                if not issubclass(avatar_type, (bytes, bytearray, memoryview)):
+                    raise TypeError(f'`icon` can be passed as `bytes-like`, got {avatar_type.__name__}.')
+                
+                extension = get_image_extension(avatar)
+                if extension not in VALID_ICON_FORMATS_EXTENDED:
+                    raise ValueError(f'Invalid icon type: `{extension}`.')
+                
+                avatar_data = image_to_base64(avatar)
+            
+            data['avatar'] = avatar_data
         
         if not data:
             return #save 1 request
@@ -6877,7 +6909,7 @@ class Client(UserBase):
         -----
         Only some characters can be in the emoji's name, so every other character is filtered out.
         """
-        image=bytes_to_base64(image)
+        image=image_to_base64(image)
         name=''.join(_VALID_NAME_CHARS.findall(name))
         
         name_ln=len(name)
@@ -7912,16 +7944,13 @@ class Client(UserBase):
     
     async def client_gateway(self):
         """
-        Requests the client's gateway url. To avoid unreasoned requests when sharding, if this request was done at the
-        last `60` seconds then return the last generated url.
+        Requests the gateway information for the client.
         
-        If the method is called, when the client logs in and it's `shard_count` is set to `1`, then this method will
-        set the shard count of the client to the suggested amount by Discord.
+        Only `1` request can be done at a time and every other will yield the result of first started one.
         
         Returns
         -------
-        websocket_url : `str`
-            The url to what the gateways' webscoket will be connected.
+        data : `dict` of (`str`, `Any`) items
         
         Raises
         ------
@@ -7931,10 +7960,6 @@ class Client(UserBase):
             When the client's token is invalid.
         DiscordException
         """
-        time = self._gateway_time
-        if time+60. > monotonic():
-            return self._gateway_url
-        
         if self._gateway_requesting:
             gateway_waiter = self._gateway_waiter
             if gateway_waiter is None:
@@ -7968,36 +7993,13 @@ class Client(UserBase):
                 
                 break
             
-            #if shard count is 1, lets auto detect shard count
-            
-            if not self.running:
-                old_shard_count=self.shard_count
-                if old_shard_count==1:
-                    shard_count = data['shards']
-                    
-                    if old_shard_count==0:
-                        return #cannot change
-                    
-                    if shard_count<old_shard_count:
-                        return #cannot go down
-                    
-                    self.shard_count=shard_count
-                    
-                    gateways=self.gateway.gateways
-                    for shard_id in range(old_shard_count,shard_count):
-                        gateway=DiscordGateway(self,shard_id)
-                        gateways.append(gateway)
-            
-            url=data['url']+'?encoding=json&v=6&compress=zlib-stream'
-            self._gateway_url = url
-            self._gateway_time = monotonic()
             self._gateway_max_concurrency = data['session_start_limit'].get('max_concurrency', 1)
         except BaseException as err:
             self._gateway_requesting = False
             gateway_waiter = self._gateway_waiter
             if (gateway_waiter is not None):
                 self._gateway_waiter = None
-                gateway_waiter.set_exception(err)
+                gateway_waiter.set_exception_if_pending(err)
             
             raise
         
@@ -8005,9 +8007,84 @@ class Client(UserBase):
         gateway_waiter = self._gateway_waiter
         if (gateway_waiter is not None):
             self._gateway_waiter = None
-            gateway_waiter.set_result(url)
+            gateway_waiter.set_result_if_pending(data)
         
-        return url
+        return data
+    
+    async def client_gateway_url(self):
+        """
+        Requests the client's gateway url. To avoid unreasoned requests when sharding, if this request was done at the
+        last `60` seconds then returns the last generated url.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection or if the request raised any ``DiscordException``.
+        InvalidToken
+            When the client's token is invalid.
+        DiscordException
+        
+        Returns
+        -------
+        gateway_url : `str`
+            The url to what the gateways' webscoket will be connected.
+        """
+        if self._gateway_time > (monotonic()+60.0):
+            return self._gateway_url
+        
+        data = await self.client_gateway()
+        self._gateway_url = gateway_url = data['url']+'?encoding=json&v=6&compress=zlib-stream'
+        self._gateway_time = monotonic()
+        
+        return gateway_url
+    
+    async def client_gateway_reshard(self, force=False):
+        """
+        Reshards the client. And also updates it's gatewas url as a sidenote.
+        
+        > Should be called only if every shard is down.
+        
+        Parameters
+        ----------
+        force : `bool`
+            Whether the the client should reshard to lower amount of shards if needed.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection or if the request raised any ``DiscordException``.
+        InvalidToken
+            When the client's token is invalid.
+        DiscordException
+        """
+        data = await self.client_gateway()
+        self._gateway_url = data['url']+'?encoding=json&v=6&compress=zlib-stream'
+        self._gateway_time = monotonic()
+        
+        old_shard_count = self.shard_count
+        if old_shard_count == 0:
+            old_shard_count = 1
+        
+        new_shard_count = data['shards']
+        
+        # Do we have more shards already?
+        if (not force) and (old_shard_count >= new_shard_count):
+            return
+        
+        if new_shard_count == 1:
+            new_shard_count = 0
+        
+        self.shard_count = new_shard_count
+        
+        gateway = self.gateway
+        if type(gateway) is DiscordGateway:
+            if new_shard_count:
+                self.gateway = DiscordGatewaySharder(self)
+        else:
+            if new_shard_count:
+                gateway.reshard()
+            else:
+                self.gateway = DiscordGateway(self)
     
     #user account only
     async def hypesquad_house_change(self, house):
@@ -8151,7 +8228,7 @@ class Client(UserBase):
             return False
         
         self._init_on_ready(data)
-        await self.client_gateway()
+        await self.client_gateway_reshard()
         await self.gateway.start()
         
         if self.is_bot:
@@ -8175,51 +8252,83 @@ class Client(UserBase):
         try:
             while True:
                 try:
-                    no_internet_stop = await self.gateway.run()
-                except (GeneratorExit,CancelledError) as err:
+                    await self.gateway.run()
+                except (GeneratorExit, CancelledError) as err:
                     # For now only here. These errors occured randomly for me since I made the wrapper, only once-once,
                     # and it was not the wrapper causing them, so it is time to say STOP.
                     # I also know `GeneratorExit` will show up as RuntimeError, but it is already a RuntimeError.
                     self._freeze_voice()
-                    sys.stderr.write(
-                        f'Ignoring unexpected outer Task or coroutine cancellation at {self!r}._connect as {err!r}.\n'
-                        'The client will reconnect.\n')
+                    try:
+                        await KOKORO.render_exc_async(err,[
+                            'Ignoring unexpected outer Task or coroutine cancellation at ',
+                            repr(self),
+                            '._connect:\n',
+                                ],)
+                    except (GeneratorExit, CancelledError) as err:
+                        sys.stderr.write(
+                            f'Ignoring unexpected outer Task or coroutine cancellation at {self!r}._connect as '
+                            f'{err!r} meanwhile rendering an exception for the same reason.\n The client will '
+                            f'reconnect.\n')
                     continue
+                
+                except DiscordGatewayException as err:
+                    if err.code in DiscordGatewayException.RESHARD_ERROR_CODES:
+                        sys.stderr.write(
+                            f'{err.__class__.__name__} occured, at {self!r}._connect:\n'
+                            f'{err!r}\n'
+                            f'The client will reshard itself and reconnect.\n'
+                                )
+                        
+                        await self.client_gateway_reshard(force=True)
+                        continue
+                    
+                    raise
+                
                 else:
-                    if not no_internet_stop:
+                    if not self.running:
                         break
                     
                     self._freeze_voice()
                     while True:
                         try:
                             await sleep(5.0, KOKORO)
-                            self._gateway_time = -99.9
                             try:
-                                await self.client_gateway()
+                                # We are down, why not reshard instantly?
+                                await self.client_gateway_reshard()
                             except ConnectionError:
                                 continue
                             else:
                                 break
                         except (GeneratorExit, CancelledError) as err:
-                            sys.stderr.write(
-                                f'Ignoring unexpected outer Task or coroutine cancellation at {self!r}._connect as'
-                                f'{err!r}.\nThe client will reconnect.\n')
+                            try:
+                                await KOKORO.render_exc_async(err,[
+                                    'Ignoring unexpected outer Task or coroutine cancellation at ',
+                                    repr(self),
+                                    '._connect:\n',
+                                        ],)
+                            except (GeneratorExit, CancelledError) as err:
+                                sys.stderr.write(
+                                    f'Ignoring unexpected outer Task or coroutine cancellation at {self!r}._connect as '
+                                    f'{err!r} meanwhile rendering an exception for the same reason.\n The client will '
+                                    f'reconnect.\n')
                             continue
                     continue
-        except (IntentError, InvalidToken) as err:
-            sys.stderr.write(
-                f'{err.__class__.__name__} occured, at {self!r}._connect:\n'
-                f'{err!r}\n'
-                    )
         except BaseException as err:
-            await KOKORO.render_exc_async(err,[
-                'Unexpected exception occured at ',
-                repr(self),
-                '._connect\n',
-                    ],
-                'If you can reproduce this bug, Please send me a message or open an issue whith your code, and with '
-                'every detail how to reproduce it.\n'
-                'Thanks!\n')
+            if isinstance(err, InvalidToken) or \
+                    (isinstance(err, DiscordGatewayException) and err.code in DiscordGatewayException.INTENT_ERROR_CODES):
+                sys.stderr.write(
+                    f'{err.__class__.__name__} occured, at {self!r}._connect:\n'
+                    f'{err!r}\n'
+                        )
+            else:
+                await KOKORO.render_exc_async(err,[
+                    'Unexpected exception occured at ',
+                    repr(self),
+                    '._connect\n',
+                        ],
+                    'If you can reproduce this bug, Please send me a message or open an issue whith your code, and with '
+                    'every detail how to reproduce it.\n'
+                    'Thanks!\n')
         
         finally:
             try:
@@ -8484,7 +8593,7 @@ class Client(UserBase):
         """
         if not self.running:
             return
-
+        
         self.running=False
         shard_count=self.shard_count
         if shard_count:

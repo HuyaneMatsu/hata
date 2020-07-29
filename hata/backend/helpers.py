@@ -2,9 +2,7 @@
 import base64, binascii, re
 from collections import namedtuple
 from urllib.parse import quote
-from math import ceil
 import socket as module_socket
-from time import monotonic
 
 from .futures import CancelledError
 
@@ -118,138 +116,67 @@ def is_ip_address(host):
     raise TypeError(f'{host} [{type(host)}] is not a str or bytes')
 
 
-class EmptyTimer(object):
-    __slots__=()
-    def __enter__(self):
+class Timeout(object):
+    __slots__ = ('_handle', '_loop', '_task', '_timeouted')
+    def __new__(cls, loop, timeout):
+        self = object.__new__(cls)
+        self._loop = loop
+        self._handle = loop.call_later(timeout, cls._cancel, self)
+        self._task = None
+        self._timeouted = False
         return self
-
-    def __exit__(self,exc_type,exc_val,exc_tb):
+    
+    def cancel(self):
+        handle = self._handle
+        if handle is None:
+            return
+        
+        handle.cancel()
+        self._handle = None
+        self._task = None
+    
+    def __enter__(self):
+        if (self._handle is None):
+            raise TimeoutError from None
+        
+        task = self._loop.current_task
+        if (task is None):
+            raise RuntimeError('Timeout should be used inside a task!')
+        
+        self._task = task
+        return self
+    
+    def _cancel(self):
+        handle = self._handle
+        if handle is None:
+            return
+        
+        self._handle = None
+        
+        self._timeouted = True
+        
+        task = self._task
+        if task is None:
+            return
+        
+        task.cancel()
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        handle = self._handle
+        if (handle is not None):
+            self._handle = None
+            handle.cancel()
+        
+        self._task = None
+        
+        if self._timeouted and (exc_type is CancelledError):
+            raise TimeoutError from None
+        
         return False
-
-
-class TimeoutHandle(object):
-    __slots__=('callbacks', 'loop', 'timeout',)
-    
-    def __init__(self,loop,timeout):
-        self.timeout    = timeout
-        self.loop       = loop
-        self.callbacks  = []
-
-    def register(self,callback,*args,**kwargs):
-        self.callbacks.append((callback,args,kwargs))
-
-    def close(self):
-        self.callbacks.clear()
-
-    def start(self):
-        timeout = self.timeout
-        if timeout>0:
-            at=ceil(monotonic()+self.timeout)
-            return self.loop.call_at(at,self)
-    
-    def timer(self):
-        if self.timeout>0:
-            timer=TimerContext(self.loop)
-            self.register(timer.timeout)
-        else:
-            timer=EmptyTimer()
-        return timer
-    
-    def __call__(self):
-        callbacks = self.callbacks
-        while callbacks:
-            callback, args, kwargs = callbacks.pop()
-            try:
-                callback(*args,**kwargs)
-            except BaseException as err:
-                self.loop.render_exc_async(err,[
-                    'Exception occured at ',
-                    repr(self),
-                    '.__call__\n'
-                        ])
     
     def __repr__(self):
-        return f'<{self.__class__.__name__}, timeout={self.timeout!r}, callbacks={self.callbacks!r}>'
-        
-class Timeout(object):
-    __slots__=('cancel_handler', 'cancelled', 'loop', 'task', 'timeout',)
-    def __init__(self, loop, timeout):
-        
-        self.timeout        = timeout
-        self.loop           = loop
-        self.task           = None
-        self.cancelled      = False
-        self.cancel_handler = None
-    
-    def __enter__(self):
-        self.task = task=self.loop.current_task
-        if task is None:
-            raise RuntimeError('Timeout context manager should be used inside a task')
-        
-        self.cancel_handler=self.loop.call_later(self.timeout,self._cancel_task)
-        return self
-    
-    def __exit__(self,exc_type,exc_val,exc_tb):
-        if exc_type in (CancelledError, GeneratorExit) and self.cancelled:
-            self.cancel_handler=None
-            self.task=None
-            raise TimeoutError from None
-        
-        self.cancel_handler.cancel()
-        self.cancel_handler=None
-        self.task=None
+        return f'<{self.__class__.__name__}>'
 
-    def _cancel_task(self):
-        self.cancelled=self.task.cancel()
-
-
-class TimerContext(object):
-    __slots__=('cancelled', 'loop', 'tasks',)
-    #Low resolution timeout context manager
-
-    def __init__(self,loop):
-        self.loop       = loop
-        self.tasks      = []
-        self.cancelled  = False
-
-    def __enter__(self):
-        task=self.loop.current_task
-        if task is None:
-            raise RuntimeError('Timeout context manager should be used inside a task')
-
-        if self.cancelled:
-            task.cancel()
-            raise TimeoutError from None
-
-        self.tasks.append(task)
-        return self
-
-    def __exit__(self,exc_type,exc_val,exc_tb):
-        tasks = self.tasks
-        if tasks:
-            tasks.pop()
-
-        if exc_type in (CancelledError, GeneratorExit) and self.cancelled:
-            raise TimeoutError from None
-
-    def timeout(self):
-        if not self.cancelled:
-            for task in set(self.tasks):
-                task.cancel()
-            
-            self.cancelled=True
-
-            
-class CeilTimeout(Timeout):
-    def __enter__(self):
-        if self.timeout:
-            self.task = task = self.loop.current_task
-            if task is None:
-                raise RuntimeError('Timeout context manager should be used inside a task')
-            
-            self.cancel_handler=self.loop.call_at(ceil(self.loop.time()+self.timeout),self._cancel_task)
-        
-        return self
 
 def content_disposition_header(disptype,params,quote_fields=True):
     #Sets Content-Disposition header.

@@ -7045,10 +7045,11 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        await self.http.vanity_edit(guild.id,{code:'code'},reason)
+        await self.http.vanity_edit(guild.id,{'code':code},reason)
     
     async def invite_create(self, channel, max_age=0, max_uses=0, unique=True, temporary=False):
         """
+        Creates an invite at the given channel with teh given parameters.
         
         Parameters
         ----------
@@ -7233,7 +7234,7 @@ class Client(UserBase):
         except DiscordException as err:
             if err.code in (
                     ERROR_CODES.unknown_channel, # the channel was deleted meanwhile
-                    ERROR_CODES.missing_permissions, # permissons changed meanwhile
+                    ERROR_CODES.invalid_permissions, # permissons changed meanwhile
                         ):
                 return None
             raise

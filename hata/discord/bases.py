@@ -473,7 +473,7 @@ class FlagBase(int, metaclass = FlagMeta, baseclass=True):
     
     def __repr__(self):
         """Returns the reprsentation of the flag."""
-        return f'{self.__class__.__name__}({self!s})'
+        return f'{self.__class__.__name__}({int.__repr__(self)})'
     
     def __getitem__(self,key):
         """Returns whether a specific flag of the given name is enableds."""

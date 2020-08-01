@@ -882,6 +882,9 @@ def transform_nothing(name,data):
     change.after=data.get('new_value',None)
     return change
 
+def transform_deprecated(name, data):
+    return None
+
 def tranfrom_icon(name, data):
     change=AuditLogChange()
     if name == 'splash_hash':
@@ -986,7 +989,11 @@ def transform_overwrites(name,data):
     return change
 
 def transform_permission(name,data):
-    change=AuditLogChange()
+    change = AuditLogChange()
+    
+    if name.endswith('_new'):
+        name = name[:-4]
+    
     change.attr=name
     value=data.get('old_value',None)
     change.before=None if value is None else Permission(value)
@@ -1023,7 +1030,7 @@ def transform_role(name,data):
 
     return change
 
-def transform_snowfalke(name,data):
+def transform_snowfalke(name, data):
     change=AuditLogChange()
     change.attr=name
     value=data.get('old_value',None)
@@ -1032,7 +1039,7 @@ def transform_snowfalke(name,data):
     change.after=None if value is None else int(value)
     return change
 
-def transform_str__vanity_code(name,data):
+def transform_str__vanity_code(name, data):
     change=AuditLogChange()
     change.attr='vanity_code'
     change.before=data.get('old_value',None)
@@ -1102,7 +1109,8 @@ TRANSFORMERS = {
     '$remove'               : transform_role,
     'account_id'            : transform_snowfalke,
     'afk_channel_id'        : transform_channel,
-    'allow'                 : transform_permission,
+    'allow'                 : transform_deprecated,
+    'allow_new'             : transform_permission,
     'application_id'        : transform_snowfalke,
     'avatar_hash'           : tranfrom_icon,
     'banner_hash'           : tranfrom_icon,
@@ -1113,7 +1121,8 @@ TRANSFORMERS = {
     # deaf (bool)
     # description (None or str)
     'default_message_notifications':transform_message_notification,
-    'deny'                  : transform_permission,
+    'deny'                  : transform_deprecated,
+    'deny_new'              : transform_permission,
     'discovery_splash_hash' : tranfrom_icon,
     # enable_emoticons (bool)
     # expire_behavior (int)
@@ -1135,7 +1144,8 @@ TRANSFORMERS = {
     # position (int)
     'prune_delete_days'     : transform_int__days,
     'permission_overwrites' : transform_overwrites,
-    'permissions'           : transform_permission,
+    'permissions'           : transform_deprecated,
+    'permissions_new'       : transform_permission,
     'public_updates_channel_id' : transform_channel,
     'rate_limit_per_user'   : transform_int__slowmode,
     'region'                : transform_region,
@@ -1153,6 +1163,7 @@ TRANSFORMERS = {
     # widget_enabled (bool)
         }
 
+del transform_deprecated
 del tranfrom_icon
 del transform_bool__separated
 del transform_channel

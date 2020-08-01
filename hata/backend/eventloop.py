@@ -13,6 +13,7 @@ from .dereaddons_local import alchemy_incendiary, WeakReferer, weakmethod, metho
 from .futures import Future, Task, gather, render_exc_to_list, iscoroutine, FutureAsyncWrapper, WaitTillFirst
 from .transprotos import SSLProtocol, _SelectorSocketTransport
 from .executor import Executor
+from .analyzer import CallableAnalyzer
 
 import threading
 from .futures import _ignore_frame
@@ -197,29 +198,240 @@ class TimerWeakHandle(TimerHandle):
             if (handle is not None):
                 handle.cancel()
 
+class CyclerCallable(object):
+    """
+    An element of a ``Cycler``, which describes whether the stored callable is sync or async and what is it's ordering
+    priority.
+    
+    Attributes
+    ----------
+    func : `callable`
+        The function to call.
+    is_async : `bool`
+        Whether `func` is async.
+    priority : `int`
+        Call order priority inside of a ``Cycler``.
+    """
+    __slots__ = ('func', 'is_async', 'priority')
+    
+    def __new__(cls, func, priority):
+        """
+        Creates a new ``CyclerCallable`` instance with the given parameters.
+        
+        Parameters
+        ----------
+        func : `callable`
+            The function to call.
+        priority : `int`
+            Call order priority inside of a ``Cycler``.
+        
+        Raises
+        ------
+        TypeError
+            - `priority` is not `int` instance, neither other numeric convertable to it.
+            - `func` is not `callable`.
+            - `func` accepts less or more reserved positional arguments than `1`.
+        """
+        if type(func) is cls:
+            return func
+        
+        priority_type = type(priority)
+        if (priority_type is not int):
+            try:
+                __int__ = getattr(priority, '__int__')
+            except AttributeError:
+                raise TypeError(f'The given `priority` is not `int`, neither other numeric convertable to it, got '
+                    f'{priority_type.__name__}.') from None
+            
+            priority = __int__(priority)
+        
+        analyzer = CallableAnalyzer(func)
+        min_, max_ = analyzer.get_non_reserved_positional_argument_range()
+        if min_>1:
+            raise TypeError(f'`{func!r}` excepts at least `{min_!r}` non reserved arguments, meanwhile `1` would be '
+                'passed to it.')
+        
+        if not ((min_==1) or max_>=1 or analyzer.accepts_args()):
+            raise TypeError(f'`{func!r}` expects maximum `{max_!r}` non reserved arguments, meanwhile the event '
+                'expects to pass `1`.')
+        
+        is_async = analyzer.is_async()
+        
+        self = object.__new__(cls)
+        self.func = func
+        self.is_async = is_async
+        self.priority = priority
+        
+        return self
+    
+    def __repr__(self):
+        """Returns the cycler callable's representation."""
+        return f'{self.__class__.__name__}(func={self.func!r}, priority={self.priority!r})'
+    
+    def __gt__(self, other):
+        """Returns whether the priority of this cycler callable is greater than the other's."""
+        return self.priority > other.priority
+    
+    def __ge__(self, other):
+        """
+        Returns whether the priority of this cycler callable is greater than the other's, or if both instance is equal.
+        """
+        self_priority = self.priority
+        other_priority = other.priority
+        if self_priority > other_priority:
+            return True
+        
+        if other_priority == other_priority:
+            if self.func == other.func:
+                return True
+        
+        return False
+    
+    def __eq__(self, other):
+        """Returns whether this cycler callable equals to the other."""
+        if self.priority != other.priority:
+            return False
+        
+        if self.func != other.func:
+            return False
+        
+        return True
+    
+    def __ne__(self, other):
+        """Returns whether this cycler callable not equals to the other."""
+        if self.priority != other.priority:
+            return True
+        
+        if self.func != other.func:
+            return True
+        
+        return False
+    
+    def __le__(self, other):
+        """
+        Returns whether the priority of this cycler callable is less than the other's, or if both instance is equal.
+        """
+        self_priority = self.priority
+        other_priority = other.priority
+        if self_priority < other_priority:
+            return True
+        
+        if other_priority == other_priority:
+            if self.func == other.func:
+                return True
+        
+        return False
+
+    def __lt__(self, other):
+        """Returns whether the priority of this cycler callable is less than the other's."""
+        return self.priority < other.priority
+
+
 class Cycler(object):
-    __slots__=('cycletime', 'funcs', 'handle', 'loop',)
-    def __init__(self,loop,cycletime,*funcs):
+    """
+    Cycler of an ``EventThread`` to call the given functions every `n` amount of seconds.
+    
+    Attributes
+    ----------
+    cycle_time : `float`
+        The time interval of the cycler to call the added functions.
+    funcs : `list` of ``CyclerCallable``
+        Callables of a cycler containing whether they are sync, async, and what is their priority order.
+    handle : ``TimerHandle``
+        Hanlder, what will call the cycler when cycle time is over.
+    loop : ``EventTHread``
+        The async event loop of the cycler, what it uses to ensure itself.
+    """
+    __slots__ = ('cycle_time', 'funcs', 'handle', 'loop',)
+    
+    def __new__(cls, loop, cycle_time, *funcs, priority=0):
+        """
+        Creates a new ``Cycler`` with the given parameters.
+        
+        Parameters
+        ----------
+        loop : ``EventTHread``
+            The async event loop of the cycler, what it uses to ensure itself.
+        cycle_time : `float`
+            The time interval of the cycler to call the added functions.
+        *funcs : `callable`
+            Callables, what the cycler will call.
+        priority : `int`
+            Priority order of the added callables, which define in which order the given `funcs` will be called.
+        
+        Raises
+        ------
+        RuntimeError
+            Event loop closed.
+        TypeError
+            - `cycle_time` is not `float` instance, neither other numeric convertable to it.
+            - `priority` is not `int` instance, neither other numeric convertable to it.
+            - Any `func` is not `callable`.
+            - Any `func` accepts less or more reserved positional arguments than `1`.
+        ValueError
+            If `cycle_time` is negative or `0`.
+        """
         if not loop.running:
             raise RuntimeError('Event loop is closed.')
-        self.loop=loop
-        self.funcs=list(funcs)
-        self.cycletime=cycletime
-        if current_thread() is loop:
-            self.handle=self.loop.call_later(cycletime,self._run)
-            return
         
-        self.handle=None
-        loop.call_soon(self._start_handle_threadsafe)
-        loop.wakeup()
-
-    def _start_handle_threadsafe(self):
-        self.handle=self.loop.call_later(self.cycletime,self._run)
-
+        cycle_time_type = cycle_time.__class__
+        if cycle_time_type is not float:
+            try:
+                __float__ = getattr(cycle_time_type, '__float__')
+            except AttributeError:
+                raise TypeError(f'The given `cycle_time` is not `float`, neither other numeric convertable to it, got '
+                    f'{cycle_time_type.__name__}.') from None
+            
+            cycle_time = __float__(cycle_time)
+        
+        if cycle_time <= 0.0:
+            raise ValueError(f'{cycle_time} cannot be `0` or less, got `{cycle_time!r}`.')
+        
+        priority_type = type(priority)
+        if (priority_type is not int):
+            try:
+                __int__ = getattr(priority, '__int__')
+            except AttributeError:
+                raise TypeError(f'The given `priority` is not `int`, neither other numeric convertable to it, got '
+                    f'{priority_type.__name__}.') from None
+            
+            priority = __int__(priority)
+        
+        validated_funcs = []
+        
+        if funcs:
+            for func in funcs:
+                validated_func = CyclerCallable(func, priority)
+                validated_funcs.append(validated_func)
+            
+            validated_funcs.sort()
+        
+        self = object.__new__(cls)
+        self.loop = loop
+        self.funcs = validated_funcs
+        self.cycle_time = cycle_time
+        
+        if current_thread() is loop:
+            handle = loop.call_later(cycle_time, cls._run, self)
+        else:
+            self.handle = None
+            
+            with ThreadSyncerCTX(loop):
+                handle = loop.call_later(cycle_time, cls._run, self)
+        
+        self.handle = handle
+        
+        return self
+    
     def _run(self):
+        """
+        Runs all the functions added to the cycler.
+        """
         for func in self.funcs:
             try:
-                func(self)
+                result = func.func(self)
+                if func.is_async:
+                    Task(result, self.loop)
             except BaseException as err:
                 self.loop.render_exc_async(err,[
                     self.__class__.__name__,
@@ -228,108 +440,295 @@ class Cycler(object):
                     '\n',
                         ])
         
-        self.handle=self.loop.call_later(self.cycletime,self._run)
-
+        self.handle = self.loop.call_later(self.cycle_time, self.__class__._run, self)
+    
     def __repr__(self):
-        result=[self.__class__.__name__,'(',repr(self.loop),', ',str(self.cycletime)]
-        for func in self.funcs:
-            result.append(', ')
-            result.append(repr(func))
+        """Returns the cycler's representation."""
+        result = [
+            self.__class__.__name__,
+            '(',
+            repr(self.loop),
+            ', ',
+            str(self.cycle_time)
+                ]
+        
+        funcs = self.funcs
+        if funcs:
+            priority = funcs[0].priority
+            
+            index = 1
+            limit = len(priority)
+            while index < limit:
+                func = funcs[index]
+                if func.priority == priority:
+                    index +=1
+                    continue
+                
+                for func in funcs:
+                    result.append(', ')
+                    result.append(repr(func))
+                break
+            
+            else:
+                for func in funcs:
+                    result.append(', ')
+                    result.append(repr(func.func))
+                
+                result.append(', priority=')
+                result.append(repr(priority))
+        
         return ''.join(result)
-
+    
     def cancel(self):
-        loop=self.loop
+        """
+        Cancels the cycler.
+        
+        If called from an other thread than it's event loop, then ensures ``._cancel`` on it instead of calling it
+        right away.
+        """
+        loop = self.loop
         if current_thread() is loop:
             self._cancel()
             return
         
-        loop.call_soon_threadsafe(self._cancel)
-
+        loop.call_soon_threadsafe(self.__class__._cancel, self)
+    
     def _cancel(self):
-        handle=self.handle
-        if handle is None:
-            return
-        handle.cancel()
-        self.handle=None
-
+        """
+        Cancels the cycler.
+        
+        This method always runs on the cycler's event loop.
+        """
+        handle = self.handle
+        if (handle is not None):
+            self.handle = None
+            handle.cancel()
+    
     def call_now(self):
-        loop=self.loop
+        """
+        Calls the cycler now, doing it's cycle.
+        
+        If called from an other thread than it's event loop, then ensures ``._call_now`` on it instead of calling it
+        right away.
+        """
+        loop = self.loop
         if current_thread() is loop:
             self._call_now()
             return
         
-        loop.call_soon_threadsafe(self._call_now)
-
+        loop.call_soon_threadsafe(self.__class__._call_now, self)
+    
     def _call_now(self):
-        handle=self.handle
-        if handle is not None:
+        """
+        Calls the cycler now, doing it's cycle.
+        
+        This method always runs on the cycler's event loop.
+        """
+        handle = self.handle
+        if (handle is not None):
             handle.cancel()
+        
         self._run()
-
-    def call_now_threadsafe(self):
-        self.loop.call_soon_threadsafe(self.call_now)
-
+    
     def reschedule(self):
-        loop=self.loop
+        """
+        Reschedules the cycler, making it's cycle to start since now. If the cycler is not running, also starts it.
+        
+        If called from an other thread than it's event loop, then ensures ``._reschedule`` on it instead of calling it
+        right away.
+        """
+        loop = self.loop
         if current_thread() is loop:
             self._reschedule()
             return
         
-        loop.call_soon_threadsafe(self._reschedule)
-
+        loop.call_soon_threadsafe(self.__class__._reschedule, self)
+    
     def _reschedule(self):
-        handle=self.handle
-        if handle is not None:
+        """
+        Reschedules the cycler, making it's cycle to start since now. If the cycler is not running, also starts it.
+        
+        This method always runs on the cycler's event loop.
+        """
+        handle = self.handle
+        if (handle is not None):
             handle.cancel()
-        self.handle=self.loop.call_later(self.cycletime,self._run)
-
-    def reschedule_threadsafe(self):
-        self.loop.call_soon_threadsafe(self.reschedule)
-
+        
+        self.handle = self.loop.call_later(self.cycle_time, self.__class__._run, self)
+    
     @property
     def running(self):
+        """
+        Returns whether the cycler is currently running.
+        
+        Returns
+        -------
+        running : `str`
+        """
         return (self.handle is not None)
-
-    def set_cycletime(self,value):
-        if type(value) is not float:
-            value=float(value)
-        if value<=0.:
-            raise ValueError('cycletime cannot be 0. or less')
-        self.cycletime=value
-
-    def append(self,obj):
-        loop=self.loop
+    
+    def set_cycle_time(self, cycle_time):
+        """
+        Sets the cycle time of the cycler to teh gvien value.
+        
+        Parameters
+        ----------
+        cycle_time : `float`
+            The time interval of the cycler to call the added functions.
+        
+        Raises
+        ------
+        TypeError
+            `cycle_time` is not `float` instance, neither other numeric convertable to it.
+        ValueError
+            If `cycle_time` is negative or `0`.
+        """
+        cycle_time_type = cycle_time.__class__
+        if cycle_time_type is not float:
+            try:
+                __float__ = getattr(cycle_time_type, '__float__')
+            except AttributeError:
+                raise TypeError(f'The given `cycle_time` is not `float`, neither other numeric convertable to it, got '
+                    f'{cycle_time_type.__name__}.') from None
+            
+            cycle_time = __float__(cycle_time)
+        
+        if cycle_time <= 0.0:
+            raise ValueError(f'{cycle_time} cannot be `0` or less, got `{cycle_time!r}`.')
+        
+        self.cycle_time = cycle_time
+    
+    def append(self, func, priority=0):
+        """
+        Adds the given `func` to the cycler to call.
+        
+        If called from an other thread than it's event loop, then it will ensure adding the `func` on it's own.
+        
+        Parameters
+        ----------
+        func : `callable`
+            Callable, what the cycler will call.
+        priority : `int`
+            Priority order of the added callables, which define in which order the given `funcs` will be called.
+        
+        Raises
+        ------
+        TypeError
+            - `priority` is not `int` instance, neither other numeric convertable to it.
+            - Any `func` is not `callable`.
+            - Any `func` accepts less or more reserved positional arguments than `1`.
+        """
+        validated_func = CyclerCallable(func, priority)
+        
+        loop = self.loop
         if current_thread() is loop:
-            self.funcs.append(obj)
+            self._append(validated_func)
             return
         
-        loop.call_soon_threadsafe(self.funcs.append,obj)
-
-    def remove(self,obj):
-        loop=self.loop
+        loop.call_soon_threadsafe(self.__class__._append, self, validated_func)
+    
+    def _append(self, validated_func):
+        """
+        Adds the given `func` to the cycler to call.
+        
+        This method always runs on the cycler's event loop.
+        
+        Parameters
+        ----------
+        validated_func : ``CyclerCallable``
+            The already validated function to add.
+        """
+        funcs = self.funcs
+        funcs.append(validated_func)
+        funcs.sort()
+    
+    def remove(self, func):
+        """
+        Removes the given `func` from the cycler, so it will stop calling it.
+        
+        If called from an other thread than it's event loop, then ensures ``._remove`` on it instead of calling it
+        right away.
+        
+        Parameters
+        ----------
+        func : `callable`
+            The function to remove.
+        """
+        loop = self.loop
         if current_thread() is loop:
-            self.funcs.remove(obj)
+            self._remove(func)
             return
         
-        loop.call_soon_threadsafe(self.funcs.remove,obj)
-
-    def time_till_next_call(self):
-        handle=self.handle
+        loop.call_soon_threadsafe(self.__class__._remove, self, func)
+    
+    def _remove(self, func):
+        """
+        Removes the given `func` from the cycler, so it will stop calling it.
+        
+        This method always runs on the cycler's event loop.
+        
+        Parameters
+        ----------
+        func : `callable`
+            The function to remove.
+        """
+        index = 0
+        funcs = self.funcs
+        limit = len(funcs)
+        
+        is_cycler_callable = (type(func) is CyclerCallable)
+        
+        while index < limit:
+            to_comapre = funcs[index]
+            if (not is_cycler_callable):
+                to_comapre = to_comapre.func
+            
+            if to_comapre == func:
+                del funcs[index]
+                break
+            
+            index +=1
+            continue
+    
+    def get_time_till_next_call(self):
+        """
+        Returns how much time is left till the next cycle call.
+        
+        Might return `-1.` if the cycler is closed, or `0.` if the calls are taking place right now.
+        
+        Returns
+        -------
+        time_till_next_call : `float`
+        """
+        handle = self.handle
         if handle is None:
-            return -1. #wont be be called
-        at=handle.when-self.loop.time()
+            return -1. #w ont be be called
+        
+        at = handle.when-self.loop.time()
+        
         if at<0.:
             return 0. #right now
+        
         return at
     
-    def time_of_next_call(self):
-        handle=self.handle
+    def get_time_of_next_call(self):
+        """
+        Returns when the next cycle call will be.
+        
+        Might return `-1.` if the cycler is closed.
+        
+        Returns
+        -------
+        ime_of_next_call : `float`
+        """
+        handle = self.handle
         if handle is None:
             return -1. #wont be be called
         return handle.when
 
+
 class ThreadSyncerCTX(object):
-    __slots__=('loop', 'enter_event', 'exit_event')
+    __slots__ = ('loop', 'enter_event', 'exit_event')
 
     def __init__(self,loop):
         self.loop       = loop
@@ -888,8 +1287,8 @@ class EventThread(Executor,Thread,metaclass=EventThreadType):
             self.wakeup()
             return handle
     
-    def cycle(self,cycletime,*funcs):
-        return Cycler(self,cycletime,*funcs)
+    def cycle(self,cycle_time,*funcs):
+        return Cycler(self,cycle_time,*funcs)
     
     def _add_callback(self,handle):
         if handle.cancelled:

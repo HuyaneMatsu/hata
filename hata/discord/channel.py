@@ -16,7 +16,7 @@ from .http import URLS
 from .message import Message, MESSAGES
 from .user import User, ZEROUSER
 from .role import PermOW
-from .client_core import GC_cycler
+from .client_core import GC_CYCLER
 from .webhook import Webhook, WebhookRepr
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_bool
 
@@ -47,9 +47,9 @@ def turn_message_limiting_on(cycler):
         TURN_MESSAGE_LIMITING_ON.remove(channel)
         channel._switch_to_limited()
 
-GC_cycler.append(turn_message_limiting_on)
+GC_CYCLER.append(turn_message_limiting_on)
 
-del turn_message_limiting_on, GC_cycler
+del turn_message_limiting_on, GC_CYCLER
 
 def PartialChannel(data, partial_guild=None):
     """
@@ -402,6 +402,44 @@ class ChannelBase(DiscordEntity, immortal=True):
         if isinstance(other,ChannelBase):
             return self.id<other.id
         return NotImplemented
+    
+    @property
+    def name(self):
+        """
+        Returns the channel's name.
+        
+        Subclasses should overwrite it.
+        
+        Returns
+        -------
+        name : `str`
+        """
+        return self.__class__.__name__
+    
+    def has_name_like(self, name):
+        """
+        Returns whether the channel's name is like the given string.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name of the channel
+        
+        Returns
+        -------
+        channel : ``ChannelBase`` instance
+        """
+        if name.startswith('#'):
+            name = name[1:]
+        
+        target_name_length = len(name)
+        if target_name_length<2 or target_name_length>100:
+            return False
+        
+        if re.match(re.escape(name), self.name, re.I) is None:
+            return False
+        
+        return True
 
 #sounds funny, but this is a class
 #the chunksize is 97, because it means 1 request for _load_messages_till

@@ -19,7 +19,18 @@ class KOKOROEngine(object):
         else:
             worker = None
         self._worker = worker
-        self._engine=Engine(pool,dialect,u,**kwargs)
+        self._engine = Engine(pool,dialect,u,**kwargs)
+    
+    @property
+    def uses_single_worker(self):
+        """
+        Returns whether the engine uses a single worker.
+        
+        Returns
+        -------
+        uses_single_worker : `bool`
+        """
+        return (self._worker is not None)
     
     @property
     def dialect(self):

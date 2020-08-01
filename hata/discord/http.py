@@ -18,8 +18,6 @@ from .ratelimit import ratelimit_global, RATELIMIT_GROUPS, RatelimitHandler, NO_
 AUDIT_LOG_REASON    = Discord_hdrs.AUDIT_LOG_REASON
 RATELIMIT_PRECISION = Discord_hdrs.RATELIMIT_PRECISION
 
-
-
 ChannelGuildBase = NotImplemented
 
 @modulize
@@ -34,7 +32,8 @@ class URLS:
     
     from .bases import ICON_TYPE_NONE, ICON_TYPE_STATIC
     
-    style_pattern=re.compile('(^shield$)|(^banner[1-4]$)')
+    STYLE_PATTERN = re.compile('(^shield$)|(^banner[1-4]$)')
+    
     #returns a URL that allows the client to jump to this message
     #guild is guild's id, or @me if there is no guild
     def message_jump_url(message):
@@ -55,6 +54,8 @@ class URLS:
             guild_id = '@me'
         
         return f'{DIS_ENDPOINT}/channels/{guild_id}/{channel.id}/{message.id}'
+    
+    MESSAGE_JUMP_URL_RP = re.compile('(?:https://)?discord(?:app)?.com/channels/(?:(\d{7,21})|@me)/(\d{7,21})/(\d{7,21})')
     
     def guild_icon_url(guild):
         """
@@ -367,7 +368,7 @@ class URLS:
         ValueError
             If `style` was not passed as any of the expected values.
         """
-        if style_pattern.match(style) is None:
+        if STYLE_PATTERN.match(style) is None:
             raise ValueError(f'Invalid style: {style!r}')
         
         return f'{API_ENDPOINT}/guilds/{guild.id}/embed.png?style={style}'
@@ -390,7 +391,7 @@ class URLS:
         ValueError
             If `style` was not passed as any of the expected values.
         """
-        if style_pattern.match(style) is None:
+        if STYLE_PATTERN.match(style) is None:
             raise ValueError(f'Invalid style: {style!r}')
         
         return f'{API_ENDPOINT}/guilds/{guild.id}/widget.png?style={style}'
@@ -553,7 +554,7 @@ class URLS:
         """
         return f'{API_ENDPOINT}/webhooks/{webhook.id}/{webhook.token}'
     
-    webhook_urlpattern=re.compile('(?:https://)?discord(?:app)?.com/api/(?:v\d/)?webhooks/([0-9]{17,21})/([a-zA-Z0-9\.\-\_%]{60,68})(?:/.*)?')
+    WEBHOOK_URL_PATTERN = re.compile('(?:https://)?discord(?:app)?.com/api/(?:v\d/)?webhooks/([0-9]{17,21})/([a-zA-Z0-9\.\-\_%]{60,68})(?:/.*)?')
     
     def invite_url(invite):
         """
@@ -564,6 +565,8 @@ class URLS:
         url : `str`
         """
         return f'http://discord.gg/{invite.code}'
+    
+    INVITE_URL_PATTERN = re.compile('(?:https?://)?discord(?:\.gg|(?:app)?\.com/invite)/([a-zA-Z0-9-]+)')
     
     def activity_asset_image_large_url(activity):
         """

@@ -6,6 +6,7 @@ from .user import User, ZEROUSER, USERS, UserBase
 from .exceptions import DiscordException, ERROR_CODES
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_preinstanced_type
 from .bases import ICON_TYPE_NONE, Icon
+from .http.URLS import WEBHOOK_URL_PATTERN
 
 from . import ratelimit
 
@@ -39,9 +40,13 @@ class WebhookType(object):
     +-----------------------+-----------+-------+
     | server                | SERVER    | 2     |
     +-----------------------+-----------+-------+
+    | system_dm             | SYSTEM_DM | 3     |
+    +-----------------------+-----------+-------+
+    | official              | OFFICIAL  | 4     |
+    +-----------------------+-----------+-------+
     """
     __slots__ = ('name', 'value')
-    INSTANCES = [NotImplemented] * 3
+    INSTANCES = [NotImplemented] * 5
     
     def __init__(self, value, name):
         """
@@ -75,10 +80,14 @@ class WebhookType(object):
     none        = NotImplemented
     bot         = NotImplemented
     server      = NotImplemented
+    system_dm   = NotImplemented
+    official    = NotImplemented
 
-WebhookType.none    = WebhookType(0,'NONE')
-WebhookType.bot     = WebhookType(1,'BOT')
-WebhookType.server  = WebhookType(2,'SERVER')
+WebhookType.none      = WebhookType(0, 'NONE')
+WebhookType.bot       = WebhookType(1, 'BOT')
+WebhookType.server    = WebhookType(2, 'SERVER')
+WebhookType.system_dm = WebhookType(3, 'SYSTEM_DM')
+WebhookType.official  = WebhookType(4, 'OFFICIAL')
 
 def PartialWebhook(webhook_id, token, type_=WebhookType.bot, channel=None):
     """
@@ -226,7 +235,7 @@ class Webhook(UserBase):
         -------
         webhook : `None` or ``Webhook``
         """
-        result=cls.urlpattern.fullmatch(url)
+        result = WEBHOOK_URL_PATTERN.fullmatch(url)
         if result is None:
             return None
         
@@ -408,8 +417,7 @@ class Webhook(UserBase):
         self.channel=None
         self.user=ZEROUSER 
     
-    url=property(URLS.webhook_url)
-    urlpattern=URLS.webhook_urlpattern
+    url = property(URLS.webhook_url)
     
     @classmethod
     async def _from_follow_data(cls, data, source_channel, target_channel, client):

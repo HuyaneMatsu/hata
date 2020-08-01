@@ -1,8 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('ContentFilterLevel', 'DISCORD_EPOCH', 'FriendRequestFlag', 'Gift', 'HypesquadHouse', 'MFA',
     'MessageNotificationLevel', 'PremiumType', 'Relationship', 'RelationshipType', 'Status', 'Theme', 'Unknown',
-    'VerificationLevel', 'VoiceRegion', 'cchunkify', 'chunkify', 'filter_content', 'id_to_time', 'is_id', 'is_mention',
-    'is_role_mention', 'is_user_mention', 'now_as_id', 'random_id', 'time_to_id', )
+    'VerificationLevel', 'VoiceRegion', 'cchunkify', 'chunkify', 'filter_content', 'id_to_time', 'is_id',
+    'is_invite_code', 'is_mention', 'is_role_mention', 'is_user_mention', 'now_as_id', 'random_id', 'time_to_id', )
 
 import random, re, sys
 from datetime import datetime
@@ -1304,7 +1304,7 @@ def log_time_converter(value):
     raise TypeError(f'Expected `int`, `{DiscordEntity.__name__}` instance, or a `datetime` object, got '
         f'`{value.__class__.__name__}`.')
 
-IS_ID_RP=re.compile('(\d{7,21})')
+ID_RP=re.compile('(\d{7,21})')
 IS_MENTION_RP=re.compile('@everyone|@here|<@[!&]?\d{7,21}>|<#\d{7,21}>')
 
 USER_MENTION_RP=re.compile('<@!?(\d{7,21})>')
@@ -1314,6 +1314,7 @@ ROLE_MENTION_RP=re.compile('<@&(\d{7,21})>')
 EMOJI_RP=re.compile('<([a]{0,1}):([a-zA-Z0-9_]{2,32}(~[1-9]){0,1}):(\d{7,21})>')
 EMOJI_NAME_RP=re.compile(':{0,1}([a-zA-Z0-9_\\-~]{1,32}):{0,1}')
 FILTER_RP=re.compile('("(.+?)"|\S+)')
+INVITE_CODE_RP = re.compile('([a-zA-Z0-9-]+)')
 
 def is_id(text):
     """
@@ -1327,7 +1328,7 @@ def is_id(text):
     -------
     result : `bool`
     """
-    return IS_ID_RP.fullmatch(text) is not None
+    return ID_RP.fullmatch(text) is not None
 
 def is_mention(text):
     """
@@ -1364,7 +1365,7 @@ def is_channel_mention(text):
     Parameters
     ----------
     text : `str`
-
+    
     Returns
     -------
     result : `bool`
@@ -1378,17 +1379,31 @@ def is_role_mention(text):
     Parameters
     ----------
     text : `str`
-
+    
     Returns
     -------
     result : `bool`
     """
     return ROLE_MENTION_RP.fullmatch(text) is not None
 
+def is_invite_code(text):
+    """
+    Returns whether the given text is an invite code
+    
+    Parameters
+    ----------
+    text : `str`
+    
+    Returns
+    -------
+    result : `bool`
+    """
+    return (INVITE_CODE_RP.fullmatch(text) is not None)
+
 def now_as_id():
     """
     Returns the current time as a Discord snowflake.
-
+    
     Returns
     -------
     snowflake : `int`

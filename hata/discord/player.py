@@ -622,7 +622,7 @@ class AudioPlayer(Thread):
                 if not self.resumed.is_set():
                     self.resumed.wait()
                     start=perf_counter()
-                    loops=0
+                    loops = 0
                     continue
                 
                 #are we disconnected from voice?
@@ -658,6 +658,9 @@ class AudioPlayer(Thread):
                     self.resumed.clear()
                     source.cleanup()
                     self.source = None
+                    
+                    if (voice_client.player is not self):
+                        break
                     
                     KOKORO.create_task_threadsafe(self._run_call_after(voice_client, source)).syncwrap().wait()
                     

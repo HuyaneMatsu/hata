@@ -1913,7 +1913,7 @@ class Guild(DiscordEntity, immortal=True):
                 return channel
         return default
     
-    def get_channel_like(self, name, default=None):
+    def get_channel_like(self, name, default=None, type_=None):
         """
         Searches a channel of the guild, whats name starts with the given string and returns the first find.
         
@@ -1923,6 +1923,8 @@ class Guild(DiscordEntity, immortal=True):
             The name to search for.
         default : `Any`, Optional
             The value what is returned when no channel was found. Defaults to `None`.
+        type_ : `None`, `type`, `tuple` of `type`, Optional
+            Whether only specific channel type instances are accepted.
         
         Returns
         -------
@@ -1935,19 +1937,23 @@ class Guild(DiscordEntity, immortal=True):
         if target_name_length<2 or target_name_length>100:
             return default
         
-        pattern=re.compile(re.escape(name),re.I)
+        pattern=re.compile(re.escape(name), re.I)
         
         accurate_channel = default
         accurate_name_length = 101
         
-        for channel in self.all_role.values():
+        for channel in self.all_channel.values():
+            if (type_ is not None) and (not isinstance(channel, type_)):
+                continue
+            
             channel_name=channel.name
-            name_length=len(channel_name)
+            name_length = len(channel_name)
             if name_length>accurate_name_length:
                 continue
             
             if pattern.match(channel_name) is None:
                 continue
+
             
             if name_length<accurate_name_length:
                 accurate_channel=channel
@@ -2000,7 +2006,7 @@ class Guild(DiscordEntity, immortal=True):
         if target_name_length<2 or target_name_length>32:
             return default
         
-        pattern=re.compile(re.escape(name),re.I)
+        pattern = re.compile(re.escape(name), re.I)
         
         accurate_role = default
         accurate_name_length = 33

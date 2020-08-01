@@ -558,4 +558,3 @@ class CallableAnalyzer(object):
     
     def accepts_kwargs(self):
         return (self.kwargs_argument is not None)
-    

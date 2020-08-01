@@ -207,12 +207,13 @@ def preconvert_flag(flag, name, type_):
     ValueError
         If `flag` was given as `int` instance, but it's value is less than `0` or it's bit length is over `64`.
     """
-    if (type(flag) is type_):
+    flag_type = flag.__class__
+    if (flag_type is type_):
         pass
-    elif isinstance(flag, int):
+    elif issubclass(flag_type, int):
         flag = type_(flag)
     else:
-        raise TypeError(f'`{name}` can be passed as `{type_.__name__}` instance, got {flag.__class__.__name__}.')
+        raise TypeError(f'`{name}` can be passed as `{type_.__name__}` instance, got {flag_type.__name__}.')
     
     if flag < 0 or flag>((1<<64)-1):
         raise ValueError(f'`{name}` can be only uint64, got {flag!r}.')

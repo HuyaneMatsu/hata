@@ -3478,7 +3478,8 @@ def check_argcount_and_convert(func, expected, errormsg=None):
     if analyzer.is_async():
         min_, max_ = analyzer.get_non_reserved_positional_argument_range()
         if min_>expected:
-            raise TypeError(f'`{func!r}` excepts at least `{min_!r}` non reserved arguments, meanwhile the event expects to pass `{expected!r}`.')
+            raise TypeError(f'`{func!r}` excepts at least `{min_!r}` non reserved arguments, meanwhile the event '
+                'expects to pass `{expected!r}`.')
         
         if min_==expected:
             return func
@@ -3490,7 +3491,8 @@ def check_argcount_and_convert(func, expected, errormsg=None):
         if analyzer.accepts_args():
             return func
         
-        raise TypeError(f'`{func!r}` expects maximum `{max_!r}` non reserved arguments  meanwhile the event expects to pass `{expected!r}`.')
+        raise TypeError(f'`{func!r}` expects maximum `{max_!r}` non reserved arguments, meanwhile the event expects '
+            f'to pass `{expected!r}`.')
     
     if analyzer.can_instance_to_async_callable():
         sub_analyzer=CallableAnalyzer(func.__call__, as_method=True)
@@ -3498,7 +3500,8 @@ def check_argcount_and_convert(func, expected, errormsg=None):
             min_, max_ = sub_analyzer.get_non_reserved_positional_argument_range()
             
             if min_>expected:
-                raise TypeError(f'After instancing `{func!r}` would still except at least `{min_!r}` non reserved arguments, meanwhile the event expects to pass `{expected!r}`.')
+                raise TypeError(f'After instancing `{func!r}` would still except at least `{min_!r}` non reserved '
+                    f'arguments, meanwhile the event expects to pass `{expected!r}`.')
             
             if min_==expected:
                 func = analyzer.instance_to_async_callable()
@@ -3513,13 +3516,14 @@ def check_argcount_and_convert(func, expected, errormsg=None):
                 func = analyzer.instance_to_async_callable()
                 return func
             
-            raise TypeError(f'After instancing `{func!r}` would still expects maximum `{max_!r}` non reserved arguments  meanwhile the event expects to pass `{expected!r}`.')
+            raise TypeError(f'After instancing `{func!r}` would still expects maximum `{max_!r}` non reserved '
+                f'arguments, meanwhile the event expects to pass `{expected!r}`.')
             
             func = analyzer.instance_to_async_callable()
             return func
     
     if errormsg is None:
-        errormsg=f'Not async callable type, or cannot be instance to async: `{func!r}`.'
+        errormsg = f'Not async callable type, or cannot be instance to async: `{func!r}`.'
     
     raise TypeError(errormsg)
 

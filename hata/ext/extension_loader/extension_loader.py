@@ -423,10 +423,8 @@ class Extension(object):
         if state==EXTENSION_STATE_UNDEFINED:
             
             spec = self._spec
-            try:
-                # the lib is imported, return it
-                lib = sys.modules[spec.name]
-            except KeyError:
+            lib = sys.modules.get(spec.name, None)
+            if lib is None:
                 # lib is not imported yet, nice
                 lib = module_from_spec(spec)
                 

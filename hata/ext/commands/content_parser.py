@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('Converter', 'ConverterFlag', 'ContentParser', )
+__all__ = ('Converter', 'ConverterFlag', 'ContentParser', 'FlaggedAnnotation')
 
 #TODO: ask python for GOTO already
 import re
@@ -9,149 +9,110 @@ try:
     from dateutil.relativedelta import relativedelta
 except ImportError:
     relativedelta = None
-    
-from ...backend.dereaddons_local import code, function, method, _spaceholder, NoneType, MethodLike
+
+from ...backend.dereaddons_local import function, _spaceholder, MethodLike
 from ...backend.analyzer import CallableAnalyzer
 
 from ...discord.bases import FlagBase
-from ...discord.others import USER_MENTION_RP, ROLE_MENTION_RP, CHANNEL_MENTION_RP, IS_ID_RP
+from ...discord.others import USER_MENTION_RP, ROLE_MENTION_RP, CHANNEL_MENTION_RP, ID_RP, INVITE_CODE_RP
 from ...discord.client import Client
-from ...discord.exceptions import DiscordException
+from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.emoji import parse_emoji, Emoji, EMOJIS
-from ...discord.client_core import CACHE_USER, USERS
+from ...discord.client_core import CACHE_USER, USERS, CHANNELS, ROLES, GUILDS, MESSAGES
 from ...discord.message import Message
-from ...discord.channel import ChannelBase, CHANNEL_TYPES
-from ...discord.user import User
-from ...discord.guild import Guild
+from ...discord.channel import ChannelBase, ChannelGuildBase, ChannelTextBase, ChannelText, ChannelPrivate, \
+    ChannelVoice, ChannelGroup, ChannelCategory, ChannelStore
+from ...discord.user import User, UserBase
 from ...discord.role import Role
-from ...discord.webhook import Webhook
-from ...discord.oauth2 import UserOA2
 from ...discord.parsers import check_argcount_and_convert
+from ...discord.preconverters import preconvert_flag, preconvert_bool
+from ...discord.guild import Guild
+from ...discord.http.URLS import MESSAGE_JUMP_URL_RP, INVITE_URL_PATTERN
+from ...discord.invite import Invite
 
-REQUEST_OVER = 50000
-INT_CONVERSION_LIMIT = 100
+NUMERIC_CONVERSION_LIMIT = 100
 
-DELTA_RP=re.compile('([\+\-]?\d+) *([a-zA-Z]+)')
-PARSER_RP=re.compile('(?:"(.+?)"|(\S+))[^"\S]*')
+DELTA_RP = re.compile('([\+\-]?\d+) *([a-zA-Z]+)')
+PARSER_RP = re.compile('(?:"(.+?)"|(\S+))[^"\S]*')
 
-TDELTA_KEYS=('weeks','days','hours','minutes','seconds','microseconds')
-def parse_tdelta(part):
-    result={}
-    index=0
-    limit=len(TDELTA_KEYS)
-    for amount,name in DELTA_RP.findall(part):
-        name=name.lower()
-        if index==limit:
-            break
-        while True:
-            key=TDELTA_KEYS[index]
-            index+=1
-            if key.startswith(name):
-                result.setdefault(key,int(amount))
-                break
-            if index==limit:
-                break
+CHANNEL_MESSAGE_RP = re.compile('(\d{7,21})-(\d{7,21})')
 
-    if result:
-        return timedelta(**result)
-
-if (relativedelta is not None):
-    RDELTA_KEYS=('years','months',)+TDELTA_KEYS
+def parse_user_mention(part, message):
+    """
+    If the message's given part is a user mention, returns the respective user.
     
-    def parse_rdelta(part):
-        result={}
-        index=0
-        limit=len(RDELTA_KEYS)
-        for amount,name in DELTA_RP.findall(part):
-            name=name.lower()
-            if index==limit:
-                break
-            while True:
-                key=RDELTA_KEYS[index]
-                index+=1
-                if key.startswith(name):
-                    result.setdefault(key,int(amount))
-                    break
-                if index==limit:
-                    break
+    Parameters
+    ----------
+    part : `str`
+        A part of a message's content.
+    message : ``Message``
+        The respective message of the given content part.
     
-        if result:
-            return relativedelta(**result)
-
-    
-class _eval_tester_cls(object):
-    __slots__=('name', 'types',)
-    def __init__(self,types,name=None):
-        if types is None:
-            pass
-        elif type(types) is not tuple:
-            types=(types,)
-        object.__setattr__(self,'types',types)
-        object.__setattr__(self,'name',name)
-    def __getattribute__(self,name):
-        types=object.__getattribute__(self,'types')
-        if types is None:
-            return type(self)(None)
-        for type_ in types:
-            if hasattr(type_,'__slots__'):
-                if name in type_.__slots__:
-                    return type(self)(None)
-                if '__dict__' in type_.__slots__:
-                    return type(self)(None)
-            try:
-                result=getattr(type_,name)
-            except AttributeError as err:
-                pass
-            else:
-                if type(result) is function:
-                    return method(self,result)
-                return result
-        raise AttributeError(object.__getattribute__(self,'name'),name)
-    def __setattr__(self,name,value):
-        type(self).__getattribute__(self,name)
-    def __delattr__(self,name):
-        type(self).__getattribute__(self,name)
-    def __call__(self,*args,**kwargs):
-        if object.__getattribute__(self,'types') is not None:
-            type(self).__getattribute__(self,'__call__')
-        return type(self)(None)
-    def __format__(self,code):
-        return ''
-
-def parse_user_mention(part,message):
-    user_mentions=message.user_mentions
+    Returns
+    -------
+    user : `None` or``UserBase`` instance
+    """
+    user_mentions = message.user_mentions
     if user_mentions is None:
         return
     
-    parsed=USER_MENTION_RP.fullmatch(part)
+    parsed = USER_MENTION_RP.fullmatch(part)
     if parsed is None:
         return
 
-    user_id=int(parsed.group(1))
+    user_id = int(parsed.group(1))
     for user in user_mentions:
-        if user.id==user_id:
+        if user.id == user_id:
             return user
 
-def parse_role_mention(part,message):
-    role_mentions=message.role_mentions
+def parse_role_mention(part, message):
+    """
+    If the message's given part is a role mention, returns the respective role.
+    
+    Parameters
+    ----------
+    part : `str`
+        A part of a message's content.
+    message : ``Message``
+        The respective message of the given content part.
+    
+    Returns
+    -------
+    role : `None` or``Role`` instance
+    """
+    role_mentions = message.role_mentions
     if role_mentions is None:
         return
     
-    parsed=ROLE_MENTION_RP.fullmatch(part)
+    parsed = ROLE_MENTION_RP.fullmatch(part)
     if parsed is None:
         return
 
-    role_id=int(parsed.group(1))
+    role_id = int(parsed.group(1))
     for role in role_mentions:
-        if role.id==role_id:
+        if role.id == role_id:
             return role
 
-def parse_channel_mention(part,message):
-    channel_mentions=message.channel_mentions
+def parse_channel_mention(part, message):
+    """
+    If the message's given part is a channel mention, returns the respective channel.
+    
+    Parameters
+    ----------
+    part : `str`
+        A part of a message's content.
+    message : ``Message``
+        The respective message of the given content part.
+        
+    Returns
+    -------
+    channel : `None` or ``ChannelBase`` instance
+    """
+    channel_mentions = message.channel_mentions
     if channel_mentions is None:
         return
     
-    parsed=CHANNEL_MENTION_RP.fullmatch(part)
+    parsed = CHANNEL_MENTION_RP.fullmatch(part)
     if parsed is None:
         return
 
@@ -159,1290 +120,2531 @@ def parse_channel_mention(part,message):
     for channel in channel_mentions:
         if channel.id==channel_id:
             return channel
-        
-PARSER_GLOBAL_DEFUALTS_OBJECTS = {}
-
-_globals = {
-    'USERS'                 : USERS,
-    'parse_user_mention'    : parse_user_mention,
-    'parse_role_mention'    : parse_role_mention,
-    'parse_channel_mention' : parse_channel_mention,
-    'DiscordException'      : DiscordException,
-    'parse_emoji'           : parse_emoji,
-    'parse_tdelta'          : parse_tdelta,
-    'PARSER_RP'             : PARSER_RP,
-    'IS_ID_RP'              : IS_ID_RP,
-    'REQUEST_OVER'          : REQUEST_OVER,
-    'INT_CONVERSION_LIMIT'  : INT_CONVERSION_LIMIT,
-    'OBJECTS'               : PARSER_GLOBAL_DEFUALTS_OBJECTS,
-    'EMOJIS'                : EMOJIS,
-        }
-
-if (relativedelta is not None):
-    _globals['parse_rdelta']=parse_rdelta
-
-_indexed_optional = {
-    'user'      : _eval_tester_cls((User,Client,Webhook,UserOA2,),'user'),
-    'role'      : _eval_tester_cls(Role,'role'),
-    'channel'   : _eval_tester_cls(tuple(CHANNEL_TYPES),'channel'),
-    'emoji'     : _eval_tester_cls(Emoji,'emoji'),
-    'str'       : _eval_tester_cls(str,'str'),
-    'int'       : _eval_tester_cls(int,'int'),
-    'tdelta'    : _eval_tester_cls(timedelta,'tdelta'),
-        }
-
-if (relativedelta is not None):
-    _indexed_optional['rdelta']=_eval_tester_cls(relativedelta,'rdelta')
-
-_unindexed_static = {
-    'client'    : _eval_tester_cls(Client,'client'),
-    'message'   : _eval_tester_cls(Message,'message'),
-    'content'   : _eval_tester_cls(str,'content'),
-    'index'     : _eval_tester_cls(int,'index'),
-    'limit'     : _eval_tester_cls(int,'limit'),
-        }
-
-_unindexed_optional = {
-    'part'      : _eval_tester_cls(str,'part'),
-    'guild'     : _eval_tester_cls(Guild,'guild'),
-    'rest'      : _eval_tester_cls(str,'rest'),
-        }
-
-del USERS, DiscordException, parse_emoji, IS_ID_RP, Webhook, UserOA2, CHANNEL_TYPES
-
-PARSER_FLAG_KEYS = {
-    'guild'     : 0,
-    'mention'   : 1,
-    'name'      : 2,
-    'id'        : 3,
-    'everywhere': 4,
-    'profile'   : 5,
-    'reversed'  : 6,
-        }
 
 class ConverterFlag(FlagBase):
+    """
+    Flags for a converter to describe by which rules it should convert.
+    
+    +---------------+---------------+
+    | Rule name     | Shift value   |
+    +===============+===============+
+    | url           | 0             |
+    +---------------+---------------+
+    | mention       | 1             |
+    +---------------+---------------+
+    | name          | 2             |
+    +---------------+---------------+
+    | id            | 3             |
+    +---------------+---------------+
+    | everywhere    | 4             |
+    +---------------+---------------+
+    | profile       | 5             |
+    +---------------+---------------+
+    """
     __keys__ = {
-        'guild'     : 0,
+        'url'       : 0,
         'mention'   : 1,
         'name'      : 2,
         'id'        : 3,
         'everywhere': 4,
         'profile'   : 5,
-        'reversed'  : 6,
             }
     
     user_default = NotImplemented
     role_default = NotImplemented
     channel_default = NotImplemented
-    guild_default = NotImplemented
     emoji_default = NotImplemented
+    guild_default = NotImplemented
+    message_default = NotImplemented
+    invite_default = NotImplemented
 
 ConverterFlag.user_default = ConverterFlag().update_by_keys(mention=True, name=True, id=True)
-ConverterFlag.role_default = ConverterFlag().update_by_keys(guild=True, mention=True, name=True, id=True)
-ConverterFlag.channel_default = ConverterFlag().update_by_keys(guild=True, mention=True, name=True, id=True)
-ConverterFlag.guild_default = ConverterFlag().update_by_keys(guild=True)
+ConverterFlag.role_default = ConverterFlag().update_by_keys(mention=True, name=True, id=True)
+ConverterFlag.channel_default = ConverterFlag().update_by_keys(mention=True, name=True, id=True)
 ConverterFlag.emoji_default = ConverterFlag().update_by_keys(mention=True, name=True, id=True)
+ConverterFlag.guild_default = ConverterFlag().update_by_keys(id=True)
+ConverterFlag.message_default = ConverterFlag().update_by_keys(url=True, id=True)
+ConverterFlag.invite_default = ConverterFlag().update_by_keys(url=True, id=True)
 
-class ParserMeta(object):
-    INSTANCES = {}
+CONVERTER_FLAG_URL = 1 << ConverterFlag.__keys__['url']
+CONVERTER_FLAG_MENTION = 1 << ConverterFlag.__keys__['mention']
+CONVERTER_FLAG_NAME = 1 << ConverterFlag.__keys__['name']
+CONVERTER_FLAG_ID = 1 << ConverterFlag.__keys__['id']
+CONVERTER_FLAG_EVERYWHERE = 1 << ConverterFlag.__keys__['everywhere']
+CONVERTER_FLAG_PROFILE = 1 << ConverterFlag.__keys__['profile']
+
+class ContentParserContext(object):
+    """
+    Content parser instance context used when parsing a message's content.
     
-    __slots__=('name', 'flags_must', 'flags_default', 'flags_all',
-        'passing_enabled', 'amount_enabled', 'default_enabled',)
+    Attributes
+    ----------
+    client : ``Client``
+        The respective client.
+    content : `str`
+        A message's content after it's prefix, but only till first linebreak if applicable.
+    index : `int`
+        The index, of the last character's end.
+    last_part : `str` or `None`
+        The last parsed part.
+    last_start : `bool`
+        When the last returned string started
+    length : `int`
+        The length of the string to parse.
+    message : ``Message``
+        The respective message.
+    result : `list` of `Any`
+        The successfully parsed objects.
+    """
+    __slots__ = ('client', 'content', 'index', 'last_part', 'last_start', 'length', 'message', 'result', )
     
-    def __init__(self, name, flags_must, flags_default, flags_all, amount_enabled,):
-        self.INSTANCES[name]= self
-        self.name           = name
-        self.flags_must     = flags_must
-        self.flags_default  = flags_default
-        self.flags_all      = flags_all
-        self.amount_enabled = amount_enabled
-    
-    def validate_flags(self, value):
-        flags_must = self.flags_must
-        flags_all = self.flags_all
+    def __init__(self, client, message, content):
+        """
+        Creates a new ``ContentParserContext`` instance.
         
-        for push in PARSER_FLAG_KEYS.values():
-            if (value>>push)&1:
-                if not (flags_all>>push)&1:
-                    value = value^(1<<push)
+        Parameters
+        ----------
+        client : ``Client``
+            The respective client.
+        message : ``Message``
+            The respective message.
+        content : `str`
+            A message's content after it's prefix, but only till first linebreak if applicable.
+        """
+        self.client = client
+        self.message = message
+        self.index = 0
+        self.length = len(content)
+        self.content = content
+        self.last_part = None
+        self.last_start = 0
+        self.result = []
+    
+    def get_next(self):
+        """
+        Gets the next string part from a respective message's content.
+        
+        Returns
+        -------
+        next_ : `str` or `None`
+            Returns `None` if the message has no more parts left.
+        """
+        index = self.index
+        length = self.length
+        if index == length:
+            if self.last_start == index:
+                next_ = None
             else:
-                if (flags_must>>push)&1:
-                    value = value|(1<<push)
+                next_ = self.last_part
+        else:
+            parsed = PARSER_RP.match(self.content, index)
+            next_ = parsed.group(2)
+            if next_ is None:
+                next_ = parsed.group(1)
+            
+            self.last_part = next_
+            self.last_start = index
+            self.index = parsed.end()
         
-        if value==0:
-            return self.flags_must
-        
-        return ConverterFlag(value)
+        return next_
     
-    def validate_amount(self, value):
-        if not self.amount_enabled:
-            return 1
-        
-        return value
+    def mark_last_as_used(self):
+        """
+        Marks the lastly returned srting as it was used up, making the next call to try to parse a
+        new one.
+        """
+        self.last_start = self.index
     
-    def validate_default(self, default_value, default_type):
-        if default_type is ConverterDefaultType.object:
-            if type(default_value) in (NoneType,int,str):
-                default_value=repr(default_value)
-                default_type=ConverterDefaultType.code
-            else:
-                default_value=DefaultValue(default_value)
+    def get_rest(self):
+        """
+        Returns the not yet used string part of ``.content``.
         
-        return default_value, default_type
-    
-ParserMeta('user', ConverterFlag(), ConverterFlag.user_default, ConverterFlag.user_default.update_by_keys(guild=True, everywhere=True, profile=True), True, )
-ParserMeta('role', ConverterFlag.guild_default, ConverterFlag.role_default, ConverterFlag.role_default, True,  )
-ParserMeta('channel', ConverterFlag.guild_default, ConverterFlag.channel_default, ConverterFlag.channel_default, True, )
-ParserMeta('guild', ConverterFlag.guild_default, ConverterFlag.guild_default, ConverterFlag.guild_default, False, )
-ParserMeta('emoji', ConverterFlag(), ConverterFlag.emoji_default, ConverterFlag.emoji_default.update_by_keys(guild=True, everywhere=True), True, )
-ParserMeta('content', ConverterFlag(), ConverterFlag(), ConverterFlag(), False, )
-ParserMeta('rest', ConverterFlag(), ConverterFlag(), ConverterFlag(), False, )
-ParserMeta('str', ConverterFlag(), ConverterFlag(), ConverterFlag(), True, )
-ParserMeta('int', ConverterFlag(), ConverterFlag(), ConverterFlag(), True, )
-ParserMeta('tdelta', ConverterFlag(), ConverterFlag(), ConverterFlag(), True, )
+        Returns
+        -------
+        rest : `str`
+            Might be empty string.
+        """
+        last_start = self.last_start
+        rest = self.content
+        if last_start:
+            rest = rest[last_start:]
+        
+        return rest
 
-if (relativedelta is not None):
-    ParserMeta('rdelta', ConverterFlag(), ConverterFlag(), ConverterFlag(), True, )
+DEFAULT_TYPE_NONE = 0
+DEFAULT_TYPE_OBJ = 1
+DEFAULT_TYPE_CALL = 2
 
-COMMAND_CALL_SETTING_2ARGS      = 0
-COMMAND_CALL_SETTING_3ARGS      = 1
-COMMAND_CALL_SETTING_USE_PARSER = 2
-
-ANNOTATION_TO_TYPE_TO_NAME = {
-    Client      : 'client',
-    User        : 'user',
-    Role        : 'role',
-    ChannelBase : 'channel',
-    Guild       : 'guild',
-    Message     : 'message',
-    Emoji       : 'emoji',
-    str         : 'str',
-    int         : 'int',
-    timedelta   : 'tdelta',
-        }
-
-if (relativedelta is not None):
-    ANNOTATION_TO_TYPE_TO_NAME[relativedelta] = 'rdelta'
-
-class ConverterDefaultType(object):
+class ParserContextBase(object):
+    """
+    Base class for parser contexts.
+    """
     __slots__ = ()
     
-    none = NotImplemented
-    object = NotImplemented
-    code = NotImplemented
+    async def __call__(self, content_parser_ctx):
+        """
+        Calls the ``ParserContextBase`` with the given content parser context.
+        
+        Parameters
+        ----------
+        content_parser_ctx : ``ContentParserContext``
+            The content parser context in which the conversion is executed.
+            
+        Returns
+        -------
+        passed : `bool`
+            Whether parsing out the variable was successful.
+        """
+        return True
 
-ConverterDefaultType.none = ConverterDefaultType()
-ConverterDefaultType.object = ConverterDefaultType()
-ConverterDefaultType.code = ConverterDefaultType()
-
-class DefaultValue(object):
-    _object_id_counter = 0
-    __slots__ = ('id', 'value', )
+class RestParserContext(ParserContextBase):
+    """
+    Parser context used when getting rest value.
     
-    def __new__(cls,value):
-        id_ = cls._object_id_counter
-        cls._object_id_counter=id_+1
+    Attributes
+    ----------
+    default : `Any`
+        The default object to return if the parser fails.
+    default_type : `int`
+        Describes how `default` is used up.
         
-        self=object.__new__(cls)
-        self.value=value
-        self.id=id_
+        Possible values:
+        +-----------------------+-------+
+        | Respective name       | Value |
+        +=======================+=======+
+        | DEFAULT_TYPE_NONE     | 0     |
+        +-----------------------+-------+
+        | DEFAULT_TYPE_OBJ      | 1     |
+        +-----------------------+-------+
+        | DEFAULT_TYPE_CALL     | 2     |
+        +-----------------------+-------+
+    """
+    __slots__ = ('default', 'default_type')
+    
+    def __new__(cls, default_type, default):
+        """
+        Creates a new parser context instance with the given parameters.
         
-        PARSER_GLOBAL_DEFUALTS_OBJECTS[id_]=value
-        
+        Parameters
+        ----------
+        default_type : `Any`
+            Describes how `default` is used up.
+            
+            Possible values:
+            +-----------------------+-------+
+            | Respective name       | Value |
+            +=======================+=======+
+            | DEFAULT_TYPE_NONE     | 0     |
+            +-----------------------+-------+
+            | DEFAULT_TYPE_OBJ      | 1     |
+            +-----------------------+-------+
+            | DEFAULT_TYPE_CALL     | 2     |
+            +-----------------------+-------+
+        default : `Any`
+            The default object to return if the parser fails
+        """
+        self = object.__new__(cls)
+        self.default_type = default_type
+        self.default = default
         return self
     
-    def __del__(self):
-        try:
-            del PARSER_GLOBAL_DEFUALTS_OBJECTS[self.id]
-        except KeyError:
-            pass
-    
-    def __str__(self):
-        return f'OBJECTS[{self.id}]'
-    
-    def __repr__(self):
-        return f'{self.__class__.__name__}({self.value})'
+    async def __call__(self, content_parser_ctx):
+        """
+        Calls the ``RestParserContext`` with the given content parser context.
+        
+        Parameters
+        ----------
+        content_parser_ctx : ``ContentParserContext``
+            The content parser context in which the conversion is executed.
+        
+        Returns
+        -------
+        passed : `bool`
+            Whether parsing out the variable was successful.
+        """
+        result = content_parser_ctx.get_rest()
+        if (not result):
+            default_type = self.default_type
+            if default_type:
+                result = self.default
+                if default_type == DEFAULT_TYPE_CALL:
+                    result = await result(self, content_parser_ctx)
+        
+        content_parser_ctx.result.append(result)
+        return True
 
-class Converter(object):
-    __slots__ = ('args', 'amount', 'default_type', 'default_value', 'flags', 'meta',)
-    def __new__(cls, type_, flags=None, default=_spaceholder, amount = None, default_code=None):
-        if not isinstance(type_,str):
-            raise TypeError('`type_` should have been passed as `str` instance.')
+class ParserContext(ParserContextBase):
+    """
+    Parser context used inside of chanined content parsers.
+    
+    Attributes
+    ----------
+    converter : `async-callable`
+        A function, what converts a part of the a respective message's content.
+    flags : ``ConverterFlag``
+        Flags which describe what details should the parser function check.
+    type : `None` or `type`
+        Type info about the entity to parse.
+    """
+    __slots__ = ('converter', 'flags', 'type')
+    
+    def __new__(cls, flagged_annotation):
+        """
+        Creates a new parser context instance with the given parameters.
         
-        if not type_.islower():
-            type_ = type_.lower()
+        Parameters
+        ----------
+        flagged_annotation : ``FlaggedAnnotation``
+            Describes what type of entity and how it should be parsed.
         
-        try:
-            meta = ParserMeta.INSTANCES[type_]
-        except KeyError:
-            raise ValueError(f'Not supported type: `{type_!r}`.') from None
-        
-        if flags is None:
-            flags = meta.flags_default
-        else:
-            if not isinstance(flags,int):
-                raise TypeError(f'`flags` should have been passed as `int` instance or `None`, got `{flags!r}`.')
-            
-            if type(flags) is not ConverterFlag:
-                flags = ConverterFlag(flags)
-            
-            flags = meta.validate_flags(flags)
-        
-        if default is _spaceholder:
-            if default_code is None:
-                default_type = ConverterDefaultType.none
-            else:
-                default_type = ConverterDefaultType.code
-        else:
-            if default_code is None:
-                default_type = ConverterDefaultType.object
-            else:
-                raise ValueError(f'`default` and `default_code` are mutually exclusive.')
-        
-        if default_type is ConverterDefaultType.none:
-            default_value = None
-        elif default_type is ConverterDefaultType.code:
-            if not isinstance(default_code,str):
-                raise TypeError(f'`default_code` should have been passed as `str` instance or `None`, got `{default_code!r}`˙.')
-        
-            default_value = default_code
-        else:
-            default_value=default
-        
-        default_value, default_type = meta.validate_default(default_value, default_type)
-        
-        if (amount is None):
-            amount = 1
-        
-        elif isinstance(amount,int):
-            if type(amount) is not int:
-                amount = int(amount)
-            
-            if amount<1:
-                raise ValueError(f'`amount` cannot be negative or `0`, got {amount!r}`.')
-            
-        elif isinstance(amount,tuple):
-            if type(amount) is not tuple:
-                amount=tuple(amount)
-                
-            if len(amount)!=2:
-                raise TypeError(f'`amount` should have been passed as `tuple` instance of length 2, `int` instance or as `None`, got `{amount!r}`.')
-            
-            min_, max_ = amount
-            if min_ < 0 or max_ < 0:
-                raise ValueError(f'`amount` cannot be negative or `0`, got {amount!r}')
-            
-            if min_ != 0 and max_ !=0:
-                if min_ == max_:
-                    amount = min_
-                
-                if max_ > min_:
-                    raise ValueError(f'`amount`\'s `min` value lower than `max` : {amount!r}`.')
-                
-        else:
-            raise TypeError(f'`amount` should have been passed as `tuple` instance of length 2, `int` instance or as `None`, got `{amount!r}`.')
-        
-        amount = meta.validate_amount(amount)
+        Raises
+        ------
+        TypeError
+            If `flagged_annotation` was gived as `tuple`.
+        """
+        type_ = flagged_annotation.annotation
+        if type(type_) is tuple:
+            raise TypeError(f'`flagged_annotation` cannot be given as `tuple`, when creating a `{cls.__name__}` '
+                f'instance, got {flagged_annotation!r}.')
         
         self = object.__new__(cls)
-        self.args = False
-        self.amount = amount
-        self.default_type = default_type
-        self.default_value = default_value
-        self.flags = flags
-        self.meta = meta
+        self.flags = flagged_annotation.flags
+        self.type = type_
+        self.converter = CONVERTER_SETTING_TYPE_RELATION_MAP[type_].converter
         return self
     
-    def set_default(self, default_value):
-        if self.default_type is not ConverterDefaultType.none:
-            raise ValueError(f'The converter has already a default added.')
+    async def __call__(self, content_parser_ctx):
+        """
+        Calls the ``ParserContext`` with the given content parser context.
         
-        default_value, default_type = self.meta.validate_default(default_value, ConverterDefaultType.object)
-        
-        self.default_value=default_value
-        self.default_type=default_type
-    
-    def set_args(self):
-        amount=self.amount
-        if type(amount) is int and amount==1:
-            self.amount = self.meta.validate_amount(0)
-        
-        self.args=True
-    
-    args_str = NotImplemented
-    content = NotImplemented
-    rest = NotImplemented
-    str = NotImplemented
-    
-    def __eq__(self, other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        if self.args != other.args:
+        Parameters
+        ----------
+        content_parser_ctx : ``ContentParserContext``
+            The content parser context in which the conversion is executed.
+            
+        Returns
+        -------
+        passed : `bool`
+            Whether parsing out the variable was successful.
+        """
+        result = await self.converter(self, content_parser_ctx)
+        if result is None:
             return False
         
-        if self.flags!=other.flags:
-            return False
+        content_parser_ctx.mark_last_as_used()
+        content_parser_ctx.result.append(result)
+        return True
+
+class SingleArgsParserContext(ParserContext):
+    """
+    Parser context used to parse *args.
+    
+    Attributes
+    ----------
+    converter : `async-callable`
+        A function, what converts a part of the a respective message's content.
+    flags : ``ConverterFlag``
+        Flags which describe what details should the parser function check.
+    type : `None` or `type`
+        Type info about the entity to parse.
+    """
+    __slots__ = ()
+    
+    async def __call__(self, content_parser_ctx):
+        """
+        Calls the ``ArgsParserContext`` with the given content parser context.
         
-        self_amount=self.amount
-        other_amount=other.amount
-        if type(self_amount) is int:
-            if type(other_amount) is int:
-                if self_amount!=other_amount:
-                    return False
+        Parameters
+        ----------
+        content_parser_ctx : ``ContentParserContext``
+            The content parser context in which the conversion is executed.
+            
+        Returns
+        -------
+        passed : `bool`
+            Whether parsing out the variable was successful.
+        """
+        while True:
+            result = await self.converter(self, content_parser_ctx)
+            if result is None:
+                break
+            
+            content_parser_ctx.mark_last_as_used()
+            content_parser_ctx.result.append(result)
+        
+        return True
+
+class ChainedArgsParserContext(ParserContextBase):
+    """
+    A chained converter *args used, when parts can represent more types.
+    
+    Attributes
+    ----------
+    parser_contexts : `tuple` of `ParserContext`
+        The chained converters.
+    """
+    __slots__ = ('parser_contexts', )
+    
+    def __new__(cls, flagged_annotations):
+        """
+        Creates a new parser context instance with the given parameters.
+        
+        Parameters
+        ----------
+        flagged_annotations : `tuple` of ``FlaggedAnnotation``
+            Describes what type of entity and how it should be parsed.
+        
+        Raises
+        ------
+        TypeError
+            If `flagged_annotation` was gived not given as `tuple` or it contains only 1 (or less) element.
+        """
+        if (type(flagged_annotations) is not tuple) or (len(flagged_annotations) < 2):
+            raise TypeError(f'`flagged_annotations` cannot be given as not `tuple`, or as `tuple` with 1 (or less) '
+                f'elements, when creating a `{cls.__name__}` instance, got {flagged_annotations!r}.')
+        
+        parser_contexts = []
+        for flagged_annotation in flagged_annotations:
+            parser_context = ParserContext(flagged_annotation)
+            parser_contexts.append(parser_context)
+        
+        self = object.__new__(cls)
+        self.parser_contexts = parser_contexts
+        return self
+    
+    async def __call__(self, content_parser_ctx):
+        """
+        Calls the ``ChainedArgsParserContext`` with the given content parser context.
+        
+        Parameters
+        ----------
+        content_parser_ctx : ``ContentParserContext``
+            The content parser context in which the conversion is executed.
+        
+        Returns
+        -------
+        passed : `bool`
+            Whether parsing out the variable was successful.
+        """
+        parser_contexts = self.parser_contexts
+        while True:
+            for parser_context in parser_contexts:
+                result = await parser_context.converter(parser_context, content_parser_ctx)
+                if (result is not None):
+                    content_parser_ctx.mark_last_as_used()
+                    content_parser_ctx.result.append(result)
+                    break
             else:
-                return False
-        else:
-            if type(other_amount) is int:
-                return False
-            else:
-                if self_amount!=other_amount:
-                    return False
-        
-        self_default_type = self.default_type
-        if self_default_type is not other.default_type:
-            return False
-        
-        if self_default_type is not ConverterDefaultType.none:
-            if self.default_value!=other.default_value:
-                return False
-        
-        if self.meta is not other.meta:
-            return False
+                break
         
         return True
     
-    def __hash__(self):
-        result = self.flags+(self.args<<11)
-        
-        amount = self.amount
-        if type(amount) is int:
-            result = result+(amount<<22)
-        else:
-            result = result^hash(result)
-        
-        if self.default_type is not ConverterDefaultType.none:
-            result = result^hash(self.default_value)
-        
-        result = result^hash(self.meta.name)
-        
-        return result
+class SingleParserContext(ParserContext):
+    """
+    Parser context used inside of a content parser.
     
-    def __repr__(self):
-        result = ['<',self.__class__.__name__,' ',self.meta.name,]
+    Attributes
+    ----------
+    converter : `async-callable`
+        A function, what converts a part of the a respective message's content.
+    flags : ``ConverterFlag``
+        Flags which describe what details should the parser function check.
+    type : `None` or `type_`
+        Type info about the entity to parse.
+    default : `Any`
+        The default object to return if the parser fails
+    default_type : `int`
+        Describes how `default` is used up.
         
-        if self.args:
-            result.append(' (args arument)')
-        else:
-            amount = self.amount
-            if (type(amount) is not int) or (amount!=1):
-                result.append(' amount=')
-                result.append(repr(amount))
-                result.append(',')
+        Possible values:
+        +-----------------------+-------+
+        | Respective name       | Value |
+        +=======================+=======+
+        | DEFAULT_TYPE_NONE     | 0     |
+        +-----------------------+-------+
+        | DEFAULT_TYPE_OBJ      | 1     |
+        +-----------------------+-------+
+        | DEFAULT_TYPE_CALL     | 2     |
+        +-----------------------+-------+
+    """
+    __slots__ = ('default', 'default_type')
+    
+    def __new__(cls, flagged_annotation, default_type, default):
+        """
+        Creates a new parser context instance with the given parameters.
         
-        default_type=self.default_type
-        if (default_type is not ConverterDefaultType.none):
-            if default_type is ConverterDefaultType.code:
-                result.append(' default (code)=')
-            else:
-                result.append(' default (object)=')
+        Parameters
+        ----------
+        flagged_annotation : ``FlaggedAnnotation``
+            Describes what type on entity and how it whould be parsed.
+        default_type : `Any`
+            Describes how `default` is used up.
             
-            result.append(repr(self.default_value))
-            result.append(',')
+            Possible values:
+            +-----------------------+-------+
+            | Respective name       | Value |
+            +=======================+=======+
+            | DEFAULT_TYPE_NONE     | 0     |
+            +-----------------------+-------+
+            | DEFAULT_TYPE_OBJ      | 1     |
+            +-----------------------+-------+
+            | DEFAULT_TYPE_CALL     | 2     |
+            +-----------------------+-------+
+        default : `Any`
+            The default object to return if the parser fails
         
-        result.append(' flags=')
-        result.append(repr(self.flags))
+        Raises
+        ------
+        TypeError
+            If `flagged_annotation` was gived as `tuple`.
+        """
+        type_ = flagged_annotation.annotation
+        if type(type_) is tuple:
+            raise TypeError(f'`flagged_annotation` cannot be given as `tuple`, when creating a `{cls.__name__}` '
+                f'instance, got {flagged_annotation!r}.')
         
-        result.append('>')
-        return ''.join(result)
+        self = object.__new__(cls)
+        self.flags = flagged_annotation.flags
+        self.type = type_
+        self.default_type = default_type
+        self.default = default
+        self.converter = CONVERTER_SETTING_TYPE_RELATION_MAP[type_].converter
+        return self
     
-    def check_default(self,_locals):
-        try:
-            eval(self.default_value,_globals,_locals)
-        except AttributeError as err:
-            args=err.args
-            if len(args)==2:
-                err.args=(f'type {args[0]} has no attribute {args[1]!r}.',)
-            raise
-        except NameError:
-            raise
-        except Exception:
+    async def __call__(self, content_parser_ctx):
+        """
+        Calls the ``SingleParserContext`` with the given content parser context.
+        
+        Parameters
+        ----------
+        content_parser_ctx : ``ContentParserContext``
+            The content parser context in which the conversion is executed.
+        
+        Returns
+        -------
+        passed : `bool`
+            Whether parsing out the variable was successful.
+        """
+        result = await self.converter(self, content_parser_ctx)
+        if (result is not None):
+            content_parser_ctx.mark_last_as_used()
+            content_parser_ctx.result.append(result)
+            return True
+        
+        default_type = self.default_type
+        if default_type == DEFAULT_TYPE_NONE:
+            return False
+        
+        default = self.default
+        if default_type == DEFAULT_TYPE_CALL:
+            default = await default(content_parser_ctx)
+        
+        content_parser_ctx.result.append(default)
+        return True
+
+class ChainedParserContext(ChainedArgsParserContext):
+    """
+    A chained converter used, when a single part can represent more types.
+    
+    Attributes
+    ----------
+    parser_contexts : `tuple` of `ParserContext`
+        The chained converters.
+    default : `Any`
+        The default object to return if the parser fails
+    default_type : `int`
+        Describes how `default` is used up.
+        
+        Possible values:
+        +-----------------------+-------+
+        | Respective name       | Value |
+        +=======================+=======+
+        | DEFAULT_TYPE_NONE     | 0     |
+        +-----------------------+-------+
+        | DEFAULT_TYPE_OBJ      | 1     |
+        +-----------------------+-------+
+        | DEFAULT_TYPE_CALL     | 2     |
+        +-----------------------+-------+
+    """
+    __slots__ = ('default', 'default_type')
+    
+    def __new__(cls, flagged_annotations, default_type, default):
+        """
+        Creates a new chained converter.
+        
+        Parameters
+        ----------
+        flagged_annotations : `tuple` of ``FlaggedAnnotation``
+            Describes what type of entity and how it should be parsed.
+        default : `Any`
+            The default object to return if the parser fails
+        default_type : `int`
+            Describes how `default` is used up.
+            
+            Possible values:
+            +-----------------------+-------+
+            | Respective name       | Value |
+            +=======================+=======+
+            | DEFAULT_TYPE_NONE     | 0     |
+            +-----------------------+-------+
+            | DEFAULT_TYPE_OBJ      | 1     |
+            +-----------------------+-------+
+            | DEFAULT_TYPE_CALL     | 2     |
+            +-----------------------+-------+
+        
+        Raises
+        ------
+        TypeError
+            If `flagged_annotation` was gived not given as `tuple` or it contains only 1 (or less) element.
+        """
+        if (type(flagged_annotations) is not tuple) or (len(flagged_annotations) < 2):
+            raise TypeError(f'`flagged_annotations` cannot be given as not `tuple`, or as `tuple` with 1 (or less) '
+                f'elements, when creating a `{cls.__name__}` instance, got {flagged_annotations!r}.')
+        
+        parser_contexts = []
+        for flagged_annotation in flagged_annotations:
+            parser_context = ParserContext(flagged_annotation)
+            parser_contexts.append(parser_context)
+        
+        self = object.__new__(cls)
+        self.parser_contexts = parser_contexts
+        self.default = default
+        self.default_type = default_type
+        return self
+    
+    async def __call__(self, content_parser_ctx):
+        """
+        Calls the ``ChainedParserContext`` with the given content parser context.
+        
+        Parameters
+        ----------
+        content_parser_ctx : ``ContentParserContext``
+            The content parser context in which the conversion is executed.
+        
+        Returns
+        -------
+        passed : `bool`
+            Whether parsing out the variable was successful.
+        """
+        for parser_context in self.parser_contexts:
+            result = await parser_context.converter(parser_context, content_parser_ctx)
+            if (result is not None):
+                content_parser_ctx.mark_last_as_used()
+                content_parser_ctx.result.append(result)
+                return True
+        
+        default_type = self.default_type
+        if default_type == DEFAULT_TYPE_NONE:
+            return False
+        
+        default = self.default
+        if default_type == DEFAULT_TYPE_CALL:
+            default = await default(content_parser_ctx)
+        
+        content_parser_ctx.result.append(default)
+        return True
+
+CONVERTER_SETTING_TYPE_RELATION_MAP = {}
+CONVERTER_SETTING_NAME_TO_TYPE = {}
+
+class ConverterSetting(object):
+    """
+    Store settings about a converter.
+    
+    Attributes
+    ----------
+    all_flags : ``ConverterFlag``
+        All the flags which the converter picks up.
+    alternative_type_name : `None` or `str`
+        Alternative string name for the parser, what allows picking up a respective converter.
+    alternative_type_name : `None` or `str`
+        Alternative string name for the parser, what allows picking up a respective converter.
+    converter : `function` (async)
+        The converter function.
+    default_flags : ``ConverterFlag``
+        The detault flags whith what teh converter will be used if not defining any specific.
+    default_type : `None` or `type`
+        The default annotation type of the converter.
+    uses_flags : `bool`
+        Whether the converter processes any flags.
+    """
+    __slots__ = ('all_flags', 'alternative_type_name', 'alternative_types', 'converter', 'default_flags', 'default_type', 'uses_flags')
+    
+    def __new__(cls, converter, uses_flags, default_flags, all_flags, alternative_type_name, default_type, alternative_types):
+        """
+        Creates a new ``ConverterSetting`` instance to store settings related to a converter function.
+        
+        Parameters
+        ----------
+        converter : `function` (async)
+            The converter function.
+        uses_flags : `bool`
+            Whether the converter processes any flags.
+        default_flags : ``ConverterFlag``
+            The detault flags whith what teh converter will be used if not defining any specific.
+        all_flags : ``ConverterFlag``
+             All the flags which the converter picks up.
+        alternative_type_name : `None` or `str`
+            Alternative string name for the parser, what allows picking up a respective converter.
+        default_type : `None` or `type`
+            The default annotation type of the converter.
+        alternative_types : `None` `iterable` of `type`
+            A list of the alternatively accepted types.
+        
+        Raises
+        -------
+        TypeError
+            - If `converter` is not type function.
+            - If `converter` is not async.
+            - If `converter` accepts bad amount of arguments.
+            - If `uses_flags` was not given as `bool`, nether as `int` as `0` or `1`.
+            - If `default_flags` or `all_flags` was not given as `ConverterFlag` instance.
+            - If `alternative_type_name` was not given as `None`, neither as `str` instance.
+            - If `default_type` was not given as `None`, neither as `type` instance.
+            - If `alternative_types` was not given as `None`, neither as `iterable` of `type`.
+        ValueError
+            If `uses_flags` is given as `true`, but at the same time `all_flags` was not given as
+            `ConverterFlag(0)`
+        """
+        converter_type = converter.__class__
+        if (converter_type is not function):
+            raise TypeError(f'`converter` shoud have been given as `{function.__name__}` instance, got '
+                f'{converter_type.__name__}.')
+        
+        analyzed = CallableAnalyzer(converter)
+        if (not analyzed.is_async()):
+            raise TypeError(f'`converter` shoud have been given as an async function instance, got '
+                f'{converter!r}.')
+        
+        non_reserved_positional_argument_count = analyzed.get_non_reserved_positional_argument_count()
+        if non_reserved_positional_argument_count!=2:
+            raise TypeError(f'`converter` shoud accept `2` non reserved positonal arguments, meanwhile it expects '
+                f'{non_reserved_positional_argument_count}.')
+        
+        if analyzed.accepts_args():
+            raise TypeError(f'`converter` shoud accept not expect args, meanwhile it does.')
+        
+        if analyzed.accepts_kwargs():
+            raise TypeError(f'`converter` shoud accept not expect kwargs, meanwhile it does.')
+        
+        non_default_keyword_only_argument_count = analyzed.get_non_default_keyword_only_argument_count()
+        if non_default_keyword_only_argument_count:
+            raise TypeError(f'`converter` shoud accept `0` keyword only arguments, meanwhile it expects '
+                f'{non_default_keyword_only_argument_count}.')
+        
+        uses_flags_type = uses_flags.__class__
+        if uses_flags_type is bool:
             pass
-    
-    @property
-    def parse_one(self):
-        amount = self.amount
-        if type(amount) is not int:
-            return False
-        
-        if amount!=1:
-            return False
-        
-        return True
-    
-    @property
-    def lower_limit(self):
-        amount = self.amount
-        if type(amount) is int:
-            return amount
-        
-        return amount[0]
-
-    @property
-    def upper_limit(self):
-        amount = self.amount
-        if type(amount) is int:
-            return amount
-        
-        return amount[1]
-    
-    @property
-    def name(self):
-        return self.meta.name
-    
-converter = object.__new__(Converter)
-converter.args = True
-converter.amount = 0
-converter.default_type = ConverterDefaultType.none
-converter.default_value = None
-converter.flags = ConverterFlag()
-converter.meta = ParserMeta.INSTANCES['str']
-Converter.args_str = converter
-
-converter = object.__new__(Converter)
-converter.args = False
-converter.amount = 0
-converter.default_type = ConverterDefaultType.none
-converter.default_value = None
-converter.flags = ConverterFlag()
-converter.meta = ParserMeta.INSTANCES['content']
-Converter.content = converter
-
-converter = object.__new__(Converter)
-converter.args = False
-converter.amount = 0
-converter.default_type = ConverterDefaultType.none
-converter.default_value = None
-converter.flags = ConverterFlag()
-converter.meta = ParserMeta.INSTANCES['rest']
-Converter.rest = converter
-
-converter = object.__new__(Converter)
-converter.args = False
-converter.amount = 0
-converter.default_type = ConverterDefaultType.none
-converter.default_value = None
-converter.flags = ConverterFlag()
-converter.meta = ParserMeta.INSTANCES['str']
-Converter.str = converter
-
-del converter
-
-COMPILED_PARSERS = {}
-    
-def parse(func):
-    analyzer = CallableAnalyzer(func)
-    if analyzer.is_async():
-        real_analyzer=analyzer
-        should_instance=False
-    elif analyzer.can_instance_to_async_callable():
-        real_analyzer=CallableAnalyzer(func.__call__, as_method=True)
-        if not real_analyzer.is_async():
-            raise TypeError(f'Not async callable type, or cannot be instanced to async: `{func!r}`.')
-        should_instance=True
-    else:
-        raise TypeError(f'Not async callable type, or cannot be instanced to async: `{func!r}`.')
-    
-    keyword_only_argument_count = real_analyzer.get_non_default_keyword_only_argument_count()
-    if keyword_only_argument_count:
-        raise ValueError(f'The passed callable: `{real_analyzer.real_function!r}` accepts keyword only arguments.')
-    
-    arguments = real_analyzer.get_non_reserved_positional_arguments()
-    args_argument = real_analyzer.args_argument
-    
-    argument_count = len(arguments)
-    if argument_count<2:
-        raise ValueError(f'The passed callable: `{real_analyzer.real_function!r}` should accept at least 2 arguments, `client` an `message` (args ignored).')
-    
-    client_argument = arguments[0]
-    if client_argument.has_default:
-        raise ValueError(f'The passed callable: `{real_analyzer.real_function!r}` has default argument set as it\'s first not reserved, meanwhile it should not have.')
-    
-    if client_argument.has_annotation and client_argument.annoation is not Client:
-        raise ValueError(f'The passed callable: `{real_analyzer.real_function!r}` has annotation at the client\'s argument slot, what is not `{Client.__name__}`.')
-    
-    message_argument = arguments[1]
-    if message_argument.has_default:
-        raise ValueError(f'The passed callable: `{real_analyzer.real_function!r}` has default argument set as it\'s first not reserved, meanwhile it should not have.')
-    
-    if message_argument.has_annotation and message_argument.annoation is not Message:
-        raise ValueError(f'The passed callable: `{real_analyzer.real_function!r}` has annotation at the message\'s argument slot what is not `{Message.__name__}`.')
-    
-    parsed_arguments = []
-    
-    to_check=arguments[2:]
-    to_check.append(args_argument)
-    
-    index = 0
-    limit = len(to_check)
-    while True:
-        if index==limit:
-            break
-        argument = to_check[index]
-        index = index+1
-        
-        if argument is None:
-            break
-        
-        if argument.has_annotation:
-            annotation = argument.annotation
-            if issubclass(type(annotation),type):
-                try:
-                    type_ = ANNOTATION_TO_TYPE_TO_NAME[annotation]
-                except KeyError:
-                    raise ValueError(f'The passed callable `{real_analyzer.real_function!r}` has annotation to type `{annotation!r}`, which is not supported.')
-                
-                try:
-                    meta = ParserMeta.INSTANCES[type_]
-                except KeyError:
-                    raise ValueError(f'Not passed callable would user a not supported type: `{type_!r}`.') from None
-
-                if argument.has_default:
-                    default_value = argument.default
-                    default_type = ConverterDefaultType.object
-                else:
-                    default_value = None
-                    default_type = ConverterDefaultType.none
-                
-                default_value, default_type = meta.validate_default(default_value, default_type)
-
-                converter = object.__new__(Converter)
-                converter.args = False
-                converter.amount = 1
-                converter.default_type = default_type
-                converter.default_value = default_value
-                converter.flags = meta.flags_default
-                converter.meta = meta
-        
-            elif isinstance(annotation,str):
-                if type(annotation) is not str:
-                    annotation=str(annotation)
-                
-                try:
-                    meta = ParserMeta.INSTANCES[annotation]
-                except KeyError:
-                    raise ValueError(f'Not passed callable would user a not supported type: `{annotation!r}`.') from None
-                
-                if argument.has_default:
-                    default_value = argument.default
-                    default_type = ConverterDefaultType.object
-                else:
-                    default_value = None
-                    default_type = ConverterDefaultType.none
-                
-                default_value, default_type = meta.validate_default(default_value, default_type)
-                
-                converter = object.__new__(Converter)
-                converter.args = False
-                converter.amount = 1
-                converter.default_type = default_type
-                converter.default_value = default_value
-                converter.flags = meta.flags_default
-                converter.meta = meta
-            
-            elif type(annotation) is Converter:
-                converter = annotation
-                if argument.has_default:
-                    converter.set_default(argument.default)
-            
+        elif issubclass(uses_flags_type, int):
+            if uses_flags in (0,1):
+                uses_flags = bool(uses_flags)
             else:
-                raise ValueError(f'Annotation has unexpected annotation value: `{annotation!r}`.')
-            
-            if index==limit:
-                converter.set_args()
+                raise TypeError(f'`uses_flags` was given as `int` instance, but not as `0`, or `1`, got '
+                    f'{uses_flags_type.__name__}. Next time please pass a `bool` instance.')
         else:
-            if index==limit:
-                converter = Converter.args_str
-            elif index==1 and limit==2:
-                converter = Converter.content
-            elif index==limit-1:
-                converter = Converter.rest
-            else:
-                converter = Converter.str
+            raise TypeError(f'`uses_flags` should have been given as `bool` instance, got {uses_flags_type.__name__}.')
         
-        parsed_arguments.append(converter)
+        default_flags_type = default_flags.__class__
+        if default_flags_type is not ConverterFlag:
+            raise TypeError(f'`default_flags` should have be given as `{ConverterFlag.__name__}` instance, got '
+                f'{default_flags_type.__name__}.')
+        
+        all_flags_type = all_flags.__class__
+        if all_flags_type is not ConverterFlag:
+            raise TypeError(f'`all_flags` should have be given as `{ConverterFlag.__name__}` instance, got '
+                f'{all_flags_type.__name__}.')
+        
+        if (alternative_type_name is not None):
+            alternative_type_name_type = alternative_type_name.__class__
+            if alternative_type_name_type is str:
+                pass
+            elif issubclass(alternative_type_name_type, str):
+                alternative_type_name = str(alternative_type_name)
+            else:
+                raise TypeError(f'`alternative_type_name` should have be given as `None` or as `str` instance, got '
+                    f'{alternative_type_name_type.__class__}.')
+        
+        if (default_type is not None) and (not isinstance(default_type, type)):
+            raise TypeError(f'`default_type` was not given as `None`, neither as `type` instance, got '
+                f'{default_type.__class__.__name__}.')
+        
+        if (alternative_types is None):
+            alternative_types_processed = None
+        
+        else:
+            alternative_types_type = alternative_types.__class__
+            if not hasattr(alternative_types_type, '__iter__'):
+                raise TypeError(f'`alternative_types` can be given as `None` or as `iterable` of `type`, got '
+                    f'{alternative_types_type.__name__}.')
+            
+            alternative_types_processed = []
+            
+            index = 1
+            for alternative_type in alternative_types:
+                if not isinstance(alternative_type, type):
+                    raise TypeError(f'`alternative_types` can be given as `None`, or as `iterable` of `type`, got '
+                        f'`iterable`, but it\'s {index} element is {alternative_type.__class__.__name__}.')
+                
+                alternative_types_processed.append(alternative_type)
+                index +=1
+            
+            if not alternative_types_processed:
+                 alternative_types_processed = None
+        
+        if (not uses_flags) and all_flags:
+            raise ValueError(f'If `uses_flags` is given as `true`, then `all_flags` should be given as '
+                f'`{ConverterFlag.__name__}(0)`, got {all_flags!r}.')
+        
+        self = object.__new__(cls)
+        self.converter = converter
+        self.uses_flags = uses_flags
+        self.default_flags = default_flags
+        self.all_flags = all_flags
+        self.alternative_type_name = alternative_type_name
+        self.default_type = default_type
+        self.alternative_types = alternative_types_processed
+        
+        if (default_type is not None):
+            CONVERTER_SETTING_TYPE_RELATION_MAP[default_type] = self
+            CONVERTER_SETTING_NAME_TO_TYPE[default_type.__name__] = default_type
+            if (alternative_type_name is not None):
+                CONVERTER_SETTING_NAME_TO_TYPE[alternative_type_name] = default_type
+        
+        if (alternative_types_processed is not None):
+            for alternative_type in alternative_types_processed:
+                CONVERTER_SETTING_TYPE_RELATION_MAP[alternative_type] = self
+                CONVERTER_SETTING_NAME_TO_TYPE[alternative_type.__name__] = alternative_type
+
+
+
+if CACHE_USER:
+    async def user_converter(parser_ctx, content_parser_ctx):
+        part = content_parser_ctx.get_next()
+        if (part is None):
+            return None
+        
+        flags = parser_ctx.flags
+        message = content_parser_ctx.message
+        
+        if flags&CONVERTER_FLAG_ID:
+            parsed = ID_RP.fullmatch(part)
+            if (parsed is not None):
+                id_ = int(parsed.group(1))
+                
+                if flags&CONVERTER_FLAG_EVERYWHERE:
+                    try:
+                        user = USERS[id_]
+                    except KeyError:
+                        try:
+                            user = await content_parser_ctx.client.user_get(id_)
+                        except BaseException as err:
+                            if not (isinstance(err, ConnectionError) or
+                                isinstance(err, DiscordException) and err.code in (
+                                    ERROR_CODES.unknown_user,
+                                    ERROR_CODES.unknown_member,
+                                        )):
+                                    raise
+                        else:
+                            return user
+                    else:
+                        return user
+                
+                else:
+                    channel = message.channel
+                    guild = message.guild
+                    if guild is None:
+                        if (not isinstance(channel, ChannelGuildBase)):
+                            for user in channel.users:
+                                if user.id == id_:
+                                    return user
+                    
+                    else:
+                        try:
+                            user = guild.users[id_]
+                        except KeyError:
+                            pass
+                        else:
+                            return user
+        
+        if flags&CONVERTER_FLAG_MENTION:
+            user = parse_user_mention(part, message)
+            if (user is not None):
+                return user
+        
+        if flags&CONVERTER_FLAG_NAME:
+            channel = message.channel
+            guild = channel.guild
+            if (guild is None):
+                if isinstance(channel, ChannelGuildBase):
+                    user = None
+                else:
+                    user = channel.get_user_like(part)
+            else:
+                user = guild.get_user_like(part)
+            
+            if (user is not None):
+                return user
+        
+        return None
+else:
+    async def user_converter(parser_ctx, content_parser_ctx):
+        part = content_parser_ctx.get_next()
+        if (part is None):
+            return None
+        
+        flags = parser_ctx.flags
+        message = content_parser_ctx.message
+        
+        if flags&CONVERTER_FLAG_ID:
+            parsed = ID_RP.fullmatch(part)
+            if (parsed is not None):
+                id_ = int(parsed.group(1))
+                
+                if flags&CONVERTER_FLAG_EVERYWHERE:
+                    if flags&CONVERTER_FLAG_PROFILE:
+                        guild = message.channel.guild
+                        if (guild is not None):
+                            try:
+                                user = await content_parser_ctx.client.guild_user_get(guild, id_)
+                            except BaseException as err:
+                                if not (isinstance(err, ConnectionError) or
+                                    isinstance(err, DiscordException) and err.code in (
+                                        ERROR_CODES.unknown_user,
+                                        ERROR_CODES.unknown_member,
+                                            )):
+                                        raise
+                            else:
+                                return user
+                    
+                    try:
+                        user = await content_parser_ctx.client.user_get(id_)
+                    except BaseException as err:
+                        if not (isinstance(err, ConnectionError) or
+                            isinstance(err, DiscordException) and err.code in (
+                                ERROR_CODES.unknown_user,
+                                ERROR_CODES.unknown_member,
+                                    )):
+                                raise
+                    else:
+                        return user
+                
+                else:
+                    channel = message.channel
+                    guild = message.guild
+                    if guild is None:
+                        if (not isinstance(channel, ChannelGuildBase)):
+                            for user in channel.users:
+                                if user.id == id_:
+                                    return user
+                    
+                    else:
+                        try:
+                            user = await content_parser_ctx.client.guild_user_get(guild, id_)
+                        except BaseException as err:
+                            if not (isinstance(err, ConnectionError) or
+                                isinstance(err, DiscordException) and err.code in (
+                                    ERROR_CODES.unknown_user,
+                                    ERROR_CODES.unknown_member,
+                                        )):
+                                    raise
+                        else:
+                            return user
+        
+        if flags&CONVERTER_FLAG_MENTION:
+            user = parse_user_mention(part, message)
+            if (user is not None):
+                return user
+        
+        if flags&CONVERTER_FLAG_NAME:
+            channel = message.channel
+            guild = channel.guild
+            if (guild is None):
+                if (not isinstance(channel, ChannelGuildBase)):
+                    user = channel.get_user_like(part)
+                    if (user is not None):
+                        return user
+            
+            else:
+                try:
+                    user = await content_parser_ctx.client.guild_user_search(guild, part)
+                except BaseException as err:
+                    if not (isinstance(err, ConnectionError) or
+                        isinstance(err, DiscordException) and err.code in (
+                            ERROR_CODES.unknown_user,
+                            ERROR_CODES.unknown_member,
+                                )):
+                            raise
+                else:
+                    return user
+        
+        return None
+
+ConverterSetting(
+    converter = user_converter,
+    uses_flags = True,
+    default_flags = ConverterFlag.user_default,
+    all_flags = ConverterFlag().update_by_keys(
+        everywhere=True, id=True, name=True, mention=True, profile=True),
+    alternative_type_name = 'user',
+    default_type = User,
+    alternative_types = [
+        UserBase,
+            ],
+        )
+
+async def channel_converter(parser_ctx, content_parser_ctx):
+    part = content_parser_ctx.get_next()
+    if (part is None):
+        return None
     
-    if len(parsed_arguments) == 0:
-        if should_instance:
-            func = analyzer.instance_to_async_callable()
-        return func, COMMAND_CALL_SETTING_2ARGS, None
+    flags = parser_ctx.flags
+    channel_type = parser_ctx.type
+    message = content_parser_ctx.message
     
-    if len(parsed_arguments) == 1 and parsed_arguments[0]==Converter.content:
-        if should_instance:
-            func = analyzer.instance_to_async_callable()
-        return func, COMMAND_CALL_SETTING_3ARGS, None
+    if flags&CONVERTER_FLAG_ID:
+        parsed = ID_RP.fullmatch(part)
+        if (parsed is not None):
+            id_ = int(parsed.group(1))
+            
+            if flags&CONVERTER_FLAG_EVERYWHERE:
+                try:
+                    channel = CHANNELS[id_]
+                except KeyError:
+                    pass
+                else:
+                    if ((channel_type is None) or isinstance(channel, channel_type)):
+                        return channel
+            
+            else:
+                channel = message.channel
+                guild = message.guild
+                if guild is None:
+                    if ((channel_type is None) or isinstance(channel, channel_type)) and channel.id == id_:
+                        return channel
+                
+                else:
+                    try:
+                        channel = guild.all_channel[id_]
+                    except KeyError:
+                        pass
+                    else:
+                        if ((channel_type is None) or isinstance(channel, channel_type)):
+                            return channel
     
-    parsed_arguments=tuple(parsed_arguments)
+    if flags&CONVERTER_FLAG_MENTION:
+        channel = parse_channel_mention(part, message)
+        if (channel is not None):
+            if ((channel_type is None) or isinstance(channel, channel_type)):
+                return channel
+    
+    if flags&CONVERTER_FLAG_NAME:
+        channel = message.channel
+        guild = channel.guild
+        if guild is None:
+            if ((channel_type is None) or isinstance(channel, channel_type)) and channel.has_name_like(part):
+                return channel
+        else:
+            channel = guild.get_channel_like(part, type_=channel_type)
+            if (channel is not None):
+                return channel
+    
+    return None
+
+ConverterSetting(
+    converter = channel_converter,
+    uses_flags = True,
+    default_flags = ConverterFlag.channel_default,
+    all_flags = ConverterFlag().update_by_keys(
+        everywhere=True, id=True, name=True, mention=True),
+    alternative_type_name = 'channel',
+    default_type = ChannelBase,
+    alternative_types = [
+        ChannelGuildBase,
+        ChannelTextBase,
+        ChannelText,
+        ChannelPrivate,
+        ChannelVoice,
+        ChannelGroup,
+        ChannelCategory,
+        ChannelStore,
+            ],
+        )
+
+async def role_converter(parser_ctx, content_parser_ctx):
+    part = content_parser_ctx.get_next()
+    if (part is None):
+        return None
+    
+    flags = parser_ctx.flags
+    message = content_parser_ctx.message
+    
+    if flags&CONVERTER_FLAG_ID:
+        parsed = ID_RP.fullmatch(part)
+        if (parsed is not None):
+            id_ = int(parsed.group(1))
+        
+            if flags&CONVERTER_FLAG_EVERYWHERE:
+                try:
+                    role = ROLES[id_]
+                except KeyError:
+                    pass
+                else:
+                    return role
+            
+            else:
+                guild = message.channel.guild
+                if (guild is not None):
+                    try:
+                        role = guild.all_role[id_]
+                    except KeyError:
+                        pass
+                    else:
+                        return role
+    
+    if flags&CONVERTER_FLAG_MENTION:
+        role = parse_role_mention(part, message)
+        if (role is not None):
+            return role
+    
+    if flags&CONVERTER_FLAG_NAME:
+        guild = message.channel.guild
+        if (guild is not None):
+            role = guild.get_role_like(part)
+            if (role is not None):
+                return role
+    
+    return None
+
+ConverterSetting(
+    converter = role_converter,
+    uses_flags = True,
+    default_flags = ConverterFlag.role_default,
+    all_flags = ConverterFlag().update_by_keys(
+        everywhere=True, id=True, name=True, mention=True),
+    alternative_type_name = 'role',
+    default_type = Role,
+    alternative_types = None,
+        )
+
+async def emoji_converter(parser_ctx, content_parser_ctx):
+    part = content_parser_ctx.get_next()
+    if (part is None):
+        return None
+    
+    flags = parser_ctx.flags
+    if flags&CONVERTER_FLAG_MENTION:
+        emoji = parse_emoji(part)
+        if (emoji is not None):
+            return emoji
+    
+    message = content_parser_ctx.message
+    if flags&CONVERTER_FLAG_ID:
+        parsed = ID_RP.fullmatch(part)
+        if (parsed is not None):
+            id_ = int(parsed.group(1))
+            
+            if flags&CONVERTER_FLAG_EVERYWHERE:
+                try:
+                    emoji = EMOJIS[id_]
+                except KeyError:
+                    pass
+                else:
+                    return emoji
+            
+            else:
+                guild = message.channel.guild
+                if (guild is not None):
+                    try:
+                        emoji = guild.EMOJIS[id_]
+                    except KeyError:
+                        pass
+                    else:
+                        return emoji
+    
+    if flags&CONVERTER_FLAG_NAME:
+        guild = message.channel.guild
+        if (guild is not None):
+            emoji = guild.get_emoji_like(part)
+            if (emoji is not None):
+                return emoji
+    
+    return None
+
+ConverterSetting(
+    converter = emoji_converter,
+    uses_flags = True,
+    default_flags = ConverterFlag.emoji_default,
+    all_flags = ConverterFlag().update_by_keys(
+        everywhere=True, id=True, name=True, mention=True),
+    alternative_type_name = 'emoji',
+    default_type = Emoji,
+    alternative_types = None,
+        )
+
+async def guild_converter(parser_ctx, content_parser_ctx):
+    part = content_parser_ctx.get_next()
+    if (part is None):
+        return None
+    
+    parsed = ID_RP.fullmatch(part)
+    if (parsed is None):
+        return None
+    
+    id_ = int(parsed.group(1))
     
     try:
-        parser = COMPILED_PARSERS[parsed_arguments]
+        guild = GUILDS[id_]
     except KeyError:
-        parser = compile_parsed(parsed_arguments)
-        COMPILED_PARSERS[parsed_arguments] = parser
-        
-    return func, COMMAND_CALL_SETTING_USE_PARSER, parser
-
-
-def compile_parsed(converters):
-    result=code()
+        return None
     
-    for converter in converters:
-        if converter.flags.guild:
-            is_guild_only = True
-            break
+    if parser_ctx.flags&CONVERTER_FLAG_EVERYWHERE:
+        return guild
+    
+    if guild in content_parser_ctx.client.guild_profiles:
+        return guild
+    
+    return None
+
+ConverterSetting(
+    converter = guild_converter,
+    uses_flags = True,
+    default_flags = ConverterFlag().guild_default,
+    all_flags = ConverterFlag().update_by_keys(
+        everywhere=True, id=True),
+    alternative_type_name = 'guild',
+    default_type = Guild,
+    alternative_types = None,
+        )
+
+# Gets a message by it's id
+async def _message_converter_m_id(parser_ctx, content_parser_ctx, message_id):
+    message = MESSAGES.get(message_id)
+    channel = content_parser_ctx.message.channel
+    if (message is not None):
+        # Message found
+        if parser_ctx.flags&CONVERTER_FLAG_EVERYWHERE:
+            return message
+        else:
+            # Only local message can be yielded, so check if it is local
+            guild = channel.guild
+            if guild is None:
+                if message.channel is channel:
+                    return message
+                else:
+                    # Message found, but other channel, yield None
+                    return None
+            else:
+                if message.channel.guild is guild:
+                    return message
+                else:
+                    # Message found, but other guild, yield None
+                    return None
+    
+    # Try to get message by id
+    client = content_parser_ctx.client
+    if channel.cached_permissions_for(client).can_read_message_history:
+        try:
+            message = await client.message_get(channel, message_id)
+        except BaseException as err:
+            if not (isinstance(err, ConnectionError) or
+                isinstance(err, DiscordException) and err.code in (
+                    ERROR_CODES.unknown_channel, # message deleted
+                    ERROR_CODES.unknown_message, # channel deleted
+                    ERROR_CODES.invalid_access, # client removed
+                    ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                        )):
+                    raise
+            
+            # Message do not exists at the respective channel, or any other acceptable error
+            return None
+        else:
+            return message
     else:
-        is_guild_only = False
-    
-    if is_guild_only:
-        needs_guild_set=True
-    else:
-        for converter in converters:
-            flags=converter.flags
-            if flags.id:
-                needs_guild_set = True
-                break
-                
-            if flags.name:
-                needs_guild_set = True
-                break
+        # The message is given by id, but the client request it.
+        return None
+
+# Gets a message by it's and it's channel's id
+async def _message_converter_cm_id(parser_ctx, content_parser_ctx, channel_id, message_id):
+    channel = content_parser_ctx.message.channel
+    message = MESSAGES.get(message_id)
+    if (message is not None):
+        # Message found
+        if parser_ctx.flags&CONVERTER_FLAG_EVERYWHERE:
+            return message
         else:
-            needs_guild_set = False
+            # Only local message can be yielded, so check if it is local
+            guild = channel.guild
+            if (message.channel is channel) if (guild is None) else (message.channel.guild is guild):
+                return message
+        
+        # Message found, but other guild or channel yield None
+        return None
     
-    result.append(f'async def parser(client,message,content):')
-    result.go_in()
-    
-    _locals=_unindexed_static.copy()
-    counters={}
-    
-    result.append('result=[]')
-    
-    if needs_guild_set:
-        result.append('guild=message.guild')
-        _locals['guild']=_unindexed_optional['guild']
-    
-    if is_guild_only:
-        result.append('if guild is None:')
-        result.append('    return False,result')
-    
-    is_part_fallback_set=False
-    is_part_set=False
-    is_index_set=False
-    for index in range(len(converters)):
-        element=converters[index]
-        name=element.meta.name
-        
-        if name=='condition':
-            
-            if element.default_type is not ConverterDefaultType.none:
-                element.check_default(_locals)
-                result.append(f'if {element.default_value}:')
-                if element.flags.reversed:
-                    result.extend('    return False,result')
-                else:
-                    result.append('    return True,result')
-            else:
-                pass #no default
-            
-            continue
-        
-        if name=='guild':
-            #TODO : add support for guild parsing
-            result.append('result.append(guild)')
-            #no else case, guild can be used just for a placeholder for guild only commands
-            continue
-        
-        if name=='rest':
-            if is_index_set:
-                if is_part_fallback_set:
-                    result.append( 'if free_part:')
-                    result.go_in()
-                    result.append( 'if index:')
-                    result.append( '    if index==limit:')
-                    result.append( '        rest=part')
-                    result.append( '    else:')
-                    result.append( '        index_=parsed.start()')
-                    result.append( '        if index_:')
-                    result.append( '            rest=content[index_:]')
-                    result.append( '        else:')
-                    result.append( '            rest=content')
-                    result.append( 'else:')
-                    result.append( '    rest=content')
-                    result.go_out()
-                    result.append( 'else:')
-                    result.go_in()
+    message_channel = CHANNELS.get(channel_id)
+    if (message_channel is None):
+        return None
 
-                result.append( 'if index:')
-                result.append( '    if index==limit:')
-                result.go_in(2)
-                if element.default_type is ConverterDefaultType.none:
-                    result.append( 'rest=\'\'')
-                else:
-                    element.check_default(_locals)
-                    result.append(f'rest={element.default_value}')
-                
-                result.go_out(2)
-                result.append( '    else:')
-                result.append( '        rest=content[index:]')
-                result.append( 'else:')
-                result.append( '    rest=content')
-
-            else:
-                if element.default_type is ConverterDefaultType.none:
-                    result.append( 'rest=content')
-                else:
-                    element.check_default(_locals)
-                    result.append( 'if content:')
-                    result.append( '    rest=content')
-                    result.append( 'else:')
-                    result.append(f'    rest={element.default_value}')
-            
-            result._back_state=1
-            _locals[name]=_unindexed_optional[name]
-            result.append(f'result.append({name})')
-            continue
-        
-        if name=='message':
-            #total ignore, we pass it by default
-            continue
-        
-        if name=='content':
-            if element.default_type is not ConverterDefaultType.none:
-                result.append( 'if not content')
-                element.check_default(_locals)
-                result.append(f'    content={element.default_value}')
-            
-            result.append('result.append(content)')
-            continue
-        
-        if (not is_index_set) and (index!=len(converters)-1 or (not element.parse_one)):
-            is_index_set=True
-            result.append('index=0')
-            result.append('limit=len(content)')
-        
-        
-        if name=='ensure':
-            if not is_part_set:
-                go_to=result._back_state
-                if is_part_fallback_set:
-                    result.append( 'if free_part:')
-                    result.append( '    free_part=False')
-                    result.append( 'else:')
-                    result.go_in()
-                if is_index_set:
-                    result.append( 'if index==limit:')
-                else:
-                    result.append( 'if not content:')
-                result.go_in()
-                if element.default_type is ConverterDefaultType.none:
-                    result.append( 'part=\'\'')
-                else:
-                    element.check_default(_locals)
-                    result.append(f'part={element.default_value}')
-                
-                result.go_out()
-                result.append( 'else:')
-                result.go_in()
-                if is_index_set:
-                    result.append( 'parsed=PARSER_RP.match(content,index)')
-                else:
-                    result.append( 'parsed=PARSER_RP.match(content)')
-                result.append( 'part=parsed.group(2)')
-                result.append( 'if part is None:')
-                result.append( '    part=parsed.group(1)')
-                if index!=len(converters)-1:
-                    result.append( 'index=parsed.end()')
-                result._back_state=go_to
-                _locals['part']=_unindexed_optional['part']
-            is_part_set=True
-            is_part_fallback_set=True
-            continue
-
-
-        counter=counters.get(name,0)
-        counters[name]=counter+1
-        variable_name=f'{name}_{counter}'
-        
-        
-        if element.parse_one:
-            loop=False
-            sub_var_name=variable_name
-        else:
-            loop=True
-            
-            sub_var_name=name
-            if not element.args:
-                result.append(f'{variable_name}=[]')
-                result.append(f'result.append({variable_name})')
-            result.append( 'index_=0')
-            if element.upper_limit:
-                result.append(f'while index_<{element.upper_limit}:')
-            else:
-                result.append( 'while True:')
-            result.go_in()
-        
-        if loop:
-            if element.lower_limit:
-                if element.default_type is ConverterDefaultType.none:
-                    return_part_on_fail=[f'if index_<{element.lower_limit}:']
-                    return_part_on_fail.append('    return False,result')
-                else:
-                    return_part_on_fail = [
-                        f'default={element.default_value}',
-                        f'while index_<{element.lower_limit}:',
-                            ]
+    if parser_ctx.flags&CONVERTER_FLAG_EVERYWHERE:
+        # Lets use that multy client core
+        for client in message_channel.clients:
+            if message_channel.cached_permissions_for(client).can_read_message_history:
+                try:
+                    message = await client.message_get(message_channel,  message_id)
+                except BaseException as err:
+                    if isinstance(err, ConnectionError):
+                        return None
                     
-                    if element.args:
-                        return_part_on_fail.append(f'    result.append(default)')
-                    else:
-                        return_part_on_fail.append(f'    {variable_name}.append(default)')
-                    
-                    return_part_on_fail.append( '    index_+=1')
-                    return_part_on_fail.append( 'break')
-                
-                return_part_on_fail_noneset=[f'if {sub_var_name} is None:']
-                for line in return_part_on_fail:
-                    return_part_on_fail_noneset.append('    '+line)
-                if element.default_type is ConverterDefaultType.none:
-                    return_part_on_fail_noneset.append('    break')
-            else:
-                return_part_on_fail=['break']
-                return_part_on_fail_noneset=[
-                    f'if {sub_var_name} is None:',
-                     '    break']
-            return_part_on_fail_nonset=return_part_on_fail
-        elif element.default_type is not ConverterDefaultType.none:
-            element.check_default(_locals)
-            return_part_on_fail=[f'{sub_var_name}={element.default_value}']
-            if element.default_value=='None':
-                if index!=len(converters)-1:
-                    return_part_on_fail_noneset=[f'free_part=({sub_var_name} is None)']
-                else:
-                    return_part_on_fail_noneset=[]
-            else:
-                if index!=len(converters)-1:
-                    return_part_on_fail.append('free_part=True')
-                    return_part_on_fail_noneset=[
-                        f'if {sub_var_name} is None:',
-                        f'    {sub_var_name}={element.default_value}',
-                         '    free_part=True',]
-                else:
-                    return_part_on_fail_noneset=[
-                        f'if {sub_var_name} is None:',
-                        f'    {sub_var_name}={element.default_value}',]
-                
-            return_part_on_fail_nonset=[f'{sub_var_name}={element.default_value}',]
-        
-        else:
-            return_part_on_fail=[
-                 'return False,result',
-                    ]
-            return_part_on_fail_noneset=[
-                f'if {sub_var_name} is None:',
-                 '    return False,result',
-                    ]
-            
-            return_part_on_fail_nonset=return_part_on_fail
-
-        if not is_part_set:
-            go_to=result._back_state
-            if is_part_fallback_set:
-                go_to+=1
-            if is_index_set:
-                if index!=len(converters)-1 and element.default_type is not ConverterDefaultType.none:
-                    result.append( 'free_part=False')
-                if is_part_fallback_set:
-                    result.append( 'if index==limit and not free_part:')
-                else:
-                    result.append( 'if index==limit:')
-            else:
-                result.append( 'if not content:')
-            result.extend(return_part_on_fail_nonset,1)
-            result.append( 'else:')
-            result.go_in()
-            if is_part_fallback_set:
-                result.append( 'if free_part:')
-                result.append( '    free_part=False')
-                result.append( 'else:')
-                result.go_in()
-            if is_index_set:
-                result.append( 'parsed=PARSER_RP.match(content,index)')
-            else:
-                result.append( 'parsed=PARSER_RP.match(content)')
-            result.append( 'part=parsed.group(2)')
-            result.append( 'if part is None:')
-            result.append( '    part=parsed.group(1)')
-            if index!=len(converters)-1 or loop:
-                result.append( 'index=parsed.end()')
-            result._back_state=go_to+1
-            _locals['part']=_unindexed_optional['part']
-            if is_part_fallback_set:
-                result.go_out()
-        _locals[sub_var_name]=_indexed_optional[name]
-
-        if (element.default_type is not ConverterDefaultType.none):
-            is_part_fallback_set=True
-            
-        if name=='user':
-            go_to=result._back_state
-            if element.flags.name:
-                if is_guild_only:
-                    if CACHE_USER:
-                        by_name_part = [
-                             'if len(guild.users)>REQUEST_OVER:',
-                            f'    found = await client.guild_user_search(guild,part)',
-                             '    if found:',
-                            f'        {sub_var_name}=found[0]',
-                             '    else:',
-                            f'        {sub_var_name}=None',
-                             'else:',
-                            f'    {sub_var_name}=guild.get_user_like(part)',
-                                ]
-                    else:
-                        by_name_part = [
-                            f'found = await client.guild_user_search(guild,part)',
-                             'if found:',
-                            f'    {sub_var_name}=found[0]',
-                             'else:',
-                            f'    {sub_var_name}=None',
-                                ]
-                else:
-                    if CACHE_USER:
-                        by_name_part = [
-                             'if guild is None:',
-                            f'    {sub_var_name}=message.channel.get_user_like(part)',
-                             'else:',
-                             '    if len(guild.users)>REQUEST_OVER:',
-                            f'        found = await client.guild_user_search(guild,part)',
-                             '        if found:',
-                            f'            {sub_var_name}=found[0]',
-                             '        else:',
-                            f'            {sub_var_name}=None',
-                             '    else:',
-                            f'        {sub_var_name}=guild.get_user_like(part)',
-                                 ]
-                    else:
-                        by_name_part = [
-                             'if guild is None:',
-                            f'    {sub_var_name}=message.channel.get_user_like(part)',
-                             'else:',
-                            f'    found = await client.guild_user_search(guild,part)',
-                             '    if found:',
-                            f'        {sub_var_name}=found[0]',
-                             '    else:',
-                            f'        {sub_var_name}=None',
-                                 ]
-            else:
-                by_name_part=None
-            
-            if element.flags.mention:
-                result.append(f'{sub_var_name}=parse_user_mention(part,message)')
-                
-                if element.flags.name or element.flags.everywhere or element.flags.id:
-                    result.append(f'if {sub_var_name} is None:')
-                    result.go_in()
-            
-            if element.flags.everywhere or element.flags.id:
-                result.append( 'parsed_=IS_ID_RP.fullmatch(part)')
-                result.append( 'if parsed_ is None:')
-                result.go_in()
-                result.extend(by_name_part)
-                result.go_out()
-                result.append( 'else:')
-                result.go_in()
-                result.append( 'id_=int(parsed_.group(1))')
-                if element.flags.everywhere:
-                    if (not CACHE_USER) and element.flags.profile:
-                        if not is_guild_only:
-                            result.append( 'if guild is None:')
-                            result.go_in()
-                            result.append( 'try:')
-                            result.append(f'    {sub_var_name} = await client.user_get(id_)')
-                            result.append( 'except DiscordException:')
-                            result.append(f'    {sub_var_name}=None')
-                            result.go_out()
-                            result.append('else:')
-                            result.go_in()
-                        result.append( 'try:')
-                        result.append(f'    {sub_var_name} = await client.guild_user_get(guild,id_)')
-                        result.append( 'except DiscordException:')
-                    else:
-                        result.append( 'try:')
-                        result.append(f'    {sub_var_name}=USERS[id_]')
-                        result.append( 'except KeyError:')
-                    result.go_in()
-                    result.append( 'try:')
-                    result.append(f'    {sub_var_name} = await client.user_get(id_)')
-                    result.append( 'except DiscordException:')
-                    result.append(f'    {sub_var_name}=None')
-                    
-                else:
-                    if is_guild_only:
-                        if (not CACHE_USER):
-                            if element.flags.profile:
-                                result.append('try:')
-                                result.append(f'    {sub_var_name} = await client.guild_user_get(guild,id_)')
-                                result.append('except DiscordException:')
-                                result.append(f'    {sub_var_name}=None')
-                        else:
-                            result.append(f'{sub_var_name}=guild.users.get(id_)')
-                    else:
-                        result.append( 'if guild is None:')
-                        result.go_in()
-                        result.append(f'for {sub_var_name} in message.channel.users:')
-                        result.append(f'    if {sub_var_name}.id==id_:')
-                        result.append( '        break')
-                        result.append( 'else:')
-                        result.append(f'    {sub_var_name}=None')
-                        result.go_out()
-                        result.append('else:')
-                        result.go_in()
-                        if CACHE_USER:
-                            result.append(f'{sub_var_name}=guild.users.get(id_)')
-                        else:
-                            if element.flags.profile:
-                                result.append('try:')
-                                result.append(f'    {sub_var_name} = await client.guild_user_get(guild,id_)')
-                                result.append('except DiscordException:')
-                                result.append(f'    {sub_var_name}=None')
-                            else:
-                                result.extend(return_part_on_fail_noneset)
-            else:
-                if element.flags.name:
-                    result.extend(by_name_part)
-            
-            result._back_state=go_to
-            result.extend(return_part_on_fail_noneset)
-        
-        elif name=='channel':
-            go_to=result._back_state
-            if element.flags.mention:
-                result.append(f'{sub_var_name}=parse_channel_mention(part,message)')
-                
-                if element.flags.id or element.flags.name:
-                    if not loop:
-                        go_to+=1
-                    result.append(f'if {sub_var_name} is None:')
-                    result.go_in()
-
-            if element.flags.id:
-                result.append( 'parsed_=IS_ID_RP.fullmatch(part)')
-                result.append( 'if parsed_ is not None:')
-                result.go_in()
-                result.append( 'id_=int(parsed_.group(1))')
-                result.append(f'{sub_var_name}=guild.all_channel.get(id_)')
-                if element.flags.name:
-                    result.append(f'if {sub_var_name} is None:')
-                    result.append(f'    {sub_var_name}=guild.get_channel_like(part)')
-                    result.go_out()
-                    result.append( 'else:')
-                    result.append(f'    {sub_var_name}=guild.get_channel_like(part)')
-            
-            else:
-                if element.flags.name:
-                    result.append(f'{sub_var_name}=guild.get_channel_like(part)')
-                    
-            result._back_state=go_to
-            result.extend(return_part_on_fail_noneset)
-
-        elif name=='role':
-            go_to=result._back_state
-            if element.flags.mention:
-                result.append(f'{sub_var_name}=parse_role_mention(part,message)')
-                
-                if element.flags.id or element.flags.name:
-                    if not loop:
-                        go_to+=1
-                    result.append(f'if {sub_var_name} is None:')
-                    result.go_in()
-                    
-            if element.flags.id:
-                result.append( 'parsed_=IS_ID_RP.fullmatch(part)')
-                result.append( 'if parsed_ is not None:')
-                result.go_in()
-                result.append( 'id_=int(parsed_.group(1))')
-                result.append(f'{sub_var_name}=guild.all_role.get(id_)')
-                if element.flags.name:
-                    result.append(f'if {sub_var_name} is None:')
-                    result.append(f'    {sub_var_name}=guild.get_role_like(part)')
-                    result.go_out()
-                    result.append( 'else:')
-                    result.append(f'    {sub_var_name}=guild.get_role_like(part)')
-            
-            else:
-                if element.flags.name:
-                    result.append(f'{sub_var_name}=guild.get_role_like(part)')
-                    
-            result._back_state=go_to
-            result.extend(return_part_on_fail_noneset)
-
-        elif name=='emoji':
-            go_to=result._back_state
-            if element.flags.mention:
-                result.append(f'{sub_var_name}=parse_emoji(part)')
-                if element.flags.id or element.flags.everyhere or element.flags.name:
-                    if not loop:
-                        go_to+=1
-                    result.append(f'if {sub_var_name} is None:')
-                    result.go_in()
-            
-            if element.flags.id or element.flags.everywhere:
-                if not element.flags.everywhere:
-                    if not is_guild_only:
-                        result.append( 'if guild is not None:')
-                        result.go_in()
+                    if isinstance(err, DiscordException):
+                        err_code = err.code
+                        # If the message or channel is deleted, return None
+                        if err_code in (
+                            ERROR_CODES.unknown_channel, # message deleted
+                            ERROR_CODES.unknown_message, # channel deleted
+                                ):
+                            return None
                         
-                result.append( 'parsed_=IS_ID_RP.fullmatch(part)')
-                result.append( 'if parsed_ is not None:')
-                result.go_in()
-                result.append( 'id_=int(parsed_.group(1))')
-                if not element.flags.everywhere:
-                    result.append(f'{sub_var_name}=guild.emojis.get(id_)')
-                    if element.flags.name:
-                        result.append(f'if {sub_var_name} is None:')
-                        result.append(f'    {sub_var_name}=guild.get_emoji_like(part)')
-                        result.go_out()
-                        result.append( 'else:')
-                        result.append(f'    {sub_var_name}=guild.get_emoji_like(part)')
-                
+                        # If client is removed or has it's permissions changed, lets move on the next if applicable
+                        if err_code in (
+                            ERROR_CODES.invalid_access, # client removed
+                            ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                                ):
+                            continue
+                    
+                    raise
                 else:
-                    result.append(f'{sub_var_name}=EMOJIS.get(id_)')
-                    if element.flags.name:
-                        result.append(f'if {sub_var_name} is None and guild is not None:')
-                        result.append(f'    {sub_var_name}=guild.get_emoji_like(part)')
-                        result.go_out()
-                        result.append( 'else:')
-                        result.go_in()
-                        result.append('if guild is not None:')
-                        result.append(f'    {sub_var_name}=guild.get_emoji_like(part)')
+                    return message
+        
+        # No message could be requested successfully.
+        return None
+    
+    guild = channel.guild
+    if (message_channel is channel) if (guild is None) else (message_channel.guild is guild):
+        client = content_parser_ctx.client
+        if channel.cached_permissions_for(client).can_read_message_history:
+            try:
+                message = await client.message_get(message_channel, message_id)
+            except BaseException as err:
+                if not (isinstance(err, ConnectionError) or
+                    isinstance(err, DiscordException) and err.code in (
+                        ERROR_CODES.unknown_channel, # message deleted
+                        ERROR_CODES.unknown_message, # channel deleted
+                        ERROR_CODES.invalid_access, # client removed
+                        ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                            )):
+                        raise
+            else:
+                return message
+        
+        return None
+
+async def message_converter(parser_ctx, content_parser_ctx):
+    part = content_parser_ctx.get_next()
+    if (part is None):
+        return None
+    
+    if parser_ctx.flags&CONVERTER_FLAG_ID:
+        parsed = ID_RP.fullmatch(part)
+        if (parsed is not None):
+            message_id = int(parsed.group(1))
+            return await _message_converter_m_id(parser_ctx, content_parser_ctx, message_id)
+        
+        parsed = CHANNEL_MESSAGE_RP.fullmatch(part)
+        if (parsed is not None):
+            channel_id, message_id = parsed.groups()
+            channel_id = int(channel_id)
+            message_id = int(message_id)
+            return await _message_converter_cm_id(parser_ctx, content_parser_ctx, channel_id, message_id)
+    
+    if parser_ctx.flags&CONVERTER_FLAG_URL:
+        parsed = MESSAGE_JUMP_URL_RP.fullmatch(part)
+        if (parsed is not None):
+            _, channel_id, message_id = parsed.groups()
+            channel_id = int(channel_id)
+            message_id = int(message_id)
+            return await _message_converter_cm_id(parser_ctx, content_parser_ctx, channel_id, message_id)
+    
+    return None
+
+ConverterSetting(
+    converter = message_converter,
+    uses_flags = True,
+    default_flags = ConverterFlag().message_default,
+    all_flags = ConverterFlag().update_by_keys(
+        everywhere=True, id=True, url=True),
+    alternative_type_name = 'message',
+    default_type = Message,
+    alternative_types = None,
+        )
+
+async def invite_converter(parser_ctx, content_parser_ctx):
+    part = content_parser_ctx.get_next()
+    if (part is None):
+        return None
+    
+    flags = parser_ctx.flags
+    
+    # It would not be a Huyane code without some GOTO
+    while True:
+        if flags&CONVERTER_FLAG_URL:
+            parsed = INVITE_URL_PATTERN.fullmatch(part)
+            if parsed is not None:
+                break
+        
+        if flags&CONVERTER_FLAG_ID:
+            parsed = INVITE_CODE_RP.fullmatch(part)
+            if (parsed is not None):
+                break
+        
+        return None
+    
+    code = parsed.group(1)
+    
+    try:
+        invite = await content_parser_ctx.client.invite_get(code)
+    except BaseException as err:
+        if not (isinstance(err, ConnectionError) or
+            isinstance(err, DiscordException) and err.code == ERROR_CODES.unknown_invite # Invite not exists
+                    ):
+                raise
+        
+        return None
+    
+    return invite
+
+ConverterSetting(
+    converter = invite_converter,
+    uses_flags = True,
+    default_flags = ConverterFlag().invite_default,
+    all_flags = ConverterFlag().invite_default,
+    alternative_type_name = 'invite',
+    default_type = Invite,
+    alternative_types = None,
+        )
+
+async def str_converter(parser_ctx, content_parser_ctx):
+    return content_parser_ctx.get_next()
+
+ConverterSetting(
+    converter = str_converter,
+    uses_flags = False,
+    default_flags = ConverterFlag(),
+    all_flags = ConverterFlag(),
+    alternative_type_name = None,
+    default_type = str,
+    alternative_types = None,
+        )
+
+async def int_converter(parser_ctx, content_parser_ctx):
+    part = content_parser_ctx.get_next()
+    if part is None:
+        return None
+    
+    if len(part)>NUMERIC_CONVERSION_LIMIT:
+        return None
+    
+    try:
+        int_ = int(part)
+    except ValueError:
+        return None
+    else:
+        return int_
+
+ConverterSetting(
+    converter = int_converter,
+    uses_flags = False,
+    default_flags = ConverterFlag(),
+    all_flags = ConverterFlag(),
+    alternative_type_name = None,
+    default_type = int,
+    alternative_types = None,
+        )
+
+TDELTA_KEYS = ('weeks', 'days', 'hours', 'minutes', 'seconds', 'microseconds')
+
+async def tdelta_converter(parser_ctx, content_parser_ctx):
+    part = content_parser_ctx.get_next()
+    if part is None:
+        return None
+    
+    result = {}
+    index = 0
+    limit = len(TDELTA_KEYS)
+    for amount, name in DELTA_RP.findall(part):
+        name = name.lower()
+        if index == limit:
+            break
+        
+        while True:
+            key = TDELTA_KEYS[index]
+            index += 1
+            if key.startswith(name):
+                result.setdefault(key, int(amount))
+                break
+            
+            if index == limit:
+                break
+    
+    if result:
+        return timedelta(**result)
+
+ConverterSetting(
+    converter = tdelta_converter,
+    uses_flags = False,
+    default_flags = ConverterFlag(),
+    all_flags = ConverterFlag(),
+    alternative_type_name = 'tdelta',
+    default_type = timedelta,
+    alternative_types = None,
+        )
+
+RDELTA_KEYS = ('years','months', *TDELTA_KEYS)
+
+if (relativedelta is not None):
+    async def rdelta_converter(parser_ctx, content_parser_ctx):
+        part = content_parser_ctx.get_next()
+        if part is None:
+            return None
+        
+        result = {}
+        index = 0
+        limit = len(RDELTA_KEYS)
+        for amount, name in DELTA_RP.findall(part):
+            name = name.lower()
+            if index == limit:
+                break
+            
+            while True:
+                key = RDELTA_KEYS[index]
+                index += 1
+                if key.startswith(name):
+                    result.setdefault(key, int(amount))
+                    break
                 
-            else:
-                if element.flags.name:
-                    if not is_guild_only:
-                        result.append( 'if guild is not None:')
-                        result.go_in()
-                    result.append(f'{sub_var_name}=guild.get_emoji_like(part)')
-            
-            result._back_state=go_to
-            result.extend(return_part_on_fail_noneset)
-            
-        elif name=='str':
-            result.append(f'{sub_var_name}=part')
-            
-        elif name=='int':
-            result.append('if len(part)>INT_CONVERSION_LIMIT:')
-            result.extend(return_part_on_fail,1)
-            result.append('else:')
-            result.go_in()
-            result.append( 'try:')
-            result.append(f'    {sub_var_name}=int(part)')
-            result.append( 'except ValueError:')
-            result.go_in()
-            result.extend(return_part_on_fail)
-            _locals[sub_var_name]=_indexed_optional['int']
+                if index == limit:
+                    break
+        
+        if result:
+            return relativedelta(**result)
+    
+    ConverterSetting(
+        converter = rdelta_converter,
+        uses_flags = False,
+        default_flags = ConverterFlag(),
+        all_flags = ConverterFlag(),
+        alternative_type_name = 'rdelta',
+        default_type = relativedelta,
+        alternative_types = None,
+            )
 
-        elif name=='tdelta' or (name=='rdelta' and (relativedelta is not None)):
-            result.append(f'{sub_var_name}=parse_{name}(part)')
-            result.extend(return_part_on_fail_noneset)
+else:
+    rdelta_converter = None
+
+# preregistered default code codes for shortcutting
+
+PREREGISTERED_DEFAULT_CODES = {}
+
+async def prdc_ma(content_parser_ctx):
+    return content_parser_ctx.message.author
+
+PREREGISTERED_DEFAULT_CODES['message.author'] = prdc_ma
+del prdc_ma
+
+async def prdc_mc(content_parser_ctx):
+    return content_parser_ctx.message.channel
+
+PREREGISTERED_DEFAULT_CODES['message.channel'] = prdc_mc
+del prdc_mc
+
+async def prdc_mg(content_parser_ctx):
+    return content_parser_ctx.message.channel.guild
+
+PREREGISTERED_DEFAULT_CODES['message.guild'] = prdc_mg
+PREREGISTERED_DEFAULT_CODES['message.channel.guild'] = prdc_mg
+del prdc_mg
+
+async def prdc_c(content_parser_ctx):
+    return content_parser_ctx.message.channel.guild
+
+PREREGISTERED_DEFAULT_CODES['client'] = prdc_c
+del prdc_c
+
+async def prdc_r(content_parser_ctx):
+    return content_parser_ctx.get_rest()
+
+PREREGISTERED_DEFAULT_CODES['rest'] = prdc_r
+del prdc_r
+
+def validate_default_code(default_code):
+    """
+    Valdiates the given `default-code`.
+    
+    Parameters
+    ----------
+    default_code : `str` or `async-callable` `function`
+        A default code function, or a `str` representing a predefined one.
+    
+    Returns
+    -------
+    default_code : `async-callable` `function`
+    
+    Raises
+    ------
+    LookupError
+        If `default_code` is given as `str` instance, but not as an identifier of any of the predefined ones.
+    TypeError
+        - If `default_code` is neither `str` or `function`.
+        - If `default_code` is given as `function`, but not as `async`
+        - If `default_code` is given as `function`, but accepts bad amount of arguments.
+    """
+    default_code_type = type(default_code)
+    if default_code_type is str:
+        pass
+    elif issubclass(default_code_type, str):
+        default_code = str(default_code)
+    elif callable(default_code):
+        analyzed = CallableAnalyzer(default_code)
+        if (not analyzed.is_async()):
+            raise TypeError(f'`default_code` shoud have been given as `str`, or as an `async-callable` `function`, '
+                f'got a function, but not an `async` one: an async function instance, got {default_code!r}.')
+        
+        non_reserved_positional_argument_count = analyzed.get_non_reserved_positional_argument_count()
+        if non_reserved_positional_argument_count!=1:
+            raise TypeError(f'`default_code` should accept `1` non reserved positonal arguments, meanwhile it expects '
+                f'{non_reserved_positional_argument_count}.')
+        
+        if analyzed.accepts_args():
+            raise TypeError(f'`default_code` should accept not expect args, meanwhile it does.')
+        
+        if analyzed.accepts_kwargs():
+            raise TypeError(f'`default_code` should accept not expect kwargs, meanwhile it does.')
+        
+        non_default_keyword_only_argument_count = analyzed.get_non_default_keyword_only_argument_count()
+        if non_default_keyword_only_argument_count:
+            raise TypeError(f'`default_code` should accept `0` keyword only arguments, meanwhile it expects '
+                f'{non_default_keyword_only_argument_count}.')
+        
+        return default_code
+    
+    else:
+        raise TypeError(f'`default_code` can be given as `str` instance, identifying a predefined default code '
+            f'funcion, or as an `async-callable` `function` type, got {default_code_type.__name__}.')
+    
+    try:
+        default_code = PREREGISTERED_DEFAULT_CODES[default_code]
+    except KeyError:
+        raise LookupError(f'`default_code` was given as `str` instance, but not as 1 of the predefined default codes, '
+              f'got {default_code!r}') from None
+    
+    return default_code
+
+def validate_annotation_type(annotation):
+    """
+    Validates a single annotation and returns it.
+    
+    Parameters
+    ----------
+    annotation : `type` or `str`
+        The annotation to validate.
+    
+    Returns
+    -------
+    annotation : `type`
+    
+    Raises
+    ------
+    LookupError
+        - If `annotation` was given as `type` instance, but that specfied type has no parser settings added to it.
+        - If `annotation` was given as `str` instance, but there is no added type representation to it.
+    TypeError
+        - If `annotation` was not given as `str`, neither as `type` instance.
+    """
+    annotation_type = annotation.__class__
+    if annotation_type is str:
+        pass
+    elif issubclass(annotation_type, str):
+        annotation = str(annotation)
+    
+    else:
+        if (annotation_type is type) or issubclass(annotation_type, type):
+            if (annotation not in CONVERTER_SETTING_TYPE_RELATION_MAP):
+                raise LookupError(f'`annotation` was given as `type` instance, but there is no parser for it, got '
+                    f'{annotation.__name__}.')
+            
+            return annotation
+        
+        raise TypeError(f'Expected `str` or `type` instance as `annotation`, got {annotation_type.__name__}.')
+    
+    try:
+        annotation = CONVERTER_SETTING_NAME_TO_TYPE[annotation]
+    except KeyError:
+        raise LookupError(f'`annotation` was given as `str` instance, but there is no parser for it, got '
+            f'{annotation!r}.') from None
+    
+    return annotation
+
+def validate_annotation_type_flags(annotation, flags):
+    """
+    Raises
+    ------
+    LookupError
+        If the given `annotation` has no linked parser setting for it.
+    TypeError
+        - If `annotation` is not given as `type` instance.
+        - If `flags` is not given as ``ConverterFlag`` instance.
+        - If `annotation`'s setting allows flags, and given, but the given flags have no interseption with the allowed
+            ones.
+        - If `annotation`'s setting do not allows any flags, meanwhile given.
+    """
+    if not isinstance(annotation, type):
+        raise TypeError(f'`annotation` should have be given as `type` instance, got {annotation.__class__.__name__}.')
+    
+    if not isinstance(flags, ConverterFlag):
+        raise TypeError(f'`flags` should have be given as `{ConverterFlag.__name__}` instance, got '
+            f'{flags.__class__.__name__}.')
+    
+    try:
+        setting = CONVERTER_SETTING_TYPE_RELATION_MAP[annotation]
+    except KeyError:
+        raise LookupError(f'The given `annotation` has no settings linked to it, got: {annotation.__name__}.') \
+            from None
+    
+    if setting.uses_flags:
+        if flags:
+            new_flags = ConverterFlag(setting.all_flags&flags)
+            if not new_flags:
+                raise TypeError(f'Flags was given as `{flags!r}`, meanwhile the {annotation!r} annotation\'s setting '
+                    f'allows: {setting.all_flags!r}. The two has no interseption.')
         else:
-            raise RuntimeError(name)
+            new_flags = setting.default_flags
+    
+    else:
+        if flags:
+            raise TypeError(f'The annotation {annotation!r}\'s setting do not allows flags, meanwhile given: '
+                f'{flags!r}.')
         
-        if loop:
-            if element.args:
-                result.append(f'result.append({sub_var_name})')
-            else:
-                result.append(f'{variable_name}.append({sub_var_name})')
-            result._back_state=2
-            if element.lower_limit or element.upper_limit:
-                result.append( 'index_+=1')
-            result._back_state=1
+        new_flags = flags
+    
+    return new_flags
+
+class FlaggedAnnotation(object):
+    """
+    Flagged annotation to store an annotation type with it's flags.
+    
+    Attributes
+    ----------
+    annotation : `type`
+        The type to convert to.
+    flags : ``ConverterFlag``
+        Extra flags for conversion.
+    """
+    __slots__ = ('annotation', 'flags', )
+    
+    def __new__(cls, annotation, flags=None):
+        """
+        Creates a ``FlaggedAnnotation`` with the given parameters.
+        
+        Parameters
+        ----------
+        annotation : `type`, `str`, ``FlaggedAnnotation``, ``Converter``
+            The annotation to convert.
+        flags : ``ConverterFlag``, Optional
+            Extra flags for conversion.
+        
+        Raises
+        ------
+        LookupError
+            - If `annotation` was given as `type` instance, but that specfied type has no parser settings added to it.
+            - If `annotation` was given as `str` instance, but there is no added type representation to it.
+        TypeError
+            - If `annotation` was not given as `str`, neither as `type` instance.
+            - If `flags` is not given as ``ConverterFlag`` instance, neither as `int`.
+            - If `annotation`'s setting allows flags, and given, but the given flags have no interseption with the
+                allowed ones.
+            - If `annotation`'s setting do not allows any flags, meanwhile given.
+            - If `annotation` is given as ``Converter`` instance with default set.
+        """
+        # First check if the type is the same
+        if type(annotation) is cls:
+            return annotation
+        
+        # Second check type ``Converter``
+        if type(annotation) is Converter:
+            if annotation.default_type:
+                raise TypeError(f'`annotation` is given as `{Converter.__name__}` instance with default set, got '
+                    f'{annotation!r}.')
+        
+        # Real annotation
+        annotation = validate_annotation_type(annotation)
+        if flags is None:
+            flags = ConverterFlag()
         else:
-            result._back_state=1
-            result.append(f'result.append({sub_var_name})')
-        
-        is_part_set=False
-    
-    result.append('return True,result')
-    
-    return result.compile(__file__,_globals,'parser')
-
-
-class ContentParser(object):
-    __slots__ = ('__func__', '_call_setting', '_is_method', '_parser', '_parser_failure_handler', )
-    __async_call__= True
-    
-    def __new__(cls, func=None, parser_failure_handler=None, is_method=False):
-        
-        if (parser_failure_handler is not None):
-            if is_method:
-                parser_failure_handler = check_argcount_and_convert(parser_failure_handler, 5,
-                    '`parser_failure_handler` expected 5 arguemnts if `is_method` is set to `True` (client, message, parent, content, args).')
-            else:
-                parser_failure_handler = check_argcount_and_convert(parser_failure_handler, 4,
-                    '`parser_failure_handler` expected 4 arguemnts (client, message, content, args).')
-        
-        if func is None:
-            return cls._wrapper(parser_failure_handler, is_method)
-        
-        if is_method:
-            func = method(func, object())
-        
-        func, call_setting, parser = parse(func)
-        
-        if is_method:
-            func = func.__func__
+            flags = preconvert_flag(flags, 'flags', ConverterFlag)
+        flags = validate_annotation_type_flags(annotation, flags)
         
         self = object.__new__(cls)
-        self.__func__       = func
-        self._call_setting  = call_setting
-        self._parser        = parser
-        self._parser_failure_handler=parser_failure_handler
-        self._is_method     = is_method
+        self.annotation = annotation
+        self.flags = flags
+        return self
+    
+    def __repr__(self):
+        """Returns the flagged annotation's representation."""
+        return f'{self.__class__.__name__}(annotation={self.annotation!r}, flags={self.flags!r})'
+
+def unnest_tuple(tuple_):
+    """
+    Yields the elements of the given `tuple`. If any of them is a `tuple` as well, then yields thats elements
+    and repeat this cycle.
+    
+    Parameters
+    ----------
+    tuple_ : `tuple` of `Any`
+    
+    Yields
+    ------
+    element : `Any`
+    """
+    for element in tuple_:
+        if isinstance(element, tuple):
+            yield from unnest_tuple(element)
+        else:
+            yield element
+
+def validate_annotation(annotation, flags=None):
+    """
+    Validates a given annotation.
+    
+    Parameters
+    ----------
+    annotation : `str`, `type`, ``FlaggedAnnotation``, ``Converter``, `tuple` (repeat)
+        The annotation to validate.
+    flags : ``ConverterFlag``, Optional
+        Converter flag to create the annotation with if given.
+    
+    Returns
+    -------
+    annotation : ``FlaggedAnnotation``, `tuple` of ``FlaggedAnnotation``
+        The validated annotation.
+    
+    Raises
+    ------
+    LookupError
+        If `annotation` was given as `type` or `str` instance, but there is no parser for it.
+    TypeError
+        - If `annotation` was given as `tuple`, but contains no real annotation.
+        - If `annotation` is given as a ``Converter`` instance with default set.
+    
+    Notes
+    -----
+    If the same annotation type is given with different flags, then their flags will be merged.
+    """
+    if isinstance(annotation, tuple):
+        annotations_by_type = {}
+        for sub_annotation in unnest_tuple(annotation):
+            flagged_annotation = FlaggedAnnotation(sub_annotation, flags=flags)
+            annotation_type = flagged_annotation.annotation
+            try:
+                actual_flagged_annotation = annotations_by_type[annotation_type]
+            except KeyError:
+                annotations_by_type[annotation_type] = flagged_annotation
+            else:
+                flagged_annotation.flags = ConverterFlag(actual_flagged_annotation.flags|flagged_annotation.flags)
+        
+        result = tuple(annotations_by_type.values())
+        
+        result_length = len(result)
+        if result_length<2:
+            if result_length == 0:
+                raise TypeError(f'`annotation` is given as a `tuple`, but it contains no real annotation, got '
+                    f'{annotation!r}.')
+            if result_length == 1:
+                result = result[0]
+    else:
+        result = FlaggedAnnotation(annotation, flags=flags)
+    
+    return result
+
+
+class Converter(object):
+    """
+    Represents a converter typehint for setting additional information for the parser.
+    
+    Parameters
+    ----------
+    annotation : ``FlaggedAnnotation`` or `tuple` of ``FlaggedAnnotation``
+        Type and flag infos about the entity to parse.
+    default : `Any`
+        The default object to return if the parser fails
+    default_type : `int`
+        Describes how `default` is used up.
+        
+        Possible values:
+        +-----------------------+-------+
+        | Respective name       | Value |
+        +=======================+=======+
+        | DEFAULT_TYPE_NONE     | 0     |
+        +-----------------------+-------+
+        | DEFAULT_TYPE_OBJ      | 1     |
+        +-----------------------+-------+
+        | DEFAULT_TYPE_CALL     | 2     |
+        +-----------------------+-------+
+    """
+    __slots__ = ('annotation', 'default_type', 'default', )
+    def __new__(cls, annotation, flags=None, default=_spaceholder, default_code=_spaceholder):
+        """
+        Creates a ``Converter`` instance with the given parameters.
+        
+        Parameters
+        ----------
+        annotation : `str`, `type`, ``Converter``, ``FlaggedAnnotation`` or `tuple` (repeat)
+            The type or a typehint to what type the respective value should be converted.
+        flags : ``ConverterFlag``, Optional
+            Flags to use with the specified type's converter.
+        default : `Any`, Optional
+            Default object returned if conversion fails.
+        default_code : `str` or `async-callable` `funciton`, Optional
+            Default code, what will be called, when the conversion fails. Mutually exclusive with `default`.
+        
+        Raises
+        ------
+        LookupError
+            - If `annotation` was given as `type` or `str` instance, but there is no parser for it.
+            - If `default_code` is given as `str` instance, but not as an identifier of any of the predefined ones.
+        TypeError
+            - If `annotation` is given as a ``Converter`` instance with default set.
+            - If `flags` was not given as ``ConverterFlag`` instance.
+            - If `default` and `default_code` parameters were given at the same time.
+            - If `default_code` is given, but neither as `str` or `function`.
+            - If `default_code` is given as `function`, but not as `async`.
+            - If `default_code` is given as `function`, but accepts bad amount of arguments.
+        """
+        if (flags is not None):
+           flags = preconvert_flag(flags, 'flags', ConverterFlag)
+        
+        annotation = validate_annotation(annotation, flags=flags)
+        
+        if (default is _spaceholder):
+            default_type = DEFAULT_TYPE_NONE
+            default_value = None
+        else:
+            default_type = DEFAULT_TYPE_OBJ
+            default_value = default
+        
+        if (default_code is not _spaceholder):
+            if default_type:
+                raise TypeError(f'`default` and `default_code` are mutually exclusive, meanwhile both was given,'
+                    f'default = {default!r}, default_code = {default_code!r}.')
+            
+            default_type = DEFAULT_TYPE_CALL
+            default_value = validate_default_code(default_code)
+        
+        self = object.__new__(cls)
+        self.annotation = annotation
+        self.default_type = default_type
+        self.default = default_value
+        return self
+    
+    def __repr__(self):
+        """Returns the converter's represnetation."""
+        result = [
+            self.__class__.__name__,
+            '(annotation=',
+                ]
+        
+        is_default_only = True
+        
+        annotation = self.annotation
+        if type(annotation) is tuple:
+            for flagged_annotation in annotation:
+                try:
+                    setting = CONVERTER_SETTING_TYPE_RELATION_MAP[flagged_annotation.annotation]
+                except KeyError:
+                    # ????
+                    continue
+                
+                if flagged_annotation.flags == setting.default_flags:
+                    continue
+                
+                is_default_only = False
+                break
+        
+        else:
+            try:
+                setting = CONVERTER_SETTING_TYPE_RELATION_MAP[annotation.annotation]
+            except KeyError:
+                # ????
+                pass
+            else:
+                if annotation.flags != setting.default_flags:
+                    is_default_only = False
+        
+        if is_default_only:
+            if type(annotation) is tuple:
+                result.append('(')
+                index = 0
+                limit = len(annotation)
+                while True:
+                    flagged_annotation = annotation[index]
+                    index +=1
+                    
+                    result.append(repr(flagged_annotation.annotation))
+                    
+                    if index == limit:
+                        break
+                    
+                    result.append(', ')
+                    continue
+            else:
+                result.append(repr(annotation.annotation))
+        
+        else:
+            if type(annotation) is tuple:
+                result.append(repr(annotation))
+            else:
+                result.append(repr(annotation.annotation))
+                result.append(', flags=')
+                result.append(repr(annotation.flags))
+        
+        default_type = self.default_type
+        if default_type != DEFAULT_TYPE_NONE:
+            if default_type == DEFAULT_TYPE_OBJ:
+                default_name = 'defeault'
+            else:
+                default_name = 'defualt_code'
+            
+            result.append(', ')
+            result.append(default_name)
+            result.append('=')
+            result.append(repr(self.default))
+        
+        result.append(')')
+        
+        return ''.join(result)
+
+class ContentParserArgumentHinter(object):
+    """
+    Hinter for content parser about it's arguments.
+    
+    Arguments
+    ---------
+    default : `Any`
+        The default object to return if the parser fails
+    default_type : `int`
+        Describes how `default` is used up.
+        
+        Possible values:
+        +-----------------------+-------+
+        | Respective name       | Value |
+        +=======================+=======+
+        | DEFAULT_TYPE_NONE     | 0     |
+        +-----------------------+-------+
+        | DEFAULT_TYPE_OBJ      | 1     |
+        +-----------------------+-------+
+        | DEFAULT_TYPE_CALL     | 2     |
+        +-----------------------+-------+
+    is_args : `bool`
+        Whether *args parser should be choosed.
+    annotation : `None`, ``FlaggedAnnotation``, `tuple` of ``FlaggedAnnotation``
+        The type of the parser to be choosed or a typehint about it.
+    """
+    __slots__ = ('default',  'default_type', 'annotation', 'is_args', )
+    
+    def __repr__(self):
+        """Returns theh inter's represnetation."""
+        return f'{self.__class__.__name__}(default={self.default!r}, default_type={self.default_type!r}, annotation=' \
+            f'{self.annotation!r}, is_args={self.is_args!r})'
+
+class CommandContentParser(object):
+    """
+    Content parser for commands.
+    
+    Parameters
+    ----------
+    _parsers : `None` or `list` of ``ParserContextBase`` instances
+        The parsers of the command content parser. Set as`None` if it would be an empty `list`.
+    """
+    __slots__ = ('_parsers', )
+    def __new__(cls, func):
+        """
+        Parameters
+        ----------
+        func : `async-callable`
+            The callable function.
+        
+        Raises
+        ------
+        LookupError
+            If `annotation` was given as `type` or `str` instance, but there is no parser for it.
+        TypeError
+            - If `func` is not given as `callable`
+            - If `func` is not given as `async-callable`, and cannot be instanced to one neither.
+            - If `func` (or it's converted form) accepts keyword only arguments.
+            - If `func` (or it's converted form) accepts keyword **kwargs.
+            - If `func` (or it's converted form) accepts less then 2 non reversed argument without *args.
+            - If `func`'s (or it's converted form's) first argument has default value set.
+            - If `func`'s (or it's converted form's) first argument has annotation set, but not as type ``Client``.
+            - If `func`'s (or it's converted form's) second argument has default value set.
+            - If `func`'s (or it's converted form's) second argument has annotation set, but not as type ``Message``.
+            - If an argument has annotation as a ``Converter`` instance with default value, meanwhile the argument
+                itself also has it's own default value.
+            - If an annotation was given as `None` or as empty `tuple` meanwhile.
+            - If an annotation was given as `tuple`, but any of it's element is not `None`, or `str`, `type` or `tuple`
+                instance.
+            - If `*args` argument's annotation was given as ``Converter`` instance with default value set.
+        """
+        analyzer = CallableAnalyzer(func)
+        if analyzer.is_async():
+            real_analyzer = analyzer
+            should_instance = False
+        
+        elif analyzer.can_instance_to_async_callable():
+            real_analyzer = CallableAnalyzer(func.__call__, as_method=True)
+            if not real_analyzer.is_async():
+                raise TypeError(f'`func` is not `async-callable` and cannot be instanced to `async` either, got '
+                    f'{func!r}.')
+            
+            should_instance = True
+        
+        else:
+            raise TypeError(f'`func` is not `async-callable` and cannot be instanced to `async` either, got {func!r}.')
+        
+        keyword_only_argument_count = real_analyzer.get_non_default_keyword_only_argument_count()
+        if keyword_only_argument_count:
+            raise TypeError(f'`{real_analyzer.real_function!r}` accepts keyword only arguments.')
+        
+        if real_analyzer.accepts_kwargs():
+            raise TypeError(f'`{real_analyzer.real_function!r}` accepts **kwargs.')
+        
+        arguments = real_analyzer.get_non_reserved_positional_arguments()
+        
+        argument_count = len(arguments)
+        if argument_count<2:
+            raise TypeError(f'`{real_analyzer.real_function!r}` should accept at least 2 arguments (without *args): '
+                f'`client` and `message`, meanwhile it accepts only {argument_count}.')
+        
+        client_argument = arguments[0]
+        if client_argument.has_default:
+            raise TypeError(f'`{real_analyzer.real_function!r}` has default argument set as it\'s first not '
+                'reserved, meanwhile it should not have.')
+        
+        if client_argument.has_annotation and (client_argument.annoation is not Client):
+            raise TypeError(f'`{real_analyzer.real_function!r}` has annotation at the client\'s argument slot, '
+                f'what is not `{Client.__name__}`.')
+        
+        message_argument = arguments[1]
+        if message_argument.has_default:
+            raise TypeError(f'`{real_analyzer.real_function!r}` has default argument set as it\'s first not '
+                f'reserved, meanwhile it should not have.')
+        
+        if message_argument.has_annotation and (message_argument.annoation is not Message):
+            raise TypeError(f'`{real_analyzer.real_function!r}` has annotation at the message\'s argument slot '
+                f'what is not `{Message.__name__}`.')
+        
+        hinters = []
+        to_check = arguments[2:]
+        args_argument = real_analyzer.args_argument
+        
+        index = 0
+        limit = len(to_check)
+        while True:
+            if index == limit:
+                break
+            
+            argument = to_check[index]
+            index += 1
+            
+            if argument.has_annotation:
+                annotation = argument.annotation
+                if type(annotation) is Converter:
+                    hinter_default = annotation.default
+                    hinter_default_type = annotation.default_type
+                    hinter_annotation = annotation.annotation
+                
+                    if argument.has_default:
+                        if hinter_default_type:
+                            raise TypeError(f'`annotation` of `{argument.name}` is given as '
+                                f'`{Converter.__class__.__name__}` instance, as {Converter!r} (with default value '
+                                f'set), meanwhile the argument has default value set as well: {argument.default!r}.')
+                        
+                        hinter_default = argument.default
+                        hinter_default_type = DEFAULT_TYPE_OBJ
+                
+                else:
+                    annotation = validate_annotation(annotation)
+                    
+                    if argument.has_default:
+                        hinter_default = argument.default
+                        hinter_default_type = DEFAULT_TYPE_OBJ
+                    else:
+                        hinter_default = None
+                        hinter_default_type = DEFAULT_TYPE_NONE
+                    
+                    hinter_annotation = annotation
+                
+            else:
+                if argument.has_default:
+                    default = argument.default
+                    if (index == limit) and (args_argument is None):
+                        hinter_annotation = None
+                    else:
+                        hinter_annotation = FlaggedAnnotation(str)
+                    
+                    hinter_default = default
+                    hinter_default_type = DEFAULT_TYPE_OBJ
+                    
+                else:
+                    if (index == limit) and (args_argument is None):
+                        hinter_annotation = None
+                    else:
+                        hinter_annotation = FlaggedAnnotation(str)
+                    
+                    hinter_default = None
+                    hinter_default_type = DEFAULT_TYPE_NONE
+            
+            hinter = ContentParserArgumentHinter()
+            hinter.default = hinter_default
+            hinter.default_type = hinter_default_type
+            hinter.annotation = hinter_annotation
+            hinter.is_args = False
+            hinters.append(hinter)
+        
+        if (args_argument is not None):
+            annotation = args_argument.annotation
+            if type(annotation) is Converter:
+                if annotation.default_type:
+                    raise TypeError(f'`*args` annotation is given as `{Converter.__class__.__name__} as '
+                        f'{Converter!r}, so with default value set, do not do that!')
+                
+                hinter_annotation = annotation.annotation
+            else:
+                hinter_annotation = validate_annotation(annotation)
+            
+            hinter = ContentParserArgumentHinter()
+            hinter.default = None
+            hinter.default_type = DEFAULT_TYPE_NONE
+            hinter.annotation = hinter_annotation
+            hinter.is_args = True
+            hinters.append(hinter)
+    
+        parsers = []
+        for hinter in hinters:
+            annotation = hinter.annotation
+            if annotation is None:
+                parser = RestParserContext(hinter.default_type, hinter.default)
+            
+            else:
+                if hinter.is_args:
+                    if type(annotation) is tuple:
+                        parser_cls = ChainedArgsParserContext
+                    else:
+                        parser_cls = SingleArgsParserContext
+                    
+                    parser = parser_cls(annotation)
+                
+                else:
+                    if type(annotation) is tuple:
+                        parser_cls = ChainedParserContext
+                    else:
+                        parser_cls = SingleParserContext
+                    
+                    parser = parser_cls(annotation, hinter.default_type, hinter.default)
+            
+            parsers.append(parser)
+        
+        if not parsers:
+            parsers = None
+        
+        if should_instance:
+            func = analyzer.instance_to_async_callable()
+        
+        self = object.__new__(cls)
+        self._parsers = parsers
+        return func, self
+    
+    async def get_args(self, client, message, content):
+        """
+        Parses the given content and returns whether it passed and what was parser.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The client who received the respective message.
+        message : ``Message``
+            The received message.
+        content : `str`
+            The message's content to parse. Can be empty.
+        
+        Returns
+        -------
+        passed : `bool`
+            Whether the parsing all the arguments of the message succeeded.
+        args : `None` or `list` of `Any`
+            The parsed out entities. Can be empty list.
+        """
+        parsers = self._parsers
+        if parsers is None:
+            return True, None
+        
+        content_parser_context = ContentParserContext(client, message, content)
+        for parser in parsers:
+            result = await parser(content_parser_context)
+            if result:
+                continue
+            
+            return False, content_parser_context.result
+        
+        return True, content_parser_context.result
+    
+    def __bool__(self):
+        """Returns whether the content parser parses anything."""
+        parsers = self._parsers
+        if parsers is None:
+            return False
+        
+        if parsers:
+            return True
+        
+        return False
+
+class ContentParser(CommandContentParser):
+    """
+    Represents a content parser, what can be used as a standalone wrapper of a function.
+    
+    Parameters
+    ----------
+    _parsers : `None` or `list` of ``ParserContextBase`` instances
+        The parsers of the command content parser. Set as`None` if it would be an empty `list`.
+    _func : `async-callable`
+        The wrapped function.
+    _handler : `None` or `async-callable`
+        A coroutine function what is ensured, when parseing the arguments fail.
+    _is_method : `bool`
+        Whether the ``ContentParser`` should act like a method descriptor.
+    """
+    __slots__ = ('_func', '_handler', '_is_method',)
+    def __new__(cls, func=None, handler=None, is_method=False):
+        """
+        Parameters
+        ----------
+        func : `None`, `async-callable` or instanceable to `async-callable`, Optional
+        
+        handler : `None`, `async-callable` or instanceable to `async-callable`, Optional
+            An async callable, what is ensured when the parser's cannot parse all the required parameters out.
+            
+            If given, should accept the following arguments:
+            +-----------------------+-------------------+
+            | Respective name       | Type              |
+            +=======================+===================+
+            | client                | ``Client``        |
+            +-----------------------+-------------------+
+            | message               | ``Message``       |
+            +-----------------------+-------------------+
+            | content_parser        | ``ContentParser`` |
+            +-----------------------+-------------------+
+            | content               | `str`             |
+            +-----------------------+-------------------+
+            | args                  | `list` of `Any`   |
+            +-----------------------+-------------------+
+            | parent                | `Any`             |
+            +-----------------------+-------------------+
+            
+        is_method : `bool`, Optional
+            Whether the content parser should act like a method. Default to `False`.
+        
+        Raises
+        ------
+        TypeError
+            - If `is_method` is not given as `bool` instance.
+            - If `handler` is not async, neither cannot be insatcned to async.
+            - If `handler` (or it's converted form) would accept bad amount of arguents.
+        """
+        is_method = preconvert_bool(is_method, 'is_method')
+        
+        if (handler is not None):
+            handler = check_argcount_and_convert(handler, 6,
+                '`ContentParser` expects to pass `6` arguments to it\'s `handler`: client, message, content_parser, '
+                'content, args, obj (can be `None`).')
+        
+        if func is None:
+            return cls._wrapper(handler, is_method)
+        
+        self, func = CommandContentParser.__new__(cls, func)
+        self._func = func
+        self._handler = handler
+        self._is_method = is_method
         return self
     
     class _wrapper(object):
-        __slots__ = ('_is_method', '_parser_failure_handler', )
-        def __init__(self, parser_failure_handler, is_method):
-            self._parser_failure_handler=parser_failure_handler
+        """
+        A wrapper of ``ContentParser`` to allow using it as a decorator.
+        
+        Parameters
+        ----------
+        _handler : `None`, `async-callable`
+            An async callable, what is ensured when the parser's cannot parse all the required parameters out.
+            
+            If given as not `None` should accept the following arguments:
+            +-----------------------+-------------------+
+            | Respective name       | Type              |
+            +=======================+===================+
+            | client                | ``Client``        |
+            +-----------------------+-------------------+
+            | message               | ``Message``       |
+            +-----------------------+-------------------+
+            | content_parser        | ``ContentParser`` |
+            +-----------------------+-------------------+
+            | content               | `str`             |
+            +-----------------------+-------------------+
+            | args                  | `list` of `Any`   |
+            +-----------------------+-------------------+
+            | parent                | `Any`             |
+            +-----------------------+-------------------+
+        _is_method : `bool`
+            Whether the content parser should act like a method.
+        """
+        __slots__ = ('_handler', '_is_method', )
+        
+        def __init__(self, handler, is_method):
+            """
+            Creates a new content parser wrapper.
+            
+            Parameters
+            ----------
+            handler : `None`, `async-callable`
+                An async callable, what is ensured when the parser's cannot parse all the required parameters out.
+                
+                If given as not `None` should accept the following arguments:
+            +-----------------------+-------------------+
+            | Respective name       | Type              |
+            +=======================+===================+
+            | client                | ``Client``        |
+            +-----------------------+-------------------+
+            | message               | ``Message``       |
+            +-----------------------+-------------------+
+            | content_parser        | ``ContentParser`` |
+            +-----------------------+-------------------+
+            | content               | `str`             |
+            +-----------------------+-------------------+
+            | args                  | `list` of `Any`   |
+            +-----------------------+-------------------+
+            | parent                | `Any`             |
+            +-----------------------+-------------------+
+            is_method : `bool`
+                Whether the content parser should act like a method.
+            """
+            self._handler = handler
             self._is_method = is_method
         
         def __call__(self, func):
-            return ContentParser(func=func, parser_failure_handler=self._parser_failure_handler, is_method=self._is_method)
-    
-    async def __call__(self, client, message, content=''):
-        call_setting = self._call_setting
-        if call_setting == COMMAND_CALL_SETTING_USE_PARSER:
-            passed, args = await self._parser(client, message, content)
-            if not passed:
-                parser_failure_handler = self._parser_failure_handler
-                if parser_failure_handler is None:
-                    return None
-                
-                return await parser_failure_handler(client, message, content, args)
+            """
+            Calls the content parser wrapper to create a ``ContentParser`` instance.
             
-            return await self.__func__(client, message, *args)
-        
-        if call_setting == COMMAND_CALL_SETTING_2ARGS:
-            return await self.__func__(client, message)
-        
-        # last case: COMMAND_CALL_SETTING_3ARGS
-        return await self.__func__(client, message, content)
+            Parameters
+            ----------
+            func : `async-callable` or instanceable to `async-callable`
+                The function to wrap.
+            
+            Returns
+            -------
+            content_parser : ``ContentParser``
+            
+            Raises
+            ------
+            TypeError
+                If `func` was given as `None`.
+            """
+            if func is None:
+                raise TypeError(f'`func` cannot be given as `None`, got {func!r}.')
+            
+            return ContentParser(func=func, handler=self._handler, is_method=self._is_method)
     
-    def __get__(self,obj,type_):
+    async def __call__(self, *args):
+        """
+        Parameters
+        ----------
+        If the content parser is a method:
+            parent : `Any`
+                The owner entity
+            client : ``Client``
+                The respective client.
+            message : ``Message``
+                The respective message.
+            content : `str`, Optional
+                The content to parse. Defaults to empty string.
+        
+        If the contnet parser is not a method:
+            client : ``Client``
+                The respective client.
+            message : ``Message``
+                The respective message.
+            content : `str`, Optional
+                The content to parse. Defaults to empty string.
+        
+        Returns
+        -------
+        passed : `bool`
+            If parsing the content was successful.
+        
+        Raises
+        ------
+        TypeError
+            Unexpected amount of arguments were passed.
+        """
+        # Parse out arguments.
+        args_count = len(args)
         if self._is_method:
-            if (obj is None):
-                return ContentParserMethod(self,type_)
+            if args_count < 3 or args_count > 4:
+                raise TypeError(f'{self!r} expects 3-4 positional arguments to be given, got {args_count}.')
+            
+            if args_count == 3:
+                parent, client, message = args
+                content = ''
             else:
-                return ContentParserMethod(self,obj)
+                parent, client, message, content = args
+        else:
+            if args_count < 2 or args_count > 3:
+                raise TypeError(f'{self!r} expects 2-3 positional arguments to be given, got {args_count}.')
+            
+            if args_count == 2:
+                client, message = args
+                content = ''
+            else:
+                client, message, content = args
+        
+        # parse content
+        passed, args = await self.get_args(client, message, content)
+        if not passed:
+            handler = self._handler
+            if (handler is not None):
+                # Handle parsing failure
+                if not self._is_method:
+                    parent = None
+                
+                await handler(client, message, self, content, args, parent)
+            
+            return False
+        
+        # call function
+        func = self.func
+        if args is None:
+            if self._is_method:
+                coro = func(parent, client, message)
+            else:
+                coro = func(client, message)
+        else:
+            if self._is_method:
+                coro = func(parent, client, message, *args)
+            else:
+                coro = func(client, message, *args)
+        
+        await coro
+        return True
+    
+    def __get__(self, obj, type_):
+        if self._is_method:
+            if obj is None:
+                obj = type_
+            
+            return ContentParserMethod(self, obj)
         
         return self
 
@@ -1451,64 +2653,81 @@ class ContentParser(object):
 
     def __delete__(self,obj):
         raise AttributeError('can\'t delete attribute')
-    
-    @property
-    def __doc__(self):
-        return getattr(self.__func__,'__doc__',None)
 
 class ContentParserMethod(MethodLike):
-    __slots__ = ('__parent__', '__self__', )
+    """
+    ``ContentParser``'s method wrapper.
+    
+    Attributes
+    ----------
+    __self__ : `Any`
+        The object with what the method was called.
+    _content_parser : ``ContentParser``
+        The parent contnet parser, what was called as a method.
+    """
+    __slots__ = ('__self__', '_content_parser', )
     __reserved_argcount__ = 2
-    __async_call__ = True
     
     def __new__(cls, content_parser, obj):
+        """
+        Creates a new ``ContentParserMethod`` instance with the given content parser and the parent object.
+        
+        Parameters
+        ----------
+        content_parser : ``ContentParser``
+            The source content parser.
+        obj : `Any`
+            The parent object.
+        """
         self = object.__new__(cls)
-        self.__parent__ = content_parser
+        self._content_parser = content_parser
         self.__self__   = obj
         return self
     
     @property
     def __func__(self):
-        parent = self.parent
-        parser = parent._parser
-        if parser is None:
-            return parent.__func__
-        else:
-            return parser
+        """Retuns the wrapped function."""
+        return self._content_parser._func
     
-    async def __call__(self, client, message, content=''):
-        parent = self.__self__
-        content_parser = self.__parent__
+    async def __call__(self, *args):
+        """
+        Calls the content parser method.
         
-        call_setting = content_parser._call_setting
-        if call_setting == COMMAND_CALL_SETTING_USE_PARSER:
-            passed, args = await content_parser._parser(client, message, content)
-            if not passed:
-                parser_failure_handler = content_parser._parser_failure_handler
-                if parser_failure_handler is None:
-                    return None
-                
-                return await parser_failure_handler(client, message, parent, content, args)
-            
-            return await content_parser.__func__(parent, client, message, *args)
+        Parameters
+        ----------
+        parent : `Any`
+            The owner entity
+        client : ``Client``
+            The respective client.
+        message : ``Message``
+            The respective message.
+        content : `str`, Optional
+            The content to parse. Defaults to empty string.
         
-        if call_setting == COMMAND_CALL_SETTING_2ARGS:
-            return await content_parser.__func__(parent, client, message)
+        Returns
+        -------
+        passed : `bool`
+            If parsing the content was successful.
         
-        # last case: COMMAND_CALL_SETTING_3ARGS
-        return await content_parser.__func__(parent, client, message, content)
+        Raises
+        ------
+        TypeError
+            Unexpected amount of arguments were passed.
+        """
+        return self._content_parser(self.__self__, *args)
     
     @property
     def __module__(self):
-        return self.__self__.__module__
+        """Return the module of the wrapped function."""
+        return self._content_parser._func.__module__
     
-    def __getattr__(self,name):
-        parent = self.parent
-        func = parent._parser
-        if func is None:
-            func = parent.__func__
-        
-        return getattr(func, name)
+    def __getattr__(self, name):
+        """Returns the wrapped function's attribute."""
+        return getattr(self._content_parser._func, name)
+    
+    def __repr__(self):
+        """Returns the method's rerpesnetation."""
+        return f'{self.__class__.__name__}(content_parser={self._content_parser!r}, obj={self.__self__!r})'
 
 del re
 del FlagBase

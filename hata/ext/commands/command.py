@@ -11,7 +11,7 @@ from ...discord.others import USER_MENTION_RP
 from ...discord.parsers import EventWaitforBase, compare_converted, check_name, check_argcount_and_convert
 from ...discord.client_core import KOKORO
 
-from .compiler import parse, COMMAND_CALL_SETTING_2ARGS, COMMAND_CALL_SETTING_3ARGS, COMMAND_CALL_SETTING_USE_PARSER
+from .content_parser import CommandContentParser
 
 COMMAND_RP=re.compile(' *([^ \t\\n]*) *(.*)')
 
@@ -155,33 +155,20 @@ class Command(object):
         > Always lower case.
     _alters : `set` of `str`
         Alternative name, whith what the command can be called.
-    _call_setting : `int`
-        An `int` flag, what defines, how the command should be called.
-        
-        Possible values:
-        +-----------------------------------+-------+
-        | Respective name                   | value |
-        +===================================+=======+
-        | COMMAND_CALL_SETTING_2ARGS        | 0     |
-        +-----------------------------------+-------+
-        | COMMAND_CALL_SETTING_3ARGS        | 1     |
-        +-----------------------------------+-------+
-        | COMMAND_CALL_SETTING_USE_PARSER   | 2     |
-        +-----------------------------------+-------+
     _category_hint : `str` or `None`
         Hint for the command processer under which category should the give command go. If set as `None`, means that
         the command will go under the default category of the command processer.
     _checks : `None` or (`list` of ``_check_base`` instances)
         The internal slot used by the ``.checks`` property. Defaults to `None`.
-    _parser : `None`
-        The generated parser function for parsing the arguments to pass to the command. Defaults to `None`.
+    parser : `None` or ``CommandContentParser``
+        Collection of content part parsers to parse argument for the command. Defaults to `None`.
     _parser_failure_handler : `Any`
         The internal slot used by the ``.parser_failure_handler`` property. Defaults to `None`.
     _wrappers : `None`, `Any`, `list` of `async-callable`
         Additional wrappers, which run before the command is executed.
     """
-    __slots__ = ( '_alters', '_call_setting', '_category_hint', '_checks', '_parser', '_parser_failure_handler',
-        '_wrappers', 'aliases', 'category', 'command', 'description', 'name',)
+    __slots__ = ( '_alters', '_category_hint', '_checks', '_parser_failure_handler', '_wrappers', 'aliases',
+        'category', 'command', 'description', 'name', 'parser', )
     
     @classmethod
     def from_class(cls, klass, kwargs=None):
@@ -490,7 +477,9 @@ class Command(object):
             parser_failure_handler = check_argcount_and_convert(parser_failure_handler, 5,
                 '`parser_failure_handler` expected 5 arguments (client, message, command, content, args).')
         
-        command, call_setting, parser = parse(command)
+        command, parser = CommandContentParser(command)
+        if not parser:
+            parser = None
         
         self=object.__new__(cls)
         self.command        = command
@@ -499,10 +488,9 @@ class Command(object):
         self.description    = description
         self.category       = category
         self._alters        = alters
-        self._call_setting  = call_setting
         self._category_hint = category_hint
         self._checks        = checks_processed
-        self._parser        = parser
+        self.parser         = parser
         self._wrappers      = wrappers
         self._parser_failure_handler = parser_failure_handler
         
@@ -537,12 +525,10 @@ class Command(object):
         result.append(', category=')
         result.append(repr(self.category))
         
-        call_setting=self._call_setting
-        if call_setting != COMMAND_CALL_SETTING_2ARGS:
-            if call_setting == COMMAND_CALL_SETTING_3ARGS:
-                result.append(', call with content')
-            else:
-                result.append(', use parser')
+        parser = self.parser
+        if (parser is not None):
+            result.append(', parser=')
+            result.append(repr(parser))
             
             parser_failure_handler=self.parser_failure_handler
             if (parser_failure_handler is not None):
@@ -734,24 +720,23 @@ class Command(object):
                         await handler(client, message, self, *args)
                     return COMMAND_PARSER_FAILED
         
-        call_setting = self._call_setting
-        if call_setting == COMMAND_CALL_SETTING_USE_PARSER:
-            passed, args = await self._parser(client, message, content)
+        parser = self.parser
+        if parser is None:
+            args = None
+        else:
+            passed, args = await parser.get_args(client, message, content)
             if not passed:
                 parser_failure_handler = self._parser_failure_handler
                 if (parser_failure_handler is not None):
                     await parser_failure_handler(client, message, self, content, args)
                 
                 return COMMAND_PARSER_FAILED
-            
-            coro = self.command(client, message, *args)
         
-        elif call_setting == COMMAND_CALL_SETTING_2ARGS:
-            coro = self.command(client, message)
-        
+        command = self.command
+        if args is None:
+            coro = command(client, message)
         else:
-            # last case: COMMAND_CALL_SETTING_3ARGS
-            coro = self.command(client, message, content)
+            coro = command(client, message, *args)
         
         await coro
         return COMMAND_SUCCEEDED
@@ -920,24 +905,23 @@ class Command(object):
         result : `bool`
             Returns `True` indicating that the command (or a handler run).
         """
-        call_setting = self._call_setting
-        if call_setting == COMMAND_CALL_SETTING_USE_PARSER:
-            passed, args = await self._parser(client, message, content)
+        parser = self.parser
+        if parser is None:
+            args = None
+        else:
+            passed, args = await parser.get_args(client, message, content)
             if not passed:
                 parser_failure_handler = self._parser_failure_handler
                 if (parser_failure_handler is not None):
                     await parser_failure_handler(client, message, self, content, args)
                 
                 return COMMAND_PARSER_FAILED
-            
-            coro = self.command(client, message, *args)
-            
-        elif call_setting == COMMAND_CALL_SETTING_2ARGS:
-            coro = self.command(client, message)
         
+        command = self.command
+        if args is None:
+            coro = command(client, message)
         else:
-            # last case: COMMAND_CALL_SETTING_3ARGS
-            coro = self.command(client, message, content)
+            coro = command(client, message, *args)
         
         await coro
         return COMMAND_SUCCEEDED
@@ -1250,14 +1234,16 @@ class checks:
                     
                     # case of `channel_id`, `guild_id`
                     if name.endswith('id'):
-                        name = name[:-3]
+                        display_name = name[:-3]
                     # case of `channel_ids`, `guild_ids`
                     elif name.endswith('ids'):
-                        name = name[:-4]
+                        display_name = name[:-4]
+                    else:
+                        display_name = name
                     
-                    result.append(name)
+                    result.append(display_name)
                     result.append('=')
-                    attr=getattr(self,name)
+                    attr = getattr(self,name)
                     result.append(repr(attr))
                     
                     if index==limit:
@@ -3622,15 +3608,18 @@ class CommandProcesser(EventWaitforBase):
                 except BaseException as err:
                     command_error = self._command_error
                     if (command_error is not None):
-                        checks = self._invalid_command_checks
-                        if (checks is not None):
+                        checks = self._command_error_checks
+                        if (checks is None):
+                            await command_error(client, message, command, content, err)
+                            return
+                        else:
                             for check in checks:
                                 if await check(client, message):
                                     continue
                                 
                                 handler = check.handler
                                 if (handler is not None):
-                                    handler(client, message, command, check)
+                                    await handler(client, message, command, check)
                                 break
                             else:
                                 await command_error(client, message, command, content, err)
@@ -3655,17 +3644,19 @@ class CommandProcesser(EventWaitforBase):
                 invalid_command = self._invalid_command
                 if (invalid_command is not None):
                     checks = self._invalid_command_checks
-                    if (checks is not None):
+                    if (checks is None):
+                        await invalid_command(client, message, command_name, content)
+                    else:
                         for check in checks:
                             if await check(client, message):
                                 continue
                             
                             handler = check.handler
                             if (handler is not None):
-                                handler(client, message, command_name, check)
+                                await handler(client, message, command_name, check)
                             return
                     
-                    await invalid_command(client,message,command_name,content)
+                    await invalid_command(client, message, command_name, content)
                 
                 return
             
@@ -3674,15 +3665,18 @@ class CommandProcesser(EventWaitforBase):
             except BaseException as err:
                 command_error = self._command_error
                 if (command_error is not None):
-                    checks = self._invalid_command_checks
-                    if (checks is not None):
+                    checks = self._command_error_checks
+                    if (checks is None):
+                        await command_error(client, message, command_name, content, err)
+                        return
+                    else:
                         for check in checks:
                             if await check(client, message):
                                 continue
                             
                             handler = check.handler
                             if (handler is not None):
-                                handler(client, message, command, check)
+                                await handler(client, message, command_name, check)
                             break
                         else:
                             await command_error(client, message, command_name, content, err)
@@ -3705,7 +3699,7 @@ class CommandProcesser(EventWaitforBase):
                             
                             handler = check.handler
                             if (handler is not None):
-                                handler(client, message, command_name, check)
+                                await handler(client, message, command_name, check)
                             return
                     
                     await invalid_command(client, message, command_name, content)
@@ -3747,7 +3741,7 @@ class CommandProcesser(EventWaitforBase):
             if (checks is not None):
                 result.append(' (with ')
                 result.append(repr(len(checks)))
-                result.append(')')
+                result.append(' check)')
             
         command_error = self._command_error
         if (command_error is not None):
@@ -3758,7 +3752,7 @@ class CommandProcesser(EventWaitforBase):
             if (checks is not None):
                 result.append(' (with ')
                 result.append(repr(len(checks)))
-                result.append(')')
+                result.append(' check)')
         
         result.append('>')
         

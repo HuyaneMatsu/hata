@@ -229,7 +229,7 @@ class Invite(object):
         invite.target_user  = ZEROUSER
         
         return invite
-
+    
     @property
     def partial(self):
         """
@@ -253,7 +253,7 @@ class Invite(object):
         """Returns the invite's code's hash."""
         return hash(self.code)
     
-    url=property(URLS.invite_url)
+    url = property(URLS.invite_url)
     if (__init__.__doc__ is not None):
         url.__doc__ = (
         """

@@ -28,7 +28,7 @@ class multievent(object):
     __slots__=('events',)
     
     def __init__(self,*events):
-        self.events=events
+        self.events = events
     
     def append(self, target, waiter):
         for event in self.events:
@@ -41,9 +41,9 @@ class multievent(object):
 class Timeouter(object):
     __slots__ = ('handler', 'owner', 'timeout')
     def __init__(self,owner,timeout):
-        self.owner=owner
-        self.timeout=timeout
-        self.handler=KOKORO.call_later(timeout,self.__step,self)
+        self.owner = owner
+        self.timeout = timeout
+        self.handler = KOKORO.call_later(timeout,self.__step,self)
     
     @staticmethod
     def __step(self):
@@ -111,6 +111,7 @@ GUI_STATE_SWITCHING_CTX  = 4
 class Pagination(object):
     """
     A builtin option to display paginated messages, allowsing the users moving between the pages with arrow emojis.
+    
     The class allows modifications and closing it's representations for every user. Also works at private channels.
     
     Picks up on reaction additions and on reaction deletions as well and removes the added reactions on if has
@@ -123,7 +124,7 @@ class Pagination(object):
         it was used, is set as `None`.
     channel : ``ChannelTextBase`` instance
         The channel wehre the ``Pagination`` is executed.
-    client : ``Client``
+    client : ``Client`` of ``Embed`` (or any compatible)
         The client who executes the ``Pagination``.
     message : `None` or ``Message``
         The message on what the ``Pagination`` is executed.
@@ -138,11 +139,11 @@ class Pagination(object):
         +---------------------------+-------+-----------------------------------------------------------------------+
         | Respective name           | Value | Description                                                           |
         +===========================+=======+=======================================================================+
-        | GUI_STATE_READY           | 0     | The Pagination does nothing an it is ready to be used.                |
+        | GUI_STATE_READY           | 0     | The Pagination does nothing, is ready to be used.                     |
         +---------------------------+-------+-----------------------------------------------------------------------+
-        | GUI_STATE_SWITCHING_PAGE  | 1     | The Pagination is currently chaning it's page.                        |
+        | GUI_STATE_SWITCHING_PAGE  | 1     | The Pagination is currently changing it's page.                       |
         +---------------------------+-------+-----------------------------------------------------------------------+
-        | GUI_STATE_CANCELLING      | 2     | The pagination is currently chaning it's page, but it was cancelled   |
+        | GUI_STATE_CANCELLING      | 2     | The pagination is currently changing it's page, but it was cancelled  |
         |                           |       | meanwhile.                                                            |
         +---------------------------+-------+-----------------------------------------------------------------------+
         | GUI_STATE_CANCELLED       | 3     | The pagination is, or is being cancelled right now.                   |
@@ -161,12 +162,12 @@ class Pagination(object):
         The emoji used to move to the first page.
     LEFT : ``Emoji`` = `BUILTIN_EMOJIS['arrow_backward']`
         The emoji used to move to the previous page.
-    RIGHT : ``Emoji`` = `BUILTIN_EMOJIS['arrow_forward'`
+    RIGHT : ``Emoji`` = `BUILTIN_EMOJIS['arrow_forward']`
         The emoji used to move on the next page.
     RIGHT2 : ``Emoji`` = `BUILTIN_EMOJIS['track_next']`
         The emoji used to move on the last page.
     CANCEL : ``Emoji`` = `BUILTIN_EMOJIS['x']`
-        The emoji used to cancel the ``Pagination``
+        The emoji used to cancel the ``Pagination``.
     EMOJIS : `tuple` (`Emoji`, `Emoji`, `Emoji`, `Emoji`, `Emoji`) = `(LEFT2, LEFT, RIGHT, RIGHT2, CANCEL,)`
         The emojis to add on the respective message in order.
     """
@@ -193,14 +194,13 @@ class Pagination(object):
             An indexable container, what stores the displayable ``Embed``-s.
         timeout : `float`, Optional
             The timeout of the ``Pagination`` in seconds. Defaults to `240.0`.
-        
         message : `None` or ``Message``, Optional
             The message on what the ``Pagination`` will be executed. If not given a new message will be cretaed.
             Defaults to `None`.
         
         Returns
         -------
-        pagination : `Mone` or ``Pagination``
+        self : `Mone` or ``Pagination``
             If `pages` is an empty container, returns `None`.
         """
         if not pages:
@@ -255,7 +255,7 @@ class Pagination(object):
     
     async def __call__(self, client, event):
         """
-        Called when a reeaction is added or removed from the respective message.
+        Called when a reaction is added or removed from the respective message.
         
         Parameters
         ----------
@@ -392,15 +392,15 @@ class Pagination(object):
         """
         Used when the ``Pagination`` is cancelled.
         
-        First of all removes the Pagination ,so it will not wait for reaction events, then sets the ``.task_flag``
-        of the ``Pagination`` to `GUI_STATE_CANCELLED`.
+        First of all removes the pagination from waitfors,so it will not wait for reaction events, then sets the
+        ``.task_flag`` of the it to `GUI_STATE_CANCELLED`.
         
         If `exception` is given as `TimeoutError`, then removes the ``Pagination``'s reactions from the respective
         message.
         
         Parameters
         ----------
-        exception : `None` or ``BaseException``
+        exception : `None` or ``BaseException`` instance
             Exception to cancel the ``Pagination`` with.
         """
         client=self.client
@@ -452,7 +452,7 @@ class Pagination(object):
         
         Parameters
         ----------
-        exception : `None` or ``BaseException``
+        exception : `None` or ``BaseException`` instance, Optional
             Exception to cancel the pagination with. Defaults to `None`
         """
         canceller = self.canceller
@@ -497,50 +497,224 @@ class Pagination(object):
 
 
 class ChooseMenu(object):
+    """
+    Familiar to ``Pagination``, but instaead of just displaying multiple pages of text, it allows the user to select
+    a displayed option.
+    
+    The class allows modifications and closing it's representations for every user. Also works at private channels.
+    
+    Picks up on reaction additions and on reaction deletions as well and removes the added reactions on if has
+    permission, which might be missing, like in DM-s.
+    
+    Attributes
+    ----------
+    canceller : `None` or `function`
+        The function called when the ``ChooseMenu`` is cancelled or when it expires. This is a onetime use and after
+        it was used, is set as `None`.
+    channel : ``ChannelTextBase`` instance
+        The channel wehre the ``ChooseMenu`` is executed.
+    client : ``Client``
+        The client who executes the ``Pagination``.
+    embed : ``Embed`` (or any compatible)
+            An embed base, what's description and footer will be rendered with the given choises and with information
+            about the respective page.
+    message : `None` or ``Message``
+        The message on what the ``ChooseMenu`` is executed.
+    selected : `int`
+        The currently selected option of the ``ChooseMenu``.
+    choices : `indexable` of `Any`
+        An indexable container, what stores the displayable choices.
+        
+        It's elements's type can be different from eachother, and different structures act differently as well.
+        There are the following cases:
+        
+        - If an element is `str` instance, then it will be used as an option's title and when selecting it, only that
+            variable will be ppased to the respective function when selected.
+        
+        - If an element is neither `str` or `tuple`, then it's `repr` will be used as an option's title, and only that
+            variable will be passed to the respective fucntion when selected.
+        
+        - If an element is `tuple` instance, then it's first element will be displayed as title. If it is `str`, then
+            will be just simply added, however if not, then it's `repr` will be used. If selecting a `tuple` option,
+            then it's element will be passed to the respective function.
+    
+    task_flag : `int`
+        A flag to store the state of the ``Pagination``.
+        
+        Possible values:
+        +---------------------------+-------+-----------------------------------------------------------------------+
+        | Respective name           | Value | Description                                                           |
+        +===========================+=======+=======================================================================+
+        | GUI_STATE_READY           | 0     | The ChooseMenu does nothing, is ready to be used.                     |
+        +---------------------------+-------+-----------------------------------------------------------------------+
+        | GUI_STATE_SWITCHING_PAGE  | 1     | The ChooseMenu is currently changing it's page.                       |
+        +---------------------------+-------+-----------------------------------------------------------------------+
+        | GUI_STATE_CANCELLING      | 2     | The ChooseMenu is currently changing it's page, but it was cancelled  |
+        |                           |       | meanwhile.                                                            |
+        +---------------------------+-------+-----------------------------------------------------------------------+
+        | GUI_STATE_CANCELLED       | 3     | The ChooseMenu is, or is being cancelled right now.                   |
+        +---------------------------+-------+-----------------------------------------------------------------------+
+        | GUI_STATE_SWITCHING_CTX   | 4     | The ChooseMenu is switching context. Not used by the default class,   |
+        |                           |       | but expected.                                                         |
+        +---------------------------+-------+-----------------------------------------------------------------------+
+    timeout : `float`
+        The timeout of the ``Pagination`` in seconds.
+    timeouter : `None` or ``Timeouter``
+        Executes the timing out feature on the ``ChooseMenu``.
+    prefix : `None` or `str`
+        A prefix displayed before each option.
+    selecter : `async-callable`
+        An `async-callable`, what is ensured when an option is selected.
+        
+        > If the ``ChooseMenu`` is created only with `1` option, then it is ensured initially instead of creating the
+        > ``ChooseMenu`` itself. At this case, if `message` was not given (or given as `None`), then the `message`
+        > passed to the `selecter` will be `None` as well.
+        
+        At least 3 parameters are passed to the `selecter`:
+        +-------------------+-------------------------------+
+        | Respective name   | Type                          |
+        +===================+===============================+
+        | client            | ``Client``                    |
+        +-------------------+-------------------------------+
+        | channel           | ``ChannelTextBase`` instance  |
+        +-------------------+-------------------------------+
+        | message           | ``Message`` or `None`         |
+        +-------------------+-------------------------------+
+        
+        The rest of the parameters depend on the resective choice (an elements of ``choices``). If the element is a
+        `tuple` instance, then it's element will be passed, however if the choice is any other type, then only that
+        object will be passed.
+    
+    Class Attributes
+    ----------------
+    UP : ``Emoji`` = `BUILTIN_EMOJIS['arrow_up_small']`
+        The emoji used to move on the displayed option one above.
+    DOWN : ``Emoji`` = `BUILTIN_EMOJIS['arrow_down_small']`
+        The emoji used to move on the displayed option one under.
+    LEFT : ``Emoji`` = `BUILTIN_EMOJIS['arrow_backward']`
+        The emoji used to move on the previous page.
+    RIGHT : ``Emoji`` = `BUILTIN_EMOJIS['arrow_forward']`
+        The emoji used to move on the next page.
+    SELECT : ``Emoji`` = `BUILTIN_EMOJIS['ok']`
+        The emoji used to select an option.
+    CANCEL : ``Emoji`` = `BUILTIN_EMOJIS['x']`
+        The emoji used to cancel the ``ChooseMenu``.
+    EMOJIS_RESTRICTED : `tuple` (`Emoji`, `Emoji`, `Emoji`, `Emoji`) = `(UP, DOWN, SELECT, CANCEL)`
+        Restricted emojis, added when the choose menu has only options for 1 page.
+    EMOJIS : `tuple` (`Emoji`, `Emoji`, `Emoji`, `Emoji`, `Emoji`, `Emoji`) = `(UP, DOWN, LEFT, RIGHT, SELECT, CANCEL)`
+        Emojis added to the choose menu.
+    """
     UP      = BUILTIN_EMOJIS['arrow_up_small']
     DOWN    = BUILTIN_EMOJIS['arrow_down_small']
     LEFT    = BUILTIN_EMOJIS['arrow_backward']
     RIGHT   = BUILTIN_EMOJIS['arrow_forward']
     SELECT  = BUILTIN_EMOJIS['ok']
     CANCEL  = BUILTIN_EMOJIS['x']
-    EMOJIS_RESTRICTED = (UP,DOWN,SELECT,CANCEL)
-    EMOJIS  = (UP,DOWN,LEFT,RIGHT,SELECT,CANCEL)
+    EMOJIS_RESTRICTED = (UP, DOWN, SELECT, CANCEL)
+    EMOJIS  = (UP, DOWN, LEFT, RIGHT, SELECT, CANCEL)
     
-    __slots__ = ('canceller', 'channel', 'client', 'embed', 'message', 'selected',
-        'choices', 'task_flag', 'timeout', 'timeouter', 'prefix', 'selecter')
+    __slots__ = ('canceller', 'channel', 'client', 'embed', 'message', 'selected', 'choices', 'task_flag', 'timeout',
+        'timeouter', 'prefix', 'selecter')
     
     async def __new__(cls, client, channel, choices, selecter, embed=Embed(), timeout=240., message=None, prefix=None):
+        """
+        Creates a new choose menu with the given parameters.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The client who executes the ``Pagination``.
+        channel : ``ChannelTextBase`` instance
+            The channel wehre the ``ChooseMenu`` is executed.
+        choices : `indexable` of `Any`
+            An indexable container, what stores the displayable choices.
+            
+            It's elements's type can be different from eachother, and different structures act differently as well.
+            There are the following cases:
+            
+            - If an element is `str` instance, then it will be used as an option's title and when selecting it, only
+                that variable will be ppased to the respective function when selected.
+            
+            - If an element is neither `str` or `tuple`, then it's `repr` will be used as an option's title, and only
+                that variable will be passed to the respective fucntion when selected.
+            
+            - If an element is `tuple` instance, then it's first element will be displayed as title. If it is `str`,
+                then will be just simply added, however if not, then it's `repr` will be used. If selecting a `tuple`
+                option, then it's element will be passed to the respective function.
+        selecter : `async-callable`
+            An `async-callable`, what is ensured when an option is selected.
+            
+            > If the ``ChooseMenu`` is created only with `1` option, then it is ensured initially instead of creating
+            > the ``ChooseMenu`` itself. At this case, if `message` was not given (or given as `None`), then the
+            > `message` passed to the `selecter` will be `None` as well.
+            
+            At least 3 parameters are passed to the `selecter`:
+            +-------------------+-------------------------------+
+            | Respective name   | Type                          |
+            +===================+===============================+
+            | client            | ``Client``                    |
+            +-------------------+-------------------------------+
+            | channel           | ``ChannelTextBase`` instance  |
+            +-------------------+-------------------------------+
+            | message           | ``Message`` or `None`         |
+            +-------------------+-------------------------------+
+            
+            The rest of the parameters depend on the resective choice (an elements of ``choices``). If the element is a
+            `tuple` instance, then it's element will be passed, however if the choice is any other type, then only that
+            object will be passed.
+        embed : ``Embed`` (or any compatible)
+            An embed base, what's description and footer will be rendered with the given choises and with information
+            about the respective page. Defaults to an empty ``Embed`` instance.
+        timeout : `float`, Optional
+            The timeout of the ``Pagination`` in seconds. Defaults to `240.0`.
+        message : `None` or ``Message``, Optional
+            The message on what the ``ChooseMenu`` will be executed. If not given a new message will be created.
+            Defaults to `None`.
+        prefix : `None` or `str`, Optional
+            A prefix displayed before each option. Defaults to `None`.
+        
+        Returns
+        -------
+        self : `Mone` or ``ChooseMenu``
+            If `choices`'s length is less than `2`, then returns `None`.
+        
+        Raises
+        ------
+        ValueError
+            If `prefix` wasn ot given as `None` and it's length is over `64` characters.
+        """
         if (prefix is not None) and len(prefix)>100:
-            raise ValueError(f'Please pass a prefix, what is shorter than 100 characters, got {prefix!r}')
+            raise ValueError(f'Please pass a prefix, what is shorter than 100 characters, got {prefix!r}.')
         
         result_ln=len(choices)
         if result_ln<2:
             if result_ln==1:
                 choice = choices[0]
                 if isinstance(choice, tuple):
-                    await selecter(client, channel, message, *choice)
+                    coro = selecter(client, channel, message, *choice)
                 else:
-                    await selecter(client, channel, message, choice)
+                    coro = selecter(client, channel, message, choice)
+                await coro
             return None
         
-        self=object.__new__(cls)
-        self.client=client
-        self.channel=channel
-        self.choices=choices
-        self.selecter=selecter
+        self = object.__new__(cls)
+        self.client = client
+        self.channel = channel
+        self.choices = choices
+        self.selecter = selecter
         self.selected = 0
-        self.canceller=cls._canceller
-        self.task_flag=GUI_STATE_READY
-        self.message=message
-        self.timeout=timeout
-        self.timeouter=None
-        self.prefix=prefix
-        self.embed=embed
+        self.canceller = cls._canceller
+        self.task_flag = GUI_STATE_READY
+        self.message = message
+        self.timeout = timeout
+        self.timeouter = None
+        self.prefix = prefix
+        self.embed = embed
         
         try:
             if message is None:
                 message = await client.message_create(channel,embed=self._render_embed())
-                self.message=message
+                self.message = message
             else:
                 await client.message_edit(message,embed=self._render_embed())
             
@@ -565,12 +739,21 @@ class ChooseMenu(object):
             
             raise
         
-        self.timeouter=Timeouter(self,timeout=timeout)
+        self.timeouter = Timeouter(self,timeout=timeout)
         client.events.reaction_add.append(message, self)
         client.events.reaction_delete.append(message, self)
         return self
     
     def _render_embed(self):
+        """
+        Renders the choose menu's embed's description with it's choices of the respective page and it's footer
+        with page information.
+        
+        Returns
+        -------
+        embed : ``Embed`` (or any compatible)
+            The rendered embed.
+        """
         selected = self.selected
         choices = self.choices
         index = (selected//10)*10
@@ -588,7 +771,7 @@ class ChooseMenu(object):
             title=choices[index]
             if isinstance(title,tuple):
                 if not title:
-                    title=''
+                    title = ''
                 else:
                     title = title[0]
             
@@ -637,7 +820,17 @@ class ChooseMenu(object):
         embed.add_footer(f'Page {current_page}/{page_limit}, {start} - {end} / {limit}, selected: {selected+1}')
         return embed
     
-    async def __call__(self,client,event):
+    async def __call__(self, client, event):
+        """
+        Called when a reeaction is added or removed from the respective message.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The client who executes the ``Pagination``
+        event : ``ReactionAddEvent``, ``ReactionDeleteEvent``
+            The received event.
+        """
         if event.user.is_bot:
             return
         
@@ -736,9 +929,10 @@ class ChooseMenu(object):
                     choice = self.choices[self.selected]
                     channel = self.channel
                     if isinstance(choice, tuple):
-                        await selecter(client, channel, message, *choice)
+                        coro = selecter(client, channel, message, *choice)
                     else:
-                        await selecter(client, channel, message, choice)
+                        coro = selecter(client, channel, message, choice)
+                    await coro
                 except BaseException as err:
                     await client.events.error(client,f'{self!r}.__call__ when calling {selecter!r}',err)
                 return
@@ -803,7 +997,21 @@ class ChooseMenu(object):
         self.task_flag=GUI_STATE_READY
         self.timeouter.set_timeout(self.timeout)
     
-    async def _canceller(self,exception,):
+    async def _canceller(self, exception,):
+        """
+        Used when the ``ChooseMenu`` is cancelled.
+        
+        First of all removes the choose menu from waitfors,so it will not wait for reaction events, then sets the
+        ``.task_flag`` of the it to `GUI_STATE_CANCELLED`.
+        
+        If `exception` is given as `TimeoutError`, then removes the ``ChooseMenu``'s reactions from the respective
+        message.
+        
+        Parameters
+        ----------
+        exception : `None` or ``BaseException`` instance
+            Exception to cancel the ``ChooseMenu`` with.
+        """
         client=self.client
         message=self.message
         
@@ -848,6 +1056,14 @@ class ChooseMenu(object):
         #we do nothing
     
     def cancel(self):
+        """
+        Cancels the choose menu, if it is not cancelled yet.
+        
+        Parameters
+        ----------
+        exception : `None` or ``BaseException`` instance, Optional
+            Exception to cancel the choose menu with. Defaults to `None`
+        """
         canceller=self.canceller
         if canceller is None:
             return
@@ -861,6 +1077,7 @@ class ChooseMenu(object):
         return Task(canceller(self,None), KOKORO)
 
     def __repr__(self):
+        """Returns the choose menu's representation."""
         result = [
             '<', self.__class__.__name__,
             ' client=', repr(self.client),
@@ -1047,7 +1264,7 @@ class prefix_by_guild(dict):
                 where(model.guild_id==guild_id))
     
     def __repr__(self):
-        return f'<{self.__class__.__name__} default=\'{self.default}\' len={self.__len__()}>'
+        return f'<{self.__class__.__name__} default={self.default!r} len={len(self)}>'
     
     # because it is a builtin subclass, it will have __str__, so we overwrite that as well
     __str__=__repr__
@@ -1069,7 +1286,7 @@ class CooldownWrapper(CommandWrapper):
         elif issubclass(weight_type, int):
             weight = int(weight)
         else:
-            raise TypeError(f'`weight` can be given as `int` instance, got {weight_type.__name__}.')
+            raise TypeError(f'`weight` can be given as `int` instance, got {weight_type.__name__}.') from None
         
         source_wrapper = self.wrapper
         if weight == 0:
@@ -1215,8 +1432,8 @@ class Cooldown(object):
             try:
                 __float__ = getattr(reset_type, '__float__')
             except AttributeError:
-                raise TypeError(f'The given reset is no `float`, neither other numeric convertable to it, got '
-                    f'{reset_type.__name__}.')
+                raise TypeError(f'The given reset is not `float`, neither other numeric convertable to it, got '
+                    f'{reset_type.__name__}.') from None
             
             reset = __float__(reset)
             
@@ -1226,7 +1443,7 @@ class Cooldown(object):
         elif issubclass(limit_type, int):
             limit = int(limit)
         else:
-            raise TypeError(f'`limit` can be given as `int` instance, got {limit_type.__name__}.')
+            raise TypeError(f'`limit` can be given as `int` instance, got {limit_type.__name__}.') from None
         
         weight_type = weight.__class__
         if weight_type is int:
@@ -1234,7 +1451,7 @@ class Cooldown(object):
         elif issubclass(weight_type, int):
             weight = int(weight)
         else:
-            raise TypeError(f'`weight` can be given as `int` instance, got {weight_type.__name__}.')
+            raise TypeError(f'`weight` can be given as `int` instance, got {weight_type.__name__}.') from None
         
         self = object.__new__(cls)
         self.checker = checker

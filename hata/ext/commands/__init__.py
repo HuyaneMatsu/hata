@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from .command import *
-from .compiler import *
+from .content_parser import *
 from .utils import *
 
 __all__ = (
     'setup_ext_commands',
     *command.__all__,
-    *compiler.__all__,
+    *content_parser.__all__,
     *utils.__all__,
         )
 

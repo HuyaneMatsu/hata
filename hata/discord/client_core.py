@@ -2,7 +2,7 @@
 __all__ = ('CACHE_PRESENCE', 'CACHE_USER', 'CHANNELS', 'CLIENTS', 'EMOJIS', 'GUILDS', 'DISCOVERY_CATEGORIES',
     'INTEGRATIONS', 'KOKORO', 'MESSAGES', 'ROLES', 'TEAMS', 'USERS', 'start_clients', 'stop_clients', )
 
-import sys
+import sys, gc
 from time import perf_counter
 from threading import current_thread
 
@@ -384,7 +384,15 @@ def stop_clients():
 
 KOKORO=EventThread(daemon=False,name='KOKORO')
 
-GC_cycler=KOKORO.cycle(1200.)
+GC_CYCLER = KOKORO.cycle(1200.)
+
+if sys.implementation.name == 'pypy':
+    def manual_gc_call(cycler):
+        gc.collect()
+    
+    GC_CYCLER.append(manual_gc_call, (1<<31)-1)
+    
+    del manual_gc_call
 
 HEARTBEAT_TIMEOUT=20.0
 

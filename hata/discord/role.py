@@ -247,7 +247,7 @@ class Role(DiscordEntity, immortal=True):
             
             role.color=Color(data.get('color',0))
             
-            role.permissions=Permission(data['permissions'])
+            role.permissions=Permission(data['permissions_new'])
             
             role.separated=data.get('hoist',False)
             
@@ -468,7 +468,7 @@ class Role(DiscordEntity, immortal=True):
             clear_permission_cache = True
         
         self.name=data['name']
-        permissions = Permission(data['permissions'])
+        permissions = Permission(data['permissions_new'])
         if self.permissions != permissions:
             self.permissions = permissions
             clear_permission_cache = True
@@ -552,7 +552,7 @@ class Role(DiscordEntity, immortal=True):
             old_attributes['name']=self.name
             self.name=name
         
-        permissions=Permission(data['permissions'])
+        permissions=Permission(data['permissions_new'])
         if self.permissions!=permissions:
             old_attributes['permissions']=self.permissions
             self.permissions=permissions
@@ -812,9 +812,9 @@ class PermOW(object):
     
     Attributes
     ----------
-    allow : `int`
+    allow : ``Permission``
         The allowed permissions by the overwrite.
-    deny : `int`
+    deny : ``Permission``
         The denied permission by the overwrite.
     target : ``Client``, ``User`` or ``Role``
         The target entity of the overwrite.
@@ -836,8 +836,8 @@ class PermOW(object):
         else:
             target=PartialUser(id_)
         self.target = target
-        self.allow=data['allow']
-        self.deny=data['deny']
+        self.allow=Permission(data['allow_new'])
+        self.deny=Permission(data['deny_new'])
     
     @classmethod
     def custom(cls, target, allow, deny):
@@ -859,8 +859,8 @@ class PermOW(object):
         """
         self = object.__new__(cls)
         self.target = target
-        self.allow = int(allow)
-        self.deny = int(deny)
+        self.allow = Permission(allow)
+        self.deny = Permission(deny)
         return self
     
     def __hash__(self):

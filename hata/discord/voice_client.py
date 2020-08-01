@@ -607,13 +607,10 @@ class VoiceClient(object):
         
         player = self.player
         if (player is not None):
-            self.player=None
-            player.done=True
+            self.player = None
+            player.done = True
+            player.source = None
             player.resumed.set()
-        
-        reader = self.reader
-        if (reader is not None):
-            reader.stop()
     
     def is_connected(self):
         """
@@ -681,10 +678,13 @@ class VoiceClient(object):
             except TimeoutError:
                 tries+=1
                 continue
+            except:
+                await self.disconnect(force=True)
+                raise
             
             try:
                 task=Task(self.gateway.connect(),KOKORO)
-                future_or_timeout(task,30.,)
+                future_or_timeout(task, 30.,)
                 await task
                 
                 self.connected.clear()
@@ -697,7 +697,7 @@ class VoiceClient(object):
                         break
                     
                 self.connected.set()
-                
+            
             except (OSError, TimeoutError, ConnectionError, ConnectionClosed, WebSocketProtocolError, InvalidHandshake,
                     ValueError) as err:
                 
@@ -709,6 +709,10 @@ class VoiceClient(object):
                 tries+=1
                 await self._terminate_handshake()
                 continue
+            
+            except:
+                await self.disconnect(force=True)
+                raise
             
             if (waiter is not None):
                 waiter.set_result(self)
@@ -730,7 +734,11 @@ class VoiceClient(object):
                     await sleep(5.,KOKORO)
                     await self._terminate_handshake()
                     break
-        
+                
+                except:
+                    await self.disconnect(force=True)
+                    raise
+    
     async def disconnect(self, force=False, terminate=True):
         """
         Disconnects the voice client.
@@ -751,37 +759,39 @@ class VoiceClient(object):
         if not (force or self.connected.is_set()):
             return
         
-        if self._freezed:
-            self.connected.clear()
-            await self.gateway.terminate()
-            if terminate:
-                await self._terminate_handshake()
-    
-            socket = self.socket
-            if (socket is not None):
-                self.socket = None
-                socket.close()
-                
-            return
-        
         self.queue.clear()
         player = self.player
         if (player is not None):
             self.player = None
             player.done = True
+            player.source = None
+            # Set connected so the player can do 1 full loop
+            self.connected.set()
             player.resumed.set()
             await sleep(PLAYER_DELAY,KOKORO)
         
         reader = self.reader
         if (reader is not None):
+            self.reader = None
             reader.stop()
         
         self.connected.clear()
         
+        if self._freezed:
+            self.connected.clear()
+            await self.gateway.terminate()
+            if terminate:
+                await self._terminate_handshake()
+            
+            socket = self.socket
+            if (socket is not None):
+                self.socket = None
+                socket.close()
+            return
+        
         try:
             del self.client.voice_clients[self.guild.id]
         except KeyError:
-            #already disconnected
             return
         
         try:
@@ -1082,6 +1092,18 @@ class VoiceClient(object):
         """Stops and unallocates the resources by the voice client, if was not done already."""
         self.stop()
         self.connected.set()
+        
+        player = self.player
+        if (player is not None):
+            self.player = None
+            player.done = True
+            player.source = None
+            player.resumed.set()
+        
+        reader = self.reader
+        if (reader is not None):
+            self.reader = None
+            reader.stop()
         
         socket = self.socket
         if (socket is not None):

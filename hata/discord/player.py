@@ -636,6 +636,9 @@ class AudioPlayer(Thread):
                 
                 new_source = self.source
                 if (new_source is None):
+                    if (voice_client.player is not self):
+                        break
+                    
                     if (source is not None):
                         source.cleanup()
                         source = None

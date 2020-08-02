@@ -37,6 +37,215 @@ PARSER_RP = re.compile('(?:"(.+?)"|(\S+))[^"\S]*')
 
 CHANNEL_MESSAGE_RP = re.compile('(\d{7,21})-(\d{7,21})')
 
+CONTENT_ARGUMNET_SEPARATORS = {}
+
+class ContentArgumentSeparator(object):
+    """
+    Content argument separator used insisde of a ``ContentParserContext`` and stored by ``CommandContentParser``
+    instances.
+    
+    Attributes
+    ----------
+    _caller : `function`
+        The choosed function what is called when the separator s called.
+        
+        Can be 1 of:
+        - ``._rule_single``
+        - ``._rule_inter``
+    _rp : `_sre.SRE_Pattern`
+        The regex pattern what is passed and used by the caller.
+    separator : `str` or `tuple` (`str`, `str`)
+        The executed separator by the ``ContentArgumentSeparator`` instance.
+    """
+    __slots__ = ('_caller', '_rp', 'separator', )
+    
+    def __new__(cls, separator):
+        """
+        Creates a new ``ContentArgumentSeparator`` instance. If one already exists with the given parameters, returns
+        that instead.
+        
+        Parameters
+        ----------
+        separator : `str`, `tuple` (`str`, `str`)
+            The executed separator by the ``ContentArgumentSeparator`` instance.
+        
+        Raises
+        ------
+        TypeError
+            - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
+            - If `separator was given as `tuple`, but it's element are not `str` instances.
+        ValueError
+            - If `seperator` is given as `str`, but it's length is not 1.
+            - If `separator` is given as `str`, but it is a space character.
+            - If `seperator` is given as `tuple`, but one of it's element's length is not 1.
+            - If `separator` is given as `tuple`, but one of it's element's is a space character.
+        """
+        if separator is None:
+            return DEFAULT_SEPARATOR
+        
+        separator_type = separator.__class__
+        if separator_type is cls:
+            return separator
+        
+        if separator_type is str:
+            processed_separator = separator
+        elif separator_type is tuple:
+            processed_separator = list(separator)
+        elif issubclass(separator_type, str):
+            processed_separator = str(separator)
+            separator_type = str
+        elif issubclass(separator_type, tuple):
+            processed_separator = list(separator)
+            separator_type = tuple
+        else:
+            raise TypeError(f'`sepatator` should have be given as `str` or as `tuple` instance, got '
+                f'{separator_type.__name__}.')
+        
+        if separator_type is str:
+            if len(processed_separator) != 1:
+                raise ValueError(f'`str` separator length can be only `1`, got {separator!r}.')
+            
+            if processed_separator.isspace():
+                raise ValueError(f'`str` sepratorcannot be a space character`, meanwhile it is, got {separator!r}.')
+            
+            separator = processed_separator
+        
+        else:
+            if len(processed_separator) != 2:
+                raise ValueError(f'`tuple` separator length can be only `2`, got {separator!r}.')
+            
+            for index in range(2):
+                element = processed_separator[index]
+                
+                element_type = element.__class__
+                if element_type is str:
+                    processed_element = element
+                elif issubclass(element_type, str):
+                    processed_element  = str(element)
+                    processed_separator[index] = processed_element
+                else:
+                    raise TypeError(f'`tuple` seprator\'s elements can be only `str` instances, meanwhile it\'s '
+                        f'element under index `{index}` is type {element_type.__name__!r}.')
+                
+                if len(processed_element) != 1:
+                    raise ValueError(f'`tuple` seprator\'s elements can be only `str` with length of `1`, meanwhile '
+                        f'it\'s element under index `{index}` is not, got {element!r}.')
+                
+                if processed_element.isspace():
+                    raise ValueError(f'`tuple` seprator\'s elements cannot be space character`, meanwhile it\'s '
+                        f'element under index `{index}` is, got {element!r}.')
+            
+            separator = tuple(processed_separator)
+        
+        try:
+            return CONTENT_ARGUMNET_SEPARATORS[separator]
+        except KeyError:
+            pass
+        
+        if  separator_type is str:
+            escaped = re.escape(separator)
+            rp = re.compile(f'[^{escaped}\S]*(?:{escaped}[^{escaped}\S]*)+')
+            caller = cls._rule_single
+        
+        else:
+            start, end = separator
+            if start == end:
+                escaped = re.escape(start)
+                rp = re.compile(f'(?:{escaped}(.+?){escaped}|(\S+))[^{escaped}\S]*')
+            
+            else:
+                start_escaped = re.escape(start)
+                end_escaped = re.escape(end)
+                rp = re.compile(f'(?:{start_escaped}(.+?){end_escaped}|(\S+))[^{start_escaped}\S]*')
+            
+            caller = cls._rule_inter
+        
+        self = object.__new__(cls)
+        self.separator = separator
+        self._rp = rp
+        self._caller = caller
+        CONTENT_ARGUMNET_SEPARATORS[separator] = self
+        return self
+    
+    @staticmethod
+    def _rule_single(rp, content, index):
+        """
+        Rule used when the the content's part are separeted by a given character.
+        
+        Parameters
+        ----------
+        rp : `_sre.SRE_Pattern`
+            The regex pattern what looks for the next part in the given content.
+        content : `str`
+            The content what's next part we are going to be parsed.
+        index : `int`
+            The starter index of the content to parse from.
+        
+        Returns
+        -------
+        part : `str`
+            The parsed out part.
+        index : `int`
+            The index where the next parsing should start from.
+        """
+        searched = rp.search(content, index)
+        # never matches the end
+        if searched is None:
+            return content[index:], len(content)
+        
+        return content[index:searched.start()], searched.end()
+    
+    @staticmethod
+    def _rule_inter(rp, content, index):
+        """
+        Rule used when the content's part are sepearted by a space or if they are between 2 (or 1) predefined
+        character.
+        
+        Parameters
+        ----------
+        rp : `_sre.SRE_Pattern`
+            The regex pattern what looks for the next part in the given content.
+        content : `str`
+            The content what's next part we are going to be parsed.
+        index : `int`
+            The starter index of the content to parse from.
+        
+        Returns
+        -------
+        part : `str`
+            The parsed out part.
+        index : `int`
+            The index where the next parsing should start from.
+        """
+        parsed = rp.match(content, index)
+        part = parsed.group(2)
+        if part is None:
+            part = parsed.group(1)
+        
+        return part, parsed.end()
+    
+    def __call__(self, content, index):
+        """
+        Calls the content argument separetor to get the next part of the given content.
+        
+        Parameters
+        ----------
+        content : `str`
+            The content what's next part we are going to be parsed.
+        index : `int`
+            The starter index of the content to parse from.
+        
+        Returns
+        -------
+        part : `str`
+            The parsed out part.
+        index : `int`
+            The index where the next parsing should start from.
+        """
+        return self._caller(self._rp, content, index)
+
+DEFAULT_SEPARATOR = ContentArgumentSeparator(('"', '"'))
+
 def parse_user_mention(part, message):
     """
     If the message's given part is a user mention, returns the respective user.
@@ -195,15 +404,19 @@ class ContentParserContext(object):
         The respective message.
     result : `list` of `Any`
         The successfully parsed objects.
+    separator : ``ContentArgumentSeparator``
+        The argument separator of the parser.
     """
-    __slots__ = ('client', 'content', 'index', 'last_part', 'last_start', 'length', 'message', 'result', )
+    __slots__ = ('client', 'content', 'index', 'last_part', 'last_start', 'length', 'message', 'result', 'separator', )
     
-    def __init__(self, client, message, content):
+    def __init__(self, separator, client, message, content):
         """
         Creates a new ``ContentParserContext`` instance.
         
         Parameters
         ----------
+        separator : ``ContentArgumentSeparator``
+            The argument separator of the parser.
         client : ``Client``
             The respective client.
         message : ``Message``
@@ -211,6 +424,7 @@ class ContentParserContext(object):
         content : `str`
             A message's content after it's prefix, but only till first linebreak if applicable.
         """
+        self.separator = separator
         self.client = client
         self.message = message
         self.index = 0
@@ -233,20 +447,15 @@ class ContentParserContext(object):
         length = self.length
         if index == length:
             if self.last_start == index:
-                next_ = None
+                part = None
             else:
-                next_ = self.last_part
+                part = self.last_part
         else:
-            parsed = PARSER_RP.match(self.content, index)
-            next_ = parsed.group(2)
-            if next_ is None:
-                next_ = parsed.group(1)
-            
-            self.last_part = next_
+            part, self.index = self.separator(self.content, index)
+            self.last_part = part
             self.last_start = index
-            self.index = parsed.end()
         
-        return next_
+        return part
     
     def mark_last_as_used(self):
         """
@@ -794,8 +1003,8 @@ class ConverterSetting(object):
         Raises
         -------
         TypeError
-            - If `converter` is not type function.
-            - If `converter` is not async.
+            - If `converter` is not `function` type.
+            - If `converter` is not `async`.
             - If `converter` accepts bad amount of arguments.
             - If `uses_flags` was not given as `bool`, nether as `int` as `0` or `1`.
             - If `default_flags` or `all_flags` was not given as `ConverterFlag` instance.
@@ -817,7 +1026,7 @@ class ConverterSetting(object):
                 f'{converter!r}.')
         
         non_reserved_positional_argument_count = analyzed.get_non_reserved_positional_argument_count()
-        if non_reserved_positional_argument_count!=2:
+        if non_reserved_positional_argument_count != 2:
             raise TypeError(f'`converter` shoud accept `2` non reserved positonal arguments, meanwhile it expects '
                 f'{non_reserved_positional_argument_count}.')
         
@@ -2160,15 +2369,19 @@ class CommandContentParser(object):
     Parameters
     ----------
     _parsers : `None` or `list` of ``ParserContextBase`` instances
-        The parsers of the command content parser. Set as`None` if it would be an empty `list`.
+        The parsers of the command content parser. Set as `None` if it would be an empty `list`.
+    _separator : ``ContentArgumentSeparator``
+        The argument separator of the parser.
     """
-    __slots__ = ('_parsers', )
-    def __new__(cls, func):
+    __slots__ = ('_parsers', '_separator')
+    def __new__(cls, func, separator):
         """
         Parameters
         ----------
         func : `async-callable`
             The callable function.
+        separator : `None`, ``ContentArgumentSeparator``, `str` or `tuple` (`str`, `str`)
+            The argument separator of the parser.
         
         Raises
         ------
@@ -2190,7 +2403,16 @@ class CommandContentParser(object):
             - If an annotation was given as `tuple`, but any of it's element is not `None`, or `str`, `type` or `tuple`
                 instance.
             - If `*args` argument's annotation was given as ``Converter`` instance with default value set.
+            - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
+            - If `separator was given as `tuple`, but it's element are not `str` instances.
+        ValueError
+            - If `seperator` is given as `str`, but it's length is not 1.
+            - If `separator` is given as `str`, but it is a space character.
+            - If `seperator` is given as `tuple`, but one of it's element's length is not 1.
+            - If `separator` is given as `tuple`, but one of it's element's is a space character.
         """
+        separator = ContentArgumentSeparator(separator)
+        
         analyzer = CallableAnalyzer(func)
         if analyzer.is_async():
             real_analyzer = analyzer
@@ -2308,15 +2530,18 @@ class CommandContentParser(object):
             hinters.append(hinter)
         
         if (args_argument is not None):
-            annotation = args_argument.annotation
-            if type(annotation) is Converter:
-                if annotation.default_type:
-                    raise TypeError(f'`*args` annotation is given as `{Converter.__class__.__name__} as '
-                        f'{Converter!r}, so with default value set, do not do that!')
-                
-                hinter_annotation = annotation.annotation
+            if args_argument.has_annotation:
+                annotation = args_argument.annotation
+                if type(annotation) is Converter:
+                    if annotation.default_type:
+                        raise TypeError(f'`*args` annotation is given as `{Converter.__class__.__name__} as '
+                            f'{Converter!r}, so with default value set, do not do that!')
+                    
+                    hinter_annotation = annotation.annotation
+                else:
+                    hinter_annotation = validate_annotation(annotation)
             else:
-                hinter_annotation = validate_annotation(annotation)
+                hinter_annotation = FlaggedAnnotation(str)
             
             hinter = ContentParserArgumentHinter()
             hinter.default = None
@@ -2358,6 +2583,7 @@ class CommandContentParser(object):
         
         self = object.__new__(cls)
         self._parsers = parsers
+        self._separator = separator
         return func, self
     
     async def get_args(self, client, message, content):
@@ -2384,7 +2610,7 @@ class CommandContentParser(object):
         if parsers is None:
             return True, None
         
-        content_parser_context = ContentParserContext(client, message, content)
+        content_parser_context = ContentParserContext(self._separator, client, message, content)
         for parser in parsers:
             result = await parser(content_parser_context)
             if result:
@@ -2413,6 +2639,8 @@ class ContentParser(CommandContentParser):
     ----------
     _parsers : `None` or `list` of ``ParserContextBase`` instances
         The parsers of the command content parser. Set as`None` if it would be an empty `list`.
+    _separator : ``ContentArgumentSeparator``
+        The argument separator of the parser.
     _func : `async-callable`
         The wrapped function.
     _handler : `None` or `async-callable`
@@ -2421,7 +2649,7 @@ class ContentParser(CommandContentParser):
         Whether the ``ContentParser`` should act like a method descriptor.
     """
     __slots__ = ('_func', '_handler', '_is_method',)
-    def __new__(cls, func=None, handler=None, is_method=False):
+    def __new__(cls, func=None, handler=None, is_method=False, separator=None):
         """
         Parameters
         ----------
@@ -2446,9 +2674,17 @@ class ContentParser(CommandContentParser):
             +-----------------------+-------------------+
             | parent                | `Any`             |
             +-----------------------+-------------------+
-            
+        
         is_method : `bool`, Optional
             Whether the content parser should act like a method. Default to `False`.
+        separator : `None`, ``ContentArgumentSeparator``, `str` or `tuple` (`str`, `str`), Optional
+            The argument separator of the parser.
+        
+        Returns
+        -------
+        wrapper / self : ``ContentParser._wrapper`` / ``ContentParser``
+            If `func` is not given, then returns a wrapper, what allows using the content parser as a decorator with
+            still giving parameters.
         
         Raises
         ------
@@ -2456,6 +2692,13 @@ class ContentParser(CommandContentParser):
             - If `is_method` is not given as `bool` instance.
             - If `handler` is not async, neither cannot be insatcned to async.
             - If `handler` (or it's converted form) would accept bad amount of arguents.
+            - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
+            - If `separator was given as `tuple`, but it's element are not `str` instances.
+        ValueError
+            - If `seperator` is given as `str`, but it's length is not 1.
+            - If `separator` is given as `str`, but it is a space character.
+            - If `seperator` is given as `tuple`, but one of it's element's length is not 1.
+            - If `separator` is given as `tuple`, but one of it's element's is a space character.
         """
         is_method = preconvert_bool(is_method, 'is_method')
         
@@ -2464,10 +2707,12 @@ class ContentParser(CommandContentParser):
                 '`ContentParser` expects to pass `6` arguments to it\'s `handler`: client, message, content_parser, '
                 'content, args, obj (can be `None`).')
         
-        if func is None:
-            return cls._wrapper(handler, is_method)
+        separator = ContentArgumentSeparator(separator)
         
-        self, func = CommandContentParser.__new__(cls, func)
+        if func is None:
+            return cls._wrapper(handler, is_method, separator)
+        
+        self, func = CommandContentParser.__new__(cls, func, separator)
         self._func = func
         self._handler = handler
         self._is_method = is_method
@@ -2500,10 +2745,12 @@ class ContentParser(CommandContentParser):
             +-----------------------+-------------------+
         _is_method : `bool`
             Whether the content parser should act like a method.
+        _separator : ``ContentArgumentSeparator``
+            The argument separator of the parser.
         """
-        __slots__ = ('_handler', '_is_method', )
+        __slots__ = ('_handler', '_is_method', '_separator', )
         
-        def __init__(self, handler, is_method):
+        def __init__(self, handler, is_method, separator):
             """
             Creates a new content parser wrapper.
             
@@ -2530,9 +2777,12 @@ class ContentParser(CommandContentParser):
             +-----------------------+-------------------+
             is_method : `bool`
                 Whether the content parser should act like a method.
+            separator : ``ContentArgumentSeparator``
+                The argument separator of the parser.
             """
             self._handler = handler
             self._is_method = is_method
+            self._separator = separator
         
         def __call__(self, func):
             """
@@ -2555,7 +2805,7 @@ class ContentParser(CommandContentParser):
             if func is None:
                 raise TypeError(f'`func` cannot be given as `None`, got {func!r}.')
             
-            return ContentParser(func=func, handler=self._handler, is_method=self._is_method)
+            return ContentParser(func=func, handler=self._handler, is_method=self._is_method, separator=self._separator)
     
     async def __call__(self, *args):
         """
@@ -2729,5 +2979,4 @@ class ContentParserMethod(MethodLike):
         """Returns the method's rerpesnetation."""
         return f'{self.__class__.__name__}(content_parser={self._content_parser!r}, obj={self.__self__!r})'
 
-del re
 del FlagBase

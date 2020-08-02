@@ -51,6 +51,12 @@ def setup_ext_commands(client, prefix, **kwargs):
         Defaults to `true`
     default_category_name : `None` or `str`
         The command processer's default category's name. Defaults to `None`.
+    category_name_rule : `None` or `function`
+        Function to generate display names for categories.
+        Should accept only 1 argument, what can be `str`  or `None` and should return a `str` instance as well.
+    command_name_rule : `None` or `function`
+        Function to generate display names for commands.
+        Should accept only 1 argument, what is `str` instance and should return a `str` instance as well.
     
     Returns
     -------

@@ -26,7 +26,7 @@ from .hdrs import METH_POST_ALL, METH_CONNECT, SET_COOKIE, CONTENT_LENGTH, CONNE
 from .helpers import BasicAuth
 from .multipart import MimeType, create_payload, payload_superclass
 from .formdata import Formdata
-from .protocol import StreamWriter
+from .protocol import HTTPStreamWriter
 
 json_re = re.compile(r'^application/(?:[\w.+-]+?\+)?json')
 
@@ -393,7 +393,7 @@ class ClientRequest(object):
                 path=f'{path}?{self.url.raw_query_string}'
         
         protocol = connection.protocol
-        writer = StreamWriter(protocol,self.loop,self.compression,self.chunked)
+        writer = HTTPStreamWriter(self.loop,protocol,self.compression,self.chunked)
         
         # set default content-type
         if (self.method in METH_POST_ALL) and (CONTENT_TYPE not in self.headers):
@@ -478,7 +478,7 @@ class ClientResponse:
         self.connection=connection
         protocol=connection.protocol
         
-        self.raw_message = message = await protocol.set_payload_reader(protocol.read_http_response())
+        self.raw_message = message = await protocol.set_payload_reader(protocol._read_http_response())
         protocol.handle_payload_waiter_cancellation()
         payload_reader = protocol.get_payload_reader_task(message)
         if (payload_reader is None):

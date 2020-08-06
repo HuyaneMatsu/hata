@@ -207,9 +207,9 @@ class Frame(object):
         
         raise WebSocketProtocolError(f'Invalid opcode: {opcode}')
 
-class StreamWriter(object):
+class HTTPStreamWriter(object):
     __slots__ = ('size', 'chunked', 'compresser', 'eof', 'length', 'loop', 'protocol', 'transport', )
-    def __init__(self, protocol, loop, compression, chunked):
+    def __init__(self, loop, protocol, compression, chunked):
         
         if (compression is None):
             compresser = None
@@ -307,7 +307,7 @@ class StreamWriter(object):
         
         self.eof=True
         self.transport=None
-
+    
     async def drain(self):
         #Flush the write buffer.
         #
@@ -316,12 +316,11 @@ class StreamWriter(object):
         #await w.write(data)
         #await w.drain()
         protocol = self.protocol
-        if protocol.transport is not None:
+        if (protocol.transport is not None):
             await protocol._drain_helper()
 
-class ProtocolBase(object):
-    __slots__ = ('_chunks', '_drain_waiter', '_eof', '_offset', '_paused', 'exception', 'loop', 'payload_reader',
-        'payload_waiter', 'transport', )
+class ReadProtocolBase(object):
+    __slots__ = ('_chunks', '_eof', '_offset', '_paused', 'exception', 'loop', 'payload_reader',  'payload_waiter', 'transport', )
     
     def __init__(self, loop):
         self.loop = loop
@@ -333,25 +332,13 @@ class ProtocolBase(object):
         self.payload_reader = None
         self.payload_waiter = None
         self._paused = False
-        self._drain_waiter = None
-    
-    def _copy_attrs_to(self, other):
-        other.transport = self.transport
-        other.exception = self.exception
-        other._chunks = self._chunks
-        other._offset = self._offset
-        other._eof = self._eof
-        other.payload_reader = self.payload_reader
-        other.payload_waiter = self.payload_waiter
-        other._paused = self._paused
-        other._drain_waiter = self._drain_waiter
     
     def __repr__(self):
         result = [
             '<',
             self.__class__.__name__,
                 ]
-
+        
         if self._eof:
             result.append(' at eof')
             add_comma = True
@@ -401,29 +388,6 @@ class ProtocolBase(object):
             return True
         
         return False
-        
-    #compability method
-    def pause_writing(self):
-        self._paused = True
-    
-    #compability method
-    def resume_writing(self):
-        self._paused = False
-
-        drain_waiter = self._drain_waiter
-        if drain_waiter is None:
-            return
-        
-        self._drain_waiter = None
-        drain_waiter.set_result_if_pending(None)
-    
-    #compability method
-    async def _drain_helper(self):
-        if not self._paused:
-            return
-        drain_waiter = Future(self.loop)
-        self._drain_waiter = drain_waiter
-        await drain_waiter
     
     #compability method
     def connection_made(self, transport):
@@ -435,108 +399,16 @@ class ProtocolBase(object):
             self.eof_received()
         else:
             self.set_exception(exception)
-        
-        #wake up the writer if currently paused.
-        if not self._paused:
-            return
-        
-        drain_waiter = self._drain_waiter
-        if drain_waiter is None:
-            return
-        
-        self._drain_waiter=None
-        if drain_waiter.done():
-            return
-        
-        if exception is None:
-            drain_waiter.set_result(None)
-        else:
-            drain_waiter.set_exception(exception)
-        
-    # Basic writing
-    def write(self, data):
-        self.transport.write(data)
-    
-    def writelines(self, data):
-        self.transport.writelines(data)
-    
-    # Specific writings
-    def write_http_request(self, meth, path, headers, version = HttpVersion11):
-        result = [f'{meth} {path} HTTP/{version.major}.{version.major}\r\n']
-        extend = result.extend
-        for k, v in headers.items():
-            extend((k,': ',v,'\r\n'))
-        
-        result.append('\r\n')
-    
-        self.transport.write(''.join(result).encode())
-    
-    def write_http_response(self, status, headers, version = HttpVersion11, body = None):
-        result = [f'HTTP/{version.major}.{version.minor} {status.value} {status.phrase}\r\n']
-        extend = result.extend
-        for k, v in headers.items():
-            extend((k,': ',v,'\r\n'))
-        
-        result.append('\r\n')
-        
-        transport = self.transport
-        transport.write(''.join(result).encode())
-        if (body is not None) and body:
-            transport.write(body)
-    
-    def write_websocket_frame(self, frame, is_client):
-        # Prepare the header.
-        head1 = frame.head1
-        head2 = is_client<<7
-        
-        transport = self.transport
-        
-        length=len(frame.data)
-        if length<126:
-            header = PACK_LEN1(head1,head2|length)
-        elif length<65536:
-            header = PACK_LEN2(head1,head2|126,length)
-        else:
-            header = PACK_LEN3(head1,head2|127,length)
-        transport.write(header)
-        
-        #prepare the data.
-        if is_client:
-            mask=getrandbits(32).to_bytes(4,'big')
-            transport.write(mask)
-            data=apply_mask(mask,frame.data,)
-        else:
-            data=frame.data
-        
-        transport.write(data)
-    
-    def write_eof(self):
-        return self.transport.write_eof()
-    
-    def can_write_eof(self):
-        return self.transport.can_write_eof()
     
     def close(self):
-        return self.transport.close()
-    
-    def get_extra_info(self, name, default=None):
-        return self.transport.get_extra_info(name, default)
-    
-    async def drain(self):
-        #use after writing
-        exception = self.exception
-        if (exception is not None):
-            raise exception
-        
         transport = self.transport
         if (transport is not None):
-            if transport.is_closing():
-                #skip 1 loop, so connection_lost() will be called
-                future=Future(self.loop)
-                future.set_result(None)
-                await future
-        
-        await self._drain_helper()
+            transport.close()
+    
+    def get_extra_info(self, name, default=None):
+        transport = self.transport
+        if (transport is not None):
+            return transport.get_extra_info(name, default)
     
     # read related
     @property
@@ -574,9 +446,8 @@ class ProtocolBase(object):
         self.payload_waiter = None
         payload_waiter.set_exception_if_pending(exception)
         
-        payload_reader = self.payload_reader
+        payload_reader = self.payload_reader.close()
         self.payload_reader = None
-        payload_reader.close()
     
     #compability method
     def eof_received(self):
@@ -697,6 +568,31 @@ class ProtocolBase(object):
             payload_waiter.set_exception(exception)
         
         return payload_waiter
+    
+    async def read(self, n=-1):
+        try:
+            return await self.set_payload_reader(self._read_until_eof() if n<0 else self._read_exactly(n))
+        except EOFError as err:
+            return err.args[0]
+    
+    async def readexactly(self, n):
+        exception = self.exception
+        if (exception is not None):
+            raise exception
+        
+        if n < 1:
+            if n==0:
+                return b''
+            
+            raise ValueError(f'`.readexactly` size can not be less than zero, got {n}')
+        
+        return await self.set_payload_reader(self._read_exactly(n))
+    
+    async def readline(self):
+        raise NotImplemented
+    
+    async def readuntil(self):
+        raise NotImplemented
     
     def _wait_for_data(self):
         if self._paused:
@@ -845,7 +741,6 @@ class ProtocolBase(object):
         if offset == 0:
             if chunk_size > n:
                 self._offset = n
-                result = chunk[:n]
                 return chunk[:n]
             #chunk same size as the requested?
             elif chunk_size == n:
@@ -916,7 +811,7 @@ class ProtocolBase(object):
         
         return chunk, offset
     
-    def read_http_response(self):
+    def _read_http_response(self):
         chunk, offset = yield from self._read_http_helper()
         
         parsed = HTTP_STATUS_RP.match(chunk, offset)
@@ -933,10 +828,10 @@ class ProtocolBase(object):
             
         major, minor, status, reason = parsed.groups()
         
-        headers = yield from self.read_http_headers(chunk, offset)
+        headers = yield from self._read_http_headers(chunk, offset)
         return RawResponseMessage(HttpVersion(int(major), int(minor)), int(status), reason, headers)
     
-    def read_http_request(self):
+    def _read_http_request(self):
         chunk, offset = yield from self._read_http_helper()
         
         parsed = HTTP_REQUEST_RP.match(chunk, offset)
@@ -953,10 +848,10 @@ class ProtocolBase(object):
         
         meth, path, major, minor = parsed.groups()
         
-        headers = yield from self.read_http_headers(chunk, offset)
+        headers = yield from self._read_http_headers(chunk, offset)
         return RawRequestMessage(HttpVersion(int(major), int(minor)), meth.upper().decode(), path.decode('ascii', 'surrogateescape'), headers)
     
-    def read_http_headers(self, chunk, offset):
+    def _read_http_headers(self, chunk, offset):
         headers = multidict_titled()
         chunks = self._chunks
         
@@ -1271,7 +1166,7 @@ class ProtocolBase(object):
                 continue
             continue
     
-    def read_websocket_frame(self, is_client, max_size):
+    def _read_websocket_frame(self, is_client, max_size):
         
         head1,head2 = yield from self._read_exactly(2)
         
@@ -1316,30 +1211,30 @@ class ProtocolBase(object):
             if message.chunked:
                 decompresser = self._decompresser_for(message.encoding)
                 if decompresser is None:
-                    return self.read_chunked()
+                    return self._read_chunked()
                 else:
-                    return self.read_chunked_encoded(decompresser)
+                    return self._read_chunked_encoded(decompresser)
             
             if (length is not None) and (length>0):
                 decompresser = self._decompresser_for(message.encoding)
                 if decompresser is None:
                     return self._read_exactly(length)
                 else:
-                    return self.read_exactly_encoded(length, decompresser)
+                    return self._read_exactly_encoded(length, decompresser)
         
         if (type(message) is RawRequestMessage) and (message.meth == METH_CONNECT):
             message.upgraded = True
-            return self.read_until_eof()
+            return self._read_until_eof()
         
         if (type(message) is RawResponseMessage) and message.status>=199 and (length is None):
             if message.chunked:
                 decompresser = self._decompresser_for(message.encoding)
                 if decompresser is None:
-                    return self.read_chunked()
+                    return self._read_chunked()
                 else:
-                    return self.read_chunked_encoded(decompresser)
+                    return self._read_chunked_encoded(decompresser)
             
-            return self.read_until_eof()
+            return self._read_until_eof()
         
         return None
     
@@ -1363,7 +1258,7 @@ class ProtocolBase(object):
         
         return decompressor
     
-    def read_chunked(self):
+    def _read_chunked(self):
         collected = []
         while True:
             chunk_length = yield from self._readtill_CRLF()
@@ -1392,20 +1287,18 @@ class ProtocolBase(object):
         
         return b''.join(collected)
     
-    def read_until_eof(self):
-        if self._eof:
-            return b''
-        
+    def _read_until_eof(self):
         chunks = self._chunks
         
-        while True:
-            try:
-                yield from self._wait_for_data()
-            except CancelledError:
-                if self._eof:
-                    break
-                
-                raise
+        if not self._eof:
+            while True:
+                try:
+                    yield from self._wait_for_data()
+                except CancelledError:
+                    if self._eof:
+                        break
+                    
+                    raise
         
         if not chunks:
             return b''
@@ -1418,11 +1311,11 @@ class ProtocolBase(object):
         chunks.clear()
         return result
     
-    def read_exactly_encoded(self, length, decompressobj):
+    def _read_exactly_encoded(self, length, decompressobj):
         chunk = yield from self._read_exactly(length)
         return decompressobj.decompress(chunk)
     
-    def read_chunked_encoded(self, decompressobj):
+    def _read_chunked_encoded(self, decompressobj):
         collected = []
         while True:
             chunk_length = yield from self._readtill_CRLF()
@@ -1458,5 +1351,181 @@ class ProtocolBase(object):
     
     def __call__(self):
         return self
+
+class ProtocolBase(ReadProtocolBase):
+    __slots__ = ('_drain_waiter', )
+    
+    def __init__(self, loop):
+        self.loop = loop
+        self.transport = None
+        self.exception = None
+        self._chunks = deque()
+        self._offset = 0
+        self._eof = False
+        self.payload_reader = None
+        self.payload_waiter = None
+        self._paused = False
+        
+        self._drain_waiter = None
+    
+    def _copy_attrs_to(self, other):
+        other.transport = self.transport
+        other.exception = self.exception
+        other._chunks = self._chunks
+        other._offset = self._offset
+        other._eof = self._eof
+        other.payload_reader = self.payload_reader
+        other.payload_waiter = self.payload_waiter
+        other._paused = self._paused
+        other._drain_waiter = self._drain_waiter
+    
+    #compability method
+    def pause_writing(self):
+        self._paused = True
+    
+    #compability method
+    def resume_writing(self):
+        self._paused = False
+        
+        drain_waiter = self._drain_waiter
+        if drain_waiter is None:
+            return
+        
+        self._drain_waiter = None
+        drain_waiter.set_result_if_pending(None)
+    
+    #compability method
+    async def _drain_helper(self):
+        if not self._paused:
+            return
+        drain_waiter = Future(self.loop)
+        self._drain_waiter = drain_waiter
+        await drain_waiter
+    
+    #compability method
+    def connection_lost(self, exception):
+        if exception is None:
+            self.eof_received()
+        else:
+            self.set_exception(exception)
+        
+        #wake up the writer if currently paused.
+        if not self._paused:
+            return
+        
+        drain_waiter = self._drain_waiter
+        if drain_waiter is None:
+            return
+        
+        self._drain_waiter=None
+        if drain_waiter.done():
+            return
+        
+        if exception is None:
+            drain_waiter.set_result(None)
+        else:
+            drain_waiter.set_exception(exception)
+    
+    # Basic writing
+    def write(self, data):
+        transport = self.transport
+        if transport is None:
+            raise RuntimeError('Protocol has no attached transport.')
+        
+        transport.write(data)
+    
+    def writelines(self, data):
+        transport = self.transport
+        if transport is None:
+            raise RuntimeError('Protocol has no attached transport.')
+        
+        transport.writelines(data)
+    
+    # Specific writings
+    def write_http_request(self, meth, path, headers, version = HttpVersion11):
+        transport = self.transport
+        if transport is None:
+            raise RuntimeError('Protocol has no attached transport.')
+        
+        result = [f'{meth} {path} HTTP/{version.major}.{version.major}\r\n']
+        extend = result.extend
+        for k, v in headers.items():
+            extend((k,': ',v,'\r\n'))
+        
+        result.append('\r\n')
+        
+        transport.write(''.join(result).encode())
+    
+    def write_http_response(self, status, headers, version = HttpVersion11, body = None):
+        transport = self.transport
+        if transport is None:
+            raise RuntimeError('Protocol has no attached transport.')
+        
+        result = [f'HTTP/{version.major}.{version.minor} {status.value} {status.phrase}\r\n']
+        extend = result.extend
+        for k, v in headers.items():
+            extend((k,': ',v,'\r\n'))
+        
+        result.append('\r\n')
+        
+        transport.write(''.join(result).encode())
+        if (body is not None) and body:
+            transport.write(body)
+    
+    def write_websocket_frame(self, frame, is_client):
+        transport = self.transport
+        if transport is None:
+            raise RuntimeError('Protocol has no attached transport.')
+        
+        # Prepare the header.
+        head1 = frame.head1
+        head2 = is_client<<7
+        
+        length=len(frame.data)
+        if length<126:
+            header = PACK_LEN1(head1,head2|length)
+        elif length<65536:
+            header = PACK_LEN2(head1,head2|126,length)
+        else:
+            header = PACK_LEN3(head1,head2|127,length)
+        transport.write(header)
+        
+        #prepare the data.
+        if is_client:
+            mask=getrandbits(32).to_bytes(4,'big')
+            transport.write(mask)
+            data=apply_mask(mask,frame.data,)
+        else:
+            data=frame.data
+        
+        transport.write(data)
+    
+    def write_eof(self):
+        transport = self.transport
+        if (transport is not None):
+            transport.write_eof()
+    
+    def can_write_eof(self):
+        transport = self.transport
+        if (transport is None):
+            return False
+        
+        return transport.can_write_eof()
+    
+    async def drain(self):
+        #use after writing
+        exception = self.exception
+        if (exception is not None):
+            raise exception
+        
+        transport = self.transport
+        if (transport is not None):
+            if transport.is_closing():
+                #skip 1 loop, so connection_lost() will be called
+                future=Future(self.loop)
+                future.set_result(None)
+                await future
+        
+        await self._drain_helper()
 
 del re, Struct

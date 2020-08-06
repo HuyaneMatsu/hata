@@ -15,6 +15,11 @@ from .transprotos import SSLProtocol, _SelectorSocketTransport
 from .executor import Executor
 from .analyzer import CallableAnalyzer
 
+IS_UNIX = (sys.platform != 'win32')
+
+if IS_UNIX:
+    from .subprocess import UnixReadPipeTransport, UnixWritePipeTransport, AsyncProcess
+
 import threading
 from .futures import _ignore_frame
 _ignore_frame(__spec__.origin           , '_run'            , 'self.func(*self.args)'           ,)
@@ -2001,14 +2006,6 @@ class EventThread(Executor,Thread,metaclass=EventThreadType):
             if n:
                 data=data[n:]
             self.add_writer(fd,self._sock_sendall,future,True,sock,data)
-
-    #should be async
-    def connect_read_pipe(self,protocol_factory,pipe):
-        raise NotImplementedError
-
-    #should be async
-    def connect_write_pipe(self,protocol_factory,pipe):
-        raise NotImplementedError
     
     #should be async
     def create_datagram_endpoint(self,protocol_factory,local_addr=None,remote_addr=None,*,family=0,proto=0,flags=0,reuse_address=None,reuse_port=None,allow_broadcast=None,sock=None):
@@ -2116,33 +2113,56 @@ class EventThread(Executor,Thread,metaclass=EventThreadType):
             sock.setblocking(False)
         
         return Server(self, sockets, protocol_factory, ssl, backlog)
-            
+        
     #should be async
     def create_unix_connection(self,protocol_factory,path,*,ssl=None,sock=None,server_hostname=None):
         raise NotImplementedError
-
+    
     #should be async
     def create_unix_server(self,protocol_factory,path=None,*,sock=None,backlog=100,ssl=None):
         raise NotImplementedError
     
-    #should be async
-    def subprocess_exec(self,protocol_factory,program,*args,
-                        stdin=subprocess.PIPE,stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,universal_newlines=False,
-                        shell=False,bufsize=0,**kwargs):
+    if IS_UNIX:
+        async def connect_read_pipe(self, protocol, pipe):
+            return await UnixReadPipeTransport(self, pipe, protocol)
         
-        raise NotImplementedError
-
-    #should be async
-    def subprocess_shell(self,protocol_factory,cmd,*,stdin=subprocess.PIPE,
-                         stdout=subprocess.PIPE,stderr=subprocess.PIPE,
-                         universal_newlines=False,shell=True,bufsize=0,**kwargs):
         
-        raise NotImplementedError
+        async def connect_write_pipe(self, protocol, pipe):
+            return await UnixWritePipeTransport(self, pipe, protocol)
+        
+        async def subprocess_shell(self, cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                **kwargs):
+            
+            cmd_type = cmd.__class__
+            if not issubclass(cmd_type, (bytes, str)):
+                raise ValueError(f'`cmd` must be `bytes` or `str` instance, got {cmd_type.__name__}.')
+            
+            return await AsyncProcess(self, cmd, True, stdin, stdout, stderr, 0, **kwargs)
+        
+        async def subprocess_exec(self, program, popen_args=(), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE, **kwargs):
+            
+            return await AsyncProcess(self, (program, *popen_args), False, stdin, stdout, stderr, 0, **kwargs)
+    
+    else:
+        def connect_read_pipe(self, protocol, pipe):
+            raise NotImplementedError
+        
+        def connect_write_pipe(self, protocol, pipe):
+            raise NotImplementedError
+        
+        def subprocess_shell(self, protocol_factory, cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE, **kwargs):
+            raise NotImplementedError
+        
+        def subprocess_exec(self, protocol_factory, program, popen_args=(), stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs):
+            raise NotImplementedError
 
 del module_time
 del subprocess
+del IS_UNIX
 
 from . import futures
-futures.EventThread=EventThread
+futures.EventThread = EventThread
 del futures

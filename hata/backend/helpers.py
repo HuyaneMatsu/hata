@@ -25,7 +25,7 @@ class BasicAuth(object):
     #login      = str
     #password   = str
     #encoding   = str ('latin1' by default)
-    __slots__=('login','password','encoding',)
+    __slots__ = ('login','password','encoding',)
     
     def __new__(cls,login,password='',encoding='latin1'):
         if login is None:
@@ -207,15 +207,15 @@ def content_disposition_header(disptype,params,quote_fields=True):
 
 def tcp_nodelay(transport,value):
     socket=transport.get_extra_info('socket')
-
+    
     if socket is None:
         return
-
+    
     if socket.family not in (module_socket.AF_INET,module_socket.AF_INET6):
         return
-
+    
     value = bool(value)
-
+    
     # socket may be closed already, on windows OSError get raised
     try:
         socket.setsockopt(module_socket.IPPROTO_TCP,module_socket.TCP_NODELAY,value)

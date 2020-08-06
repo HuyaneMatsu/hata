@@ -443,7 +443,7 @@ class Future(object):
                 raise CancelledError
             
             #PENDING
-            raise InvalidStateError(self,'result')
+            raise InvalidStateError(self, 'result')
     else:
         def result(self):
             state=self._state
@@ -488,13 +488,13 @@ class Future(object):
             
             #PENDING
             raise InvalidStateError(self,'exception')
-
+    
     def add_done_callback(self,func):
         if self._state is PENDING:
             self._callbacks.append(func)
         else:
             self._loop.call_soon(func,self)
-
+    
     def remove_done_callback(self,func):
         callbacks=self._callbacks
         count=0
@@ -524,38 +524,38 @@ class Future(object):
         self._loop._schedule_callbacks(self)
         return 1
     
-    def set_exception(self,exception):
+    def set_exception(self, exception):
         if self._state is not PENDING:
             raise InvalidStateError(self,'set_exception')
         
-        if isinstance(exception,type):
-            exception=exception()
+        if isinstance(exception, type):
+            exception = exception()
         
         if type(exception) is StopIteration:
              raise TypeError(f'{exception} cannot be raised to a {self.__class__.__name__}: {self!r}')
         
         self._exception = exception
-        self._state     = FINISHED
+        self._state = FINISHED
         self._loop._schedule_callbacks(self)
     
-    def set_exception_if_pending(self,exception):
+    def set_exception_if_pending(self, exception):
         if self._state is not PENDING:
             return 0
         
-        if isinstance(exception,type):
-            exception=exception()
+        if isinstance(exception, type):
+            exception = exception()
         
         if type(exception) is StopIteration:
              raise TypeError(f'{exception} cannot be raised to a {self.__class__.__name__}: {self!r}')
         
         self._exception = exception
-        self._state     = FINISHED
+        self._state = FINISHED
         self._loop._schedule_callbacks(self)
         return 1
     
     def __iter__(self):
         if self._state is PENDING:
-            self._blocking=True
+            self._blocking = True
             yield self
         
         return self.result()
@@ -2212,8 +2212,8 @@ class WaitTillFirst(Future):
         if self._state is not PENDING:
             raise InvalidStateError(self,'set_exception')
         
-        if isinstance(exception,type):
-            exception=exception()
+        if isinstance(exception, type):
+            exception = exception()
         
         if type(exception) is StopIteration:
              raise TypeError(f'{exception} cannot be raised to a {self.__class__.__name__}: {self!r}')
@@ -2225,23 +2225,23 @@ class WaitTillFirst(Future):
         if type(exception) is not TimeoutError:
             self._exception = exception
     
-    def set_exception_if_pending(self,exception):
+    def set_exception_if_pending(self, exception):
         if self._state is not PENDING:
             return 0
         
-        if isinstance(exception,type):
-            exception=exception()
+        if isinstance(exception, type):
+            exception = exception()
         
         if type(exception) is StopIteration:
              raise TypeError(f'{exception} cannot be raised to a {self.__class__.__name__}: {self!r}')
-            
+        
         self._callback._parent=None
         self._state     = FINISHED
         self._loop._schedule_callbacks(self)
         
         if type(exception) is TimeoutError:
             return 2
-            
+        
         self._exception = exception
         return 1
     

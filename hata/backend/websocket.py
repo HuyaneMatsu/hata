@@ -294,7 +294,7 @@ class WebSocketCommonProtocol(ProtocolBase):
     async def read_data_frame(self,max_size):
         while True:
             
-            frame = await self.set_payload_reader(self.read_websocket_frame(self.is_client, max_size))
+            frame = await self.set_payload_reader(self._read_websocket_frame(self.is_client, max_size))
             
             extensions = self.extensions
             if (extensions is not None):
@@ -711,7 +711,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
     
     async def handshake(self):
         try:
-            self.request = request =await self.set_payload_reader(self.read_http_request())
+            self.request = request =await self.set_payload_reader(self._read_http_request())
             
             request_headers=request.headers
             if self.server.is_serving():

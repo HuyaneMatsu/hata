@@ -48,12 +48,12 @@ class _SSLPipe(object):
         self.need_ssldata   = False
         self._handshake_cb  = None
         self._shutdown_cb   = None
-
-
+    
+    
     @property
     def wrapped(self):
         return self.state is WRAPPED
-
+    
     def do_handshake(self,callback=None):
         if self.state is not UNWRAPPED:
             raise RuntimeError('handshake in progress or completed')
@@ -65,7 +65,7 @@ class _SSLPipe(object):
         ssldata,_=self.feed_ssldata(b'',only_handshake=True)
 
         return ssldata
-
+    
     def shutdown(self, callback=None):
         state = self.state
         if state is UNWRAPPED:
@@ -77,11 +77,11 @@ class _SSLPipe(object):
         self._shutdown_cb=callback
         ssldata,_=self.feed_ssldata(b'')
         return ssldata
-
+    
     def feed_eof(self):
         self._incoming.write_eof()
         self.feed_ssldata(b'') #return is ignored
-
+    
     def feed_ssldata(self, data, only_handshake=False):
         if self.state is UNWRAPPED:
             # If unwrapped, pass plaintext data straight through.
@@ -90,7 +90,7 @@ class _SSLPipe(object):
             else:
                 appdata=[]
             return [],appdata
-
+    
         self.need_ssldata = False
         if data:
             self._incoming.write(data)
@@ -383,7 +383,7 @@ class SSLProtocol(object):
 
 
         # Add extra info that becomes available after handshake.
-        extra=self._extra
+        extra = self._extra
         extra['peercert']   = peercert
         extra['cipher']     = sslobj.cipher()
         extra['compression']= sslobj.compression()
@@ -629,7 +629,7 @@ class _SelectorSocketTransport(object):
                 high=low<<2
         if low is None:
             low=high>>2
-            
+        
         if not high>=low>=0:
             raise ValueError(f'high ({high}) must be >= low ({low}) must be >= 0')
         self._high_water=high
@@ -672,7 +672,7 @@ class _SelectorSocketTransport(object):
                     ])
         
         self._force_close(exception)
-
+    
     def _force_close(self,exception):
         if self._conn_lost:
             return
@@ -680,14 +680,14 @@ class _SelectorSocketTransport(object):
         if self.buffer:
             self.buffer.clear()
             self.loop.remove_writer(self._sock_fd)
-            
+        
         if not self.closing:
             self.closing = True
             self.loop.remove_reader(self._sock_fd)
         
         self._conn_lost+=1
         self.loop.call_soon(self._call_connection_lost,exception)
-
+    
     def _call_connection_lost(self, exception):
         try:
             if self._protocol_connected:
@@ -697,14 +697,14 @@ class _SelectorSocketTransport(object):
             self.socket=None
             self.protocol=None
             self.loop=None
-            server=self.server
+            server = self.server
             if (server is not None):
                 server._detach()
                 self.server=None
-
+    
     def get_write_buffer_size(self):
         return len(self.buffer)
-
+    
     def pause_reading(self):
         if self.closing:
             raise RuntimeError('Cannot pause_reading() when closing')
@@ -712,7 +712,7 @@ class _SelectorSocketTransport(object):
             raise RuntimeError('Already paused')
         self.paused = True
         self.loop.remove_reader(self._sock_fd)
-
+    
     def resume_reading(self):
         if not self.paused:
             raise RuntimeError('Not paused')
@@ -720,7 +720,7 @@ class _SelectorSocketTransport(object):
         if self.closing:
             return
         self.loop._add_reader(self._sock_fd,self._read_ready)
-
+    
     def _read_ready(self):
         if self._conn_lost:
             return
@@ -740,7 +740,7 @@ class _SelectorSocketTransport(object):
                 self.loop.remove_reader(self._sock_fd)
             else:
                 self.close()
-
+    
     def write(self,data):
         if not isinstance(data,(bytes,bytearray, memoryview)):
             raise TypeError(f'data argument must be a bytes-like object, got {data.__class__.__name__}')
@@ -748,11 +748,11 @@ class _SelectorSocketTransport(object):
             raise RuntimeError('Cannot call write() after write_eof()')
         if not data:
             return
-
+        
         if self._conn_lost:
             self._conn_lost+=1
             return
-
+        
         if not self.buffer:
             # Optimization: try to send now.
             try:
@@ -768,7 +768,7 @@ class _SelectorSocketTransport(object):
                     return
             # Not all was written; register write handler.
             self.loop._add_writer(self._sock_fd,self._write_ready)
-
+        
         # Add it to the buffer.
         self.buffer.extend(data)
         self._maybe_pause_protocol()
@@ -794,14 +794,14 @@ class _SelectorSocketTransport(object):
                     self._call_connection_lost(None)
                 elif self.eof:
                     self.socket.shutdown(module_socket.SHUT_WR)
-
+    
     def write_eof(self):
         if self.eof:
             return
         self.eof = True
         if not self.buffer:
             self.socket.shutdown(module_socket.SHUT_WR)
-
+    
     def can_write_eof(self):
         return True
 

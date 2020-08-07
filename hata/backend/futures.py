@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 __all__ = ('AsyncQue', 'CancelledError', 'Future', 'FutureAsyncWrapper', 'FutureG', 'FutureSyncWrapper', 'FutureWM',
-    'InvalidStateError', 'Lock', 'ScarletExecutor', 'Task', 'WaitContinously', 'WaitTillAll', 'WaitTillExc',
-    'WaitTillFirst', 'enter_executor', 'future_or_timeout', 'gather', 'iscoroutine', 'iscoroutinefunction', 'shield',
-    'sleep', )
+    'InvalidStateError', 'Lock', 'ScarletExecutor', 'ScarletLock', 'Task', 'WaitContinously', 'WaitTillAll',
+    'WaitTillExc', 'WaitTillFirst', 'enter_executor', 'future_or_timeout', 'gather', 'iscoroutine',
+    'iscoroutinefunction', 'shield', 'sleep', )
 
 import sys, reprlib, linecache
 from types import GeneratorType, CoroutineType, MethodType as method, FunctionType as function
@@ -2376,14 +2376,15 @@ class Lock(object):
         return self
     
     async def __aenter__(self):
-        future=Future(self._loop)
-        waiters=self._waiters
+        future = Future(self._loop)
+        waiters = self._waiters
         waiters.appendleft(future)
+        
         if len(waiters)>1:
             await waiters[1]
-
+    
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        future=self._waiters.pop()
+        future = self._waiters.pop()
         future.set_result_if_pending(None)
     
     # returns True if the Lock is entered anywhere
@@ -2399,16 +2400,92 @@ class Lock(object):
         while waiters:
             yield from waiters[0]
     
-    __await__=__iter__
+    __await__ = __iter__
     
     def __repr__(self):
-        result=['<',self.__class__.__name__,' locked=']
-        count=self._waiters.__len__()
+        result = [
+            '<',
+            self.__class__.__name__,
+            ' locked=',
+                ]
+        
+        count = len(self._waiters)
         if count:
             result.append('True, waiting=')
-            result.append(count.__repr__())
+            result.append(repr(count))
         else:
             result.append('False')
+        
+        result.append('>')
+        
+        return ''.join(result)
+
+class ScarletLock(object):
+    __slots__ = ('_loop', '_size', '_waiters')
+    def __new__(cls, loop, size=1):
+        size_type = size.__class__
+        if size_type is int:
+            pass
+        elif issubclass(size_type, int):
+            size = int(size)
+        else:
+            raise TypeError(f'`size` can be given as `int` instance, got {size_type.__name__}.')
+        
+        if size < 1:
+            raise ValueError(f'`size` can be given only as positive, got {size!r}.')
+        
+        self = object.__new__(cls)
+        self._loop = loop
+        self._waiters = deque()
+        self._size = size
+        
+        return self
+    
+    async def __aenter__(self):
+        future = Future(self._loop)
+        waiters = self._waiters
+        waiters.appendleft(future)
+        
+        size = self._size
+        if len(waiters) > size:
+            await waiters[size]
+    
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        future = self._waiters.pop()
+        future.set_result_if_pending(None)
+    
+    # returns True if the Lock is entered anywhere
+    def locked(self):
+        return (len(self._waiters) >= self._size)
+    
+    def __iter__(self):
+        waiters = self._waiters
+        while waiters:
+            yield from waiters[0]
+    
+    __await__ = __iter__
+    
+    def __repr__(self):
+        result = [
+            '<',
+            self.__class__.__name__,
+            ' size=',
+                ]
+        
+        size = self._size
+        result.append(repr(size))
+        
+        result.append(', locked=')
+        count = len(self._waiters)
+        if count >= size:
+            result.append('True')
+        else:
+            result.append('False')
+        
+        if count:
+            result.append(', waiting=')
+            result.append(repr(count))
+        
         result.append('>')
         
         return ''.join(result)

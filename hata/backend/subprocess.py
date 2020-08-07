@@ -664,12 +664,19 @@ class AsyncProcess(object):
         
         process.terminate()
     
-    def kill(self):
+    async def kill(self):
         process = self.process
         if process is None:
             raise ProcessLookupError()
         
         process.kill()
+        
+        self.close()
+        
+        loop = self.loop
+        future = Future(loop)
+        loop.call_later(0.0, Future.set_result_if_pending, future, None)
+        await future
     
     def _pipe_connection_lost(self, fd, exception):
         pending_calls = self._pending_calls
@@ -729,7 +736,7 @@ class AsyncProcess(object):
             reader.data_received(data)
     
     def _process_exited(self):
-        returncode = self.process.returncode
+        returncode = self.process.poll()
         self.returncode = returncode
         
         pending_calls = self._pending_calls
@@ -841,7 +848,6 @@ class AsyncProcess(object):
         transport = self._subprocess_stdout_protocol.transport
         result = await stream.read()
         transport.close()
-        print('_read_close_stdout_stream', result)
         return result
     
     # Used by .communicate
@@ -853,7 +859,6 @@ class AsyncProcess(object):
         transport = self._subprocess_stderr_protocol.transport
         result = await stream.read()
         transport.close()
-        print('_read_close_stderr_stream', result)
         return result
     
     async def communicate(self, input_=None, timeout=None):

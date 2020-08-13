@@ -16,13 +16,14 @@ from ...discord.permission import Permission
 from ...discord.user import ZEROUSER
 from ...discord.message import MessageType
 from ...discord.role import Role
+from ...discord.integration import IntegrationAccount
 
 #testerfile for events
 #later embeds will be added in plan
 
 PRETTY_PRINTERS={}
 
-class Pretty_empty(object):
+class PrettyEmpty(object):
     __slots__=()
     def __init__(self,text=None,back=None):
         pass
@@ -51,7 +52,7 @@ class Pretty_empty(object):
     def __call__(self,amount):
         return self
     
-Pretty_empty=Pretty_empty()
+PrettyEmpty=PrettyEmpty()
 
 class Pretty_line(object):
     __slots__=('back', 'text')
@@ -72,7 +73,7 @@ class Pretty_line(object):
         return self
 
 
-class Pretty_ignore_push(object):
+class PrettyIgnorePush(object):
     __slots__=('text',)
     def __init__(self,text,back=None):
         self.text=text
@@ -87,20 +88,19 @@ class Pretty_ignore_push(object):
         return self.text
     def __call__(self,amount):
         pass
-    back=type(Pretty_empty).back
+    back=type(PrettyEmpty).back
 
-        
-    
-class Pretty_block(object):
+
+class PrettyBlock(object):
     __slots__=('container', 'back',)
     def __init__(self,back=0):
         self.container=[]
         self.back=back
     def append(self,content,back=0):
         if not content:
-            value=Pretty_empty
+            value=PrettyEmpty
         elif back<0:
-            value=Pretty_ignore_push(content)
+            value=PrettyIgnorePush(content)
         elif type(content)==str:
             value=Pretty_line(content,self.back+back)
         else:
@@ -135,7 +135,7 @@ def pconnect(obj,**kwargs):
     return '\n'.join(pretty_print(obj,**kwargs))
     
 def str_message(message,index=None,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     if index is None:
         start=''
     else:
@@ -272,7 +272,7 @@ def str_message(message,index=None,**kwargs):
     return result
 
 def str_reaction_mapping(reactions,index=None,**kwargs): #ignore index, 1 message can have only 1
-    result=Pretty_block()
+    result=PrettyBlock()
     reaction_count=len(reactions)
     result.append(f'Reactions: ({reaction_count})')
     reaction_ordering=list((len(v),k) for k,v in reactions.items())
@@ -291,7 +291,7 @@ def str_reaction_mapping(reactions,index=None,**kwargs): #ignore index, 1 messag
     return result
 
 def str_reaction_mapping_line(users,**kwargs): #ignore index
-    result=Pretty_block()
+    result=PrettyBlock()
     user_count=len(users)
     unknown=users.unknown
     if unknown:
@@ -305,27 +305,29 @@ def str_reaction_mapping_line(users,**kwargs): #ignore index
     return result
 
 def str_message_application(application,index=None,**kwargs): #ignore index, 1/message
-    result=Pretty_block()
+    result=PrettyBlock()
     result.append(f'message_application : ({application.id})')
     result.append(f'- name : {application.name}',1)
     result.append(f'- id : {application.id}',1)
     
-    cover_url=application.cover_url
+    cover_url = application.cover_url
     if (cover_url is not None):
-        result.append(f'- cover: {application.cover_url}',1)
+        result.append(f'- cover: {cover_url}',1)
     
-    icon_url=application.icon_url
+    icon_url = application.icon_url
     if (icon_url is not None):
         result.append(f'- icon : {icon_url}',1)
     
-    if len(application.description)>32:
-        result.append(f'- descr.: {application.description[:26]}...(+{len(application.description)-26})',1)
+    description = application.description
+    if len(description)>32:
+        result.append(f'- descr.: {description[:26]}...(+{len(description)-26})',1)
     else:
-        result.append(f'- descr.: {application.description}',1)
+        result.append(f'- descr.: {description}',1)
+    
     return result
     
 def str_attachment(attachment,index=None,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     if index is None:
         start=''
     else:
@@ -342,7 +344,7 @@ def str_attachment(attachment,index=None,**kwargs):
     return result
     
 def str_embed_core(embed,index=None,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     if index is None:
         start=''
     else:
@@ -524,7 +526,7 @@ def str_embed_core(embed,index=None,**kwargs):
 
 
 def str_role(role,index=None,write_parents=True,detailed=True,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     if index is None:
         start=''
     else:
@@ -557,43 +559,53 @@ def str_role(role,index=None,write_parents=True,detailed=True,**kwargs):
     return result
 
 
-def str_channel_text(channel,index=None,write_parents=True,overwrites=False,**kwargs):
-    result=Pretty_block()
+def write_guild_channel_extras(channel, result, write_parents, write_overwrites, kwargs):
+    guild = channel.guild
+    if write_parents:
+        result.append(f'- guild : {guild.name!r} ({guild.id})',1)
+    
+    result.append(f'- position : {channel.position}',1)
+    
+    category = channel.category
+    if category is not guild:
+        result.append(f'- category : {category.name!r} ({category.id})',1)
+    
+    overwrites = channel.overwrites
+    if overwrites:
+        if write_overwrites:
+            result.append(f'Permission overwrites: ({len(overwrites)})',1)
+            for index,overwrite in enumerate(overwrites,1):
+                result.append(str_PermOW(overwrite, index=index, **kwargs),2)
+        else:
+            result.append(f'- overwrites count: {len(overwrites)}',1)
+
+def str_channel_text(channel, index=None, write_parents=True, overwrites=False, **kwargs):
+    result=PrettyBlock()
     if index is None:
         start=''
     else:
         start=f'{index}.: '
     result.append(f'{start}ChannelText ({"news" if channel.type else "text"} {channel.type}) : ({channel.id})')
-    result.append(f'- name : {channel.name}',1)
+    result.append(f'- name : {channel.name!r}',1)
     result.append(f'- created at : {channel:c}',1)
     if not channel.clients:
         result.append('- DELETED',1)
         return result
     
-    result.append(f'- position : {channel.position}',1)
-    if write_parents:
-        result.append(f'- guild : {channel.guild.name} ({channel.guild.id})',1)
-        if channel.category!=channel.guild:
-            result.append(f'- category : {channel.category.name} ({channel.category.id})',1)
     if channel.topic:
-        result.append(f'- topic : "{channel.topic}"',1)
+        result.append(f'- topic : {channel.topic!r}',1)
     if channel.slowmode:
         result.append(f'- slowmode : {channel.slowmode}s',1)
     if channel.nsfw:
         result.append('- NSFW',1)
-    if channel.overwrites:
-        if overwrites:
-            result.append(f'Permission overwrites: ({len(channel.overwrites)})',1)
-            for index,overwrite in enumerate(channel.overwrites,1):
-                result.append(str_PermOW(overwrite,index=index,**kwargs),2)
-        else:
-            result.append(f'- overwrites count: {len(channel.overwrites)}',1)
+
+    write_guild_channel_extras(channel, result, write_parents, overwrites, kwargs)
     
     return result
 
 
 def str_channel_private(channel,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     result.append(f'ChannelPrivate: ({channel.id})')
     result.append(f'- created at : {channel:c}',1)
     if not channel.clients:
@@ -609,138 +621,155 @@ def str_channel_private(channel,**kwargs):
             
     return result
 
-def str_channel_voice(channel,index=None,write_parents=True,overwrites=False,**kwargs):
-    result=Pretty_block()
+def str_channel_voice(channel, index=None, write_parents=True, overwrites=False, **kwargs):
+    result = PrettyBlock()
     if index is None:
-        start=''
+        start = ''
     else:
-        start=f'{index}.: '
+        start = f'{index}.: '
     result.append(f'{start}ChannelVoice: ({channel.id})')
-    result.append(f'- name : {channel.name}',1)
+    result.append(f'- name : {channel.name!r}',1)
     result.append(f'- created at : {channel:c}',1)
     if not channel.clients:
         result.append('- DELETED',1)
         return result
     
-    result.append(f'- position : {channel.position}',1)
-    if write_parents:
-        result.append(f'- guild : {channel.guild.name} ({channel.guild.id})',1)
-        if channel.category!=channel.guild:
-            result.append(f'- category : {channel.category.name} ({channel.category.id})',1)
     if channel.bitrate:
         result.append(f'- bitrate : {channel.bitrate}',1)
     if channel.user_limit:
         result.append(f'- user limit : {channel.user_limit}',1)
-    if channel.overwrites:
-        if overwrites:
-            result.append(f'Permission overwrites: ({len(channel.overwrites)})',1)
-            for index,overwrite in enumerate(channel.overwrites,1):
-                result.append(str_PermOW(overwrite,index=index,**kwargs),2)
-        else:
-            result.append(f'- overwrites count: {len(channel.overwrites)}',1)
-
+    
+    write_guild_channel_extras(channel, result, write_parents, overwrites, kwargs)
+    
     return result
 
 def str_channel_group(channel,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     result.append(f'ChannelGroup: ({channel.id})')
-    result.append(f'- name : {channel.name}',1)
+    result.append(f'- name : {channel.name!r}',1)
     result.append(f'- created at : {channel:c}',1)
     if not channel.clients:
         result.append('- DELETED',1)
         return result
-
+    
+    owner = channel.owner
     if channel.owner.partial:
-        result.append(f'- owner : Partial user {channel.owner.id}',1)
+        result.append(f'- owner : Partial user {owner.id}',1)
     else:
-        result.append(f'- owner: {channel.owner:f} {channel.owner.id}',1)
-            
-    result.append(f'Users : ({len(channel.users)})',1)
-    for index,user in enumerate(channel.users,1):
+        result.append(f'- owner: {owner.full_name} {owner.id}',1)
+    
+    users = channel.users
+    result.append(f'Users : ({len(users)})',1)
+    for index,user in enumerate(users,1):
         if user.partial:
             result.append(f'{index}.: Partial user {user.id}',2)
         else:
-            result.append(f'{index}.: {user:f} {user.id}',2)
-    if channel.icon:
-        result.append(f'- icon : ({channel.icon_url})',1)
-
+            result.append(f'{index}.: {user.full_name} {user.id}',2)
+    
+    icon_url = channel.icon_url
+    if (icon_url is not None):
+        result.append(f'- icon : ({icon_url})',1)
+    
     return result
 
-def str_channel_category(channel,index=None,write_parents=True,overwrites=False,**kwargs):
-    result=Pretty_block()
+def str_channel_category(channel, index=None, write_parents=True, overwrites=False, **kwargs):
+    result = PrettyBlock()
     if index is None:
-        start=''
+        start = ''
     else:
-        start=f'{index}.: '
+        start = f'{index}.: '
+    
     result.append(f'{start}ChannelCategory: ({channel.id})')
-    result.append(f'- name : {channel.name}',1)
+    result.append(f'- name : {channel.name!r}',1)
     result.append(f'- created at : {channel:c}',1)
     if not channel.clients:
         result.append('- DELETED',1)
         return result
     
-    result.append(f'- position : {channel.position}',1)
-    if write_parents:
-        result.append(f'- guild : {channel.guild.name} ({channel.guild.id})',1)
-    if channel.channels:
-        result.append(str_weakposlist(channel.channels,write_parents=write_parents),1)
-    if channel.overwrites:
-        if overwrites:
-            result.append('Permission overwrites: ({len(channel.overwrites)})',1)
-            for index,overwrite in enumerate(channel.overwrites,1):
-                result.append(str_PermOW(overwrite,index=index,**kwargs),2)
-        else:
-            result.append(f'- overwrites count: {len(channel.overwrites)}',1)
+    channels = channel.channels
+    if channels:
+        result.append(str_autoposlist(channels, write_parents=write_parents, overwrites=overwrites, **kwargs),1)
+    
+    write_guild_channel_extras(channel, result, write_parents, overwrites, kwargs)
     
     return result
 
-def str_channel_store(channel,index=None,write_parents=True,overwrites=False,**kwargs):
-    result=Pretty_block()
+def str_channel_store(channel, index=None, write_parents=True, overwrites=False, **kwargs):
+    result = PrettyBlock()
     if index is None:
-        start=''
+        start = ''
     else:
-        start=f'{index}.: '
+        start = f'{index}.: '
     result.append(f'{start}ChannelStore ({channel.type})')
-    result.append(f'- name : {channel.name}',1)
+    result.append(f'- name : {channel.name!r}',1)
     result.append(f'- created at : {channel:c}',1)
     if not channel.clients:
         result.append('- DELETED',1)
         return result
     
-    result.append(f'- position : {channel.position}',1)
-
-    if write_parents:
-        result.append(f'- guild : {channel.guild.name} ({channel.guild.id})',1)
-        if channel.category!=channel.guild:
-            result.append(f'- category : {channel.category.name} ({channel.category.id})',1)
     if channel.nsfw:
         result.append('- NSFW',1)
-    if channel.overwrites:
-        if overwrites:
-            result.append(f'Permission overwrites: ({len(channel.overwrites)})',1)
-            for index,overwrite in enumerate(channel.overwrites,1):
-                result.append(str_PermOW(overwrite,index=index,**kwargs),2)
-        else:
-            result.append(f'- overwrites count: {len(channel.overwrites)}',1)
-
+    
+    write_guild_channel_extras(channel, result, write_parents, overwrites, kwargs)
+    
     return result
 
-def str_weakposlist(list_,**kwargs):
-    result=Pretty_block()
-    result.append(f'Channels : ({len(list_)})')
-    for index,value in enumerate(list_,1):
-        result.append(PRETTY_PRINTERS[value.__class__.__name__](value,index=index,**kwargs),1)
+def str_channel_thread(channel, index=None, write_parents=True, overwrites=False, **kwargs):
+    result = PrettyBlock()
+    if index is None:
+        start = ''
+    else:
+        start = f'{index}.: '
+    
+    result.append(f'{start}ChannelStore ({channel.type})')
+    result.append(f'- name : {channel.name!r}',1)
+    result.append(f'- created at : {channel:c}',1)
+    if not channel.clients:
+        result.append('- DELETED',1)
+        return result
+    
+    result.append(f'- position : {channel.position}',1)
+    
+    write_guild_channel_extras(channel, result, write_parents, overwrites, kwargs)
+    
     return result
 
-def str_autoposlist(list_,detailed=False,**kwargs):
-    result=Pretty_block()
-    result.append(f'Roles : ({len(list_)})')
+def str_channel_guild_undefined(channel, index=None, write_parents=True, overwrites=False, **kwargs):
+    result = PrettyBlock()
+    if index is None:
+        start = ''
+    else:
+        start = f'{index}.: '
+    
+    result.append(f'{start}ChannelStore ({channel.type})')
+    result.append(f'- name : {channel.name!r}',1)
+    result.append(f'- created at : {channel:c}',1)
+    if not channel.clients:
+        result.append('- DELETED',1)
+        return result
+    
+    result.append(f'- position : {channel.position}',1)
+    for key, value in channel.__dict__:
+        result.append(f'{key} : {value!r}', 1)
+    
+    write_guild_channel_extras(channel, result, write_parents, overwrites, kwargs)
+    
+    return result
+
+def str_autoposlist(list_, detailed=False, name=None, **kwargs):
+    result  = PrettyBlock()
+    if name is None:
+        name = list_.__class__.__name__
+    
+    result.append(f'{name} : ({len(list_)})')
+    
     for index,value in enumerate(list_,1):
         result.append(PRETTY_PRINTERS[value.__class__.__name__](value,index=index,detailed=detailed,**kwargs),1)
+    
     return result
 
 def str_guild(guild,index=None,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     if index is None:
         start=''
     else:
@@ -816,7 +845,7 @@ def str_guild(guild,index=None,**kwargs):
     if guild.booster_count:
         result.append(f'- boosters : {guild.booster_count}',1)
         result.append(f'- premium tier : {guild.premium_tier}',1)
-    result.append(str_weakposlist(guild.channels,write_parents=False),1)
+    result.append(str_autoposlist(guild.channels,write_parents=False),1)
     result.append(str_autoposlist(guild.roles,write_parents=False),1)
     if guild.voice_states:
         voice_states=multidict()
@@ -839,7 +868,7 @@ def str_guild(guild,index=None,**kwargs):
     return result
 
 def str_PermOW(overwrite,index=None,detailed=True,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     if index is None:
         start=''
     else:
@@ -876,7 +905,7 @@ def str_PermOW(overwrite,index=None,detailed=True,**kwargs):
     return result
 
 def str_permission(permission,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     result.append('Permission:')
     for name,value in permission.items():
         value=bool(value)
@@ -884,7 +913,7 @@ def str_permission(permission,**kwargs):
     return result
 
 def str_invite(invite,index=None,write_parents=True,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     if index is None:
         start=''
     else:
@@ -940,8 +969,8 @@ def str_invite(invite,index=None,write_parents=True,**kwargs):
 
     return result
 
-def str_list(list_,mixed=False,name=None,**kwargs):
-    result=Pretty_block()
+def str_list(list_, mixed=True, name=None, **kwargs):
+    result=PrettyBlock()
     if not list_:
         if name is not None:
             result.append(f'{name}s: (0)')
@@ -964,7 +993,7 @@ def str_list(list_,mixed=False,name=None,**kwargs):
     return result
 
 def str_dict(dict_,mixed=False,name=None,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     if not dict_:
         result.append('Empty')
         return result
@@ -984,7 +1013,7 @@ def str_dict(dict_,mixed=False,name=None,**kwargs):
     return result
 
 def str_webhook(webhook,index=None,write_parents=True,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     
     if index is None:
         start=''
@@ -1014,11 +1043,15 @@ def str_webhook(webhook,index=None,write_parents=True,**kwargs):
         guild=channel.guild
         if guild is not None:
             result.append(f'- guild : {guild.name} ({guild.id})',1)
-            
+    
+    applciation_id = webhook.application_id
+    if applciation_id:
+        result.append(f'- applciation id : {applciation_id}', 1)
+    
     return result
 
 def str_AuditLog(audit_log,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     
     result.append('AuditLog:')
     result.append(f'- guild: {audit_log.guild.name} ({audit_log.guild.id})',1)
@@ -1032,7 +1065,7 @@ def str_AuditLog(audit_log,**kwargs):
     return result
 
 def str_AuditLogEntry(entry,index=None,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     
     if index is None:
         start=''
@@ -1090,7 +1123,7 @@ def str_AuditLogEntry(entry,index=None,**kwargs):
     return result
 
 def str_connection(connection,index=None,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     
     if index is None:
         start=''
@@ -1117,7 +1150,7 @@ def str_connection(connection,index=None,**kwargs):
     return result
 
 def str_integration(integration,index=None,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
 
     if index is None:
         start=''
@@ -1125,28 +1158,96 @@ def str_integration(integration,index=None,**kwargs):
         start=f'{index}.: '
 
     result.append(f'{start}Integration:')
-    result.append(f'- name: {integration.name}',1)
+    result.append(f'- name: {integration.name!r}',1)
     result.append(f'- type: {integration.type}',1)
     result.append(f'- {"enabled" if integration.enabled else "disabled"}',1)
     result.append(f'- {"syncing" if integration.syncing else "not syncing"}',1)
-    role=integration.role
-    result.append(f'- role : {role.name} ({role.id})',1)
-    guild=role.guild
+    
+    role = integration.role
+    result.append(f'- role : {role.name!r} ({role.id})',1)
+    guild = role.guild
     if guild is None:
         result.append('- role already deleted',1)
     else:
         result.append(f'- guild : {guild.name} ({guild.id})',1)
     result.append(f'- expire behavior : {integration.expire_behavior}',1)
     result.append(f'- expire grace period : {integration.expire_grace_period}',1)
-    result.append(f'- user : {integration.user:f} ({integration.user.id}',1)
-    result.append(f'- account id : {integration.account_id}',1)
-    result.append(f'- account name : {integration.account_name}',1)
+    
+    user = integration.user
+    if (user is not ZEROUSER):
+        result.append(f'- user : {user.full_name!r} ({user.id}',1)
+    
+    result.append(f'Account:',1)
+    result.append(str_integration_account(integration.account, head_line=False, **kwargs), 1)
+    
     result.append(f'- synced at : {integration.synced_at:%Y.%m.%d-%H:%M:%S}',1)
-
+    subscriber_count = integration.subscriber_count
+    if subscriber_count:
+        result.append(f'- subscriber count: {subscriber_count}', 1)
+    
+    application = integration.application
+    if (application is not None):
+        result.append('Application:', 1)
+        result.append(str_integration_application(application, head_line=False, **kwargs), 1)
+    
     return result
-            
+
+def str_integration_account(account, index=None, head_line=True, **kwargs):
+    if type(account) is not IntegrationAccount:
+        return str_user(account, index=index, head_line=head_line, **kwargs)
+    
+    result = PrettyBlock()
+    
+    if head_line:
+        if index is None:
+            start = ''
+        else:
+            start = f'{index}.:'
+        
+        result.append(f'{start}Integration Account:')
+    
+    result.append(f'name : {account.name!r}', 1)
+    result.append(f'id : {account.id!r}', 1)
+    return result
+
+def str_integration_application(application, index=None, head_line=True, **kwargs):
+    result = PrettyBlock()
+    
+    if head_line:
+        if index is None:
+            start = ''
+        else:
+            start = f'{index}.:'
+        
+        result.append(f'{start}Integration Application:')
+    
+    result.append(f'- id : {application.id}', 1)
+    result.append(f'- name : {application.name!r}', 1)
+    icon_url = application.icon_url
+    if (icon_url is not None):
+        result.append(f'- icon : {icon_url}',1)
+    
+    description = application.description
+    if len(description)>32:
+        result.append(f'- description: {description[:26]}...(+{len(description)-26})',1)
+    else:
+        result.append(f'- description : {description}',1)
+    
+    summary = application.summary
+    if len(description)>32:
+        result.append(f'- summary: {summary[:26]}...(+{len(summary)-26})',1)
+    else:
+        result.append(f'- summary : {summary}',1)
+    
+    bot = application.bot
+    if (bot is not ZEROUSER):
+        result.append('Bot:', 1)
+        result.append(str_user(bot, head_line=False, **kwargs), 1)
+    
+    return result
+
 def str_activity(activity,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     result.append('Activity:')
     for key,value in activity.fulldict().items():
         if type(value) is dict:
@@ -1159,7 +1260,7 @@ def str_activity(activity,**kwargs):
     return result
 
 def str_voice_state(state,index=None,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     
     if index is None:
         start=''
@@ -1187,7 +1288,7 @@ def str_voice_state(state,index=None,**kwargs):
     return result
 
 def str_useroa2(user,index=None,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     if index is None:
         start=''
     else:
@@ -1214,7 +1315,7 @@ def str_useroa2(user,index=None,**kwargs):
     return result
 
 def str_GuildEmbed(guild_embed,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     
     result.append(f'Guild embed:')
     guild=guild_embed.guild
@@ -1228,13 +1329,16 @@ def str_GuildEmbed(guild_embed,**kwargs):
     
     return result
 
-def str_user(user,index=None,**kwargs):
-    result=Pretty_block()
-    if index is None:
-        start=''
-    else:
-        start=f'{index}.: '
-    result.append(f'{start}User:')
+def str_user(user, index=None, head_line=True, **kwargs):
+    result = PrettyBlock()
+    
+    if head_line:
+        if index is None:
+            start = ''
+        else:
+            start = f'{index}.: '
+        result.append(f'{start}User:')
+    
     if user.partial:
         result.append('- PARTIAL')
         result.append(f'- id : {user.id}',1)
@@ -1252,22 +1356,22 @@ def str_user(user,index=None,**kwargs):
         
         result.append(f'- known guilds: {len(user.guild_profiles)}',1)
     result.append(f'- created at : {user:c}',1)
-    if user.activities:
-        result.append(f'- activities : ({len(user.activities)})')
-        for activity in user.activities:
-            result.append(str_activity(activity,**kwargs),2)
-    else:
-        result.append(str_activity(user.activity,**kwargs),1)
+    activities = user.activities
+    if activities:
+        result.append(f'- activities : ({len(activities)})', 1)
+        for activity in activities:
+            result.append(str_activity(activity, **kwargs), 2)
+    
     result.append(f'- status : {user.status!s}',1)
     if user.statuses:
-        result.append(f'- stauses : ',1)
+        result.append(f'- statuses : ',1)
         for platform,status in user.statuses.items():
             result.append(f'- {platform} : {status!s}',2)
     
     return result
 
 def str_GuildWidget(widget,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     result.append(f'Guild widget:')
     result.append(f'- guild : {widget.guild.name} ({widget.guild.id})',1)
     invite_url=widget.invite_url
@@ -1276,13 +1380,13 @@ def str_GuildWidget(widget,**kwargs):
     result.append(f'- invite_url : {invite_url}',1)
     result.append(f'- online_count : {widget.online_count}',1)
     
-    result.append(str_list(widget.users,name='user',**kwargs),1)
-    result.append(str_list(widget.channels,name='channels',**kwargs),1)
+    result.append(str_list(widget.users, name='user', **kwargs),1)
+    result.append(str_list(widget.channels, name='channels', **kwargs),1)
     
     return result
 
 def str_GuildWidgetUser(GWU,index=None,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     if index is None:
         start=''
     else:
@@ -1300,7 +1404,7 @@ def str_GuildWidgetUser(GWU,index=None,**kwargs):
     return result
 
 def str_GuildWidgetChannel(GWC,index=None,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     if index is None:
         start=''
     else:
@@ -1314,7 +1418,7 @@ def str_GuildWidgetChannel(GWC,index=None,**kwargs):
     return result
 
 def str_achievement(achievement,index=None,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     if index is None:
         start=''
     else:
@@ -1331,7 +1435,7 @@ def str_achievement(achievement,index=None,**kwargs):
     return result
 
 def str_emoji(emoji,index=None,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     if index is None:
         start=''
     else:
@@ -1387,7 +1491,7 @@ def str_emoji(emoji,index=None,**kwargs):
     return result
 
 def str_guild_preview(guild_preview,index=None,**kwargs):
-    result=Pretty_block()
+    result=PrettyBlock()
     if index is None:
         start=''
     else:
@@ -1412,15 +1516,144 @@ def str_guild_preview(guild_preview,index=None,**kwargs):
     if features:
         result.append(f'- features : {", ".join(feature.value for feature in features)}',1)
     
-    emojis=guild_preview.emojis
+    emojis = guild_preview.emojis
     if emojis:
         result.append(f'Emojis : {len(emojis)}',1)
-        for index,emoji in enumerate(emojis.values(),1):
+        for index, emoji in enumerate(emojis.values(),1):
             if emoji.animated:
-                animated=' (animated)'
+                animated = ' (animated)'
             else:
-                animated=''
-            result.append(f'{index}.: {emoji.name} {emoji.id}{animated}',2)
+                animated = ''
+            result.append(f'{index}.: {emoji.name!r} {emoji.id}{animated}',2)
+    
+    return result
+
+def str_application(application, index=None, **kwargs):
+    result = PrettyBlock()
+    if index is None:
+        start = ''
+    else:
+        start = f'{index}.: '
+    
+    result.append(f'{start}Application:')
+    if application.partial:
+        result.append('- PARTIAL', 1)
+        return result
+    
+    result.append(f'- id : {application.id}', 1)
+    result.append(f'- name : {application.name!r}', 1)
+    if application.bot_public:
+        result.append(f'- bot_public', 1)
+    if application.bot_require_code_grant:
+        result.append(f'- bot require code grant', 1)
+    cover_url = application.cover_url
+    if (cover_url is not None):
+        result.append(f'- cover: {cover_url}', 1)
+    description = application.description
+    if description:
+        result.append(f'- description : {description!r}', 1)
+    guild_id = application.guild_id
+    if guild_id:
+        result.append(f'- guild id : {guild_id}', 1)
+    icon_url = application.icon_url
+    if (icon_url is not None):
+        result.append(f'- icon : {icon_url}', 1)
+    
+    owner = application.owner
+    if (owner is not ZEROUSER):
+        result.append(PRETTY_PRINTERS[owner.__class__.__name__](owner, **kwargs), 1)
+    
+    primary_sku_id = application.primary_sku_id
+    if primary_sku_id:
+        result.append(f'- primary sku id : {primary_sku_id}', 1)
+    rpc_origins = application.rpc_origins
+    if (rpc_origins is not None):
+        result.append(f'- rpc origins : {rpc_origins!r}', 1)
+    slug = application.slug
+    if (slug is not None):
+        result.append(f'- slug: {slug!r}', 1)
+    summary = application.summary
+    if summary:
+        result.append(f'- summary : {summary!r}', 1)
+    verify_key = application.verify_key
+    if verify_key:
+        result.append(f'- verify key : {verify_key!r}', 1)
+    developers = application.developers
+    if (developers is not None):
+        result.append(f'- developers: ({len(developers)})', 1)
+        for index, developer in enumerate(developers, 1):
+            result.append(f'{index}.: name={developer.name!r}, id={developer.id}', 2)
+    if application.hook:
+        result.append('- hook', 1)
+    publishers = application.publishers
+    if (publishers is not None):
+        result.append(f'- publishers: ({len(publishers)})', 1)
+        for index, publisher in enumerate(publishers, 1):
+            result.append(f'{index}.: name={publisher.name!r}, id={publisher.id}', 2)
+    executables = application.executables
+    if (executables is not None):
+        result.append(f'- executables: ({len(executables)})', 1)
+        for index, executable in enumerate(executables, 1):
+            arguments = executable.arguments
+            if arguments is None:
+                arguments_r = ''
+            else:
+                arguments_r = f', arguments={arguments!r}'
+            
+            if executable.is_launcher:
+                is_launcher_r = f', is_launcher=True'
+            else:
+                is_launcher_r = ''
+            
+            result.append(f'{index}.: name={executable.name!r}, os={executable.os!r}{arguments_r}{is_launcher_r}', 2)
+    
+    third_party_skus = application.third_party_skus
+    if (third_party_skus is not None):
+        result.append(f' third party skus: ({len(third_party_skus)})', 1)
+        for index, sku in enumerate(third_party_skus, 1):
+            result.append(f'{index}.: distributor={sku.distributor!r}, id={sku.id!r} sku={sku.sku!r}' , 2)
+    splash = application.splash
+    if splash:
+        result.append(f'- splash : {splash.as_base16_hash!r}', 1)
+    if application.overlay:
+        result.append('- overlay', 1)
+    if application.overlay_compatibility_hook:
+        result.append('- overlay compatibility hook', 1)
+    aliases = application.aliases
+    if (aliases is not None):
+        result.append(f'- aliases : {aliases!r}', 1)
+    eula_id = application.eula_id
+    if eula_id:
+        result.append(f'- eula id : {eula_id}', 1)
+    
+    return result
+
+def str_team(team, index=None, **kwargs):
+    result = PrettyBlock()
+    if index is None:
+        start = ''
+    else:
+        start = f'{index}.: '
+    
+    result.append(f'{start}Team:')
+    
+    result.append(f'- name : {team.name}', 1)
+    
+    icon_url = team.icon_url
+    if (icon_url is not None):
+        result.append(f'- icon : {icon_url}', 1)
+    
+    owner = team.owner
+    if (owner is not ZEROUSER):
+        result.append('- owner:', 1)
+        result.append(str_user(owner, head_line=False),1)
+    
+    members = team.members
+    if members:
+        result.append(f'- members: ({len(members)})', 1)
+        for index, member in enumerate(members, 1):
+            result.append(f'{index}.: state={member.state.name}, permissions={member.permissions!r}', 2)
+            result.append(str_user(member.user), 3)
     
     return result
 
@@ -1437,8 +1670,9 @@ PRETTY_PRINTERS['ChannelVoice']=str_channel_voice
 PRETTY_PRINTERS['ChannelGroup']=str_channel_group
 PRETTY_PRINTERS['ChannelCategory']=str_channel_category
 PRETTY_PRINTERS['ChannelStore']=str_channel_store
+PRETTY_PRINTERS['ChannelThread'] = str_channel_thread
+PRETTY_PRINTERS['ChannelGuildUndefnied'] = str_channel_guild_undefined
 PRETTY_PRINTERS['autoposlist']=str_autoposlist
-PRETTY_PRINTERS['weakposlist']=str_weakposlist
 PRETTY_PRINTERS['Guild']=str_guild
 PRETTY_PRINTERS['PermOW']=str_PermOW
 PRETTY_PRINTERS['Permission']=str_permission
@@ -1468,3 +1702,7 @@ PRETTY_PRINTERS['GuildWidgetChannel']=str_GuildWidgetChannel
 PRETTY_PRINTERS['Achievement']=str_achievement
 PRETTY_PRINTERS['Emoji']=str_emoji
 PRETTY_PRINTERS['GuildPreview']=str_guild_preview
+PRETTY_PRINTERS['IntegrationApplication'] = str_integration_application
+PRETTY_PRINTERS['IntegrationAccount'] = str_integration_account
+PRETTY_PRINTERS['Application'] = str_application
+PRETTY_PRINTERS['Team'] = str_team

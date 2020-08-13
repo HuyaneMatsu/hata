@@ -1,8 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('ChooseMenu', 'Cooldown', 'GUI_STATE_CANCELLED', 'GUI_STATE_CANCELLING', 'GUI_STATE_READY',
     'GUI_STATE_SWITCHING_CTX', 'GUI_STATE_SWITCHING_PAGE', 'Timeouter', 'Pagination', 'WaitAndContinue',
-    'ReactionAddWaitfor', 'ReactionDeleteWaitfor', 'multievent', 'prefix_by_guild', 'wait_for_message',
-    'wait_for_reaction', )
+    'ReactionAddWaitfor', 'ReactionDeleteWaitfor', 'multievent', 'wait_for_message', 'wait_for_reaction', )
 
 from time import monotonic
 
@@ -17,90 +16,200 @@ from ...discord.embed import Embed
 from .command import CommandWrapper
 
 class ReactionAddWaitfor(EventWaitforBase):
+    """
+    Implements waiting for `reaction_add` events.
+    
+    Attrbiutes
+    ----------
+    waitfors : `WeakValueDictionary` of (``DiscordEntity``, `asnyc-callable`) items
+        An autoadded container to store `entity` - `async-callable` pairs.
+    
+    Class Attributes
+    ----------------
+    __event_name__ : `str` = `'reaction_add'`
+        Predefined name to what the event handler will be added.
+    """
     __slots__ = ()
     __event_name__ = 'reaction_add'
 
 class ReactionDeleteWaitfor(EventWaitforBase):
+    """
+    Implements waiting for `reaction_delete` events.
+    
+    Attrbiutes
+    ----------
+    waitfors : `WeakValueDictionary` of (``DiscordEntity``, `asnyc-callable`) items
+        An autoadded container to store `entity` - `async-callable` pairs.
+    
+    Class Attributes
+    ----------------
+    __event_name__ : `str` = `'reaction_delete'`
+        Predefined name to what the event handler will be added.
+    """
     __slots__ = ()
     __event_name__ = 'reaction_delete'
 
 class multievent(object):
+    """
+    Helper class to hold more waitfor event handlers together allowing to add `target` - `waiter` pairs at the same to
+    more.
+    
+    Attributes
+    ----------
+    events : `tuple` of `Any`
+        A `tuple` of the contained event handlers.
+    """
     __slots__=('events',)
     
-    def __init__(self,*events):
+    def __init__(self, *events):
+        """
+        Createss a `multievent` instance with the gvien event handlers
+        
+        Parameters
+        ----------
+        *events : `Any`
+            The event handlers to hold together.
+        """
         self.events = events
     
     def append(self, target, waiter):
+        """
+        Adds the given `target` - `waiter` pair to the contained event handlers.
+        
+        Parameters
+        ----------
+        target : ``DiscordEntity`` instance
+        waiter : `async callable`
+        """
         for event in self.events:
             event.append(target, waiter)
     
     def remove(self, target, waiter):
+        """
+        Removes the given `target` - `waiter` pair to the contained event handlers.
+        
+        Parameters
+        ----------
+        target : ``DiscordEntity`` instance
+        waiter : `async callable`
+        """
         for event in self.events:
             event.remove(target, waiter)
 
 class Timeouter(object):
-    __slots__ = ('handler', 'owner', 'timeout')
-    def __init__(self,owner,timeout):
+    """
+    Executes timing out feature on ``Pagination`` and on other familiar types.
+    
+    Attributes
+    ----------
+    handle : `None` or ``TimerHandle``
+        Handle to wakeup the timeouter with it's `.__step` function.
+        Set to `None`, when the respective timeout is over or if the timeout is cancelled.
+    owner : `Any`
+        The object what uses the timeouter.
+        Set to `None`, when the respective timeout is over or if the timeout is cancelled.
+    timeout : `float`
+        The time whith what the timeout will be expired when it's current waiting cycle is over.
+    """
+    __slots__ = ('handle', 'owner', 'timeout')
+    def __init__(self, owner, timeout):
+        """
+        Creates a new ``Timeouter`` instance with the given `owner` and `timeout`.
+        
+        Parameters
+        ----------
+        owner : `Any`
+            The object what uses the timeouter.
+        timeout : `float`
+            The time whith what the timeout will be expired when it's current waiting cycle is over.
+        """
         self.owner = owner
-        self.timeout = timeout
-        self.handler = KOKORO.call_later(timeout,self.__step,self)
+        self.timeout = 0.0
+        self.handle = KOKORO.call_later(timeout, self.__step, self)
     
     @staticmethod
     def __step(self):
-        timeout=self.timeout
+        """
+        Executes a timeouter cycle.
+        
+        Increases the timeout if ``.timeout`` was updated. If not and applicable, calls it's ``.owner``'s
+        `.canceller` with `TimeoutError` and unlinks ``.owner`` and `owner.canceller`,
+        """
+        timeout = self.timeout
         if timeout>0.0:
-            self.handler=KOKORO.call_later(timeout,self.__step,self)
-            self.timeout=0.0
+            self.handle = KOKORO.call_later(timeout, self.__step, self)
+            self.timeout = 0.0
             return
         
-        self.handler=None
-        owner=self.owner
+        self.handle = None
+        owner = self.owner
         if owner is None:
             return
         
-        self.owner=None
+        self.owner = None
         
-        canceller=owner.canceller
+        canceller = owner.canceller
         if canceller is None:
             return
-        owner.canceller=None
-        Task(canceller(owner,TimeoutError()),KOKORO)
         
-        
+        owner.canceller = None
+        Task(canceller(owner, TimeoutError()), KOKORO)
+    
     def cancel(self):
-        handler=self.handler
-        if handler is None:
+        """
+        Cancels the timeouter.
+        
+        Should be called by the timeouter's owner when it is cancelled with an other exception.
+        """
+        handle = self.handle
+        if handle is None:
             return
         
-        self.handler=None
-        handler.cancel()
-        self.owner=None
+        self.handle = None
+        handle.cancel()
+        self.owner = None
     
-    def set_timeout(self,value):
-        handler=self.handler
-        if handler is None:
+    def set_timeout(self, value):
+        """
+        Sets the timeouter of the timeouter to the given value.
+        """
+        handle = self.handle
+        if handle is None:
             # Cannot change timeout of expired timeouter
             return
         
         if value<=0.0:
-            self.timeout=0.0
-            handler._run()
-            handler.cancel()
+            self.timeout = 0.0
+            handle._run()
+            handle.cancel()
             return
         
-        now=monotonic()
-        next_step=self.handler.when
+        now = monotonic()
+        next_step = self.handle.when
         
-        planed_end=now+value
-        if planed_end<next_step:
-            handler.cancel()
-            self.handler=KOKORO.call_at(planed_end,self.__step,self)
+        planed_end = now+value
+        if planed_end < next_step:
+            handle.cancel()
+            self.handle = KOKORO.call_at(planed_end, self.__step, self)
             return
         
-        self.timeout=planed_end-next_step
-        
+        self.timeout = planed_end-next_step
+    
     def get_expiration_delay(self):
-        return self.handler.when-monotonic()+self.timeout
+        """
+        Returns after how much time the timeouter will expire.
+        
+        If the timeouter already expired, returns `0.0˙.
+        
+        Returns
+        -------
+        time_left : `float`
+        """
+        handle = self.handle
+        if handle is None:
+            return 0.0
+        
+        return handle.when-monotonic()+self.timeout
 
 GUI_STATE_READY          = 0
 GUI_STATE_SWITCHING_PAGE = 1
@@ -1111,175 +1220,229 @@ class ChooseMenu(object):
         return ''.join(result)
 
 class WaitAndContinue(object):
-    __slots__=('canceller', 'check', 'event', 'future', 'target', 'timeouter')
+    """
+    Waits for the given event and if the check returns `True` called with the received parameters, then passes them to
+    it's waiter future. If check return anything else than `False`, then passes that as well to the future.
+    
+    Attributes
+    -----------
+    canceller : `None` `function`
+        The canceller function of the ``WaitAndContinue``, what is set to ``._canceller`` by default.
+        When ``.cancel`` is called, then this instance attribute is set to `None`.
+    check : `callable`
+        The check what is called whith the received parameters whenever an event is received.
+    event : `async-callable`
+        The respective event handler on what the waiting is executed.
+    future : `Future`
+        The waiter future what's result will be set when the check returns non `False` value.
+    target : ``DiscordEntity``
+        The target entity on what the waiting is executed.
+    timeouter : ``TimeOuter``
+        Executes the ``WaitAndContinue`` timeout feature and raise `TimeoutError` to the waiter.
+    """
+    __slots__ = ('canceller', 'check', 'event', 'future', 'target', 'timeouter', )
     def __init__(self, future, check, target, event, timeout):
-        self.canceller=self.__class__._canceller
-        self.future=future
-        self.check=check
-        self.event=event
-        self.target=target
-        self.timeouter=Timeouter(self,timeout)
+        """
+        Creates a new ``WaitAndContinue`` instance with the given parameters.
+        
+        Parameters
+        ----------
+        future : `Future`
+            The waiter future what's result will be set when the check returns non `False` value.
+        check : `callable`
+            The check what is called whith the received parameters whenever an event is received.
+        target : ``DiscordEntity``
+            The target entity on what the waiting is executed.
+        event : `async-callable`
+            The respective event handler on what the waiting is executed.
+        timeout : `float`
+            The timeout after `TimeoutError` will be raised to the waiter future.
+        """
+        self.canceller = self.__class__._canceller
+        self.future = future
+        self.check = check
+        self.event = event
+        self.target = target
+        self.timeouter = Timeouter(self,timeout)
         event.append(target, self)
     
     async def __call__(self, client, *args):
-        result = self.check(*args)
-        if type(result) is bool:
-            if not result:
-                return
-                
-            if len(args)==1:
-                args=args[0]
+        """
+        Calls the ``WaitAndContinue`` and if it's check returns non `False`, then set's the waiter future's result to
+        the received parameters. If `check` returned non `bool`, then passes that value to the waiter as well.
         
+        Parameters
+        ----------
+        client : ``Client``
+            The client who received the respecive event.
+        *args : `Any`
+            Received parameters given by the respective event handler.
+        """
+        try:
+            result = self.check(*args)
+        except BaseException as err:
+            self.future.set_exception_if_pending(err)
         else:
-            args=(*args,result,)
+            if type(result) is bool:
+                if not result:
+                    return
+                
+                if len(args)==1:
+                    args = args[0]
+            
+            else:
+                args=(*args, result,)
+            
+            self.future.set_result_if_pending(args,)
+        finally:
+            self.cancel()
+    
+    async def _canceller(self, exception):
+        """
+        Cancels the ``WaitAndContinue`` with the given exception. If the given `exception` is `BaseException` instance,
+        then raises it to the waiter future.
         
-        self.future.set_result_if_pending(args,)
-        
-        self.cancel()
-        
-    async def _canceller(self,exception):
-        self.event.remove(self.target, self)
+        Parameters
+        ----------
+        exception : `None` or `BaseException`
+            Exception to cancel the ``WaitAndContinue``'s ``.future`` with.
+        """
         if exception is None:
             self.future.set_result_if_pending(None)
             return
         
+        self.event.remove(self.target, self)
         self.future.set_exception_if_pending(exception)
         
-        if not isinstance(exception,TimeoutError):
+        if not isinstance(exception, TimeoutError):
             return
-
-        timeouter=self.timeouter
+        
+        timeouter = self.timeouter
         if timeouter is not None:
             timeouter.cancel()
     
     def cancel(self):
-        canceller=self.canceller
+        """
+        Cancels the ``WaitAndContinue``.
+        """
+        canceller = self.canceller
         if canceller is None:
             return
         
-        timeouter=self.timeouter
+        self.event.remove(self.target, self)
+        timeouter = self.timeouter
         if timeouter is not None:
             timeouter.cancel()
         
-        return Task(canceller(self,None),self.future._loop)
+        return Task(canceller(self, None), KOKORO)
 
 def wait_for_reaction(client, message, check, timeout):
+    """
+    Executes waiting for reaction on a message with a `Future` instance.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The client who's `reaction_add` event will be used.
+    check : `callable`
+        The check what is called whith the received parameters whenever an event is received.
+    message : ``Message``
+        The target message on what new reactons will be checked.
+    timeout : `float`
+        The timeout after `TimeoutError` will be raised to the waiter future.
+    
+    Returns
+    -------
+    future : `Future`
+        The waiter future, what should be awaited.
+    """
     future = Future(KOKORO)
     WaitAndContinue(future, check, message ,client.events.reaction_add, timeout)
     return future
 
 def wait_for_message(client, channel, check, timeout):
+    """
+    Executes waiting for messages at a channel with a `Future` instance.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The client who's `message_create` event will be used.
+    check : `callable`
+        The check what is called whith the received parameters whenever an event is received.
+    channel : ``ChannelBase``
+        The target channel where the new messages will be checked.
+    timeout : `float`
+        The timeout after `TimeoutError` will be raised to the waiter future.
+    
+    Returns
+    -------
+    future : `Future`
+        The waiter future, what should be awaited.
+    """
     future=Future(KOKORO)
     WaitAndContinue(future, check, channel, client.events.message_create, timeout)
     return future
 
-class prefix_by_guild(dict):
-    __slots__=('default', 'orm',)
     
-    def __init__(self,default,*orm):
-        if type(default) is not str:
-            raise TypeError (f'Default expected type str, got type {default.__class__.__name__}')
-        self.default=default
-        if orm:
-            if len(orm)!=3:
-                raise TypeError(f'Expected \'engine\', \'table\', \'model\' for orm, but got {len(orm)} elements')
-            self.orm=orm
-            Task(self._load_orm(),KOKORO)
-            KOKORO.wakeup()
-            
-    def __call__(self,message):
-        guild=message.guild
-        if guild is not None:
-            return self.get(guild.id,self.default)
-        return self.default
+class _CDUnit(object):
+    """
+    A cooldown unit stored by a ``CooldownWrapper``.
     
-    def __getstate__(self):
-        return self.default
-    def __setstate__(self,state):
-        self.default=state
-        self.orm=None
-    
-    def add(self,guild,prefix):
-        guild_id=guild.id
-        if guild_id in self:
-            if prefix==self.default:
-                del self[guild_id]
-                if self.orm is not None:
-                    Task(self._remove_prefix(guild_id),KOKORO)
-                    KOKORO.wakeup()
-                return True
-            self[guild_id]=prefix
-            if self.orm is not None:
-                Task(self._modify_prefix(guild_id,prefix),KOKORO)
-                KOKORO.wakeup()
-            return True
-        else:
-            if prefix==self.default:
-                return False
-            self[guild_id]=prefix
-            if self.orm is not None:
-                Task(self._add_prefix(guild_id,prefix),KOKORO)
-                KOKORO.wakeup()
-            return True
-    
-    def to_json_serializable(self):
-        result=dict(self)
-        result['default']=self.default
-        return result
-    
-    @classmethod
-    def from_json_serialization(cls,data):
-        self=dict.__new__(cls)
-        self.default=data.pop('default')
-        for id_,prefix in data.items():
-            self[int(id_)]=prefix
-        self.orm=None
-        return self
-    
-    async def _load_orm(self,):
-        engine,table,model=self.orm
-        async with engine.connect() as connector:
-            result = await connector.execute(table.select())
-            prefixes = await result.fetchall()
-            for item in prefixes:
-                self[item.guild_id]=item.prefix
-    
-    async def _add_prefix(self,guild_id,prefix):
-        engine,table,model=self.orm
-        async with engine.connect() as connector:
-            await connector.execute(table.insert(). \
-                values(guild_id=guild_id,prefix=prefix))
-    
-    async def _modify_prefix(self,guild_id,prefix):
-        engine,table,model=self.orm
-        async with engine.connect() as connector:
-            await connector.execute(table.update(). \
-                values(prefix=prefix). \
-                where(model.guild_id==guild_id))
-    
-    async def _remove_prefix(self,guild_id):
-        engine,table,model=self.orm
-        async with engine.connect() as connector:
-            await connector.execute(table.delete(). \
-                where(model.guild_id==guild_id))
+    Attributes
+    ----------
+    expires_at : `float`
+        When the cooldown unit will expire in monotonic time.
+    uses_left : `int`
+        How much uses are left till the respective entity will be locked by cooldown.
+    """
+    __slots__ = ('expires_at', 'uses_left',)
+    def __init__(self, expires_at, uses_left):
+        """
+        Creates a new ``_CDUnit`` with the given parameters.
+        
+        Parameters
+        ----------
+        expires_at : `float`
+            When the cooldown unit will expire in monotonic time.
+        uses_left : `int`
+            How much uses are left till the respective entity will be locked by cooldown.
+        """
+        self.expires_at = expires_at
+        self.uses_left = uses_left
     
     def __repr__(self):
-        return f'<{self.__class__.__name__} default={self.default!r} len={len(self)}>'
-    
-    # because it is a builtin subclass, it will have __str__, so we overwrite that as well
-    __str__=__repr__
-    
-class _CD_unit(object):
-    __slots__=('expires_at', 'uses_left',)
-    def __init__(self,expires_at,uses_left):
-        self.expires_at=expires_at
-        self.uses_left=uses_left
-    
-    def __repr__(self):
+        """Returns the object's representation."""
         return f'{self.__class__.__name__}(expires_at={self.expires_at}, uses_left={self.uses_left})'
 
 class CooldownWrapper(CommandWrapper):
+    """
+    Rich command wrapper of ``Cooldown``. Check ``CommandWrapper`` itself for more details.
+    
+    This subclass adds `Cooldown.shared` feature to the command wrappers created by ``Cooldown``.
+    """
     def shared(self, weight=0, func=None):
+        """
+        Creates a new cooldown instance, which cooldown is shared with the source one.
+        
+        Parameters
+        ----------
+        weight : `int`, Optional
+            The weight of one call. Defaults to `1`.
+        func : `async-callable`, Optional
+            The wrapped command. If not given, returns a wrapper, what can be used as a decorator.
+
+        Returns
+        -------
+        wrapper : ``Cooldown._wrapper`` / ``CooldownWrapper``
+            If `func` is given, then returns the created ``CooldownWrapper``, if not, then returns a wrapper,
+            what can be used as a decorator.
+        
+        Raises
+        ------
+        TypeError
+            If `weight` is not numeric convertable to `int`.
+        """
         weight_type = weight.__class__
         if weight_type is int:
             pass
@@ -1395,7 +1558,7 @@ class Cooldown(object):
     
     Attributes
     ----------
-    cache : `dict` of (``DiscordEntity``, ``_CD_unit``) items
+    cache : `dict` of (``DiscordEntity``, ``_CDUnit``) items
         Cache to remember how much use of the given entity are exhausted already.
     checker : `function`
         Checks after how much time the given entity can use again the respective command.
@@ -1409,7 +1572,60 @@ class Cooldown(object):
     __slots__ = ('cache', 'checker', 'limit', 'reset', 'weight',)
     
     def __new__(cls, for_, reset, limit=1, weight=1, handler=None, func=None):
-        # Validate float.
+        """
+        Creates a new
+        
+        Parameters
+        ----------
+        for_ : `str`
+            By what type of entity the cooldown should limit the command.
+            
+            Possible values:
+             - `'user'`
+             - `'channel'`
+             - `'guild'`
+         
+        reset : `float`
+            The reset time of the cooldown.
+        limit : `int`
+            The amount of calls after the respective command goes on cooldown.
+        weight : `int`, Optional
+            The weight of one call. Defaults to `1`.
+        handler : `None` or `async-callable`
+            Called, when the wrapped command is on cooldown.
+            
+            If given then 4 parameters will be passed to it:
+            +-------------------+---------------+
+            | Respective name   | Type          |
+            +===================+===============+
+            | client            | ``Client``    |
+            +-------------------+---------------+
+            | message           | ``Message``   |
+            +-------------------+---------------+
+            | command           | ``Command``   |
+            +-------------------+---------------+
+            | time_left         | `float`       |
+            +-------------------+---------------+
+        
+        func : `async-callable`, Optional
+            The wrapped command. If not given, returns a wrapper, what can be used as a decorator.
+        
+        Returns
+        -------
+        wrapper : ``Cooldown._wrapper`` / ``CooldownWrapper``
+            If `func` is given, then returns the created ``CooldownWrapper``, if not, then returns a wrapper,
+            what can be used as a decorator.
+        
+        Raises
+        ------
+        TypeError
+            - If `str` is not given as `str` instance.
+            - If `weight` is not numeric convertable to `int`.
+            - If `reset` is not numeric convertable to `float`.
+            - If `limit` is not numeric convertable to `int`.
+        ValueError
+            - If `for_` is not given as any of the expected value.
+        """
         for_type = for_.__class__
         if for_type is str:
             pass
@@ -1468,15 +1684,97 @@ class Cooldown(object):
         return wrapper
     
     class _wrapper(object):
+        """
+        When a parent ``Command`` instance would be created without giving `func` parameter, then a wrapper of this
+        type is returned enabling using ``Cooldown` as a decorator, with still giving parameters to it.
+        
+        Attributes
+        ----------
+        parent : ``Cooldown``
+            The parent cooldown instance.
+        handler : `None` or `async-callable`
+            Called, when the wrapped command is on cooldown.
+            
+            If given then 4 parameters will be passed to it:
+            +-------------------+---------------+
+            | Respective name   | Type          |
+            +===================+===============+
+            | client            | ``Client``    |
+            +-------------------+---------------+
+            | message           | ``Message``   |
+            +-------------------+---------------+
+            | command           | ``Command``   |
+            +-------------------+---------------+
+            | time_left         | `float`       |
+            +-------------------+---------------+
+        """
         __slots__ = ('parent', 'handler')
         def __init__(self, parent, handler):
+            """
+            Creates a new ``Cooldown._wrapper`` instance with the given parameters.
+            
+            Parameters
+            ----------
+            parent : ``Cooldown``
+                The parent cooldown instance.
+            handler : `None` or `async-callable`
+                Called, when the wrapped command is on cooldown.
+                
+                If given then 4 parameters will be passed to it:
+                +-------------------+---------------+
+                | Respective name   | Type          |
+                +===================+===============+
+                | client            | ``Client``    |
+                +-------------------+---------------+
+                | message           | ``Message``   |
+                +-------------------+---------------+
+                | command           | ``Command``   |
+                +-------------------+---------------+
+                | time_left         | `float`       |
+                +-------------------+---------------+
+            """
             self.parent = parent
             self.handler = handler
         
         def __call__(self, func):
+            """
+            By calling a cooldown's ``._wrapper`` a ``CooldownWrapper`` instance is created and returned, what can be
+            added as a command.
+            
+            Parameters
+            ----------
+            func : `async-callable`
+                The wrapped function by the cooldown to add as a command.
+
+            Returns
+            -------
+            wrapper : ``CooldownWrapper``
+            """
+            if func is None:
+                raise TypeError('`func` is given as `None`.')
+            
             return CooldownWrapper(func, self.parent, self.handler)
     
     async def __call__(self, client, message):
+        """
+        Calls the cooldown with the respective `client` and `message`, and then yields whether the command can be
+        called, and if not, then with what extra parameters the handler should receive.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The client who received the respective message.
+        message : ``Message``
+            The received message.
+        
+        Yields
+        ------
+        passed : `bool`
+            Whether the command can be called. If not, then yields additional parameters to call the cooldown's
+            handler with.
+        time_left : `float`
+            How much time is left till the cooldown's expiration.
+        """
         value = self.checker(self, message)
         if not value:
             yield True
@@ -1487,7 +1785,22 @@ class Cooldown(object):
         return
     
     @staticmethod
-    def _check_user(self,message):
+    def _check_user(self, message):
+        """
+        Executes user cooldown check.
+        
+        Might be set as the ``Cooldown``'s ``.checker`` instance attribute.
+        
+        Parameters
+        ----------
+        message : ``Message``
+            The reeived message.
+        
+        Returns
+        -------
+        expires_at : `int`
+            When the cooldown for the given entity will expire.
+        """
         id_=message.author.id
         
         cache=self.cache
@@ -1495,7 +1808,7 @@ class Cooldown(object):
             unit=cache[id_]
         except KeyError:
             at_=monotonic()+self.reset
-            cache[id_]=_CD_unit(at_,self.limit)
+            cache[id_]=_CDUnit(at_,self.limit)
             KOKORO.call_at(at_,dict.__delitem__,cache,id_)
             return 0.
         
@@ -1506,7 +1819,22 @@ class Cooldown(object):
         return unit.expires_at
     
     @staticmethod
-    def _check_channel(self,message):
+    def _check_channel(self, message):
+        """
+        Executes channel cooldown check.
+        
+        Might be set as the ``Cooldown``'s ``.checker`` instance attribute.
+        
+        Parameters
+        ----------
+        message : ``Message``
+            The reeived message.
+        
+        Returns
+        -------
+        expires_at : `int`
+            When the cooldown for the given entity will expire.
+        """
         id_=message.channel.id
         
         cache=self.cache
@@ -1514,7 +1842,7 @@ class Cooldown(object):
             unit=cache[id_]
         except KeyError:
             at_=monotonic()+self.reset
-            cache[id_]=_CD_unit(at_,self.limit)
+            cache[id_]=_CDUnit(at_,self.limit)
             KOKORO.call_at(at_,dict.__delitem__,cache,id_)
             return 0.
         
@@ -1527,6 +1855,23 @@ class Cooldown(object):
     #returns -1. if non guild
     @staticmethod
     def _check_guild(self, message):
+        """
+        Executes guild based cooldown check.
+        
+        Might be set as the ``Cooldown``'s ``.checker`` instance attribute.
+        
+        Parameters
+        ----------
+        message : ``Message``
+            The reeived message.
+        
+        Returns
+        -------
+        expires_at : `int`
+            When the cooldown for the given entity will expire.
+            
+            If the cooldown limitation is not applicable for the given entity, returns `-1.0`.
+        """
         channel=message.channel
         if channel.type in (1,3):
             return -1.
@@ -1538,7 +1883,7 @@ class Cooldown(object):
             unit=cache[id_]
         except KeyError:
             at_=monotonic()+self.reset
-            cache[id_]=_CD_unit(at_,self.limit)
+            cache[id_]=_CDUnit(at_,self.limit)
             KOKORO.call_at(at_,dict.__delitem__,cache, id_)
             return 0.
         

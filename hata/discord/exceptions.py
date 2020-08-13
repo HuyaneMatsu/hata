@@ -478,3 +478,5 @@ class InvalidToken(BaseException):
     def __init__(self):
         BaseException.__init__(self,'Invalid token, please update it, then start the client again.')
     
+
+VOICE_CLIENT_DISCONNECTC_CLOSE_CODE = 4014

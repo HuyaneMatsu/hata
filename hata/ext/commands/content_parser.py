@@ -10,7 +10,8 @@ try:
 except ImportError:
     relativedelta = None
 
-from ...backend.dereaddons_local import function, _spaceholder, MethodLike
+from ...env import CACHE_USER
+from ...backend.dereaddons_local import function, _spaceholder, MethodLike, method
 from ...backend.analyzer import CallableAnalyzer
 
 from ...discord.bases import FlagBase
@@ -18,7 +19,7 @@ from ...discord.others import USER_MENTION_RP, ROLE_MENTION_RP, CHANNEL_MENTION_
 from ...discord.client import Client
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.emoji import parse_emoji, Emoji, EMOJIS
-from ...discord.client_core import CACHE_USER, USERS, CHANNELS, ROLES, GUILDS, MESSAGES
+from ...discord.client_core import USERS, CHANNELS, ROLES, GUILDS, MESSAGES
 from ...discord.message import Message
 from ...discord.channel import ChannelBase, ChannelGuildBase, ChannelTextBase, ChannelText, ChannelPrivate, \
     ChannelVoice, ChannelGroup, ChannelCategory, ChannelStore
@@ -243,6 +244,22 @@ class ContentArgumentSeparator(object):
             The index where the next parsing should start from.
         """
         return self._caller(self._rp, content, index)
+    
+    def __repr__(self):
+        """Returns the content argument separator's representation."""
+        return f'{self.__class__.__name__}({self.separator!r})'
+    
+    def __hash__(self):
+        """Returns the content argument parser's hash."""
+        return hash(self.separator)
+    
+    def __eq__(self, other):
+        """Returns whether the two content argument separatos are the same."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return (self.separator == other.separator)
+
 
 DEFAULT_SEPARATOR = ContentArgumentSeparator(('"', '"'))
 
@@ -483,6 +500,7 @@ class ContentParserContext(object):
 DEFAULT_TYPE_NONE = 0
 DEFAULT_TYPE_OBJ = 1
 DEFAULT_TYPE_CALL = 2
+DEFAULT_TYPE_NAMES = ('DEFAULT_TYPE_NONE', 'DEFAULT_TYPE_OBJ', 'DEFAULT_TYPE_CALL', )
 
 class ParserContextBase(object):
     """
@@ -505,6 +523,10 @@ class ParserContextBase(object):
             Whether parsing out the variable was successful.
         """
         return True
+    
+    def __repr__(self):
+        """Returns the parser context's represnetation."""
+        return f'<{self.__class__.__name__}>'
 
 class RestParserContext(ParserContextBase):
     """
@@ -581,6 +603,26 @@ class RestParserContext(ParserContextBase):
         
         content_parser_ctx.result.append(result)
         return True
+    
+    def __repr__(self):
+        """Returns the parser context's represnetation."""
+        result = [
+            '<',
+            self.__class__.__name__,
+                ]
+        
+        default_type = self.default_type
+        if default_type:
+            result.append(' default_type=')
+            result.append(repr(default_type))
+            result.append(' (')
+            result.append(DEFAULT_TYPE_NAMES[default_type])
+            result.append('), default=')
+            result.append(repr(self.default))
+        
+        result.append('>')
+        
+        return ''.join(result)
 
 class ParserContext(ParserContextBase):
     """
@@ -643,6 +685,31 @@ class ParserContext(ParserContextBase):
         content_parser_ctx.mark_last_as_used()
         content_parser_ctx.result.append(result)
         return True
+    
+    def __repr__(self):
+        """Returns the parser context's represnetation."""
+        result = [
+            '<',
+            self.__class__.__name__,
+            'converter=',
+            self.converter.__name__,
+            ' type=',
+                ]
+        
+        type_ = self.type
+        if (type_ is None):
+            result.append('None')
+        else:
+            result.append(type_.__name__)
+        
+        flags = self.flags
+        if flags:
+            result.append(', flags=')
+            result.append(int.__repr__(flags))
+        
+        result.append('>')
+        
+        return ''.join(result)
 
 class SingleArgsParserContext(ParserContext):
     """
@@ -748,6 +815,34 @@ class ChainedArgsParserContext(ParserContextBase):
         
         return True
     
+    def __repr__(self):
+        """Returns the parser context's represnetation."""
+        result = [
+            '<',
+            self.__class__.__name__,
+            ' parser_contexts=[',
+                ]
+        
+        parser_contexts = self.parser_contexts
+        index = 0
+        limit = len(parser_contexts)
+        while True:
+            parser_context = parser_contexts[index]
+            index +=1
+            
+            result.append(repr(parser_context))
+            
+            if index == limit:
+                break
+            
+            result.append(', ')
+            continue
+        
+        result.append(']>')
+        
+        return ''.join(result)
+
+
 class SingleParserContext(ParserContext):
     """
     Parser context used inside of a content parser.
@@ -851,6 +946,46 @@ class SingleParserContext(ParserContext):
         content_parser_ctx.result.append(default)
         return True
 
+    def __repr__(self):
+        """Returns the parser context's represnetation."""
+        result = [
+            '<',
+            self.__class__.__name__,
+            ' type=',
+                ]
+        
+        type_ = self.type
+        if (type_ is None):
+            result.append('None')
+        else:
+            result.append(type_.__name__)
+        
+        flags = self.flags
+        if flags:
+            result.append(', flags=')
+            result.append(int.__repr__(flags))
+            
+            add_comma = True
+        else:
+            add_comma = False
+        
+        default_type = self.default_type
+        if default_type:
+            if add_comma:
+                result.append(',')
+            
+            result.append(' default_type=')
+            result.append(repr(default_type))
+            result.append(' (')
+            result.append(DEFAULT_TYPE_NAMES[default_type])
+            result.append('), default=')
+            result.append(repr(self.default))
+        
+        result.append('>')
+        
+        return ''.join(result)
+
+
 class ChainedParserContext(ChainedArgsParserContext):
     """
     A chained converter used, when a single part can represent more types.
@@ -953,6 +1088,45 @@ class ChainedParserContext(ChainedArgsParserContext):
         content_parser_ctx.result.append(default)
         return True
 
+    def __repr__(self):
+        """Returns the parser context's represnetation."""
+        result = [
+            '<',
+            self.__class__.__name__,
+            ' parser_contexts=[',
+                ]
+        
+        parser_contexts = self.parser_contexts
+        index = 0
+        limit = len(parser_contexts)
+        while True:
+            parser_context = parser_contexts[index]
+            index +=1
+            
+            result.append(repr(parser_context))
+            
+            if index == limit:
+                break
+            
+            result.append(', ')
+            continue
+        
+        result.append(']')
+        
+        default_type = self.default_type
+        if default_type:
+            result.append(', default_type=')
+            result.append(repr(default_type))
+            result.append(' (')
+            result.append(DEFAULT_TYPE_NAMES[default_type])
+            result.append('), default=')
+            result.append(repr(self.default))
+        
+        result.append('>')
+        
+        return ''.join(result)
+
+
 CONVERTER_SETTING_TYPE_RELATION_MAP = {}
 CONVERTER_SETTING_NAME_TO_TYPE = {}
 
@@ -966,9 +1140,9 @@ class ConverterSetting(object):
         All the flags which the converter picks up.
     alternative_type_name : `None` or `str`
         Alternative string name for the parser, what allows picking up a respective converter.
-    alternative_type_name : `None` or `str`
-        Alternative string name for the parser, what allows picking up a respective converter.
-    converter : `function` (async)
+    alternative_types : `None` or `list` of `type` instances
+        Alternative type specifications, which are supported by the parser.
+    converter : `async-function`
         The converter function.
     default_flags : ``ConverterFlag``
         The detault flags whith what teh converter will be used if not defining any specific.
@@ -1123,7 +1297,64 @@ class ConverterSetting(object):
             for alternative_type in alternative_types_processed:
                 CONVERTER_SETTING_TYPE_RELATION_MAP[alternative_type] = self
                 CONVERTER_SETTING_NAME_TO_TYPE[alternative_type.__name__] = alternative_type
-
+    
+    def __repr__(self):
+        """Returns the converter setting's representation."""
+        result = [
+            '<',
+            self.__class__.__name__,
+            ' converter=',
+            self.converter.__name__,
+                ]
+        
+        default_type = self.default_type
+        if default_type is None:
+            alternative_type_name = self.alternative_type_name
+            if (alternative_type_name is not None):
+                result.append(', alternative_type_name=')
+                result.append(repr(alternative_type_name))
+        else:
+            default_type_name = default_type.__name__
+            result.append(', default_type=')
+            result.append(default_type_name)
+            
+            alternative_type_name = self.alternative_type_name
+            if alternative_type_name != default_type_name:
+                result.append(', alternative_type_name=')
+                result.append(repr(alternative_type_name))
+            
+            alternative_types = self.alternative_types
+            if (alternative_types is not None):
+                result.append(', alternative_types=[')
+                
+                index = 0
+                limit = len(alternative_types)
+                while True:
+                    alternative_type_= alternative_types[index]
+                    index +=1
+                    
+                    result.append(alternative_type_.__name__)
+                    
+                    if index == limit:
+                        break
+                    
+                    result.append(', ')
+                    continue
+                
+                result.append(']')
+        
+        if self.uses_flags:
+            default_flags = self.default_flags
+            result.append(', default_flags=')
+            result.append(int.__repr__(default_flags))
+            
+            all_flags = self.all_flags
+            if default_flags != all_flags:
+                result.append(', all_flags=')
+                result.append(int.__repr__(all_flags))
+        
+        result.append('>')
+        return ''.join(result)
 
 
 if CACHE_USER:
@@ -1391,7 +1622,7 @@ async def role_converter(parser_ctx, content_parser_ctx):
         parsed = ID_RP.fullmatch(part)
         if (parsed is not None):
             id_ = int(parsed.group(1))
-        
+            
             if flags&CONVERTER_FLAG_EVERYWHERE:
                 try:
                     role = ROLES[id_]
@@ -2584,7 +2815,7 @@ class CommandContentParser(object):
         self = object.__new__(cls)
         self._parsers = parsers
         self._separator = separator
-        return func, self
+        return self, func
     
     async def get_args(self, client, message, content):
         """
@@ -2630,6 +2861,27 @@ class CommandContentParser(object):
             return True
         
         return False
+    
+    def __repr__(self):
+        """Returns the command content parser's representation."""
+        result = [
+            '<',
+            self.__class__.__name__,
+                ]
+        
+        parsers = self._parsers
+        if (parsers is not None):
+            result.append(' parsers=')
+            result.append(repr(parsers))
+            
+            separator = self._separator
+            if (separator is not DEFAULT_SEPARATOR):
+                result.append(', separator=')
+                result.append(repr(separator))
+        
+        result.append('>')
+        
+        return ''.join(result)
 
 class ContentParser(CommandContentParser):
     """
@@ -2712,7 +2964,12 @@ class ContentParser(CommandContentParser):
         if func is None:
             return cls._wrapper(handler, is_method, separator)
         
+        if is_method:
+            func = method(func, object())
         self, func = CommandContentParser.__new__(cls, func, separator)
+        if is_method:
+            func = func.__func__
+        
         self._func = func
         self._handler = handler
         self._is_method = is_method
@@ -2874,7 +3131,7 @@ class ContentParser(CommandContentParser):
             return False
         
         # call function
-        func = self.func
+        func = self._func
         if args is None:
             if self._is_method:
                 coro = func(parent, client, message)
@@ -2898,11 +3155,46 @@ class ContentParser(CommandContentParser):
         
         return self
 
-    def __set__(self,obj,value):
+    def __set__(self, obj, value):
         raise AttributeError('can\'t set attribute')
 
-    def __delete__(self,obj):
+    def __delete__(self, obj):
         raise AttributeError('can\'t delete attribute')
+    
+    def __repr__(self):
+        """Returns the content parser's representation."""
+        result = [
+            '<',
+            self.__class__.__name__,
+                ]
+        
+        func = self._func
+        result.append(' func=')
+        result.append(repr(func))
+        
+        parsers = self._parsers
+        if (parsers is not None):
+            result.append(', parsers=')
+            result.append(repr(parsers))
+            
+            separator = self._separator
+            if (separator is not DEFAULT_SEPARATOR):
+                result.append(', separator=')
+                result.append(repr(separator))
+            
+            add_comma = True
+        
+        handler = self._handler
+        if (handler is not None):
+            result.append(', handler=')
+            result.append(repr(handler))
+        
+        if self._is_method:
+            result.append(', is_method=True')
+        
+        result.append('>')
+        
+        return ''.join(result)
 
 class ContentParserMethod(MethodLike):
     """
@@ -2964,7 +3256,7 @@ class ContentParserMethod(MethodLike):
         TypeError
             Unexpected amount of arguments were passed.
         """
-        return self._content_parser(self.__self__, *args)
+        return await self._content_parser(self.__self__, *args)
     
     @property
     def __module__(self):

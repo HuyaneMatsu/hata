@@ -18,10 +18,10 @@ from .ratelimit import ratelimit_global, RATELIMIT_GROUPS, RatelimitHandler, NO_
 AUDIT_LOG_REASON    = Discord_hdrs.AUDIT_LOG_REASON
 RATELIMIT_PRECISION = Discord_hdrs.RATELIMIT_PRECISION
 
-ChannelGuildBase = NotImplemented
-
 @modulize
 class URLS:
+    ChannelGuildBase = NotImplemented
+    
     VALID_ICON_FORMATS   = ('jpg','jpeg','png','webp')
     VALID_ICON_SIZES     = {1<<x for x in range(4,13)}
     VALID_ICON_FORMATS_EXTENDED = (*VALID_ICON_FORMATS,'gif',)
@@ -1401,6 +1401,10 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.channel_group_leave, channel_id),
             METH_DELETE, f'{API_ENDPOINT}/channels/{channel_id}')
     
+    async def channel_group_users(self, channel_id):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.channel_group_user_add, channel_id),
+            METH_GET, f'{API_ENDPOINT}/channels/{channel_id}/recipients')
+    
     async def channel_group_user_add(self,channel_id,user_id):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.channel_group_user_add, channel_id),
             METH_PUT, f'{API_ENDPOINT}/channels/{channel_id}/recipients/{user_id}')
@@ -1444,8 +1448,8 @@ class DiscordHTTPClient(HTTPClient):
     #messages
     
     #hooman only
-    async def message_mar(self,channel_id,message_id,data):
-        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.message_mar, channel_id),
+    async def message_ack(self,channel_id,message_id,data):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.message_ack, channel_id),
             METH_POST, f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}/ack',data)
     
     async def message_get(self,channel_id,message_id):
@@ -1508,6 +1512,11 @@ class DiscordHTTPClient(HTTPClient):
     async def channel_pins(self,channel_id):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.channel_pins, channel_id),
             METH_GET, f'{API_ENDPOINT}/channels/{channel_id}/pins')
+    
+    # hooman only
+    async def channel_pins_ack(self, channel_id):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.channel_pins_ack, channel_id),
+            METH_POST, f'{API_ENDPOINT}/channels/{channel_id}/pins/ack')
     
     #typing
     
@@ -1587,8 +1596,8 @@ class DiscordHTTPClient(HTTPClient):
             METH_DELETE, f'{API_ENDPOINT}/guilds/{guild_id}/discovery-categories/{category_id}')
     
     #hooman only
-    async def guild_mar(self,guild_id,data):
-        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.guild_mar, guild_id),
+    async def guild_ack(self,guild_id,data):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.guild_ack, guild_id),
             METH_POST, f'{API_ENDPOINT}/guilds/{guild_id}/ack', data)
     
     async def guild_leave(self,guild_id):
@@ -1647,9 +1656,9 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.user_move, guild_id),
             METH_PATCH, f'{API_ENDPOINT}/guilds/{guild_id}/members/{user_id}',data)
     
-    async def integration_get_all(self,guild_id):
+    async def integration_get_all(self, guild_id, data):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.integration_get_all, guild_id),
-            METH_GET, f'{API_ENDPOINT}/guilds/{guild_id}/integrations')
+            METH_GET, f'{API_ENDPOINT}/guilds/{guild_id}/integrations', params=data)
     
     async def integration_create(self,guild_id,data):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.integration_create, guild_id),
@@ -1695,6 +1704,10 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.guild_roles, guild_id),
             METH_GET, f'{API_ENDPOINT}/guilds/{guild_id}/roles')
     
+    async def welcome_screen_get(self, guild_id):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.welcome_screen_get, guild_id),
+            METH_GET, f'{API_ENDPOINT}/guilds/{guild_id}/welcome-screen')
+    
     #invite
     
     async def invite_create(self,channel_id,data):
@@ -1719,7 +1732,6 @@ class DiscordHTTPClient(HTTPClient):
     
     
     #role
-    
     async def role_edit(self,guild_id,role_id,data,reason):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.role_edit, guild_id),
             METH_PATCH, f'{API_ENDPOINT}/guilds/{guild_id}/roles/{role_id}',data,reason=reason)
@@ -1842,7 +1854,7 @@ class DiscordHTTPClient(HTTPClient):
     async def hypesquad_house_leave(self):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.hypesquad_house_leave, NO_SPECIFIC_RATELIMITER),
             METH_DELETE, f'{API_ENDPOINT}/hypesquad/online')
-
+    
     #achievements
     
     async def achievement_get_all(self,application_id):
@@ -1880,6 +1892,14 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.application_get, NO_SPECIFIC_RATELIMITER),
             METH_GET, f'{API_ENDPOINT}/applications/{application_id}')
     
+    async def applications_detectable(self):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.applications_detectable, NO_SPECIFIC_RATELIMITER),
+            METH_GET, f'{API_ENDPOINT}/applications/detectable')
+    
+    async def eula_get(self, eula_id):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.eula_get, NO_SPECIFIC_RATELIMITER),
+            METH_GET, f'{API_ENDPOINT}/store/eulas/{eula_id}')
+    
     async def discovery_categories(self):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.discovery_categories, NO_SPECIFIC_RATELIMITER),
             METH_GET, f'{API_ENDPOINT}/discovery/categories')
@@ -1887,6 +1907,34 @@ class DiscordHTTPClient(HTTPClient):
     async def discovery_validate_term(self, data):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.discovery_validate_term, NO_SPECIFIC_RATELIMITER),
             METH_GET, f'{API_ENDPOINT}/discovery/valid-term', params=data)
+    
+    #hooman only
+    async def bulk_ack(self):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.bulk_ack, NO_SPECIFIC_RATELIMITER),
+            METH_POST, f'{API_ENDPOINT}/read-states/ack-bulk',)
+    
+    # thread
+    
+    # DiscordException Forbidden (403), code=20001: Bots cannot use this endpoint
+    async def channel_thread_start(self, channel_id, data):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.channel_thread_start, channel_id),
+            METH_POST, f'{API_ENDPOINT}/channels/{channel_id}/threads', data)
+    
+    # DiscordException Not Found (404): 404: Not Found
+    async def thread_users(self, channel_id):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.thread_users, channel_id),
+            METH_GET, f'{API_ENDPOINT}/channels/{channel_id}/threads/participants')
+    
+    # DiscordException Not Found (404): 404: Not Found
+    async def thread_user_delete(self, channel_id, user_id):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.thread_user_delete, channel_id),
+            METH_DELETE, f'{API_ENDPOINT}/channels/{channel_id}/threads/participants/{user_id}')
+    
+    # DiscordException Not Found (404): 404: Not Found
+    async def thread_user_add(self, channel_id, user_id):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.thread_user_add, channel_id),
+            METH_POST, f'{API_ENDPOINT}/channels/{channel_id}/threads/participants/{user_id}')
+
 
 del re
 del modulize

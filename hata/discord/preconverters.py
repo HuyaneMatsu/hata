@@ -24,12 +24,13 @@ def preconvert_snowflake(snowflake, name):
         - If `snowfalke` was passed as `str` and cannot be converted to `int`.
         - If the converted `snowflake` is negative or it's bit length is over 64.
     """
-    if (type(snowflake) is int):
+    snowflake_type = snowflake.__class__
+    if snowflake_type is int:
         pass
-    if isinstance(snowflake,int):
-        snowflake=int(snowflake)
+    if issubclass(snowflake_type, int):
+        snowflake = int(snowflake)
     # JSON uint64 is str
-    elif isinstance(snowflake,str) and 6<len(snowflake)<18 and snowflake.isdigit():
+    elif issubclass(snowflake_type, str) and 6<len(snowflake)<21 and snowflake.isdigit():
         snowflake = int(snowflake)
     else:
         raise TypeError(f'`{name}` can be passed as `int` or `str` instance, got {snowflake.__class__.__name__}.')

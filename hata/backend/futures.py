@@ -2420,8 +2420,8 @@ class Lock(object):
         
         return ''.join(result)
 
-class ScarletLock(object):
-    __slots__ = ('_loop', '_size', '_waiters')
+class ScarletLock(Lock):
+    __slots__ = ('_size',)
     def __new__(cls, loop, size=1):
         size_type = size.__class__
         if size_type is int:
@@ -2450,20 +2450,9 @@ class ScarletLock(object):
         if len(waiters) > size:
             await waiters[size]
     
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        future = self._waiters.pop()
-        future.set_result_if_pending(None)
-    
     # returns True if the Lock is entered anywhere
     def locked(self):
         return (len(self._waiters) >= self._size)
-    
-    def __iter__(self):
-        waiters = self._waiters
-        while waiters:
-            yield from waiters[0]
-    
-    __await__ = __iter__
     
     def __repr__(self):
         result = [

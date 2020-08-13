@@ -28,18 +28,25 @@ def PartialEmoji(data):
     -------
     emoji : ``Emoji``
     """
-    emoji_id=data.get('id')
+    try:
+        name = data['name']
+    except KeyError:
+        name = data['emoji_name']
+        emoji_id = data.get('emoji_id')
+    else:
+        emoji_id = data.get('id')
+    
     if emoji_id is None:
-        name=data['name']
         try:
             return UNICODE_TO_EMOJI[name]
         except KeyError:
-            raise RuntimeError(f'Undefined emoji : {name.encode()!r}\nPlease open an issue with this message.') from None
+            raise RuntimeError(f'Undefined emoji : {name.encode()!r}\nPlease open an issue with this message.') \
+                from None
     
-    emoji_id=int(emoji_id)
+    emoji_id = int(emoji_id)
     
     try:
-        emoji=EMOJIS[emoji_id]
+        emoji = EMOJIS[emoji_id]
     except KeyError:
         emoji           = object.__new__(Emoji)
         emoji.id        = emoji_id
@@ -49,11 +56,10 @@ def PartialEmoji(data):
         emoji.guild     = None
     
     # name can change
-    name=data['name']
     if name is None:
-        name=''
+        name = ''
     
-    emoji.name=name
+    emoji.name = name
     
     return emoji
     

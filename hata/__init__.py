@@ -1,9 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
-__version__ = '1.0.29'
+__version__ = '1.0.30'
 
-import sys
-BACKEND_ONLY = ('backend_only' in sys.argv) or ('backend-only' in sys.argv)
-del sys
+from .env import BACKEND_ONLY
 
 if BACKEND_ONLY:
     from .backend import *

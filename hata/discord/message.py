@@ -18,6 +18,7 @@ from .embed import EmbedCore, EXTRA_EMBED_TYPES
 from .webhook import WebhookRepr, PartialWebhook, WebhookType, Webhook
 from .role import Role
 from .preconverters import preconvert_flag, preconvert_bool, preconvert_snowflake, preconvert_str
+from .activity import ActivityStream
 
 from . import ratelimit
 
@@ -32,6 +33,24 @@ ChannelGroup    = NotImplemented
 class MessageFlag(FlagBase):
     """
     Bitwise flags of a ``Message``.
+    
+    The implemented message flags are the following:
+    
+    +---------------------------+-------------------+
+    | Respective name           | Bitwise position  |
+    +===========================+===================+
+    | crossposted               | 0                 |
+    +---------------------------+-------------------+
+    | is_crosspost              | 1                 |
+    +---------------------------+-------------------+
+    | embeds_suppressed         | 2                 |
+    +---------------------------+-------------------+
+    | source_message_deleted    | 3                 |
+    +---------------------------+-------------------+
+    | urgent                    | 4                 |
+    +---------------------------+-------------------+
+    | has_thread                | 5                 |
+    +---------------------------+-------------------+
     """
     __keys__ = {
         'crossposted'           : 0,
@@ -39,6 +58,7 @@ class MessageFlag(FlagBase):
         'embeds_suppressed'     : 2,
         'source_message_deleted': 3,
         'urgent'                : 4,
+        'has_thread'            : 5,
             }
 
 class MessageActivityType(object):
@@ -661,6 +681,29 @@ class Message(DiscordEntity, immortal=True):
         """
         raise RuntimeError(f'`{cls.__name__}` should not be created like this.')
     
+    @classmethod
+    def _create_unlinked(cls, message_id, data, channel):
+        """
+        Creates an unlinked message.
+        
+        Parameters
+        ----------
+        message_id : `int`
+            The message's unique identificator number.
+        data : `dict` of (`str`, `Any`) items
+            Message data.
+        channel : ``ChanneltextBase`` instance
+            Source channel.
+        
+        Returns
+        -------
+        self : ``Message``
+        """
+        self = object.__new__(cls)
+        self.id = message_id
+        self._finish_init(data, channel)
+        return self
+    
     def _finish_init(self, data, channel):
         """
         This method is called after a message object is created and it's id is set. Fills up the message's attributes
@@ -729,11 +772,11 @@ class Message(DiscordEntity, immortal=True):
         else:
             self.activity=MessageActivity(activity_data)
 
-        edited=data['edited_timestamp']
-        if edited is not None:
-            edited=parse_time(edited)
-        self.edited=edited
-            
+        edited = data['edited_timestamp']
+        if (edited is not None):
+            edited = parse_time(edited)
+        self.edited = edited
+        
         self.pinned=data.get('pinned',False)
         self.everyone_mention=data.get('mention_everyone',False)
         self.tts=data.get('tts',False)
@@ -2151,9 +2194,11 @@ class MessageType(object):
     +-------------------------------------------+---------------------------------------------------+-------+
     | discovery_grace_period_final_warning      | convert_discovery_grace_period_final_warning      | 17    |
     +-------------------------------------------+---------------------------------------------------+-------+
+    | thread_created                            | convert_thread_created                            | 18    |
+    +-------------------------------------------+---------------------------------------------------+-------+
     """
     # class related
-    INSTANCES = [NotImplemented] * 18
+    INSTANCES = [NotImplemented] * 19
     
     # object related
     __slots__ = ('convert', 'name', 'value', )
@@ -2178,7 +2223,7 @@ class MessageType(object):
         self.INSTANCES[value]=self
     
     def __str__(self):
-        """Returns teh message type's name."""
+        """Returns the message type's name."""
         return self.name
     
     def __int__(self):
@@ -2349,18 +2394,29 @@ def convert_new_guild_sub_t3(self):
 
 def convert_new_follower_channel(self):
     channel=self.channel
-    guild=channel.guild
+    guild = channel.guild
     if guild is None:
         guild_name='None'
     else:
-        guild_name=guild.name
+        guild_name = guild.name
     
-    return (f'{self.author.name} has added {guild_name} #{channel.name} to this channel. Its most important updates '
+    user_name = self.author.name_at(guild)
+    
+    return (f'{user_name} has added {guild_name} #{channel.name} to this channel. Its most important updates '
         'will show up here.')
 
-#TODO
 def convert_stream(self):
-    return ''
+    user = self.author
+    for activity in user.activities:
+        if type(activity) is ActivityStream:
+            activity_name = activity.name
+            break
+    else:
+        activity_name = 'Unknown'
+    
+    user_name = user.name_at(self.guild)
+    
+    return f'{user_name} is live! Now streaming {activity_name}'
 
 def convert_discovery_disqualified(self):
     return ('This server has been removed from Server Discovery because it no longer passes all the requirements. '
@@ -2369,14 +2425,18 @@ def convert_discovery_disqualified(self):
 def convert_discovery_requalified(self):
     return 'This server is eligible for Server Discovery again and has been automatically relisted!'
 
-#TODO
 def convert_discovery_grace_period_initial_warning(self):
-    return ''
+    return ('This server has failed Discovery activity requirements for 1 week. If this server fails for 4 weeks in '
+        'a row, it will be automatically removed from Discovery.')
 
-#TODO
 def convert_discovery_grace_period_final_warning(self):
-    return ''
-    
+    return ('This server has failed Discovery activity requirements for 3 weeks in a row. If this server fails for 1 '
+        'more week, it will be removed from Discovery.')
+
+def convert_thread_created(self):
+    user_name = self.author.name_at(self.guild)
+    return f'{user_name} started a thread'
+
 MessageType.default = MessageType(0, 'default', convert_default)
 MessageType.add_user = MessageType(1, 'add_user', convert_add_user)
 MessageType.remove_user = MessageType(2, 'remove_user', convert_remove_user)
@@ -2397,6 +2457,7 @@ MessageType.discovery_grace_period_initial_warning = MessageType(16, 'discovery_
     convert_discovery_grace_period_initial_warning)
 MessageType.discovery_grace_period_final_warning = MessageType(17, 'discovery_grace_period_final_warning',
     convert_discovery_grace_period_final_warning)
+MessageType.discovery_grace_period_final_warning = MessageType(18, 'thread_created', convert_thread_created)
 
 del convert_default
 del convert_add_user
@@ -2414,6 +2475,7 @@ del convert_new_follower_channel
 del convert_stream
 del convert_discovery_disqualified
 del convert_discovery_requalified
+del convert_thread_created
 
 ratelimit.Message = Message
 

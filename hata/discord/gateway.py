@@ -11,6 +11,7 @@ else:
     SecretBox=nacl.secret.SecretBox
     del nacl
 
+from ..env import CACHE_PRESENCE
 from ..backend.futures import sleep, Task, future_or_timeout, WaitTillExc, WaitTillAll, Future, WaitContinously
 from ..backend.exceptions import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
 
@@ -18,8 +19,8 @@ from .others import to_json, from_json
 from .activity import ActivityUnknown
 from .parsers import PARSERS
 from .guild import LARGE_LIMIT
-from .client_core import CACHE_PRESENCE, Kokoro, KOKORO
-from .exceptions import DiscordGatewayException
+from .client_core import Kokoro, KOKORO
+from .exceptions import DiscordGatewayException, VOICE_CLIENT_DISCONNECTC_CLOSE_CODE
 
 GATEWAY_RATELIMIT_LIMIT = 120
 GATEWAY_RATELIMIT_RESET = 60.0
@@ -352,7 +353,6 @@ class DiscordGateway(object):
             
             if not resume:
                 await self._identify()
-                KOKORO.call_later(.2,self.client._unfreeze_voice_for,self,)
                 return
             
             await self._resume()
@@ -365,7 +365,6 @@ class DiscordGateway(object):
                 self.sequence=None
                 continue
             
-            KOKORO.call_later(.2,self.client._unfreeze_voice_for,self,)
             return
 
     #w8s for the next event
@@ -499,7 +498,6 @@ class DiscordGateway(object):
             return False
         
         if operation==self.RECONNECT:
-            self.client._freeze_voice_for(self)
             await self.terminate()
             return True
         
@@ -818,8 +816,14 @@ class DiscordGatewayVoice(object):
         ------
         TimeoutError
             If the gateways's `.kokoro` is not beating, meanwhile it should.
+        ConnectionClosed
+            If the websocket is already closed. Can happen when destroying ghost clients.
         """
-        message = await self.websocket.recv()
+        websocket = self.websocket
+        if websocket is None:
+            raise ConnectionClosed(VOICE_CLIENT_DISCONNECTC_CLOSE_CODE, None)
+        
+        message = await websocket.recv()
         await self._received_message(message)
     
     async def _received_message(self, message):

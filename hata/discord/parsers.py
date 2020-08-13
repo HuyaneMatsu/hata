@@ -4,18 +4,20 @@ __all__ = ('EventBase', 'EventHandlerBase', 'EventWaitforBase', 'GuildUserChunkE
 
 import sys, datetime
 from time import monotonic
+from datetime import datetime
 try:
     from _weakref import WeakSet
 except ImportError:
     from weakref import WeakSet
 
+from ..env import CACHE_USER, CACHE_PRESENCE
 from ..backend.futures import Future, Task, iscoroutinefunction as iscoro
 from ..backend.dereaddons_local import function, RemovedDescriptor, _spaceholder, MethodLike, NEEDS_DUMMY_INIT, \
     WeakKeyDictionary, WeakReferer
 from ..backend.analyzer import CallableAnalyzer
 
 from .bases import FlagBase
-from .client_core import CACHE_USER, CACHE_PRESENCE, CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO
+from .client_core import CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO
 from .user import User, PartialUser, USERS
 from .channel import CHANNEL_TYPES, ChannelGuildBase
 from .others import Relationship, Gift
@@ -24,9 +26,7 @@ from .emoji import PartialEmoji
 from .role import Role
 from .exceptions import DiscordException, ERROR_CODES
 from .invite import Invite
-from .message import EMBED_UPDATE_NONE
-
-utcfromtimestamp=datetime.datetime.utcfromtimestamp
+from .message import EMBED_UPDATE_NONE, Message
 
 class EVENT_SYSTEM_CORE(object):
     """
@@ -1112,27 +1112,36 @@ def MESSAGE_UPDATE__CAL_SC(client,data):
         
         Task(client.events.embed_update(client, message, change_state), KOKORO)
 
-def MESSAGE_UPDATE__CAL_MC(client,data):
-    message_id=int(data['id'])
-    message=MESSAGES.get(message_id)
+def MESSAGE_UPDATE__CAL_MC(client, data):
+    message_id = int(data['id'])
+    message = MESSAGES.get(message_id)
     if message is None:
-        return
+        try:
+            channel = CHANNELS[int(data['channel_id'])]
+        except KeyError:
+            return
     
-    channel = message.channel
-    clients=filter_clients(channel.clients,INTENT_GUILD_MESSAGES if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_MESSAGES)
+    else:
+        channel = message.channel
+    
+    clients = filter_clients(channel.clients,INTENT_GUILD_MESSAGES if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_MESSAGES)
     if clients.send(None) is not client:
         clients.close()
         return
     
     if 'edited_timestamp' in data:
-        old_attributes = message._update(data)
-        if not old_attributes:
-            return
+        if message is None:
+            message = Message._create_unlinked(message_id, data, channel)
+            old_attributes = None
+        else:
+            old_attributes = message._update(data)
+            if not old_attributes:
+                return
         
         for client_ in clients:
             Task(client_.events.message_edit(client_,message,old_attributes), KOKORO)
     else:
-        result=message._update_embed(data)
+        result = message._update_embed(data)
         if not result:
             return
             
@@ -1166,7 +1175,7 @@ def MESSAGE_UPDATE__OPT_MC(client,data):
         message._update_embed_no_return(data)
 
 
-PARSER_DEFAULTS('MESSAGE_UPDATE',MESSAGE_UPDATE__CAL_SC,MESSAGE_UPDATE__CAL_MC,MESSAGE_UPDATE__OPT_SC,MESSAGE_UPDATE__OPT_MC)
+PARSER_DEFAULTS('MESSAGE_UPDATE',MESSAGE_UPDATE__CAL_SC, MESSAGE_UPDATE__CAL_MC, MESSAGE_UPDATE__OPT_SC, MESSAGE_UPDATE__OPT_MC)
 del MESSAGE_UPDATE__CAL_SC, MESSAGE_UPDATE__CAL_MC, MESSAGE_UPDATE__OPT_SC, MESSAGE_UPDATE__OPT_MC
 
 class ReactionAddEvent(EventBase):
@@ -2990,14 +2999,14 @@ def VOICE_STATE_UPDATE__CAL_SC(client,data):
     #the objects will be different.
     if user==client:
         try:
-            voice_client=client.voice_clients[id_]
+            voice_client = client.voice_clients[id_]
         except KeyError:
             pass
         else:
             if result[1]=='l':
                 Task(voice_client.disconnect(force=True,terminate=False), KOKORO)
             else:
-                voice_client.channel=result[0].channel
+                voice_client.channel = result[0].channel
     
     Task(client.events.voice_state_update(client,*result), KOKORO)
 
@@ -3033,14 +3042,14 @@ def VOICE_STATE_UPDATE__CAL_MC(client,data):
         #the objects will be different.
         if user==client_:
             try:
-                voice_client=client_.voice_clients[id_]
+                voice_client = client_.voice_clients[id_]
             except KeyError:
                 pass
             else:
                 if result[1]=='l':
                     Task(voice_client.disconnect(force=True,terminate=False),KOKORO)
                 else:
-                    voice_client.channel=result[0].channel
+                    voice_client.channel = result[0].channel
         
         Task(client_.events.voice_state_update(client_,*result),KOKORO)
 
@@ -3073,7 +3082,7 @@ def VOICE_STATE_UPDATE__OPT_SC(client,data):
         return
     
     try:
-        voice_client=client.voice_clients[id_]
+        voice_client = client.voice_clients[id_]
     except KeyError:
         return
     
@@ -3116,14 +3125,14 @@ def VOICE_STATE_UPDATE__OPT_MC(client,data):
         return
     
     try:
-        voice_client=client.voice_clients[id_]
+        voice_client = client.voice_clients[id_]
     except KeyError:
         return
     
     if result is _spaceholder:
         Task(voice_client.disconnect(force=True,terminate=False), KOKORO)
     else:
-        voice_client.channel=result
+        voice_client.channel = result
 
 PARSER_DEFAULTS('VOICE_STATE_UPDATE',VOICE_STATE_UPDATE__CAL_SC,VOICE_STATE_UPDATE__CAL_MC,VOICE_STATE_UPDATE__OPT_SC,VOICE_STATE_UPDATE__OPT_MC)
 del VOICE_STATE_UPDATE__CAL_SC, VOICE_STATE_UPDATE__CAL_MC, VOICE_STATE_UPDATE__OPT_SC, VOICE_STATE_UPDATE__OPT_MC
@@ -3137,7 +3146,7 @@ def VOICE_SERVER_UPDATE(client,data):
     voice_client_id = int(voice_client_id)
     
     try:
-        voice_client=client.voice_clients[voice_client_id]
+        voice_client = client.voice_clients[voice_client_id]
     except KeyError:
         return
     
@@ -3159,7 +3168,7 @@ if CACHE_PRESENCE:
         user_id=int(data['user_id'])
         user=PartialUser(user_id)
         
-        timestamp=utcfromtimestamp(data.get('timestamp'))
+        timestamp = datetime.utcfromtimestamp(data.get('timestamp'))
         
         Task(client.events.typing(client,channel,user,timestamp), KOKORO)
     
@@ -3800,7 +3809,15 @@ class _EventHandlerManager(object):
             -------
             func : `callable`
                 The created instance by the respective event handler.
+            
+            Raises
+            ------
+            TypeError
+                If `func` is given as `None`.
             """
+            if func is None:
+                raise TypeError('`func` is given as `None`.')
+            
             return self.parent(func, self.name, **self.kwargs)
     
     def __getattr__(self, name):
@@ -4087,8 +4104,16 @@ class eventlist(list):
             -------
             func : `callable`
                 The function if the parent  ``eventlist`` has no `.type` set. If it has then an instance of that type.
+            
+            Raises
+            ------
+            TypeError
+                If `func` is given as `None`.
             """
-            parent=self.parent
+            if func is None:
+                raise TypeError('`func` is given as `None`.')
+            
+            parent = self.parent
             type_ = parent.type
             
             if type_ is None:
@@ -5484,7 +5509,7 @@ class EventDescriptor(object):
     message_delete(client: Client, message: Message):
         Called when a loaded message is deleted.
     
-    message_edit(client: Client, message: Message, old_attributes: dict):
+    message_edit(client: Client, message: Message, old_attributes: Union[None, dict]):
         Called when a loaded message is edited. The passed `old_attributes` argument contains the message's overwritten
         attributes in `attribute-name` - `old-value` relation.
         
@@ -5521,6 +5546,8 @@ class EventDescriptor(object):
         A special case is if a message is (un)pinned or (un)suppressed, because then the `old_attributes` argument is
         not going to contain `edited`, only `pinned` or `flags`. If the embeds are (un)suppressed of the message, then
         `old_attributes` might contain also `embeds`.
+        
+        Note, if an uncached message is updated, then `old_attributes` is given as `None`.
     
     reaction_add(client: Client, event: ReactionAddEvent):
         Called when a user reacts on a message with the given emoji.
@@ -5782,11 +5809,15 @@ class EventDescriptor(object):
             AttributeError
                 Invalid event name.
             TypeError
+                - If `func` is given as `None`.
                 - If `func` was not given as callable.
                 - If `func` is not as async and neither cannot be converted to an async one.
                 - If `func` expects less or more non reserved positional arguments as `expected` is.
                 - If `name` was not passed as `None` or type `str`.
             """
+            if func is None:
+                raise TypeError('`func` is given as `None`.')
+            
             return self.parent(func, *self.args)
     
     def clear(self):
@@ -5952,6 +5983,5 @@ async def _with_error(client, task):
         await client.events.error(client,repr(task),err)
 
 del RemovedDescriptor
-del datetime
 del FlagBase
 del NEEDS_DUMMY_INIT

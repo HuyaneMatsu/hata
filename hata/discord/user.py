@@ -3,8 +3,10 @@ __all__ = ('ActivityChange', 'GuildProfile', 'User', 'UserBase', 'UserFlag', 'Vo
 
 from datetime import datetime
 
+from ..env import CACHE_USER, CACHE_PRESENCE
+
 from .bases import DiscordEntity, FlagBase, IconSlot, ICON_TYPE_NONE
-from .client_core import CACHE_USER, CACHE_PRESENCE, USERS
+from .client_core import USERS
 from .others import parse_time, Status, DISCORD_EPOCH_START
 from .color import Color, DefaultAvatar
 from .activity import ActivityUnknown, Activity
@@ -17,11 +19,53 @@ from . import others
 class UserFlag(FlagBase):
     """
     Represents a user's flags.
+    
+    The implememted user flags are the following:
+    
+    +-------------------------------+-------------------+
+    | Respective name               | Bitwise position  |
+    +===============================+===================+
+    | staff                         | 0                 |
+    +-------------------------------+-------------------+
+    | partner                       | 1                 |
+    +-------------------------------+-------------------+
+    | hypesquad                     | 2                 |
+    +-------------------------------+-------------------+
+    | bug_hunter_level_1            | 3                 |
+    +-------------------------------+-------------------+
+    | mfa_sms                       | 4                 |
+    +-------------------------------+-------------------+
+    | premium_promo_dismissed       | 5                 |
+    +-------------------------------+-------------------+
+    | hypesquad_bravery             | 6                 |
+    +-------------------------------+-------------------+
+    | hypesquad_brilliance          | 7                 |
+    +-------------------------------+-------------------+
+    | hypesquad_balance             | 8                 |
+    +-------------------------------+-------------------+
+    | early_supporter               | 9                 |
+    +-------------------------------+-------------------+
+    | team_user                     | 10                |
+    +-------------------------------+-------------------+
+    | team_pseudo_user              | 11                |
+    +-------------------------------+-------------------+
+    | system                        | 12                |
+    +-------------------------------+-------------------+
+    | has_unread_urgent_messages    | 13                |
+    +-------------------------------+-------------------+
+    | bug_hunter_level_2            | 14                |
+    +-------------------------------+-------------------+
+    | underage_deleted              | 15                |
+    +-------------------------------+-------------------+
+    | verified_bot                  | 16                |
+    +-------------------------------+-------------------+
+    | verified_developer            | 17                |
+    +-------------------------------+-------------------+
     """
     __keys__ = {
-        'discord_employee'          :  0,
-        'discord_partner'           :  1,
-        'hypesquad_events'          :  2,
+        'staff'                     :  0,
+        'partner'                   :  1,
+        'hypesquad'                 :  2,
         'bug_hunter_level_1'        :  3,
         'mfa_sms'                   :  4,
         'premium_promo_dismissed'   :  5,
@@ -30,12 +74,13 @@ class UserFlag(FlagBase):
         'hypesquad_balance'         :  8,
         'early_supporter'           :  9,
         'team_user'                 : 10,
+        'team_pseudo_user'          : 11,
         'system'                    : 12,
         'has_unread_urgent_messages': 13,
         'bug_hunter_level_2'        : 14,
         'underage_deleted'          : 15,
         'verified_bot'              : 16,
-        'verified_bot_developer'    : 17,
+        'verified_developer'        : 17,
             }
 
 if CACHE_USER:
@@ -815,7 +860,7 @@ class UserBase(DiscordEntity, immortal=True):
             -------
             activtiy : ``ActivityBase`` instance
             """
-            activities=self.activities
+            activities = self.activities
             if activities:
                 return activities[0]
             return ActivityUnknown

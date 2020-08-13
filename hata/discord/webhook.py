@@ -118,6 +118,7 @@ def PartialWebhook(webhook_id, token, type_=WebhookType.bot, channel=None):
         
         webhook.name = ''
         webhook.discriminator = 0
+        webhook.application_id = 0
         webhook.avatar_hash = 0
         webhook.avatar_type = ICON_TYPE_NONE
         
@@ -148,6 +149,8 @@ class Webhook(UserBase):
         The webhook's avatar's hash in `uint128`.
     avatar_type : `bool`
         The webhook's avatar's type.
+    application_id : `int`
+        The application's id what created the webhook. Defaults to `0` if not applicable.
     channel : `None` or ``ChannelText``
         The channel, where the webhook is going to send it's messages.
     token : `str`
@@ -161,7 +164,7 @@ class Webhook(UserBase):
     -----
     Instances of this class are weakreferable.
     """
-    __slots__ = ('channel', 'token', 'type', 'user', ) #default webhook
+    __slots__ = ('application_id', 'channel', 'token', 'type', 'user', ) #default webhook
 
     @property
     def is_bot(self):
@@ -217,7 +220,15 @@ class Webhook(UserBase):
             webhook.id=webhook_id
         
         webhook._update_no_return(data)
-        webhook.type=WebhookType.INSTANCES[data['type']]
+        webhook.type = WebhookType.INSTANCES[data['type']]
+        
+        application_id = data.get('application_id')
+        if application_id is None:
+            application_id = 0
+        else:
+            application_id = int(application_id)
+        webhook.application_id = application_id
+        
         return webhook
     
     @classmethod
@@ -309,6 +320,8 @@ class Webhook(UserBase):
             The webhook's ``.user``.
         channel : ``ChannelText``, Optional
             The webhook's ``.channel``.
+        application_id : `int`
+            The application's id what created the webhook.
         
         Returns
         -------
@@ -355,6 +368,14 @@ class Webhook(UserBase):
                 type_ = preconvert_preinstanced_type(type_, 'type', WebhookType)
                 processable.append(('type',type_))
             
+            try:
+                application_id = kwargs.pop('application_id')
+            except KeyError:
+                pass
+            else:
+                application_id = preconvert_snowflake(application_id, 'application_id')
+                processable.append(('application_id', application_id))
+            
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs}.')
         
@@ -375,6 +396,7 @@ class Webhook(UserBase):
             webhook.user    = ZEROUSER
             webhook.channel = None
             webhook.type    = WebhookType.bot
+            webhook.application_id = 0
             
             USERS[webhook_id]=webhook
         else:
@@ -478,6 +500,7 @@ class Webhook(UserBase):
         webhook.token       = ''
         webhook.user        = client
         webhook.type        = WebhookType.server
+        webhook.application_id = 0
         
         guild=target_channel.guild
         if (guild is not None):

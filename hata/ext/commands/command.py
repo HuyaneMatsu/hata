@@ -517,7 +517,7 @@ class Command(object):
             parser_failure_handler = check_argcount_and_convert(parser_failure_handler, 5,
                 '`parser_failure_handler` expected 5 arguments (client, message, command, content, args).')
         
-        command, parser = CommandContentParser(command, separator)
+        parser, command = CommandContentParser(command, separator)
         if not parser:
             parser = None
         

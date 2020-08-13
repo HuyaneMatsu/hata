@@ -1007,6 +1007,8 @@ class ActivityUnknown(ActivityBase):
         Tells over how much data an activity will be created as `ActivityRich` over sub-activity-types.
     ACTIVITY_FLAG : `int` = `0b0000000000000000`
         Represents which attribute groups the activity type implements.
+    CUSTOM_ID : `str` = `'UNKNOWN'`
+        Custom placeholder id of the unknown activity.
     color : ``Color`` = `Color(0)
         The color of the activity.
     name : `str` = `'Unknown'`
@@ -1014,6 +1016,7 @@ class ActivityUnknown(ActivityBase):
     id : `int` = `0`
         The activity's id. Subclasses might overwrite it as member descriptor.
     """
+    CUSTOM_ID = 'UNKNOWN'
     
     def __repr__(self):
         """Returns the activity's representation."""

@@ -1,23 +1,24 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('DiscoveryCategory', 'Guild', 'GuildDiscovery', 'GuildEmbed', 'GuildFeature', 'GuildPreview', 'GuildWidget',
-    'GuildWidgetChannel', 'GuildWidgetUser', 'SystemChannelFlag', )
+    'GuildWidgetChannel', 'GuildWidgetUser', 'SystemChannelFlag', 'WelcomeChannel', 'WelcomeScreen', )
 
-import re
+import re, reprlib
 
+from ..env import CACHE_PRESENCE
 from ..backend.dereaddons_local import autoposlist, cached_property, _spaceholder
 from ..backend.futures import Task
 
 from .bases import DiscordEntity, ReverseFlagBase, IconSlot, ICON_TYPE_NONE
-from .client_core import CACHE_PRESENCE, GUILDS, DISCOVERY_CATEGORIES
+from .client_core import GUILDS, DISCOVERY_CATEGORIES, CHANNELS
 from .others import EMOJI_NAME_RP, VoiceRegion, Status, VerificationLevel, MessageNotificationLevel, MFA, \
     ContentFilterLevel, DISCORD_EPOCH_START
 from .user import User, PartialUser, VoiceState, UserBase, ZEROUSER
 from .role import Role
-from .channel import CHANNEL_TYPES, ChannelCategory
+from .channel import CHANNEL_TYPES, ChannelCategory, ChannelText
 from .http import URLS
 from .permission import Permission
 from .activity import Activity, ActivityUnknown
-from .emoji import Emoji
+from .emoji import Emoji, PartialEmoji
 from .webhook import Webhook, WebhookRepr
 from .oauth2 import parse_preferred_locale, DEFAULT_LOCALE
 from .preconverters import preconvert_snowflake, preconvert_str
@@ -116,7 +117,7 @@ class GuildFeature(object):
         return guild_feature
     
     # object related
-    __slots__=('value',)
+    __slots__ = ('value',)
     
     def __init__(self, value):
         """
@@ -1696,36 +1697,42 @@ class Guild(DiscordEntity, immortal=True):
         -------
         user : ``User``, ``Client`` or `default`
         """
-        if len(name)>37:
+        if not 1<len(name)<38:
             return default
-        users=self.users
+        
+        users = self.users
         if len(name)>6 and name[-5]=='#':
             try:
-                discriminator=int(name[-4:])
+                discriminator = int(name[-4:])
             except ValueError:
                 pass
             else:
-                name=name[:-5]
+                name = name[:-5]
                 for user in users.values():
                     if user.discriminator==discriminator and user.name==name:
                         return user
         
         if len(name)>32:
             return default
+        
         for user in users.values():
             if user.name==name:
                 return user
+        
         for user in users.values():
-            nick=user.guild_profiles[self].nick
+            nick = user.guild_profiles[self].nick
             if nick is None:
                 continue
+            
             if nick==name:
                 return user
+        
         return default
     
     def get_user_like(self, name, default=None):
         """
-        Searches a user, who's name or nick starts with the given string and returns the first find.
+        Searches a user, who's name or nick starts with the given string and returns the first find. Also matches full
+        name.
         
         Parameters
         ----------
@@ -1738,20 +1745,41 @@ class Guild(DiscordEntity, immortal=True):
         -------
         user : ``User``, ``Client`` or `default`
         """
-        if not 1<len(name)<33:
+        if not 1<len(name)<38:
             return default
-        pattern=re.compile(re.escape(name),re.I)
+        
+        users = self.users
+        if len(name)>6 and name[-5]=='#':
+            try:
+                discriminator = int(name[-4:])
+            except ValueError:
+                pass
+            else:
+                name = name[:-5]
+                for user in users.values():
+                    if user.discriminator==discriminator and user.name==name:
+                        return user
+        
+        if len(name)>32:
+            return default
+        
+        pattern = re.compile(re.escape(name), re.I)
         for user in self.users.values():
             if pattern.match(user.name) is not None:
                 return user
-            nick=user.guild_profiles[self].nick
+            
+            nick = user.guild_profiles[self].nick
+            
             if nick is None:
                 continue
+            
             if pattern.match(nick) is None:
                 continue
+            
             return user
+        
         return default
-
+    
     def get_users_like(self, name):
         """
         Searches the users, who's name or nick start with the given string.
@@ -1768,19 +1796,18 @@ class Guild(DiscordEntity, immortal=True):
         result=[]
         if not 1<len(name)<33:
             return result
-        pattern=re.compile(re.escape(name),re.I)
+        pattern = re.compile(re.escape(name),re.I)
         for user in self.users.values():
-            if pattern.match(user.name) is not None:
-                result.append(user)
-                continue
-            nick=user.guild_profiles[self].nick
-            if nick is None:
-                continue
-            if pattern.match(nick) is None:
-                continue
+            if pattern.match(user.name) is None:
+                nick = user.guild_profiles[self].nick
+                if nick is None:
+                    continue
+                if pattern.match(nick) is None:
+                    continue
+            
             result.append(user)
         return result
-
+    
     def get_users_like_ordered(self, name):
         """
         Searches the users, who's name or nick start with the given string. At the orders them at the same ways, as
@@ -1800,27 +1827,28 @@ class Guild(DiscordEntity, immortal=True):
             return to_sort
         pattern=re.compile(re.escape(name),re.I)
         for user in self.users.values():
-            profile=user.guild_profiles[self]
-            if pattern.match(user.name) is not None:
-                to_sort.append((profile.joined_at,user,),)
-                continue
-            nick=profile.nick
-            if nick is None:
-                continue
-            if pattern.match(nick) is None:
-                continue
-            joined_at=profile.joined_at
+            profile = user.guild_profiles[self]
+            if pattern.match(user.name) is None:
+                nick = profile.nick
+                if nick is None:
+                    continue
+                
+                if pattern.match(nick) is None:
+                    continue
+            
+            joined_at = profile.joined_at
+            
             if joined_at is None:
-                to_sort.append((user.created_at,user,),)
-            else:
-                to_sort.append((profile.joined_at,user,),)
-
+                joined_at = user.created_at
+            
+            to_sort.append((joined_at, user))
+        
         if not to_sort:
             return to_sort
-
+        
         to_sort.sort(key=lambda x:x[0])
         return [x[1] for x in to_sort]
-
+    
     def get_emoji(self, name, default=None):
         """
         Searches an emoji of the guild, what's name equals the given name.
@@ -3255,6 +3283,120 @@ DiscoveryCategory.comics_and_cartoons = DiscoveryCategory(44, 'Comics & Cartoons
 DiscoveryCategory.mobile = DiscoveryCategory(45, 'Mobile', False)
 DiscoveryCategory.console = DiscoveryCategory(46, 'Console', False)
 DiscoveryCategory.charity_and_nonprofit = DiscoveryCategory(47, 'Charity & Nonprofit', False)
+
+class WelcomeScreen(object):
+    """
+    Represents a guild's welcome screen.
+    
+    Attributes
+    ----------
+    description : `str`
+        Description, of what is the server about.
+    welcome_channels : `list` of ``WelcomeChannel``
+        The featured channels by the welcome screen.
+    """
+    __slots__ = ('description', 'welcome_channels', )
+    
+    def __init__(self, data):
+        """
+        Creates a new welcome screen instance from the given data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Welcome screen data.
+        """
+        self.description = data['description']
+        self.welcome_channels = [
+            WelcomeChannel(welcome_channel_data) for welcome_channel_data in data['welcome_channels']
+                ]
+    
+    def __repr__(self):
+        """Returns the welcome screen's representation."""
+        return (f'<{self.__class__.__name__} description={reprlib.repr(self.description)}, welcome_channels='
+            f'{self.welcome_channels!r}>')
+    
+    def __hash__(self):
+        """Returns the welcome screen's hash."""
+        return hash(self.description) ^ hash(self.welcome_channels)
+    
+    def __eq__(self, other):
+        """Returns whether the two welcome screens are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.description != other.description:
+            return False
+        
+        if self.welcome_channels != other.welcome_channels:
+            return False
+        
+        return True
+
+class WelcomeChannel(object):
+    """
+    Represents a featured channel by a welcome screen.
+    
+    Attributes
+    ----------
+    description : `str`
+        The channel's short description.
+    channel_id : `int`
+        The channel's id.
+    emoji : ``Emoji``
+        The emoji displayed before the `description`.
+    """
+    __slots__ = ('description', 'channel_id', 'emoji', )
+    def __init__(self, data):
+        """
+        Creates a new welcome channel instance from the given data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Welcome channel data.
+        """
+        self.channel_id = int(data['channel_id'])
+        self.description = data['description']
+        self.emoji = PartialEmoji(data)
+    
+    @property
+    def channel(self):
+        """
+        Returns the welcome channel's respective channel.
+        """
+        channel_id = self.channel_id
+        try:
+            channel = CHANNELS[channel_id]
+        except KeyError:
+            channel = ChannelText._from_partial_data(None, channel_id, None)
+        
+        return channel
+    
+    def __repr__(self):
+        """Returns the welcome channel's representation."""
+        return (f'<{self.__class__.__name__} channel_id={self.channel_id},  emoji={self.emoji!r}, description='
+            f'{reprlib.repr(self.description)}>')
+    
+    def __hash__(self):
+        """Returns the welcome channel's hash."""
+        return self.channel_id ^ self.emoji.id ^ hash(self.description)
+    
+    def __eq__(self, other):
+        """Returns whether the two welcome channels are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.channel_id != other.channel_id:
+            return False
+        
+        if (self.emoji is not other.emoji):
+            return False
+        
+        if self.description != other.description:
+            return False
+        
+        return True
 
 ratelimit.Guild = Guild
 

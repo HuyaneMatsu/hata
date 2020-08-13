@@ -1,6 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('CACHE_PRESENCE', 'CACHE_USER', 'CHANNELS', 'CLIENTS', 'EMOJIS', 'GUILDS', 'DISCOVERY_CATEGORIES',
-    'INTEGRATIONS', 'KOKORO', 'MESSAGES', 'ROLES', 'TEAMS', 'USERS', 'start_clients', 'stop_clients', )
+__all__ = ('APPLICATIONS', 'CHANNELS', 'CLIENTS', 'EMOJIS', 'EULAS', 'GUILDS', 'DISCOVERY_CATEGORIES', 'INTEGRATIONS',
+    'KOKORO', 'MESSAGES', 'ROLES', 'TEAMS', 'USERS', 'start_clients', 'stop_clients', )
 
 import sys, gc
 from time import perf_counter
@@ -10,13 +10,7 @@ from ..backend.dereaddons_local import WeakValueDictionary
 from ..backend.futures import Future, sleep, CancelledError, future_or_timeout, Task
 from ..backend.eventloop import EventThread
 
-Client=NotImplemented
-
-CACHE_USER      = not (('no_user_cache'     in sys.argv) or ('no-user-cache'        in sys.argv))
-CACHE_PRESENCE  = not (('no_presence_cache' in sys.argv) or ('no-presence-cache'    in sys.argv))
-#You cannot store presences of not loaded users.
-if (not CACHE_USER):
-    CACHE_PRESENCE=False
+Client = NotImplemented
 
 if (sys.hash_info.width>=64):
     #if we have 64 bit system we can use array instead of list
@@ -353,6 +347,8 @@ ROLES       = WeakValueDictionary()
 TEAMS       = WeakValueDictionary()
 USERS       = WeakValueDictionary()
 DISCOVERY_CATEGORIES = WeakValueDictionary()
+EULAS       = WeakValueDictionary()
+APPLICATIONS = WeakValueDictionary()
 
 def start_clients():
     """
@@ -377,12 +373,12 @@ def stop_clients():
     """
     for client in CLIENTS:
         if client.running:
-            Task(client.disconnect(),KOKORO)
+            Task(client.disconnect(), KOKORO)
     
     if (current_thread() is not KOKORO):
         KOKORO.wakeup()
 
-KOKORO=EventThread(daemon=False,name='KOKORO')
+KOKORO = EventThread(daemon=False, name='KOKORO')
 
 GC_CYCLER = KOKORO.cycle(1200.)
 
@@ -540,14 +536,12 @@ class Kokoro(object):
             - Wait `.interval` time and set the waiting `Future` to `self.beat_waiter`. If kokoro is cancelled, or
                 if it should beat now, it is cancelled and we repeat the loop.
             - If we did not get answer since last beating (what is triggered first from outside), then we stop the
-                gateway. If the gateway's client is type ``Client``, then we freeze kokoro's respective voice clients
-                as well. We also break out from the loop to terminate the beating state and we will wait for the
+                gateway. We also break out from the loop to terminate the beating state and we will wait for the
                 websocket to connect again.
             - We beat one with starting `gateway._beat` as a `Task` and setting it to `.beat_task`. If the task is
-                not completed before it's respective timeout, we stop the gateway here as well. If the gateway's
-                client is type ``Client``, then we freeze kokoro's respective voice clients as well. We also break out
+                not completed before it's respective timeout, we stop the gateway here as well. We also break out
                 from the loop to terminate the beating state and we will wait for the websocket to connect again.
-                This task can also be cancelled. If cancellation occures, we repat the loop.
+                This task can also be cancelled. If cancellation occures, we repeat the loop.
             - If the beating task is done, we update `.last_send` to the current `perf_counter` time. Repeat the loop.
         """
         self.last_answer=perf_counter()
@@ -567,8 +561,6 @@ class Kokoro(object):
             if (self.last_answer+self.interval+HEARTBEAT_TIMEOUT)-perf_counter()<=0.:
                 self.should_beat = False
                 client=gateway.client
-                if type(client) is Client:
-                    client._freeze_voice_for(gateway)
                 Task(gateway.terminate(), KOKORO)
                 break
             
@@ -580,8 +572,6 @@ class Kokoro(object):
             except TimeoutError:
                 self.should_beat = False
                 client=gateway.client
-                if type(client) is Client:
-                    client._freeze_voice_for(gateway)
                 Task(gateway.terminate(), KOKORO)
                 break
             except CancelledError:

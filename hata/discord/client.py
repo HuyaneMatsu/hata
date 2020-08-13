@@ -8,6 +8,7 @@ from os.path import split as splitpath
 from threading import current_thread
 from math import inf
 
+from ..env import CACHE_USER, CACHE_PRESENCE
 from ..backend.dereaddons_local import multidict_titled, _spaceholder, methodize, basemethod
 from ..backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, WaitTillFirst, WaitTillExc
 from ..backend.eventloop import EventThread
@@ -23,9 +24,9 @@ from .emoji import Emoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, \
     message_relativeindex, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES
 from .guild import Guild, PartialGuild, GuildEmbed, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
-    DiscoveryCategory, COMMUNITY_FEATURES
-from .http import DiscordHTTPClient, URLS, CDN_ENDPOINT
-from .http.URLS import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED
+    DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen
+from .http import DiscordHTTPClient, URLS
+from .http.URLS import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDPOINT
 from .role import Role, PermOW
 from .webhook import Webhook, PartialWebhook
 from .gateway import DiscordGateway, DiscordGatewaySharder
@@ -35,11 +36,11 @@ from .invite import Invite
 from .message import Message
 from .oauth2 import Connection, parse_locale, DEFAULT_LOCALE, AO2Access, UserOA2, Achievement
 from .exceptions import DiscordException, DiscordGatewayException, ERROR_CODES, InvalidToken
-from .client_core import CLIENTS, CACHE_USER, CACHE_PRESENCE, KOKORO, GUILDS, DISCOVERY_CATEGORIES
+from .client_core import CLIENTS, KOKORO, GUILDS, DISCOVERY_CATEGORIES, EULAS
 from .voice_client import VoiceClient
 from .activity import ActivityUnknown, ActivityBase, ActivityCustom
 from .integration import Integration
-from .application import Application, Team
+from .application import Application, Team, EULA
 from .ratelimit import RatelimitProxy, RATELIMIT_GROUPS
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool, preconvert_discriminator, \
     preconvert_flag, preconvert_preinstanced_type
@@ -946,7 +947,7 @@ class Client(UserBase):
         self.id                 = client_id
         self.partial            = True
         self.ready_state        = None
-        self.application        = Application()
+        self.application        = Application._create_empty()
         self.gateway            = (DiscordGatewaySharder if shard_count else DiscordGateway)(self)
         self.http               = DiscordHTTPClient(self)
         self.events             = EventDescriptor(self)
@@ -1832,6 +1833,52 @@ class Client(UserBase):
         data = await self.http.application_get(application_id)
         return Application(data)
     
+    async def eula_get(self, eula_id):
+        """
+        Requests the eula with the given id.
+
+        Parameters
+        ----------
+        eula_id : `int`
+            The `id` of the eula to request.
+
+        Returns
+        -------
+        eula : ``EULA``
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
+        try:
+            eula = EULA[eula_id]
+        except KeyError:
+            pass
+        else:
+            return eula
+        
+        eula_data = await self.http.eula_get(eula_id)
+        return EULA(eula_data)
+    
+    async def applications_detectable(self):
+        """
+        Requst the detectable applications
+
+        Returns
+        -------
+        applications : `list` of ``Application``
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
+        applications_data = await self.http.applications_detectable()
+        return [Application(application_data) for application_data in applications_data]
+    
     def _delete(self):
         """
         Cleares up the client's references. By default this is not called when a client is stopped. This method should
@@ -1862,7 +1909,7 @@ class Client(UserBase):
         """
         if self.running:
             raise RuntimeError(f'{self.__class__.__name__}._delete called from a running client.')
-
+        
         CLIENTS.remove(self)
         client_id=self.id
         alterego=object.__new__(User)
@@ -1886,7 +1933,7 @@ class Client(UserBase):
                     for relationship in client.relationships:
                         if relationship.user is self:
                             relationship.user=alterego
-                    
+        
         else:
             try:
                 del USERS[client_id]
@@ -1898,7 +1945,7 @@ class Client(UserBase):
                     del guild[client_id]
                 except KeyError:
                     pass
-
+        
         self.relationships.clear()
         for channel in self.group_channels.values():
             users=channel.users
@@ -1906,10 +1953,9 @@ class Client(UserBase):
                 if users[index].id==client_id:
                     users[index]=alterego
                     continue
-
+        
         self.private_channels.clear()
         self.group_channels.clear()
-        self.application._fillup()
         self.events.clear()
         
         self.guild_profiles     = {}
@@ -2275,7 +2321,7 @@ class Client(UserBase):
         
         #quality python code incoming :ok_hand:
         ordered=[]
-        indexes=[0,0,0,0,0,0,0] #for the 7 channel type (type 1 and 3 wont be used)
+        indexes=[0,0,0,0,0,0,0,0] #for the 7 channel type (type 1 and 3 wont be used)
 
         #loop preparations
         outer_channels=guild.channels
@@ -2298,7 +2344,7 @@ class Client(UserBase):
             
             if type_==4:
                 #reset type_indexes
-                indexes[0]=indexes[2]=indexes[5]=indexes[6]=0
+                indexes[0]=indexes[2]=indexes[5]=indexes[6]=indexes[7]=0
                 #loop preparations
                 inner_channels=channel_.channels
                 limit_1=len(inner_channels)
@@ -2556,7 +2602,7 @@ class Client(UserBase):
                 index_0=index_0+1
             #loop ended
                 
-        indexes[0]=indexes[2]=indexes[4]=indexes[5]=indexes[6]=0 #reset
+        indexes[0]=indexes[2]=indexes[4]=indexes[5]=indexes[6]=indexes[7]=0 #reset
 
         #loop preparations
         index_0=0
@@ -2580,7 +2626,7 @@ class Client(UserBase):
             
             if type_==4:
                 #reset type_indexes
-                indexes[0]=indexes[2]=indexes[5]=indexes[6]=0
+                indexes[0]=indexes[2]=indexes[5]=indexes[6]=indexes[7]=0
                 #loop preparations
                 #loop start
                 while True:
@@ -2683,7 +2729,7 @@ class Client(UserBase):
         
         if type_<128:
             INTERCHANGE=channel.INTERCHANGE
-            if len(INTERCHANGE)==1:
+            if len(INTERCHANGE) <= 1:
                 raise TypeError(f'You can not switch channel type of this channel type')
             if type_ not in INTERCHANGE:
                 raise ValueError(f'You can switch chanel type from {value} to {type_}')
@@ -4499,6 +4545,40 @@ class Client(UserBase):
         """
         await self.http.guild_user_delete(guild.id,user.id,reason)
     
+    async def welcome_screen_get(self, guild):
+        """
+        Requests the given guild's welcome screen.
+        
+        Parameters
+        ----------
+        guild : ``Guild``
+            The guild, what's welcome screen will be requested.
+        
+        Returns
+        -------
+        welcome_screen : `None` or ``WelcomeScreen``
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        
+        Notes
+        -----
+        If the guild has no welcome screen enabled, will not do any request.
+        """
+        if GuildFeature.welcome_screen in guild.features:
+            welcome_screen_data = await self.http.welcome_screen_get(guild.id)
+            if welcome_screen_data is None:
+                welcome_screen = None
+            else:
+                welcome_screen = WelcomeScreen(welcome_screen_data)
+        else:
+            welcome_screen = None
+        
+        return welcome_screen
+    
     async def guild_ban_add(self, guild ,user, delete_message_days=0, reason=None):
         """
         Bans the given user from the guild.
@@ -5040,12 +5120,12 @@ class Client(UserBase):
             data['system_channel_id']=None if system_channel is None else system_channel.id
         
         if (rules_channel is not _spaceholder):
-            if not COMMUNITY_FEATURES&guild.features:
+            if not COMMUNITY_FEATURES.intersection(guild.features):
                 raise ValueError('The guild is not Community guild and `rules_channel` was given.')
             data['rules_channel_id']=None if rules_channel is None else rules_channel.id
         
         if (public_updates_channel is not _spaceholder):
-            if not COMMUNITY_FEATURES&guild.features:
+            if not COMMUNITY_FEATURES.intersection(guild.features):
                 raise ValueError('The guild is not Community guild and `public_updates_channel` was given.')
             data['public_updates_channel_id']=None if public_updates_channel is None else public_updates_channel.id
         
@@ -5072,7 +5152,7 @@ class Client(UserBase):
             data['default_message_notifications']=message_notification.value
         
         if (description is not _spaceholder):
-            if not COMMUNITY_FEATURES&guild.features:
+            if not COMMUNITY_FEATURES.intersection(guild.features):
                 raise ValueError('The guild is not Community guild and `description` was given.')
             
             if (description is not None) and (not description):
@@ -6055,7 +6135,7 @@ class Client(UserBase):
     #integrations
     
     #TODO: decide if we should store integrations at Guild objects
-    async def integration_get_all(self, guild):
+    async def integration_get_all(self, guild, include_applications=False):
         """
         Requests the integrations of the given guild.
         
@@ -6063,6 +6143,8 @@ class Client(UserBase):
         ----------
         guild : ``Guild``
             The guild, what's intgrations will be requested.
+        include_applications : `bool`
+            Whether the integrations should include application data as well.
         
         Returns
         -------
@@ -6074,8 +6156,12 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        data = await self.http.integration_get_all(guild.id)
-        return [Integration(integration_data) for integration_data in data]
+        if include_applications:
+            data = {'include_applications': True}
+        else:
+            data = None
+        integrations_data = await self.http.integration_get_all(guild.id, data)
+        return [Integration(integration_data) for integration_data in integrations_data]
     
     #TODO: what is integration id?
     async def integration_create(self, guild, integration_id, type_):
@@ -7941,7 +8027,7 @@ class Client(UserBase):
         """
         if self.is_bot:
             data = await self.http.client_application_info()
-            self.application(data)
+            self.application = self.application._create_update(data)
     
     async def client_gateway(self):
         """
@@ -8258,7 +8344,6 @@ class Client(UserBase):
                     # For now only here. These errors occured randomly for me since I made the wrapper, only once-once,
                     # and it was not the wrapper causing them, so it is time to say STOP.
                     # I also know `GeneratorExit` will show up as RuntimeError, but it is already a RuntimeError.
-                    self._freeze_voice()
                     try:
                         await KOKORO.render_exc_async(err,[
                             'Ignoring unexpected outer Task or coroutine cancellation at ',
@@ -8289,7 +8374,6 @@ class Client(UserBase):
                     if not self.running:
                         break
                     
-                    self._freeze_voice()
                     while True:
                         try:
                             await sleep(5.0, KOKORO)
@@ -8385,7 +8469,7 @@ class Client(UserBase):
             raise TimeoutError(f'Cannot join channel without guild: {channel!r}')
         
         try:
-            voice_client=self.voice_clients[guild.id]
+            voice_client = self.voice_clients[guild.id]
         except KeyError:
             voice_client = await VoiceClient(self,channel)
         else:
@@ -9048,69 +9132,6 @@ class Client(UserBase):
         """
         type_=RelationshipType.pending_outgoing
         return [rs for rs in self.relationships.values() if rs.type is type_]
-    
-    def _freeze_voice(self):
-        """
-        Freezes the client's voice clients.
-        """
-        for voice_client in self.voice_clients.values():
-            voice_client._freeze()
-    
-    def _freeze_voice_for(self, gateway):
-        """
-        Freezes the client's voice clients for the specific gateway.
-        
-        Parameters
-        ----------
-        gateway  : ``DiscordGateway``
-            The gateway, what's voice clients will be freezed.
-        """
-        voice_clients=self.voice_clients
-        
-        shard_count=self.shard_count
-        if shard_count:
-            target_shard_id=gateway.shard_id
-            for voice_client in voice_clients.values():
-                guild = voice_client.channel.guild
-                if guild is None:
-                    Task(voice_client.disconnect(),KOKORO)
-                    continue
-                
-                if (guild.id>>22)%shard_count==target_shard_id:
-                    voice_client._freeze()
-            return
-        
-        for voice_client in voice_clients.values():
-            voice_client._freeze()
-    
-    def _unfreeze_voice_for(self, gateway):
-        """
-        Unfreezes the client's voice clients for the specific gateway.
-        
-        Parameters
-        ----------
-        gateway  : ``DiscordGateway``
-            The gateway, what's voice clients will be unfreezed.
-        """
-        voice_clients=self.voice_clients
-        if not voice_clients:
-            return
-        
-        shard_count=self.shard_count
-        if shard_count:
-            target_shard_id=gateway.shard_id
-            for voice_client in voice_clients.values():
-                guild=voice_client.channel.guild
-                if guild is None:
-                    Task(voice_client.disconnect(),KOKORO)
-                    continue
-                
-                if (guild.id>>22)%shard_count==target_shard_id:
-                    voice_client._unfreeze()
-            return
-        
-        for voice_client in voice_clients.values():
-            voice_client._unfreeze()
     
     def _gateway_for(self, guild):
         """

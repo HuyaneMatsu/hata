@@ -440,7 +440,11 @@ class TCPConnector(ConnectorBase):
             self.cached_hosts.clear()
     
     async def resolve(self, host, port=0, family=module_socket.AF_INET):
-        infos = await self.loop.getaddrinfo(host,port,type=module_socket.SOCK_STREAM,family=family)
+        try:
+            infos = await self.loop.getaddrinfo(host, port, type=module_socket.SOCK_STREAM, family=family)
+        except BaseException as err:
+            return err
+        
         return HostInfoCont(host, infos,)
     
     async def resolver_task(self, key,):
@@ -449,14 +453,10 @@ class TCPConnector(ConnectorBase):
         except KeyError:
             event = Task(self.resolve(*key, family=self.family), self.loop)
             self.dns_events[key] = event
-            try:
-                hostinfo = await event
-            except BaseException as err:
-                return err
-            else:
+            hostinfo = await event
+            if type(hostinfo) is HostInfoCont:
                 self.cached_hosts[key] = hostinfo
-            finally:
-                del self.dns_events[key]
+            del self.dns_events[key]
         else:
             hostinfo = await event
         

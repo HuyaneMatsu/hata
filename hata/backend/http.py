@@ -33,81 +33,76 @@ class HTTPClient(object):
         url             = URL(url)
         proxy_url       = self.proxy_url
         
-        try:
-            with Timeout(self.loop, DEFAULT_TIMEOUT):
-                while True:
-                    cookies=self.cookie_jar.filter_cookies(url)
-                    
-                    if proxy_url:
-                        proxy_url=URL(proxy_url)
-                    
-                    request = ClientRequest(self.loop, method, url, headers, data, params, cookies, None, proxy_url,
-                        self.proxy_auth)
-                    
-                    connection = await self.connector.connect(request)
-                    
-                    tcp_nodelay(connection.transport, True)
-                    
+        with Timeout(self.loop, DEFAULT_TIMEOUT):
+            while True:
+                cookies=self.cookie_jar.filter_cookies(url)
+                
+                if proxy_url:
+                    proxy_url=URL(proxy_url)
+                
+                request = ClientRequest(self.loop, method, url, headers, data, params, cookies, None, proxy_url,
+                    self.proxy_auth)
+                
+                connection = await self.connector.connect(request)
+                
+                tcp_nodelay(connection.transport, True)
+                
+                try:
+                    response = await request.send(connection)
                     try:
-                        response = await request.send(connection)
-                        try:
-                            await response.start(connection)
-                        except:
-                            response.close()
-                            raise
+                        await response.start(connection)
                     except:
-                        connection.close()
+                        response.close()
                         raise
+                except:
+                    connection.close()
+                    raise
+                
+                #we do nothing with os error
+                
+                self.cookie_jar.update_cookies(response.cookies,response.url)
+                
+                # redirects
+                if response.status in (301,302,303,307) and redirect:
+                    redirect-=1
+                    history.append(response)
+                    if not redirect:
+                        response.close()
+                        raise ConnectionError('Too many redirects',history[0].request_info,tuple(history))
                     
-                    #we do nothing with os error
+                    if (response.status==303 and response.method!=METH_HEAD) \
+                       or (response.status in (301,302) and response.method==METH_POST):
+                        method=METH_GET
+                        data=None
+                        headers.pop(CONTENT_LENGTH,None)
                     
-                    self.cookie_jar.update_cookies(response.cookies,response.url)
-                    
-                    # redirects
-                    if response.status in (301,302,303,307) and redirect:
-                        redirect-=1
-                        history.append(response)
-                        if not redirect:
-                            response.close()
-                            raise ConnectionError('Too many redirects',history[0].request_info,tuple(history))
-                        
-                        # For 301 and 302, mimic IE behaviour, now changed in RFC.
-                        # Details: https://github.com/kennethreitz/requests/pull/269
-                        if (response.status==303 and response.method!=METH_HEAD) \
-                           or (response.status in (301,302) and response.method==METH_POST):
-                            method=METH_GET
-                            data=None
-                            headers.pop(CONTENT_LENGTH,None)
-                        
-                        redirect_url = (response.headers.get(LOCATION) or response.headers.get(URI))
-                        if redirect_url is None:
-                            break
-                        else:
-                            response.release()
-                        
-                        redirect_url=URL(redirect_url)
-                        
-                        scheme=redirect_url.scheme
-                        if scheme not in ('http','https',''):
-                            response.close()
-                            raise ValueError('Can redirect only to http or https')
-                        elif not scheme:
-                            redirect_url=url.join(redirect_url)
-                        
-                        if url.origin()!=redirect_url.origin():
-                            headers.pop(AUTHORIZATION,None)
-                        
-                        url=redirect_url
-                        params = None
+                    redirect_url = (response.headers.get(LOCATION) or response.headers.get(URI))
+                    if redirect_url is None:
+                        break
+                    else:
                         response.release()
-                        continue
-
-                    break
-            
-            response.history=tuple(history)
-            return response
-        except BaseException:
-            raise
+                    
+                    redirect_url=URL(redirect_url)
+                    
+                    scheme=redirect_url.scheme
+                    if scheme not in ('http','https',''):
+                        response.close()
+                        raise ValueError('Can redirect only to http or https')
+                    elif not scheme:
+                        redirect_url=url.join(redirect_url)
+                    
+                    if url.origin()!=redirect_url.origin():
+                        headers.pop(AUTHORIZATION,None)
+                    
+                    url = redirect_url
+                    params = None
+                    response.release()
+                    continue
+                
+                break
+        
+        response.history=tuple(history)
+        return response
         
     async def _request2(self, method, url, headers=None, params=None, data=None, auth=None, redirects=10, read_until_eof=True,
             proxy_url=None, proxy_auth=None, timeout=DEFAULT_TIMEOUT, ssl=None):

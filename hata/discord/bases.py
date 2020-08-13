@@ -1,6 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('ICON_TYPE_ANIMATED', 'ICON_TYPE_NONE', 'ICON_TYPE_STATIC', 'Icon', 'IconType',
-    'instance_or_id_to_instance', 'instance_or_id_to_snowflake', )
+__all__ = ('DiscordEntity', 'ICON_TYPE_ANIMATED', 'ICON_TYPE_NONE', 'ICON_TYPE_STATIC', 'Icon', 'IconType',
+    'IconSlot', 'instance_or_id_to_instance', 'instance_or_id_to_snowflake', )
 
 import sys
 
@@ -1039,10 +1039,12 @@ class IconSlot(object):
         added_instance_atttribute_name_hash = internal_name+'_hash'
         added_internal_attribute_name_type  = internal_name+'_type'
         
-        added_class_attributes = [
-            (f'{internal_name}_url'    , property(url_property) ),
-            (f'{internal_name}_url_as' , url_as_method          ),
-                ]
+        added_class_attributes = []
+        if (url_property is not None):
+            added_class_attributes.append((f'{internal_name}_url', property(url_property)))
+        
+        if (url_as_method is not None):
+            added_class_attributes.append((f'{internal_name}_url_as', url_as_method))
         
         locals_ = {}
         func_name = f'_set_{internal_name}'

@@ -75,6 +75,15 @@ MAX_LINE_LENGTH = 8190
 
 WRITE_CHUNK_LIMIT = 65536
 
+CONNECTION_ERROR_EOF_NO_HTTP_HEADER = (
+    'Stream closed before any data was received. (Might be caused by bad connection on your side, like the other side '
+    'might have closed the stream before receiving the full payload.)'
+        )
+
+PAYLOAD_ERROR_EOF_AT_HTTP_HEADER = (
+    'EOF received meanwhile reading http headers.'
+        )
+
 class RawMessage(object):
     __slots__ = ('_upgraded', 'headers', )
     
@@ -320,7 +329,8 @@ class HTTPStreamWriter(object):
             await protocol._drain_helper()
 
 class ReadProtocolBase(object):
-    __slots__ = ('_chunks', '_eof', '_offset', '_paused', 'exception', 'loop', 'payload_reader',  'payload_waiter', 'transport', )
+    __slots__ = ('_chunks', '_eof', '_offset', '_paused', 'exception', 'loop', 'payload_reader',  'payload_waiter',
+        'transport', )
     
     def __init__(self, loop):
         self.loop = loop
@@ -715,7 +725,8 @@ class ReadProtocolBase(object):
             del chunks[0]
             n -=len(chunk)
             if n < 0:
-                raise PayloadError(f'Header line exceeds max line length: {MAX_LINE_LENGTH!r} by {-n!r} and CRLF still not found.')
+                raise PayloadError(f'Header line exceeds max line length: {MAX_LINE_LENGTH!r} by {-n!r} and CRLF still '
+                    f'not found.')
             
             continue
         
@@ -812,44 +823,65 @@ class ReadProtocolBase(object):
         return chunk, offset
     
     def _read_http_response(self):
-        chunk, offset = yield from self._read_http_helper()
-        
-        parsed = HTTP_STATUS_RP.match(chunk, offset)
-        if parsed is None:
-            # stupid fallback
-            line = yield from self._readtill_CRLF()
-            parsed = HTTP_STATUS_LINE_RP.fullmatch(line)
+        try:
+            try:
+                chunk, offset = yield from self._read_http_helper()
+            except EOFError as err:
+                args = err.args
+                if (args is None) or (not args) or (not args[0]):
+                    raise ConnectionError(CONNECTION_ERROR_EOF_NO_HTTP_HEADER)
+                
+                raise
+            
+            parsed = HTTP_STATUS_RP.match(chunk, offset)
             if parsed is None:
-                raise PayloadError(f'Invalid status line: {line!r}.')
+                # stupid fallback
+                line = yield from self._readtill_CRLF()
+                parsed = HTTP_STATUS_LINE_RP.fullmatch(line)
+                if parsed is None:
+                    raise PayloadError(f'Invalid status line: {line!r}.')
+                
+                chunk, offset = yield from self._read_http_helper()
+            else:
+                offset = parsed.end()
+                
+            major, minor, status, reason = parsed.groups()
             
-            chunk, offset = yield from self._read_http_helper()
-        else:
-            offset = parsed.end()
-            
-        major, minor, status, reason = parsed.groups()
-        
-        headers = yield from self._read_http_headers(chunk, offset)
-        return RawResponseMessage(HttpVersion(int(major), int(minor)), int(status), reason, headers)
+            headers = yield from self._read_http_headers(chunk, offset)
+            return RawResponseMessage(HttpVersion(int(major), int(minor)), int(status), reason, headers)
+        except EOFError as err:
+            raise PayloadError(PAYLOAD_ERROR_EOF_AT_HTTP_HEADER) from err
     
     def _read_http_request(self):
-        chunk, offset = yield from self._read_http_helper()
-        
-        parsed = HTTP_REQUEST_RP.match(chunk, offset)
-        if parsed is None:
-            # stupid fallback
-            line = yield from self._readtill_CRLF()
-            parsed = HTTP_REQUEST_LINE_RP.fullmatch(line)
-            if parsed is None:
-                raise PayloadError(f'invalid request line: {line!r}')
+        try:
+            try:
+                chunk, offset = yield from self._read_http_helper()
+            except EOFError as err:
+                args = err.args
+                if (args is None) or (not args) or (not args[0]):
+                    raise ConnectionError(CONNECTION_ERROR_EOF_NO_HTTP_HEADER)
+                
+                raise
             
-            chunk, offset = yield from self._read_http_helper()
-        else:
-            offset = parsed.end()
-        
-        meth, path, major, minor = parsed.groups()
-        
-        headers = yield from self._read_http_headers(chunk, offset)
-        return RawRequestMessage(HttpVersion(int(major), int(minor)), meth.upper().decode(), path.decode('ascii', 'surrogateescape'), headers)
+            parsed = HTTP_REQUEST_RP.match(chunk, offset)
+            if parsed is None:
+                # stupid fallback
+                line = yield from self._readtill_CRLF()
+                parsed = HTTP_REQUEST_LINE_RP.fullmatch(line)
+                if parsed is None:
+                    raise PayloadError(f'invalid request line: {line!r}')
+                
+                chunk, offset = yield from self._read_http_helper()
+            else:
+                offset = parsed.end()
+            
+            meth, path, major, minor = parsed.groups()
+            
+            headers = yield from self._read_http_headers(chunk, offset)
+            path = path.decode('ascii', 'surrogateescape')
+            return RawRequestMessage(HttpVersion(int(major), int(minor)), meth.upper().decode(), path, headers)
+        except EOFError as err:
+            raise PayloadError(PAYLOAD_ERROR_EOF_AT_HTTP_HEADER) from err
     
     def _read_http_headers(self, chunk, offset):
         headers = multidict_titled()

@@ -785,7 +785,7 @@ class RatelimitHandlerCTX(object):
     
     def exit(self, headers):
         """
-        Marks the context manager as it was already exited and exists's its parent with the given `headers` as well.
+        ackks the context manager as it was already exited and exists's its parent with the given `headers` as well.
         
         Parameters
         ----------
@@ -1275,12 +1275,13 @@ class RATELIMIT_GROUPS:
     GROUP_USER_ROLE_MODIFY      = RatelimitGroup(LIMITER_GUILD)
     
     oauth2_token                = RatelimitGroup(optimistic=True)
-    application_get             = RatelimitGroup() # untested
+    application_get             = RatelimitGroup(optimistic=True) # untested
     achievement_get_all         = RatelimitGroup()
     achievement_create          = RatelimitGroup()
     achievement_delete          = RatelimitGroup()
     achievement_get             = RatelimitGroup()
     achievement_edit            = RatelimitGroup()
+    applications_detectable     = RatelimitGroup(optimistic=True)
     client_logout               = RatelimitGroup() # untested
     channel_delete              = RatelimitGroup.unlimited()
     channel_group_leave         = RatelimitGroup.unlimited() # untested; same as channel_delete?
@@ -1296,7 +1297,7 @@ class RATELIMIT_GROUPS:
     message_delete_b2wo         = RatelimitGroup(LIMITER_CHANNEL)
     message_get                 = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
     message_edit                = RatelimitGroup(LIMITER_CHANNEL)
-    message_mar                 = RatelimitGroup(optimistic=True) # untested
+    message_ack                 = RatelimitGroup(optimistic=True) # untested
     message_crosspost           = RatelimitGroup(LIMITER_CHANNEL)
     reaction_clear              = GROUP_REACTION_MODIFY
     reaction_delete_emoji       = GROUP_REACTION_MODIFY
@@ -1308,10 +1309,16 @@ class RATELIMIT_GROUPS:
     permission_ow_delete        = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
     permission_ow_create        = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
     channel_pins                = RatelimitGroup()
+    channel_pins_ack             = RatelimitGroup(optimistic=True) # untested
     message_unpin               = GROUP_PIN_MODIFY
     message_pin                 = GROUP_PIN_MODIFY
+    channel_group_users         = RatelimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     channel_group_user_delete   = RatelimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     channel_group_user_add      = RatelimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
+    channel_thread_start        = RatelimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
+    thread_users                = RatelimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
+    thread_user_delete          = RatelimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
+    thread_user_add             = RatelimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     typing                      = RatelimitGroup(LIMITER_CHANNEL)
     webhook_get_channel         = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
     webhook_create              = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
@@ -1323,7 +1330,7 @@ class RATELIMIT_GROUPS:
     guild_delete                = RatelimitGroup.unlimited()
     guild_get                   = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     guild_edit                  = RatelimitGroup(LIMITER_GUILD, optimistic=True)
-    guild_mar                   = RatelimitGroup() # untested
+    guild_ack                   = RatelimitGroup() # untested
     audit_logs                  = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     guild_bans                  = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     guild_ban_delete            = RatelimitGroup(LIMITER_GUILD, optimistic=True)
@@ -1370,6 +1377,7 @@ class RATELIMIT_GROUPS:
     role_edit                   = RatelimitGroup(LIMITER_GUILD)
     vanity_get                  = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     vanity_edit                 = RatelimitGroup(LIMITER_GUILD, optimistic=True) # untested
+    welcome_screen_get          = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     webhook_get_guild           = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     guild_widget_get            = RatelimitGroup.unlimited()
     hypesquad_house_leave       = RatelimitGroup() # untested
@@ -1377,6 +1385,8 @@ class RATELIMIT_GROUPS:
     invite_delete               = RatelimitGroup.unlimited()
     invite_get                  = RatelimitGroup()
     client_application_info     = RatelimitGroup(optimistic=True)
+    bulk_ack                    = RatelimitGroup(optimistic=True) # untested
+    eula_get                    = RatelimitGroup(optimistic=True)
     user_info                   = RatelimitGroup(optimistic=True)
     client_user                 = RatelimitGroup(optimistic=True)
     client_edit                 = RatelimitGroup()
@@ -1479,6 +1489,12 @@ del modulize
 ##    limit   : 5
 ##    reset   : 5
 ##    limiter : GLOBAL
+##
+##endpoint: /applications/detectable
+##method  : GET
+##auth    : UNKNOWN
+##used at : applications_detectable
+##limits  : UNLIMITED
 ##
 ##endpoint: /auth/logout
 ##method  : POST
@@ -1595,7 +1611,7 @@ del modulize
 ##endpoint: /channels/{channel_id}/messages/{message_id}/ack
 ##method  : POST
 ##auth    : user
-##used at : message_mar
+##used at : message_ack
 ##limits  : UNTESTED
 ##
 ##endpoint: /channels/{channel_id}/messages/{message_id}/crosspost
@@ -1696,6 +1712,12 @@ del modulize
 ##    reset   : 5
 ##    limiter : GLOBAL
 ##
+##endpoint: /channels/{channel_id}/pins/ack
+##method  : POST
+##auth    : user
+##used at : channel_pins_ack
+##limits  : UNTESTED
+##
 ##endpoint: /channels/{channel_id}/pins/{message_id}
 ##method  : DELETE
 ##auth    : bot
@@ -1716,6 +1738,12 @@ del modulize
 ##    reset   : 4
 ##    limiter : channel_id
 ##
+##endpoint: /channels/{channel_id}/recipients/
+##method  : DELETE
+##auth    : user
+##used at : channel_group_users
+##limits  : UNTESTED
+##
 ##endpoint: /channels/{channel_id}/recipients/{user_id}
 ##method  : DELETE
 ##auth    : user
@@ -1726,6 +1754,30 @@ del modulize
 ##method  : PUT
 ##auth    : user
 ##used at : channel_group_user_add
+##limits  : UNTESTED
+##
+##endpoint: /channels/{channel_id}/threads'
+##method  : POST
+##auth    : bot
+##user at : channel_thread_start
+##limits  : UNTESTED
+##
+##endpoint: /channels/{channel_id}/threads/participants'
+##method  : GET
+##auth    : UNDEFINED
+##user at : thread_users
+##limits  : UNTESTED
+##
+##endpoint: /channels/{channel_id}/threads/participants/{user_id}'
+##method  : DELETE
+##auth    : UNDEFINED
+##user at : thread_user_delete
+##limits  : UNTESTED
+##
+##endpoint: /channels/{channel_id}/threads/participants/{user_id}'
+##method  : POST
+##auth    : UNDEFINED
+##user at : thread_user_add
 ##limits  : UNTESTED
 ##
 ##endpoint: /channels/{channel_id}/typing
@@ -1813,7 +1865,7 @@ del modulize
 ##endpoint: /guilds/{guild_id}/ack
 ##method  : POST
 ##auth    : user
-##used at : guild_mar
+##used at : guild_ack
 ##limits  : UNTESTED
 ##
 ##endpoint: /guilds/{guild_id}/audit-logs
@@ -2152,6 +2204,12 @@ del modulize
 ##used at : vanity_edit
 ##limits  : UNTESTED
 ##
+##endpoint: /guilds/{guild_id}/welcome-screen
+##method  : GET
+##auth    : bot
+##used at : welcome_screen_get
+##limits  : UNLIMITED
+##
 ##endpoint: /guilds/{guild_id}/webhooks
 ##method  : GET
 ##auth    : bot
@@ -2203,6 +2261,18 @@ del modulize
 ##auth    : bot
 ##used at : client_application_info
 ##limits  : unlimited
+##
+##endpoint: /read-states/ack-bulk
+##method  : GET
+##auth    : user
+##used at : bulk_ack
+##limits  : UNTESTED
+##
+##endpoint: /store/eulas/{eula_id}
+##method  : GET
+##auth    : UNDEFINED
+##used at : eula_get
+##limits  : UNLIMITED
 ##
 ##endpoint: /users/@me
 ##method  : GET

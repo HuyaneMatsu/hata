@@ -474,9 +474,9 @@ class ClientResponse:
     
     async def start(self,connection):
         #Start response processing.
-        self.closed=False
-        self.connection=connection
-        protocol=connection.protocol
+        self.closed = False
+        self.connection = connection
+        protocol = connection.protocol
         
         self.raw_message = message = await protocol.set_payload_reader(protocol._read_http_response())
         protocol.handle_payload_waiter_cancellation()

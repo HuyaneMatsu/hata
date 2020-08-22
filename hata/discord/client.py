@@ -49,9 +49,12 @@ from .bases import ICON_TYPE_NONE
 
 from . import client_core, message, webhook, channel
 
-_VALID_NAME_CHARS=re.compile('([0-9A-Za-z_]+)')
+_VALID_NAME_CHARS = re.compile('([0-9A-Za-z_]+)')
 
 USER_CHUNK_TIMEOUT = 2.5
+
+CHANNEL_MOVE_RESET_INDEXES = tuple(index for index, type_ in enumerate(CHANNEL_TYPES) if \
+    (issubclass(type_, ChannelGuildBase) and type_ is not ChannelCategory))
 
 class SingleUserChunker(object):
     """
@@ -662,7 +665,7 @@ class Client(UserBase):
     group_channels : `dict` of (`int`, ``ChannelGroup``) items
         The group channels of the client. They can be accessed by their id as the key.
     ready_state : ``ReadyState`` or `None`
-        The client on login in fills up it's `.ready_state` with ``Guild`` objects, which will have their members
+        The client on login in fills up it's ``.ready_state`` with ``Guild`` objects, which will have their members
         requested.
     relationships : `dict` of (`int`, ``Relationship``) items
         Stores the relationships of the client. The relationships' users' ids are the keys and the relationships
@@ -690,7 +693,7 @@ class Client(UserBase):
     _gateway_requesting : `bool`
         Whether the client alredy requests it's gateway.
     _gateway_time : `float`
-        The last timestamp when `._gateway_url` was updated.
+        The last timestamp when ``._gateway_url`` was updated.
     _gateway_max_concurrency : `int`
         The max amount of shards, which can be launched at the same time.
     _gateway_waiter : `None` or `Future`
@@ -709,11 +712,11 @@ class Client(UserBase):
     
     See Also
     --------
-    UserBase : The superclass of ``Client`` and of other user classes.
-    User : The default type of Discord users.
-    Webhook : Discord webhook entity.
-    WebhookRepr : Discord webhook's user representation.
-    UserOA2 : A user class with extended oauth2 attributes.
+    - ``UserBase`` : The superclass of ``Client`` and of other user classes.
+    - ``User`` : The default type of Discord users.
+    - ``Webhook`` : Discord webhook entity.
+    - ``WebhookRepr`` : Discord webhook's user representation.
+    - ``UserOA2`` : A user class with extended oauth2 attributes.
     
     Notes
     -----
@@ -1328,7 +1331,7 @@ class Client(UserBase):
         
         See Also
         --------
-        parse_oauth2_redirect_url : Parses `redirect_url` and the `code` from a full url.
+        ``parse_oauth2_redirect_url`` : Parses `redirect_url` and the `code` from a full url.
         """
         data = {
             'client_id'     : self.id,
@@ -1892,6 +1895,7 @@ class Client(UserBase):
         
         Examples
         --------
+        ```
         >>> from hata import Client, GUILDS
         >>> import gc
         >>> TOKEN = 'a token goes here'
@@ -1906,6 +1910,7 @@ class Client(UserBase):
         680
         >>> len(GUILDS)
         0
+        ```
         """
         if self.running:
             raise RuntimeError(f'{self.__class__.__name__}._delete called from a running client.')
@@ -2321,7 +2326,7 @@ class Client(UserBase):
         
         #quality python code incoming :ok_hand:
         ordered=[]
-        indexes=[0,0,0,0,0,0,0,0] #for the 7 channel type (type 1 and 3 wont be used)
+        indexes=[0 for _ in range(len(CHANNEL_TYPES))]  # (type 1 and 3 wont be used)
 
         #loop preparations
         outer_channels=guild.channels
@@ -2344,7 +2349,8 @@ class Client(UserBase):
             
             if type_==4:
                 #reset type_indexes
-                indexes[0]=indexes[2]=indexes[5]=indexes[6]=indexes[7]=0
+                for to_reset_index in CHANNEL_MOVE_RESET_INDEXES:
+                    indexes[to_reset_index]=0
                 #loop preparations
                 inner_channels=channel_.channels
                 limit_1=len(inner_channels)
@@ -2454,7 +2460,7 @@ class Client(UserBase):
             
             if info_line[3].ORDER_GROUP in after:
                 possible_indexes.append((0,restricted_positions[index_0],),)
-                
+            
             #loop at 0 block ended
             while True:
                 if index_0==limit_0:
@@ -2464,10 +2470,10 @@ class Client(UserBase):
                 index_0=index_0+1
                 info_line_2=ordered[restricted_positions[index_0]]
                 #loop block start
-
+                
                 if info_line[3].ORDER_GROUP in before and info_line_2[3].ORDER_GROUP in after:
                     possible_indexes.append((index_0,restricted_positions[index_0],),)
-
+                
                 #loop block end
             if limit_0:
                 info_line=info_line_2
@@ -2475,13 +2481,13 @@ class Client(UserBase):
             
             if info_line[3].ORDER_GROUP in before:
                 possible_indexes.append((index_0+1,restricted_positions[index_0]+1,),)
-
+            
             #loop at -1 block ended
             #loop ended
         else:
             #empty category
             possible_indexes.append((0,category_index+1,),)
-            
+        
         #GOTO start 
         while True:
             #GOTO block start
@@ -2601,9 +2607,11 @@ class Client(UserBase):
                 #loop block end
                 index_0=index_0+1
             #loop ended
-                
-        indexes[0]=indexes[2]=indexes[4]=indexes[5]=indexes[6]=indexes[7]=0 #reset
-
+        
+        # reset
+        for to_reset_index in CHANNEL_MOVE_RESET_INDEXES:
+            indexes[to_reset_index]=0
+        
         #loop preparations
         index_0=0
         limit_0=len(ordered)
@@ -2626,7 +2634,8 @@ class Client(UserBase):
             
             if type_==4:
                 #reset type_indexes
-                indexes[0]=indexes[2]=indexes[5]=indexes[6]=indexes[7]=0
+                for to_reset_index in CHANNEL_MOVE_RESET_INDEXES:
+                    indexes[to_reset_index]=0
                 #loop preparations
                 #loop start
                 while True:
@@ -2662,9 +2671,9 @@ class Client(UserBase):
                 continue
             if channel_.position!=position:
                 data.append({'id':channel_.id,'position':position})
-
+        
         await self.http.channel_move(guild.id,data,reason)
-
+    
     async def channel_edit(self, channel, name=None, topic=None, nsfw=None, slowmode=None, user_limit=None,
             bitrate=None, type_=128, reason=None):
         """
@@ -2934,12 +2943,13 @@ class Client(UserBase):
         
         See Also
         --------
-        .message_logs_fromzero : Familiar to this method, but it requests only the newest messages of the channel and
-            makes sure they are chained up with the channel's message history.
-        .message_at_index : A toplevel method to get a message at the specified index at the given channel.
+        - ``.message_logs_fromzero`` : Familiar to this method, but it requests only the newest messages of the channel
+            and makes sure they are chained up with the channel's message history.
+        - ``.message_at_index`` : A toplevel method to get a message at the specified index at the given channel.
             Usually used to load the channel's message history to that point.
-        .messages_in_range : A toplevel method to get all the messages till the specified index at the given channel.
-        .message_iterator : An iterator over a channel's message history.
+        - ``.messages_in_range`` : A toplevel method to get all the messages till the specified index at the given
+            channel.
+        - ``.message_iterator`` : An iterator over a channel's message history.
         """
         if limit<1 or limit>100:
             raise ValueError(f'limit must be in between 1 and 100, got {limit!r}.')
@@ -3063,7 +3073,7 @@ class Client(UserBase):
         
         See Also
         --------
-        .webhook_send : Sending a message with a ``Webbhook``.
+        ``.webhook_send`` : Sending a message with a ``Webbhook``.
         """
         data={}
         contains_content=False
@@ -3922,7 +3932,7 @@ class Client(UserBase):
         
         See Also
         --------
-        .message_suppress_embeds : For suppressing only the embeds of the message.
+        ``.message_suppress_embeds`` : For suppressing only the embeds of the message.
         """
         data={}
         if (content is not None):
@@ -4579,7 +4589,7 @@ class Client(UserBase):
         
         return welcome_screen
     
-    async def guild_ban_add(self, guild ,user, delete_message_days=0, reason=None):
+    async def guild_ban_add(self, guild, user, delete_message_days=0, reason=None):
         """
         Bans the given user from the guild.
         
@@ -4899,7 +4909,7 @@ class Client(UserBase):
         
         See Also
         --------
-        .guild_prune_estimate : Returns how much user would be pruned if ``.guild_prune`` would be called.
+        ``.guild_prune_estimate`` : Returns how much user would be pruned if ``.guild_prune`` would be called.
         """
         if count and guild.is_large:
             count=False
@@ -5748,15 +5758,39 @@ class Client(UserBase):
         DiscordException
         """
         data = await self.http.guild_regions(guild.id)
-        results=[]
-        optimals=[]
+        voice_regions = []
+        optimals = []
         for voice_region_data in data:
-            region=VoiceRegion.from_data(voice_region_data)
-            results.append(region)
+            region = VoiceRegion.from_data(voice_region_data)
+            voice_regions.append(region)
             if voice_region_data['optimal']:
                 optimals.append(region)
-        return results, optimals
-
+        
+        return voice_regions, optimals
+    
+    async def voice_regions(self):
+        """
+        Returns all the voice regions.
+        
+        Returns
+        -------
+        voice_regions : `list` of ``VoiceRegion`` objects
+            Received voice regions.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
+        data = await self.http.voice_regions()
+        voice_regions = []
+        for voice_region_data in data:
+            region = VoiceRegion.from_data(voice_region_data)
+            voice_regions.append(region)
+        
+        return voice_regions
+    
     async def guild_sync_channels(self, guild):
         """
         Requests the given guild's channels and if there any desync between the wrapper and Discord, applies the
@@ -6466,7 +6500,7 @@ class Client(UserBase):
         
         See Also
         --------
-        .webhook_get_token : Getting webhook with Discord's webhook API.
+        ``.webhook_get_token`` : Getting webhook with Discord's webhook API.
         
         Notes
         -----
@@ -6545,7 +6579,7 @@ class Client(UserBase):
         
         See Also
         --------
-        .webhook_update_token : Updating webhook with Discord webhook API.
+        ``.webhook_update_token`` : Updating webhook with Discord webhook API.
         """
         data = await self.http.webhook_get(webhook.id)
         webhook._update_no_return(data)
@@ -6665,7 +6699,7 @@ class Client(UserBase):
         
         See Also
         --------
-        .webhook_delete_token : Deleting webhook with Discord's webhook API.
+        ``.webhook_delete_token`` : Deleting webhook with Discord's webhook API.
         """
         await self.http.webhook_delete(webhook.id)
 
@@ -6720,7 +6754,7 @@ class Client(UserBase):
         
         See Also
         --------
-        .webhook_edit_token : Editing webhook with Discord's webhook API.
+        ``.webhook_edit_token`` : Editing webhook with Discord's webhook API.
         """
         data={}
         

@@ -655,6 +655,7 @@ class Role(DiscordEntity, immortal=True):
         
         Examples
         --------
+        ```
         >>>> from hata import Role, now_as_id
         >>>> role = Role.precreate(now_as_id(), name='admiralgeneral')
         >>>> role
@@ -668,6 +669,7 @@ class Role(DiscordEntity, immortal=True):
         >>>> # 'c' stands for created at.
         >>>> f'{role:c}'
         '2020.06.24-12:58:20'
+        ```
         """
         if not code:
             return self.__str__()

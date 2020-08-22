@@ -470,7 +470,7 @@ class VoiceRegion(object):
         -------
         self : ``VoiceRegion``
         """
-        id_=data['id']
+        id_ = data['id']
         try:
             return cls.INSTANCES[id_]
         except KeyError:
@@ -487,7 +487,7 @@ class VoiceRegion(object):
         return self
     
     # object related
-    __slots__=('custom', 'deprecated', 'id', 'name', 'vip',)
+    __slots__ = ('custom', 'deprecated', 'id', 'name', 'vip',)
     
     def __init__(self, name, id_, deprecated, vip):
         """

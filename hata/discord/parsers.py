@@ -246,7 +246,7 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
     +---------------------------+---------------+-----------------------+-----------------------------------+
     | INTENT_GUILD_MESSAGES     | 9             | guild_messages        | MESSAGE_CREATE                    |
     +---------------------------+---------------+-----------------------+-----------------------------------+
-    |                           |               |                       | MESSAGE_UPDATE                    |
+    | N/A                       | N/A           | N/A                   | MESSAGE_UPDATE                    |
     |                           |               |                       | MESSAGE_DELETE                    |
     |                           |               |                       | MESSAGE_DELETE_BULK               |
     +---------------------------+---------------+-----------------------+-----------------------------------+
@@ -4493,7 +4493,7 @@ class EventWaitforMeta(type):
     
     See Also
     --------
-    EventWaitforBase : Base class to inherit instead of metaclassing ``EventWaitforMeta``.
+    ``EventWaitforBase`` : Base class to inherit instead of metaclassing ``EventWaitforMeta``.
     """
     def __call__(cls, *args, **kwargs):
         """

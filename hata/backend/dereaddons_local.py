@@ -1,8 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('BaseMethodDescriptor', 'KeepType', 'KeyedReferer', 'RemovedDescriptor', 'WeakCallable', 'WeakKeyDictionary',
     'WeakMap', 'WeakReferer', 'WeakValueDictionary', 'alchemy_incendiary', 'any_to_any', 'cached_property',
-    'isweakreferable', 'listdifference', 'methodize', 'modulize', 'multidict', 'multidict_titled', 'titledstr',
-    'weakmethod', )
+    'isweakreferable', 'listdifference', 'methodize', 'module_property', 'modulize', 'multidict', 'multidict_titled',
+    'titledstr', 'weakmethod', )
 
 from types import \
     MethodType              as method, \
@@ -714,23 +714,43 @@ class code(object):
             self.append(line,backstate)
 
 class cached_property(object):
-    __slots__=('func','__name__',)
+    __slots__=('fget', 'name',)
     #Use as a class method decorator.  It operates almost exactly like
     #the Python `@property` decorator, but it puts the result of the
     #method it decorates into the instance dict after the first call,
     #effectively replacing the function it decorates with an instance
     #variable.
-    def __init__(self, func):
-        self.func = func
-        self.__name__ = func.__name__
+    def __new__(cls, fget):
+        name = getattr(fget, '__name__', None)
+        
+        name_type = name.__class__
+        if name_type is NoneType:
+            name_type_correct = False
+        elif name_type is str:
+            name_type_correct = True
+        elif issubclass(name_type, str):
+            name = str(name)
+            name_type_correct = True
+        else:
+            name_type_correct = False
+        
+        if not name_type_correct:
+            raise TypeError(f'`fget` has no attribute or has, but non string attribute `__name__`, got '
+                f'{name_type.__name__}.')
+        
+        self = object.__new__(cls)
+        self.fget = fget
+        self.name = name
+        return self
     
     def __get__(self, obj, objtype):
         if obj is None:
             return self
-        value = obj._cache.get(self.__name__,_spaceholder)
+        
+        value = obj._cache.get(self.name, _spaceholder)
         if value is _spaceholder:
-            value = self.func(obj)
-            obj._cache[self.__name__] = value
+            value = self.fget(obj)
+            obj._cache[self.name] = value
         
         return value
     
@@ -801,15 +821,12 @@ class basemethod(MethodLike):
         return self.__func__.__doc__
 
 class BaseMethodDescriptor(object):
-    __slots__=('func',)
-    def __init__(self, func):
-        self.func = func
+    __slots__=('fget',)
+    def __init__(self, fget):
+        self.fget = fget
     
-    def __get__(self, obj, type_=None):
-        if type_ is None:
-            type_ = type(obj)
-        
-        return basemethod(self.func, type_, obj)
+    def __get__(self, obj, type_):
+        return basemethod(self.fget, type_, obj)
     
     def __set__(self, obj, value):
         raise AttributeError('can\'t set attribute')
@@ -882,7 +899,7 @@ def modulize(klass):
     try:
         result_module = sys.modules['module_path']
     except KeyError:
-        result_module = module(module_name)
+        result_module = module(module_path)
         sys.modules[module_path] = result_module
         globals_ = result_module.__dict__
         globals_['__builtins__'] = __builtins__
@@ -922,14 +939,16 @@ def modulize(klass):
 class methodize(object):
     __slots__=('klass',)
     def __init__(self,klass):
-        self.klass=klass
+        self.klass = klass
     
-    def __get__(self, obj, type_=None):
+    def __get__(self, obj, type_):
+        klass = self.klass
         if obj is None:
-            return self.klass
-        return method(self.klass, obj)
+            return klass
+        
+        return method(klass, obj)
     
-    def __set__(self,obj,value):
+    def __set__(self, obj, value):
         raise AttributeError('can\'t set attribute')
     
     def __delete__(self,obj):
@@ -2800,6 +2819,56 @@ class WeakMap(dict):
         
         dict.__setitem__(self, reference, reference)
         return key
+
+class module_property(object):
+    """
+    Instead of defining a  `.__module__` attribute as `property`, define it as `module_property` to avoid getter issues,
+    when calling from class.
+    
+    Attributes
+    ----------
+    fget : `func`
+        Getter used when calling the module from instance.
+    module : `str`
+        The module where the `module_property` was created.
+    """
+    __slots__ = ('fget', 'module', )
+    def __new__(cls, fget):
+        module = getattr(fget, '__module__', None)
+        if module is None:
+            module = cls.__module__
+        elif type(module) is str:
+            module = module
+        elif isinstance(module, str):
+            module = str(module)
+        else:
+            module = cls.__module__
+            
+        self = object.__new__(cls)
+        self.fget = fget
+        self.module = module
+        return self
+    
+    def __get__(self, obj, type_):
+        if obj is None:
+            return self.module
+        
+        return self.fget()
+    
+    def __set__(self, obj, module):
+        if module is None:
+            module = self.__module__
+        elif type(module) is str:
+            module = module
+        elif isinstance(module, str):
+            module = str(module)
+        else:
+            module = self.__module__
+        
+        self.module = module
+    
+    def __delete__(self, obj):
+        raise AttributeError('can\'t delete attribute')
 
 del WeakrefType
 del dummy_init_tester

@@ -601,23 +601,23 @@ class ExtensionLoader(object):
     """
     There are some cases when you propably want to change some functional part of your client in runtime. Load,
     unload or reload code. Hata provides an easy to use (that's what she said) solution to solve this issue.
-
-    It is called extension loader is an extension of hata. It is separated from `events` extension, but it does not
+    
+    It is called extension loader is an extension of hata. It is separated from `commands` extension, but it does not
     mean they do not go well together. But what more, extension loader was made to complement it.
     
     Usage
     -----
     The ``ExtensionLoader`` class is instanced already as `EXTENSION_LOADER` and that can be imported as well from
     `extension_loader.py`. Instancing the class again will yield the same object.
-
+    
     Because hata can have more clients, we needed a special extension loader what can handle using more clients at any
     file, so the choice ended up on a  really interesting idea: asign variables to a module before it is (re)loaded.
-
+    
     To show this is not blackmagic, here is an example:
     
     **main.py**
     
-    ```py
+    ```
     from hata.extension_loader import EXTENSION_LOADER
     from datetime import datetime
     
@@ -630,19 +630,19 @@ class ExtensionLoader(object):
     
     **extension.py**
     
-    ```py
+    ```
     print(cake, now)
     ```
     
     Make sure you start `main.py` with interactive mode. If you never did it, just use the `-i` option like:
     
-    ```sh
+    ```
     $ python3 -i main.py
     ```
     
     Or on windows:
     
-    ```sh
+    ```
     $ python -i main.py
     ```
     
@@ -654,7 +654,7 @@ class ExtensionLoader(object):
     
     Because now we have the interpreter, you can change the variables.
     
-    ```py
+    ```
     >>> EXTENSION_LOADER.add_default_variables(cake='cakes taste good, and now is:')
     >>> EXTENSION_LOADER.reload_all()
     ```
@@ -667,14 +667,14 @@ class ExtensionLoader(object):
     
     Now lets edit `extension.py`.
     
-    ```py
+    ```
     cake = cake.split()
-    print(*cake, now, sep='\n')
+    print(*cake, now, sep='\\n')
     ```
     
     And reload the extension:
     
-    ```py
+    ```
     >>> EXTENSION_LOADER.reload_all()
     ```
     
@@ -692,7 +692,7 @@ class ExtensionLoader(object):
     
     If you remove default variables and the extension file still uses them, you get an ``ExtensionError``:
     
-    ```py
+    ```
     >>> EXTENSION_LOADER.remove_default_variables('cake')
     >>> EXTENSION_LOADER.reload_all()
     ```
@@ -733,13 +733,13 @@ class ExtensionLoader(object):
     -----------------
     Extensions can be added with the `.add` method.
     
-    ```py
+    ```
     EXTENSION_LOADER.add('cute_commands')
     ```
     
     Or more extension can be added as well by passing an iterable:
     
-    ```py
+    ```
     EXTENSION_LOADER.add(['cute_commands', 'nice_commands'])
     ```
     
@@ -750,19 +750,19 @@ class ExtensionLoader(object):
     -------
     Extensions can be loaded by their name:
     
-    ```py
+    ```
     EXTENSION_LOADER.load('cute_commands')
     ```
     
     All extension can be loaded by using:
     
-    ```py
+    ```
     EXTENSION_LOADER.load_all()
     ```
     
     Or extension can be added and loaded at the same time as well:
     
-    ```py
+    ```
     EXTENSION_LOADER.load_extension('cute_commands')
     ```
     
@@ -772,7 +772,7 @@ class ExtensionLoader(object):
     
     You can pass variables to extensions with the `.add_default_variables` method:
     
-    ```py
+    ```
     EXTENSION_LOADER.add_default_variables(cake=cake, now=now)
     ```
     
@@ -781,7 +781,7 @@ class ExtensionLoader(object):
     
     Or pass variables to just specific extensions:
     
-    ```py
+    ```
     EXTENSION_LOADER.add('cute_commands', cake=cake, now=now)
     ```
     
@@ -793,13 +793,13 @@ class ExtensionLoader(object):
     
     Every variable added is stored in an optionally weak value dictionary, but you are able remove the added variables as well:
     
-    ```py
+    ```
     EXTENSION_LOADER.remove_default_variables('cake', 'now')
     ```
     
     The extensions can be accessed by their name as well, then you can use their properties to modify them.
     
-    ```py
+    ```
     EXTENSION_LOADER.extensions['cute_commands'].remove_default_variables('cake')
     ```
     
@@ -807,13 +807,13 @@ class ExtensionLoader(object):
     ------------------------
     You can unload extension on the same way as loading them.
     
-    ```py
+    ```
     EXTENSION_LOADER.unload('cute_commands')
     ```
     
     Or unload all:
     
-    ```py
+    ```
     EXTENSION_LOADER.unload_all()
     ```
     
@@ -824,13 +824,13 @@ class ExtensionLoader(object):
     
     Can be set almost on the same way as well:
     
-    ```py
+    ```
     EXTENSION_LOADER.default_exit_point = 'exit'
     ```
     
     Or:
     
-    ```py
+    ```
     EXTENSION_LOADER.add('cute_commands', exit_point='exit')
     ```
     
@@ -841,13 +841,13 @@ class ExtensionLoader(object):
     
     Unloaded extensions can be removed from the extension loader by using the `.remove` method:
     
-    ```py
+    ```
     EXTENSION_LOADER.remove('cute_commands')
     ```
     
     Or more extension with an iterable:
     
-    ```py
+    ```
     EXTENSION_LOADER.remove(['cute_commands', 'nice_commands'])
     ```
     

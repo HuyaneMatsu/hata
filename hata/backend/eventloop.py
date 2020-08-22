@@ -193,7 +193,7 @@ class TimerWeakHandle(TimerHandle):
             self.cancelled = False
         
     class _callback(object):
-        __slot__ = ('handle', )
+        __slots__ = ('handle', )
         
         def __init__(self, handle):
             self.handle = WeakReferer(handle)

@@ -361,17 +361,17 @@ class RatelimitUnit(object):
             repr(self.allocates),
                 ]
         
-        next = self.next
-        if (next is not None):
+        next_ = self.next
+        if (next_ is not None):
             result.append(', nexts=[')
             while True:
                 result.append('(')
-                result.append(repr(next.drop))
+                result.append(repr(next_.drop))
                 result.append(', ')
-                result.append(repr(next.allocates))
+                result.append(repr(next_.allocates))
                 result.append(')')
-                next = next.next
-                if (next is None):
+                next_ = next_.next
+                if (next_ is None):
                     break
                 
                 result.append(', ')
@@ -447,12 +447,12 @@ class RatelimitHandler(object):
         new : ``RatelimitHandler``
         """
         new = object.__new__(type(self))
-        new.parent      = self.parent
+        new.parent = self.parent
         new.limiter_id  = self.limiter_id
-        new.drops       = None
-        new.active      = 0
-        new.queue       = None
-        new.wakeupper   = None
+        new.drops = None
+        new.active = 0
+        new.queue = None
+        new.wakeupper = None
         return new
     
     def __repr__(self):
@@ -1309,7 +1309,7 @@ class RATELIMIT_GROUPS:
     permission_ow_delete        = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
     permission_ow_create        = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
     channel_pins                = RatelimitGroup()
-    channel_pins_ack             = RatelimitGroup(optimistic=True) # untested
+    channel_pins_ack            = RatelimitGroup(optimistic=True) # untested
     message_unpin               = GROUP_PIN_MODIFY
     message_pin                 = GROUP_PIN_MODIFY
     channel_group_users         = RatelimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
@@ -1407,6 +1407,7 @@ class RATELIMIT_GROUPS:
     user_get                    = RatelimitGroup()
     channel_group_create        = RatelimitGroup(optimistic=True) # untested
     user_get_profile            = RatelimitGroup(optimistic=True) # untested
+    voice_regions               = RatelimitGroup(optimistic=True)
     webhook_delete              = RatelimitGroup.unlimited()
     webhook_get                 = RatelimitGroup.unlimited()
     webhook_edit                = RatelimitGroup(LIMITER_WEBHOOK, optimistic=True)
@@ -2417,6 +2418,12 @@ del modulize
 ##auth    : user
 ##used at : user_get_profle
 ##limits  : UNTESTED
+##
+##endpoint: /voice/regions
+##method  : GET
+##auth    : bot
+##used at : voice_regions
+##limits  : unlimited
 ##
 ##endpoint: /webhooks/{webhook_id}
 ##method  : DELETE

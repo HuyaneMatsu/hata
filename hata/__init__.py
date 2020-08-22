@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-__version__ = '1.0.30'
+__version__ = '1.0.31'
 
 from .env import BACKEND_ONLY
 
@@ -15,3 +15,4 @@ else:
         *backend.__all__,
         *discord.__all__,
             )
+

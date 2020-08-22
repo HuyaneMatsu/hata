@@ -522,17 +522,17 @@ class Command(object):
             parser = None
         
         self = object.__new__(cls)
-        self.command        = command
-        self.name           = name
-        self.display_name   = name
-        self.aliases        = aliases
-        self.description    = description
-        self.category       = category
-        self._alters        = alters
+        self.command = command
+        self.name = name
+        self.display_name = name
+        self.aliases = aliases
+        self.description = description
+        self.category = category
+        self._alters = alters
         self._category_hint = category_hint
-        self._checks        = checks_processed
-        self.parser         = parser
-        self._wrappers      = wrappers
+        self._checks  = checks_processed
+        self.parser = parser
+        self._wrappers = wrappers
         self._parser_failure_handler = parser_failure_handler
         
         return self
@@ -551,7 +551,12 @@ class Command(object):
         description = self.description
         if (description is not None):
             result.append(', description=')
-            result.append(reprlib.repr(self.description))
+            if type(description) is str:
+                description = reprlib.repr(description)
+            else:
+                description = repr(description)
+            
+            result.append(description)
         
         aliases = self.aliases
         if (aliases is not None):
@@ -575,7 +580,12 @@ class Command(object):
             if (parser_failure_handler is not None):
                 result.append(', parser_failure_handler=')
                 result.append(repr(parser_failure_handler))
-            
+        
+        wrappers = self._wrappers
+        if (wrappers is not None):
+            result.append(', wrappers=')
+            result.append(repr(wrappers))
+        
         result.append('>')
         
         return ''.join(result)
@@ -979,11 +989,11 @@ class Command(object):
     
     def __gt__(self, other):
         """Returns whether this command's name is greater than the other's"""
-        return self.name>other.name
+        return (self.name > other.name)
     
     def __lt__(self, other):
         """Returns whether this command's name is less than the other's"""
-        return self.name<other.name
+        return (self.name < other.name)
 
 def normalize_description(text):
     """
@@ -1009,61 +1019,56 @@ def normalize_description(text):
         if not lines:
             return None
         
-        line=lines[0]
-        if line:
-            break
-        
-        del lines[0]
-        continue
-    
-    while True:
-        if not lines:
-            return None
-        
-        line=lines[-1]
-        if line:
+        if lines[-1]:
             break
         
         del lines[-1]
         continue
     
-    limit=len(lines)
+    while True:
+        if lines[0]:
+            break
+        
+        del lines[0]
+        continue
+    
+    limit = len(lines)
     if limit==1:
         return lines[0].lstrip()
     
-    ignore_index=0
+    ignore_index = 0
     
     while True:
-        next_char=lines[0][ignore_index]
+        next_char = lines[0][ignore_index]
         if next_char not in ('\t', ' '):
             break
         
         index=1
         while index<limit:
-            line=lines[index]
-            index=index+1
+            line = lines[index]
+            index = index+1
             if not line:
                 continue
             
-            char=line[ignore_index]
-            if char!=next_char:
+            char = line[ignore_index]
+            if char != next_char:
                 break
             
             continue
         
-        if char!=next_char:
+        if char != next_char:
             break
         
-        ignore_index=ignore_index+1
+        ignore_index +=1
         continue
     
-    if ignore_index!=0:
+    if ignore_index:
         for index in range(len(lines)):
-            line=lines[index]
+            line = lines[index]
             if not line:
                 continue
             
-            lines[index]=line[ignore_index:]
+            lines[index] = line[ignore_index:]
             continue
     
     return '\n'.join(lines)
@@ -1201,7 +1206,7 @@ class checks:
         __slots__ = ('handler',)
         def __new__(cls, handler=None):
             """
-            Creates a check with the given paramteres.
+            Creates a check with the given parameters.
             
             Paramaters
             ----------

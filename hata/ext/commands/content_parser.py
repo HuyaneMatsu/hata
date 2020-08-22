@@ -11,7 +11,7 @@ except ImportError:
     relativedelta = None
 
 from ...env import CACHE_USER
-from ...backend.dereaddons_local import function, _spaceholder, MethodLike, method
+from ...backend.dereaddons_local import function, _spaceholder, MethodLike, method, module_property
 from ...backend.analyzer import CallableAnalyzer
 
 from ...discord.bases import FlagBase
@@ -3258,7 +3258,7 @@ class ContentParserMethod(MethodLike):
         """
         return await self._content_parser(self.__self__, *args)
     
-    @property
+    @module_property
     def __module__(self):
         """Return the module of the wrapped function."""
         return self._content_parser._func.__module__
@@ -3271,4 +3271,5 @@ class ContentParserMethod(MethodLike):
         """Returns the method's rerpesnetation."""
         return f'{self.__class__.__name__}(content_parser={self._content_parser!r}, obj={self.__self__!r})'
 
+del module_property
 del FlagBase

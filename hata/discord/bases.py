@@ -564,6 +564,7 @@ class FlagBase(int, metaclass = FlagMeta, baseclass=True):
         
         Examples
         -------
+        ```
         >>> from hata import Permission
         >>> perm = Permission().update_by_keys(kick_users=True, ban_users=True)
         >>> list(perm)
@@ -571,6 +572,7 @@ class FlagBase(int, metaclass = FlagMeta, baseclass=True):
         >>> perm = perm.update_by_keys(manage_roles=True, kick_users=False)
         >>> list(perm)
         ['ban_users', 'manage_roles']
+        ```
         """
         new=self
         for key, value in kwargs.items():
@@ -694,6 +696,7 @@ class ReverseFlagBase(FlagBase, baseclass=True):
         
         Examples
         --------
+        ```
         >>> from hata import SystemChannelFlag
         >>> flags = SystemChannelFlag()
         >>> list(flags)
@@ -701,6 +704,7 @@ class ReverseFlagBase(FlagBase, baseclass=True):
         >>> flags = flags.update_by_keys(boost=False)
         >>> list(flags)
         ['welcome']
+        ```
         """
         new=self
         for key, value in kwargs.items():

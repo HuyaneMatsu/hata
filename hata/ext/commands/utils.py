@@ -1421,6 +1421,7 @@ class CooldownWrapper(CommandWrapper):
     
     This subclass adds `Cooldown.shared` feature to the command wrappers created by ``Cooldown``.
     """
+    __slots__ = ()
     def shared(self, weight=0, func=None):
         """
         Creates a new cooldown instance, which cooldown is shared with the source one.
@@ -1455,7 +1456,7 @@ class CooldownWrapper(CommandWrapper):
         if weight == 0:
             weight = source_wrapper.weight
         
-        new_wrapper = object.__new__(type(self))
+        new_wrapper = object.__new__(type(source_wrapper))
         new_wrapper.checker= source_wrapper.checker
         new_wrapper.reset  = source_wrapper.reset
         new_wrapper.cache  = source_wrapper.cache
@@ -1480,7 +1481,7 @@ class Cooldown(object):
     
     **Using a cooldown handler example:**
     
-    ```py
+    ```
     from hata import DiscordException, CancelledError, sleep
     from hata.commands. import Cooldown
     
@@ -1535,7 +1536,7 @@ class Cooldown(object):
     
     **Using shared cooldowns:**
 
-    ```py
+    ```
     from hata import Embed
     from hata.ext.commandsi mport Converter, ConverterFlag
     

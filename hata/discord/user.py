@@ -416,6 +416,7 @@ class UserBase(DiscordEntity, immortal=True):
         
         Examples
         --------
+        ```
         >>> from hata import User, now_as_id
         >>> user = User.precreate(now_as_id(), name='Neko', discriminator=2012)
         >>> user
@@ -432,6 +433,7 @@ class UserBase(DiscordEntity, immortal=True):
         >>> # 'c' stands for created at.
         >>> f'{user:c}'
         '2020.07.08-01:26:45'
+        ```
         """
         if not code:
             return self.name

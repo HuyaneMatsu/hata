@@ -686,7 +686,7 @@ def convert_integration(entry, parent,target_id):
     else:
         target_id = int(target_id)
         try:
-            target = parent.inegrations[target_id]
+            target = parent.integrations[target_id]
         except KeyError:
             target = Unknown('Integration', target_id)
     

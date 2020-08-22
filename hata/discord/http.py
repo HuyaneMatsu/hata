@@ -1913,6 +1913,10 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.bulk_ack, NO_SPECIFIC_RATELIMITER),
             METH_POST, f'{API_ENDPOINT}/read-states/ack-bulk',)
     
+    async def voice_regions(self):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.voice_regions, NO_SPECIFIC_RATELIMITER),
+            METH_GET, f'{API_ENDPOINT}/voice/regions',)
+    
     # thread
     
     # DiscordException Forbidden (403), code=20001: Bots cannot use this endpoint

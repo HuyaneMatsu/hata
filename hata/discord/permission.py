@@ -99,7 +99,7 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
     +---------------------------+-----------------------------------------------+
     | permission_deny_voice_con | 0b11101100000011111111111011101111            |
     +---------------------------+-----------------------------------------------+
-    | permission_deny_both      | permission_deny_text | permission_deny_voice  |
+    | permission_deny_both      | permission_deny_text|permission_deny_voice    |
     +---------------------------+-----------------------------------------------+
     """
     __keys__ = {

@@ -1441,6 +1441,7 @@ class Message(DiscordEntity, immortal=True):
         
         Examples
         --------
+        ```
         >>>> from hata import Message, ChannelText, now_as_id
         >>>> message = Message.custom(content='Fluffy nekos', channel=ChannelText.precreate(now_as_id()))
         >>>> message
@@ -1460,6 +1461,7 @@ class Message(DiscordEntity, immortal=True):
         <Message id=0, ln=12, author=#0000>
         >>>> f'{message:e}'
         '2020.05.31-16:00:00'
+        ```
         """
         if not code:
             return self.__str__()
@@ -2087,7 +2089,7 @@ class Message(DiscordEntity, immortal=True):
                     break
                 result+=len(embed)
         return result
-
+    
     @property
     def clean_embeds(self):
         """
@@ -2457,7 +2459,7 @@ MessageType.discovery_grace_period_initial_warning = MessageType(16, 'discovery_
     convert_discovery_grace_period_initial_warning)
 MessageType.discovery_grace_period_final_warning = MessageType(17, 'discovery_grace_period_final_warning',
     convert_discovery_grace_period_final_warning)
-MessageType.discovery_grace_period_final_warning = MessageType(18, 'thread_created', convert_thread_created)
+MessageType.thread_created = MessageType(18, 'thread_created', convert_thread_created)
 
 del convert_default
 del convert_add_user
@@ -2475,7 +2477,10 @@ del convert_new_follower_channel
 del convert_stream
 del convert_discovery_disqualified
 del convert_discovery_requalified
+del convert_discovery_grace_period_initial_warning
+del convert_discovery_grace_period_final_warning
 del convert_thread_created
+
 
 ratelimit.Message = Message
 

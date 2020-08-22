@@ -807,7 +807,7 @@ class Guild(DiscordEntity, immortal=True):
         The total number of boosts of the guild.
     channels : `autoposlist` of ``ChannelGuildBase`` instances
         The guild's channel in sorted form. The channels under the ``ChannelCategory`` are not listed, but those are
-        listen under the category's `.channel` attribute.
+        listen under the category's `.channels` attribute.
     clients : `list` of ``Client``
         The loaded clients, who are the member of the guild. If no clients are member of a guild, it is partial.
     content_filter : ``ContentFilterLevel``
@@ -821,7 +821,7 @@ class Guild(DiscordEntity, immortal=True):
     embed_channel : `None` or ``ChannelText``
         The channel to where the guild's embed widget will generate the invite to.
     embed_enabled : `bool`
-        If the guild embeddable. Linked to `.embed_channel`.
+        If the guild embeddable. Linked to ``.embed_channel``.
     emojis : `dict` of (`int`, ``Emoji``) items
         The emojis of the guild stored in `emoji_id` - `emoji` relation.
     features : `list` of ``GuildFeature``
@@ -888,18 +888,18 @@ class Guild(DiscordEntity, immortal=True):
     widget_channel : `None` or ``ChannelText``
         The channel for the guild's widget.
     widget_enabled : `bool`
-        Whether the guild's widget is enabled. Linked to `.widget_channel`.
+        Whether the guild's widget is enabled. Linked to ``.widget_channel``.
     
     Notes
     -----
     When a guild is loaded first time, some of it's attrbiutes might not reflect their real value. These are the
     following:
-    - `.embed_channel`
-    - `.embed_enabled`
-    - `.max_presences`
-    - `.max_users`
-    - `.widget_channel`
-    - `.widget_enabled`
+    - ``.embed_channel``
+    - ``.embed_enabled``
+    - ``.max_presences``
+    - ``.max_users``
+    - ``.widget_channel``
+    - ``.widget_enabled``
     """
     __slots__ = ('_boosters', '_cache_perm', 'afk_channel', 'afk_timeout', 'all_channel', 'all_role', 'available',
         'booster_count', 'channels', 'clients', 'content_filter', 'description', 'embed_channel', 'embed_enabled',
@@ -1217,6 +1217,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Examples
         --------
+        ```
         >>> from hata import Guild, now_as_id
         >>> guild = Guild.precreate(now_as_id(), name='GrassGrass')
         >>> guild
@@ -1227,6 +1228,7 @@ class Guild(DiscordEntity, immortal=True):
         >>> # 'c' stands for created at.
         >>> f'{guild:c}'
         '2020.05.23-11:44:02'
+        ```
         """
         if not code:
             return self.name
@@ -2073,7 +2075,7 @@ class Guild(DiscordEntity, immortal=True):
         
         See Also
         --------
-        .cached_permissions_for : Cached permission calculator.
+        ``.cached_permissions_for`` : Cached permission calculator.
         """
         if user==self.owner:
             return Permission.permission_all
@@ -2824,6 +2826,7 @@ class GuildPreview(DiscordEntity):
         
         Examples
         --------
+        ```
         >>> from hata import Client, KOKORO
         >>> TOKEN = 'a token goes here'
         >>> client = Client(TOKEN)
@@ -2837,6 +2840,7 @@ class GuildPreview(DiscordEntity):
         >>> # 'c' stands for created at.
         >>> f'{guild_preview:c}'
         '2017.04.13-14:56:54'
+        ```
         """
         if not code:
             return self.name

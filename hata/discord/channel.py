@@ -187,6 +187,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         
         Examples
         --------
+        ```
         >>> from hata import ChannelText, now_as_id
         >>> channel = ChannelText.precreate(now_as_id(), name='GENERAL')
         >>> channel
@@ -203,6 +204,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         >>> # 'c' stands for created at.
         >>> f'{channel:c}'
         '2020.05.14-14:57:24'
+        ```
         """
         if not code:
             return self.__str__()
@@ -1320,7 +1322,7 @@ class ChannelGuildBase(ChannelBase):
         
         See Also
         --------
-        .cached_permissions_for : Cached permission calculator.
+        ``.cached_permissions_for`` : Cached permission calculator.
         """
         if user==self.guild.owner:
             return Permission.permission_all
@@ -1829,7 +1831,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         
         See Also
         --------
-        .cached_permissions_for : Cached permission calculator.
+        ``.cached_permissions_for`` : Cached permission calculator.
         """
         if user==self.guild.owner:
             return Permission.permission_deny_voice
@@ -2465,7 +2467,7 @@ class ChannelVoice(ChannelGuildBase):
         
         See Also
         --------
-        .cached_permissions_for : Cached permission calculator.
+        ``.cached_permissions_for`` : Cached permission calculator.
         """
         if user==self.guild.owner:
             return Permission.permission_deny_text
@@ -3442,7 +3444,7 @@ class ChannelStore(ChannelGuildBase):
         
         See Also
         --------
-        .cached_permissions_for : Cached permission calculator.
+        ``.cached_permissions_for`` : Cached permission calculator.
         """
         if user==self.guild.owner:
             return Permission.permission_deny_both
@@ -3734,7 +3736,7 @@ class ChannelThread(ChannelGuildBase):
         
         See Also
         --------
-        .cached_permissions_for : Cached permission calculator.
+        ``.cached_permissions_for`` : Cached permission calculator.
         """
         if user==self.guild.owner:
             return Permission.permission_deny_both
@@ -4060,7 +4062,7 @@ class ChannelGuildUndefnied(ChannelGuildBase):
         
         See Also
         --------
-        .cached_permissions_for : Cached permission calculator.
+        ``.cached_permissions_for`` : Cached permission calculator.
         """
         if user==self.guild.owner:
             return Permission.permission_deny_both
@@ -4169,7 +4171,6 @@ CHANNEL_TYPES = (
     ChannelGuildUndefnied,
     ChannelThread,
         )
-
 
 def cr_pg_channel_object(name, type_, overwrites=None, topic=None, nsfw=False, slowmode=0, bitrate=64000, user_limit=0,
         bitrate_limit=96000, category_id=None):

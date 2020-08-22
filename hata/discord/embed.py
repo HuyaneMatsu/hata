@@ -2,7 +2,7 @@
 __all__ = ('EXTRA_EMBED_TYPES', 'Embed', 'EmbedAuthor', 'EmbedCore', 'EmbedField', 'EmbedFooter', 'EmbedImage',
     'EmbedProvider', 'EmbedThumbnail', 'EmbedVideo', )
 
-import re
+from re import escape as re_escape, compile as re_compile
 
 from .others import ROLE_MENTION_RP, USER_MENTION_RP, CHANNEL_MENTION_RP, parse_time, urlcutter
 from .color import Color
@@ -24,58 +24,59 @@ def _convert_content(content, message):
     -------
     content : `str`
     """
-    escape=re.escape
     transformations = {
         '@everyone':'@\u200beveryone',
         '@here':'@\u200bhere'
             }
     
-    guild=message.channel.guild
+    guild = message.channel.guild
     
     if guild is None:
-        users=message.channel.users
+        users = message.channel.users
         for id_ in USER_MENTION_RP.findall(content):
-            id_=int(id_)
+            id_ = int(id_)
             for user in users:
-                if user.id==id_:
-                    transformations[escape(f'<@{id_}>')]=f'@{user.name}'
+                if user.id == id_:
+                    transformations[re_escape(f'<@{id_}>')] = f'@{user.name}'
                     break
     else:
-        channels=guild.all_channel
+        channels = guild.all_channel
         for id_ in CHANNEL_MENTION_RP.findall(content):
-            id_=int(id_)
+            id_ = int(id_)
             try:
-                channel=channels[id_]
+                channel = channels[id_]
             except KeyError:
                 continue
-            transformations[escape(f'<#{id_}>')]=f'#{channel.name}'
+            transformations[re_escape(f'<#{id_}>')] = f'#{channel.name}'
         
-        users=guild.users
+        users = guild.users
         for id_ in USER_MENTION_RP.findall(content):
-            id_=int(id_)
+            id_ = int(id_)
             try:
-                user=users[id_]
+                user = users[id_]
             except KeyError:
                 continue
-            profile=user.guild_profiles.get(guild,None)
-            if profile is None or profile.nick is None:
-                name=f'@{user.name}'
+            
+            profile = user.guild_profiles.get(guild,None)
+            if (profile is None) or (profile.nick is None):
+                name = f'@{user.name}'
             else:
-                name=f'@{profile.nick}'
+                name = f'@{profile.nick}'
                 
-            transformations[escape(f'<@!{id_}>')]=name
-            transformations[escape(f'<@{id_}>')]=name
+            transformations[re_escape(f'<@!{id_}>')] = name
+            transformations[re_escape(f'<@{id_}>')] = name
 
-        roles=guild.all_role
+        roles = guild.all_role
         for id_ in ROLE_MENTION_RP.findall(content):
-            id_=int(id_)
+            id_ = int(id_)
             try:
-                role=roles[id_]
+                role = roles[id_]
             except KeyError:
                 continue
-            transformations[escape(f'<@&{id_}>')]=f'@{role.name}'
+            
+            transformations[re_escape(f'<@&{id_}>')] = f'@{role.name}'
         
-        return re.compile("|".join(transformations)).sub(lambda mention:transformations[escape(mention.group(0))],content)
+        return re_compile('|'.join(transformations)).sub(lambda mention:transformations[re_escape(mention.group(0))],content)
 
 class EmbedThumbnail(object):
     """
@@ -102,10 +103,10 @@ class EmbedThumbnail(object):
         url : `str`
             The url of the thumbnail. Can be http(s) or attachment.
         """
-        self.url            = url
-        self.proxy_url      = None
-        self.height         = 0
-        self.width          = 0
+        self.url = url
+        self.proxy_url = None
+        self.height = 0
+        self.width = 0
         
     @classmethod
     def from_data(cls, data):
@@ -121,11 +122,11 @@ class EmbedThumbnail(object):
         -------
         embed_thumbnail : ``EmbedThumbnail``
         """
-        self=object.__new__(cls)
-        self.url            = data.get('url',None)
-        self.proxy_url      = data.get('proxy_url',None)
-        self.height         = data.get('height',0)
-        self.width          = data.get('width',0)
+        self = object.__new__(cls)
+        self.url = data.get('url',None)
+        self.proxy_url = data.get('proxy_url',None)
+        self.height = data.get('height',0)
+        self.width = data.get('width',0)
         
         return self
     
@@ -135,10 +136,10 @@ class EmbedThumbnail(object):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        thumbnail_data : `dict` of (`str`, `Any`) items
         """
         return {
-            'url'           : self.url,
+            'url' : self.url,
                 }
     
     def __len__(self):
@@ -153,12 +154,12 @@ class EmbedThumbnail(object):
             ' url=',
                 ]
         
-        url=self.url
+        url = self.url
         if url is None:
             text.append('None')
         else:
             text.append('\'')
-            url=urlcutter(url)
+            url = urlcutter(url)
             text.append(url)
             text.append('\'')
         
@@ -173,16 +174,10 @@ class EmbedThumbnail(object):
     
     def __eq__(self, other):
         """Returns whether the two embed thumbnails are equal."""
-        if self.url is None:
-            if other.url is not None:
-                return False
-        else:
-            if other.url is None:
-                return False
-            if self.url!=other.url:
-                return False
+        if type(self) is not type(other):
+            return NotImplemented
         
-        return True
+        return (self.url == other.url)
     
 class EmbedVideo(object):
     """
@@ -206,9 +201,9 @@ class EmbedVideo(object):
         Creates a new embed video object. Because embed videos cannot be sent, it accepts no parameters and just creates
         an empty embed video object with default attributes.
         """
-        self.url            = None
-        self.height         = 0
-        self.width          = 0
+        self.url = None
+        self.height = 0
+        self.width = 0
     
     @classmethod
     def from_data(cls, data):
@@ -224,10 +219,10 @@ class EmbedVideo(object):
         -------
         embed_video : ``EmbedVideo``
         """
-        self=object.__new__(cls)
-        self.url            = data.get('url',None)
-        self.height         = data.get('height',0)
-        self.width          = data.get('width',0)
+        self = object.__new__(cls)
+        self.url = data.get('url', None)
+        self.height = data.get('height', 0)
+        self.width = data.get('width', 0)
         
         return self
     
@@ -239,7 +234,7 @@ class EmbedVideo(object):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        video_data : `dict` of (`str`, `Any`) items
         """
         return {}
     
@@ -255,12 +250,12 @@ class EmbedVideo(object):
             ' url=',
                 ]
         
-        url=self.url
+        url = self.url
         if url is None:
             text.append('None')
         else:
             text.append('\'')
-            url=urlcutter(url)
+            url = urlcutter(url)
             text.append(url)
             text.append('\'')
         
@@ -275,17 +270,11 @@ class EmbedVideo(object):
     
     def __eq__(self, other):
         """Returns whether the two embed videos are equal."""
-        if self.url is None:
-            if other.url is not None:
-                return False
-        else:
-            if other.url is None:
-                return False
-            if self.url!=other.url:
-                return False
+        if type(self) is not type(other):
+            return NotImplemented
         
-        return True
-    
+        return (self.url == other.url)
+
 class EmbedImage(object):
     """
     Represents an embed's image.
@@ -312,10 +301,10 @@ class EmbedImage(object):
         url : `str`
             The url of the image. Can be http(s) or attachment.
         """
-        self.url            = url
-        self.proxy_url      = None
-        self.height         = 0
-        self.width          = 0
+        self.url = url
+        self.proxy_url = None
+        self.height = 0
+        self.width = 0
     
     @classmethod
     def from_data(cls,data):
@@ -331,11 +320,11 @@ class EmbedImage(object):
         -------
         embed_image : ``EmbedImage``
         """
-        self=object.__new__(cls)
-        self.url            = data.get('url',None)
-        self.proxy_url      = data.get('proxy_url',None)
-        self.height         = data.get('height',0)
-        self.width          = data.get('width',0)
+        self = object.__new__(cls)
+        self.url = data.get('url', None)
+        self.proxy_url = data.get('proxy_url', None)
+        self.height = data.get('height', 0)
+        self.width = data.get('width', 0)
         
         return self
     
@@ -345,10 +334,10 @@ class EmbedImage(object):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        image_data : `dict` of (`str`, `Any`) items
         """
         return {
-            'url'           : self.url,
+            'url' : self.url,
                 }
     
     def __len__(self):
@@ -363,12 +352,12 @@ class EmbedImage(object):
             ' url=',
                 ]
         
-        url=self.url
+        url = self.url
         if url is None:
             text.append('None')
         else:
             text.append('\'')
-            url=urlcutter(url)
+            url = urlcutter(url)
             text.append(url)
             text.append('\'')
             
@@ -383,16 +372,10 @@ class EmbedImage(object):
     
     def __eq__(self, other):
         """Returns whether the two embed images are equal."""
-        if self.url is None:
-            if other.url is not None:
-                return False
-        else:
-            if other.url is None:
-                return False
-            if self.url!=other.url:
-                return False
+        if type(self) is not type(other):
+            return NotImplemented
         
-        return True
+        return (self.url == other.url)
     
 class EmbedProvider(object):
     """
@@ -410,8 +393,8 @@ class EmbedProvider(object):
     __slots__ = ('name', 'url',)
     
     def __init__(self):
-        self.name           = None
-        self.url            = None
+        self.name = None
+        self.url = None
         
     @classmethod
     def from_data(cls, data):
@@ -419,9 +402,9 @@ class EmbedProvider(object):
         Creates a new embed provider object. Because embed providers cannot be sent, it accepts no parameters and just
         creates an empty embed provider object with default attributes.
         """
-        self=object.__new__(cls)
-        self.name           = data.get('name',None)
-        self.url            = data.get('url',None)
+        self = object.__new__(cls)
+        self.name = data.get('name', None)
+        self.url = data.get('url', None)
         
         return self
     
@@ -433,13 +416,13 @@ class EmbedProvider(object):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        provider_data : `dict` of (`str`, `Any`) items
         """
         return {}
     
     def __len__(self):
         """Returns the embed provider's contents' length."""
-        name=self.name
+        name = self.name
         if name is None:
             return 0
         return len(name)
@@ -450,16 +433,16 @@ class EmbedProvider(object):
             '<',
             self.__class__.__name__,
             ' length=',
-            str(self.__len__()),
+            str(len(self)),
             ', url='
                 ]
         
-        url=self.url
+        url = self.url
         if url is None:
             text.append('None')
         else:
             text.append('\'')
-            url=urlcutter(url)
+            url = urlcutter(url)
             text.append(url)
             text.append('\'')
         
@@ -469,23 +452,14 @@ class EmbedProvider(object):
     
     def __eq__(self, other):
         """Returns whether the two embed providers are equal."""
-        if self.name is None:
-            if other.name is not None:
-                return False
-        else:
-            if other.name is None:
-                return False
-            if self.name!=other.name:
-                return False
-            
-        if self.url is None:
-            if other.url is not None:
-                return False
-        else:
-            if other.url is None:
-                return False
-            if self.name!=other.name:
-                return False
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.name != other.name:
+            return False
+        
+        if self.url != other.url:
+            return False
         
         return True
     
@@ -518,9 +492,9 @@ class EmbedAuthor(object):
         url : `str`, Optional
             The url of the author.
         """
-        self.icon_url       = icon_url
-        self.name           = name
-        self.url            = url
+        self.icon_url = icon_url
+        self.name = name
+        self.url = url
         self.proxy_icon_url = None
     
     @classmethod
@@ -537,11 +511,11 @@ class EmbedAuthor(object):
         -------
         embed_author : ``EmbedAuthor``
         """
-        self=object.__new__(cls)
-        self.name           = data.get('name',None)
-        self.url            = data.get('url',None)
-        self.icon_url       = data.get('icon_url',None)
-        self.proxy_icon_url = data.get('proxy_icon_url',None)
+        self = object.__new__(cls)
+        self.name = data.get('name', None)
+        self.url = data.get('url', None)
+        self.icon_url = data.get('icon_url', None)
+        self.proxy_icon_url = data.get('proxy_icon_url', None)
         
         return self
     
@@ -551,30 +525,30 @@ class EmbedAuthor(object):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        author_data : `dict` of (`str`, `Any`) items
         """
-        result={}
+        author_data = {}
     
-        name=self.name
-        if name is not None:
-            result['name']  = name
+        name = self.name
+        if (name is not None):
+            author_data['name'] = name
         
-        url=self.url
-        if url is not None:
-            result['url']   = url
+        url = self.url
+        if (url is not None):
+            author_data['url'] = url
         
-        icon_url=self.icon_url
-        if icon_url is not None:
-            result['icon_url']=icon_url
-            
-        return result
+        icon_url = self.icon_url
+        if (icon_url is not None):
+            author_data['icon_url'] = icon_url
+        
+        return author_data
 
     def __len__(self):
         """Returns the embed author's contents' length."""
-        name=self.name
+        name = self.name
         if name is None:
             return 0
-        return len(self.name)
+        return len(name)
     
     def __repr__(self):
         """Returns the representation of the embed author."""
@@ -582,26 +556,26 @@ class EmbedAuthor(object):
             '<',
             self.__class__.__name__,
             ' length=',
-            str(self.__len__()),
+            str(len(self)),
             ', url='
                 ]
         
-        url=self.url
+        url = self.url
         if url is None:
             text.append('None')
         else:
             text.append('\'')
-            url=urlcutter(url)
+            url = urlcutter(url)
             text.append(url)
             text.append('\'')
         
         text.append(', icon_url=')
-        icon_url=self.icon_url
+        icon_url = self.icon_url
         if icon_url is None:
             text.append('None')
         else:
             text.append('\'')
-            icon_url=urlcutter(icon_url)
+            icon_url = urlcutter(icon_url)
             text.append(icon_url)
             text.append('\'')
             
@@ -611,32 +585,17 @@ class EmbedAuthor(object):
     
     def __eq__(self, other):
         """Returns whether the two embed authors are equal."""
-        if self.icon_url is None:
-            if other.icon_url is not None:
-                return False
-        else:
-            if other.icon_url is None:
-                return False
-            if self.icon_url!=other.icon_url:
-                return False
+        if type(self) is not type(other):
+            return NotImplemented
         
-        if self.name is None:
-            if other.name is not None:
-                return False
-        else:
-            if other.name is None:
-                return False
-            if self.name!=other.name:
-                return False
+        if self.icon_url != other.icon_url:
+            return False
         
-        if self.url is None:
-            if other.url is not None:
-                return False
-        else:
-            if other.url is None:
-                return False
-            if self.url!=other.url:
-                return False
+        if self.name != other.name:
+            return False
+        
+        if self.url != other.url:
+            return False
         
         return True
     
@@ -666,8 +625,8 @@ class EmbedFooter(object):
         icon_url : `str`, Optional
             An url of the footer's icon. Can be http(s) or attachment.
         """
-        self.text           = text
-        self.icon_url       = icon_url
+        self.text = text
+        self.icon_url = icon_url
         self.proxy_icon_url = None
     
     @classmethod
@@ -684,10 +643,10 @@ class EmbedFooter(object):
         -------
         embed_footer : ``EmbedFooter``
         """
-        self=object.__new__(cls)
-        self.text           = data['text']
-        self.icon_url       = data.get('icon_url',None)
-        self.proxy_icon_url = data.get('proxy_icon_url',None)
+        self = object.__new__(cls)
+        self.text = data['text']
+        self.icon_url = data.get('icon_url', None)
+        self.proxy_icon_url = data.get('proxy_icon_url', None)
         
         return self
     
@@ -697,17 +656,17 @@ class EmbedFooter(object):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        footer_data : `dict` of (`str`, `Any`) items
         """
-        result = {
-            'text'          : self.text,
+        footer_data = {
+            'text' : self.text,
                 }
         
-        icon_url=self.icon_url
-        if icon_url is not None:
-            result['icon_url']= icon_url
+        icon_url = self.icon_url
+        if (icon_url is not None):
+            footer_data['icon_url'] = icon_url
             
-        return result
+        return footer_data
     
     def __len__(self):
         """Returns the embed footer's contents' length."""
@@ -719,16 +678,16 @@ class EmbedFooter(object):
             '<',
             self.__class__.__name__,
             ' length=',
-            str(self.__len__()),
+            str(len(self)),
             ', url='
                 ]
         
-        icon_url=self.icon_url
+        icon_url = self.icon_url
         if icon_url is None:
             text.append('None')
         else:
             text.append('\'')
-            icon_url=urlcutter(icon_url)
+            icon_url = urlcutter(icon_url)
             text.append(icon_url)
             text.append('\'')
         
@@ -738,16 +697,13 @@ class EmbedFooter(object):
     
     def __eq__(self,other):
         """Returns whether the two embed footers are equal."""
-        if self.icon_url is None:
-            if other.icon_url is not None:
-                return False
-        else:
-            if other.icon_url is None:
-                return False
-            if self.icon_url!=other.icon_url:
-                return False
+        if type(self) is not type(other):
+            return NotImplemented
         
-        if self.text!=other.text:
+        if self.icon_url != other.icon_url:
+            return False
+        
+        if self.text != other.text:
             return False
         
         return True
@@ -779,9 +735,9 @@ class EmbedField(object):
         inline : `bool`, Optional
             Whether this field should display inline.
         """
-        self.name           = name
-        self.value          = value
-        self.inline         = inline
+        self.name = name
+        self.value = value
+        self.inline = inline
     
     @classmethod
     def from_data(cls, data):
@@ -797,32 +753,32 @@ class EmbedField(object):
         -------
         embed_field : ``EmbedField``
         """
-        self=object.__new__(cls)
+        self = object.__new__(cls)
         
-        self.name           = data['name']
-        self.value          = data['value']
-        self.inline         = data.get('inline',False)
+        self.name = data['name']
+        self.value = data['value']
+        self.inline = data.get('inline',False)
         
         return self
-
+    
     def to_data(self):
         """
         Converts the embed field to json serializable `dict` representing it.
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        field_data : `dict` of (`str`, `Any`) items
         """
-        result = {
-            'name'          : self.name,
-            'value'         : self.value,
+        field_data = {
+            'name' : self.name,
+            'value' : self.value,
                 }
         
-        inline=self.inline
+        inline = self.inline
         if inline:
-            result['inline']= inline
-
-        return result
+            field_data['inline'] = inline
+        
+        return field_data
     
     def __len__(self):
         """Returns the embed field's contents' length."""
@@ -830,17 +786,20 @@ class EmbedField(object):
     
     def __repr__(self):
         """Returns the representation of the embed field."""
-        return f'<{self.__class__.__name__} length={self.__len__()}, inline={self.inline}>'
+        return f'<{self.__class__.__name__} length={len(self)}, inline={self.inline}>'
 
     def __eq__(self, other):
         """Returns whether the two embed fields are equal."""
-        if self.name!=other.name:
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.name != other.name:
             return False
         
-        if self.value!=other.value:
+        if self.value != other.value:
             return False
         
-        if self.inline!=other.inline:
+        if self.inline != other.inline:
             return False
         
         return True
@@ -904,19 +863,19 @@ class EmbedCore(object):
         type_ : `None` or `str`, Optional
             The type of the embed. Defaults to `'rich'`.
         """
-        self.title          = title
-        self.description    = description
-        self.color          = color
-        self.url            = url
-        self.timestamp      = timestamp
-        self.type           = type_ #must be `rich` for webhook embeds
-        self.footer         = None
-        self.image          = None
-        self.thumbnail      = None
-        self.video          = None
-        self.provider       = None
-        self.author         = None
-        self.fields         = []
+        self.title = title
+        self.description = description
+        self.color = color
+        self.url = url
+        self.timestamp = timestamp
+        self.type = type_ #must be `rich` for webhook embeds
+        self.footer = None
+        self.image = None
+        self.thumbnail = None
+        self.video = None
+        self.provider = None
+        self.author = None
+        self.fields = []
     
     @classmethod
     def from_data(cls, data):
@@ -934,73 +893,82 @@ class EmbedCore(object):
         """
         self=cls.__new__(cls)
         
-        self.title          = data.get('title',None)
-        self.type           = data.get('type',None)
-        self.description    = data.get('description',None)
-        self.url            = data.get('url',None)
+        self.title = data.get('title', None)
+        self.type = data.get('type', None)
+        self.description = data.get('description', None)
+        self.url = data.get('url', None)
 
         try:
             timestamp_data = data['timestamp']
         except KeyError:
-            self.timestamp  = None
+            timestamp = None
         else:
-            self.timestamp  = parse_time(timestamp_data)
+           timestamp = parse_time(timestamp_data)
+        self.timestamp = timestamp
         
         try:
-            color_data      = data['color']
+            color_data = data['color']
         except KeyError:
-            self.color      = None
+            color = None
         else:
-            self.color      = Color(color_data)
+            color = Color(color_data)
+        self.color = color
 
         try:
-            footer_data     = data['footer']
+            footer_data = data['footer']
         except KeyError:
-            self.footer     = None
+            footer = None
         else:
-            self.footer     = EmbedFooter.from_data(footer_data)
+            footer = EmbedFooter.from_data(footer_data)
+        self.footer = footer
         
         try:
-            image_data      = data['image']
+            image_data = data['image']
         except KeyError:
-            self.image      = None
+            image = None
         else:
-            self.image      = EmbedImage.from_data(image_data)
+            image = EmbedImage.from_data(image_data)
+        self.image = image
         
         try:
-            thumbnail_data  = data['thumbnail']
+            thumbnail_data = data['thumbnail']
         except KeyError:
-            self.thumbnail  = None
+            thumbnail = None
         else:
-            self.thumbnail  = EmbedThumbnail.from_data(thumbnail_data)
-
-        try:
-            video_data      = data['video']
-        except KeyError:
-            self.video      = None
-        else:
-            self.video      = EmbedVideo.from_data(video_data)
+            thumbnail = EmbedThumbnail.from_data(thumbnail_data)
+        self.thumbnail = thumbnail
         
         try:
-            provider_data   = data['provider']
+            video_data = data['video']
         except KeyError:
-            self.provider   = None
+            video = None
         else:
-            self.provider   = EmbedProvider.from_data(provider_data)
+            video = EmbedVideo.from_data(video_data)
+        self.video = video
         
         try:
-            author_data     = data['author']
+            provider_data = data['provider']
         except KeyError:
-            self.author     = None
+            provider = None
         else:
-            self.author     = EmbedAuthor.from_data(author_data)
-            
+            provider = EmbedProvider.from_data(provider_data)
+        self.provider = provider
+        
         try:
-            field_datas     = data['fields']
+            author_data = data['author']
         except KeyError:
-            self.fields     = []
+            author = None
         else:
-            self.fields     = [EmbedField.from_data(field_data) for field_data in field_datas]
+            author = EmbedAuthor.from_data(author_data)
+        self.author = author
+        
+        try:
+            field_datas = data['fields']
+        except KeyError:
+            fields = []
+        else:
+            fields = [EmbedField.from_data(field_data) for field_data in field_datas]
+        self.fields = fields
         
         return self
 
@@ -1014,48 +982,49 @@ class EmbedCore(object):
         """
         data = {}
         
-        type=self.type
-        if type is not None:
-            data['type']        = type
+        type_ = self.type
+        if (type_ is not None):
+            data['type'] = type_
         
-        title=self.title
-        if title is not None:
-            data['title']       = title
+        title = self.title
+        if (title is not None):
+            data['title'] = title
         
-        description=self.description
-        if description is not None:
+        description = self.description
+        if (description is not None):
             data['description'] = description
             
-        color=self.color
-        if color is not None:
-            data['color']       = color
+        color = self.color
+        if (color is not None):
+            data['color'] = color
         
-        url=self.url
-        if url is not None:
-            data['url']         = url
+        url = self.url
+        if (url is not None):
+            data['url'] = url
         
-        timestamp=self.timestamp
-        if timestamp is not None:
-            data['timestamp']   = timestamp.isoformat()
-
-        footer=self.footer
-        if footer is not None:
-            data['footer']      = footer.to_data()
+        timestamp = self.timestamp
+        if (timestamp is not None):
+            data['timestamp'] = timestamp.isoformat()
         
-        image=self.image
-        if image is not None:
-            data['image']       = image.to_data()
+        footer = self.footer
+        if (footer is not None):
+            data['footer'] = footer.to_data()
         
-        thumbnail=self.thumbnail
-        if thumbnail is not None:
-            data['thumbnail']   = thumbnail.to_data()
+        image = self.image
+        if (image is not None):
+            data['image'] = image.to_data()
         
-        author=self.author
-        if author is not None:
-            data['author']      = author.to_data()
+        thumbnail = self.thumbnail
+        if (thumbnail is not None):
+            data['thumbnail'] = thumbnail.to_data()
         
-        if self.fields:
-            data['fields']      = [field.to_data() for field in self.fields]
+        author = self.author
+        if (author is not None):
+            data['author'] = author.to_data()
+        
+        fields = self.fields
+        if fields:
+            data['fields'] = [field.to_data() for field in fields]
         
         return data
 
@@ -1078,45 +1047,45 @@ class EmbedCore(object):
         -------
         changed : `int`
         """
-        changed=0
+        changed = 0
         try:
-            image_data=data['image']
+            image_data = data['image']
         except KeyError:
             pass
         else:
-            image=self.image
+            image = self.image
             if image is None:
-                self.image      = EmbedImage.from_data(image_data)
+                self.image = EmbedImage.from_data(image_data)
             else:
-                image.height    = image_data.get('height',0)
-                image.width     = image_data.get('width',0)
-            changed=1
+                image.height = image_data.get('height', 0)
+                image.width = image_data.get('width', 0)
+            changed = 1
         
         try:
-            thumbnail_data=data['thumbnail']
+            thumbnail_data = data['thumbnail']
         except KeyError:
             pass
         else:
-            thumbnail=self.thumbnail
+            thumbnail = self.thumbnail
             if thumbnail is None:
-                self.thumbnail  = EmbedThumbnail.from_data(thumbnail_data)
+                self.thumbnail = EmbedThumbnail.from_data(thumbnail_data)
             else:
-                thumbnail.height= thumbnail_data.get('height',0)
-                thumbnail.width = thumbnail_data.get('width',0)
-            changed=1
+                thumbnail.height= thumbnail_data.get('height', 0)
+                thumbnail.width = thumbnail_data.get('width', 0)
+            changed = 1
 
         try:
-            video_data=data['video']
+            video_data = data['video']
         except KeyError:
             pass
         else:
-            video=self.video
+            video = self.video
             if video is None:
-                self.video      = EmbedVideo.from_data(video_data)
+                self.video = EmbedVideo.from_data(video_data)
             else:
-                video.height    = video_data.get('height',0)
-                video.width     = video_data.get('width',0)
-            changed=1
+                video.height = video_data.get('height', 0)
+                video.width = video_data.get('width', 0)
+            changed = 1
 
         return changed
 
@@ -1132,187 +1101,122 @@ class EmbedCore(object):
             Embed data received from Discord.
         """
         try:
-            image_data=data['image']
+            image_data = data['image']
         except KeyError:
             pass
         else:
-            image=self.image
+            image = self.image
             if image is None:
-                self.image      = EmbedImage.from_data(image_data)
+                self.image = EmbedImage.from_data(image_data)
             else:
-                image.height    = image_data.get('height',0)
-                image.width     = image_data.get('width',0)
-
+                image.height = image_data.get('height', 0)
+                image.width = image_data.get('width', 0)
+        
         try:
-            thumbnail_data=data['thumbnail']
+            thumbnail_data = data['thumbnail']
         except KeyError:
             pass
         else:
-            thumbnail=self.thumbnail
+            thumbnail = self.thumbnail
             if thumbnail is None:
-                self.thumbnail  = EmbedThumbnail.from_data(thumbnail_data)
+                self.thumbnail = EmbedThumbnail.from_data(thumbnail_data)
             else:
-                thumbnail.height= thumbnail_data.get('height',0)
-                thumbnail.width = thumbnail_data.get('width',0)
-
+                thumbnail.height = thumbnail_data.get('height', 0)
+                thumbnail.width = thumbnail_data.get('width', 0)
+        
         try:
-            video_data=data['video']
+            video_data = data['video']
         except KeyError:
             pass
         else:
-            video=self.video
+            video = self.video
             if video is None:
-                self.video      = EmbedVideo.from_data(video_data)
+                self.video = EmbedVideo.from_data(video_data)
             else:
-                video.height    = video_data.get('height',0)
-                video.width     = video_data.get('width',0)
-
+                video.height = video_data.get('height', 0)
+                video.width = video_data.get('width', 0)
+    
     def __len__(self):
         """Returns the embed's contents' length."""
-        result=0
+        result = 0
         
-        title=self.title
-        if title is not None:
-            result+=len(title)
+        title = self.title
+        if (title is not None):
+            result += len(title)
             
-        description=self.description
-        if description is not None:
-            result+=len(description)
+        description = self.description
+        if (description is not None):
+            result += len(description)
         
-        title=self.title
-        if title is not None:
-            result+=len(title)
+        title = self.title
+        if (title is not None):
+            result += len(title)
         
-        footer=self.footer
-        if footer is not None:
-            result+=len(footer.text)
+        footer = self.footer
+        if (footer is not None):
+            result += len(footer.text)
         
-        author=self.author
-        if author is not None:
-            name=author.name
-            if name is not None:
-                result+=len(name)
+        author = self.author
+        if (author is not None):
+            name = author.name
+            if (name is not None):
+                result += len(name)
         
         for field in self.fields:
-            result+=len(field.name)
-            result+=len(field.value)
+            result += len(field.name)
+            result += len(field.value)
 
         return result
     
     def __repr__(self):
         """Returns the representation of the embed."""
-        return f'<{self.__class__.__name__} length={self.__len__()}>'
+        return f'<{self.__class__.__name__} length={len(self)}>'
     
     def __eq__(self,other):
         """Returns whether the two embeds are equal."""
-        if type(self) is not type(other):
+        if (type(self) is not type(other)):
             try:
-                other=other.source
+                other = other.source
             except AttributeError:
                 return NotImplemented
-            if type(self) is not type(other):
+            
+            if (type(self) is not type(other)):
                 return NotImplemented
         
-        if self.title is None:
-            if other.title is not None:
-                return False
-        else:
-            if other.title is None:
-                return False
-            if self.title!=other.title:
-                return False
+        if self.title != other.title:
+            return False
             
-        if self.description is None:
-            if other.description is not None:
-                return False
-        else:
-            if other.description is None:
-                return False
-            if self.description!=other.description:
-                return False
+        if self.description != other.description:
+            return False
         
-        if self.color is None:
-            if other.color is not None:
-                return False
-        else:
-            if other.color is None:
-                return False
-            if self.color!=other.color:
-                return False
+        if self.color != other.color:
+            return False
         
-        if self.url is None:
-            if other.url is not None:
-                return False
-        else:
-            if other.url is None:
-                return False
-            if self.url!=other.url:
-                return False
+        if self.url != other.url:
+            return False
             
-        if self.timestamp is None:
-            if other.timestamp is not None:
-                return False
-        else:
-            if other.timestamp is None:
-                return False
-            if self.timestamp!=other.timestamp:
-                return False
+        if self.timestamp != other.timestamp:
+            return False
             
-        if self.type is None:
-            if other.type is not None:
-                return False
-        else:
-            if other.type is None:
-                return False
-            if self.type!=other.type:
-                return False
+        if self.type != other.type:
+            return False
         
-        if self.footer is None:
-            if other.footer is not None:
-                return False
-        else:
-            if other.footer is None:
-                return False
-            if self.footer!=other.footer:
-                return False
+        if self.footer != other.footer:
+            return False
             
-        if self.image is None:
-            if other.image is not None:
-                return False
-        else:
-            if other.image is None:
-                return False
-            if self.image!=other.image:
-                return False
+        if self.image != other.image:
+            return False
             
-        if self.thumbnail is None:
-            if other.thumbnail is not None:
-                return False
-        else:
-            if other.thumbnail is None:
-                return False
-            if self.thumbnail!=other.thumbnail:
-                return False
+        if self.thumbnail != other.thumbnail:
+            return False
         
-        if self.video is None:
-            if other.video is not None:
-                return False
-        else:
-            if other.video is None:
-                return False
-            if self.video!=other.video:
-                return False
+        if self.video != other.video:
+            return False
         
-        if self.author is None:
-            if other.author is not None:
-                return False
-        else:
-            if other.author is None:
-                return False
-            if self.author!=other.author:
-                return False
+        if self.author != other.author:
+            return False
         
-        if self.fields!=other.fields:
+        if self.fields != other.fields:
             return False
         
         return True
@@ -1334,31 +1238,31 @@ class EmbedCore(object):
         -------
         contents : `list` of `str`
         """
-        result=[]
+        contents = []
         
-        title=self.title
-        if title is not None:
-            result.append(title)
+        title = self.title
+        if (title is not None):
+            contents.append(title)
             
-        description=self.description
-        if description is not None:
-            result.append(description)
+        description = self.description
+        if (description is not None):
+            contents.append(description)
             
-        author=self.author
-        if author is not None:
-            name=author.name
-            if name is not None:
-                result.append(name)
+        author = self.author
+        if (author is not None):
+            name = author.name
+            if (name is not None):
+                contents.append(name)
 
-        footer=self.footer
-        if footer is not None:
-            result.append(footer.text)
+        footer = self.footer
+        if (footer is not None):
+            contents.append(footer.text)
 
         for field in self.fields:
-            result.append(field.name)
-            result.append(field.value)
+            contents.append(field.name)
+            contents.append(field.value)
 
-        return result
+        return contents
 
     def _clean_copy(self, message):
         """
@@ -1375,22 +1279,25 @@ class EmbedCore(object):
         -------
         embed : ``EmbedCore``
         """
-        new=object.__new__(type(self))
+        new = object.__new__(type(self))
         
-        new.title           = self.title
-        new.description     = None if self.description is None else _convert_content(self.description,message)
-        new.color           = self.color
-        new.url             = self.url
-        new.timestamp       = self.timestamp
-        new.type            = self.type
+        new.title = self.title
+        description = self.description
+        new.description = None if (description is None) else _convert_content(description, message)
+        new.color = self.color
+        new.url = self.url
+        new.timestamp = self.timestamp
+        new.type = self.type
         
-        new.footer          = self.footer
-        new.image           = self.image
-        new.thumbnail       = self.thumbnail
-        new.video           = self.video
-        new.provider        = self.provider
-        new.author          = self.author
-        new.fields          = [type(field)(field.name,_convert_content(field.value,message),inline=field.inline) for field in self.fields]
+        new.footer = self.footer
+        new.image = self.image
+        new.thumbnail = self.thumbnail
+        new.video = self.video
+        new.provider = self.provider
+        new.author = self.author
+        new.fields = [
+            type(field)(field.name,_convert_content(field. value, message), inline=field.inline) \
+                for field in self.fields]
         
         return new
 
@@ -1412,7 +1319,7 @@ class Embed(object):
     --------
     Example of using local embed file:
         
-        ```py
+        ```
         # Imports
         from hata import Embed, ReuAsyncIO
         
@@ -1452,22 +1359,22 @@ class Embed(object):
         self.data = data = {}
         
         if (title is not None):
-            data['title']       = title
+            data['title'] = title
             
         if (description is not None):
             data['description'] = description
             
         if (color is not None):
-            data['color']       = color
+            data['color'] = color
             
         if (url is not None):
-            data['url']         = url
+            data['url'] = url
             
         if (timestamp is not None):
-            data['timestamp']   = timestamp.isoformat()
+            data['timestamp'] = timestamp.isoformat()
             
         if (type_ is not None):
-            data['type']        = type_
+            data['type'] = type_
     
     def to_data(self):
         """
@@ -1485,18 +1392,21 @@ class Embed(object):
     #author
     def _get_author(self):
         try:
-            data=self.data['author']
+            author_data = self.data['author']
         except KeyError:
-            return
-        return EmbedAuthor.from_data(data)
+            return None
+        
+        return EmbedAuthor.from_data(author_data)
     
-    def _set_author(self,value):
-        self.data['author']=value.to_data()
+    def _set_author(self, value):
+        self.data['author'] = value.to_data()
+    
     def _del_author(self):
         try:
             del self.data['author']
         except KeyError:
             pass
+    
     author = property(_get_author, _set_author, _del_author)
     del _get_author, _set_author, _del_author
     if (__init__.__doc__ is not None):
@@ -1524,31 +1434,34 @@ class Embed(object):
         -------
         self : ``Embed``
         """
-        data = {}
-
+        author_data = {}
+        
         if (name is not None):
-            data['name']    = name
+            author_data['name'] = name
         
         if (url is not None):
-            data['url']     = url
+            author_data['url'] = url
         
         if (icon_url is not None):
-            data['icon_url']= icon_url
+            author_data['icon_url'] = icon_url
         
-        self.data['author']=data
+        self.data['author'] = author_data
         return self
     
     #color
     def _get_color(self):
-        return self.data.get('color',None)
-    def _set_color(self,value):
-        self.data['color']=value
-    def _del_color(self,value):
+        return self.data.get('color', None)
+    
+    def _set_color(self, value):
+        self.data['color'] = value
+    
+    def _del_color(self):
         try:
             del self.data['color']
         except KeyError:
             pass
-    color=property(_get_color, _set_color, _del_color)
+    
+    color = property(_get_color, _set_color, _del_color)
     del _get_color, _set_color, _del_color
     if (__init__.__doc__ is not None):
         color.__doc__ = (
@@ -1560,15 +1473,18 @@ class Embed(object):
     
     #description
     def _get_description(self):
-        return self.data.get('description',None)
-    def _set_description(self,value):
-        self.data['description']=value
+        return self.data.get('description', None)
+    
+    def _set_description(self, value):
+        self.data['description'] = value
+    
     def _del_description(self):
         try:
             del self.data['description']
         except KeyError:
             pass
-    description=property(_get_description, _set_description, _del_description)
+    
+    description = property(_get_description, _set_description, _del_description)
     del _get_description, _set_description, _del_description
     if (__init__.__doc__ is not None):
         description.__doc__ = (
@@ -1581,11 +1497,13 @@ class Embed(object):
     #fields
     def _get_fields(self):
         try:
-            field_datas=self.data['fields']
+            field_datas = self.data['fields']
         except KeyError:
-            self.data['fields']=field_datas=[]
+            self.data['fields'] = field_datas = []
+        
         return _EmbedFieldsReflection(field_datas)
-    def _set_fields(self,value):
+    
+    def _set_fields(self, value):
         data = self.data
         try:
             fields_data = data['fields']
@@ -1593,21 +1511,22 @@ class Embed(object):
             fields_data = data['fields'] = []
         
         if type(value) is _EmbedFieldsReflection:
-            new_fiels_data = value.data
+            new_fields_data = value.data
         else:
-            new_fiels_data = list(field.to_data() for field in value)
+            new_fields_data = list(field.to_data() for field in value)
         
         fields_data.clear()
-        fields_data.extend(new_fiels_data)
-        
+        fields_data.extend(new_fields_data)
+    
     def _del_fields(self):
         try:
-            field_datas=self.data['fields']
+            field_datas = self.data['fields']
         except KeyError:
             pass
         else:
             field_datas.clear()
-    fields=property(_get_fields, _set_fields, _del_fields)
+    
+    fields = property(_get_fields, _set_fields, _del_fields)
     del _get_fields, _set_fields, _del_fields
     if (__init__.__doc__ is not None):
         fields.__doc__ = (
@@ -1635,23 +1554,23 @@ class Embed(object):
         -------
         self : ``Embed``
         """
-        data = {
-            'name'  : name,
+        field_data = {
+            'name' : name,
             'value' : value,
                 }
         
         if inline:
-            data['inline']  = inline
-
+            field_data['inline'] = inline
+        
         try:
-            fields=self.data['fields']
+            field_datas = self.data['fields']
         except KeyError:
-            self.data['fields']=[data]
+            self.data['fields'] = [field_data]
         else:
-            fields.append(data)
+            field_datas.append(field_data)
         
         return self
-
+    
     def insert_field(self, index, name, value, inline=False):
         """
         Inserts an ``EmbedField`` to the embed's fields at the specified `index`.
@@ -1667,20 +1586,20 @@ class Embed(object):
         inline : `bool`, Optional
             Whether this field should display inline.
         """
-        data = {
-            'name'  : name,
+        field_data = {
+            'name' : name,
             'value' : value,
                 }
         
         if inline:
-            data['inline']  = inline
+            field_data['inline'] = inline
         
         try:
-            fields=self.data['fields']
+            field_datas = self.data['fields']
         except KeyError:
-            self.data['fields']=[data]
+            self.data['fields'] = [field_data]
         else:
-            fields.insert(index,data)
+            field_datas.insert(index, field_data)
     
     def get_field(self, index):
         """
@@ -1701,12 +1620,12 @@ class Embed(object):
             Index out of the fields' range.
         """
         try:
-            fields=self.data['fields']
+            field_datas = self.data['fields']
         except KeyError:
             raise IndexError('Index out of the fields\' range.') from None
         
         try:
-            field_data=fields[index]
+            field_data = field_datas[index]
         except IndexError as err:
             err.args = ('Index out of the fields\' range.', )
             raise
@@ -1722,14 +1641,14 @@ class Embed(object):
         field : ``EmbedField``
             The field to append the embed's field with.
         """
-        data = field.to_data()
+        field_data = field.to_data()
         
         try:
-            fields=self.data['fields']
+            field_datas = self.data['fields']
         except KeyError:
-            self.data['fields']=[data]
+            self.data['fields'] = [field_data]
         else:
-            fields.append(data)
+            field_datas.append(field_data)
     
     def set_field(self, index, field):
         """
@@ -1748,14 +1667,14 @@ class Embed(object):
             Index out of the fields' range.
         """
         try:
-            fields=self.data['fields']
+            fields = self.data['fields']
         except KeyError:
             raise IndexError('Index out of the fields\' range.') from None
         
-        field_data=field.to_data()
+        field_data = field.to_data()
         
         try:
-            fields[index]=field_data
+            fields[index] = field_data
         except IndexError as err:
             err.args = ('Index out of the fields\' range.',)
             raise
@@ -1775,7 +1694,7 @@ class Embed(object):
             Index out of the fields' range.
         """
         try:
-            fields=self.data['fields']
+            fields = self.data['fields']
         except KeyError:
             raise IndexError('Index out of the fields\' range.') from None
         
@@ -1788,18 +1707,22 @@ class Embed(object):
     #footer
     def _get_footer(self):
         try:
-            data=self.data['footer']
+            footer_data = self.data['footer']
         except KeyError:
-            return
-        return EmbedFooter.from_data(data)
-    def _set_footer(self,value):
-        self.data['footer']=value.to_data()
+            return None
+        
+        return EmbedFooter.from_data(footer_data)
+    
+    def _set_footer(self, value):
+        self.data['footer'] = value.to_data()
+    
     def _del_footer(self):
         try:
             del self.data['footer']
         except KeyError:
             pass
-    footer=property(_get_footer, _set_footer, _del_footer)
+    
+    footer = property(_get_footer, _set_footer, _del_footer)
     del _get_footer, _set_footer, _del_footer
     if (__init__.__doc__ is not None):
         footer.__doc__ = (
@@ -1824,32 +1747,35 @@ class Embed(object):
         -------
         self : ``Embed``
         """
-        data = {
-            'text'  : text,
+        footer_data = {
+            'text' : text,
                 }
         
-        if icon_url is not None:
-            data['icon_url']= icon_url
+        if (icon_url is not None):
+            footer_data['icon_url'] = icon_url
         
-        self.data['footer']=data
+        self.data['footer'] = footer_data
         return self
     
     #image
     def _get_image(self):
         try:
-            data=self.data['image']
+            image_data = self.data['image']
         except KeyError:
-            return
-        return EmbedImage.from_data(data)
-    def _set_image(self,value):
-        self.data['image']=value.to_data()
+            return None
+        
+        return EmbedImage.from_data(image_data)
+    
+    def _set_image(self, value):
+        self.data['image'] = value.to_data()
+    
     def _del_image(self):
         try:
-            del self. data['image']
+            del self.data['image']
         except KeyError:
             pass
     
-    image=property(_get_image, _set_image, _del_image)
+    image = property(_get_image, _set_image, _del_image)
     del _get_image, _set_image, _del_image
     if (__init__.__doc__ is not None):
         image.__doc__ = (
@@ -1872,25 +1798,29 @@ class Embed(object):
         -------
         self : ``Embed``
         """
-        data = {
-            'url'   : url,
+        image_data = {
+            'url' : url,
                 }
-        self.data['image']  = data
+        
+        self.data['image'] = image_data
         return self
     
     #provider
     def _get_provider(self):
         try:
-            data=self.data['provider']
+            provider_data = self.data['provider']
         except KeyError:
-            return
-        return EmbedProvider.from_data(data)
+            return None
+        
+        return EmbedProvider.from_data(provider_data)
+    
     def _del_provider(self):
         try:
             del self.data['provider']
         except KeyError:
             pass
-    provider=property(_get_provider, None, _del_provider)
+    
+    provider = property(_get_provider, None, _del_provider)
     del _get_provider, _del_provider
     if (__init__.__doc__ is not None):
         provider.__doc__ = (
@@ -1905,18 +1835,22 @@ class Embed(object):
     #thumbnail
     def _get_thumbnail(self):
         try:
-            data=self.data['thumbnail']
+            thumbnail_data = self.data['thumbnail']
         except KeyError:
-            return
-        return EmbedThumbnail.from_data(data)
-    def _set_thumbnail(self,value):
-        self.data['thumbnail']=value.to_data()
+            return None
+        
+        return EmbedThumbnail.from_data(thumbnail_data)
+    
+    def _set_thumbnail(self, value):
+        self.data['thumbnail'] = value.to_data()
+    
     def _del_thumbnail(self):
         try:
             self.data['thumbnail']
         except KeyError:
             pass
-    thumbnail=property(_get_thumbnail, _set_thumbnail, _del_thumbnail)
+    
+    thumbnail = property(_get_thumbnail, _set_thumbnail, _del_thumbnail)
     del _get_thumbnail, _set_thumbnail, _del_thumbnail
     if (__init__.__doc__ is not None):
         thumbnail.__doc__ = (
@@ -1939,28 +1873,32 @@ class Embed(object):
         -------
         self : ``Embed``
         """
-        data = {
-            'url'   : url,
+        thumbnail_data = {
+            'url' : url,
                 }
 
-        self.data['thumbnail']= data
+        self.data['thumbnail'] = thumbnail_data
         return self
 
     #timestamp
     def _get_timestamp(self):
         try:
-            value=self.data['timestamp']
+            timestamp_value = self.data['timestamp']
         except KeyError:
-            return
-        return parse_time(value)
-    def _set_timestamp(self,value):
-        self.data['timestamp']=value.isoformat()
+            return None
+        
+        return parse_time(timestamp_value)
+    
+    def _set_timestamp(self, value):
+        self.data['timestamp'] = value.isoformat()
+    
     def _del_timestamp(self):
         try:
             del self.data['timestamp']
         except KeyError:
             pass
-    timestamp=property(_get_timestamp, _set_timestamp, _del_timestamp)
+    
+    timestamp = property(_get_timestamp, _set_timestamp, _del_timestamp)
     del _get_timestamp, _set_timestamp, _del_timestamp
     if (__init__.__doc__ is not None):
         timestamp.__doc__ = (
@@ -1972,15 +1910,19 @@ class Embed(object):
     
     #title
     def _get_title(self):
-        return self.data.get('title',None)
-    def _set_title(self,value):
-        self.data['title']=value
+        return self.data.get('title', None)
+    
+    def _set_title(self, value):
+        self.data['title'] = value
+    
     def _del_title(self):
         try:
             del self.data['title']
         except KeyError:
             pass
-    title=property(_get_title, _set_title, _del_title)
+    
+    title = property(_get_title, _set_title, _del_title)
+    
     del _get_title, _set_title, _del_title
     if (__init__.__doc__ is not None):
         title.__doc__ = (
@@ -1992,15 +1934,18 @@ class Embed(object):
     
     #type
     def _get_type(self):
-        return self.data.get('type',None)
-    def _set_type(self,value):
-        self.data['type']=value
-    def _del_type(self,value):
+        return self.data.get('type', None)
+    
+    def _set_type(self, value):
+        self.data['type'] = value
+    
+    def _del_type(self):
         try:
             del self.data['type']
         except KeyError:
             pass
-    type=property(_get_type, _set_type, _del_type)
+    
+    type = property(_get_type, _set_type, _del_type)
     del _get_type, _set_type, _del_type
     if (__init__.__doc__ is not None):
         type.__doc__ = (
@@ -2012,15 +1957,18 @@ class Embed(object):
     
     #url
     def _get_url(self):
-        return self.data.get('url',None)
-    def _set_url(self,value):
-        self.data['url']=value
+        return self.data.get('url', None)
+    
+    def _set_url(self, value):
+        self.data['url'] = value
+    
     def _del_url(self):
         try:
             del self.data['url']
         except KeyError:
             pass
-    url=property(_get_url, _set_url, _del_url)
+    
+    url = property(_get_url, _set_url, _del_url)
     del _get_url, _set_url, _del_url
     if (__init__.__doc__ is not None):
         url.__doc__ = (
@@ -2033,16 +1981,19 @@ class Embed(object):
     #video
     def _get_video(self):
         try:
-            data=self.data['video']
+            video_data = self.data['video']
         except KeyError:
-            return
-        return EmbedVideo.from_data(data)
+            return None
+        
+        return EmbedVideo.from_data(video_data)
+    
     def _del_video(self):
         try:
             del self.data['video']
         except KeyError:
             pass
-    video=property(_get_video, None, _del_video)
+    
+    video = property(_get_video, None, _del_video)
     del _get_video, _del_video
     if (__init__.__doc__ is not None):
         video.__doc__ = (
@@ -2057,20 +2008,23 @@ class Embed(object):
     #rest
     def _get_source(self):
         return EmbedCore.from_data(self.data)
+    
     def _set_source(self, value):
         if type(value) is type(self):
             data = value.data.copy()
         else:
             data = value.to_data()
         self.data = data
-    def _del_source(self, value):
+    
+    def _del_source(self):
         data = self.data
         fields = data.get('fields')
         data.clear()
         if (fields is not None):
             fields.clear()
             data['fields'] = fields
-    source=property(_get_source, _set_source, _del_source)
+    
+    source = property(_get_source, _set_source, _del_source)
     del _get_source, _set_source, _del_source
     if (__init__.__doc__ is not None):
         source.__doc__ = (
@@ -2082,60 +2036,60 @@ class Embed(object):
     
     def __len__(self):
         """Returns the embed's contents' length."""
-        data=self.data
-        result=0
+        data = self.data
+        result = 0
         
         try:
-            title=data['title']
+            title = data['title']
         except KeyError:
             pass
         else:
-            result+=len(title)
+            result += len(title)
         
         try:
-            description=data['description']
+            description = data['description']
         except KeyError:
             pass
         else:
-            result+=len(description)
+            result += len(description)
         
         try:
-            author=data['author']
+            author_data = data['author']
         except KeyError:
             pass
         else:
             try:
-                name=data['name']
+                author_name = author_data['name']
             except KeyError:
                 pass
             else:
-                result+=len(name)
-
+                result += len(author_name)
+        
         try:
-            footer=data['footer']
+            footer_data = data['footer']
         except KeyError:
             pass
         else:
-            result+=len(footer['text'])
+            result += len(footer_data['text'])
         
         try:
-            field_datas=data['fields']
+            field_datas = data['fields']
         except KeyError:
             pass
         else:
             for field_data in field_datas:
-                result+=len(field_data['name'])
-                result+=len(field_data['value'])
-
+                result += len(field_data['name'])
+                result += len(field_data['value'])
+        
         return result
     
     def __repr__(self):
         """Returns the representation of the embed."""
-        return f'<{self.__class__.__name__} length={self.__len__()}>'
+        return f'<{self.__class__.__name__} length={len(self)}>'
     
     def __eq__(self, other):
         """Returns whether the two embeds are equal."""
-        return self.source==other
+        return (self.source == other)
     
     @property
     def contents(self):
@@ -2154,51 +2108,51 @@ class Embed(object):
         -------
         contents : `list` of `str`
         """
-        data=self.data
-        result=[]
+        data = self.data
+        result = []
         
         try:
-            title=data['title']
+            title = data['title']
         except KeyError:
             pass
         else:
             result.append(title)
-            
+        
         try:
-            description=data['description']
+            description = data['description']
         except KeyError:
             pass
         else:
             result.append(description)
         
         try:
-            author=data['author']
+            author_data = data['author']
         except KeyError:
             pass
         else:
             try:
-                name=author['name']
+                author_name = author_data['name']
             except KeyError:
                 pass
             else:
-                result.append(name)
+                result.append(author_name)
         
         try:
-            footer=data['footer']
+            footer_data = data['footer']
         except KeyError:
             pass
         else:
-            result.append(footer['text'])
+            result.append(footer_data['text'])
         
         try:
-            field_datas=data['fields']
+            field_datas = data['fields']
         except KeyError:
             pass
         else:
             for field_data in field_datas:
                 result.append(field_data['name'])
                 result.append(field_data['value'])
-
+        
         return result
 
 class _EmbedFieldsReflection(object):
@@ -2221,7 +2175,7 @@ class _EmbedFieldsReflection(object):
         data : `list` of (`dict` of (`str`, `Any`) items)
             Raw data containing the respective embed's fields.
         """
-        self.data=data
+        self.data = data
         
     def clear(self):
         """
@@ -2231,19 +2185,19 @@ class _EmbedFieldsReflection(object):
 
     def __len__(self):
         """Returns how much fields the respective embed has."""
-        return self.data.__len__()
+        return len(self.data)
     
     def __repr__(self):
         """Returns the representation of the object."""
-        return f'<{self.__class__.__name__} length={self.data.__len__()}>'
+        return f'<{self.__class__.__name__} length={len(self.data)}>'
     
     def __getitem__(self, index):
         """Returns the embed field on the given index."""
         return EmbedField.from_data(self.data[index])
     
-    def __setitem__(self,index,field):
+    def __setitem__(self, index, field):
         """Sets the given embed field object on the given index."""
-        self.data[index]=field.to_data()
+        self.data[index] = field.to_data()
     
     def __delitem__(self, index):
         """Deletes the field on the given index"""
@@ -2286,15 +2240,15 @@ class _EmbedFieldsReflection(object):
         inline : `bool`, Optional
             Whether this field should display inline.
         """
-        data = {
-            'name'  : name,
+        field_data = {
+            'name' : name,
             'value' : value,
                 }
         
         if inline:
-            data['inline']  = inline
+            field_data['inline'] = inline
         
-        self.data.append(data)
+        self.data.append(field_data)
     
     def insert_field(self, index, name, value, inline=False):
         """
@@ -2311,15 +2265,15 @@ class _EmbedFieldsReflection(object):
         inline : `bool`, Optional
             Whether this field should display inline.
         """
-        data = {
-            'name'  : name,
+        field_data = {
+            'name' : name,
             'value' : value,
                 }
         
         if inline:
-            data['inline']  = inline
+            field_data['inline'] = inline
         
-        self.data.insert(index,data)
+        self.data.insert(index, field_data)
     
     def __iter__(self):
         """Iterates over the respective embed's fields."""

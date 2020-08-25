@@ -1150,7 +1150,7 @@ def listing_converter(listing, indent_level, optimal_fit, builder_context):
         yield from ListingHeadConverter(listing_element.head, indent_level, optimal_fit, builder_context)
         content = listing_element.content
         if content is None:
-            return
+            continue
         
         yield from sub_section_converter(content, indent_level+1, optimal_fit-builder_context.indent_size, builder_context)
 
@@ -1188,9 +1188,9 @@ class ListingHeadConverter(DescriptionConverter):
             lines = [DEFAULT_LISTING_HEAD]
         else:
             words = builder_context.word_converter(head)
-            lines  = sizify(words, optimal_fit-builder_context.indent_size)
+            lines = sizify(words, optimal_fit-builder_context.indent_size)
         
-        new_lines.append(f'{(builder_context.indent*indent_level)}{lines[0]}\n')
+        new_lines.append(f'{(builder_context.indent*indent_level)}- {lines[0]}\n')
         
         if len(lines)>1:
             indention = builder_context.indent*(indent_level+1)

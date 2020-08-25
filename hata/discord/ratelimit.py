@@ -7,7 +7,7 @@ from time import monotonic
 from collections import deque
 from threading import current_thread
 
-from ..backend.dereaddons_local import modulize, WeakReferer
+from ..backend.dereaddons_local import modulize, WeakReferer, DOCS_ENABLED
 from ..backend.futures import Future
 from ..backend.hdrs import DATE
 
@@ -1048,7 +1048,7 @@ class RatelimitProxy(object):
     keep_alive = property(_get_keep_alive, _set_keep_alive)
     del _get_keep_alive, _set_keep_alive
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         keep_alive.__doc__ = (
         """
         Get-set property for accessing whether the ratelimit proxy should keep alive the respective ratelimit handler.
@@ -1417,6 +1417,7 @@ class RATELIMIT_GROUPS:
     webhook_send                = RatelimitGroup(LIMITER_WEBHOOK)
 
 del modulize
+del DOCS_ENABLED
 
 ##INFO :
 ##    some endpoints might be off 1s

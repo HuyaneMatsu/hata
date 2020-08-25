@@ -5,11 +5,11 @@ __all__ = ('DiscoveryCategory', 'Guild', 'GuildDiscovery', 'GuildEmbed', 'GuildF
 import re, reprlib
 
 from ..env import CACHE_PRESENCE
-from ..backend.dereaddons_local import autoposlist, cached_property, _spaceholder
+from ..backend.dereaddons_local import autoposlist, cached_property, _spaceholder, DOCS_ENABLED
 from ..backend.futures import Task
 
 from .bases import DiscordEntity, ReverseFlagBase, IconSlot, ICON_TYPE_NONE
-from .client_core import GUILDS, DISCOVERY_CATEGORIES, CHANNELS
+from .client_core import GUILDS, DISCOVERY_CATEGORIES, CHANNELS, KOKORO
 from .others import EMOJI_NAME_RP, VoiceRegion, Status, VerificationLevel, MessageNotificationLevel, MFA, \
     ContentFilterLevel, DISCORD_EPOCH_START
 from .user import User, PartialUser, VoiceState, UserBase, ZEROUSER
@@ -25,9 +25,9 @@ from .preconverters import preconvert_snowflake, preconvert_str
 
 from . import ratelimit
 
-VoiceClient=NotImplemented
+VoiceClient = NotImplemented
 
-LARGE_LIMIT=250 #can be between 50 and 250
+LARGE_LIMIT = 250 #can be between 50 and 250
 
 EMOJI_UPDATE_NEW    = 0
 EMOJI_UPDATE_DELETE = 1
@@ -92,7 +92,7 @@ class GuildFeature(object):
     +-------------------------------+-------------------------------+
     """
     # class related
-    INSTANCES={}
+    INSTANCES = {}
     
     @classmethod
     def get(cls, value):
@@ -110,9 +110,9 @@ class GuildFeature(object):
         guild_feature : ``GuildFeature``
         """
         try:
-            guild_feature=cls.INSTANCES[value]
+            guild_feature = cls.INSTANCES[value]
         except KeyError:
-            guild_feature=cls(value)
+            guild_feature = cls(value)
         
         return guild_feature
     
@@ -128,15 +128,15 @@ class GuildFeature(object):
         value : `str`
             The identificator value of the guild feature.
         """
-        self.value=value
-        self.INSTANCES[value]=self
+        self.value = value
+        self.INSTANCES[value] = self
     
     def __str__(self):
         """Returns the guild feature's value."""
         return self.value
     
-    name=property(__str__)
-    if (__str__.__doc__ is not None):
+    name = property(__str__)
+    if DOCS_ENABLED:
         name.__doc__ = (
         """
         Returns the guild feature's value.
@@ -153,49 +153,49 @@ class GuildFeature(object):
     def __gt__(self, other):
         """Whether this feature's value is greater than the other's."""
         if type(self) is type(other):
-            return self.value>other.value
-        if isinstance(other,str):
-            return self.value>other
+            return self.value > other.value
+        if isinstance(other, str):
+            return self.value > other
         return NotImplemented
     
     def __ge__(self, other):
         """Whether this feature's value is greater or equal than the other's."""
         if type(self) is type(other):
-            return self.value>=other.value
-        if isinstance(other,str):
-            return self.value>=other
+            return self.value >= other.value
+        if isinstance(other, str):
+            return self.value >= other
         return NotImplemented
     
     def __eq__(self, other):
         """Whether this feature's value is equal to the other's."""
         if type(self) is type(other):
-            return self.value==other.value
-        if isinstance(other,str):
-            return self.value==other
+            return self.value == other.value
+        if isinstance(other, str):
+            return self.value == other
         return NotImplemented
     
     def __ne__(self, other):
         """Whether this feature's value is not equal to the other's."""
         if type(self) is type(other):
-            return self.value!=other.value
-        if isinstance(other,str):
-            return self.value!=other
+            return self.value != other.value
+        if isinstance(other, str):
+            return self.value != other
         return NotImplemented
     
     def __le__(self, other):
         """Whether this feature's value is lower or equal than the other's."""
         if type(self) is type(other):
-            return self.value<=other.value
-        if isinstance(other,str):
-            return self.value<=other
+            return self.value <= other.value
+        if isinstance(other, str):
+            return self.value <= other
         return NotImplemented
     
     def __lt__(self, other):
         """Whether this feature's value is lower than the other's."""
         if type(self) is type(other):
-            return self.value<other.value
-        if isinstance(other,str):
-            return self.value<other
+            return self.value < other.value
+        if isinstance(other, str):
+            return self.value < other
         return  NotImplemented
     
     def __hash__(self):
@@ -263,7 +263,7 @@ class SystemChannelFlag(ReverseFlagBase):
     """
     __keys__ = {
         'welcome': 0,
-        'boost' : 1,
+        'boost'  : 1,
             }
     
     @property
@@ -275,7 +275,7 @@ class SystemChannelFlag(ReverseFlagBase):
         -------
         none : `bool`
         """
-        return self==self.NONE
+        return (self == self.NONE)
     
     @property
     def all(self):
@@ -286,13 +286,13 @@ class SystemChannelFlag(ReverseFlagBase):
         -------
         none : `bool`
         """
-        return self==self.ALL
+        return (self == self.ALL)
     
-    NONE    = NotImplemented
-    ALL     = NotImplemented
+    NONE = NotImplemented
+    ALL  = NotImplemented
 
-SystemChannelFlag.NONE  = SystemChannelFlag(0b11)
-SystemChannelFlag.ALL   = SystemChannelFlag(0b00)
+SystemChannelFlag.NONE = SystemChannelFlag(0b11)
+SystemChannelFlag.ALL  = SystemChannelFlag(0b00)
 
 class GuildEmbed(object):
     """
@@ -319,13 +319,13 @@ class GuildEmbed(object):
         guild : ``Guild``
             The guild of the guild embed.
         """
-        self.guild  = guild
-        self.enabled= guild.embed_enabled=data['enabled']
-        channel_id=data['channel_id']
+        self.guild = guild
+        self.enabled = guild.embed_enabled = data['enabled']
+        channel_id = data['channel_id']
         if (channel_id is not None):
-            channel=guild.all_channel.get(int(channel_id))
+            channel = guild.all_channel.get(int(channel_id))
         else:
-            channel=None
+            channel = None
         self.channel = guild.embed_channel=channel
     
     @classmethod
@@ -342,10 +342,10 @@ class GuildEmbed(object):
         -------
         guild_embed : ``GuildEmbed``
         """
-        self=object.__new__(cls)
-        self.enabled= guild.embed_enabled
-        self.channel= guild.embed_channel
-        self.guild  = guild
+        self = object.__new__(cls)
+        self.enabled = guild.embed_enabled
+        self.channel = guild.embed_channel
+        self.guild = guild
         return self
 
     def __repr__(self):
@@ -382,11 +382,11 @@ class GuildWidgetUser(DiscordEntity):
         data : `dict` of (`str`, `Any`) items
             Guild widget user data received with ``GuildWidget``'s.
         """
-        self.name           = data['username']
-        self.id             = int(data['id'])
-        self.discriminator  = int(data['discriminator'])
-        self.avatar_url     = data['avatar_url']
-        self.status         = Status.INSTANCES[data['status']]
+        self.name = data['username']
+        self.id = int(data['id'])
+        self.discriminator = int(data['discriminator'])
+        self.avatar_url = data['avatar_url']
+        self.status = Status.INSTANCES[data['status']]
         try:
             activity_data = data['game']
         except KeyError:
@@ -394,7 +394,7 @@ class GuildWidgetUser(DiscordEntity):
         else:
             activity_name = activity_data['name']
         
-        self.activity_name  = activity_name
+        self.activity_name = activity_name
     
     @property
     def full_name(self):
@@ -467,7 +467,7 @@ class GuildWidgetChannel(DiscordEntity):
         """
         self.id = int(data['id'])
         self.name = data['name']
-        self.position=data['name']
+        self.position = data['name']
     
     @property
     def mention(self):
@@ -615,7 +615,7 @@ class GuildWidget(DiscordEntity):
         -------
         invite_url : `str` or `None`
         """
-        return self._data.get('instant_invite',None)
+        return self._data.get('instant_invite', None)
     
     @property
     def online_count(self):
@@ -672,15 +672,15 @@ def PartialGuild(data):
     """
     if (data is None) or (not data):
         return None
-    guild_id=int(data['id'])
+    guild_id = int(data['id'])
     try:
         return GUILDS[guild_id]
     except KeyError:
         pass
     
-    guild=object.__new__(Guild)
-    GUILDS[guild_id]=guild
-    guild.id=guild_id
+    guild = object.__new__(Guild)
+    GUILDS[guild_id] = guild
+    guild.id = guild_id
     
     # do not use pop, at later versions the received data might be read-only.
     try:
@@ -695,85 +695,85 @@ def PartialGuild(data):
     
     # set default values
     guild._boosters = None
-    guild._cache_perm={}
-    guild.afk_channel=None
-    guild.afk_timeout=0
-    guild.all_channel={}
-    guild.all_role={}
+    guild._cache_perm = {}
+    guild.afk_channel = None
+    guild.afk_timeout = 0
+    guild.all_channel = {}
+    guild.all_role = {}
     #available set up
     guild.banner_type = ICON_TYPE_NONE
     guild.banner_hash = 0
-    guild.booster_count=-1
-    guild.channels=autoposlist()
-    guild.clients=[]
-    guild.content_filter=ContentFilterLevel.disabled
+    guild.booster_count = -1
+    guild.channels = autoposlist()
+    guild.clients = []
+    guild.content_filter = ContentFilterLevel.disabled
     # description will be set down
-    guild.embed_channel=None
-    guild.embed_enabled=False
-    guild.emojis={}
-    guild.features=[]
+    guild.embed_channel = None
+    guild.embed_enabled = False
+    guild.emojis = {}
+    guild.features = []
     # icon_type will be set down
     # icon_hash will be set down
     # id is set up
-    guild.is_large=False
-    guild.max_presences=25000
-    guild.max_users=250000
-    guild.max_video_channel_users=25
-    guild.message_notification=MessageNotificationLevel.only_mentions
-    guild.mfa=MFA.none
+    guild.is_large = False
+    guild.max_presences = 25000
+    guild.max_users = 250000
+    guild.max_video_channel_users = 25
+    guild.message_notification = MessageNotificationLevel.only_mentions
+    guild.mfa = MFA.none
     # name will be set down
-    guild.owner=ZEROUSER
-    guild.preferred_locale=DEFAULT_LOCALE
-    guild.premium_tier=0
-    guild.public_updates_channel=None
-    guild.region=VoiceRegion.eu_central
-    guild.roles=autoposlist()
-    guild.rules_channel=None
+    guild.owner = ZEROUSER
+    guild.preferred_locale = DEFAULT_LOCALE
+    guild.premium_tier = 0
+    guild.public_updates_channel = None
+    guild.region = VoiceRegion.eu_central
+    guild.roles = autoposlist()
+    guild.rules_channel = None
     # invite_splash_type will be set down
     # invite_splash_hash will be set down
-    guild.system_channel=None
-    guild.system_channel_flags=SystemChannelFlag.NONE
-    guild.user_count=1
-    guild.users={}
-    guild.vanity_code=None
-    guild.verification_level=VerificationLevel.none
-    guild.voice_states={}
-    guild.webhooks={}
-    guild.webhooks_uptodate=False
-    guild.widget_channel=None
-    guild.widget_enabled=False
+    guild.system_channel = None
+    guild.system_channel_flags = SystemChannelFlag.NONE
+    guild.user_count = 1
+    guild.users = {}
+    guild.vanity_code = None
+    guild.verification_level = VerificationLevel.none
+    guild.voice_states = {}
+    guild.webhooks = {}
+    guild.webhooks_uptodate = False
+    guild.widget_channel = None
+    guild.widget_enabled = False
     
     if len(data) < restricted_data_limit:
-        guild.name=''
+        guild.name = ''
         guild.icon_type = ICON_TYPE_NONE
         guild.icon_hash = 0
         guild.invite_splash_type = ICON_TYPE_NONE
         guild.invite_splash_hash = 0
         guild.discovery_splash_type = ICON_TYPE_NONE
         guild.discovery_splash_hash = 0
-        guild.description=None
+        guild.description = None
     else:
-        guild.name=data.get('name','')
+        guild.name = data.get('name','')
         guild._set_icon(data)
         guild._set_invite_splash(data)
         guild._set_discovery_splash(data)
         guild.description=data.get('description',None)
         
         try:
-            verification_level=data['verification_level']
+            verification_level = data['verification_level']
         except KeyError:
             pass
         else:
-            guild.verification_level=VerificationLevel.INSTANCES[verification_level]
+            guild.verification_level = VerificationLevel.INSTANCES[verification_level]
         
         try:
-            features=data['features']
+            features = data['features']
         except KeyError:
             guild.features.clear()
         else:
-            features=[GuildFeature.get(feature) for feature in features]
+            features = [GuildFeature.get(feature) for feature in features]
             features.sort()
-            guild.features=features
+            guild.features = features
     
     return guild
 
@@ -931,45 +931,45 @@ class Guild(DiscordEntity, immortal=True):
         -------
         guild : ``Guild``
         """
-        guild_id=int(data['id'])
+        guild_id = int(data['id'])
         
         try:
-            guild=GUILDS[guild_id]
-            update= (not guild.clients)
+            guild = GUILDS[guild_id]
+            update = (not guild.clients)
         except KeyError:
-            guild=object.__new__(cls)
-            GUILDS[guild_id]=guild
-            guild.id=guild_id
+            guild = object.__new__(cls)
+            GUILDS[guild_id] = guild
+            guild.id = guild_id
             
-            guild.clients=[]
-            guild.users={}
-            guild.emojis={}
-            guild.voice_states={}
-            guild.all_role={}
-            guild.roles=autoposlist()
-            guild.channels=autoposlist()
-            guild.all_channel={}
-            guild.features=[]
-            guild.webhooks={}
-            guild.webhooks_uptodate=False
-            guild._cache_perm={}
+            guild.clients = []
+            guild.users = {}
+            guild.emojis = {}
+            guild.voice_states = {}
+            guild.all_role = {}
+            guild.roles = autoposlist()
+            guild.channels = autoposlist()
+            guild.all_channel = {}
+            guild.features = []
+            guild.webhooks = {}
+            guild.webhooks_uptodate = False
+            guild._cache_perm = {}
             guild._boosters = None
             
-            update=True
+            update = True
         
         guild.available = (not data.get('unavailable',False))
         
         if update:
-            guild.user_count=data.get('member_count',1)
-            guild.booster_count=-1
+            guild.user_count = data.get('member_count',1)
+            guild.booster_count = -1
             
             try:
-                guild.is_large=data['large']
+                guild.is_large = data['large']
             except KeyError:
-                guild.is_large=guild.user_count>=LARGE_LIMIT
+                guild.is_large = (guild.user_count>=LARGE_LIMIT)
             
             try:
-                role_datas=data['roles']
+                role_datas = data['roles']
             except KeyError:
                 pass
             else:
@@ -977,86 +977,86 @@ class Guild(DiscordEntity, immortal=True):
                     Role(role_data,guild)
             
             try:
-                emoji_datas=data['emojis']
+                emoji_datas = data['emojis']
             except KeyError:
                 pass
             else:
-                emojis=guild.emojis
+                emojis = guild.emojis
                 for emoji_data in emoji_datas:
-                    emoji=Emoji(emoji_data,guild)
-                    emojis[emoji.id]=emoji
+                    emoji = Emoji(emoji_data,guild)
+                    emojis[emoji.id] = emoji
             
             try:
-                channel_datas=data['channels']
+                channel_datas = data['channels']
             except KeyError:
                 pass
             else:
-                later=[]
+                later = []
                 for channel_data in channel_datas:
-                    channel_type=CHANNEL_TYPES[channel_data['type']]
+                    channel_type = CHANNEL_TYPES[channel_data['type']]
                     if channel_type is ChannelCategory:
-                        channel_type(channel_data,client,guild)
+                        channel_type(channel_data, client, guild)
                     else:
-                        later.append((channel_type,channel_data),)
+                        later.append((channel_type, channel_data),)
                 for channel_type,channel_data in later:
-                    channel_type(channel_data,client,guild)
+                    channel_type(channel_data, client, guild)
             
             guild._update_no_return(data)
             
             if CACHE_PRESENCE:
                 try:
-                    user_datas=data['members']
+                    user_datas = data['members']
                 except KeyError:
                     pass
                 else:
                     for user_data in user_datas:
-                        User(user_data,guild)
+                        User(user_data, guild)
                 #if user caching is disabled, then presence caching is too.
                 try:
-                    presence_data=data['presences']
+                    presence_data = data['presences']
                 except KeyError:
                     pass
                 else:
                     guild._apply_presences(presence_data)
             
             try:
-                voice_state_datas=data['voice_states']
+                voice_state_datas = data['voice_states']
             except KeyError:
                 pass
             else:
                 for voice_state_data in voice_state_datas:
-                    user=PartialUser(int(voice_state_data['user_id']))
+                    user = PartialUser(int(voice_state_data['user_id']))
                     if user.id in guild.voice_states:
                         continue
                     
-                    channel_id=voice_state_data.get('channel_id',None)
+                    channel_id = voice_state_data.get('channel_id', None)
                     if channel_id is None:
                         continue
-                    channel=guild.all_channel[int(channel_id)]
+                    channel = guild.all_channel[int(channel_id)]
                     
-                    guild.voice_states[user.id]=VoiceState(voice_state_data,channel)
-
+                    guild.voice_states[user.id] = VoiceState(voice_state_data, channel)
+        
         if (not CACHE_PRESENCE):
             #we get information about the client here
             try:
-                user_datas=data['members']
+                user_datas = data['members']
             except KeyError:
                 pass
             else:
                 for user_data in user_datas:
-                    User._bypass_no_cache(user_data,guild)
+                    User._bypass_no_cache(user_data, guild)
         
         if client not in guild.clients:
             try:
-                ghost_state=guild.voice_states[client.id]
+                ghost_state = guild.voice_states[client.id]
             except KeyError:
                 pass
             else:
-                Task(VoiceClient._kill_ghost(client,ghost_state.channel),client.loop)
+                Task(VoiceClient._kill_ghost(client, ghost_state.channel), KOKORO)
             guild.clients.append(client)
         
         return guild
-
+    
     @classmethod
     def precreate(cls, guild_id, **kwargs):
         """
@@ -1124,61 +1124,61 @@ class Guild(DiscordEntity, immortal=True):
             processable = None
         
         try:
-            guild=GUILDS[guild_id]
+            guild = GUILDS[guild_id]
         except KeyError:
-            guild=object.__new__(cls)
-            guild._boosters=None
-            guild._cache_perm={}
-            guild.afk_channel=None
-            guild.afk_timeout=0
-            guild.all_channel={}
-            guild.all_role={}
-            guild.available=False
+            guild = object.__new__(cls)
+            guild._boosters = None
+            guild._cache_perm = {}
+            guild.afk_channel = None
+            guild.afk_timeout = 0
+            guild.all_channel = {}
+            guild.all_role = {}
+            guild.available = False
             guild.banner_hash = 0
             guild.banner_type = ICON_TYPE_NONE
-            guild.booster_count=-1
-            guild.channels=autoposlist()
-            guild.clients=[]
-            guild.content_filter=ContentFilterLevel.disabled
-            guild.description=None
+            guild.booster_count = -1
+            guild.channels = autoposlist()
+            guild.clients = []
+            guild.content_filter = ContentFilterLevel.disabled
+            guild.description = None
             guild.discovery_splash_hash = 0
             guild.discovery_splash_type = ICON_TYPE_NONE
-            guild.embed_channel=None
-            guild.embed_enabled=False
-            guild.emojis={}
-            guild.features=[]
-            guild.has_animated_icon=False
+            guild.embed_channel = None
+            guild.embed_enabled = False
+            guild.emojis = {}
+            guild.features = []
+            guild.has_animated_icon = False
             guild.icon_hash = 0
             guild.icon_type = ICON_TYPE_NONE
-            guild.id=guild_id
-            guild.is_large=False
-            guild.max_presences=25000
-            guild.max_users=250000
-            guild.max_video_channel_users=25
-            guild.message_notification=MessageNotificationLevel.only_mentions
-            guild.mfa=MFA.none
-            guild.name=''
-            guild.owner=ZEROUSER
-            guild.preferred_locale=DEFAULT_LOCALE
-            guild.premium_tier=0
-            guild.public_updates_channel=None
-            guild.region=VoiceRegion.eu_central
-            guild.roles=autoposlist()
-            guild.rules_channel=None
+            guild.id = guild_id
+            guild.is_large = False
+            guild.max_presences = 25000
+            guild.max_users = 250000
+            guild.max_video_channel_users = 25
+            guild.message_notification = MessageNotificationLevel.only_mentions
+            guild.mfa = MFA.none
+            guild.name = ''
+            guild.owner = ZEROUSER
+            guild.preferred_locale = DEFAULT_LOCALE
+            guild.premium_tier = 0
+            guild.public_updates_channel = None
+            guild.region = VoiceRegion.eu_central
+            guild.roles = autoposlist()
+            guild.rules_channel = None
             guild.invite_splash_hash = 0
             guild.invite_splash_type = ICON_TYPE_NONE
-            guild.system_channel=None
-            guild.system_channel_flags=SystemChannelFlag.NONE
-            guild.user_count=1
-            guild.users={}
-            guild.vanity_code=None
-            guild.verification_level=VerificationLevel.none
-            guild.voice_states={}
-            guild.webhooks={}
-            guild.webhooks_uptodate=False
-            guild.widget_channel=None
-            guild.widget_enabled=False
-            GUILDS[guild_id]=guild
+            guild.system_channel = None
+            guild.system_channel_flags = SystemChannelFlag.NONE
+            guild.user_count = 1
+            guild.users = {}
+            guild.vanity_code = None
+            guild.verification_level = VerificationLevel.none
+            guild.voice_states = {}
+            guild.webhooks = {}
+            guild.webhooks_uptodate = False
+            guild.widget_channel = None
+            guild.widget_enabled = False
+            GUILDS[guild_id] = guild
         else:
             if guild.clients:
                 return guild
@@ -1232,8 +1232,10 @@ class Guild(DiscordEntity, immortal=True):
         """
         if not code:
             return self.name
-        if code=='c':
+        
+        if code == 'c':
             return self.created_at.__format__('%Y.%m.%d-%H:%M:%S')
+        
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
     embed_url=URLS.guild_embed_url
@@ -1248,13 +1250,13 @@ class Guild(DiscordEntity, immortal=True):
         data : `dict` of (`str`, `Any`) items
             Guild embed's data received from Discord.
         """
-        self.embed_enabled=data.get('enabled',False)
+        self.embed_enabled = data.get('enabled', False)
         
-        channel_id=data.get('id',None)
+        channel_id = data.get('id')
         if channel_id is None:
-            embed_channel=None
+            embed_channel = None
         else:
-            embed_channel=self.all_channel[int(channel_id)]
+            embed_channel = self.all_channel[int(channel_id)]
         self.embed_channel = embed_channel
     
     @property
@@ -1281,20 +1283,20 @@ class Guild(DiscordEntity, immortal=True):
         clients = self.clients
         
         try:
-            self.clients.remove(client)
+            clients.remove(client)
         except ValueError:
             pass
         
-        if self.clients:
+        if clients:
             return
         
-        categories=self.channels
-        for category_index in range(len(categories)-1,-1,-1):
-            category=categories[category_index]
+        categories = self.channels
+        for category_index in range(len(categories)-1, -1, -1):
+            category = categories[category_index]
             if type(category) is ChannelCategory:
-                channels=category.channels
-                for channel_index in range(len(channels)-1,-1,-1):
-                    channel=channels[channel_index]
+                channels = category.channels
+                for channel_index in range(len(channels)-1, -1, -1):
+                    channel = channels[channel_index]
                     channel._delete()
             category._delete()
         
@@ -1310,13 +1312,13 @@ class Guild(DiscordEntity, immortal=True):
         
         users.clear()
         
-        roles=self.roles
-        for index in range(len(roles)-1,-1,-1):
+        roles = self.roles
+        for index in range(len(roles)-1, -1, -1):
             roles[index]._delete()
         
         self.webhooks.clear()
-        self.webhooks_uptodate=False
-        self._boosters=None
+        self.webhooks_uptodate = False
+        self._boosters = None
     
     def _update_voice_state(self, data, user):
         """
@@ -1377,30 +1379,32 @@ class Guild(DiscordEntity, immortal=True):
             +---------------+-------------------+
         """
         while True:
-            channel_id=data.get('channel_id',None)
+            channel_id = data.get('channel_id')
             if channel_id is None:
                 try:
-                    state=self.voice_states.pop(user.id)
+                    state = self.voice_states.pop(user.id)
                 except KeyError:
                     return
+                
                 old_attributes = None
-                action='l'
+                action = 'l'
                 break
             
             channel=self.all_channel[int(channel_id)]
             
             try:
-                state=self.voice_states[user.id]
+                state = self.voice_states[user.id]
             except KeyError:
-                state=self.voice_states[user.id]=VoiceState(data,channel)
+                state = self.voice_states[user.id] = VoiceState(data, channel)
                 old_attributes = None
-                action='j'
+                action = 'j'
                 break
             
             old_attributes = state._update(data,channel)
             if old_attributes:
-                action='u'
+                action = 'u'
                 break
+            
             old_attributes = None
             return
         
@@ -1425,20 +1429,20 @@ class Guild(DiscordEntity, immortal=True):
         -------
         changes : `None`, `_spaceholder`, ``ChannelVoice``
         """
-        channel_id=data.get('channel_id',None)
+        channel_id = data.get('channel_id')
         if channel_id is None:
             try:
-                state=self.voice_states.pop(user.id)
+                state = self.voice_states.pop(user.id)
             except KeyError:
                 return
             return _spaceholder
         
-        channel=self.all_channel[int(channel_id)]
+        channel = self.all_channel[int(channel_id)]
         
         try:
-            state=self.voice_states[user.id]
+            state = self.voice_states[user.id]
         except KeyError:
-            self.voice_states[user.id]=VoiceState(data,channel)
+            self.voice_states[user.id] = VoiceState(data,channel)
             return channel
         
         state._update_no_return(data,channel)
@@ -1498,7 +1502,18 @@ class Guild(DiscordEntity, immortal=True):
         channels : `list` of ``ChannelStore``
         """
         return [channel for channel in self.all_channel.values() if channel.type==6]
-
+    
+    @property
+    def thread_channels(self):
+        """
+        Returns the thread channels of the guild.
+        
+        Returns
+        -------
+        channels : `list` of ``ChannelThread``
+        """
+        return [channel for channel in self.all_channel.values() if channel.type==9]
+    
     @property
     def messageable_channels(self):
         """
@@ -1508,7 +1523,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels : `list` of ``ChannelText``
         """
-        return [channel for channel in self.all_channel.values() if channel.type in (0,5)]
+        return [channel for channel in self.all_channel.values() if channel.type in (0, 5)]
     
     @property
     def default_role(self):
@@ -1544,9 +1559,10 @@ class Guild(DiscordEntity, immortal=True):
             Received guild data.
         """
         try:
-            self.is_large=data['large']
+            is_large = data['large']
         except KeyError:
-            self.is_large=self.user_count>=LARGE_LIMIT
+            is_large = (self.user_count>=LARGE_LIMIT)
+        self.is_large = is_large
         
         self._update_no_return(data)
         
@@ -1558,7 +1574,7 @@ class Guild(DiscordEntity, immortal=True):
             self._sync_roles(role_datas)
         
         try:
-            emoji_datas=data['emojis']
+            emoji_datas = data['emojis']
         except KeyError:
             pass
         else:
@@ -1602,15 +1618,15 @@ class Guild(DiscordEntity, immortal=True):
         """
         users = self.users
         for presence in data:
-            user_id=int(presence['user']['id'])
+            user_id = int(presence['user']['id'])
             try:
-                user=users[user_id]
+                user = users[user_id]
             except KeyError:
                 pass
             else:
-                user.status=Status.INSTANCES[presence['status']]
-                user.statuses=presence['client_status']
-                user.activities=[Activity(activity_data) for activity_data in presence['activities']]
+                user.status = Status.INSTANCES[presence['status']]
+                user.statuses = presence['client_status']
+                user.activities = [Activity(activity_data) for activity_data in presence['activities']]
     
     def _sync_channels(self, data):
         """
@@ -1621,16 +1637,16 @@ class Guild(DiscordEntity, immortal=True):
         data `list` of (`dict` of (`str`, `Any`) items)
             Received guild channel datas.
         """
-        channels=self.all_channel
-        old_ids=set(channels)
+        channels = self.all_channel
+        old_ids = set(channels)
         
-        later=[]
+        later = []
         for channel_data in data:
-            channel_type=CHANNEL_TYPES[channel_data['type']]
+            channel_type = CHANNEL_TYPES[channel_data['type']]
             if channel_type is ChannelCategory:
                 #categories
-                channel=channel_type(channel_data,None,self)
-                channel_id=channel.id
+                channel = channel_type(channel_data, None, self)
+                channel_id = channel.id
                 try:
                     old_ids.remove(channel_id)
                 except KeyError:
@@ -1642,8 +1658,8 @@ class Guild(DiscordEntity, immortal=True):
                 later.append((channel_type,channel_data),)
         #non category channels
         for channel_type, channel_data in later:
-            channel=channel_type(channel_data,None,self)
-            channel_id=channel.id
+            channel = channel_type(channel_data, None, self)
+            channel_id = channel.id
             try:
                 old_ids.remove(channel_id)
             except KeyError:
@@ -1664,21 +1680,21 @@ class Guild(DiscordEntity, immortal=True):
         data `list` of (`dict` of (`str`, `Any`) items)
             Received guild role datas.
         """
-        roles=self.all_role
-        old_ids=set(roles)
-        #every new role can cause mass switchings at the role orders, can it mess up the order tho?
+        roles = self.all_role
+        old_ids = set(roles)
+        # every new role can cause mass switchings at the role orders, can it mess up the order tho?
         for role_data in data:
-            role=Role(role_data,self)
+            role = Role(role_data,self)
             try:
                 old_ids.remove(role.id)
                 # self._cache_perm.clear() will be called by this at least for the default role.
                 role._update_no_return(role_data)
             except KeyError:
                 pass
-
+        
         for role_id in old_ids:
             roles[role_id]._delete()
-
+    
     def get_user(self, name, default=None):
         """
         Tries to find the a user with the given name at the guild. Returns the first matched one.
@@ -1699,7 +1715,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         user : ``User``, ``Client`` or `default`
         """
-        if not 1<len(name)<38:
+        if (not 1<len(name)<38):
             return default
         
         users = self.users
@@ -1711,14 +1727,14 @@ class Guild(DiscordEntity, immortal=True):
             else:
                 name = name[:-5]
                 for user in users.values():
-                    if user.discriminator==discriminator and user.name==name:
+                    if (user.discriminator == discriminator) and (user.name == name):
                         return user
         
-        if len(name)>32:
+        if len(name) > 32:
             return default
         
         for user in users.values():
-            if user.name==name:
+            if user.name == name:
                 return user
         
         for user in users.values():
@@ -1726,7 +1742,7 @@ class Guild(DiscordEntity, immortal=True):
             if nick is None:
                 continue
             
-            if nick==name:
+            if nick == name:
                 return user
         
         return default
@@ -1747,7 +1763,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         user : ``User``, ``Client`` or `default`
         """
-        if not 1<len(name)<38:
+        if (not 1<len(name)<38):
             return default
         
         users = self.users
@@ -1759,15 +1775,15 @@ class Guild(DiscordEntity, immortal=True):
             else:
                 name = name[:-5]
                 for user in users.values():
-                    if user.discriminator==discriminator and user.name==name:
+                    if (user.discriminator == discriminator) and (user.name == name):
                         return user
         
-        if len(name)>32:
+        if len(name) > 32:
             return default
         
         pattern = re.compile(re.escape(name), re.I)
         for user in self.users.values():
-            if pattern.match(user.name) is not None:
+            if (pattern.match(user.name) is not None):
                 return user
             
             nick = user.guild_profiles[self].nick
@@ -1795,15 +1811,17 @@ class Guild(DiscordEntity, immortal=True):
         -------
         users : `list` of (``User`` or ``Client``) objects
         """
-        result=[]
-        if not 1<len(name)<33:
+        result = []
+        if (not 1<len(name)<33):
             return result
-        pattern = re.compile(re.escape(name),re.I)
+        
+        pattern = re.compile(re.escape(name), re.I)
         for user in self.users.values():
             if pattern.match(user.name) is None:
                 nick = user.guild_profiles[self].nick
                 if nick is None:
                     continue
+                
                 if pattern.match(nick) is None:
                     continue
             
@@ -1824,10 +1842,11 @@ class Guild(DiscordEntity, immortal=True):
         -------
         users : `list` of (``User`` or ``Client``) objects
         """
-        to_sort=[]
-        if not 1<len(name)<33:
+        to_sort = []
+        if (not 1<len(name)<33):
             return to_sort
-        pattern=re.compile(re.escape(name),re.I)
+        
+        pattern=re.compile(re.escape(name), re.I)
         for user in self.users.values():
             profile = user.guild_profiles[self]
             if pattern.match(user.name) is None:
@@ -1848,7 +1867,7 @@ class Guild(DiscordEntity, immortal=True):
         if not to_sort:
             return to_sort
         
-        to_sort.sort(key=lambda x:x[0])
+        to_sort.sort(key=lambda x: x[0])
         return [x[1] for x in to_sort]
     
     def get_emoji(self, name, default=None):
@@ -1866,13 +1885,15 @@ class Guild(DiscordEntity, immortal=True):
         -------
         emoji : ``Emoji`` or `default`
         """
-        emoji=EMOJI_NAME_RP.fullmatch(name)
+        emoji = EMOJI_NAME_RP.fullmatch(name)
         if emoji is None:
             return default
-        name=emoji.groups()[0]
+        
+        name = emoji.groups()[0]
         for emoji in self.emojis.values():
-            if emoji.name==name:
+            if emoji.name == name:
                 return emoji
+        
         return default
     
     def get_emoji_like(self, name, default=None):
@@ -1890,28 +1911,29 @@ class Guild(DiscordEntity, immortal=True):
         -------
         emoji : ``Emoji`` or `default`
         """
-        target_name_length=len(name)
-        if target_name_length<2 or target_name_length>32:
+        target_name_length = len(name)
+        if (target_name_length < 2) or (target_name_length > 32):
             return default
-        pattern=re.compile(re.escape(name),re.I)
         
-        accurate_emoji=default
-        accurate_name_length=33
+        pattern = re.compile(re.escape(name),re.I)
+        
+        accurate_emoji = default
+        accurate_name_length = 33
         
         for emoji in self.emojis.values():
-            emoji_name=emoji.name
-            name_length=len(emoji_name)
-            if name_length>accurate_name_length:
+            emoji_name = emoji.name
+            name_length = len(emoji_name)
+            if name_length > accurate_name_length:
                 continue
             
             if pattern.match(emoji_name) is None:
                 continue
             
-            if name_length<accurate_name_length:
-                accurate_emoji=emoji
-                accurate_name_length=name_length
+            if name_length < accurate_name_length:
+                accurate_emoji = emoji
+                accurate_name_length = name_length
             
-            if name_length==target_name_length and name==emoji_name:
+            if (name_length == target_name_length) and (name == emoji_name):
                 return emoji
             
             continue
@@ -1934,13 +1956,16 @@ class Guild(DiscordEntity, immortal=True):
         channel : ``ChannelGuildBase`` instance or `default`
         """
         if name.startswith('#'):
-            name=name[1:]
+            name = name[1:]
+        
         for channel in self.all_channel.values():
-            if channel.display_name==name:
+            if channel.display_name == name:
                 return channel
+        
         for channel in self.all_channel.values():
-            if channel.name==name:
+            if channel.name == name:
                 return channel
+        
         return default
     
     def get_channel_like(self, name, default=None, type_=None):
@@ -1961,13 +1986,13 @@ class Guild(DiscordEntity, immortal=True):
         channel : ``ChannelGuildBase`` instance or `default`
         """
         if name.startswith('#'):
-            name=name[1:]
+            name = name[1:]
         
         target_name_length = len(name)
-        if target_name_length<2 or target_name_length>100:
+        if (target_name_length < 2) or (target_name_length > 100):
             return default
         
-        pattern=re.compile(re.escape(name), re.I)
+        pattern = re.compile(re.escape(name), re.I)
         
         accurate_channel = default
         accurate_name_length = 101
@@ -1985,12 +2010,12 @@ class Guild(DiscordEntity, immortal=True):
                 continue
 
             
-            if name_length<accurate_name_length:
-                accurate_channel=channel
-                accurate_name_length=name_length
+            if name_length < accurate_name_length:
+                accurate_channel = channel
+                accurate_name_length = name_length
             
             # Compare with display name
-            if name_length==target_name_length and name==channel.display_name:
+            if (name_length == target_name_length) and (name == channel.display_name):
                 return channel
             
             continue
@@ -2013,8 +2038,9 @@ class Guild(DiscordEntity, immortal=True):
         role : ``Role`` or `default`
         """
         for role in self.all_role.values():
-            if role.name==name:
+            if role.name == name:
                 return role
+        
         return default
     
     def get_role_like(self, name, default=None):
@@ -2033,7 +2059,7 @@ class Guild(DiscordEntity, immortal=True):
         role : ``Role`` or `default`
         """
         target_name_length = len(name)
-        if target_name_length<2 or target_name_length>32:
+        if (target_name_length < 2) or (target_name_length > 32):
             return default
         
         pattern = re.compile(re.escape(name), re.I)
@@ -2042,19 +2068,19 @@ class Guild(DiscordEntity, immortal=True):
         accurate_name_length = 33
         
         for role in self.all_role.values():
-            role_name=role.name
-            name_length=len(role_name)
-            if name_length>accurate_name_length:
+            role_name = role.name
+            name_length = len(role_name)
+            if name_length > accurate_name_length:
                 continue
             
             if pattern.match(role_name) is None:
                 continue
             
-            if name_length<accurate_name_length:
-                accurate_role=role
-                accurate_name_length=name_length
+            if name_length < accurate_name_length:
+                accurate_role = role
+                accurate_name_length = name_length
             
-            if name_length==target_name_length and name==role_name:
+            if (name_length == target_name_length) and (name == role_name):
                 return role
             
             continue
@@ -2077,13 +2103,13 @@ class Guild(DiscordEntity, immortal=True):
         --------
         ``.cached_permissions_for`` : Cached permission calculator.
         """
-        if user==self.owner:
+        if user == self.owner:
             return Permission.permission_all
         
-        base=self.roles[0].permissions
+        base = self.roles[0].permissions
         
         try:
-            roles=user.guild_profiles[self].roles
+            roles = user.guild_profiles[self].roles
         except KeyError:
             if type(user) in (Webhook, WebhookRepr) and user.guild is self:
                 return base
@@ -2091,7 +2117,7 @@ class Guild(DiscordEntity, immortal=True):
         
         roles.sort()
         for role in roles:
-            base|=role.permissions
+            base |= role.permissions
         
         if Permission.can_administrator(base):
             return Permission.permission_all
@@ -2118,8 +2144,8 @@ class Guild(DiscordEntity, immortal=True):
         try:
             return self._cache_perm[user.id]
         except KeyError:
-            permissions=self.permissions_for(user)
-            self._cache_perm[user.id]=permissions
+            permissions = self.permissions_for(user)
+            self._cache_perm[user.id] = permissions
             return permissions
     
     def _update(self, data):
@@ -2216,177 +2242,174 @@ class Guild(DiscordEntity, immortal=True):
         #ignoring 'member_count'
         #ignoring 'large'
         
-        name=data['name']
-        if self.name!=name:
-            old_attributes['name']=self.name
-            self.name=name
+        name = data['name']
+        if self.name != name:
+            old_attributes['name'] = self.name
+            self.name = name
         
         self._update_icon(data, old_attributes)
         self._update_invite_splash(data, old_attributes)
         self._update_discovery_splash(data, old_attributes)
         self._update_banner(data, old_attributes)
         
-        region=VoiceRegion.get(data['region'])
+        region = VoiceRegion.get(data['region'])
         if self.region is not region:
-            old_attributes['region']=region
-            self.region=region
+            old_attributes['region'] = region
+            self.region = region
         
-        afk_timeout=data['afk_timeout']
-        if self.afk_timeout!=afk_timeout:
-            old_attributes['afk_timeout']=self.afk_timeout
-            self.afk_timeout=afk_timeout
+        afk_timeout = data['afk_timeout']
+        if self.afk_timeout != afk_timeout:
+            old_attributes['afk_timeout'] = self.afk_timeout
+            self.afk_timeout = afk_timeout
         
-        verification_level=VerificationLevel.INSTANCES[data['verification_level']]
+        verification_level = VerificationLevel.INSTANCES[data['verification_level']]
         if self.verification_level is not verification_level:
-            old_attributes['verification_level']=self.verification_level
-            self.verification_level=verification_level
+            old_attributes['verification_level'] = self.verification_level
+            self.verification_level = verification_level
 
-        message_notification=MessageNotificationLevel.INSTANCES[data['default_message_notifications']]
+        message_notification = MessageNotificationLevel.INSTANCES[data['default_message_notifications']]
         if self.message_notification is not message_notification:
-            old_attributes['message_notification']=self.message_notification
-            self.message_notification=message_notification
+            old_attributes['message_notification'] = self.message_notification
+            self.message_notification = message_notification
         
-        mfa=MFA.INSTANCES[data['mfa_level']]
-        if self.mfa!=mfa:
-            old_attributes['mfa']=self.mfa
-            self.mfa=mfa
+        mfa = MFA.INSTANCES[data['mfa_level']]
+        if self.mfa is not mfa:
+            old_attributes['mfa'] = self.mfa
+            self.mfa = mfa
         
-        content_filter=ContentFilterLevel.INSTANCES[data.get('explicit_content_filter',0)]
+        content_filter = ContentFilterLevel.INSTANCES[data.get('explicit_content_filter', 0)]
         if self.content_filter is not content_filter:
-            old_attributes['content_filter']=self.content_filter
-            self.content_filter=content_filter
+            old_attributes['content_filter'] = self.content_filter
+            self.content_filter = content_filter
         
-        available=not data.get('unavailable',False)
-        if self.available!=available:
-            old_attributes['available']=self.available
-            self.available=available
+        available = (not data.get('unavailable', False))
+        if self.available != available:
+            old_attributes['available'] = self.available
+            self.available = available
         
         try:
-            features=data['features']
+            features = data['features']
         except KeyError:
-            features=[]
+            features = []
         else:
-            features=[GuildFeature.get(feature) for feature in features]
+            features = [GuildFeature.get(feature) for feature in features]
             features.sort()
-        if self.features!=features:
-            old_attributes['features']=self.features
-            self.features=features
         
-        system_channel_id=data['system_channel_id']
+        if self.features != features:
+            old_attributes['features'] = self.features
+            self.features = features
+        
+        system_channel_id = data.get('system_channel_id')
         if system_channel_id is None:
-            system_channel=None
+            system_channel = None
         else:
-            system_channel=self.all_channel[int(system_channel_id)]
+            system_channel = self.all_channel[int(system_channel_id)]
+        
         if self.system_channel is not system_channel:
-            old_attributes['system_channel']=self.system_channel
-            self.system_channel=system_channel
+            old_attributes['system_channel'] = self.system_channel
+            self.system_channel = system_channel
         
         try:
-            system_channel_flags=SystemChannelFlag(data['system_channel_flags'])
+            system_channel_flags = SystemChannelFlag(data['system_channel_flags'])
         except KeyError:
-            system_channel_flags=SystemChannelFlag.ALL
-        if self.system_channel_flags!=system_channel_flags:
-            old_attributes['system_channel_flags']=self.system_channel_flags
-            self.system_channel_flags=system_channel_flags
+            system_channel_flags = SystemChannelFlag.ALL
         
-        public_updates_channel_id=data.get('public_updates_channel_id',None)
+        if self.system_channel_flags != system_channel_flags:
+            old_attributes['system_channel_flags'] = self.system_channel_flags
+            self.system_channel_flags = system_channel_flags
+        
+        public_updates_channel_id = data.get('public_updates_channel_id')
         if public_updates_channel_id is None:
-            public_updates_channel=None
+            public_updates_channel = None
         else:
-            public_updates_channel=self.all_channel[int(public_updates_channel_id)]
+            public_updates_channel = self.all_channel[int(public_updates_channel_id)]
+        
         if self.public_updates_channel is not public_updates_channel:
-            old_attributes['public_updates_channel']=self.public_updates_channel
-            self.public_updates_channel=public_updates_channel
+            old_attributes['public_updates_channel'] = self.public_updates_channel
+            self.public_updates_channel = public_updates_channel
         
-        owner=PartialUser(int(data['owner_id']))
-        if self.owner is not owner:
-            old_attributes['owner']=self.owner
-            self.owner=owner
+        owner_id = data.get('owner_id')
+        if owner_id is None:
+            owner = ZEROUSER
+        else:
+            owner = PartialUser(int(owner_id))
         
-        afk_channel_id=data['afk_channel_id']
+        if self.owner != owner:
+            old_attributes['owner'] = self.owner
+            self.owner = owner
+        
+        afk_channel_id = data['afk_channel_id']
         if afk_channel_id is None:
-            afk_channel=None
+            afk_channel = None
         else:
-            afk_channel=self.all_channel[int(afk_channel_id)]
+            afk_channel = self.all_channel[int(afk_channel_id)]
         if self.afk_channel is not afk_channel:
-            old_attributes['afk_channel']=self.afk_channel
-            self.afk_channel=afk_channel
+            old_attributes['afk_channel'] = self.afk_channel
+            self.afk_channel = afk_channel
         
-        widget_enabled=data.get('widget_enabled',False)
-        if self.widget_enabled!=widget_enabled:
-            old_attributes['widget_enabled']=self.widget_enabled
-            self.widget_enabled=widget_enabled
+        widget_enabled = data.get('widget_enabled', False)
+        if self.widget_enabled != widget_enabled:
+            old_attributes['widget_enabled'] = self.widget_enabled
+            self.widget_enabled = widget_enabled
         
-        widget_channel_id=data.get('widget_channel_id',None)
+        widget_channel_id = data.get('widget_channel_id')
         if widget_channel_id is None:
-            widget_channel=None
+            widget_channel = None
         else:
-            widget_channel=self.all_channel[int(widget_channel_id)]
+            widget_channel = self.all_channel[int(widget_channel_id)]
         
         if self.widget_channel is not widget_channel:
-            old_attributes['widget_channel']=self.widget_channel
-            self.widget_channel=widget_channel
+            old_attributes['widget_channel'] = self.widget_channel
+            self.widget_channel = widget_channel
         
-        embed_enabled=data.get('embed_enabled',False)
-        if self.embed_enabled!=embed_enabled:
-            old_attributes['embed_enabled']=self.embed_enabled
-            self.embed_enabled=embed_enabled
+        embed_enabled = data.get('embed_enabled', False)
+        if self.embed_enabled != embed_enabled:
+            old_attributes['embed_enabled'] = self.embed_enabled
+            self.embed_enabled = embed_enabled
 
-        embed_channel_id=data.get('embed_channel_id',None)
+        embed_channel_id = data.get('embed_channel_id')
         if embed_channel_id is None:
-            embed_channel=None
+            embed_channel = None
         else:
-            embed_channel=self.all_channel[int(embed_channel_id)]
+            embed_channel = self.all_channel[int(embed_channel_id)]
+        
         if self.embed_channel is not embed_channel:
-            old_attributes['embed_channel']=self.embed_channel
-            self.embed_channel=embed_channel
+            old_attributes['embed_channel'] = self.embed_channel
+            self.embed_channel = embed_channel
         
-        rules_channel_id=data.get('rules_channel_id',None)
+        rules_channel_id = data.get('rules_channel_id')
         if rules_channel_id is None:
-            rules_channel=None
+            rules_channel = None
         else:
-            rules_channel=self.all_channel[int(rules_channel_id)]
+            rules_channel = self.all_channel[int(rules_channel_id)]
+        
         if self.rules_channel is not rules_channel:
-            old_attributes['rules_channel']=self.rules_channel
-            self.rules_channel=rules_channel
+            old_attributes['rules_channel'] = self.rules_channel
+            self.rules_channel = rules_channel
         
-        description=data.get('description',None)
-        if self.description is None:
-            if (description is not None):
-                old_attributes['description']=None
-                self.description=description
-        else:
-            if description is None:
-                old_attributes['description']=self.description
-                self.description=None
-            elif self.description!=description:
-                old_attributes['description']=self.description
-                self.description=description
+        description = data.get('description')
+        if self.description != description:
+            old_attributes['description'] = self.description
+            self.description = description
         
-        vanity_code=data.get('vanity_url_code',None)
-        if self.vanity_code is None:
-            if vanity_code is not None:
-                old_attributes['vanity_code']=None
-                self.vanity_code=vanity_code
-        else:
-            if vanity_code is None:
-                old_attributes['vanity_code']=self.vanity_code
-                self.vanity_code=None
-            elif self.vanity_code!=vanity_code:
-                old_attributes['vanity_code']=self.vanity_code
-                self.vanity_code=vanity_code
+        vanity_code = data.get('vanity_url_code')
+        if self.vanity_code != vanity_code:
+            old_attributes['vanity_code'] = self.vanity_code
+            self.vanity_code = vanity_code
         
-        max_users=data.get('max_members',250000)
-        if self.max_users!=max_users:
-            old_attributes['max_users']=self.max_users
-            self.max_users=max_users
+        max_users = data.get('max_members')
+        if max_users is None:
+            max_users = 250000
+        if self.max_users != max_users:
+            old_attributes['max_users'] = self.max_users
+            self.max_users = max_users
         
-        max_presences=data.get('max_presences',None)
+        max_presences = data.get('max_presences')
         if max_presences is None:
-            max_presences=25000
-        if self.max_presences!=max_presences:
-            old_attributes['max_presences']=self.max_presences
-            self.max_presences=max_presences
+            max_presences = 25000
+        if self.max_presences != max_presences:
+            old_attributes['max_presences'] = self.max_presences
+            self.max_presences = max_presences
         
         max_video_channel_users = data.get('max_video_channel_users', 25)
         if self.max_video_channel_users!=max_video_channel_users:
@@ -2398,18 +2421,20 @@ class Guild(DiscordEntity, immortal=True):
             old_attributes['premium_tier']=self.premium_tier
             self.premium_tier=premium_tier
 
-        booster_count=data.get('premium_subscription_count',None)
+        booster_count = data.get('premium_subscription_count')
         if booster_count is None:
             booster_count=0
-        if self.booster_count!=booster_count:
-            old_attributes['booster_count']=self.booster_count
-            self.booster_count=booster_count
-            self._boosters=None
-
-        preferred_locale=parse_preferred_locale(data)
-        if self.preferred_locale!=preferred_locale:
-            old_attributes['preferred_locale']=self.preferred_locale
-            self.preferred_locale=preferred_locale
+        
+        if self.booster_count != booster_count:
+            old_attributes['booster_count'] = self.booster_count
+            self.booster_count = booster_count
+        
+        self._boosters = None
+        
+        preferred_locale = parse_preferred_locale(data)
+        if self.preferred_locale != preferred_locale:
+            old_attributes['preferred_locale'] = self.preferred_locale
+            self.preferred_locale = preferred_locale
         
         return old_attributes
     
@@ -2429,110 +2454,121 @@ class Guild(DiscordEntity, immortal=True):
         #ignoring 'channels'
         #ignoring 'voice_states'
         
-        self.name=data['name']
+        self.name = data['name']
         
         self._set_icon(data)
         self._set_invite_splash(data)
         self._set_discovery_splash(data)
         self._set_banner(data)
         
-        self.region=VoiceRegion.get(data['region'])
+        self.region = VoiceRegion.get(data['region'])
         
-        self.afk_timeout=data['afk_timeout']
+        self.afk_timeout = data['afk_timeout']
         
-        self.verification_level=VerificationLevel.INSTANCES[data['verification_level']]
+        self.verification_level = VerificationLevel.INSTANCES[data['verification_level']]
         
-        self.message_notification=MessageNotificationLevel.INSTANCES[data['default_message_notifications']]
+        self.message_notification = MessageNotificationLevel.INSTANCES[data['default_message_notifications']]
         
-        self.mfa=MFA.INSTANCES[data['mfa_level']]
+        self.mfa = MFA.INSTANCES[data['mfa_level']]
         
-        self.content_filter=ContentFilterLevel.INSTANCES[data.get('explicit_content_filter',0)]
+        self.content_filter = ContentFilterLevel.INSTANCES[data.get('explicit_content_filter', 0)]
 
-        self.available=not data.get('unavailable',False)               
+        self.available = (not data.get('unavailable', False))
         
         try:
-            features=data['features']
+            features = data['features']
         except KeyError:
             self.features.clear()
         else:
-            features=[GuildFeature.get(feature) for feature in features]
+            features = [GuildFeature.get(feature) for feature in features]
             features.sort()
-            self.features=features
+            self.features = features
         
-        system_channel_id=data['system_channel_id']
+        system_channel_id = data.get('system_channel_id')
         if system_channel_id is None:
-            system_channel=None
+            system_channel = None
         else:
-            system_channel=self.all_channel[int(system_channel_id)]
+            system_channel = self.all_channel[int(system_channel_id)]
         self.system_channel = system_channel
         
         try:
-            system_channel_flags=SystemChannelFlag(data['system_channel_flags'])
+            system_channel_flags = SystemChannelFlag(data['system_channel_flags'])
         except KeyError:
-            system_channel_flags=SystemChannelFlag.ALL
+            system_channel_flags = SystemChannelFlag.ALL
         self.system_channel_flags = system_channel_flags
         
-        public_updates_channel_id=data.get('public_updates_channel_id',None)
+        public_updates_channel_id = data.get('public_updates_channel_id')
         if public_updates_channel_id is None:
-            public_updates_channel=None
+            public_updates_channel = None
         else:
-            public_updates_channel=self.all_channel[int(public_updates_channel_id)]
+            public_updates_channel = self.all_channel[int(public_updates_channel_id)]
         self.public_updates_channel = public_updates_channel
         
-        self.owner=PartialUser(int(data['owner_id']))
-        
-        afk_channel_id=data['afk_channel_id']
-        if afk_channel_id is None:
-            afk_channel=None
+        owner_id = data.get('owner_id')
+        if owner_id is None:
+            owner = ZEROUSER
         else:
-            afk_channel=self.all_channel[int(afk_channel_id)]
+            owner = PartialUser(int(owner_id))
+        self.owner = owner
+        
+        afk_channel_id = data.get('afk_channel_id')
+        if afk_channel_id is None:
+            afk_channel = None
+        else:
+            afk_channel = self.all_channel[int(afk_channel_id)]
         self.afk_channel = afk_channel
         
-        self.widget_enabled=data.get('widget_enabled',False)
+        self.widget_enabled = data.get('widget_enabled', False)
 
-        widget_channel_id=data.get('widget_channel_id',None)
+        widget_channel_id = data.get('widget_channel_id')
         if widget_channel_id is None:
-            widget_channel=None
+            widget_channel = None
         else:
-            widget_channel=self.all_channel[int(widget_channel_id)]
+            widget_channel = self.all_channel[int(widget_channel_id)]
         self.widget_channel = widget_channel
         
-        self.embed_enabled=data.get('embed_enabled',False)
+        self.embed_enabled = data.get('embed_enabled', False)
 
-        embed_channel_id=data.get('embed_channel_id',None)
+        embed_channel_id = data.get('embed_channel_id')
         if embed_channel_id is None:
-            embed_channel=None
+            embed_channel = None
         else:
-            embed_channel=self.all_channel[int(embed_channel_id)]
+            embed_channel = self.all_channel[int(embed_channel_id)]
         self.embed_channel = embed_channel
         
-        rules_channel_id=data.get('rules_channel_id',None)
+        rules_channel_id = data.get('rules_channel_id')
         if rules_channel_id is None:
-            self.rules_channel=None
+            rules_channel = None
         else:
-            self.rules_channel=self.all_channel[int(rules_channel_id)]
+            rules_channel = self.all_channel[int(rules_channel_id)]
+        self.rules_channel = rules_channel
         
-        self.description=data.get('description',None)
+        self.description = data.get('description')
         
-        self.vanity_code=data.get('vanity_url_code',None)
+        self.vanity_code = data.get('vanity_url_code')
         
-        self.max_users=data.get('max_members',250000)
+        max_users = data.get('max_members')
+        if max_users is None:
+            max_users = 250000
+        self.max_users = max_users
         
-        max_presences=data.get('max_presences',None)
-        self.max_presences=25000 if max_presences is None else max_presences
+        max_presences = data.get('max_presences')
+        if max_presences is None:
+            max_presences = 25000
+        self.max_presences = max_presences
         
         self.max_video_channel_users = data.get('max_video_channel_users', 25)
         
-        self.premium_tier=data['premium_tier']
-
-        booster_count=data.get('premium_subscription_count',None)
+        self.premium_tier = data['premium_tier']
+        
+        booster_count = data.get('premium_subscription_count')
         if booster_count is None:
-            booster_count=0
-        if self.booster_count!=booster_count:
-            self.booster_count=booster_count
-            self._boosters=None
-
-        self.preferred_locale       = parse_preferred_locale(data)
+            booster_count = 0
+        
+        self.booster_count = booster_count
+        self._boosters = None
+        
+        self.preferred_locale = parse_preferred_locale(data)
 
     def _update_emojis(self, data):
         """
@@ -2587,28 +2623,28 @@ class Guild(DiscordEntity, immortal=True):
             | roles             | `None` or `set` of ``Role``   |
             +-------------------+-------------------------------+
         """
-        emojis=self.emojis
-        changes=[]
-        old_ids=set(emojis)
+        emojis = self.emojis
+        changes = []
+        old_ids = set(emojis)
         
         for emoji_data in data:
-            emoji_id=int(emoji_data['id'])
+            emoji_id = int(emoji_data['id'])
             try:
-                emoji=emojis[emoji_id]
+                emoji = emojis[emoji_id]
             except KeyError:
-                emoji=Emoji(emoji_data,self)
-                emojis[emoji_id]=emoji
-                changes.append((EMOJI_UPDATE_NEW,emoji,None),)
+                emoji = Emoji(emoji_data,self)
+                emojis[emoji_id] = emoji
+                changes.append((EMOJI_UPDATE_NEW,emoji, None),)
             else:
                 old_attributes = emoji._update(emoji_data)
                 if old_attributes:
-                    changes.append((EMOJI_UPDATE_EDIT,emoji,old_attributes),)
+                    changes.append((EMOJI_UPDATE_EDIT, emoji, old_attributes),)
                 old_ids.remove(emoji_id)
         
         for emoji_id in old_ids:
-            emoji=emojis[emoji_id]
+            emoji = emojis[emoji_id]
             emoji._delete()
-            changes.append((EMOJI_UPDATE_DELETE,emoji,None),)
+            changes.append((EMOJI_UPDATE_DELETE, emoji, None),)
         
         return changes
     
@@ -2621,22 +2657,22 @@ class Guild(DiscordEntity, immortal=True):
         data : `list` of (`dict` of (`str`, `Any`) items)
             Received emoji datas.
         """
-        emojis=self.emojis
-        old_ids=set(emojis)
+        emojis = self.emojis
+        old_ids = set(emojis)
 
         for emoji_data in data:
-            emoji_id=int(emoji_data['id'])
+            emoji_id = int(emoji_data['id'])
             try:
-                emoji=emojis[emoji_id]
+                emoji = emojis[emoji_id]
             except KeyError:
-                emoji=Emoji(emoji_data,self)
-                emojis[emoji_id]=emoji
+                emoji = Emoji(emoji_data,self)
+                emojis[emoji_id] = emoji
             else:
                 emoji._update_no_return(emoji_data)
                 old_ids.remove(emoji_id)
         
         for emoji_id in old_ids:
-            emoji=emojis[emoji_id]
+            emoji = emojis[emoji_id]
             emoji._delete()
     
     @property
@@ -2648,9 +2684,9 @@ class Guild(DiscordEntity, immortal=True):
         -------
         limit : `int`
         """
-        limit=(50,100,150,250)[self.premium_tier]
+        limit = (50, 100, 150, 250)[self.premium_tier]
         if limit<200 and (GuildFeature.more_emoji in self.features):
-            limit=200
+            limit = 200
         return limit
     
     @property
@@ -2662,7 +2698,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         limit : `int`
         """
-        limit=(96000,128000,256000,384000)[self.premium_tier]
+        limit = (96000, 128000, 256000, 384000)[self.premium_tier]
         if limit<128000 and (GuildFeature.vip in self.features):
             limit=128000
         return limit
@@ -2692,25 +2728,60 @@ class Guild(DiscordEntity, immortal=True):
         -------
         boosters : `list` of (``User`` or ``Client``)
         """
-        boosters=self._boosters
+        boosters = self._boosters
         if boosters is None:
             if self.booster_count:
-                boosters_ordered=[]
+                boosters_ordered = []
                 for user in self.users.values():
-                    boosts_since=user.guild_profiles[self].boosts_since
+                    boosts_since = user.guild_profiles[self].boosts_since
                     if boosts_since is None:
                         continue
-                    boosters_ordered.append((boosts_since,user),)
+                    boosters_ordered.append((boosts_since, user),)
                     
-                boosters_ordered.sort(key=lambda element:element[0])
-                boosters=[element[1] for element in boosters_ordered]
+                boosters_ordered.sort(key=lambda element: element[0])
+                boosters = [element[1] for element in boosters_ordered]
             else:
                 boosters=[]
             
-            self._boosters=boosters
+            self._boosters = boosters
 
         return boosters
-
+    
+    @property
+    def emoji_counts(self):
+        """
+        Returns the emoji counts of the guild.
+        
+        Returns
+        -------
+        normal_static : `int`
+            The static emoji count of the guild (excluding managed static).
+        normal_animated : `int`
+            The animated emoji count of the guild (excluding managed animated).
+        managed_static : `int`
+            The static managed emoji count of the guild.
+        manged_animated : `int`
+            The animated managed emoji count of the guild.
+        """
+        normal_static = 0
+        normal_animated = 0
+        managed_static = 0
+        manged_animated = 0
+        
+        for emoji in self.emojis.values():
+            if emoji.animated:
+                if emoji.managed:
+                    manged_animated +=1
+                else:
+                    normal_animated +=1
+            else:
+                if emoji.managed:
+                    managed_static +=1
+                else:
+                    normal_static +=1
+        
+        return normal_static, normal_animated, managed_static, manged_animated
+            
 class GuildPreview(DiscordEntity):
     """
     A preview of a public guild.
@@ -2762,41 +2833,41 @@ class GuildPreview(DiscordEntity):
         
         self._set_discovery_splash(data)
         
-        emojis={}
-        self.emojis=emojis
+        emojis = {}
+        self.emojis = emojis
         try:
-            emoji_datas=data['emojis']
+            emoji_datas = data['emojis']
         except KeyError:
             pass
         else:
             for emoji_data in emoji_datas:
-                emoji=Emoji(emoji_data,None)
+                emoji = Emoji(emoji_data,None)
                 emojis[emoji.id]=emoji
         
-        features=[]
-        self.features=features
+        features = []
+        self.features = features
         try:
-            feature_datas=data['features']
+            feature_datas = data['features']
         except KeyError:
             pass
         else:
             for feature_data in feature_datas:
-                feature=GuildFeature.get(feature_data)
+                feature = GuildFeature.get(feature_data)
                 features.append(feature)
             
             features.sort()
         
         self._set_icon(data)
         
-        self.id=int(data['id'])
+        self.id = int(data['id'])
         
-        self.name=data['name']
+        self.name = data['name']
         
-        self.online_count=data['approximate_presence_count']
+        self.online_count = data['approximate_presence_count']
         
         self._set_invite_splash(data)
         
-        self.user_count=data['approximate_member_count']
+        self.user_count = data['approximate_member_count']
     
     def __str__(self):
         """Returns the respective guild's name."""
@@ -2844,7 +2915,7 @@ class GuildPreview(DiscordEntity):
         """
         if not code:
             return self.name
-        if code=='c':
+        if code == 'c':
             return f'{self.created_at:%Y.%m.%d-%H:%M:%S}'
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
 
@@ -3412,3 +3483,4 @@ del ratelimit
 del DiscordEntity
 del ReverseFlagBase
 del IconSlot
+del DOCS_ENABLED

@@ -4,6 +4,8 @@ __all__ = ('EXTRA_EMBED_TYPES', 'Embed', 'EmbedAuthor', 'EmbedCore', 'EmbedField
 
 from re import escape as re_escape, compile as re_compile
 
+from ..backend.dereaddons_local import DOCS_ENABLED
+
 from .others import ROLE_MENTION_RP, USER_MENTION_RP, CHANNEL_MENTION_RP, parse_time, urlcutter
 from .color import Color
 
@@ -1409,7 +1411,7 @@ class Embed(object):
     
     author = property(_get_author, _set_author, _del_author)
     del _get_author, _set_author, _del_author
-    if (__init__.__doc__ is not None):
+    if DOCS_ENABLED:
         author.__doc__ = (
         """
         A get-set-del property for accessing the embed's author.
@@ -1463,7 +1465,7 @@ class Embed(object):
     
     color = property(_get_color, _set_color, _del_color)
     del _get_color, _set_color, _del_color
-    if (__init__.__doc__ is not None):
+    if DOCS_ENABLED:
         color.__doc__ = (
         """
         A get-set-del property for accessing the embed's color.
@@ -1486,7 +1488,7 @@ class Embed(object):
     
     description = property(_get_description, _set_description, _del_description)
     del _get_description, _set_description, _del_description
-    if (__init__.__doc__ is not None):
+    if DOCS_ENABLED:
         description.__doc__ = (
         """
         A get-set-del property for accessing the embed's description.
@@ -1528,7 +1530,7 @@ class Embed(object):
     
     fields = property(_get_fields, _set_fields, _del_fields)
     del _get_fields, _set_fields, _del_fields
-    if (__init__.__doc__ is not None):
+    if DOCS_ENABLED:
         fields.__doc__ = (
         """
         A get-set-del property for accessing the embed's fields.
@@ -1724,7 +1726,7 @@ class Embed(object):
     
     footer = property(_get_footer, _set_footer, _del_footer)
     del _get_footer, _set_footer, _del_footer
-    if (__init__.__doc__ is not None):
+    if DOCS_ENABLED:
         footer.__doc__ = (
         """
         A get-set-del property for accessing the embed's footer.
@@ -1777,7 +1779,7 @@ class Embed(object):
     
     image = property(_get_image, _set_image, _del_image)
     del _get_image, _set_image, _del_image
-    if (__init__.__doc__ is not None):
+    if DOCS_ENABLED:
         image.__doc__ = (
         """
         A get-set-del property for accessing the embed's image.
@@ -1822,7 +1824,7 @@ class Embed(object):
     
     provider = property(_get_provider, None, _del_provider)
     del _get_provider, _del_provider
-    if (__init__.__doc__ is not None):
+    if DOCS_ENABLED:
         provider.__doc__ = (
         """
         A get-del property for accessing the embed's provider.
@@ -1852,7 +1854,7 @@ class Embed(object):
     
     thumbnail = property(_get_thumbnail, _set_thumbnail, _del_thumbnail)
     del _get_thumbnail, _set_thumbnail, _del_thumbnail
-    if (__init__.__doc__ is not None):
+    if DOCS_ENABLED:
         thumbnail.__doc__ = (
         """
         A get-set-del property for accessing the embed's thumbnail.
@@ -1900,7 +1902,7 @@ class Embed(object):
     
     timestamp = property(_get_timestamp, _set_timestamp, _del_timestamp)
     del _get_timestamp, _set_timestamp, _del_timestamp
-    if (__init__.__doc__ is not None):
+    if DOCS_ENABLED:
         timestamp.__doc__ = (
         """
         A get-set-del property for accessing the embed's timestamp.
@@ -1924,7 +1926,7 @@ class Embed(object):
     title = property(_get_title, _set_title, _del_title)
     
     del _get_title, _set_title, _del_title
-    if (__init__.__doc__ is not None):
+    if DOCS_ENABLED:
         title.__doc__ = (
         """
         A get-set-del property for accessing the embed's title.
@@ -1947,7 +1949,7 @@ class Embed(object):
     
     type = property(_get_type, _set_type, _del_type)
     del _get_type, _set_type, _del_type
-    if (__init__.__doc__ is not None):
+    if DOCS_ENABLED:
         type.__doc__ = (
         """
         A get-set-del property for accessing the embed's type.
@@ -1970,7 +1972,7 @@ class Embed(object):
     
     url = property(_get_url, _set_url, _del_url)
     del _get_url, _set_url, _del_url
-    if (__init__.__doc__ is not None):
+    if DOCS_ENABLED:
         url.__doc__ = (
         """
         A get-set-del property for accessing the embed's url.
@@ -1995,7 +1997,7 @@ class Embed(object):
     
     video = property(_get_video, None, _del_video)
     del _get_video, _del_video
-    if (__init__.__doc__ is not None):
+    if DOCS_ENABLED:
         video.__doc__ = (
         """
         A get-del property for accessing the embed's video.
@@ -2026,7 +2028,7 @@ class Embed(object):
     
     source = property(_get_source, _set_source, _del_source)
     del _get_source, _set_source, _del_source
-    if (__init__.__doc__ is not None):
+    if DOCS_ENABLED:
         source.__doc__ = (
         """
         A get-set-del property for accessing the embed's data.
@@ -2284,3 +2286,5 @@ class _EmbedFieldsReflection(object):
         """Reverse iterates over the respective embed's fields."""
         for field_data in reversed(self.data):
             yield EmbedField.from_data(field_data)
+
+del DOCS_ENABLED

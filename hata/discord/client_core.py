@@ -1,6 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('APPLICATIONS', 'CHANNELS', 'CLIENTS', 'EMOJIS', 'EULAS', 'GUILDS', 'DISCOVERY_CATEGORIES', 'INTEGRATIONS',
-    'KOKORO', 'MESSAGES', 'ROLES', 'TEAMS', 'USERS', 'start_clients', 'stop_clients', )
+__all__ = ('APPLICATIONS', 'CHANNELS', 'CLIENTS', 'DISCOVERY_CATEGORIES', 'EMOJIS', 'EULAS', 'GUILDS', 'INTEGRATIONS',
+    'INVITES', 'KOKORO', 'MESSAGES', 'ROLES', 'TEAMS', 'USERS', 'start_clients', 'stop_clients', )
 
 import sys, gc
 from time import perf_counter
@@ -42,15 +42,15 @@ else:
         -------
         index : `int`
         """
-        bot=0
-        top=len(array)
+        bot = 0
+        top = len(array)
         while True:
-            if bot<top:
-                half=(bot+top)>>1
-                if array[half]<value:
-                    bot=half+1
+            if bot < top:
+                half = (bot+top)>>1
+                if array[half] < value:
+                    bot = half+1
                 else:
-                    top=half
+                    top = half
                 continue
             break
         return bot
@@ -68,15 +68,15 @@ class ClientDictionary(object):
     _next : `int`
         The next added ``Client``'s auto id, if it has no id set.
     """
-    __slots__=('_elements', '_ids', '_next',)
+    __slots__ = ('_elements', '_ids', '_next',)
     
     def __init__(self):
         """
         Creates a ``ClientDictionary``.
         """
-        self._elements  = []
-        self._ids       = create_array()
-        self._next      = 1
+        self._elements = []
+        self._ids = create_array()
+        self._next = 1
     
     def append(self, client):
         """
@@ -93,23 +93,23 @@ class ClientDictionary(object):
         RuntimeError:
             If an object with it's respective `.id` same as `client`'s is already added to the container.
         """
-        id_=client.id
+        id_ = client.id
         
-        if id_<4194304:
-            id_=self._next
-            client.id=id_
-            self._next=id_+1
+        if id_ < 4194304:
+            id_ = self._next
+            client.id = id_
+            self._next = id_+1
         
-        array=self._ids
-        index=_relativeindex(array,id_)
+        array = self._ids
+        index = _relativeindex(array, id_)
         
-        if index==len(array): #put it at the last place
+        if index == len(array): #put it at the last place
             array.append(id_)
             self._elements.append(client)
             return
         
-        if array[index]==id_:  #this object is already at the container, lets check it!
-            if self._elements[index] is self._elements[index]:
+        if array[index] == id_:  #this object is already at the container, lets check it!
+            if self._elements[index] is client:
                 return
             #hah, got u!
             raise RuntimeError('Two different objects added with same id')
@@ -337,18 +337,19 @@ class ClientDictionary(object):
         return ''.join(result)
 
 
-CHANNELS    = WeakValueDictionary()
-CLIENTS     = ClientDictionary()
-EMOJIS      = WeakValueDictionary()
-GUILDS      = WeakValueDictionary()
-INTEGRATIONS= WeakValueDictionary()
-MESSAGES    = WeakValueDictionary()
-ROLES       = WeakValueDictionary()
-TEAMS       = WeakValueDictionary()
-USERS       = WeakValueDictionary()
+CHANNELS = WeakValueDictionary()
+CLIENTS = ClientDictionary()
+EMOJIS = WeakValueDictionary()
+GUILDS = WeakValueDictionary()
+INTEGRATIONS = WeakValueDictionary()
+MESSAGES = WeakValueDictionary()
+ROLES = WeakValueDictionary()
+TEAMS = WeakValueDictionary()
+USERS = WeakValueDictionary()
 DISCOVERY_CATEGORIES = WeakValueDictionary()
-EULAS       = WeakValueDictionary()
+EULAS = WeakValueDictionary()
 APPLICATIONS = WeakValueDictionary()
+INVITES = WeakValueDictionary()
 
 def start_clients():
     """

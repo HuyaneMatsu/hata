@@ -140,7 +140,7 @@ def preconvert_str(value, name, lower_limit, upper_limit):
     """
     if type(value) is str:
         pass
-    elif isinstance(value,str):
+    elif isinstance(value, str):
         value = str(value)
     else:
         raise TypeError(f'`{name}` can be `str` instance, got {value.__class__.__name__}.')
@@ -175,13 +175,13 @@ def preconvert_bool(value, name):
     """
     if (type(value) is bool):
         pass
-    elif isinstance(value,int):
-        if (value not in (0,1)):
+    elif isinstance(value, int):
+        if (value not in (0, 1)):
             raise ValueError(f'`{name}` was given as `int` instance, but neither as `0` or `1`, got {value!r}.')
         value = bool(value)
     else:
         raise TypeError(f'`{name}` can be `bool` or `int` instance as `0` or `1`, got {value.__class__.__name__}.')
-        
+    
     return value
 
 def preconvert_flag(flag, name, type_):
@@ -304,7 +304,7 @@ def preconvert_int(value, name, lower_limit, upper_limit):
     """
     if type(value) is int:
         pass
-    elif isinstance(value,int):
+    elif isinstance(value, int):
         value = int(value)
     else:
         raise TypeError(f'`{name}` can be `int` instance, got {value.__class__.__name__}.')

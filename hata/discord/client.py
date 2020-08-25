@@ -47,7 +47,7 @@ from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool
 from .permission import Permission
 from .bases import ICON_TYPE_NONE
 
-from . import client_core, message, webhook, channel
+from . import client_core, message, webhook, channel, invite
 
 _VALID_NAME_CHARS = re.compile('([0-9A-Za-z_]+)')
 
@@ -3062,11 +3062,11 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            - If `allowed_mentions` when correct type, but an invalid value would been sent.
+            - If `allowed_mentions` contains an element of invalid type.
             - If ivalid file type would be sent.
         ValueError
+            - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
             - If more than `10` files would be sent.
-            - If `allowed_mentions` contains an element of invalid type.
         ConnectionError
             No internet connection.
         DiscordException
@@ -4612,11 +4612,11 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        data={}
+        data = {}
         if delete_message_days:
             if delete_message_days<1 or delete_message_days>7:
                 raise ValueError(f'`delete_message_days` can be between 0-7, got {delete_message_days}')
-            data['delete-message-days']=delete_message_days
+            data['delete-message-days'] = delete_message_days
         await self.http.guild_ban_add(guild.id,user.id,data,reason)
     
     async def guild_ban_delete(self, guild, user, reason=None):
@@ -6885,12 +6885,12 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            - If `allowed_mentions` when correct type, but an invalid value would been sent.
+            - If `allowed_mentions` contains an element of invalid type.
             - If ivalid file type would be sent.
             - If `embed` was not passed as an embed like, or a `tuple`, `list` or `deque` of them.
         ValueError
+            - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
             - If more than `10` files would be sent.
-            - If `allowed_mentions` contains an element of invalid type.
             - If `name` was passed, but with length under `1` or over `32`.
         ConnectionError
             No internet connection.
@@ -7145,7 +7145,7 @@ class Client(UserBase):
         
         data = await self.http.invite_get(vanity_code,{})
         return Invite._create_vanity(guild,data)
-
+    
     async def vanity_edit(self, guild, code, reason=None):
         """
         Edits the given guild's vanity invite's code.
@@ -7196,7 +7196,7 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        if channel.type in (1,4):
+        if channel.type in (1, 4):
             raise TypeError(f'Cannot create invite from {channel.__class__.__name__}.')
         
         data = {
@@ -7207,7 +7207,7 @@ class Client(UserBase):
                 }
         
         data = await self.http.invite_create(channel.id,data)
-        return Invite(data)
+        return Invite(data, False)
 
     # 'target_user_id' :
     #     DiscordException BAD REQUEST (400), code=50035: Invalid Form Body
@@ -7257,9 +7257,9 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        user_id=user.id
+        user_id = user.id
         try:
-            voice_state=guild.voice_states[user_id]
+            voice_state = guild.voice_states[user_id]
         except KeyError:
             raise ValueError('The user must stream at a voice channel of the guild!') from None
         
@@ -7275,8 +7275,8 @@ class Client(UserBase):
             'target_user_type'  : 1,
                 }
         
-        data = await self.http.invite_create(voice_state.channel.id,data)
-        return Invite(data)
+        data = await self.http.invite_create(voice_state.channel.id, data)
+        return Invite(data, False)
     
     #u cannot create invite from guild, but this chooses a prefered channel
     async def invite_create_pref(self, guild, *args, **kwargs):
@@ -7319,27 +7319,27 @@ class Client(UserBase):
             if not guild.channels:
                 raise ValueError('The guild has no channels (yet?), try waiting for dispatch or create a channel')
 
-            channel=guild.system_channel
+            channel = guild.system_channel
             if channel is not None:
                 break
             
-            channel=guild.embed_channel
+            channel = guild.embed_channel
             if channel is not None:
                 break
             
-            channel=guild.widget_channel
+            channel = guild.widget_channel
             if channel is not None:
                 break
             
             for channel_type in (0,2):
                 for channel in guild.channels:
-                    if channel.type==4:
+                    if channel.type == 4:
                         for channel in channel.channels:
-                            if channel.type==channel_type:
+                            if channel.type == channel_type:
                                 break
-                    if channel.type==channel_type:
+                    if channel.type == channel_type:
                         break
-                if channel.type==channel_type:
+                if channel.type == channel_type:
                     break
             else:
                 raise ValueError('The guild has only category channels and cannot create invite from them!')
@@ -7380,8 +7380,8 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        data = await self.http.invite_get(invite_code,{'with_counts':with_count})
-        return Invite(data)
+        data = await self.http.invite_get(invite_code, {'with_counts':with_count})
+        return Invite(data, False)
     
     async def invite_update(self, invite, with_count=True):
         """
@@ -7401,9 +7401,14 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        data = await self.http.invite_get(invite.code,{'with_counts':with_count})
-        invite._update_no_return(data)
-
+        data = await self.http.invite_get(invite.code, {'with_counts': with_count})
+        if invite.partial:
+            updater = Invite._update_attributes
+        else:
+            updater = Invite._update_counts_only
+        
+        updater(invite, data)
+    
     async def invite_get_guild(self, guild):
         """
         Gets the invites of the given guild.
@@ -7423,9 +7428,9 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        data=await self.http.invite_get_guild(guild.id)
-        return [Invite(invite_data) for invite_data in data]
-
+        data = await self.http.invite_get_guild(guild.id)
+        return [Invite(invite_data, False) for invite_data in data]
+    
     async def invite_get_channel(self, channel):
         """
         Gets the invites of the given channel.
@@ -7446,7 +7451,7 @@ class Client(UserBase):
         DiscordException
         """
         data = await self.http.invite_get_channel(channel.id)
-        return [Invite(invite_data) for invite_data in data]
+        return [Invite(invite_data, False) for invite_data in data]
 
     async def invite_delete(self, invite, reason=None):
         """
@@ -7490,10 +7495,10 @@ class Client(UserBase):
         DiscordException
         """
         data = await self.http.invite_delete(invite_code,reason)
-        return Invite(data)
+        return Invite(data, False)
     
     # Role management
-
+    
     async def role_edit(self, role, name=None, color=None, separated=None, mentionable=None, permissions=None,
             position=None, reason=None):
         """
@@ -9224,13 +9229,13 @@ class Typer(object):
             The maximal amount of time till the client will keep sending typing events. Defaults to `300.0`.
         """
         self.client = client
-        self.channel= channel
+        self.channel = channel
         self.waiter = None
-        self.timeout= timeout
+        self.timeout = timeout
     
     def __enter__(self):
         """Enters the typer's context block by ensuring it's ``.run`` method."""
-        Task(self.run(),self.client.loop)
+        Task(self.run(), KOKORO)
         return self
     
     async def run(self):
@@ -9238,20 +9243,19 @@ class Typer(object):
         The coroutine what keeps sending the typing requests.
         """
         # js client's typing is 8s
-        loop=self.client.loop
-        while self.timeout>0.:
-            self.timeout-=8.
-            self.waiter = waiter = sleep(8.,loop)
+        while self.timeout > 0.:
+            self.timeout -=8.0
+            self.waiter = waiter = sleep(8., KOKORO)
             await self.client.http.typing(self.channel.id)
             await waiter
         
-        self.waiter=None
+        self.waiter = None
     
     def cancel(self):
         """
         If the context manager is still active, cancels it.
         """
-        self.timeout=0.
+        self.timeout = 0.0
         waiter = self.waiter
         if (waiter is not None):
             self.waiter = None
@@ -9265,6 +9269,7 @@ client_core.Client = Client
 message.Client = Client
 webhook.Client = Client
 channel.Client = Client
+invite.Client = Client
 
 del client_core
 del re
@@ -9273,3 +9278,4 @@ del message
 del webhook
 del RATELIMIT_GROUPS
 del DISCOVERY_CATEGORIES
+del invite

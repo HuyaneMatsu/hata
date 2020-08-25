@@ -1,12 +1,20 @@
 # -*- coding: utf-8 -*-
 __all__ = ('Invite', 'InviteTargetType')
 
+from datetime import datetime
+
+from ..backend.dereaddons_local import DOCS_ENABLED
+
+from .bases import DiscordEntity, instance_or_id_to_instance
+from .preconverters import preconvert_str, preconvert_int, preconvert_bool, preconvert_preinstanced_type
 from .others import parse_time, DISCORD_EPOCH_START
 from .http import URLS
-from .client_core import GUILDS, CHANNELS
+from .client_core import GUILDS, CHANNELS, INVITES
 from .user import User, ZEROUSER
-from .guild import PartialGuild
-from .channel import PartialChannel
+from .guild import PartialGuild, Guild
+from .channel import PartialChannel, ChannelText, ChannelGroup, ChannelVoice, ChannelStore
+
+Client = NotImplemented
 
 class InviteTargetType(object):
     """
@@ -38,7 +46,7 @@ class InviteTargetType(object):
     INSTANCES = [NotImplemented] * 2
     
     # object related
-    __slots__=('name', 'value')
+    __slots__ = ('name', 'value')
     
     def __init__(self, value, name):
         """
@@ -51,10 +59,10 @@ class InviteTargetType(object):
         name : `str`
             The name of invite target type.
         """
-        self.value=value
-        self.name=name
+        self.value = value
+        self.name = name
         
-        self.INSTANCES[value]=self
+        self.INSTANCES[value] = self
     
     def __str__(self):
         """Returns the ivnite target type's name."""
@@ -69,13 +77,14 @@ class InviteTargetType(object):
         return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r})'
     
     # predefined
-    NONE    = NotImplemented
-    STREAM  = NotImplemented
+    NONE   = NotImplemented
+    STREAM = NotImplemented
 
-InviteTargetType.NONE   = InviteTargetType(0,'NONE')
-InviteTargetType.STREAM = InviteTargetType(1,'STREAM')
+InviteTargetType.NONE   = InviteTargetType(0, 'NONE')
+InviteTargetType.STREAM = InviteTargetType(1, 'STREAM')
 
-class Invite(object):
+
+class Invite(DiscordEntity, immortal=True):
     """
     Represents a Discord Invite.
     
@@ -87,9 +96,9 @@ class Invite(object):
     code : `str`
         The invite's unique identificator.
     created_at : `datetime`
-        When the invite was created.
+        When the invite was created. Defaults to Discord epoch.
     guild : `None` or ``Guild``
-        The guild this invite is for. If not included or if the invite's channel is a group channel, then set as
+        The guild the invite is for. If not included or if the invite's channel is a group channel, then set as
         `None`.
     inviter : ``Client`` or ``User``
         The creator of the invite. If not included, then set as `ZEROUSER`.
@@ -101,6 +110,8 @@ class Invite(object):
         > If the invite has no use limit, then this value is set as `0`.
     online_count : `int`
         The amount of online users at the respective guild (or group channel). If not included, then set as `0`.
+    partial : `bool`
+        Whether the invite is only partially loaded.
     target_type : ``InviteTargetType``
         The invite's target type.
     target_user : ``Client`` or ``User``
@@ -113,10 +124,10 @@ class Invite(object):
     uses : `None` or `int`
         The amount how much times the invite was used. If not included, set as `None`.
     """
-    __slots__ = ('channel', 'code', 'created_at', 'guild', 'inviter', 'max_age', 'max_uses', 'online_count',
+    __slots__ = ('channel', 'code', 'created_at', 'guild', 'inviter', 'max_age', 'max_uses', 'online_count', 'partial',
         'target_type', 'target_user', 'temporary', 'user_count', 'uses',)
     
-    def __init__(self,data):
+    def __new__(cls, data, data_partial):
         """
         Creates an invite from the given invite data. The invite data can be requested or received through the gateway
         as well.
@@ -126,8 +137,120 @@ class Invite(object):
         data : `dict` of (`str`, `Any`) items
             Invite data.
         """
-        self.code = data['code']
+        code = data['code']
         
+        try:
+            invite = INVITES[code]
+        except KeyError:
+            invite = object.__new__(cls)
+            invite.code = code
+            invite.partial = data_partial
+            updater = cls._set_attributes
+        else:
+            if invite.partial:
+                if data_partial:
+                    updater = cls._update_attributes
+                else:
+                    updater = cls._set_attributes
+                    invite.partial = False
+            else:
+                if data_partial:
+                    updater = cls._update_counts_only
+                else:
+                    updater = cls._update_attributes
+        
+        updater(invite, data)
+        return invite
+    
+    @classmethod
+    def _create_vanity(cls, guild, data):
+        """
+        Creates a vanity invite from the given guild and from the given invite data.
+        
+        Parameters
+        ----------
+        guild : ``Guild``
+            The respective guild of the vanity invite.
+        data : `dict` of (`str`, `Any`) items
+            Invite data requested from Discord.
+        
+        Returns
+        -------
+        ivnite : ``Invite``
+        """
+        code = guild.vanity_code
+        try:
+            invite = INVITES[code]
+        except KeyError:
+            invite = object.__new__(cls)
+        
+        invite.code = code
+        invite.inviter = ZEROUSER
+        invite.uses = None
+        invite.max_age = None
+        invite.max_uses = None
+        invite.temporary = False
+        invite.created_at = DISCORD_EPOCH_START
+        invite.guild = guild
+        try:
+            channel_data = data['channel']
+        except KeyError:
+            channel = None
+        else:
+            channel = PartialChannel(channel_data, guild)
+        invite.channel = channel
+        invite.online_count = 0
+        invite.user_count = 0
+        invite.target_type = InviteTargetType.NONE
+        invite.target_user = ZEROUSER
+        invite.partial = True
+        
+        return invite
+    
+    def __str__(self):
+        """Returns the invite's url."""
+        return self.url
+    
+    def __repr__(self):
+        """Returns th represnetation of the invite."""
+        return f'<{self.__class__.__name__} code={self.code!r}>'
+    
+    def __hash__(self):
+        """Returns the invite's code's hash."""
+        return hash(self.code)
+    
+    url = property(URLS.invite_url)
+    if DOCS_ENABLED:
+        url.__doc__ = (
+        """
+        Returns the invite's url.
+        
+        Returns
+        -------
+        url : `str`
+        """)
+    
+    @property
+    def id(self):
+        """
+        Compability property with other Discord entities.
+        
+        Returns
+        -------
+        id : `int` = `0`
+        """
+        return 0
+    
+    # When we update it we get only a partial invite from Discord. So sad.
+    def _set_attributes(self, data):
+        """
+        Updates the invite by overwriting it's old attributes.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Invite data.
+        """
         try:
             guild_data = data['guild']
         except KeyError:
@@ -137,7 +260,7 @@ class Invite(object):
                 guild = None
             else:
                 guild_id = int(guild_id)
-                guild = GUILDS.get(guild_id,None)
+                guild = GUILDS.get(guild_id, None)
         else:
             guild = PartialGuild(guild_data)
         
@@ -157,8 +280,8 @@ class Invite(object):
             channel = PartialChannel(channel_data, guild)
         self.channel = channel
         
-        self.online_count = data.get('approximate_presence_count',0)
-        self.user_count = data.get('approximate_member_count',0)
+        self.online_count = data.get('approximate_presence_count', 0)
+        self.user_count = data.get('approximate_member_count', 0)
         
         try:
             inviter_data = data['inviter']
@@ -168,10 +291,10 @@ class Invite(object):
             inviter = User(inviter_data)
         self.inviter = inviter
         
-        self.uses = data.get('uses',None)
-        self.max_age = data.get('max_age',None)
-        self.max_uses = data.get('max_uses',None)
-        self.temporary = data.get('temporary',True)
+        self.uses = data.get('uses', None)
+        self.max_age = data.get('max_age', None)
+        self.max_uses = data.get('max_uses', None)
+        self.temporary = data.get('temporary', True)
         
         try:
             created_at_data = data['created_at']
@@ -181,145 +304,293 @@ class Invite(object):
             created_at = parse_time(created_at_data)
         self.created_at = created_at
         
-        self.target_type = InviteTargetType.INSTANCES[data.get('target_user_type',0)]
+        self.target_type = InviteTargetType.INSTANCES[data.get('target_user_type', 0)]
         
         try:
-            target_user_data=data['target_user']
+            target_user_data = data['target_user']
         except KeyError:
-            target_user=ZEROUSER
+            target_user = ZEROUSER
         else:
-            target_user=User(target_user_data)
-        self.target_user = target_user
+            target_user = User(target_user_data)
         
-    @classmethod
-    def _create_vanity(cls ,guild, data):
+        self.target_user = target_user
+    
+    def _update_attributes(self, data):
         """
-        Creates a vanity invite from the given guild and from the given invite data.
+        Updates the invite with the given data. Only updates the attributes, which's respective value is included.
         
         Parameters
         ----------
-        guild : ``Guild``
-            The respective guild of the vanity invite.
         data : `dict` of (`str`, `Any`) items
-            Invite data requested from Discord.
+            Invite data.
+        """
+        guild = self.guild
+        if guild is None:
+            try:
+                guild_data = data['guild']
+            except KeyError:
+                try:
+                    guild_id = data['guild_id']
+                except KeyError:
+                    guild = None
+                else:
+                    guild_id = int(guild_id)
+                    guild = GUILDS.get(guild_id, None)
+            else:
+                guild = PartialGuild(guild_data)
+            
+            self.guild = guild
+        
+        if self.channel is None:
+            try:
+                channel_data = data['channel']
+            except KeyError:
+                try:
+                    channel_id = data['channel_id']
+                except KeyError:
+                    channel = None
+                else:
+                    channel_id = int(channel_id)
+                    channel = CHANNELS.get(channel_id)
+            else:
+                channel = PartialChannel(channel_data, guild)
+            
+            self.channel = channel
+        
+        try:
+            self.online_count = data['approximate_presence_count']
+        except KeyError:
+            pass
+        
+        try:
+            self.user_count = data['approximate_member_count']
+        except KeyError:
+            pass
+        
+        try:
+            inviter_data = data['inviter']
+        except KeyError:
+            pass
+        else:
+            self.inviter = User(inviter_data)
+        
+        try:
+            self.uses = data['uses']
+        except KeyError:
+            pass
+        
+        try:
+            self.max_age = data['max_age']
+        except KeyError:
+            pass
+        
+        try:
+            self.max_uses = data['max_uses']
+        except KeyError:
+            pass
+        
+        try:
+            self.temporary = data['temporary']
+        except KeyError:
+            pass
+        
+        try:
+            created_at_data = data['created_at']
+        except KeyError:
+            pass
+        else:
+            self.created_at = parse_time(created_at_data)
+        
+        try:
+            target_type_value = data['target_user_type']
+        except KeyError:
+            pass
+        else:
+            self.target_type = InviteTargetType.INSTANCES[target_type_value]
+        
+        try:
+            target_user_data = data['target_user']
+        except KeyError:
+            pass
+        else:
+            self.target_user = User(target_user_data)
+    
+    def _update_counts_only(self, data):
+        """
+        Updates the invite's counts if given.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received invite data.
+        """
+        try:
+            self.online_count = data['approximate_presence_count']
+        except KeyError:
+            pass
+        
+        try:
+            self.user_count = data['approximate_member_count']
+        except KeyError:
+            pass
+    
+    @classmethod
+    def precreate(cls, code, **kwargs):
+        """
+        Precreates an invite object with the given parameters.
+        
+        Parameters
+        ----------
+        code : `str`
+            The invite's code.
+        **kwargs : keyword arguments
+            Additional predefined attributes for the invite.
+        
+        Other Parameters
+        ----------------
+        channel : `None`, ``ChannelText``, ``ChannelVoice``, ``ChannelStore`` or ``ChannelGroup``
+            The channe lwhere the invite redirects.
+        created_at : `datetime`
+            When the invite was created.
+        guild : `None` or ``Guild``
+            The guild the invite is for.
+        inviter : `int`, `str`, ``Client`` or ``User``
+            The creator of the invite.
+        max_age : `None` or `int`
+            The time in seconds after the invite will expire.
+        max_uses : `None` or `int`
+            How much times the invite can be used.
+        online_count : `int`
+            The amount of online users at the respective guild (or group channel).
+        target_type : `int` or ``InviteTargetType``
+            The invite's target type.
+        target_user : `int`, `str`, ``Client`` or ``User``
+            The target of the invite.
+        temporary : `bool`
+            Whether this invite only grants temporary membership.
+        user_count : `int`
+            The amount of users at the respective guild (or group channel).
+        uses : `None` or `int`
+            The amount how much times the invite was used.
         
         Returns
         -------
-        ivnite : ``Invite``
+        invite : ``Invite``
+        
+        Raises
+        ------
+        TypeError
+            If any argument's type is bad or if unexpected argument is passed.
+        ValueError
+            If an argument's type is good, but it's value is unacceptable.
         """
-        invite=object.__new__(cls)
-        invite.code         = guild.vanity_code
-        invite.inviter      = ZEROUSER
-        invite.uses         = None
-        invite.max_age      = None
-        invite.max_uses     = None
-        invite.temporary    = False
-        invite.created_at   = None
-        invite.guild        = guild
-        try:
-            channel_data = data['channel']
-        except KeyError:
-            channel = None
+        code = preconvert_str(code, 'code', 2, 32)
+
+        if kwargs:
+            processable = []
+            for key in ('uses', 'max_age', 'max_uses' ):
+                try:
+                    value = kwargs.pop(key)
+                except KeyError:
+                    pass
+                else:
+                    if (value is not None):
+                        value = preconvert_int(value, key, 0, (1<<64)-1)
+                        processable.append((key, value))
+            
+            try:
+                temporary = kwargs.pop('temporary')
+            except KeyError:
+                pass
+            else:
+                temporary = preconvert_bool(temporary, 'temporary')
+                processable.append(('temporary', temporary))
+            
+            try:
+                created_at = kwargs.pop('created_at')
+            except KeyError:
+                pass
+            else:
+                created_at_type = created_at.__class__
+                if (created_at_type is not datetime):
+                    raise TypeError(f'`\'created_at\'` can be `int` instance, got {created_at_type.__name__}.')
+                processable.append(('created_at', created_at))
+            
+            for key in ('inviter', 'target_user',):
+                try:
+                    value = kwargs.pop(key)
+                except KeyError:
+                    pass
+                else:
+                    value = instance_or_id_to_instance(value, (User, Client), key)
+                    processable.append((key, value))
+            
+            for key in ('online_count', 'user_count',):
+                try:
+                    value = kwargs.pop(key)
+                except KeyError:
+                    pass
+                else:
+                    value = preconvert_int(value, key, 0, (1<<64)-1)
+                    processable.append((key, value))
+            
+            for key, type_ in (
+                    ('guild', Guild),
+                    ('channel', (ChannelText, ChannelGroup, ChannelVoice, ChannelStore)),
+                        ):
+                
+                try:
+                    value = kwargs.pop(key)
+                except KeyError:
+                    pass
+                else:
+                    if (value is not None):
+                        value = instance_or_id_to_instance(value, type_, key)
+                        processable.append((key, value))
+                    
+            try:
+                target_type = kwargs.pop('target_type')
+            except KeyError:
+                pass
+            else:
+                target_type = preconvert_preinstanced_type(target_type, InviteTargetType, 'target_type')
+                processable.append(('target_type', target_type))
+            
+            if kwargs:
+                raise TypeError(f'Unused or unsettable attributes: {kwargs}.')
+        
         else:
-            channel = PartialChannel(channel_data, guild)
-        invite.channel      = channel
-        invite.online_count = 0
-        invite.user_count   = 0
-        invite.target_type  = InviteTargetType.NONE
-        invite.target_user  = ZEROUSER
+            processable = None
+        
+        try:
+            invite = INVITES[code]
+        except KeyError:
+            invite = object.__new__(cls)
+            invite.code = code
+            invite.inviter = ZEROUSER
+            invite.uses = None
+            invite.max_age = None
+            invite.max_uses = None
+            invite.temporary = False
+            invite.created_at = DISCORD_EPOCH_START
+            invite.guild = None
+            invite.channel = None
+            invite.online_count = 0
+            invite.user_count = 0
+            invite.target_type = InviteTargetType.NONE
+            invite.target_user = ZEROUSER
+            invite.partial = True
+            
+            INVITES[code] = invite
+        else:
+            if not invite.partial:
+                return invite
+        
+        if (processable is not None):
+            for item in processable:
+                setattr(invite, *item)
         
         return invite
-    
-    @property
-    def partial(self):
-        """
-        Returns whether the integration is not fully loaded.
-        
-        Returns
-        -------
-        partial : `bool`
-        """
-        return bool(self.inviter.id)
-    
-    def __str__(self):
-        """Returns the invite's url."""
-        return self.url
-    
-    def __repr__(self):
-        """Returns th represnetation of the invite."""
-        return f'<{self.__class__.__name__} code={self.code!r}>'
-    
-    def __hash__(self):
-        """Returns the invite's code's hash."""
-        return hash(self.code)
-    
-    url = property(URLS.invite_url)
-    if (__init__.__doc__ is not None):
-        url.__doc__ = (
-        """
-        Returns the invite's url.
-        
-        Returns
-        -------
-        url : `str`
-        """)
-    
-    # When we update it we get only a partial invite from Discord. So sad.
-    def _update_no_return(self, data):
-        """
-        Updates the invite by overwriting it's old attributes.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Requested invite data.
-        """
-        # Code can not change, I am pretty sure.
-        try:
-            self.online_count=data['approximate_presence_count']
-            self.user_count=data['approximate_member_count']
-        except KeyError:
-            pass
-    
-    def _update(self, data):
-        """
-        Updates the invite and returns the changed attributes in a dictionary with `attribute-name` - `old-value`
-        relation.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Requested invite data.
-        
-        Returns
-        -------
-        old_attributes : `dict` of (`str`, `Any`) items
-            All item in the returned dict is optional.
-        
-        Returned Data Structure
-        -----------------------
-        +---------------+-----------+
-        | Keys          | Values    |
-        +===============+===========+
-        | online_count  | `int`     |
-        +---------------+-----------+
-        | user_count    | `int`     |
-        +---------------+-----------+
-        """
-        old_attributes = {}
-        try:
-            online_count=data['approximate_presence_count']
-            if self.online_count!=online_count:
-                old_attributes['online_count']=self.online_count
-                self.online_count=online_count
-
-            user_count=data['approximate_member_count']
-            if self.user_count!=user_count:
-                old_attributes['user_count']=self.user_count
-                self.user_count=user_count
-        except KeyError:
-            pass
-        
-        return old_attributes
 
 del URLS
+del DOCS_ENABLED

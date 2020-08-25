@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('ChooseMenu', 'Cooldown', 'GUI_STATE_CANCELLED', 'GUI_STATE_CANCELLING', 'GUI_STATE_READY',
+__all__ = ('ChooseMenu', 'Closer', 'Cooldown', 'GUI_STATE_CANCELLED', 'GUI_STATE_CANCELLING', 'GUI_STATE_READY',
     'GUI_STATE_SWITCHING_CTX', 'GUI_STATE_SWITCHING_PAGE', 'Timeouter', 'Pagination', 'WaitAndContinue',
     'ReactionAddWaitfor', 'ReactionDeleteWaitfor', 'multievent', 'wait_for_message', 'wait_for_reaction', )
 
@@ -178,7 +178,7 @@ class Timeouter(object):
             # Cannot change timeout of expired timeouter
             return
         
-        if value<=0.0:
+        if value <= 0.0:
             self.timeout = 0.0
             handle._run()
             handle.cancel()
@@ -232,7 +232,7 @@ class Pagination(object):
         The function called when the ``Pagination`` is cancelled or when it expires. This is a onetime use and after
         it was used, is set as `None`.
     channel : ``ChannelTextBase`` instance
-        The channel wehre the ``Pagination`` is executed.
+        The channel where the ``Pagination`` is executed.
     client : ``Client`` of ``Embed`` (or any compatible)
         The client who executes the ``Pagination``.
     message : `None` or ``Message``
@@ -298,54 +298,54 @@ class Pagination(object):
         client : ``Client``
             The client who will execute the ``Pagination``.
         channel : ``ChannelTextBase`` instance
-            The channel wehre the ``Pagination`` will be executed.
-        pages : `indexable`
+            The channel where the ``Pagination`` will be executed.
+        pages : `indexable-container`
             An indexable container, what stores the displayable ``Embed``-s.
         timeout : `float`, Optional
             The timeout of the ``Pagination`` in seconds. Defaults to `240.0`.
         message : `None` or ``Message``, Optional
-            The message on what the ``Pagination`` will be executed. If not given a new message will be cretaed.
+            The message on what the ``Pagination`` will be executed. If not given a new message will be created.
             Defaults to `None`.
         
         Returns
         -------
-        self : `Mone` or ``Pagination``
+        self : `None` or ``Pagination``
             If `pages` is an empty container, returns `None`.
         """
         if not pages:
             return None
         
-        self=object.__new__(cls)
-        self.client=client
-        self.channel=channel
-        self.pages=pages
-        self.page=0
-        self.canceller=cls._canceller
-        self.task_flag=GUI_STATE_READY
-        self.message=message
-        self.timeout=timeout
-        self.timeouter=None
+        self = object.__new__(cls)
+        self.client = client
+        self.channel = channel
+        self.pages = pages
+        self.page = 0
+        self.canceller = cls._canceller
+        self.task_flag = GUI_STATE_READY
+        self.message = message
+        self.timeout = timeout
+        self.timeouter = None
         
         try:
             if message is None:
-                message = await client.message_create(channel,embed=pages[0])
-                self.message=message
+                message = await client.message_create(channel, embed=pages[0])
+                self.message = message
             else:
-                await client.message_edit(message,embed=pages[0])
+                await client.message_edit(message, embed=pages[0])
             
             if not channel.cached_permissions_for(client).can_add_reactions:
                 return self
             
             if len(self.pages)>1:
                 for emoji in self.EMOJIS:
-                    await client.reaction_add(message,emoji)
+                    await client.reaction_add(message, emoji)
             else:
-                await client.reaction_add(message,self.CANCEL)
+                await client.reaction_add(message, self.CANCEL)
         except BaseException as err:
-            if isinstance(err,ConnectionError):
+            if isinstance(err, ConnectionError):
                 return None
             
-            if isinstance(err,DiscordException):
+            if isinstance(err, DiscordException):
                 if err.code in (
                         ERROR_CODES.unknown_message, # message deleted
                         ERROR_CODES.unknown_channel, # message's channel deleted
@@ -357,7 +357,7 @@ class Pagination(object):
             
             raise
         
-        self.timeouter=Timeouter(self,timeout=timeout)
+        self.timeouter = Timeouter(self, timeout=timeout)
         client.events.reaction_add.append(message, self)
         client.events.reaction_delete.append(message, self)
         return self
@@ -383,11 +383,11 @@ class Pagination(object):
             return
         
         emoji = event.emoji
-        task_flag=self.task_flag
-        if task_flag!=GUI_STATE_READY:
-            if task_flag==GUI_STATE_SWITCHING_PAGE:
+        task_flag = self.task_flag
+        if task_flag != GUI_STATE_READY:
+            if task_flag == GUI_STATE_SWITCHING_PAGE:
                 if emoji is self.CANCEL:
-                    self.task_flag=GUI_STATE_CANCELLING
+                    self.task_flag = GUI_STATE_CANCELLING
                 return
             
             # ignore GUI_STATE_CANCELLED and GUI_STATE_SWITCHING_CTX
@@ -395,32 +395,32 @@ class Pagination(object):
         
         while True:
             if emoji is self.LEFT:
-                page=self.page-1
+                page = self.page-1
                 break
             
             if emoji is self.RIGHT:
-                page=self.page+1
+                page = self.page+1
                 break
             
             if emoji is self.CANCEL:
-                self.task_flag=GUI_STATE_CANCELLED
+                self.task_flag = GUI_STATE_CANCELLED
                 try:
                     await client.message_delete(self.message)
                 except BaseException as err:
                     self.cancel()
                     
-                    if isinstance(err,ConnectionError):
+                    if isinstance(err, ConnectionError):
                         # no internet
                         return
                     
-                    if isinstance(err,DiscordException):
+                    if isinstance(err, DiscordException):
                         if err.code in (
                                 ERROR_CODES.unknown_channel, # message's channel deleted
                                 ERROR_CODES.invalid_access, # client removed
                                     ):
                             return
                     
-                    await client.events.error(client,f'{self!r}.__call__',err)
+                    await client.events.error(client, f'{self!r}.__call__', err)
                     return
                 
                 else:
@@ -428,37 +428,37 @@ class Pagination(object):
                     return
             
             if emoji is self.LEFT2:
-                page=0
+                page = 0
                 break
             
             if emoji is self.RIGHT2:
-                page=len(self.pages)-1
+                page = len(self.pages)-1
                 break
             
             return
         
-        if page<0:
-            page=0
-        elif page>=len(self.pages):
-            page=len(self.pages)-1
+        if page < 0:
+            page = 0
+        elif page >= len(self.pages):
+            page = len(self.pages)-1
         
-        if self.page==page:
+        if self.page == page:
             return
-
-        self.page=page
-        self.task_flag=GUI_STATE_SWITCHING_PAGE
+        
+        self.page = page
+        self.task_flag = GUI_STATE_SWITCHING_PAGE
         
         try:
-            await client.message_edit(self.message,embed=self.pages[page])
+            await client.message_edit(self.message, embed=self.pages[page])
         except BaseException as err:
-            self.task_flag=GUI_STATE_CANCELLED
+            self.task_flag = GUI_STATE_CANCELLED
             self.cancel()
             
-            if isinstance(err,ConnectionError):
+            if isinstance(err, ConnectionError):
                 # no internet
                 return
             
-            if isinstance(err,DiscordException):
+            if isinstance(err, DiscordException):
                 if err.code in (
                         ERROR_CODES.unknown_message, # message deleted
                         ERROR_CODES.unknown_channel, # channel deleted
@@ -467,41 +467,41 @@ class Pagination(object):
                     return
             
             # We definitedly do not want to silence `ERROR_CODES.invalid_form_body`
-            await client.events.error(client,f'{self!r}.__call__',err)
+            await client.events.error(client, f'{self!r}.__call__', err)
             return
         
-        if self.task_flag==GUI_STATE_CANCELLING:
-            self.task_flag=GUI_STATE_CANCELLED
+        if self.task_flag == GUI_STATE_CANCELLING:
+            self.task_flag = GUI_STATE_CANCELLED
             self.cancel()
             
             try:
                 await client.message_delete(self.message)
             except BaseException as err:
                 
-                if isinstance(err,ConnectionError):
+                if isinstance(err, ConnectionError):
                     # no internet
                     return
                 
-                if isinstance(err,DiscordException):
+                if isinstance(err, DiscordException):
                     if err.code in (
                             ERROR_CODES.unknown_channel, #message's channel deleted
                             ERROR_CODES.invalid_access, # client removed
                                 ):
                         return
                 
-                await client.events.error(client,f'{self!r}.__call__',err)
+                await client.events.error(client, f'{self!r}.__call__', err)
                 return
             
             return
             
-        self.task_flag=GUI_STATE_READY
+        self.task_flag = GUI_STATE_READY
         self.timeouter.set_timeout(self.timeout)
     
     async def _canceller(self, exception,):
         """
         Used when the ``Pagination`` is cancelled.
         
-        First of all removes the pagination from waitfors,so it will not wait for reaction events, then sets the
+        First of all removes the pagination from waitfors, so it will not wait for reaction events, then sets the
         ``.task_flag`` of the it to `GUI_STATE_CANCELLED`.
         
         If `exception` is given as `TimeoutError`, then removes the ``Pagination``'s reactions from the respective
@@ -512,17 +512,17 @@ class Pagination(object):
         exception : `None` or ``BaseException`` instance
             Exception to cancel the ``Pagination`` with.
         """
-        client=self.client
-        message=self.message
+        client = self.client
+        message = self.message
         
         client.events.reaction_add.remove(message, self)
         client.events.reaction_delete.remove(message, self)
         
-        if self.task_flag==GUI_STATE_SWITCHING_CTX:
+        if self.task_flag == GUI_STATE_SWITCHING_CTX:
             # the message is not our, we should not do anything with it.
             return
         
-        self.task_flag=GUI_STATE_CANCELLED
+        self.task_flag = GUI_STATE_CANCELLED
         
         if exception is None:
             return
@@ -550,8 +550,8 @@ class Pagination(object):
                     return
             return
         
-        timeouter=self.timeouter
-        if timeouter is not None:
+        timeouter = self.timeouter
+        if (timeouter is not None):
             timeouter.cancel()
         #we do nothing
     
@@ -568,13 +568,13 @@ class Pagination(object):
         if canceller is None:
             return
         
-        self.canceller=None
+        self.canceller = None
         
         timeouter = self.timeouter
         if (timeouter is not None):
             timeouter.cancel()
         
-        return Task(canceller(self,exception),KOKORO)
+        return Task(canceller(self, exception), KOKORO)
     
     def __repr__(self):
         """Returns the pagination's representation."""
@@ -587,7 +587,264 @@ class Pagination(object):
             ', task_flag='
                 ]
         
-        task_flag=self.task_flag
+        task_flag = self.task_flag
+        result.append(repr(task_flag))
+        result.append(' (')
+        
+        task_flag_name = (
+            'GUI_STATE_READY',
+            'GUI_STATE_SWITCHING_PAGE',
+            'GUI_STATE_CANCELLING',
+            'GUI_STATE_CANCELLED',
+            'GUI_STATE_SWITCHING_CTX',
+                )[task_flag]
+        
+        result.append(task_flag_name)
+        result.append(')>')
+        
+        return ''.join(result)
+
+class Closer(object):
+    """
+    Familair to ``Pagination``, but can be used if the given contnet has only 1 page, so only an `x` would show up.
+    
+    Picks up on reaction additions by any users.
+    
+    Attributes
+    ----------
+    canceller : `None` or `function`
+        The function called when the ``Closer`` is cancelled or when it expires. This is a onetime use and after
+        it was used, is set as `None`.
+    channel : ``ChannelTextBase`` instance
+        The channel where the ``Closer`` is executed.
+    client : ``Client`` of ``Embed`` (or any compatible)
+        The client who executes the ``Closer``.
+    message : `None` or ``Message``
+        The message on what the ``Closer`` is executed.
+    task_flag : `int`
+        A flag to store the state of the ``Closer``.
+        
+        Possible values:
+        +---------------------------+-------+-----------------------------------------------------------------------+
+        | Respective name           | Value | Description                                                           |
+        +===========================+=======+=======================================================================+
+        | GUI_STATE_READY           | 0     | The closer does nothing, is ready to be used.                         |
+        +---------------------------+-------+-----------------------------------------------------------------------+
+        | GUI_STATE_SWITCHING_PAGE  | 1     | The closer is currently changing it's page.                           |
+        +---------------------------+-------+-----------------------------------------------------------------------+
+        | GUI_STATE_CANCELLING      | 2     | The pagination is currently changing it's page, but it was cancelled  |
+        |                           |       | meanwhile.                                                            |
+        +---------------------------+-------+-----------------------------------------------------------------------+
+        | GUI_STATE_CANCELLED       | 3     | The pagination is, or is being cancelled right now.                   |
+        +---------------------------+-------+-----------------------------------------------------------------------+
+        | GUI_STATE_SWITCHING_CTX   | 4     | The closer is switching context. Not used by the default class,       |
+        |                           |       | but expected.                                                         |
+        +---------------------------+-------+-----------------------------------------------------------------------+
+    timeouter : `None` or ``Timeouter``
+        Executes the timing out feature on the ``Closer``.
+    
+    Class Attributes
+    ----------------
+    CANCEL : ``Emoji`` = `BUILTIN_EMOJIS['x']`
+        The emoji used to cancel the ``Closer``.
+    """
+    CANCEL = BUILTIN_EMOJIS['x']
+    
+    __slots__ = ('canceller', 'channel', 'client', 'message', 'task_flag', 'timeouter')
+    
+    async def __new__(cls, client, channel, embed, timeout=240., message=None):
+        """
+        Creates a new pagination with the given parameters.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The client who will execute the ``Closer``.
+        channel : ``ChannelTextBase`` instance
+            The channel where the ``Closer`` will be executed.
+        embed : ``EmbedCore``, ``Embed`` or other `embed-like`
+            The embed what will be displayed.
+        timeout : `float`, Optional
+            The timeout of the ``Closer`` in seconds. Defaults to `240.0`.
+        message : `None` or ``Message``, Optional
+            The message on what the ``Closer`` will be executed. If not given a new message will be created.
+            Defaults to `None`.
+        
+        Returns
+        -------
+        self : `None` or ``Closer``
+        """
+        self = object.__new__(cls)
+        self.client = client
+        self.channel = channel
+        self.canceller = cls._canceller
+        self.task_flag = GUI_STATE_READY
+        self.message = message
+        self.timeouter = None
+        
+        try:
+            if message is None:
+                message = await client.message_create(channel, embed=embed)
+                self.message = message
+            else:
+                await client.message_edit(message, embed=embed)
+            
+            if not channel.cached_permissions_for(client).can_add_reactions:
+                return self
+            
+            await client.reaction_add(message, self.CANCEL)
+        except BaseException as err:
+            if isinstance(err, ConnectionError):
+                return None
+            
+            if isinstance(err, DiscordException):
+                if err.code in (
+                        ERROR_CODES.unknown_message, # message deleted
+                        ERROR_CODES.unknown_channel, # message's channel deleted
+                        ERROR_CODES.max_reactions, # reached reaction 20, some1 is trolling us.
+                        ERROR_CODES.invalid_access, # client removed
+                        ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                            ):
+                    return None
+            
+            raise
+        
+        self.timeouter = Timeouter(self, timeout=timeout)
+        client.events.reaction_add.append(message, self)
+        return self
+
+
+    async def __call__(self, client, event):
+        """
+        Called when a reaction is added on the respective message.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The client who executes the ``Closer``
+        event : ``ReactionAddEvent``
+            The received event.
+        """
+        if event.user.is_bot:
+            return
+        
+        if (event.emoji is not self.CANCEL):
+            return
+        
+        task_flag = self.task_flag
+        if task_flag != GUI_STATE_READY:
+            # ignore GUI_STATE_SWITCHING_PAGE and GUI_STATE_CANCELLED and GUI_STATE_SWITCHING_CTX
+            return
+        
+        self.task_flag = GUI_STATE_CANCELLED
+        try:
+            await client.message_delete(self.message)
+        except BaseException as err:
+            self.cancel()
+            
+            if isinstance(err, ConnectionError):
+                # no internet
+                return
+            
+            if isinstance(err, DiscordException):
+                if err.code in (
+                        ERROR_CODES.unknown_channel, # message's channel deleted
+                        ERROR_CODES.unknown_message, # message deleted
+                        ERROR_CODES.invalid_access, # client removed
+                            ):
+                    return
+            
+            await client.events.error(client, f'{self!r}.__call__', err)
+            return
+    
+    async def _canceller(self, exception,):
+        """
+        Used when the ``Closer`` is cancelled.
+        
+        First removes the respective waitfors of the canceller, then set it's ``.task_flag`` of the it to
+        `GUI_STATE_CANCELLED`.
+        
+        If `exception` is given as `TimeoutError`, then removes the ``Closer``'s reactions from the respective
+        message.
+        
+        Parameters
+        ----------
+        exception : `None` or ``BaseException`` instance
+            Exception to cancel the ``Closer`` with.
+        """
+        client = self.client
+        message = self.message
+        
+        client.events.reaction_add.remove(message, self)
+        
+        if self.task_flag == GUI_STATE_SWITCHING_CTX:
+            # the message is not our, we should not do anything with it.
+            return
+        
+        self.task_flag = GUI_STATE_CANCELLED
+        
+        if exception is None:
+            return
+        
+        if isinstance(exception, TimeoutError):
+            if self.channel.cached_permissions_for(client).can_manage_messages:
+                try:
+                    await client.reaction_clear(message)
+                except BaseException as err:
+                    
+                    if isinstance(err, ConnectionError):
+                        # no internet
+                        return
+                    
+                    if isinstance(err, DiscordException):
+                        if err.code in (
+                                ERROR_CODES.unknown_message, # message deleted
+                                ERROR_CODES.unknown_channel, # channel deleted
+                                ERROR_CODES.invalid_access, # client removed
+                                ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                                    ):
+                            return
+                    
+                    await client.events.error(client, f'{self!r}._canceller', err)
+                    return
+            return
+        
+        timeouter = self.timeouter
+        if (timeouter is not None):
+            timeouter.cancel()
+        #we do nothing
+    
+    def cancel(self, exception=None):
+        """
+        Cancels the closer, if it is not cancelled yet.
+        
+        Parameters
+        ----------
+        exception : `None` or ``BaseException`` instance, Optional
+            Exception to cancel the closer with. Defaults to `None`
+        """
+        canceller = self.canceller
+        if canceller is None:
+            return
+        
+        self.canceller = None
+        
+        timeouter = self.timeouter
+        if (timeouter is not None):
+            timeouter.cancel()
+        
+        return Task(canceller(self, exception), KOKORO)
+    
+    def __repr__(self):
+        """Returns the pagination's representation."""
+        result = [
+            '<', self.__class__.__name__,
+            ' client=', repr(self.client),
+            ', channel=', repr(self.channel),
+            ', task_flag='
+                ]
+        
+        task_flag = self.task_flag
         result.append(repr(task_flag))
         result.append(' (')
         
@@ -621,7 +878,7 @@ class ChooseMenu(object):
         The function called when the ``ChooseMenu`` is cancelled or when it expires. This is a onetime use and after
         it was used, is set as `None`.
     channel : ``ChannelTextBase`` instance
-        The channel wehre the ``ChooseMenu`` is executed.
+        The channel where the ``ChooseMenu`` is executed.
     client : ``Client``
         The client who executes the ``Pagination``.
     embed : ``Embed`` (or any compatible)
@@ -734,7 +991,7 @@ class ChooseMenu(object):
         client : ``Client``
             The client who executes the ``Pagination``.
         channel : ``ChannelTextBase`` instance
-            The channel wehre the ``ChooseMenu`` is executed.
+            The channel where the ``ChooseMenu`` is executed.
         choices : `indexable` of `Any`
             An indexable container, what stores the displayable choices.
             
@@ -784,7 +1041,7 @@ class ChooseMenu(object):
         
         Returns
         -------
-        self : `Mone` or ``ChooseMenu``
+        self : `None` or ``ChooseMenu``
             If `choices`'s length is less than `2`, then returns `None`.
         
         Raises
@@ -822,10 +1079,10 @@ class ChooseMenu(object):
         
         try:
             if message is None:
-                message = await client.message_create(channel,embed=self._render_embed())
+                message = await client.message_create(channel, embed=self._render_embed())
                 self.message = message
             else:
-                await client.message_edit(message,embed=self._render_embed())
+                await client.message_edit(message, embed=self._render_embed())
             
             if not channel.cached_permissions_for(client).can_add_reactions:
                 return self
@@ -833,10 +1090,10 @@ class ChooseMenu(object):
             for emoji in (self.EMOJIS if len(choices)>10 else self.EMOJIS_RESTRICTED):
                 await client.reaction_add(message,emoji)
         except BaseException as err:
-            if isinstance(err,ConnectionError):
+            if isinstance(err, ConnectionError):
                 return self
             
-            if isinstance(err,DiscordException):
+            if isinstance(err, DiscordException):
                 if err.code in (
                         ERROR_CODES.unknown_message, # message deleted
                         ERROR_CODES.unknown_channel, # message's channel deleted
@@ -848,7 +1105,7 @@ class ChooseMenu(object):
             
             raise
         
-        self.timeouter = Timeouter(self,timeout=timeout)
+        self.timeouter = Timeouter(self, timeout=timeout)
         client.events.reaction_add.append(message, self)
         client.events.reaction_delete.append(message, self)
         return self
@@ -874,10 +1131,10 @@ class ChooseMenu(object):
         prefix=self.prefix
         left_length = 195
         if (prefix is not None):
-            left_length-=len(prefix)
+            left_length -= len(prefix)
         
         while True:
-            title=choices[index]
+            title = choices[index]
             if isinstance(title,tuple):
                 if not title:
                     title = ''
@@ -887,14 +1144,14 @@ class ChooseMenu(object):
             if not isinstance(title,str):
                 title = str(title)
             
-            if len(title)>left_length:
-                space_position = title.rfind(' ',left_length-25,left_length)
-                if space_position==-1:
+            if len(title) > left_length:
+                space_position = title.rfind(' ', left_length-25, left_length)
+                if space_position == -1:
                     space_position=left_length-3
                 
                 title = title[:space_position]+'...'
             
-            if index==selected:
+            if index == selected:
                 if (prefix is not None):
                     parts.append('**')
                     parts.append(prefix)
@@ -920,11 +1177,11 @@ class ChooseMenu(object):
         limit = len(choices)
         page_limit = (limit//10)+1
         start = end-9
-        if start<1:
-            start=1
-        if end==len(choices):
-            end-=1
-        limit-=1
+        if start < 1:
+            start = 1
+        if end == len(choices):
+            end -= 1
+        limit -= 1
         
         embed.add_footer(f'Page {current_page}/{page_limit}, {start} - {end} / {limit}, selected: {selected+1}')
         return embed
@@ -952,11 +1209,11 @@ class ChooseMenu(object):
         if (event.delete_reaction_with(client) == event.DELETE_REACTION_NOT_ADDED):
             return
         
-        task_flag=self.task_flag
-        if task_flag!=GUI_STATE_READY:
-            if task_flag==GUI_STATE_SWITCHING_PAGE:
+        task_flag = self.task_flag
+        if task_flag != GUI_STATE_READY:
+            if task_flag == GUI_STATE_SWITCHING_PAGE:
                 if event.emoji is self.CANCEL:
-                    self.task_flag=GUI_STATE_CANCELLING
+                    self.task_flag = GUI_STATE_CANCELLING
                 return
             
             # ignore GUI_STATE_CANCELLED and GUI_STATE_SWITCHING_CTX
@@ -981,24 +1238,25 @@ class ChooseMenu(object):
                 break
             
             if emoji is self.CANCEL:
-                self.task_flag=GUI_STATE_CANCELLED
+                self.task_flag = GUI_STATE_CANCELLED
                 try:
                     await client.message_delete(message)
                 except BaseException as err:
                     self.cancel()
                     
-                    if isinstance(err,ConnectionError):
+                    if isinstance(err, ConnectionError):
                         # no internet
                         return
                     
-                    if isinstance(err,DiscordException):
+                    if isinstance(err, DiscordException):
                         if err.code in (
                                 ERROR_CODES.unknown_channel, # message's channel deleted
+                                ERROR_CODES.unknown_message, # message deleted
                                 ERROR_CODES.invalid_access, # client removed
                                     ):
                             return
                     
-                    await client.events.error(client,f'{self!r}.__call__',err)
+                    await client.events.error(client, f'{self!r}.__call__', err)
                     return
                 
                 else:
@@ -1017,11 +1275,11 @@ class ChooseMenu(object):
                         for emoji in self.EMOJIS:
                             await client.reaction_delete_own(message,emoji)
                 except BaseException as err:
-                    if isinstance(err,ConnectionError):
+                    if isinstance(err, ConnectionError):
                         # no internet
                         return
                     
-                    if isinstance(err,DiscordException):
+                    if isinstance(err, DiscordException):
                         if err.code in (
                                 ERROR_CODES.unknown_message, # message already deleted
                                 ERROR_CODES.unknown_channel, # channel deleted
@@ -1048,27 +1306,27 @@ class ChooseMenu(object):
             
             return
         
-        if selected<0:
-            selected=0
-        elif selected>=len(self.choices):
-            selected=len(self.choices)-1
+        if selected < 0:
+            selected = 0
+        elif selected >= len(self.choices):
+            selected = len(self.choices)-1
         
-        if self.selected==selected:
+        if self.selected == selected:
             return
         
-        self.selected=selected
-        self.task_flag=GUI_STATE_SWITCHING_PAGE
+        self.selected = selected
+        self.task_flag = GUI_STATE_SWITCHING_PAGE
         try:
-            await client.message_edit(message,embed=self._render_embed())
+            await client.message_edit(message, embed=self._render_embed())
         except BaseException as err:
-            self.task_flag=GUI_STATE_CANCELLED
+            self.task_flag = GUI_STATE_CANCELLED
             self.cancel()
             
-            if isinstance(err,ConnectionError):
+            if isinstance(err, ConnectionError):
                 # no internet
                 return
             
-            if isinstance(err,DiscordException):
+            if isinstance(err, DiscordException):
                 if err.code in (
                         ERROR_CODES.unknown_message, # message already deleted
                         ERROR_CODES.unknown_channel, # message's channel deleted
@@ -1077,7 +1335,7 @@ class ChooseMenu(object):
                     return
             
             # We definitedly do not want to silence `ERROR_CODES.invalid_form_body`
-            await client.events.error(client,f'{self!r}.__call__',err)
+            await client.events.error(client,f'{self!r}.__call__', err)
             return
 
         if self.task_flag==GUI_STATE_CANCELLING:
@@ -1086,31 +1344,32 @@ class ChooseMenu(object):
                 await client.message_delete(message)
             except BaseException as err:
                 
-                if isinstance(err,ConnectionError):
+                if isinstance(err, ConnectionError):
                     # no internet
                     return
                 
-                if isinstance(err,DiscordException):
+                if isinstance(err, DiscordException):
                     if err.code in (
-                            ERROR_CODES.unknown_channel,
+                            ERROR_CODES.unknown_channel, # channel deleted
+                            ERROR_CODES.unknown_message, # message deleted
                             ERROR_CODES.invalid_access, # client removed
                                 ):
                         return
                 
-                await client.events.error(client,f'{self!r}.__call__',err)
+                await client.events.error(client, f'{self!r}.__call__', err)
                 return
             
             self.cancel()
             return
         
-        self.task_flag=GUI_STATE_READY
+        self.task_flag = GUI_STATE_READY
         self.timeouter.set_timeout(self.timeout)
     
     async def _canceller(self, exception,):
         """
         Used when the ``ChooseMenu`` is cancelled.
         
-        First of all removes the choose menu from waitfors,so it will not wait for reaction events, then sets the
+        First of all removes the choose menu from waitfors, so it will not wait for reaction events, then sets the
         ``.task_flag`` of the it to `GUI_STATE_CANCELLED`.
         
         If `exception` is given as `TimeoutError`, then removes the ``ChooseMenu``'s reactions from the respective
@@ -1121,8 +1380,8 @@ class ChooseMenu(object):
         exception : `None` or ``BaseException`` instance
             Exception to cancel the ``ChooseMenu`` with.
         """
-        client=self.client
-        message=self.message
+        client = self.client
+        message = self.message
         
         client.events.reaction_add.remove(message, self)
         client.events.reaction_delete.remove(message, self)
@@ -1136,17 +1395,17 @@ class ChooseMenu(object):
         if exception is None:
             return
         
-        if isinstance(exception,TimeoutError):
+        if isinstance(exception, TimeoutError):
             if self.channel.cached_permissions_for(client).can_manage_messages:
                 try:
                     await client.reaction_clear(message)
                 except BaseException as err:
                     
-                    if isinstance(err,ConnectionError):
+                    if isinstance(err, ConnectionError):
                         # no internet
                         return
                     
-                    if isinstance(err,DiscordException):
+                    if isinstance(err, DiscordException):
                         if err.code in (
                                 ERROR_CODES.unknown_message, # message deleted
                                 ERROR_CODES.unknown_channel, # channel deleted
@@ -1159,8 +1418,8 @@ class ChooseMenu(object):
                     return
             return
         
-        timeouter=self.timeouter
-        if timeouter is not None:
+        timeouter = self.timeouter
+        if (timeouter is not None):
             timeouter.cancel()
         #we do nothing
     
@@ -1196,13 +1455,13 @@ class ChooseMenu(object):
             ', selecter=', repr(self.selecter),
                 ]
         
-        prefix=self.prefix
+        prefix = self.prefix
         if (prefix is not None):
             result.append(', prefix=')
             result.append(repr(prefix))
         
         result.append(', task_flag=')
-        task_flag=self.task_flag
+        task_flag = self.task_flag
         result.append(repr(task_flag))
         result.append(' (')
         
@@ -1282,19 +1541,19 @@ class WaitAndContinue(object):
             result = self.check(*args)
         except BaseException as err:
             self.future.set_exception_if_pending(err)
+            self.cancel()
         else:
             if type(result) is bool:
                 if not result:
                     return
                 
-                if len(args)==1:
+                if len(args) == 1:
                     args = args[0]
             
             else:
-                args=(*args, result,)
+                args = (*args, result,)
             
-            self.future.set_result_if_pending(args,)
-        finally:
+            self.future.set_result_if_pending(args)
             self.cancel()
     
     async def _canceller(self, exception):
@@ -1308,7 +1567,7 @@ class WaitAndContinue(object):
             Exception to cancel the ``WaitAndContinue``'s ``.future`` with.
         """
         if exception is None:
-            self.future.set_result_if_pending(None)
+            self.future.set_exception_if_pending(TimeoutError())
             return
         
         self.event.remove(self.target, self)
@@ -1318,7 +1577,7 @@ class WaitAndContinue(object):
             return
         
         timeouter = self.timeouter
-        if timeouter is not None:
+        if (timeouter is not None):
             timeouter.cancel()
     
     def cancel(self):
@@ -1331,10 +1590,11 @@ class WaitAndContinue(object):
         
         self.event.remove(self.target, self)
         timeouter = self.timeouter
-        if timeouter is not None:
+        if (timeouter is not None):
             timeouter.cancel()
         
         return Task(canceller(self, None), KOKORO)
+
 
 def wait_for_reaction(client, message, check, timeout):
     """
@@ -1357,8 +1617,9 @@ def wait_for_reaction(client, message, check, timeout):
         The waiter future, what should be awaited.
     """
     future = Future(KOKORO)
-    WaitAndContinue(future, check, message ,client.events.reaction_add, timeout)
+    WaitAndContinue(future, check, message, client.events.reaction_add, timeout)
     return future
+
 
 def wait_for_message(client, channel, check, timeout):
     """
@@ -1380,11 +1641,11 @@ def wait_for_message(client, channel, check, timeout):
     future : `Future`
         The waiter future, what should be awaited.
     """
-    future=Future(KOKORO)
+    future = Future(KOKORO)
     WaitAndContinue(future, check, channel, client.events.message_create, timeout)
     return future
 
-    
+
 class _CDUnit(object):
     """
     A cooldown unit stored by a ``CooldownWrapper``.
@@ -1457,11 +1718,11 @@ class CooldownWrapper(CommandWrapper):
             weight = source_wrapper.weight
         
         new_wrapper = object.__new__(type(source_wrapper))
-        new_wrapper.checker= source_wrapper.checker
-        new_wrapper.reset  = source_wrapper.reset
-        new_wrapper.cache  = source_wrapper.cache
+        new_wrapper.checker = source_wrapper.checker
+        new_wrapper.reset = source_wrapper.reset
+        new_wrapper.cache = source_wrapper.cache
         new_wrapper.weight = weight
-        new_wrapper.limit  = source_wrapper.limit+source_wrapper.weight-weight
+        new_wrapper.limit = source_wrapper.limit+source_wrapper.weight-weight
         
         if func is None:
             wrapper = source_wrapper._wrapper(new_wrapper, self.handler)
@@ -1795,27 +2056,27 @@ class Cooldown(object):
         Parameters
         ----------
         message : ``Message``
-            The reeived message.
+            The received message.
         
         Returns
         -------
         expires_at : `int`
             When the cooldown for the given entity will expire.
         """
-        id_=message.author.id
+        id_ = message.author.id
         
-        cache=self.cache
+        cache = self.cache
         try:
-            unit=cache[id_]
+            unit = cache[id_]
         except KeyError:
-            at_=monotonic()+self.reset
-            cache[id_]=_CDUnit(at_,self.limit)
-            KOKORO.call_at(at_,dict.__delitem__,cache,id_)
+            at_ = monotonic()+self.reset
+            cache[id_] = _CDUnit(at_, self.limit)
+            KOKORO.call_at(at_, dict.__delitem__, cache, id_)
             return 0.
         
-        left=unit.uses_left
-        if left>0:
-            unit.uses_left=left-self.weight
+        left = unit.uses_left
+        if left > 0:
+            unit.uses_left = left-self.weight
             return 0.
         return unit.expires_at
     
@@ -1836,20 +2097,20 @@ class Cooldown(object):
         expires_at : `int`
             When the cooldown for the given entity will expire.
         """
-        id_=message.channel.id
+        id_ = message.channel.id
         
-        cache=self.cache
+        cache = self.cache
         try:
-            unit=cache[id_]
+            unit = cache[id_]
         except KeyError:
-            at_=monotonic()+self.reset
-            cache[id_]=_CDUnit(at_,self.limit)
-            KOKORO.call_at(at_,dict.__delitem__,cache,id_)
+            at_ = monotonic()+self.reset
+            cache[id_] = _CDUnit(at_, self.limit)
+            KOKORO.call_at(at_, dict.__delitem__, cache, id_)
             return 0.
         
-        left=unit.uses_left
+        left = unit.uses_left
         if left>0:
-            unit.uses_left=left-self.weight
+            unit.uses_left = left-self.weight
             return 0.
         return unit.expires_at
     
@@ -1873,23 +2134,23 @@ class Cooldown(object):
             
             If the cooldown limitation is not applicable for the given entity, returns `-1.0`.
         """
-        channel=message.channel
+        channel = message.channel
         if channel.type in (1,3):
             return -1.
         else:
-            id_=channel.guild.id
+            id_ = channel.guild.id
         
-        cache=self.cache
+        cache = self.cache
         try:
-            unit=cache[id_]
+            unit = cache[id_]
         except KeyError:
-            at_=monotonic()+self.reset
-            cache[id_]=_CDUnit(at_,self.limit)
-            KOKORO.call_at(at_,dict.__delitem__,cache, id_)
+            at_ = monotonic()+self.reset
+            cache[id_] = _CDUnit(at_,self.limit)
+            KOKORO.call_at(at_, dict.__delitem__, cache, id_)
             return 0.
         
-        left=unit.uses_left
-        if left>0:
-            unit.uses_left=left-self.weight
+        left = unit.uses_left
+        if left > 0:
+            unit.uses_left = left-self.weight
             return 0.
         return unit.expires_at

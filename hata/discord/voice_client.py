@@ -4,6 +4,7 @@ __all__ = ('VoiceClient', )
 import socket as module_socket
 from threading import Event
 
+from ..backend.dereaddons_local import DOCS_ENABLED
 from ..backend.futures import Future, Task, sleep, future_or_timeout, Lock
 from ..backend.exceptions import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
 
@@ -14,6 +15,8 @@ from .reader import AudioReader, AudioStream
 from .gateway import DiscordGatewayVoice, SecretBox
 from .channel import ChannelVoice
 from .exceptions import VOICE_CLIENT_DISCONNECTC_CLOSE_CODE
+
+from . import guild
 
 class VoiceClient(object):
     """
@@ -200,7 +203,7 @@ class VoiceClient(object):
     
     volume = property(_get_volume,_set_volume)
     del _get_volume,_set_volume
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         volume.__doc__ = (
         """
         Get-set proparty for accessing the voice client's volume.
@@ -1048,6 +1051,8 @@ class VoiceClient(object):
         
         return ''.join(result)
 
-from . import guild
+
 guild.VoiceClient = VoiceClient
+
 del guild
+del DOCS_ENABLED

@@ -1,13 +1,13 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('ChannelBase', 'ChannelCategory', 'ChannelGroup', 'ChannelGuildBase', 'ChannelPrivate', 'ChannelStore',
-    'ChannelText', 'ChannelTextBase', 'ChannelVoice', 'MessageIterator', 'cr_pg_channel_object')
+    'ChannelText', 'ChannelTextBase', 'ChannelThread', 'ChannelVoice', 'MessageIterator', 'cr_pg_channel_object')
 
 import re
 from collections import deque
 from time import monotonic
 from weakref import WeakSet
 
-from ..backend.dereaddons_local import autoposlist, _spaceholder
+from ..backend.dereaddons_local import autoposlist, _spaceholder, DOCS_ENABLED
 
 from .bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
 from .client_core import CHANNELS
@@ -609,7 +609,7 @@ class ChannelTextBase:
     message_keep_limit=property(_get_message_keep_limit,_set_message_keep_limit)
     del _get_message_keep_limit, _set_message_keep_limit
     # If opt level is under2, set docstring
-    if (_messageable_init.__doc__ is not None):
+    if DOCS_ENABLED:
         message_keep_limit.__doc__ = (
         """
         A property for getting or setting how much message the channel can store before removing the last.
@@ -2109,7 +2109,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
 
     name = property(__str__)
     # Add docstring for name, if opt level is under 2
-    if (name.__doc__ is not None):
+    if DOCS_ENABLED:
         name.__doc__ = (
         """
         Returns the channel's name.
@@ -2120,7 +2120,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         """)
     
     display_name = property(__str__)
-    if (display_name.__doc__ is not None):
+    if DOCS_ENABLED:
         display_name.__doc__ = (
         """
         Returns the channel's display name.
@@ -2821,7 +2821,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         return 'Unnamed'
     
     display_name = property(__str__)
-    if (display_name.__doc__ is not None):
+    if DOCS_ENABLED:
         display_name.__doc__ = (
         """
         Returns the channel's display name.
@@ -4318,3 +4318,4 @@ del URLS
 del ratelimit
 del DiscordEntity
 del WeakSet
+del DOCS_ENABLED

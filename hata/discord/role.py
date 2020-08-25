@@ -285,7 +285,7 @@ class Role(DiscordEntity, immortal=True):
             The role's manager's id.
         manager_type : `RoleManagerType`
             The role's ``.manager_type``.
-        mentionable : `bool
+        mentionable : `bool`
             The role's ``.mentionable``.
         separated : `bool`
             The role's ``.separated``.
@@ -327,7 +327,7 @@ class Role(DiscordEntity, immortal=True):
                     pass
                 else:
                     value = preconvert_bool(value, key)
-                    processable.append((key,value))
+                    processable.append((key, value))
             
             try:
                 position = kwargs.pop('position')
@@ -343,7 +343,7 @@ class Role(DiscordEntity, immortal=True):
                 pass
             else:
                 permissions = preconvert_flag(permissions, 'permissions', Permission)
-                processable.append(('permissions',permissions))
+                processable.append(('permissions', permissions))
             
             try:
                 color = kwargs.pop('color')
@@ -351,7 +351,7 @@ class Role(DiscordEntity, immortal=True):
                 pass
             else:
                 color = preconvert_color(color)
-                processable.append(('color',color))
+                processable.append(('color', color))
             
             try:
                 manager_type = kwargs.pop('manager_type')

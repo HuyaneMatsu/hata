@@ -646,8 +646,8 @@ class GravedListingElement(object):
         result = [
             '<',
             self.__class__.__name__,
-            'head=',
-            repr(graved_to_source_text),
+            ' head=',
+            repr(graved_to_source_text(self.head)),
                 ]
         
         content = self.content

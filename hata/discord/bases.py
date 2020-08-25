@@ -1211,7 +1211,7 @@ class IconSlot(object):
         processable[icon_type_name] = icon_type
         processable[icon_hash_name] = icon_hash
 
-def instance_or_id_to_instance(obj, type_):
+def instance_or_id_to_instance(obj, type_, name):
     """
     Converts the given `obj` to it's `type_` representation.
     
@@ -1219,8 +1219,10 @@ def instance_or_id_to_instance(obj, type_):
     ----------
     obj : `int`, `str` or`type_` instance
         The object to convert.
-    type_ : `type`
+    type_ : `type` or (`tuple` of `type`)
         The type to convert.
+    name : `str`
+        The respective name of the object.
     
     Returns
     -------
@@ -1248,23 +1250,31 @@ def instance_or_id_to_instance(obj, type_):
             if 6<len(obj)<18 and obj.isdigit():
                 snowflake = int(obj)
             else:
-                raise ValueError(f'`obj` was given as `str` instance, but not as a valid snowflake, got {obj!r}.')
+                raise ValueError(f'`{name}` was given as `str` instance, but not as a valid snowflake, got {obj!r}.')
         
         elif issubclass(obj_type, int):
             snowflake = int(obj)
         else:
-            raise TypeError(f'`obj` can be given either as {type_.__name__} instance, or as `int` or `str` '
-                f'representing a snowflake, got {obj_type.__name__}.')
+            if type(type_) is tuple:
+                type_name = ', '.join(t.__name__ for t in type_)
+            else:
+                type_name = type_.__name__
+            
+            raise TypeError(f'`{name}` can be given either as {type_name} instance, or as `int` or `str` representing '
+                f'a snowflake, got {obj_type.__name__}.')
         
         if snowflake < 0 or snowflake>((1<<64)-1):
-            raise ValueError(f'`obj` was given either as `int` or as `str` instance, but not as represneting a '
+            raise ValueError(f'`{name}` was given either as `int` or as `str` instance, but not as represneting a '
                 f'`uint64`, got {obj!r}.')
-    
+        
+        if type(type_) is tuple:
+            type_ = type_[0]
+        
         instance = type_.precreate(snowflake)
     
     return instance
 
-def instance_or_id_to_snowflake(obj, type_):
+def instance_or_id_to_snowflake(obj, type_, name):
     """
     Validates the given `obj` whether it is instance of the given `type_`, or is a valid snowflake representation.
     
@@ -1272,8 +1282,10 @@ def instance_or_id_to_snowflake(obj, type_):
     ----------
     obj : `int`, `str` or`type_` instance
         The object to validate.
-    type_ : `type`
+    type_ : `type` of (`tuple` of `type`)
         Expected type.
+    name : `str`
+        The respective name of the object.
     
     Returns
     -------
@@ -1300,16 +1312,21 @@ def instance_or_id_to_snowflake(obj, type_):
             if 6<len(obj)<18 and obj.isdigit():
                 snowflake = int(obj)
             else:
-                raise ValueError(f'`obj` was given as `str` instance, but not as a valid snowflake, got {obj!r}.')
+                raise ValueError(f'`{name}` was given as `str` instance, but not as a valid snowflake, got {obj!r}.')
         
         elif issubclass(obj_type, int):
             snowflake = int(obj)
         else:
-            raise TypeError(f'`obj` can be given either as {type_.__name__} instance, or as `int` or `str` '
-                f'representing a snowflake, got {obj_type.__name__}.')
+            if type(type_) is tuple:
+                type_name = ', '.join(t.__name__ for t in type_)
+            else:
+                type_name = type_.__name__
+            
+            raise TypeError(f'`{name}` can be given either as {type_name} instance, or as `int` or `str` representing '
+                f'a snowflake, got {obj_type.__name__}.')
         
         if snowflake < 0 or snowflake>((1<<64)-1):
-            raise ValueError(f'`obj` was given either as `int` or as `str` instance, but not as represneting a '
+            raise ValueError(f'`{name}` was given either as `int` or as `str` instance, but not as represneting a '
                 f'`uint64`, got {obj!r}.')
     
     return snowflake

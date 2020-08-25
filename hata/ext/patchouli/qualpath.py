@@ -7,12 +7,12 @@ class QualPath(object):
     
     Attributes
     ----------
-    __hash : `None` or `int`
+    _hash : `None` or `int`
         Cached slot for the hash of the qualpath.
     parts : `list` of `str`
         Broken down parts of the module path.
     """
-    __slots__ = ('__hash', 'parts', )
+    __slots__ = ('_hash', 'parts', )
     
     def __new__(cls, *paths):
         """
@@ -59,7 +59,7 @@ class QualPath(object):
         
         self = object.__new__(cls)
         self.parts = parts
-        self.__hash = None
+        self._hash = None
         return self
     
     def __str__(self):
@@ -95,33 +95,9 @@ class QualPath(object):
         """Adds the two qualpath together returning a new one."""
         return type(self)(self, other)
     
-    def __itruediv__(self, other):
-        """Adds the two qualpaths together with extending self."""
-        if type(other) is type(self):
-            self.parts.extend(other.parts)
-            self.__hash = None
-            return
-        
-        if isinstance(other, str):
-            if not other:
-                return
-            
-            sub_parts = other.split('.')
-            if len(sub_parts) == 1:
-                self.parts.append(sub_parts[0])
-                self.__hash = None
-                return
-            
-            for sub_part in sub_parts:
-                if not sub_part:
-                    raise ValueError(f'`{other!r}` contains empty subpath.')
-                
-            self.parts.extend(sub_parts)
-            self.__hash = None
-            return
-        
-        raise TypeError(f'`path` passed neither as `str`, or `{self.__class__.__name__} instance: '
-            f'{other.__class__.__name__}.')
+    def __rtruediv__(self, other):
+        """Adds the two qualpath together returning a new one."""
+        return type(self)(other, self)
     
     def __eq__(self, other):
         """Returns whether the two values are the same."""
@@ -133,11 +109,72 @@ class QualPath(object):
         
         return NotImplemented
     
+    def __sub__(self, other):
+        """Subtracts from self's end the given other if applicable."""
+        if type(other) is type(self):
+            pass
+        elif isinstance(other, str):
+            other = type(self)(other)
+        else:
+            return NotImplemented
+        
+        return self._do_sub(other)
+    
+    def __rsub__(self, other):
+        """Subtracts from the given other's end self if applicable."""
+        if type(other) is type(self):
+            pass
+        elif isinstance(other, str):
+            other = type(self)(other)
+        else:
+            return NotImplemented
+        
+        return other._do_sub(self)
+    
+    def _do_sub(self, other):
+        """
+        Subtracts other from self's end if applicable.
+        
+        This method is called by ``.__sub__`` and by ``.__rsub__``, after `other`'s type is validated to do the real
+        work.
+        
+        Parameters
+        ----------
+        other : ``QualPath``
+            The other qualpatch to subtract.
+        
+        Returns
+        -------
+        new : ``QualPath``
+        """
+        self_parts = self.parts
+        if not self_parts:
+            return self
+        
+        other_parts = other.parts
+        if not other_parts:
+            return self
+        
+        other_to_find = other_parts[0]
+        
+        limit = len(self_parts)
+        index = limit-len(other_parts)
+        while True:
+            if (self_parts[index] == other_to_find) and (self_parts[index:] == other_parts[:limit-index]):
+                new = object.__new__(type(self))
+                new.parts = self_parts[:index]
+                new._hash = None
+                return new
+            
+            index +=1
+            if index == limit:
+                return self
+    
     def __hash__(self):
         """Returns the path's hash."""
-        hash_ = self.__hash
+        hash_ = self._hash
         if hash_ is None:
-            self.__hash = hash_ = hash(str(self))
+            self._hash = hash_ = hash(str(self))
         
         return hash_
     
@@ -204,4 +241,5 @@ class QualPath(object):
         """
         new = object.__new__(type(self))
         new.parts = self.parts[:-1]
+        new._hash = None
         return new

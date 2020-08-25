@@ -650,12 +650,12 @@ class AudioReader(Thread):
                     sys.stderr.write(''.join(extracted))
         
         except BaseException as err:
-            extracted=[
+            extracted = [
                 'Exception occured at\n',
                 repr(self),
                 '.run\n',
                     ]
-            render_exc_to_list(err,extend=extracted)
+            render_exc_to_list(err, extend=extracted)
             sys.stderr.write(''.join(extracted))
         
         self.stop()

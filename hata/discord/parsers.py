@@ -13,7 +13,7 @@ except ImportError:
 from ..env import CACHE_USER, CACHE_PRESENCE
 from ..backend.futures import Future, Task, iscoroutinefunction as iscoro
 from ..backend.dereaddons_local import function, RemovedDescriptor, _spaceholder, MethodLike, NEEDS_DUMMY_INIT, \
-    WeakKeyDictionary, WeakReferer
+    WeakKeyDictionary, WeakReferer, DOCS_ENABLED
 from ..backend.analyzer import CallableAnalyzer
 
 from .bases import FlagBase
@@ -3183,7 +3183,7 @@ PARSER_DEFAULTS('TYPING_START',TYPING_START__CAL,TYPING_START__CAL,TYPING_START_
 del TYPING_START__CAL, TYPING_START__OPT
 
 def INVITE_CREATE__CAL(client,data):
-    invite = Invite(data)
+    invite = Invite(data, False)
     Task(client.events.invite_create(client,invite), KOKORO)
 
 def INVITE_CREATE__OPT(client,data):
@@ -3193,7 +3193,7 @@ PARSER_DEFAULTS('INVITE_CREATE',INVITE_CREATE__CAL,INVITE_CREATE__CAL,INVITE_CRE
 del INVITE_CREATE__CAL, INVITE_CREATE__OPT
 
 def INVITE_DELETE__CAL(client,data):
-    invite = Invite(data)
+    invite = Invite(data, True)
     Task(client.events.invite_delete(client,invite), KOKORO)
 
 def INVITE_DELETE__OPT(client,data):
@@ -3678,7 +3678,7 @@ class _EventHandlerManager(object):
         
         The `parent` event handler should implement the following methods:
         - `.__setevent__(func, name, **kwargs)`
-        - `.__delvent__(func, name)`
+        - `.__delevent__(func, name)`
         And optionally:
         - `.__setevent_from_class__(klass)`
         
@@ -3686,8 +3686,8 @@ class _EventHandlerManager(object):
         ----------
         parent : `Any`
         """
-        self.parent=parent
-        self._supports_from_class = hasattr(type(parent),'__setevent_from_class__')
+        self.parent = parent
+        self._supports_from_class = hasattr(type(parent), '__setevent_from_class__')
     
     def __repr__(self):
         """Returns the representation of the event handler manager."""
@@ -3727,9 +3727,9 @@ class _EventHandlerManager(object):
         if func is None:
             return self._wrapper(self,name,kwargs)
         
-        name=check_name(func,name)
+        name = check_name(func,name)
         
-        func=self.parent.__setevent__(func,name,**kwargs)
+        func = self.parent.__setevent__(func,name,**kwargs)
         return func
     
     def from_class(self, klass):
@@ -3758,9 +3758,21 @@ class _EventHandlerManager(object):
         return self.parent.__setevent_from_class__(klass)
         
     def remove(self,func, name=None, **kwargs):
-        name=check_name(func,name)
+        """
+        Removes the given `func` - `name` relation from the event handler manager's parent.
         
-        self.parent.__delevent__(func,name,**kwargs)
+        Parameters
+        ----------
+        func : `callable`, Optional
+            The event to be removed to the respective event handler.
+        name : `str` or `None`
+            A name to be used instead of the passed `func`'s.
+        **kwargs : Keyword arguments
+            Additional keyword arguments.
+        """
+        name = check_name(func,name)
+        
+        self.parent.__delevent__(func, name, **kwargs)
     
     class _wrapper(object):
         """
@@ -3791,9 +3803,9 @@ class _EventHandlerManager(object):
             kwargs : `None` or `dict` of (`str`, `Any`) items
                 Additionally passed keyword arguments when the wrapper was created.
             """
-            self.parent=parent
-            self.name=name
-            self.kwargs=kwargs
+            self.parent = parent
+            self.name = name
+            self.kwargs = kwargs
         
         def __call__(self, func,):
             """
@@ -3894,7 +3906,7 @@ class _EventHandlerManager(object):
                 collected=[]
                 for element in iterable:
                     try:
-                        parent.__delevent__(element,None)
+                        parent.__delevent__(element, None)
                     except ValueError as err:
                         collected.append(err.args[0])
 
@@ -3902,23 +3914,23 @@ class _EventHandlerManager(object):
                     raise ValueError('\n'.join(collected)) from None
                 return
         else:
-            iterable=_convert_unsafe_event_iterable(iterable)
+            iterable = _convert_unsafe_event_iterable(iterable)
         
-        collected=[]
-        parent=self.parent
+        collected = []
+        parent = self.parent
         for element in iterable:
-            func=element.func
-            name=element.name
+            func = element.func
+            name = element.name
             
-            name=check_name(func,name)
+            name = check_name(func,name)
             
             kwargs=element.kwargs
             try:
                 
                 if kwargs is None:
-                    parent.__delevent__(func,name)
+                    parent.__delevent__(func, name)
                 else:
-                    parent.__delvent__(func,name,**kwargs)
+                    parent.__delevent__(func, name, **kwargs)
             
             except ValueError as err:
                 collected.append(err.args[0])
@@ -5034,7 +5046,7 @@ class ReadyState(object):
             if (not guild_left_counter) and (not self.ready_left_counter):
                 self.wakeupper.set_result_if_pending(True)
     
-    if (shard_ready.__doc__ is not None):
+    if DOCS_ENABLED:
         feed.__doc__ = (
         """
         Feeds the given `guild` to the ready state. Sets the last received guild's time to the current time and ends
@@ -5925,7 +5937,7 @@ class EventDescriptor(object):
             return
         
         if type(actual) is asynclist:
-            for index in reversed(range(len(asynclist))):
+            for index in reversed(range(len(actual))):
                 element = actual[index]
                 if by_type:
                     element = type(element)
@@ -5985,3 +5997,4 @@ async def _with_error(client, task):
 del RemovedDescriptor
 del FlagBase
 del NEEDS_DUMMY_INIT
+del DOCS_ENABLED

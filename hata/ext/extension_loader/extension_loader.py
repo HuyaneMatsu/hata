@@ -8,7 +8,7 @@ from importlib import reload as reload_module
 from threading import current_thread
 
 from ...backend.eventloop import EventThread
-from ...backend.dereaddons_local import alchemy_incendiary, HybridValueDictionary, WeakValueDictionary
+from ...backend.dereaddons_local import alchemy_incendiary, HybridValueDictionary, WeakValueDictionary, DOCS_ENABLED
 from ...backend.futures import iscoroutinefunction as is_coro, Task
 from ...backend.analyzer import CallableAnalyzer
 
@@ -331,7 +331,7 @@ class Extension(object):
     entry_point = property(_get_entry_point,_set_entry_point,_del_entry_point)
     del _get_entry_point, _set_entry_point, _del_entry_point
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         entry_point.__doc__ = ("""
         Get-set-del descriptor for modifying the extension's entry point.
         
@@ -354,7 +354,7 @@ class Extension(object):
     exit_point = property(_get_exit_point,_set_exit_point,_del_exit_point)
     del _get_exit_point, _set_exit_point, _del_exit_point
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         exit_point.__doc__ = ("""
         Get-set-del descriptor for modifying the extension's exit point.
         
@@ -379,7 +379,7 @@ class Extension(object):
     extend_default_variables = property(_get_extend_default_variables,_set_extend_default_variables)
     del _get_extend_default_variables, _set_extend_default_variables
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         extend_default_variables.__doc__ = ("""
         Set-del descriptor to define whether the extension uses the loader's default variables or just it's own's.
         
@@ -403,7 +403,7 @@ class Extension(object):
     locked = property(_get_locked, _set_locked)
     del _get_locked, _set_locked
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         extend_default_variables.__doc__ = ("""
         Set-del descriptor to define whether the extension should be picked up by the `{}_all` methods of the
         extension loader.
@@ -931,7 +931,7 @@ class ExtensionLoader(object):
     default_entry_point = property(_get_default_entry_point,_set_default_entry_point,_del_default_entry_point)
     del _get_default_entry_point, _set_default_entry_point, _del_default_entry_point
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         default_entry_point.__doc__ = ("""
         Get-set-del descriptor for modifying the extension loader's default entry point.
         
@@ -954,7 +954,7 @@ class ExtensionLoader(object):
     default_exit_point = property(_get_default_exit_point,_set_default_exit_point,_del_default_exit_point)
     del _get_default_exit_point, _set_default_exit_point, _del_default_exit_point
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         default_exit_point.__doc__ = ("""
         Get-set-del descriptor for modifying the extension loader's default exit point.
         
@@ -1758,3 +1758,4 @@ class ExtensionLoader(object):
 EXTENSION_LOADER = ExtensionLoader()
 
 del WeakValueDictionary
+del DOCS_ENABLED

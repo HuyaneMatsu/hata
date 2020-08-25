@@ -21,7 +21,15 @@ except ImportError:
     from weakref import ref as WeakrefType
 
 class RemovedDescriptor(object):
-    __slots__=('name',)
+    """
+    A descriptor, what can be used to overwrite a classe's attribute, what sould be inherited anyways.
+    
+    Attributes
+    ----------
+    name : `str` or `None`
+        The name of the attribute. Set when the class is finalizing.
+    """
+    __slots__ = ('name',)
     def __init__(self,):
         self.name = None
     
@@ -54,7 +62,9 @@ class RemovedDescriptor(object):
         
         raise AttributeError(name)
 
-def any_to_any(v1,v2):
+DOCS_ENABLED = (RemovedDescriptor.__doc__ is not None)
+
+def any_to_any(v1, v2):
     for v in v1:
         if v in v2:
             return True

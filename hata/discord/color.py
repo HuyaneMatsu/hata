@@ -7,7 +7,7 @@ class Color(int):
     """
     A Color object represents a RGB color. Using int instead of Color is completely fine.
     """
-    __slots__=()
+    __slots__ = ()
     
     def __repr__(self):
         """Returns the color's representation."""
@@ -43,13 +43,13 @@ class Color(int):
         ValueError
             If the conversion failed.
         """
-        if len(value)!=7:
+        if len(value) != 7:
             raise ValueError(f'The passed string\'s length must be 7, got {value!r}.')
         
-        if value[0]!='#':
+        if value[0] != '#':
             raise ValueError(f'The passed string\'s first character must be \'#\', got {value!r}.')
         
-        return cls(value[1:],base=16)
+        return cls(value[1:], base=16)
     
     @classmethod
     def from_tuple(cls, value):
@@ -178,7 +178,7 @@ class DefaultAvatar(object):
     INSTANCES = [NotImplemented] * COUNT
     
     @classmethod
-    def for_(cls,user):
+    def for_(cls, user):
         """
         Returns the default avatar for the given user.
         
@@ -194,7 +194,7 @@ class DefaultAvatar(object):
         return cls.INSTANCES[user.discriminator%cls.COUNT]
     
     # object related
-    __slots__=('color', 'name', 'value',)
+    __slots__ = ('color', 'name', 'value',)
     
     def __init__(self, value, name, color):
         """
@@ -209,10 +209,10 @@ class DefaultAvatar(object):
         value : ``int`
             The index value of the default avatar.
         """
-        self.value=value
-        self.name=name
-        self.color=color
-        self.INSTANCES[value]=self
+        self.value = value
+        self.name = name
+        self.color = color
+        self.INSTANCES[value] = self
     
     def __str__(self):
         """Returns the default's avatar's name."""
@@ -226,7 +226,7 @@ class DefaultAvatar(object):
         """Returns the default's avatar's representation."""
         return f'<{self.__class__.__name__} name={self.name}, value={self.value}>'
     
-    url=property(URLS.default_avatar_url)
+    url = property(URLS.default_avatar_url)
     
     # predefined
     blue    = NotImplemented
@@ -235,10 +235,10 @@ class DefaultAvatar(object):
     orange  = NotImplemented
     red     = NotImplemented
 
-DefaultAvatar.blue      = DefaultAvatar(0,  'blue',     Color(0x7289da))
-DefaultAvatar.gray      = DefaultAvatar(1,  'gray',     Color(0x747f8d))
-DefaultAvatar.green     = DefaultAvatar(2,  'green',    Color(0x43b581))
-DefaultAvatar.orange    = DefaultAvatar(3,  'orange',   Color(0xfaa61a))
-DefaultAvatar.red       = DefaultAvatar(4,  'red',      Color(0xf04747))
+DefaultAvatar.blue   = DefaultAvatar(0 ,   'blue' , Color(0x7289da))
+DefaultAvatar.gray   = DefaultAvatar(1 ,   'gray' , Color(0x747f8d))
+DefaultAvatar.green  = DefaultAvatar(2 ,  'green' , Color(0x43b581))
+DefaultAvatar.orange = DefaultAvatar(3 , 'orange' , Color(0xfaa61a))
+DefaultAvatar.red    = DefaultAvatar(4 ,    'red' , Color(0xf04747))
 
 del URLS

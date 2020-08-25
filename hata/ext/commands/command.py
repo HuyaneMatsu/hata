@@ -3,7 +3,7 @@ __all__ = ('Category', 'Command', 'CommandProcesser', 'checks', 'normalize_descr
 
 import re, reprlib
 
-from ...backend.dereaddons_local import sortedlist, modulize, NEEDS_DUMMY_INIT, function
+from ...backend.dereaddons_local import sortedlist, modulize, NEEDS_DUMMY_INIT, function, DOCS_ENABLED
 from ...backend.futures import Task
 from ...backend.analyzer import CallableAnalyzer
 
@@ -488,10 +488,10 @@ class Command(object):
             aliases = None
         
         if description is None:
-            description=getattr(command,'__doc__',None)
+            description = getattr(command,'__doc__',None)
         
         if (description is not None) and isinstance(description,str):
-            description=normalize_description(description)
+            description = normalize_description(description)
         
         if category is None:
             category_hint = None
@@ -610,7 +610,7 @@ class Command(object):
     checks = property(_get_checks, _set_checks, _del_checks)
     del _get_checks, _set_checks, _del_checks
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         checks.__doc__ = ("""
         Get-set-del property for accessing the checks of the ``Command``.
         
@@ -640,7 +640,7 @@ class Command(object):
     parser_failure_handler = property(_get_parser_failure_handler, _set_parser_failure_handler, _del_parser_failure_handler)
     del _get_parser_failure_handler, _set_parser_failure_handler, _del_parser_failure_handler
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         parser_failure_handler.__doc__ = ("""
         Get-set-del property for accessing the ``Command``'s parser failure handler.
         
@@ -1356,7 +1356,7 @@ class checks:
                 If `role` was given as `str` or as `int` instance, but not as a valid snowflake, so ``Role``
                     instance cannot be precreated with it.
             """
-            role = instance_or_id_to_instance(role, Role)
+            role = instance_or_id_to_instance(role, Role, 'role')
             handler = _convert_handler(handler)
             
             self = object.__new__(cls)
@@ -1475,7 +1475,7 @@ class checks:
             
             roles_processed = set()
             for role in roles:
-                role = instance_or_id_to_instance(role, Role)
+                role = instance_or_id_to_instance(role, Role, 'role')
                 roles_processed.add(role)
             
             self = object.__new__(cls)
@@ -1499,9 +1499,10 @@ class checks:
             passed : `bool`
                 Whether the check passed.
             """
-            user=message.author
-            if user.has_role(self.roles):
-                return True
+            user = message.author
+            for role in self.roles:
+                if  user.has_role(role):
+                    return True
             
             return False
     
@@ -2131,7 +2132,7 @@ class checks:
             ValueError
                 If `guild` was given as `str` or as `int` instance, but not as a valid snowflake.
             """
-            guild_id = instance_or_id_to_snowflake(guild, Guild)
+            guild_id = instance_or_id_to_snowflake(guild, Guild, 'guild')
             handler = _convert_handler(handler)
             
             self = object.__new__(cls)
@@ -2217,7 +2218,7 @@ class checks:
             
             guild_ids_processed = set()
             for guild in guilds:
-                guild_id = instance_or_id_to_snowflake(guild, Guild)
+                guild_id = instance_or_id_to_snowflake(guild, Guild, 'guild')
                 guild_ids_processed.add(guild_id)
             
             handler = _convert_handler(handler)
@@ -2392,7 +2393,7 @@ class checks:
             ValueError
                 If `channel` was given as `str` or as `int` instance, but not as a valid snowflake.
             """
-            channel_id = instance_or_id_to_snowflake(channel, ChannelBase)
+            channel_id = instance_or_id_to_snowflake(channel, ChannelBase, 'channel')
             handler = _convert_handler(handler)
             
             self = object.__new__(cls)
@@ -2474,7 +2475,7 @@ class checks:
             
             channel_ids_processed = set()
             for channel in channels:
-                channel_id = instance_or_id_to_snowflake(channel, ChannelBase)
+                channel_id = instance_or_id_to_snowflake(channel, ChannelBase, 'channel')
                 channel_ids_processed.add(channel_id)
             
             handler = _convert_handler(handler)
@@ -2589,7 +2590,7 @@ class Category(object):
     checks = property(_get_checks, _set_checks, _del_checks)
     del _get_checks, _set_checks, _del_checks
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         checks.__doc__ = ("""
         Get-set-del property for accessing the checks of the ``Category``.
         
@@ -3143,7 +3144,7 @@ class CommandProcesser(EventWaitforBase):
     default_category_name = property(_get_default_category_name,_set_default_category_name)
     del _get_default_category_name, _set_default_category_name
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         default_category_name.__doc__ = ("""
         A get-set property for accessing or changing the command processer's dfault category's name.
         
@@ -3761,6 +3762,10 @@ class CommandProcesser(EventWaitforBase):
             except KeyError:
                 pass
         
+        category = command.category
+        if (category is not None):
+            category.commands.remove(command)
+        
         return
     
     async def __call__(self, client, message):
@@ -3999,7 +4004,7 @@ class CommandProcesser(EventWaitforBase):
     default_event = property(_get_default_event, _set_default_event, _del_default_event)
     del _get_default_event, _set_default_event, _del_default_event
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         default_event.__doc__ = ("""
         A get-set-del property for changing the command processer's default event.
         
@@ -4031,7 +4036,7 @@ class CommandProcesser(EventWaitforBase):
     default_event_checks = property(_get_default_event_checks, _set_default_event_checks, _del_default_event_checks)
     del _get_default_event_checks, _set_default_event_checks, _del_default_event_checks
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         default_event_checks.__doc__ = ("""
         A get-set-del property for changing the command processer's default event's checks.
         """)
@@ -4051,7 +4056,7 @@ class CommandProcesser(EventWaitforBase):
     command_error = property(_get_command_error, _set_command_error, _del_command_error)
     del _get_command_error, _set_command_error, _del_command_error
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         command_error.__doc__ = ("""
         A get-set-del property for changing the command processer's command error handler.
         
@@ -4090,7 +4095,7 @@ class CommandProcesser(EventWaitforBase):
     command_error_checks = property(_get_command_error_checks, _set_command_error_checks, _del_command_error_checks)
     del _get_command_error_checks, _set_command_error_checks, _del_command_error_checks
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         command_error_checks.__doc__ = ("""
         A get-set-del property for changing the command processer's command error's checks.
         """)
@@ -4109,7 +4114,7 @@ class CommandProcesser(EventWaitforBase):
     invalid_command = property(_get_invalid_command, _set_invalid_command, _del_invalid_command)
     del _get_invalid_command, _set_invalid_command, _del_invalid_command
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         invalid_command.__doc__ = ("""
         A get-set-del property for changing the command processer's invalid command.
         
@@ -4146,7 +4151,7 @@ class CommandProcesser(EventWaitforBase):
     invalid_command_checks = property(_get_invalid_command_checks, _set_invalid_command_checks, _del_invalid_command_checks)
     del _get_invalid_command_checks, _set_invalid_command_checks, _del_invalid_command_checks
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         invalid_command_checks.__doc__ = ("""
         A get-set-del property for changing the command processer's invalid command's checks.
         """)
@@ -4179,7 +4184,7 @@ class CommandProcesser(EventWaitforBase):
     category_name_rule = property(_get_category_name_rule, _set_category_name_rule, _del_category_name_rule)
     del _get_category_name_rule, _set_category_name_rule, _del_category_name_rule
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         category_name_rule.__doc__ = ("""
         A get-set-del property for changing the command processer's category name rule.
         
@@ -4218,10 +4223,11 @@ class CommandProcesser(EventWaitforBase):
     command_name_rule = property(_get_command_name_rule, _set_command_name_rule, _del_command_name_rule)
     del _get_command_name_rule, _set_command_name_rule, _del_command_name_rule
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         command_name_rule.__doc__ = ("""
         A get-set-del property for changing the command processer's command name rule.
         """)
     
 del modulize
 del NEEDS_DUMMY_INIT
+del DOCS_ENABLED

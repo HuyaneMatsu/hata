@@ -15,7 +15,7 @@ try:
 except ImportError:
     relativedelta = None
 
-from ..backend.dereaddons_local import titledstr, modulize
+from ..backend.dereaddons_local import titledstr, modulize, DOCS_ENABLED
 
 from .bases import DiscordEntity
 
@@ -785,7 +785,7 @@ class Status(object):
         return self.value
     
     name = property(__str__)
-    if (__str__.__doc__ is not None):
+    if DOCS_ENABLED:
         name.__doc__ = (
         """
         Returns the statuse's value.
@@ -1047,7 +1047,7 @@ class MFA(object):
     INSTANCES = [NotImplemented] * 2
     
     # object related
-    __slots__=('name', 'value', )
+    __slots__ = ('name', 'value', )
     
     def __init__(self, value, name):
         """
@@ -1060,10 +1060,10 @@ class MFA(object):
         name : `str`
             The name of the MFA level.
         """
-        self.value=value
-        self.name=name
+        self.value = value
+        self.name = name
 
-        self.INSTANCES[value]=self
+        self.INSTANCES[value] = self
 
     def __str__(self):
         """Returns the name of the MFA level."""
@@ -1080,8 +1080,8 @@ class MFA(object):
     none    = NotImplemented
     elevated= NotImplemented
 
-MFA.none    = MFA(0,'none')
-MFA.elevated= MFA(1,'elevated')
+MFA.none    = MFA(0, 'none')
+MFA.elevated= MFA(1, 'elevated')
 
 class PremiumType(object):
     """
@@ -1951,7 +1951,7 @@ class Theme(object):
         return f'<{self.__class__.__name__} value={self.value!r}>'
     
     name = property(__str__)
-    if (__str__.__doc__ is not None):
+    if DOCS_ENABLED:
         name.__doc__ = (
         """
         Returns the theme's value.
@@ -2099,3 +2099,4 @@ del re
 del titledstr
 del modulize
 del bases
+del DOCS_ENABLED

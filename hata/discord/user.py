@@ -5,6 +5,8 @@ from datetime import datetime
 
 from ..env import CACHE_USER, CACHE_PRESENCE
 
+from ..backend.dereaddons_local import DOCS_ENABLED
+
 from .bases import DiscordEntity, FlagBase, IconSlot, ICON_TYPE_NONE
 from .client_core import USERS
 from .others import parse_time, Status, DISCORD_EPOCH_START
@@ -96,7 +98,7 @@ else:
     def PartialUser(user_id):
         return User._create_empty(user_id)
 
-if (Color.__doc__ is not None):
+if DOCS_ENABLED:
     PartialUser.__doc__ = (
     """
     Creates a partial user from the given `user_id`. If the user already exists returns that instead.
@@ -1101,7 +1103,7 @@ class UserBase(DiscordEntity, immortal=True):
             return False
 
 class User(UserBase):
-    if (UserBase.__doc__ is not None): __doc__ = ''.join([
+    if DOCS_ENABLED: __doc__ = ''.join([
     """
     Represents a Discord user.
     
@@ -1245,7 +1247,7 @@ class User(UserBase):
             
             return user
     
-    if (UserBase.__doc__ is not None):
+    if DOCS_ENABLED:
         __new__.__doc__ = (
         """
         First tries to find the user by id. If fails, then creates a new ``User`` object. If guild was given
@@ -1492,27 +1494,28 @@ class User(UserBase):
         @classmethod
         def _create_and_update(cls, data, guild=None):
             try:
-                user_data=data['user']
-                member_data=data
+                user_data = data['user']
             except KeyError:
-                user_data=data
-                member_data=None
-                
-            user_id=int(user_data['id'])
+                user_data = data
+                member_data = None
+            else:
+                member_data = data
+            
+            user_id = int(user_data['id'])
 
-            user=object.__new__(cls)
-            user.id=user_id
-            user.guild_profiles={}
-            user.partial=False
-            user.is_bot=user_data.get('bot',False)
+            user = object.__new__(cls)
+            user.id = user_id
+            user.guild_profiles = {}
+            user.partial = False
+            user.is_bot = user_data.get('bot', False)
             user._update_no_return(user_data)
 
-            if member_data is not None and guild is not None:
-                user.guild_profiles[guild]=GuildProfile(member_data,guild)
+            if (member_data is not None) and (guild is not None):
+                user.guild_profiles[guild] = GuildProfile(member_data, guild)
         
             return user
     
-    if (UserBase.__doc__ is not None):
+    if DOCS_ENABLED:
         __new__.__doc__ = (
         """
         Creates a user with the given data. If the user already exists, updates it.
@@ -1572,41 +1575,41 @@ class User(UserBase):
         | statuses      | `dict` of (`str`, `str`) items                        |
         +---------------+-------------------------------------------------------+
         """
-        old_attributes={}
+        old_attributes = {}
         
-        statuses=data['client_status']
-        if self.statuses!=statuses:
-            old_attributes['statuses']=self.statuses
-            self.statuses=statuses
+        statuses = data['client_status']
+        if self.statuses != statuses:
+            old_attributes['statuses'] = self.statuses
+            self.statuses = statuses
             
-            status=data['status']
-            if self.status.value!=status:
-                old_attributes['status']=self.status
-                self.status=Status.INSTANCES[status]
+            status = data['status']
+            if self.status.value != status:
+                old_attributes['status'] = self.status
+                self.status = Status.INSTANCES[status]
         
-        activity_datas=data['activities']
+        activity_datas = data['activities']
         if activity_datas:
-            should_pass=False
-            old_activities=self.activities
-            self.activities=new_activities=[]
+            should_pass = False
+            old_activities = self.activities
+            self.activities = new_activities=[]
 
             if old_activities:
                 for activity_data in activity_datas:
-                    activity_type=activity_data['type']
+                    activity_type = activity_data['type']
                     for index in range(len(old_activities)):
-                        activity=old_activities[index]
+                        activity = old_activities[index]
                         if type(activity) is ActivityChange:
                             continue
                         
                         if activity_type != activity.type:
                             continue
                         
-                        if activity_data['id']!=activity.discord_side_id:
+                        if activity_data['id'] != activity.discord_side_id:
                             continue
                         
                         activity_old_attributes = activity._update(activity_data)
                         if activity_old_attributes:
-                            should_pass=True
+                            should_pass = True
                             activity_change = ActivityChange()
                             activity_change.activity = activity
                             activity_change.old_attributes = activity_old_attributes
@@ -1616,20 +1619,20 @@ class User(UserBase):
                         new_activities.append(activity)
                         break
                     else:
-                        should_pass=True
+                        should_pass = True
                         new_activities.append(Activity(activity_data))
                         
             else:
-                should_pass=True
+                should_pass = True
                 for activity_data in activity_datas:
                     new_activities.append(Activity(activity_data))
             
             if should_pass:
-                old_attributes['activities']=old_activities
+                old_attributes['activities'] = old_activities
             
         elif self.activities:
-            old_attributes['activities']=self.activities
-            self.activities=[]
+            old_attributes['activities'] = self.activities
+            self.activities = []
         
         return old_attributes
     
@@ -1642,27 +1645,29 @@ class User(UserBase):
         data : `dict` of (`str`, `Any`) items
             Received guild member data.
         """
-        self.status=Status.INSTANCES[data['status']]
+        self.status = Status.INSTANCES[data['status']]
         
         try:
             # not included sometimes
-            self.statuses=data['client_status']
+            self.statuses = data['client_status']
         except KeyError:
             pass
         
-        activity_datas=data['activities']
+        activity_datas = data['activities']
+        
+        old_activities = self.activities
         if activity_datas:
-            old_activities=self.activities
-            self.activities=new_activities=[]
+            self.activities = new_activities = []
             
             if old_activities:
                 for activity_data in activity_datas:
-                    activity_type=activity_data['type']
+                    activity_type = activity_data['type']
                     for index in range(len(old_activities)):
-                        activity=old_activities[index]
-                        if activity_type==activity.type:
-                            if activity_data['id']!=activity.discord_side_id:
+                        activity = old_activities[index]
+                        if activity_type == activity.type:
+                            if activity_data['id'] != activity.discord_side_id:
                                 continue
+                            
                             activity._update_no_return(activity_data)
                             del old_activities[index]
                             new_activities.append(activity)
@@ -1672,8 +1677,9 @@ class User(UserBase):
             else:
                 for activity_data in activity_datas:
                     new_activities.append(Activity(activity_data))
-        elif self.activities:
-            self.activities.clear()
+        
+        elif old_activities:
+            old_activities.clear()
     
     def _update(self, data):
         """
@@ -1848,7 +1854,7 @@ class User(UserBase):
             
             return user
     
-    if (UserBase.__doc__ is not None):
+    if DOCS_ENABLED:
         _create_empty.__doc__ = (
         """
         Creates a user instance with the given `user_id` and with the default user attributes.
@@ -2105,3 +2111,4 @@ del DiscordEntity
 del FlagBase
 del IconSlot
 del others
+del DOCS_ENABLED

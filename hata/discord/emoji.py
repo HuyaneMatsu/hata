@@ -1,6 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('BUILTIN_EMOJIS', 'Emoji', 'parse_emoji', 'reaction_mapping', 'reaction_mapping_line',)
 
+from ..backend.dereaddons_local import DOCS_ENABLED
+
 from .bases import DiscordEntity
 from .client_core import EMOJIS
 from .others import id_to_time, EMOJI_RP, DISCORD_EPOCH_START
@@ -759,7 +761,7 @@ class reaction_mapping(dict):
             self[PartialEmoji(line['emoji'])] = reaction_mapping_line(line.get('count', 1))
     
     emoji_count = property(dict.__len__)
-    if (__init__ is not None):
+    if DOCS_ENABLED:
         emoji_count.__doc__ = (
         """
         The amount of different emojis, which were added on the reaction mapping's respective ``Message``.
@@ -4180,3 +4182,4 @@ activity.PartialEmoji = PartialEmoji
 del generate_builtin_emojis
 del activity
 del URLS
+del DOCS_ENABLED

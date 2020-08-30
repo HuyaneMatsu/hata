@@ -572,27 +572,28 @@ class URLS:
         """
         Returns the activity's large asset image's url. If the activity has no large asset image, then returns `None`.
         
-        > Bound to `ACTIVITY_FLAG&0b0000010000010000` (application_id | asset).
-        
         Returns
         -------
         url : `str` or `None`
         """
-        application_id=activity.application_id
+        application_id = activity.application_id
         if not application_id:
             return None
-
-        asset_image_large=activity.asset_image_large
-        if not asset_image_large:
+        
+        assets = activity.assets
+        if assets is None:
             return None
-
-        return f'{CDN_ENDPOINT}/app-assets/{application_id}/{asset_image_large}.png'
+        
+        image_large = assets.image_large
+        if image_large is None:
+            return None
+        
+        return f'{CDN_ENDPOINT}/app-assets/{application_id}/{image_large}.png'
     
     def activity_asset_image_large_url_as(activity, ext='png', size=None):
         """
         Returns the activity's large asset image's url. If the activity has no large asset image, then returns `None`.
-        
-        > Bound to `ACTIVITY_FLAG&0b0000010000010000` (application_id | asset).
+
         
         Parameters
         ----------
@@ -611,12 +612,16 @@ class URLS:
         ValueError
             If `ext` or `size` was not passed as any of the expected values.
         """
-        application_id=activity.application_id
+        application_id = activity.application_id
         if not application_id:
             return None
 
-        asset_image_large=activity.asset_image_large
-        if not asset_image_large:
+        assets = activity.assets
+        if assets is None:
+            return None
+        
+        image_large = assets.image_large
+        if image_large is None:
             return None
 
         if size is None:
@@ -629,33 +634,33 @@ class URLS:
         if ext not in VALID_ICON_FORMATS:
             raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
 
-        return f'{CDN_ENDPOINT}/app-assets/{application_id}/{asset_image_large}.{ext}{end}'
+        return f'{CDN_ENDPOINT}/app-assets/{application_id}/{image_large}.{ext}{end}'
         
     def activity_asset_image_small_url(activity):
         """
         Returns the activity's small asset image's url. If the activity has no small asset image, then returns `None`.
         
-        > Bound to `ACTIVITY_FLAG&0b0000010000010000` (application_id | asset).
-        
         Returns
         -------
         url : `str` or `None`
         """
-        application_id=activity.application_id
+        application_id = activity.application_id
         if not application_id:
             return None
-
-        asset_image_small=activity.asset_image_small
-        if not asset_image_small:
+        
+        assets = activity.assets
+        if assets is None:
             return None
-
-        return f'{CDN_ENDPOINT}/app-assets/{application_id}/{asset_image_small}.png'
+        
+        image_small = assets.image_small
+        if image_small is None:
+            return None
+        
+        return f'{CDN_ENDPOINT}/app-assets/{application_id}/{image_small}.png'
 
     def activity_asset_image_small_url_as(activity, ext='png', size=None):
         """
         Returns the activity's small asset image's url. If the activity has no small asset image, then returns `None`.
-        
-        > Bound to `ACTIVITY_FLAG&0b0000010000010000` (application_id | asset).
         
         Parameters
         ----------
@@ -674,14 +679,18 @@ class URLS:
         ValueError
             If `ext` or `size` was not passed as any of the expected values.
         """
-        application_id=activity.application_id
+        application_id = activity.application_id
         if not application_id:
             return None
-
-        asset_image_small=activity.asset_image_small
-        if not asset_image_small:
+        
+        assets = activity.assets
+        if assets is None:
             return None
-
+        
+        image_small = assets.image_small
+        if image_small is None:
+            return None
+        
         if size is None:
             end = ''
         elif size in VALID_ICON_SIZES:
@@ -692,7 +701,7 @@ class URLS:
         if ext not in VALID_ICON_FORMATS:
             raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
         
-        return f'{CDN_ENDPOINT}/app-assets/{application_id}/{asset_image_small}.{ext}{end}'
+        return f'{CDN_ENDPOINT}/app-assets/{application_id}/{image_small}.{ext}{end}'
     
     def user_avatar_url(user):
         """

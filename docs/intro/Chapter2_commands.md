@@ -14,7 +14,7 @@ from hata.ext.commands import setup_ext_commands
 TOKEN = ''
 NekoBot = Client(TOKEN)
 
-setup_ext_commands(NekoBot,'n!')
+setup_ext_commands(NekoBot, 'n!')
 
 @NekoBot.commands
 async def pat(client, message):

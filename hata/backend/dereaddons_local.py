@@ -1196,7 +1196,7 @@ class sortedlist(list):
         return default
 
 def isweakreferable(object_):
-    slots=getattr(type(object_), '__slots__',None)
+    slots = getattr(type(object_), '__slots__',None)
     if (slots is not None) and ('__weakref__' in slots):
         return True
     

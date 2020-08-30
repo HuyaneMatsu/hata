@@ -8,30 +8,32 @@ HERE = pathlib.Path(__file__).parent
 version_search_pattern = re.compile('^__version__[ ]*=[ ]*((?:\'[^\']+\')|(?:\"[^\"]+\"))[ ]*$',re.M)
 parsed = version_search_pattern.search((HERE / 'hata' / '__init__.py').read_text())
 if parsed is None:
-    raise RuntimeError('No version found at __init__.py')
+    raise RuntimeError('No version found in `__init__.py`')
 
-version=literal_eval(parsed.group(1))
+version = literal_eval(parsed.group(1))
 
 # Lookup readme
 README = (HERE / 'README.md').read_text()
 
 setup(
-    name        = 'hata',
-    version     = version,
-    packages    = [
+    name = 'hata',
+    version = version,
+    packages = [
         'hata',
         'hata.backend',
         'hata.discord',
         'hata.discord.bin',
         'hata.ext.commands',
+        'hata.ext.commands.helps',
         'hata.ext.extension_loader',
         'hata.ext.kokoro_sqlalchemy',
+        'hata.ext.patchouli',
         'hata.ext.prettyprint',
             ],
-    url         = 'https://github.com/HuyaneMatsu/hata',
-    license     = 'Apache 2.0',
-    author      = 'HuyaneMatsu',
-    author_email= 're.ism.tm@gmail.com',
+    url = 'https://github.com/HuyaneMatsu/hata',
+    license = 'Apache 2.0',
+    author = 'HuyaneMatsu',
+    author_email = 're.ism.tm@gmail.com',
     description = 'Discord API wrapper in Python',
     long_description = README,
     long_description_content_type = 'text/markdown',

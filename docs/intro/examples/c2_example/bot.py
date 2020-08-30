@@ -11,13 +11,13 @@ AYY_RP = re.compile('ay+', re.I)
 TOKEN = ''
 NekoBot = Client(TOKEN)
 
-setup_extension(NekoBot,'n!')
+setup_extension(NekoBot, 'n!')
 
 NekoBot.commands.extend(cute_commands)
 
 @NekoBot.commands
 async def pat(client, message):
-    await client.message_create(message.channel,'Puurs !')
+    await client.message_create(message.channel, 'Puurs !')
 
 
 @NekoBot.commands

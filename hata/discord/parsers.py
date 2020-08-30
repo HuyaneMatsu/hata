@@ -4728,10 +4728,13 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         Parameters
         ----------
         target : ``DiscordEntity`` instance
+            The entity on what the given waiter waits for tthe respective event.
         waiter : `async callable`
+            The waiter, what is called with the respective parameters if the respective event occures related to the
+            given `target`.
         """
         try:
-            container=self.waitfors.pop(target)
+            container = self.waitfors.pop(target)
         except KeyError:
             return
         
@@ -4743,11 +4746,11 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         except ValueError:
             pass
         else:
-            if len(container)==1:
-                self.waitfors[target]=container[0]
+            if len(container) == 1:
+                self.waitfors[target] = container[0]
                 return
         
-        self.waitfors[target]=container
+        self.waitfors[target] = container
     
     def get_waiter(self, target, waiter, by_type=False, is_method=False):
         """
@@ -5239,7 +5242,7 @@ class asynclist(list):
             return attribute
         
         raise AttributeError(f'`{self.__class__.__name__}` object has no attribte `{name}`.')
-    
+
 async def DEFAULT_EVENT(*args):
     """
     Default event handler what is set under events if there is no specified event handler to use.
@@ -5249,7 +5252,7 @@ async def DEFAULT_EVENT(*args):
     *args : Positional arguments
     """
     pass
-    
+
 class EventDescriptor(object):
     """
     After a client gets a dispatch event from Discord, it's parser might ensure an event. These events are stored
@@ -5623,18 +5626,18 @@ class EventDescriptor(object):
         Called when a user's presence is updated.
         
         The passed `old_attributes` argument contain the user's changed presence related attributes in `attribute-name`
-        - `old-value` relation. An exception from this is `activities`. If an activity is not removed, but updated, then
-        it will show up as an ``ActivityChange`` instance.
+        - `old-value` relation. An exception from this is `activities`, because thats a ``ActivityChange`` instance
+        containing all the changes of the user's activities.
         
-        +---------------+-------------------------------------------------------+
-        | Keys          | Values                                                |
-        +===============+=======================================================+
-        | activities    | `list` of (``ActivityBase`` or ``ActivityChange``)    |
-        +---------------+-------------------------------------------------------+
-        | status        | ``Status``                                            |
-        +---------------+-------------------------------------------------------+
-        | statuses      | `dict` of (`str`, `str`) items                        |
-        +---------------+-------------------------------------------------------+
+        +---------------+-----------------------------------+
+        | Keys          | Values                            |
+        +===============+===================================+
+        | activities    | ``ActivityChange``                |
+        +---------------+-----------------------------------+
+        | status        | ``Status``                        |
+        +---------------+-----------------------------------+
+        | statuses      | `dict` of (`str`, `str`) items    |
+        +---------------+-----------------------------------+
         
     user_profile_edit(client : Client, user: UserBase, guild: Guild, old_attributes: dict):
         Called when a user's ``GuildProfile`` is updated. The passed `old_attributes` argument contains the message's
@@ -5693,7 +5696,7 @@ class EventDescriptor(object):
     webhook_update(client: Client, channel: ChannelGuildBase):
         Called when a webhook of a channel is updated. Discord not provides further details tho.
     """
-    __slots__=('client_reference',*sorted(EVENTS.defaults))
+    __slots__ = ('client_reference', *sorted(EVENTS.defaults))
     
     def __init__(self, client):
         """

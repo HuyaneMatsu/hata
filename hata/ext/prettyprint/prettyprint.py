@@ -9,7 +9,7 @@ except ImportError:
 
 from ...backend.dereaddons_local import multidict
 
-from ...discord.others import cchunkify, DISCORD_EPOCH_START
+from ...discord.others import cchunkify, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 if (relativedelta is not None):
     from ...discord.others import elapsed_time
 from ...discord.permission import Permission
@@ -171,7 +171,7 @@ def str_message(message,index=None,**kwargs):
     
     edited = message.edited
     if (edited is not None):
-        result.append(f'- edited at: {edited:%Y.%m.%d-%H:%M:%S}',1)
+        result.append(f'- edited at: {edited:{DATETIME_FORMAT_CODE}}', 1)
     
     reactions = message.reactions
     if reactions:
@@ -381,7 +381,7 @@ def str_embed_core(embed,index=None,**kwargs):
     
     timestamp=embed.timestamp
     if timestamp is not None:
-        result.append(f'- timestamp: {timestamp:%Y.%m.%d-%H:%M:%S}',1)
+        result.append(f'- timestamp: {timestamp:{DATETIME_FORMAT_CODE}}',1)
     
     color=embed.color
     if color is not None:
@@ -941,7 +941,7 @@ def str_invite(invite,index=None,write_parents=True,**kwargs):
     
     created_at=invite.created_at
     if (created_at > DISCORD_EPOCH_START):
-        result.append(f'- created at : {created_at:%Y.%m.%d-%H:%M:%S}',1)
+        result.append(f'- created at : {created_at:{DATETIME_FORMAT_CODE}}',1)
         max_age=invite.max_age
         if (max_age is not None):
             if (relativedelta is None):
@@ -1073,7 +1073,7 @@ def str_AuditLogEntry(entry,index=None,**kwargs):
         start=f'{index}.: '
     
     result.append(f'{start}AuditLogEntry:')
-    result.append(f'- created: {entry.created_at:%Y.%m.%d-%H:%M:%S}',1)
+    result.append(f'- created: {entry.created_at:{DATETIME_FORMAT_CODE}}',1)
     result.append(f'- type: {entry.type.name} ({entry.type.value})',1)
     user=entry.user
     if user is not None:
@@ -1180,7 +1180,7 @@ def str_integration(integration,index=None,**kwargs):
     result.append(f'Account:',1)
     result.append(str_integration_account(integration.account, head_line=False, **kwargs), 1)
     
-    result.append(f'- synced at : {integration.synced_at:%Y.%m.%d-%H:%M:%S}',1)
+    result.append(f'- synced at : {integration.synced_at:{DATETIME_FORMAT_CODE}}',1)
     subscriber_count = integration.subscriber_count
     if subscriber_count:
         result.append(f'- subscriber count: {subscriber_count}', 1)
@@ -1686,10 +1686,6 @@ PRETTY_PRINTERS['Connection']=str_connection
 PRETTY_PRINTERS['Integration']=str_integration
 PRETTY_PRINTERS['ActivityRich']=str_activity
 PRETTY_PRINTERS['ActivityUnknown']=str_activity
-PRETTY_PRINTERS['ActivityGame']=str_activity
-PRETTY_PRINTERS['ActivityStream']=str_activity
-PRETTY_PRINTERS['ActivitySpotify']=str_activity
-PRETTY_PRINTERS['ActivityWatching']=str_activity
 PRETTY_PRINTERS['ActivityCustom']=str_activity
 PRETTY_PRINTERS['VoiceState']=str_voice_state
 PRETTY_PRINTERS['UserOA2']=str_useroa2

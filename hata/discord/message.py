@@ -6,11 +6,11 @@ __all__ = ('Attachment', 'EMBED_UPDATE_EMBED_ADD', 'EMBED_UPDATE_EMBED_REMOVE', 
 import re
 from datetime import datetime
 
-from ..backend.dereaddons_local import any_to_any, where, cached_property, _spaceholder, BaseMethodDescriptor
+from ..backend.dereaddons_local import any_to_any, cached_property, _spaceholder, BaseMethodDescriptor
 
 from .bases import DiscordEntity, FlagBase
 from .http import URLS
-from .others import parse_time, CHANNEL_MENTION_RP, time_to_id
+from .others import parse_time, CHANNEL_MENTION_RP, time_to_id, DATETIME_FORMAT_CODE
 from .client_core import MESSAGES, CHANNELS, GUILDS
 from .user import ZEROUSER, User
 from .emoji import reaction_mapping
@@ -18,7 +18,7 @@ from .embed import EmbedCore, EXTRA_EMBED_TYPES
 from .webhook import WebhookRepr, PartialWebhook, WebhookType, Webhook
 from .role import Role
 from .preconverters import preconvert_flag, preconvert_bool, preconvert_snowflake, preconvert_str
-from .activity import ActivityStream
+from .activity import ActivityTypes
 
 from . import ratelimit
 
@@ -450,53 +450,53 @@ class UnknownCrossMention(DiscordEntity):
         -------
         channel : ``UnknownCrossMention`` or ``ChannelGuildBase`` instance
         """
-        channel_id=int(data['id'])
+        channel_id = int(data['id'])
         try:
-            channel=CHANNELS[channel_id]
+            channel = CHANNELS[channel_id]
         except KeyError:
-            channel=object.__new__(cls)
-            channel.id=channel_id
-            channel.guild_id=int(data['guild_id'])
-            channel.type=data['type']
-            channel.name=data['name']
+            channel = object.__new__(cls)
+            channel.id = channel_id
+            channel.guild_id = int(data['guild_id'])
+            channel.type = data['type']
+            channel.name = data['name']
         
         return channel
     
-    def __gt__(self,other):
+    def __gt__(self, other):
         """Returns whether this unknown cross mention's id is greater than the other's."""
-        if (type(other) is not UnknownCrossMention) or (not isinstance(other,ChannelBase)):
+        if (type(other) is not UnknownCrossMention) and (not isinstance(other, ChannelBase)):
             return NotImplemented
-        return self.id>other.id
+        return self.id > other.id
     
-    def __ge__(self,other):
+    def __ge__(self, other):
         """Returns whether this unknown cross mention's id is greater or equal to the other's."""
-        if (type(other) is not UnknownCrossMention) or (not isinstance(other,ChannelBase)):
+        if (type(other) is not UnknownCrossMention) and (not isinstance(other, ChannelBase)):
             return NotImplemented
-        return self.id>=other.id
+        return self.id >= other.id
     
-    def __eq__(self,other):
+    def __eq__(self, other):
         """Returns whether this unknown cross mention's id is equal to the other's."""
-        if (type(other) is not UnknownCrossMention) or (not isinstance(other,ChannelBase)):
+        if (type(other) is not UnknownCrossMention) and (not isinstance(other, ChannelBase)):
             return NotImplemented
-        return self.id==other.id
+        return self.id == other.id
     
-    def __ne__(self,other):
+    def __ne__(self, other):
         """Returns whether this unknown cross mention's id is not equal to the other's."""
-        if (type(other) is not UnknownCrossMention) or (not isinstance(other,ChannelBase)):
+        if (type(other) is not UnknownCrossMention) and (not isinstance(other, ChannelBase)):
             return NotImplemented
-        return self.id!=other.id
+        return self.id != other.id
     
-    def __le__(self,other):
+    def __le__(self, other):
         """Returns whether this unknown cross mention's id is less or equal to the other's."""
-        if (type(other) is not UnknownCrossMention) or (not isinstance(other,ChannelBase)):
+        if (type(other) is not UnknownCrossMention) and (not isinstance(other, ChannelBase)):
             return NotImplemented
-        return self.id<=other.id
+        return self.id <= other.id
     
-    def __lt__(self,other):
+    def __lt__(self, other):
         """Returns whether this unknown cross mention's id is less than the other's."""
-        if (type(other) is not UnknownCrossMention) or (not isinstance(other,ChannelBase)):
+        if (type(other) is not UnknownCrossMention) and (not isinstance(other, ChannelBase)):
             return NotImplemented
-        return self.id<other.id
+        return self.id < other.id
     
     def __str__(self):
         """Returns the unknown cross mention's respective channel's name."""
@@ -523,12 +523,16 @@ class UnknownCrossMention(DiscordEntity):
         """
         if not code:
             return self.__str__()
-        if code=='m':
+        
+        if code == 'm':
             return f'<#{self.id}>'
-        if code=='d':
+        
+        if code == 'd':
             return self.display_name
-        if code=='c':
-            return f'{self.created_at:%Y.%m.%d-%H:%M:%S}'
+        
+        if code == 'c':
+            return self.created_at.__format__(DATETIME_FORMAT_CODE)
+        
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
     @property
@@ -551,18 +555,18 @@ class UnknownCrossMention(DiscordEntity):
         -------
         display_name : `str`
         """
-        type_=self.type
-        name=self.name
+        type_ = self.type
+        name = self.name
         # Text or Store
-        if (type_==0) or (type_==5) or (type_==6):
+        if type_ in (0, 5, 6, 9):
             return name.lower()
         
         # Voice
-        if (type==2):
+        if type == 2:
             return name.capitalize()
         
         # Category
-        if (type_==4):
+        if type_ == 4:
             return name.upper()
         
         # Should not happen
@@ -960,7 +964,7 @@ class Message(DiscordEntity, immortal=True):
             _channel_mentions=_spaceholder
         
         try:
-            activity=kwargs.pop('activity')
+            activity = kwargs.pop('activity')
         except KeyError:
             if base is None:
                 activity=None
@@ -1467,7 +1471,7 @@ class Message(DiscordEntity, immortal=True):
             return self.__str__()
         
         if code=='c':
-            return self.created_at.__format__('%Y.%m.%d-%H:%M:%S')
+            return self.created_at.__format__(DATETIME_FORMAT_CODE)
         
         if code=='e':
             edited = self.edited
@@ -2410,7 +2414,7 @@ def convert_new_follower_channel(self):
 def convert_stream(self):
     user = self.author
     for activity in user.activities:
-        if type(activity) is ActivityStream:
+        if activity.type == ActivityTypes.stream:
             activity_name = activity.name
             break
     else:

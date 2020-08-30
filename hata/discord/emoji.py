@@ -1,11 +1,12 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('BUILTIN_EMOJIS', 'Emoji', 'parse_emoji', 'reaction_mapping', 'reaction_mapping_line',)
+__all__ = ('BUILTIN_EMOJIS', 'Emoji', 'parse_emoji', 'parse_custom_emojis', 'reaction_mapping',
+    'reaction_mapping_line',)
 
 from ..backend.dereaddons_local import DOCS_ENABLED
 
 from .bases import DiscordEntity
 from .client_core import EMOJIS
-from .others import id_to_time, EMOJI_RP, DISCORD_EPOCH_START
+from .others import id_to_time, EMOJI_RP, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 from .http import URLS
 from .user import User, ZEROUSER
 from .preconverters import preconvert_str, preconvert_bool, preconvert_snowflake
@@ -334,7 +335,7 @@ class Emoji(DiscordEntity, immortal=True):
             return f'{self.name}:{self.id}'
         
         if code == 'c':
-            return self.created_at.__format__('%Y.%m.%d-%H:%M:%S')
+            return self.created_at.__format__(DATETIME_FORMAT_CODE)
         
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
@@ -568,6 +569,44 @@ class Emoji(DiscordEntity, immortal=True):
             self.available = available
         
         return old_attributes
+    
+    @classmethod
+    def _from_parsed_group(cls, groups):
+        """
+        Creates a new emoji from the given parsed out groups.
+        
+        Parameters
+        ----------
+        groups : `tuple` ((`str` or `None`), `str`, `str`)
+            A tuple, which contains whether the emoji to create is animated (element 0), the emoji's name (element 1) and
+            the emoji's id. (element 2).
+        
+        Returns
+        -------
+        emoji : ``Emoji``
+        """
+        animated, name, emoji_id = groups
+        emoji_id = int(emoji_id)
+        
+        try:
+            emoji = EMOJIS[emoji_id]
+            if emoji.guild is None:
+                emoji.name = name
+        except KeyError:
+            emoji = object.__new__(cls)
+            emoji.id = emoji_id
+            emoji.animated = (animated is not None)
+            emoji.name = name
+            emoji.unicode = None
+            emoji.guild = None
+            emoji.available = True
+            emoji.require_colons = True
+            emoji.managed = False
+            emoji.user = ZEROUSER
+            emoji.roles = None
+            EMOJIS[emoji_id] = emoji
+        
+        return emoji
 
 class reaction_mapping_line(set):
     """
@@ -926,32 +965,35 @@ def parse_emoji(text):
     -------
     emoji : `None` or ``Emoji``
     """
-    custom = EMOJI_RP.fullmatch(text)
-    if custom is None:
-        try:
-            emoji = UNICODE_TO_EMOJI[text]
-        except KeyError:
-            return None
-        else:
-            if text == emoji.unicode:
-                return emoji
+    parsed = EMOJI_RP.fullmatch(text)
+    if parsed is None:
+        emoji = UNICODE_TO_EMOJI.get(text)
+    else:
+        emoji = Emoji._from_parsed_group(parsed.groups())
     
-    args = custom.groups()
-    emoji_id = int(args[3])
-    try:
-        emoji = EMOJIS[emoji_id]
-        if emoji.guild is None:
-            emoji.name = args[1]
-    except KeyError:
-        emoji = object.__new__(Emoji)
-        emoji.id = emoji_id
-        emoji.animated = bool(args[0])
-        emoji.name = args[1]
-        emoji.unicode = None
-        emoji.guild = None
-        emoji.available = True
-        
     return emoji
+
+
+def parse_custom_emojis(text):
+    """
+    Parses out every custom emoji from the given text.
+    
+    Parameters
+    ----------
+    text : `str`
+        Text, what might contain custom emojis.
+    
+    Returns
+    -------
+    emojis : `set` of ``Emoji``
+    """
+    emojis = set()
+    for groups in EMOJI_RP.findall(text):
+        emoji = Emoji._from_parsed_group(groups)
+        emojis.add(emoji)
+    
+    return emojis
+
 
 def generate_builtin_emojis():
     for emoji_id, element in enumerate((

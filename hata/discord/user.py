@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__all__ = ('ActivityChange', 'GuildProfile', 'User', 'UserBase', 'UserFlag', 'VoiceState', 'ZEROUSER', )
+__all__ = ('ActivityChange', 'ActivityUpdate', 'GuildProfile', 'User', 'UserBase', 'UserFlag', 'VoiceState', 'ZEROUSER')
 
 from datetime import datetime
 
@@ -9,7 +9,7 @@ from ..backend.dereaddons_local import DOCS_ENABLED
 
 from .bases import DiscordEntity, FlagBase, IconSlot, ICON_TYPE_NONE
 from .client_core import USERS
-from .others import parse_time, Status, DISCORD_EPOCH_START
+from .others import parse_time, Status, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 from .color import Color, DefaultAvatar
 from .activity import ActivityUnknown, Activity
 from .http import URLS
@@ -61,7 +61,7 @@ class UserFlag(FlagBase):
     +-------------------------------+-------------------+
     | verified_bot                  | 16                |
     +-------------------------------+-------------------+
-    | verified_developer            | 17                |
+    | early_verified_developer      | 17                |
     +-------------------------------+-------------------+
     """
     __keys__ = {
@@ -82,7 +82,7 @@ class UserFlag(FlagBase):
         'bug_hunter_level_2'        : 14,
         'underage_deleted'          : 15,
         'verified_bot'              : 16,
-        'verified_developer'        : 17,
+        'early_verified_developer'  : 17,
             }
 
 if CACHE_USER:
@@ -171,6 +171,10 @@ class GuildProfile(object):
         
         self._update_no_return(data,guild)
     
+    def __repr__(self):
+        """Returns the represnetation of the guild profile."""
+        return f'<{self.__class__.__name__}>'
+    
     def _set_joined(self, data):
         """
         Sets ``.joined_at`` of the guild profile if it is not set yet.
@@ -201,12 +205,12 @@ class GuildProfile(object):
         guild : ``Guild``
             The guild profile's respective guild.
         """
-        self.nick = data.get('nick',None)
+        self.nick = data.get('nick')
         
         roles = self.roles
         roles.clear()
         
-        guild_roles=guild.all_role
+        guild_roles = guild.all_role
         for role_id in data['roles']:
             role_id = int(role_id)
             try:
@@ -215,10 +219,10 @@ class GuildProfile(object):
                 continue
             roles.append(role)
         
-        boosts_since = data.get('premium_since',None)
+        boosts_since = data.get('premium_since')
         if (boosts_since is not None):
-            boosts_since=parse_time(boosts_since)
-        self.boosts_since=boosts_since
+            boosts_since = parse_time(boosts_since)
+        self.boosts_since = boosts_since
     
     def _update(self, data, guild):
         """
@@ -250,18 +254,18 @@ class GuildProfile(object):
         +-------------------+-----------------------+
         """
         old_attributes = {}
-        nick=data.get('nick',None)
-        if self.nick!=nick:
-            old_attributes['nick']=self.nick
-            self.nick=nick
+        nick = data.get('nick')
+        if self.nick != nick:
+            old_attributes['nick'] = self.nick
+            self.nick = nick
         
-        roles=[]
+        roles = []
         
-        guild_roles=guild.all_role
+        guild_roles = guild.all_role
         for role_id in data['roles']:
-            role_id=int(role_id)
+            role_id = int(role_id)
             try:
-                role=guild_roles[role_id]
+                role = guild_roles[role_id]
             except KeyError:
                 continue
             roles.append(role)
@@ -269,25 +273,25 @@ class GuildProfile(object):
         roles.sort()
         own_roles = self.roles
         own_roles.sort()
-        if own_roles!=roles:
-            old_attributes['roles']=self.roles
-            self.roles=roles
+        if own_roles != roles:
+            old_attributes['roles'] = self.roles
+            self.roles = roles
         
-        boosts_since=data.get('premium_since',None)
+        boosts_since = data.get('premium_since')
         if boosts_since is not None:
-            boosts_since=parse_time(boosts_since)
+            boosts_since = parse_time(boosts_since)
         
         if (self.boosts_since is None):
-            if boosts_since is not None:
-                old_attributes['boosts_since']=None
-                self.boosts_since=boosts_since
+            if (boosts_since is not None):
+                old_attributes['boosts_since'] = None
+                self.boosts_since = boosts_since
         else:
             if (boosts_since is None):
-                old_attributes['boosts_since']=self.boosts_since
-                self.boosts_since=None
-            elif (self.boosts_since!=boosts_since):
-                old_attributes['boosts_since']=self.boosts_since
-                self.boosts_since=boosts_since
+                old_attributes['boosts_since'] = self.boosts_since
+                self.boosts_since = None
+            elif (self.boosts_since != boosts_since):
+                old_attributes['boosts_since'] = self.boosts_since
+                self.boosts_since = boosts_since
         
         return old_attributes
     
@@ -357,22 +361,22 @@ class UserBase(DiscordEntity, immortal=True):
         """Replaces some methods of the subclasses depending on their instance attributes."""
         rich = cls.__rich__
         if 'guild_profiles' in cls.__slots__:
-            cls.color_at        = rich.color_at
-            cls.name_at         = rich.name_at
-            cls.has_role        = rich.has_role
-            cls.top_role_at     = rich.top_role_at
-            cls.can_use_emoji   = rich.can_use_emoji
-            cls.has_higher_role_than    = rich.has_higher_role_than
+            cls.color_at = rich.color_at
+            cls.name_at = rich.name_at
+            cls.has_role = rich.has_role
+            cls.top_role_at = rich.top_role_at
+            cls.can_use_emoji = rich.can_use_emoji
+            cls.has_higher_role_than = rich.has_higher_role_than
             cls.has_higher_role_than_at = rich.has_higher_role_than_at
         
         if 'activities' in cls.__slots__:
-            cls.activity      = rich.activity
+            cls.activity = rich.activity
         
         if 'statuses' in cls.__slots__:
-            cls.platform      = rich.platform
+            cls.platform = rich.platform
         
         # webhook type
-        if hasattr(cls,'guild'):
+        if hasattr(cls, 'guild'):
             cls.can_use_emoji = rich.can_use_emoji__w_guild
     
     def __str__(self):
@@ -439,12 +443,16 @@ class UserBase(DiscordEntity, immortal=True):
         """
         if not code:
             return self.name
-        if code=='f':
+        
+        if code == 'f':
             return self.full_name
-        if code=='m':
+        
+        if code == 'm':
             return self.mention
-        if code=='c':
-            return self.created_at.__format__('%Y.%m.%d-%H:%M:%S')
+        
+        if code == 'c':
+            return self.created_at.__format__(DATETIME_FORMAT_CODE)
+        
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
     @property
@@ -509,38 +517,38 @@ class UserBase(DiscordEntity, immortal=True):
     #for sorting users
     def __gt__(self, other):
         """Returns whether the user's id is greater than the other's."""
-        if isinstance(other,UserBase):
-            return self.id>other.id
+        if isinstance(other, UserBase):
+            return self.id > other.id
         return NotImplemented
     
     def __ge__(self, other):
         """Returns whether the user's id is greater or equal to the other."""
-        if isinstance(other,UserBase):
-            return self.id>=other.id
+        if isinstance(other, UserBase):
+            return self.id >= other.id
         return NotImplemented
     
     def __eq__(self, other):
         """Return whether the user's id is equal to the other."""
-        if isinstance(other,UserBase):
-            return self.id==other.id
+        if isinstance(other, UserBase):
+            return self.id == other.id
         return NotImplemented
     
     def __ne__(self, other):
         """Returns whether the user's id is different as the other's."""
-        if isinstance(other,UserBase):
-            return self.id!=other.id
+        if isinstance(other, UserBase):
+            return self.id != other.id
         return NotImplemented
     
     def __le__(self, other):
         """Returns whether the user's id is less or equal to the other."""
         if isinstance(other,UserBase):
-            return self.id<=other.id
+            return self.id <= other.id
         return NotImplemented
     
     def __lt__(self, other):
         """Returns whether the user's id is less than the other's."""
-        if isinstance(other,UserBase):
-            return self.id<other.id
+        if isinstance(other, UserBase):
+            return self.id < other.id
         return NotImplemented
     
     @property
@@ -550,9 +558,9 @@ class UserBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        activities : `list` of ``ActivityBase`` instances
+        activities : `None`
         """
-        return []
+        return None
     
     @property
     def status(self):
@@ -820,7 +828,7 @@ class UserBase(DiscordEntity, immortal=True):
             """
             if (guild is not None):
                 try:
-                    profile=self.guild_profiles[guild]
+                    profile = self.guild_profiles[guild]
                 except KeyError:
                     pass
                 else:
@@ -845,16 +853,16 @@ class UserBase(DiscordEntity, immortal=True):
             """
             if (guild is not None):
                 try:
-                    profile=self.guild_profiles[guild]
+                    profile = self.guild_profiles[guild]
                 except KeyError:
                     pass
                 else:
-                    nick=profile.nick
+                    nick = profile.nick
                     if nick is not None:
                         return nick
             
             return self.name
-
+        
         @property
         def activity(self):
             """
@@ -865,10 +873,12 @@ class UserBase(DiscordEntity, immortal=True):
             activtiy : ``ActivityBase`` instance
             """
             activities = self.activities
-            if activities:
-                return activities[0]
-            return ActivityUnknown
-
+            if activities is None:
+                activity = ActivityUnknown
+            else:
+                activity = activities[0]
+            return activity
+        
         @property
         def platform(self):
             """
@@ -878,11 +888,11 @@ class UserBase(DiscordEntity, immortal=True):
             -------
             platform : `str`
             """
-            statuses=self.statuses
+            statuses = self.statuses
             if statuses:
-                status=self.status.value
+                status = self.status.value
                 for platform,l_status in statuses.items():
-                    if l_status==status:
+                    if l_status == status:
                         return platform
             return ''
         
@@ -905,7 +915,7 @@ class UserBase(DiscordEntity, immortal=True):
                 return False
             
             try:
-                profile=self.guild_profiles[guild]
+                profile = self.guild_profiles[guild]
             except KeyError:
                 return False
             
@@ -1126,8 +1136,8 @@ class User(UserBase):
         The user's user flags.
     partial : `bool`
         Partial users have only their `.id` set and every other field might not reflect the reality.""", """
-    activities : `list` of ``AcitvityBase`` instances
-        A list of the client's activities.
+    activities : `None` or `list` of ``AcitvityBase`` instances
+        A list of the client's activities. Defaults to `None`
     status : `Status`
         The user's display status.
     statuses : `dict` of (`str`, `str`) items
@@ -1148,39 +1158,39 @@ class User(UserBase):
     if CACHE_PRESENCE:
         def __new__(cls, data, guild=None):
             try:
-                user_data=data['user']
-                member_data=data
+                user_data = data['user']
+                member_data = data
             except KeyError:
-                user_data=data
-                member_data=data.get('member')
+                user_data = data
+                member_data = data.get('member')
                 
-            user_id=int(user_data['id'])
+            user_id = int(user_data['id'])
             
             try:
-                user=USERS[user_id]
-                update=user.partial
+                user = USERS[user_id]
+                update = user.partial
             except KeyError:
-                user=object.__new__(cls)
-                user.id=user_id
-                user.guild_profiles={}
-                user.status=Status.offline
-                user.statuses={}
-                user.activities=[]
-                update=True
+                user = object.__new__(cls)
+                user.id = user_id
+                user.guild_profiles = {}
+                user.status = Status.offline
+                user.statuses = {}
+                user.activities = None
+                update = True
                 
-                USERS[user_id]=user
+                USERS[user_id] = user
             
             if update:
-                user.partial=False
-                user.is_bot=user_data.get('bot',False)
+                user.partial = False
+                user.is_bot = user_data.get('bot', False)
                 user._update_no_return(user_data)
             
-            if member_data is not None and guild is not None:
+            if (member_data is not None) and (guild is not None):
                 try:
-                    profile=user.guild_profiles[guild]
+                    profile = user.guild_profiles[guild]
                 except KeyError:
-                    guild.users[user_id]=user
-                    user.guild_profiles[guild]=GuildProfile(member_data,guild)
+                    guild.users[user_id] = user
+                    user.guild_profiles[guild] = GuildProfile(member_data, guild)
                 else:
                     profile._set_joined(member_data)
             
@@ -1189,36 +1199,36 @@ class User(UserBase):
     elif CACHE_USER:
         def __new__(cls, data, guild=None):
             try:
-                user_data=data['user']
-                member_data=data
+                user_data = data['user']
+                member_data = data
             except KeyError:
-                user_data=data
-                member_data=data.get('member')
+                user_data = data
+                member_data = data.get('member')
                 
-            user_id=int(user_data['id'])
+            user_id = int(user_data['id'])
 
             try:
-                user=USERS[user_id]
-                update=user.partial
+                user = USERS[user_id]
+                update = user.partial
             except KeyError:
-                user=object.__new__(cls)
-                user.id=user_id
-                user.guild_profiles={}
-                update=True
+                user = object.__new__(cls)
+                user.id = user_id
+                user.guild_profiles = {}
+                update = True
                 
-                USERS[user_id]=user
+                USERS[user_id] = user
 
             if update:
-                user.partial=False
-                user.is_bot=user_data.get('bot',False)
+                user.partial = False
+                user.is_bot = user_data.get('bot', False)
                 user._update_no_return(user_data)
 
-            if member_data is not None and guild is not None:
+            if (member_data is not None) and (guild is not None):
                 try:
-                    profile=user.guild_profiles[guild]
+                    profile = user.guild_profiles[guild]
                 except KeyError:
-                    guild.users[user_id]=user
-                    user.guild_profiles[guild]=GuildProfile(member_data,guild)
+                    guild.users[user_id] = user
+                    user.guild_profiles[guild] = GuildProfile(member_data, guild)
                 else:
                     profile._set_joined(member_data)
                     
@@ -1227,23 +1237,23 @@ class User(UserBase):
     else:
         def __new__(cls, data, guild=None):
             try:
-                user_data=data['user']
-                member_data=data
+                user_dat = data['user']
+                member_data = data
             except KeyError:
-                user_data=data
-                member_data=data.get('member')
+                user_data = data
+                member_data = data.get('member')
             
-            user_id=int(user_data['id'])
+            user_id = int(user_data['id'])
             
-            user=object.__new__(cls)
-            user.id=user_id
-            user.guild_profiles={}
-            user.partial=False
-            user.is_bot=user_data.get('bot',False)
+            user = object.__new__(cls)
+            user.id = user_id
+            user.guild_profiles = {}
+            user.partial = False
+            user.is_bot = user_data.get('bot', False)
             user._update_no_return(user_data)
             
-            if member_data is not None and guild is not None:
-                user.guild_profiles[guild]=GuildProfile(member_data,guild)
+            if (member_data is not None) and (guild is not None):
+                user.guild_profiles[guild] = GuildProfile(member_data, guild)
             
             return user
     
@@ -1283,24 +1293,24 @@ class User(UserBase):
                 A respective guild from where the user data was received. Picked up if the given data includes
                 guild member data as well.
             """
-            user_data=data['user']
-            member_data=data
+            user_data = data['user']
+            member_data = data
             
-            user_id=int(user_data['id'])
+            user_id = int(user_data['id'])
             
             try:
-                user=USERS[user_id]
+                user = USERS[user_id]
             except KeyError:
                 return
             
             try:
-                profile=user.guild_profiles[guild]
+                profile = user.guild_profiles[guild]
             except KeyError:
-                guild.users[user_id]=user
-                user.guild_profiles[guild]=GuildProfile(member_data,guild)
+                guild.users[user_id] = user
+                user.guild_profiles[guild] = GuildProfile(member_data, guild)
             else:
                 profile._set_joined(member_data)
-                profile._update_no_return(member_data,guild)
+                profile._update_no_return(member_data, guild)
     
     @classmethod
     def precreate(cls, user_id, **kwargs):
@@ -1406,50 +1416,50 @@ class User(UserBase):
         data : `dict` of (`str`, `Any`) items
             User data received from Discord.
         """
-        self.name=data['username']
-        self.discriminator=int(data['discriminator'])
-
+        self.name = data['username']
+        self.discriminator = int(data['discriminator'])
+        
         self._set_avatar(data)
         
-        self.flags = UserFlag(data.get('public_flags',0))
+        self.flags = UserFlag(data.get('public_flags', 0))
     
     if CACHE_PRESENCE:
         @classmethod
         def _create_and_update(cls, data, guild=None):
             try:
-                user_data=data['user']
-                member_data=data
+                user_data = data['user']
+                member_data = data
             except KeyError:
-                user_data=data
-                member_data=None
+                user_data = data
+                member_data = None
             
-            user_id=int(user_data['id'])
+            user_id = int(user_data['id'])
             
             try:
-                user=USERS[user_id]
+                user = USERS[user_id]
             except KeyError:
-                user=object.__new__(cls)
-                user.id=user_id
-                user.guild_profiles={}
-                user.status=Status.offline
-                user.statuses={}
-                user.activities=[]
+                user = object.__new__(cls)
+                user.id = user_id
+                user.guild_profiles = {}
+                user.status = Status.offline
+                user.statuses = {}
+                user.activities = None
                 
-                USERS[user_id]=user
+                USERS[user_id] = user
             
-            user.partial=False
-            user.is_bot=user_data.get('bot',False)
+            user.partial = False
+            user.is_bot = user_data.get('bot', False)
             user._update_no_return(user_data)
             
-            if member_data is not None and guild is not None:
+            if (member_data is not None) and (guild is not None):
                 try:
-                    profile=user.guild_profiles[guild]
+                    profile = user.guild_profiles[guild]
                 except KeyError:
-                    guild.users[user_id]=user
-                    user.guild_profiles[guild]=GuildProfile(member_data,guild)
+                    guild.users[user_id] = user
+                    user.guild_profiles[guild] = GuildProfile(member_data, guild)
                 else:
                     profile._set_joined(member_data)
-                    profile._update_no_return(member_data,guild)
+                    profile._update_no_return(member_data, guild)
             
             return user
         
@@ -1457,36 +1467,36 @@ class User(UserBase):
         @classmethod
         def _create_and_update(cls,data,guild=None):
             try:
-                user_data=data['user']
-                member_data=data
+                user_data = data['user']
+                member_data = data
             except KeyError:
-                user_data=data
-                member_data=None
+                user_data = data
+                member_data = None
             
-            user_id=int(user_data['id'])
+            user_id = int(user_data['id'])
             
             try:
-                user=USERS[user_id]
+                user = USERS[user_id]
             except KeyError:
-                user=object.__new__(cls)
-                user.id=user_id
-                user.guild_profiles={}
+                user = object.__new__(cls)
+                user.id = user_id
+                user.guild_profiles = {}
                 
-                USERS[user_id]=user
+                USERS[user_id] = user
             
-            user.partial=False
-            user.is_bot=user_data.get('bot',False)
+            user.partial = False
+            user.is_bot = user_data.get('bot', False)
             user._update_no_return(user_data)
             
-            if member_data is not None and guild is not None:
+            if (member_data is not None) and (guild is not None):
                 try:
-                    profile=user.guild_profiles[guild]
+                    profile = user.guild_profiles[guild]
                 except KeyError:
-                    guild.users[user_id]=user
-                    user.guild_profiles[guild]=GuildProfile(member_data,guild)
+                    guild.users[user_id] = user
+                    user.guild_profiles[guild] = GuildProfile(member_data, guild)
                 else:
                     profile._set_joined(member_data)
-                    profile._update_no_return(member_data,guild)
+                    profile._update_no_return(member_data, guild)
             
             return user
         
@@ -1546,12 +1556,12 @@ class User(UserBase):
             except KeyError:
                 pass
     
-    #if CACHE_PRESENCE is False, this should be never called from this class
+    # if CACHE_PRESENCE is False, this should be never called from this class
     def _update_presence(self, data):
         """
         Updates the user's presence and returns it's overwritten attributes as a `dict` with a `attribute-name` -
-        `old-value` relation. An exception from this is `activities`. If an activity is not removed, but updated, then
-        it will show up as an ``ActivityChange`` instance.
+        `old-value` relation. An exception from this is `activities`, because thats a ``ActivityChange`` instance
+        containing all the changes of the user's activities.
         
         Parameters
         ----------
@@ -1565,15 +1575,15 @@ class User(UserBase):
         
         Returned Data Structure
         -----------------------
-        +---------------+-------------------------------------------------------+
-        | Keys          | Values                                                |
-        +===============+=======================================================+
-        | activities    | `list` of (``ActivityBase`` or ``ActivityChange``)    |
-        +---------------+-------------------------------------------------------+
-        | status        | ``Status``                                            |
-        +---------------+-------------------------------------------------------+
-        | statuses      | `dict` of (`str`, `str`) items                        |
-        +---------------+-------------------------------------------------------+
+        +---------------+-----------------------------------+
+        | Keys          | Values                            |
+        +===============+===================================+
+        | activities    | ``ActivityChange``                |
+        +---------------+-----------------------------------+
+        | status        | ``Status``                        |
+        +---------------+-----------------------------------+
+        | statuses      | `dict` of (`str`, `str`) items    |
+        +---------------+-----------------------------------+
         """
         old_attributes = {}
         
@@ -1588,51 +1598,85 @@ class User(UserBase):
                 self.status = Status.INSTANCES[status]
         
         activity_datas = data['activities']
+        
+        old_activities = self.activities
+        new_activities = None
+        
         if activity_datas:
-            should_pass = False
-            old_activities = self.activities
-            self.activities = new_activities=[]
-
-            if old_activities:
+            if old_activities is None:
+                for activity_data in activity_datas:
+                    activity = Activity(activity_data)
+                    
+                    if new_activities is None:
+                        new_activities = []
+                    
+                    new_activities.append(activity)
+                
+                activity_change = ActivityChange(new_activities, None, None)
+                
+            else:
+                added_activites = None
+                updated_activities = None
+                removed_activites = old_activities.copy()
+                
                 for activity_data in activity_datas:
                     activity_type = activity_data['type']
-                    for index in range(len(old_activities)):
-                        activity = old_activities[index]
-                        if type(activity) is ActivityChange:
-                            continue
+                    for index in range(len(removed_activites)):
+                        activity = removed_activites[index]
                         
                         if activity_type != activity.type:
                             continue
-                        
+                            
                         if activity_data['id'] != activity.discord_side_id:
                             continue
                         
+                        del removed_activites[index]
+                        
                         activity_old_attributes = activity._update(activity_data)
                         if activity_old_attributes:
-                            should_pass = True
-                            activity_change = ActivityChange()
-                            activity_change.activity = activity
-                            activity_change.old_attributes = activity_old_attributes
+                            activity_update = ActivityUpdate(activity, activity_old_attributes)
                             
-                            old_activities[index] = activity_change
+                            if updated_activities is None:
+                                updated_activities = []
+                            
+                            updated_activities.append(activity_update)
+                        
+                        if new_activities is None:
+                            new_activities = []
                         
                         new_activities.append(activity)
                         break
                     else:
-                        should_pass = True
-                        new_activities.append(Activity(activity_data))
+                        activity = Activity(activity_data)
                         
+                        if new_activities is None:
+                            new_activities = []
+                        
+                        new_activities.append(activity)
+                        
+                        if added_activites is None:
+                            added_activites = []
+                        
+                        added_activites.append(activity)
+                
+                if not removed_activites:
+                    removed_activites = None
+                
+                if None is added_activites is updated_activities is removed_activites:
+                    activity_change = None
+                else:
+                    activity_change = ActivityChange(added_activites, updated_activities, removed_activites)
+        
+        else:
+            if old_activities is None:
+                activity_change = None
             else:
-                should_pass = True
-                for activity_data in activity_datas:
-                    new_activities.append(Activity(activity_data))
-            
-            if should_pass:
-                old_attributes['activities'] = old_activities
-            
-        elif self.activities:
-            old_attributes['activities'] = self.activities
-            self.activities = []
+                activity_change = ActivityChange(None, None, old_activities)
+        
+        if (activity_change is not None):
+            old_attributes['activities'] = activity_change
+        
+        self.activities = new_activities
         
         return old_attributes
     
@@ -1654,32 +1698,12 @@ class User(UserBase):
             pass
         
         activity_datas = data['activities']
-        
-        old_activities = self.activities
         if activity_datas:
-            self.activities = new_activities = []
-            
-            if old_activities:
-                for activity_data in activity_datas:
-                    activity_type = activity_data['type']
-                    for index in range(len(old_activities)):
-                        activity = old_activities[index]
-                        if activity_type == activity.type:
-                            if activity_data['id'] != activity.discord_side_id:
-                                continue
-                            
-                            activity._update_no_return(activity_data)
-                            del old_activities[index]
-                            new_activities.append(activity)
-                            break
-                    else:
-                        new_activities.append(Activity(activity_data))
-            else:
-                for activity_data in activity_datas:
-                    new_activities.append(Activity(activity_data))
+            new_activites = [Activity(activity_data) for activity_data in activity_datas]
+        else:
+            new_activites = None
         
-        elif old_activities:
-            old_activities.clear()
+        self.activities = new_activites
     
     def _update(self, data):
         """
@@ -1712,21 +1736,21 @@ class User(UserBase):
         """
         old_attributes = {}
         
-        name=data['username']
-        if self.name!=name:
-            old_attributes['name']=self.name
-            self.name=name
+        name = data['username']
+        if self.name != name:
+            old_attributes['name'] = self.name
+            self.name = name
         
-        discriminator=int(data['discriminator'])
-        if self.discriminator!=discriminator:
-            old_attributes['discriminator']=self.discriminator
-            self.discriminator=discriminator
+        discriminator = int(data['discriminator'])
+        if self.discriminator != discriminator:
+            old_attributes['discriminator'] = self.discriminator
+            self.discriminator = discriminator
         
         self._update_avatar(data, old_attributes)
         
-        flags = data.get('public_flags',0)
+        flags = data.get('public_flags', 0)
         if self.flags != flags:
-            old_attributes['flags']=self.flags
+            old_attributes['flags'] = self.flags
             self.flags = UserFlag(flags)
         
         return old_attributes
@@ -1764,23 +1788,23 @@ class User(UserBase):
             | roles             | `list` of ``Role``    |
             +-------------------+-----------------------+
         """
-        user_id=int(data['user']['id'])
+        user_id = int(data['user']['id'])
         
         try:
-            user=USERS[user_id]
+            user = USERS[user_id]
         except KeyError:
-            user=cls(data,guild)
+            user = cls(data, guild)
             return user,{}
         
         try:
-            profile=user.guild_profiles[guild]
+            profile = user.guild_profiles[guild]
         except KeyError:
-            user.guild_profiles[guild]=GuildProfile(data,guild)
-            guild.users[user_id]=user
+            user.guild_profiles[guild] = GuildProfile(data, guild)
+            guild.users[user_id] = user
             return user, {}
 
         profile._set_joined(data)
-        return user, profile._update(data,guild)
+        return user, profile._update(data, guild)
     
     @classmethod
     def _update_profile_no_return(cls, data, guild):
@@ -1798,21 +1822,21 @@ class User(UserBase):
         guild : ``Guild``
             The respective guild of the profile to update.
         """
-        user_id=int(data['user']['id'])
+        user_id = int(data['user']['id'])
         
         try:
-            user=USERS[user_id]
+            user = USERS[user_id]
         except KeyError:
-            cls(data,guild)
+            cls(data, guild)
             return
         
         try:
-            profile=user.guild_profiles[guild]
+            profile = user.guild_profiles[guild]
         except KeyError:
-            user.guild_profiles[guild]=GuildProfile(data,guild)
+            user.guild_profiles[guild] = GuildProfile(data, guild)
             return
 
-        profile._update_no_return(data,guild)
+        profile._update_no_return(data, guild)
     
     if CACHE_PRESENCE:
         @classmethod
@@ -1832,7 +1856,7 @@ class User(UserBase):
             
             user.status = Status.offline
             user.statuses = {}
-            user.activities = []
+            user.activities = None
             
             return user
     
@@ -1867,72 +1891,140 @@ class User(UserBase):
 
 class ActivityChange(object):
     """
+    Represnets a user's changed activites.
+    
+    Attributes
+    ----------
+    added : `None` or `list` of ``ActivityBase``
+        The added activites to the respective user. Defaults to `None`.
+    updated : `None` or `list` of ``ActivityUpdate``
+        The updated activites of the respective user. Defaults to `None`.
+    removed: `None` or `list` of ``ActivityBase``
+        The removed activites from the respective user. Defaults to `None`.
+    """
+    __slots__ = ('added', 'updated', 'removed',)
+    
+    def __init__(self, added, updated, removed):
+        """
+        Creates a new activity change with the given parameters.
+        
+        added : `None` or `list` of ``ActivityBase``
+            The added activites to the user.
+        updated : `None` or `list` of ``ActivityUpdate``
+            The updated activites of the user.
+        removed: `None` or `list` of ``ActivityBase``
+            The removed activites from the user.
+        """
+        self.added = added
+        self.updated = updated
+        self.removed = removed
+    
+    def __repr__(self):
+        """Returns the representation of the activity change."""
+        result = ['<',
+            self.__class__.__name__,
+                ]
+        
+        added = self.added
+        if added is None:
+            put_comma = False
+        else:
+            result.append(' added=')
+            result.append(repr(added))
+            put_comma = True
+        
+        updated = self.updated
+        if (updated is not None):
+            if put_comma:
+                result.append(',')
+            else:
+                put_comma = True
+            
+            result.append(' updated=')
+            result.append(repr(updated))
+        
+        removed = self.removed
+        if (removed is not None):
+            if put_comma:
+                result.append(',')
+            
+            result.append(' removed=')
+            result.append(repr(removed))
+        
+        result.append('>')
+        
+        return ''.join(result)
+    
+    def __len__(self):
+        """Helper for unpacking if needed."""
+        return 3
+    
+    def __iter__(self):
+        """Unpacks the activity change."""
+        yield self.added
+        yield self.updated
+        yield self.removed
+    
+class ActivityUpdate(object):
+    """
     Represents an updated activity with storing the activity and it's old updated attributes in a `dict`.
     
     Attributes
     ----------
     activity : ``ActivityBase`` instance
-        The updated activity
+        The updated activity.
     old_attributes : `dict` of (`str`, `Any`) items
         The changed attributes of the activity in `attribute-name` - `old-value` relation. Can conatin any of the
         following items:
         
-        +-----------------------+-----------------------+
-        | Keys                  | Values                |
-        +=======================+=======================+
-        | application_id        | `int`                 |
-        +-----------------------+-----------------------+
-        | asset_image_large     | `str`                 |
-        +-----------------------+-----------------------+
-        | asset_image_small     | `str`                 |
-        +-----------------------+-----------------------+
-        | asset_text_large      | `str`                 |
-        +-----------------------+-----------------------+
-        | asset_text_small      | `str`                 |
-        +-----------------------+-----------------------+
-        | created               | `int`                 |
-        +-----------------------+-----------------------+
-        | details               | `str`                 |
-        +-----------------------+-----------------------+
-        | emoji                 | `None` or ``Emoji``   |
-        +-----------------------+-----------------------+
-        | flags                 | ``ActivityFlag``      |
-        +-----------------------+-----------------------+
-        | id                    | `int`                 |
-        +-----------------------+-----------------------+
-        | name                  | `str`                 |
-        +-----------------------+-----------------------+
-        | party_id              | `str`                 |
-        +-----------------------+-----------------------+
-        | party_max             | `int`                 |
-        +-----------------------+-----------------------+
-        | party_size            | `int`                 |
-        +-----------------------+-----------------------+
-        | secret_join           | `str`                 |
-        +-----------------------+-----------------------+
-        | secret_match          | `str`                 |
-        +-----------------------+-----------------------+
-        | secret_spectate       | `str`                 |
-        +-----------------------+-----------------------+
-        | session_id            | `str`                 |
-        +-----------------------+-----------------------+
-        | state                 | `None` or `str`       |
-        +-----------------------+-----------------------+
-        | sync_id               | `str`                 |
-        +-----------------------+-----------------------+
-        | timestamp_end         | `int`                 |
-        +-----------------------+-----------------------+
-        | timestamp_start       | `int`                 |
-        +-----------------------+-----------------------+
-        | type                  | `int`                 |
-        +-----------------------+-----------------------+
-        | url                   | `str`                 |
-        +-----------------------+-----------------------+
+        +-------------------+-----------------------------------+
+        | Keys              | Values                            |
+        +===================+===================================+
+        | application_id    | `int`                             |
+        +-------------------+-----------------------------------+
+        | assets            | `None` or ``ActivityAssets``      |
+        +-------------------+-----------------------------------+
+        | created           | `int`                             |
+        +-------------------+-----------------------------------+
+        | details           | `None` or `str`                   |
+        +-------------------+-----------------------------------+
+        | emoji             | `None` or ``Emoji``               |
+        +-------------------+-----------------------------------+
+        | flags             | ``ActivityFlag``                  |
+        +-------------------+-----------------------------------+
+        | name              | `str`                             |
+        +-------------------+-----------------------------------+
+        | party             | `None` or ``ActivityParty``       |
+        +-------------------+-----------------------------------+
+        | secrets           | `None` or ``ActivitySecrets``     |
+        +-------------------+-----------------------------------+
+        | session_id        | `None` or `str`                   |
+        +-------------------+-----------------------------------+
+        | state             | `None` or `str`                   |
+        +-------------------+-----------------------------------+
+        | sync_id           | `None` or `str`                   |
+        +-------------------+-----------------------------------+
+        | timestamps        | `None` or `ActivityTimestamps``   |
+        +-------------------+-----------------------------------+
+        | url               | `None` or `str`                   |
+        +-------------------+-----------------------------------+
     """
     __slots__ = ('activity', 'old_attributes',)
     
+    def __init__(self, activity, old_attributes):
+        """
+        Creates a new activity change instance with teh given parameters.
+        
+        activity : ``ActivityBase`` instance
+            The updated activity.
+        old_attributes : `dict` of (`str`, `Any`) items
+            The changed attributes of the activity.
+        """
+        self.activity = activity
+        self.old_attributes = old_attributes
+    
     def __repr__(self):
-        """Returns the representation of the activity change."""
+        """Returns the representation of the activity update."""
         return f'<{self.__class__.__name__} activity={self.activity!r} changes count={len(self.old_attributes)}>'
     
     def __len__(self):
@@ -1940,7 +2032,7 @@ class ActivityChange(object):
         return 2
     
     def __iter__(self):
-        """Unpacks the activity change."""
+        """Unpacks the activity update."""
         yield self.activity
         yield self.old_attributes
 
@@ -1969,7 +2061,7 @@ class VoiceState(object):
     user : ``User`` or ``Client``
         The voice state's respective user. If user caching is disabled it will be set as a partial user.
     """
-    __slots__ = ('channel', 'deaf', 'mute', 'self_deaf', 'self_mute', 'self_stream', 'self_video', 'session_id', 'user',)
+    __slots__ = ('channel', 'deaf', 'mute', 'self_deaf', 'self_mute', 'self_stream', 'self_video', 'session_id', 'user')
     def __init__(self, data, channel):
         """
         Creates a ``VoiceState`` object from the given data.
@@ -1981,15 +2073,15 @@ class VoiceState(object):
         channel : ``ChannelVoice``
             The channel of the voice state.
         """
-        self.channel        = channel
-        self.user           = PartialUser(int(data['user_id']))
-        self.session_id     = data['session_id']
-        self.mute           = data['mute']
-        self.deaf           = data['deaf']
-        self.self_deaf      = data['self_deaf']
-        self.self_mute      = data['self_mute']
-        self.self_stream    = data.get('self_stream',False)
-        self.self_video     = data['self_video']
+        self.channel = channel
+        self.user = PartialUser(int(data['user_id']))
+        self.session_id = data['session_id']
+        self.mute = data['mute']
+        self.deaf = data['deaf']
+        self.self_deaf = data['self_deaf']
+        self.self_mute = data['self_mute']
+        self.self_stream = data.get('self_stream', False)
+        self.self_video = data['self_video']
     
     @property
     def guild(self):
@@ -2042,38 +2134,38 @@ class VoiceState(object):
         old_attributes = {}
         
         if (self.channel is not channel):
-            old_attributes['channel']=self.channel
-            self.channel=channel
+            old_attributes['channel'] = self.channel
+            self.channel = channel
         
-        deaf=data['deaf']
-        if self.deaf!=deaf:
-            old_attributes['deaf']=self.deaf
-            self.deaf=deaf
+        deaf = data['deaf']
+        if self.deaf != deaf:
+            old_attributes['deaf'] = self.deaf
+            self.deaf = deaf
         
-        mute=data['mute']
-        if self.mute!=mute:
-            old_attributes['mute']=self.mute
-            self.mute=mute
+        mute = data['mute']
+        if self.mute != mute:
+            old_attributes['mute'] = self.mute
+            self.mute = mute
         
-        self_deaf=data['self_deaf']
-        if self.self_deaf!=self_deaf:
-            old_attributes['self_deaf']=self.self_deaf
-            self.self_deaf=self_deaf
+        self_deaf = data['self_deaf']
+        if self.self_deaf != self_deaf:
+            old_attributes['self_deaf'] = self.self_deaf
+            self.self_deaf = self_deaf
         
-        self_video=data['self_video']
-        if self.self_video!=self_video:
-            old_attributes['self_video']=self.self_video
-            self.self_video=self_video
+        self_video = data['self_video']
+        if self.self_video != self_video:
+            old_attributes['self_video'] = self.self_video
+            self.self_video = self_video
         
         self_stream = data.get('self_stream', False)
         if self.self_stream != self_stream:
             old_attributes['self_stream'] = self.self_stream
             self.self_stream = self_stream
         
-        self_mute=data['self_mute']
-        if self.self_mute!=self_mute:
-            old_attributes['self_mute']=self.self_mute
-            self.self_mute=self_mute
+        self_mute = data['self_mute']
+        if self.self_mute != self_mute:
+            old_attributes['self_mute'] = self.self_mute
+            self.self_mute = self_mute
         
         return old_attributes
     
@@ -2088,12 +2180,12 @@ class VoiceState(object):
         channel : ``ChannelVoice``
             The channel of the voice state.
         """
-        self.channel    = channel
-        self.deaf       = data['deaf']
-        self.mute       = data['mute']
-        self.self_deaf  = data['self_deaf']
-        self.self_mute  = data['self_mute']
-        self.self_stream= data.get('self_stream',False)
+        self.channel = channel
+        self.deaf = data['deaf']
+        self.mute = data['mute']
+        self.self_deaf = data['self_deaf']
+        self.self_mute = data['self_mute']
+        self.self_stream = data.get('self_stream',False)
         self.self_video = data['self_video']
     
     def __repr__(self):

@@ -11,7 +11,7 @@ from ..backend.futures import Task
 from .bases import DiscordEntity, ReverseFlagBase, IconSlot, ICON_TYPE_NONE
 from .client_core import GUILDS, DISCOVERY_CATEGORIES, CHANNELS, KOKORO
 from .others import EMOJI_NAME_RP, VoiceRegion, Status, VerificationLevel, MessageNotificationLevel, MFA, \
-    ContentFilterLevel, DISCORD_EPOCH_START
+    ContentFilterLevel, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 from .user import User, PartialUser, VoiceState, UserBase, ZEROUSER
 from .role import Role
 from .channel import CHANNEL_TYPES, ChannelCategory, ChannelText
@@ -1234,7 +1234,7 @@ class Guild(DiscordEntity, immortal=True):
             return self.name
         
         if code == 'c':
-            return self.created_at.__format__('%Y.%m.%d-%H:%M:%S')
+            return self.created_at.__format__(DATETIME_FORMAT_CODE)
         
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
@@ -2916,7 +2916,7 @@ class GuildPreview(DiscordEntity):
         if not code:
             return self.name
         if code == 'c':
-            return f'{self.created_at:%Y.%m.%d-%H:%M:%S}'
+            return self.created_at.__format__(DATETIME_FORMAT_CODE)
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
 
 class GuildDiscovery(object):

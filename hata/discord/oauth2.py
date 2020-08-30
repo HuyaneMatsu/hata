@@ -8,7 +8,7 @@ from time import time as time_now
 from .bases import DiscordEntity, IconSlot
 from .http import URLS
 from .integration import Integration
-from .others import PremiumType
+from .others import PremiumType, DATETIME_FORMAT_CODE
 from .user import UserBase, UserFlag
 
 DEFAULT_LOCALE='en-US'
@@ -448,7 +448,7 @@ class Achievement(DiscordEntity):
         if not code:
             return self.name
         if code=='c':
-            return self.created_at.__format__('%Y.%m.%d-%H:%M:%S')
+            return self.created_at.__format__(DATETIME_FORMAT_CODE)
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
     def _update(self, data):

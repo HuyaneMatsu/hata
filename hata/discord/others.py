@@ -23,6 +23,8 @@ from . import bases
 
 PartialUser = NotImplemented
 
+DATETIME_FORMAT_CODE = '%Y.%m.%d-%H:%M:%S'
+
 def endswith_xFFxD9(data):
     """
     Checks whether the given data endswith `b'\xD9\xFF'` ignoring empty bytes at the end of it.
@@ -100,7 +102,7 @@ def image_to_base64(data):
     
     return ''.join(['data:', extension_value, ';base64,', b64encode(data).decode('ascii')])
 
-DISCORD_EPOCH=1420070400000
+DISCORD_EPOCH = 1420070400000
 # example dates:
 # "2016-03-31T19:15:39.954000+00:00"
 # "2019-04-28T15:14:38+00:00"
@@ -109,7 +111,7 @@ DISCORD_EPOCH=1420070400000
 # at desuppress:
 # "2019-07-17T18:52:50.758000+00:00"
 
-PARSE_TIME_RP=re.compile('(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d{3})?)?.*')
+PARSE_TIME_RP = re.compile('(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d{3})?)?.*')
 
 def parse_time(timestamp):
     """
@@ -139,18 +141,18 @@ def parse_time(timestamp):
     -----
     I already noted that timestamp formats are inconsistent, but even our baka Chiruno could have fix it...
     """
-    parsed=PARSE_TIME_RP.fullmatch(timestamp)
+    parsed = PARSE_TIME_RP.fullmatch(timestamp)
     if parsed is None:
         sys.stderr.write(f'Cannot parse timestamp: `{timestamp}`, returning `DISCORD_EPOCH_START`\n')
         return DISCORD_EPOCH_START
     
-    year    = int(parsed.group(1))
-    month   = int(parsed.group(2))
-    day     = int(parsed.group(3))
-    hour    = int(parsed.group(4))
-    minute  = int(parsed.group(5))
-    second  = int(parsed.group(6))
-    micro   = parsed.group(7)
+    year   = int(parsed.group(1))
+    month  = int(parsed.group(2))
+    day    = int(parsed.group(3))
+    hour   = int(parsed.group(4))
+    minute = int(parsed.group(5))
+    second = int(parsed.group(6))
+    micro  = parsed.group(7)
     
     if micro is None:
         micro = 0
@@ -278,7 +280,7 @@ class VerificationLevel(object):
     INSTANCES = [NotImplemented] * 5
     
     # object related
-    __slots__=('name', 'value',)
+    __slots__ = ('name', 'value',)
     
     def __init__(self, value, name):
         """
@@ -291,10 +293,10 @@ class VerificationLevel(object):
         name : `str`
             The name of the verification level.
         """
-        self.value=value
-        self.name=name
+        self.value = value
+        self.name = name
         
-        self.INSTANCES[value]=self
+        self.INSTANCES[value] = self
     
     def __str__(self):
         """Returns the name of the verification level."""
@@ -412,9 +414,9 @@ class VoiceRegion(object):
         voice_region : ``VoiceRegion``
         """
         try:
-            voice_region=cls.INSTANCES[id_]
+            voice_region = cls.INSTANCES[id_]
         except KeyError:
-            voice_region=cls._from_id(id_)
+            voice_region = cls._from_id(id_)
         
         return voice_region
     
@@ -434,23 +436,23 @@ class VoiceRegion(object):
         -------
         voice_region : ``VoiceRegion``
         """
-        name_parts      = id_.split('-')
+        name_parts = id_.split('-')
         for index in range(len(name_parts)):
-            name_part=name_parts[index]
-            if len(name_part)<4:
-                name_part=name_part.upper()
+            name_part = name_parts[index]
+            if len(name_part) < 4:
+                name_part = name_part.upper()
             else:
-                name_part=name_part.capitalize()
-            name_parts[index]=name_part
+                name_part = name_part.capitalize()
+            name_parts[index] = name_part
         
-        name=' '.join(name_parts)
+        name = ' '.join(name_parts)
         
-        self                = object.__new__(cls)
-        self.name           = name
-        self.id             = id_
-        self.deprecated     = False
-        self.vip            = id_.startswith('vip-')
-        self.custom         = True
+        self = object.__new__(cls)
+        self.name = name
+        self.id = id_
+        self.deprecated = False
+        self.vip = id_.startswith('vip-')
+        self.custom = True
         self.INSTANCES[id_] = self
         return self
     
@@ -476,12 +478,12 @@ class VoiceRegion(object):
         except KeyError:
             pass
         
-        self                = object.__new__(cls)
-        self.name           = data['name']
-        self.id             = id_
-        self.deprecated     = data['deprecated']
-        self.vip            = data['vip']
-        self.custom         = data['custom']
+        self = object.__new__(cls)
+        self.name = data['name']
+        self.id = id_
+        self.deprecated = data['deprecated']
+        self.vip = data['vip']
+        self.custom = data['custom']
         self.INSTANCES[id_] = self
         
         return self
@@ -504,11 +506,11 @@ class VoiceRegion(object):
         vip : `bool`
             Whether the voice region can be used only by guilds with `VIP_REGIONS` feature.
         """
-        self.name           = name
-        self.id             = id_
-        self.deprecated     = deprecated
-        self.vip            = vip
-        self.custom         = False
+        self.name = name
+        self.id = id_
+        self.deprecated = deprecated
+        self.vip = vip
+        self.custom = False
         self.INSTANCES[id_] = self
     
     def __str__(self):
@@ -608,7 +610,7 @@ class ContentFilterLevel(object):
     INSTANCES = [NotImplemented] * 3
     
     # object related
-    __slots__=('name', 'value', )
+    __slots__ = ('name', 'value', )
     
     def __init__(self, value, name):
         """
@@ -622,10 +624,10 @@ class ContentFilterLevel(object):
         name : `str`
             The name of the content filter level.
         """
-        self.value=value
-        self.name=name
+        self.value = value
+        self.name = name
         
-        self.INSTANCES[value]=self
+        self.INSTANCES[value] = self
     
     def __str__(self):
         """Returns the content filter level's name."""
@@ -640,9 +642,9 @@ class ContentFilterLevel(object):
         return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r})'
     
     # predefined
-    disabled    = NotImplemented
-    no_role     = NotImplemented
-    everyone    = NotImplemented
+    disabled = NotImplemented
+    no_role  = NotImplemented
+    everyone = NotImplemented
 
 ContentFilterLevel.disabled = ContentFilterLevel(0,'disabled')
 ContentFilterLevel.no_role  = ContentFilterLevel(1,'no_role')
@@ -683,7 +685,7 @@ class HypesquadHouse(object):
     INSTANCES = [NotImplemented] * 4
     
     #object related
-    __slots__=('name', 'value', )
+    __slots__ = ('name', 'value', )
     
     def __init__(self, value, name):
         """
@@ -697,10 +699,10 @@ class HypesquadHouse(object):
         name : `str`
             The name of the hypesquad house.
         """
-        self.value=value
-        self.name=name
+        self.value = value
+        self.name = name
 
-        self.INSTANCES[value]=self
+        self.INSTANCES[value] = self
 
     def __str__(self):
         """Returns the hypesquad house's name."""
@@ -720,10 +722,10 @@ class HypesquadHouse(object):
     brilliance  = NotImplemented
     balance     = NotImplemented
 
-HypesquadHouse.none         = HypesquadHouse(0,'none')
-HypesquadHouse.bravery      = HypesquadHouse(1,'bravery')
-HypesquadHouse.brilliance   = HypesquadHouse(2,'brilliance')
-HypesquadHouse.balance      = HypesquadHouse(3,'balance')
+HypesquadHouse.none        = HypesquadHouse(0, 'none')
+HypesquadHouse.bravery     = HypesquadHouse(1, 'bravery')
+HypesquadHouse.brilliance  = HypesquadHouse(2, 'brilliance')
+HypesquadHouse.balance     = HypesquadHouse(3, 'balance')
 
 
 class Status(object):
@@ -776,9 +778,9 @@ class Status(object):
         position : `int`
             Internal position of the status for sorting purposes.
         """
-        self.value=value
-        self.position=position
-        self.INSTANCES[value]=self
+        self.value = value
+        self.position = position
+        self.INSTANCES[value] = self
 
     def __str__(self):
         """Returns the status's value."""
@@ -926,17 +928,17 @@ class Status(object):
         return False
     
     # predefined
-    online      = NotImplemented
-    idle        = NotImplemented
-    dnd         = NotImplemented
-    offline     = NotImplemented
-    invisible   = NotImplemented
+    online     = NotImplemented
+    idle       = NotImplemented
+    dnd        = NotImplemented
+    offline    = NotImplemented
+    invisible  = NotImplemented
 
-Status.online   = Status('online',0)
-Status.idle     = Status('idle',1)
-Status.dnd      = Status('dnd',2)
-Status.offline  = Status('offline',3)
-Status.invisible= Status('invisible',3)
+Status.online    = Status('online', 0)
+Status.idle      = Status('idle', 1)
+Status.dnd       = Status('dnd', 2)
+Status.offline   = Status('offline', 3)
+Status.invisible = Status('invisible', 3)
 
 class MessageNotificationLevel(object):
     """
@@ -973,7 +975,7 @@ class MessageNotificationLevel(object):
     INSTANCES = [NotImplemented] * 4
     
     # object related
-    __slots__=('name', 'value', )
+    __slots__ = ('name', 'value', )
     
     def __init__(self, value, name):
         """
@@ -987,10 +989,10 @@ class MessageNotificationLevel(object):
         name : `str`
             The name of the message notificaiton level.
         """
-        self.value=value
-        self.name=name
+        self.value = value
+        self.name = name
 
-        self.INSTANCES[value]=self
+        self.INSTANCES[value] = self
     
     def __str__(self):
         """Returns the message notification level's name."""
@@ -1005,10 +1007,10 @@ class MessageNotificationLevel(object):
         return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r})'
     
     # predefined
-    all_messages   = NotImplemented
-    only_mentions  = NotImplemented
-    no_messages    = NotImplemented
-    null           = NotImplemented
+    all_messages  = NotImplemented
+    only_mentions = NotImplemented
+    no_messages   = NotImplemented
+    null          = NotImplemented
 
 MessageNotificationLevel.all_messages  = MessageNotificationLevel(0, 'all_messages')
 MessageNotificationLevel.only_mentions = MessageNotificationLevel(1, 'only_mentions')
@@ -1077,11 +1079,11 @@ class MFA(object):
         """Returns the representation of the MFA level."""
         return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r})'
 
-    none    = NotImplemented
-    elevated= NotImplemented
+    none     = NotImplemented
+    elevated = NotImplemented
 
-MFA.none    = MFA(0, 'none')
-MFA.elevated= MFA(1, 'elevated')
+MFA.none     = MFA(0, 'none')
+MFA.elevated = MFA(1, 'elevated')
 
 class PremiumType(object):
     """
@@ -1116,7 +1118,7 @@ class PremiumType(object):
     INSTANCES = [NotImplemented] * 3
     
     # object related
-    __slots__=('name', 'value',)
+    __slots__ = ('name', 'value',)
     
     def __init__(self, value, name):
         """
@@ -1129,10 +1131,10 @@ class PremiumType(object):
         name : `str`
             The name of the premium type.
         """
-        self.value=value
-        self.name=name
+        self.value = value
+        self.name = name
 
-        self.INSTANCES[value]=self
+        self.INSTANCES[value] = self
     
     def __str__(self):
         """Returns the name of the premium type."""
@@ -1147,13 +1149,13 @@ class PremiumType(object):
         return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r})'
     
     # predefined
-    none            = NotImplemented
-    nitro_classic   = NotImplemented
-    nitro           = NotImplemented
+    none           = NotImplemented
+    nitro_classic  = NotImplemented
+    nitro          = NotImplemented
 
-PremiumType.none            = PremiumType(0,'none')
-PremiumType.nitro_classic   = PremiumType(1,'nitro_classic')
-PremiumType.nitro           = PremiumType(2,'nitro')
+PremiumType.none           = PremiumType(0, 'none')
+PremiumType.nitro_classic  = PremiumType(1, 'nitro_classic')
+PremiumType.nitro          = PremiumType(2, 'nitro')
 
 class RelationshipType(object):
     """
@@ -1194,7 +1196,7 @@ class RelationshipType(object):
     INSTANCES = [NotImplemented] * 6
     
     # object related
-    __slots__=('name', 'value',)
+    __slots__ = ('name', 'value',)
     
     def __init__(self, value, name):
         """
@@ -1208,10 +1210,10 @@ class RelationshipType(object):
         name : `str`
             The relationship type's name.
         """
-        self.value=value
-        self.name=name
+        self.value = value
+        self.name = name
 
-        self.INSTANCES[value]=self
+        self.INSTANCES[value] = self
 
     def __str__(self):
         """Returns the name of the relationship type."""
@@ -1292,7 +1294,7 @@ def log_time_converter(value):
     TypeError
         If the given `value`'s type is not any of the expected ones.
     """
-    if isinstance(value,int):
+    if isinstance(value, int):
         return value
     
     if isinstance(value, DiscordEntity):
@@ -1304,16 +1306,16 @@ def log_time_converter(value):
     raise TypeError(f'Expected `int`, `{DiscordEntity.__name__}` instance, or a `datetime` object, got '
         f'`{value.__class__.__name__}`.')
 
-ID_RP=re.compile('(\d{7,21})')
-IS_MENTION_RP=re.compile('@everyone|@here|<@[!&]?\d{7,21}>|<#\d{7,21}>')
+ID_RP = re.compile('(\d{7,21})')
+IS_MENTION_RP = re.compile('@everyone|@here|<@[!&]?\d{7,21}>|<#\d{7,21}>')
 
-USER_MENTION_RP=re.compile('<@!?(\d{7,21})>')
-CHANNEL_MENTION_RP=re.compile('<#(\d{7,21})>')
-ROLE_MENTION_RP=re.compile('<@&(\d{7,21})>')
+USER_MENTION_RP = re.compile('<@!?(\d{7,21})>')
+CHANNEL_MENTION_RP = re.compile('<#(\d{7,21})>')
+ROLE_MENTION_RP = re.compile('<@&(\d{7,21})>')
 
-EMOJI_RP=re.compile('<([a]{0,1}):([a-zA-Z0-9_]{2,32}(~[1-9]){0,1}):(\d{7,21})>')
-EMOJI_NAME_RP=re.compile(':{0,1}([a-zA-Z0-9_\\-~]{1,32}):{0,1}')
-FILTER_RP=re.compile('("(.+?)"|\S+)')
+EMOJI_RP = re.compile('<(a)?:([a-zA-Z0-9_]{2,32})(?:~[1-9])?:(\d{7,21})>')
+EMOJI_NAME_RP = re.compile(':?([a-zA-Z0-9_\\-~]{1,32}):?')
+FILTER_RP = re.compile('("(.+?)"|\S+)')
 INVITE_CODE_RP = re.compile('([a-zA-Z0-9-]+)')
 
 def is_id(text):
@@ -1445,47 +1447,47 @@ def chunkify(lines, limit=2000):
     ValueError`
         If limit is less than `500`.
     """
-    if limit<500:
+    if limit < 500:
         raise ValueError(f'Minimal limit should be at least 500, got {limit!r}.')
     
-    result=[]
-    chunk_ln=0
-    chunk=[]
+    result = []
+    chunk_ln = 0
+    chunk = []
     for line in lines:
         while True:
-            ln=len(line)+1
-            if chunk_ln+ln>limit:
-                position=limit-chunk_ln
-                if position<250:
+            ln = len(line)+1
+            if chunk_ln+ln > limit:
+                position = limit-chunk_ln
+                if position < 250:
                     result.append('\n'.join(chunk))
                     chunk.clear()
                     chunk.append(line)
                     chunk_ln=ln
                     break
                 
-                position=line.rfind(' ',position-250,position-3)
-                if position==-1:
+                position = line.rfind(' ', position-250, position-3)
+                if position == -1:
                     position = limit-chunk_ln-3
-                    post_part=line[position:]
+                    post_part = line[position:]
                 else:
-                    post_part=line[position+1:]
+                    post_part = line[position+1:]
                 
-                pre_part=line[:position]+'...'
+                pre_part = line[:position]+'...'
                 
                 chunk.append(pre_part)
                 result.append('\n'.join(chunk))
                 chunk.clear()
-                if len(post_part)>limit:
-                    line=post_part
-                    chunk_ln=0
+                if len(post_part) > limit:
+                    line = post_part
+                    chunk_ln = 0
                     continue
                 
                 chunk.append(post_part)
-                chunk_ln=len(post_part)+1
+                chunk_ln = len(post_part)+1
                 break
             
             chunk.append(line)
-            chunk_ln+=ln
+            chunk_ln += ln
             break
     
     result.append('\n'.join(chunk))
@@ -1514,37 +1516,37 @@ def cchunkify(lines, lang='', limit=2000):
     ValueError`
         If limit is less than `500`.
     """
-    if limit<500:
+    if limit < 500:
         raise ValueError(f'Minimal limit should be at least 500, got {limit!r}.')
     
-    starter=f'```{lang}'
-    limit=limit-len(starter)-5
+    starter = f'```{lang}'
+    limit = limit-len(starter)-5
     
-    result=[]
-    chunk_ln=0
-    chunk=[starter]
+    result = []
+    chunk_ln = 0
+    chunk = [starter]
     for line in lines:
         while True:
-            ln=len(line)+1
-            if chunk_ln+ln>limit:
-                position=limit-chunk_ln
-                if position<250:
+            ln = len(line)+1
+            if chunk_ln+ln > limit:
+                position = limit-chunk_ln
+                if position < 250:
                     chunk.append('```')
                     result.append('\n'.join(chunk))
                     chunk.clear()
                     chunk.append(starter)
                     chunk.append(line)
-                    chunk_ln=ln
+                    chunk_ln = ln
                     break
                 
-                position=line.rfind(' ',position-250,position-3)
-                if position==-1:
+                position = line.rfind(' ', position-250, position-3)
+                if position == -1:
                     position = limit-chunk_ln-3
-                    post_part=line[position:]
+                    post_part = line[position:]
                 else:
-                    post_part=line[position+1:]
+                    post_part = line[position+1:]
                 
-                pre_part=line[:position]+'...'
+                pre_part = line[:position]+'...'
                 
                 chunk.append(pre_part)
                 chunk.append('```')
@@ -1552,17 +1554,17 @@ def cchunkify(lines, lang='', limit=2000):
                 chunk.clear()
                 chunk.append(starter)
                 
-                if len(post_part)>limit:
-                    line=post_part
-                    chunk_ln=0
+                if len(post_part) > limit:
+                    line = post_part
+                    chunk_ln = 0
                     continue
                 
                 chunk.append(post_part)
-                chunk_ln=len(post_part)+1
+                chunk_ln = len(post_part)+1
                 break
             
             chunk.append(line)
-            chunk_ln+=ln
+            chunk_ln += ln
             break
     
     if len(chunk)>1:
@@ -1680,8 +1682,8 @@ class Unknown(DiscordEntity):
         name : `str`, Optional
             The name of the entity if applicable. If not, `type_` will be used as name instead.
         """
-        self.type=type_
-        self.id=id_
+        self.type = type_
+        self.id = id_
         if name is None:
             name = type_
         self.name = name
@@ -1826,14 +1828,14 @@ class FriendRequestFlag(object):
         if data is None:
             return cls.none
         
-        all_=data.get('all',False)
+        all_ = data.get('all', False)
         if all_:
-            key=4
+            key = 4
         else:
-            mutual_guilds=data.get('mutual_guilds',False)
-            mutual_friends=data.get('mutual_friends',False)
+            mutual_guilds = data.get('mutual_guilds', False)
+            mutual_friends = data.get('mutual_friends', False)
             
-            key=mutual_guilds+(mutual_friends<<1)
+            key = mutual_guilds+(mutual_friends<<1)
         
         return cls.INSTANCES[key]
     
@@ -1851,10 +1853,10 @@ class FriendRequestFlag(object):
         name : `str`
             The name of the friend request flag.
         """
-        self.value=value
-        self.name=name
+        self.value = value
+        self.name = name
 
-        self.INSTANCES[value]=self
+        self.INSTANCES[value] = self
     
     def __str__(self):
         """Returns the name of the friend request flag."""
@@ -1889,11 +1891,11 @@ class FriendRequestFlag(object):
         return result
     
     # predefined
-    none                        = NotImplemented
-    mutual_guilds               = NotImplemented
-    mutual_friends              = NotImplemented
-    mutual_guilds_and_friends   = NotImplemented
-    all                         = NotImplemented
+    none                       = NotImplemented
+    mutual_guilds              = NotImplemented
+    mutual_friends             = NotImplemented
+    mutual_guilds_and_friends  = NotImplemented
+    all                        = NotImplemented
 
 FriendRequestFlag.none                      = FriendRequestFlag(0,'none')
 FriendRequestFlag.mutual_guilds             = FriendRequestFlag(1,'mutual_guilds')
@@ -1928,8 +1930,8 @@ class Theme(object):
     """
     INSTANCES = {}
     
-    __slots__=('value',)
-    values={}
+    __slots__ = ('value',)
+    values = {}
     def __init__(self, value):
         """
         Creates a new theme with the given value and stores it at the classe's `.INSTANCES` class attribute.
@@ -1939,8 +1941,8 @@ class Theme(object):
         value : `str`
             The discord side identificator value of the theme.
         """
-        self.value=value
-        self.INSTANCES[value]=self
+        self.value = value
+        self.INSTANCES[value] = self
 
     def __str__(self):
         """Returns the theme's value."""
@@ -1963,8 +1965,8 @@ class Theme(object):
         value : `str`
         """)
     
-    dark    = NotImplemented
-    light   = NotImplemented
+    dark  = NotImplemented
+    light = NotImplemented
 
 Theme.dark  = Theme('dark')
 Theme.light = Theme('light')
@@ -1990,8 +1992,8 @@ class Gift(object):
         data : `dict` of (`str`, `Any`) items
             Gift data received from Discord.
         """
-        self.uses=data['uses']
-        self.code=data['code']
+        self.uses = data['uses']
+        self.code = data['code']
 
 @modulize
 class Discord_hdrs:
@@ -2016,84 +2018,84 @@ def urlcutter(url):
     -------
     result : `str`
     """
-    if len(url)<50:
+    if len(url) < 50:
         return url
     
-    position=url.find('/')
+    position = url.find('/')
     
-    if position==-1:
+    if position == -1:
         return f'{url[:28]}...{url[-19:]}'
     
-    position=position+1
-    if url[position]=='/':
-        position=position+1
-        if position==len(url):
+    position +=1
+    if url[position] == '/':
+        position +=1
+        if position == len(url):
             return f'{url[:28]}...{url[-19:]}'
         
-        position=url.find('/',position)
-        position=position+1
-        if position==0 or position==len(url):
+        position = url.find('/', position)
+        position +=1
+        if position == 0 or position == len(url):
             return f'{url[:28]}...{url[-19:]}'
     
     positions=[position]
     
     while True:
-        position=url.find('/',position)
-        if position==-1:
+        position = url.find('/', position)
+        if position == -1:
             break
-        position=position+1
-        if position==len(url):
+        position +=1
+        if position == len(url):
             break
         positions.append(position)
     
-    from_start=0
-    from_end=0
-    top_limit=len(url)
-    index=0
+    from_start = 0
+    from_end = 0
+    top_limit = len(url)
+    index = 0
     
     while True:
-        value=positions[index]
-        if value+from_end>47:
-            if from_start+from_end<33:
-                from_start=47-from_end
+        value = positions[index]
+        if value+from_end > 47:
+            if from_start+from_end < 33:
+                from_start = 47-from_end
                 break
             else:
-                index=index+1
-                if index==len(positions):
-                    value=0
+                index +=1
+                if index == len(positions):
+                    value  =0
                 else:
-                    value=positions[len(positions)-index]
-                value=top_limit-value
+                    value = positions[len(positions)-index]
+                value = top_limit-value
                 if value+from_start>47:
                     break
                 else:
-                    from_end=value
+                    from_end = value
                     break
-        from_start=value
+        from_start = value
         
-        index=index+1
-        value=positions[len(positions)-index]
-        value=top_limit-value
-        if value+from_start>47:
-            if from_start+from_end<33:
-                from_end=47-from_start
+        index = index+1
+        value = positions[len(positions)-index]
+        value = top_limit-value
+        if value+from_start > 47:
+            if from_start+from_end < 33:
+                from_end = 47-from_start
                 break
             else:
-                if index==len(positions):
-                    value=top_limit
+                if index == len(positions):
+                    value = top_limit
                 else:
-                    value=positions[index]
+                    value = positions[index]
                 
-                if value+from_end>47:
+                if value+from_end > 47:
                     break
                 else:
-                    from_start=value
+                    from_start = value
                     break
-        from_end=value
+        from_end = value
         
     return f'{url[:from_start]}...{url[top_limit-from_end-1:]}'
 
-bases.id_to_time =id_to_time
+bases.id_to_time = id_to_time
 
 del re
 del titledstr

@@ -22,7 +22,7 @@ from ...discord.emoji import parse_emoji, Emoji, EMOJIS
 from ...discord.client_core import USERS, CHANNELS, ROLES, GUILDS, MESSAGES
 from ...discord.message import Message
 from ...discord.channel import ChannelBase, ChannelGuildBase, ChannelTextBase, ChannelText, ChannelPrivate, \
-    ChannelVoice, ChannelGroup, ChannelCategory, ChannelStore
+    ChannelVoice, ChannelGroup, ChannelCategory, ChannelStore, ChannelThread
 from ...discord.user import User, UserBase
 from ...discord.role import Role
 from ...discord.parsers import check_argcount_and_convert
@@ -1607,6 +1607,7 @@ ConverterSetting(
         ChannelGroup,
         ChannelCategory,
         ChannelStore,
+        ChannelThread,
             ],
         )
 
@@ -3181,8 +3182,6 @@ class ContentParser(CommandContentParser):
             if (separator is not DEFAULT_SEPARATOR):
                 result.append(', separator=')
                 result.append(repr(separator))
-            
-            add_comma = True
         
         handler = self._handler
         if (handler is not None):

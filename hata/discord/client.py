@@ -627,8 +627,8 @@ class Client(UserBase):
         Whether the client is a bot or a user account.
     partial : `bool`
         Partial clients have only their id set. If any other data is set, it might not be in sync with Discord.
-    activities : `list` of ``AcitvityBase`` instances
-        A list of the client's activities.
+    activities : `None` or `list` of ``AcitvityBase`` instances
+        A list of the client's activities. Defaults to `None`.
     status : `Status`
         The client's display status.
     statuses : `dict` of (`str`, `str`) items
@@ -936,7 +936,7 @@ class Client(UserBase):
         self.status             = Status.offline
         self.statuses           = {}
         self._activity          = activity
-        self.activities         = []
+        self.activities         = None
         self._additional_owner_ids = additional_owner_ids
         self._gateway_url       = ''
         self._gateway_time      = -inf
@@ -1967,7 +1967,7 @@ class Client(UserBase):
         self.status             = Status.offline
         self.statuses           = {}
         self._activity          = ActivityUnknown
-        self.activities         = []
+        self.activities         = None
         self.ready_state        = None
     
     async def download_url(self,url):

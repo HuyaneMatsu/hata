@@ -19,6 +19,7 @@ from .role import PermOW
 from .client_core import GC_CYCLER
 from .webhook import Webhook, WebhookRepr
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_bool
+from .others import DATETIME_FORMAT_CODE
 
 from . import webhook, message, ratelimit
 
@@ -213,7 +214,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         if code=='d':
             return self.display_name
         if code=='c':
-            return self.created_at.__format__('%Y.%m.%d-%H:%M:%S')
+            return self.created_at.__format__(DATETIME_FORMAT_CODE)
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
     @property

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 __all__ = ('SubterraneanHelpCommand', )
 
+from ....backend.dereaddons_local import DOCS_ENABLED, DocProperty
 from ....discord.embed import Embed
 from ....discord.others import chunkify
 from ....discord.preconverters import preconvert_color, preconvert_str
@@ -60,7 +61,45 @@ ARGUMENT_SEPARATOR_SPACE_AFTER_ONLY = {
     ';',
         }
 
+class SubterraneanHelpHelp(object):
+    """
+    Shows the usage of help of a respective help command.
+    
+    Attributes
+    ----------
+    color : ``Color``
+        The color of the generated embed.
+    """
+    __slots__ = ('color',)
+    
+    def __init__(self, parent):
+        """
+        Creates a new Subterranean help help instance.
+        
+        Attributes
+        ----------
+        parent : ``SubterraneanHelpCommand``
+            The parent of the help helper.
+        """
+        self.color = parent.color
+    
+    async def __call__(self, client, message):
+        """
+        Returns the respective help command's generated help embed.
+        
+        Returns
+        -------
+        embed : ``Embed``
+        """
+        prefix = client.command_processer.get_prefix_for(message)
+        return Embed('help',
+            'Shows the help command of the client.\n'
+            f'Try `{prefix}!help` for displaying the categories or the commands of it.',
+            color = self.color)
+
+
 class SubterraneanHelpCommand(object):
+    __class_doc__ = (
     """
     A default help command shipped with hata's commands extension.
     
@@ -91,7 +130,21 @@ class SubterraneanHelpCommand(object):
         A color for the generated embeds.
     prefix : `str`
         Prefix inserted before commands's display name.
-    """
+    """ ) if DOCS_ENABLED else None
+    
+    @property
+    def __instance_doc__(self):
+        """
+        Returns the help of the help for the help command.
+        
+        Returns
+        -------
+        helphelp : ``SubterraneanHelpHelp``
+        """
+        return SubterraneanHelpHelp(self)
+    
+    __doc__ = DocProperty()
+    
     __slots__ = ('color', 'prefix')
     
     def __new__(cls, color=None, prefix=None):
@@ -692,3 +745,5 @@ del Emoji
 del Guild
 del Message
 del Invite
+del DOCS_ENABLED
+del DocProperty

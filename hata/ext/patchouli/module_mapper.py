@@ -694,8 +694,8 @@ class FolderedUnit(ObjectedUnitBase):
     def __repr__(self):
         """Returns the foldered unit's represnetation."""
         return f'<{self.__class__.__name__} name={self.name!r}, path={self.path!s}, references={self.references!r}>'
-    
-    
+
+
 class TypeUnit(FolderedUnit):
     """
     Represents a type.

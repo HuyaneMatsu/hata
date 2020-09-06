@@ -9,7 +9,7 @@ from threading import current_thread
 from math import inf
 
 from ..env import CACHE_USER, CACHE_PRESENCE
-from ..backend.dereaddons_local import multidict_titled, _spaceholder, methodize, basemethod
+from ..backend.dereaddons_local import multidict_titled, _spaceholder, methodize, basemethod, change_on_switch
 from ..backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, WaitTillFirst, WaitTillExc
 from ..backend.eventloop import EventThread
 from ..backend.formdata import Formdata
@@ -88,7 +88,7 @@ class SingleUserChunker(object):
             ``SingleUserChunker`` returns always `True`, because it waits only for one event.
         """
         self.waiter.set_result_if_pending(event.users)
-        timer=self.timer
+        timer = self.timer
         if (timer is not None):
             self.timer = None
             timer.cancel()
@@ -104,7 +104,7 @@ class SingleUserChunker(object):
         """
         self.waiter.cancel()
         
-        timer=self.timer
+        timer = self.timer
         if (timer is not None):
             self.timer = None
             timer.cancel()
@@ -118,7 +118,7 @@ class SingleUserChunker(object):
         """
         self.waiter.set_result_if_pending([])
         
-        timer=self.timer
+        timer = self.timer
         if (timer is not None):
             self.timer = None
             timer.cancel()
@@ -227,9 +227,9 @@ class MassUserChunker(object):
         self.left = 0
         self.waiter.set_result_if_pending(None)
         
-        timer=self.timer
+        timer = self.timer
         if (timer is not None):
-            self.timer=None
+            self.timer = None
             timer.cancel()
     
     def __await__(self):
@@ -633,8 +633,8 @@ class Client(UserBase):
         The client's display status.
     statuses : `dict` of (`str`, `str`) items
         The client's statuses for each platform.
-    email : `str`
-        The client's email. Defaults to empty string.
+    email : `None` or `str`
+        The client's email.
     flags : ``UserFlag``
         The client's user flags.
     locale : `str`
@@ -790,7 +790,7 @@ class Client(UserBase):
         # token
         if (type(token) is str):
             pass
-        elif isinstance(token,str):
+        elif isinstance(token, str):
             token = str(token)
         else:
             raise TypeError(f'`token` can be passed as `str` instance, got {token!r}.')
@@ -798,7 +798,7 @@ class Client(UserBase):
         # secret
         if (secret is None) or type(secret is str):
             pass
-        elif isinstance(secret,str):
+        elif isinstance(secret, str):
             secret = str(secret)
         else:
             raise TypeError(f'`secret` can be passed as `str` instance, got `{secret.__class__.__name__}`.')
@@ -851,7 +851,7 @@ class Client(UserBase):
             index = 1
             for additional_owner in iter_(additional_owners):
                 index+=1
-                if not isinstance(additional_owner,(int,UserBase)):
+                if not isinstance(additional_owner,(int, UserBase)):
                     raise TypeError(f'User {index} at `additional_owners`  was not passed neither as `int` or as '
                         f'`{UserBase.__name__}` instance, got {additional_owner.__class__.__name__}')
                 
@@ -913,47 +913,47 @@ class Client(UserBase):
         
         self = object.__new__(cls)
         
-        self.name               = ''
-        self.discriminator      = 0
-        self.avatar_type        = ICON_TYPE_NONE
-        self.avatar_hash        = 0
-        self.flags              = UserFlag()
-        self.mfa                = False
-        self.system             = False
-        self.verified           = False
-        self.email              = ''
-        self.premium_type       = PremiumType.none
-        self.locale             = DEFAULT_LOCALE
-        self.token              = token
-        self.secret             = secret
-        self.is_bot             = is_bot
-        self.shard_count        = shard_count
-        self.intents            = intents
-        self.running            = False
-        self.relationships      = {}
-        self.guild_profiles     = {}
-        self._status            = _status
-        self.status             = Status.offline
-        self.statuses           = {}
-        self._activity          = activity
-        self.activities         = None
+        self.name = ''
+        self.discriminator = 0
+        self.avatar_type = ICON_TYPE_NONE
+        self.avatar_hash = 0
+        self.flags = UserFlag()
+        self.mfa = False
+        self.system = False
+        self.verified = False
+        self.email = None
+        self.premium_type = PremiumType.none
+        self.locale = DEFAULT_LOCALE
+        self.token = token
+        self.secret = secret
+        self.is_bot = is_bot
+        self.shard_count = shard_count
+        self.intents = intents
+        self.running = False
+        self.relationships = {}
+        self.guild_profiles = {}
+        self._status = _status
+        self.status = Status.offline
+        self.statuses = {}
+        self._activity = activity
+        self.activities = None
         self._additional_owner_ids = additional_owner_ids
-        self._gateway_url       = ''
-        self._gateway_time      = -inf
+        self._gateway_url = ''
+        self._gateway_time = -inf
         self._gateway_max_concurrency = 1
         self._gateway_requesting = False
-        self._gateway_waiter    = None
+        self._gateway_waiter = None
         self._user_chunker_nonce= 0
-        self.group_channels     = {}
-        self.private_channels   = {}
-        self.voice_clients      = {}
-        self.id                 = client_id
-        self.partial            = True
-        self.ready_state        = None
-        self.application        = Application._create_empty()
-        self.gateway            = (DiscordGatewaySharder if shard_count else DiscordGateway)(self)
-        self.http               = DiscordHTTPClient(self)
-        self.events             = EventDescriptor(self)
+        self.group_channels = {}
+        self.private_channels = {}
+        self.voice_clients = {}
+        self.id = client_id
+        self.partial = True
+        self.ready_state = None
+        self.application = Application._create_empty()
+        self.gateway = (DiscordGatewaySharder if shard_count else DiscordGateway)(self)
+        self.http = DiscordHTTPClient(self)
+        self.events = EventDescriptor(self)
         
         if (processable is not None):
             for item in processable:
@@ -962,7 +962,7 @@ class Client(UserBase):
         CLIENTS.append(self)
         
         if client_id:
-            USERS[client_id]    = self
+            USERS[client_id] = self
         
         return self
     
@@ -978,29 +978,29 @@ class Client(UserBase):
         data : `dict` of (`str`, `Any`) items
             Data requested from Discord by the ``.client_login_static`` method.
         """
-        client_id           = int(data['id'])
-        if self.id!=client_id:
-            CLIENTS.update(self,client_id)
+        client_id = int(data['id'])
+        if self.id != client_id:
+            CLIENTS.update(self, client_id)
         
         # GOTO
         while True:
             if CACHE_USER:
                 try:
-                    alterego        = USERS[client_id]
+                    alterego = USERS[client_id]
                 except KeyError:
                     # Go Out
                     break
                 else:
                     if alterego is not self:
                         #we already exists, we need to go tru everthing and replace ourself.
-                        guild_profiles=alterego.guild_profiles
-                        self.guild_profiles=guild_profiles
+                        guild_profiles = alterego.guild_profiles
+                        self.guild_profiles = guild_profiles
                         for guild in guild_profiles:
                             guild.users[client_id] = self
                             for channel in guild.channels:
                                 for overwrite in channel.overwrites:
                                     if overwrite.target is alterego:
-                                        overwrite.target=self
+                                        overwrite.target = self
             
             # This part should run at both case, except when there is no alterego detected when caching users.
             for client in CLIENTS:
@@ -1023,22 +1023,22 @@ class Client(UserBase):
             
             break
         
-        self.name           = data['username']
-        self.discriminator  = int(data['discriminator'])
+        self.name = data['username']
+        self.discriminator = int(data['discriminator'])
         self._set_avatar(data)
-        self.mfa            = data.get('mfa_enabled',False)
-        self.system         = data.get('system',False)
-        self.verified       = data.get('verified',False)
-        self.email          = data.get('email','')
-        self.flags          = UserFlag(data.get('flags',0))
-        self.premium_type   = PremiumType.INSTANCES[data.get('premium_type',0)]
-        self.locale         = parse_locale(data)
+        self.mfa = data.get('mfa_enabled', False)
+        self.system = data.get('system', False)
+        self.verified = data.get('verified', False)
+        self.email = data.get('email')
+        self.flags = UserFlag(data.get('flags', 0))
+        self.premium_type = PremiumType.INSTANCES[data.get('premium_type', 0)]
+        self.locale = parse_locale(data)
         
-        self.partial        = False
+        self.partial = False
         
-        USERS[client_id]=self
+        USERS[client_id] = self
     
-    _update_presence    = User._update_presence
+    _update_presence = User._update_presence
     _update_presence_no_return = User._update_presence_no_return
     
     @property
@@ -1055,7 +1055,7 @@ class Client(UserBase):
         -----
         Custom client's status is always `'web'`, so other than `''` or `'web'` will not be returned.
         """
-        if self.status in (Status.offline,Status.invisible):
+        if self.status in (Status.offline, Status.invisible):
             return ''
         return 'web'
     
@@ -1106,15 +1106,15 @@ class Client(UserBase):
             if not self.is_bot:
                 raise ValueError('Password is must for non bots!')
         else:
-            data['password']=password
+            data['password'] = password
 
         if (name is None):
             pass
-        elif isinstance(name,str):
-            name_ln=len(name)
-            if name_ln<2 or name_ln>32:
+        elif isinstance(name , str):
+            name_ln = len(name)
+            if name_ln < 2 or name_ln > 32:
                 raise ValueError(f'The length of the name can be between 2-32, got {name_ln}')
-            data['username']=name
+            data['username'] = name
         else:
             raise TypeError(f'`name` can be passed as type str, got {name.__class__.__name__}.')
         
@@ -1139,17 +1139,17 @@ class Client(UserBase):
         
         if not self.is_bot:
             if (email is not None):
-                data['email']=email
+                data['email'] = email
             if (new_password is not None):
-                data['new_password']=new_password
+                data['new_password'] = new_password
         
         data = await self.http.client_edit(data)
         self._update_no_return(data)
         
         if not self.is_bot:
-            self.email=data['email']
+            self.email = data['email']
             try:
-                self.token=data['token']
+                self.token = data['token']
             except KeyError:
                 pass
         
@@ -1191,36 +1191,36 @@ class Client(UserBase):
         if (nick is None):
             pass
         elif isinstance(nick, str):
-            nick_ln=len(nick)
-            if nick_ln>32:
+            nick_ln = len(nick)
+            if nick_ln > 32:
                 raise ValueError(f'The length of the `nick` can be between 1-32, got {nick_ln}')
-            if nick_ln==0:
-                nick=None
+            if nick_ln == 0:
+                nick = None
         else:
             raise TypeError(f'`nick` can be str instance, got {nick.__class__.__name__}')
         
         try:
-            actual_nick=self.guild_profiles[guild].nick
+            actual_nick = self.guild_profiles[guild].nick
         except KeyError:
             # we arent at the guild ->  will raise propably
-            should_edit_nick=True
+            should_edit_nick = True
         else:
             if nick is None:
                 if actual_nick is None:
-                    should_edit_nick=False
+                    should_edit_nick = False
                 else:
-                    should_edit_nick=True
+                    should_edit_nick = True
             else:
                 if actual_nick is None:
-                    should_edit_nick=True
-                elif nick==actual_nick:
-                    should_edit_nick=False
+                    should_edit_nick = True
+                elif nick == actual_nick:
+                    should_edit_nick = False
                 else:
-                    should_edit_nick=True
+                    should_edit_nick = True
         
         if should_edit_nick:
-            await self.http.client_edit_nick(guild.id,{'nick':nick},reason)
-
+            await self.http.client_edit_nick(guild.id, {'nick': nick}, reason)
+    
     async def client_connections(self):
         """
         Requests the client's connections. For a bot account this request will always return an empty list.
@@ -1259,39 +1259,40 @@ class Client(UserBase):
             - If the status `str` instance, but not any of the predefined ones.
         """
         if status is None:
-            status=self._status
-        elif isinstance(status,str):
+            status = self._status
+        elif isinstance(status, str):
             try:
-                status=Status.INSTANCES[status]
+                status = Status.INSTANCES[status]
             except KeyError as err:
                 raise ValueError(f'Invalid status {status}') from err
-            self._status=status
-        elif isinstance(status,Status):
-            self._status=status
+            self._status = status
+        elif isinstance(status, Status):
+            self._status = status
         else:
             raise TypeError(f'`status` can be type `str` or `{Status.__name__}`, got {status.__class__.__name__}')
         
-        status=status.value
+        status = status.value
         
         if activity is None:
-            activity=self._activity
+            activity = self._activity
         elif isinstance(activity, ActivityBase) and (type(activity) is not ActivityCustom):
-            self._activity=activity
+            self._activity = activity
         else:
-            raise TypeError(f'`activity` should have been passed as `{ActivityBase.__name__} instance (except {ActivityCustom.__name__}), got: {activity.__class__.__name__}.')
+            raise TypeError(f'`activity` should have been passed as `{ActivityBase.__name__} instance (except '
+                f'{ActivityCustom.__name__}), got: {activity.__class__.__name__}.')
         
         if activity is ActivityUnknown:
-            activity=None
+            activity = None
         elif (activity is not None):
             if self.is_bot:
-                activity=activity.botdict()
+                activity = activity.botdict()
             else:
-                activity=activity.hoomandict()
+                activity = activity.hoomandict()
         
-        if status=='idle':
-            since=int(time_now()*1000.)
+        if status == 'idle':
+            since = int(time_now()*1000.)
         else:
-            since=0.0
+            since = 0.0
         
         data = {
             'op': DiscordGateway.PRESENCE,
@@ -1343,10 +1344,10 @@ class Client(UserBase):
                 }
         
         data = await self.http.oauth2_token(data, multidict_titled())
-        if len(data)==1:
+        if len(data) == 1:
             return
         
-        return AO2Access(data,redirect_url)
+        return AO2Access(data, redirect_url)
     
     async def owners_access(self, scopes):
         """
@@ -1374,14 +1375,14 @@ class Client(UserBase):
         Does not work if the client's application is owned by a team.
         """
         data = {
-            'grant_type'    : 'client_credentials',
-            'scope'         : ' '.join(scopes),
+            'grant_type' : 'client_credentials',
+            'scope'      : ' '.join(scopes),
                 }
         
         headers = multidict_titled()
         headers[AUTHORIZATION] = BasicAuth(str(self.id), self.secret).encode()
         data = await self.http.oauth2_token(data, headers)
-        return AO2Access(data,'')
+        return AO2Access(data, '')
     
     #needs `email` or/and `identify` scopes granted for more data
     async def user_info(self, access):
@@ -1405,10 +1406,10 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        headers=multidict_titled()
-        headers[AUTHORIZATION]=f'Bearer {access.access_token}'
+        headers = multidict_titled()
+        headers[AUTHORIZATION] = f'Bearer {access.access_token}'
         data = await self.http.user_info(headers)
-        return UserOA2(data,access)
+        return UserOA2(data, access)
     
     async def user_connections(self, access):
         """
@@ -1429,8 +1430,8 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        headers=multidict_titled()
-        headers[AUTHORIZATION]=f'Bearer {access.access_token}'
+        headers = multidict_titled()
+        headers[AUTHORIZATION] = f'Bearer {access.access_token}'
         data = await self.http.user_connections(headers)
         return [Connection(connection_data) for connection_data in data]
     
@@ -1508,34 +1509,35 @@ class Client(UserBase):
         DiscordException
         """
         if type(access_or_compuser) is AO2Access:
-            access=access_or_compuser
+            access = access_or_compuser
             if user is None:
                 raise TypeError('`user` can not be None if `access_or_compuser` is passed as `AO2Access`.')
         elif type(access_or_compuser) is UserOA2:
-            access=access_or_compuser.access
+            access = access_or_compuser.access
             if user is None:
-                user=access_or_compuser
+                user = access_or_compuser
         else:
-            raise TypeError(f'Invalid `access_or_compuser` type, expected {AO2Access.__name__} or {UserOA2.__name__}, got {access_or_compuser.__class__.__name__}.')
+            raise TypeError(f'Invalid `access_or_compuser` type, expected {AO2Access.__name__} or {UserOA2.__name__}, '
+                f'got {access_or_compuser.__class__.__name__}.')
         
-        data={'access_token':access.access_token}
+        data = {'access_token': access.access_token}
         if (nick is not None):
-            nick_ln=len(nick)
-            if nick_ln!=0:
-                if nick_ln>32:
+            nick_ln = len(nick)
+            if nick_ln != 0:
+                if nick_ln > 32:
                     raise ValueError(f'The length of the nick can be between 1-32, got {nick!r}.')
-                data['nick']=nick
+                data['nick'] = nick
         
         if roles:
-            data['roles']=[role.id for role in roles]
+            data['roles'] = [role.id for role in roles]
         
         if mute:
-            data['mute']=mute
+            data['mute'] = mute
         
         if deaf:
-            data['deaf']=deaf
+            data['deaf'] = deaf
         
-        await self.http.guild_user_add(guild.id,user.id,data)
+        await self.http.guild_user_add(guild.id, user.id, data)
     
     async def user_guilds(self, access):
         """
@@ -1558,8 +1560,8 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        headers=multidict_titled()
-        headers[AUTHORIZATION]=f'Bearer {access.access_token}'
+        headers = multidict_titled()
+        headers[AUTHORIZATION] = f'Bearer {access.access_token}'
         data = await self.http.user_guilds(headers)
         return [PartialGuild(guild_data) for guild_data in data]
     
@@ -1640,21 +1642,21 @@ class Client(UserBase):
         icon_data = image_to_base64(icon)
         
         data = {
-            'name'          : {
-                'default'   : name,
+            'name'        : {
+                'default' : name,
                     },
-            'description'   : {
-                'default'   : description,
+            'description' : {
+                'default' : description,
                     },
-            'secret'        : secret,
-            'secure'        : secure,
-            'icon'          : icon_data,
+            'secret' : secret,
+            'secure' : secure,
+            'icon'   : icon_data,
                 }
         
-        data = await self.http.achievement_create(self.application.id,data)
+        data = await self.http.achievement_create(self.application.id, data)
         return Achievement(data)
     
-    async def achievement_edit(self, achievement, name=None ,description=None, secret=None, secure=None,
+    async def achievement_edit(self, achievement, name=None , description=None, secret=None, secure=None,
             icon=_spaceholder):
         """
         Edits the passed achievemnt with the specified parameters. All parameter is optional.
@@ -1689,23 +1691,23 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        data={}
+        data = {}
         
         if (name is not None):
             data['name'] = {
-                'default'   : name,
+                'default' : name,
                     }
         
         if (description is not None):
             data['description'] = {
-                'default'   : description,
+                'default' : description,
                     }
         
         if (secret is not None):
-            data['secret']=secret
+            data['secret'] = secret
         
         if (secure is not None):
-            data['secure']=secure
+            data['secure'] = secure
         
         if (icon is not _spaceholder):
             icon_type = icon.__class__
@@ -1718,7 +1720,7 @@ class Client(UserBase):
             
             data['icon'] = image_to_base64(icon)
         
-        data = await self.http.achievement_edit(self.application.id,achievement.id,data)
+        data = await self.http.achievement_edit(self.application.id, achievement.id, data)
         achievement._update_no_return(data)
         return achievement
     
@@ -1737,7 +1739,7 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        await self.http.achievement_delete(self.application.id,achievement.id)
+        await self.http.achievement_delete(self.application.id, achievement.id)
     #
     # This endpoint is unintentionally documented and will never work
     # https://github.com/discordapp/discord-api-docs/issues/1230
@@ -1767,10 +1769,10 @@ class Client(UserBase):
         This endpoint is unintentionally documented and will never work. For reference:
         ``https://github.com/discordapp/discord-api-docs/issues/1230``.
         """
-        headers=multidict_titled()
-        headers[AUTHORIZATION]=f'Bearer {access.access_token}'
+        headers = multidict_titled()
+        headers[AUTHORIZATION] = f'Bearer {access.access_token}'
         
-        data = await self.http.user_achievements(self.application.id,headers)
+        data = await self.http.user_achievements(self.application.id, headers)
         return [Achievement(achievement_data) for achievement_data in data]
     
     # https://github.com/discordapp/discord-api-docs/issues/1230
@@ -1806,8 +1808,8 @@ class Client(UserBase):
         This endpoint cannot grant achievement, but can it even update them?. For reference:
         ``https://github.com/discordapp/discord-api-docs/issues/1230``.
         """
-        data={'percent_complete':percent_complete}
-        await self.http.user_achievement_update(user.id,self.application.id,achievement.id,data)
+        data = {'percent_complete': percent_complete}
+        await self.http.user_achievement_update(user.id, self.application.id, achievement.id, data)
     
     #hooman only
     async def application_get(self, application_id):
@@ -1856,7 +1858,7 @@ class Client(UserBase):
         DiscordException
         """
         try:
-            eula = EULA[eula_id]
+            eula = EULAS[eula_id]
         except KeyError:
             pass
         else:
@@ -1916,35 +1918,35 @@ class Client(UserBase):
             raise RuntimeError(f'{self.__class__.__name__}._delete called from a running client.')
         
         CLIENTS.remove(self)
-        client_id=self.id
-        alterego=object.__new__(User)
+        client_id = self.id
+        alterego = object.__new__(User)
         for attrname in User.__slots__:
             if attrname.startswith('__'):
                 continue
-            setattr(alterego,attrname,getattr(self,attrname))
+            setattr(alterego, attrname, getattr(self, attrname))
         
         if CACHE_USER:
-            USERS[client_id]=alterego
-            guild_profiles=self.guild_profiles
+            USERS[client_id] = alterego
+            guild_profiles = self.guild_profiles
             for guild in guild_profiles:
-                guild.users[client_id]=self
+                guild.users[client_id] = self
                 for channel in guild.channels:
                     for overwrite in channel.overwrites:
                         if overwrite.target is alterego:
-                            overwrite.target=self
+                            overwrite.target = self
             
             for client in CLIENTS:
                 if (client is not self) and client.running:
                     for relationship in client.relationships:
                         if relationship.user is self:
-                            relationship.user=alterego
+                            relationship.user = alterego
         
         else:
             try:
                 del USERS[client_id]
             except KeyError:
                 pass
-            guild_profiles=self.guild_profiles
+            guild_profiles = self.guild_profiles
             for guild in guild_profiles:
                 try:
                     del guild[client_id]
@@ -1953,24 +1955,24 @@ class Client(UserBase):
         
         self.relationships.clear()
         for channel in self.group_channels.values():
-            users=channel.users
+            users = channel.users
             for index in range(users):
-                if users[index].id==client_id:
-                    users[index]=alterego
+                if users[index].id == client_id:
+                    users[index] = alterego
                     continue
         
         self.private_channels.clear()
         self.group_channels.clear()
         self.events.clear()
         
-        self.guild_profiles     = {}
-        self.status             = Status.offline
-        self.statuses           = {}
-        self._activity          = ActivityUnknown
-        self.activities         = None
-        self.ready_state        = None
+        self.guild_profiles = {}
+        self.status = Status.offline
+        self.statuses = {}
+        self._activity = ActivityUnknown
+        self.activities = None
+        self.ready_state = None
     
-    async def download_url(self,url):
+    async def download_url(self, url):
         """
         Requests an url and returns the response's content. A shortcut option for doing a get request with the
         client's http and reading it.
@@ -2091,7 +2093,7 @@ class Client(UserBase):
         DiscordException
         """
         for user in users:
-            await self.http.channel_group_user_add(channel.id,user.id)
+            await self.http.channel_group_user_add(channel.id, user.id)
 
     async def channel_group_user_delete(self, channel, *users):
         """
@@ -2111,7 +2113,7 @@ class Client(UserBase):
         DiscordException
         """
         for user in users:
-            await self.http.channel_group_user_delete(channel.id,user.id)
+            await self.http.channel_group_user_delete(channel.id, user.id)
     
     async def channel_group_edit(self, channel, name=_spaceholder, icon=_spaceholder):
         """
@@ -2148,16 +2150,16 @@ class Client(UserBase):
             if (name is None):
                 pass
             elif isinstance(name, str):
-                name_ln=len(name)
-                if name_ln==1 or name_ln>100:
+                name_ln = len(name)
+                if name_ln == 1 or name_ln > 100:
                     raise ValueError(f'`channel`\'s `.name`\'s length can be between 2-100, got {name!r}.')
                 
-                if name_ln==0:
-                    name=None
+                if name_ln == 0:
+                    name = None
             else:
                 raise TypeError(f'`name` can be `None` or `str` instance, got {name.__class__.__name__}.')
             
-            data['name']=name
+            data['name'] = name
         
         if (icon is not _spaceholder):
             if icon is None:
@@ -2176,7 +2178,7 @@ class Client(UserBase):
             data['icon'] = icon_data
         
         if data:
-            await self.http.channel_group_edit(channel.id,data)
+            await self.http.channel_group_edit(channel.id, data)
     
     #user only
     async def channel_group_create(self, users):
@@ -2205,12 +2207,12 @@ class Client(UserBase):
         -----
         This endpoint does not support bot accounts.
         """
-        if len(users)<2:
+        if len(users) < 2:
             raise ValueError('ChannelGroup must be created with 2 or more users')
         
-        data={'recipients':[user.id for user in users]}
-        data=await self.http.channel_group_create(self.id,data)
-        return ChannelGroup(data,self)
+        data = {'recipients': [user.id for user in users]}
+        data = await self.http.channel_group_create(self.id, data)
+        return ChannelGroup(data, self)
     
     async def channel_private_create(self, user):
         """
@@ -2231,10 +2233,10 @@ class Client(UserBase):
         DiscordException
         """
         try:
-            channel=self.private_channels[user.id]
+            channel = self.private_channels[user.id]
         except KeyError:
-            data=await self.http.channel_private_create({'recipient_id':user.id})
-            channel=ChannelPrivate(data,self)
+            data = await self.http.channel_private_create({'recipient_id': user.id})
+            channel = ChannelPrivate(data, self)
         return channel
 
     #returns an empty list for bots
@@ -2253,11 +2255,11 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        result=[]
+        result = []
         if (not self.is_bot):
             data = await self.http.channel_private_get_all()
             for channel_data in data:
-                channel=CHANNEL_TYPES[channel_data['type']](data,self)
+                channel = CHANNEL_TYPES[channel_data['type']](data, self)
                 result.append(channel)
         
         return result
@@ -2303,9 +2305,9 @@ class Client(UserBase):
             return
         
         if category is _spaceholder:
-            category=channel.category
+            category = channel.category
         elif category is None:
-            category=guild
+            category = guild
         elif type(category) is Guild:
             if guild is not category:
                 raise ValueError('Can not move channel between guilds!')
@@ -2318,188 +2320,188 @@ class Client(UserBase):
         if type(channel) is type(category):
             raise ValueError('Cant move category under category!')
         
-        if channel.category is category and category.channels.index(channel)==visual_position:
+        if channel.category is category and category.channels.index(channel) == visual_position:
             return #saved 1 request
         
         #making sure
-        visual_position=int(visual_position) 
+        visual_position = int(visual_position)
         
         #quality python code incoming :ok_hand:
-        ordered=[]
-        indexes=[0 for _ in range(len(CHANNEL_TYPES))]  # (type 1 and 3 wont be used)
+        ordered = []
+        indexes = [0 for _ in range(len(CHANNEL_TYPES))]  # (type 1 and 3 wont be used)
 
         #loop preparations
-        outer_channels=guild.channels
-        index_0=0
-        limit_0=len(outer_channels)
+        outer_channels = guild.channels
+        index_0 = 0
+        limit_0 = len(outer_channels)
         #inner loop preparations
-        index_1=0
+        index_1 = 0
         #loop start
         while True:
-            if index_0==limit_0:
+            if index_0 == limit_0:
                 break
-            channel_=outer_channels[index_0]
+            channel_ = outer_channels[index_0]
             #loop block start
             
-            type_=channel_.type
-            type_index=indexes[type_]
-            indexes[type_]=type_index+1
+            type_ = channel_.type
+            type_index = indexes[type_]
+            indexes[type_] = type_index+1
             
-            ordered.append((index_0,index_1,type_index,channel_),)
+            ordered.append((index_0, index_1, type_index, channel_),)
             
-            if type_==4:
+            if type_ == 4:
                 #reset type_indexes
                 for to_reset_index in CHANNEL_MOVE_RESET_INDEXES:
-                    indexes[to_reset_index]=0
+                    indexes[to_reset_index] = 0
                 #loop preparations
-                inner_channels=channel_.channels
-                limit_1=len(inner_channels)
+                inner_channels = channel_.channels
+                limit_1 = len(inner_channels)
                 #loop start
                 while True:
-                    if index_1==limit_1:
+                    if index_1 == limit_1:
                         break
-                    channel_=inner_channels[index_1]
+                    channel_ = inner_channels[index_1]
                     #loop block start
                     
-                    type_=channel_.type
-                    type_index=indexes[type_]
-                    indexes[type_]=type_index+1
+                    type_ = channel_.type
+                    type_index = indexes[type_]
+                    indexes[type_] = type_index+1
                     
-                    ordered.append((index_0,index_1,type_index,channel_),)
+                    ordered.append((index_0, index_1, type_index, channel_),)
                     
                     #loop block end
-                    index_1=index_1+1
+                    index_1 +=1
                 #reseting inner
-                index_1=0
+                index_1 = 0
                 #loop ended
             
             #loop block end
-            index_0=index_0+1
+            index_0 +=1
         #loop ended
         
         #prepare loop
-        index_0=0
-        limit_0=len(ordered)
+        index_0 = 0
+        limit_0 = len(ordered)
         #loop start
         while True:
-            if index_0==limit_0:
+            if index_0 == limit_0:
                 break
-            info_line=ordered[index_0]
+            info_line = ordered[index_0]
             #loop block start
             
             if info_line[3] is channel:
-                original_position=index_0
+                original_position = index_0
                 break
 
             #loop block end
-            index_0=index_0+1
+            index_0 +=1
         #loop ended
 
-        restricted_positions=[]
+        restricted_positions = []
         
-        index_0=0
-        limit_0=len(ordered)
-        last_index=-1
+        index_0 = 0
+        limit_0 = len(ordered)
+        last_index = -1
         if type(category) is Guild:
             #loop start
             while True:
-                if index_0==limit_0:
+                if index_0 == limit_0:
                     break
                 info_line=ordered[index_0]
                 #loop block start
                 
-                if info_line[0]>last_index:
-                    last_index+=1
+                if info_line[0] > last_index:
+                    last_index +=1
                     restricted_positions.append(index_0)
                 
                 #loop block end
-                index_0=index_0+1
+                index_0 +=1
             #loop ended
         else:
             #loop start
             while True:
-                if index_0==limit_0:
+                if index_0 == limit_0:
                     break
-                info_line=ordered[index_0]
-                category_index=index_0 #we might need it
+                info_line = ordered[index_0]
+                category_index = index_0 #we might need it
                 #loop block start
                 if info_line[3] is category:
-                    index_0=index_0+1
+                    index_0 +=1
                     #loop preapre
                     #loop start
                     while True:
-                        if index_0==limit_0:
+                        if index_0 == limit_0:
                             break
-                        info_line=ordered[index_0]
+                        info_line = ordered[index_0]
                         #loop block start
 
-                        if info_line[3].type==4:
+                        if info_line[3].type == 4:
                             break
                         restricted_positions.append(index_0)
                         
                         #loop block end
-                        index_0=index_0+1
+                        index_0 +=1
                     #loop ended
                     break
                 
                 #loop block end
-                index_0=index_0+1
+                index_0 +=1
             #loop ended
                 
-        index_0=(4,2,0).index(channel.ORDER_GROUP)
-        before=(4,2,0)[index_0:]
-        after =(4,2,0)[:index_0+1]
+        index_0 = (4, 2, 0).index(channel.ORDER_GROUP)
+        before = (4, 2, 0)[index_0:]
+        after = (4, 2, 0)[:index_0+1]
 
-        possible_indexes=[]
+        possible_indexes = []
         if restricted_positions:
             #loop prepare
-            index_0=0
-            limit_0=len(restricted_positions)-1
-            info_line=ordered[restricted_positions[index_0]]
+            index_0 = 0
+            limit_0 = len(restricted_positions)-1
+            info_line = ordered[restricted_positions[index_0]]
             #loop at 0 block start
             
             if info_line[3].ORDER_GROUP in after:
-                possible_indexes.append((0,restricted_positions[index_0],),)
+                possible_indexes.append((0, restricted_positions[index_0],),)
             
             #loop at 0 block ended
             while True:
-                if index_0==limit_0:
+                if index_0 == limit_0:
                     break
-                info_line=ordered[restricted_positions[index_0]]
+                info_line = ordered[restricted_positions[index_0]]
                 #next step mixin
-                index_0=index_0+1
+                index_0 +=1
                 info_line_2=ordered[restricted_positions[index_0]]
                 #loop block start
                 
                 if info_line[3].ORDER_GROUP in before and info_line_2[3].ORDER_GROUP in after:
-                    possible_indexes.append((index_0,restricted_positions[index_0],),)
+                    possible_indexes.append((index_0, restricted_positions[index_0],),)
                 
                 #loop block end
             if limit_0:
-                info_line=info_line_2
+                info_line = info_line_2
             #loop at -1 block start
             
             if info_line[3].ORDER_GROUP in before:
-                possible_indexes.append((index_0+1,restricted_positions[index_0]+1,),)
+                possible_indexes.append((index_0+1, restricted_positions[index_0]+1,),)
             
             #loop at -1 block ended
             #loop ended
         else:
             #empty category
-            possible_indexes.append((0,category_index+1,),)
+            possible_indexes.append((0, category_index+1,),)
         
         #GOTO start 
         while True:
             #GOTO block start
             
             #loop prepare
-            index_0=0
-            limit_0=len(possible_indexes)
-            info_line=possible_indexes[index_0]
+            index_0 = 0
+            limit_0 = len(possible_indexes)
+            info_line = possible_indexes[index_0]
             
             #loop at 0 block start
-            if info_line[0]>visual_position:
-                result_position=info_line[1]
+            if info_line[0] > visual_position:
+                result_position = info_line[1]
                 
                 #GOTO end 
                 break
@@ -2508,26 +2510,26 @@ class Client(UserBase):
             #loop at 0 block ended
             
             #setup GOTO from loop start
-            end_goto=False
+            end_goto = False
             #setup GOTO from loop ended
             
-            index_0=index_0+1
+            index_0 +=1
             while True:
-                if index_0==limit_0:
+                if index_0 == limit_0:
                     break
-                info_line=possible_indexes[index_0]
+                info_line = possible_indexes[index_0]
                 #loop block start
 
-                if info_line[0]==visual_position:
-                    result_position=info_line[1]
+                if info_line[0] == visual_position:
+                    result_position = info_line[1]
                     
                     #GOTO end inner 1
-                    end_goto=True
+                    end_goto = True
                     break
                     #GOTO ended inner 1
 
                 #loop block end
-                index_0=index_0+1
+                index_0 +=1
             #loop ended
 
             #GOTO end
@@ -2535,144 +2537,144 @@ class Client(UserBase):
                 break
             #GOTO ended
 
-            result_position=info_line[1]
+            result_position = info_line[1]
 
             #GOTO block ended
             break
         #GOTO ended
             
-        ordered.insert(result_position,ordered[original_position])
-        higher_flag=(result_position<original_position)
+        ordered.insert(result_position, ordered[original_position])
+        higher_flag = (result_position < original_position)
         if higher_flag:
-            original_position=original_position+1
+            original_position +=1
         else:
-            result_position=result_position-1
+            result_position -=1
         del ordered[original_position]
         
-        if channel.type==4:
-            channels_to_move=[]
+        if channel.type == 4:
+            channels_to_move = []
 
             #loop prepare
-            index_0=original_position
-            limit_0=len(ordered)
+            index_0 = original_position
+            limit_0 = len(ordered)
             #loop start
             while True:
-                if index_0==limit_0:
+                if index_0 == limit_0:
                     break
-                info_line=ordered[index_0]
+                info_line = ordered[index_0]
                 #loop block start
-
-                if info_line[3].type==4:
+                
+                if info_line[3].type == 4:
                     break
                 channels_to_move.append(info_line)
                 
                 #loop block end
-                index_0=index_0+1
+                index_0 +=1
             #loop ended
-
-            insert_to=result_position+1
+            
+            insert_to = result_position+1
             
             #loop prepare
-            index_0=len(channels_to_move)
-            limit_0=0
+            index_0 = len(channels_to_move)
+            limit_0 = 0
             #loop start
             while True:
-                index_0=index_0-1
-                info_line=channels_to_move[index_0]
+                index_0 -=1
+                info_line = channels_to_move[index_0]
                 #loop block start
                 
-                ordered.insert(insert_to,info_line)
+                ordered.insert(insert_to, info_line)
                 
                 #loop block end
-                if index_0==limit_0:
+                if index_0 == limit_0:
                     break
             #loop ended
 
-            delete_from=original_position
+            delete_from = original_position
             if higher_flag:
-                delete_from=delete_from+len(channels_to_move) #len(channels_to_move)
+                delete_from = delete_from+len(channels_to_move) #len(channels_to_move)
 
             #loop prepare
-            index_0=0
-            limit_0=len(channels_to_move)
+            index_0 = 0
+            limit_0 = len(channels_to_move)
             #loop start
             while True:
-                if index_0==limit_0:
+                if index_0 == limit_0:
                     break
-                info_line=ordered[index_0]
+                info_line = ordered[index_0]
                 #loop block start
-
+                
                 del ordered[delete_from]
                 
                 #loop block end
-                index_0=index_0+1
+                index_0 +=1
             #loop ended
         
         # reset
         for to_reset_index in CHANNEL_MOVE_RESET_INDEXES:
-            indexes[to_reset_index]=0
+            indexes[to_reset_index] = 0
         
         #loop preparations
-        index_0=0
-        limit_0=len(ordered)
+        index_0 = 0
+        limit_0 = len(ordered)
         #loop start
         while True:
-            if index_0==limit_0:
+            if index_0 == limit_0:
                 break
-            channel_=ordered[index_0][3]
+            channel_ = ordered[index_0][3]
             #loop block start
             
-            type_=channel_.type
-            type_index=indexes[type_]
-            indexes[type_]=type_index+1
+            type_ = channel_.type
+            type_index = indexes[type_]
+            indexes[type_] = type_index+1
             
-            ordered[index_0]=(type_index,channel_)
-
+            ordered[index_0] = (type_index, channel_)
+            
             #loop block step
-            index_0=index_0+1
+            index_0 +=1
             #loop block continue
             
-            if type_==4:
+            if type_ == 4:
                 #reset type_indexes
                 for to_reset_index in CHANNEL_MOVE_RESET_INDEXES:
-                    indexes[to_reset_index]=0
+                    indexes[to_reset_index] = 0
                 #loop preparations
                 #loop start
                 while True:
-                    if index_0==limit_0:
+                    if index_0 == limit_0:
                         break
-                    channel_=ordered[index_0][3]
+                    channel_ = ordered[index_0][3]
                     #loop block start
                     
-                    type_=channel_.type
-                    if type_==4:
+                    type_ = channel_.type
+                    if type_ == 4:
                         break
-                    type_index=indexes[type_]
-                    indexes[type_]=type_index+1
+                    type_index = indexes[type_]
+                    indexes[type_] = type_index+1
 
-                    ordered[index_0]=(type_index,channel_)
+                    ordered[index_0] = (type_index, channel_)
                     
                     #loop block end
-                    index_0=index_0+1
+                    index_0 +=1
                 
             #loop block end
         #loop ended
-
-        bonus_data={'lock_permissions':lock_permissions}
+        
+        bonus_data = {'lock_permissions': lock_permissions}
         if category is guild:
-            bonus_data['parent_id']=None
+            bonus_data['parent_id'] = None
         else:
-            bonus_data['parent_id']=category.id
+            bonus_data['parent_id'] = category.id
         
-        data=[]
-        for position,channel_ in ordered:
+        data = []
+        for position, channel_ in ordered:
             if channel is channel_:
-                data.append({'id':channel_.id,'position':position,**bonus_data})
+                data.append({'id': channel_.id, 'position': position, **bonus_data})
                 continue
-            if channel_.position!=position:
-                data.append({'id':channel_.id,'position':position})
+            if channel_.position != position:
+                data.append({'id': channel_.id, 'position': position})
         
-        await self.http.channel_move(guild.id,data,reason)
+        await self.http.channel_move(guild.id, data, reason)
     
     async def channel_edit(self, channel, name=None, topic=None, nsfw=None, slowmode=None, user_limit=None,
             bitrate=None, type_=128, reason=None):
@@ -2718,55 +2720,55 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        if not isinstance(channel,ChannelGuildBase):
+        if not isinstance(channel, ChannelGuildBase):
             raise TypeError(f'Only Guild channels can be edited with this method, got {channel.__class__.__name__}.')
         
-        data={}
-        value=channel.type
+        data = {}
+        value = channel.type
         if (name is not None):
-            name_ln=len(name)
-            if name_ln<2 or name_ln>100:
+            name_ln = len(name)
+            if name_ln < 2 or name_ln > 100:
                 raise ValueError(f'Invalid `name` length, can be between 2-100, got {name_ln}')
-            data['name']=name
+            data['name'] = name
         
-        if value in (0,5):
+        if value in (0, 5):
             if (topic is not None):
-                topic_ln=len(topic)
-                if topic_ln>1024:
+                topic_ln = len(topic)
+                if topic_ln > 1024:
                     raise ValueError(f'Invalid topic length can be between 0-1024, go {topic_ln}')
-                data['topic']=topic
+                data['topic'] = topic
         
-        if type_<128:
-            INTERCHANGE=channel.INTERCHANGE
+        if type_ < 128:
+            INTERCHANGE = channel.INTERCHANGE
             if len(INTERCHANGE) <= 1:
                 raise TypeError(f'You can not switch channel type of this channel type')
             if type_ not in INTERCHANGE:
                 raise ValueError(f'You can switch chanel type from {value} to {type_}')
-            if type_!=value:
-                data['type']=type_
+            if type_ != value:
+                data['type'] = type_
         
-        if value in (0,5,6):
+        if value in (0, 5, 6):
             if (nsfw is not None):
-                data['nsfw']=nsfw
+                data['nsfw'] = nsfw
         
-        if value==0:
+        if value == 0:
             if (slowmode is not None):
-                if slowmode<0 or slowmode>21600:
+                if slowmode < 0 or slowmode > 21600:
                     raise ValueError(f'`slowmode` should be between 0 and 21600, got: {slowmode}.')
                 data['rate_limit_per_user']=slowmode
         
-        elif value==2:
-            if bitrate<8000 or bitrate>channel.guild.bitrate_limit:
+        elif value == 2:
+            if bitrate < 8000 or bitrate > channel.guild.bitrate_limit:
                 raise ValueError('`bitrate` should be 8000-96000. 128000 max for vip, or 128000, 256000, 384000 '
                     f'max depending on premium tier, got {bitrate!r}.')
-            data['bitrate']=bitrate
+            data['bitrate'] = bitrate
             
             if (user_limit is not None):
-                if user_limit<0 or user_limit>99:
+                if user_limit < 0 or user_limit > 99:
                     raise ValueError(f'`user_limit` should be betwwen 0 and 99, got {user_limit!r}.')
-                data['user_limit']=user_limit
+                data['user_limit'] = user_limit
         
-        await self.http.channel_edit(channel.id,data,reason)
+        await self.http.channel_edit(channel.id, data, reason)
     
     async def channel_create(self, guild, category=None, *args, reason=None, **kwargs):
         """
@@ -2838,9 +2840,9 @@ class Client(UserBase):
         else:
             raise TypeError(f'For `category` type {category.__class__.__name__} is not acceptable.')
         
-        data=cr_pg_channel_object(*args, **kwargs, bitrate_limit=guild.bitrate_limit, category_id=category_id)
-        data = await self.http.channel_create(guild.id,data,reason)
-        return CHANNEL_TYPES[data['type']](data,self,guild)
+        data = cr_pg_channel_object(*args, **kwargs, bitrate_limit=guild.bitrate_limit, category_id=category_id)
+        data = await self.http.channel_create(guild.id, data, reason)
+        return CHANNEL_TYPES[data['type']](data, self, guild)
     
     async def channel_delete(self, channel, reason=None):
         """
@@ -2863,8 +2865,8 @@ class Client(UserBase):
         -----
         If a category channel is deleted, it's subchannels will not be removed, instead they will move under the guild.
         """
-        await self.http.channel_delete(channel.id,reason)
-
+        await self.http.channel_delete(channel.id, reason)
+    
     async def channel_follow(self, source_channel, target_channel):
         """
         Follows the `source_channel` with the `target_channel`. Returns the webhook, what will crosspost the published
@@ -2891,7 +2893,7 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        if source_channel.type!=5:
+        if source_channel.type != 5:
             raise TypeError(f'`source_channel` must be type 5 (announcements) channel, got `{source_channel}`.')
         if target_channel.type not in ChannelText.INTERCHANGE:
             raise TypeError(f'`target_channel` must be type 0 or 5 (any guild text channel), got  `{target_channel}`.')
@@ -2900,7 +2902,7 @@ class Client(UserBase):
             'webhook_channel_id': target_channel.id,
                 }
         
-        data = await self.http.channel_follow(source_channel.id,data)
+        data = await self.http.channel_follow(source_channel.id, data)
         webhook = await Webhook._from_follow_data(data, source_channel, target_channel, self)
         return webhook
     
@@ -2951,21 +2953,21 @@ class Client(UserBase):
             channel.
         - ``.message_iterator`` : An iterator over a channel's message history.
         """
-        if limit<1 or limit>100:
+        if limit < 1 or limit > 100:
             raise ValueError(f'limit must be in between 1 and 100, got {limit!r}.')
         
-        data={'limit':limit}
+        data = {'limit': limit}
         
         if (after is not None):
-            data['after']=log_time_converter(after)
+            data['after'] = log_time_converter(after)
         
         if (around is not None):
-            data['around']=log_time_converter(around)
+            data['around'] = log_time_converter(around)
         
         if (before is not None):
-            data['before']=log_time_converter(before)
+            data['before'] = log_time_converter(before)
         
-        data = await self.http.message_logs(channel.id,data)
+        data = await self.http.message_logs(channel.id, data)
         return channel._process_message_chunk(data)
     
     #if u have 0-1-2 messages at a channel, and you wanna store the messages.
@@ -2995,11 +2997,11 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        if limit<1 or limit>100:
-            raise ValueError(f'limit must be in <1,100>, got {limit}')
+        if limit < 1 or limit > 100:
+            raise ValueError(f'limit must be in <1, 100>, got {limit}')
         
-        data = {'limit':limit,'before':9223372036854775807}
-        data = await self.http.message_logs(channel.id,data)
+        data = {'limit': limit, 'before': 9223372036854775807}
+        data = await self.http.message_logs(channel.id, data)
         if data:
             channel._create_new_message(data[0])
             messages = channel._process_message_chunk(data)
@@ -3007,7 +3009,7 @@ class Client(UserBase):
             messages = []
         
         return messages
-
+    
     async def message_get(self, channel, message_id):
         """
         Requests a specific message by it's id at the given `channel`.
@@ -3029,7 +3031,7 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        data = await self.http.message_get(channel.id,message_id)
+        data = await self.http.message_get(channel.id, message_id)
         return channel._create_unknown_message(data)
     
     async def message_create(self, channel, content=None, embed=None, file=None, allowed_mentions=_spaceholder,
@@ -3075,34 +3077,34 @@ class Client(UserBase):
         --------
         ``.webhook_send`` : Sending a message with a ``Webbhook``.
         """
-        data={}
-        contains_content=False
+        data = {}
+        contains_content = False
         
         if (content is not None) and content:
-            data['content']=content
-            contains_content=True
+            data['content'] = content
+            contains_content = True
         
         if (embed is not None):
-            data['embed']=embed.to_data()
-            contains_content=True
+            data['embed'] = embed.to_data()
+            contains_content = True
         
         if tts:
-            data['tts']=True
+            data['tts'] = True
         
         if (nonce is not None):
-            data['nonce']=nonce
+            data['nonce'] = nonce
         
         if (allowed_mentions is not _spaceholder):
-            data['allowed_mentions']=self._parse_allowed_mentions(allowed_mentions)
+            data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
         
         if file is None:
-            to_send=data
+            to_send = data
         else:
-            to_send=self._create_file_form(data,file)
+            to_send = self._create_file_form(data, file)
             if to_send is None:
-                to_send=data
+                to_send = data
             else:
-                contains_content=True
+                contains_content = True
         
         if not contains_content:
             return None
@@ -3159,62 +3161,62 @@ class Client(UserBase):
         `0` (or later if needed) on close, instead of really closing instantly. These datatypes implement a
         `.real_close()` method, but they do `real_close` on `__exit__` as well.
         """
-        form=Formdata()
-        form.add_field('payload_json',to_json(data))
-        files=[]
+        form = Formdata()
+        form.add_field('payload_json', to_json(data))
+        files = []
         
         #checking structure
         
         #case 1 dict like
-        if hasattr(file,'items'):
+        if hasattr(type(file), 'items'):
             files.extend(file.items())
         
         #case 2 tuple => file, filename pair
-        elif isinstance(file,tuple):
+        elif isinstance(file, tuple):
             files.append(file)
         
         #case 3 list like
-        elif isinstance(file,(list,deque)):
+        elif isinstance(file, (list, deque)):
             for element in file:
                 if type(element) is tuple:
-                    name,io=element
+                    name, io = element
                 else:
-                    io=element
-                    name=''
+                    io = element
+                    name = ''
                 
                 if not name:
                     #guessing name
-                    name=getattr(io,'name','')
+                    name = getattr(io, 'name', '')
                     if name:
-                        _,name=splitpath(name)
+                        _, name = splitpath(name)
                     else:
-                        name=str(random_id())
-                        
-                files.append((name,io),)
+                        name = str(random_id())
+                
+                files.append((name, io),)
         
         #case 4 file itself
         else:
-            name=getattr(file,'name','')
+            name = getattr(file, 'name', '')
             #guessing name
             if name:
-                _,name=splitpath(name)
+                _, name = splitpath(name)
             else:
-                name=str(random_id())
+                name = str(random_id())
             
-            files.append((name,file),)
+            files.append((name, file),)
         
         #checking the amount of files
         #case 1 one file
-        if len(files)==1:
-            name,io=files[0]
-            form.add_field('file',io,filename=name,content_type='application/octet-stream')
+        if len(files) == 1:
+            name, io = files[0]
+            form.add_field('file', io, filename=name, content_type='application/octet-stream')
         #case 2, no files -> return None, we should use the already existing data
-        elif len(files)==0:
+        elif len(files) == 0:
             return None
         #case 3 maximum 10 files
-        elif len(files)<11:
-            for index,(name,io) in enumerate(files):
-                form.add_field(f'file{index}s',io,filename=name,content_type='application/octet-stream')
+        elif len(files) < 11:
+            for index, (name, io) in enumerate(files):
+                form.add_field(f'file{index}s', io, filename=name, content_type='application/octet-stream')
         
         #case 4 more than 10 files
         else:
@@ -3256,7 +3258,7 @@ class Client(UserBase):
         """
         
         if (allowed_mentions is None) or (not allowed_mentions):
-            return {'parse':[]}
+            return {'parse': []}
         
         allow_everyone = False
         allow_users = False
@@ -3267,21 +3269,22 @@ class Client(UserBase):
         
         for element in allowed_mentions:
             if type(element) is str:
-                if element=='everyone':
-                    allow_everyone=True
+                if element == 'everyone':
+                    allow_everyone = True
                     continue
                 
-                if element=='users':
-                    allow_users=True
+                if element == 'users':
+                    allow_users = True
                     continue
                 
-                if element=='roles':
-                    allow_roles=True
+                if element == 'roles':
+                    allow_roles = True
                     continue
                 
-                raise ValueError(f'`allowed_mentions` contains a not valid `str` element: `{element!r}`. Type`str` elements can be one of: (\'everyone\', \'users\', \'roles\').')
+                raise ValueError(f'`allowed_mentions` contains a not valid `str` element: `{element!r}`. Type`str` '
+                    f'elements can be one of: (\'everyone\', \'users\', \'roles\').')
             
-            if isinstance(element,UserBase):
+            if isinstance(element, UserBase):
                 if allowed_users is None:
                     allowed_users = []
                 
@@ -3295,11 +3298,12 @@ class Client(UserBase):
                 allowed_roles.append(element.id)
                 continue
             
-            raise TypeError(f'`allowed_mentions` contains an element of an invalid type: `{element!r}`. The allowed types are: `str`, `Role` and any`UserBase` instance.')
+            raise TypeError(f'`allowed_mentions` contains an element of an invalid type: `{element!r}`. The allowed '
+                f'types are: `str`, `Role` and any`UserBase` instance.')
         
         
         result = {}
-        parse_all_of=None
+        parse_all_of = None
         
         if allow_everyone:
             if parse_all_of is None:
@@ -3316,7 +3320,7 @@ class Client(UserBase):
             parse_all_of.append('users')
         else:
             if (allowed_users is not None):
-                result['users']=allowed_users
+                result['users'] = allowed_users
         
         if allow_roles:
             if parse_all_of is None:
@@ -3326,7 +3330,7 @@ class Client(UserBase):
             parse_all_of.append('roles')
         else:
             if (allowed_roles is not None):
-                result['roles']=allowed_roles
+                result['roles'] = allowed_roles
         
         return result
     
@@ -3354,9 +3358,9 @@ class Client(UserBase):
         """
         if (message.author == self) or (message.id > int((time_now()-1209590.)*1000.-DISCORD_EPOCH)<<22):
             # own or new
-            await self.http.message_delete(message.channel.id,message.id,reason)
+            await self.http.message_delete(message.channel.id, message.id, reason)
         else:
-            await self.http.message_delete_b2wo(message.channel.id,message.id,reason)
+            await self.http.message_delete_b2wo(message.channel.id, message.id, reason)
     
     
     async def message_delete_multiple(self, messages, reason=None):
@@ -3383,29 +3387,29 @@ class Client(UserBase):
         if not messages:
             return
         
-        channel=messages[0].channel
-        channel_id=channel.id
+        channel = messages[0].channel
+        channel_id = channel.id
 
         if not isinstance(channel,ChannelGuildBase):
             # Bulk delete is available only at guilds. At private or group
             # channel you can delete only yours tho.
             for message in messages:
-                await self.http.message_delete(channel_id,message.id,reason)
+                await self.http.message_delete(channel_id, message.id, reason)
                 
             return
         
-        message_group_new       = deque()
-        message_group_old       = deque()
-        message_group_old_own   = deque()
+        message_group_new = deque()
+        message_group_old = deque()
+        message_group_old_own = deque()
         
         bulk_delete_limit = int((time_now()-1209600.)*1000.-DISCORD_EPOCH)<<22 # 2 weeks
         
         for message in messages:
-            message_id=message.id
-            own=(message.author==self)
+            message_id = message.id
+            own = (message.author == self)
             
-            if message_id>bulk_delete_limit:
-                message_group_new.append((own,message_id),)
+            if message_id > bulk_delete_limit:
+                message_group_new.append((own, message_id),)
                 continue
             
             if own:
@@ -3418,26 +3422,26 @@ class Client(UserBase):
         
         tasks = []
         
-        delete_mass_task= None
+        delete_mass_task = None
         delete_new_task = None
         delete_old_task = None
         
         while True:
             if delete_mass_task is None:
-                message_limit=len(message_group_new)
+                message_limit = len(message_group_new)
                 
                 # 0 is all good, but if it is more, lets check them
                 if message_limit:
-                    message_ids=[]
-                    message_count=0
+                    message_ids = []
+                    message_count = 0
                     limit = int((time_now()-1209590.)*1000.-DISCORD_EPOCH)<<22 # 2 weeks -10s
                     
                     while message_group_new:
-                        own,message_id=message_group_new.popleft()
-                        if message_id>limit:
+                        own, message_id = message_group_new.popleft()
+                        if message_id > limit:
                             message_ids.append(message_id)
-                            message_count=message_count+1
-                            if message_count==100:
+                            message_count +=1
+                            if message_count == 100:
                                 break
                             continue
                         
@@ -3455,19 +3459,20 @@ class Client(UserBase):
                         continue
                     
                     if message_count:
-                        if message_count==1:
+                        if message_count == 1:
                             if (delete_new_task is None):
-                                message_id=message_ids[0]
-                                delete_new_task = Task(self.http.message_delete(channel_id,message_id,None), KOKORO)
+                                message_id = message_ids[0]
+                                delete_new_task = Task(self.http.message_delete(channel_id, message_id, None), KOKORO)
                                 tasks.append(delete_new_task)
                         else:
-                            delete_mass_task = Task(self.http.message_delete_multiple(channel_id,{'messages':message_ids},None), KOKORO)
+                            delete_mass_task = Task(self.http.message_delete_multiple(channel_id,
+                                {'messages': message_ids}, None), KOKORO)
                             tasks.append(delete_mass_task)
-                
+            
             if delete_old_task is None:
                 if message_group_old:
-                    message_id=message_group_old.popleft()
-                    delete_old_task = Task(self.http.message_delete_b2wo(channel_id,message_id,reason), KOKORO)
+                    message_id = message_group_old.popleft()
+                    delete_old_task = Task(self.http.message_delete_b2wo(channel_id, message_id, reason), KOKORO)
                     tasks.append(delete_old_task)
             
             if delete_new_task is None:
@@ -3479,8 +3484,8 @@ class Client(UserBase):
                     group = None
                 
                 if (group is not None):
-                    message_id=message_group_old_own.popleft()
-                    delete_new_task = Task(self.http.message_delete(channel_id,message_id,reason), KOKORO)
+                    message_id = message_group_old_own.popleft()
+                    delete_new_task = Task(self.http.message_delete(channel_id, message_id, reason), KOKORO)
                     tasks.append(delete_new_task)
             
             if not tasks:
@@ -3493,42 +3498,42 @@ class Client(UserBase):
                     break
                 
                 # We really have at least 1 message at that interval.
-                own,message_id = message_group_new.popleft()
+                own, message_id = message_group_new.popleft()
                 # We will delete that message with old endpoint if not own, to make
                 # Sure it will not block the other endpoint for 2 minutes with any chance.
                 if own:
-                    delete_new_task = Task(self.http.message_delete(channel_id,message_id,None), KOKORO)
+                    delete_new_task = Task(self.http.message_delete(channel_id, message_id, None), KOKORO)
                 else:
-                    delete_old_task = Task(self.http.message_delete_b2wo(channel_id,message_id,None), KOKORO)
+                    delete_old_task = Task(self.http.message_delete_b2wo(channel_id, message_id, None), KOKORO)
                 
                 tasks.append(delete_old_task)
-                
+            
             done, pending = await WaitTillFirst(tasks, KOKORO)
-    
+            
             for task in done:
                 tasks.remove(task)
                 try:
                     result = task.result()
-                except (DiscordException,ConnectionError):
+                except (DiscordException, ConnectionError):
                     for task in tasks:
                         task.cancel()
                     raise
                 
                 if task is delete_mass_task:
-                    delete_mass_task=None
+                    delete_mass_task = None
                     continue
                 
                 if task is delete_new_task:
-                    delete_new_task=None
+                    delete_new_task = None
                     continue
                 
                 if task is delete_old_task:
-                    delete_old_task=None
+                    delete_old_task = None
                     continue
                  
                 # Should not happen
                 continue
-
+    
     #deletes from more channels
     async def message_delete_multiple2(self, messages, reason=None):
         """
@@ -3547,24 +3552,24 @@ class Client(UserBase):
         -------
         exceptions : `None`, `list` of (`ConnectionError` or ``DiscordException``) instances
         """
-        delete_system={}
+        delete_system = {}
         for message in messages:
-            channel_id=message.channel.id
+            channel_id = message.channel.id
             try:
                 delete_system[channel_id].append(message)
             except KeyError:
-                delete_system[channel_id]=[message]
+                delete_system[channel_id] = [message]
         
         tasks = []
         for messages in delete_system.values():
-            task=Task(self.message_delete_multiple(messages,reason), KOKORO)
+            task=Task(self.message_delete_multiple(messages, reason), KOKORO)
             tasks.append(task)
         
         await WaitTillAll(tasks, KOKORO)
         
         exceptions = []
         for task in tasks:
-            exception=task.exception()
+            exception = task.exception()
             if exception is None:
                 continue
             
@@ -3608,141 +3613,144 @@ class Client(UserBase):
         This method uses up 4 different ratelimit groups parallelly to maximalize the request and the deletion speed.
         """
         # Check permissions
-        permissions=channel.cached_permissions_for(self)
+        permissions = channel.cached_permissions_for(self)
         if not permissions.can_manage_messages:
             return
         
-        before  = 9223372036854775807 if before is None else log_time_converter(before)
-        after   = 0 if after is None else log_time_converter(after)
-        limit   = 9223372036854775807 if limit is None else limit
+        before = 9223372036854775807 if before is None else log_time_converter(before)
+        after = 0 if after is None else log_time_converter(after)
+        limit = 9223372036854775807 if limit is None else limit
         
         # Check for reversed intervals
-        if before<after:
+        if before < after:
             return
         
         # Check if we are done already
-        if limit<=0:
+        if limit <= 0:
             return
         
-        message_group_new       = deque()
-        message_group_old       = deque()
-        message_group_old_own   = deque()
+        message_group_new = deque()
+        message_group_old = deque()
+        message_group_old_own = deque()
         
         # Check if we can request more messages
         if channel.message_history_reached_end or (not permissions.can_read_message_history):
-            should_request=False
+            should_request = False
         else:
-            should_request=True
+            should_request = True
         
         last_message_id = before
         
         messages_=channel.messages
         if messages_:
-            before_index=message_relativeindex(messages_,before)
-            after_index=message_relativeindex(messages_,after)
-            if before_index!=after_index:
+            before_index = message_relativeindex(messages_, before)
+            after_index = message_relativeindex(messages_, after)
+            if before_index != after_index:
                 time_limit = int((time_now()-1209600.)*1000.-DISCORD_EPOCH)<<22
                 while True:
-                    if before_index==after_index:
+                    if before_index == after_index:
                         break
                     
                     message_ = messages_[before_index]
-                    before_index=before_index+1
+                    before_index +=1
                     
                     if (filter is not None):
                         if not filter(message_):
                             continue
                     
-                    last_message_id=message_.id
-                    own = (message_.author==self)
+                    last_message_id = message_.id
+                    own = (message_.author == self)
                     if last_message_id > time_limit:
-                        message_group_new.append((own,last_message_id,),)
+                        message_group_new.append((own, last_message_id,),)
                     else:
                         if own:
-                            group=message_group_old_own
+                            group = message_group_old_own
                         else:
-                            group=message_group_old
+                            group = message_group_old
                         group.append(last_message_id)
                     
                     # Check if we reached the limit
-                    limit=limit-1
+                    limit -=1
                     if limit:
                         continue
-                    should_request=False
+                    should_request = False
                     break
         
-        tasks               = []
+        tasks = []
         
-        get_mass_task       = None
-        delete_mass_task    = None
-        delete_new_task     = None
-        delete_old_task     = None
+        get_mass_task = None
+        delete_mass_task = None
+        delete_new_task = None
+        delete_old_task = None
         
-        channel_id=channel.id
+        channel_id = channel.id
         
         while True:
             if should_request and (get_mass_task is None):
                 request_data = {
-                    'limit' : 100,
+                    'limit': 100,
                     'before': last_message_id,
                         }
                 
-                get_mass_task = Task(self.http.message_logs(channel_id,request_data), KOKORO)
+                get_mass_task = Task(self.http.message_logs(channel_id, request_data), KOKORO)
                 tasks.append(get_mass_task)
             
             if (delete_mass_task is None):
-                message_limit=len(message_group_new)
+                message_limit = len(message_group_new)
                 # If there are more messages, we are waiting for other tasks
                 if message_limit:
                     time_limit = int((time_now()-1209590.)*1000.-DISCORD_EPOCH)<<22 # 2 weeks -10s
                     collected = 0
                     
                     while True:
-                        if collected==message_limit:
+                        if collected == message_limit:
                             break
                         
-                        if collected==100:
+                        if collected == 100:
                             break
                         
-                        own,message_id=message_group_new[collected]
-                        if message_id<time_limit:
+                        own, message_id = message_group_new[collected]
+                        if message_id < time_limit:
                             break
                         
-                        collected=collected+1
+                        collected +=1
                         continue
                     
-                    if collected==0:
+                    if collected == 0:
                         pass
-                    elif collected==1:
+                    
+                    elif collected == 1:
                         # Delete the message if we dont delete a new message already
                         if (delete_new_task is None):
                             # We collected 1 message -> We cannot use mass delete on this.
-                            own,message_id=message_group_new.popleft()
-                            delete_new_task = Task(self.http.message_delete(channel_id,message_id,reason=reason), KOKORO)
+                            own, message_id = message_group_new.popleft()
+                            delete_new_task = Task(self.http.message_delete(channel_id, message_id, reason=reason),
+                                KOKORO)
                             tasks.append(delete_new_task)
                     else:
-                        message_ids=[]
+                        message_ids = []
                         while collected:
-                            collected = collected-1
-                            own,message_id=message_group_new.popleft()
+                            collected -=1
+                            own, message_id = message_group_new.popleft()
                             message_ids.append(message_id)
                         
-                        delete_mass_task = Task(self.http.message_delete_multiple(channel_id,{'messages':message_ids},reason=reason), KOKORO)
+                        delete_mass_task = Task(self.http.message_delete_multiple(channel_id, {'messages': message_ids},
+                            reason=reason), KOKORO)
                         tasks.append(delete_mass_task)
                     
                     # After we checked what is at this group, lets move the others from it's end, if needed ofc
-                    message_limit=len(message_group_new)
+                    message_limit = len(message_group_new)
                     if message_limit:
                         # timelimit -> 2 week
                         time_limit = time_limit-20971520000
                         
                         while True:
                             # Cannot start at index = len(...), so we instantly do -1
-                            message_limit = message_limit-1
+                            message_limit -=1
                             
                             own, message_id = message_group_new[message_limit]
                             # Check if we should not move -> leave
-                            if message_id>time_limit:
+                            if message_id > time_limit:
                                 break
                             
                             del message_group_new[message_limit]
@@ -3761,14 +3769,14 @@ class Client(UserBase):
             if (delete_new_task is None):
                 # Check old own messages only, mass delete speed is pretty good by itself.
                 if message_group_old_own:
-                    message_id=message_group_old_own.popleft()
-                    delete_new_task = Task(self.http.message_delete(channel_id,message_id,reason=reason), KOKORO)
+                    message_id = message_group_old_own.popleft()
+                    delete_new_task = Task(self.http.message_delete(channel_id, message_id, reason=reason), KOKORO)
                     tasks.append(delete_new_task)
             
             if (delete_old_task is None):
                 if message_group_old:
-                    message_id=message_group_old.popleft()
-                    delete_old_task = Task(self.http.message_delete_b2wo(channel_id,message_id,reason=reason), KOKORO)
+                    message_id = message_group_old.popleft()
+                    delete_old_task = Task(self.http.message_delete_b2wo(channel_id, message_id, reason=reason), KOKORO)
                     tasks.append(delete_old_task)
             
             if not tasks:
@@ -3781,15 +3789,15 @@ class Client(UserBase):
                     break
                 
                 # We really have at least 1 message at that interval.
-                own,message_id = message_group_new.popleft()
+                own, message_id = message_group_new.popleft()
                 # We will delete that message with old endpoint if not own, to make
                 # Sure it will not block the other endpoint for 2 minutes with any chance.
                 if own:
-                    delete_new_task = Task(self.http.message_delete(channel_id,message_id,reason=reason), KOKORO)
-                    task=delete_new_task
+                    delete_new_task = Task(self.http.message_delete(channel_id, message_id, reason=reason), KOKORO)
+                    task = delete_new_task
                 else:
-                    delete_old_task = Task(self.http.message_delete_b2wo(channel_id,message_id,reason=reason), KOKORO)
-                    task=delete_old_task
+                    delete_old_task = Task(self.http.message_delete_b2wo(channel_id, message_id, reason=reason), KOKORO)
+                    task = delete_old_task
                 
                 tasks.append(task)
             
@@ -3799,20 +3807,20 @@ class Client(UserBase):
                 tasks.remove(task)
                 try:
                     result = task.result()
-                except (DiscordException,ConnectionError):
+                except (DiscordException, ConnectionError):
                     for task in tasks:
                         task.cancel()
                     raise
                 
                 if task is get_mass_task:
-                    get_mass_task=None
+                    get_mass_task = None
                     
-                    received_count=len(result)
-                    if received_count<100:
-                        should_request=False
+                    received_count = len(result)
+                    if received_count < 100:
+                        should_request = False
                         
                         # We got 0 messages, move on the next task
-                        if received_count==0:
+                        if received_count == 0:
                             continue
                     
                     # We dont really care about the limit, because we check
@@ -3821,11 +3829,11 @@ class Client(UserBase):
                     
                     for message_data in result:
                         if (filter is None):
-                            last_message_id=int(message_data['id'])
+                            last_message_id = int(message_data['id'])
     
                             # Did we reach the after limit?
-                            if last_message_id<after:
-                                should_request=False
+                            if last_message_id < after:
+                                should_request = False
                                 break
                             
                             # If filter is `None`, we just have to decide, if we
@@ -3835,41 +3843,41 @@ class Client(UserBase):
                             # author data. The default author_id will be 0, because
                             # thats sure not the id of the client.
                             try:
-                                author_data=message_data['author']
+                                author_data = message_data['author']
                             except KeyError:
-                                author_id=0
+                                author_id = 0
                             else:
                                 # If we have author data, lets select the user's data
                                 # from it
                                 try:
-                                    user_data=author_data['user']
+                                    user_data = author_data['user']
                                 except KeyError:
-                                    user_data=author_data
+                                    user_data = author_data
                                 
                                 try:
-                                    author_id=user_data['id']
+                                    author_id = user_data['id']
                                 except KeyError:
-                                    author_id=0
+                                    author_id = 0
                                 else:
-                                    author_id=int(author_id)
+                                    author_id = int(author_id)
                         else:
-                            message_=channel._create_unknown_message(message_data)
-                            last_message_id=message_.id
+                            message_ = channel._create_unknown_message(message_data)
+                            last_message_id = message_.id
                             
                             # Did we reach the after limit?
-                            if last_message_id<after:
-                                should_request=False
+                            if last_message_id < after:
+                                should_request = False
                                 break
                             
                             if not filter(message_):
                                 continue
                             
-                            author_id=message_.author.id
+                            author_id = message_.author.id
                         
                         own = (author_id == self.id)
                         
-                        if last_message_id>time_limit:
-                            message_group_new.append((own,last_message_id,),)
+                        if last_message_id > time_limit:
+                            message_group_new.append((own, last_message_id,),)
                         else:
                             if own:
                                 group = message_group_old_own
@@ -3879,23 +3887,23 @@ class Client(UserBase):
                             group.append(last_message_id)
                         
                         # Did we reach the amount limit?
-                        limit = limit-1
+                        limit -=1
                         if limit:
                             continue
                         
-                        should_request=False
+                        should_request = False
                         break
                 
                 if task is delete_mass_task:
-                    delete_mass_task=None
+                    delete_mass_task = None
                     continue
                 
                 if task is delete_new_task:
-                    delete_new_task=None
+                    delete_new_task = None
                     continue
                 
                 if task is delete_old_task:
-                    delete_old_task=None
+                    delete_old_task = None
                     continue
                  
                 # Should not happen
@@ -3934,31 +3942,32 @@ class Client(UserBase):
         --------
         ``.message_suppress_embeds`` : For suppressing only the embeds of the message.
         """
-        data={}
+        data = {}
         if (content is not None):
-            data['content']=content
+            data['content'] = content
         
         if (embed is not _spaceholder):
             if embed is None:
-                embed_data=None
+                embed_data = None
             else:
-                embed_data=embed.to_data()
+                embed_data = embed.to_data()
             
-            data['embed']=embed_data
+            data['embed'] = embed_data
         
         if (allowed_mentions is not _spaceholder):
-            data['allowed_mentions']=self._parse_allowed_mentions(allowed_mentions)
+            data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
         
         if (suppress is not None):
+            flags = message.flags
             if suppress:
-                flags=message.flags|0b00000100
+                flags |= 0b00000100
             else:
-                flags=message.flags&0b11111011
-            data['flags']=flags
+                flags &= 0b11111011
+            data['flags'] = flags
         
         await self.http.message_edit(message.channel.id, message.id, data)
 
-    async def message_suppress_embeds(self, message ,suppress=True):
+    async def message_suppress_embeds(self, message, suppress=True):
         """
         Suppresses or unsuppressed the given message's embeds.
         
@@ -3975,7 +3984,7 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        await self.http.message_suppress_embeds(message.channel.id,message.id,{'suppress':suppress})
+        await self.http.message_suppress_embeds(message.channel.id, message.id, {'suppress': suppress})
     
     async def message_crosspost(self, message):
         """
@@ -4009,7 +4018,7 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        await self.http.message_pin(message.channel.id,message.id)
+        await self.http.message_pin(message.channel.id, message.id)
     
     async def message_unpin(self, message):
         """
@@ -4026,7 +4035,7 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        await self.http.message_unpin(message.channel.id,message.id)
+        await self.http.message_unpin(message.channel.id, message.id)
 
     async def channel_pins(self, channel):
         """
@@ -4088,9 +4097,9 @@ class Client(UserBase):
             if ln:
                 result = await self.message_logs(channel, planned, before=channel.messages[ln-2].id)
             else:
-                result = await self.message_logs_fromzero(channel,planned)
+                result = await self.message_logs_fromzero(channel, planned)
             
-            if len(result)<planned:
+            if len(result) < planned:
                 channel.message_history_reached_end=True
                 raise IndexError(index)
         
@@ -4123,7 +4132,7 @@ class Client(UserBase):
         DiscordException
         """
         messages = channel.messages
-        if index<len(messages):
+        if index < len(messages):
             return messages[index]
         
         if channel.message_history_reached_end:
@@ -4132,7 +4141,7 @@ class Client(UserBase):
         if not channel.cached_permissions_for(self).can_read_message_history:
             raise PermissionError('Client can\'t read message history')
         
-        await self._load_messages_till(channel,index)
+        await self._load_messages_till(channel, index)
         # access it again, because it might be modified
         return channel.messages[index]
     
@@ -4160,16 +4169,16 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        if end>=len(channel.messages) and (not channel.message_history_reached_end) and \
+        if end >= len(channel.messages) and (not channel.message_history_reached_end) and \
                channel.cached_permissions_for(self).can_read_message_history:
             try:
-                await self._load_messages_till(channel,end)
+                await self._load_messages_till(channel, end)
             except IndexError:
                 pass
         
         result = []
         messages = channel.messages
-        for index in range(start,min(end,len(messages))):
+        for index in range(start, min(end, len(messages))):
             result.append(messages[index])
         
         return result
@@ -4231,9 +4240,9 @@ class Client(UserBase):
         typer : ``Typer``
         """
         return Typer(self, channel, timeout)
-
-    #reactions:
-
+    
+    # Reactions:
+    
     async def reaction_add(self, message, emoji):
         """
         Adds a reaction on the given message.
@@ -4251,8 +4260,8 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        await self.http.reaction_add(message.channel.id,message.id,emoji.as_reaction)
-
+        await self.http.reaction_add(message.channel.id, message.id, emoji.as_reaction)
+    
     async def reaction_delete(self, message, emoji, user):
         """
         Removes the specified reaction of the user from the given message.
@@ -4272,12 +4281,11 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        await self.http.reaction_add(message.channel.id,message.id,emoji.as_reaction)
-        if self==user:
-            await self.http.reaction_delete_own(message.channel.id,message.id,emoji.as_reaction)
+        if self == user:
+            await self.http.reaction_delete_own(message.channel.id, message.id, emoji.as_reaction)
         else:
-            await self.http.reaction_delete(message.channel.id,message.id,emoji.as_reaction,user.id)
-
+            await self.http.reaction_delete(message.channel.id, message.id, emoji.as_reaction, user.id)
+    
     async def reaction_delete_emoji(self, message, emoji):
         """
         Removes all the reaction of the specified emoji from the given message.
@@ -4295,8 +4303,8 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        await self.http.reaction_delete_emoji(message.channel.id,message.id,emoji.as_reaction)
-
+        await self.http.reaction_delete_emoji(message.channel.id, message.id, emoji.as_reaction)
+    
     async def reaction_delete_own(self, message, emoji):
         """
         Removes the specified reaction of the client from the given message.
@@ -4314,8 +4322,8 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        await self.http.reaction_delete_own(message.channel.id,message.id,emoji.as_reaction)
-
+        await self.http.reaction_delete_own(message.channel.id, message.id, emoji.as_reaction)
+    
     async def reaction_clear(self, message):
         """
         Removes all the reactions from the given message.
@@ -4331,7 +4339,7 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        await self.http.reaction_clear(message.channel.id,message.id)
+        await self.http.reaction_clear(message.channel.id, message.id)
     
     # before is not supported
     
@@ -4374,44 +4382,44 @@ class Client(UserBase):
         """
         reactions = message.reactions
         try:
-            line=reactions[emoji]
+            line = reactions[emoji]
         except KeyError:
             return []
         
         if line.unknown:
-            data={}
+            data = {}
             if (limit is not None):
                 if type(limit) is not int:
                     raise TypeError(f'`limit` can be `None` or type `int`, got `{limit!r}`.')
                 
-                if limit<1 or limit>100:
+                if limit < 1 or limit > 100:
                     raise ValueError(f'`limit` can be between 1-100, got `{limit!r}`.')
                 
-                data['limit']=limit
+                data['limit'] = limit
             
             if (after is not None):
-                data['after']=log_time_converter(after)
+                data['after'] = log_time_converter(after)
             
-            #if (before is not None):
-            #    data['before']=log_time_converter(before)
+            # if (before is not None):
+            #     data['before'] = log_time_converter(before)
             
-            data = await self.http.reaction_users(message.channel.id,message.id,emoji.as_reaction,data)
+            data = await self.http.reaction_users(message.channel.id, message.id, emoji.as_reaction, data)
             
-            users=[User(user_data) for user_data in data]
-            reactions._update_some_users(emoji,users)
+            users = [User(user_data) for user_data in data]
+            reactions._update_some_users(emoji, users)
             
         else:
-            #if we know every reacters:
+            # if we know every reacters:
             if limit is None:
-                limit=25
+                limit = 25
             elif type(limit) is not int:
                 raise TypeError(f'`limit` can be `None` or type `int`, got `{limit!r}`')
-            elif limit<1 or limit>100:
+            elif limit < 1 or limit > 100:
                 raise ValueError(f'`limit` can be between 1-100, got `{limit!r}`')
             
-            #before = 9223372036854775807 if before is None else log_time_converter(before)
+            # before = 9223372036854775807 if before is None else log_time_converter(before)
             after = 0 if after is None else log_time_converter(after)
-            users=line.filter_after(limit,after)
+            users = line.filter_after(limit, after)
         
         return users
     
@@ -4444,27 +4452,27 @@ class Client(UserBase):
             return []
         
         try:
-            line=reactions[emoji]
+            line = reactions[emoji]
         except KeyError:
             return []
         
         if line.unknown:
-            limit=len(line)
-            data={'limit':100,'after':0}
-            users=[]
-            reaction=emoji.as_reaction
+            limit = len(line)
+            data = {'limit': 100, 'after': 0}
+            users = []
+            reaction = emoji.as_reaction
             
-            while limit>0:
-                user_datas = await self.http.reaction_users(message.channel.id,message.id,reaction,data)
+            while limit > 0:
+                user_datas = await self.http.reaction_users(message.channel.id, message.id, reaction, data)
                 users.extend(User(user_data) for user_data in user_datas)
                 
-                data['after']=users[-1].id
-                limit-=100
+                data['after'] = users[-1].id
+                limit -=100
             
-            reactions._update_all_users(emoji,users)
+            reactions._update_all_users(emoji, users)
         else:
-            #we copy
-            users=list(line)
+            # we copy
+            users = list(line)
         
         return users
     
@@ -4490,24 +4498,24 @@ class Client(UserBase):
         if not reactions:
             return
         
-        users=[]
-        data={'limit':100,'after':0}
-        for emoji,line in reactions.items():
+        users = []
+        data = {'limit': 100, 'after': 0}
+        for emoji, line in reactions.items():
             if not line.unknown:
                 continue
             
-            reaction=emoji.as_reaction
-            data['after']=0
-            limit=len(line)
-            while limit>0:
+            reaction = emoji.as_reaction
+            data['after'] = 0
+            limit = len(line)
+            while limit > 0:
                 
-                user_datas = await self.http.reaction_users(message.channel.id,message.id,reaction,data)
+                user_datas = await self.http.reaction_users(message.channel.id, message.id, reaction, data)
                 users.extend(User(user_data) for user_data in user_datas)
                 
-                data['after']=users[-1].id
-                limit-=100
-
-            message.reactions._update_all_users(emoji,users)
+                data['after'] = users[-1].id
+                limit -= 100
+            
+            message.reactions._update_all_users(emoji, users)
             users.clear()
     
     # Guild
@@ -4553,7 +4561,7 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        await self.http.guild_user_delete(guild.id,user.id,reason)
+        await self.http.guild_user_delete(guild.id, user.id, reason)
     
     async def welcome_screen_get(self, guild):
         """
@@ -4614,10 +4622,10 @@ class Client(UserBase):
         """
         data = {}
         if delete_message_days:
-            if delete_message_days<1 or delete_message_days>7:
+            if delete_message_days < 1 or delete_message_days > 7:
                 raise ValueError(f'`delete_message_days` can be between 0-7, got {delete_message_days}')
             data['delete-message-days'] = delete_message_days
-        await self.http.guild_ban_add(guild.id,user.id,data,reason)
+        await self.http.guild_ban_add(guild.id, user.id, data, reason)
     
     async def guild_ban_delete(self, guild, user, reason=None):
         """
@@ -4638,7 +4646,7 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        await self.http.guild_ban_delete(guild.id,user.id,reason)
+        await self.http.guild_ban_delete(guild.id, user.id, reason)
     
     async def guild_sync(self, guild_id):
         """
@@ -4662,47 +4670,47 @@ class Client(UserBase):
         # sadly guild_get does not returns channel and voice state data
         # at least we can request the channels
         try:
-            guild=GUILDS[guild_id]
+            guild = GUILDS[guild_id]
         except KeyError:
             data = await self.http.guild_get(guild_id)
             channel_datas = await self.http.guild_channels(guild_id)
-            data['channels']=channel_datas
-            user_data = await self.http.guild_user_get(guild_id,self.id)
-            data['members']=[user_data]
-            guild=Guild(data,self)
+            data['channels'] = channel_datas
+            user_data = await self.http.guild_user_get(guild_id, self.id)
+            data['members'] = [user_data]
+            guild = Guild(data, self)
         else:
             data = await self.http.guild_get(guild_id)
             guild._sync(data)
             channel_datas = await self.http.guild_channels(guild_id)
             guild._sync_channels(channel_datas)
             
-            user_data = await self.http.guild_user_get(guild_id,self.id)
+            user_data = await self.http.guild_user_get(guild_id, self.id)
             try:
-                profile=self.guild_profiles[guild]
+                profile = self.guild_profiles[guild]
             except KeyError:
-                self.guild_profiles[guild]=GuildProfile(user_data,guild)
+                self.guild_profiles[guild] = GuildProfile(user_data, guild)
                 if guild not in guild.clients:
                     guild.clients.append(self)
             else:
-                profile._update_no_return(user_data,guild)
+                profile._update_no_return(user_data, guild)
         
         return guild
 
 ##    # Disable user syncing, takes too much time
-##    async def _guild_sync_postprocess(self,guild):
+##    async def _guild_sync_postprocess(self, guild):
 ##        for client in CLIENTS:
 ##            try:
-##                user_data = await self.http.guild_user_get(guild.id,client.id)
+##                user_data = await self.http.guild_user_get(guild.id, client.id)
 ##           except (DiscordException, ConnectionError):
 ##                continue
 ##            try:
 ##                profile=client.guild_profiles[guild]
 ##            except KeyError:
-##                client.guild_profiles[guild]=GuildProfile(user_data,guild)
+##                client.guild_profiles[guild]=GuildProfile(user_data, guild)
 ##                if client not in guild.clients:
 ##                    guild.clients.append(client)
 ##            else:
-##                profile._update_no_return(user_data,guild)
+##                profile._update_no_return(user_data, guild)
 ##
 ##        if not CACHE_USER:
 ##            return
@@ -4710,9 +4718,9 @@ class Client(UserBase):
 ##        old_ids=set(guild.users)
 ##        data={'limit':1000,'after':'0'}
 ##        while True:
-##            user_datas = await self.http.guild_users(guild.id,data)
+##            user_datas = await self.http.guild_users(guild.id, data)
 ##            for user_data in user_datas:
-##                user=User._create_and_update(user_data,guild)
+##                user=User._create_and_update(user_data, guild)
 ##                try:
 ##                    old_ids.remove(user.id)
 ##                except KeyError:
@@ -4827,15 +4835,15 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        if len(self.guild_profiles)>(99,9)[self.is_bot]:
+        if len(self.guild_profiles) > (9 if self.is_bot else 99):
             if self.is_bot:
-                message='Bots cannot create a new server if they have 10 or more.'
+                message = 'Bots cannot create a new server if they have 10 or more.'
             else:
-                message='Hooman cannot have more than 100 guilds.'
+                message = 'Hooman cannot have more than 100 guilds.'
             raise ValueError(message)
         
-        name_ln=len(name)
-        if name_ln<2 or name_ln>100:
+        name_ln = len(name)
+        if name_ln < 2 or name_ln > 100:
             raise ValueError(f'Guild\'s name\'s length can be between 2-100, got {name_ln}')
         
         if icon is None:
@@ -4869,9 +4877,9 @@ class Client(UserBase):
             data['system_channel_id'] = system_channel_id
         
         if (afk_timeout is not None):
-            if afk_timeout not in (60,300,900,1800,3600):
+            if afk_timeout not in (60, 300, 900, 1800, 3600):
                 raise ValueError(f'Afk timeout should be 60, 300, 900, 1800, 3600 seconds!, got `{afk_timeout!r}`')
-            data['afk_timeout']=afk_timeout
+            data['afk_timeout'] = afk_timeout
         
         data = await self.http.guild_create(data)
         #we can create only partial, because the guild data is not completed usually
@@ -4912,17 +4920,17 @@ class Client(UserBase):
         ``.guild_prune_estimate`` : Returns how much user would be pruned if ``.guild_prune`` would be called.
         """
         if count and guild.is_large:
-            count=False
+            count = False
         
         data = {
-            'days'                  : days,
-            'compute_prune_count'   : count,
+            'days': days,
+            'compute_prune_count': count,
                 }
         
         if roles:
             data['include_roles'] = [role.id for role in roles]
         
-        data = await self.http.guild_prune(guild.id,data,reason)
+        data = await self.http.guild_prune(guild.id, data, reason)
         return data['pruned']
     
     async def guild_prune_estimate(self, guild, days, roles=[]):
@@ -4950,13 +4958,13 @@ class Client(UserBase):
         DiscordException
         """
         data = {
-            'days'  : days,
+            'days': days,
                 }
         
         if roles:
             data['include_roles'] = [role.id for role in roles]
         
-        data = await self.http.guild_prune_estimate(guild.id,data)
+        data = await self.http.guild_prune_estimate(guild.id, data)
         return data['pruned']
     
     async def guild_edit(self, guild, name=None, icon=_spaceholder, invite_splash=_spaceholder,
@@ -5040,13 +5048,13 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        data={}
+        data = {}
         
         if (name is not None):
-            name_ln=len(name)
-            if name_ln<2 or name_ln>100:
+            name_ln = len(name)
+            if name_ln < 2 or name_ln > 100:
                 raise ValueError(f'Guild\'s name\'s length can be between 2-100, got {name_ln}: {name!r}.')
-            data['name']=name
+            data['name'] = name
         
         if (icon is not _spaceholder):
             if icon is None:
@@ -5124,42 +5132,42 @@ class Client(UserBase):
             data['discovery_splash'] = discovery_splash_data
         
         if (afk_channel is not _spaceholder):
-            data['afk_channel_id']=None if afk_channel is None else afk_channel.id
+            data['afk_channel_id'] = None if afk_channel is None else afk_channel.id
         
         if (system_channel is not _spaceholder):
-            data['system_channel_id']=None if system_channel is None else system_channel.id
+            data['system_channel_id'] = None if system_channel is None else system_channel.id
         
         if (rules_channel is not _spaceholder):
             if not COMMUNITY_FEATURES.intersection(guild.features):
                 raise ValueError('The guild is not Community guild and `rules_channel` was given.')
-            data['rules_channel_id']=None if rules_channel is None else rules_channel.id
+            data['rules_channel_id'] = None if rules_channel is None else rules_channel.id
         
         if (public_updates_channel is not _spaceholder):
             if not COMMUNITY_FEATURES.intersection(guild.features):
                 raise ValueError('The guild is not Community guild and `public_updates_channel` was given.')
-            data['public_updates_channel_id']=None if public_updates_channel is None else public_updates_channel.id
+            data['public_updates_channel_id'] = None if public_updates_channel is None else public_updates_channel.id
         
         if (owner is not None):
-            if (guild.owner!=self):
+            if (guild.owner != self):
                 raise ValueError('You must be owner to transfer ownership')
-            data['owner_id']=owner.id
+            data['owner_id'] = owner.id
         
         if (region is not None):
-            data['region']=region.id
+            data['region'] = region.id
         
-        if afk_timeout is not None:
-            if afk_timeout not in (60,300,900,1800,3600):
+        if (afk_timeout is not None):
+            if afk_timeout not in (60, 300, 900, 1800, 3600):
                 raise ValueError(f'Afk timeout should be 60, 300, 900, 1800, 3600  seconds, got `{afk_timeout!r}`')
-            data['afk_timeout']=afk_timeout
+            data['afk_timeout'] = afk_timeout
         
         if (verification_level is not None):
-            data['verification_level']=verification_level.value
+            data['verification_level'] = verification_level.value
         
         if (content_filter is not None):
-            data['explicit_content_filter']=content_filter.value
+            data['explicit_content_filter'] = content_filter.value
         
         if (message_notification is not None):
-            data['default_message_notifications']=message_notification.value
+            data['default_message_notifications'] = message_notification.value
         
         if (description is not _spaceholder):
             if not COMMUNITY_FEATURES.intersection(guild.features):
@@ -5229,8 +5237,8 @@ class Client(UserBase):
             
             data['features'] = features
         
-        await self.http.guild_edit(guild.id,data,reason)
-
+        await self.http.guild_edit(guild.id, data, reason)
+    
     async def guild_bans(self, guild):
         """
         Returns the guild's bans.
@@ -5251,9 +5259,9 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        data=await self.http.guild_bans(guild.id)
-        return [(User(ban_data['user']),ban_data.get('reason',None)) for ban_data in data]
-
+        data = await self.http.guild_bans(guild.id)
+        return [(User(ban_data['user']), ban_data.get('reason', None)) for ban_data in data]
+    
     async def guild_ban_get(self, guild, user_id):
         """
         Returns the guild's ban entry for the given user id.
@@ -5276,8 +5284,8 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        data = await self.http.guild_ban_get(guild.id,user_id)
-        return User(data['user']),data.get('reason',None)
+        data = await self.http.guild_ban_get(guild.id, user_id)
+        return User(data['user']), data.get('reason')
     
     async def guild_embed_get(self, guild):
         """
@@ -5304,7 +5312,7 @@ class Client(UserBase):
         returns it.
         """
         data = await self.http.guild_embed_get(guild.id)
-        return GuildEmbed(data,guild)
+        return GuildEmbed(data, guild)
     
     async def guild_embed_edit(self, guild, enabled=None, channel=_spaceholder):
         """
@@ -5325,14 +5333,14 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        data={}
+        data = {}
         if (enabled is not None):
-            data['enabled']=enabled
+            data['enabled'] = enabled
         
         if (channel is not _spaceholder):
-            data['channel_id']=None if channel is None else channel.id
+            data['channel_id'] = None if channel is None else channel.id
         
-        await self.http.guild_embed_edit(guild.id,data)
+        await self.http.guild_embed_edit(guild.id, data)
     
     async def guild_widget_get(self, guild_or_id):
         """
@@ -5357,16 +5365,16 @@ class Client(UserBase):
         DiscordException
         """
         if type(guild_or_id) is Guild:
-            guild_id=guild_or_id.id
+            guild_id = guild_or_id.id
         elif type(guild_or_id) is int:
-            guild_id=guild_or_id
+            guild_id = guild_or_id
         else:
             raise TypeError(f'Excepted `{Guild.__name__}` or `int` (id), got `{guild_or_id!r}`')
         
         try:
             data = await self.http.guild_widget_get(guild_id)
         except DiscordException as err:
-            if err.response.status==403: #Widget Disabled -> return None
+            if err.response.status == 403: #Widget Disabled -> return None
                 return
             raise
         
@@ -5471,13 +5479,13 @@ class Client(UserBase):
         if (keywords is not _spaceholder):
             if (keywords is None):
                 pass
-            elif (not isinstance(keywords,str)) and hasattr(type(keywords),'__iter__'):
+            elif (not isinstance(keywords, str)) and hasattr(type(keywords), '__iter__'):
                 keywords_processed = set()
                 index = 0
                 for keyword in keywords:
                     if (type(keyword) is str):
                         pass
-                    elif isinstance(keyword,str):
+                    elif isinstance(keyword, str):
                         keyword = str(keyword)
                     else:
                         raise TypeError(f'`keywords` can be `None` or `iterable` of `str`. Got `iterable`, but it\'s '
@@ -5640,7 +5648,9 @@ class Client(UserBase):
         DiscordException
         """
         discovery_category_datas = await self.http.discovery_categories()
-        return [DiscoveryCategory.from_data(discovery_category_data) for discovery_category_data in discovery_category_datas]
+        return [
+            DiscoveryCategory.from_data(discovery_category_data) for discovery_category_data in discovery_category_datas
+                    ]
     
     # Add cached, so even tho the first request fails with `ConnectionError` will not be raised.
     discovery_categories = DiscoveryCategoryRequestCacher(discovery_categories, 3600.0,
@@ -5694,16 +5704,16 @@ class Client(UserBase):
         If user caching is allowed, these users should be already loaded if the client finished starting up.
         This method takes a long time to finish for huge guilds.
         """
-        data={'limit':1000,'after':'0'}
-        result=[]
+        data = {'limit': 1000, 'after': '0'}
+        result = []
         while True:
-            user_datas = await self.http.guild_users(guild.id,data)
+            user_datas = await self.http.guild_users(guild.id, data)
             for user_data in user_datas:
-                user=User(user_data,guild)
+                user = User(user_data, guild)
                 result.append(user)
-            if len(user_datas)<1000:
+            if len(user_datas) < 1000:
                 break
-            data['after']=user_datas[999]['user']['id']
+            data['after'] = user_datas[999]['user']['id']
         return result
     
     async def guild_get_all(self):
@@ -5724,14 +5734,14 @@ class Client(UserBase):
         -----
         If the client finished starting up, all the guilds should be already loaded.
         """
-        result=[]
-        params={'after':0}
+        result = []
+        params = {'after': 0}
         while True:
             data = await self.http.guild_get_all(params)
             result.extend(PartialGuild(guild_data) for guild_data in data)
-            if len(data)<100:
+            if len(data) < 100:
                 break
-            params['after']=result[-1].id
+            params['after'] = result[-1].id
         
         return result
     
@@ -5863,25 +5873,25 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        if limit<1 or limit>100:
-            raise ValueError(f'Limit can be in <1,100>, got {limit}')
+        if limit < 1 or limit > 100:
+            raise ValueError(f'Limit can be in <1, 100>, got {limit}')
         
-        data={'limit':limit}
+        data = {'limit': limit}
         
         if (before is not None):
-            data['before']=log_time_converter(before)
+            data['before'] = log_time_converter(before)
         
         if (after is not None):
-            data['after']=log_time_converter(after)
+            data['after'] = log_time_converter(after)
         
         if (user is not None):
-            data['user_id']=user.id
+            data['user_id'] = user.id
         
         if (event is not None):
-            data['action_type']=event.value
+            data['action_type'] = event.value
         
-        data = await self.http.audit_logs(guild.id,data)
-        return AuditLog(data,guild)
+        data = await self.http.audit_logs(guild.id, data)
+        return AuditLog(data, guild)
     
     def audit_log_iterator(self, guild, user=None, event=None):
         """
@@ -5937,55 +5947,54 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        data={}
+        data = {}
         if (nick is not _spaceholder):
             if (nick is not None):
-                nick_ln=len(nick)
-                if nick_ln>32:
+                nick_ln = len(nick)
+                if nick_ln > 32:
                     raise ValueError(f'The length of the nick can be between 1-32, got {nick_ln}')
-                if nick_ln==0:
-                    nick=None
+                if nick_ln == 0:
+                    nick = None
             
-            should_edit_nick=False
             try:
-                actual_nick=user.guild_profiles[guild].nick
+                actual_nick = user.guild_profiles[guild].nick
             except KeyError:
                 # user cache disabled, or the user is not at the guild -> will raise later
-                should_edit_nick=True
+                should_edit_nick = True
             else:
                 if (nick is None):
                     if (actual_nick is None):
-                        should_edit_nick=False
+                        should_edit_nick = False
                     else:
-                        should_edit_nick=True
+                        should_edit_nick = True
                 else:
                     if (actual_nick is None):
-                        should_edit_nick=True
-                    elif actual_nick==nick:
-                        should_edit_nick=False
+                        should_edit_nick = True
+                    elif actual_nick == nick:
+                        should_edit_nick = False
                     else:
-                        should_edit_nick=True
+                        should_edit_nick = True
             
             if should_edit_nick:
-                if self==user:
-                    await self.http.client_edit_nick(guild.id,{'nick':nick},reason)
+                if self == user:
+                    await self.http.client_edit_nick(guild.id, {'nick': nick}, reason)
                 else:
-                    data['nick']=nick
+                    data['nick'] = nick
                     
         if (deaf is not None):
-            data['deaf']=deaf
+            data['deaf'] = deaf
             
         if (mute is not None):
-            data['mute']=mute
+            data['mute'] = mute
             
         if (voice_channel is not _spaceholder):
-            data['channel_id']=None if voice_channel is None else voice_channel.id
+            data['channel_id'] = None if voice_channel is None else voice_channel.id
             
         if (roles is not None):
-            data['roles']=[role.id for role in roles]
+            data['roles'] = [role.id for role in roles]
             
-        await self.http.user_edit(guild.id,user.id,data,reason)
-
+        await self.http.user_edit(guild.id, user.id, data, reason)
+    
     async def user_role_add(self, user, role, reason=None):
         """
         Adds the role on the user.
@@ -6010,8 +6019,8 @@ class Client(UserBase):
         if guild is None:
             return
         
-        await self.http.user_role_add(guild.id,user.id,role.id,reason)
-
+        await self.http.user_role_add(guild.id, user.id, role.id, reason)
+    
     async def user_role_delete(self, user, role, reason=None):
         """
         Deletes the role from the user.
@@ -6036,8 +6045,8 @@ class Client(UserBase):
         if guild is None:
             return
         
-        await self.http.user_role_delete(guild.id,user.id,role.id,reason)
-
+        await self.http.user_role_delete(guild.id, user.id, role.id, reason)
+    
     async def user_voice_move(self, user, voice_channel):
         """
         Moves the user to the givn voice channel. The user must be in a voice channel at the respective guild already.
@@ -6060,7 +6069,7 @@ class Client(UserBase):
         if guild is None:
             return
        
-        await self.http.user_move(guild.id,user.id,{'channel_id':voice_channel.id})
+        await self.http.user_move(guild.id, user.id, {'channel_id': voice_channel.id})
     
     async def user_voice_kick(self, user, guild):
         """
@@ -6079,7 +6088,7 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        await self.http.user_move(guild.id,user.id,{'channel_id':None})
+        await self.http.user_move(guild.id, user.id,{'channel_id':None})
     
     async def user_get(self, user_id):
         """
@@ -6223,10 +6232,10 @@ class Client(UserBase):
         DiscordException
         """
         data = {
-            'id'    : integration_id,
-            'type'  : type_,
+            'id'   : integration_id,
+            'type' : type_,
                 }
-        data = await self.http.integration_create(guild.id,data)
+        data = await self.http.integration_create(guild.id, data)
         return Integration(data)
 
     async def integration_edit(self, integration, expire_behavior=None, expire_grace_period=None, enable_emojis=True):
@@ -6262,31 +6271,31 @@ class Client(UserBase):
             return
         
         if expire_behavior is None:
-            expire_behavior=integration.expire_behavior
+            expire_behavior = integration.expire_behavior
         elif type(expire_behavior) is int:
-            if expire_behavior not in (0,1):
+            if expire_behavior not in (0, 1):
                 raise ValueError(f'`expire_behavior` should be 0 for kick, 1 for remove role, got {expire_behavior!r}.')
         else:
             raise TypeError(f'`expire_behavior` should be type `int`, got {expire_behavior.__class__.__name__}.')
         if expire_grace_period is None:
             expire_grace_period=integration.expire_grace_period
         elif type(expire_grace_period) is int:
-            if expire_grace_period not in (1,3,7,14,30):
+            if expire_grace_period not in (1, 3, 7, 14, 30):
                 raise ValueError(f'`expire_grace_period` should be 1, 3, 7, 14, 30, got {expire_grace_period!r}.')
         else:
             raise TypeError(f'`expire_grace_period` should be type `int`, got {expire_grace_period.__class__.__name__}.')
         
         data = {
-            'expire_behavior'       : expire_behavior,
-            'expire_grace_period'   : expire_grace_period,
+            'expire_behavior'     : expire_behavior,
+            'expire_grace_period' : expire_grace_period,
                 }
         
-        if integration.type=='twitch' and (enable_emojis is not None):
+        if (integration.type == 'twitch') and (enable_emojis is not None):
             if type(enable_emojis) is not bool:
                 raise TypeError(f'`enable_emojis` should be `bool`, got {enable_emojis.__class__.__name__}.')
-            data['enable_emoticons']=enable_emojis
+            data['enable_emoticons'] = enable_emojis
         
-        await self.http.integration_edit(guild.id,integration.id,data)
+        await self.http.integration_edit(guild.id, integration.id, data)
     
     async def integration_delete(self, integration):
         """
@@ -6307,7 +6316,7 @@ class Client(UserBase):
         if guild is None:
             return
         
-        await self.http.integration_delete(guild.id,integration.id)
+        await self.http.integration_delete(guild.id, integration.id)
     
     async def integration_sync(self, integration):
         """
@@ -6327,7 +6336,7 @@ class Client(UserBase):
         if guild is None:
             return
         
-        await self.http.integration_sync(guild.id,integration.id)
+        await self.http.integration_sync(guild.id, integration.id)
     
     async def permission_ow_edit(self, channel, overwrite, allow, deny, reason=None):
         """
@@ -6357,7 +6366,7 @@ class Client(UserBase):
             'deny'  : deny,
             'type'  : overwrite.type
                 }
-        await self.http.permission_ow_create(channel.id,overwrite.target.id,data,reason)
+        await self.http.permission_ow_create(channel.id, overwrite.target.id, data, reason)
     
     async def permission_ow_delete(self, channel, overwrite, reason=None):
         """
@@ -6378,7 +6387,7 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        await self.http.permission_ow_delete(channel.id,overwrite.target.id,reason)
+        await self.http.permission_ow_delete(channel.id, overwrite.target.id, reason)
     
     async def permission_ow_create(self, channel, target, allow, deny, reason=None):
         """
@@ -6411,11 +6420,12 @@ class Client(UserBase):
         DiscordException
         """
         if type(target) is Role:
-            type_='role'
+            type_ = 'role'
         elif isinstance(target, UserBase):
-            type_='member'
+            type_ = 'member'
         else:
-            raise TypeError(f'`target` can be either `{Role.__name__}` or `{UserBase.__name__}` instance, got {target.__class__.__name__}.')
+            raise TypeError(f'`target` can be either `{Role.__name__}` or `{UserBase.__name__}` instance, got '
+                f'{target.__class__.__name__}.')
         
         data = {
             'target': target.id,
@@ -6424,7 +6434,7 @@ class Client(UserBase):
             'type'  : type_,
                 }
         
-        await self.http.permission_ow_create(channel.id,target.id,data,reason)
+        await self.http.permission_ow_create(channel.id, target.id, data, reason)
         return PermOW.custom(target, allow, deny)
     
     # Webhook management
@@ -6459,11 +6469,11 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        name_ln=len(name)
-        if name_ln==0 or name_ln>80:
+        name_ln = len(name)
+        if name_ln == 0 or name_ln > 80:
             raise ValueError(f'`name` length can be between 1-80, got {name!r}')
         
-        data={'name':name}
+        data = {'name': name}
         
         if (avatar is not None):
             avatar_type = avatar.__class__
@@ -6478,7 +6488,7 @@ class Client(UserBase):
         
         data = await self.http.webhook_create(channel.id, data)
         return Webhook(data)
-
+    
     async def webhook_get(self, webhook_id):
         """
         Requests the webhook by it's id.
@@ -6507,12 +6517,12 @@ class Client(UserBase):
         If the webhook already loaded and if it's guild's webhooks are up to date, no request is done.
         """
         try:
-            webhook=USERS[webhook_id]
+            webhook = USERS[webhook_id]
         except KeyError:
             data = await self.http.webhook_get(webhook_id)
             return Webhook(data)
         else:
-            channel=webhook.channel
+            channel = webhook.channel
             if (channel is not None):
                 guild = channel.guild
                 if (guild is not None) and guild.webhooks_uptodate:
@@ -6548,20 +6558,20 @@ class Client(UserBase):
         If the webhook already loaded and if it's guild's webhooks are up to date, no request is done.
         """
         try:
-            webhook=USERS[webhook_id]
+            webhook = USERS[webhook_id]
         except KeyError:
-            webhook = PartialWebhook(webhook_id,webhook_token)
+            webhook = PartialWebhook(webhook_id, webhook_token)
         else:
             channel = webhook.channel
             if (channel is not None):
                 guild = channel.guild
                 if (guild is not None) and guild.webhooks_uptodate:
                     return webhook
-
+            
             data = await self.http.webhook_get_token(webhook)
             webhook._update_no_return(data)
             return webhook
-
+    
     async def webhook_update(self, webhook):
         """
         Updates the given webhook.
@@ -6661,24 +6671,24 @@ class Client(UserBase):
         if guild.webhooks_uptodate:
             return list(guild.webhooks.values())
         
-        old_ids=list(guild.webhooks)
+        old_ids = list(guild.webhooks)
         
-        result=[]
+        result = []
         
-        data=await self.http.webhook_get_guild(guild.id)
+        data = await self.http.webhook_get_guild(guild.id)
         for webhook_data in data:
-            webhook=Webhook(webhook_data)
+            webhook = Webhook(webhook_data)
             result.append(webhook)
             try:
                 old_ids.remove(webhook.id)
             except ValueError:
                 pass
-            
+        
         if old_ids:
             for id_ in old_ids:
                 guild.webhooks[id_]._delete()
-
-        guild.webhooks_uptodate=True
+        
+        guild.webhooks_uptodate = True
         
         return result
         
@@ -6756,14 +6766,14 @@ class Client(UserBase):
         --------
         ``.webhook_edit_token`` : Editing webhook with Discord's webhook API.
         """
-        data={}
+        data = {}
         
         if (name is not None):
-            name_ln=len(name)
-            if name_ln==0 or name_ln>80:
+            name_ln = len(name)
+            if name_ln == 0 or name_ln > 80:
                 raise ValueError(f'The length of the name can be between 1-80, got {name!r}')
             
-            data['name']=name
+            data['name'] = name
         
         if (avatar is not _spaceholder):
             if avatar is None:
@@ -6782,12 +6792,12 @@ class Client(UserBase):
             data['avatar'] = avatar_data
         
         if (channel is not None):
-            data['channel_id']=channel.id
+            data['channel_id'] = channel.id
         
         if not data:
             return #save 1 request
         
-        data = await self.http.webhook_edit(webhook.id,data)
+        data = await self.http.webhook_edit(webhook.id, data)
         webhook._update_no_return(data)
         
     async def webhook_edit_token(self, webhook, name=None, avatar=_spaceholder): #channel is ignored!
@@ -6819,14 +6829,14 @@ class Client(UserBase):
         -----
         This endpoint cannot edit the webhook's channel, like ``.webhook_edit``.
         """
-        data={}
+        data = {}
         
         if (name is not None):
-            name_ln=len(name)
-            if name_ln==0 or name_ln>80:
+            name_ln = len(name)
+            if name_ln == 0 or name_ln > 80:
                 raise ValueError(f'The length of the name can be between 1-80, got {name_ln}')
             
-            data['name']=name
+            data['name'] = name
         
         if (avatar is not _spaceholder):
             if avatar is None:
@@ -6847,7 +6857,7 @@ class Client(UserBase):
         if not data:
             return #save 1 request
         
-        data = await self.http.webhook_edit_token(webhook,data)
+        data = await self.http.webhook_edit_token(webhook, data)
         webhook._update_no_return(data)
    
     async def webhook_send(self, webhook, content=None, embed=None, file=None, allowed_mentions=_spaceholder,
@@ -6896,65 +6906,66 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        data={}
-        contains_content=False
+        data = {}
+        contains_content = False
         
         if (embed is not None):
-            if isinstance(embed,(tuple,list,deque)):
-                embed_amount=len(embed)
-                if embed_amount>10:
+            if isinstance(embed, (tuple, list, deque)):
+                embed_amount = len(embed)
+                if embed_amount > 10:
                     raise ValueError(f'There can be only 10 embed maximum, got {embed_amount}.')
                 
-                if embed_amount!=0:
-                    data['embeds']=[embed.to_data() for embed in embed]
-                    contains_content=True
+                if embed_amount != 0:
+                    data['embeds'] = [embed.to_data() for embed in embed]
+                    contains_content = True
             else:
                 #check case, when it is not embed like
-                converter=getattr(type(embed),'to_data')
+                converter = getattr(type(embed), 'to_data')
                 if converter is None:
-                    raise TypeError(f'Expected embed like or `tuple`, `list` or `deque` of embed likes, got `{embed.__class__.__name__}`.')
+                    raise TypeError(f'Expected embed like or `tuple`, `list` or `deque` of embed likes, got '
+                        f'`{embed.__class__.__name__}`.')
                 
-                data['embeds']=[converter(embed)]
-                contains_content=True
+                data['embeds'] = [converter(embed)]
+                contains_content = True
         
         if (content is not None) and content:
-            data['content']=content
-            contains_content=True
+            data['content'] = content
+            contains_content = True
         
         if (allowed_mentions is not _spaceholder):
-            data['allowed_mentions']=self._parse_allowed_mentions(allowed_mentions)
+            data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
         
         if tts:
-            data['tts']=True
+            data['tts'] = True
         
         if (avatar_url is not None):
-            data['avatar_url']=avatar_url
+            data['avatar_url'] = avatar_url
         
         if (name is not None):
-            name_ln=len(name)
-            if name_ln>32:
+            name_ln = len(name)
+            if name_ln > 32:
                 raise ValueError(f'The length of the name can be between 1-32, got {name!r}.')
-            if name_ln!=0:
-                data['username']=name
+            if name_ln != 0:
+                data['username'] = name
         
         if file is None:
-            to_send=data
+            to_send = data
         else:
-            to_send=self._create_file_form(data,file)
+            to_send = self._create_file_form(data, file)
             if to_send is None:
-                to_send=data
+                to_send = data
             else:
-                contains_content=True
+                contains_content = True
         
         if not contains_content:
             return None
         
-        data = await self.http.webhook_send(webhook,to_send,wait)
+        data = await self.http.webhook_send(webhook, to_send, wait)
         
         if wait:
-            channel=webhook.channel
+            channel = webhook.channel
             if channel is None:
-                channel=ChannelText.precreate(int(data['channel_id']))
+                channel = ChannelText.precreate(int(data['channel_id']))
             return channel._create_new_message(data)
     
     async def emoji_get(self, guild, emoji_id):
@@ -6980,9 +6991,9 @@ class Client(UserBase):
         DiscordException
         """
         data = await self.http.emoji_get(guild.id, emoji_id)
-        return Emoji(data,guild)
+        return Emoji(data, guild)
     
-    async def guild_sync_emojis(self,guild):
+    async def guild_sync_emojis(self, guild):
         """
         Syncs the given guild's emojis with the wrapper.
         
@@ -7029,21 +7040,21 @@ class Client(UserBase):
         -----
         Only some characters can be in the emoji's name, so every other character is filtered out.
         """
-        image=image_to_base64(image)
-        name=''.join(_VALID_NAME_CHARS.findall(name))
-        
-        name_ln=len(name)
-        if name_ln<2 or name_ln>32:
+        name = ''.join(_VALID_NAME_CHARS.findall(name))
+        name_ln = len(name)
+        if name_ln < 2 or name_ln > 32:
             raise ValueError(f'The length of the emoji can be between 2-32, got {name!r}.')
         
+        image = image_to_base64(image)
+        
         data={
-            'name'      : name,
-            'image'     : image,
-            'role_ids'  : [role.id for role in roles]
+            'name'     : name,
+            'image'    : image,
+            'role_ids' : [role.id for role in roles]
                 }
         
-        await self.http.emoji_create(guild.id,data,reason)
-
+        await self.http.emoji_create(guild.id, data, reason)
+    
     async def emoji_delete(self, emoji, reason=None):
         """
         Deletes th given emoji.
@@ -7065,8 +7076,8 @@ class Client(UserBase):
         if guild is None:
             return
         
-        await self.http.emoji_delete(guild.id,emoji.id,reason=reason)
-
+        await self.http.emoji_delete(guild.id, emoji.id, reason=reason)
+    
     async def emoji_edit(self, emoji, name=None, roles=_spaceholder, reason=None):
         """
         Edits the given emoji.
@@ -7095,18 +7106,18 @@ class Client(UserBase):
         if guild is None:
             return
         
-        data={}
+        data = {}
         
         # name is required
         if (name is None):
-            data['name']=emoji.name
+            data['name'] = emoji.name
         else:
-            name=''.join(_VALID_NAME_CHARS.findall(name))
-            name_ln=len(name)
-            if name_ln<2 or name_ln>32:
+            name = ''.join(_VALID_NAME_CHARS.findall(name))
+            name_ln = len(name)
+            if name_ln < 2 or name_ln > 32:
                 raise ValueError(f'The length of `name` can be between 2-32, got {name!r}.')
             
-            data['name']=name
+            data['name'] = name
         
         # roles are not required
         if (roles is not _spaceholder):
@@ -7115,7 +7126,7 @@ class Client(UserBase):
             
             data['roles'] = roles
         
-        await self.http.emoji_edit(guild.id,emoji.id,data,reason)
+        await self.http.emoji_edit(guild.id, emoji.id, data, reason)
         
     # Invite management
         
@@ -7143,8 +7154,8 @@ class Client(UserBase):
         if vanity_code is None:
             return None
         
-        data = await self.http.invite_get(vanity_code,{})
-        return Invite._create_vanity(guild,data)
+        data = await self.http.invite_get(vanity_code, {})
+        return Invite._create_vanity(guild, data)
     
     async def vanity_edit(self, guild, code, reason=None):
         """
@@ -7165,7 +7176,7 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        await self.http.vanity_edit(guild.id,{'code':code},reason)
+        await self.http.vanity_edit(guild.id, {'code': code}, reason)
     
     async def invite_create(self, channel, max_age=0, max_uses=0, unique=True, temporary=False):
         """
@@ -7206,7 +7217,7 @@ class Client(UserBase):
             'unique'    : unique,
                 }
         
-        data = await self.http.invite_create(channel.id,data)
+        data = await self.http.invite_create(channel.id, data)
         return Invite(data, False)
 
     # 'target_user_id' :
@@ -7267,12 +7278,12 @@ class Client(UserBase):
             raise ValueError('The user must stream at a voice channel of the guild!')
         
         data = {
-            'max_age'           : max_age,
-            'max_uses'          : max_uses,
-            'temporary'         : temporary,
-            'unique'            : unique,
-            'target_user_id'    : user_id,
-            'target_user_type'  : 1,
+            'max_age'          : max_age,
+            'max_uses'         : max_uses,
+            'temporary'        : temporary,
+            'unique'           : unique,
+            'target_user_id'   : user_id,
+            'target_user_type' : 1,
                 }
         
         data = await self.http.invite_create(voice_state.channel.id, data)
@@ -7331,7 +7342,7 @@ class Client(UserBase):
             if channel is not None:
                 break
             
-            for channel_type in (0,2):
+            for channel_type in (0, 2):
                 for channel in guild.channels:
                     if channel.type == 4:
                         for channel in channel.channels:
@@ -7350,7 +7361,7 @@ class Client(UserBase):
             return None
         
         try:
-            return (await self.invite_create(channel,*args,**kwargs))
+            return (await self.invite_create(channel, *args, **kwargs))
         except DiscordException as err:
             if err.code in (
                     ERROR_CODES.unknown_channel, # the channel was deleted meanwhile
@@ -7380,7 +7391,7 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        data = await self.http.invite_get(invite_code, {'with_counts':with_count})
+        data = await self.http.invite_get(invite_code, {'with_counts': with_count})
         return Invite(data, False)
     
     async def invite_update(self, invite, with_count=True):
@@ -7470,7 +7481,7 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        await self.http.invite_delete(invite.code,reason)
+        await self.http.invite_delete(invite.code, reason)
 
     async def invite_delete_by_code(self, invite_code, reason=None):
         """
@@ -7494,7 +7505,7 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        data = await self.http.invite_delete(invite_code,reason)
+        data = await self.http.invite_delete(invite_code, reason)
         return Invite(data, False)
     
     # Role management
@@ -7538,30 +7549,30 @@ class Client(UserBase):
             return
         
         if (position is not None):
-            await self.role_move(role,position,reason)
+            await self.role_move(role, position, reason)
         
         data={}
         
         if (name is not None):
-            name_ln=len(name)
-            if name_ln<2 or name_ln>32:
+            name_ln = len(name)
+            if name_ln < 2 or name_ln > 32:
                 raise ValueError(f'The name of the role can be between 2-32, got {name!r}.')
-            data['name']=name
+            data['name'] = name
         
         if (color is not None):
-            data['color']=color
+            data['color'] = color
         
         if (separated is not None):
-            data['hoist']=separated
+            data['hoist'] = separated
         
         if (mentionable is not None):
-            data['mentionable']=mentionable
+            data['mentionable'] = mentionable
         
         if (permissions is not None):
-            data['permissions']=permissions
+            data['permissions'] = permissions
         
         if data:
-            await self.http.role_edit(guild.id,role.id,data,reason)
+            await self.http.role_edit(guild.id, role.id, data, reason)
     
     async def role_delete(self, role, reason=None):
         """
@@ -7584,7 +7595,7 @@ class Client(UserBase):
         if guild is None:
             return
         
-        await self.http.role_delete(guild.id,role.id,reason)
+        await self.http.role_delete(guild.id, role.id, reason)
     
     async def role_create(self, guild, name=None, permissions=None, color=None, separated=None, mentionable=None,
             reason=None):
@@ -7616,27 +7627,27 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        data={}
+        data = {}
         if (name is not None):
-            name_ln=len(name)
-            if name_ln<2 or name_ln>32:
+            name_ln = len(name)
+            if name_ln < 2 or name_ln > 32:
                 raise ValueError(f'Role\'s name\'s length can be between 2-32, got {name!r}.')
-            data['name']=name
+            data['name'] = name
         
         if (permissions is not None):
-            data['permissions']=permissions
+            data['permissions'] = permissions
         
         if (color is not None):
-            data['color']=color
+            data['color'] = color
         
         if (separated is not None):
-            data['hoist']=separated
+            data['hoist'] = separated
         
         if (mentionable is not None):
-            data['mentionable']=mentionable
+            data['mentionable'] = mentionable
         
-        data = await self.http.role_create(guild.id,data,reason)
-        return Role(data,guild)
+        data = await self.http.role_create(guild.id, data, reason)
+        return Role(data, guild)
     
     async def role_move(self, role, position, reason=None):
         """
@@ -7660,29 +7671,29 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        guild=role.guild
+        guild = role.guild
         if guild is None:
             # The role is partial, we cannot move it, because there is nowhere to move it >.>
             return
         
         # Is there nothing to move?
-        if role.position==position:
+        if role.position == position:
             return
         
         # Default role cannot be moved to position not 0
-        if role.position==0:
-            if position!=0:
+        if role.position == 0:
+            if position != 0:
                 raise ValueError(f'Default role cannot be moved: `{role!r}`.')
         # non default role cannot be moved to position 0
         else:
-            if position==0:
+            if position == 0:
                 raise ValueError(f'Role cannot be moved to position `0`.')
         
-        data = guild.roles.change_on_switch(role, position, key=lambda role, pos:{'id':role.id,'position':pos})
+        data = change_on_switch(guild.role_list, role, position, key=lambda role, pos:{'id': role.id,'position': pos})
         if not data:
             return
         
-        await self.http.role_move(guild.id,data,reason)
+        await self.http.role_move(guild.id, data, reason)
     
     async def role_reorder(self, roles, reason=None):
         """
@@ -7716,16 +7727,18 @@ class Client(UserBase):
             return
         
         # Lets check `roles` structure
-        roles_valid=[]
+        roles_valid = []
         
         # Is `roles` passed as dictlike?
-        if hasattr(type(roles),'items'):
+        if hasattr(type(roles), 'items'):
             for item in roles.items():
                 if type(item) is not tuple:
-                    raise TypeError(f'`roles` passed as dictlike, but when iterating it\'s `.items` returned not a `tuple`, got `{item!r}`')
+                    raise TypeError(f'`roles` passed as dictlike, but when iterating it\'s `.items` returned not a '
+                        f'`tuple`, got `{item!r}`')
                 
                 if len(item)!=2:
-                    raise TypeError(f'`roles` passed as dictlike, but when iterating it\'s `.items` returned a `tuple`, but not with length `2`, got `{item!r}`')
+                    raise TypeError(f'`roles` passed as dictlike, but when iterating it\'s `.items` returned a '
+                        f'`tuple`, but not with length `2`, got `{item!r}`')
                 
                 if (type(item[0]) is not Role) or (type(item[1]) is not int):
                     raise TypeError(f'Items should be `{Role.__name__}`, `int` pairs, but got `{item!r}`')
@@ -7733,13 +7746,15 @@ class Client(UserBase):
                 roles_valid.append(item)
         
         # Is `roles` passed as other iterable
-        elif hasattr(type(roles),'__iter__'):
+        elif hasattr(type(roles), '__iter__'):
             for item in roles:
                 if type(item) is not tuple:
-                    raise TypeError(f'`roles` passed as other iterable, but when iterating returned not a `tuple`, got `{item!r}`')
+                    raise TypeError(f'`roles` passed as other iterable, but when iterating returned not a `tuple`, got '
+                        f'`{item!r}`')
                 
-                if len(item)!=2:
-                    raise TypeError(f'`roles` passed as other iterable, but when iterating returned a `tuple`, but not with length `2`, got `{item!r}`')
+                if len(item) != 2:
+                    raise TypeError(f'`roles` passed as other iterable, but when iterating returned a `tuple`, but not '
+                        f'with length `2`, got `{item!r}`')
                 
                 if (type(item[0]) is not Role) or (type(item[1]) is not int):
                     raise TypeError(f'Items should be `{Role.__name__}`, `int` pairs, but got `{item!r}`')
@@ -7753,139 +7768,139 @@ class Client(UserBase):
                 f'iterable with (`{Role.__name__}, `int`) elements, but got `{roles!r}`')
         
         # Check default and moving to default position
-        index=0
-        limit=len(roles_valid)
+        index = 0
+        limit = len(roles_valid)
         while True:
-            if index==limit:
+            if index == limit:
                 break
             
             role, position = roles_valid[index]
             # Default role cannot be moved
-            if role.position==0:
-                if position!=0:
+            if role.position == 0:
+                if position != 0:
                     raise ValueError(f'Default role cannot be moved: `{role!r}`.')
                 
                 # default and moving to default, lets delete it
                 del roles_valid[index]
-                limit = limit-1
+                limit -=1
                 continue
                 
             else:
                 # Role cannot be moved to default position
-                if position==0:
+                if position == 0:
                     raise ValueError(f'Role cannot be moved to position `0`.')
             
-            index = index+1
+            index +=1
             continue
         
         if not limit:
             return
         
         # Check dupe roles
-        roles=set()
-        ln=0
+        roles = set()
+        ln = 0
         
         for role, position in roles_valid:
             roles.add(role)
-            if len(roles)==ln:
+            if len(roles) == ln:
                 raise ValueError(f'{Role.__name__} `{role!r}` is duped.')
             
-            ln=ln+1
+            ln +=1
             continue
         
         # Now that we have the roles, lets order them
         roles_valid.sort(key = lambda item : item[1])
         
         # We have all the roles sorted, but they can have dupe positions too
-        index=0
-        limit=len(roles_valid)
-        last_position=0
+        index = 0
+        limit = len(roles_valid)
+        last_position = 0
         while True:
             role, position = roles_valid[index]
             
-            if last_position!=position:
-                last_position=position
+            if last_position != position:
+                last_position = position
                 
-                index=index+1
-                if index==limit:
+                index +=1
+                if index == limit:
                     break
                 
                 continue
             
             # Oh no, we need to reorder
             # First role cannot get here, becuase it cannot have position 0.
-            roles=[roles_valid[index-1][0],role]
+            roles = [roles_valid[index-1][0], role]
             
-            sub_index=index+1
+            sub_index = index+1
             
             while True:
-                if sub_index==limit:
+                if sub_index == limit:
                     break
                 
                 role, position = roles_valid[sub_index]
-                if position!=last_position:
+                if position != last_position:
                     break
                 
                 roles.append(role)
-                sub_index=sub_index+1
+                sub_index +=1
                 continue
             
             # We have all the roles with the same target position.
             # Now we order them by their actual position.
             roles.sort()
             
-            index=index-1
-            sub_index=0
-            sub_limit=len(roles)
+            index -=1
+            sub_index = 0
+            sub_limit = len(roles)
             while True:
-                real_index=sub_index+index
-                role=roles[sub_index]
-                real_position=last_position+sub_index
-                roles_valid[real_index]=(role,real_position)
+                real_index = sub_index+index
+                role = roles[sub_index]
+                real_position = last_position+sub_index
+                roles_valid[real_index] = (role, real_position)
                 
-                sub_index=sub_index+1
-                if sub_index==sub_limit:
+                sub_index +=1
+                if sub_index == sub_limit:
                     break
                 
                 continue
             
-            added_position=sub_limit-1
+            added_position = sub_limit-1
             
-            real_index=sub_index+index
+            real_index = sub_index+index
             while True:
-                if real_index==limit:
+                if real_index == limit:
                     break
                 
                 role, position = roles_valid[real_index]
-                real_position=position+added_position
-                roles_valid[real_index]=(role,real_position)
+                real_position = position+added_position
+                roles_valid[real_index] = (role, real_position)
                 
-                real_index=real_index+1
+                real_index +=1
                 continue
             
             
-            index=index+sub_limit
-            last_position=last_position+added_position
+            index += sub_limit
+            last_position += added_position
             
-            if index==limit:
+            if index == limit:
                 break
             
             continue
         
         # We have all the roles in order. Filter out partial roles.
-        index=0
-        push=0
+        index = 0
+        push = 0
         while True:
             role, position = roles_valid[index]
             
             if role.guild is None:
-                push=push+1
+                push +=1
                 del roles_valid[index]
-                limit=limit-1
+                limit -=1
             
             else:
                 if push:
-                    roles_valid[index]=(role,position-push)
+                    roles_valid[index] = (role, position-push)
                 
                 index=index+1
             
@@ -7895,7 +7910,7 @@ class Client(UserBase):
             continue
         
         # Did we get down to 0 role?
-        if limit==0:
+        if limit == 0:
             return
         
         # Check role guild
@@ -7912,44 +7927,45 @@ class Client(UserBase):
             if guild is guild_:
                 continue
             
-            raise ValueError(f'There were roles passed at least from two different guilds: `{guild!r}` and `{guild_!r}`.')
+            raise ValueError(f'There were roles passed at least from two different guilds: `{guild!r}` and '
+                f'`{guild_!r}`.')
         
         # Lets cut out every other role from the guild's
-        roles_leftover=set(guild.all_role.values())
+        roles_leftover = set(guild.roles.values())
         for item in roles_valid:
-            role=item[0]
+            role = item[0]
             roles_leftover.remove(role)
         
-        roles_leftover=sorted(roles_leftover)
+        roles_leftover = sorted(roles_leftover)
     
-        target_order=[]
+        target_order = []
         
-        index_valid=0
-        index_leftover=0
-        limit_valid=len(roles_valid)
-        limit_leftover=len(roles_leftover)
-        position_target=0
+        index_valid = 0
+        index_leftover = 0
+        limit_valid = len(roles_valid)
+        limit_leftover = len(roles_leftover)
+        position_target = 0
         
         while True:
-            if index_valid==limit_valid:
+            if index_valid == limit_valid:
                 while True:
-                    if index_leftover==limit_leftover:
+                    if index_leftover == limit_leftover:
                         break
                     
                     role = roles_leftover[index_leftover]
-                    index_leftover = index_leftover+1
+                    index_leftover +=1
                     target_order.append(role)
                     continue
                 
                 break
             
-            if index_leftover==limit_leftover:
+            if index_leftover == limit_leftover:
                 while True:
-                    if index_valid==limit_valid:
+                    if index_valid == limit_valid:
                         break
                     
                     role = roles_valid[index_valid][0]
-                    index_valid = index_valid+1
+                    index_valid +=1
                     target_order.append(role)
                     continue
                 
@@ -7957,9 +7973,9 @@ class Client(UserBase):
                 break
             
             role, position = roles_valid[index_valid]
-            if position==position_target:
-                position_target = position_target+1
-                index_valid = index_valid+1
+            if position == position_target:
+                position_target +=1
+                index_valid +=1
                 target_order.append(role)
                 continue
             
@@ -7972,18 +7988,18 @@ class Client(UserBase):
         data = []
         
         for index, role in enumerate(target_order):
-            position=role.position
-            if index==position:
+            position = role.position
+            if index == position:
                 continue
             
-            data.append({'id':role.id,'position':index})
+            data.append({'id': role.id, 'position': index})
             continue
         
         # Nothing to move
         if not data:
             return
         
-        await self.http.role_move(guild.id,data,reason)
+        await self.http.role_move(guild.id, data, reason)
     
     # Relationship related
     #hooman only
@@ -8022,11 +8038,11 @@ class Client(UserBase):
             No internet connection.
         DiscordException
         """
-        data={}
+        data = {}
         if (relationship_type is not None):
-            data['type']=relationship_type.value
-        await self.http.relationship_create(user.id,data)
-
+            data['type'] = relationship_type.value
+        await self.http.relationship_create(user.id, data)
+    
     #hooman only
     async def relationship_friend_request(self, user):
         """
@@ -8096,15 +8112,13 @@ class Client(UserBase):
         self._gateway_requesting = True
         
         try:
-            http = self.http
-            if self.is_bot:
-                func = http.client_gateway_bot
-            else:
-                func = http.client_gateway_hooman
-            
             while True:
+                if self.is_bot:
+                    coro = self.http.client_gateway_bot()
+                else:
+                    coro = self.http.client_gateway_hooman()
                 try:
-                    data = await func()
+                    data = await coro
                 except DiscordException as err:
                     status = err.status
                     if status == 401:
@@ -8272,7 +8286,7 @@ class Client(UserBase):
         if thread is KOKORO:
             return task
         
-        if isinstance(thread,EventThread):
+        if isinstance(thread, EventThread):
             # Asyncwrap wakes up KOKORO
             return task.asyncwrap(thread)
         
@@ -8293,13 +8307,13 @@ class Client(UserBase):
                 `TaskAsyncWrapper`.
             - If the method was called from any other thread, returns `None` when disconnecting finished.
         """
-        task = Task(self.disconnect(),KOKORO)
+        task = Task(self.disconnect(), KOKORO)
         
         thread = current_thread()
         if thread is KOKORO:
             return task
         
-        if isinstance(thread,EventThread):
+        if isinstance(thread, EventThread):
             # Asyncwrap wakes up KOKORO
             return task.asyncwrap(thread)
         
@@ -8329,7 +8343,7 @@ class Client(UserBase):
         try:
             data = await self.client_login_static()
         except BaseException as err:
-            if isinstance(err, ConnectionError) and err.args[0]=='Invalid adress':
+            if isinstance(err, ConnectionError) and err.args[0] == 'Invalid adress':
                 after=(
                     'Connection failed, could not connect to Discord.\n Please check your internet connection / has '
                     'Python rights to use it?\n'
@@ -8343,14 +8357,14 @@ class Client(UserBase):
                 '.connect\n',
                     ]
             
-            await KOKORO.render_exc_async(err,before,after)
+            await KOKORO.render_exc_async(err, before, after)
             return False
         
         if type(data) is not dict:
             sys.stderr.write(''.join([
                 'Connection failed, could not connect to Discord.\n'
                 'Received invalid data:\n',
-                repr(data),'\n']))
+                repr(data), '\n']))
             return False
         
         self._init_on_ready(data)
@@ -8366,7 +8380,7 @@ class Client(UserBase):
         if self.running:
             raise RuntimeError(f'{self!r} is already running!')
         
-        self.running=True
+        self.running = True
         PARSER_DEFAULTS.register(self)
         Task(self._connect(), KOKORO)
         return True
@@ -8450,8 +8464,8 @@ class Client(UserBase):
                     repr(self),
                     '._connect\n',
                         ],
-                    'If you can reproduce this bug, Please send me a message or open an issue whith your code, and with '
-                    'every detail how to reproduce it.\n'
+                    'If you can reproduce this bug, Please send me a message or open an issue whith your code, and '
+                    'with every detail how to reproduce it.\n'
                     'Thanks!\n')
         
         finally:
@@ -8464,7 +8478,7 @@ class Client(UserBase):
                 if not self.guild_profiles:
                     return
                 
-                to_remove=[]
+                to_remove = []
                 for guild in self.guild_profiles:
                     guild._delete(self)
                     if guild.clients:
@@ -8476,8 +8490,8 @@ class Client(UserBase):
                         del self.guild_profiles[guild]
                 
                 #needs to delete the references for cleanup
-                guild=None
-                to_remove=None
+                guild = None
+                to_remove = None
     
     async def join_voice_channel(self, channel):
         """
@@ -8510,11 +8524,11 @@ class Client(UserBase):
         try:
             voice_client = self.voice_clients[guild.id]
         except KeyError:
-            voice_client = await VoiceClient(self,channel)
+            voice_client = await VoiceClient(self, channel)
         else:
             if voice_client.channel is not channel:
-                gateway=self._gateway_for(guild)
-                await gateway._change_voice_state(guild.id,channel.id)
+                gateway = self._gateway_for(guild)
+                await gateway._change_voice_state(guild.id, channel.id)
         
         return voice_client
 
@@ -8523,7 +8537,7 @@ class Client(UserBase):
         Delays the client's "ready" till it receives all of it guild's data. If caching is allowed (so by default),
         then it waits additional time till it requests all the members of it's guilds.
         """
-        ready_state=self.ready_state
+        ready_state = self.ready_state
         try:
             if self.is_bot:
                 await ready_state
@@ -8531,12 +8545,12 @@ class Client(UserBase):
             if ready_state.guilds and CACHE_USER:
                 await self._request_members2(ready_state.guilds)
                 
-            self.ready_state=None
-                
+            self.ready_state = None
+        
         except CancelledError:
             pass
         else:
-            Task(_with_error(self,self.events.ready(self)), KOKORO)
+            Task(_with_error(self, self.events.ready(self)), KOKORO)
     
     async def _request_members2(self, guilds):
         """
@@ -8561,9 +8575,9 @@ class Client(UserBase):
         
         shard_count = self.shard_count
         if shard_count:
-            guilds_by_shards=[[] for x in range(shard_count)]
+            guilds_by_shards = [[] for x in range(shard_count)]
             for guild in guilds:
-                shard_index=(guild.id>>22)%shard_count
+                shard_index = (guild.id>>22)%shard_count
                 guilds_by_shards[shard_index].append(guild)
             
             tasks = []
@@ -8602,8 +8616,8 @@ class Client(UserBase):
                 }
         
         data = {
-            'op'    : DiscordGateway.REQUEST_MEMBERS,
-            'd'     : sub_data
+            'op' : DiscordGateway.REQUEST_MEMBERS,
+            'd'  : sub_data
                 }
         
         for guild in guilds:
@@ -8629,7 +8643,7 @@ class Client(UserBase):
         event_handler.waiters[nonce] = waiter = MassUserChunker(1)
         
         data = {
-            'op'            : DiscordGateway.REQUEST_MEMBERS,
+            'op' : DiscordGateway.REQUEST_MEMBERS,
             'd' : {
                 'guild_id'  : guild.id,
                 'query'     : '',
@@ -8639,7 +8653,7 @@ class Client(UserBase):
                     },
                 }
         
-        gateway=self._gateway_for(guild)
+        gateway = self._gateway_for(guild)
         await gateway.send_as_json(data)
         
         try:
@@ -8687,7 +8701,7 @@ class Client(UserBase):
         event_handler.waiters[nonce] = waiter = SingleUserChunker()
         
         data = {
-            'op'            : DiscordGateway.REQUEST_MEMBERS,
+            'op' : DiscordGateway.REQUEST_MEMBERS,
             'd' : {
                 'guild_id'  : guild.id,
                 'query'     : name,
@@ -8697,7 +8711,7 @@ class Client(UserBase):
                     },
                 }
         
-        gateway=self._gateway_for(guild)
+        gateway = self._gateway_for(guild)
         await gateway.send_as_json(data)
         
         try:
@@ -8718,8 +8732,8 @@ class Client(UserBase):
         if not self.running:
             return
         
-        self.running=False
-        shard_count=self.shard_count
+        self.running = False
+        shard_count = self.shard_count
         if shard_count:
             for gateway in self.gateway.gateways:
                 gateway.kokoro.cancel()
@@ -8731,7 +8745,7 @@ class Client(UserBase):
                 await self.http.client_logout()
             
             for gateway in self.gateway.gateways:
-                websocket=gateway.websocket
+                websocket = gateway.websocket
                 if (websocket is not None) and websocket.open:
                     await gateway.close()
         else:
@@ -8743,7 +8757,7 @@ class Client(UserBase):
             if (not self.is_bot):
                 await self.http.client_logout()
             
-            websocket=self.gateway.websocket
+            websocket = self.gateway.websocket
             if (websocket is not None) and websocket.open:
                 await self.gateway.close()
     
@@ -8765,7 +8779,7 @@ class Client(UserBase):
         if guild is None:
             return
         
-        return self.voice_clients.get(guild.id,None)
+        return self.voice_clients.get(guild.id)
     
     def get_guild(self, name, default=None):
         """
@@ -8783,9 +8797,9 @@ class Client(UserBase):
         -------
         guild : ``Guild`` or `default`
         """
-        if 1<len(name)<101:
+        if 1 < len(name) < 101:
             for guild in self.guild_profiles.keys():
-                if guild.name==name:
+                if guild.name == name:
                     return guild
         
         return default
@@ -8804,7 +8818,7 @@ class Client(UserBase):
         -------
         owner : ``User``, ``Client``
         """
-        application_owner=self.application.owner
+        application_owner = self.application.owner
         if type(application_owner) is Team:
             return application_owner.owner
         return application_owner
@@ -8822,7 +8836,7 @@ class Client(UserBase):
         -------
         is_owner : `bool`
         """
-        application_owner=self.application.owner
+        application_owner = self.application.owner
         if type(application_owner) is Team:
             if user in application_owner.accepted:
                 return True
@@ -8862,7 +8876,7 @@ class Client(UserBase):
                 raise TypeError(f'User {index} was not passed neither as `int` or as `{UserBase.__name__}` instance, '
                     f'got {user.__class__.__name__}.')
             
-            if index==limit:
+            if index == limit:
                 break
         
         additional_owner_ids = self._additional_owner_ids
@@ -8901,7 +8915,7 @@ class Client(UserBase):
         while True:
             user = users[index]
             index +=1
-            if not isinstance(user,(int,UserBase)):
+            if not isinstance(user, (int, UserBase)):
                 raise TypeError(f'User {index} was not passed neither as `int` or as `{UserBase.__name__}` instance, '
                     f'got {user.__class__.__name__}.')
             
@@ -8973,7 +8987,7 @@ class Client(UserBase):
         +-----------------------+-------------------+
         | discriminator         | `int`             |
         +-----------------------+-------------------+
-        | email                 | `str`             |
+        | email                 | `None` or `str`   |
         +-----------------------+-------------------+
         | flags                 | ``UserFlag``      |
         +-----------------------+-------------------+
@@ -8990,56 +9004,56 @@ class Client(UserBase):
         """
         old_attributes = {}
             
-        name=data['username']
-        if self.name!=name:
-            old_attributes['name']=self.name
-            self.name=name
+        name = data['username']
+        if self.name != name:
+            old_attributes['name'] = self.name
+            self.name = name
                 
-        discriminator=int(data['discriminator'])
-        if self.discriminator!=discriminator:
-            old_attributes['discriminator']=self.discriminator
-            self.discriminator=discriminator
+        discriminator = int(data['discriminator'])
+        if self.discriminator != discriminator:
+            old_attributes['discriminator'] = self.discriminator
+            self.discriminator = discriminator
 
         self._update_avatar(data, old_attributes)
         
-        email=data.get('email','')
-        if self.email!=email:
-            old_attributes['email']=self.email
-            self.email=email
+        email = data.get('email')
+        if self.email != email:
+            old_attributes['email'] = self.email
+            self.email = email
         
-        premium_type=PremiumType.INSTANCES[data.get('premium_type',0)]
+        premium_type = PremiumType.INSTANCES[data.get('premium_type', 0)]
         if self.premium_type is not premium_type:
-            old_attributes['premium_type']=premium_type
-            self.premium_type=premium_type
+            old_attributes['premium_type'] = premium_type
+            self.premium_type = premium_type
         
-        system=data.get('system',False)
-        if self.system!=system:
-            old_attributes['system']=self.system
-            self.system=system
+        system = data.get('system', False)
+        if self.system != system:
+            old_attributes['system'] = self.system
+            self.system = system
         
-        verified=data.get('verified',False)
-        if self.verified!=verified:
-            old_attributes['verified']=self.verified
-            self.verified=verified
+        verified = data.get('verified', False)
+        if self.verified != verified:
+            old_attributes['verified'] = self.verified
+            self.verified = verified
         
-        mfa=data.get('mfa_enabled',False)
-        if self.mfa!=mfa:
-            old_attributes['mfa']=self.mfa
-            self.mfa=mfa
-
-        flags=UserFlag(data.get('flags',0))
-        if self.flags!=flags:
-            old_attributes['flags']=self.flags
-            self.flags=flags
-
-        locale=parse_locale(data)
-        if self.locale!=locale:
-            old_attributes['locale']=self.locale
-            self.locale=locale
-
+        mfa = data.get('mfa_enabled', False)
+        if self.mfa != mfa:
+            old_attributes['mfa'] = self.mfa
+            self.mfa = mfa
+        
+        flags = UserFlag(data.get('flags', 0))
+        if self.flags != flags:
+            old_attributes['flags'] = self.flags
+            self.flags = flags
+        
+        locale = parse_locale(data)
+        if self.locale != locale:
+            old_attributes['locale'] = self.locale
+            self.locale = locale
+        
         return old_attributes
-
-    def _update_no_return(self,data):
+    
+    def _update_no_return(self, data):
         """
         Updates the client by overwriting it's old attributes.
         
@@ -9048,25 +9062,25 @@ class Client(UserBase):
         data : `dict` of (`str`, `Any`) items
             Data received from Discord.
         """
-        self.name=data['username']
+        self.name = data['username']
         
-        self.discriminator=int(data['discriminator'])
+        self.discriminator = int(data['discriminator'])
         
         self._set_avatar(data)
         
-        self.system=data.get('system',False)
+        self.system = data.get('system', False)
         
-        self.verified=data.get('verified',False)
+        self.verified = data.get('verified', False)
         
-        self.email=data.get('email','')
-
-        self.premium_type=PremiumType.INSTANCES[data.get('premium_type',0)]
+        self.email = data.get('email')
         
-        self.mfa=data.get('mfa_enabled',False)
-
-        self.flags=UserFlag(data.get('flags',0))
-
-        self.locale=parse_locale(data)
+        self.premium_type = PremiumType.INSTANCES[data.get('premium_type', 0)]
+        
+        self.mfa = data.get('mfa_enabled', False)
+        
+        self.flags = UserFlag(data.get('flags', 0))
+        
+        self.locale = parse_locale(data)
     
     def _update_profile_only(self, data, guild):
         """
@@ -9098,12 +9112,12 @@ class Client(UserBase):
         +---------------+-----------------------+
         """
         try:
-            profile=self.guild_profiles[guild]
+            profile = self.guild_profiles[guild]
         except KeyError:
-            self.guild_profiles[guild]=GuildProfile(data,guild)
-            guild.users[self.id]=self
+            self.guild_profiles[guild] = GuildProfile(data, guild)
+            guild.users[self.id] = self
             return {}
-        return profile._update(data,guild)
+        return profile._update(data, guild)
     
     def _update_profile_only_no_return(self, data, guild):
         """
@@ -9117,12 +9131,12 @@ class Client(UserBase):
             The respective guild of the guild profile.
         """
         try:
-            profile=self.guild_profiles[guild]
+            profile = self.guild_profiles[guild]
         except KeyError:
-            self.guild_profiles[guild]=GuildProfile(data,guild)
-            guild.users[self.id]=self
+            self.guild_profiles[guild] = GuildProfile(data, guild)
+            guild.users[self.id] = self
         else:
-            profile._update_no_return(data,guild)
+            profile._update_no_return(data, guild)
     
     @property
     def friends(self):
@@ -9133,7 +9147,7 @@ class Client(UserBase):
         -------
         relationships : `list` of ``Relationship`` objects
         """
-        type_=RelationshipType.friend
+        type_ = RelationshipType.friend
         return [rs for rs in self.relationships.values() if rs.type is type_]
 
     @property
@@ -9145,9 +9159,9 @@ class Client(UserBase):
         -------
         relationships : `list` of ``Relationship`` objects
         """
-        type_=RelationshipType.blocked
+        type_ = RelationshipType.blocked
         return [rs for rs in self.relationships.values() if rs.type is type_]
-
+    
     @property
     def received_requests(self):
         """
@@ -9157,9 +9171,9 @@ class Client(UserBase):
         -------
         relationships : `list` of ``Relationship`` objects
         """
-        type_=RelationshipType.pending_incoiming
+        type_ = RelationshipType.pending_incoiming
         return [rs for rs in self.relationships.values() if rs.type is type_]
-
+    
     @property
     def sent_requests(self):
         """
@@ -9169,7 +9183,7 @@ class Client(UserBase):
         -------
         relationships : `list` of ``Relationship`` objects
         """
-        type_=RelationshipType.pending_outgoing
+        type_ = RelationshipType.pending_outgoing
         return [rs for rs in self.relationships.values() if rs.type is type_]
     
     def _gateway_for(self, guild):
@@ -9185,17 +9199,18 @@ class Client(UserBase):
         -------
         gateway : ``DiscordGateway``
         """
-        shard_count=self.shard_count
+        shard_count = self.shard_count
         if shard_count:
             if guild is None:
                 return self.gateway.gateways[0]
             
-            guild_id=guild.id
-            shard_index=(guild_id>>22)%shard_count
+            guild_id = guild.id
+            shard_index = (guild_id>>22)%shard_count
             
             return self.gateway.gateways[shard_index]
         
         return self.gateway
+
 
 class Typer(object):
     """
@@ -9216,7 +9231,7 @@ class Typer(object):
     waiter : `Future` or `None`
         The sleeping future what will wakeup ``.run``.
     """
-    __slots__=('channel', 'client', 'timeout', 'waiter',)
+    __slots__ = ('channel', 'client', 'timeout', 'waiter',)
     def __init__(self, client, channel, timeout=300.):
         """
         Parameters
@@ -9244,7 +9259,7 @@ class Typer(object):
         """
         # js client's typing is 8s
         while self.timeout > 0.:
-            self.timeout -=8.0
+            self.timeout -= 8.0
             self.waiter = waiter = sleep(8., KOKORO)
             await self.client.http.typing(self.channel.id)
             await waiter

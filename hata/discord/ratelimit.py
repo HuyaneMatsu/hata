@@ -22,10 +22,10 @@ Webhook          = NotImplemented
 WebhookRepr      = NotImplemented
 Guild            = NotImplemented
 
-RATELIMIT_RESET         = Discord_hdrs.RATELIMIT_RESET
-RATELIMIT_RESET_AFTER   = Discord_hdrs.RATELIMIT_RESET_AFTER
-RATELIMIT_REMAINING     = Discord_hdrs.RATELIMIT_REMAINING
-RATELIMIT_LIMIT         = Discord_hdrs.RATELIMIT_LIMIT
+RATELIMIT_RESET       = Discord_hdrs.RATELIMIT_RESET
+RATELIMIT_RESET_AFTER = Discord_hdrs.RATELIMIT_RESET_AFTER
+RATELIMIT_REMAINING   = Discord_hdrs.RATELIMIT_REMAINING
+RATELIMIT_LIMIT       = Discord_hdrs.RATELIMIT_LIMIT
 
 #parsing time
 #email.utils.parsedate_to_datetime
@@ -45,7 +45,7 @@ def parsedate_to_datetime(data):
     if tz is None:
         date = datetime(*dtuple[:6])
     else:
-        date = datetime(*dtuple[:6],tzinfo=timezone(timedelta(seconds=tz)))
+        date = datetime(*dtuple[:6], tzinfo=timezone(timedelta(seconds=tz)))
     return date
 
 class global_lock_canceller:
@@ -103,10 +103,10 @@ def ratelimit_global(session, retry_after):
     """
     future = session.global_lock
     if (future is None):
-        future=Future(KOKORO)
+        future = Future(KOKORO)
         future.add_done_callback(global_lock_canceller(session))
-        session.global_lock=future
-        KOKORO.call_later(retry_after,Future.set_result_if_pending,future,None)
+        session.global_lock = future
+        KOKORO.call_later(retry_after, Future.set_result_if_pending, future, None)
     
     return future
 
@@ -116,11 +116,11 @@ MAXIMAL_UNLIMITED_PARARELLITY = -50
 UNLIMITED_SIZE_VALUE = -10000
 NO_SPECIFIC_RATELIMITER = 0
 
-LIMITER_CHANNEL     = 'channel_id'
-LIMITER_GUILD       = 'guild_id'
-LIMITER_WEBHOOK     = 'webhook_id'
-LIMITER_GLOBAL      = 'global'
-LIMITER_UNLIMITED   = 'unlimited'
+LIMITER_CHANNEL   = 'channel_id'
+LIMITER_GUILD     = 'guild_id'
+LIMITER_WEBHOOK   = 'webhook_id'
+LIMITER_GLOBAL    = 'global'
+LIMITER_UNLIMITED = 'unlimited'
 
 class RatelimitGroup(object):
     """
@@ -198,7 +198,7 @@ class RatelimitGroup(object):
         self.limiter = limiter
         self.size = (-1 if optimistic else 0)
         group_id = cls.__auto_next_id
-        cls.__auto_next_id = group_id + (7<<8)
+        cls.__auto_next_id = group_id+(7<<8)
         self.group_id = group_id
         return self
     
@@ -423,7 +423,7 @@ class RatelimitHandler(object):
         limiter_id : `int`
             The `id` of the Discord Entity based on what the handler is limiter.
         """
-        self.parent     = parent
+        self.parent = parent
         
         limiter = parent.limiter
         if limiter is LIMITER_UNLIMITED:
@@ -432,10 +432,10 @@ class RatelimitHandler(object):
             limiter_id = GLOBALLY_LIMITED
         
         self.limiter_id = limiter_id
-        self.drops      = None
-        self.active     = 0
-        self.queue      = None
-        self.wakeupper  = None
+        self.drops = None
+        self.active = 0
+        self.queue = None
+        self.wakeupper = None
     
     def copy(self):
         """
@@ -517,20 +517,20 @@ class RatelimitHandler(object):
     
     def __eq__(self, other):
         """Returns whether the two ratelimit handler has the same `.limiter_id` and `.parent`."""
-        if self.limiter_id!=other.limiter_id:
+        if self.limiter_id != other.limiter_id:
             return False
         
-        if self.parent.group_id!=other.parent.group_id:
+        if self.parent.group_id != other.parent.group_id:
             return False
         
         return True
     
     def __ne__(self, other):
         """Returns whether the two ratelimit handler has different `.limiter_id` or `.parent`."""
-        if self.limiter_id!=other.limiter_id:
+        if self.limiter_id != other.limiter_id:
             return True
         
-        if self.parent.group_id!=other.parent.group_id:
+        if self.parent.group_id != other.parent.group_id:
             return True
         
         return False
@@ -567,7 +567,7 @@ class RatelimitHandler(object):
             queue.append(future)
             await future
             
-            self.active = self.active+1
+            self.active +=1
             return
         
         left -= self.count_drops()
@@ -579,7 +579,7 @@ class RatelimitHandler(object):
         queue.append(future)
         await future
         
-        self.active = self.active+1
+        self.active +=1
     
     def exit(self, headers):
         """
@@ -635,7 +635,7 @@ class RatelimitHandler(object):
                 size = -size
             
             if size > current_size:
-                if current_size==-1:
+                if current_size == -1:
                     current_size = 1
                     # We might have cooldowns from before as well
                     allocates = size-int(headers[RATELIMIT_REMAINING])
@@ -644,21 +644,22 @@ class RatelimitHandler(object):
                 queue = self.queue
                 queue_ln = len(queue)
                 
-                if can_free>queue_ln:
-                    can_free=queue_ln
+                if can_free > queue_ln:
+                    can_free = queue_ln
                 
-                while can_free>0:
+                while can_free > 0:
                     future = queue.popleft()
                     future.set_result(None)
-                    can_free-=1
+                    can_free -=1
                     continue
         
         if optimistic:
             delay = 1.0
         else:
             delay1 = (
-                datetime.fromtimestamp(float(headers[RATELIMIT_RESET]),timezone.utc)-parsedate_to_datetime(headers[DATE])
-                    ).total_seconds()
+                datetime.fromtimestamp(
+                    float(headers[RATELIMIT_RESET]), timezone.utc) - parsedate_to_datetime(headers[DATE])
+                        ).total_seconds()
             delay2 = float(headers[RATELIMIT_RESET_AFTER])
             
             if delay1 < delay2:
@@ -676,15 +677,15 @@ class RatelimitHandler(object):
         
         wakeupper = self.wakeupper
         if wakeupper is None:
-            wakeupper = KOKORO.call_at(drop,type(self).wakeup,self)
+            wakeupper = KOKORO.call_at(drop, type(self).wakeup, self)
             self.wakeupper = wakeupper
             return
         
-        if wakeupper.when<=drop:
+        if wakeupper.when <= drop:
             return
         
         wakeupper.cancel()
-        wakeupper = KOKORO.call_at(drop,type(self).wakeup,self)
+        wakeupper = KOKORO.call_at(drop, type(self).wakeup, self)
         self.wakeupper = wakeupper
     
     def wakeup(self):
@@ -700,7 +701,7 @@ class RatelimitHandler(object):
         else:
             self.drops = drops = drops.next
             if (drops is not None):
-                wakeupper = KOKORO.call_at(drops.drop,type(self).wakeup,self)
+                wakeupper = KOKORO.call_at(drops.drop, type(self).wakeup, self)
             else:
                 wakeupper = None
         
@@ -723,10 +724,10 @@ class RatelimitHandler(object):
         if can_free > queue_ln:
             can_free = queue_ln
         
-        while can_free>0:
+        while can_free > 0:
             future = queue.popleft()
             future.set_result(None)
-            can_free-=1
+            can_free -=1
             continue
     
     def ctx(self):
@@ -897,7 +898,9 @@ class RatelimitProxy(object):
                         limiter_id = limiter.id
                         break
                     
-                    if isinstance(limiter, ChannelGuildBase) or (type(limiter) in (Message, Role, Webhook, WebhookRepr)):
+                    if isinstance(limiter, ChannelGuildBase) or \
+                            type(limiter) in (Message, Role, Webhook, WebhookRepr):
+                        
                         guild = limiter.guild
                         if (guild is not None):
                             limiter_id = limiter.id

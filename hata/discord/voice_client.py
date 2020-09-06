@@ -101,8 +101,8 @@ class VoiceClient(object):
         method, when the client's gateway receives response after connecting. If the client leaves the voice channel,
         then the socket is closed and set back to `None`.
     speaking : `int`
-        Whether the client is showed by Discord as `speaking`, then this attribute should is set as `1`. Can be modified, with the
-        ``.set_speaking``, however it is always adjusted to the voice client's current playing state.
+        Whether the client is showed by Discord as `speaking`, then this attribute should is set as `1`. Can be
+        modified, with the ``.set_speaking``, however it is always adjusted to the voice client's current playing state.
     """
     __slots__ = ('_audio_port', '_audio_source', '_audio_sources', '_audio_streams', '_encoder', '_endpoint',
         '_endpoint_ip', '_handshake_complete', '_ip', '_port', '_pref_volume', '_secret_box', '_sequence',
@@ -154,33 +154,33 @@ class VoiceClient(object):
         
         self = object.__new__(cls)
         
-        self.guild          = guild
-        self.channel        = channel
-        self.gateway        = DiscordGatewayVoice(self)
-        self.socket         = None
-        self.client         = client
-        self.connected      = Event() #this will be used at the AudioPlayer thread
-        self.queue          = []
-        self.player         = None
-        self.call_after     = cls._play_next
-        self.speaking       = 0
-        self.lock           = Lock(KOKORO)
-        self.reader         = None
+        self.guild = guild
+        self.channel = channel
+        self.gateway = DiscordGatewayVoice(self)
+        self.socket = None
+        self.client = client
+        self.connected = Event() #this will be used at the AudioPlayer thread
+        self.queue = []
+        self.player = None
+        self.call_after = cls._play_next
+        self.speaking = 0
+        self.lock = Lock(KOKORO)
+        self.reader = None
         
         self._handshake_complete = Future(KOKORO)
-        self._encoder       = OpusEncoder()
-        self._sequence      = 0
-        self._timestamp     = 0
-        self._audio_source  = 0
-        self._video_source  = 0
-        self._pref_volume   = 1.0
+        self._encoder = OpusEncoder()
+        self._sequence = 0
+        self._timestamp = 0
+        self._audio_source = 0
+        self._video_source = 0
+        self._pref_volume = 1.0
         self._set_speaking_task = None
-        self._endpoint      = None
-        self._port          = None
-        self._endpoint_ip   = None
-        self._secret_box    = None
-        self._audio_port    = None
-        self._ip            = None
+        self._endpoint = None
+        self._port = None
+        self._endpoint_ip = None
+        self._secret_box = None
+        self._audio_port = None
+        self._ip = None
         self._audio_sources = {}
         self._audio_streams = None
         
@@ -194,10 +194,10 @@ class VoiceClient(object):
         return self._pref_volume
     
     def _set_volume(self, value):
-        if value<0.:
-            value=0.
-        elif value>2.:
-            value=2.
+        if value < 0.:
+            value = 0.
+        elif value > 2.:
+            value = 2.
         
         self._pref_volume = value
     
@@ -229,8 +229,8 @@ class VoiceClient(object):
     #methods
     async def set_speaking(self, value):
         """
-        A coroutine, what is used when changing the ``.speaking`` state of the voice client. By default when audio is played,
-        the speaking state is changed to `True` and meanwhile not, then to `False`.
+        A coroutine, what is used when changing the ``.speaking`` state of the voice client. By default when audio is
+        played, the speaking state is changed to `True` and meanwhile not, then to `False`.
         
         Parameters
         ----------
@@ -244,18 +244,18 @@ class VoiceClient(object):
         if (task is not None):
             await task
             
-        if self.speaking==value:
+        if self.speaking == value:
             return
 
-        self.speaking=value
+        self.speaking = value
         
-        task = Task(self.gateway._set_speaking(value),KOKORO)
+        task = Task(self.gateway._set_speaking(value), KOKORO)
         self._set_speaking_task = task
         
         try:
             await task
         finally:
-            self._set_speaking_task=None
+            self._set_speaking_task = None
     
     def listen_to(self, user, **kwargs):
         """
@@ -279,7 +279,7 @@ class VoiceClient(object):
         -------
         audio_stream : ``AudioStream``
         """
-        stream =  AudioStream(self, user, **kwargs)
+        stream = AudioStream(self, user, **kwargs)
         self._link_audio_stream(stream)
         return stream
     
@@ -658,14 +658,14 @@ class VoiceClient(object):
         """
         try:
             await self.gateway.start()
-            tries=0
+            tries = 0
             while True:
-                if tries==5:
+                if tries == 5:
                     if (waiter is not None):
                         waiter.set_exception(TimeoutError())
                     return
                 
-                self._secret_box=None
+                self._secret_box = None
                 
                 try:
                     await self._start_handshake()
@@ -677,7 +677,7 @@ class VoiceClient(object):
                     raise
                 
                 try:
-                    task=Task(self.gateway.connect(),KOKORO)
+                    task = Task(self.gateway.connect(), KOKORO)
                     future_or_timeout(task, 30.,)
                     await task
                     
@@ -692,15 +692,15 @@ class VoiceClient(object):
                         
                     self.connected.set()
                 
-                except (OSError, TimeoutError, ConnectionError, ConnectionClosed, WebSocketProtocolError, InvalidHandshake,
-                        ValueError) as err:
+                except (OSError, TimeoutError, ConnectionError, ConnectionClosed, WebSocketProtocolError,
+                        InvalidHandshake, ValueError) as err:
                     
                     if isinstance(err, ConnectionClosed) and (err.code == VOICE_CLIENT_DISCONNECTC_CLOSE_CODE):
                         await self.disconnect(force=False)
                         return
                     
-                    await sleep(1+(tries<<1),KOKORO)
-                    tries+=1
+                    await sleep(1+(tries<<1), KOKORO)
+                    tries +=1
                     await self._terminate_handshake()
                     continue
                 
@@ -712,7 +712,7 @@ class VoiceClient(object):
                     waiter.set_result(self)
                     waiter = None
                 
-                tries=0
+                tries = 0
                 while True:
                     try:
                         task = Task(self.gateway._poll_event(), KOKORO)
@@ -726,7 +726,7 @@ class VoiceClient(object):
                                 return
                         
                         self.connected.clear()
-                        await sleep(5.,KOKORO)
+                        await sleep(5., KOKORO)
                         await self._terminate_handshake()
                         break
                     
@@ -768,7 +768,7 @@ class VoiceClient(object):
             # Set connected so the player can do 1 full loop
             self.connected.set()
             player.resumed.set()
-            await sleep(PLAYER_DELAY,KOKORO)
+            await sleep(PLAYER_DELAY, KOKORO)
         
         reader = self.reader
         if (reader is not None):

@@ -54,7 +54,7 @@ def PartialEmoji(data):
         emoji = object.__new__(Emoji)
         emoji.id = emoji_id
         emoji.animated = data.get('animated', False)
-        EMOJIS[emoji_id]= emoji
+        EMOJIS[emoji_id] = emoji
         emoji.unicode = None
         emoji.guild = None
     
@@ -169,7 +169,7 @@ class Emoji(DiscordEntity, immortal=True):
             roles = None
         else:
             if role_ids:
-                roles = {guild.all_role[int(role_id)] for role_id in role_ids}
+                roles = {guild.roles[int(role_id)] for role_id in role_ids}
             else:
                 roles = None
         
@@ -466,7 +466,7 @@ class Emoji(DiscordEntity, immortal=True):
                 roles = None
             else:
                 if role_ids:
-                    roles = {guild.all_role[int(role_id)] for role_id in role_ids}
+                    roles = {guild.roles[int(role_id)] for role_id in role_ids}
                 else:
                     roles = None
         
@@ -548,7 +548,7 @@ class Emoji(DiscordEntity, immortal=True):
                 roles = None
             else:
                 if role_ids:
-                    roles = {guild.all_role[int(role_id)] for role_id in role_ids}
+                    roles = {guild.roles[int(role_id)] for role_id in role_ids}
                 else:
                     roles = None
         

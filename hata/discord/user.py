@@ -127,7 +127,7 @@ class GuildProfile(object):
         it is set to `None`.
     nick : `None` or `str`
         The user's nick at the guild if it has.
-    roles : `list` of ``Role``
+    roles : `None` or `list` of ``Role``
         The user's roles at the guild.
         
         > Feel free to use `.sort()` on it.
@@ -159,7 +159,6 @@ class GuildProfile(object):
         guild : ``Guild``
             The guild profile's respective guild.
         """
-        self.roles = []
         try:
             joined_at_data = data['joined_at']
         except KeyError:
@@ -169,7 +168,7 @@ class GuildProfile(object):
         
         self.joined_at = joined_at
         
-        self._update_no_return(data,guild)
+        self._update_no_return(data, guild)
     
     def __repr__(self):
         """Returns the represnetation of the guild profile."""
@@ -188,9 +187,9 @@ class GuildProfile(object):
             try:
                 joined_at_data = data['joined_at']
             except KeyError:
-                joined_at=None
+                joined_at = None
             else:
-                joined_at=parse_time(joined_at_data)
+                joined_at = parse_time(joined_at_data)
             
             self.joined_at = joined_at
     
@@ -207,17 +206,25 @@ class GuildProfile(object):
         """
         self.nick = data.get('nick')
         
-        roles = self.roles
-        roles.clear()
+        role_ids = data['roles']
+        if role_ids:
+            guild_roles = guild.roles
+            roles = []
+            for role_id in role_ids:
+                role_id = int(role_id)
+                try:
+                    role = guild_roles[role_id]
+                except KeyError:
+                    continue
+                
+                roles.append(role)
+            
+            if (not roles):
+                roles = None
+        else:
+            roles = None
         
-        guild_roles = guild.all_role
-        for role_id in data['roles']:
-            role_id = int(role_id)
-            try:
-                role = guild_roles[role_id]
-            except KeyError:
-                continue
-            roles.append(role)
+        self.roles = roles
         
         boosts_since = data.get('premium_since')
         if (boosts_since is not None):
@@ -243,15 +250,15 @@ class GuildProfile(object):
         
         Returned Data Structure
         -----------------------
-        +-------------------+-----------------------+
-        | Keys              | Values                |
-        +===================+=======================+
-        | boosts_since      | `None` or `datetime`  |
-        +-------------------+-----------------------+
-        | nick              | `None` or `str`       |
-        +-------------------+-----------------------+
-        | roles             | `list` of ``Role``    |
-        +-------------------+-----------------------+
+        +-------------------+-------------------------------+
+        | Keys              | Values                        |
+        +===================+===============================+
+        | boosts_since      | `None` or `datetime`          |
+        +-------------------+-------------------------------+
+        | nick              | `None` or `str`               |
+        +-------------------+-------------------------------+
+        | roles             | `None` or `list` of ``Role``  |
+        +-------------------+-------------------------------+
         """
         old_attributes = {}
         nick = data.get('nick')
@@ -259,26 +266,43 @@ class GuildProfile(object):
             old_attributes['nick'] = self.nick
             self.nick = nick
         
-        roles = []
-        
-        guild_roles = guild.all_role
-        for role_id in data['roles']:
-            role_id = int(role_id)
-            try:
-                role = guild_roles[role_id]
-            except KeyError:
-                continue
-            roles.append(role)
+        role_ids = data['roles']
+        if role_ids:
+            guild_roles = guild.roles
+            roles = []
+            for role_id in role_ids:
+                role_id = int(role_id)
+                try:
+                    role = guild_roles[role_id]
+                except KeyError:
+                    continue
+                
+                roles.append(role)
             
-        roles.sort()
+            if (not roles):
+                roles = None
+        else:
+            roles = None
+        
         own_roles = self.roles
-        own_roles.sort()
-        if own_roles != roles:
-            old_attributes['roles'] = self.roles
-            self.roles = roles
+        if roles is None:
+            if (own_roles is not None):
+                old_attributes['roles'] = self.roles
+                self.roles = None
+        else:
+            if own_roles is None:
+                old_attributes['roles'] = None
+                self.roles = roles
+            else:
+                own_roles.sort()
+                roles.sort()
+                
+                if own_roles != roles:
+                    old_attributes['roles'] = self.roles
+                    self.roles = roles
         
         boosts_since = data.get('premium_since')
-        if boosts_since is not None:
+        if (boosts_since is not None):
             boosts_since = parse_time(boosts_since)
         
         if (self.boosts_since is None):
@@ -309,7 +333,7 @@ class GuildProfile(object):
         top_role : ``Role`` or `default`
         """
         roles = self.roles
-        if not roles:
+        if roles is None:
             return default
         
         roles.sort()
@@ -325,7 +349,7 @@ class GuildProfile(object):
         color : ``Color``
         """
         roles = self.roles
-        if roles:
+        if (roles is not None):
             roles.sort()
             for role in reversed(roles):
                 color = role.color
@@ -715,9 +739,11 @@ class UserBase(DiscordEntity, immortal=True):
                 except KeyError:
                     pass
                 else:
-                    for role in profile.roles:
-                        if role in role_mentions:
-                            return True
+                    roles = profile.roles
+                    if (roles is not None):
+                        for role in roles:
+                            if role in role_mentions:
+                                return True
         
         return False
     
@@ -891,7 +917,7 @@ class UserBase(DiscordEntity, immortal=True):
             statuses = self.statuses
             if statuses:
                 status = self.status.value
-                for platform,l_status in statuses.items():
+                for platform, l_status in statuses.items():
                     if l_status == status:
                         return platform
             return ''
@@ -917,6 +943,10 @@ class UserBase(DiscordEntity, immortal=True):
             try:
                 profile = self.guild_profiles[guild]
             except KeyError:
+                return False
+            
+            roles = profile.roles
+            if roles is None:
                 return False
             
             return (role in profile.roles)
@@ -974,14 +1004,18 @@ class UserBase(DiscordEntity, immortal=True):
             except KeyError:
                 return False
             
-            roles = emoji.roles
-            if (roles is None) or (not roles):
+            emoji_roles = emoji.roles
+            if (emoji_roles is None):
                 return True
             
             if guild.owner == self:
                 return True
             
-            if roles.isdisjoint(profile.roles):
+            profile_roles = profile.roles
+            if (profile_roles is None):
+                return False
+            
+            if emoji_roles.isdisjoint(profile_roles):
                 return False
             
             return True
@@ -1011,8 +1045,8 @@ class UserBase(DiscordEntity, immortal=True):
             if webhook_guild is None:
                 return False
             
-            roles = emoji.roles
-            if (roles is None) or (not roles):
+            emoji_roles = emoji.emoji_roles
+            if (emoji_roles is None):
                 return True
             
             return False
@@ -1091,7 +1125,7 @@ class UserBase(DiscordEntity, immortal=True):
                     return False
                 
                 # If we have any roles, we have more role than a webhook with 0
-                if own_profile.roles:
+                if (own_profile.roles is not None):
                     return True
                 
                 return False
@@ -1465,7 +1499,7 @@ class User(UserBase):
         
     elif CACHE_USER:
         @classmethod
-        def _create_and_update(cls,data,guild=None):
+        def _create_and_update(cls, data, guild=None):
             try:
                 user_data = data['user']
                 member_data = data
@@ -2185,7 +2219,7 @@ class VoiceState(object):
         self.mute = data['mute']
         self.self_deaf = data['self_deaf']
         self.self_mute = data['self_mute']
-        self.self_stream = data.get('self_stream',False)
+        self.self_stream = data.get('self_stream', False)
         self.self_video = data['self_video']
     
     def __repr__(self):

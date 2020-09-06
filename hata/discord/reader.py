@@ -49,45 +49,45 @@ class Array_uint_32b(object): #TODO : ask python to implement arrays already
         limit : `int`
             The first byte, what is not inside of the array after `._offset`.
         """
-        self._data  = data
-        self._offset= offset
+        self._data = data
+        self._offset = offset
         self._limit = limit
     
     def __len__(self):
         """Returns the array's length"""
-        limit   = self._limit
-        offset  = self._offset
-        value   = (limit-offset)>>2
+        limit = self._limit
+        offset = self._offset
+        value = (limit-offset)>>2
         
         return value
     
     def __getitem__(self, index):
         """Returns the element of the array at the given index."""
-        index   = index<<2
-        offset  = self._offset+index
-        value   = int.from_bytes(self._data[offset:offset+4],'big')
+        index = index<<2
+        offset = self._offset+index
+        value = int.from_bytes(self._data[offset:offset+4], 'big')
         
         return value
     
     def __iter__(self):
         """Iterated over the array's elements."""
-        data    = self._data
-        offset  = self._offset
-        limit   = self._limit
+        data = self._data
+        offset = self._offset
+        limit = self._limit
         
         while True:
-            if offset==limit:
+            if offset == limit:
                 break
-            value=int.from_bytes(data[offset:offset+4],'big')
+            value = int.from_bytes(data[offset:offset+4], 'big')
             yield value
             
-            offset=offset+4
+            offset = offset+4
 
 class PacketBase(object):
     """
     Base class for packet subclasses.
     """
-    __slots__=()
+    __slots__ = ()
 
 class VoicePacket(PacketBase):
     """
@@ -108,8 +108,8 @@ class VoicePacket(PacketBase):
         data : `bytes`
             Not yet decoded voice data.
         """
-        self.encoded    = data
-        self.decoded    = None
+        self.encoded = data
+        self.decoded = None
     
     def __repr__(self):
         """ Returns the voice packet's representation."""
@@ -131,27 +131,27 @@ class RTPPacket(PacketBase):
     _decrypted : `bytes`
         Descrypted data of the RTP packet.
     """
-    __slots__=('_data', '_offset1', '_offset2', '_decrypted',)
+    __slots__ = ('_data', '_offset1', '_offset2', '_decrypted',)
     
     def __init__(self, data, voice_client):
-        self._data=data
-        offset=12
-        cc=self.cc
+        self._data =data
+        offset = 12
+        cc = self.cc
         if cc:
-            offset=offset+(cc<<2)
+            offset = offset+(cc<<2)
         self._offset1 = offset
         
         nonce = data[:12]+b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-        decrypted = voice_client._secret_box.decrypt(data[offset:],nonce)
+        decrypted = voice_client._secret_box.decrypt(data[offset:], nonce)
         self._decrypted = decrypted
         
         if self.extended:
-            extension=int.from_bytes(decrypted[2:4],'big')
-            offset=(extension<<2)+4
+            extension=int.from_bytes(decrypted[2:4], 'big')
+            offset = (extension<<2)+4
         else:
-            offset=0
+            offset = 0
         
-        self._offset2=offset
+        self._offset2 = offset
     
     @property
     def data(self):
@@ -163,14 +163,14 @@ class RTPPacket(PacketBase):
     
     @property
     def csrcs(self):
-        return Array_uint_32b(self._data,12,self._offset1)
+        return Array_uint_32b(self._data, 12, self._offset1)
     
     @property
     def extension_profile(self):
         if not self.extended:
             return 0
         
-        profile=int.from_bytes(self._decrypted[0:2],'big')
+        profile = int.from_bytes(self._decrypted[0:2], 'big')
         return profile
     
     @property
@@ -178,15 +178,15 @@ class RTPPacket(PacketBase):
         if not self.extended:
             return 0
         
-        length=int.from_bytes(self._decrypted[2:4],'big')
+        length = int.from_bytes(self._decrypted[2:4], 'big')
         return length
     
     @property
     def extension_values(self):
-        limit=self._offset2
-        if limit<=4:
+        limit = self._offset2
+        if limit <= 4:
             return None
-        return Array_uint_32b(self._decrypted,4,limit)
+        return Array_uint_32b(self._decrypted, 4, limit)
     
     @property
     def version(self):
@@ -214,32 +214,33 @@ class RTPPacket(PacketBase):
     
     @property
     def timestamp(self):
-        return int.from_bytes(self._data[4:8],'big')
+        return int.from_bytes(self._data[4:8], 'big')
     
     @property
     def source(self):
-        return int.from_bytes(self._data[8:12],'big')
+        return int.from_bytes(self._data[8:12], 'big')
     
     @property
     def sequence(self):
-        return int.from_bytes(self._data[2:4],'big')
+        return int.from_bytes(self._data[2:4], 'big')
     
     @property
     def header(self):
         return memoryview(self._data)[:12]
 
     def __repr__(self):
-        return f'<{self.__class__.__name__} timestamp={self.timestamp}, source={self.source}, sequence={self.sequence}, size={len(self.data)}>'
+        return (f'<{self.__class__.__name__} timestamp={self.timestamp}, source={self.source}, sequence='
+            f'{self.sequence}, size={len(self.data)}>')
 
 #NOT USED
 
 ###http://www.rfcreader.com/#rfc3550_line855
 ##class RTCPPacket(PacketBase):
-##    __slots__=('_data')
-##    type=0
+##    __slots__ = ('_data')
+##    type = 0
 ##
 ##    def __init__(self,data):
-##        self._data=data
+##        self._data = data
 ##
 ##    @property
 ##    def version(self):
@@ -251,7 +252,7 @@ class RTPPacket(PacketBase):
 ##
 ##    @property
 ##    def length(self):
-##        return int.from_bytes(self._data[2:4],'big')
+##        return int.from_bytes(self._data[2:4], 'big')
 ##
 ##    @property
 ##    def report_count(self):
@@ -259,68 +260,69 @@ class RTPPacket(PacketBase):
 ##
 ##    @property
 ##    def source(self):
-##        return int.from_bytes(self._data[4:8],'big')
+##        return int.from_bytes(self._data[4:8], 'big')
 ##
 ##class _RPReport(self):
-##    __slots__=('_data','_offset')
-##    def __init__(self,data,offset):
-##        self._data  = data
-##        self._offset= offset
+##    __slots__ = ('_data','_offset')
+##    def __init__(self, data, offset):
+##        self._data = data
+##        self._offset = offset
 ##
 ##    @property
 ##    def source(self):
-##        offset=self._offset
-##        return int.from_bytes(self._data[offset:offset+4],'big')
+##        offset = self._offset
+##        return int.from_bytes(self._data[offset:offset+4], 'big')
 ##
 ##    @property
 ##    def loss_percent(self):
-##        offset=self._offset
+##        offset = self._offset
 ##        return self._data[offset+4]
 ##
 ##    @property
 ##    def loss_total(self):
-##        offset=self._offset+5
-##        return int.from_bytes(self._data[offset:offset+3],'big')
+##        offset = self._offset+5
+##        return int.from_bytes(self._data[offset:offset+3], 'big')
 ##
 ##    @property
 ##    def last_sequence(self):
-##        offset=self._offset+8
-##        return int.from_bytes(self._data[offset:offset+4],'big')
+##        offset = self._offset+8
+##        return int.from_bytes(self._data[offset:offset+4], 'big')
 ##
 ##    @property
 ##    def jitter(self):
-##        offset=self._offset+12
-##        return int.from_bytes(self._data[offset:offset+4],'big')
+##        offset = self._offset+12
+##        return int.from_bytes(self._data[offset:offset+4], 'big')
 ##
 ##    @property
 ##    def lsr(self):
-##        offset=self._offset+16
-##        return int.from_bytes(self._data[offset:offset+4],'big')
+##        offset = self._offset+16
+##        return int.from_bytes(self._data[offset:offset+4], 'big')
 ##
 ##    @property
 ##    def dlsr(self):
-##        offset=self._offset+20
-##        return int.from_bytes(self._data[offset:offset+4],'big')
+##        offset = self._offset+20
+##        return int.from_bytes(self._data[offset:offset+4], 'big')
 ##        
 ###http://www.rfcreader.com/#rfc3550_line1614
 ##class SenderReportPacket(RTCPPacket):
 ##    __slots__ = ('_descripted', '_offset1')
-##    type=200
+##    type = 200
 ##    
-##    def __init__(self,data,voice_client):
-##        data_shard=data[:8]
-##        self._data=data_shard
+##    def __init__(self, data, voice_client):
+##        data_shard = data[:8]
+##        self._data = data_shard
 ##        
-##        nonce=data_shard+b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-##        descripted=voice_client._secret_box.decrypt(data[8:],nonce)
-##        self._descripted=descripted
+##        nonce = data_shard+b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+##        descripted = voice_client._secret_box.decrypt(data[8:], nonce)
+##        self._descripted = descripted
 ##        
-##        report_count=data_shard[0]&0b00011111
-##        offset=(report_count*24)+20
-##        self._offset1=offset
+##        report_count = data_shard[0]&0b00011111
+##        offset = (report_count*24)+20
+##        self._offset1 = offset
 ##
 ##    def __repr__(self):
-##        return f'<{self.__class__.__name__} timestamp={self.timestamp}, length={self.length}, reports={self.report_count}>'
+##        return (f'<{self.__class__.__name__} timestamp={self.timestamp}, length={self.length}, reports='
+##            f'{self.report_count}>')
 ##    
 ##    @property
 ##    def descripted(self):
@@ -328,102 +330,103 @@ class RTPPacket(PacketBase):
 ##    
 ##    @property
 ##    def info_ntp_ts_msw(self):
-##        return int.from_bytes(self._descripted[0:4],'big')
+##        return int.from_bytes(self._descripted[0:4], 'big')
 ##
 ##    @property
 ##    def info_ntp_ts_lsw(self):
-##        return int.from_bytes(self._descripted[4:8],'big')
+##        return int.from_bytes(self._descripted[4:8], 'big')
 ##
 ##    @property
 ##    def info_ntp_ts(self):
-##        low = int.from_bytes(self._descripted[4:8],'big')
+##        low = int.from_bytes(self._descripted[4:8], 'big')
 ##        low = low/(1<<low.bit_length())
 ##        
-##        high= int.from_bytes(self._descripted[0:4],'big')
+##        high = int.from_bytes(self._descripted[0:4], 'big')
 ##        
 ##        return high+low
 ##
 ##    @property
 ##    def info_rtp_ts(self):
-##        return int.from_bytes(self._descripted[8:12],'big')
+##        return int.from_bytes(self._descripted[8:12], 'big')
 ##
 ##    @property
 ##    def info_sequence(self):
-##        return int.from_bytes(self._descripted[12:16],'big')
+##        return int.from_bytes(self._descripted[12:16], 'big')
 ##
 ##    @property
 ##    def info_octet(self):
-##        return int.from_bytes(self._descripted[16:20],'big')
+##        return int.from_bytes(self._descripted[16:20], 'big')
 ##
 ##    @property
 ##    def extension(self):
-##        data    = self._descripted
-##        offset  = self._offset1
+##        data = self._descripted
+##        offset = self._offset1
 ##        
 ##        if len(data)>offset:
 ##            return memoryview(descripted)[offset:]
 ##
 ##    def report_get(self,index):
-##        offset  = (index*24)+20
-##        obj     = _RPReport(self._descripted,offset)
+##        offset = (index*24)+20
+##        obj = _RPReport(self._descripted, offset)
 ##        
 ##        return obj
 ##
-##    def report_iter(self,index):
-##        data    = self._descripted
-##        limit   = self._offset1
-##        offset  = 20
+##    def report_iter(self, index):
+##        data = self._descripted
+##        limit = self._offset1
+##        offset = 20
 ##        
 ##        while True:
-##            if offset>=limit:
+##            if offset >= limit:
 ##                break
-##            obj=_RPReport(data,offset)
+##            obj = _RPReport(data, offset)
 ##            yield obj
 ##            
-##            offset=offset+24
+##            offset += 24
 ##
 ###http://www.rfcreader.com/#rfc3550_line1879
 ##class ReceiverReportPacket(RTCPPacket):
-##    __slots__ = ('_descripted','_offset1')
+##    __slots__ = ('_descripted', '_offset1')
 ##    type = 201
 ##    
 ##    def __init__(self,data,voice_client):
-##        data_shard=data[:8]
-##        self._data=data_shard
+##        data_shard = data[:8]
+##        self._data = data_shard
 ##        
-##        nonce=data_shard+b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-##        descripted=voice_client._secret_box.decrypt(data[8:],nonce)
-##        self._descripted=descripted
+##        nonce = data_shard+b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+##        descripted = voice_client._secret_box.decrypt(data[8:], nonce)
+##        self._descripted = descripted
 ##        
-##        report_count=data_shard[0]&0b00011111
-##        offset=report_count*24
-##        self._offset1=offset
+##        report_count = data_shard[0]&0b00011111
+##        offset = report_count*24
+##        self._offset1 = offset
 ##
 ##    def __repr__(self):
-##        return f'<{self.__class__.__name__} timestamp={self.timestamp}, length={self.length}, reports={self.report_count}>'
+##        return (f'<{self.__class__.__name__} timestamp={self.timestamp}, length={self.length}, reports='
+##            f'{self.report_count}>')
 ##
 ##    @property
 ##    def descripted(self):
 ##        return memoryview(self._descripted)
 ##    
 ##    def report_get(self,index):
-##        offset  = index*24
-##        obj     = _RPReport(self._descripted,offset)
+##        offset = index*24
+##        obj = _RPReport(self._descripted,offset)
 ##        
 ##        return obj
 ##
 ##    def report_iter(self,index):
-##        data    = self._descripted
-##        limit   = self._offset1
-##        offset  = 0
+##        data = self._descripted
+##        limit = self._offset1
+##        offset = 0
 ##        
 ##        while True:
-##            if offset>=limit:
+##            if offset >= limit:
 ##                break
-##            obj=_RPReport(data,offset)
+##            obj = _RPReport(data, offset)
 ##            yield obj
 ##            
-##            offset=offset+24
+##            offset += 24
 
 class AudioStream(AudioSource):
     """
@@ -646,7 +649,7 @@ class AudioReader(Thread):
                         repr(self),
                         '\n',
                             ]
-                    render_exc_to_list(err,extend=extracted)
+                    render_exc_to_list(err, extend=extracted)
                     sys.stderr.write(''.join(extracted))
         
         except BaseException as err:

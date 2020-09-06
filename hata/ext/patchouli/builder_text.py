@@ -36,14 +36,22 @@ def sizify(words, max_length):
     line_length = 0
     for word in words:
         word_length = len(word)
-        line_length += 1+word_length
+        line_length += word_length
+        if actual_line:
+            line_length += 1
+        
         if line_length <= max_length:
+            actual_line.append(word)
+            continue
+        
+        if len(actual_line) == 0:
             actual_line.append(word)
             continue
         
         if len(actual_line) == 1:
             line = actual_line.pop(0)
             line_length = 0
+        
         else:
             line = ' '.join(actual_line)
             actual_line.clear()
@@ -53,12 +61,13 @@ def sizify(words, max_length):
         lines.append(line)
         continue
     
-    if len(actual_line) == 1:
-        line = actual_line[0]
-    else:
-        line = ' '.join(actual_line)
-    
-    lines.append(line)
+    if len(actual_line) != 0:
+        if len(actual_line) == 1:
+            line = actual_line[0]
+        else:
+            line = ' '.join(actual_line)
+        
+        lines.append(line)
     
     return lines
 
@@ -281,7 +290,7 @@ class TableLine(object):
         """
         length = 0
         for line in self.lines:
-            length+=len(line)
+            length += len(line)
         
         return length
 
@@ -341,9 +350,16 @@ class TableConverter(object):
                     longest_lengths[index] = length
         
         fillable_chars = optimal_fit - (x+1) - ((x-1)<<1)
+        
         # do we fit?
         if sum(longest_lengths) <= fillable_chars:
             sizes = longest_lengths
+            for index in range(len(lines)):
+                line = lines[index]
+                if line is None:
+                    continue
+                
+                lines[index] = [[' '.join(parts)] for parts in line]
         else:
             # calculate minimal lengths, aka longest word's length for each column
             shortest_lengths = [0 for _ in range(x)]
@@ -383,26 +399,12 @@ class TableConverter(object):
                 average_lengths[index] = length
             
             size_factors = [
-                (((average_lengths[index]<< 1) + longest_lengths[index])*shortest_lengths[index])**.5 \
+                (((average_lengths[index]<<1) + longest_lengths[index])*shortest_lengths[index])**.5 \
                     for index in range(x)]
             
             factorizbale_chars = fillable_chars - sum(shortest_lengths)
             
-            if factorizbale_chars <= 40:
-                if x == 1:
-                    median_shortest = shortest_lengths[0]
-                else:
-                    sorted_shortest = sorted(shortest_lengths)
-                    if x&1:
-                        median_shortest = sorted_shortest[x>>1]
-                    else:
-                        median_shortest = ceil((sorted_shortest[x>>1] + sorted_shortest[(x+1)>>1] / 2.0))
-                
-                factor =  ((-factorizbale_chars) + median_shortest)
-            else:
-                factor =  factorizbale_chars
-            
-            factor = factor / fillable_chars
+            factor = factorizbale_chars / fillable_chars
             
             sizes = [ceil(size_factors[index]*factor + shortest_lengths[index]) for index in range(x)]
             
@@ -649,7 +651,7 @@ class CodeBlockConverter(object):
         length : `int`
         """
         lines = self.lines
-        length = len(self.parentheses) <<1
+        length = len(self.parentheses)<<1
         for line in lines:
             length +=len(line)
         
@@ -1386,7 +1388,7 @@ class SectionConverter(object):
         last_part = None
         for part in self.parts:
             if should_insert_linebreak(last_part, part):
-                length+=1
+                length +=1
             
             length += part.character_count
             last_part = part
@@ -1406,7 +1408,7 @@ class SectionConverter(object):
         last_part = None
         for part in self.parts:
             if should_insert_linebreak(last_part, part):
-                length+=1
+                length +=1
             
             length += part.line_count
             last_part = part
@@ -1488,9 +1490,9 @@ class SectionConverter(object):
             return False
         
         if isinstance(parts[0], SectionTitleConverter):
-            min_line_count = 8
+            min_line_count = 7
         else:
-            min_line_count = 6
+            min_line_count = 5
         
         if self.line_count < min_line_count:
             return False
@@ -1512,7 +1514,7 @@ class SectionConverter(object):
             The best fitting 2 section shard, if there is any optimal case. If there is non, returns `None` instead.
         """
         best_fit = None
-        for break_point in range(1, len(self.parts)-1):
+        for break_point in range(1, len(self.parts)):
             sections = self._do_break(break_point)
             leftover_chars = number_of_chars - sections[0].character_count
             if leftover_chars < 0:
@@ -1535,6 +1537,9 @@ class SectionConverter(object):
             
             best_fit = sections
             continue
+        
+        if best_fit is None:
+            best_fit = self._do_break_middle_chared(0, number_of_chars)
         
         return best_fit
     

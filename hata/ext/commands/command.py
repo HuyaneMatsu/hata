@@ -356,11 +356,11 @@ class Command(object):
             parser_failure_handler = None
             separator = None
         else:
-            description = kwargs.pop('description',None)
-            aliases = kwargs.pop('aliases',None)
-            category = kwargs.pop('category',None)
-            checks_ = kwargs.pop('checks',None)
-            parser_failure_handler = kwargs.pop('parser_failure_handler',None)
+            description = kwargs.pop('description', None)
+            aliases = kwargs.pop('aliases', None)
+            category = kwargs.pop('category', None)
+            checks_ = kwargs.pop('checks', None)
+            parser_failure_handler = kwargs.pop('parser_failure_handler', None)
             separator = kwargs.pop('separator', None)
             
             if kwargs:
@@ -488,9 +488,9 @@ class Command(object):
             aliases = None
         
         if description is None:
-            description = getattr(command,'__doc__',None)
+            description = getattr(command, '__doc__', None)
         
-        if (description is not None) and isinstance(description,str):
+        if (description is not None) and isinstance(description, str):
             description = normalize_description(description)
         
         if category is None:
@@ -637,7 +637,8 @@ class Command(object):
     def _del_parser_failure_handler(self):
         self._parser_failure_handler=None
     
-    parser_failure_handler = property(_get_parser_failure_handler, _set_parser_failure_handler, _del_parser_failure_handler)
+    parser_failure_handler = property(_get_parser_failure_handler, _set_parser_failure_handler,
+        _del_parser_failure_handler)
     del _get_parser_failure_handler, _set_parser_failure_handler, _del_parser_failure_handler
     
     if DOCS_ENABLED:
@@ -1010,10 +1011,10 @@ def normalize_description(text):
     result : `None` or `str`
         The normalized description, or `None` if ended up with an empty string.
     """
-    lines=text.splitlines()
+    lines = text.splitlines()
     
     for index in range(len(lines)):
-        lines[index]=lines[index].rstrip()
+        lines[index] = lines[index].rstrip()
     
     while True:
         if not lines:
@@ -1033,7 +1034,7 @@ def normalize_description(text):
         continue
     
     limit = len(lines)
-    if limit==1:
+    if limit == 1:
         return lines[0].lstrip()
     
     ignore_index = 0
@@ -1044,7 +1045,7 @@ def normalize_description(text):
             break
         
         index=1
-        while index<limit:
+        while index < limit:
             line = lines[index]
             index = index+1
             if not line:
@@ -1264,13 +1265,13 @@ class checks:
                 '(',
                     ]
             
-            slots=self.__slots__
-            limit=len(slots)
+            slots = self.__slots__
+            limit = len(slots)
             if limit:
-                index=0
+                index = 0
                 while True:
-                    name=slots[index]
-                    index=index+1
+                    name = slots[index]
+                    index +=1
                     # case of `_is_async`
                     if name.startswith('_'):
                         continue
@@ -1289,7 +1290,7 @@ class checks:
                     attr = getattr(self,name)
                     result.append(repr(attr))
                     
-                    if index==limit:
+                    if index == limit:
                         break
                     
                     result.append(', ')
@@ -1533,7 +1534,7 @@ class checks:
             passed : `bool`
                 Whether the check passed.
             """
-            user=message.author
+            user = message.author
             for role in self.roles:
                 if user.has_role(role):
                     return True
@@ -1667,7 +1668,7 @@ class checks:
             if guild is None:
                 return False
             
-            if guild.owner==message.author:
+            if guild.owner == message.author:
                 return True
             
             return False
@@ -1703,7 +1704,7 @@ class checks:
                 return False
             
             user = message.author
-            if guild.owner==user:
+            if guild.owner == user:
                 return True
             
             if client.is_owner(user):
@@ -1778,7 +1779,7 @@ class checks:
             passed : `bool`
                 Whether the check passed.
             """
-            if message.channel.permissions_for(message.author)>=self.permissions:
+            if message.channel.permissions_for(message.author) >= self.permissions:
                 return True
             
             return False
@@ -1812,7 +1813,7 @@ class checks:
                 Whether the check passed.
             """
             user = message.author
-            if message.channel.permissions_for(user)>=self.permissions:
+            if message.channel.permissions_for(user) >= self.permissions:
                 return True
             
             if client.is_owner(user):
@@ -1891,7 +1892,7 @@ class checks:
             if guild is None:
                 return False
             
-            if guild.permissions_for(message.author)>=self.permissions:
+            if guild.permissions_for(message.author) >= self.permissions:
                 return True
             
             return False
@@ -1931,7 +1932,7 @@ class checks:
             
             user = message.author
             
-            if guild.permissions_for(user)>=self.permissions:
+            if guild.permissions_for(user) >= self.permissions:
                 return True
             
             if client.is_owner(user):
@@ -2006,7 +2007,7 @@ class checks:
             passed : `bool`
                 Whether the check passed.
             """
-            if message.channel.cached_permissions_for(client)>=self.permissions:
+            if message.channel.cached_permissions_for(client) >= self.permissions:
                 return True
             
             return False
@@ -2082,7 +2083,7 @@ class checks:
             if guild is None:
                 return False
             
-            if guild.cached_permissions_for(client)>=self.permissions:
+            if guild.cached_permissions_for(client) >= self.permissions:
                 return True
             
             return False
@@ -2160,7 +2161,7 @@ class checks:
             if guild is None:
                 return False
             
-            if (guild.id==self.guild_id):
+            if (guild.id == self.guild_id):
                 return True
             
             return False
@@ -2337,7 +2338,7 @@ class checks:
                 if self._is_async:
                     result = await result
             except BaseException as err:
-                Task(client.events.error(client,repr(self),err), KOKORO)
+                Task(client.events.error(client, repr(self), err), KOKORO)
                 return False
             
             if result is None:
@@ -2417,7 +2418,7 @@ class checks:
             passed : `bool`
                 Whether the check passed.
             """
-            if (message.channel.id==self.channel_id):
+            if (message.channel.id == self.channel_id):
                 return True
             
             return False
@@ -2556,8 +2557,8 @@ class Category(object):
         """
         checks_processed = validate_checks(checks_)
         
-        if (description is not None) and isinstance(description,str):
-            description=normalize_description(description)
+        if (description is not None) and isinstance(description, str):
+            description = normalize_description(description)
         
         if name is None:
             display_name = DEFAULT_CATEGORY_DEFAULT_DISPLAY_NAME
@@ -2628,7 +2629,7 @@ class Category(object):
             | COMMAND_CHECKS_SUCCEEDED  | 1     |
             +---------------------------+-------+
         """
-        checks=self._checks
+        checks = self._checks
         if (checks is not None):
             for check in checks:
                 if await check(client, message):
@@ -2640,8 +2641,8 @@ class Category(object):
     
     def __gt__(self, other):
         """Returns whether this category's name is greater than the other's"""
-        self_name=self.name
-        other_name=other.name
+        self_name = self.name
+        other_name = other.name
         
         if self_name is None:
 ##            if other_name is None:
@@ -2657,8 +2658,8 @@ class Category(object):
     
     def __lt__(self, other):
         """Returns whether this category's name is less than the other's"""
-        self_name=self.name
-        other_name=other.name
+        self_name = self.name
+        other_name = other.name
         
         if self_name is None:
             if other_name is None:
@@ -2689,7 +2690,7 @@ class Category(object):
             '<',
             self.__class__.__name__,
                 ]
-        name=self.name
+        name = self.name
         if (name is not None):
             result.append(' ')
             result.append(name)
@@ -3286,18 +3287,18 @@ class CommandProcesser(EventWaitforBase):
                 if analyzed.is_async():
                     async def prefixfilter(message):
                         practical_prefix = await prefix(message)
-                        if re.match(re.escape(practical_prefix),message.content,flag) is None:
+                        if re.match(re.escape(practical_prefix), message.content, flag) is None:
                             return
-                        result = COMMAND_RP.match(message.content,len(practical_prefix))
+                        result = COMMAND_RP.match(message.content, len(practical_prefix))
                         if result is None:
                             return
                         return result.groups()
                 else:
                     async def prefixfilter(message):
                         practical_prefix = prefix(message)
-                        if re.match(re.escape(practical_prefix),message.content,flag) is None:
+                        if re.match(re.escape(practical_prefix), message.content,flag) is None:
                             return
-                        result = COMMAND_RP.match(message.content,len(practical_prefix))
+                        result = COMMAND_RP.match(message.content, len(practical_prefix))
                         if result is None:
                             return
                         return result.groups()
@@ -3309,7 +3310,7 @@ class CommandProcesser(EventWaitforBase):
                 if not prefix:
                     raise ValueError('Prefix cannot be passed as empty string.')
                 
-                PREFIX_RP=re.compile(re.escape(prefix),flag)
+                PREFIX_RP=re.compile(re.escape(prefix), flag)
                 def get_prefix_for(message):
                     return prefix
             
@@ -3324,7 +3325,7 @@ class CommandProcesser(EventWaitforBase):
                     if not prefix_:
                         raise ValueError('Prefix cannot be passed as empty string.')
                 
-                PREFIX_RP=re.compile("|".join(re.escape(prefix_) for prefix_ in prefix),flag)
+                PREFIX_RP = re.compile("|".join(re.escape(prefix_) for prefix_ in prefix), flag)
                 practical_prefix = prefix[0]
                 
                 def get_prefix_for(message):
@@ -3339,10 +3340,10 @@ class CommandProcesser(EventWaitforBase):
             
             async def prefixfilter(message):
                 content = message.content
-                result=PREFIX_RP.match(content)
+                result = PREFIX_RP.match(content)
                 if result is None:
                     return
-                result=COMMAND_RP.match(content,result.end())
+                result = COMMAND_RP.match(content, result.end())
                 if result is None:
                     return
                 return result.groups()
@@ -3354,7 +3355,8 @@ class CommandProcesser(EventWaitforBase):
         self.get_prefix_for = get_prefix_for
         self._ignorecase = ignorecase
     
-    def __setevent__(self, func, name, description=None, aliases=None, category=None, checks=None, parser_failure_handler=None, separator=None):
+    def __setevent__(self, func, name, description=None, aliases=None, category=None, checks=None,
+            parser_failure_handler=None, separator=None):
         """
         Method used to add commands to the command procseer.
         

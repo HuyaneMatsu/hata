@@ -45,7 +45,7 @@ class DiscordEntityMeta(type):
         parent_count = len(class_parents)
         if parent_count > 0:
             parent = class_parents[0]
-            final_slots.update(getattr(parent,'__slots__',()))
+            final_slots.update(getattr(parent, '__slots__', ()))
             
             #Sublasses might miss hash!
             if class_attributes.get('__hash__', None) is None:
@@ -60,7 +60,7 @@ class DiscordEntityMeta(type):
             index = 1
             while index < parent_count:
                 parent = class_parents[index]
-                final_slots.update(getattr(parent,f'_{parent.__name__}__slots',()))
+                final_slots.update(getattr(parent, f'_{parent.__name__}__slots', ()))
                 index +=1
         
         slots = class_attributes.get('__slots__',)
@@ -69,7 +69,7 @@ class DiscordEntityMeta(type):
         
         if immortal:
             for parent in class_parents:
-                if hasattr(parent,'__weakref__'):
+                if hasattr(parent, '__weakref__'):
                     break
             else:
                 final_slots.add('__weakref__')
@@ -252,7 +252,7 @@ class FlagEnabler(object):
     def __call__(self):
         instance = self.instance
         shift = self.shift
-        return int.__new__(type(instance),(instance|(1<<self.shift)))
+        return int.__new__(type(instance), (instance|(1<<self.shift)))
 
 class FlagEnableDescriptor(FlagGetDescriptor):
     """
@@ -301,7 +301,7 @@ class FlagDisabler(object):
         instance = self.instance
         shift = self.shift
         if (instance>>shift)&1:
-            return int.__new__(type(instance),(instance^(1<<shift)))
+            return int.__new__(type(instance), (instance^(1<<shift)))
         else:
             return instance
 
@@ -333,8 +333,8 @@ class FlagMeta(type):
     """
     Metaclass for byte vize flags.
     """
-    def __new__(cls, class_name, class_parents, class_attributes, access_keyword=None, enable_keyword=None, disable_keyword=None,
-            baseclass=False):
+    def __new__(cls, class_name, class_parents, class_attributes, access_keyword=None, enable_keyword=None,
+            disable_keyword=None, baseclass=False):
         """
         Creates a byte vize flag type.
         
@@ -377,10 +377,10 @@ class FlagMeta(type):
             When any requirements are not satisfied.
         """
         if baseclass:
-            if (not class_parents) or (not issubclass(class_parents[0],int)):
+            if (not class_parents) or (not issubclass(class_parents[0], int)):
                 raise TypeError(f'`{class_name}` is not derived directly from `int`.')
             
-            class_keys = class_attributes.get('__keys__',_spaceholder)
+            class_keys = class_attributes.get('__keys__', _spaceholder)
             if class_keys is NotImplemented:
                 pass
             elif class_keys is _spaceholder:
@@ -416,10 +416,12 @@ class FlagMeta(type):
         
         for name, shift in keys.items():
             if (type(name) is not str):
-                raise TypeError(f'`__keys__`\'s keys should be `str` instances, meanwhile got at least 1 non `str`: {name!r}.')
+                raise TypeError('`__keys__`\'s keys should be `str` instances, meanwhile got at least 1 non `str`: '
+                    f'{name!r}.')
             
             if (type(shift) is not int):
-                raise TypeError(f'`__keys__`\'s values should be `int` instances, meanwhile got at least 1 non `int`: {shift!r}.')
+                raise TypeError('`__keys__`\'s values should be `int` instances, meanwhile got at least 1 non `int`: '
+                    f'{shift!r}.')
             
             if shift < 0 or shift > 63:
                 raise TypeError(f'`__keys__`\' values must be between 0 and 63, got: {shift!r}')
@@ -475,7 +477,7 @@ class FlagBase(int, metaclass = FlagMeta, baseclass=True):
         """Returns the reprsentation of the flag."""
         return f'{self.__class__.__name__}({int.__repr__(self)})'
     
-    def __getitem__(self,key):
+    def __getitem__(self, key):
         """Returns whether a specific flag of the given name is enableds."""
         return (self>>self.__keys__[key])&1
     
@@ -522,7 +524,7 @@ class FlagBase(int, metaclass = FlagMeta, baseclass=True):
     def __contains__(self, key):
         """Returns whether the specific flag of the given name is enabled."""
         try:
-            position=self.__keys__[key]
+            position = self.__keys__[key]
         except KeyError:
             return 0
         
@@ -530,19 +532,19 @@ class FlagBase(int, metaclass = FlagMeta, baseclass=True):
     
     def is_subset(self, other):
         """Returns whether self has the same amount or more flags disabled than other."""
-        return (self&other)==self
+        return (self&other) == self
     
     def is_superset(self, other):
         """Returns whether self has the same amount or more flags enabled than other."""
-        return (self|other)==self
+        return (self|other) == self
     
     def is_strict_subset(self, other):
         """Returns whether self has more flags disabled than other."""
-        return self!=other and (self&other)==self
+        return self != other and (self&other) == self
     
     def is_strict_superset(self, other):
         """Returns whether self has more flags enabled than other."""
-        return self!=other and (self|other)==self
+        return self != other and (self|other) == self
     
     __ge__ = is_superset
     __gt__ = is_strict_superset
@@ -574,21 +576,21 @@ class FlagBase(int, metaclass = FlagMeta, baseclass=True):
         ['ban_users', 'manage_roles']
         ```
         """
-        new=self
+        new = self
         for key, value in kwargs.items():
             try:
-                shift=self.__keys__[key]
+                shift = self.__keys__[key]
             except KeyError as err:
-                err.args=(f'Invalid key: {key!r}.',)
+                err.args = (f'Invalid key: {key!r}.',)
                 raise
             
             if value:
-                new|=(1<<shift)
+                new |= (1<<shift)
             else:
                 if (new>>shift)&1:
-                    new^=(1<<shift)
+                    new ^= (1<<shift)
         
-        return int.__new__(type(self),new)
+        return int.__new__(type(self), new)
 
 class ReverseFlagBase(FlagBase, baseclass=True):
     """
@@ -654,34 +656,34 @@ class ReverseFlagBase(FlagBase, baseclass=True):
     def __contains__(self, key):
         """Returns whether the specific flag of the given name is enabled."""
         try:
-            position=self.__keys__[key]
+            position = self.__keys__[key]
         except KeyError:
             return 0
         
         return ((self>>position)&1)^1
     
-    def is_subset(self,other):
+    def is_subset(self, other):
         """Returns whether self has the same amount or more flags disabled than other."""
-        return (self|other)==self
+        return (self|other) == self
     
-    def is_superset(self,other):
+    def is_superset(self, other):
         """Returns whether self has the same amount or more flags enabled than other."""
-        return (self&other)==self
+        return (self&other) == self
     
-    def is_strict_subset(self,other):
+    def is_strict_subset(self, other):
         """Returns whether self has more flags disabled than other."""
-        return self!=other and (self|other)==self
+        return self != other and (self|other) == self
     
-    def is_strict_superset(self,other):
+    def is_strict_superset(self, other):
         """Returns whether self has more flags enabled than other."""
-        return self!=other and (self&other)==self
+        return self != other and (self&other) == self
     
     __ge__ = is_superset
     __gt__ = is_strict_superset
     __lt__ = is_strict_subset
     __le__ = is_subset
     
-    def update_by_keys(self,**kwargs):
+    def update_by_keys(self, **kwargs):
         """
         Updates the source value with the given flags and returns a new one.
         
@@ -706,21 +708,21 @@ class ReverseFlagBase(FlagBase, baseclass=True):
         ['welcome']
         ```
         """
-        new=self
+        new = self
         for key, value in kwargs.items():
             try:
-                shift=self.__keys__[key]
+                shift = self.__keys__[key]
             except KeyError as err:
-                err.args=(f'Invalid key:{key!r}.',)
+                err.args = (f'Invalid key:{key!r}.',)
                 raise
             
             if value:
                 if (new>>shift)&1:
-                    new^=(1<<shift)
+                    new ^= (1<<shift)
             else:
-                new|=(1<<shift)
+                new |= (1<<shift)
         
-        return int.__new__(type(self),new)
+        return int.__new__(type(self), new)
 
 class IconType(object):
     """
@@ -834,9 +836,9 @@ class IconType(object):
     STATIC = NotImplemented
     ANIMATED = NotImplemented
 
-IconType.NONE     = ICON_TYPE_NONE     = IconType('NONE'     , 0 ,)
-IconType.STATIC   = ICON_TYPE_STATIC   = IconType('STATIC'   , 1 ,)
-IconType.ANIMATED = ICON_TYPE_ANIMATED = IconType('ANIMATED' , 2 ,)
+IconType.NONE     = ICON_TYPE_NONE     = IconType('NONE'    , 0)
+IconType.STATIC   = ICON_TYPE_STATIC   = IconType('STATIC'  , 1)
+IconType.ANIMATED = ICON_TYPE_ANIMATED = IconType('ANIMATED', 2)
 
 class Icon(object):
     """
@@ -1069,7 +1071,7 @@ class IconSlot(object):
             f''
             f'    self.{added_internal_attribute_name_type} = icon_type\n'
             f'    self.{added_instance_atttribute_name_hash} = icon_hash\n'
-                ),f'<{cls.__name__}>', 'exec', optimize=2), cls._compile_globals, locals_)
+                ), f'<{cls.__name__}>', 'exec', optimize=2), cls._compile_globals, locals_)
         
         added_class_attributes.append((func_name, locals_[func_name]),)
         
@@ -1097,7 +1099,7 @@ class IconSlot(object):
                 f'        old_attributes[{internal_name!r}] = Icon(self_icon_type, self_icon_hash)\n'
                 f'        self.{added_internal_attribute_name_type} = icon_type\n'
                 f'        self.{added_instance_atttribute_name_hash} = icon_hash\n'
-                    ),f'<{cls.__name__}>', 'exec', optimize=2), cls._compile_globals, locals_)
+                    ), f'<{cls.__name__}>', 'exec', optimize=2), cls._compile_globals, locals_)
             
             added_class_attributes.append((func_name, locals_[func_name]),)
         

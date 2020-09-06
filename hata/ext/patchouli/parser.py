@@ -15,8 +15,8 @@ TABLE_ANY_RP = re.compile(f'{TABLE_BORDER_PATTERN}|{TABLE_TEXT_PATTERN}')
 TABLE_TEXT_SPLITTER = re.compile('(?:\| )?(.*?) \|')
 LISTING_HEAD_LINE_RP = re.compile('[\-]+[ \t]*(.*)')
 
-ATTRIBUTE_SECTION_NAME_RP = re.compile('(?:(?:instance|class)? )?attributes?', re.I)
-ATTRIBUTE_NAME_RP = re.compile('([a-z_][0-9a-z_]*) *: *')
+ATTRIBUTE_SECTION_NAME_RP = re.compile('.*?attributes?', re.I)
+ATTRIBUTE_NAME_RP = re.compile('([A-Za-z_][0-9A-Za-z_]*) *: *')
 
 del TABLE_BORDER_PATTERN
 del TABLE_TEXT_PATTERN
@@ -136,7 +136,8 @@ def parse_sections(lines):
         line = lines[index]
         
         # If there are at least 2 lines and we can match:
-        if (limit-index)>2 and (SECTION_NAME_RP.fullmatch(line) is not None) and (SECTION_UNDERLINE_RP.fullmatch(lines[index+1]) is not None):
+        if (limit-index) > 2 and (SECTION_NAME_RP.fullmatch(line) is not None) and \
+                (SECTION_UNDERLINE_RP.fullmatch(lines[index+1]) is not None):
             # Get the current line out.
             while section_lines:
                 if section_lines[-1]:
@@ -1286,7 +1287,7 @@ def get_attribute_docs_from(sections):
             if index == limit:
                 break
             
-            part = sections[index]
+            part = section[index]
             if (type(part) is not GravedDescription):
                 break
             
@@ -1298,7 +1299,7 @@ def get_attribute_docs_from(sections):
             if parsed is None:
                 break
             
-            attr_name = parsed.group(0)
+            attr_name = parsed.group(1)
             attr_head = part.content.copy()
             starter_continous = starter[parsed.end():]
             if starter_continous:
@@ -1313,7 +1314,7 @@ def get_attribute_docs_from(sections):
             if index == limit:
                 attr_body = None
             else:
-                part = sections[index]
+                part = section[index]
                 if type(part) is list:
                     attr_body = part
                     index +=1
@@ -1364,13 +1365,22 @@ class DocString(object):
         """
         Creates an attribute docstring.
         """
-        section = [attr_head]
+        section = []
+        if (attr_head is not None):
+            head = object.__new__(GravedDescription)
+            head.content = attr_head
+            
+            section.append(head)
+        
         if (attr_body is not None):
-            section.append(attr_body)
+            section.extend(attr_body)
+        
+        if not section:
+            return None
         
         self = object.__new__(cls)
         self._attribute_sections = None
-        self.sections = [(None, attr_body)]
+        self.sections = [(None, section)]
         return self
     
     def attribute_docstring_for(self, name):

@@ -342,9 +342,9 @@ def parse_channel_mention(part, message):
     if parsed is None:
         return
 
-    channel_id=int(parsed.group(1))
+    channel_id = int(parsed.group(1))
     for channel in channel_mentions:
-        if channel.id==channel_id:
+        if channel.id == channel_id:
             return channel
 
 class ConverterFlag(FlagBase):
@@ -1219,7 +1219,7 @@ class ConverterSetting(object):
         if uses_flags_type is bool:
             pass
         elif issubclass(uses_flags_type, int):
-            if uses_flags in (0,1):
+            if uses_flags in (0, 1):
                 uses_flags = bool(uses_flags)
             else:
                 raise TypeError(f'`uses_flags` was given as `int` instance, but not as `0`, or `1`, got '
@@ -1564,7 +1564,7 @@ async def channel_converter(parser_ctx, content_parser_ctx):
                 
                 else:
                     try:
-                        channel = guild.all_channel[id_]
+                        channel = guild.channels[id_]
                     except KeyError:
                         pass
                     else:
@@ -1636,7 +1636,7 @@ async def role_converter(parser_ctx, content_parser_ctx):
                 guild = message.channel.guild
                 if (guild is not None):
                     try:
-                        role = guild.all_role[id_]
+                        role = guild.roles[id_]
                     except KeyError:
                         pass
                     else:
@@ -2109,11 +2109,22 @@ async def prdc_c(content_parser_ctx):
 PREREGISTERED_DEFAULT_CODES['client'] = prdc_c
 del prdc_c
 
-async def prdc_r(content_parser_ctx):
+async def prdc_rest(content_parser_ctx):
     return content_parser_ctx.get_rest()
 
-PREREGISTERED_DEFAULT_CODES['rest'] = prdc_r
-del prdc_r
+PREREGISTERED_DEFAULT_CODES['rest'] = prdc_rest
+del prdc_rest
+
+async def prdc_mgr(content_parser_ctx):
+    guild = content_parser_ctx.message.channel.guild
+    if guild is None:
+        return None
+    
+    return guild.default_role
+
+PREREGISTERED_DEFAULT_CODES['message.guild.default_role'] = prdc_mgr
+PREREGISTERED_DEFAULT_CODES['message.channel.guild.default_role'] = prdc_mgr
+del prdc_mgr
 
 def validate_default_code(default_code):
     """
@@ -2393,7 +2404,7 @@ def validate_annotation(annotation, flags=None):
         result = tuple(annotations_by_type.values())
         
         result_length = len(result)
-        if result_length<2:
+        if result_length < 2:
             if result_length == 0:
                 raise TypeError(f'`annotation` is given as a `tuple`, but it contains no real annotation, got '
                     f'{annotation!r}.')

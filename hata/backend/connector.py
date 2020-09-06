@@ -27,12 +27,12 @@ KEEP_ALIVE_TIMEOUT = 15.0
     
 class Connection(object):
     __slots__ = ('callbacks', 'connector', 'key', 'loop', 'protocol',)
-    def __init__(self,connector,key,protocol,loop):
-        self.connector  = connector
-        self.key        = key
-        self.protocol   = protocol
-        self.loop       = loop
-        self.callbacks  = []
+    def __init__(self, connector, key, protocol, loop):
+        self.connector = connector
+        self.key = key
+        self.protocol = protocol
+        self.loop = loop
+        self.callbacks = []
     
     def __repr__(self):
         return f'<{self.__class__.__name__} to {self.key}>'
@@ -51,7 +51,7 @@ class Connection(object):
     def writer(self):
         return self.protocol.writer
     
-    def add_callback(self,callback):
+    def add_callback(self, callback):
         if callback is None:
             return
         
@@ -89,26 +89,26 @@ class Connection(object):
     def close(self):
         self._run_callbacks()
         
-        protocol=self.protocol
+        protocol = self.protocol
         if (protocol is not None):
-            self.connector.release(self.key,protocol,should_close=True)
+            self.connector.release(self.key, protocol, should_close=True)
             self.protocol=None
     
     def release(self):
         self._run_callbacks()
         
-        protocol=self.protocol
+        protocol = self.protocol
         if (protocol is not None):
-            self.connector.release(self.key,protocol,should_close=protocol.should_close())
-            self.protocol=None
+            self.connector.release(self.key, protocol, should_close=protocol.should_close())
+            self.protocol = None
     
     def detach(self):
         self._run_callbacks()
         
-        protocol=self.protocol
+        protocol = self.protocol
         if (protocol is not None):
-            self.connector.release_acquired(self.key,protocol)
-            self.protocol=None
+            self.connector.release_acquired(self.key, protocol)
+            self.protocol = None
     
     @property
     def closed(self):
@@ -127,16 +127,15 @@ class ConnectorBase(object):
     #    after each request (and between redirects).
     
     def __new__(cls, loop, force_close=False,):
-        
-        self=object.__new__(cls)
-        self.loop               = loop
-        self.closed             = False
-        self.connections        = {}
-        self.acquired           = set()
-        self.acquired_per_host  = defaultdict(set)
-        self.force_close        = force_close
-        self.cookies            = SimpleCookie()
-        self.cleanup_handle     = None
+        self = object.__new__(cls)
+        self.loop = loop
+        self.closed = False
+        self.connections = {}
+        self.acquired = set()
+        self.acquired_per_host = defaultdict(set)
+        self.force_close = force_close
+        self.cookies = SimpleCookie()
+        self.cleanup_handle = None
         return self
     
     def __del__(self):
@@ -180,9 +179,9 @@ class ConnectorBase(object):
             self.cleanup_handle = self.loop.call_later_weak(KEEP_ALIVE_TIMEOUT, self._cleanup,)
     
     def drop_acquired_per_host(self, key, val):
-        acquired_per_host=self.acquired_per_host
+        acquired_per_host = self.acquired_per_host
         try:
-            connections=acquired_per_host[key]
+            connections = acquired_per_host[key]
         except KeyError:
             return
         
@@ -196,7 +195,7 @@ class ConnectorBase(object):
         if self.closed:
             return
         
-        self.closed=True
+        self.closed = True
 
         try:
             if not self.loop.running:
@@ -254,13 +253,13 @@ class ConnectorBase(object):
         
         del self.connections[key]
     
-    def release_acquired(self,key,protocol):
+    def release_acquired(self, key, protocol):
         if self.closed:
             return
         
         try:
             self.acquired.remove(protocol)
-            self.drop_acquired_per_host(key,protocol)
+            self.drop_acquired_per_host(key, protocol)
         except KeyError:
             pass
     
@@ -268,7 +267,7 @@ class ConnectorBase(object):
         if self.closed:
             return
         
-        self.release_acquired(key,protocol)
+        self.release_acquired(key, protocol)
         
         if should_close or self.force_close or protocol.should_close():
             transport = protocol.transport
@@ -277,9 +276,9 @@ class ConnectorBase(object):
                 transport.abort()
         else:
             try:
-                connections=self.connections[key]
+                connections = self.connections[key]
             except KeyError:
-                connections=self.connections[key]=[]
+                connections = self.connections[key] = []
             
             connections.append((protocol,monotonic()))
             
@@ -337,7 +336,8 @@ class HostInfo(object):
         return True
 
     def __hash__(self):
-        return hash(self.hostname) ^ hash(self.host) ^ (self.port << 17 ) ^ hash(self.family) ^ hash(self.proto) ^ hash(self.flags)
+        return hash(self.hostname) ^ hash(self.host) ^ (self.port << 17 ) ^ hash(self.family) ^ hash(self.proto) ^ \
+               hash(self.flags)
 
 class HostInfoCont(object):
     __slots__ = ('addrs', 'index', 'timestamp')
@@ -414,13 +414,13 @@ class TCPConnector(ConnectorBase):
         if not isinstance(ssl, SSL_ALLOWED_TYPES):
             raise TypeError(f'`ssl` should be one of instance of: {SSL_ALLOWED_TYPES!r}, but got `{ssl!r}` instead.')
         
-        self = ConnectorBase.__new__(cls,loop,force_close,)
+        self = ConnectorBase.__new__(cls, loop, force_close,)
         
-        self.ssl            = ssl
-        self.cached_hosts   = {}
-        self.dns_events     = {}
-        self.family         = family
-        self.local_addr     = local_addr
+        self.ssl = ssl
+        self.cached_hosts = {}
+        self.dns_events = {}
+        self.family = family
+        self.local_addr = local_addr
         
         return self
 
@@ -430,10 +430,10 @@ class TCPConnector(ConnectorBase):
         
         ConnectorBase.close(self)
     
-    def clear_dns_cache(self,host=None,port=None):
+    def clear_dns_cache(self, host=None, port=None):
         if (host is not None) and (port is not None):
             try:
-                del self.cached_hosts[(host,port)]
+                del self.cached_hosts[(host, port)]
             except KeyError:
                 pass
         else:
@@ -516,9 +516,9 @@ class TCPConnector(ConnectorBase):
         #Has same keyword arguments as BaseEventLoop.create_connection.
         
         if request.proxy_url:
-            _,protocol = await self.create_proxy_connection(request)
+            _, protocol = await self.create_proxy_connection(request)
         else:
-            _,protocol = await self.create_direct_connection(request)
+            _, protocol = await self.create_direct_connection(request)
 
         return protocol
     
@@ -535,7 +535,7 @@ class TCPConnector(ConnectorBase):
             sslcontext.set_default_verify_paths()
             return sslcontext
     
-    def get_ssl_context(self,request):
+    def get_ssl_context(self, request):
         #Logic to get the correct SSL context
         
         #0. if request.ssl is False, return None
@@ -548,28 +548,28 @@ class TCPConnector(ConnectorBase):
         #    2. if verify_ssl is True in request, generate a default SSL context
         #    3. if verify_ssl is False in request, generate a SSL context that
         #       won't verify
-
+        
         if not request.is_ssl():
             return
         
         if module_ssl is None:
             raise RuntimeError('SSL is not supported')
         
-        sslcontext=request.ssl
+        sslcontext = request.ssl
         if isinstance(sslcontext, module_ssl.SSLContext):
             return sslcontext
         
         if (sslcontext is not None):
             return self.make_ssl_context(False) #not verified or fingerprinted
-                        
-        sslcontext=self.ssl
-                                    
+        
+        sslcontext = self.ssl
+        
         if isinstance(sslcontext, module_ssl.SSLContext):
             return sslcontext
         
         return self.make_ssl_context((sslcontext is None), )
 
-    def get_fingerprint(self,request):
+    def get_fingerprint(self, request):
         if isinstance(request.ssl,Fingerprint):
             return request.ssl
         
@@ -598,7 +598,7 @@ class TCPConnector(ConnectorBase):
                 err.key=request.connection_key
                 raise
             except OSError as err:
-                last_error = OSError(request.connection_key,err)
+                last_error = OSError(request.connection_key, err)
                 last_error.__cause__ = err
                 continue
             
@@ -616,12 +616,13 @@ class TCPConnector(ConnectorBase):
         raise last_error
     
 
-    async def create_proxy_connection(self,request):
-        headers=multidict_titled()
+    async def create_proxy_connection(self, request):
+        headers = multidict_titled()
         
-        headers[HOST]=request.headers[HOST]
+        headers[HOST] = request.headers[HOST]
         
-        proxy_request=ClientRequest(METH_GET,request.proxy_url,self.loop,headers=headers,auth=request.proxy_auth,ssl=request.ssl)
+        proxy_request = ClientRequest(METH_GET, request.proxy_url, self.loop, headers=headers,auth=request.proxy_auth,
+            ssl=request.ssl)
         
         # create connection to proxy server
         transport, protocol = await self.create_direct_connection(proxy_request)
@@ -631,20 +632,20 @@ class TCPConnector(ConnectorBase):
         # response.
         protocol.force_close()
         
-        auth=proxy_request.headers.pop(AUTHORIZATION,None)
+        auth=proxy_request.headers.pop(AUTHORIZATION, None)
         if auth is not None:
             if not request.is_ssl():
-                request.headers[PROXY_AUTHORIZATION]=auth
+                request.headers[PROXY_AUTHORIZATION] = auth
             else:
-                proxy_request.headers[PROXY_AUTHORIZATION]=auth
+                proxy_request.headers[PROXY_AUTHORIZATION] = auth
         
         if request.is_ssl():
-            sslcontext          = self.get_ssl_context(request)
-            proxy_request.method= METH_CONNECT
-            proxy_request.url   = request.url
-            key                 = (request.connection_key,None,None)
-            connection          = Connection(self,key,protocol,self.loop)
-            proxy_response      = await proxy_request.send(connection)
+            sslcontext = self.get_ssl_context(request)
+            proxy_request.method = METH_CONNECT
+            proxy_request.url = request.url
+            key = (request.connection_key, None, None)
+            connection = Connection(self, key, protocol, self.loop)
+            proxy_response = await proxy_request.send(connection)
             try:
                 connection.protocol.set_response_params()
                 response = await proxy_response.start(connection)
@@ -653,33 +654,31 @@ class TCPConnector(ConnectorBase):
                 connection.close()
                 raise
             else:
-                connection.protocol  = None
+                connection.protocol = None
                 connection.protocol.transport = None
                 try:
                     if response.status != 200:
-                        raise ProxyError(response.status,response.reason,response.headers)
-                    rawsock = transport.get_extra_info('socket',None)
+                        raise ProxyError(response.status, response.reason, response.headers)
+                    rawsock = transport.get_extra_info('socket', None)
                     if rawsock is None:
                         raise RuntimeError('Transport does not expose socket instance')
                     # Duplicate the socket, so now we can close proxy transport
-                    rawsock=rawsock.dup()
+                    rawsock = rawsock.dup()
                 finally:
                     transport.close()
-
+                
                 try:
                     transport, protocol= await self.loop.create_connection(ProtocolBase(self.loop),
-                        ssl=sslcontext,
-                        sock=rawsock,
-                        server_hostname=request.host,)
+                        ssl=sslcontext, sock=rawsock, server_hostname=request.host,)
                 except ssl_errors as err:
-                    err.key=request.connection_key
+                    err.key = request.connection_key
                     raise
                 except OSError as err:
-                    raise OSError(request.connection_key,err) from err
+                    raise OSError(request.connection_key, err) from err
             
             finally:
                 proxy_response.close()
-
-        return transport,protocol
+        
+        return transport, protocol
 
 del lru_cache

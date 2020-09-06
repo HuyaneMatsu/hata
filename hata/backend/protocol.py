@@ -46,13 +46,13 @@ else:
 ZLIB_DECOMPRESSOR = zlib.decompressobj
 ZLIB_COMPRESSOR = zlib.compressobj
 
-WS_OP_CONT     = 0
-WS_OP_TEXT     = 1
-WS_OP_BINARY   = 2
+WS_OP_CONT   = 0
+WS_OP_TEXT   = 1
+WS_OP_BINARY = 2
 
-WS_OP_CLOSE    = 8
-WS_OP_PING     = 9
-WS_OP_PONG     = 10
+WS_OP_CLOSE  = 8
+WS_OP_PING   = 9
+WS_OP_PONG   = 10
 
 WS_DATA_OPCODES = (WS_OP_CONT,  WS_OP_TEXT, WS_OP_BINARY)
 WS_CTRL_OPCODES = (WS_OP_CLOSE, WS_OP_PING, WS_OP_PONG)
@@ -90,7 +90,7 @@ class RawMessage(object):
     @property
     def close_connection(self):
         try:
-            connection=self.headers[CONNECTION]
+            connection = self.headers[CONNECTION]
         except KeyError:
             pass
         else:
@@ -107,7 +107,7 @@ class RawMessage(object):
         upgraded = self._upgraded
         if upgraded == 2:
             try:
-                connection=self.headers[CONNECTION]
+                connection = self.headers[CONNECTION]
             except KeyError:
                 upgraded = 0
             else:
@@ -163,20 +163,20 @@ class RawRequestMessage(RawMessage):
         self.path = path
         self.headers = headers
         self._upgraded = 2
-    
+
 #TODO: whats the fastest way on pypy ? casting 64 bit ints -> xor -> replace?
 _XOR_TABLE = [bytes(a^b for a in range(256)) for b in range(256)]
-def apply_mask(mask,data):
-    data_bytes=bytearray(data)
+def apply_mask(mask, data):
+    data_bytes = bytearray(data)
     for index in range(4):
-        data_bytes[index::4]=data_bytes[index::4].translate(_XOR_TABLE[mask[index]])
+        data_bytes[index::4] = data_bytes[index::4].translate(_XOR_TABLE[mask[index]])
     return data_bytes
 
 class Frame(object):
-    __slots__=('data', 'head1',)
+    __slots__ = ('data', 'head1',)
     def __init__(self, fin, opcode, data):
-        self.data=data
-        self.head1=(fin<<7)|opcode
+        self.data = data
+        self.head1 = (fin<<7)|opcode
     
     @property
     def fin(self):
@@ -202,13 +202,13 @@ class Frame(object):
         #check that this frame contains acceptable values.
         if self.head1&0b01110000:
             raise WebSocketProtocolError('Reserved bits must be 0')
-
-        opcode=self.head1&0b00001111
+        
+        opcode = self.head1&0b00001111
         if opcode in WS_DATA_OPCODES:
             return
         
         if opcode in WS_CTRL_OPCODES:
-            if len(self.data)>125:
+            if len(self.data) > 125:
                 raise WebSocketProtocolError('Control frame too long')
             if not self.head1&0b10000000:
                 raise WebSocketProtocolError('Fragmented control frame')
@@ -231,20 +231,20 @@ class HTTPStreamWriter(object):
         
         self.compresser = compresser
         
-        self.protocol       = protocol
-        self.transport      = protocol.transport
+        self.protocol = protocol
+        self.transport = protocol.transport
         
-        self.loop           = loop
-        self.length         = None
-        self.chunked        = chunked
-        self.size           = 0
+        self.loop = loop
+        self.length = None
+        self.chunked = chunked
+        self.size = 0
         
-        self.eof            = False
-        self.compresser     = None
+        self.eof = False
+        self.compresser = None
     
-    def _write(self,chunk):
-        size=len(chunk)
-        self.size+=size
+    def _write(self, chunk):
+        size = len(chunk)
+        self.size += size
         
         transport = self.transport
         if (transport is None) or transport.is_closing():
@@ -267,28 +267,28 @@ class HTTPStreamWriter(object):
         
         length = self.length
         if (length is not None):
-            chunk_len=len(chunk)
-            if length>=chunk_len:
-                self.length=length-chunk_len
+            chunk_len = len(chunk)
+            if length >= chunk_len:
+                self.length = length-chunk_len
             else:
-                chunk=chunk[:length]
+                chunk = chunk[:length]
                 self.length=0
                 if not chunk:
                     return
         
         if chunk:
             if self.chunked:
-                chunk=b''.join([len(chunk).__format__('x').encode('ascii'),b'\r\n',chunk,b'\r\n'])
+                chunk = b''.join([len(chunk).__format__('x').encode('ascii'), b'\r\n', chunk, b'\r\n'])
             
             self._write(chunk)
             
-            if self.size>WRITE_CHUNK_LIMIT:
-                self.size=0
+            if self.size > WRITE_CHUNK_LIMIT:
+                self.size = 0
                 protocol = self.protocol
                 if protocol.transport is not None:
                     await protocol._drain_helper()
     
-    async def write_eof(self,chunk=b''):
+    async def write_eof(self, chunk=b''):
         if self.eof:
             return
         
@@ -296,16 +296,16 @@ class HTTPStreamWriter(object):
         if compresser is None:
             if self.chunked:
                 if chunk:
-                    chunk=b''.join([len(chunk).__format__('x').encode('ascii'),b'\r\n',chunk,b'\r\n0\r\n\r\n'])
+                    chunk = b''.join([len(chunk).__format__('x').encode('ascii'), b'\r\n', chunk, b'\r\n0\r\n\r\n'])
                 else:
-                    chunk=b'0\r\n\r\n'
+                    chunk = b'0\r\n\r\n'
         else:
             if chunk:
-                chunk=compresser.compress(chunk)
+                chunk = compresser.compress(chunk)
             
-            chunk=chunk+compresser.flush()
+            chunk = chunk+compresser.flush()
             if chunk and self.chunked:
-                chunk=b''.join([len(chunk).__format__('x').encode('ascii'),b'\r\n',chunk,b'\r\n0\r\n\r\n'])
+                chunk = b''.join([len(chunk).__format__('x').encode('ascii'), b'\r\n', chunk, b'\r\n0\r\n\r\n'])
         
         if chunk:
             self._write(chunk)
@@ -358,7 +358,7 @@ class ReadProtocolBase(object):
         transport = self.transport
         if (transport is not None):
             if add_comma:
-                result.append(',')
+                result.append(', ')
             else:
                 add_comma = True
             
@@ -368,7 +368,7 @@ class ReadProtocolBase(object):
         exception = self.exception
         if (exception is not None):
             if add_comma:
-                result.append(',')
+                result.append(', ')
             else:
                 add_comma = True
             
@@ -378,7 +378,7 @@ class ReadProtocolBase(object):
         payload_reader = self.payload_reader
         if (payload_reader is not None):
             if add_comma:
-                result.append(',')
+                result.append(', ')
             
             result.append(' payload_reader=')
             result.append(repr(payload_reader))
@@ -456,7 +456,7 @@ class ReadProtocolBase(object):
         self.payload_waiter = None
         payload_waiter.set_exception_if_pending(exception)
         
-        payload_reader = self.payload_reader.close()
+        self.payload_reader.close()
         self.payload_reader = None
     
     #compability method
@@ -479,7 +479,7 @@ class ReadProtocolBase(object):
             args = err.args
             if not args:
                 result = None
-            elif len(args)==1:
+            elif len(args) == 1:
                 result = args[0]
             else:
                 result = args
@@ -523,7 +523,7 @@ class ReadProtocolBase(object):
                 args = err.args
                 if not args:
                     result = None
-                elif len(args)==1:
+                elif len(args) == 1:
                     result = args[0]
                 else:
                     result = args
@@ -561,7 +561,7 @@ class ReadProtocolBase(object):
                 args = err.args
                 if not args:
                     result = None
-                elif len(args)==1:
+                elif len(args) == 1:
                     result = args[0]
                 else:
                     result = args
@@ -581,7 +581,7 @@ class ReadProtocolBase(object):
     
     async def read(self, n=-1):
         try:
-            return await self.set_payload_reader(self._read_until_eof() if n<0 else self._read_exactly(n))
+            return await self.set_payload_reader(self._read_until_eof() if n < 0 else self._read_exactly(n))
         except EOFError as err:
             return err.args[0]
     
@@ -591,7 +591,7 @@ class ReadProtocolBase(object):
             raise exception
         
         if n < 1:
-            if n==0:
+            if n == 0:
                 return b''
             
             raise ValueError(f'`.readexactly` size can not be less than zero, got {n}')
@@ -638,10 +638,10 @@ class ReadProtocolBase(object):
             # Because the result must be bytes, we slice it
             collected = chunk[offset:position]
             # Add 2 to position to compensate CRLF
-            position = position+2
+            position += 2
             
             # If the chunk is exhausted, remove it
-            if len(chunk)==position:
+            if len(chunk) == position:
                 del chunks[0]
                 self._offset = 0
             # Else, offset it, fast slicing!
@@ -676,7 +676,7 @@ class ReadProtocolBase(object):
                 
                 if chunk[0] == b'\n'[0]:
                     # If size is 1, we delete it
-                    if len(chunk)==1:
+                    if len(chunk) == 1:
                         del chunks[0]
                         self._offset = 0
                     # If more, fast slice it!
@@ -709,7 +709,7 @@ class ReadProtocolBase(object):
                 collected.append(memoryview(chunk)[:position])
                 
                 # Add 2 position to ompensate CRLF
-                position = position+2
+                position += 2
                 # If the chunk is fully exhausted remove it
                 if len(chunk) == position:
                     del chunks[0]
@@ -723,7 +723,7 @@ class ReadProtocolBase(object):
             # collected the data
             collected.append(chunk)
             del chunks[0]
-            n -=len(chunk)
+            n -= len(chunk)
             if n < 0:
                 raise PayloadError(f'Header line exceeds max line length: {MAX_LINE_LENGTH!r} by {-n!r} and CRLF still '
                     f'not found.')
@@ -731,8 +731,8 @@ class ReadProtocolBase(object):
             continue
         
     def _read_exactly(self, n):
-        if n<1:
-            if n<0:
+        if n < 1:
+            if n < 0:
                 raise ValueError(f'.readexactly called with negative `n`: {n!r}')
             else:
                 return b''
@@ -887,9 +887,9 @@ class ReadProtocolBase(object):
         headers = multidict_titled()
         chunks = self._chunks
         
-        end = chunk.find(b'\r\n',offset)
+        end = chunk.find(b'\r\n', offset)
         if end > offset:
-            middle = chunk.find(b':',offset, end)
+            middle = chunk.find(b':', offset, end)
             if middle <= offset:
                 raise PayloadError(f'Invalid header line: {chunk[offset:end]!r}')
             name = chunk[offset:middle].lstrip()
@@ -966,14 +966,14 @@ class ReadProtocolBase(object):
                 
                 break
         
-        name = name.decode('utf-8','surrogateescape')
+        name = name.decode('utf-8', 'surrogateescape')
         
         while True:
             if chunk[offset] in (b'\t'[0], b' '[0]):
                 # continous
                 value = [value]
                 while True:
-                    end = chunk.find(b'\r\n',offset)
+                    end = chunk.find(b'\r\n', offset)
                     # most likely case if we find \r\n
                     if end > offset:
                         value.append(chunk[offset:end].strip())
@@ -1034,20 +1034,20 @@ class ReadProtocolBase(object):
                     # Not continous, leave loop
                     value = b' '.join(value)
                     break
-
+            
             # Store, nice!
-            headers[name] = value.decode('utf-8','surrogateescape')
+            headers[name] = value.decode('utf-8', 'surrogateescape')
             
             # Find end again
-            end = chunk.find(b'\r\n',offset)
+            end = chunk.find(b'\r\n', offset)
             # If we found and we arent at the end yet.
             if end > offset:
-                middle = chunk.find(b':',offset, end)
+                middle = chunk.find(b':', offset, end)
                 # New header line always must have b':', leave if not found, or if it is at the start.
                 if middle <= offset:
                     raise PayloadError(f'Invalid header line: {chunk[offset:end]!r}')
                 
-                name = chunk[offset:middle].lstrip().decode('utf-8','surrogateescape')
+                name = chunk[offset:middle].lstrip().decode('utf-8', 'surrogateescape')
                 value = chunk[middle+1:end].strip()
                 
                 # Add 2 to the offset, to apply \r\n
@@ -1103,7 +1103,7 @@ class ReadProtocolBase(object):
                     if middle <= 0:
                         raise PayloadError(f'Invalid header line: {chunk[offset:end]!r}')
                     
-                    name = chunk[:middle].lstrip().decode('utf-8','surrogateescape')
+                    name = chunk[:middle].lstrip().decode('utf-8', 'surrogateescape')
                     value = chunk[middle+1:end].strip()
                     
                     #Apply offset and update chunk data if needed.
@@ -1150,7 +1150,7 @@ class ReadProtocolBase(object):
                     if middle <= 0:
                         raise PayloadError(f'Invalid header line: {line!r}')
                     
-                    name = line[:middle].lstrip().decode('utf-8','surrogateescape')
+                    name = line[:middle].lstrip().decode('utf-8', 'surrogateescape')
                     value = line[middle+1:].strip()
                     
                     # Update the current chunk and offset state
@@ -1181,7 +1181,7 @@ class ReadProtocolBase(object):
                 if middle <= 0:
                     raise PayloadError(f'Invalid header line: {line!r}')
                 
-                name = line[:middle].lstrip().decode('utf-8','surrogateescape')
+                name = line[:middle].lstrip().decode('utf-8', 'surrogateescape')
                 value = line[middle+1:].strip()
                 
                 # Update the current chunk and offset state
@@ -1200,9 +1200,9 @@ class ReadProtocolBase(object):
     
     def _read_websocket_frame(self, is_client, max_size):
         
-        head1,head2 = yield from self._read_exactly(2)
+        head1, head2 = yield from self._read_exactly(2)
         
-        if ((head2&0b10000000)>>7)==is_client:
+        if ((head2&0b10000000)>>7) == is_client:
             raise WebSocketProtocolError('Incorrect masking')
         
         length = head2&0b01111111
@@ -1223,11 +1223,11 @@ class ReadProtocolBase(object):
         else:
             mask = yield from self._read_exactly(4)
             data = yield from self._read_exactly(length)
-            data=apply_mask(mask,data)
+            data = apply_mask(mask,data)
         
-        frame=object.__new__(Frame)
-        frame.data=data
-        frame.head1=head1
+        frame = object.__new__(Frame)
+        frame.data = data
+        frame.head1 = head1
         
         return frame
     
@@ -1247,7 +1247,7 @@ class ReadProtocolBase(object):
                 else:
                     return self._read_chunked_encoded(decompresser)
             
-            if (length is not None) and (length>0):
+            if (length is not None) and (length > 0):
                 decompresser = self._decompresser_for(message.encoding)
                 if decompresser is None:
                     return self._read_exactly(length)
@@ -1258,7 +1258,7 @@ class ReadProtocolBase(object):
             message.upgraded = True
             return self._read_until_eof()
         
-        if (type(message) is RawResponseMessage) and message.status>=199 and (length is None):
+        if (type(message) is RawResponseMessage) and message.status >= 199 and (length is None):
             if message.chunked:
                 decompresser = self._decompresser_for(message.encoding)
                 if decompresser is None:
@@ -1274,15 +1274,15 @@ class ReadProtocolBase(object):
     def _decompresser_for(encoding):
         if (encoding is None):
             decompressor = None
-        elif encoding=='gzip':
+        elif encoding == 'gzip':
             decompressor=ZLIB_DECOMPRESSOR(wbits=16+zlib.MAX_WBITS)
-        elif encoding=='deflate':
+        elif encoding == 'deflate':
             decompressor=ZLIB_DECOMPRESSOR(wbits=-zlib.MAX_WBITS)
-        elif encoding=='br':
+        elif encoding == 'br':
             if BROTLI_DECOMPRESSOR is None:
                 raise ContentEncodingError('Can not decode content-encoding: brotli (br). Please install `brotlipy`.')
             decompressor = BROTLI_DECOMPRESSOR()
-        elif encoding=='identity':
+        elif encoding == 'identity':
             # I asume this is no encoding
             decompressor = None
         else:
@@ -1304,7 +1304,7 @@ class ReadProtocolBase(object):
             except ValueError:
                 raise PayloadError(f'Not hexadecimal chunk size: {chunk_length!r}') from None
             
-            if chunk_length==0:
+            if chunk_length == 0:
                 end = yield from self._read_exactly(2)
                 if end != b'\r\n':
                     raise PayloadError(f'Recevied chunk does not end with b\'\\r\\n\', instead with: {end}')
@@ -1361,7 +1361,7 @@ class ReadProtocolBase(object):
             except ValueError:
                 raise PayloadError(f'Not hexadecimal chunk size: {chunk_length!r}') from None
             
-            if chunk_length==0:
+            if chunk_length == 0:
                 end = yield from self._read_exactly(2)
                 if end != b'\r\n':
                     raise PayloadError(f'Recevied chunk does not end with b\'\\r\\n\', instead with: {end}')
@@ -1449,7 +1449,7 @@ class ProtocolBase(ReadProtocolBase):
         if drain_waiter is None:
             return
         
-        self._drain_waiter=None
+        self._drain_waiter = None
         if drain_waiter.done():
             return
         
@@ -1482,7 +1482,7 @@ class ProtocolBase(ReadProtocolBase):
         result = [f'{meth} {path} HTTP/{version.major}.{version.major}\r\n']
         extend = result.extend
         for k, v in headers.items():
-            extend((k,': ',v,'\r\n'))
+            extend((k, ': ', v, '\r\n'))
         
         result.append('\r\n')
         
@@ -1496,7 +1496,7 @@ class ProtocolBase(ReadProtocolBase):
         result = [f'HTTP/{version.major}.{version.minor} {status.value} {status.phrase}\r\n']
         extend = result.extend
         for k, v in headers.items():
-            extend((k,': ',v,'\r\n'))
+            extend((k, ': ', v, '\r\n'))
         
         result.append('\r\n')
         
@@ -1513,22 +1513,22 @@ class ProtocolBase(ReadProtocolBase):
         head1 = frame.head1
         head2 = is_client<<7
         
-        length=len(frame.data)
-        if length<126:
-            header = PACK_LEN1(head1,head2|length)
-        elif length<65536:
-            header = PACK_LEN2(head1,head2|126,length)
+        length = len(frame.data)
+        if length < 126:
+            header = PACK_LEN1(head1, head2|length)
+        elif length < 65536:
+            header = PACK_LEN2(head1, head2|126,length)
         else:
-            header = PACK_LEN3(head1,head2|127,length)
+            header = PACK_LEN3(head1, head2|127,length)
         transport.write(header)
         
         #prepare the data.
         if is_client:
-            mask=getrandbits(32).to_bytes(4,'big')
+            mask = getrandbits(32).to_bytes(4, 'big')
             transport.write(mask)
-            data=apply_mask(mask,frame.data,)
+            data = apply_mask(mask, frame.data,)
         else:
-            data=frame.data
+            data = frame.data
         
         transport.write(data)
     

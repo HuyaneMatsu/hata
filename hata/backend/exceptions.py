@@ -5,23 +5,23 @@ class PayloadError(Exception):
 class HttpProcessingError(Exception):
     #pass Shortcut for raising HTTP errors with custom code, message and headers.
     
-    def __init__(self,code=0,message='',headers=None):
-        self.code   = code
-        self.headers= headers
-        self.message= message
+    def __init__(self, code=0, message='', headers=None):
+        self.code = code
+        self.headers = headers
+        self.message = message
 
-        Exception.__init__(self,f'{self.code}, message=\'{message}\'')
+        Exception.__init__(self,f'{self.code}, message={message!r}')
 
 class InvalidHandshake(Exception):
     pass
 
 class AbortHandshake(InvalidHandshake):
-    def __init__(self,status,headers,body):
-        self.status=status
-        self.headers=headers
-        self.body=body
+    def __init__(self, status, headers, body):
+        self.status = status
+        self.headers = headers
+        self.body = body
         
-        InvalidHandshake.__init__(self,f'HTTP {status}, {len(headers)} headers, {len(body)} bytes')
+        InvalidHandshake.__init__(self, f'HTTP {status}, {len(headers)} headers, {len(body)} bytes')
     
 class ProxyError(HttpProcessingError):
     #if proxy responds with status other than "200 OK"
@@ -34,11 +34,11 @@ class InvalidUpgrade(InvalidHandshake):
     pass
 
 class ContentEncodingError(HttpProcessingError):
-    def __init__(self,message='Bad Request',headers=None):
-        HttpProcessingError.__init__(self,400,message,headers)
+    def __init__(self, message='Bad Request', headers=None):
+        HttpProcessingError.__init__(self, 400, message, headers)
 
 class ConnectionClosed(Exception):
-    _close_reasons= {
+    _close_reasons = {
         1000: 'OK',
         1001: 'going away',
         1002: 'protocol error',
@@ -57,36 +57,36 @@ class ConnectionClosed(Exception):
             }
 
     @classmethod
-    def _get_close_reason(cls,code):
-        if code<1000:
+    def _get_close_reason(cls, code):
+        if code < 1000:
             return '`unused`'
-        if code<2000:
+        if code < 2000:
             try:
                 return cls._close_reasons[code]
             except KeyError:
                 return '`reserved`'
-        if code<3000:
+        if code < 3000:
             return '`reserved for extensions`'
-        if code<4000:
+        if code < 4000:
             return '`registered`'
-        if code<500:
+        if code < 500:
             return '`private use`'
-
+        
         return '`unknown`'
 
     def __init__(self, code, exception, reason=None):
-        self.code=code
-        self.exception=exception
-        self._reason=reason
+        self.code = code
+        self.exception = exception
+        self._reason = reason
         Exception.__init__(self)
-
+    
     @property
     def reason(self):
-        reason=self._reason
+        reason = self._reason
         if (reason is not None):
             return reason
         return self._get_close_reason(self.code)
-        
+    
     def __str__(self):
         return f'{self.__class__.__name__}, code={self.code}, reason={self.reason!r}, exception={self.exception!r}'
 

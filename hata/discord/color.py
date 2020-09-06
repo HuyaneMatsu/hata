@@ -78,7 +78,7 @@ class Color(int):
         -------
         tuple_value : `tuple` of 3 `int`-s
         """
-        return (self>>16,(self>>8)&0x00ff,self&0x0000ff)
+        return (self>>16, (self>>8)&0x00ff, self&0x0000ff)
     
     @classmethod
     def from_rgb(cls, r, g, b):
@@ -229,11 +229,11 @@ class DefaultAvatar(object):
     url = property(URLS.default_avatar_url)
     
     # predefined
-    blue    = NotImplemented
-    gray    = NotImplemented
-    green   = NotImplemented
-    orange  = NotImplemented
-    red     = NotImplemented
+    blue   = NotImplemented
+    gray   = NotImplemented
+    green  = NotImplemented
+    orange = NotImplemented
+    red    = NotImplemented
 
 DefaultAvatar.blue   = DefaultAvatar(0 ,   'blue' , Color(0x7289da))
 DefaultAvatar.gray   = DefaultAvatar(1 ,   'gray' , Color(0x747f8d))

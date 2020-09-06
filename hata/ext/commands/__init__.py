@@ -81,7 +81,7 @@ def setup_ext_commands(client, prefix, **kwargs):
     if hasattr(client, 'commands'):
         raise RuntimeError(f'The client already has an attribute named s `commands`.')
     
-    event_message_create=client.events.message_create
+    event_message_create = client.events.message_create
     while True:
         if event_message_create is DEFAULT_EVENT:
             break
@@ -98,9 +98,9 @@ def setup_ext_commands(client, prefix, **kwargs):
         
         break
     
-    command_processer = client.events(CommandProcesser(prefix,**kwargs))
-    client.command_processer=command_processer
-    client.commands=command_processer.shortcut
+    command_processer = client.events(CommandProcesser(prefix, **kwargs))
+    client.command_processer = command_processer
+    client.commands = command_processer.shortcut
     
     event_reaction_add = client.events.reaction_add
     while True:
@@ -110,14 +110,14 @@ def setup_ext_commands(client, prefix, **kwargs):
         
         if type(event_reaction_add) is asynclist:
             for event in event_reaction_add:
-                if isinstance(event,EventWaitforBase):
+                if isinstance(event, EventWaitforBase):
                     break
             else:
                 client.events(ReactionAddWaitfor)
             
             break
         
-        if isinstance(event_reaction_add,EventWaitforBase):
+        if isinstance(event_reaction_add, EventWaitforBase):
             break
         
         client.events(ReactionAddWaitfor)
@@ -131,14 +131,14 @@ def setup_ext_commands(client, prefix, **kwargs):
         
         if type(event_reaction_delete) is asynclist:
             for event in event_reaction_add:
-                if isinstance(event,EventWaitforBase):
+                if isinstance(event, EventWaitforBase):
                     break
             else:
                 client.events(ReactionDeleteWaitfor)
             
             break
         
-        if isinstance(event_reaction_delete,EventWaitforBase):
+        if isinstance(event_reaction_delete, EventWaitforBase):
             break
         
         client.events(ReactionDeleteWaitfor)

@@ -42,7 +42,7 @@ def _convert_content(content, message):
                     transformations[re_escape(f'<@{id_}>')] = f'@{user.name}'
                     break
     else:
-        channels = guild.all_channel
+        channels = guild.channels
         for id_ in CHANNEL_MENTION_RP.findall(content):
             id_ = int(id_)
             try:
@@ -68,7 +68,7 @@ def _convert_content(content, message):
             transformations[re_escape(f'<@!{id_}>')] = name
             transformations[re_escape(f'<@{id_}>')] = name
 
-        roles = guild.all_role
+        roles = guild.roles
         for id_ in ROLE_MENTION_RP.findall(content):
             id_ = int(id_)
             try:

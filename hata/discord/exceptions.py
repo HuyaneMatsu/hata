@@ -110,7 +110,7 @@ class DiscordException(Exception):
             message_base = data.get('message', '')
             error_datas = data.get('errors')
             if error_datas:
-                stack = [[(None,error_datas,)]]
+                stack = [[(None, error_datas,)]]
                 while True:
                     line = stack[-1]
                     if not line:
@@ -322,6 +322,7 @@ class ERROR_CODES:
     slowmode_ratelimited    = 20016
     channel_following_edit_ratelimited = 20022
     under_minimum_age       = 20024
+    channel_send_rate_limit = 20028
     
     max_guilds              = 30001 # 100
     max_friends             = 30001 # 10000

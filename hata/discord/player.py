@@ -20,12 +20,12 @@ del FRAME_LENGTH
 
 DEFAULT_EXECUTABLE = 'ffmpeg'
 
-if os.name=='nt':
-    SUBPROCESS_STARTUP_INFO=subprocess.STARTUPINFO()
-    SUBPROCESS_STARTUP_INFO.dwFlags|=subprocess.STARTF_USESHOWWINDOW
-    SUBPROCESS_STARTUP_INFO.wShowWindow=subprocess.SW_HIDE
+if os.name == 'nt':
+    SUBPROCESS_STARTUP_INFO = subprocess.STARTUPINFO()
+    SUBPROCESS_STARTUP_INFO.dwFlags |=subprocess.STARTF_USESHOWWINDOW
+    SUBPROCESS_STARTUP_INFO.wShowWindow = subprocess.SW_HIDE
 else:
-    SUBPROCESS_STARTUP_INFO=None
+    SUBPROCESS_STARTUP_INFO = None
 
 class AudioSource(object):
     """
@@ -119,7 +119,7 @@ class PCMAudio(AudioSource):
     REPEATABLE : `bool` = `False`
         Whether the source can be repeated after it is exhausted once.
     """
-    __slots__=('stream',)
+    __slots__ = ('stream',)
     
     def __new__(cls, stream):
         """
@@ -134,8 +134,8 @@ class PCMAudio(AudioSource):
         -------
         self : ``PCMAudio``
         """
-        self=object.__new__(cls)
-        self.stream=stream
+        self = object.__new__(cls)
+        self.stream = stream
         return self
 
     def read(self):
@@ -149,7 +149,7 @@ class PCMAudio(AudioSource):
         audio_data : `bytes` or `None`
         """
         result = self.stream.read(FRAME_SIZE)
-        if (result is not None) and len(result)!=FRAME_SIZE:
+        if (result is not None) and (len(result) != FRAME_SIZE):
             result = None
         return result
 
@@ -234,12 +234,13 @@ class LocalAudio(AudioSource):
             elif issubclass(source_type, str):
                 source = str(source)
             else:
-                raise TypeError(f'The given `source` should be given as `str` or as `Path` instance, got {source_type}.')
+                raise TypeError('The given `source` should be given as `str` or as `Path` instance, got '
+                    f'{source_type}.')
         
         args = [executable]
         
         if (before_options is not None):
-            if isinstance(before_options,str):
+            if isinstance(before_options, str):
                 before_options = shlex.split(before_options)
             
             args.extend(before_options)
@@ -412,7 +413,7 @@ class LocalAudio(AudioSource):
 try:
     import youtube_dl
 except ImportError:
-    youtube_dl=None
+    youtube_dl = None
     DownloadError = None
     YTAudio = None
 else:
@@ -537,13 +538,13 @@ else:
                 path, data, args = cls._preprocess(cls, url, stream)
             
             # Create self only at the end, so the `__del__` wont pick it up
-            self=object.__new__(cls)
+            self = object.__new__(cls)
             self._process_args = args
-            self.process    = None
-            self._stdout    = None
-            self.path       = path
-            self.title      = data.get('title')
-            self.url        = data.get('url')
+            self.process = None
+            self._stdout = None
+            self.path = path
+            self.title = data.get('title')
+            self.url = data.get('url')
             
             return self
 
@@ -578,7 +579,7 @@ class AudioPlayer(Thread):
         Thread.__init__(self, daemon=True)
         self.source = source
         self.client = voice_client
-        self.done  = False
+        self.done = False
         
         resumed = Event()
         resumed.set()    #we are not paused
@@ -611,9 +612,9 @@ class AudioPlayer(Thread):
                 await voice_client.call_after(voice_client, last_source)
     
     def run(self):
-        voice_client=self.client
-        start=perf_counter()
-        loops=0
+        voice_client = self.client
+        start = perf_counter()
+        loops = 0
         
         source = None
         
@@ -621,18 +622,18 @@ class AudioPlayer(Thread):
             while True:
                 if not self.resumed.is_set():
                     self.resumed.wait()
-                    start=perf_counter()
+                    start = perf_counter()
                     loops = 0
                     continue
                 
                 #are we disconnected from voice?
                 if not voice_client.connected.is_set():
                     voice_client.connected.wait()
-                    start=perf_counter()
-                    loops=0
+                    start = perf_counter()
+                    loops = 0
                     continue
                 
-                loops+=1
+                loops +=1
                 
                 new_source = self.source
                 if (new_source is None):
@@ -676,12 +677,12 @@ class AudioPlayer(Thread):
                     source.postprocess()
                     continue
                 
-                sequence=voice_client._sequence
-                if sequence==65535:
-                    sequence=0
+                sequence = voice_client._sequence
+                if sequence == 65535:
+                    sequence = 0
                 else:
-                    sequence+=1
-                voice_client._sequence=sequence
+                    sequence +=1
+                voice_client._sequence = sequence
                 
                 if source.NEEDS_ENCODE:
                     pref_volume = voice_client._pref_volume
@@ -690,28 +691,28 @@ class AudioPlayer(Thread):
                     
                     data = voice_client._encoder.encode(data)
                 
-                header=b''.join([
+                header = b''.join([
                     b'\x80x',
-                    voice_client._sequence.to_bytes(2,'big'),
-                    voice_client._timestamp.to_bytes(4,'big'),
-                    voice_client._audio_source.to_bytes(4,'big'),
+                    voice_client._sequence.to_bytes(2, 'big'),
+                    voice_client._timestamp.to_bytes(4, 'big'),
+                    voice_client._audio_source.to_bytes(4, 'big'),
                         ])
                 
-                nonce=header+b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-                packet=bytearray(header)+voice_client._secret_box.encrypt(bytes(data),nonce).ciphertext
+                nonce = header+b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+                packet = bytearray(header)+voice_client._secret_box.encrypt(bytes(data), nonce).ciphertext
                 
                 try:
-                    voice_client.socket.sendto(packet,(voice_client._endpoint_ip, voice_client._audio_port))
+                    voice_client.socket.sendto(packet, (voice_client._endpoint_ip, voice_client._audio_port))
                 except BlockingIOError:
                     pass
                 
-                timestamp=voice_client._timestamp+SAMPLES_PER_FRAME
-                if timestamp>4294967295:
-                    timestamp=0
-                voice_client._timestamp=timestamp
+                timestamp = voice_client._timestamp+SAMPLES_PER_FRAME
+                if timestamp > 4294967295:
+                    timestamp = 0
+                voice_client._timestamp = timestamp
                 
-                delay=PLAYER_DELAY+((start+PLAYER_DELAY*loops)-perf_counter())
-                if delay<.0:
+                delay = PLAYER_DELAY+((start+PLAYER_DELAY*loops)-perf_counter())
+                if delay < 0.0:
                     continue
                 blocking_sleep(delay)
         except BaseException as err:
@@ -729,8 +730,8 @@ class AudioPlayer(Thread):
                 repr(self),
                 '\n',
                     ]
-            render_exc_to_list(err,extend=extracted)
+            render_exc_to_list(err, extend=extracted)
             sys.stderr.write(''.join(extracted))
             
         else:
-            voice_client.player=None
+            voice_client.player = None

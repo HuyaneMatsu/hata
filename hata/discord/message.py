@@ -1,14 +1,14 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('Attachment', 'EMBED_UPDATE_EMBED_ADD', 'EMBED_UPDATE_EMBED_REMOVE', 'EMBED_UPDATE_NONE',
     'EMBED_UPDATE_SIZE_UPDATE', 'Message', 'MessageActivity', 'MessageActivityType', 'MessageApplication',
-    'MessageFlag', 'MessageReference', 'MessageType', 'UnknownCrossMention', )
+    'MessageFlag', 'MessageReference', 'MessageRepr', 'MessageType', 'UnknownCrossMention', )
 
 import re
 from datetime import datetime
 
-from ..backend.dereaddons_local import any_to_any, cached_property, _spaceholder, BaseMethodDescriptor
+from ..backend.dereaddons_local import any_to_any, _spaceholder, BaseMethodDescriptor
 
-from .bases import DiscordEntity, FlagBase
+from .bases import DiscordEntity, FlagBase, IconSlot
 from .http import URLS
 from .others import parse_time, CHANNEL_MENTION_RP, time_to_id, DATETIME_FORMAT_CODE
 from .client_core import MESSAGES, CHANNELS, GUILDS
@@ -22,13 +22,13 @@ from .activity import ActivityTypes
 
 from . import ratelimit
 
-Client          = NotImplemented
-ChannelBase     = NotImplemented
-ChannelTextBase = NotImplemented
-ChannelGuildBase= NotImplemented
-ChannelText     = NotImplemented
-ChannelPrivate  = NotImplemented
-ChannelGroup    = NotImplemented
+Client           = NotImplemented
+ChannelBase      = NotImplemented
+ChannelTextBase  = NotImplemented
+ChannelGuildBase = NotImplemented
+ChannelText      = NotImplemented
+ChannelPrivate   = NotImplemented
+ChannelGroup     = NotImplemented
 
 class MessageFlag(FlagBase):
     """
@@ -53,12 +53,12 @@ class MessageFlag(FlagBase):
     +---------------------------+-------------------+
     """
     __keys__ = {
-        'crossposted'           : 0,
-        'is_crosspost'          : 1,
-        'embeds_suppressed'     : 2,
-        'source_message_deleted': 3,
-        'urgent'                : 4,
-        'has_thread'            : 5,
+        'crossposted'            : 0,
+        'is_crosspost'           : 1,
+        'embeds_suppressed'      : 2,
+        'source_message_deleted' : 3,
+        'urgent'                 : 4,
+        'has_thread'             : 5,
             }
 
 class MessageActivityType(object):
@@ -99,7 +99,7 @@ class MessageActivityType(object):
     INSTANCES = [NotImplemented] * 6
     
     # object related
-    __slots__=('name', 'value', )
+    __slots__ = ('name', 'value', )
     
     def __init__(self, value, name):
         """
@@ -112,10 +112,10 @@ class MessageActivityType(object):
         name : `str`
             The name of the message activity type.
         """
-        self.value=value
-        self.name=name
+        self.value = value
+        self.name = name
         
-        self.INSTANCES[value]=self
+        self.INSTANCES[value] = self
     
     def __str__(self):
         """Returns the message activity type's name."""
@@ -164,8 +164,8 @@ class MessageActivity(object):
         data : `dict` of (`str`, `Any`) items
             Message activity data.
         """
-        self.party_id=data.get('party_id','')
-        self.type=MessageActivityType.INSTANCES[data['type']]
+        self.party_id = data.get('party_id','')
+        self.type = MessageActivityType.INSTANCES[data['type']]
 
     def __eq__(self, other):
         """Returns whether the two message activitys are equal."""
@@ -175,7 +175,7 @@ class MessageActivity(object):
         if self.type is not other.type:
             return False
         
-        if self.party_id!=other.party_id:
+        if self.party_id != other.party_id:
             return False
         
         return True
@@ -215,13 +215,13 @@ class Attachment(DiscordEntity):
         data : `dict` of (`str`, `Any`) items
             Received attachment data.
         """
-        self.name       = data['filename']
-        self.id         = int(data['id'])
-        self.proxy_url  = data['proxy_url']
-        self.size       = data['size']
-        self.url        = data['url']
-        self.height     = data.get('height',0)
-        self.width      = data.get('width',0)
+        self.name = data['filename']
+        self.id = int(data['id'])
+        self.proxy_url = data['proxy_url']
+        self.size = data['size']
+        self.url = data['url']
+        self.height = data.get('height', 0)
+        self.width = data.get('width', 0)
     
     def __repr__(self):
         """Returns the representation of the attachment."""
@@ -231,8 +231,8 @@ class Attachment(DiscordEntity):
             ', name=',repr(self.name),
                 ]
         
-        x=self.width
-        y=self.height
+        x = self.width
+        y = self.height
         if x and y:
             result.append(', size=')
             result.append(repr(x))
@@ -252,17 +252,25 @@ class MessageApplication(DiscordEntity):
     ----------
     id : `int`
         Unique identificator of the respective appliaction.
-    cover : `int`
-        The respective application's cover image's hash in `uin128` if applicable. Set as `0` if the application has
-        no cover.
+    cover_hash : `int`
+        The respective application's store cover image's hash in `uint128`. If the application is sold at Discord,
+        this image will be used at the store.
+    cover_type : ``IconType``
+        The respective application's store cover image's type.
     description : `str`
         The respective application's description.
-    icon : `int`
-        The respective application's icon's hash in `uint128` if applicable. Set as `0`, if th application has no icon.
+    icon_hash : `int`
+        The respective application's icon's hash as `uint128`.
+    icon_type : ``IconType``
+        The respective application's icon's type.
     name : `str`
         The respective application's name.
     """
-    __slots__ = ('cover', 'description', 'icon', 'name',)
+    __slots__ = ('description', 'name',)
+    
+    cover = IconSlot('cover', 'cover_image', URLS.application_cover_url, URLS.application_cover_url_as, add_updater=False)
+    icon = IconSlot('icon', 'icon', URLS.application_icon_url, URLS.application_icon_url_as, add_updater=False)
+    
     def __init__(self, data):
         """
         Creates a new ``MessageApplication`` from message application data included inside of a ``Message``'s data.
@@ -272,18 +280,16 @@ class MessageApplication(DiscordEntity):
         data : `dict` of (`str`, `Any`) items
             Message application data.
         """
-        cover = data.get('cover_image',)
-        self.cover = 0 if cover is None else int(cover,16)
+        self._set_cover(data)
         self.description = data['description']
-        icon=data.get('icon')
-        self.icon = 0 if icon is None else int(icon,16)
+        self._set_icon(data)
         self.id = int(data['id'])
-        self.name  = data['name']
+        self.name = data['name']
     
-    icon_url=property(URLS.application_icon_url)
-    icon_url_as=URLS.application_icon_url_as
-    cover_url=property(URLS.application_cover_url)
-    cover_url_as=URLS.application_cover_url_as
+    icon_url = property(URLS.application_icon_url)
+    icon_url_as = URLS.application_icon_url_as
+    cover_url = property(URLS.application_cover_url)
+    cover_url_as = URLS.application_cover_url_as
     
     def __repr__(self):
         """Returns the represnetation of the message application."""
@@ -295,10 +301,20 @@ class MessageReference(object):
     
     Attributes
     ----------
-    _cache : `dict` of (`str`, `Any`) items
-        A dictionary used by the object's properties and cached properties.
+    _channel : `object`, `None` or ``ChannelBase``
+        Internal slot used by the ``.channel`` property.
+    _guild : `object`, `None` or ``Guild``
+        Internal used by the ``.guild`` property.
+    _message : `object`. `None`, ``Message``
+        Internal slot used by the ``.message`` property.
+    channel_id : `int`
+        The referenced message's channel's id. Might be set as `0`.
+    guild_id : `int`
+        The referenced message's guild's id. Might be set as `None`.
+    message_id : `int`
+        The referenced message's id. Might be set as `0`.
     """
-    __slots__=('_cache',)
+    __slots__ = ('_channel', '_message', '_guild', 'channel_id', 'guild_id', 'message_id',)
     def __init__(self, data):
         """
         Creates a ``MessagReference`` from message reference data included inside of a ``Message``'s.
@@ -308,116 +324,131 @@ class MessageReference(object):
         data : `dict` of (`str`, `Any`) items
             Message reference data.
         """
-        self._cache=cache={}
-        
-        try:
-            channel_id=data['channel_id']
-        except KeyError:
-            channel_id=0
+        channel_id = data.get('channel_id')
+        if channel_id is None:
+            channel_id = None
         else:
-            channel_id=int(channel_id)
+            channel_id = int(channel_id)
+        self.channel_id = channel_id
         
-        cache['channel_id']=channel_id
-        
-        try:
-            guild_id=data['guild_id']
-        except KeyError:
-            guild_id=0
+        guild_id = data.get('guild_id')
+        if guild_id is None:
+            guild_id = 0
         else:
-            guild_id=int(guild_id)
-            
-        cache['guild_id']=guild_id
+            guild_id = int(guild_id)
+        self.guild_id = guild_id
         
-        try:
-            message_id=data['message_id']
-        except KeyError:
-            message_id=0
+        message_id = data.get('message_id')
+        if message_id is None:
+            message_id = 0
         else:
-            message_id=int(message_id)
-            
-        cache['message_id']=message_id
+            message_id = int(message_id)
+        self.message_id = message_id
+        
+        self._message = _spaceholder
+        self._channel = _spaceholder
+        self._guild = _spaceholder
     
     @property
-    def channel_id(self):
-        """
-        Returns the referenced message's channel's id. If no `channel_id` was received from Discord, returns `0`.
-        
-        Returns
-        -------
-        channel_id : `int`
-        """
-        return self._cache['channel_id']
-    
-    @property
-    def guild_id(self):
-        """
-        Returns the referenced message's guild's id. If no `guild_id` was received from Discord, then returns `0`.
-        
-        Returns
-        -------
-        guild_id : `int`
-        """
-        return self._cache['guild_id']
-    
-    @property
-    def message_id(self):
-        """
-        Returns the referenced message's id. If no `message_id` was received from Discord, then returns `0`.
-        
-        Returns
-        -------
-        message_id : `int`
-        """
-        return self._cache['message_id']
-    
-    @cached_property
     def channel(self):
         """
-        Tries to find the referenced message's channel and return it. If fails on any step, then returns `None`.
+        Returns referenced message's channel if found.
         
         Returns
         -------
-        channel : `None` or ``ChannelText``
+        channel : `None` or ``ChannelBase`` instance
         """
-        channel_id=self._cache['channel_id']
-        if channel_id==0:
-            return None
+        channel = self._channel
+        if channel is _spaceholder:
+            channel_id = self.channel_id
+            if channel_id:
+                channel = CHANNELS.get(channel_id)
+            else:
+                channel = None
+            
+            self._channel = channel
         
-        return CHANNELS.get(channel_id)
+        return channel
     
-    @cached_property
+    @property
     def guild(self):
         """
-        Tries to find the referenced message's guild and return it. If fails on any step, then returns `None`.
+        Returns referenced message's guild if found.
         
         Returns
         -------
         guild : `None` or ``Guild``
         """
-        guild_id=self._cache['guild_id']
-        if guild_id==0:
-            return None
+        guild = self.guild
+        if guild is _spaceholder:
+            guild_id = self.guild_id
+            if guild_id:
+                guild = GUILDS.get(guild_id)
+            else:
+                guild = None
+            
+            self._guild = guild
         
-        return GUILDS.get(guild_id)
+        return guild
     
-    @cached_property
+    @property
     def message(self):
         """
-        Tries to find the referenced message and return it. If fails on any step, then returns `None`.
+        Returns referenced message if found.
         
         Returns
         -------
         message : `None` or ``Message``
         """
-        message_id=self._cache['message_id']
-        if message_id==0:
-            return
+        message = self.message
+        if message is _spaceholder:
+            message_id = self.message_id
+            if message_id:
+                message = GUILDS.get(message_id)
+            else:
+                message = None
+            
+            self._message = message
         
-        return MESSAGES.get(message_id)
+        return message
     
     def __repr__(self):
         """Returns the representation of the message reference."""
-        return f'<{self.__class__.__name__} channel_id={self._cache["channel_id"]}, guild_id={self._cache["guild_id"]}, message_id={self._cache["message_id"]}>'
+        result = [
+            '<',
+            self.__class__.__name__,
+                ]
+        
+        message_id = self.message_id
+        if message_id:
+            result.append(' message_id=')
+            result.append(repr(message_id))
+            put_comma = True
+        else:
+            put_comma = False
+        
+        channel_id = self.channel_id
+        if channel_id:
+            if put_comma:
+                result.append(',')
+            else:
+                put_comma = True
+            
+            result.append(' channel_id=')
+            result.append(repr(channel_id))
+        
+        guild_id = self.guild_id
+        if guild_id:
+            if put_comma:
+                result.append(',')
+            
+            result.append(' guild_id=')
+            result.append(repr(guild_id))
+        
+        result.append('>')
+        
+        return ''.join(result)
+
 
 class UnknownCrossMention(DiscordEntity):
     """
@@ -610,6 +641,102 @@ EMBED_UPDATE_SIZE_UPDATE = 1
 EMBED_UPDATE_EMBED_ADD = 2
 EMBED_UPDATE_EMBED_REMOVE = 3
 
+class MessageRepr(DiscordEntity):
+    """
+    Represents an uncached message.
+    
+    The class is used, when `HATA_ALLOW_DEAD_EVENTS` env variable is set as `True`.
+    
+    Attributes
+    ----------
+    id : `int`
+        The unique identificator number of the represented message.
+    channel : ``ChannelBase``
+        The respective message's channel.
+    """
+    __slots__ = ('channel',)
+    def __init__(self, message_id, channel):
+        """
+        Creates a new message represnetation with the given parameters.
+        
+        Parameters
+        ----------
+        message_id : `int`
+            The unique identificator number of the represented message.
+        channel : ``ChannelBase`` instance
+            The respective message's channel.
+        """
+        self.id = message_id
+        self.channel = channel
+    
+    @property
+    def guild(self):
+        """
+        Returns the represented message's guild.
+        
+        Returns
+        -------
+        guild : `None` or ``Guild``
+        """
+        return self.channel.guild
+    
+    def __repr__(self):
+        """Returns the message representation's reprentation."""
+        return f'<{self.__class__.__name__} id={self.id}, channel={self.channel!r}>'
+    
+    def __gt__(self, other):
+        """Returns wherhet this message's id is greater than the other's."""
+        other_type = other.__class__
+        if other_type is type(self) or other_type is Message:
+            return (self.id > other.id)
+        
+        return NotImplemented
+    
+    def __ge__(self, other):
+        """Returns wherhet this message's id is greater than the other's, or whether the two messages are equal."""
+        other_type = other.__class__
+        if other_type is type(self):
+            return (self.id >= other.id)
+        
+        if other_type is Message:
+            return (self.id > other.id)
+    
+        return NotImplemented
+    
+    def __eq__(self, other):
+        """Returns whether the two message representations are equal."""
+        if type(self) is type(other):
+            return (self.id == other.id)
+        
+        return NotImplemented
+    
+    def __ne__(self, other):
+        """Returns whether the two message representations are not equal."""
+        if type(self) is type(other):
+            return (self.id != other.id)
+        
+        return NotImplemented
+    
+    def __le__(self, other):
+        """Returns wherhet this message's id is less than the other's, or whether the two messages are equal."""
+        other_type = other.__class__
+        if other_type is type(self):
+            return (self.id <= other.id)
+        
+        if other_type is Message:
+            return (self.id < other.id)
+    
+        return NotImplemented
+    
+    def __lt__(self, other):
+        """Returns wherhet this message's id is less than the other's."""
+        other_type = other.__class__
+        if other_type is type(self) or other_type is Message:
+            return (self.id < other.id)
+        
+        return NotImplemented
+
+
 class Message(DiscordEntity, immortal=True):
     """
     Represents a message from Discord.
@@ -720,112 +847,119 @@ class Message(DiscordEntity, immortal=True):
         channel : ``ChanneltextBase`` instance
             Source channel.
         """
-        self.channel=channel
-        guild=channel.guild
-        webhook_id=data.get('webhook_id',None)
-        author_data=data.get('author',None)
+        self.channel = channel
+        guild = channel.guild
+        webhook_id = data.get('webhook_id')
+        author_data = data.get('author')
         if webhook_id is None:
-            self.cross_reference=None
-            self.cross_mentions=None
+            self.cross_reference = None
+            self.cross_mentions = None
             if author_data is None:
-                self.author=ZEROUSER
+                self.author = ZEROUSER
             else:
                 try:
-                     author_data['member']=data['member']
+                     author_data['member'] = data['member']
                 except KeyError:
                     pass
-                self.author=User(author_data,guild)
+                self.author = User(author_data, guild)
         else:
-            webhook_id=int(webhook_id)
-            cross_reference_data=data.get('message_reference',None)
-            is_cross=(cross_reference_data is not None)
+            webhook_id = int(webhook_id)
+            cross_reference_data = data.get('message_reference')
+            is_cross = (cross_reference_data is not None)
             if is_cross:
-                self.cross_reference=MessageReference(cross_reference_data)
+                self.cross_reference = MessageReference(cross_reference_data)
                 
-                cross_mention_datas=data.get('mention_channels',None)
+                cross_mention_datas = data.get('mention_channels')
                 if cross_mention_datas is None:
-                    cross_mentions=None
+                    cross_mentions = None
                 else:
-                    cross_mentions=[UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas]
+                    cross_mentions = [
+                        UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas
+                            ]
                     cross_mentions.sort()
-                self.cross_mentions=cross_mentions
-                webhook_type=WebhookType.server
+                self.cross_mentions = cross_mentions
+                webhook_type = WebhookType.server
             else:
-                self.cross_reference=None
-                self.cross_mentions=None
-                webhook_type=WebhookType.bot
+                self.cross_reference = None
+                self.cross_mentions = None
+                webhook_type = WebhookType.bot
             
             if author_data is None:
-                self.author=PartialWebhook(webhook_id,'',type_=webhook_type)
+                author = PartialWebhook(webhook_id, '', type_=webhook_type)
             else:
-                self.author=WebhookRepr(author_data,webhook_id,type_=webhook_type,channel=channel)
+                author = WebhookRepr(author_data, webhook_id, type_=webhook_type, channel=channel)
+            self.author = author
         
-        self.reactions=reaction_mapping(data.get('reactions',None))
-        
-        try:
-            application_data=data['application']
-        except KeyError:
-            self.application=None
-        else:
-            self.application=MessageApplication(application_data)
+        self.reactions = reaction_mapping(data.get('reactions'))
         
         try:
-            activity_data=data['activity']
+            application_data = data['application']
         except KeyError:
-            self.activity=None
+            application = None
         else:
-            self.activity=MessageActivity(activity_data)
-
+            application = MessageApplication(application_data)
+        self.application = application
+        
+        try:
+            activity_data = data['activity']
+        except KeyError:
+            activity = None
+        else:
+            activity = MessageActivity(activity_data)
+        self.activity = activity
+        
         edited = data['edited_timestamp']
         if (edited is not None):
             edited = parse_time(edited)
         self.edited = edited
         
-        self.pinned=data.get('pinned',False)
-        self.everyone_mention=data.get('mention_everyone',False)
-        self.tts=data.get('tts',False)
-        self.type=MessageType.INSTANCES[data['type']]
+        self.pinned = data.get('pinned', False)
+        self.everyone_mention = data.get('mention_everyone', False)
+        self.tts = data.get('tts', False)
+        self.type = MessageType.INSTANCES[data['type']]
         
-        attachment_datas=data['attachments']
+        attachment_datas = data['attachments']
         if attachment_datas:
-            attachments=[Attachment(attachment) for attachment in attachment_datas]
+            attachments = [Attachment(attachment) for attachment in attachment_datas]
         else:
-            attachments=None
-        self.attachments=attachments
+            attachments = None
+        self.attachments = attachments
         
-        embed_datas=data['embeds']
+        embed_datas = data['embeds']
         if embed_datas:
-            self.embeds=[EmbedCore.from_data(embed) for embed in embed_datas]
+            embeds = [EmbedCore.from_data(embed) for embed in embed_datas]
         else:
-            self.embeds=None
+            embeds = None
+        self.embeds = embeds
         
-        self.nonce=data.get('nonce',None)
-        self.content=data['content']
-        self.flags=MessageFlag(data.get('flags',0))
+        self.nonce = data.get('nonce')
+        self.content = data['content']
+        self.flags = MessageFlag(data.get('flags', 0))
         
-        user_mention_datas=data['mentions']
+        user_mention_datas = data['mentions']
         if user_mention_datas:
-            self.user_mentions=[User(user_mention_data,guild) for user_mention_data in user_mention_datas]
-            self.user_mentions.sort()
+            user_mentions = [User(user_mention_data, guild) for user_mention_data in user_mention_datas]
+            user_mentions.sort()
         else:
-            self.user_mentions=None
+            user_mentions = None
+        self.user_mentions = user_mentions
         
         if guild is None:
-            self._channel_mentions=None
-            self.role_mentions=None
-            self.cross_mentions=None
-            self.cross_reference=None
+            self._channel_mentions = None
+            self.role_mentions = None
+            self.cross_mentions = None
+            self.cross_reference = None
         else:
-            self._channel_mentions=_spaceholder
+            self._channel_mentions = _spaceholder
     
             try:
-                role_mention_ids=data['mention_roles']
+                role_mention_ids = data['mention_roles']
             except KeyError:
-                role_mentions=None
+                role_mentions = None
             else:
                 if role_mention_ids:
-                    roles=guild.all_role
-                    role_mentions=[]
+                    roles = guild.roles
+                    role_mentions = []
                     for role_id in role_mention_ids:
                         try:
                             role_mentions.append(roles[int(role_id)])
@@ -833,11 +967,11 @@ class Message(DiscordEntity, immortal=True):
                             continue
                     role_mentions.sort()
                 else:
-                    role_mentions=None
+                    role_mentions = None
             
-            self.role_mentions=role_mentions
+            self.role_mentions = role_mentions
         
-        MESSAGES[self.id]=self
+        MESSAGES[self.id] = self
         
     @BaseMethodDescriptor
     def custom(cls, base, validate=True, **kwargs):
@@ -948,82 +1082,87 @@ class Message(DiscordEntity, immortal=True):
             raise TypeError(f'`base` should be either `None`, or type `{cls.__name__}`, got `{base!r}`')
         
         try:
-            channel=kwargs.pop('channel')
+            channel = kwargs.pop('channel')
         except KeyError:
             if base is None:
-                raise TypeError('Expected to be called as method, but was called as a classmethod and `channel` was not passed.')
-            channel=base.channel
+                raise TypeError('Expected to be called as method, but was called as a classmethod and `channel` was '
+                    f'not passed.')
+            channel = base.channel
         else:
-            if not isinstance(channel,ChannelTextBase):
-                raise TypeError(f'`channel` should be `{ChannelTextBase.__name__}` subclasse\'s instance, got `{channel!r}`')
+            if not isinstance(channel, ChannelTextBase):
+                raise TypeError(f'`channel` should be `{ChannelTextBase.__name__}` subclasse\'s instance, got '
+                    f'`{channel!r}`')
         
         # `_channel_mentions` is internal, we wont check kwargs
-        if isinstance(channel,ChannelGuildBase):
-            _channel_mentions=None
+        if isinstance(channel, ChannelGuildBase):
+            _channel_mentions = None
         else:
-            _channel_mentions=_spaceholder
+            _channel_mentions = _spaceholder
         
         try:
             activity = kwargs.pop('activity')
         except KeyError:
             if base is None:
-                activity=None
+                activity = None
             else:
-                activity=base.activity
+                activity = base.activity
         else:
             if (activity is not None) and (type(activity) is not MessageActivity):
                 raise TypeError(f'`activity` should be `None` or type `{MessageActivity.__name__}`, got `{activity!r}`')
         
         try:
-            application=kwargs.pop('application')
+            application = kwargs.pop('application')
         except KeyError:
             if base is None:
-                application=None
+                application = None
             else:
-                application=base.application
+                application = base.application
         else:
             if (application is not None) and (type(application) is not MessageApplication):
-                raise TypeError(f'`application` should be `None` or type `{MessageApplication.__name__}`, got `{application!r}`')
+                raise TypeError(f'`application` should be `None` or type `{MessageApplication.__name__}`, got '
+                    f'`{application!r}`')
         
         try:
-            attachments=kwargs.pop('attachments')
+            attachments = kwargs.pop('attachments')
         except KeyError:
             if base is None:
-                attachments=None
+                attachments = None
             else:
-                attachments=base.attachments
+                attachments = base.attachments
                 if (attachments is not None):
                     # Copy it, because it might change
-                    attachments=attachments.copy()
+                    attachments = attachments.copy()
         else:
             if (attachments is not None):
                 if (type(attachments) is not list):
-                    raise TypeError(f'`attachments` should be `None` or `list` of type `{Attachment.__name__}`, got `{attachments!r}`')
+                    raise TypeError(f'`attachments` should be `None` or `list` of type `{Attachment.__name__}`, got '
+                        f'`{attachments!r}`')
                 
-                attachment_ln=len(attachments)
+                attachment_ln = len(attachments)
                 if validate:
-                    if attachment_ln>10:
+                    if attachment_ln > 10:
                         raise ValueError(f'`attachments` should have maximal length of `10`, got `{attachment_ln!r}`')
                 
                 if attachment_ln:
                     for attachment in attachments:
                         if (type(attachment) is not Attachment):
-                            raise TypeError(f'`attachments` `list` contains at least 1 non `{Attachment.__name__}` object, `{attachment!r}`')
+                            raise TypeError(f'`attachments` `list` contains at least 1 non `{Attachment.__name__}` '
+                                f'object, `{attachment!r}`')
                 else:
                     # We should not have empty attachment list, lets fix it
-                    attachments=None
+                    attachments = None
         
         try:
-            author=kwargs.pop('author')
+            author = kwargs.pop('author')
         except KeyError:
             if base is None:
-                author=ZEROUSER
+                author = ZEROUSER
             else:
-                author=base.author
+                author = base.author
         else:
             if author is None:
                 # Author cannot be None, but accept it as `ZEROUSER`
-                author=ZEROUSER
+                author = ZEROUSER
             elif (type(author) in (User, Client, Webhook, WebhookRepr)):
                 # This should be the case
                 pass
@@ -1033,7 +1172,7 @@ class Message(DiscordEntity, immortal=True):
                     f'`{WebhookRepr.__name__}`, got `{author!r}`')
         
         try:
-            content=kwargs.pop('content')
+            content = kwargs.pop('content')
         except KeyError:
             if base is None:
                 content = ''
@@ -1043,15 +1182,16 @@ class Message(DiscordEntity, immortal=True):
             content = preconvert_str(content, 'content', 0, 2000)
         
         try:
-            cross_reference=kwargs.pop('cross_reference')
+            cross_reference = kwargs.pop('cross_reference')
         except KeyError:
             if base is None:
-                cross_reference=None
+                cross_reference = None
             else:
-                cross_reference=base.cross_reference
+                cross_reference = base.cross_reference
         else:
             if (cross_reference is not None) and (type(cross_reference) is not MessageReference):
-                    raise TypeError(f'`cross_reference` should be `None` or type `{MessageReference.__call__}`, got `{cross_reference!r}`')
+                    raise TypeError(f'`cross_reference` should be `None` or type `{MessageReference.__call__}`, got '
+                        f'`{cross_reference!r}`')
         
         if validate:
             if (cross_reference is not None) and (type(channel) is not ChannelText):
@@ -1060,21 +1200,21 @@ class Message(DiscordEntity, immortal=True):
                     f'as `{channel!r}`')
         
         try:
-            cross_mentions=kwargs.pop('cross_mentions')
+            cross_mentions = kwargs.pop('cross_mentions')
         except KeyError:
             if base is None:
-                cross_mentions=None
+                cross_mentions = None
             else:
-                cross_mentions=base.cross_mentions
+                cross_mentions = base.cross_mentions
                 if (cross_mentions is not None):
                     # Copy it, it might change
-                    cross_mentions=cross_mentions.copy()
+                    cross_mentions = cross_mentions.copy()
         else:
             if (cross_mentions is not None):
                 if (type(cross_mentions) is not list):
                     raise TypeError(
-                        f'`cross_mentions` should be `None` or `list` of `{ChannelGuildBase.__name__}` subclass instances, or '
-                        f'`{UnknownCrossMention.__name__}` instances, got `{cross_mentions!r}`')
+                        f'`cross_mentions` should be `None` or `list` of `{ChannelGuildBase.__name__}` subclass '
+                        f'instances, or `{UnknownCrossMention.__name__}` instances, got `{cross_mentions!r}`')
                 
                 for channel_ in cross_mentions:
                     if isinstance(channel_,ChannelGuildBase):
@@ -1111,12 +1251,12 @@ class Message(DiscordEntity, immortal=True):
                 message_id = base.id
         
         try:
-            edited=kwargs.pop('edited')
+            edited = kwargs.pop('edited')
         except KeyError:
             if base is None:
-                edited=None
+                edited = None
             else:
-                edited=base.edited
+                edited = base.edited
         else:
             if (edited is not None) and (type(edited) is not datetime):
                 raise TypeError(f'`edited` can be `None` or type `datetime`, got `{edited!r}`')
@@ -1126,63 +1266,65 @@ class Message(DiscordEntity, immortal=True):
                 raise ValueError('`edited` can not be lower, than `created_at`')
         
         try:
-            embeds=kwargs.pop('embeds')
+            embeds = kwargs.pop('embeds')
         except KeyError:
             if base is None:
-                embeds=None
+                embeds = None
             else:
-                embeds=base.embeds
+                embeds = base.embeds
         else:
             if (embeds is not None):
                 if (type(embeds) is not list):
-                    raise TypeError(f'`embeds` can be `None` or `list` of type `{EmbedCore.__name__}`, got `{embeds!r}`')
+                    raise TypeError(f'`embeds` can be `None` or `list` of type `{EmbedCore.__name__}`, got '
+                        f'`{embeds!r}`')
                 
                 # Do not check embed length, Discord might be able to send more?
                 
-                embed_ln=len(embeds)
+                embed_ln = len(embeds)
                 if validate:
-                    if len(embeds)>10:
+                    if len(embeds) > 10:
                         raise ValueError(f'`embeds` can have maximal length of `10`, got `{embed_ln!r}`')
                 
                 if embed_ln:
                     for index in range(embed_ln):
-                        embed=embeds[index]
+                        embed = embeds[index]
                         
                         if type(embed) is EmbedCore:
                             continue
                             
-                        if hasattr(type(embed),'to_data'):
+                        if hasattr(type(embed), 'to_data'):
                             # Embed compatible, lets convert it
-                            embed=EmbedCore.from_data(embed.to_data())
-                            embeds[index]=embed
+                            embed = EmbedCore.from_data(embed.to_data())
+                            embeds[index] = embed
                             continue
                         
-                        raise TypeError(f'`embeds` `list` contains at least 1 non `{EmbedCore.__name__}` object; `{embeds!r}`')
+                        raise TypeError(f'`embeds` `list` contains at least 1 non `{EmbedCore.__name__}` object; '
+                            f'`{embeds!r}`')
                 else:
                     # embeds cannot be an empty list, lets fix it
-                    embeds=None
+                    embeds = None
         
         try:
-            everyone_mention=kwargs.pop('everyone_mention')
+            everyone_mention = kwargs.pop('everyone_mention')
         except KeyError:
             if base is None:
-                everyone_mention=False
+                everyone_mention = False
             else:
-                everyone_mention=base.everyone_mention
+                everyone_mention = base.everyone_mention
         else:
             everyone_mention = preconvert_bool(everyone_mention, 'everyone_mention')
         
         try:
-            flags=kwargs.pop('flags')
+            flags = kwargs.pop('flags')
         except KeyError:
             if base is None:
-                flags=MessageFlag(0)
+                flags = MessageFlag(0)
             else:
-                flags=base.flags
+                flags = base.flags
         else:
             if flags is None:
                 # Accept None, and then convert it.
-                flags=MessageFlag()
+                flags = MessageFlag()
             else:
                 flags = preconvert_flag(flags, 'flags', MessageFlag)
         
@@ -1194,27 +1336,30 @@ class Message(DiscordEntity, immortal=True):
                         'message\'s source can be deleted')
                 
                 if (cross_reference is not None) and (not flags.is_crosspost):
-                    raise ValueError(
-                        '`cross_reference` is set, but `flags.is_crosspost` is not -> Only crossposted messages can have `cross_reference`')
+                    raise ValueError('`cross_reference` is set, but `flags.is_crosspost` is not -> Only crossposted '
+                        'messages can have `cross_reference`')
                 
                 # Other cases?
             else:
                 if flags.crossposted:
-                    raise ValueError(f'`flags.crossposted` is set, meanwhile `channel` is not type `{ChannelText.__name__}`; `{channel!r}`')
+                    raise ValueError('`flags.crossposted` is set, meanwhile `channel` is not type '
+                        f'`{ChannelText.__name__}`; `{channel!r}`')
     
                 if flags.is_crosspost:
-                    raise ValueError(f'`flags.is_crosspost` is set, meanwhile `channel` is not type `{ChannelText.__name__}`; `{channel!r}`')
+                    raise ValueError('`flags.is_crosspost` is set, meanwhile `channel` is not type '
+                        f'`{ChannelText.__name__}`; `{channel!r}`')
     
                 if flags.source_message_deleted:
-                    raise ValueError(f'`flags.source_message_deleted` is set, meanwhile `channel` is not type `{ChannelText.__name__}`; `{channel!r}`')
+                    raise ValueError('`flags.source_message_deleted` is set, meanwhile `channel` is not type '
+                        f'`{ChannelText.__name__}`; `{channel!r}`')
         
         try:
-            nonce=kwargs.pop('nonce')
+            nonce = kwargs.pop('nonce')
         except KeyError:
             if base is None:
-                nonce=None
+                nonce = None
             else:
-                nonce=base.nonce
+                nonce = base.nonce
         else:
             if (nonce is not None):
                 if (type(nonce) is not str):
@@ -1223,27 +1368,27 @@ class Message(DiscordEntity, immortal=True):
                     raise TypeError(f'`nonce`\'s length can be be maximum 32, got: `{nonce!r}`.')
             
         try:
-            pinned=kwargs.pop('pinned')
+            pinned = kwargs.pop('pinned')
         except KeyError:
             if base is None:
                 pinned = False
             else:
-                pinned=base.pinned
+                pinned = base.pinned
         else:
             pinned = preconvert_bool(pinned, 'pinned')
         
         try:
-            reactions=kwargs.pop('reactions')
+            reactions = kwargs.pop('reactions')
         except KeyError:
             if base is None:
-                reactions=reaction_mapping(None)
+                reactions = reaction_mapping(None)
             else:
                 # Copy it, because it might be modified
-                reactions=base.reactions.copy()
+                reactions = base.reactions.copy()
         else:
             if reactions is None:
                 # Lets accept `None` and create an empty one
-                reactions=reaction_mapping(None)
+                reactions = reaction_mapping(None)
             elif type(reactions) is reaction_mapping:
                 # We expect this as default
                 pass
@@ -1251,43 +1396,44 @@ class Message(DiscordEntity, immortal=True):
                 raise TypeError(f'`reactions`, should be type `{reaction_mapping.__name__}`, got `{reactions}`')
         
         try:
-            role_mentions=kwargs.pop('role_mentions')
+            role_mentions = kwargs.pop('role_mentions')
         except KeyError:
             if base is None:
-                role_mentions=None
+                role_mentions = None
             else:
-                role_mentions=base.role_mentions
+                role_mentions = base.role_mentions
                 if (role_mentions is not None):
                     # Copy it, because it might change
-                    role_mentions=role_mentions.copy()
+                    role_mentions = role_mentions.copy()
         else:
             if (role_mentions is not None):
                 if (type(role_mentions) is not list):
-                    raise TypeError(f'`role_mentions` should be `None` or `list` of type `{Role.__name__}`, got `{role_mentions!r}`')
+                    raise TypeError(f'`role_mentions` should be `None` or `list` of type `{Role.__name__}`, got '
+                        f'`{role_mentions!r}`')
                 
                 if role_mentions:
                     for role in role_mentions:
                         if type(role) is Role:
                             continue
                         
-                        raise TypeError(f'`role_mentions` contains at least 1 non `{Role.__name__}` object, `{role_mentions!r}`')
+                        raise TypeError(f'`role_mentions` contains at least 1 non `{Role.__name__}` object, '
+                            f'`{role_mentions!r}`')
                 else:
                     # There cannot be an empty mention list, so lets fix it.
-                    role_mentions=None
+                    role_mentions = None
         
         if validate:
             if (role_mentions is not None) and (not isinstance(channel,ChannelGuildBase)):
-                raise ValueError(
-                    f'`role_mentions` are set as not `None`, meanhile the `channel` is not `{ChannelGuildBase}` '
-                    f'subclasse\'s instance; `{channel!r}`')
+                raise ValueError('`role_mentions` are set as not `None`, meanhile the `channel` is not '
+                    f'`{ChannelGuildBase}` subclasse\'s instance; `{channel!r}`')
         
         try:
-            tts=kwargs.pop('tts')
+            tts = kwargs.pop('tts')
         except KeyError:
             if base is None:
-                tts=False
+                tts = False
             else:
-                tts=base.tts
+                tts = base.tts
         else:
             tts = preconvert_bool(tts, 'tts')
         
@@ -1306,7 +1452,7 @@ class Message(DiscordEntity, immortal=True):
             if type(type_) is MessageType:
                 # This is as it should be
                 pass
-            elif (type(type_) is int) and (type_>=0) and (type_<len(MessageType.INSTANCES)):
+            elif (type(type_) is int) and (type_ >= 0) and (type_<len(MessageType.INSTANCES)):
                 # For second attemt, lets check int and it's value as well
                 type_=MessageType.INSTANCES[type_]
             else:
@@ -1314,31 +1460,33 @@ class Message(DiscordEntity, immortal=True):
             
         else:
             if base is None:
-                type_=MessageType.default
+                type_ = MessageType.default
             else:
-                type_=base.type
+                type_ = base.type
         
         try:
-            user_mentions=kwargs.pop('user_mentions')
+            user_mentions = kwargs.pop('user_mentions')
         except KeyError:
             if base is None:
-                user_mentions=None
+                user_mentions = None
             else:
-                user_mentions=base.user_mentions
+                user_mentions = base.user_mentions
                 if (user_mentions is not None):
                     # Copy it, because it might change
-                    user_mentions=user_mentions.copy()
+                    user_mentions = user_mentions.copy()
         else:
             if (user_mentions is not None):
                 if (type(user_mentions) is not list):
-                    raise TypeError(f'`user_mentions` should be type `list` of `{Client.__name__}` / `{User.__name__}`, got `{user_mentions!r}`')
+                    raise TypeError(f'`user_mentions` should be type `list` of `{Client.__name__}` / '
+                        f'`{User.__name__}`, got `{user_mentions!r}`')
                 
                 if user_mentions:
                     for user in user_mentions:
-                        if type(user) in (Client,User):
+                        if type(user) in (Client, User):
                             continue
                         
-                        raise TypeError(f'`user_mentions` contains at least 1 non `{Client.__name__}` or `{User.__name__}` object; `{user!r}`')
+                        raise TypeError(f'`user_mentions` contains at least 1 non `{Client.__name__}` or '
+                            f'`{User.__name__}` object; `{user!r}`')
                 else:
                     user_mentions = None
         
@@ -1346,29 +1494,29 @@ class Message(DiscordEntity, immortal=True):
         if kwargs:
             raise TypeError(f'Unused aruments: {", ".join(list(kwargs))}')
         
-        message=object.__new__(cls)
+        message = object.__new__(cls)
         
-        message._channel_mentions=_channel_mentions
-        message.activity=activity
-        message.application=application
-        message.attachments=attachments
-        message.author=author
-        message.channel=channel
-        message.content=content
-        message.cross_mentions=cross_mentions
-        message.cross_reference=cross_reference
-        message.edited=edited
-        message.embeds=embeds
-        message.everyone_mention=everyone_mention
-        message.flags=flags
-        message.id=message_id
-        message.nonce=nonce
-        message.pinned=pinned
-        message.reactions=reactions
-        message.role_mentions=role_mentions
-        message.tts=tts
-        message.type=type_
-        message.user_mentions=user_mentions
+        message._channel_mentions = _channel_mentions
+        message.activity = activity
+        message.application = application
+        message.attachments = attachments
+        message.author = author
+        message.channel = channel
+        message.content = content
+        message.cross_mentions = cross_mentions
+        message.cross_reference = cross_reference
+        message.edited = edited
+        message.embeds = embeds
+        message.everyone_mention = everyone_mention
+        message.flags = flags
+        message.id = message_id
+        message.nonce = nonce
+        message.pinned = pinned
+        message.reactions = reactions
+        message.role_mentions = role_mentions
+        message.tts = tts
+        message.type = type_
+        message.user_mentions = user_mentions
         
         return message
         
@@ -1378,20 +1526,20 @@ class Message(DiscordEntity, immortal=True):
         `.channel_mentions` as `None`, else it sets it as a `list` of ``ChannelBase`` (and ``UnknownCrossMention``)
         instances. Invalid channel mentions are ignored.
         """
-        content=self.content
-        channel_mentions=[]
-        channels=self.channel.guild.all_channel
-        cross_mentions=self.cross_mentions
+        content = self.content
+        channel_mentions = []
+        channels = self.channel.guild.channels
+        cross_mentions = self.cross_mentions
 
         for channel_id in CHANNEL_MENTION_RP.findall(content):
-            channel_id=int(channel_id)
+            channel_id = int(channel_id)
             try:
-                channel=channels[channel_id]
+                channel = channels[channel_id]
             except KeyError:
                 if cross_mentions is None:
                     continue
                 try:
-                    channel=cross_mentions[channel_id]
+                    channel = cross_mentions[channel_id]
                 except KeyError:
                     continue
             if channel not in channel_mentions:
@@ -1399,9 +1547,9 @@ class Message(DiscordEntity, immortal=True):
         channel_mentions.sort()
 
         if channel_mentions:
-            self._channel_mentions=channel_mentions
+            self._channel_mentions = channel_mentions
             return channel_mentions
-        self._channel_mentions=None
+        self._channel_mentions = None
     
     url = property(URLS.message_jump_url)
     
@@ -1470,15 +1618,15 @@ class Message(DiscordEntity, immortal=True):
         if not code:
             return self.__str__()
         
-        if code=='c':
+        if code == 'c':
             return self.created_at.__format__(DATETIME_FORMAT_CODE)
         
-        if code=='e':
+        if code == 'e':
             edited = self.edited
             if edited is None:
                 edited = 'never'
             else:
-                edited = f'{edited:%Y.%m.%d-%H:%M:%S}'
+                edited = self.edited.__format__(DATETIME_FORMAT_CODE)
             return edited
         
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
@@ -1534,181 +1682,134 @@ class Message(DiscordEntity, immortal=True):
         """
         old_attributes = {}
 
-        pinned=data['pinned']
-        if self.pinned!=pinned:
-            old_attributes['pinned']=self.pinned
-            self.pinned=pinned
+        pinned = data['pinned']
+        if self.pinned != pinned:
+            old_attributes['pinned'] = self.pinned
+            self.pinned = pinned
 
-        flags=data.get('flags',0)
-        flag_difference=self.flags^flags
+        flags = data.get('flags', 0)
+        flag_difference = self.flags^flags
         if flag_difference:
             old_attributes['flags'] = self.flags
             self.flags = MessageFlag(flags)
             
             if MessageFlag(flag_difference).embeds_suppressed:
-                embed_datas=data['embeds']
+                embed_datas = data['embeds']
                 if embed_datas:
-                    embeds=[EmbedCore.from_data(embed) for embed in embed_datas]
+                    embeds = [EmbedCore.from_data(embed) for embed in embed_datas]
                 else:
-                    embeds=None
+                    embeds = None
                 
-                if self.embeds is None:
-                    if (embeds is not None):
-                        old_attributes['embeds']=None
-                        self.embeds=embeds
-                else:
-                    if embeds is None:
-                        old_attributes['embeds']=self.embeds
-                        self.embeds=None
-                    elif self.embeds!=embeds:
-                        old_attributes['embeds']=self.embeds
-                        self.embeds=embeds
+                if self.embeds  != embeds:
+                    old_attributes['embeds'] = self.embeds
+                    self.embeds = embeds
         
         #at the case of pin update edited is None
-        edited_timestamp=data['edited_timestamp']
+        edited_timestamp = data['edited_timestamp']
         if edited_timestamp is None:
             return old_attributes
         
-        edited=parse_time(edited_timestamp)
-        if self.edited==edited:
+        edited = parse_time(edited_timestamp)
+        if self.edited == edited:
             return old_attributes
         
-        old_attributes['edited']=self.edited
-        self.edited=edited
+        old_attributes['edited'] = self.edited
+        self.edited = edited
         
         try:
-            application=MessageApplication(data['application'])
+            application_data = data['application']
         except KeyError:
-            application=None
+            application = None
+        else:
+            application = MessageApplication(application_data)
         
-        if self.application!=application:
-            old_attributes['application']=self.application
-            self.application=self.application
+        if self.application != application:
+            old_attributes['application'] = self.application
+            self.application = self.application
         
         try:
-            activity_data=data['activity']
+            activity_data = data['activity']
         except KeyError:
-            activity=None
+            activity = None
         else:
-            activity=MessageActivity(activity_data)
+            activity = MessageActivity(activity_data)
         
-        if self.activity is None:
-            if (activity is not None):
-                old_attributes['activity']=None
-                self.activity=activity
-        else:
-            if activity is None:
-                old_attributes['activity']=self.activity
-                self.activity=None
-            elif self.activity!=activity:
-                old_attributes['activity']=self.activity
-                self.activity=activity
+        if self.activity != activity:
+            old_attributes['activity'] = self.activity
+            self.activity = activity
                     
-        everyone_mention=data.get('mention_everyone',False)
-        if self.everyone_mention!=everyone_mention:
-            old_attributes['everyone_mention']=self.everyone_mention
-            self.everyone_mention=everyone_mention
+        everyone_mention = data.get('mention_everyone', False)
+        if self.everyone_mention != everyone_mention:
+            old_attributes['everyone_mention'] = self.everyone_mention
+            self.everyone_mention = everyone_mention
 
         #ignoring tts
         #ignoring type
         #ignoring nonce
         
-        attachment_datas=data['attachments']
+        attachment_datas = data['attachments']
         if attachment_datas:
-            attachments=[Attachment(attachment) for attachment in attachment_datas]
+            attachments = [Attachment(attachment) for attachment in attachment_datas]
         else:
-            attachments=None
+            attachments = None
         
-        if self.attachments is None:
-            if (attachments is not None):
-                old_attributes['attachments']=None
-                self.attachments=attachments
-        else:
-            if attachments is None:
-                old_attributes['attachments']=self.attachments
-                self.attachments=None
-            elif self.attachments!=attachments:
-                old_attributes['attachments']=self.attachments
-                self.attachments=attachments
+        if self.attachments != attachments:
+            old_attributes['attachments'] = self.attachments
+            self.attachments = attachments
         
-        embed_datas=data['embeds']
+        embed_datas = data['embeds']
         if embed_datas:
-            embeds=[EmbedCore.from_data(embed) for embed in embed_datas]
+            embeds = [EmbedCore.from_data(embed) for embed in embed_datas]
         else:
-            embeds=None
+            embeds = None
         
-        if self.embeds is None:
-            if (embeds is not None):
-                old_attributes['embeds']=None
-                self.embeds=embeds
-        else:
-            if embeds is None:
-                old_attributes['embeds']=self.embeds
-                self.embeds=None
-            elif self.embeds!=embeds:
-                old_attributes['embeds']=self.embeds
-                self.embeds=embeds
+        if self.embeds != embeds:
+            old_attributes['embeds'] = self.embeds
+            self.embeds = embeds
             
-        content=data['content']
-        if self.content!=content:
-            old_attributes['content']=self.content
-            self.content=content
-
-        user_mention_datas=data['mentions']
-
-        guild=self.channel.guild
+        content = data['content']
+        if self.content != content:
+            old_attributes['content'] = self.content
+            self.content = content
+        
+        user_mention_datas = data['mentions']
+        
+        guild = self.channel.guild
         
         if user_mention_datas:
-            user_mentions=[User(user_mention_data,guild) for user_mention_data in user_mention_datas]
+            user_mentions = [User(user_mention_data, guild) for user_mention_data in user_mention_datas]
             user_mentions.sort()
         else:
-            user_mentions=None
+            user_mentions = None
 
-        if self.user_mentions is None:
-            if (user_mentions is not None):
-                old_attributes['user_mentions']=None
-                self.user_mentions=user_mentions
-        else:
-            if user_mentions is None:
-                old_attributes['user_mentions']=self.user_mentions
-                self.user_mentions=None
-            elif self.user_mentions!=user_mentions:
-                old_attributes['user_mentions']=self.user_mentions
-                self.user_mentions=user_mentions
+        if self.user_mentions != user_mentions:
+            old_attributes['user_mentions'] = self.user_mentions
+            self.user_mentions = user_mentions
         
         if guild is None:
             return old_attributes
 
-        self._channel_mentions=_spaceholder
+        self._channel_mentions = _spaceholder
 
-        cross_mention_datas=data.get('mention_channels',None)
+        cross_mention_datas = data.get('mention_channels')
         if cross_mention_datas is None:
-            cross_mentions=None
+            cross_mentions = None
         else:
-            cross_mentions=[UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas]
+            cross_mentions = [UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas]
             cross_mentions.sort()
 
-        if self.cross_mentions is None:
-            if (cross_mentions is not None):
-                old_attributes['cross_mentions']=None
-                self.cross_mentions=cross_mentions
-        else:
-            if cross_mentions is None:
-                old_attributes['cross_mentions']=self.cross_mentions
-                self.cross_mentions=None
-            else:
-                if self.cross_mentions!=cross_mentions:
-                    old_attributes['cross_mentions']=self.cross_mentions
-                    self.cross_mentions=cross_mentions
+        if self.cross_mentions !=cross_mentions:
+            old_attributes['cross_mentions'] = self.cross_mentions
+            self.cross_mentions = cross_mentions
         
         try:
-            role_mention_ids=data['mention_roles']
+            role_mention_ids = data['mention_roles']
         except KeyError:
-            role_mentions=None
+            role_mentions = None
         else:
             if role_mention_ids:
-                roles=guild.all_role
-                role_mentions=[]
+                roles = guild.roles
+                role_mentions = []
                 for role_id in role_mention_ids:
                     try:
                         role_mentions.append(roles[int(role_id)])
@@ -1716,20 +1817,11 @@ class Message(DiscordEntity, immortal=True):
                         continue
                 role_mentions.sort()
             else:
-                role_mentions=None
+                role_mentions = None
 
-        if self.role_mentions is None:
-            if (role_mentions is not None):
-                old_attributes['role_mentions']=None
-                self.role_mentions=role_mentions
-        else:
-            if role_mentions is None:
-                old_attributes['role_mentions']=self.role_mentions
-                self.role_mentions=None
-            else:
-                if self.role_mentions!=role_mentions:
-                    old_attributes['role_mentions']=self.role_mentions
-                    self.role_mentions=role_mentions
+        if self.role_mentions != role_mentions:
+            old_attributes['role_mentions'] = self.role_mentions
+            self.role_mentions = role_mentions
 
         return old_attributes
     
@@ -1742,107 +1834,103 @@ class Message(DiscordEntity, immortal=True):
         data : `dict` of (`str`, `Any`) items
             Message data received from Discord.
         """
-        self.pinned=data['pinned']
+        self.pinned = data['pinned']
         
-        flags=data.get('flags',0)
-        flag_difference=self.flags^flags
+        flags = data.get('flags', 0)
+        flag_difference = self.flags^flags
         if flag_difference:
             self.flags = MessageFlag(flags)
             
             if MessageFlag(flag_difference).embeds_suppressed:
-                embed_datas=data['embeds']
+                embed_datas = data['embeds']
                 if embed_datas:
-                    embeds=[EmbedCore.from_data(embed_data) for embed_data in embed_datas]
+                    embeds = [EmbedCore.from_data(embed_data) for embed_data in embed_datas]
                 else:
-                    embeds=None
-                self.embeds=embeds
+                    embeds = None
+                self.embeds = embeds
         
-        edited_timestamp=data['edited_timestamp']
+        edited_timestamp = data['edited_timestamp']
         if edited_timestamp is None:
             return
         
-        edited=parse_time(edited_timestamp)
-        if self.edited==edited:
+        edited = parse_time(edited_timestamp)
+        if self.edited == edited:
             return
-        self.edited=edited
+        self.edited = edited
 
         try:
-            self.application=MessageApplication(data['application'])
+            application_data = data['application']
         except KeyError:
-            self.application=None
-
+            application = None
+        else:
+            application = MessageApplication(application_data)
+        self.application = application
+        
         try:
             activity_data=data['activity']
         except KeyError:
-            self.activity=None
+            activity = None
         else:
-            self.activity=MessageActivity(activity_data)
-
-        self.everyone_mention=data['mention_everyone']
+            activity = MessageActivity(activity_data)
+        self.activity = activity
+        
+        self.everyone_mention = data['mention_everyone']
 
         #ignoring tts
         #ignoring type
         #ignoring nonce
         
-        attachment_datas=data['attachments']
+        attachment_datas = data['attachments']
         if attachment_datas:
-            attachments=[Attachment(attachment) for attachment in attachment_datas]
+            attachments = [Attachment(attachment) for attachment in attachment_datas]
         else:
-            attachments=None
+            attachments = None
         self.attachments=attachments
 
-        embed_datas=data['embeds']
+        embed_datas = data['embeds']
         if embed_datas:
-            embeds=[EmbedCore.from_data(embed_data) for embed_data in embed_datas]
+            embeds = [EmbedCore.from_data(embed_data) for embed_data in embed_datas]
         else:
-            embeds=None
-        self.embeds=embeds
+            embeds = None
+        self.embeds = embeds
         
-        self.content=data['content']
+        self.content = data['content']
 
-        user_mention_datas=data['mentions']
+        user_mention_datas = data['mentions']
 
-        guild=self.channel.guild
+        guild = self.channel.guild
+        
+        guild = self.channel.guild
         
         if user_mention_datas:
-            user_mentions=self.user_mentions
-            if user_mentions is None:
-                user_mentions=[User(user_mention_data,guild) for user_mention_data in user_mention_datas]
-                self.user_mentions=user_mentions
-            else:
-                user_mentions.clear()
-                user_mentions.extend(User(user_mention_data,guild) for user_mention_data in user_mention_datas)
+            user_mentions = [User(user_mention_data, guild) for user_mention_data in user_mention_datas]
             user_mentions.sort()
         else:
-            self.user_mentions=None
+            user_mentions = None
+        
+        self.user_mentions = user_mentions
 
         if guild is None:
             return
 
-        self._channel_mentions=_spaceholder
+        self._channel_mentions = _spaceholder
 
-        cross_mention_datas=data.get('mention_channels',None)
+        cross_mention_datas = data.get('mention_channels')
         if cross_mention_datas is None:
-            self.cross_mentions=None
+            cross_mentions = None
         else:
-            cross_mentions=[UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas]
+            cross_mentions = [UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas]
             cross_mentions.sort()
-            self.cross_mentions=cross_mentions
+        self.cross_mentions = cross_mentions
         
         try:
-            role_mention_ids=data['role_mentions']
+            role_mention_ids = data['mention_roles']
         except KeyError:
-            self.role_mentions=None
+            role_mentions = None
         else:
             if role_mention_ids:
-                role_mentions=self.role_mentions
-                if role_mentions is None:
-                    role_mentions=[]
-                    self.role_mentions=role_mentions
-                else:
-                    role_mentions.clear()
-                
-                roles=guild.all_role
+                roles = guild.roles
+                role_mentions = []
                 for role_id in role_mention_ids:
                     try:
                         role_mentions.append(roles[int(role_id)])
@@ -1850,7 +1938,9 @@ class Message(DiscordEntity, immortal=True):
                         continue
                 role_mentions.sort()
             else:
-                self.role_mentions=None
+                role_mentions = None
+        
+        self.role_mentions = role_mentions
         
     def _update_embed(self, data):
         """
@@ -1885,55 +1975,56 @@ class Message(DiscordEntity, immortal=True):
         # 2 -> New embeds appeard -> link.
         # 3 -> There are less embed -> bug?
         
-        embeds=self.embeds
+        embeds = self.embeds
         if embeds is None:
-            ln1=0
+            ln1 = 0
         else:
-            ln1=len(embeds)
+            ln1 = len(embeds)
         
-        embed_datas=data.get('embeds',None)
+        embed_datas = data.get('embeds')
         if embed_datas is None:
-            ln2=0
+            ln2 = 0
         else:
-            ln2=len(embed_datas)
+            ln2 = len(embed_datas)
         
-        if ln1==0:
-            if ln2==0:
+        if ln1 == 0:
+            if ln2 == 0:
                 # No change
                 return EMBED_UPDATE_NONE
             
             # New embeds are added
-            self.embeds=[EmbedCore.from_data(embed_data) for embed_data in embed_datas]
+            self.embeds = [EmbedCore.from_data(embed_data) for embed_data in embed_datas]
             return EMBED_UPDATE_EMBED_ADD
         
-        if ln2<ln1:
+        if ln2 < ln1:
             # Embeds are removed, should not happen, except if the message was suppressed.
             if self.flags.embeds_suppressed:
-                self.embeds=None
+                self.embeds = None
                 # Embeds are suppressed, message_edit was already called. Return 0.
                 return EMBED_UPDATE_NONE
             
             # We have less embeds as we had, should not happen. Return 3.
-            if ln2==0:
-                self.embeds=None
+            if ln2 == 0:
+                embeds = None
             else:
-                self.embeds=[EmbedCore.from_data(embed_data) for embed_data in embed_datas]
+                embeds = [EmbedCore.from_data(embed_data) for embed_data in embed_datas]
+            self.embeds = embeds
             return EMBED_UPDATE_EMBED_REMOVE
         
-        if ln1==0:
-            embeds=[]
-            self.embeds=embeds
+        if ln1 == 0:
+            embeds = []
+            self.embeds = embeds
         else:
             change_state = EMBED_UPDATE_NONE
             for index in range(ln1):
-                embed_data=embed_datas[index]
+                embed_data = embed_datas[index]
                 if embeds[index]._update_sizes(embed_data):
                     change_state = EMBED_UPDATE_SIZE_UPDATE
             
-            if ln1==ln2:
+            if ln1 == ln2:
                 return change_state
         
-        for index in range(ln1,ln2):
+        for index in range(ln1, ln2):
             embeds.append(EmbedCore.from_data(embed_datas[index]))
         
         return EMBED_UPDATE_EMBED_ADD
@@ -1947,53 +2038,54 @@ class Message(DiscordEntity, immortal=True):
         data : `dict` of (`str`, `Any`) items
             Message data received from Discord.
         """
-        embeds=self.embeds
+        embeds = self.embeds
         if embeds is None:
-            ln1=0
+            ln1 = 0
         else:
-            ln1=len(embeds)
+            ln1 = len(embeds)
         
-        embed_datas=data.get('embeds',None)
+        embed_datas=data.get('embeds')
         if embed_datas is None:
-            ln2=0
+            ln2 = 0
         else:
-            ln2=len(embed_datas)
+            ln2 = len(embed_datas)
         
-        if ln1==0:
-            if ln2==0:
+        if ln1 == 0:
+            if ln2 == 0:
                 # No change
                 return
             
             # New embeds are added
-            self.embeds=[EmbedCore.from_data(embed_data) for embed_data in embed_datas]
+            self.embeds = [EmbedCore.from_data(embed_data) for embed_data in embed_datas]
             return
         
-        if ln2<ln1:
+        if ln2 < ln1:
             # Embeds are removed, should not happen, except if the message was suppressed.
             if self.flags.embeds_suppressed:
-                self.embeds=None
+                self.embeds = None
                 # Embeds are suppressed, message_edit was already called.
                 return
             
             # We have less embeds as we had, should not happen.
-            if ln2==0:
-                self.embeds=None
+            if ln2 == 0:
+                embeds = None
             else:
-                self.embeds=[EmbedCore.from_data(embed_data) for embed_data in embed_datas]
+                embeds = [EmbedCore.from_data(embed_data) for embed_data in embed_datas]
+            self.embeds = embeds
             return
         
-        if ln1==0:
-            embeds=[]
-            self.embeds=embeds
+        if ln1 == 0:
+            embeds = []
+            self.embeds = embeds
         else:
             for index in range(ln1):
-                embed_data=embed_datas[index]
+                embed_data = embed_datas[index]
                 embeds[index]._update_sizes_no_return(embed_data)
 
-            if ln1==ln2:
+            if ln1 == ln2:
                 return
 
-        for index in range(ln1,ln2):
+        for index in range(ln1, ln2):
             embeds.append(EmbedCore.from_data(embed_datas[index]))
     
     @property
@@ -2082,16 +2174,17 @@ class Message(DiscordEntity, immortal=True):
         length : `int`
         """
         if self.type is MessageType.default:
-            result=len(self.content)
+            result = len(self.content)
         else:
-            result=len(self.clean_content)
+            result = len(self.clean_content)
         
         embeds = self.embeds
         if (embeds is not None):
             for embed in embeds:
                 if embed.type in EXTRA_EMBED_TYPES:
                     break
-                result+=len(embed)
+                result += len(embed)
+        
         return result
     
     @property
@@ -2135,7 +2228,7 @@ class Message(DiscordEntity, immortal=True):
         did_react : `bool`
         """
         try:
-            reacters=self.reactions[emoji]
+            reacters = self.reactions[emoji]
         except KeyError:
             return False
         return (user in reacters)
@@ -2222,9 +2315,9 @@ class MessageType(object):
         convert : `function`
             The converter function of the message type.
         """
-        self.value  = value
-        self.name   = name
-        self.convert= convert
+        self.value = value
+        self.name = name
+        self.convert = convert
         
         self.INSTANCES[value]=self
     
@@ -2261,37 +2354,41 @@ class MessageType(object):
     discovery_grace_period_final_warning = NotImplemented
 
 def convert_default(self):
-    escape=re.escape
+    escape = re.escape
     transformations = {
         '@everyone':'@\u200beveryone',
         '@here':'@\u200bhere'
             }
     
-    guild=self.channel.guild
+    guild = self.channel.guild
     if guild is None:
-        if self.user_mentions is not None:
-            for user in self.user_mentions:
-                transformations[escape(f'<@{user.id}>')]=f'@{user.name}'
+        user_mentions = self.user_mentions
+        if user_mentions is not None:
+            for user in user_mentions:
+                transformations[escape(f'<@{user.id}>')] = f'@{user.name}'
     else:
-        if self.channel_mentions is not None:
-            for channel in self.channel_mentions:
-                transformations[escape(f'<#{channel.id}>')]=f'#{channel.name}'
+        channel_mentions = self.channel_mentions
+        if channel_mentions is not None:
+            for channel in channel_mentions:
+                transformations[escape(f'<#{channel.id}>')] = f'#{channel.name}'
         
-        if self.user_mentions is not None:
-            for user in self.user_mentions:
-                profile=user.guild_profiles.get(guild,None)
+        user_mentions = self.user_mentions
+        if user_mentions is not None:
+            for user in user_mentions:
+                profile = user.guild_profiles.get(guild, None)
                 if (profile is None) or (profile.nick is None):
-                    name=f'@{user.name}'
+                    name = f'@{user.name}'
                 else:
-                    name=f'@{profile.nick}'
+                    name = f'@{profile.nick}'
                     
-                transformations[escape(f'<@!{user.id}>')]=name
-                transformations[escape(f'<@{user.id}>')]=name
+                transformations[escape(f'<@!{user.id}>')] = name
+                transformations[escape(f'<@{user.id}>')] = name
         
-        if self.role_mentions is not None:
-            for role in self.role_mentions:
-                transformations[escape(f'<@&{role.id}>')]=f'@{role.name}'
-
+        role_mentions = self.role_mentions
+        if role_mentions is not None:
+            for role in role_mentions:
+                transformations[escape(f'<@&{role.id}>')] = f'@{role.name}'
+    
     return re.compile("|".join(transformations)).sub(lambda mention:transformations[escape(mention.group(0))],self.content)
 
 def convert_add_user(self):
@@ -2301,7 +2398,7 @@ def convert_remove_user(self):
     return f'{self.author.name} removed {self.user_mentions[0].name} from the group.'
 
 def convert_call(self):
-    if any_to_any(self.channel.clients,self.call.users):
+    if any_to_any(self.channel.clients, self.call.users):
         return f'{self.author.name} started a call.'
     if self.call.ended_timestamp is None:
         return f'{self.author.name} started a call \N{EM DASH} Join the call.'
@@ -2319,7 +2416,7 @@ def convert_new_pin(self):
 #TODO: this system changed, just pulled out the new texts from the js client source, but the calculation is bad
 def convert_welcome(self):
     #tuples with immutable elements are stored directly
-    join_messages=(
+    join_messages = (
         '{0} just joined the server - glhf!',
         '{0} just joined. Everyone, look busy!',
         '{0} just joined. Can I get a heal?',
@@ -2364,45 +2461,45 @@ def convert_welcome(self):
     return join_messages[int(self.created_at.timestamp())%len(join_messages)].format(self.author.name)
 
 def convert_new_guild_sub(self):
-    guild=self.channel.guild
+    guild = self.channel.guild
     if guild is None:
-        guild_name='None'
+        guild_name = 'None'
     else:
-        guild_name=guild.name
+        guild_name = guild.name
     return f'{self.author.name} boosted {guild_name} with Nitro!'
 
 def convert_new_guild_sub_t1(self):
-    guild=self.channel.guild
+    guild = self.channel.guild
     if guild is None:
-        guild_name='None'
+        guild_name = 'None'
     else:
-        guild_name=guild.name
+        guild_name = guild.name
         
     return f'{self.author.name} boosted {guild_name} with Nitro! {guild_name} has achieved level 1!'
 
 def convert_new_guild_sub_t2(self):
-    guild=self.channel.guild
+    guild = self.channel.guild
     if guild is None:
-        guild_name='None'
+        guild_name = 'None'
     else:
-        guild_name=guild.name
+        guild_name = guild.name
     
     return f'{self.author.name} boosted {guild_name} with Nitro! {guild_name} has achieved level 2!'
 
 def convert_new_guild_sub_t3(self):
-    guild=self.channel.guild
+    guild = self.channel.guild
     if guild is None:
-        guild_name='None'
+        guild_name = 'None'
     else:
-        guild_name=guild.name
+        guild_name = guild.name
         
     return f'{self.author.name} boosted {guild_name} with Nitro! {guild_name} has achieved level 3!'
 
 def convert_new_follower_channel(self):
-    channel=self.channel
+    channel = self.channel
     guild = channel.guild
     if guild is None:
-        guild_name='None'
+        guild_name = 'None'
     else:
         guild_name = guild.name
     
@@ -2492,3 +2589,4 @@ del URLS
 del ratelimit
 del DiscordEntity
 del FlagBase
+del IconSlot

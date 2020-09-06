@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-__all__ = ('MAPPED_OBJECTS', 'map_module', )
+__all__ = ('AttributeUnitBase', 'ClassAttributeUnit', 'FolderedUnit', 'FunctionUnit', 'InstanceAttributeUnit', \
+    'MAPPED_OBJECTS', 'ModuleUnit', 'ObjectedUnitBase', 'PropertyUnit', 'TypeUnit', 'UnitBase', 'map_module', )
+
 import sys, re
 from types import FunctionType, BuiltinFunctionType, BuiltinMethodType, MethodType, GetSetDescriptorType, MemberDescriptorType
 
@@ -445,7 +447,7 @@ class AttributeUnitBase(UnitBase):
         if parent is None:
             return None
         
-        docstring = parent.docstring
+        docstring = parent.docs
         if docstring is None:
             return None
         

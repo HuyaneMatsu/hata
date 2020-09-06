@@ -171,6 +171,36 @@ class Grave(object):
         
         return True
 
+def get_part_arround(content, index):
+    """
+    Gets the part of the given `content` arround the given `index`.
+    
+    Parameters
+    ----------
+    content : `str`
+        The content, arround what the part will be cut out.
+    index : `str`
+        The index of aaround where the part will be cut out.
+    """
+    result = []
+    
+    low_limit = index-25
+    if low_limit < 0:
+        low_limit = 0
+    elif low_limit > 0:
+        result.append('... ')
+    
+    high_limit = index+25
+    if high_limit > len(content):
+        high_limit = len(content)
+    
+    result.append(content[low_limit:high_limit])
+    
+    if high_limit < len(content):
+        result.append(' ...')
+    
+    return ''.join(result)
+
 
 def build_graves(text):
     """
@@ -192,9 +222,9 @@ def build_graves(text):
     
     grave_end = 0
     while True:
-        grave_start = text.find('`',grave_end)
-        if grave_start==-1:
-            if grave_end!=len(text):
+        grave_start = text.find('`', grave_end)
+        if grave_start == -1:
+            if grave_end != len(text):
                 section = text[grave_end:]
                 if content:
                     last = content[-1]
@@ -206,12 +236,12 @@ def build_graves(text):
             break
         
         if grave_start == len(text):
-            warnings.append('Not ended grave character')
+            warnings.append(f'Not ended grave character: {get_part_arround(text, grave_start)!r}')
             break
         
-        if grave_start==grave_end:
-            if grave_end!=0:
-                warnings.append('Empty ungraved section')
+        if grave_start == grave_end:
+            if grave_end != 0:
+                warnings.append(f'Empty ungraved section: {get_part_arround(text, grave_end)!r}')
         else:
             section = text[grave_end:grave_start]
             if content:
@@ -221,8 +251,8 @@ def build_graves(text):
                     section = last+section
             content.append(section)
         
-        grave_start+=1
-        if grave_start<len(text) and text[grave_start] == '`':
+        grave_start +=1
+        if grave_start < len(text) and text[grave_start] == '`':
             double_grave = True
             grave_start +=1
         else:
@@ -238,11 +268,11 @@ def build_graves(text):
                     section = last+section
                     
             content.append(section)
-            warnings.append('Not ended grave section')
+            warnings.append(f'Not ended grave section: {get_part_arround(text, len(section))!r}')
             break
         
         if double_grave:
-            if grave_end >= len(text) or text[grave_end+1] != '`':
+            if grave_end > len(text)-2 or text[grave_end+1] != '`':
                 section = text[grave_start:grave_end]
                 if content:
                     last = content[-1]
@@ -251,15 +281,15 @@ def build_graves(text):
                         section = last+section
                 
                 content.append(section)
-                warnings.append('Not ended double grave section')
+                warnings.append(f'Not ended double grave section: {get_part_arround(text, len(section))!r}')
             else:
                 if grave_start == grave_end:
-                    warnings.append('Empty double grave')
+                    warnings.append(f'Empty double grave: {get_part_arround(text, grave_end)!r}')
                 else:
                     reference = text[grave_start:grave_end]
                     content.append(Grave(reference, GRAVE_TYPE_GLOBAL_REFERENCE))
                 
-                grave_end+=1
+                grave_end +=1
         
         else:
             # single graves cannot be empty
@@ -270,7 +300,7 @@ def build_graves(text):
                 try:
                     literal_eval(reference)
                 except SyntaxError as err:
-                    #warnings.append(f'{err.__class__.__name__}({err}) at a single grave: {reference!r}')
+                    # warnings.append(f'{err.__class__.__name__}({err}) at a single grave: {reference!r}')
                     content.append(Grave(reference, GRAVE_TYPE_QUOTE))
                 except ValueError:
                     content.append(Grave(reference, GRAVE_TYPE_LOCAL_REFERENCE))

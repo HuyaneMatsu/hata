@@ -280,12 +280,12 @@ class Pagination(object):
     EMOJIS : `tuple` (`Emoji`, `Emoji`, `Emoji`, `Emoji`, `Emoji`) = `(LEFT2, LEFT, RIGHT, RIGHT2, CANCEL,)`
         The emojis to add on the respective message in order.
     """
-    LEFT2   = BUILTIN_EMOJIS['track_previous']
-    LEFT    = BUILTIN_EMOJIS['arrow_backward']
-    RIGHT   = BUILTIN_EMOJIS['arrow_forward']
-    RIGHT2  = BUILTIN_EMOJIS['track_next']
-    CANCEL  = BUILTIN_EMOJIS['x']
-    EMOJIS  = (LEFT2, LEFT, RIGHT, RIGHT2, CANCEL,)
+    LEFT2  = BUILTIN_EMOJIS['track_previous']
+    LEFT   = BUILTIN_EMOJIS['arrow_backward']
+    RIGHT  = BUILTIN_EMOJIS['arrow_forward']
+    RIGHT2 = BUILTIN_EMOJIS['track_next']
+    CANCEL = BUILTIN_EMOJIS['x']
+    EMOJIS = (LEFT2, LEFT, RIGHT, RIGHT2, CANCEL,)
     
     __slots__ = ('canceller', 'channel', 'client', 'message', 'page', 'pages', 'task_flag', 'timeout', 'timeouter')
     
@@ -352,6 +352,7 @@ class Pagination(object):
                         ERROR_CODES.max_reactions, # reached reaction 20, some1 is trolling us.
                         ERROR_CODES.invalid_access, # client removed
                         ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                        ERROR_CODES.invalid_message_send_user, # user has dm-s disallowed
                             ):
                     return None
             
@@ -527,7 +528,7 @@ class Pagination(object):
         if exception is None:
             return
         
-        if isinstance(exception,TimeoutError):
+        if isinstance(exception, TimeoutError):
             if self.channel.cached_permissions_for(client).can_manage_messages:
                 try:
                     await client.reaction_clear(message)
@@ -546,7 +547,7 @@ class Pagination(object):
                                     ):
                             return
                     
-                    await client.events.error(client,f'{self!r}._canceller',err)
+                    await client.events.error(client, f'{self!r}._canceller', err)
                     return
             return
         
@@ -704,6 +705,7 @@ class Closer(object):
                         ERROR_CODES.max_reactions, # reached reaction 20, some1 is trolling us.
                         ERROR_CODES.invalid_access, # client removed
                         ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                        ERROR_CODES.invalid_message_send_user, # user has dm-s disallowed
                             ):
                     return None
             
@@ -970,14 +972,14 @@ class ChooseMenu(object):
     EMOJIS : `tuple` (`Emoji`, `Emoji`, `Emoji`, `Emoji`, `Emoji`, `Emoji`) = `(UP, DOWN, LEFT, RIGHT, SELECT, CANCEL)`
         Emojis added to the choose menu.
     """
-    UP      = BUILTIN_EMOJIS['arrow_up_small']
-    DOWN    = BUILTIN_EMOJIS['arrow_down_small']
-    LEFT    = BUILTIN_EMOJIS['arrow_backward']
-    RIGHT   = BUILTIN_EMOJIS['arrow_forward']
-    SELECT  = BUILTIN_EMOJIS['ok']
-    CANCEL  = BUILTIN_EMOJIS['x']
+    UP     = BUILTIN_EMOJIS['arrow_up_small']
+    DOWN   = BUILTIN_EMOJIS['arrow_down_small']
+    LEFT   = BUILTIN_EMOJIS['arrow_backward']
+    RIGHT  = BUILTIN_EMOJIS['arrow_forward']
+    SELECT = BUILTIN_EMOJIS['ok']
+    CANCEL = BUILTIN_EMOJIS['x']
     EMOJIS_RESTRICTED = (UP, DOWN, SELECT, CANCEL)
-    EMOJIS  = (UP, DOWN, LEFT, RIGHT, SELECT, CANCEL)
+    EMOJIS = (UP, DOWN, LEFT, RIGHT, SELECT, CANCEL)
     
     __slots__ = ('canceller', 'channel', 'client', 'embed', 'message', 'selected', 'choices', 'task_flag', 'timeout',
         'timeouter', 'prefix', 'selecter')
@@ -1049,12 +1051,12 @@ class ChooseMenu(object):
         ValueError
             If `prefix` wasn ot given as `None` and it's length is over `64` characters.
         """
-        if (prefix is not None) and len(prefix)>100:
+        if (prefix is not None) and (len(prefix) > 100):
             raise ValueError(f'Please pass a prefix, what is shorter than 100 characters, got {prefix!r}.')
         
-        result_ln=len(choices)
-        if result_ln<2:
-            if result_ln==1:
+        result_ln = len(choices)
+        if result_ln < 2:
+            if result_ln == 1:
                 choice = choices[0]
                 if isinstance(choice, tuple):
                     coro = selecter(client, channel, message, *choice)
@@ -1087,8 +1089,8 @@ class ChooseMenu(object):
             if not channel.cached_permissions_for(client).can_add_reactions:
                 return self
             
-            for emoji in (self.EMOJIS if len(choices)>10 else self.EMOJIS_RESTRICTED):
-                await client.reaction_add(message,emoji)
+            for emoji in (self.EMOJIS if (len(choices) > 10) else self.EMOJIS_RESTRICTED):
+                await client.reaction_add(message, emoji)
         except BaseException as err:
             if isinstance(err, ConnectionError):
                 return self
@@ -1100,6 +1102,7 @@ class ChooseMenu(object):
                         ERROR_CODES.max_reactions, # reached reaction 20, some1 is trolling us.
                         ERROR_CODES.invalid_access, # client removed
                         ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                        ERROR_CODES.invalid_message_send_user, # user has dm-s disallowed
                             ):
                     return self
             
@@ -1124,11 +1127,11 @@ class ChooseMenu(object):
         choices = self.choices
         index = (selected//10)*10
         end = index+10
-        if len(choices)<end:
+        if len(choices) < end:
             end = len(choices)
         
-        parts=[]
-        prefix=self.prefix
+        parts = []
+        prefix = self.prefix
         left_length = 195
         if (prefix is not None):
             left_length -= len(prefix)
@@ -1147,7 +1150,7 @@ class ChooseMenu(object):
             if len(title) > left_length:
                 space_position = title.rfind(' ', left_length-25, left_length)
                 if space_position == -1:
-                    space_position=left_length-3
+                    space_position = left_length-3
                 
                 title = title[:space_position]+'...'
             
@@ -1166,12 +1169,12 @@ class ChooseMenu(object):
                 parts.append(title)
                 parts.append('\n')
             
-            index=index+1
-            if index==end:
+            index +=1
+            if index == end:
                 break
         
-        embed=self.embed
-        embed.description=''.join(parts)
+        embed = self.embed
+        embed.description = ''.join(parts)
         
         current_page = (selected//10)+1
         limit = len(choices)
@@ -1203,8 +1206,8 @@ class ChooseMenu(object):
         if (event.emoji not in (self.EMOJIS if len(self.choices)>10 else self.EMOJIS_RESTRICTED)):
             return
         
-        client=self.client
-        message=self.message
+        client = self.client
+        message = self.message
         
         if (event.delete_reaction_with(client) == event.DELETE_REACTION_NOT_ADDED):
             return
@@ -1264,7 +1267,7 @@ class ChooseMenu(object):
                     return
             
             if emoji is self.SELECT:
-                self.task_flag=GUI_STATE_SWITCHING_CTX
+                self.task_flag = GUI_STATE_SWITCHING_CTX
                 self.cancel()
                 
                 try:
@@ -1273,7 +1276,7 @@ class ChooseMenu(object):
                     
                     else:
                         for emoji in self.EMOJIS:
-                            await client.reaction_delete_own(message,emoji)
+                            await client.reaction_delete_own(message, emoji)
                 except BaseException as err:
                     if isinstance(err, ConnectionError):
                         # no internet
@@ -1288,7 +1291,7 @@ class ChooseMenu(object):
                                     ):
                             return
                     
-                    await client.events.error(client,f'{self!r}.__call__',err)
+                    await client.events.error(client, f'{self!r}.__call__', err)
                     return
                 
                 selecter = self.selecter
@@ -1301,7 +1304,7 @@ class ChooseMenu(object):
                         coro = selecter(client, channel, message, choice)
                     await coro
                 except BaseException as err:
-                    await client.events.error(client,f'{self!r}.__call__ when calling {selecter!r}',err)
+                    await client.events.error(client, f'{self!r}.__call__ when calling {selecter!r}', err)
                 return
             
             return
@@ -1335,11 +1338,11 @@ class ChooseMenu(object):
                     return
             
             # We definitedly do not want to silence `ERROR_CODES.invalid_form_body`
-            await client.events.error(client,f'{self!r}.__call__', err)
+            await client.events.error(client, f'{self!r}.__call__', err)
             return
 
-        if self.task_flag==GUI_STATE_CANCELLING:
-            self.task_flag=GUI_STATE_CANCELLED
+        if self.task_flag == GUI_STATE_CANCELLING:
+            self.task_flag = GUI_STATE_CANCELLED
             try:
                 await client.message_delete(message)
             except BaseException as err:
@@ -1386,11 +1389,11 @@ class ChooseMenu(object):
         client.events.reaction_add.remove(message, self)
         client.events.reaction_delete.remove(message, self)
         
-        if self.task_flag==GUI_STATE_SWITCHING_CTX:
+        if self.task_flag == GUI_STATE_SWITCHING_CTX:
             # the message is not our, we should not do anything with it.
             return
-
-        self.task_flag=GUI_STATE_CANCELLED
+        
+        self.task_flag = GUI_STATE_CANCELLED
         
         if exception is None:
             return
@@ -1414,16 +1417,16 @@ class ChooseMenu(object):
                                     ):
                             return
                     
-                    await client.events.error(client,f'{self!r}._canceller',err)
+                    await client.events.error(client, f'{self!r}._canceller', err)
                     return
             return
         
         timeouter = self.timeouter
         if (timeouter is not None):
             timeouter.cancel()
-        #we do nothing
+        # we do nothing
     
-    def cancel(self):
+    def cancel(self, exception=None):
         """
         Cancels the choose menu, if it is not cancelled yet.
         
@@ -1432,17 +1435,17 @@ class ChooseMenu(object):
         exception : `None` or ``BaseException`` instance, Optional
             Exception to cancel the choose menu with. Defaults to `None`
         """
-        canceller=self.canceller
+        canceller = self.canceller
         if canceller is None:
             return
         
-        self.canceller=None
+        self.canceller = None
         
-        timeouter=self.timeouter
+        timeouter = self.timeouter
         if timeouter is not None:
             timeouter.cancel()
         
-        return Task(canceller(self,None), KOKORO)
+        return Task(canceller(self, exception), KOKORO)
 
     def __repr__(self):
         """Returns the choose menu's representation."""
@@ -2135,7 +2138,7 @@ class Cooldown(object):
             If the cooldown limitation is not applicable for the given entity, returns `-1.0`.
         """
         channel = message.channel
-        if channel.type in (1,3):
+        if channel.type in (1, 3):
             return -1.
         else:
             id_ = channel.guild.id

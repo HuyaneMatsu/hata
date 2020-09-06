@@ -8,7 +8,7 @@ from .futures import Task, Future, WaitTillAll, future_or_timeout
 from .protocol import ReadProtocolBase
 
 IS_AIX = sys.platform.startswith('aix')
-LIMIT = 2 ** 16
+LIMIT = 1<<16
 MAX_READ_SIZE = 262144
 
 class UnixReadPipeTransport(object):
@@ -346,7 +346,9 @@ class UnixWritePipeTransport(object):
         try:
             protocol.pause_writing()
         except BaseException as err:
-            self.loop.render_exc_async(err, [self.__class__.__name__, '._maybe_pause_protocol() failed' , '\non: ', repr(self), '\n'])
+            self.loop.render_exc_async(err, [
+                repr(self), '._maybe_pause_protocol() failed\n'
+                'On: ', repr(protocol), '.pause_writing()\n'])
     
     def _maybe_resume_protocol(self):
         if (self.protocol_paused and self.get_write_buffer_size() <= self._low_water):
@@ -356,7 +358,9 @@ class UnixWritePipeTransport(object):
                 try:
                     protocol.resume_writing()
                 except BaseException as err:
-                    self.loop.render_exc_async(err, [self.__class__.__name__, '._maybe_resume_protocol() failed' , '\non: ', repr(self), '\n'])
+                    self.loop.render_exc_async(err, [
+                        repr(self), '._maybe_resume_protocol() failed\n'
+                        'on: ', repr(protocol), '.resume_writing()\n'])
     
     def get_write_buffer_limits(self):
         return self._low_water, self._high_water
@@ -372,7 +376,7 @@ class UnixWritePipeTransport(object):
             if low is None:
                 low = high>>2
         
-        if low<0 or high<low:
+        if low < 0 or high < low:
             raise ValueError(f'high ({high!r}) must be >= low ({low!r}) must be >= 0')
         
         self._high_water = high
@@ -419,7 +423,7 @@ class SubprocessStreamWriter(object):
             future = Future(loop)
             loop.call_soon(Future.set_result_if_pending, future, None)
             await future
-            
+        
         await self.protocol._drain_helper()
 
 class SubprocessWritePipeProtocol(object):

@@ -10,7 +10,7 @@ try:
 except ImportError:
     from weakref import WeakSet
 
-from ..env import CACHE_USER, CACHE_PRESENCE
+from ..env import CACHE_USER, CACHE_PRESENCE, ALLOW_DEAD_EVENTS
 from ..backend.futures import Future, Task, iscoroutinefunction as iscoro
 from ..backend.dereaddons_local import function, RemovedDescriptor, _spaceholder, MethodLike, NEEDS_DUMMY_INIT, \
     WeakKeyDictionary, WeakReferer, DOCS_ENABLED
@@ -26,7 +26,7 @@ from .emoji import PartialEmoji
 from .role import Role
 from .exceptions import DiscordException, ERROR_CODES
 from .invite import Invite
-from .message import EMBED_UPDATE_NONE, Message
+from .message import EMBED_UPDATE_NONE, Message, MessageRepr
 
 class EVENT_SYSTEM_CORE(object):
     """
@@ -373,34 +373,34 @@ def filter_clients(clients, flag_shift):
     -------
     client : ``Client`` or `None`
     """
-    index=0
-    limit=len(clients)
+    index = 0
+    limit = len(clients)
     
     while True:
-        if index==limit:
+        if index == limit:
             yield None
             return
         
-        client=clients[index]
+        client = clients[index]
         if (client.intents>>flag_shift)&1:
             yield client
             break
         
-        index=index+1
+        index +=1
         continue
         
     yield client
-    index=index+1
+    index +=1
     
     while True:
-        if index==limit:
+        if index == limit:
             return
         
-        client=clients[index]
+        client = clients[index]
         if (client.intents>>flag_shift)&1:
             yield client
         
-        index=index+1
+        index +=1
         continue
 
 def filter_clients_or_me(clients, flag_shift, me):
@@ -434,8 +434,8 @@ def filter_clients_or_me(clients, flag_shift, me):
     -------
     client : ``Client`` or `None`
     """
-    index=0
-    limit=len(clients)
+    index = 0
+    limit = len(clients)
     
     while True:
         if index==limit:
@@ -446,28 +446,28 @@ def filter_clients_or_me(clients, flag_shift, me):
                 yield me
             return
         
-        client=clients[index]
+        client = clients[index]
         if (client.intents>>flag_shift)&1:
             user = yield client
             break
         
-        index=index+1
+        index +=1
         continue
     
     yield
     
     yield client
-    index=index+1
+    index +=1
     
     while True:
-        if index==limit:
+        if index == limit:
             break
         
-        client=clients[index]
+        client = clients[index]
         if (client.intents>>flag_shift)&1:
             yield client
         
-        index=index+1
+        index +=1
         continue
     
     # Whether the user is type Client and we did not yield it, yield it.
@@ -494,19 +494,19 @@ def first_client(clients, flag_shift):
     -------
     client : ``Client`` or `None`
     """
-    index=0
-    limit=len(clients)
+    index = 0
+    limit = len(clients)
     
     while True:
-        if index==limit:
+        if index == limit:
             return None
         
-        client=clients[index]
+        client = clients[index]
         if (client.intents>>flag_shift)&1:
             return client
             break
         
-        index=index+1
+        index +=1
         continue
 
 def first_client_or_me(clients, flag_shift, me):
@@ -526,22 +526,22 @@ def first_client_or_me(clients, flag_shift, me):
     -------
     client : ``Client``
     """
-    index=0
-    limit=len(clients)
+    index = 0
+    limit = len(clients)
     
     while True:
-        if index==limit:
+        if index == limit:
             return me
         
-        client=clients[index]
+        client = clients[index]
         if (client.intents>>flag_shift)&1:
             return client
             break
         
-        index=index+1
+        index +=1
         continue
 
-PARSERS={}
+PARSERS = {}
 
 class PARSER_DEFAULTS(object):
     """
@@ -580,10 +580,10 @@ class PARSER_DEFAULTS(object):
         A weakreference set of all the running clients, which' events are included in the parser optimalization
         process.
     """
-    all={}
-    registered=WeakSet()
+    all = {}
+    registered = WeakSet()
     
-    __slots__=('mention_count', 'client_count', 'cal_sc', 'name', 'opt_sc', 'cal_mc', 'opt_mc',)
+    __slots__ = ('mention_count', 'client_count', 'cal_sc', 'name', 'opt_sc', 'cal_mc', 'opt_mc',)
     def __init__(self, name, cal_sc, cal_mc, opt_sc, opt_mc):
         """
         Creates a new parser defaults object with the given name and with the given parsers.
@@ -606,15 +606,15 @@ class PARSER_DEFAULTS(object):
         opt_mc : `function`
             Multy client optimized parsers.
         """
-        self.name=name
-        self.cal_sc=cal_sc
-        self.cal_mc=cal_mc
-        self.opt_sc=opt_sc
-        self.opt_mc=opt_mc
-        self.mention_count=0
-        self.client_count=0
-        self.all[name]=self
-        PARSERS[name]=opt_sc
+        self.name = name
+        self.cal_sc = cal_sc
+        self.cal_mc = cal_mc
+        self.opt_sc = opt_sc
+        self.opt_mc = opt_mc
+        self.mention_count = 0
+        self.client_count = 0
+        self.all[name] = self
+        PARSERS[name] = opt_sc
     
     @classmethod
     def register(cls, client):
@@ -626,13 +626,13 @@ class PARSER_DEFAULTS(object):
         ----------
         client : ``Client``
         """
-        registered=cls.registered
+        registered = cls.registered
         if client in registered:
             return
         
         registered.add(client)
         
-        enabled_parsers=set()
+        enabled_parsers = set()
         
         if client.is_bot:
             for parser_name in client.intents.iterate_parser_names():
@@ -642,12 +642,12 @@ class PARSER_DEFAULTS(object):
                 enabled_parsers.add(parser_name)
         
         for parser_name in enabled_parsers:
-            parser_default=cls.all[parser_name]
-            parser_default.client_count+=1
+            parser_default = cls.all[parser_name]
+            parser_default.client_count +=1
             parser_default._recalculate()
         
         for event_name in EVENTS.parsers.keys():
-            event = getattr(client.events,event_name)
+            event = getattr(client.events, event_name)
             if event is DEFAULT_EVENT:
                 continue
             
@@ -656,8 +656,8 @@ class PARSER_DEFAULTS(object):
                 if parser_name not in enabled_parsers:
                     continue
                 
-                parser_default=cls.all[parser_name]
-                parser_default.mention_count+=1
+                parser_default = cls.all[parser_name]
+                parser_default.mention_count +=1
                 parser_default._recalculate()
             
     
@@ -671,13 +671,13 @@ class PARSER_DEFAULTS(object):
         ----------
         client : ``Client``
         """
-        registered=cls.registered
+        registered = cls.registered
         if client not in registered:
             return
         
         registered.remove(client)
         
-        enabled_parsers=set()
+        enabled_parsers = set()
         
         if client.is_bot:
             for parser_name in client.intents.iterate_parser_names():
@@ -687,12 +687,12 @@ class PARSER_DEFAULTS(object):
                 enabled_parsers.add(parser_name)
         
         for parser_name in enabled_parsers:
-            parser_default=cls.all[parser_name]
-            parser_default.client_count-=1
+            parser_default = cls.all[parser_name]
+            parser_default.client_count -=1
             parser_default._recalculate()
         
         for event_name in EVENTS.parsers.keys():
-            event = getattr(client.events,event_name)
+            event = getattr(client.events, event_name)
             if event is DEFAULT_EVENT:
                 continue
             
@@ -701,8 +701,8 @@ class PARSER_DEFAULTS(object):
                 if parser_name not in enabled_parsers:
                     continue
                 
-                parser_default=cls.all[parser_name]
-                parser_default.mention_count-=1
+                parser_default = cls.all[parser_name]
+                parser_default.mention_count -=1
                 parser_default._recalculate()
                 continue
     
@@ -719,7 +719,8 @@ class PARSER_DEFAULTS(object):
         
         if client not in self.registered:
             return
-        self.mention_count+=1
+        
+        self.mention_count +=1
         self._recalculate()
     
     def remove_mention(self, client):
@@ -736,28 +737,29 @@ class PARSER_DEFAULTS(object):
         
         if client not in self.registered:
             return
-        self.mention_count-=1
+        
+        self.mention_count -=1
         self._recalculate()
         
     def _recalculate(self):
         """
         Chooses the optimal parsers for each dispatch event.
         """
-        mention_count=self.mention_count
-        client_count=self.client_count
+        mention_count = self.mention_count
+        client_count = self.client_count
         
-        if mention_count==0:
-            if client_count<2:
+        if mention_count == 0:
+            if client_count < 2:
                 parser = self.opt_sc
             else:
                 parser = self.opt_mc
         else:
-            if client_count<2:
+            if client_count < 2:
                 parser = self.cal_sc
             else:
                 parser = self.cal_mc
         
-        PARSERS[self.name]=parser
+        PARSERS[self.name] = parser
 
 SYNC_REQUESTS = {}
 
@@ -791,12 +793,12 @@ async def sync_task(queue_id, coro, queue):
     else:
         for client, data, parser_and_checker in queue:
             if type(parser_and_checker) is str:
-                PARSERS[parser_and_checker](client,data)
+                PARSERS[parser_and_checker](client, data)
                 continue
             
             parser_name, checker, value = parser_and_checker
             if checker(guild,value):
-                PARSERS[parser_name](client,data)
+                PARSERS[parser_name](client, data)
     finally:
         del SYNC_REQUESTS[queue_id]
 
@@ -811,7 +813,7 @@ def check_channel(guild, channel_id):
     guild : ``Guild``
     channel_id : `int`
     """
-    return (channel_id in guild.all_channel)
+    return (channel_id in guild.channels)
 
 def guild_sync(client, data, parser_and_checker):
     """
@@ -835,20 +837,20 @@ def guild_sync(client, data, parser_and_checker):
             third value (the type `Any` one) as arguments and return the condition's result.
     """
     try:
-        guild_id=int(data['guild_id'])
+        guild_id = int(data['guild_id'])
     except KeyError:
         return
     
     try:
-        queue=SYNC_REQUESTS[guild_id]
+        queue = SYNC_REQUESTS[guild_id]
     except KeyError:
-        queue=[]
+        queue = []
         Task(sync_task(guild_id, client.guild_sync(guild_id), queue), KOKORO)
-        SYNC_REQUESTS[guild_id]=queue
+        SYNC_REQUESTS[guild_id] = queue
     
     if parser_and_checker is None:
         return
-    queue.append((client,data,parser_and_checker),)
+    queue.append((client, data, parser_and_checker),)
 
 class EventBase(object):
     """
@@ -873,12 +875,12 @@ class EventBase(object):
         yield # This is intentional. Python stuff... Do not ask, just accept.
 
 #we dont call ready from this function directly
-def READY(client,data):
-    ready_state=client.ready_state
-    guild_datas=data['guilds']
+def READY(client, data):
+    ready_state = client.ready_state
+    guild_datas = data['guilds']
     
     if ready_state is None:
-        ready_state=ReadyState(client,guild_datas)
+        ready_state = ReadyState(client, guild_datas)
         client.ready_state=ready_state
         Task(client._delay_ready(), KOKORO)
     else:
@@ -890,11 +892,11 @@ def READY(client,data):
     # and those disappear so there is not reason to create them
     if not client.is_bot:
         for guild_data in guild_datas:
-            guild=Guild(guild_data,client)
+            guild = Guild(guild_data, client)
             ready_state.feed(guild)
     
     try:
-        relationship_datas=data['relationships']
+        relationship_datas = data['relationships']
     except KeyError:
         pass
     else:
@@ -902,12 +904,12 @@ def READY(client,data):
             Relationship(client, relationship_data, int(relationship_data['id']))
     
     try:
-        channel_private_datas=data['private_channels']
+        channel_private_datas = data['private_channels']
     except KeyError:
         pass
     else:
         for channel_private_data in channel_private_datas:
-            CHANNEL_TYPES[channel_private_data['type']](channel_private_data,client)
+            CHANNEL_TYPES[channel_private_data['type']](channel_private_data, client)
     
     # ignore `'user_settings'`
     
@@ -915,242 +917,471 @@ def READY(client,data):
     
     return _spaceholder
 
-PARSER_DEFAULTS('READY',READY,READY,READY,READY)
+PARSER_DEFAULTS(
+    'READY',
+    READY,
+    READY,
+    READY,
+    READY)
 del READY
 
-def RESUMED(client,data):
+def RESUMED(client, data):
     return _spaceholder
 
-PARSER_DEFAULTS('RESUMED',RESUMED,RESUMED,RESUMED,RESUMED)
+PARSER_DEFAULTS(
+    'RESUMED',
+    RESUMED,
+    RESUMED,
+    RESUMED,
+    RESUMED)
 del RESUMED
 
-def USER_UPDATE__CAL(client,data):
+def USER_UPDATE__CAL(client, data):
     old_attributes = client._update(data)
     if not old_attributes:
         return
     
-    Task(client.events.client_edit(client,old_attributes), KOKORO)
+    Task(client.events.client_edit(client, old_attributes), KOKORO)
 
-def USER_UPDATE__OPT(client,data):
+def USER_UPDATE__OPT(client, data):
     client._update_no_return(data)
 
-PARSER_DEFAULTS('USER_UPDATE',USER_UPDATE__CAL,USER_UPDATE__CAL,USER_UPDATE__OPT,USER_UPDATE__OPT)
-del USER_UPDATE__CAL, USER_UPDATE__OPT
+PARSER_DEFAULTS(
+    'USER_UPDATE',
+    USER_UPDATE__CAL,
+    USER_UPDATE__CAL,
+    USER_UPDATE__OPT,
+    USER_UPDATE__OPT)
+del USER_UPDATE__CAL, \
+    USER_UPDATE__OPT
 
-def MESSAGE_CREATE__CAL(client,data):
-    channel_id=int(data['channel_id'])
+def MESSAGE_CREATE__CAL(client, data):
+    channel_id = int(data['channel_id'])
     try:
-        channel=CHANNELS[channel_id]
+        channel = CHANNELS[channel_id]
     except KeyError:
-        guild_sync(client,data,('MESSAGE_CREATE',check_channel,channel_id))
+        guild_sync(client, data, ('MESSAGE_CREATE', check_channel, channel_id))
         return
 
     message = channel._create_new_message(data)
     
-    Task(client.events.message_create(client,message), KOKORO)
+    Task(client.events.message_create(client, message), KOKORO)
 
-def MESSAGE_CREATE__OPT(client,data):
-    channel_id=int(data['channel_id'])
+def MESSAGE_CREATE__OPT(client, data):
+    channel_id = int(data['channel_id'])
     try:
-        channel=CHANNELS[channel_id]
+        channel = CHANNELS[channel_id]
     except KeyError:
-        guild_sync(client,data,('MESSAGE_CREATE',check_channel,channel_id))
+        guild_sync(client, data, ('MESSAGE_CREATE', check_channel, channel_id))
         return
     
     channel._create_new_message(data)
 
-PARSER_DEFAULTS('MESSAGE_CREATE',MESSAGE_CREATE__CAL,MESSAGE_CREATE__CAL,MESSAGE_CREATE__OPT,MESSAGE_CREATE__OPT)
-del MESSAGE_CREATE__CAL, MESSAGE_CREATE__OPT
+PARSER_DEFAULTS(
+    'MESSAGE_CREATE',
+    MESSAGE_CREATE__CAL,
+    MESSAGE_CREATE__CAL,
+    MESSAGE_CREATE__OPT,
+    MESSAGE_CREATE__OPT)
+del MESSAGE_CREATE__CAL, \
+    MESSAGE_CREATE__OPT
 
-def MESSAGE_DELETE__CAL_SC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
-        return
-    
-    message_id=int(data['id'])
-    message=channel._pop_message(message_id)
-    if message is None:
-        return
-    
-    Task(client.events.message_delete(client,message), KOKORO)
-
-def MESSAGE_DELETE__CAL_MC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
-        return
-    
-    clients=filter_clients(channel.clients,INTENT_GUILD_MESSAGES if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_MESSAGES)
-    if clients.send(None) is not client:
-        clients.close()
-        return
-    
-    message_id=int(data['id'])
-    message=channel._pop_message(message_id)
-    if message is None:
-        return
-    
-    for client_ in clients:
-        Task(client_.events.message_delete(client_,message),KOKORO)
-    
-def MESSAGE_DELETE__OPT_SC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
-        return
-    
-    message_id=int(data['id'])
-    channel._pop_message(message_id)
-
-def MESSAGE_DELETE__OPT_MC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
-        return
-    
-    if first_client(channel.clients,INTENT_GUILD_MESSAGES if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_MESSAGES) is not client:
-        return
-    
-    message_id=int(data['id'])
-    channel._pop_message(message_id)
-
-PARSER_DEFAULTS('MESSAGE_DELETE',MESSAGE_DELETE__CAL_SC,MESSAGE_DELETE__CAL_MC,MESSAGE_DELETE__OPT_SC,MESSAGE_DELETE__OPT_MC)
-del MESSAGE_DELETE__CAL_SC, MESSAGE_DELETE__CAL_MC, MESSAGE_DELETE__OPT_SC, MESSAGE_DELETE__OPT_MC
-
-def MESSAGE_DELETE_BULK__CAL_SC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
-        return
-    
-    message_ids=[int(message_id) for message_id in data['ids']]
-    messages=channel._pop_multiple(message_ids)
-    
-    event = client.events.message_delete
-    for message in messages:
-        Task(client.events.message_delete(client, message), KOKORO)
-
-def MESSAGE_DELETE_BULK__CAL_MC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
-        return
-    
-    clients=filter_clients(channel.clients,INTENT_GUILD_MESSAGES)
-    if clients.send(None) is not client:
-        clients.close()
-        return
-    
-    message_ids=[int(message_id) for message_id in data['ids']]
-    messages=channel._pop_multiple(message_ids)
-    
-    for client_ in clients:
-        event = client_.events.message_delete
-        if event is DEFAULT_EVENT:
-            continue
-        
-        for message in messages:
-            Task(event(client_, message), KOKORO)
-
-def MESSAGE_DELETE_BULK__OPT_SC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
-        return
-
-    message_ids=[int(message_id) for message_id in data['ids']]
-    channel._pop_multiple(message_ids)
-
-def MESSAGE_DELETE_BULK__OPT_MC(client,data):
-    channel_id=int(data['channel_id'])
-    try:
-        channel=CHANNELS[channel_id]
-    except KeyError:
-        guild_sync(client,data,None)
-        return
-
-    if first_client(channel.clients,INTENT_GUILD_MESSAGES) is not client:
-        return
-
-    message_ids=[int(message_id) for message_id in data['ids']]
-    channel._pop_multiple(message_ids)
-
-PARSER_DEFAULTS('MESSAGE_DELETE_BULK',MESSAGE_DELETE_BULK__CAL_SC,MESSAGE_DELETE_BULK__CAL_MC,MESSAGE_DELETE_BULK__OPT_SC,MESSAGE_DELETE_BULK__OPT_MC)
-del MESSAGE_DELETE_BULK__CAL_SC, MESSAGE_DELETE_BULK__CAL_MC, MESSAGE_DELETE_BULK__OPT_SC, MESSAGE_DELETE_BULK__OPT_MC
-
-def MESSAGE_UPDATE__CAL_SC(client,data):
-    message_id=int(data['id'])
-    message=MESSAGES.get(message_id)
-    if message is None:
-        return
-    
-    if 'edited_timestamp' in data:
-        old_attributes = message._update(data)
-        if not old_attributes:
-            return
-        
-        Task(client.events.message_edit(client,message,old_attributes), KOKORO)
-    else:
-        change_state = message._update_embed(data)
-        if change_state == EMBED_UPDATE_NONE:
-            return
-        
-        Task(client.events.embed_update(client, message, change_state), KOKORO)
-
-def MESSAGE_UPDATE__CAL_MC(client, data):
-    message_id = int(data['id'])
-    message = MESSAGES.get(message_id)
-    if message is None:
+if ALLOW_DEAD_EVENTS:
+    def MESSAGE_DELETE__CAL_SC(client, data):
+        channel_id = int(data['channel_id'])
         try:
-            channel = CHANNELS[int(data['channel_id'])]
+            channel = CHANNELS[channel_id]
         except KeyError:
+            # Can happen that 1 client gets message or guild delete payload earlier, than the other message delete one,
+            # so do not sync guild at this case.
             return
+        
+        message_id = int(data['id'])
+        message = channel._pop_message(message_id)
+        if message is None:
+            message = MessageRepr(message_id, channel)
+        
+        Task(client.events.message_delete(client, message), KOKORO)
     
-    else:
-        channel = message.channel
+    def MESSAGE_DELETE__CAL_MC(client, data):
+        channel_id = int(data['channel_id'])
+        try:
+            channel = CHANNELS[channel_id]
+        except KeyError:
+            # Can happen that 1 client gets message or guild delete payload earlier, than the other message delete one,
+            # so do not sync guild at this case.
+            return
+        
+        clients = filter_clients(channel.clients,
+            INTENT_GUILD_MESSAGES if isinstance(channel, ChannelGuildBase) else INTENT_DIRECT_MESSAGES)
+        
+        if clients.send(None) is not client:
+            clients.close()
+            return
+        
+        message_id = int(data['id'])
+        message = channel._pop_message(message_id)
+        if message is None:
+            message = MessageRepr(message_id, channel)
+        
+        for client_ in clients:
+            Task(client_.events.message_delete(client_, message), KOKORO)
+        
+else:
+    def MESSAGE_DELETE__CAL_SC(client, data):
+        channel_id = int(data['channel_id'])
+        try:
+            channel = CHANNELS[channel_id]
+        except KeyError:
+            # Can happen that 1 client gets message or guild delete payload earlier, than the other message delete one,
+            # so do not sync guild at this case.
+            return
+        
+        message_id = int(data['id'])
+        message = channel._pop_message(message_id)
+        if message is None:
+            return
+        
+        Task(client.events.message_delete(client, message), KOKORO)
     
-    clients = filter_clients(channel.clients,INTENT_GUILD_MESSAGES if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_MESSAGES)
-    if clients.send(None) is not client:
-        clients.close()
+    def MESSAGE_DELETE__CAL_MC(client, data):
+        channel_id = int(data['channel_id'])
+        try:
+            channel = CHANNELS[channel_id]
+        except KeyError:
+            # Can happen that 1 client gets message or guild delete payload earlier, than the other message delete one,
+            # so do not sync guild at this case.
+            return
+        
+        clients = filter_clients(channel.clients,
+            INTENT_GUILD_MESSAGES if isinstance(channel, ChannelGuildBase) else INTENT_DIRECT_MESSAGES)
+        
+        if clients.send(None) is not client:
+            clients.close()
+            return
+        
+        message_id = int(data['id'])
+        message = channel._pop_message(message_id)
+        if message is None:
+            return
+        
+        for client_ in clients:
+            Task(client_.events.message_delete(client_, message), KOKORO)
+
+def MESSAGE_DELETE__OPT_SC(client, data):
+    channel_id = int(data['channel_id'])
+    try:
+        channel = CHANNELS[channel_id]
+    except KeyError:
+        # Can happen that 1 client gets message or guild delete payload earlier, than the other message delete one,
+        # so do not sync guild at this case.
         return
     
-    if 'edited_timestamp' in data:
+    message_id = int(data['id'])
+    channel._pop_message(message_id)
+
+def MESSAGE_DELETE__OPT_MC(client, data):
+    channel_id = int(data['channel_id'])
+    try:
+        channel = CHANNELS[channel_id]
+    except KeyError:
+        # Can happen that 1 client gets message or guild delete payload earlier, than the other message delete one,
+        # so do not sync guild at this case.
+        return
+    
+    if first_client(
+            channel.clients,
+            INTENT_GUILD_MESSAGES if isinstance(channel, ChannelGuildBase) else INTENT_DIRECT_MESSAGES
+                ) is not client:
+        return
+    
+    message_id = int(data['id'])
+    channel._pop_message(message_id)
+
+PARSER_DEFAULTS(
+    'MESSAGE_DELETE',
+    MESSAGE_DELETE__CAL_SC,
+    MESSAGE_DELETE__CAL_MC,
+    MESSAGE_DELETE__OPT_SC,
+    MESSAGE_DELETE__OPT_MC)
+del MESSAGE_DELETE__CAL_SC, \
+    MESSAGE_DELETE__CAL_MC, \
+    MESSAGE_DELETE__OPT_SC, \
+    MESSAGE_DELETE__OPT_MC
+
+if ALLOW_DEAD_EVENTS:
+    def MESSAGE_DELETE_BULK__CAL_SC(client, data):
+        channel_id = int(data['channel_id'])
+        try:
+            channel = CHANNELS[channel_id]
+        except KeyError:
+            # Can happen that 1 client gets message or guild delete payload earlier, than the other message delete one,
+            # so do not sync guild at this case.
+            return
+        
+        message_ids = [int(message_id) for message_id in data['ids']]
+        messages, missed = channel._pop_multiple(message_ids)
+        
+        if missed:
+            for message_id in missed:
+                message = MessageRepr(message_id, channel)
+                messages.append(missed)
+        
+        event = client.events.message_delete
+        for message in messages:
+            Task(event(client, message), KOKORO)
+    
+    def MESSAGE_DELETE_BULK__CAL_MC(client, data):
+        channel_id = int(data['channel_id'])
+        try:
+            channel = CHANNELS[channel_id]
+        except KeyError:
+            # Can happen that 1 client gets message or guild delete payload earlier, than the other message delete one,
+            # so do not sync guild at this case.
+            return
+        
+        clients = filter_clients(channel.clients, INTENT_GUILD_MESSAGES)
+        if clients.send(None) is not client:
+            clients.close()
+            return
+        
+        message_ids = [int(message_id) for message_id in data['ids']]
+        messages, missed = channel._pop_multiple(message_ids)
+        
+        if missed:
+            for message_id in missed:
+                message = MessageRepr(message_id, channel)
+                messages.append(missed)
+        
+        for client_ in clients:
+            event = client_.events.message_delete
+            if event is DEFAULT_EVENT:
+                continue
+            
+            for message in messages:
+                Task(event(client_, message), KOKORO)
+else:
+    def MESSAGE_DELETE_BULK__CAL_SC(client, data):
+        channel_id = int(data['channel_id'])
+        try:
+            channel = CHANNELS[channel_id]
+        except KeyError:
+            # Can happen that 1 client gets message or guild delete payload earlier, than the other message delete one,
+            # so do not sync guild at this case.
+            return
+        
+        message_ids = [int(message_id) for message_id in data['ids']]
+        messages, missed = channel._pop_multiple(message_ids)
+        
+        event = client.events.message_delete
+        for message in messages:
+            Task(event(client, message), KOKORO)
+    
+    def MESSAGE_DELETE_BULK__CAL_MC(client, data):
+        channel_id = int(data['channel_id'])
+        try:
+            channel = CHANNELS[channel_id]
+        except KeyError:
+            # Can happen that 1 client gets message or guild delete payload earlier, than the other message delete one,
+            # so do not sync guild at this case.
+            return
+        
+        clients = filter_clients(channel.clients, INTENT_GUILD_MESSAGES)
+        if clients.send(None) is not client:
+            clients.close()
+            return
+        
+        message_ids = [int(message_id) for message_id in data['ids']]
+        messages, missed = channel._pop_multiple(message_ids)
+        
+        for client_ in clients:
+            event = client_.events.message_delete
+            if event is DEFAULT_EVENT:
+                continue
+            
+            for message in messages:
+                Task(event(client_, message), KOKORO)
+
+def MESSAGE_DELETE_BULK__OPT_SC(client, data):
+    channel_id = int(data['channel_id'])
+    try:
+        channel = CHANNELS[channel_id]
+    except KeyError:
+        guild_sync(client, data, None)
+        return
+
+    message_ids = [int(message_id) for message_id in data['ids']]
+    channel._pop_multiple(message_ids)
+
+def MESSAGE_DELETE_BULK__OPT_MC(client, data):
+    channel_id = int(data['channel_id'])
+    try:
+        channel = CHANNELS[channel_id]
+    except KeyError:
+        guild_sync(client, data, None)
+        return
+
+    if first_client(channel.clients, INTENT_GUILD_MESSAGES) is not client:
+        return
+
+    message_ids = [int(message_id) for message_id in data['ids']]
+    channel._pop_multiple(message_ids)
+
+PARSER_DEFAULTS(
+    'MESSAGE_DELETE_BULK',
+    MESSAGE_DELETE_BULK__CAL_SC,
+    MESSAGE_DELETE_BULK__CAL_MC,
+    MESSAGE_DELETE_BULK__OPT_SC,
+    MESSAGE_DELETE_BULK__OPT_MC)
+del MESSAGE_DELETE_BULK__CAL_SC, \
+    MESSAGE_DELETE_BULK__CAL_MC, \
+    MESSAGE_DELETE_BULK__OPT_SC, \
+    MESSAGE_DELETE_BULK__OPT_MC
+
+if ALLOW_DEAD_EVENTS:
+    def MESSAGE_UPDATE__CAL_SC(client, data):
+        message_id = int(data['id'])
+        message = MESSAGES.get(message_id)
         if message is None:
-            message = Message._create_unlinked(message_id, data, channel)
-            old_attributes = None
+            try:
+                channel = CHANNELS[int(data['channel_id'])]
+            except KeyError:
+                return
+        
         else:
+            channel = message.channel
+        
+        if message is None:
+            if 'edited_timestamp' not in data:
+                return
+            
+            if message is None:
+                message = Message._create_unlinked(message_id, data, channel)
+                old_attributes = None
+            else:
+                old_attributes = message._update(data)
+                if not old_attributes:
+                    return
+            
+            Task(client.events.message_edit(client, message, old_attributes), KOKORO)
+            return
+        
+        if 'edited_timestamp' in data:
             old_attributes = message._update(data)
             if not old_attributes:
                 return
-        
-        for client_ in clients:
-            Task(client_.events.message_edit(client_,message,old_attributes), KOKORO)
-    else:
-        result = message._update_embed(data)
-        if not result:
-            return
             
-        for client_ in clients:
-            Task(client_.events.embed_update(client_,message,result), KOKORO)
+            Task(client.events.message_edit(client, message, old_attributes), KOKORO)
+        else:
+            change_state = message._update_embed(data)
+            if change_state == EMBED_UPDATE_NONE:
+                return
+            
+            Task(client.events.embed_update(client, message, change_state), KOKORO)
+    
+    def MESSAGE_UPDATE__CAL_MC(client, data):
+        message_id = int(data['id'])
+        message = MESSAGES.get(message_id)
+        if message is None:
+            try:
+                channel = CHANNELS[int(data['channel_id'])]
+            except KeyError:
+                return
+        
+        else:
+            channel = message.channel
+        
+        clients = filter_clients(channel.clients,
+            INTENT_GUILD_MESSAGES if isinstance(channel, ChannelGuildBase) else INTENT_DIRECT_MESSAGES)
+        
+        if clients.send(None) is not client:
+            clients.close()
+            return
+        
+        if message is None:
+            if 'edited_timestamp' not in data:
+                return
+            
+            if message is None:
+                message = Message._create_unlinked(message_id, data, channel)
+                old_attributes = None
+            else:
+                old_attributes = message._update(data)
+                if not old_attributes:
+                    return
+            
+            for client_ in clients:
+                Task(client_.events.message_edit(client_, message, old_attributes), KOKORO)
+            
+            return
+        
+        if 'edited_timestamp' in data:
+            old_attributes = message._update(data)
+            if not old_attributes:
+                return
+            
+            for client_ in clients:
+                Task(client_.events.message_edit(client_, message, old_attributes), KOKORO)
+        else:
+            result = message._update_embed(data)
+            if not result:
+                return
+                
+            for client_ in clients:
+                Task(client_.events.embed_update(client_, message, result), KOKORO)
 
-def MESSAGE_UPDATE__OPT_SC(client,data):
-    message_id=int(data['id'])
-    message=MESSAGES.get(message_id)
+else:
+    def MESSAGE_UPDATE__CAL_SC(client, data):
+        message_id = int(data['id'])
+        message = MESSAGES.get(message_id)
+        if message is None:
+            return
+        
+        if 'edited_timestamp' in data:
+            old_attributes = message._update(data)
+            if not old_attributes:
+                return
+            
+            Task(client.events.message_edit(client, message, old_attributes), KOKORO)
+        else:
+            change_state = message._update_embed(data)
+            if change_state == EMBED_UPDATE_NONE:
+                return
+            
+            Task(client.events.embed_update(client, message, change_state), KOKORO)
+    
+    def MESSAGE_UPDATE__CAL_MC(client, data):
+        message_id = int(data['id'])
+        message = MESSAGES.get(message_id)
+        if message is None:
+            return
+        
+        channel = message.channel
+        clients = filter_clients(channel.clients,
+            INTENT_GUILD_MESSAGES if isinstance(channel, ChannelGuildBase) else INTENT_DIRECT_MESSAGES)
+        
+        if clients.send(None) is not client:
+            clients.close()
+            return
+        
+        if 'edited_timestamp' in data:
+            old_attributes = message._update(data)
+            if not old_attributes:
+                return
+            
+            for client_ in clients:
+                Task(client_.events.message_edit(client_, message, old_attributes), KOKORO)
+        else:
+            result = message._update_embed(data)
+            if not result:
+                return
+                
+            for client_ in clients:
+                Task(client_.events.embed_update(client_, message, result), KOKORO)
+
+def MESSAGE_UPDATE__OPT_SC(client, data):
+    message_id = int(data['id'])
+    message = MESSAGES.get(message_id)
     if message is None:
         return
     
@@ -1159,14 +1390,17 @@ def MESSAGE_UPDATE__OPT_SC(client,data):
     else:
         message._update_embed_no_return(data)
 
-def MESSAGE_UPDATE__OPT_MC(client,data):
-    message_id=int(data['id'])
-    message=MESSAGES.get(message_id)
+def MESSAGE_UPDATE__OPT_MC(client, data):
+    message_id = int(data['id'])
+    message = MESSAGES.get(message_id)
     if message is None:
         return
     
     channel = message.channel
-    if first_client(channel.clients,INTENT_GUILD_MESSAGES if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_MESSAGES) is not client:
+    if first_client(
+            channel.clients,
+            INTENT_GUILD_MESSAGES if isinstance(channel, ChannelGuildBase) else INTENT_DIRECT_MESSAGES
+                ) is not client:
         return
     
     if 'edited_timestamp' in data:
@@ -1175,8 +1409,16 @@ def MESSAGE_UPDATE__OPT_MC(client,data):
         message._update_embed_no_return(data)
 
 
-PARSER_DEFAULTS('MESSAGE_UPDATE',MESSAGE_UPDATE__CAL_SC, MESSAGE_UPDATE__CAL_MC, MESSAGE_UPDATE__OPT_SC, MESSAGE_UPDATE__OPT_MC)
-del MESSAGE_UPDATE__CAL_SC, MESSAGE_UPDATE__CAL_MC, MESSAGE_UPDATE__OPT_SC, MESSAGE_UPDATE__OPT_MC
+PARSER_DEFAULTS(
+    'MESSAGE_UPDATE',
+    MESSAGE_UPDATE__CAL_SC,
+    MESSAGE_UPDATE__CAL_MC,
+    MESSAGE_UPDATE__OPT_SC,
+    MESSAGE_UPDATE__OPT_MC)
+del MESSAGE_UPDATE__CAL_SC, \
+    MESSAGE_UPDATE__CAL_MC, \
+    MESSAGE_UPDATE__OPT_SC, \
+    MESSAGE_UPDATE__OPT_MC
 
 class ReactionAddEvent(EventBase):
     """
@@ -1184,8 +1426,11 @@ class ReactionAddEvent(EventBase):
     
     Attributes
     ----------
-    message : ``Message``
+    message : ``Message`` or ``MessageRepr``
         The message on what the reaction is added.
+        
+        If `HATA_ALLOW_DEAD_EVENTS` enviromental variable is given as `True`, then message might be given as
+        ``MessageRepr`` instance, if the respective event was received on an uncached message.
     emoji : ``Emoji``
         The emoji used as reaction.
     user : ``User`` or ``Client``
@@ -1203,6 +1448,22 @@ class ReactionAddEvent(EventBase):
         ``ReactionAddEvent``.
     """
     __slots__ = ('message', 'emoji', 'user')
+    def __new__(cls, message, emoji, user):
+        """
+        Creates a new ``ReactionAddEvent`` instance (or it's subclasse's instance).
+        
+        message : ``Message`` or ``MessageRepr``
+            The respective message.
+        emoji : ``Emoji``
+            The emoji used.
+        user : ``User`` or ``Client``
+            The user who reacted.
+        """
+        self = object.__new__(cls)
+        self.message = message
+        self.emoji = emoji
+        self.user = user
+        return self
     
     def __repr__(self):
         """Returns the representation of the event."""
@@ -1275,134 +1536,261 @@ async def _delete_reaction_with_task(reaction_add_event, client):
         await client.events.error(client, f'_delete_reaction_with_task called from {reaction_add_event!r}', err)
         return
 
-def MESSAGE_REACTION_ADD__CAL_SC(client,data):
-    message_id=int(data['message_id'])
-    message=MESSAGES.get(message_id)
+if ALLOW_DEAD_EVENTS:
+    def MESSAGE_REACTION_ADD__CAL_SC(client, data):
+        message_id = int(data['message_id'])
+        message = MESSAGES.get(message_id)
+        if message is None:
+            channel_id = int(data['channel_id'])
+            try:
+                channel = CHANNELS[channel_id]
+            except KeyError:
+                return
+        
+        user_id = int(data['user_id'])
+        user = PartialUser(user_id)
+        emoji = PartialEmoji(data['emoji'])
+        
+        if message is None:
+            message = MessageRepr(message_id, channel)
+        else:
+            message.reactions.add(emoji, user)
+        
+        event = ReactionAddEvent(message, emoji, user)
+        Task(client.events.reaction_add(client, event), KOKORO)
+    
+    def MESSAGE_REACTION_ADD__CAL_MC(client, data):
+        message_id = int(data['message_id'])
+        message = MESSAGES.get(message_id)
+        if message is None:
+            channel_id = int(data['channel_id'])
+            try:
+                channel = CHANNELS[channel_id]
+            except KeyError:
+                return
+            
+        else:
+            channel = message.channel
+        
+        clients = filter_clients(channel.clients,
+            INTENT_GUILD_REACTIONS if isinstance(channel, ChannelGuildBase) else INTENT_DIRECT_REACTIONS)
+        if clients.send(None) is not client:
+            clients.close()
+            return
+        
+        user_id = int(data['user_id'])
+        user = PartialUser(user_id)
+        emoji = PartialEmoji(data['emoji'])
+        
+        if message is None:
+            message = MessageRepr(message_id, channel)
+        else:
+            message.reactions.add(emoji, user)
+        
+        event = ReactionAddEvent(message, emoji, user)
+        for client_ in clients:
+            Task(client_.events.reaction_add(client_, event), KOKORO)
+else:
+    def MESSAGE_REACTION_ADD__CAL_SC(client, data):
+        message_id = int(data['message_id'])
+        message = MESSAGES.get(message_id)
+        if message is None:
+            return
+        
+        user_id = int(data['user_id'])
+        user = PartialUser(user_id)
+        emoji = PartialEmoji(data['emoji'])
+        message.reactions.add(emoji, user)
+        
+        event = ReactionAddEvent(message, emoji, user)
+        Task(client.events.reaction_add(client, event), KOKORO)
+    
+    def MESSAGE_REACTION_ADD__CAL_MC(client, data):
+        message_id = int(data['message_id'])
+        message = MESSAGES.get(message_id)
+        if message is None:
+            return
+        
+        channel = message.channel
+        clients = filter_clients(channel.clients,
+            INTENT_GUILD_REACTIONS if isinstance(channel, ChannelGuildBase) else INTENT_DIRECT_REACTIONS)
+        if clients.send(None) is not client:
+            clients.close()
+            return
+        
+        user_id = int(data['user_id'])
+        user = PartialUser(user_id)
+        emoji = PartialEmoji(data['emoji'])
+        message.reactions.add(emoji, user)
+        
+        event = ReactionAddEvent(message, emoji, user)
+        for client_ in clients:
+            Task(client_.events.reaction_add(client_, event), KOKORO)
+
+def MESSAGE_REACTION_ADD__OPT_SC(client, data):
+    message_id = int(data['message_id'])
+    message = MESSAGES.get(message_id)
     if message is None:
         return
     
-    user_id=int(data['user_id'])
-    user=PartialUser(user_id)
-    emoji=PartialEmoji(data['emoji'])
-    message.reactions.add(emoji,user)
-    
-    event = object.__new__(ReactionAddEvent)
-    event.message = message
-    event.emoji = emoji
-    event.user = user
-    
-    Task(client.events.reaction_add(client, event), KOKORO)
+    user_id = int(data['user_id'])
+    user = PartialUser(user_id)
+    emoji = PartialEmoji(data['emoji'])
+    message.reactions.add(emoji, user)
 
-def MESSAGE_REACTION_ADD__CAL_MC(client,data):
-    message_id=int(data['message_id'])
-    message=MESSAGES.get(message_id)
-    if message is None:
-        return
-    
-    channel = message.channel
-    clients=filter_clients(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS)
-    if clients.send(None) is not client:
-        clients.close()
-        return
-    
-    user_id=int(data['user_id'])
-    user=PartialUser(user_id)
-    emoji=PartialEmoji(data['emoji'])
-    message.reactions.add(emoji,user)
-    
-    event = object.__new__(ReactionAddEvent)
-    event.message = message
-    event.emoji = emoji
-    event.user = user
-    
-    for client_ in clients:
-        Task(client_.events.reaction_add(client_, event), KOKORO)
-
-def MESSAGE_REACTION_ADD__OPT_SC(client,data):
-    message_id=int(data['message_id'])
-    message=MESSAGES.get(message_id)
-    if message is None:
-        return
-    
-    user_id=int(data['user_id'])
-    user=PartialUser(user_id)
-    emoji=PartialEmoji(data['emoji'])
-    message.reactions.add(emoji,user)
-
-def MESSAGE_REACTION_ADD__OPT_MC(client,data):
-    message_id=int(data['message_id'])
-    message=MESSAGES.get(message_id)
-    if message is None:
-        return
-    
-    channel = message.channel
-    if first_client(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS) is not client:
-        return
-    
-    user_id=int(data['user_id'])
-    user=PartialUser(user_id)
-    emoji=PartialEmoji(data['emoji'])
-    message.reactions.add(emoji,user)
-
-PARSER_DEFAULTS('MESSAGE_REACTION_ADD',MESSAGE_REACTION_ADD__CAL_SC,MESSAGE_REACTION_ADD__CAL_MC,MESSAGE_REACTION_ADD__OPT_SC,MESSAGE_REACTION_ADD__OPT_MC)
-del MESSAGE_REACTION_ADD__CAL_SC, MESSAGE_REACTION_ADD__CAL_MC, MESSAGE_REACTION_ADD__OPT_SC, MESSAGE_REACTION_ADD__OPT_MC
-
-def MESSAGE_REACTION_REMOVE_ALL__CAL_SC(client,data):
-    message_id=int(data['message_id'])
-    message=MESSAGES.get(message_id)
-    if message is None:
-        return
-    
-    old_reactions=message.reactions
-    if not old_reactions:
-        return
-    
-    message.reactions=type(old_reactions)(None)
-    
-    Task(client.events.reaction_clear(client,message,old_reactions), KOKORO)
-
-def MESSAGE_REACTION_REMOVE_ALL__CAL_MC(client,data):
-    message_id=int(data['message_id'])
-    message=MESSAGES.get(message_id)
-    if message is None:
-        return
-    
-    channel = message.channel
-    clients=filter_clients(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS)
-    if clients.send(None) is not client:
-        clients.close()
-        return
-    
-    old_reactions=message.reactions
-    if not old_reactions:
-        return
-    
-    message.reactions=type(old_reactions)(None)
-    for client_ in clients:
-        Task(client_.events.reaction_clear(client_,message,old_reactions),KOKORO)
-    
-def MESSAGE_REACTION_REMOVE_ALL__OPT_SC(client,data):
-    message_id=int(data['message_id'])
-    message=MESSAGES.get(message_id)
-    if message is None:
-        return
-
-    message.reactions=type(message.reactions)(None)
-
-def MESSAGE_REACTION_REMOVE_ALL__OPT_MC(client,data):
-    message_id=int(data['message_id'])
-    message=MESSAGES.get(message_id)
+def MESSAGE_REACTION_ADD__OPT_MC(client, data):
+    message_id = int(data['message_id'])
+    message = MESSAGES.get(message_id)
     if message is None:
         return
     
     channel = message.channel
-    if first_client(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS) is not client:
+    if first_client(
+            channel.clients,
+            INTENT_GUILD_REACTIONS if isinstance(channel, ChannelGuildBase) else INTENT_DIRECT_REACTIONS
+                ) is not client:
         return
     
-    message.reactions=type(message.reactions)(None)
+    user_id = int(data['user_id'])
+    user = PartialUser(user_id)
+    emoji = PartialEmoji(data['emoji'])
+    message.reactions.add(emoji, user)
 
-PARSER_DEFAULTS('MESSAGE_REACTION_REMOVE_ALL',MESSAGE_REACTION_REMOVE_ALL__CAL_SC,MESSAGE_REACTION_REMOVE_ALL__CAL_MC,MESSAGE_REACTION_REMOVE_ALL__OPT_SC,MESSAGE_REACTION_REMOVE_ALL__OPT_MC)
-del MESSAGE_REACTION_REMOVE_ALL__CAL_SC, MESSAGE_REACTION_REMOVE_ALL__CAL_MC, MESSAGE_REACTION_REMOVE_ALL__OPT_SC, MESSAGE_REACTION_REMOVE_ALL__OPT_MC
+PARSER_DEFAULTS(
+    'MESSAGE_REACTION_ADD',
+    MESSAGE_REACTION_ADD__CAL_SC,
+    MESSAGE_REACTION_ADD__CAL_MC,
+    MESSAGE_REACTION_ADD__OPT_SC,
+    MESSAGE_REACTION_ADD__OPT_MC)
+del MESSAGE_REACTION_ADD__CAL_SC, \
+    MESSAGE_REACTION_ADD__CAL_MC, \
+    MESSAGE_REACTION_ADD__OPT_SC, \
+    MESSAGE_REACTION_ADD__OPT_MC
+
+if ALLOW_DEAD_EVENTS:
+    def MESSAGE_REACTION_REMOVE_ALL__CAL_SC(client, data):
+        message_id = int(data['message_id'])
+        message = MESSAGES.get(message_id)
+        if message is None:
+            channel_id = int(data['channel_id'])
+            try:
+                channel = CHANNELS[channel_id]
+            except KeyError:
+                return
+            
+            message = MessageRepr(message_id, channel)
+            old_reactions = None
+        
+        else:
+            old_reactions = message.reactions
+            if not old_reactions:
+                return
+            
+            message.reactions = type(old_reactions)(None)
+        
+        Task(client.events.reaction_clear(client, message, old_reactions), KOKORO)
+    
+    def MESSAGE_REACTION_REMOVE_ALL__CAL_MC(client, data):
+        message_id = int(data['message_id'])
+        message = MESSAGES.get(message_id)
+        if message is None:
+            channel_id = int(data['channel_id'])
+            try:
+                channel = CHANNELS[channel_id]
+            except KeyError:
+                return
+        else:
+            channel = message.channel
+        
+        clients = filter_clients(channel.clients,
+            INTENT_GUILD_REACTIONS if isinstance(channel, ChannelGuildBase) else INTENT_DIRECT_REACTIONS)
+        if clients.send(None) is not client:
+            clients.close()
+            return
+
+        if message is None:
+            message = MessageRepr(message_id, channel)
+            old_reactions = None
+        
+        else:
+            old_reactions = message.reactions
+            if not old_reactions:
+                return
+            
+            message.reactions = type(old_reactions)(None)
+        
+        for client_ in clients:
+            Task(client_.events.reaction_clear(client_, message, old_reactions), KOKORO)
+
+else:
+    def MESSAGE_REACTION_REMOVE_ALL__CAL_SC(client, data):
+        message_id = int(data['message_id'])
+        message = MESSAGES.get(message_id)
+        if message is None:
+            return
+        
+        old_reactions = message.reactions
+        if not old_reactions:
+            return
+        
+        message.reactions = type(old_reactions)(None)
+        
+        Task(client.events.reaction_clear(client, message, old_reactions), KOKORO)
+    
+    def MESSAGE_REACTION_REMOVE_ALL__CAL_MC(client, data):
+        message_id = int(data['message_id'])
+        message = MESSAGES.get(message_id)
+        if message is None:
+            return
+        
+        channel = message.channel
+        clients = filter_clients(channel.clients,
+            INTENT_GUILD_REACTIONS if isinstance(channel, ChannelGuildBase) else INTENT_DIRECT_REACTIONS)
+        if clients.send(None) is not client:
+            clients.close()
+            return
+        
+        old_reactions = message.reactions
+        if not old_reactions:
+            return
+        
+        message.reactions = type(old_reactions)(None)
+        for client_ in clients:
+            Task(client_.events.reaction_clear(client_, message, old_reactions), KOKORO)
+
+def MESSAGE_REACTION_REMOVE_ALL__OPT_SC(client, data):
+    message_id = int(data['message_id'])
+    message = MESSAGES.get(message_id)
+    if message is None:
+        return
+
+    message.reactions = type(message.reactions)(None)
+
+def MESSAGE_REACTION_REMOVE_ALL__OPT_MC(client, data):
+    message_id = int(data['message_id'])
+    message = MESSAGES.get(message_id)
+    if message is None:
+        return
+    
+    channel = message.channel
+    if first_client(
+            channel.clients,
+            INTENT_GUILD_REACTIONS if isinstance(channel, ChannelGuildBase) else INTENT_DIRECT_REACTIONS
+                ) is not client:
+        return
+    
+    message.reactions = type(message.reactions)(None)
+
+PARSER_DEFAULTS(
+    'MESSAGE_REACTION_REMOVE_ALL',
+    MESSAGE_REACTION_REMOVE_ALL__CAL_SC,
+    MESSAGE_REACTION_REMOVE_ALL__CAL_MC,
+    MESSAGE_REACTION_REMOVE_ALL__OPT_SC,
+    MESSAGE_REACTION_REMOVE_ALL__OPT_MC)
+del MESSAGE_REACTION_REMOVE_ALL__CAL_SC, \
+    MESSAGE_REACTION_REMOVE_ALL__CAL_MC, \
+    MESSAGE_REACTION_REMOVE_ALL__OPT_SC, \
+    MESSAGE_REACTION_REMOVE_ALL__OPT_MC
 
 
 class ReactionDeleteEvent(ReactionAddEvent):
@@ -1411,8 +1799,11 @@ class ReactionDeleteEvent(ReactionAddEvent):
     
     Attributes
     ----------
-    message : ``Message``
+    message : ``Message`` or ``MessageRepr``
         The message from what the reaction was removed.
+        
+        If `HATA_ALLOW_DEAD_EVENTS` enviromental variable is given as `True`, then message might be given as
+        ``MessageRepr`` instance, if the respective event was received on an uncached message.
     emoji : ``Emoji``
         The removed emoji.
     user : ``User`` or ``Client``
@@ -1462,143 +1853,267 @@ class ReactionDeleteEvent(ReactionAddEvent):
         
         return result
 
-def MESSAGE_REACTION_REMOVE__CAL_SC(client,data):
-    message_id=int(data['message_id'])
-    message=MESSAGES.get(message_id)
+if ALLOW_DEAD_EVENTS:
+    def MESSAGE_REACTION_REMOVE__CAL_SC(client, data):
+        message_id = int(data['message_id'])
+        message = MESSAGES.get(message_id)
+        if message is None:
+            channel_id = int(data['channel_id'])
+            try:
+                channel = CHANNELS[channel_id]
+            except KeyError:
+                return
+            
+            message = MessageRepr(message_id, channel)
+        else:
+            channel = message.channel
+        
+        user_id = int(data['user_id'])
+        user = PartialUser(user_id)
+        emoji = PartialEmoji(data['emoji'])
+        message.reactions.remove(emoji, user)
+        
+        event = ReactionDeleteEvent(message, emoji, user)
+        Task(client.events.reaction_delete(client, event), KOKORO)
+    
+    def MESSAGE_REACTION_REMOVE__CAL_MC(client, data):
+        message_id = int(data['message_id'])
+        message = MESSAGES.get(message_id)
+        if message is None:
+            channel_id = int(data['channel_id'])
+            try:
+                channel = CHANNELS[channel_id]
+            except KeyError:
+                return
+            
+        else:
+            channel = message.channel
+        
+        clients = filter_clients(channel.clients,
+            INTENT_GUILD_REACTIONS if isinstance(channel, ChannelGuildBase) else INTENT_DIRECT_REACTIONS)
+        if clients.send(None) is not client:
+            clients.close()
+            return
+        
+        user_id = int(data['user_id'])
+        user = PartialUser(user_id)
+        emoji = PartialEmoji(data['emoji'])
+        if message is None:
+            message = MessageRepr(message_id, channel)
+        else:
+            message.reactions.remove(emoji, user)
+        
+        event = ReactionDeleteEvent(message, emoji, user)
+        for client_ in clients:
+            Task(client_.events.reaction_delete(client_, event), KOKORO)
+else:
+    def MESSAGE_REACTION_REMOVE__CAL_SC(client, data):
+        message_id = int(data['message_id'])
+        message = MESSAGES.get(message_id)
+        if message is None:
+            return
+        
+        user_id = int(data['user_id'])
+        user = PartialUser(user_id)
+        emoji = PartialEmoji(data['emoji'])
+        message.reactions.remove(emoji, user)
+        
+        event = ReactionDeleteEvent(message, emoji, user)
+        Task(client.events.reaction_delete(client, event), KOKORO)
+    
+    def MESSAGE_REACTION_REMOVE__CAL_MC(client, data):
+        message_id = int(data['message_id'])
+        message = MESSAGES.get(message_id)
+        if message is None:
+            return
+        
+        channel = message.channel
+        clients = filter_clients(channel.clients,
+            INTENT_GUILD_REACTIONS if isinstance(channel, ChannelGuildBase) else INTENT_DIRECT_REACTIONS)
+        if clients.send(None) is not client:
+            clients.close()
+            return
+        
+        user_id = int(data['user_id'])
+        user = PartialUser(user_id)
+        emoji = PartialEmoji(data['emoji'])
+        message.reactions.remove(emoji, user)
+        
+        event = ReactionDeleteEvent(message, emoji, user)
+        for client_ in clients:
+            Task(client_.events.reaction_delete(client_, event), KOKORO)
+
+def MESSAGE_REACTION_REMOVE__OPT_SC(client, data):
+    message_id = int(data['message_id'])
+    message = MESSAGES.get(message_id)
     if message is None:
         return
     
-    user_id=int(data['user_id'])
-    user=PartialUser(user_id)
-    emoji=PartialEmoji(data['emoji'])
-    message.reactions.remove(emoji,user)
-    
-    event = object.__new__(ReactionDeleteEvent)
-    event.message = message
-    event.emoji = emoji
-    event.user = user
-    
-    Task(client.events.reaction_delete(client,event), KOKORO)
+    user_id = int(data['user_id'])
+    user = PartialUser(user_id)
+    emoji = PartialEmoji(data['emoji'])
+    message.reactions.remove(emoji, user)
 
-def MESSAGE_REACTION_REMOVE__CAL_MC(client,data):
-    message_id=int(data['message_id'])
-    message=MESSAGES.get(message_id)
+def MESSAGE_REACTION_REMOVE__OPT_MC(client, data):
+    message_id = int(data['message_id'])
+    message = MESSAGES.get(message_id)
     if message is None:
         return
     
     channel = message.channel
-    clients=filter_clients(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS)
-    if clients.send(None) is not client:
-        clients.close()
+    if first_client(
+            channel.clients,
+            INTENT_GUILD_REACTIONS if isinstance(channel, ChannelGuildBase) else INTENT_DIRECT_REACTIONS
+                ) is not client:
         return
     
-    user_id=int(data['user_id'])
-    user=PartialUser(user_id)
-    emoji=PartialEmoji(data['emoji'])
-    message.reactions.remove(emoji,user)
-    
-    event = object.__new__(ReactionDeleteEvent)
-    event.message = message
-    event.emoji = emoji
-    event.user = user
-    
-    for client_ in clients:
-        Task(client_.events.reaction_delete(client_, event),KOKORO)
+    user_id = int(data['user_id'])
+    user = PartialUser(user_id)
+    emoji = PartialEmoji(data['emoji'])
+    message.reactions.remove(emoji, user)
 
-def MESSAGE_REACTION_REMOVE__OPT_SC(client,data):
-    message_id=int(data['message_id'])
-    message=MESSAGES.get(message_id)
+PARSER_DEFAULTS(
+    'MESSAGE_REACTION_REMOVE',
+    MESSAGE_REACTION_REMOVE__CAL_SC,
+    MESSAGE_REACTION_REMOVE__CAL_MC,
+    MESSAGE_REACTION_REMOVE__OPT_SC,
+    MESSAGE_REACTION_REMOVE__OPT_MC)
+del MESSAGE_REACTION_REMOVE__CAL_SC, \
+    MESSAGE_REACTION_REMOVE__CAL_MC, \
+    MESSAGE_REACTION_REMOVE__OPT_SC, \
+    MESSAGE_REACTION_REMOVE__OPT_MC
+
+if ALLOW_DEAD_EVENTS:
+    def MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC(client, data):
+        message_id = int(data['message_id'])
+        message = MESSAGES.get(message_id)
+        if message is None:
+            channel_id = int(data['channel_id'])
+            try:
+                channel = CHANNELS[channel_id]
+            except KeyError:
+                return
+        
+        emoji = PartialEmoji(data['emoji'])
+        
+        if message is None:
+            message = MessageRepr(message_id, channel)
+            users = None
+        else:
+            users = message.reactions.remove_emoji(emoji)
+            if users is None:
+                return
+        
+        Task(client.events.reaction_delete_emoji(client, message, emoji, users), KOKORO)
+    
+    def MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC(client, data):
+        message_id = int(data['message_id'])
+        message = MESSAGES.get(message_id)
+        if message is None:
+            channel_id = int(data['channel_id'])
+            try:
+                channel = CHANNELS[channel_id]
+            except KeyError:
+                return
+        else:
+            channel = message.channel
+        
+        clients = filter_clients(channel.clients,
+            INTENT_GUILD_REACTIONS if isinstance(channel, ChannelGuildBase) else INTENT_DIRECT_REACTIONS)
+        if clients.send(None) is not client:
+            clients.close()
+            return
+        
+        emoji = PartialEmoji(data['emoji'])
+        
+        if message is None:
+            message = MessageRepr(message_id, channel)
+            users = None
+        else:
+            users = message.reactions.remove_emoji(emoji)
+            if users is None:
+                return
+        
+        for client_ in clients:
+            Task(client_.events.reaction_delete_emoji(client_, message, emoji, users), KOKORO)
+else:
+    def MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC(client, data):
+        message_id = int(data['message_id'])
+        message = MESSAGES.get(message_id)
+        if message is None:
+            return
+        
+        emoji = PartialEmoji(data['emoji'])
+        users = message.reactions.remove_emoji(emoji)
+        if users is None:
+            return
+        
+        Task(client.events.reaction_delete_emoji(client, message, emoji, users), KOKORO)
+    
+    def MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC(client, data):
+        message_id = int(data['message_id'])
+        message = MESSAGES.get(message_id)
+        if message is None:
+            return
+        
+        channel = message.channel
+        clients = filter_clients(channel.clients,
+            INTENT_GUILD_REACTIONS if isinstance(channel, ChannelGuildBase) else INTENT_DIRECT_REACTIONS)
+        if clients.send(None) is not client:
+            clients.close()
+            return
+        
+        emoji = PartialEmoji(data['emoji'])
+        users = message.reactions.remove_emoji(emoji)
+        if users is None:
+            return
+        
+        for client_ in clients:
+            Task(client_.events.reaction_delete_emoji(client_, message, emoji, users), KOKORO)
+
+def MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC(client, data):
+    message_id = int(data['message_id'])
+    message = MESSAGES.get(message_id)
     if message is None:
         return
     
-    user_id=int(data['user_id'])
-    user=PartialUser(user_id)
-    emoji=PartialEmoji(data['emoji'])
-    message.reactions.remove(emoji,user)
-
-def MESSAGE_REACTION_REMOVE__OPT_MC(client,data):
-    message_id=int(data['message_id'])
-    message=MESSAGES.get(message_id)
-    if message is None:
-        return
-    
-    channel = message.channel
-    if first_client(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS) is not client:
-        return
-    
-    user_id=int(data['user_id'])
-    user=PartialUser(user_id)
-    emoji=PartialEmoji(data['emoji'])
-    message.reactions.remove(emoji,user)
-
-PARSER_DEFAULTS('MESSAGE_REACTION_REMOVE',MESSAGE_REACTION_REMOVE__CAL_SC,MESSAGE_REACTION_REMOVE__CAL_MC,MESSAGE_REACTION_REMOVE__OPT_SC,MESSAGE_REACTION_REMOVE__OPT_MC)
-del MESSAGE_REACTION_REMOVE__CAL_SC, MESSAGE_REACTION_REMOVE__CAL_MC, MESSAGE_REACTION_REMOVE__OPT_SC, MESSAGE_REACTION_REMOVE__OPT_MC
-
-def MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC(client,data):
-    message_id=int(data['message_id'])
-    message=MESSAGES.get(message_id)
-    if message is None:
-        return
-    
-    emoji=PartialEmoji(data['emoji'])
-    users=message.reactions.remove_emoji(emoji)
-    if users is None:
-        return
-    
-    Task(client.events.reaction_delete_emoji(client,message,emoji,users), KOKORO)
-
-def MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC(client,data):
-    message_id=int(data['message_id'])
-    message=MESSAGES.get(message_id)
-    if message is None:
-        return
-    
-    channel = message.channel
-    clients=filter_clients(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS)
-    if clients.send(None) is not client:
-        clients.close()
-        return
-    
-    emoji=PartialEmoji(data['emoji'])
-    users=message.reactions.remove_emoji(emoji)
-    if users is None:
-        return
-    
-    for client_ in clients:
-        Task(client_.events.reaction_delete_emoji(client_,message,emoji,users),KOKORO)
-
-def MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC(client,data):
-    message_id=int(data['message_id'])
-    message=MESSAGES.get(message_id)
-    if message is None:
-        return
-    
-    emoji=PartialEmoji(data['emoji'])
+    emoji = PartialEmoji(data['emoji'])
     message.reactions.remove_emoji(emoji)
 
-def MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC(client,data):
-    message_id=int(data['message_id'])
-    message=MESSAGES.get(message_id)
+def MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC(client, data):
+    message_id = int(data['message_id'])
+    message = MESSAGES.get(message_id)
     if message is None:
         return
     
     channel = message.channel
-    if first_client(channel.clients,INTENT_GUILD_REACTIONS if isinstance(channel,ChannelGuildBase) else INTENT_DIRECT_REACTIONS) is not client:
+    if first_client(
+            channel.clients,
+            INTENT_GUILD_REACTIONS if isinstance(channel, ChannelGuildBase) else INTENT_DIRECT_REACTIONS
+                ) is not client:
         return
     
-    emoji=PartialEmoji(data['emoji'])
+    emoji = PartialEmoji(data['emoji'])
     message.reactions.remove_emoji(emoji)
 
-PARSER_DEFAULTS('MESSAGE_REACTION_REMOVE_EMOJI',MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC,MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC,MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC,MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC)
-del MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC, MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC, MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC, MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC
+PARSER_DEFAULTS(
+    'MESSAGE_REACTION_REMOVE_EMOJI',
+    MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC,
+    MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC,
+    MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC,
+    MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC)
+del MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC, \
+    MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC, \
+    MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC, \
+    MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC
 
 
 if CACHE_PRESENCE:
-    def PRESENCE_UPDATE__CAL_SC(client,data):
-        user_data=data['user']
-        user_id=int(user_data.pop('id'))
+    def PRESENCE_UPDATE__CAL_SC(client, data):
+        user_data = data['user']
+        user_id = int(user_data.pop('id'))
         try:
-            user=USERS[user_id]
+            user = USERS[user_id]
         except KeyError:
             return #pretty much we dont care
         
@@ -1606,65 +2121,65 @@ if CACHE_PRESENCE:
             if user_data:
                 old_attributes = user._update(user_data)
                 if old_attributes:
-                    presence=False
+                    presence = False
                     break
             
             old_attributes = user._update_presence(data)
             if old_attributes:
-                presence=True
+                presence = True
                 break
             
             return
         
         if presence:
-            coro=client.events.user_presence_update
+            coro = client.events.user_presence_update
         else:
-            coro=client.events.user_edit
+            coro = client.events.user_edit
         
-        Task(coro(client,user,old_attributes), KOKORO)
+        Task(coro(client, user, old_attributes), KOKORO)
     
-    def PRESENCE_UPDATE__CAL_MC(client,data):
-        user_data=data['user']
-        user_id=int(user_data.pop('id'))
+    def PRESENCE_UPDATE__CAL_MC(client, data):
+        user_data = data['user']
+        user_id = int(user_data.pop('id'))
         try:
-            user=USERS[user_id]
+            user = USERS[user_id]
         except KeyError:
             return #pretty much we dont care 
         
         while True:
             if user_data:
-                old_attributes=user._update(user_data)
+                old_attributes = user._update(user_data)
                 if old_attributes:
-                    presence=False
+                    presence = False
                     break
             
-            old_attributes=user._update_presence(data)
+            old_attributes = user._update_presence(data)
             if old_attributes:
-                presence=True
+                presence = True
                 break
             
             return
         
         for client_ in CLIENTS:
-            if (client_.intents>>INTENT_GUILD_PRESENCES)&1==0:
+            if (client_.intents>>INTENT_GUILD_PRESENCES)&1 == 0:
                 continue
             
             if presence:
-                coro=client_.events.user_presence_update
+                coro = client_.events.user_presence_update
             else:
-                coro=client_.events.user_edit
+                coro = client_.events.user_edit
             
             if coro is DEFAULT_EVENT:
                 continue
             
-            Task(coro(client_,user,old_attributes),KOKORO)
+            Task(coro(client_, user, old_attributes), KOKORO)
             continue
     
-    def PRESENCE_UPDATE__OPT(client,data):
-        user_data=data['user']
-        user_id=int(user_data.pop('id'))
+    def PRESENCE_UPDATE__OPT(client, data):
+        user_data = data['user']
+        user_id = int(user_data.pop('id'))
         try:
-            user=USERS[user_id]
+            user = USERS[user_id]
         except KeyError:
             return #pretty much we dont care
         
@@ -1674,122 +2189,137 @@ if CACHE_PRESENCE:
         user._update_presence_no_return(data)
 
 else:
-    def PRESENCE_UPDATE__CAL_SC(client,data):
+    def PRESENCE_UPDATE__CAL_SC(client, data):
         return
-    PRESENCE_UPDATE__CAL_MC=PRESENCE_UPDATE__CAL_SC
-    PRESENCE_UPDATE__OPT=PRESENCE_UPDATE__CAL_SC
+    PRESENCE_UPDATE__CAL_MC = PRESENCE_UPDATE__CAL_SC
+    PRESENCE_UPDATE__OPT = PRESENCE_UPDATE__CAL_SC
 
-PARSER_DEFAULTS('PRESENCE_UPDATE',PRESENCE_UPDATE__CAL_SC,PRESENCE_UPDATE__CAL_MC,PRESENCE_UPDATE__OPT,PRESENCE_UPDATE__OPT)
-del PRESENCE_UPDATE__CAL_SC, PRESENCE_UPDATE__CAL_MC, PRESENCE_UPDATE__OPT
+PARSER_DEFAULTS(
+    'PRESENCE_UPDATE',
+    PRESENCE_UPDATE__CAL_SC,
+    PRESENCE_UPDATE__CAL_MC,
+    PRESENCE_UPDATE__OPT,
+    PRESENCE_UPDATE__OPT)
+del PRESENCE_UPDATE__CAL_SC, \
+    PRESENCE_UPDATE__CAL_MC, \
+    PRESENCE_UPDATE__OPT
 
 if CACHE_USER:
-    def GUILD_MEMBER_UPDATE__CAL_SC(client,data):
-        guild_id=int(data['guild_id'])
+    def GUILD_MEMBER_UPDATE__CAL_SC(client, data):
+        guild_id = int(data['guild_id'])
         try:
-            guild=GUILDS[guild_id]
+            guild = GUILDS[guild_id]
         except KeyError:
-            guild_sync(client,data,'GUILD_MEMBER_UPDATE')
+            guild_sync(client, data, 'GUILD_MEMBER_UPDATE')
             return
         
-        user, old_attributes = User._update_profile(data,guild)
+        user, old_attributes = User._update_profile(data, guild)
         
         if not old_attributes:
             return
         
         Task(client.events.user_profile_edit(client, user, guild, old_attributes), KOKORO)
     
-    def GUILD_MEMBER_UPDATE__CAL_MC(client,data):
-        guild_id=int(data['guild_id'])
+    def GUILD_MEMBER_UPDATE__CAL_MC(client, data):
+        guild_id = int(data['guild_id'])
         try:
-            guild=GUILDS[guild_id]
+            guild = GUILDS[guild_id]
         except KeyError:
-            guild_sync(client,data,'GUILD_MEMBER_UPDATE')
+            guild_sync(client, data, 'GUILD_MEMBER_UPDATE')
             return
         
-        clients=filter_clients_or_me(guild.clients,INTENT_GUILD_USERS,client)
+        clients = filter_clients_or_me(guild.clients, INTENT_GUILD_USERS, client)
         if clients.send(None) is not client:
             clients.close()
             return
         
-        user, old_attributes = User._update_profile(data,guild)
+        user, old_attributes = User._update_profile(data, guild)
         
         if not old_attributes:
             return
         
         clients.send(user)
         for client_ in clients:
-            Task(client_.events.user_profile_edit(client_, user, guild, old_attributes),KOKORO)
+            Task(client_.events.user_profile_edit(client_, user, guild, old_attributes), KOKORO)
     
-    def GUILD_MEMBER_UPDATE__OPT_SC(client,data):
-        guild_id=int(data['guild_id'])
+    def GUILD_MEMBER_UPDATE__OPT_SC(client, data):
+        guild_id = int(data['guild_id'])
         try:
-            guild=GUILDS[guild_id]
+            guild = GUILDS[guild_id]
         except KeyError:
-            guild_sync(client,data,'GUILD_MEMBER_UPDATE')
+            guild_sync(client, data, 'GUILD_MEMBER_UPDATE')
             return
         
-        User._update_profile_no_return(data,guild)
+        User._update_profile_no_return(data, guild)
 
-    def GUILD_MEMBER_UPDATE__OPT_MC(client,data):
-        guild_id=int(data['guild_id'])
+    def GUILD_MEMBER_UPDATE__OPT_MC(client, data):
+        guild_id = int(data['guild_id'])
         try:
-            guild=GUILDS[guild_id]
+            guild = GUILDS[guild_id]
         except KeyError:
-            guild_sync(client,data,'GUILD_MEMBER_UPDATE')
+            guild_sync(client, data, 'GUILD_MEMBER_UPDATE')
             return
         
-        if first_client_or_me(guild.clients,INTENT_GUILD_USERS,client) is not client:
+        if first_client_or_me(guild.clients, INTENT_GUILD_USERS, client) is not client:
             return
         
-        User._update_profile_no_return(data,guild)
+        User._update_profile_no_return(data, guild)
 
 else:
-    def GUILD_MEMBER_UPDATE__CAL_SC(client,data):
-        user_id=int(data['user']['id'])
-        if user_id!=client.id:
+    def GUILD_MEMBER_UPDATE__CAL_SC(client, data):
+        user_id = int(data['user']['id'])
+        if user_id != client.id:
             return
         
-        guild_id=int(data['guild_id'])
+        guild_id = int(data['guild_id'])
         try:
-            guild=GUILDS[guild_id]
+            guild = GUILDS[guild_id]
         except KeyError:
-            guild_sync(client,data,'GUILD_MEMBER_UPDATE')
+            guild_sync(client, data, 'GUILD_MEMBER_UPDATE')
             return
         
-        old_attributes = client._update_profile_only(data,guild)
+        old_attributes = client._update_profile_only(data, guild)
         
         if not old_attributes:
             return
         
         Task(client.events.user_profile_edit(client, client, guild, old_attributes), KOKORO)
-
-    GUILD_MEMBER_UPDATE__CAL_MC=GUILD_MEMBER_UPDATE__CAL_SC
-
-    def GUILD_MEMBER_UPDATE__OPT_SC(client,data):
-        user_id=int(data['user']['id'])
-        if user_id!=client.id:
-            return
-        
-        guild_id=int(data['guild_id'])
-        try:
-            guild=GUILDS[guild_id]
-        except KeyError:
-            guild_sync(client,data,'GUILD_MEMBER_UPDATE')
-            return
-        
-        client._update_profile_only_no_return(data,guild)
     
-    GUILD_MEMBER_UPDATE__OPT_MC=GUILD_MEMBER_UPDATE__OPT_SC
+    GUILD_MEMBER_UPDATE__CAL_MC = GUILD_MEMBER_UPDATE__CAL_SC
+    
+    def GUILD_MEMBER_UPDATE__OPT_SC(client, data):
+        user_id = int(data['user']['id'])
+        if user_id != client.id:
+            return
+        
+        guild_id = int(data['guild_id'])
+        try:
+            guild = GUILDS[guild_id]
+        except KeyError:
+            guild_sync(client, data, 'GUILD_MEMBER_UPDATE')
+            return
+        
+        client._update_profile_only_no_return(data, guild)
+    
+    GUILD_MEMBER_UPDATE__OPT_MC = GUILD_MEMBER_UPDATE__OPT_SC
 
-PARSER_DEFAULTS('GUILD_MEMBER_UPDATE',GUILD_MEMBER_UPDATE__CAL_SC,GUILD_MEMBER_UPDATE__CAL_MC,GUILD_MEMBER_UPDATE__OPT_SC,GUILD_MEMBER_UPDATE__OPT_MC)
-del GUILD_MEMBER_UPDATE__CAL_SC, GUILD_MEMBER_UPDATE__CAL_MC, GUILD_MEMBER_UPDATE__OPT_SC, GUILD_MEMBER_UPDATE__OPT_MC
+PARSER_DEFAULTS(
+    'GUILD_MEMBER_UPDATE',
+    GUILD_MEMBER_UPDATE__CAL_SC,
+    GUILD_MEMBER_UPDATE__CAL_MC,
+    GUILD_MEMBER_UPDATE__OPT_SC,
+    GUILD_MEMBER_UPDATE__OPT_MC)
+del GUILD_MEMBER_UPDATE__CAL_SC, \
+    GUILD_MEMBER_UPDATE__CAL_MC, \
+    GUILD_MEMBER_UPDATE__OPT_SC, \
+    GUILD_MEMBER_UPDATE__OPT_MC
 
 def CHANNEL_DELETE__CAL_SC(client, data):
-    channel_id=int(data['id'])
+    channel_id = int(data['id'])
     try:
-        channel=CHANNELS[channel_id]
+        channel = CHANNELS[channel_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
     if isinstance(channel, ChannelGuildBase):
@@ -1805,11 +2335,11 @@ def CHANNEL_DELETE__CAL_SC(client, data):
     Task(client.events.channel_delete(client, channel, guild), KOKORO)
 
 def CHANNEL_DELETE__CAL_MC(client, data):
-    channel_id=int(data['id'])
+    channel_id = int(data['id'])
     try:
-        channel=CHANNELS[channel_id]
+        channel = CHANNELS[channel_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
     if isinstance(channel, ChannelGuildBase):
@@ -1826,12 +2356,12 @@ def CHANNEL_DELETE__CAL_MC(client, data):
         channel._delete(client)
         Task(client.events.channel_delete(client, channel, None), KOKORO)
 
-def CHANNEL_DELETE__OPT(client,data):
-    channel_id=int(data['id'])
+def CHANNEL_DELETE__OPT(client, data):
+    channel_id = int(data['id'])
     try:
-        channel=CHANNELS[channel_id]
+        channel = CHANNELS[channel_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
     if isinstance(channel, ChannelGuildBase):
@@ -1839,32 +2369,39 @@ def CHANNEL_DELETE__OPT(client,data):
     else:
         channel._delete(client)
 
-PARSER_DEFAULTS('CHANNEL_DELETE',CHANNEL_DELETE__CAL_SC,CHANNEL_DELETE__CAL_MC,CHANNEL_DELETE__OPT,CHANNEL_DELETE__OPT)
-del CHANNEL_DELETE__CAL_SC, CHANNEL_DELETE__CAL_MC, CHANNEL_DELETE__OPT
+PARSER_DEFAULTS(
+    'CHANNEL_DELETE',
+    CHANNEL_DELETE__CAL_SC,
+    CHANNEL_DELETE__CAL_MC,
+    CHANNEL_DELETE__OPT,
+    CHANNEL_DELETE__OPT)
+del CHANNEL_DELETE__CAL_SC, \
+    CHANNEL_DELETE__CAL_MC, \
+    CHANNEL_DELETE__OPT
 
-def CHANNEL_UPDATE__CAL_SC(client,data):
-    channel_id=int(data['id'])
+def CHANNEL_UPDATE__CAL_SC(client, data):
+    channel_id = int(data['id'])
     try:
-        channel=CHANNELS[channel_id]
+        channel = CHANNELS[channel_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
     old_attributes = channel._update(data)
     if not old_attributes:
         return
     
-    Task(client.events.channel_edit(client,channel,old_attributes), KOKORO)
+    Task(client.events.channel_edit(client, channel, old_attributes), KOKORO)
 
-def CHANNEL_UPDATE__CAL_MC(client,data):
-    channel_id=int(data['id'])
+def CHANNEL_UPDATE__CAL_MC(client, data):
+    channel_id = int(data['id'])
     try:
-        channel=CHANNELS[channel_id]
+        channel = CHANNELS[channel_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
-    clients=filter_clients(channel.clients,INTENT_GUILDS)
+    clients = filter_clients(channel.clients, INTENT_GUILDS)
     if clients.send(None) is not client:
         clients.close()
         return
@@ -1874,214 +2411,247 @@ def CHANNEL_UPDATE__CAL_MC(client,data):
         return
     
     for client_ in clients:
-        Task(client_.events.channel_edit(client_,channel,old_attributes),KOKORO)
+        Task(client_.events.channel_edit(client_, channel, old_attributes), KOKORO)
 
-def CHANNEL_UPDATE__OPT_SC(client,data):
-    channel_id=int(data['id'])
+def CHANNEL_UPDATE__OPT_SC(client, data):
+    channel_id = int(data['id'])
     try:
-        channel=CHANNELS[channel_id]
+        channel = CHANNELS[channel_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
     channel._update_no_return(data)
 
-def CHANNEL_UPDATE__OPT_MC(client,data):
-    channel_id=int(data['id'])
+def CHANNEL_UPDATE__OPT_MC(client, data):
+    channel_id = int(data['id'])
     try:
-        channel=CHANNELS[channel_id]
+        channel = CHANNELS[channel_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
-    if first_client(channel.clients,INTENT_GUILDS) is not client:
+    if first_client(channel.clients, INTENT_GUILDS) is not client:
         return
     
     channel._update_no_return(data)
 
-PARSER_DEFAULTS('CHANNEL_UPDATE',CHANNEL_UPDATE__CAL_SC,CHANNEL_UPDATE__CAL_MC,CHANNEL_UPDATE__OPT_SC,CHANNEL_UPDATE__OPT_MC)
-del CHANNEL_UPDATE__CAL_SC, CHANNEL_UPDATE__CAL_MC, CHANNEL_UPDATE__OPT_SC, CHANNEL_UPDATE__OPT_MC
+PARSER_DEFAULTS(
+    'CHANNEL_UPDATE',
+    CHANNEL_UPDATE__CAL_SC,
+    CHANNEL_UPDATE__CAL_MC,
+    CHANNEL_UPDATE__OPT_SC,
+    CHANNEL_UPDATE__OPT_MC)
+del CHANNEL_UPDATE__CAL_SC, \
+    CHANNEL_UPDATE__CAL_MC, \
+    CHANNEL_UPDATE__OPT_SC, \
+    CHANNEL_UPDATE__OPT_MC
 
-def CHANNEL_CREATE__CAL(client,data):
-    channel_type=data['type']
-    if channel_type in (1,3):
-        channel=CHANNEL_TYPES[channel_type]._dispatch(data,client)
+def CHANNEL_CREATE__CAL(client, data):
+    channel_type = data['type']
+    if channel_type in (1, 3):
+        channel = CHANNEL_TYPES[channel_type]._dispatch(data, client)
         if channel is None:
             return
     else:
-        guild_id=int(data['guild_id'])
+        guild_id = int(data['guild_id'])
         try:
-            guild=GUILDS[guild_id]
+            guild = GUILDS[guild_id]
         except KeyError:
-            guild_sync(client,data,'CHANNEL_CREATE')
+            guild_sync(client, data, 'CHANNEL_CREATE')
             return
         
-        channel=CHANNEL_TYPES[channel_type](data,client,guild)
+        channel = CHANNEL_TYPES[channel_type](data, client, guild)
     
-    Task(client.events.channel_create(client,channel), KOKORO)
+    Task(client.events.channel_create(client, channel), KOKORO)
 
-def CHANNEL_CREATE__OPT(client,data):
-    channel_type=data['type']
-    if channel_type in (1,3):
-        CHANNEL_TYPES[channel_type]._dispatch(data,client)
+def CHANNEL_CREATE__OPT(client, data):
+    channel_type = data['type']
+    if channel_type in (1, 3):
+        CHANNEL_TYPES[channel_type]._dispatch(data, client)
         return
     
-    guild_id=int(data['guild_id'])
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,'CHANNEL_CREATE')
+        guild_sync(client, data, 'CHANNEL_CREATE')
         return
     
-    CHANNEL_TYPES[channel_type](data,client,guild)
+    CHANNEL_TYPES[channel_type](data, client, guild)
 
-PARSER_DEFAULTS('CHANNEL_CREATE',CHANNEL_CREATE__CAL,CHANNEL_CREATE__CAL,CHANNEL_CREATE__OPT,CHANNEL_CREATE__OPT)
-del CHANNEL_CREATE__CAL, CHANNEL_CREATE__OPT
+PARSER_DEFAULTS(
+    'CHANNEL_CREATE',
+    CHANNEL_CREATE__CAL,
+    CHANNEL_CREATE__CAL,
+    CHANNEL_CREATE__OPT,
+    CHANNEL_CREATE__OPT)
+del CHANNEL_CREATE__CAL, \
+    CHANNEL_CREATE__OPT
 
-def CHANNEL_PINS_UPDATE__CAL(client,data):
-    channel_id=int(data['channel_id'])
+def CHANNEL_PINS_UPDATE__CAL(client, data):
+    channel_id = int(data['channel_id'])
     try:
-        channel=CHANNELS[channel_id]
+        channel = CHANNELS[channel_id]
     except KeyError:
-        guild_sync(client,data,('CHANNEL_PINS_UPDATE',check_channel,channel_id))
+        guild_sync(client, data, ('CHANNEL_PINS_UPDATE', check_channel, channel_id))
         return
     
     #ignoring message search
-    Task(client.events.channel_pin_update(client,channel), KOKORO)
+    Task(client.events.channel_pin_update(client, channel), KOKORO)
 
-def CHANNEL_PINS_UPDATE__OPT(client,data):
+def CHANNEL_PINS_UPDATE__OPT(client, data):
     pass
 
-PARSER_DEFAULTS('CHANNEL_PINS_UPDATE',CHANNEL_PINS_UPDATE__CAL,CHANNEL_PINS_UPDATE__CAL,CHANNEL_PINS_UPDATE__OPT,CHANNEL_PINS_UPDATE__OPT)
-del CHANNEL_PINS_UPDATE__CAL, CHANNEL_PINS_UPDATE__OPT
+PARSER_DEFAULTS(
+    'CHANNEL_PINS_UPDATE',
+    CHANNEL_PINS_UPDATE__CAL,
+    CHANNEL_PINS_UPDATE__CAL,
+    CHANNEL_PINS_UPDATE__OPT,
+    CHANNEL_PINS_UPDATE__OPT)
+del CHANNEL_PINS_UPDATE__CAL, \
+    CHANNEL_PINS_UPDATE__OPT
 
-def CHANNEL_RECIPIENT_ADD_CAL(client,data):
-    channel_id=int(data['channel_id'])
+def CHANNEL_RECIPIENT_ADD_CAL(client, data):
+    channel_id = int(data['channel_id'])
     try:
-        channel=CHANNELS[channel_id]
+        channel = CHANNELS[channel_id]
     except KeyError:
         return
     
-    user=User(data['user'])
-    users=channel.users
+    user = User(data['user'])
+    users = channel.users
     if user not in users:
         users.append(user)
     
-    Task(client.events.channel_group_user_add(client,channel,user), KOKORO)
+    Task(client.events.channel_group_user_add(client, channel, user), KOKORO)
 
-def CHANNEL_RECIPIENT_ADD__OPT(client,data):
-    channel_id=int(data['channel_id'])
+def CHANNEL_RECIPIENT_ADD__OPT(client, data):
+    channel_id = int(data['channel_id'])
     try:
-        channel=CHANNELS[channel_id]
+        channel = CHANNELS[channel_id]
     except KeyError:
         return
     
-    user=User(data['user'])
-    users=channel.users
+    user = User(data['user'])
+    users = channel.users
     if user not in users:
         users.append(user)
 
-PARSER_DEFAULTS('CHANNEL_RECIPIENT_ADD',CHANNEL_RECIPIENT_ADD_CAL,CHANNEL_RECIPIENT_ADD_CAL,CHANNEL_RECIPIENT_ADD__OPT,CHANNEL_RECIPIENT_ADD__OPT)
-del CHANNEL_RECIPIENT_ADD_CAL, CHANNEL_RECIPIENT_ADD__OPT
+PARSER_DEFAULTS(
+    'CHANNEL_RECIPIENT_ADD',
+    CHANNEL_RECIPIENT_ADD_CAL,
+    CHANNEL_RECIPIENT_ADD_CAL,
+    CHANNEL_RECIPIENT_ADD__OPT,
+    CHANNEL_RECIPIENT_ADD__OPT)
+del CHANNEL_RECIPIENT_ADD_CAL, \
+    CHANNEL_RECIPIENT_ADD__OPT
 
-def CHANNEL_RECIPIENT_REMOVE__CAL_SC(client,data):
-    channel_id=int(data['channel_id'])
+def CHANNEL_RECIPIENT_REMOVE__CAL_SC(client, data):
+    channel_id = int(data['channel_id'])
     try:
-        channel=CHANNELS[channel_id]
+        channel = CHANNELS[channel_id]
     except KeyError:
         return
     
-    user=User(data['user'])
+    user = User(data['user'])
     try:
         channel.users.remove(user)
     except ValueError:
         return
     
-    if client!=user:
-        Task(client.events.channel_group_user_delete(client,channel,user), KOKORO)
+    if client != user:
+        Task(client.events.channel_group_user_delete(client, channel, user), KOKORO)
 
-def CHANNEL_RECIPIENT_REMOVE__CAL_MC(client,data):
-    channel_id=int(data['channel_id'])
+def CHANNEL_RECIPIENT_REMOVE__CAL_MC(client, data):
+    channel_id = int(data['channel_id'])
     try:
-        channel=CHANNELS[channel_id]
+        channel = CHANNELS[channel_id]
     except KeyError:
         return
     
-    user=User(data['user'])
+    user = User(data['user'])
     try:
         channel.users.remove(user)
     except ValueError:
         return
     
     for client_ in channel.clients:
-        if (client_ is client) or (client_!=user):
-            Task(client_.events.channel_group_user_delete(client_,channel,user),KOKORO)
+        if (client_ is client) or (client_ != user):
+            Task(client_.events.channel_group_user_delete(client_, channel, user), KOKORO)
 
-def CHANNEL_RECIPIENT_REMOVE__OPT(client,data):
-    channel_id=int(data['channel_id'])
+def CHANNEL_RECIPIENT_REMOVE__OPT(client, data):
+    channel_id = int(data['channel_id'])
     try:
-        channel=CHANNELS[channel_id]
+        channel = CHANNELS[channel_id]
     except KeyError:
         return
 
-    user=User(data['user'])
+    user = User(data['user'])
     try:
         channel.users.remove(user)
     except ValueError:
         pass
 
-PARSER_DEFAULTS('CHANNEL_RECIPIENT_REMOVE',CHANNEL_RECIPIENT_REMOVE__CAL_SC,CHANNEL_RECIPIENT_REMOVE__CAL_MC,CHANNEL_RECIPIENT_REMOVE__OPT,CHANNEL_RECIPIENT_REMOVE__OPT)
-del CHANNEL_RECIPIENT_REMOVE__CAL_SC, CHANNEL_RECIPIENT_REMOVE__CAL_MC, CHANNEL_RECIPIENT_REMOVE__OPT
+PARSER_DEFAULTS(
+    'CHANNEL_RECIPIENT_REMOVE',
+    CHANNEL_RECIPIENT_REMOVE__CAL_SC,
+    CHANNEL_RECIPIENT_REMOVE__CAL_MC,
+    CHANNEL_RECIPIENT_REMOVE__OPT,
+    CHANNEL_RECIPIENT_REMOVE__OPT)
+del CHANNEL_RECIPIENT_REMOVE__CAL_SC, \
+    CHANNEL_RECIPIENT_REMOVE__CAL_MC, \
+    CHANNEL_RECIPIENT_REMOVE__OPT
 
-def GUILD_EMOJIS_UPDATE__CAL_SC(client,data):
-    guild_id=int(data['guild_id'])
+def GUILD_EMOJIS_UPDATE__CAL_SC(client, data):
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
 
-    changes=guild._update_emojis(data['emojis'])
+    changes = guild._update_emojis(data['emojis'])
     
     if not changes:
         return
     
     for action, emoji, old_attributes in changes:
-        if action==EMOJI_UPDATE_EDIT:
-            coro=client.events.emoji_edit
+        if action == EMOJI_UPDATE_EDIT:
+            coro = client.events.emoji_edit
             if coro is DEFAULT_EVENT:
                 continue
             
-            Task(coro(client,emoji,old_attributes), KOKORO)
+            Task(coro(client, emoji, old_attributes), KOKORO)
             continue
             
-        if action==EMOJI_UPDATE_NEW:
-            coro=client.events.emoji_create
+        if action == EMOJI_UPDATE_NEW:
+            coro = client.events.emoji_create
             if coro is DEFAULT_EVENT:
                 continue
             
-            Task(coro(client,emoji), KOKORO)
+            Task(coro(client, emoji), KOKORO)
             continue
         
-        if action==EMOJI_UPDATE_DELETE:
-            coro=client.events.emoji_delete
+        if action == EMOJI_UPDATE_DELETE:
+            coro = client.events.emoji_delete
             if coro is DEFAULT_EVENT:
                 continue
             
-            Task(coro(client,emoji,guild), KOKORO)
+            Task(coro(client, emoji, guild), KOKORO)
             continue
         
         # no more case
 
-def GUILD_EMOJIS_UPDATE__CAL_MC(client,data):
-    guild_id=int(data['guild_id'])
+def GUILD_EMOJIS_UPDATE__CAL_MC(client, data):
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
-    clients=filter_clients(guild.clients,INTENT_GUILD_EMOJIS)
+    clients = filter_clients(guild.clients, INTENT_GUILD_EMOJIS)
     if clients.send(None) is not client:
         clients.close()
         return
@@ -2093,207 +2663,223 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client,data):
     
     for client_ in clients:
         for action, emoji, old_attributes in changes:
-            if action==EMOJI_UPDATE_EDIT:
-                coro=client_.events.emoji_edit
+            if action == EMOJI_UPDATE_EDIT:
+                coro = client_.events.emoji_edit
                 if coro is DEFAULT_EVENT:
                     continue
                 
-                Task(coro(client,emoji,old_attributes),KOKORO)
+                Task(coro(client, emoji, old_attributes), KOKORO)
                 continue
                 
-            if action==EMOJI_UPDATE_NEW:
-                coro=client_.events.emoji_create
+            if action == EMOJI_UPDATE_NEW:
+                coro = client_.events.emoji_create
                 if coro is DEFAULT_EVENT:
                     continue
                 
-                Task(coro(client,guild,emoji),KOKORO)
+                Task(coro(client, guild, emoji), KOKORO)
                 continue
             
-            if action==EMOJI_UPDATE_DELETE:
-                coro=client_.events.emoji_delete
+            if action == EMOJI_UPDATE_DELETE:
+                coro = client_.events.emoji_delete
                 if coro is DEFAULT_EVENT:
                     continue
                 
-                Task(coro(client,guild,emoji),KOKORO)
+                Task(coro(client, guild, emoji), KOKORO)
                 continue
             
             continue
             # no more case
 
-def GUILD_EMOJIS_UPDATE__OPT_SC(client,data):
-    guild_id=int(data['guild_id'])
+def GUILD_EMOJIS_UPDATE__OPT_SC(client, data):
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
     guild._sync_emojis(data['emojis'])
 
-def GUILD_EMOJIS_UPDATE__OPT_MC(client,data):
-    guild_id=int(data['guild_id'])
+def GUILD_EMOJIS_UPDATE__OPT_MC(client, data):
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
-    if first_client(guild.clients,INTENT_GUILD_EMOJIS) is not client:
+    if first_client(guild.clients, INTENT_GUILD_EMOJIS) is not client:
         return
     
     guild._sync_emojis(data['emojis'])
 
-PARSER_DEFAULTS('GUILD_EMOJIS_UPDATE',GUILD_EMOJIS_UPDATE__CAL_SC,GUILD_EMOJIS_UPDATE__CAL_MC,GUILD_EMOJIS_UPDATE__OPT_SC,GUILD_EMOJIS_UPDATE__OPT_MC)
-del GUILD_EMOJIS_UPDATE__CAL_SC, GUILD_EMOJIS_UPDATE__CAL_MC, GUILD_EMOJIS_UPDATE__OPT_SC, GUILD_EMOJIS_UPDATE__OPT_MC
+PARSER_DEFAULTS(
+    'GUILD_EMOJIS_UPDATE',
+    GUILD_EMOJIS_UPDATE__CAL_SC,
+    GUILD_EMOJIS_UPDATE__CAL_MC,
+    GUILD_EMOJIS_UPDATE__OPT_SC,
+    GUILD_EMOJIS_UPDATE__OPT_MC)
+del GUILD_EMOJIS_UPDATE__CAL_SC, \
+    GUILD_EMOJIS_UPDATE__CAL_MC, \
+    GUILD_EMOJIS_UPDATE__OPT_SC, \
+    GUILD_EMOJIS_UPDATE__OPT_MC
 
-def GUILD_MEMBER_ADD__CAL_SC(client,data):
-    guild_id=int(data['guild_id'])
+def GUILD_MEMBER_ADD__CAL_SC(client, data):
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
-    user=User(data,guild)
-    guild.user_count+=1
+    user = User(data, guild)
+    guild.user_count +=1
     
-    Task(client.events.guild_user_add(client,guild,user), KOKORO)
+    Task(client.events.guild_user_add(client, guild, user), KOKORO)
 
-def GUILD_MEMBER_ADD__CAL_MC(client,data):
-    guild_id=int(data['guild_id'])
+def GUILD_MEMBER_ADD__CAL_MC(client, data):
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
-    clients=filter_clients(guild.clients,INTENT_GUILD_USERS)
+    clients = filter_clients(guild.clients, INTENT_GUILD_USERS)
     if clients.send(None) is not client:
         clients.close()
         return
     
-    user=User(data,guild)
-    guild.user_count+=1
+    user = User(data, guild)
+    guild.user_count +=1
     
     for client_ in clients:
-        Task(client_.events.guild_user_add(client_,guild,user),KOKORO)
+        Task(client_.events.guild_user_add(client_, guild, user), KOKORO)
 
 if CACHE_USER:
-    def GUILD_MEMBER_ADD__OPT_SC(client,data):
-        guild_id=int(data['guild_id'])
+    def GUILD_MEMBER_ADD__OPT_SC(client, data):
+        guild_id = int(data['guild_id'])
         try:
-            guild=GUILDS[guild_id]
+            guild = GUILDS[guild_id]
         except KeyError:
-            guild_sync(client,data,None)
+            guild_sync(client, data, None)
             return
         
-        User(data,guild)
-        guild.user_count+=1
-
-    def GUILD_MEMBER_ADD__OPT_MC(client,data):
-        guild_id=int(data['guild_id'])
+        User(data, guild)
+        guild.user_count +=1
+    
+    def GUILD_MEMBER_ADD__OPT_MC(client, data):
+        guild_id = int(data['guild_id'])
         try:
-            guild=GUILDS[guild_id]
+            guild = GUILDS[guild_id]
         except KeyError:
-            guild_sync(client,data,None)
+            guild_sync(client, data, None)
             return
 
-        if first_client(guild.clients,INTENT_GUILD_USERS) is not client:
+        if first_client(guild.clients, INTENT_GUILD_USERS) is not client:
             return
 
-        User(data,guild)
-        guild.user_count+=1
+        User(data, guild)
+        guild.user_count +=1
 else:
-    def GUILD_MEMBER_ADD__OPT_SC(client,data):
-        guild_id=int(data['guild_id'])
+    def GUILD_MEMBER_ADD__OPT_SC(client, data):
+        guild_id = int(data['guild_id'])
         try:
-            guild=GUILDS[guild_id]
+            guild = GUILDS[guild_id]
         except KeyError:
-            guild_sync(client,data,None)
+            guild_sync(client, data, None)
             return
         
-        guild.user_count+=1
+        guild.user_count +=1
 
-    def GUILD_MEMBER_ADD__OPT_MC(client,data):
-        guild_id=int(data['guild_id'])
+    def GUILD_MEMBER_ADD__OPT_MC(client, data):
+        guild_id = int(data['guild_id'])
         try:
-            guild=GUILDS[guild_id]
+            guild = GUILDS[guild_id]
         except KeyError:
-            guild_sync(client,data,None)
+            guild_sync(client, data, None)
             return
         
-        if first_client(guild.clients,INTENT_GUILD_USERS) is not client:
+        if first_client(guild.clients, INTENT_GUILD_USERS) is not client:
             return
         
-        guild.user_count+=1
+        guild.user_count +=1
 
-PARSER_DEFAULTS('GUILD_MEMBER_ADD',GUILD_MEMBER_ADD__CAL_SC,GUILD_MEMBER_ADD__CAL_MC,GUILD_MEMBER_ADD__OPT_SC,GUILD_MEMBER_ADD__OPT_MC)
-del GUILD_MEMBER_ADD__CAL_SC, GUILD_MEMBER_ADD__CAL_MC, GUILD_MEMBER_ADD__OPT_SC, GUILD_MEMBER_ADD__OPT_MC
+PARSER_DEFAULTS(
+    'GUILD_MEMBER_ADD',
+    GUILD_MEMBER_ADD__CAL_SC,
+    GUILD_MEMBER_ADD__CAL_MC,
+    GUILD_MEMBER_ADD__OPT_SC,
+    GUILD_MEMBER_ADD__OPT_MC)
+del GUILD_MEMBER_ADD__CAL_SC, \
+    GUILD_MEMBER_ADD__CAL_MC, \
+    GUILD_MEMBER_ADD__OPT_SC, \
+    GUILD_MEMBER_ADD__OPT_MC
 
 if CACHE_USER:
-    def GUILD_MEMBER_REMOVE__CAL_SC(client,data):
-        guild_id=int(data['guild_id'])
+    def GUILD_MEMBER_REMOVE__CAL_SC(client, data):
+        guild_id = int(data['guild_id'])
         try:
-            guild=GUILDS[guild_id]
+            guild = GUILDS[guild_id]
         except KeyError:
-            guild_sync(client,data,'GUILD_MEMBER_REMOVE')
+            guild_sync(client, data, 'GUILD_MEMBER_REMOVE')
             return
         
-        user=User(data['user'])
+        user = User(data['user'])
         
         try:
             del guild.users[user.id]
         except KeyError:
-            profile=None
+            profile = None
         else:
             if type(user) is User:
-                profile=user.guild_profiles.pop(guild,None)
+                profile = user.guild_profiles.pop(guild, None)
             else:
-                profile=user.guild_profiles.get(guild,None)
+                profile = user.guild_profiles.get(guild, None)
         
-        guild.user_count-=1
+        guild.user_count -=1
         
-        Task(client.events.guild_user_delete(client,guild,user,profile), KOKORO)
+        Task(client.events.guild_user_delete(client, guild, user,profile), KOKORO)
 
-    def GUILD_MEMBER_REMOVE__CAL_MC(client,data):
-        guild_id=int(data['guild_id'])
+    def GUILD_MEMBER_REMOVE__CAL_MC(client, data):
+        guild_id = int(data['guild_id'])
         try:
-            guild=GUILDS[guild_id]
+            guild = GUILDS[guild_id]
         except KeyError:
-            guild_sync(client,data,'GUILD_MEMBER_REMOVE')
+            guild_sync(client, data, 'GUILD_MEMBER_REMOVE')
             return
         
-        clients=filter_clients(guild.clients,INTENT_GUILD_USERS)
+        clients = filter_clients(guild.clients, INTENT_GUILD_USERS)
         if clients.send(None) is not client:
             clients.close()
             return
         
-        user=User(data['user'])
+        user = User(data['user'])
         
         try:
             del guild.users[user.id]
         except KeyError:
-            profile=None
+            profile = None
         else:
             if type(user) is User:
-                profile=user.guild_profiles.pop(guild,None)
+                profile = user.guild_profiles.pop(guild, None)
             else:
-                profile=user.guild_profiles.get(guild,None)
+                profile = user.guild_profiles.get(guild, None)
         
-        guild.user_count-=1
+        guild.user_count -=1
         
         for client_ in clients:
-            Task(client_.events.guild_user_delete(client_,guild,user,profile),KOKORO)
+            Task(client_.events.guild_user_delete(client_, guild, user,profile), KOKORO)
     
-    def GUILD_MEMBER_REMOVE__OPT_SC(client,data):
-        guild_id=int(data['guild_id'])
+    def GUILD_MEMBER_REMOVE__OPT_SC(client, data):
+        guild_id = int(data['guild_id'])
         try:
-            guild=GUILDS[guild_id]
+            guild = GUILDS[guild_id]
         except KeyError:
-            guild_sync(client,data,'GUILD_MEMBER_REMOVE')
+            guild_sync(client, data, 'GUILD_MEMBER_REMOVE')
             return
         
-        user=User(data['user'])
+        user = User(data['user'])
         
         try:
             del guild.users[user.id]
@@ -2301,22 +2887,22 @@ if CACHE_USER:
             pass
         else:
             if type(user) is User:
-                user.guild_profiles.pop(guild,None)
+                user.guild_profiles.pop(guild, None)
         
-        guild.user_count-=1
+        guild.user_count -=1
     
-    def GUILD_MEMBER_REMOVE__OPT_MC(client,data):
-        guild_id=int(data['guild_id'])
+    def GUILD_MEMBER_REMOVE__OPT_MC(client, data):
+        guild_id = int(data['guild_id'])
         try:
-            guild=GUILDS[guild_id]
+            guild = GUILDS[guild_id]
         except KeyError:
-            guild_sync(client,data,'GUILD_MEMBER_REMOVE')
+            guild_sync(client, data, 'GUILD_MEMBER_REMOVE')
             return
         
-        if first_client(guild.clients,INTENT_GUILD_USERS) is not client:
+        if first_client(guild.clients, INTENT_GUILD_USERS) is not client:
             return
         
-        user=User(data['user'])
+        user = User(data['user'])
         
         try:
             del guild.users[user.id]
@@ -2324,94 +2910,102 @@ if CACHE_USER:
             pass
         else:
             if type(user) is User:
-                user.guild_profiles.pop(guild,None)
+                user.guild_profiles.pop(guild, None)
         
-        guild.user_count-=1
+        guild.user_count -=1
 
 else:
-    def GUILD_MEMBER_REMOVE__CAL_SC(client,data):
-        guild_id=int(data['guild_id'])
+    def GUILD_MEMBER_REMOVE__CAL_SC(client, data):
+        guild_id = int(data['guild_id'])
         try:
-            guild=GUILDS[guild_id]
+            guild = GUILDS[guild_id]
         except KeyError:
-            guild_sync(client,data,'GUILD_MEMBER_REMOVE')
+            guild_sync(client, data, 'GUILD_MEMBER_REMOVE')
             return
         
-        user=User(data['user'])
-        guild.user_count-=1
+        user = User(data['user'])
+        guild.user_count -=1
         
-        Task(client.events.guild_user_delete(client,guild,user,None), KOKORO)
+        Task(client.events.guild_user_delete(client, guild, user, None), KOKORO)
 
-    def GUILD_MEMBER_REMOVE__CAL_MC(client,data):
-        guild_id=int(data['guild_id'])
+    def GUILD_MEMBER_REMOVE__CAL_MC(client, data):
+        guild_id = int(data['guild_id'])
         try:
-            guild=GUILDS[guild_id]
+            guild = GUILDS[guild_id]
         except KeyError:
-            guild_sync(client,data,'GUILD_MEMBER_REMOVE')
+            guild_sync(client, data, 'GUILD_MEMBER_REMOVE')
             return
         
-        clients=filter_clients(guild.clients,INTENT_GUILD_USERS)
+        clients = filter_clients(guild.clients, INTENT_GUILD_USERS)
         if clients.send(None) is not client:
             clients.close()
             return
         
-        user=User(data['user'])
-        guild.user_count-=1
+        user = User(data['user'])
+        guild.user_count -=1
         
         for client_ in clients:
-            Task(client_.events.guild_user_delete(client_,guild,user,None),KOKORO)
+            Task(client_.events.guild_user_delete(client_, guild, user, None), KOKORO)
     
-    def GUILD_MEMBER_REMOVE__OPT_SC(client,data):
-        guild_id=int(data['guild_id'])
+    def GUILD_MEMBER_REMOVE__OPT_SC(client, data):
+        guild_id = int(data['guild_id'])
         try:
-            guild=GUILDS[guild_id]
+            guild = GUILDS[guild_id]
         except KeyError:
-            guild_sync(client,data,'GUILD_MEMBER_REMOVE')
+            guild_sync(client, data, 'GUILD_MEMBER_REMOVE')
             return
         
-        guild.user_count-=1
+        guild.user_count -=1
     
-    def GUILD_MEMBER_REMOVE__OPT_MC(client,data):
-        guild_id=int(data['guild_id'])
+    def GUILD_MEMBER_REMOVE__OPT_MC(client, data):
+        guild_id = int(data['guild_id'])
         try:
-            guild=GUILDS[guild_id]
+            guild = GUILDS[guild_id]
         except KeyError:
-            guild_sync(client,data,'GUILD_MEMBER_REMOVE')
+            guild_sync(client, data, 'GUILD_MEMBER_REMOVE')
             return
         
-        if first_client(guild.clients,INTENT_GUILD_USERS) is not client:
+        if first_client(guild.clients, INTENT_GUILD_USERS) is not client:
             return
         
-        guild.user_count-=1
+        guild.user_count -=1
 
-PARSER_DEFAULTS('GUILD_MEMBER_REMOVE',GUILD_MEMBER_REMOVE__CAL_SC,GUILD_MEMBER_REMOVE__CAL_MC,GUILD_MEMBER_REMOVE__OPT_SC,GUILD_MEMBER_REMOVE__OPT_MC)
-del GUILD_MEMBER_REMOVE__CAL_SC, GUILD_MEMBER_REMOVE__CAL_MC, GUILD_MEMBER_REMOVE__OPT_SC, GUILD_MEMBER_REMOVE__OPT_MC
+PARSER_DEFAULTS(
+    'GUILD_MEMBER_REMOVE',
+    GUILD_MEMBER_REMOVE__CAL_SC,
+    GUILD_MEMBER_REMOVE__CAL_MC,
+    GUILD_MEMBER_REMOVE__OPT_SC,
+    GUILD_MEMBER_REMOVE__OPT_MC)
+del GUILD_MEMBER_REMOVE__CAL_SC, \
+    GUILD_MEMBER_REMOVE__CAL_MC, \
+    GUILD_MEMBER_REMOVE__OPT_SC, \
+    GUILD_MEMBER_REMOVE__OPT_MC
 
 if CACHE_PRESENCE:
-    def GUILD_CREATE__CAL(client,data):
-        guild_state=data.get('unavailable',False)
+    def GUILD_CREATE__CAL(client, data):
+        guild_state = data.get('unavailable', False)
         if guild_state:
             return
         
-        guild=Guild(data,client)
+        guild = Guild(data, client)
         
-        ready_state=client.ready_state
+        ready_state = client.ready_state
         if ready_state is None:
             if guild.is_large:
                 Task(client._request_members(guild), KOKORO)
-            Task(client.events.guild_create(client,guild), KOKORO)
+            Task(client.events.guild_create(client, guild), KOKORO)
             return
         
         ready_state.feed(guild)
 
-    def GUILD_CREATE__OPT(client,data):
-        guild_state=data.get('unavailable',False)
+    def GUILD_CREATE__OPT(client, data):
+        guild_state = data.get('unavailable', False)
         if guild_state:
             return
         
-        guild=Guild(data,client)
+        guild = Guild(data, client)
         
-        ready_state=client.ready_state
+        ready_state = client.ready_state
         if ready_state is None:
             if guild.is_large:
                 Task(client._request_members(guild), KOKORO)
@@ -2420,29 +3014,29 @@ if CACHE_PRESENCE:
         ready_state.feed(guild)
 
 elif CACHE_USER:
-    def GUILD_CREATE__CAL(client,data):
-        guild_state=data.get('unavailable',False)
+    def GUILD_CREATE__CAL(client, data):
+        guild_state = data.get('unavailable', False)
         if guild_state:
             return
         
-        guild=Guild(data,client)
+        guild = Guild(data, client)
         
-        ready_state=client.ready_state
+        ready_state = client.ready_state
         if ready_state is None:
             Task(client._request_members(guild), KOKORO)
-            Task(client.events.guild_create(client,guild), KOKORO)
+            Task(client.events.guild_create(client, guild), KOKORO)
             return
         
         ready_state.feed(guild)
 
-    def GUILD_CREATE__OPT(client,data):
-        guild_state=data.get('unavailable',False)
+    def GUILD_CREATE__OPT(client, data):
+        guild_state = data.get('unavailable', False)
         if guild_state:
             return
         
-        guild=Guild(data,client)
+        guild = Guild(data, client)
         
-        ready_state=client.ready_state
+        ready_state = client.ready_state
         if ready_state is None:
             Task(client._request_members(guild), KOKORO)
             return
@@ -2450,59 +3044,65 @@ elif CACHE_USER:
         ready_state.feed(guild)
 
 else:
-    def GUILD_CREATE__CAL(client,data):
-        guild_state=data.get('unavailable',False)
+    def GUILD_CREATE__CAL(client, data):
+        guild_state = data.get('unavailable', False)
         if guild_state:
             return
         
-        guild=Guild(data,client)
+        guild = Guild(data, client)
         
-        ready_state=client.ready_state
+        ready_state = client.ready_state
         if ready_state is None:
-            Task(client.events.guild_create(client,guild), KOKORO)
+            Task(client.events.guild_create(client, guild), KOKORO)
             return
         
         ready_state.feed(guild)
     
-    def GUILD_CREATE__OPT(client,data):
-        guild_state=data.get('unavailable',False)
+    def GUILD_CREATE__OPT(client, data):
+        guild_state = data.get('unavailable', False)
         if guild_state:
             return
         
-        guild=Guild(data,client)
+        guild = Guild(data, client)
         
-        ready_state=client.ready_state
+        ready_state = client.ready_state
         if ready_state is None:
             return
         
         ready_state.feed(guild)
 
-PARSER_DEFAULTS('GUILD_CREATE',GUILD_CREATE__CAL,GUILD_CREATE__CAL,GUILD_CREATE__OPT,GUILD_CREATE__OPT)
-del GUILD_CREATE__CAL, GUILD_CREATE__OPT
+PARSER_DEFAULTS(
+    'GUILD_CREATE',
+    GUILD_CREATE__CAL,
+    GUILD_CREATE__CAL,
+    GUILD_CREATE__OPT,
+    GUILD_CREATE__OPT)
+del GUILD_CREATE__CAL, \
+    GUILD_CREATE__OPT
 
-def GUILD_UPDATE__CAL_SC(client,data):
-    guild_id=int(data['guild_id'])
+def GUILD_UPDATE__CAL_SC(client, data):
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
     old_attributes = guild._update(data)
     if not old_attributes:
         return
     
-    Task(client.events.guild_edit(client,guild,old_attributes), KOKORO)
+    Task(client.events.guild_edit(client, guild, old_attributes), KOKORO)
 
-def GUILD_UPDATE__CAL_MC(client,data):
-    guild_id=int(data['guild_id'])
+def GUILD_UPDATE__CAL_MC(client, data):
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
-    clients=filter_clients(guild.clients,INTENT_GUILDS)
+    clients = filter_clients(guild.clients, INTENT_GUILDS)
     if clients.send(None) is not client:
         clients.close()
         return
@@ -2512,101 +3112,127 @@ def GUILD_UPDATE__CAL_MC(client,data):
         return
     
     for client_ in clients:
-        Task(client_.events.guild_edit(client_,guild,old_attributes),KOKORO)
+        Task(client_.events.guild_edit(client_, guild, old_attributes), KOKORO)
 
-def GUILD_UPDATE__OPT_SC(client,data):
-    guild_id=int(data['guild_id'])
+def GUILD_UPDATE__OPT_SC(client, data):
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
     guild._update_no_return(data)
 
-def GUILD_UPDATE__OPT_MC(client,data):
-    guild_id=int(data['guild_id'])
+def GUILD_UPDATE__OPT_MC(client, data):
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
-    if first_client(guild.clients,INTENT_GUILDS) is not client:
+    if first_client(guild.clients, INTENT_GUILDS) is not client:
         return
     
     guild._update_no_return(data)
 
-PARSER_DEFAULTS('GUILD_UPDATE',GUILD_UPDATE__CAL_SC,GUILD_UPDATE__CAL_MC,GUILD_UPDATE__OPT_SC,GUILD_UPDATE__OPT_MC)
-del GUILD_UPDATE__CAL_SC, GUILD_UPDATE__CAL_MC, GUILD_UPDATE__OPT_SC, GUILD_UPDATE__OPT_MC
+PARSER_DEFAULTS(
+    'GUILD_UPDATE',
+    GUILD_UPDATE__CAL_SC,
+    GUILD_UPDATE__CAL_MC,
+    GUILD_UPDATE__OPT_SC,
+    GUILD_UPDATE__OPT_MC)
+del GUILD_UPDATE__CAL_SC, \
+    GUILD_UPDATE__CAL_MC, \
+    GUILD_UPDATE__OPT_SC, \
+    GUILD_UPDATE__OPT_MC
 
-def GUILD_DELETE__CAL(client,data):
-    guild_id=int(data['id'])
+def GUILD_DELETE__CAL(client, data):
+    guild_id = int(data['id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
         return
     
-    if data.get('unavailable',2)==1:
+    if data.get('unavailable', 2) == 1:
         return
     
-    profile=client.guild_profiles.pop(guild,None)
+    profile = client.guild_profiles.pop(guild, None)
     
     guild._delete(client)
     
-    Task(client.events.guild_delete(client,guild,profile), KOKORO)
+    Task(client.events.guild_delete(client, guild,profile), KOKORO)
 
-def GUILD_DELETE__OPT(client,data):
-    guild_id=int(data['id'])
+def GUILD_DELETE__OPT(client, data):
+    guild_id = int(data['id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
         return
     
-    if data.get('unavailable',2)==1:
+    if data.get('unavailable', 2) == 1:
         return
     
-    client.guild_profiles.pop(guild,None)
+    client.guild_profiles.pop(guild, None)
     
     guild._delete(client)
 
-PARSER_DEFAULTS('GUILD_DELETE',GUILD_DELETE__CAL,GUILD_DELETE__CAL,GUILD_DELETE__OPT,GUILD_DELETE__OPT)
-del GUILD_DELETE__CAL, GUILD_DELETE__OPT
+PARSER_DEFAULTS(
+    'GUILD_DELETE',
+    GUILD_DELETE__CAL,
+    GUILD_DELETE__CAL,
+    GUILD_DELETE__OPT,
+    GUILD_DELETE__OPT)
+del GUILD_DELETE__CAL, \
+    GUILD_DELETE__OPT
 
-def GUILD_BAN_ADD__CAL(client,data):
-    guild_id=int(data['guild_id'])
+def GUILD_BAN_ADD__CAL(client, data):
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,'GUILD_BAN_ADD')
+        guild_sync(client, data, 'GUILD_BAN_ADD')
         return
     
-    user=User(data['user'])
+    user = User(data['user'])
     
-    Task(client.events.guild_ban_add(client,guild,user), KOKORO)
+    Task(client.events.guild_ban_add(client, guild, user), KOKORO)
 
-def GUILD_BAN_ADD__OPT(client,data):
+def GUILD_BAN_ADD__OPT(client, data):
     pass
 
-PARSER_DEFAULTS('GUILD_BAN_ADD',GUILD_BAN_ADD__CAL,GUILD_BAN_ADD__CAL,GUILD_BAN_ADD__OPT,GUILD_BAN_ADD__OPT)
-del GUILD_BAN_ADD__CAL, GUILD_BAN_ADD__OPT
+PARSER_DEFAULTS(
+    'GUILD_BAN_ADD',
+    GUILD_BAN_ADD__CAL,
+    GUILD_BAN_ADD__CAL,
+    GUILD_BAN_ADD__OPT,
+    GUILD_BAN_ADD__OPT)
+del GUILD_BAN_ADD__CAL, \
+    GUILD_BAN_ADD__OPT
 
-def GUILD_BAN_REMOVE__CAL(client,data):
-    guild_id=int(data['guild_id'])
+def GUILD_BAN_REMOVE__CAL(client, data):
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,'GUILD_BAN_REMOVE')
+        guild_sync(client, data, 'GUILD_BAN_REMOVE')
         return
     
-    user=User(data['user'])
-    Task(client.events.guild_ban_delete(client,guild,user), KOKORO)
+    user = User(data['user'])
+    Task(client.events.guild_ban_delete(client, guild, user), KOKORO)
 
-def GUILD_BAN_REMOVE__OPT(client,data):
+def GUILD_BAN_REMOVE__OPT(client, data):
     pass
 
-PARSER_DEFAULTS('GUILD_BAN_REMOVE',GUILD_BAN_REMOVE__CAL,GUILD_BAN_REMOVE__CAL,GUILD_BAN_REMOVE__OPT,GUILD_BAN_REMOVE__OPT)
-del GUILD_BAN_REMOVE__CAL, GUILD_BAN_REMOVE__OPT
+PARSER_DEFAULTS(
+    'GUILD_BAN_REMOVE',
+    GUILD_BAN_REMOVE__CAL,
+    GUILD_BAN_REMOVE__CAL,
+    GUILD_BAN_REMOVE__OPT,
+    GUILD_BAN_REMOVE__OPT)
+del GUILD_BAN_REMOVE__CAL, \
+    GUILD_BAN_REMOVE__OPT
 
 class GuildUserChunkEvent(EventBase):
     """
@@ -2645,15 +3271,15 @@ class GuildUserChunkEvent(EventBase):
 
 if CACHE_PRESENCE:
     def GUILD_MEMBERS_CHUNK(client, data):
-        guild_id=int(data['guild_id'])
+        guild_id = int(data['guild_id'])
         try:
-            guild=GUILDS[guild_id]
+            guild = GUILDS[guild_id]
         except KeyError:
             return
         
-        users=[]
+        users = []
         for user_data in data['members']:
-            user = User(user_data,guild)
+            user = User(user_data, guild)
             users.append(user)
         
         try:
@@ -2673,15 +3299,15 @@ if CACHE_PRESENCE:
         Task(client.events.guild_user_chunk(client, event), KOKORO)
 else:
     def GUILD_MEMBERS_CHUNK(client, data):
-        guild_id=int(data['guild_id'])
+        guild_id = int(data['guild_id'])
         try:
-            guild=GUILDS[guild_id]
+            guild = GUILDS[guild_id]
         except KeyError:
             return
         
         users = []
         for user_data in data['members']:
-            user = User(user_data,guild)
+            user = User(user_data, guild)
             users.append(user)
         
         event = object.__new__(GuildUserChunkEvent)
@@ -2691,305 +3317,346 @@ else:
         event.index = data['chunk_index']
         event.count = data['chunk_count']
         
-        Task(client.events.guild_user_chunk(client,event), KOKORO)
+        Task(client.events.guild_user_chunk(client, event), KOKORO)
 
-PARSER_DEFAULTS('GUILD_MEMBERS_CHUNK',GUILD_MEMBERS_CHUNK,GUILD_MEMBERS_CHUNK,GUILD_MEMBERS_CHUNK,GUILD_MEMBERS_CHUNK)
+PARSER_DEFAULTS(
+    'GUILD_MEMBERS_CHUNK',
+    GUILD_MEMBERS_CHUNK,
+    GUILD_MEMBERS_CHUNK,
+    GUILD_MEMBERS_CHUNK,
+    GUILD_MEMBERS_CHUNK)
 del GUILD_MEMBERS_CHUNK
 
-def GUILD_INTEGRATIONS_UPDATE__CAL(client,data):
-    guild_id=int(data['guild_id'])
+def GUILD_INTEGRATIONS_UPDATE__CAL(client, data):
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,'GUILD_INTEGRATIONS_UPDATE')
+        guild_sync(client, data, 'GUILD_INTEGRATIONS_UPDATE')
         return
     
-    Task(client.events.integration_update(client,guild), KOKORO)
+    Task(client.events.integration_update(client, guild), KOKORO)
 
-def GUILD_INTEGRATIONS_UPDATE__OPT(client,data):
+def GUILD_INTEGRATIONS_UPDATE__OPT(client, data):
     pass
 
-PARSER_DEFAULTS('GUILD_INTEGRATIONS_UPDATE',GUILD_INTEGRATIONS_UPDATE__CAL,GUILD_INTEGRATIONS_UPDATE__CAL,GUILD_INTEGRATIONS_UPDATE__OPT,GUILD_INTEGRATIONS_UPDATE__OPT)
-del GUILD_INTEGRATIONS_UPDATE__CAL, GUILD_INTEGRATIONS_UPDATE__OPT
+PARSER_DEFAULTS(
+    'GUILD_INTEGRATIONS_UPDATE',
+    GUILD_INTEGRATIONS_UPDATE__CAL,
+    GUILD_INTEGRATIONS_UPDATE__CAL,
+    GUILD_INTEGRATIONS_UPDATE__OPT,
+    GUILD_INTEGRATIONS_UPDATE__OPT)
+del GUILD_INTEGRATIONS_UPDATE__CAL, \
+    GUILD_INTEGRATIONS_UPDATE__OPT
 
-def GUILD_ROLE_CREATE__CAL_SC(client,data):
-    guild_id=int(data['guild_id'])
+def GUILD_ROLE_CREATE__CAL_SC(client, data):
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,'GUILD_ROLE_CREATE')
+        guild_sync(client, data, 'GUILD_ROLE_CREATE')
         return
     
-    role=Role(data['role'],guild)
+    role = Role(data['role'], guild)
     
-    Task(client.events.role_create(client,role), KOKORO)
+    Task(client.events.role_create(client, role), KOKORO)
 
-def GUILD_ROLE_CREATE__CAL_MC(client,data):
-    guild_id=int(data['guild_id'])
+def GUILD_ROLE_CREATE__CAL_MC(client, data):
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,'GUILD_ROLE_CREATE')
+        guild_sync(client, data, 'GUILD_ROLE_CREATE')
         return
     
-    clients=filter_clients(guild.clients,INTENT_GUILDS)
+    clients = filter_clients(guild.clients, INTENT_GUILDS)
     if clients.send(None) is not client:
         clients.close()
         return
     
-    role=Role(data['role'],guild)
+    role = Role(data['role'], guild)
     
     for client_ in clients:
-        Task(client_.events.role_create(client_,role),KOKORO)
+        Task(client_.events.role_create(client_, role), KOKORO)
 
-def GUILD_ROLE_CREATE__OPT_SC(client,data):
-    guild_id=int(data['guild_id'])
+def GUILD_ROLE_CREATE__OPT_SC(client, data):
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,'GUILD_ROLE_CREATE')
+        guild_sync(client, data, 'GUILD_ROLE_CREATE')
         return
     
-    Role(data['role'],guild)
+    Role(data['role'], guild)
 
-def GUILD_ROLE_CREATE__OPT_MC(client,data):
-    guild_id=int(data['guild_id'])
+def GUILD_ROLE_CREATE__OPT_MC(client, data):
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,'GUILD_ROLE_CREATE')
+        guild_sync(client, data, 'GUILD_ROLE_CREATE')
         return
     
-    if first_client(guild.clients,INTENT_GUILDS) is not client:
+    if first_client(guild.clients, INTENT_GUILDS) is not client:
         return
     
-    Role(data['role'],guild)
+    Role(data['role'], guild)
 
-PARSER_DEFAULTS('GUILD_ROLE_CREATE',GUILD_ROLE_CREATE__CAL_SC,GUILD_ROLE_CREATE__CAL_MC,GUILD_ROLE_CREATE__OPT_SC,GUILD_ROLE_CREATE__OPT_MC)
-del GUILD_ROLE_CREATE__CAL_SC, GUILD_ROLE_CREATE__CAL_MC, GUILD_ROLE_CREATE__OPT_SC, GUILD_ROLE_CREATE__OPT_MC
+PARSER_DEFAULTS(
+    'GUILD_ROLE_CREATE',
+    GUILD_ROLE_CREATE__CAL_SC,
+    GUILD_ROLE_CREATE__CAL_MC,
+    GUILD_ROLE_CREATE__OPT_SC,
+    GUILD_ROLE_CREATE__OPT_MC)
+del GUILD_ROLE_CREATE__CAL_SC, \
+    GUILD_ROLE_CREATE__CAL_MC, \
+    GUILD_ROLE_CREATE__OPT_SC, \
+    GUILD_ROLE_CREATE__OPT_MC
 
 def GUILD_ROLE_DELETE__CAL_SC(client, data):
-    guild_id=int(data['guild_id'])
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
-    role_id=int(data['role_id'])
+    role_id = int(data['role_id'])
     try:
-        role=guild.all_role[role_id]
+        role = guild.roles[role_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
     role._delete()
     
-    Task(client.events.role_delete(client,role,guild), KOKORO)
+    Task(client.events.role_delete(client, role, guild), KOKORO)
 
 def GUILD_ROLE_DELETE__CAL_MC(client, data):
-    guild_id=int(data['guild_id'])
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
-    clients=filter_clients(guild.clients,INTENT_GUILDS)
+    clients = filter_clients(guild.clients, INTENT_GUILDS)
     if clients.send(None) is not client:
         clients.close()
         return
     
-    role_id=int(data['role_id'])
+    role_id = int(data['role_id'])
     try:
-        role=guild.all_role[role_id]
+        role = guild.roles[role_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
     role._delete()
     
     for client_ in clients:
-        Task(client_.events.role_delete(client_,role, guild),KOKORO)
+        Task(client_.events.role_delete(client_, role, guild), KOKORO)
 
 def GUILD_ROLE_DELETE__OPT_SC(client, data):
-    guild_id=int(data['guild_id'])
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
-    role_id=int(data['role_id'])
+    role_id = int(data['role_id'])
     try:
-        role=guild.all_role[role_id]
+        role = guild.roles[role_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
     role._delete()
 
 def GUILD_ROLE_DELETE__OPT_MC(client, data):
-    guild_id=int(data['guild_id'])
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
-    if first_client(guild.clients,INTENT_GUILDS) is not client:
+    if first_client(guild.clients, INTENT_GUILDS) is not client:
         return
     
-    role_id=int(data['role_id'])
+    role_id = int(data['role_id'])
     try:
-        role=guild.all_role[role_id]
+        role = guild.roles[role_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
     role._delete()
 
-PARSER_DEFAULTS('GUILD_ROLE_DELETE',GUILD_ROLE_DELETE__CAL_SC,GUILD_ROLE_DELETE__CAL_MC,GUILD_ROLE_DELETE__OPT_SC,GUILD_ROLE_DELETE__OPT_MC)
-del GUILD_ROLE_DELETE__CAL_SC, GUILD_ROLE_DELETE__CAL_MC, GUILD_ROLE_DELETE__OPT_SC, GUILD_ROLE_DELETE__OPT_MC
+PARSER_DEFAULTS(
+    'GUILD_ROLE_DELETE',
+    GUILD_ROLE_DELETE__CAL_SC,
+    GUILD_ROLE_DELETE__CAL_MC,
+    GUILD_ROLE_DELETE__OPT_SC,
+    GUILD_ROLE_DELETE__OPT_MC)
+del GUILD_ROLE_DELETE__CAL_SC, \
+    GUILD_ROLE_DELETE__CAL_MC, \
+    GUILD_ROLE_DELETE__OPT_SC, \
+    GUILD_ROLE_DELETE__OPT_MC
 
-def GUILD_ROLE_UPDATE__CAL_SC(client,data):
-    guild_id=int(data['guild_id'])
+def GUILD_ROLE_UPDATE__CAL_SC(client, data):
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
-    role_data=data['role']
-    role_id=int(role_data['id'])
+    role_data = data['role']
+    role_id = int(role_data['id'])
     try:
-        role=guild.all_role[role_id]
+        role = guild.roles[role_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
     old_attributes = role._update(data['role'])
     if not old_attributes:
         return
     
-    Task(client.events.role_edit(client,role,old_attributes), KOKORO)
+    Task(client.events.role_edit(client, role, old_attributes), KOKORO)
 
-def GUILD_ROLE_UPDATE__CAL_MC(client,data):
-    guild_id=int(data['guild_id'])
+def GUILD_ROLE_UPDATE__CAL_MC(client, data):
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
-    clients=filter_clients(guild.clients,INTENT_GUILDS)
+    clients = filter_clients(guild.clients, INTENT_GUILDS)
     if clients.send(None) is not client:
         clients.close()
         return
     
-    role_data=data['role']
-    role_id=int(role_data['id'])
+    role_data = data['role']
+    role_id = int(role_data['id'])
     try:
-        role=guild.all_role[role_id]
+        role = guild.roles[role_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
-    old_attributes=role._update(data['role'])
+    old_attributes = role._update(data['role'])
     if not old_attributes:
         return
     
     for client_ in clients:
-        Task(client_.events.role_edit(client_,role,old_attributes),KOKORO)
+        Task(client_.events.role_edit(client_, role, old_attributes), KOKORO)
 
-def GUILD_ROLE_UPDATE__OPT_SC(client,data):
-    guild_id=int(data['guild_id'])
+def GUILD_ROLE_UPDATE__OPT_SC(client, data):
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
-    role_data=data['role']
-    role_id=int(role_data['id'])
+    role_data = data['role']
+    role_id = int(role_data['id'])
     try:
-        role=guild.all_role[role_id]
+        role = guild.roles[role_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
     role._update_no_return(data['role'])
 
-def GUILD_ROLE_UPDATE__OPT_MC(client,data):
-    guild_id=int(data['guild_id'])
+def GUILD_ROLE_UPDATE__OPT_MC(client, data):
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
-    if first_client(guild.clients,INTENT_GUILDS) is not client:
+    if first_client(guild.clients, INTENT_GUILDS) is not client:
         return
     
-    role_data=data['role']
-    role_id=int(role_data['id'])
+    role_data = data['role']
+    role_id = int(role_data['id'])
     try:
-        role=guild.all_role[role_id]
+        role = guild.roles[role_id]
     except KeyError:
-        guild_sync(client,data,None)
+        guild_sync(client, data, None)
         return
     
     role._update_no_return(data['role'])
 
-PARSER_DEFAULTS('GUILD_ROLE_UPDATE',GUILD_ROLE_UPDATE__CAL_SC,GUILD_ROLE_UPDATE__CAL_MC,GUILD_ROLE_UPDATE__OPT_SC,GUILD_ROLE_UPDATE__OPT_MC)
-del GUILD_ROLE_UPDATE__CAL_SC, GUILD_ROLE_UPDATE__CAL_MC, GUILD_ROLE_UPDATE__OPT_SC, GUILD_ROLE_UPDATE__OPT_MC
+PARSER_DEFAULTS(
+    'GUILD_ROLE_UPDATE',
+    GUILD_ROLE_UPDATE__CAL_SC,
+    GUILD_ROLE_UPDATE__CAL_MC,
+    GUILD_ROLE_UPDATE__OPT_SC,
+    GUILD_ROLE_UPDATE__OPT_MC)
+del GUILD_ROLE_UPDATE__CAL_SC, \
+    GUILD_ROLE_UPDATE__CAL_MC, \
+    GUILD_ROLE_UPDATE__OPT_SC, \
+    GUILD_ROLE_UPDATE__OPT_MC
 
-def WEBHOOKS_UPDATE__CAL(client,data):
-    guild_id=int(data['guild_id'])
+def WEBHOOKS_UPDATE__CAL(client, data):
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,'WEBHOOKS_UPDATE')
+        guild_sync(client, data, 'WEBHOOKS_UPDATE')
         return
     
-    guild.webhooks_uptodate=False
+    guild.webhooks_uptodate = False
     
-    channel_id=int(data['channel_id'])
-    channel=guild.all_channel.get(channel_id,None)
+    channel_id = int(data['channel_id'])
+    channel = guild.channels.get(channel_id)
     
     #if this happens the client might ask for update.
-    Task(client.events.webhook_update(client,channel,), KOKORO)
+    Task(client.events.webhook_update(client, channel,), KOKORO)
 
-def WEBHOOKS_UPDATE__OPT(client,data):
-    guild_id=int(data['guild_id'])
+def WEBHOOKS_UPDATE__OPT(client, data):
+    guild_id = int(data['guild_id'])
     try:
-        guild=GUILDS[guild_id]
+        guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client,data,'WEBHOOKS_UPDATE')
+        guild_sync(client, data, 'WEBHOOKS_UPDATE')
         return
     
-    guild.webhooks_uptodate=False
+    guild.webhooks_uptodate = False
 
-PARSER_DEFAULTS('WEBHOOKS_UPDATE',WEBHOOKS_UPDATE__CAL,WEBHOOKS_UPDATE__CAL,WEBHOOKS_UPDATE__OPT,WEBHOOKS_UPDATE__OPT)
-del WEBHOOKS_UPDATE__CAL, WEBHOOKS_UPDATE__OPT
+PARSER_DEFAULTS(
+    'WEBHOOKS_UPDATE',
+    WEBHOOKS_UPDATE__CAL,
+    WEBHOOKS_UPDATE__CAL,
+    WEBHOOKS_UPDATE__OPT,
+    WEBHOOKS_UPDATE__OPT)
+del WEBHOOKS_UPDATE__CAL, \
+    WEBHOOKS_UPDATE__OPT
 
-def VOICE_STATE_UPDATE__CAL_SC(client,data):
+def VOICE_STATE_UPDATE__CAL_SC(client, data):
     try:
-        id_=int(data['guild_id'])
+        id_ = int(data['guild_id'])
     except KeyError:
         # Do not handle outside of guild calls
         return
     else:
         try:
-            guild=GUILDS[id_]
+            guild = GUILDS[id_]
         except KeyError:
-            guild_sync(client,data,'VOICE_STATE_UPDATE')
+            guild_sync(client, data, 'VOICE_STATE_UPDATE')
             return
     
     try:
-        user=User(data['member'],guild)
+        user = User(data['member'], guild)
     except KeyError:
-        user=User(data['user'])
+        user = User(data['user'])
     result = guild._update_voice_state(data, user)
     
     if result is None:
@@ -2997,42 +3664,42 @@ def VOICE_STATE_UPDATE__CAL_SC(client,data):
     
     #need to comapre id, because if caching is disabled,
     #the objects will be different.
-    if user==client:
+    if user == client:
         try:
             voice_client = client.voice_clients[id_]
         except KeyError:
             pass
         else:
-            if result[1]=='l':
-                Task(voice_client.disconnect(force=True,terminate=False), KOKORO)
+            if result[1] == 'l':
+                Task(voice_client.disconnect(force=True, terminate=False), KOKORO)
             else:
                 voice_client.channel = result[0].channel
     
-    Task(client.events.voice_state_update(client,*result), KOKORO)
+    Task(client.events.voice_state_update(client, *result), KOKORO)
 
-def VOICE_STATE_UPDATE__CAL_MC(client,data):
+def VOICE_STATE_UPDATE__CAL_MC(client, data):
     try:
-        id_=int(data['guild_id'])
+        id_ = int(data['guild_id'])
     except KeyError:
         # Do not handle outside of guild calls
         return
     else:
         try:
-            guild=GUILDS[id_]
+            guild = GUILDS[id_]
         except KeyError:
-            guild_sync(client,data,'VOICE_STATE_UPDATE')
+            guild_sync(client, data, 'VOICE_STATE_UPDATE')
             return
     
-    clients=filter_clients(guild.clients,INTENT_GUILD_VOICE_STATES)
+    clients = filter_clients(guild.clients, INTENT_GUILD_VOICE_STATES)
     if clients.send(None) is not client:
         clients.close()
         return
     
     try:
-        user=User(data['member'],guild)
+        user = User(data['member'], guild)
     except KeyError:
-        user=User(data['user'])
-    result=guild._update_voice_state(data,user)
+        user = User(data['user'])
+    result = guild._update_voice_state(data, user)
     
     if result is None:
         return
@@ -3040,45 +3707,45 @@ def VOICE_STATE_UPDATE__CAL_MC(client,data):
     for client_ in clients:
         #need to comapre id, because if caching is disabled,
         #the objects will be different.
-        if user==client_:
+        if user == client_:
             try:
                 voice_client = client_.voice_clients[id_]
             except KeyError:
                 pass
             else:
-                if result[1]=='l':
-                    Task(voice_client.disconnect(force=True,terminate=False),KOKORO)
+                if result[1] == 'l':
+                    Task(voice_client.disconnect(force=True, terminate=False), KOKORO)
                 else:
                     voice_client.channel = result[0].channel
         
-        Task(client_.events.voice_state_update(client_,*result),KOKORO)
+        Task(client_.events.voice_state_update(client_, *result), KOKORO)
 
-def VOICE_STATE_UPDATE__OPT_SC(client,data):
+def VOICE_STATE_UPDATE__OPT_SC(client, data):
     try:
-        id_=int(data['guild_id'])
+        id_ = int(data['guild_id'])
     except KeyError:
         # Do not handle outside of guild calls
         return
     else:
         try:
-            guild=GUILDS[id_]
+            guild = GUILDS[id_]
         except KeyError:
-            guild_sync(client,data,'VOICE_STATE_UPDATE')
+            guild_sync(client, data, 'VOICE_STATE_UPDATE')
             return
     
     try:
-        user=User(data['member'],guild)
+        user = User(data['member'], guild)
     except KeyError:
-        user=User(data['user'])
+        user = User(data['user'])
     
-    result=guild._update_voice_state_restricted(data,user)
+    result = guild._update_voice_state_restricted(data, user)
     
     if result is None:
         return
     
     #need to comapre id, because if caching is disabled,
     #the objects will be different.
-    if user!=client:
+    if user != client:
         return
     
     try:
@@ -3087,31 +3754,31 @@ def VOICE_STATE_UPDATE__OPT_SC(client,data):
         return
     
     if result is _spaceholder:
-        Task(voice_client.disconnect(force=True,terminate=False), KOKORO)
+        Task(voice_client.disconnect(force=True, terminate=False), KOKORO)
     else:
-        voice_client.channel=result
+        voice_client.channel = result
 
-def VOICE_STATE_UPDATE__OPT_MC(client,data):
+def VOICE_STATE_UPDATE__OPT_MC(client, data):
     try:
-        id_=int(data['guild_id'])
+        id_ = int(data['guild_id'])
     except KeyError:
         # Do not handle outside of guild calls
         return
     else:
         try:
-            guild=GUILDS[id_]
+            guild = GUILDS[id_]
         except KeyError:
-            guild_sync(client,data,'VOICE_STATE_UPDATE')
+            guild_sync(client, data, 'VOICE_STATE_UPDATE')
             return
     
-    if first_client(guild.clients,INTENT_GUILD_VOICE_STATES) is not client:
+    if first_client(guild.clients, INTENT_GUILD_VOICE_STATES) is not client:
         return
     
     try:
-        user=User(data['member'],guild)
+        user = User(data['member'], guild)
     except KeyError:
-        user=User(data['user'])
-    result=guild._update_voice_state_restricted(data,user)
+        user = User(data['user'])
+    result = guild._update_voice_state_restricted(data, user)
     
     if result is None:
         return
@@ -3119,7 +3786,7 @@ def VOICE_STATE_UPDATE__OPT_MC(client,data):
     for client in guild.clients:
         #need to comapre id, because if caching is disabled,
         #the objects will be different.
-        if user==client:
+        if user == client:
             break
     else:
         return
@@ -3130,14 +3797,22 @@ def VOICE_STATE_UPDATE__OPT_MC(client,data):
         return
     
     if result is _spaceholder:
-        Task(voice_client.disconnect(force=True,terminate=False), KOKORO)
+        Task(voice_client.disconnect(force=True, terminate=False), KOKORO)
     else:
         voice_client.channel = result
 
-PARSER_DEFAULTS('VOICE_STATE_UPDATE',VOICE_STATE_UPDATE__CAL_SC,VOICE_STATE_UPDATE__CAL_MC,VOICE_STATE_UPDATE__OPT_SC,VOICE_STATE_UPDATE__OPT_MC)
-del VOICE_STATE_UPDATE__CAL_SC, VOICE_STATE_UPDATE__CAL_MC, VOICE_STATE_UPDATE__OPT_SC, VOICE_STATE_UPDATE__OPT_MC
+PARSER_DEFAULTS(
+    'VOICE_STATE_UPDATE',
+    VOICE_STATE_UPDATE__CAL_SC,
+    VOICE_STATE_UPDATE__CAL_MC,
+    VOICE_STATE_UPDATE__OPT_SC,
+    VOICE_STATE_UPDATE__OPT_MC)
+del VOICE_STATE_UPDATE__CAL_SC, \
+    VOICE_STATE_UPDATE__CAL_MC, \
+    VOICE_STATE_UPDATE__OPT_SC, \
+    VOICE_STATE_UPDATE__OPT_MC
 
-def VOICE_SERVER_UPDATE(client,data):
+def VOICE_SERVER_UPDATE(client, data):
     try:
         voice_client_id = data['guild_id']
     except KeyError:
@@ -3153,72 +3828,94 @@ def VOICE_SERVER_UPDATE(client,data):
     Task(voice_client._create_socket(data), KOKORO)
     #should we add event to this?
 
-PARSER_DEFAULTS('VOICE_SERVER_UPDATE',VOICE_SERVER_UPDATE,VOICE_SERVER_UPDATE,VOICE_SERVER_UPDATE,VOICE_SERVER_UPDATE)
+PARSER_DEFAULTS(
+    'VOICE_SERVER_UPDATE',
+    VOICE_SERVER_UPDATE,
+    VOICE_SERVER_UPDATE,
+    VOICE_SERVER_UPDATE,
+    VOICE_SERVER_UPDATE)
 del VOICE_SERVER_UPDATE
 
 if CACHE_PRESENCE:
-    def TYPING_START__CAL(client,data):
-        channel_id=int(data['channel_id'])
+    def TYPING_START__CAL(client, data):
+        channel_id = int(data['channel_id'])
         try:
-            channel=CHANNELS[channel_id]
+            channel = CHANNELS[channel_id]
         except KeyError:
-            guild_sync(client,data,('TYPING_START',check_channel,channel_id))
+            guild_sync(client, data, ('TYPING_START', check_channel, channel_id))
             return
         
-        user_id=int(data['user_id'])
-        user=PartialUser(user_id)
+        user_id = int(data['user_id'])
+        user = PartialUser(user_id)
         
         timestamp = datetime.utcfromtimestamp(data.get('timestamp'))
         
-        Task(client.events.typing(client,channel,user,timestamp), KOKORO)
+        Task(client.events.typing(client, channel, user, timestamp), KOKORO)
     
-    def TYPING_START__OPT(client,data):
+    def TYPING_START__OPT(client, data):
         return
 else:
-    def TYPING_START__CAL(client,data):
+    def TYPING_START__CAL(client, data):
         return
     TYPING_START__OPT=TYPING_START__CAL
 
-PARSER_DEFAULTS('TYPING_START',TYPING_START__CAL,TYPING_START__CAL,TYPING_START__OPT,TYPING_START__OPT)
-del TYPING_START__CAL, TYPING_START__OPT
+PARSER_DEFAULTS(
+    'TYPING_START',
+    TYPING_START__CAL,
+    TYPING_START__CAL,
+    TYPING_START__OPT,
+    TYPING_START__OPT)
+del TYPING_START__CAL, \
+    TYPING_START__OPT
 
-def INVITE_CREATE__CAL(client,data):
+def INVITE_CREATE__CAL(client, data):
     invite = Invite(data, False)
-    Task(client.events.invite_create(client,invite), KOKORO)
+    Task(client.events.invite_create(client, invite), KOKORO)
 
-def INVITE_CREATE__OPT(client,data):
+def INVITE_CREATE__OPT(client, data):
     pass
 
-PARSER_DEFAULTS('INVITE_CREATE',INVITE_CREATE__CAL,INVITE_CREATE__CAL,INVITE_CREATE__OPT,INVITE_CREATE__OPT)
-del INVITE_CREATE__CAL, INVITE_CREATE__OPT
+PARSER_DEFAULTS(
+    'INVITE_CREATE',
+    INVITE_CREATE__CAL,
+    INVITE_CREATE__CAL,
+    INVITE_CREATE__OPT,
+    INVITE_CREATE__OPT)
+del INVITE_CREATE__CAL, \
+    INVITE_CREATE__OPT
 
-def INVITE_DELETE__CAL(client,data):
+def INVITE_DELETE__CAL(client, data):
     invite = Invite(data, True)
-    Task(client.events.invite_delete(client,invite), KOKORO)
+    Task(client.events.invite_delete(client, invite), KOKORO)
 
-def INVITE_DELETE__OPT(client,data):
+def INVITE_DELETE__OPT(client, data):
     pass
 
-PARSER_DEFAULTS('INVITE_DELETE',INVITE_DELETE__CAL,INVITE_DELETE__CAL,INVITE_DELETE__OPT,INVITE_DELETE__OPT)
-del INVITE_DELETE__CAL, INVITE_DELETE__OPT
+PARSER_DEFAULTS('INVITE_DELETE',
+    INVITE_DELETE__CAL,
+    INVITE_DELETE__CAL,
+    INVITE_DELETE__OPT,
+    INVITE_DELETE__OPT)
+del INVITE_DELETE__CAL, \
+    INVITE_DELETE__OPT
 
-def RELATIONSHIP_ADD__CAL(client,data):
-    user_id=int(data['id'])
+def RELATIONSHIP_ADD__CAL(client, data):
+    user_id = int(data['id'])
     try:
-        old_relationship=client.relationships.pop(user_id)
+        old_relationship = client.relationships.pop(user_id)
     except KeyError:
-        old_relationship=None
+        old_relationship = None
     
-    new_relationship=Relationship(client, data, user_id)
+    new_relationship = Relationship(client, data, user_id)
     
     if old_relationship is None:
-        coro=client.events.relationship_add(client,new_relationship)
+        coro = client.events.relationship_add(client, new_relationship)
     else:
-        coro=client.events.relationship_change(client,old_relationship,new_relationship)
+        coro = client.events.relationship_change(client, old_relationship, new_relationship)
     Task(coro, KOKORO)
 
-def RELATIONSHIP_ADD__OPT(client,data):
-    user_id=int(data['id'])
+def RELATIONSHIP_ADD__OPT(client, data):
+    user_id = int(data['id'])
     try:
         del client.relationships[user_id]
     except KeyError:
@@ -3226,90 +3923,138 @@ def RELATIONSHIP_ADD__OPT(client,data):
     
     Relationship(client, data, user_id)
 
-PARSER_DEFAULTS('RELATIONSHIP_ADD',RELATIONSHIP_ADD__CAL,RELATIONSHIP_ADD__CAL,RELATIONSHIP_ADD__OPT,RELATIONSHIP_ADD__OPT)
-del RELATIONSHIP_ADD__CAL, RELATIONSHIP_ADD__OPT
+PARSER_DEFAULTS(
+    'RELATIONSHIP_ADD',
+    RELATIONSHIP_ADD__CAL,
+    RELATIONSHIP_ADD__CAL,
+    RELATIONSHIP_ADD__OPT,
+    RELATIONSHIP_ADD__OPT)
+del RELATIONSHIP_ADD__CAL, \
+    RELATIONSHIP_ADD__OPT
 
-def RELATIONSHIP_REMOVE__CAL(client,data):
-    user_id=int(data['id'])
+def RELATIONSHIP_REMOVE__CAL(client, data):
+    user_id = int(data['id'])
     try:
         old_relationship = client.relationships.pop(user_id)
     except KeyError:
         return
     
-    Task(client.events.relationship_delete(client,old_relationship), KOKORO)
+    Task(client.events.relationship_delete(client, old_relationship), KOKORO)
 
-def RELATIONSHIP_REMOVE__OPT(client,data):
-    user_id=int(data['id'])
+def RELATIONSHIP_REMOVE__OPT(client, data):
+    user_id = int(data['id'])
     try:
         del client.user.relations[user_id]
     except KeyError:
         pass
 
-PARSER_DEFAULTS('RELATIONSHIP_REMOVE',RELATIONSHIP_REMOVE__CAL,RELATIONSHIP_REMOVE__CAL,RELATIONSHIP_REMOVE__OPT,RELATIONSHIP_REMOVE__OPT)
-del RELATIONSHIP_REMOVE__CAL, RELATIONSHIP_REMOVE__OPT
+PARSER_DEFAULTS(
+    'RELATIONSHIP_REMOVE',
+    RELATIONSHIP_REMOVE__CAL,
+    RELATIONSHIP_REMOVE__CAL,
+    RELATIONSHIP_REMOVE__OPT,
+    RELATIONSHIP_REMOVE__OPT)
+del RELATIONSHIP_REMOVE__CAL, \
+    RELATIONSHIP_REMOVE__OPT
 
 #empty list
-def PRESENCES_REPLACE(client,data):
+def PRESENCES_REPLACE(client, data):
     pass
 
-PARSER_DEFAULTS('PRESENCES_REPLACE',PRESENCES_REPLACE,PRESENCES_REPLACE,PRESENCES_REPLACE,PRESENCES_REPLACE)
+PARSER_DEFAULTS(
+    'PRESENCES_REPLACE',
+    PRESENCES_REPLACE,
+    PRESENCES_REPLACE,
+    PRESENCES_REPLACE,
+    PRESENCES_REPLACE)
 del PRESENCES_REPLACE
 
-def USER_SETTINGS_UPDATE(client,data):
+def USER_SETTINGS_UPDATE(client, data):
     pass
 
-PARSER_DEFAULTS('USER_SETTINGS_UPDATE',USER_SETTINGS_UPDATE, USER_SETTINGS_UPDATE, USER_SETTINGS_UPDATE, USER_SETTINGS_UPDATE)
+PARSER_DEFAULTS(
+    'USER_SETTINGS_UPDATE',
+    USER_SETTINGS_UPDATE,
+    USER_SETTINGS_UPDATE,
+    USER_SETTINGS_UPDATE,
+    USER_SETTINGS_UPDATE)
 del USER_SETTINGS_UPDATE
 
-def GIFT_CODE_UPDATE__CAL(client,data):
-    channel_id=int(data['channel_id'])
+def GIFT_CODE_UPDATE__CAL(client, data):
+    channel_id = int(data['channel_id'])
     try:
-        channel=CHANNELS[channel_id]
+        channel = CHANNELS[channel_id]
     except KeyError:
-        guild_sync(client,data,('GIFT_CODE_UPDATE',check_channel,channel_id))
+        guild_sync(client, data, ('GIFT_CODE_UPDATE', check_channel, channel_id))
         return
     
-    gift=Gift(data)
-    Task(client.events.gift_update(client,channel,gift), KOKORO)
+    gift = Gift(data)
+    Task(client.events.gift_update(client, channel, gift), KOKORO)
 
-def GIFT_CODE_UPDATE__OPT(client,data):
+def GIFT_CODE_UPDATE__OPT(client, data):
     pass
 
-PARSER_DEFAULTS('GIFT_CODE_UPDATE',GIFT_CODE_UPDATE__CAL,GIFT_CODE_UPDATE__CAL,GIFT_CODE_UPDATE__OPT,GIFT_CODE_UPDATE__OPT)
-del GIFT_CODE_UPDATE__CAL, GIFT_CODE_UPDATE__OPT
+PARSER_DEFAULTS(
+    'GIFT_CODE_UPDATE',
+    GIFT_CODE_UPDATE__CAL,
+    GIFT_CODE_UPDATE__CAL,
+    GIFT_CODE_UPDATE__OPT,
+    GIFT_CODE_UPDATE__OPT)
+del GIFT_CODE_UPDATE__CAL, \
+    GIFT_CODE_UPDATE__OPT
 
 #hooman only event
 def USER_ACHIEVEMENT_UPDATE(client, data):
     pass
 
-PARSER_DEFAULTS('USER_ACHIEVEMENT_UPDATE', USER_ACHIEVEMENT_UPDATE, USER_ACHIEVEMENT_UPDATE, USER_ACHIEVEMENT_UPDATE, USER_ACHIEVEMENT_UPDATE)
+PARSER_DEFAULTS(
+    'USER_ACHIEVEMENT_UPDATE',
+    USER_ACHIEVEMENT_UPDATE,
+    USER_ACHIEVEMENT_UPDATE,
+    USER_ACHIEVEMENT_UPDATE,
+    USER_ACHIEVEMENT_UPDATE)
 del USER_ACHIEVEMENT_UPDATE
 
 #hooman only event
-def MESSAGE_ACK(client,data):
+def MESSAGE_ACK(client, data):
     # contains `message_id` and `channel_id`, no clue, how it could be usefull.
     pass
 
-PARSER_DEFAULTS('MESSAGE_ACK',MESSAGE_ACK,MESSAGE_ACK,MESSAGE_ACK,MESSAGE_ACK)
+PARSER_DEFAULTS(
+    'MESSAGE_ACK',
+    MESSAGE_ACK,
+    MESSAGE_ACK,
+    MESSAGE_ACK,
+    MESSAGE_ACK)
 del MESSAGE_ACK
 
 #hooman only event, with the own presence data, what we get anyways.
-def SESSIONS_REPLACE(client,data):
+def SESSIONS_REPLACE(client, data):
     pass
 
-PARSER_DEFAULTS('SESSIONS_REPLACE',SESSIONS_REPLACE,SESSIONS_REPLACE,SESSIONS_REPLACE,SESSIONS_REPLACE)
+PARSER_DEFAULTS(
+    'SESSIONS_REPLACE',
+    SESSIONS_REPLACE,
+    SESSIONS_REPLACE,
+    SESSIONS_REPLACE,
+    SESSIONS_REPLACE)
 del SESSIONS_REPLACE
 
 #hooman only event,
-def USER_GUILD_SETTINGS_UPDATE(client,data):
+def USER_GUILD_SETTINGS_UPDATE(client, data):
     # invidual guild settings data.
     pass
 
-PARSER_DEFAULTS('USER_GUILD_SETTINGS_UPDATE',USER_GUILD_SETTINGS_UPDATE,USER_GUILD_SETTINGS_UPDATE,USER_GUILD_SETTINGS_UPDATE,USER_GUILD_SETTINGS_UPDATE)
+PARSER_DEFAULTS(
+    'USER_GUILD_SETTINGS_UPDATE',
+    USER_GUILD_SETTINGS_UPDATE,
+    USER_GUILD_SETTINGS_UPDATE,
+    USER_GUILD_SETTINGS_UPDATE,
+    USER_GUILD_SETTINGS_UPDATE)
 del USER_GUILD_SETTINGS_UPDATE
 
 
-EVENTS=EVENT_SYSTEM_CORE()
+EVENTS = EVENT_SYSTEM_CORE()
 
 EVENTS.add_default('error'                      , 3 , ()                                        , )
 
@@ -3421,27 +4166,27 @@ def check_name(func, name):
         if _check_name_should_break(name):
             break
         
-        if hasattr(func,'__event_name__'):
+        if hasattr(func, '__event_name__'):
             name = func.__event_name__
             if _check_name_should_break(name):
                 break
         
         #func or method
-        if hasattr(func,'__name__'):
-            name=func.__name__
+        if hasattr(func, '__name__'):
+            name = func.__name__
             if _check_name_should_break(name):
                 break
         
-        func=type(func)
-        if not issubclass(func,type) and hasattr(func,'__name__'):
-            name=func.__name__
+        func = type(func)
+        if not issubclass(func, type) and hasattr(func, '__name__'):
+            name = func.__name__
             if _check_name_should_break(name):
                 break
         
         raise TypeError(f'Metaclasses are not allowed, got {func!r}.')
     
     if not name.islower():
-        name=name.lower()
+        name = name.lower()
     return name
 
 def check_argcount_and_convert(func, expected, errormsg=None):
@@ -3486,15 +4231,15 @@ def check_argcount_and_convert(func, expected, errormsg=None):
     analyzer = CallableAnalyzer(func)
     if analyzer.is_async():
         min_, max_ = analyzer.get_non_reserved_positional_argument_range()
-        if min_>expected:
+        if min_ > expected:
             raise TypeError(f'`{func!r}` excepts at least `{min_!r}` non reserved arguments, meanwhile the event '
                 'expects to pass `{expected!r}`.')
         
-        if min_==expected:
+        if min_ == expected:
             return func
         
-        #min<expected
-        if max_>=expected:
+        # min < expected
+        if max_ >= expected:
             return func
         
         if analyzer.accepts_args():
@@ -3504,20 +4249,20 @@ def check_argcount_and_convert(func, expected, errormsg=None):
             f'to pass `{expected!r}`.')
     
     if analyzer.can_instance_to_async_callable():
-        sub_analyzer=CallableAnalyzer(func.__call__, as_method=True)
+        sub_analyzer = CallableAnalyzer(func.__call__, as_method=True)
         if sub_analyzer.is_async():
             min_, max_ = sub_analyzer.get_non_reserved_positional_argument_range()
             
-            if min_>expected:
+            if min_ > expected:
                 raise TypeError(f'After instancing `{func!r}` would still except at least `{min_!r}` non reserved '
                     f'arguments, meanwhile the event expects to pass `{expected!r}`.')
             
-            if min_==expected:
+            if min_ == expected:
                 func = analyzer.instance_to_async_callable()
                 return func
             
-            #min<expected
-            if max_>=expected:
+            # min < expected
+            if max_ >= expected:
                 func = analyzer.instance_to_async_callable()
                 return func
             
@@ -3536,28 +4281,28 @@ def check_argcount_and_convert(func, expected, errormsg=None):
     
     raise TypeError(errormsg)
 
-def compare_converted(converted,non_converted):
+def compare_converted(converted, non_converted):
     # function, both should be functions
-    if isinstance(non_converted,function):
+    if isinstance(non_converted, function):
         return (converted is non_converted)
     
     # method, both should be methods
-    if isinstance(non_converted,MethodLike):
+    if isinstance(non_converted, MethodLike):
         return (converted is non_converted)
     
     # callable object, both should be the same
-    if not isinstance(non_converted,type) and hasattr(type(non_converted),'__call__'):
+    if not isinstance(non_converted, type) and hasattr(type(non_converted), '__call__'):
         return (converted is non_converted)
     
     # type, but not metaclass
-    if not issubclass(non_converted,type) and isinstance(non_converted,type):
+    if not issubclass(non_converted, type) and isinstance(non_converted, type):
         
         # async initializer, both is type
         if iscoro(non_converted.__new__):
             return (converted is non_converted)
         
         # async call -> should be initalized already, compare the converted's type
-        if hasattr(non_converted,'__call__'):
+        if hasattr(non_converted, '__call__'):
             return (type(converted) is non_converted)
     
     #meow?
@@ -3594,61 +4339,63 @@ def _convert_unsafe_event_iterable(iterable, type_=None):
     ValueError
         If an element of the received iterable does not macthes any of the expected formats.
     """
-    result=[]
+    result = []
     for element in iterable:
         if type(element) is EventListElement:
             if (type_ is not None):
-                element=type_.from_kwargs(element.func, element.name, element.kwargs)
+                element = type_.from_kwargs(element.func, element.name, element.kwargs)
         if type(element) is type_:
             pass
         else:
-            if isinstance(element,tuple):
-                element_len=len(element)
-                if element_len>3 or element_len==0:
+            if isinstance(element, tuple):
+                element_len = len(element)
+                if element_len > 3 or element_len == 0:
                     raise ValueError(f'Expected `tuple` with length 1 or 2, got `{element!r}`.')
                 
-                func=element[0]
-                if element_len==1:
-                    name=None
+                func = element[0]
+                if element_len == 1:
+                    name = None
                     kwargs=None
                 else:
-                    name=element[1]
+                    name = element[1]
                     if (name is not None) and (type(name) is not str):
                         raise ValueError(f'Expected `None` or `str` instance at index 1 at element: `{element!r}`')
                     
-                    if element_len==2:
-                        kwargs=None
+                    if element_len == 2:
+                        kwargs = None
                     else:
-                        kwargs=element[2]
+                        kwargs = element[2]
                         if (kwargs is not None):
                             if (type(kwargs) is not dict):
-                                raise ValueError(f'Expected `None` or `dict` instance at index 1 at element: `{element!r}`')
+                                raise ValueError(f'Expected `None` or `dict` instance at index 1 at element: '
+                                    f'`{element!r}`')
                             
                             if not kwargs:
                                 kwargs=None
             
-            elif isinstance(element,dict):
+            elif isinstance(element, dict):
                 try:
-                    func=element.pop('func')
+                    func = element.pop('func')
                 except KeyError:
-                    raise ValueError(f'Expected all `dict` elements to contain `\'func\'` key, but was not found at `{element!r}`') from None
+                    raise ValueError(f'Expected all `dict` elements to contain `\'func\'` key, but was not found at '
+                        f'`{element!r}`') from None
                 
-                name=element.pop('name',None)
+                name = element.pop('name', None)
                 
                 if element:
-                    kwargs=element
+                    kwargs = element
                 else:
                     kwargs=None
             
             else:
-                func=element
-                name=None
-                kwargs=None
+                func = element
+                name = None
+                kwargs =None
             
             if type_ is None:
-                element = EventListElement(func,name,kwargs)
+                element = EventListElement(func, name, kwargs)
             else:
-                element = type_.from_kwargs(func,name,kwargs)
+                element = type_.from_kwargs(func, name, kwargs)
             
         result.append(element)
         continue
@@ -3693,7 +4440,7 @@ class _EventHandlerManager(object):
         """Returns the representation of the event handler manager."""
         return f'<{self.__class__.__name__} of {self.parent!r}>'
     
-    def __call__(self, func=None, name=None, **kwargs):
+    def __call__(self, func=None, name = None, **kwargs):
         """
         Adds the given `func` to the event handler manager's parent. If `func` is not passed, then returns a
         ``._wrapper` to allow using the manager as a decorator with still passing keyword arguments.
@@ -3725,11 +4472,11 @@ class _EventHandlerManager(object):
             Additionally passed keyword arguments to be used when the passed `func` is used up.
         """
         if func is None:
-            return self._wrapper(self,name,kwargs)
+            return self._wrapper(self, name, kwargs)
         
-        name = check_name(func,name)
+        name = check_name(func, name)
         
-        func = self.parent.__setevent__(func,name,**kwargs)
+        func = self.parent.__setevent__(func, name, **kwargs)
         return func
     
     def from_class(self, klass):
@@ -3757,7 +4504,7 @@ class _EventHandlerManager(object):
         
         return self.parent.__setevent_from_class__(klass)
         
-    def remove(self,func, name=None, **kwargs):
+    def remove(self,func, name = None, **kwargs):
         """
         Removes the given `func` - `name` relation from the event handler manager's parent.
         
@@ -3770,7 +4517,7 @@ class _EventHandlerManager(object):
         **kwargs : Keyword arguments
             Additional keyword arguments.
         """
-        name = check_name(func,name)
+        name = check_name(func, name)
         
         self.parent.__delevent__(func, name, **kwargs)
     
@@ -3852,31 +4599,31 @@ class _EventHandlerManager(object):
             - If `iterable` was not passed as type ``eventlist`` and any of it's element's format is incorrect.
         """
         if type(iterable) is eventlist:
-            type_=iterable.type
+            type_ = iterable.type
             if (type_ is not None):
-                parent=self.parent
-                supported_types=getattr(parent,'SUPPORTED_TYPES',None)
+                parent = self.parent
+                supported_types = getattr(parent, 'SUPPORTED_TYPES', None)
                 if (supported_types is None) or (type_ not in supported_types):
                     raise TypeError(f'`{parent!r}` does not supports elements of type `{type_!r}`.')
                 
                 for element in iterable:
-                    parent.__setevent__(element,None)
+                    parent.__setevent__(element, None)
                 return
         else:
-            iterable=_convert_unsafe_event_iterable(iterable)
+            iterable = _convert_unsafe_event_iterable(iterable)
         
-        parent=self.parent
+        parent = self.parent
         for element in iterable:
-            func=element.func
-            name=element.name
+            func = element.func
+            name = element.name
             
-            name=check_name(func,name)
+            name = check_name(func, name)
             
-            kwargs=element.kwargs
+            kwargs = element.kwargs
             if kwargs is None:
-                parent.__setevent__(func,name)
+                parent.__setevent__(func, name)
             else:
-                parent.__setevent__(func,name,**kwargs)
+                parent.__setevent__(func, name, **kwargs)
     
     def unextend(self, iterable):
         """
@@ -3896,14 +4643,14 @@ class _EventHandlerManager(object):
                 only at the end.
         """
         if type(iterable) is eventlist:
-            type_=iterable.type
+            type_ = iterable.type
             if (type_ is not None):
-                parent=self.parent
-                supported_types=getattr(parent,'SUPPORTED_TYPES',None)
+                parent = self.parent
+                supported_types = getattr(parent, 'SUPPORTED_TYPES', None)
                 if (supported_types is None) or (type_ not in supported_types):
                     raise TypeError(f'`{parent!r}` does not supports elements of type `{type_!r}`.')
                 
-                collected=[]
+                collected = []
                 for element in iterable:
                     try:
                         parent.__delevent__(element, None)
@@ -3922,9 +4669,9 @@ class _EventHandlerManager(object):
             func = element.func
             name = element.name
             
-            name = check_name(func,name)
+            name = check_name(func, name)
             
-            kwargs=element.kwargs
+            kwargs = element.kwargs
             try:
                 
                 if kwargs is None:
@@ -3965,9 +4712,9 @@ class EventListElement(object):
         kwargs : `None` or `dict` of (`str`, `Any`) items
             Additional kwargs for `func`.
         """
-        self.func  = func
-        self.name  = name
-        self.kwargs= kwargs
+        self.func = func
+        self.name = name
+        self.kwargs = kwargs
     
     def __repr__(self):
         """Returns the representation of the eeventlist element."""
@@ -4021,7 +4768,7 @@ class eventlist(list):
     
     __slots__ = ('_supports_from_class', 'kwargs', 'type')
     
-    def __new__(cls, iterable=None, type_=None, **kwargs):
+    def __new__(cls, iterable = None, type_=None, **kwargs):
         """
         Creates a new eventlist from the the given parameters.
         
@@ -4045,10 +4792,10 @@ class eventlist(list):
         if (type_ is None):
             supports_from_class = False
         else:
-            if not isinstance(type_,type):
+            if not isinstance(type_, type):
                 raise TypeError(f'`type_` should be `type` instance, got `{type!r}`.')
             
-            if not hasattr(type_,'from_kwargs'):
+            if not hasattr(type_, 'from_kwargs'):
                 raise TypeError('The passed `type_` has no method called `from_kwargs`.')
             
             supports_from_class = hasattr(type_,'from_class')
@@ -4056,8 +4803,8 @@ class eventlist(list):
         if not kwargs:
             kwargs = None
         
-        self=list.__new__(cls)
-        self.type=type_
+        self = list.__new__(cls)
+        self.type = type_
         self._supports_from_class = supports_from_class
         self.kwargs = kwargs
         
@@ -4099,9 +4846,9 @@ class eventlist(list):
             kwargs : `None` or `dict` of (`str`, `Any`) items
                 Additionally passed keyword arguments when the wrapper was created by it's parent.
             """
-            self.parent=parent
-            self.name=name
-            self.kwargs=kwargs
+            self.parent = parent
+            self.name = name
+            self.kwargs = kwargs
         
         def __call__(self, func):
             """
@@ -4155,12 +4902,12 @@ class eventlist(list):
         TypeError
             If the eventlist has no `.type` set, or if it's `.type` is not supporting this method.
         """
-        type_=self.type
+        type_ = self.type
         if not self._supports_from_class:
             if type_ is None:
-                message='On `eventlist` without type `.from_class` method cannot be used.'
+                message = 'On `eventlist` without type `.from_class` method cannot be used.'
             else:
-                message=f'The `eventlist`\'s type: `{type!r}` is not supporting `.from_class`.'
+                message = f'The `eventlist`\'s type: `{type!r}` is not supporting `.from_class`.'
             raise TypeError(message)
         
         # kwargs are gonna be emptied, so copy them if needed
@@ -4168,8 +4915,8 @@ class eventlist(list):
         if (kwargs is not None):
             kwargs = kwargs.copy()
         
-        element = type_.from_class(klass, kwargs = kwargs)
-        list.append(self,element)
+        element = type_.from_class(klass, kwargs=kwargs)
+        list.append(self, element)
         return element
     
     def extend(self, iterable):
@@ -4189,9 +4936,10 @@ class eventlist(list):
         """
         if type(iterable) is type(self):
             if self.type is not iterable.type:
-                raise ValueError(f'Extensing {self.__class__.__name__} with an other object of the same type, but with a different type, own: `{self.type!r}`, other\'s: `{iterable.type!r}`.')
+                raise ValueError(f'Extensing {self.__class__.__name__} with an other object of the same type, but with '
+                    f'a different type, own: `{self.type!r}`, other\'s: `{iterable.type!r}`.')
         else:
-            iterable=_convert_unsafe_event_iterable(iterable, self.type)
+            iterable = _convert_unsafe_event_iterable(iterable, self.type)
         
         list.extend(self, iterable)
     
@@ -4212,12 +4960,13 @@ class eventlist(list):
             - If any of the passed elements is not at the ``eventlist``. At this case error is raised only at the end.
         """
         if type(iterable) is not type(self):
-            iterable=_convert_unsafe_event_iterable(iterable,self.type)
+            iterable = _convert_unsafe_event_iterable(iterable, self.type)
         else:
             if self.type is not iterable.type:
-                raise ValueError(f'Extensing {self.__class__.__name__} with an other object of the same type, but with a different type, own: `{self.type!r}`, other\'s: `{iterable.type!r}`.')
+                raise ValueError(f'Extensing {self.__class__.__name__} with an other object of the same type, but with '
+                    f'a different type, own: `{self.type!r}`, other\'s: `{iterable.type!r}`.')
         
-        collected=[]
+        collected = []
         for element in iterable:
             try:
                 self.remove(*element)
@@ -4227,7 +4976,7 @@ class eventlist(list):
         if collected:
             raise ValueError('\n'.join(collected))
         
-    def __call__(self, func=None, name=None, **kwargs):
+    def __call__(self, func=None, name = None, **kwargs):
         """
         Adds the given `func` to the ``eventlist`` with the other given keyword arguments. If `func` is not passed,
         then returns a ``._wrapper` to allow using the ``eventlist`` as a decorator with still passing keyword
@@ -4260,9 +5009,9 @@ class eventlist(list):
             
             if name:
                 if not name.islower():
-                    name=name.lower()
+                    name = name.lower()
             else:
-                name=None
+                name = None
         
         own_kwargs = self.kwargs
         if (own_kwargs is not None) and own_kwargs:
@@ -4270,18 +5019,18 @@ class eventlist(list):
                 kwargs.setdefault(name_, value_)
         
         if func is None:
-            return self._wrapper(self,name,kwargs)
+            return self._wrapper(self, name, kwargs)
         
         type_ = self.type
         if type_ is None:
-            element = EventListElement(func,name,kwargs)
+            element = EventListElement(func, name, kwargs)
         else:
-            element = func = type_.from_kwargs(func,name,kwargs)
+            element = func = type_.from_kwargs(func, name, kwargs)
         
-        list.append(self,element)
+        list.append(self, element)
         return func
         
-    def remove(self, func, name=None):
+    def remove(self, func, name = None):
         """
         Removes an element of the eventlist.
         
@@ -4305,14 +5054,14 @@ class eventlist(list):
             
             if name:
                 if not name.islower():
-                    name=name.lower()
+                    name = name.lower()
             else:
-                name=None
-            
+                name = None
+        
         # we might overwrite __iter__ later
         for element in list.__iter__(self):
             
-            converted_name=element.name
+            converted_name = element.name
             # `name` can be `None` or `str`
             if converted_name is None:
                 if name is not None:
@@ -4321,28 +5070,31 @@ class eventlist(list):
                 if name is None:
                     continue
                 
-                if converted_name!=name:
+                if converted_name != name:
                     continue
             
-            if compare_converted(element.func,func):
+            if compare_converted(element.func, func):
                 return
         
         raise ValueError(f'Did not find any element, what matched the passed func={func!r}, name={name!r} combination.')
     
     def __repr__(self):
         """Returns the representation of the eventlist."""
-        result=[self.__class__.__name__,'([']
+        result = [
+            self.__class__.__name__,
+            '([',
+                ]
         
-        limit=list.__len__(self)
-        if limit!=0:
-            index=0
+        limit = list.__len__(self)
+        if limit != 0:
+            index = 0
             
             while True:
-                element=list.__getitem__(self,index)
+                element=list.__getitem__(self, index)
                 result.append(repr(element))
-                index=index+1
+                index +=1
                 
-                if index==limit:
+                if index == limit:
                     break
                 
                 result.append(', ')
@@ -4350,7 +5102,7 @@ class eventlist(list):
         
         result.append(']')
         
-        type_=self.type
+        type_ = self.type
         if (type_ is not None):
             result.append(', type=')
             result.append(repr(type_))
@@ -4528,7 +5280,7 @@ class EventWaitforMeta(type):
             return object_
         
         object_.waitfors = WeakKeyDictionary()
-        cls.__init__(object_,*args,**kwargs)
+        cls.__init__(object_, *args, **kwargs)
         return object_
     
     _call_waitfors = {}
@@ -4711,15 +5463,15 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         waiter : `async callable`
         """
         try:
-            actual=self.waitfors[target]
+            actual = self.waitfors[target]
             if type(actual) is asynclist:
                 actual.append(waiter)
             else:
-                self.waitfors[target]=container=asynclist()
+                self.waitfors[target] = container = asynclist()
                 container.append(actual)
                 container.append(waiter)
         except KeyError:
-            self.waitfors[target]=waiter
+            self.waitfors[target] = waiter
     
     def remove(self, target, waiter):
         """
@@ -4752,7 +5504,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         
         self.waitfors[target] = container
     
-    def get_waiter(self, target, waiter, by_type=False, is_method=False):
+    def get_waiter(self, target, waiter, by_type = False, is_method=False):
         """
         Looks up whether any of the given `target` - `waiter` relation is stored inside of `.waiters` and if there is any,
         then returns the first find. If non, then returns `None`.
@@ -4781,7 +5533,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         if type(element) is asynclist:
             for element in element:
                 if is_method:
-                    if not isinstance(element,MethodLike):
+                    if not isinstance(element, MethodLike):
                         continue
                     
                     element = element.__self__
@@ -4801,7 +5553,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         
         else:
             if is_method:
-                if not isinstance(element,MethodLike):
+                if not isinstance(element, MethodLike):
                     return None
                 
                 element = element.__self__
@@ -4817,7 +5569,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
                 else:
                     return None
 
-    def get_waiters(self, target, waiter, by_type=False, is_method=False):
+    def get_waiters(self, target, waiter, by_type = False, is_method=False):
         """
         Looks up the waiters of `target` - `waiter` relation stored inside of `.waiters` and returns all the matched
         one.
@@ -4848,7 +5600,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         if type(element) is asynclist:
             for element in element:
                 if is_method:
-                    if not isinstance(element,MethodLike):
+                    if not isinstance(element, MethodLike):
                         continue
                     
                     element = element.__self__
@@ -4865,7 +5617,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         
         else:
             if is_method:
-                if not isinstance(element,MethodLike):
+                if not isinstance(element, MethodLike):
                     return result
                 
                 element = element.__self__
@@ -4891,7 +5643,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
             Arguments to ensure the watfors with.
         """
         try:
-            event=self.waitfors[target]
+            event = self.waitfors[target]
         except KeyError:
             pass
         else:
@@ -4944,7 +5696,8 @@ def EventWaitforMeta__new__(cls, class_name, class_parents, class_attributes):
         try:
             call_waitfors = cls._call_waitfors[event_name]
         except KeyError:
-            raise TypeError(f'The following event name: `{event_name!r}` has no auto `call_waitfor` added. Please define one.')
+            raise TypeError(f'The following event name: `{event_name!r}` has no auto `call_waitfor` added. Please '
+                'define one.')
         
         class_attributes['call_waitfors'] = call_waitfors
         
@@ -4958,7 +5711,7 @@ def EventWaitforMeta__new__(cls, class_name, class_parents, class_attributes):
     
     return type.__new__(cls, class_name, class_parents, class_attributes)
 
-EventWaitforMeta.__new__  = EventWaitforMeta__new__
+EventWaitforMeta.__new__ = EventWaitforMeta__new__
 del EventWaitforMeta__new__
 
 READY_STATE_TIMEOUT = 2.0
@@ -5005,7 +5758,7 @@ class ReadyState(object):
             ready_left_counter -=1
         self.ready_left_counter = ready_left_counter
         
-        now=monotonic()
+        now = monotonic()
         self.last_guild = now
         self.last_ready = now
     
@@ -5074,7 +5827,7 @@ class ReadyState(object):
             last_wakeup = last_shard
         
         while True:
-            wakeupper._loop.call_at(last_wakeup+READY_STATE_TIMEOUT, wakeupper.__class__.set_result_if_pending, wakeupper, False)
+            KOKORO.call_at(last_wakeup+READY_STATE_TIMEOUT, wakeupper.__class__.set_result_if_pending, wakeupper, False)
             last = yield from wakeupper
             if last:
                 break
@@ -5094,14 +5847,14 @@ class ReadyState(object):
             last_wakeup = next_wakeup
             continue
     
-    __await__=__iter__
+    __await__ = __iter__
 
 
 class ChunkWaiter(EventHandlerBase):
-    __slots__=('waiters',)
-    __event_name__='guild_user_chunk'
+    __slots__ = ('waiters',)
+    __event_name__ = 'guild_user_chunk'
     def __init__(self):
-        self.waiters={}
+        self.waiters = {}
     
     # Interact directly with `self.waiters` instead.
     def __setevent__(self, waiter, nonce):
@@ -5161,19 +5914,19 @@ async def default_error_event(client, name, err):
     err : `Any`
         The caught exception. Can be given as non `BaseException` instance as well.
     """
-    extracted=[
+    extracted = [
         client.full_name,
         ' ignores occurred Exception at ',
         name,
-        '\n'
+        '\n',
             ]
     
-    if isinstance(err,BaseException):
-        await KOKORO.render_exc_async(err,extracted)
+    if isinstance(err, BaseException):
+        await KOKORO.render_exc_async(err, extracted)
         return
     
-    if not isinstance(err,str):
-        err=repr(err)
+    if not isinstance(err, str):
+        err = repr(err)
     extracted.append(err)
     
     sys.stderr.write(''.join(extracted))
@@ -5213,17 +5966,17 @@ class asynclist(list):
             self.__class__.__name__,
             '([']
         
-        index=0
-        limit=len(self)
-        if index!=limit:
+        index = 0
+        limit = len(self)
+        if index != limit:
             while True:
-                element=self[index]
+                element = self[index]
                 result.append(repr(element))
-                if index==limit:
+                if index == limit:
                     break
                 
                 result.append(', ')
-                index=index+1
+                index +=1
         
         result.append('])')
         
@@ -5235,7 +5988,7 @@ class asynclist(list):
             raise TypeError(f'Attribute name must be string, not `{type(name).__name__}`.')
         
         for coro in self:
-            attribute = getattr(coro,name,_spaceholder)
+            attribute = getattr(coro, name,_spaceholder)
             if attribute is _spaceholder:
                 continue
             
@@ -5265,12 +6018,12 @@ class EventDescriptor(object):
     client_reference : `WeakReferer`
         Weak reference to the parent client to avoid reference loops.
     
-    Additonal event Attributes
-    ----------------
+    Additonal Event Attributes
+    --------------------------
     channel_create(client: Client, channel: ChannelBase)
         Called when a channel is created.
         
-        > At hata wrapper this event is called only the first time when a private (or group) channel is created.
+        At hata wrapper this event is called only the first time when a private (or group) channel is created.
     
     channel_delete(client: Client, channel: ChannelBase)
         Called when a channel is deleted.
@@ -5302,7 +6055,7 @@ class EventDescriptor(object):
         +---------------+---------------------------------------+
         | slowmode      | `int`                                 |
         +---------------+---------------------------------------+
-        | topic         | `str`                                 |
+        | topic         | `None` or `str`                       |
         +---------------+---------------------------------------+
         | type          | `int`                                 |
         +---------------+---------------------------------------+
@@ -5333,15 +6086,15 @@ class EventDescriptor(object):
         +-----------------------+-------------------+
         | discriminator         | `int`             |
         +-----------------------+-------------------+
-        | email                 | `str`             |
+        | email                 | `None` or `str`   |
         +-----------------------+-------------------+
         | flags                 | ``UserFlag``      |
         +-----------------------+-------------------+
-        | locale                | `str              |
+        | locale                | `str`             |
         +-----------------------+-------------------+
         | mfa                   | `bool`            |
         +-----------------------+-------------------+
-        | name                  | `str              |
+        | name                  | `str`             |
         +-----------------------+-------------------+
         | premium_type          | ``PremiumType``   |
         +-----------------------+-------------------+
@@ -5373,7 +6126,7 @@ class EventDescriptor(object):
     emoji_delete(client: Client, emoji: Emoji, guild: Guild):
         Called when an emoji is deleted.
         
-        > Deleted emoji's `.guild` attribute is set to `None`.
+        Deleted emoji's `.guild` attribute is set to `None`.
         
     emoji_edit(client : Client, emoji: Emoji, old_attributes: dict):
         Called when an emoji is edited. The passed `old_attributes` argument contains the emoji's overwritten
@@ -5431,7 +6184,7 @@ class EventDescriptor(object):
         +---------------------------+-------------------------------+
         | Keys                      | Values                        |
         +===========================+===============================+
-        | afk_channel               | `None` or ``ChannelVoice`     |
+        | afk_channel               | `None` or ``ChannelVoice``    |
         +---------------------------+-------------------------------+
         | afk_timeout               | `int`                         |
         +---------------------------+-------------------------------+
@@ -5509,8 +6262,8 @@ class EventDescriptor(object):
     integration_update(client, Client, guild: Guild):
         Called when an ``Integration`` of a guild is updated.
         
-        > No integration data is included with the received dispatch event, so it cannot be passed to the event
-        > handler either.
+        No integration data is included with the received dispatch event, so it cannot be passed to the event
+        handler either.
     
     invite_create(client: Client, invite: Invite):
         Called when an invite is created  at a guild.
@@ -5521,8 +6274,11 @@ class EventDescriptor(object):
     message_create(client: Client, message: Message):
         Called when a message is sent to any of the client's text channels.
     
-    message_delete(client: Client, message: Message):
+    message_delete(client: Client, message: Union[Message, MessageRepr]):
         Called when a loaded message is deleted.
+        
+        Note, `HATA_ALLOW_DEAD_EVENTS` enviromental variable is given as `True`, and an uncached message is deleted,
+        then `message` is given as ``MessageRepr`` instance.
     
     message_edit(client: Client, message: Message, old_attributes: Union[None, dict]):
         Called when a loaded message is edited. The passed `old_attributes` argument contains the message's overwritten
@@ -5539,7 +6295,7 @@ class EventDescriptor(object):
         +-------------------+-----------------------------------------------------------------------+
         | attachments       | `None` or (`list` of ``Attachment``)                                  |
         +-------------------+-----------------------------------------------------------------------+
-        | content           | `str                                                                  |
+        | content           | `str`                                                                 |
         +-------------------+-----------------------------------------------------------------------+
         | cross_mentions    | `None` or (`list` of (``ChannelBase`` or ``UnknownCrossMention``))    |
         +-------------------+-----------------------------------------------------------------------+
@@ -5562,21 +6318,29 @@ class EventDescriptor(object):
         not going to contain `edited`, only `pinned` or `flags`. If the embeds are (un)suppressed of the message, then
         `old_attributes` might contain also `embeds`.
         
-        Note, if an uncached message is updated, then `old_attributes` is given as `None`.
+        Note, if `HATA_ALLOW_DEAD_EVENTS` enviromental variable is given as `True`, and an uncached message is updated,
+        then `old_attributes` is given as `None`.
     
     reaction_add(client: Client, event: ReactionAddEvent):
         Called when a user reacts on a message with the given emoji.
     
-    reaction_clear(client: Client, message: Message, old_reactions: reaction_mapping):
+    reaction_clear(client: Client, message: Union[Message, MessageRepr], old_reactions: Union[None, reaction_mapping]):
         Called when the reactions of a message are cleared. The passed `old_reactions` argument are the old reactions
         of the message.
+    
+        Note, if `HATA_ALLOW_DEAD_EVENTS` enviromental variable is given as `True`, and the reactions are removed from
+        and uncached message, then `message` is given as ``MessageRepr`` and `old_reactions` as `None`.
     
     reaction_delete(client: Client, event: ReactionDeleteEvent):
         Called when a user removes it's reaction from a message.
     
-    reaction_delete_emoji(client: Client, message: Message, users: reaction_mapping_line):
+    reaction_delete_emoji(client: Client, message: Union[Message, MessageRepr], \
+            users: Union[None, reaction_mapping_line]):
         Called when all the reactions of a specified emoji are removed from a message. The passed `users` argument
         are the old reacter users of the given emoji.
+        
+        Note, if `HATA_ALLOW_DEAD_EVENTS` enviromental variable is given as `True`, and the reactions are removed from
+        and uncached message, then `message` is given as ``MessageRepr`` and `users` as `None`.
     
     ready(client: Client):
         Called when the client finishes logging in. The event might be called more times, because the clients might
@@ -5597,12 +6361,12 @@ class EventDescriptor(object):
     role_delete(client: Client, role: Role, guild: Guild):
         Called when a role is deleted from a guild.
         
-        > Deleted role's `.guild` attrbiute is set as `None`.
+        Deleted role's `.guild` attribute is set as `None`.
     
     typing(client: Client, channel: ChannelTextBase, user: UserBase, timestamp: datetime):
         Called when a user is typing at a channel. The `timestamp` argument represents when the typing started.
         
-        > However a typing requests stands for 8 seconds, but the official Discord client usually just spams it.
+        However a typing requests stands for 8 seconds, but the official Discord client usually just spams it.
     
     user_edit(client: Client, user: User, old_attributes: dict):
         Called when a user is edited This event not includes guild profile changes. The passed `old_attributes`
@@ -5615,7 +6379,7 @@ class EventDescriptor(object):
         +===============+===============+
         | avatar        | ``Icon``      |
         +---------------+---------------+
-        | discriminator | `int          |
+        | discriminator | `int`         |
         +---------------+---------------+
         | flags         | ``UserFlag``  |
         +---------------+---------------+
@@ -5625,9 +6389,9 @@ class EventDescriptor(object):
     user_presence_update(client: Client, user: UserBase, old_attributes: dict):
         Called when a user's presence is updated.
         
-        The passed `old_attributes` argument contain the user's changed presence related attributes in `attribute-name`
-        - `old-value` relation. An exception from this is `activities`, because thats a ``ActivityChange`` instance
-        containing all the changes of the user's activities.
+        The passed `old_attributes` argument contain the user's changed presence related attributes in
+        `attribute-name` - `old-value` relation. An exception from this is `activities`, because thats a
+        ``ActivityChange`` instance containing all the changes of the user's activities.
         
         +---------------+-----------------------------------+
         | Keys          | Values                            |
@@ -5645,15 +6409,15 @@ class EventDescriptor(object):
         
         Every item in `old_attributes` is optional and it's items can be any of the following:
         
-        +-------------------+-----------------------+
-        | Keys              | Values                |
-        +===================+=======================+
-        | boosts_since      | `None` or `datetime`  |
-        +-------------------+-----------------------+
-        | nick              | `None` or `str`       |
-        +-------------------+-----------------------+
-        | roles             | `list` of ``Role``    |
-        +-------------------+-----------------------+
+        +-------------------+-------------------------------+
+        | Keys              | Values                        |
+        +===================+===============================+
+        | boosts_since      | `None` or `datetime`          |
+        +-------------------+-------------------------------+
+        | nick              | `None` or `str`               |
+        +-------------------+-------------------------------+
+        | roles             | `None` or `list` of ``Role``  |
+        +-------------------+-------------------------------+
     
     voice_state_update(client: Client, state: VoiceState, action: str, old_attributes: Union[None, dict]):
         Called when a voice state is updated inside of a ``ChannelVoice``.
@@ -5669,7 +6433,7 @@ class EventDescriptor(object):
         +-------------------+-------+
         | update            | `'u'` |
         +-------------------+-------+
-    
+        
         If `action` is given as `'u'`, then the `old_attributes` argument will be given as a `dict` with the voice
         state's updated attributes within `attribute-name` - `old-attribute` relation.
         
@@ -5706,14 +6470,14 @@ class EventDescriptor(object):
         ----------
         client : ``Client``
         """
-        client_reference=WeakReferer(client)
-        object.__setattr__(self,'client_reference',client_reference)
+        client_reference = WeakReferer(client)
+        object.__setattr__(self, 'client_reference', client_reference)
         for name in EVENTS.defaults:
-            object.__setattr__(self,name,DEFAULT_EVENT)
-        object.__setattr__(self,'error',default_error_event)
-        object.__setattr__(self,'guild_user_chunk',ChunkWaiter())
+            object.__setattr__(self, name, DEFAULT_EVENT)
+        object.__setattr__(self, 'error', default_error_event)
+        object.__setattr__(self, 'guild_user_chunk', ChunkWaiter())
     
-    def __call__(self, func=None, name=None, overwrite=False):
+    def __call__(self, func=None, name = None, overwrite = False):
         """
         Adds the given `func` to the event descriptor as en event handler.
         
@@ -5742,28 +6506,28 @@ class EventDescriptor(object):
             - If `name` was not passed as `None` or type `str`.
         """
         if func is None:
-            return self._wrapper(self, (name,overwrite))
+            return self._wrapper(self, (name, overwrite))
         
-        name=check_name(func,name)
-        argcount=EVENTS.get_argcount(name)
-        func=check_argcount_and_convert(func,argcount)
+        name = check_name(func, name)
+        argcount = EVENTS.get_argcount(name)
+        func = check_argcount_and_convert(func, argcount)
         
         if overwrite:
-            setattr(self,name,func)
+            setattr(self, name, func)
             return func
         
-        parser_names=EVENTS.parsers.get(name,None)
+        parser_names = EVENTS.parsers.get(name, None)
         if (parser_names is None):
             raise AttributeError(f'Event name: {name!r} is invalid.')
         
         if func is DEFAULT_EVENT:
             return func
         
-        actual=getattr(self,name)
+        actual = getattr(self, name)
         if actual is DEFAULT_EVENT:
-            object.__setattr__(self,name,func)
+            object.__setattr__(self, name, func)
             for parser_name in parser_names:
-                parser_default=PARSER_DEFAULTS.all[parser_name]
+                parser_default = PARSER_DEFAULTS.all[parser_name]
                 parser_default.add_mention(self.client_reference())
             return func
         
@@ -5771,10 +6535,10 @@ class EventDescriptor(object):
             actual.append(func)
             return func
         
-        new=asynclist()
+        new = asynclist()
         new.append(actual)
         new.append(func)
-        object.__setattr__(self,name,new)
+        object.__setattr__(self, name, new)
         return func
     
     class _wrapper(object):
@@ -5839,12 +6603,12 @@ class EventDescriptor(object):
         """
         Cleares the ``EventDescriptor`` to the same state as it were just created.
         """
-        delete=type(self).__delattr__
+        delete = type(self).__delattr__
         for name in EVENTS.defaults:
-            delete(self,name)
-            
-        object.__setattr__(self,'error',default_error_event)
-        object.__setattr__(self,'guild_user_chunk',ChunkWaiter())
+            delete(self, name)
+        
+        object.__setattr__(self, 'error', default_error_event)
+        object.__setattr__(self, 'guild_user_chunk', ChunkWaiter())
     
     def __setattr__(self, name, value):
         """
@@ -5862,15 +6626,15 @@ class EventDescriptor(object):
         AttributeError
             The ``EventDescriptor`` has no attribute named as the given `name`.
         """
-        parser_names=EVENTS.parsers.get(name,None)
+        parser_names = EVENTS.parsers.get(name, None)
         if (parser_names is None):
-            object.__setattr__(self,name,value)
+            object.__setattr__(self, name, value)
             return
         
         for parser_name in parser_names:
-            parser_default=PARSER_DEFAULTS.all[parser_name]
-            actual=getattr(self,name)
-            object.__setattr__(self,name,value)
+            parser_default = PARSER_DEFAULTS.all[parser_name]
+            actual = getattr(self, name)
+            object.__setattr__(self, name, value)
             if actual is DEFAULT_EVENT:
                 if value is DEFAULT_EVENT:
                     continue
@@ -5896,19 +6660,19 @@ class EventDescriptor(object):
         AttributeError
             The ``EventDescriptor`` has no attribute named as the given `name`.
         """
-        actual=getattr(self, name)
+        actual = getattr(self, name)
         if actual is DEFAULT_EVENT:
             return
         
-        object.__setattr__(self,name,DEFAULT_EVENT)
+        object.__setattr__(self, name, DEFAULT_EVENT)
         
-        parser_names=EVENTS.parsers.get(name,None)
+        parser_names=EVENTS.parsers.get(name, None)
         if (parser_names is None) or (not parser_names):
             # parser name can be an empty string as well for internal events
             return
         
         for parser_name in parser_names:
-            parser_default=PARSER_DEFAULTS.all[parser_name]
+            parser_default = PARSER_DEFAULTS.all[parser_name]
             parser_default.remove_mention(self.client_reference())
     
     def remove(self, func, name=None, by_type=False, count=-1):
@@ -5926,13 +6690,13 @@ class EventDescriptor(object):
         count : `int`, Optional
             The maximal amount of the same events to remove. Negative numbers count as unlimited. Defaults to `-1`.
         """
-        if count==0 or name=='client':
+        if (count == 0) or (name == 'client'):
             return
         
-        name=check_name(func,name)
+        name = check_name(func, name)
         
         try:
-            actual=getattr(self,name)
+            actual = getattr(self, name)
         except AttributeError:
             return
         
@@ -5949,18 +6713,18 @@ class EventDescriptor(object):
                     continue
                 
                 del actual[index]
-                count = count-1
-                if count==0:
+                count -=1
+                if count == 0:
                     break
                 
                 continue
             
-            if len(actual)>1:
+            if len(actual) > 1:
                 return
             
-            if len(actual)==0:
-                actual=actual[0]
-                object.__setattr__(self,name,actual)
+            if len(actual) == 0:
+                actual = actual[0]
+                object.__setattr__(self, name, actual)
                 return
         
         else:
@@ -5970,14 +6734,14 @@ class EventDescriptor(object):
             if actual != func:
                 return
         
-        object.__setattr__(self,name,DEFAULT_EVENT)
+        object.__setattr__(self, name, DEFAULT_EVENT)
         
-        parser_names=EVENTS.parsers.get(name,None)
+        parser_names = EVENTS.parsers.get(name, None)
         if (parser_names is None):
             return
         
         for parser_name in parser_names:
-            parser_default=PARSER_DEFAULTS.all[parser_name]
+            parser_default = PARSER_DEFAULTS.all[parser_name]
             parser_default.remove_mention(self.client_reference())
         return
 
@@ -5995,7 +6759,7 @@ async def _with_error(client, task):
     try:
         await task
     except BaseException as err:
-        await client.events.error(client,repr(task),err)
+        await client.events.error(client, repr(task), err)
 
 del RemovedDescriptor
 del FlagBase

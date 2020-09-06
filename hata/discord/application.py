@@ -245,7 +245,7 @@ class Application(DiscordEntity, immortal=True):
         
         self.description = data['description']
         
-        rpc_origins = data.get('rpc_origins', None)
+        rpc_origins = data.get('rpc_origins')
         if (rpc_origins is not None) and (not rpc_origins):
             rpc_origins = None
         
@@ -259,7 +259,7 @@ class Application(DiscordEntity, immortal=True):
         if set_owner:
             team_data = data.get('team')
             if team_data is None:
-                owner_data = data.get('owner', None)
+                owner_data = data.get('owner')
                 if owner_data is None:
                     owner = ZEROUSER
                 else:
@@ -269,7 +269,7 @@ class Application(DiscordEntity, immortal=True):
             
             self.owner = owner
         
-        guild_id = data.get('guild_id', None)
+        guild_id = data.get('guild_id')
         if guild_id is None:
             guild_id = 0
         else:
@@ -277,7 +277,7 @@ class Application(DiscordEntity, immortal=True):
         
         self.guild_id = guild_id
         
-        primary_sku_id = data.get('primary_sku_id', None)
+        primary_sku_id = data.get('primary_sku_id')
         if primary_sku_id is None:
             primary_sku_id = None
         else:
@@ -289,7 +289,7 @@ class Application(DiscordEntity, immortal=True):
         self._set_cover(data)
         self._set_icon(data)
         
-        developers_data = data.get('developers', None)
+        developers_data = data.get('developers')
         if (developers_data is None) or (not developers_data):
             developers = None
         else:
@@ -307,7 +307,7 @@ class Application(DiscordEntity, immortal=True):
         
         self.publishers = publishers
         
-        executables_data = data.get('executables', None)
+        executables_data = data.get('executables')
         if (executables_data is None) or (not executables_data):
             executables = None
         else:
@@ -317,7 +317,7 @@ class Application(DiscordEntity, immortal=True):
         
         self._set_splash(data)
         
-        third_party_skus_data = data.get('third_party_skus', None)
+        third_party_skus_data = data.get('third_party_skus')
         if (third_party_skus_data is None) or (not third_party_skus_data):
             third_party_skus = None
         else:
@@ -328,19 +328,20 @@ class Application(DiscordEntity, immortal=True):
         self.overlay = data.get('overlay', False)
         self.overlay_compatibility_hook = data.get('overlay_compatibility_hook', False)
         
-        aliases = data.get('aliases', None)
+        aliases = data.get('aliases')
         if (aliases is not None) and (not aliases):
             aliases = None
         
         self.aliases = aliases
         
-        eula_id = data.get('eula_id', None)
+        eula_id = data.get('eula_id')
         if eula_id is None:
             eula_id = 0
         else:
             eula_id = int(eula_id)
         
         self.eula_id = eula_id
+
 
 class Team(DiscordEntity, immortal=True):
     """
@@ -382,12 +383,12 @@ class Team(DiscordEntity, immortal=True):
         -------
         team : ``Team``
         """
-        team_id=int(data['id'])
+        team_id = int(data['id'])
         try:
-            team=TEAMS[team_id]
+            team = TEAMS[team_id]
         except KeyError:
-            team=object.__new__(cls)
-            team.id=team_id
+            team = object.__new__(cls)
+            team.id = team_id
         
         #update every attribute
         team.name = data['name']
@@ -399,7 +400,7 @@ class Team(DiscordEntity, immortal=True):
         
         for member in members:
             user = member.user
-            if user.id==owner_id:
+            if user.id == owner_id:
                 break
         else:
             user = ZEROUSER
@@ -416,7 +417,7 @@ class Team(DiscordEntity, immortal=True):
         -------
         users : `list` of (``User`` or ``Client``) objects
         """
-        target_state=TeamMembershipState.INVITED
+        target_state = TeamMembershipState.INVITED
         return [team_member.user for team_member in self.members if team_member.state is target_state]
     
     @property
@@ -428,7 +429,7 @@ class Team(DiscordEntity, immortal=True):
         -------
         users : `list` of (``User`` or ``Client``) objects
         """
-        target_state=TeamMembershipState.ACCEPTED
+        target_state = TeamMembershipState.ACCEPTED
         return [team_member.user for team_member in self.members if team_member.state is target_state]
     
     def __str__(self):
@@ -529,10 +530,10 @@ class TeamMembershipState(object):
     __slots__ = ('name', 'value',)
     
     def __init__(self,value,name):
-        self.value=value
-        self.name=name
+        self.value = value
+        self.name = name
         
-        self.INSTANCES[value]=self
+        self.INSTANCES[value] = self
     
     def __int__(self):
         """Retruns the team membership state's value."""
@@ -551,13 +552,13 @@ class TeamMembershipState(object):
         return f'{self.__class__.__name__}(value={self.value}, name={self.name!r})'
     
     # predefined
-    NONE    = None
-    INVITED = None
-    ACCEPTED= None
+    NONE     = None
+    INVITED  = None
+    ACCEPTED = None
 
-TeamMembershipState.NONE        = TeamMembershipState(0,'NONE')
-TeamMembershipState.INVITED     = TeamMembershipState(1,'INVITED')
-TeamMembershipState.ACCEPTED    = TeamMembershipState(2,'ACCEPTED')
+TeamMembershipState.NONE     = TeamMembershipState(0, 'NONE')
+TeamMembershipState.INVITED  = TeamMembershipState(1, 'INVITED')
+TeamMembershipState.ACCEPTED = TeamMembershipState(2, 'ACCEPTED')
 
 class ApplicationSubEntity(DiscordEntity):
     """
@@ -629,7 +630,7 @@ class ApplicationExecutable(object):
         """
         self.name = data['name']
         self.os = data['os']
-        self.arguments = data.get('arguments', None)
+        self.arguments = data.get('arguments')
         self.is_launcher = data.get('is_launcher', False)
     
     def __repr__(self):
@@ -667,17 +668,8 @@ class ApplicationExecutable(object):
         if self.os != other.os:
             return False
         
-        self_argumnets = self.arguments
-        other_arguments = other.arguments
-        if self_argumnets is None:
-            if (other_arguments is not None):
-                return False
-        else:
-            if other_arguments is None:
-                return False
-            
-            if self.arguments != other.arguments:
-                return False
+        if self.arguments != other.arguments:
+            return False
         
         if self.is_launcher != other.is_launcher:
             return False

@@ -238,7 +238,7 @@ class Role(DiscordEntity, immortal=True):
         
         if update:
             
-            guild.all_role[role.id] = role
+            guild.roles[role.id] = role
             role.guild = guild
             
             role.name = data['name']
@@ -258,8 +258,6 @@ class Role(DiscordEntity, immortal=True):
                 role.manager_type = ROLE_MANAGER_TYPE_NONE
             
             role.mentionable = data.get('mentionable', False)
-            
-            guild.roles.append(role)
         
         return role
     
@@ -464,7 +462,6 @@ class Role(DiscordEntity, immortal=True):
         position = data['position']
         if self.position != position:
             self.position = position
-            guild.roles.sort()
             clear_permission_cache = True
         
         self.name = data['name']
@@ -483,9 +480,9 @@ class Role(DiscordEntity, immortal=True):
         self.mentionable = data['mentionable']
         
         if clear_permission_cache:
-            guild._cache_perm.clear()
-            for channel in guild.all_channel.values():
-                channel._cache_perm.clear()
+            guild._cache_perm = None
+            for channel in guild.channels.values():
+                channel._cache_perm = None
         
     def __str__(self):
         """Returns teh role"s name or `'Partial'` if it has non."""
@@ -544,7 +541,6 @@ class Role(DiscordEntity, immortal=True):
         if self.position != position:
             old_attributes['position'] = self.position
             self.position = position
-            guild.roles.sort()
             clear_permission_cache = True
         
         name = data['name']
@@ -582,12 +578,12 @@ class Role(DiscordEntity, immortal=True):
             self.mentionable = mentionable
         
         if clear_permission_cache:
-            guild._cache_perm.clear()
-            for channel in guild.all_channel.values():
-                channel._cache_perm.clear()
+            guild._cache_perm = None
+            for channel in guild.channels.values():
+                channel._cache_perm = None
         
         return old_attributes
-
+    
     def _delete(self):
         """
         Removes the role's references.
@@ -600,12 +596,11 @@ class Role(DiscordEntity, immortal=True):
         
         self.guild = None
         
-        guild.roles.remove(self)
-        del guild.all_role[self.id]
+        del guild.roles[self.id]
         
-        guild._cache_perm.clear()
-        for channel in guild.all_channel.values():
-            channel._cache_perm.clear()
+        guild._cache_perm = None
+        for channel in guild.channels.values():
+            channel._cache_perm = None
         
         for user in guild.users.values():
             try:
@@ -921,7 +916,7 @@ class PermOW(object):
         """
         allow = self.allow
         deny = self.deny
-        for key,index in Permission.__keys__.items():
+        for key, index in Permission.__keys__.items():
             if (allow>>index)&1:
                 state = +1
             elif (deny>>index)&1:
@@ -933,7 +928,7 @@ class PermOW(object):
     
     def __getitem__(self, key):
         """Returns the permission's state for the given permission name."""
-        index=Permission.__keys__[key]
+        index = Permission.__keys__[key]
         if (self.allow>>index)&1:
             state = +1
         elif (self.deny>>index)&1:
@@ -995,13 +990,13 @@ class PermOW(object):
         if type(self) is not type(other):
             return NotImplemented
         
-        if self.target.id!=other.target.id:
+        if self.target.id != other.target.id:
             return False
         
-        if self.allow!=other.allow:
+        if self.allow != other.allow:
             return False
         
-        if self.deny!=other.deny:
+        if self.deny != other.deny:
             return False
         
         return True
@@ -1055,7 +1050,7 @@ def cr_p_role_object(name, id_=None, color=Color(0), separated=False, position=0
     role_data : `dict` of (`str`, `Any`) items
     """
     if id_ is None:
-        id_=random_id()
+        id_ = random_id()
     
     return {
         'id'          : id_,

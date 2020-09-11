@@ -1,9 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
-__version__ = '1.0.25'
+__version__ = '1.0.36'
 
-import sys
-BACKEND_ONLY = ('backend_only' in sys.argv) or ('backend-only' in sys.argv)
-del sys
+from .env import BACKEND_ONLY
 
 if BACKEND_ONLY:
     from .backend import *
@@ -17,3 +15,4 @@ else:
         *backend.__all__,
         *discord.__all__,
             )
+

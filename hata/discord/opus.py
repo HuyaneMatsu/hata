@@ -90,12 +90,12 @@ def load_opus():
         
         lib_opus = ctypes.cdll.LoadLibrary(filename)
         
-        c_int_ptr   = ctypes.POINTER(ctypes.c_int)
+        c_int_ptr = ctypes.POINTER(ctypes.c_int)
         c_int16_ptr = ctypes.POINTER(ctypes.c_int16)
         c_float_ptr = ctypes.POINTER(ctypes.c_float)
         
-        EncoderStructPtr=ctypes.POINTER(type('EncoderStruct',(ctypes.Structure,),{},))
-        DecoderStructPtr=ctypes.POINTER(type('DecoderStruct',(ctypes.Structure,),{},))
+        EncoderStructPtr=ctypes.POINTER(type('EncoderStruct', (ctypes.Structure,), {},))
+        DecoderStructPtr=ctypes.POINTER(type('DecoderStruct', (ctypes.Structure,), {},))
         
         def _err_lt(result, func, args):
             if result < 0:
@@ -174,14 +174,14 @@ try:
 except BaseException:
     pass
 
-SAMPLING_RATE       = 48000 #this is the max sadly
-CHANNELS            = 2
-FRAME_LENGTH        = 20
-SAMPLE_SIZE         = 4 # (bit_rate / 8) * CHANNELS (bit_rate == 16)
-SAMPLES_PER_FRAME   = int(SAMPLING_RATE/1000*FRAME_LENGTH)
-FRAME_SIZE          = SAMPLES_PER_FRAME*SAMPLE_SIZE
-BUFFER_SIZE         = 3840
-BUFFER_TYPE         = (ctypes.c_char*BUFFER_SIZE)
+SAMPLING_RATE = 48000 #this is the max sadly
+CHANNELS = 2
+FRAME_LENGTH = 20
+SAMPLE_SIZE = 4 # (bit_rate / 8) * CHANNELS (bit_rate == 16)
+SAMPLES_PER_FRAME = int(SAMPLING_RATE/1000*FRAME_LENGTH)
+FRAME_SIZE = SAMPLES_PER_FRAME*SAMPLE_SIZE
+BUFFER_SIZE = 3840
+BUFFER_TYPE = ctypes.c_char*BUFFER_SIZE
 
 class OpusEncoder(object):
     """
@@ -238,12 +238,12 @@ class OpusEncoder(object):
         ----------
         kbps : `int`
         """
-        if kbps<16:
-            kbps=16
-        elif kbps>512:
-            kbps=512
+        if kbps < 16:
+            kbps = 16
+        elif kbps > 512:
+            kbps = 512
         
-        opus.opus_encoder_control(self._encoder,SET_BITRATE,kbps<<10)
+        opus.opus_encoder_control(self._encoder, SET_BITRATE, kbps<<10)
 
     def set_bandwidth(self, bandwidth):
         """
@@ -314,12 +314,12 @@ class OpusEncoder(object):
         percentage : `float`
             The expected packet loss percentage. Should be between `0` and `100`.
         """
-        if percentage<.0:
-            percentage=0
-        elif percentage>1.:
-            percentage=100
+        if percentage < 0.0:
+            percentage = 0
+        elif percentage > 1.0:
+            percentage = 100
         else:
-            percentage=int(percentage*100.)
+            percentage = int(percentage*100.0)
         
         opus.opus_encoder_control(self._encoder, SET_PACKET_LOSS_PERC, percentage)
     
@@ -373,7 +373,7 @@ class OpusDecoder(object):
         
         decoder = opus.opus_decoder_create(SAMPLING_RATE, CHANNELS, ctypes.byref(ctypes.c_int()))
         
-        self=object.__new__(cls)
+        self = object.__new__(cls)
         self._decoder = decoder
         self._buffer = BUFFER_TYPE()
         
@@ -463,7 +463,7 @@ class OpusDecoder(object):
         -------
         duration : `int`
         """
-        obj=ctypes.c_int32()
+        obj = ctypes.c_int32()
         opus.opus_decoder_control(self._decoder, GET_LAST_PACKET_DURATION, ctypes.byref(obj))
         return obj.value
     

@@ -7,7 +7,7 @@ from time import monotonic
 from collections import deque
 from threading import current_thread
 
-from ..backend.dereaddons_local import modulize, WeakReferer
+from ..backend.dereaddons_local import modulize, WeakReferer, DOCS_ENABLED
 from ..backend.futures import Future
 from ..backend.hdrs import DATE
 
@@ -22,10 +22,10 @@ Webhook          = NotImplemented
 WebhookRepr      = NotImplemented
 Guild            = NotImplemented
 
-RATELIMIT_RESET         = Discord_hdrs.RATELIMIT_RESET
-RATELIMIT_RESET_AFTER   = Discord_hdrs.RATELIMIT_RESET_AFTER
-RATELIMIT_REMAINING     = Discord_hdrs.RATELIMIT_REMAINING
-RATELIMIT_LIMIT         = Discord_hdrs.RATELIMIT_LIMIT
+RATELIMIT_RESET       = Discord_hdrs.RATELIMIT_RESET
+RATELIMIT_RESET_AFTER = Discord_hdrs.RATELIMIT_RESET_AFTER
+RATELIMIT_REMAINING   = Discord_hdrs.RATELIMIT_REMAINING
+RATELIMIT_LIMIT       = Discord_hdrs.RATELIMIT_LIMIT
 
 #parsing time
 #email.utils.parsedate_to_datetime
@@ -45,7 +45,7 @@ def parsedate_to_datetime(data):
     if tz is None:
         date = datetime(*dtuple[:6])
     else:
-        date = datetime(*dtuple[:6],tzinfo=timezone(timedelta(seconds=tz)))
+        date = datetime(*dtuple[:6], tzinfo=timezone(timedelta(seconds=tz)))
     return date
 
 class global_lock_canceller:
@@ -103,10 +103,10 @@ def ratelimit_global(session, retry_after):
     """
     future = session.global_lock
     if (future is None):
-        future=Future(KOKORO)
+        future = Future(KOKORO)
         future.add_done_callback(global_lock_canceller(session))
-        session.global_lock=future
-        KOKORO.call_later(retry_after,Future.set_result_if_pending,future,None)
+        session.global_lock = future
+        KOKORO.call_later(retry_after, Future.set_result_if_pending, future, None)
     
     return future
 
@@ -116,11 +116,11 @@ MAXIMAL_UNLIMITED_PARARELLITY = -50
 UNLIMITED_SIZE_VALUE = -10000
 NO_SPECIFIC_RATELIMITER = 0
 
-LIMITER_CHANNEL     = 'channel_id'
-LIMITER_GUILD       = 'guild_id'
-LIMITER_WEBHOOK     = 'webhook_id'
-LIMITER_GLOBAL      = 'global'
-LIMITER_UNLIMITED   = 'unlimited'
+LIMITER_CHANNEL   = 'channel_id'
+LIMITER_GUILD     = 'guild_id'
+LIMITER_WEBHOOK   = 'webhook_id'
+LIMITER_GLOBAL    = 'global'
+LIMITER_UNLIMITED = 'unlimited'
 
 class RatelimitGroup(object):
     """
@@ -198,7 +198,7 @@ class RatelimitGroup(object):
         self.limiter = limiter
         self.size = (-1 if optimistic else 0)
         group_id = cls.__auto_next_id
-        cls.__auto_next_id = group_id + (7<<8)
+        cls.__auto_next_id = group_id+(7<<8)
         self.group_id = group_id
         return self
     
@@ -361,17 +361,17 @@ class RatelimitUnit(object):
             repr(self.allocates),
                 ]
         
-        next = self.next
-        if (next is not None):
+        next_ = self.next
+        if (next_ is not None):
             result.append(', nexts=[')
             while True:
                 result.append('(')
-                result.append(repr(next.drop))
+                result.append(repr(next_.drop))
                 result.append(', ')
-                result.append(repr(next.allocates))
+                result.append(repr(next_.allocates))
                 result.append(')')
-                next = next.next
-                if (next is None):
+                next_ = next_.next
+                if (next_ is None):
                     break
                 
                 result.append(', ')
@@ -423,7 +423,7 @@ class RatelimitHandler(object):
         limiter_id : `int`
             The `id` of the Discord Entity based on what the handler is limiter.
         """
-        self.parent     = parent
+        self.parent = parent
         
         limiter = parent.limiter
         if limiter is LIMITER_UNLIMITED:
@@ -432,10 +432,10 @@ class RatelimitHandler(object):
             limiter_id = GLOBALLY_LIMITED
         
         self.limiter_id = limiter_id
-        self.drops      = None
-        self.active     = 0
-        self.queue      = None
-        self.wakeupper  = None
+        self.drops = None
+        self.active = 0
+        self.queue = None
+        self.wakeupper = None
     
     def copy(self):
         """
@@ -447,12 +447,12 @@ class RatelimitHandler(object):
         new : ``RatelimitHandler``
         """
         new = object.__new__(type(self))
-        new.parent      = self.parent
+        new.parent = self.parent
         new.limiter_id  = self.limiter_id
-        new.drops       = None
-        new.active      = 0
-        new.queue       = None
-        new.wakeupper   = None
+        new.drops = None
+        new.active = 0
+        new.queue = None
+        new.wakeupper = None
         return new
     
     def __repr__(self):
@@ -517,20 +517,20 @@ class RatelimitHandler(object):
     
     def __eq__(self, other):
         """Returns whether the two ratelimit handler has the same `.limiter_id` and `.parent`."""
-        if self.limiter_id!=other.limiter_id:
+        if self.limiter_id != other.limiter_id:
             return False
         
-        if self.parent.group_id!=other.parent.group_id:
+        if self.parent.group_id != other.parent.group_id:
             return False
         
         return True
     
     def __ne__(self, other):
         """Returns whether the two ratelimit handler has different `.limiter_id` or `.parent`."""
-        if self.limiter_id!=other.limiter_id:
+        if self.limiter_id != other.limiter_id:
             return True
         
-        if self.parent.group_id!=other.parent.group_id:
+        if self.parent.group_id != other.parent.group_id:
             return True
         
         return False
@@ -567,7 +567,7 @@ class RatelimitHandler(object):
             queue.append(future)
             await future
             
-            self.active = self.active+1
+            self.active +=1
             return
         
         left -= self.count_drops()
@@ -579,7 +579,7 @@ class RatelimitHandler(object):
         queue.append(future)
         await future
         
-        self.active = self.active+1
+        self.active +=1
     
     def exit(self, headers):
         """
@@ -635,7 +635,7 @@ class RatelimitHandler(object):
                 size = -size
             
             if size > current_size:
-                if current_size==-1:
+                if current_size == -1:
                     current_size = 1
                     # We might have cooldowns from before as well
                     allocates = size-int(headers[RATELIMIT_REMAINING])
@@ -644,21 +644,22 @@ class RatelimitHandler(object):
                 queue = self.queue
                 queue_ln = len(queue)
                 
-                if can_free>queue_ln:
-                    can_free=queue_ln
+                if can_free > queue_ln:
+                    can_free = queue_ln
                 
-                while can_free>0:
+                while can_free > 0:
                     future = queue.popleft()
                     future.set_result(None)
-                    can_free-=1
+                    can_free -=1
                     continue
         
         if optimistic:
             delay = 1.0
         else:
             delay1 = (
-                datetime.fromtimestamp(float(headers[RATELIMIT_RESET]),timezone.utc)-parsedate_to_datetime(headers[DATE])
-                    ).total_seconds()
+                datetime.fromtimestamp(
+                    float(headers[RATELIMIT_RESET]), timezone.utc) - parsedate_to_datetime(headers[DATE])
+                        ).total_seconds()
             delay2 = float(headers[RATELIMIT_RESET_AFTER])
             
             if delay1 < delay2:
@@ -676,15 +677,15 @@ class RatelimitHandler(object):
         
         wakeupper = self.wakeupper
         if wakeupper is None:
-            wakeupper = KOKORO.call_at(drop,type(self).wakeup,self)
+            wakeupper = KOKORO.call_at(drop, type(self).wakeup, self)
             self.wakeupper = wakeupper
             return
         
-        if wakeupper.when<=drop:
+        if wakeupper.when <= drop:
             return
         
         wakeupper.cancel()
-        wakeupper = KOKORO.call_at(drop,type(self).wakeup,self)
+        wakeupper = KOKORO.call_at(drop, type(self).wakeup, self)
         self.wakeupper = wakeupper
     
     def wakeup(self):
@@ -700,7 +701,7 @@ class RatelimitHandler(object):
         else:
             self.drops = drops = drops.next
             if (drops is not None):
-                wakeupper = KOKORO.call_at(drops.drop,type(self).wakeup,self)
+                wakeupper = KOKORO.call_at(drops.drop, type(self).wakeup, self)
             else:
                 wakeupper = None
         
@@ -723,10 +724,10 @@ class RatelimitHandler(object):
         if can_free > queue_ln:
             can_free = queue_ln
         
-        while can_free>0:
+        while can_free > 0:
             future = queue.popleft()
             future.set_result(None)
-            can_free-=1
+            can_free -=1
             continue
     
     def ctx(self):
@@ -785,7 +786,7 @@ class RatelimitHandlerCTX(object):
     
     def exit(self, headers):
         """
-        Marks the context manager as it was already exited and exists's its parent with the given `headers` as well.
+        ackks the context manager as it was already exited and exists's its parent with the given `headers` as well.
         
         Parameters
         ----------
@@ -897,7 +898,9 @@ class RatelimitProxy(object):
                         limiter_id = limiter.id
                         break
                     
-                    if isinstance(limiter, ChannelGuildBase) or (type(limiter) in (Message, Role, Webhook, WebhookRepr)):
+                    if isinstance(limiter, ChannelGuildBase) or \
+                            type(limiter) in (Message, Role, Webhook, WebhookRepr):
+                        
                         guild = limiter.guild
                         if (guild is not None):
                             limiter_id = limiter.id
@@ -1048,7 +1051,7 @@ class RatelimitProxy(object):
     keep_alive = property(_get_keep_alive, _set_keep_alive)
     del _get_keep_alive, _set_keep_alive
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         keep_alive.__doc__ = (
         """
         Get-set property for accessing whether the ratelimit proxy should keep alive the respective ratelimit handler.
@@ -1275,12 +1278,13 @@ class RATELIMIT_GROUPS:
     GROUP_USER_ROLE_MODIFY      = RatelimitGroup(LIMITER_GUILD)
     
     oauth2_token                = RatelimitGroup(optimistic=True)
-    application_get             = RatelimitGroup() # untested
+    application_get             = RatelimitGroup(optimistic=True) # untested
     achievement_get_all         = RatelimitGroup()
     achievement_create          = RatelimitGroup()
     achievement_delete          = RatelimitGroup()
     achievement_get             = RatelimitGroup()
     achievement_edit            = RatelimitGroup()
+    applications_detectable     = RatelimitGroup(optimistic=True)
     client_logout               = RatelimitGroup() # untested
     channel_delete              = RatelimitGroup.unlimited()
     channel_group_leave         = RatelimitGroup.unlimited() # untested; same as channel_delete?
@@ -1289,14 +1293,14 @@ class RATELIMIT_GROUPS:
     channel_follow              = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
     invite_get_channel          = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
     invite_create               = RatelimitGroup()
-    message_logs                = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
+    message_logs                = RatelimitGroup(LIMITER_CHANNEL)
     message_create              = RatelimitGroup(LIMITER_CHANNEL)
     message_delete_multiple     = RatelimitGroup(LIMITER_CHANNEL)
     message_delete              = RatelimitGroup(LIMITER_CHANNEL)
     message_delete_b2wo         = RatelimitGroup(LIMITER_CHANNEL)
-    message_get                 = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
+    message_get                 = RatelimitGroup(LIMITER_CHANNEL)
     message_edit                = RatelimitGroup(LIMITER_CHANNEL)
-    message_mar                 = RatelimitGroup(optimistic=True) # untested
+    message_ack                 = RatelimitGroup(optimistic=True) # untested
     message_crosspost           = RatelimitGroup(LIMITER_CHANNEL)
     reaction_clear              = GROUP_REACTION_MODIFY
     reaction_delete_emoji       = GROUP_REACTION_MODIFY
@@ -1308,10 +1312,16 @@ class RATELIMIT_GROUPS:
     permission_ow_delete        = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
     permission_ow_create        = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
     channel_pins                = RatelimitGroup()
+    channel_pins_ack            = RatelimitGroup(optimistic=True) # untested
     message_unpin               = GROUP_PIN_MODIFY
     message_pin                 = GROUP_PIN_MODIFY
+    channel_group_users         = RatelimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     channel_group_user_delete   = RatelimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     channel_group_user_add      = RatelimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
+    channel_thread_start        = RatelimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
+    thread_users                = RatelimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
+    thread_user_delete          = RatelimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
+    thread_user_add             = RatelimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     typing                      = RatelimitGroup(LIMITER_CHANNEL)
     webhook_get_channel         = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
     webhook_create              = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
@@ -1323,7 +1333,7 @@ class RATELIMIT_GROUPS:
     guild_delete                = RatelimitGroup.unlimited()
     guild_get                   = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     guild_edit                  = RatelimitGroup(LIMITER_GUILD, optimistic=True)
-    guild_mar                   = RatelimitGroup() # untested
+    guild_ack                   = RatelimitGroup() # untested
     audit_logs                  = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     guild_bans                  = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     guild_ban_delete            = RatelimitGroup(LIMITER_GUILD, optimistic=True)
@@ -1370,6 +1380,7 @@ class RATELIMIT_GROUPS:
     role_edit                   = RatelimitGroup(LIMITER_GUILD)
     vanity_get                  = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     vanity_edit                 = RatelimitGroup(LIMITER_GUILD, optimistic=True) # untested
+    welcome_screen_get          = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     webhook_get_guild           = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     guild_widget_get            = RatelimitGroup.unlimited()
     hypesquad_house_leave       = RatelimitGroup() # untested
@@ -1377,6 +1388,8 @@ class RATELIMIT_GROUPS:
     invite_delete               = RatelimitGroup.unlimited()
     invite_get                  = RatelimitGroup()
     client_application_info     = RatelimitGroup(optimistic=True)
+    bulk_ack                    = RatelimitGroup(optimistic=True) # untested
+    eula_get                    = RatelimitGroup(optimistic=True)
     user_info                   = RatelimitGroup(optimistic=True)
     client_user                 = RatelimitGroup(optimistic=True)
     client_edit                 = RatelimitGroup()
@@ -1397,6 +1410,7 @@ class RATELIMIT_GROUPS:
     user_get                    = RatelimitGroup()
     channel_group_create        = RatelimitGroup(optimistic=True) # untested
     user_get_profile            = RatelimitGroup(optimistic=True) # untested
+    voice_regions               = RatelimitGroup(optimistic=True)
     webhook_delete              = RatelimitGroup.unlimited()
     webhook_get                 = RatelimitGroup.unlimited()
     webhook_edit                = RatelimitGroup(LIMITER_WEBHOOK, optimistic=True)
@@ -1406,11 +1420,12 @@ class RATELIMIT_GROUPS:
     webhook_send                = RatelimitGroup(LIMITER_WEBHOOK)
 
 del modulize
+del DOCS_ENABLED
 
 ##INFO :
 ##    some endpoints might be off 1s
 ##    groups are not accurate now, because we use autogroups
-##    last group id: 102144
+##    last group id: 105728
 ##
 ##endpoint: https://cdn.discordapp.com/
 ##method  : GET
@@ -1480,6 +1495,12 @@ del modulize
 ##    reset   : 5
 ##    limiter : GLOBAL
 ##
+##endpoint: /applications/detectable
+##method  : GET
+##auth    : UNKNOWN
+##used at : applications_detectable
+##limits  : UNLIMITED
+##
 ##endpoint: /auth/logout
 ##method  : POST
 ##auth    : user
@@ -1541,7 +1562,11 @@ del modulize
 ##method  : GET
 ##auth    : bot
 ##used at : message_logs
-##limits  : unlimited
+##limits  :
+##    group   : 105728
+##    limit   : 5
+##    reset   : 5
+##    limiter : channel_id
 ##
 ##endpoint: /channels/{channel_id}/messages
 ##method  : POST
@@ -1580,7 +1605,11 @@ del modulize
 ##method  : GET
 ##auth    : bot
 ##used at : message_get
-##limits  : unlimited
+##limits  :
+##    group   : 103936
+##    limit   : 5
+##    reset   : 5
+##    limiter : channel_id
 ##
 ##endpoint: /channels/{channel_id}/messages/{message_id}
 ##method  : PATCH
@@ -1595,7 +1624,7 @@ del modulize
 ##endpoint: /channels/{channel_id}/messages/{message_id}/ack
 ##method  : POST
 ##auth    : user
-##used at : message_mar
+##used at : message_ack
 ##limits  : UNTESTED
 ##
 ##endpoint: /channels/{channel_id}/messages/{message_id}/crosspost
@@ -1696,6 +1725,12 @@ del modulize
 ##    reset   : 5
 ##    limiter : GLOBAL
 ##
+##endpoint: /channels/{channel_id}/pins/ack
+##method  : POST
+##auth    : user
+##used at : channel_pins_ack
+##limits  : UNTESTED
+##
 ##endpoint: /channels/{channel_id}/pins/{message_id}
 ##method  : DELETE
 ##auth    : bot
@@ -1716,6 +1751,12 @@ del modulize
 ##    reset   : 4
 ##    limiter : channel_id
 ##
+##endpoint: /channels/{channel_id}/recipients/
+##method  : DELETE
+##auth    : user
+##used at : channel_group_users
+##limits  : UNTESTED
+##
 ##endpoint: /channels/{channel_id}/recipients/{user_id}
 ##method  : DELETE
 ##auth    : user
@@ -1726,6 +1767,30 @@ del modulize
 ##method  : PUT
 ##auth    : user
 ##used at : channel_group_user_add
+##limits  : UNTESTED
+##
+##endpoint: /channels/{channel_id}/threads'
+##method  : POST
+##auth    : bot
+##user at : channel_thread_start
+##limits  : UNTESTED
+##
+##endpoint: /channels/{channel_id}/threads/participants'
+##method  : GET
+##auth    : UNDEFINED
+##user at : thread_users
+##limits  : UNTESTED
+##
+##endpoint: /channels/{channel_id}/threads/participants/{user_id}'
+##method  : DELETE
+##auth    : UNDEFINED
+##user at : thread_user_delete
+##limits  : UNTESTED
+##
+##endpoint: /channels/{channel_id}/threads/participants/{user_id}'
+##method  : POST
+##auth    : UNDEFINED
+##user at : thread_user_add
 ##limits  : UNTESTED
 ##
 ##endpoint: /channels/{channel_id}/typing
@@ -1813,7 +1878,7 @@ del modulize
 ##endpoint: /guilds/{guild_id}/ack
 ##method  : POST
 ##auth    : user
-##used at : guild_mar
+##used at : guild_ack
 ##limits  : UNTESTED
 ##
 ##endpoint: /guilds/{guild_id}/audit-logs
@@ -2152,6 +2217,12 @@ del modulize
 ##used at : vanity_edit
 ##limits  : UNTESTED
 ##
+##endpoint: /guilds/{guild_id}/welcome-screen
+##method  : GET
+##auth    : bot
+##used at : welcome_screen_get
+##limits  : UNLIMITED
+##
 ##endpoint: /guilds/{guild_id}/webhooks
 ##method  : GET
 ##auth    : bot
@@ -2203,6 +2274,18 @@ del modulize
 ##auth    : bot
 ##used at : client_application_info
 ##limits  : unlimited
+##
+##endpoint: /read-states/ack-bulk
+##method  : GET
+##auth    : user
+##used at : bulk_ack
+##limits  : UNTESTED
+##
+##endpoint: /store/eulas/{eula_id}
+##method  : GET
+##auth    : UNDEFINED
+##used at : eula_get
+##limits  : UNLIMITED
 ##
 ##endpoint: /users/@me
 ##method  : GET
@@ -2347,6 +2430,12 @@ del modulize
 ##auth    : user
 ##used at : user_get_profle
 ##limits  : UNTESTED
+##
+##endpoint: /voice/regions
+##method  : GET
+##auth    : bot
+##used at : voice_regions
+##limits  : unlimited
 ##
 ##endpoint: /webhooks/{webhook_id}
 ##method  : DELETE

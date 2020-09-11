@@ -3,7 +3,7 @@ __all__ = ('Category', 'Command', 'CommandProcesser', 'checks', 'normalize_descr
 
 import re, reprlib
 
-from ...backend.dereaddons_local import sortedlist, modulize, NEEDS_DUMMY_INIT
+from ...backend.dereaddons_local import sortedlist, modulize, NEEDS_DUMMY_INIT, function, DOCS_ENABLED
 from ...backend.futures import Task
 from ...backend.analyzer import CallableAnalyzer
 
@@ -11,7 +11,7 @@ from ...discord.others import USER_MENTION_RP
 from ...discord.parsers import EventWaitforBase, compare_converted, check_name, check_argcount_and_convert
 from ...discord.client_core import KOKORO
 
-from .compiler import parse, COMMAND_CALL_SETTING_2ARGS, COMMAND_CALL_SETTING_3ARGS, COMMAND_CALL_SETTING_USE_PARSER
+from .content_parser import CommandContentParser
 
 COMMAND_RP=re.compile(' *([^ \t\\n]*) *(.*)')
 
@@ -31,7 +31,10 @@ class CommandWrapper(object):
     wrapped : `async-callable`
         The wrapped function of the command.
     wrapper : `async-callable`
-        Rich check, w
+        Rich check, which will be
+    handler : None` or `async-callable`
+        The rich handler, what is called when the `wrapper` yield `False`. Note that every other value what
+        `wrapper` yields will be also passed to the `handler`.
     """
     __slots__ = ('wrapped', 'wrapper', 'handler', )
     def __new__(cls, wrapped, wrapper, handler):
@@ -45,7 +48,8 @@ class CommandWrapper(object):
         wrapper : `Any`
             A wrapper for the function.
         handler : None` or `async-callable`
-            handler
+            The rich handler, what is called when the `wrapper` yield `False`. Note that every other value what
+            `wrapper` yields will be also passed to the `handler`.
         
         Returns
         -------
@@ -70,7 +74,7 @@ def generate_alters_for(name):
     ----------
     name : `str`
         A command's or an aliase's name.
-
+    
     Returns
     -------
     alters : `list` of `str`
@@ -149,39 +153,28 @@ class Command(object):
         attribute for it. If the description is a string instance, then it will be normalized with the
         ``normalize_description`` function. If it ends up as an empty string, then `None` will be set as the
         description.
+    display_name : `str`
+        The command's display name.
     name : `str`
-        The command's name.
+        The command's name. Always lower case.
         
         > Always lower case.
     _alters : `set` of `str`
         Alternative name, whith what the command can be called.
-    _call_setting : `int`
-        An `int` flag, what defines, how the command should be called.
-        
-        Possible values:
-        +-----------------------------------+-------+
-        | Respective name                   | value |
-        +===================================+=======+
-        | COMMAND_CALL_SETTING_2ARGS        | 0     |
-        +-----------------------------------+-------+
-        | COMMAND_CALL_SETTING_3ARGS        | 1     |
-        +-----------------------------------+-------+
-        | COMMAND_CALL_SETTING_USE_PARSER   | 2     |
-        +-----------------------------------+-------+
     _category_hint : `str` or `None`
         Hint for the command processer under which category should the give command go. If set as `None`, means that
         the command will go under the default category of the command processer.
     _checks : `None` or (`list` of ``_check_base`` instances)
         The internal slot used by the ``.checks`` property. Defaults to `None`.
-    _parser : `None`
-        The generated parser function for parsing the arguments to pass to the command. Defaults to `None`.
+    parser : `None` or ``CommandContentParser``
+        Collection of content part parsers to parse argument for the command. Defaults to `None`.
     _parser_failure_handler : `Any`
         The internal slot used by the ``.parser_failure_handler`` property. Defaults to `None`.
     _wrappers : `None`, `Any`, `list` of `async-callable`
         Additional wrappers, which run before the command is executed.
     """
-    __slots__ = ( '_alters', '_call_setting', '_category_hint', '_checks', '_parser', '_parser_failure_handler',
-        '_wrappers', 'aliases', 'category', 'command', 'description', 'name',)
+    __slots__ = ( '_alters', '_category_hint', '_checks', '_parser_failure_handler', '_wrappers', 'aliases',
+        'category', 'command', 'description', 'display_name', 'name', 'parser',)
     
     @classmethod
     def from_class(cls, klass, kwargs=None):
@@ -207,7 +200,7 @@ class Command(object):
             - checks : `None` or (`iterable` of ``_check_base``)
                 If no checks were provided, then the classe's `.checks_` attribute will be checked as well.
             - parser_failure_handler : `None` or `async-callable`
-        
+            - separator : `None`, ``ContentArgumentSeparator``, `str` or `tuple` (`str`, `str`)
         kwargs, `None` or `dict` of (`str`, `Any`) items, Optional
             Additional keyword arguments.
             
@@ -216,6 +209,7 @@ class Command(object):
             - category
             - checks
             - parser_failure_handler
+            - separator
         
         Returns
         -------
@@ -229,8 +223,14 @@ class Command(object):
             - `aliases` were not passed as `None` or as `iterable` of `str`.
             - `category` was not given as `None, `str`, or as ``Category`` instance.
             - If `checks` was not given as `None` or as `iterable` of ``_check_base`` instances.
+            - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
+            - If `separator was given as `tuple`, but it's element are not `str` instances.
         ValueError
             - If `.command` attribute is missing of the class.
+            - If `seperator` is given as `str`, but it's length is not 1.
+            - If `separator` is given as `str`, but it is a space character.
+            - If `seperator` is given as `tuple`, but one of it's element's length is not 1.
+            - If `separator` is given as `tuple`, but one of it's element's is a space character.
         """
         klass_type = klass.__class__
         if not issubclass(klass_type, type):
@@ -263,6 +263,8 @@ class Command(object):
             checks_=getattr(klass,'checks_',None)
         
         parser_failure_handler=getattr(klass,'parser_failure_handler',None)
+        
+        separator = getattr(klass, 'separator', None)
         
         if (kwargs is not None) and kwargs:
             if (description is None):
@@ -297,10 +299,18 @@ class Command(object):
                 except KeyError:
                     pass
             
+            if (separator is None):
+                separator = kwargs.pop('separator', None)
+            else:
+                try:
+                    del kwargs['separator']
+                except KeyError:
+                    pass
+            
             if kwargs:
                 raise TypeError(f'`{cls.__name__}.from_class` did not use up some kwargs: `{kwargs!r}`.')
         
-        return cls(command, name, description, aliases, category, checks_, parser_failure_handler)
+        return cls(command, name, description, aliases, category, checks_, parser_failure_handler, separator)
     
     @classmethod
     def from_kwargs(cls, command, name, kwargs):
@@ -330,6 +340,13 @@ class Command(object):
             - `aliases` were not passed as `None` or as `iterable` of `str`.
             - `category` was not given as `None, `str`, or as ``Category`` instance.
             - If `checks` was not given as `None` or as `iterable` of ``_check_base`` instances.
+            - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
+            - If `separator was given as `tuple`, but it's element are not `str` instances.
+        ValueError
+            - If `seperator` is given as `str`, but it's length is not 1.
+            - If `separator` is given as `str`, but it is a space character.
+            - If `seperator` is given as `tuple`, but one of it's element's length is not 1.
+            - If `separator` is given as `tuple`, but one of it's element's is a space character.
         """
         if (kwargs is None) or (not kwargs):
             description = None
@@ -337,19 +354,21 @@ class Command(object):
             category = None
             checks_ = None
             parser_failure_handler = None
+            separator = None
         else:
-            description = kwargs.pop('description',None)
-            aliases = kwargs.pop('aliases',None)
-            category = kwargs.pop('category',None)
-            checks_ = kwargs.pop('checks',None)
-            parser_failure_handler = kwargs.pop('parser_failure_handler',None)
+            description = kwargs.pop('description', None)
+            aliases = kwargs.pop('aliases', None)
+            category = kwargs.pop('category', None)
+            checks_ = kwargs.pop('checks', None)
+            parser_failure_handler = kwargs.pop('parser_failure_handler', None)
+            separator = kwargs.pop('separator', None)
             
             if kwargs:
                 raise TypeError(f'type `{cls.__name__}` not uses: `{kwargs!r}`.')
         
-        return cls(command, name, description, aliases, category, checks_, parser_failure_handler)
+        return cls(command, name, description, aliases, category, checks_, parser_failure_handler, separator)
     
-    def __new__(cls, command, name, description, aliases, category, checks_, parser_failure_handler):
+    def __new__(cls, command, name, description, aliases, category, checks_, parser_failure_handler, separator):
         """
         Creates a new ``Command`` object.
         
@@ -391,6 +410,8 @@ class Command(object):
             +-----------------------+-------------------+
             | args                  | `list` of `Any`   |
             +-----------------------+-------------------+
+        separator : `None`, ``ContentArgumentSeparator``, `str` or `tuple` (`str`, `str`)
+            The argument separator of the command's parser.
         
         Returns
         -------
@@ -402,8 +423,14 @@ class Command(object):
             - `aliases` were not passed as `None` or as `iterable` of `str`.
             - `category` was not given as `None, `str`, or as ``Category`` instance.
             - If `checks_` was not given as `None` or as `iterable` of ``_check_base`` instances.
+            - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
+            - If `separator was given as `tuple`, but it's element are not `str` instances.
+        ValueError
+            - If `seperator` is given as `str`, but it's length is not 1.
+            - If `separator` is given as `str`, but it is a space character.
+            - If `seperator` is given as `tuple`, but one of it's element's length is not 1.
+            - If `separator` is given as `tuple`, but one of it's element's is a space character.
         """
-        
         wrappers = None
         while isinstance(command, CommandWrapper):
             if wrappers is None:
@@ -461,10 +488,10 @@ class Command(object):
             aliases = None
         
         if description is None:
-            description=getattr(command,'__doc__',None)
+            description = getattr(command, '__doc__', None)
         
-        if (description is not None) and isinstance(description,str):
-            description=normalize_description(description)
+        if (description is not None) and isinstance(description, str):
+            description = normalize_description(description)
         
         if category is None:
             category_hint = None
@@ -490,20 +517,22 @@ class Command(object):
             parser_failure_handler = check_argcount_and_convert(parser_failure_handler, 5,
                 '`parser_failure_handler` expected 5 arguments (client, message, command, content, args).')
         
-        command, call_setting, parser = parse(command)
+        parser, command = CommandContentParser(command, separator)
+        if not parser:
+            parser = None
         
-        self=object.__new__(cls)
-        self.command        = command
-        self.name           = name
-        self.aliases        = aliases
-        self.description    = description
-        self.category       = category
-        self._alters        = alters
-        self._call_setting  = call_setting
+        self = object.__new__(cls)
+        self.command = command
+        self.name = name
+        self.display_name = name
+        self.aliases = aliases
+        self.description = description
+        self.category = category
+        self._alters = alters
         self._category_hint = category_hint
-        self._checks        = checks_processed
-        self._parser        = parser
-        self._wrappers      = wrappers
+        self._checks  = checks_processed
+        self.parser = parser
+        self._wrappers = wrappers
         self._parser_failure_handler = parser_failure_handler
         
         return self
@@ -519,17 +548,22 @@ class Command(object):
             repr(self.command),
                 ]
         
-        description=self.description
+        description = self.description
         if (description is not None):
             result.append(', description=')
-            result.append(reprlib.repr(self.description))
+            if type(description) is str:
+                description = reprlib.repr(description)
+            else:
+                description = repr(description)
+            
+            result.append(description)
         
-        aliases=self.aliases
+        aliases = self.aliases
         if (aliases is not None):
             result.append(', aliases=')
             result.append(repr(aliases))
         
-        checks=self._checks
+        checks = self._checks
         if (checks is not None):
             result.append(', checks=')
             result.append(repr(checks))
@@ -537,18 +571,21 @@ class Command(object):
         result.append(', category=')
         result.append(repr(self.category))
         
-        call_setting=self._call_setting
-        if call_setting != COMMAND_CALL_SETTING_2ARGS:
-            if call_setting == COMMAND_CALL_SETTING_3ARGS:
-                result.append(', call with content')
-            else:
-                result.append(', use parser')
+        parser = self.parser
+        if (parser is not None):
+            result.append(', parser=')
+            result.append(repr(parser))
             
             parser_failure_handler=self.parser_failure_handler
             if (parser_failure_handler is not None):
                 result.append(', parser_failure_handler=')
                 result.append(repr(parser_failure_handler))
-            
+        
+        wrappers = self._wrappers
+        if (wrappers is not None):
+            result.append(', wrappers=')
+            result.append(repr(wrappers))
+        
         result.append('>')
         
         return ''.join(result)
@@ -573,7 +610,7 @@ class Command(object):
     checks = property(_get_checks, _set_checks, _del_checks)
     del _get_checks, _set_checks, _del_checks
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         checks.__doc__ = ("""
         Get-set-del property for accessing the checks of the ``Command``.
         
@@ -600,10 +637,11 @@ class Command(object):
     def _del_parser_failure_handler(self):
         self._parser_failure_handler=None
     
-    parser_failure_handler = property(_get_parser_failure_handler, _set_parser_failure_handler, _del_parser_failure_handler)
+    parser_failure_handler = property(_get_parser_failure_handler, _set_parser_failure_handler,
+        _del_parser_failure_handler)
     del _get_parser_failure_handler, _set_parser_failure_handler, _del_parser_failure_handler
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         parser_failure_handler.__doc__ = ("""
         Get-set-del property for accessing the ``Command``'s parser failure handler.
         
@@ -734,29 +772,28 @@ class Command(object):
                         await handler(client, message, self, *args)
                     return COMMAND_PARSER_FAILED
         
-        call_setting = self._call_setting
-        if call_setting == COMMAND_CALL_SETTING_USE_PARSER:
-            passed, args = await self._parser(client, message, content)
+        parser = self.parser
+        if parser is None:
+            args = None
+        else:
+            passed, args = await parser.get_args(client, message, content)
             if not passed:
                 parser_failure_handler = self._parser_failure_handler
                 if (parser_failure_handler is not None):
                     await parser_failure_handler(client, message, self, content, args)
                 
                 return COMMAND_PARSER_FAILED
-            
-            coro = self.command(client, message, *args)
         
-        elif call_setting == COMMAND_CALL_SETTING_2ARGS:
-            coro = self.command(client, message)
-        
+        command = self.command
+        if args is None:
+            coro = command(client, message)
         else:
-            # last case: COMMAND_CALL_SETTING_3ARGS
-            coro = self.command(client, message, content)
+            coro = command(client, message, *args)
         
         await coro
         return COMMAND_SUCCEEDED
     
-    async def call_checks(self, client, message, content):
+    async def call_checks(self, client, message):
         """
         Runs the checks of the commands's ``.category`` and of the command itself too.
         
@@ -768,9 +805,6 @@ class Command(object):
             The client with what the checks will be called.
         message : ``Message``
             The message with what the checks will be called.
-        content : `str`
-            The message's content after the prefix and the command's name, but before the first linebreak.
-            Can be empty string.
         
         Returns
         -------
@@ -920,24 +954,23 @@ class Command(object):
         result : `bool`
             Returns `True` indicating that the command (or a handler run).
         """
-        call_setting = self._call_setting
-        if call_setting == COMMAND_CALL_SETTING_USE_PARSER:
-            passed, args = await self._parser(client, message, content)
+        parser = self.parser
+        if parser is None:
+            args = None
+        else:
+            passed, args = await parser.get_args(client, message, content)
             if not passed:
                 parser_failure_handler = self._parser_failure_handler
                 if (parser_failure_handler is not None):
                     await parser_failure_handler(client, message, self, content, args)
                 
                 return COMMAND_PARSER_FAILED
-            
-            coro = self.command(client, message, *args)
-            
-        elif call_setting == COMMAND_CALL_SETTING_2ARGS:
-            coro = self.command(client, message)
         
+        command = self.command
+        if args is None:
+            coro = command(client, message)
         else:
-            # last case: COMMAND_CALL_SETTING_3ARGS
-            coro = self.command(client, message, content)
+            coro = command(client, message, *args)
         
         await coro
         return COMMAND_SUCCEEDED
@@ -957,11 +990,11 @@ class Command(object):
     
     def __gt__(self, other):
         """Returns whether this command's name is greater than the other's"""
-        return self.name>other.name
+        return (self.name > other.name)
     
     def __lt__(self, other):
         """Returns whether this command's name is less than the other's"""
-        return self.name<other.name
+        return (self.name < other.name)
 
 def normalize_description(text):
     """
@@ -978,70 +1011,65 @@ def normalize_description(text):
     result : `None` or `str`
         The normalized description, or `None` if ended up with an empty string.
     """
-    lines=text.splitlines()
+    lines = text.splitlines()
     
     for index in range(len(lines)):
-        lines[index]=lines[index].rstrip()
+        lines[index] = lines[index].rstrip()
     
     while True:
         if not lines:
             return None
         
-        line=lines[0]
-        if line:
-            break
-        
-        del lines[0]
-        continue
-    
-    while True:
-        if not lines:
-            return None
-        
-        line=lines[-1]
-        if line:
+        if lines[-1]:
             break
         
         del lines[-1]
         continue
     
-    limit=len(lines)
-    if limit==1:
+    while True:
+        if lines[0]:
+            break
+        
+        del lines[0]
+        continue
+    
+    limit = len(lines)
+    if limit == 1:
         return lines[0].lstrip()
     
-    ignore_index=0
+    ignore_index = 0
     
     while True:
-        next_char=lines[0][ignore_index]
+        next_char = lines[0][ignore_index]
         if next_char not in ('\t', ' '):
             break
         
         index=1
-        while index<limit:
-            line=lines[index]
-            index=index+1
+        while index < limit:
+            line = lines[index]
+            index = index+1
             if not line:
                 continue
             
-            char=line[ignore_index]
-            if char!=next_char:
+            char = line[ignore_index]
+            if char != next_char:
                 break
             
             continue
         
-        if char!=next_char:
+        if char != next_char:
             break
         
-        ignore_index=ignore_index+1
+        ignore_index +=1
         continue
     
-    if ignore_index!=0:
+    if ignore_index:
         for index in range(len(lines)):
-            line=lines[index]
+            line = lines[index]
             if not line:
                 continue
             
-            lines[index]=line[ignore_index:]
+            lines[index] = line[ignore_index:]
             continue
     
     return '\n'.join(lines)
@@ -1052,7 +1080,7 @@ class checks:
     from ...discord.guild import Guild
     from ...discord.permission import Permission
     from ...discord.role import Role
-    from ...discord.channel import ChannelBase
+    from ...discord.channel import ChannelBase, ChannelText
     from ...discord.parsers import check_argcount_and_convert
     
     def validate_checks(checks_):
@@ -1179,7 +1207,7 @@ class checks:
         __slots__ = ('handler',)
         def __new__(cls, handler=None):
             """
-            Creates a check with the given paramteres.
+            Creates a check with the given parameters.
             
             Paramaters
             ----------
@@ -1237,30 +1265,32 @@ class checks:
                 '(',
                     ]
             
-            slots=self.__slots__
-            limit=len(slots)
+            slots = self.__slots__
+            limit = len(slots)
             if limit:
-                index=0
+                index = 0
                 while True:
-                    name=slots[index]
-                    index=index+1
+                    name = slots[index]
+                    index +=1
                     # case of `_is_async`
                     if name.startswith('_'):
                         continue
                     
                     # case of `channel_id`, `guild_id`
                     if name.endswith('id'):
-                        name = name[:-3]
+                        display_name = name[:-3]
                     # case of `channel_ids`, `guild_ids`
                     elif name.endswith('ids'):
-                        name = name[:-4]
+                        display_name = name[:-4]
+                    else:
+                        display_name = name
                     
-                    result.append(name)
+                    result.append(display_name)
                     result.append('=')
-                    attr=getattr(self,name)
+                    attr = getattr(self,name)
                     result.append(repr(attr))
                     
-                    if index==limit:
+                    if index == limit:
                         break
                     
                     result.append(', ')
@@ -1327,7 +1357,7 @@ class checks:
                 If `role` was given as `str` or as `int` instance, but not as a valid snowflake, so ``Role``
                     instance cannot be precreated with it.
             """
-            role = instance_or_id_to_instance(role, Role)
+            role = instance_or_id_to_instance(role, Role, 'role')
             handler = _convert_handler(handler)
             
             self = object.__new__(cls)
@@ -1446,7 +1476,7 @@ class checks:
             
             roles_processed = set()
             for role in roles:
-                role = instance_or_id_to_instance(role, Role)
+                role = instance_or_id_to_instance(role, Role, 'role')
                 roles_processed.add(role)
             
             self = object.__new__(cls)
@@ -1470,9 +1500,10 @@ class checks:
             passed : `bool`
                 Whether the check passed.
             """
-            user=message.author
-            if user.has_role(self.roles):
-                return True
+            user = message.author
+            for role in self.roles:
+                if  user.has_role(role):
+                    return True
             
             return False
     
@@ -1503,7 +1534,7 @@ class checks:
             passed : `bool`
                 Whether the check passed.
             """
-            user=message.author
+            user = message.author
             for role in self.roles:
                 if user.has_role(role):
                     return True
@@ -1637,7 +1668,7 @@ class checks:
             if guild is None:
                 return False
             
-            if guild.owner==message.author:
+            if guild.owner == message.author:
                 return True
             
             return False
@@ -1673,7 +1704,7 @@ class checks:
                 return False
             
             user = message.author
-            if guild.owner==user:
+            if guild.owner == user:
                 return True
             
             if client.is_owner(user):
@@ -1748,7 +1779,7 @@ class checks:
             passed : `bool`
                 Whether the check passed.
             """
-            if message.channel.permissions_for(message.author)>=self.permissions:
+            if message.channel.permissions_for(message.author) >= self.permissions:
                 return True
             
             return False
@@ -1782,7 +1813,7 @@ class checks:
                 Whether the check passed.
             """
             user = message.author
-            if message.channel.permissions_for(user)>=self.permissions:
+            if message.channel.permissions_for(user) >= self.permissions:
                 return True
             
             if client.is_owner(user):
@@ -1861,7 +1892,7 @@ class checks:
             if guild is None:
                 return False
             
-            if guild.permissions_for(message.author)>=self.permissions:
+            if guild.permissions_for(message.author) >= self.permissions:
                 return True
             
             return False
@@ -1901,7 +1932,7 @@ class checks:
             
             user = message.author
             
-            if guild.permissions_for(user)>=self.permissions:
+            if guild.permissions_for(user) >= self.permissions:
                 return True
             
             if client.is_owner(user):
@@ -1976,7 +2007,7 @@ class checks:
             passed : `bool`
                 Whether the check passed.
             """
-            if message.channel.cached_permissions_for(client)>=self.permissions:
+            if message.channel.cached_permissions_for(client) >= self.permissions:
                 return True
             
             return False
@@ -2052,7 +2083,7 @@ class checks:
             if guild is None:
                 return False
             
-            if guild.cached_permissions_for(client)>=self.permissions:
+            if guild.cached_permissions_for(client) >= self.permissions:
                 return True
             
             return False
@@ -2102,7 +2133,7 @@ class checks:
             ValueError
                 If `guild` was given as `str` or as `int` instance, but not as a valid snowflake.
             """
-            guild_id = instance_or_id_to_snowflake(guild, Guild)
+            guild_id = instance_or_id_to_snowflake(guild, Guild, 'guild')
             handler = _convert_handler(handler)
             
             self = object.__new__(cls)
@@ -2130,7 +2161,7 @@ class checks:
             if guild is None:
                 return False
             
-            if (guild.id==self.guild_id):
+            if (guild.id == self.guild_id):
                 return True
             
             return False
@@ -2188,7 +2219,7 @@ class checks:
             
             guild_ids_processed = set()
             for guild in guilds:
-                guild_id = instance_or_id_to_snowflake(guild, Guild)
+                guild_id = instance_or_id_to_snowflake(guild, Guild, 'guild')
                 guild_ids_processed.add(guild_id)
             
             handler = _convert_handler(handler)
@@ -2307,7 +2338,7 @@ class checks:
                 if self._is_async:
                     result = await result
             except BaseException as err:
-                Task(client.events.error(client,repr(self),err), KOKORO)
+                Task(client.events.error(client, repr(self), err), KOKORO)
                 return False
             
             if result is None:
@@ -2363,7 +2394,7 @@ class checks:
             ValueError
                 If `channel` was given as `str` or as `int` instance, but not as a valid snowflake.
             """
-            channel_id = instance_or_id_to_snowflake(channel, ChannelBase)
+            channel_id = instance_or_id_to_snowflake(channel, ChannelBase, 'channel')
             handler = _convert_handler(handler)
             
             self = object.__new__(cls)
@@ -2387,7 +2418,7 @@ class checks:
             passed : `bool`
                 Whether the check passed.
             """
-            if (message.channel.id==self.channel_id):
+            if (message.channel.id == self.channel_id):
                 return True
             
             return False
@@ -2445,7 +2476,7 @@ class checks:
             
             channel_ids_processed = set()
             for channel in channels:
-                channel_id = instance_or_id_to_snowflake(channel, ChannelBase)
+                channel_id = instance_or_id_to_snowflake(channel, ChannelBase, 'channel')
                 channel_ids_processed.add(channel_id)
             
             handler = _convert_handler(handler)
@@ -2475,8 +2506,77 @@ class checks:
                 return True
             
             return False
+    
+    class nsfw_channel_only(_check_base):
+        """
+        Checks whether the message was sent to an nsfw channel.
+        
+        Attributes
+        ----------
+        handler : `None` or `async-callable`
+            An async callable what will be called when the check fails.
+        """
+        __slots__ = ()
+        def __new__(cls, handler=None):
+            """
+            Creates a check, what will validate whether the a received message of a client passes the given condition.
+            
+            Parameters
+            ----------
+            handler : `None` or `async-callable` or instanceable to `async-callable`
+                The handler to convert.
+                
+                If the handler is `async-callable` or if it would be instanced to it, then it should accept the
+                following arguments:
+                +-------------------+---------------------------+
+                | Respective name   | Type                      |
+                +===================+===========================+
+                | client            | ``Client``                |
+                +-------------------+---------------------------+
+                | message           | ``Message``               |
+                +-------------------+---------------------------+
+                | command           | ``Command``               |
+                +-------------------+---------------------------+
+                | check             | ``_check_base`` instance  |
+                +-------------------+---------------------------+
+            
+            Raises
+            ------
+            TypeError
+                If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
+            """
+            handler = _convert_handler(handler)
+            
+            self = object.__new__(cls)
+            self.handler = handler
+            return self
+        
+        async def __call__(self, client, message):
+            """
+            Calls the check to validate whether it passes with the given conditions.
+            
+            Parameters
+            ----------
+            client : ``Client``
+                The client who's received the message.
+            message : ``Message``
+                The received message.
+            
+            Returns
+            -------
+            passed : `bool`
+                Whether the check passed.
+            """
+            channel = message.channel
+            if (isinstance(channel, ChannelText) and channel.nsfw):
+                return True
+            
+            return False
+
 
 from .command.checks import validate_checks
+
+DEFAULT_CATEGORY_DEFAULT_DISPLAY_NAME = 'general'
 
 class Category(object):
     """
@@ -2493,10 +2593,12 @@ class Category(object):
         Sortedlist storing the category's commands.
     description : `Any`
         Optional description for the category.
+    display_name : `str`
+        The category's display name.
     name : `None` or `str`
-        The name of the category. Only a command processer's default category can have it's name as `None`.
+        The name of the category. Only a command processer's default category can have it's name as `None`. (Always lower case.)
     """
-    __slots__ = ('_checks', 'commands', 'description', 'name', )
+    __slots__ = ('_checks', 'commands', 'description', 'display_name', 'name', )
     
     def __new__(cls, name, checks_=None, description=None):
         """
@@ -2522,14 +2624,22 @@ class Category(object):
         """
         checks_processed = validate_checks(checks_)
         
-        if (description is not None) and isinstance(description,str):
-            description=normalize_description(description)
+        if (description is not None) and isinstance(description, str):
+            description = normalize_description(description)
         
-        self=object.__new__(cls)
-        self.name=name
-        self.commands=sortedlist()
+        if name is None:
+            display_name = DEFAULT_CATEGORY_DEFAULT_DISPLAY_NAME
+        else:
+            display_name = name
+            if not name.islower():
+                name = name.lower()
+        
+        self = object.__new__(cls)
+        self.name = name
+        self.display_name = display_name
+        self.commands = sortedlist()
         self._checks = checks_processed
-        self.description=description
+        self.description = description
         return self
     
     def _get_checks(self):
@@ -2548,7 +2658,7 @@ class Category(object):
     checks = property(_get_checks, _set_checks, _del_checks)
     del _get_checks, _set_checks, _del_checks
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         checks.__doc__ = ("""
         Get-set-del property for accessing the checks of the ``Category``.
         
@@ -2572,6 +2682,8 @@ class Category(object):
         message : ``Message``
             The message with what the checks will be called.
         
+        Returns
+        -------
         result : `int`
             Returns an identificator number depending how the command execution went.
             
@@ -2584,7 +2696,7 @@ class Category(object):
             | COMMAND_CHECKS_SUCCEEDED  | 1     |
             +---------------------------+-------+
         """
-        checks=self._checks
+        checks = self._checks
         if (checks is not None):
             for check in checks:
                 if await check(client, message):
@@ -2596,8 +2708,8 @@ class Category(object):
     
     def __gt__(self, other):
         """Returns whether this category's name is greater than the other's"""
-        self_name=self.name
-        other_name=other.name
+        self_name = self.name
+        other_name = other.name
         
         if self_name is None:
 ##            if other_name is None:
@@ -2613,8 +2725,8 @@ class Category(object):
     
     def __lt__(self, other):
         """Returns whether this category's name is less than the other's"""
-        self_name=self.name
-        other_name=other.name
+        self_name = self.name
+        other_name = other.name
         
         if self_name is None:
             if other_name is None:
@@ -2645,7 +2757,7 @@ class Category(object):
             '<',
             self.__class__.__name__,
                 ]
-        name=self.name
+        name = self.name
         if (name is not None):
             result.append(' ')
             result.append(name)
@@ -2657,6 +2769,80 @@ class Category(object):
         result.append('>')
         
         return ''.join(result)
+
+def test_name_rule(rule, rule_name, nullable):
+    """
+    Tests the given name rule and raises if it do not passes any requirements.
+    
+    Parameters
+    ----------
+    rule : `None` or `function`
+        The rule to test.
+    rule_name : `str`
+        The name of the given rule.
+    nullable : `bool`
+        Whether `rule` should handle `None` input as well.
+    
+    Raises
+    ------
+    TypeError
+        - If `rule` is not `None` or `function` instance.
+        - If `rule` is `async` `function`.
+        - If `rule` accepts bad amount of arguments.
+        - If `rule` raised expcetion when `str` was passed to it.
+        - If `rule` did not return `str`, when passing `str` to it.
+        - If `nullable` is given as `True` and `rule` raised expcetion when `None` was passed to it.
+        - If `nullable` is given as `True` and `rule` did not return `str`, when passing `None` to it.
+    """
+    if rule is None:
+        return
+    
+    rule_type = rule.__class__
+    if (rule_type is not function):
+        raise TypeError(f'`{rule_name}` shoud have been given as `{function.__name__}` instance, got '
+            f'{rule_type.__name__}.')
+    
+    analyzed = CallableAnalyzer(rule)
+    if analyzed.is_async():
+        raise TypeError(f'`{rule_name}` shoud have been given as an non async function instance, got '
+            f'{rule!r}.')
+    
+    non_reserved_positional_argument_count = analyzed.get_non_reserved_positional_argument_count()
+    if non_reserved_positional_argument_count != 1:
+        raise TypeError(f'`{rule_name}` shoud accept `2` non reserved positonal arguments, meanwhile it expects '
+            f'{non_reserved_positional_argument_count}.')
+    
+    if analyzed.accepts_args():
+        raise TypeError(f'`{rule_name}` shoud accept not expect args, meanwhile it does.')
+    
+    if analyzed.accepts_kwargs():
+        raise TypeError(f'`{rule_name}` shoud accept not expect kwargs, meanwhile it does.')
+    
+    non_default_keyword_only_argument_count = analyzed.get_non_default_keyword_only_argument_count()
+    if non_default_keyword_only_argument_count:
+        raise TypeError(f'`{rule_name}` shoud accept `0` keyword only arguments, meanwhile it expects '
+            f'{non_default_keyword_only_argument_count}.')
+    
+    try:
+        result = rule('test-this-name')
+    except BaseException as err:
+        raise TypeError(f'Got unexpected exception meanwhile testing the given {rule_name}: {rule!r}.') from err
+    
+    if (type(result) is not str):
+        raise TypeError(f'{rule_name}: {rule!r} did not return `str` instance, meanwhile testing it, got '
+            f'{result.__class__.__name__}')
+    
+    if not nullable:
+        return
+        
+    try:
+        result = rule(None)
+    except BaseException as err:
+        raise TypeError(f'Got unexpected exception meanwhile testing the given {rule_name}: {rule!r}.') from err
+    
+    if (type(result) is not str):
+        raise TypeError(f'{rule_name}: {rule!r} did not return `str` instance, meanwhile testing it, got '
+            f'{result.__class__.__name__}')
 
 class CommandProcesser(EventWaitforBase):
     """
@@ -2737,11 +2923,17 @@ class CommandProcesser(EventWaitforBase):
     ----------
     waitfors : `WeakValueDictionary` of (``DiscordEntity``, `asnyc-callable`) items
         Container to store the entities where message is expected to be sent and their waiters.
+    _category_name_rule : `None` or `function`
+        Function to generate display names for categories.
+        Should accept only 1 argument, what can be `str`  or `None` and should return a `str` instance as well.
     _command_error : `None` or `async-callable`
         Called when execution of a command raised. Internal slot used by the ``.command_error`` property.
     _command_error_checks : `None` or `list` of ``_check_base``
         Checks to deside whether ``._command_error`` should be called. Internal slot used by the
         ``.command_error_checks`` property.
+    _command_name_rule : `None` or `function`
+        Function to generate display names for commands.
+        Should accept only 1 argument, what is `str` instance and should return a `str` instance as well.
     _default_category_name : `None` or `str`
         The command processser's default category's name.
     _default_event : `None` or `async-callable`
@@ -2790,15 +2982,17 @@ class CommandProcesser(EventWaitforBase):
     SUPPORTED_TYPES : `tuple` (``Command``,)
         Tells to ``eventlist`` what exact types the ``CommandProcesser`` accepts.
     """
-    __slots__ = ('_command_error', '_command_error_checks', '_default_category_name', '_default_event',
-        '_default_event_checks', '_ignorecase', '_invalid_command', '_invalid_command_checks', 'categories',
-        'commands', 'get_prefix_for', 'mention_prefix', 'prefix', 'prefixfilter')
+    __slots__ = ('_command_error', '_category_name_rule', '_command_error_checks', '_command_name_rule',
+        '_default_category_name', '_default_event', '_default_event_checks', '_ignorecase', '_invalid_command',
+        '_invalid_command_checks', 'categories', 'commands', 'get_prefix_for', 'mention_prefix', 'prefix',
+        'prefixfilter', )
     
     __event_name__ = 'message_create'
     
     SUPPORTED_TYPES = (Command, )
     
-    def __new__(cls, prefix, ignorecase=True, mention_prefix=True, default_category_name=None):
+    def __new__(cls, prefix, ignorecase=True, mention_prefix=True, default_category_name=None, category_name_rule=None,
+            command_name_rule=None,):
         """
         Creates an ``CommandProcesser`` instance.
         
@@ -2821,6 +3015,12 @@ class CommandProcesser(EventWaitforBase):
             to `True`.
         default_category_name : `None` or `str`, Optional
             The command processser's default category's name. Defaults to `None`.
+        category_name_rule : `None` or `function`, Optional
+            Function to generate display names for categories.
+            Should accept only 1 argument, what can be `str`  or `None` and should return a `str` instance as well.
+        command_name_rule : `None` or `function`, Optional
+            Function to generate display names for commands.
+            Should accept only 1 argument, what is `str` instance and should return a `str` instance as well.
         
         Raises
         ------
@@ -2829,12 +3029,31 @@ class CommandProcesser(EventWaitforBase):
             - If `prefix` was given as a `callable`, but accepts bad amount of arguments.
             - If `prefix` was given as `tuple`or `list`, but contains a non `str`.
             - If `prefix` was not given as `str`, (tuple`, `list`) of `str` or as `callable`.
+            - If `category_name_rule` is not `None` or `function` instance.
+            - If `category_name_rule` is `async` `function`.
+            - If `category_name_rule` accepts bad amount of arguments.
+            - If `category_name_rule` raised expcetion when `str` was passed to it.
+            - If `category_name_rule` did not return `str`, when passing `str` to it.
+            - If `nullable` is given as `True` and `category_name_rule` raised expcetion when `None` was passed to it.
+            - If `nullable` is given as `True` and `category_name_rule` did not return `str`, when passing `None`
+                to it.
+            - If `command_name_rule` is not `None` or `function` instance.
+            - If `command_name_rule` is `async` `function`.
+            - If `command_name_rule` accepts bad amount of arguments.
+            - If `command_name_rule` raised expcetion when `str` was passed to it.
+            - If `command_name_rule` did not return `str`, when passing `str` to it.
+            - If `nullable` is given as `True` and `command_name_rule` raised expcetion when `None` was passed to it.
+            - If `nullable` is given as `True` and `command_name_rule` did not return `str`, when passing `None` to it.
         ValueError
             - If `prefix` was given as an empty `str`.
+        
         Returns
         -------
         self : ``CommandProcesser``
         """
+        test_name_rule(category_name_rule, 'category_name_rule', True)
+        test_name_rule(command_name_rule, 'command_name_rule', False)
+        
         if (default_category_name is not None):
             default_category_name_type = default_category_name.__class__
             if default_category_name_type is str:
@@ -2848,22 +3067,27 @@ class CommandProcesser(EventWaitforBase):
             if not default_category_name:
                 default_category_name = None
         
+        default_category = Category(default_category_name)
+        if (category_name_rule is not None):
+            default_category.display_name = category_name_rule(default_category.name)
+        
         self = object.__new__(cls)
+        self._category_name_rule = category_name_rule
+        self._command_name_rule = command_name_rule
         self._command_error = None
         self._command_error_checks = None
         self._default_event = None
         self._default_event_checks = None
         self._invalid_command = None
         self._invalid_command_checks = None
-        self.mention_prefix=mention_prefix
-        self.commands={}
-        self.update_prefix(prefix,ignorecase)
-        self._ignorecase=ignorecase
+        self.mention_prefix = mention_prefix
+        self.commands = {}
+        self.update_prefix(prefix, ignorecase)
+        self._ignorecase = ignorecase
+        self._default_category_name = default_category.name
+        self.categories = categories = sortedlist()
+        categories.add(default_category)
         
-        self._default_category_name=default_category_name
-        categories=sortedlist()
-        self.categories=categories
-        categories.add(Category(default_category_name))
         return self
     
     def get_category(self, category_name):
@@ -2903,7 +3127,10 @@ class CommandProcesser(EventWaitforBase):
                 raise TypeError(f'`category_name` can be given as `None` or as `instance`, got '
                     f'{category_name_type.__class__}.')
             
-            if not category_name:
+            if category_name:
+                if not category_name.islower():
+                    category_name = category_name.lower()
+            else:
                 category_name = self._default_category_name
                 if category_name is None:
                     category_name = ''
@@ -2921,6 +3148,7 @@ class CommandProcesser(EventWaitforBase):
         category_name = self._default_category_name
         if category_name is None:
             category_name = ''
+        
         return self.categories.get(category_name, key=self._get_category_key)
     
     @staticmethod
@@ -2948,7 +3176,7 @@ class CommandProcesser(EventWaitforBase):
                 raise TypeError(f'`category_name` can be given as `None` or as `instance`, got '
                     f'{default_category_name_type.__class__}.')
             
-            if not default_category_name:
+            if default_category_name:
                 default_category_name = None
         
         # if both is same, dont do anything
@@ -2965,14 +3193,26 @@ class CommandProcesser(EventWaitforBase):
             raise ValueError(f'There is already a category added with name: `{default_category_name!r}`.')
         
         default_category = self.get_category(actual_default_category_name)
+        
+        category_name_rule = self._category_name_rule
+        if (category_name_rule is None):
+            default_category_display_name = default_category_name
+        else:
+            default_category_display_name = category_name_rule(default_category_name)
+        
+        if not default_category_name.islower():
+            default_category_name = default_category_name.lower()
+        
         default_category.name = default_category_name
+        default_category.display_name = default_category_display_name
+        
         self.categories.resort()
         self._default_category_name = default_category_name
     
     default_category_name = property(_get_default_category_name,_set_default_category_name)
     del _get_default_category_name, _set_default_category_name
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         default_category_name.__doc__ = ("""
         A get-set property for accessing or changing the command processer's dfault category's name.
         
@@ -3009,8 +3249,13 @@ class CommandProcesser(EventWaitforBase):
         if (category is not None):
             raise ValueError(f'There is already a category added with that name: `{name!r}`')
         
-        category=Category(name,checks,description)
+        category = Category(name, checks, description)
         self.categories.add(category)
+        
+        category_name_rule = self._category_name_rule
+        if (category_name_rule is not None):
+            category.display_name = category_name_rule(category.name)
+        
         return category
     
     def delete_category(self, category):
@@ -3035,13 +3280,20 @@ class CommandProcesser(EventWaitforBase):
         category_type = category.__class__
         if category_type is Category:
             category_name = category.name
-        elif category_type is str:
-            category_name = category
-        elif issubclass(category_type, str):
-            category_name = str(category)
         else:
-            raise TypeError(f'Expected type `str` or `{Category.__class__.__name__} as `category`, got '
-                f'{category_type.__name__}.')
+            if category_type is str:
+                category_name = category
+            elif issubclass(category_type, str):
+                category_name = str(category)
+            else:
+                raise TypeError(f'Expected type `str` or `{Category.__class__.__name__} as `category`, got '
+                    f'{category_type.__name__}.')
+            
+            if category_name:
+                if not category_name.islower():
+                    category_name = category_name.lower()
+            else:
+                raise ValueError('Default category cannot be deleted.')
         
         category = self.categories.pop(category_name, key=self._get_category_key)
         if category is None:
@@ -3102,18 +3354,18 @@ class CommandProcesser(EventWaitforBase):
                 if analyzed.is_async():
                     async def prefixfilter(message):
                         practical_prefix = await prefix(message)
-                        if re.match(re.escape(practical_prefix),message.content,flag) is None:
+                        if re.match(re.escape(practical_prefix), message.content, flag) is None:
                             return
-                        result = COMMAND_RP.match(message.content,len(practical_prefix))
+                        result = COMMAND_RP.match(message.content, len(practical_prefix))
                         if result is None:
                             return
                         return result.groups()
                 else:
                     async def prefixfilter(message):
                         practical_prefix = prefix(message)
-                        if re.match(re.escape(practical_prefix),message.content,flag) is None:
+                        if re.match(re.escape(practical_prefix), message.content,flag) is None:
                             return
-                        result = COMMAND_RP.match(message.content,len(practical_prefix))
+                        result = COMMAND_RP.match(message.content, len(practical_prefix))
                         if result is None:
                             return
                         return result.groups()
@@ -3125,7 +3377,7 @@ class CommandProcesser(EventWaitforBase):
                 if not prefix:
                     raise ValueError('Prefix cannot be passed as empty string.')
                 
-                PREFIX_RP=re.compile(re.escape(prefix),flag)
+                PREFIX_RP=re.compile(re.escape(prefix), flag)
                 def get_prefix_for(message):
                     return prefix
             
@@ -3140,7 +3392,7 @@ class CommandProcesser(EventWaitforBase):
                     if not prefix_:
                         raise ValueError('Prefix cannot be passed as empty string.')
                 
-                PREFIX_RP=re.compile("|".join(re.escape(prefix_) for prefix_ in prefix),flag)
+                PREFIX_RP = re.compile("|".join(re.escape(prefix_) for prefix_ in prefix), flag)
                 practical_prefix = prefix[0]
                 
                 def get_prefix_for(message):
@@ -3155,10 +3407,10 @@ class CommandProcesser(EventWaitforBase):
             
             async def prefixfilter(message):
                 content = message.content
-                result=PREFIX_RP.match(content)
+                result = PREFIX_RP.match(content)
                 if result is None:
                     return
-                result=COMMAND_RP.match(content,result.end())
+                result = COMMAND_RP.match(content, result.end())
                 if result is None:
                     return
                 return result.groups()
@@ -3170,7 +3422,8 @@ class CommandProcesser(EventWaitforBase):
         self.get_prefix_for = get_prefix_for
         self._ignorecase = ignorecase
     
-    def __setevent__(self, func, name, description=None, aliases=None, category=None, checks=None, parser_failure_handler=None):
+    def __setevent__(self, func, name, description=None, aliases=None, category=None, checks=None,
+            parser_failure_handler=None, separator=None):
         """
         Method used to add commands to the command procseer.
         
@@ -3191,16 +3444,15 @@ class CommandProcesser(EventWaitforBase):
             
             > Giving `func` as ``Command`` instance is always checked and added first tho.
         
-        description : `Any`, Optional
+        description : `Any`, Optional, Optional
             Description for the command. Defaults to `None`.
-        aliases : `None` or (`iterable` of `str`)
+        aliases : `None` or (`iterable` of `str`), Optional
             Aliases for the command. Defaults to `None`
-        category : `None`, `str`, ``Category``
+        category : `None`, `str`, ``Category``, Optional
             The category for the command. Defaults to `None`
-        checks : `None` or (`iterable` of ``_check_base`` instances)
+        checks : `None` or (`iterable` of ``_check_base`` instances), Optional
             Checks to deside in which circumstances the command should be called. Defaults to `None`.
-        
-        parser_failure_handler : `None` or `async-callable`
+        parser_failure_handler : `None` or `async-callable`, Optional
             Called when the command uses a parser to parse it's arguments, but it cannot parse out all the required
             ones. Defaults to `None`.
             
@@ -3219,6 +3471,8 @@ class CommandProcesser(EventWaitforBase):
             +-----------------------+-------------------+
             | args                  | `list` of `Any`   |
             +-----------------------+-------------------+
+        separator : `None`, ``ContentArgumentSeparator``, `str` or `tuple` (`str`, `str`), Optional
+            The argument separator of the parser.
         
         returns
         -------
@@ -3231,11 +3485,17 @@ class CommandProcesser(EventWaitforBase):
             - `aliases` were not passed as `None` or as `iterable` of `str`.
             - `category` was not given as `None, `str`, or as ``Category`` instance.
             - If `checks_` was not given as `None` or as `iterable` of ``_check_base`` instances.
+            - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
+            - If `separator was given as `tuple`, but it's element are not `str` instances.
         ValueError
             - If `category` was given as ``Category`` instance and the command processer already has a category
                 with the same name as the `category`'s.
             - If the added command's `.name` would overwrite an alias of an other command.
             - If the added command would overwrite more than `1` already added command.
+            - If `seperator` is given as `str`, but it's length is not 1.
+            - If `separator` is given as `str`, but it is a space character.
+            - If `seperator` is given as `tuple`, but one of it's element's length is not 1.
+            - If `separator` is given as `tuple`, but one of it's element's is a space character.
         """
         if type(func) is Command:
             self._add_command(func)
@@ -3270,7 +3530,7 @@ class CommandProcesser(EventWaitforBase):
         
         # called first
         
-        command = Command(func, name, description, aliases, category, checks, parser_failure_handler)
+        command = Command(func, name, description, aliases, category, checks, parser_failure_handler, separator)
         self._add_command(command)
         return command
         
@@ -3336,11 +3596,16 @@ class CommandProcesser(EventWaitforBase):
         else:
             category_hint = command._category_hint
             if category_hint is None:
-                category_hint=self._default_category_name
+                category_hint = self._default_category_name
             
-            category=self.get_category(category_hint)
+            category = self.get_category(category_hint)
             if category is None:
-                category=Category(category_hint)
+                category = Category(category_hint)
+                
+                category_name_rule = self._category_name_rule
+                if (category_name_rule is not None):
+                    category.display_name = category_name_rule(category.name)
+                
                 category_added = False
             else:
                 category_added = True
@@ -3355,7 +3620,7 @@ class CommandProcesser(EventWaitforBase):
             raise ValueError(f'The command would overwrite an alias of an another one: `{would_overwrite}`.'
                 'If you intend to overwrite an another command please overwrite it with it\'s default name.')
         
-        alters=command._alters
+        alters = command._alters
         for alter in alters:
             try:
                 overwrites=commands[alter]
@@ -3392,7 +3657,7 @@ class CommandProcesser(EventWaitforBase):
             category=would_overwrite.category
             if (category is not None):
                 category.commands.remove(would_overwrite)
-            
+        
         # If everything is correct check for category, create it if needed,
         # add to it. Then add to the commands as well with it's aliases ofc.
         
@@ -3404,6 +3669,11 @@ class CommandProcesser(EventWaitforBase):
         alters = command._alters
         for alter in alters:
             commands[alter]=command
+        
+        # apply name rule if paplicable
+        command_name_rule = self._command_name_rule
+        if (command_name_rule is not None):
+            command.display_name = command_name_rule(command.name)
     
     def __delevent__(self, func, name, **kwargs):
         """
@@ -3561,6 +3831,10 @@ class CommandProcesser(EventWaitforBase):
             except KeyError:
                 pass
         
+        category = command.category
+        if (category is not None):
+            category.commands.remove(command)
+        
         return
     
     async def __call__(self, client, message):
@@ -3622,15 +3896,18 @@ class CommandProcesser(EventWaitforBase):
                 except BaseException as err:
                     command_error = self._command_error
                     if (command_error is not None):
-                        checks = self._invalid_command_checks
-                        if (checks is not None):
+                        checks = self._command_error_checks
+                        if (checks is None):
+                            await command_error(client, message, command, content, err)
+                            return
+                        else:
                             for check in checks:
                                 if await check(client, message):
                                     continue
                                 
                                 handler = check.handler
                                 if (handler is not None):
-                                    handler(client, message, command, check)
+                                    await handler(client, message, command, check)
                                 break
                             else:
                                 await command_error(client, message, command, content, err)
@@ -3662,10 +3939,10 @@ class CommandProcesser(EventWaitforBase):
                             
                             handler = check.handler
                             if (handler is not None):
-                                handler(client, message, command_name, check)
+                                await handler(client, message, command_name, check)
                             return
                     
-                    await invalid_command(client,message,command_name,content)
+                    await invalid_command(client, message, command_name, content)
                 
                 return
             
@@ -3674,15 +3951,18 @@ class CommandProcesser(EventWaitforBase):
             except BaseException as err:
                 command_error = self._command_error
                 if (command_error is not None):
-                    checks = self._invalid_command_checks
-                    if (checks is not None):
+                    checks = self._command_error_checks
+                    if (checks is None):
+                        await command_error(client, message, command_name, content, err)
+                        return
+                    else:
                         for check in checks:
                             if await check(client, message):
                                 continue
                             
                             handler = check.handler
                             if (handler is not None):
-                                handler(client, message, command, check)
+                                await handler(client, message, command_name, check)
                             break
                         else:
                             await command_error(client, message, command_name, content, err)
@@ -3705,7 +3985,7 @@ class CommandProcesser(EventWaitforBase):
                             
                             handler = check.handler
                             if (handler is not None):
-                                handler(client, message, command_name, check)
+                                await handler(client, message, command_name, check)
                             return
                     
                     await invalid_command(client, message, command_name, content)
@@ -3747,7 +4027,7 @@ class CommandProcesser(EventWaitforBase):
             if (checks is not None):
                 result.append(' (with ')
                 result.append(repr(len(checks)))
-                result.append(')')
+                result.append(' check)')
             
         command_error = self._command_error
         if (command_error is not None):
@@ -3758,7 +4038,7 @@ class CommandProcesser(EventWaitforBase):
             if (checks is not None):
                 result.append(' (with ')
                 result.append(repr(len(checks)))
-                result.append(')')
+                result.append(' check)')
         
         result.append('>')
         
@@ -3793,7 +4073,7 @@ class CommandProcesser(EventWaitforBase):
     default_event = property(_get_default_event, _set_default_event, _del_default_event)
     del _get_default_event, _set_default_event, _del_default_event
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         default_event.__doc__ = ("""
         A get-set-del property for changing the command processer's default event.
         
@@ -3825,7 +4105,7 @@ class CommandProcesser(EventWaitforBase):
     default_event_checks = property(_get_default_event_checks, _set_default_event_checks, _del_default_event_checks)
     del _get_default_event_checks, _set_default_event_checks, _del_default_event_checks
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         default_event_checks.__doc__ = ("""
         A get-set-del property for changing the command processer's default event's checks.
         """)
@@ -3845,7 +4125,7 @@ class CommandProcesser(EventWaitforBase):
     command_error = property(_get_command_error, _set_command_error, _del_command_error)
     del _get_command_error, _set_command_error, _del_command_error
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         command_error.__doc__ = ("""
         A get-set-del property for changing the command processer's command error handler.
         
@@ -3884,7 +4164,7 @@ class CommandProcesser(EventWaitforBase):
     command_error_checks = property(_get_command_error_checks, _set_command_error_checks, _del_command_error_checks)
     del _get_command_error_checks, _set_command_error_checks, _del_command_error_checks
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         command_error_checks.__doc__ = ("""
         A get-set-del property for changing the command processer's command error's checks.
         """)
@@ -3903,7 +4183,7 @@ class CommandProcesser(EventWaitforBase):
     invalid_command = property(_get_invalid_command, _set_invalid_command, _del_invalid_command)
     del _get_invalid_command, _set_invalid_command, _del_invalid_command
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         invalid_command.__doc__ = ("""
         A get-set-del property for changing the command processer's invalid command.
         
@@ -3940,10 +4220,83 @@ class CommandProcesser(EventWaitforBase):
     invalid_command_checks = property(_get_invalid_command_checks, _set_invalid_command_checks, _del_invalid_command_checks)
     del _get_invalid_command_checks, _set_invalid_command_checks, _del_invalid_command_checks
     
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         invalid_command_checks.__doc__ = ("""
         A get-set-del property for changing the command processer's invalid command's checks.
         """)
-
+    
+    def _get_category_name_rule(self):
+        return self._category_name_rule
+    
+    def _set_category_name_rule(self, category_name_rule):
+        if self._category_name_rule == category_name_rule:
+            return
+        
+        test_name_rule(category_name_rule, 'category_name_rule', True)
+        self._category_name_rule = category_name_rule
+        
+        if (category_name_rule is None):
+            for category in self.categories:
+                category.display_name = category.name
+        else:
+            for category in self.categories:
+                category.display_name = category_name_rule(category.name)
+    
+    def _del_category_name_rule(self):
+        if self._category_name_rule is None:
+            return
+        
+        self._category_name_rule = None
+        for category in self.categories:
+            category.display_name = category.name
+    
+    category_name_rule = property(_get_category_name_rule, _set_category_name_rule, _del_category_name_rule)
+    del _get_category_name_rule, _set_category_name_rule, _del_category_name_rule
+    
+    if DOCS_ENABLED:
+        category_name_rule.__doc__ = ("""
+        A get-set-del property for changing the command processer's category name rule.
+        
+        Note, that removing the category rule, or setting it as `None`, will not change the current category names
+        back to their original, because their original name always defaults to the name with what they were added.
+        """)
+    
+    def _get_command_name_rule(self):
+        return self._command_name_rule
+    
+    def _set_command_name_rule(self, command_name_rule):
+        if self._command_name_rule == command_name_rule:
+            return
+        
+        test_name_rule(command_name_rule, 'command_name_rule', False)
+        self._command_name_rule = command_name_rule
+        
+        if (command_name_rule is None):
+            for category in self.categories:
+                for command in category.commands:
+                    command.display_name = command.name
+        else:
+            for category in self.categories:
+                for command in category.commands:
+                    command.display_name = command_name_rule(command.name)
+    
+    def _del_command_name_rule(self):
+        if self._command_name_rule is None:
+            return
+        
+        self._command_name_rule = None
+        for category in self.categories:
+            for command in category.commands:
+                command.display_name = command.name
+    
+    command_name_rule = property(_get_command_name_rule, _set_command_name_rule, _del_command_name_rule)
+    del _get_command_name_rule, _set_command_name_rule, _del_command_name_rule
+    
+    if DOCS_ENABLED:
+        command_name_rule.__doc__ = ("""
+        A get-set-del property for changing the command processer's command name rule.
+        """)
+    
 del modulize
 del NEEDS_DUMMY_INIT
+del DOCS_ENABLED

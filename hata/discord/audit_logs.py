@@ -109,7 +109,7 @@ class AuditLogEvent(object):
     INSTANCES = {}
     
     # object related
-    __slots__=('name', 'value', )
+    __slots__ = ('name', 'value', )
     
     def __init__(self, value, name):
         """
@@ -122,10 +122,10 @@ class AuditLogEvent(object):
         name : `str`
             The name of audit log event.
         """
-        self.value=value
-        self.name=name
+        self.value = value
+        self.name = name
         
-        self.INSTANCES[value]=self
+        self.INSTANCES[value] = self
     
     def __int__(self):
         """Returns the value of the audit log event."""
@@ -144,93 +144,93 @@ class AuditLogEvent(object):
         return f'{self.__class__.__name__}(value={self.value}, name={self.name!r})'
     
     # predefined
-    GUILD_UPDATE            = NotImplemented
+    GUILD_UPDATE             = NotImplemented
     
-    CHANNEL_CREATE          = NotImplemented
-    CHANNEL_UPDATE          = NotImplemented
-    CHANNEL_DELETE          = NotImplemented
-    CHANNEL_OVERWRITE_CREATE= NotImplemented
-    CHANNEL_OVERWRITE_UPDATE= NotImplemented
-    CHANNEL_OVERWRITE_DELETE= NotImplemented
+    CHANNEL_CREATE           = NotImplemented
+    CHANNEL_UPDATE           = NotImplemented
+    CHANNEL_DELETE           = NotImplemented
+    CHANNEL_OVERWRITE_CREATE = NotImplemented
+    CHANNEL_OVERWRITE_UPDATE = NotImplemented
+    CHANNEL_OVERWRITE_DELETE = NotImplemented
     
-    MEMBER_KICK             = NotImplemented
-    MEMBER_PRUNE            = NotImplemented
-    MEMBER_BAN_ADD          = NotImplemented
-    MEMBER_BAN_REMOVE       = NotImplemented
-    MEMBER_UPDATE           = NotImplemented
-    MEMBER_ROLE_UPDATE      = NotImplemented
-    MEMBER_MOVE             = NotImplemented
-    MEMBER_DISCONNECT       = NotImplemented
-    BOT_ADD                 = NotImplemented
+    MEMBER_KICK              = NotImplemented
+    MEMBER_PRUNE             = NotImplemented
+    MEMBER_BAN_ADD           = NotImplemented
+    MEMBER_BAN_REMOVE        = NotImplemented
+    MEMBER_UPDATE            = NotImplemented
+    MEMBER_ROLE_UPDATE       = NotImplemented
+    MEMBER_MOVE              = NotImplemented
+    MEMBER_DISCONNECT        = NotImplemented
+    BOT_ADD                  = NotImplemented
     
-    ROLE_CREATE             = NotImplemented
-    ROLE_UPDATE             = NotImplemented
-    ROLE_DELETE             = NotImplemented
+    ROLE_CREATE              = NotImplemented
+    ROLE_UPDATE              = NotImplemented
+    ROLE_DELETE              = NotImplemented
     
-    INVITE_CREATE           = NotImplemented
-    INVITE_UPDATE           = NotImplemented
-    INVITE_DELETE           = NotImplemented
+    INVITE_CREATE            = NotImplemented
+    INVITE_UPDATE            = NotImplemented
+    INVITE_DELETE            = NotImplemented
     
-    WEBHOOK_CREATE          = NotImplemented
-    WEBHOOK_UPDATE          = NotImplemented
-    WEBHOOK_DELETE          = NotImplemented
+    WEBHOOK_CREATE           = NotImplemented
+    WEBHOOK_UPDATE           = NotImplemented
+    WEBHOOK_DELETE           = NotImplemented
     
-    EMOJI_CREATE            = NotImplemented
-    EMOJI_UPDATE            = NotImplemented
-    EMOJI_DELETE            = NotImplemented
+    EMOJI_CREATE             = NotImplemented
+    EMOJI_UPDATE             = NotImplemented
+    EMOJI_DELETE             = NotImplemented
     
-    MESSAGE_DELETE          = NotImplemented
-    MESSAGE_BULK_DELETE     = NotImplemented
-    MESSAGE_PIN             = NotImplemented
-    MESSAGE_UNPIN           = NotImplemented
+    MESSAGE_DELETE           = NotImplemented
+    MESSAGE_BULK_DELETE      = NotImplemented
+    MESSAGE_PIN              = NotImplemented
+    MESSAGE_UNPIN            = NotImplemented
     
-    INTEGRATION_CREATE      = NotImplemented
-    INTEGRATION_UPDATE      = NotImplemented
-    INTEGRATION_DELETE      = NotImplemented
+    INTEGRATION_CREATE       = NotImplemented
+    INTEGRATION_UPDATE       = NotImplemented
+    INTEGRATION_DELETE       = NotImplemented
 
-AuditLogEvent.GUILD_UPDATE              = AuditLogEvent( 1,'GUILD_UPDATE')
+AuditLogEvent.GUILD_UPDATE             = AuditLogEvent( 1, 'GUILD_UPDATE')
 
-AuditLogEvent.CHANNEL_CREATE            = AuditLogEvent(10,'CHANNEL_CREATE')
-AuditLogEvent.CHANNEL_UPDATE            = AuditLogEvent(11,'CHANNEL_UPDATE')
-AuditLogEvent.CHANNEL_DELETE            = AuditLogEvent(12,'CHANNEL_DELETE')
-AuditLogEvent.CHANNEL_OVERWRITE_CREATE  = AuditLogEvent(13,'CHANNEL_OVERWRITE_CREATE')
-AuditLogEvent.CHANNEL_OVERWRITE_UPDATE  = AuditLogEvent(14,'CHANNEL_OVERWRITE_UPDATE')
-AuditLogEvent.CHANNEL_OVERWRITE_DELETE  = AuditLogEvent(15,'CHANNEL_OVERWRITE_DELETE')
+AuditLogEvent.CHANNEL_CREATE           = AuditLogEvent(10, 'CHANNEL_CREATE')
+AuditLogEvent.CHANNEL_UPDATE           = AuditLogEvent(11, 'CHANNEL_UPDATE')
+AuditLogEvent.CHANNEL_DELETE           = AuditLogEvent(12, 'CHANNEL_DELETE')
+AuditLogEvent.CHANNEL_OVERWRITE_CREATE = AuditLogEvent(13, 'CHANNEL_OVERWRITE_CREATE')
+AuditLogEvent.CHANNEL_OVERWRITE_UPDATE = AuditLogEvent(14, 'CHANNEL_OVERWRITE_UPDATE')
+AuditLogEvent.CHANNEL_OVERWRITE_DELETE = AuditLogEvent(15, 'CHANNEL_OVERWRITE_DELETE')
 
-AuditLogEvent.MEMBER_KICK               = AuditLogEvent(20,'MEMBER_KICK')
-AuditLogEvent.MEMBER_PRUNE              = AuditLogEvent(21,'MEMBER_PRUNE')
-AuditLogEvent.MEMBER_BAN_ADD            = AuditLogEvent(22,'MEMBER_BAN_ADD')
-AuditLogEvent.MEMBER_BAN_REMOVE         = AuditLogEvent(23,'MEMBER_BAN_REMOVE')
-AuditLogEvent.MEMBER_UPDATE             = AuditLogEvent(24,'MEMBER_UPDATE')
-AuditLogEvent.MEMBER_ROLE_UPDATE        = AuditLogEvent(25,'MEMBER_ROLE_UPDATE')
-AuditLogEvent.MEMBER_MOVE               = AuditLogEvent(26,'MEMBER_MOVE')
-AuditLogEvent.MEMBER_DISCONNECT         = AuditLogEvent(27,'MEMBER_DISCONNECT')
-AuditLogEvent.BOT_ADD                   = AuditLogEvent(28,'MEMBER_ROLE_UPDATE')
+AuditLogEvent.MEMBER_KICK              = AuditLogEvent(20, 'MEMBER_KICK')
+AuditLogEvent.MEMBER_PRUNE             = AuditLogEvent(21, 'MEMBER_PRUNE')
+AuditLogEvent.MEMBER_BAN_ADD           = AuditLogEvent(22, 'MEMBER_BAN_ADD')
+AuditLogEvent.MEMBER_BAN_REMOVE        = AuditLogEvent(23, 'MEMBER_BAN_REMOVE')
+AuditLogEvent.MEMBER_UPDATE            = AuditLogEvent(24, 'MEMBER_UPDATE')
+AuditLogEvent.MEMBER_ROLE_UPDATE       = AuditLogEvent(25, 'MEMBER_ROLE_UPDATE')
+AuditLogEvent.MEMBER_MOVE              = AuditLogEvent(26, 'MEMBER_MOVE')
+AuditLogEvent.MEMBER_DISCONNECT        = AuditLogEvent(27, 'MEMBER_DISCONNECT')
+AuditLogEvent.BOT_ADD                  = AuditLogEvent(28, 'MEMBER_ROLE_UPDATE')
 
-AuditLogEvent.ROLE_CREATE               = AuditLogEvent(30,'ROLE_CREATE')
-AuditLogEvent.ROLE_UPDATE               = AuditLogEvent(31,'ROLE_UPDATE')
-AuditLogEvent.ROLE_DELETE               = AuditLogEvent(32,'ROLE_DELETE')
+AuditLogEvent.ROLE_CREATE              = AuditLogEvent(30, 'ROLE_CREATE')
+AuditLogEvent.ROLE_UPDATE              = AuditLogEvent(31, 'ROLE_UPDATE')
+AuditLogEvent.ROLE_DELETE              = AuditLogEvent(32, 'ROLE_DELETE')
 
-AuditLogEvent.INVITE_CREATE             = AuditLogEvent(40,'INVITE_CREATE')
-AuditLogEvent.INVITE_UPDATE             = AuditLogEvent(41,'INVITE_UPDATE')
-AuditLogEvent.INVITE_DELETE             = AuditLogEvent(42,'INVITE_DELETE')
+AuditLogEvent.INVITE_CREATE            = AuditLogEvent(40, 'INVITE_CREATE')
+AuditLogEvent.INVITE_UPDATE            = AuditLogEvent(41, 'INVITE_UPDATE')
+AuditLogEvent.INVITE_DELETE            = AuditLogEvent(42, 'INVITE_DELETE')
 
-AuditLogEvent.WEBHOOK_CREATE            = AuditLogEvent(50,'WEBHOOK_CREATE')
-AuditLogEvent.WEBHOOK_UPDATE            = AuditLogEvent(51,'WEBHOOK_UPDATE')
-AuditLogEvent.WEBHOOK_DELETE            = AuditLogEvent(52,'WEBHOOK_DELETE')
+AuditLogEvent.WEBHOOK_CREATE           = AuditLogEvent(50, 'WEBHOOK_CREATE')
+AuditLogEvent.WEBHOOK_UPDATE           = AuditLogEvent(51, 'WEBHOOK_UPDATE')
+AuditLogEvent.WEBHOOK_DELETE           = AuditLogEvent(52, 'WEBHOOK_DELETE')
 
-AuditLogEvent.EMOJI_CREATE              = AuditLogEvent(60,'EMOJI_CREATE')
-AuditLogEvent.EMOJI_UPDATE              = AuditLogEvent(61,'EMOJI_UPDATE')
-AuditLogEvent.EMOJI_DELETE              = AuditLogEvent(62,'EMOJI_DELETE')
+AuditLogEvent.EMOJI_CREATE             = AuditLogEvent(60, 'EMOJI_CREATE')
+AuditLogEvent.EMOJI_UPDATE             = AuditLogEvent(61, 'EMOJI_UPDATE')
+AuditLogEvent.EMOJI_DELETE             = AuditLogEvent(62, 'EMOJI_DELETE')
 
-AuditLogEvent.MESSAGE_DELETE            = AuditLogEvent(72,'MESSAGE_DELETE')
-AuditLogEvent.MESSAGE_BULK_DELETE       = AuditLogEvent(73,'MESSAGE_BULK_DELETE')
-AuditLogEvent.MESSAGE_PIN               = AuditLogEvent(74,'MESSAGE_PIN')
-AuditLogEvent.MESSAGE_UNPIN             = AuditLogEvent(75,'MESSAGE_UNPIN')
+AuditLogEvent.MESSAGE_DELETE           = AuditLogEvent(72, 'MESSAGE_DELETE')
+AuditLogEvent.MESSAGE_BULK_DELETE      = AuditLogEvent(73, 'MESSAGE_BULK_DELETE')
+AuditLogEvent.MESSAGE_PIN              = AuditLogEvent(74, 'MESSAGE_PIN')
+AuditLogEvent.MESSAGE_UNPIN            = AuditLogEvent(75, 'MESSAGE_UNPIN')
 
-AuditLogEvent.INTEGRATION_CREATE        = AuditLogEvent(80,'INTEGRATION_CREATE')
-AuditLogEvent.INTEGRATION_UPDATE        = AuditLogEvent(81,'INTEGRATION_UPDATE')
-AuditLogEvent.INTEGRATION_DELETE        = AuditLogEvent(82,'INTEGRATION_DELETE')
+AuditLogEvent.INTEGRATION_CREATE       = AuditLogEvent(80, 'INTEGRATION_CREATE')
+AuditLogEvent.INTEGRATION_UPDATE       = AuditLogEvent(81, 'INTEGRATION_UPDATE')
+AuditLogEvent.INTEGRATION_DELETE       = AuditLogEvent(82, 'INTEGRATION_DELETE')
 
 class AuditLog(object):
     """
@@ -265,27 +265,27 @@ class AuditLog(object):
         guild : ``Guild``
             The respective guild of the audit logs.
         """
-        self.guild=guild
+        self.guild = guild
         
-        self.users=users={}
+        self.users = users = {}
         try:
-            user_datas=data['users']
+            user_datas = data['users']
         except KeyError:
             pass
         else:
             for user_data in user_datas:
-                user=User(user_data)
-                users[user.id]=user
+                user = User(user_data)
+                users[user.id] = user
         
-        self.webhooks=webhooks={}
+        self.webhooks = webhooks = {}
         try:
             webhook_datas=data['webhook']
         except KeyError:
             pass
         else:
             for webhook_data in webhook_datas:
-                webhook=Webhook(webhook_data)
-                webhooks[webhook.id]=webhook
+                webhook = Webhook(webhook_data)
+                webhooks[webhook.id] = webhook
         
         self.integrations = integrations = {}
         try:
@@ -308,11 +308,11 @@ class AuditLog(object):
     
     def __iter__(self):
         """Iterates over the audit log's entries."""
-        return self.entries.__iter__()
+        return iter(self.entries)
     
     def __reversed__(self):
         """Reversed iterater over the audit log's antries."""
-        return self.entries.__reversed__()
+        return reversed(self.entries)
     
     def __len__(self):
         """Returns the amount of entries, what the audit lgo contain."""
@@ -377,10 +377,10 @@ class AuditLogIterator(object):
                 }
         
         if (user is not None):
-            data['user_id']=user.id
+            data['user_id'] = user.id
         
         if (event is not None):
-            data['action_type']=event.value
+            data['action_type'] = event.value
         
         self._data = data
         self._index = 0
@@ -388,7 +388,7 @@ class AuditLogIterator(object):
         self.guild = guild
         self.entries = []
         self.users = {}
-        self.webhooks ={}
+        self.webhooks = {}
         self.integrations = {}
     
     async def load_all(self):
@@ -396,15 +396,15 @@ class AuditLogIterator(object):
         Loads all not yet loaded audit logs of the audit log iterator's guild.
         """
         entries = self.entries
-        client  = self.client
-        http    = client.http
-        data    = self._data
+        client = self.client
+        http = client.http
+        data = self._data
         
         while True:
             if entries:
-                data['before']=entries[-1].id
+                data['before'] = entries[-1].id
             
-            log_data = await http.audit_logs(self.guild.id,data)
+            log_data = await http.audit_logs(self.guild.id, data)
             
             try:
                 self._process_data(log_data)
@@ -422,11 +422,11 @@ class AuditLogIterator(object):
         -------
         audit_log : ``AuiditLog``
         """
-        result=object.__new__(AuditLog)
-        result.guild=self.guild
-        result.entries=self.entries
-        result.users=self.users
-        result.webhooks=self.webhooks
+        result = object.__new__(AuditLog)
+        result.guild = self.guild
+        result.entries = self.entries
+        result.users = self.users
+        result.webhooks = self.webhooks
         result.integrations = self.integrations
         return result
     
@@ -437,23 +437,23 @@ class AuditLogIterator(object):
     
     async def __anext__(self):
         """Yields the next entry of the audit log iterator."""
-        ln=len(self.entries)
-        index=self._index
+        ln = len(self.entries)
+        index = self._index
         
-        if index<ln:
-            self._index+=1
+        if index < ln:
+            self._index +=1
             return self.entries[index]
         
         if index%100:
             raise StopAsyncIteration
         
-        data=self._data
+        data = self._data
         if ln:
-            data['before']=self.entries[ln-1].id
+            data['before'] = self.entries[ln-1].id
         
-        log_data = await self.client.http.audit_logs(self.guild.id,data)
+        log_data = await self.client.http.audit_logs(self.guild.id, data)
         self._process_data(log_data)
-        self._index+=1
+        self._index +=1
         return self.entries[index]
 
     def __repr__(self):
@@ -470,31 +470,32 @@ class AuditLogIterator(object):
             Data received from Discord.
         """
         try:
-            entry_datas=data['audit_log_entries']
-            if not entry_datas:
-                raise StopAsyncIteration
+            entry_datas = data['audit_log_entries']
         except KeyError:
             raise StopAsyncIteration from None
         
-        users=self.users
+        if not entry_datas:
+            raise StopAsyncIteration
+        
+        users = self.users
         try:
-            users_data=data['users']
+            users_data = data['users']
         except KeyError:
             pass
         else:
             for user_data in users_data:
-                user=User(user_data)
-                users[user.id]=user
+                user = User(user_data)
+                users[user.id] = user
         
-        webhooks=self.webhooks
+        webhooks = self.webhooks
         try:
-            webhooks_data=data['webhook']
+            webhooks_data = data['webhook']
         except KeyError:
             pass
         else:
             for webhook_data in webhooks_data:
-                webhook=Webhook(webhook_data)
-                webhooks[webhook.id]=webhook
+                webhook = Webhook(webhook_data)
+                webhooks[webhook.id] = webhook
         
         integrations = self.integrations
         try:
@@ -525,7 +526,7 @@ def convert_detail_channel(key, value, all_):
         channel = Unknown('Channel',channel_id)
     return 'channel', channel
 
-def convert_detail_message(key,value,all_):
+def convert_detail_message(key, value, all_):
     message_id = int(value)
     try:
         message = MESSAGES[message_id]
@@ -535,7 +536,7 @@ def convert_detail_message(key,value,all_):
     return 'message', message
 
 def convert_detail_amount(key, value, all_):
-    return 'amount' ,int(value)
+    return 'amount', int(value)
 
 def convert_detail_permow_target(key, value, all_):
     id_=int(value)
@@ -545,17 +546,17 @@ def convert_detail_permow_target(key, value, all_):
         # broken data
         return None
     
-    if type_name=='member':
+    if type_name == 'member':
         try:
             target = USERS[id_]
         except KeyError:
             target = Unknown('User', id_)
     
-    elif type_name=='role':
+    elif type_name == 'role':
         try:
             target = ROLES[id_]
         except KeyError:
-            target = Unknown('Role', id_, all_.get('name',''))
+            target = Unknown('Role', id_, all_.get('name', ''))
     else:
         # permow type can be only member and role, so if it is else,
         # the data is broken again
@@ -596,7 +597,7 @@ def convert_channel(entry, parent, target_id):
     else:
         target_id = int(target_id)
         try:
-            target = parent.guild.all_channel[target_id]
+            target = parent.guild.channels[target_id]
         except KeyError:
             target = Unknown('Channel', target_id)
     
@@ -621,7 +622,7 @@ def convert_role(entry, parent, target_id):
     else:
         target = int(target_id)
         try:
-            target = parent.guild.all_role[target_id]
+            target = parent.guild.roles[target_id]
         except KeyError:
             target = Unknown('Role', target_id)
     
@@ -686,7 +687,7 @@ def convert_integration(entry, parent,target_id):
     else:
         target_id = int(target_id)
         try:
-            target = parent.inegrations[target_id]
+            target = parent.integrations[target_id]
         except KeyError:
             target = Unknown('Integration', target_id)
     
@@ -751,8 +752,8 @@ class AuditLogEntry(object):
             The parent of the entry, what contains the respective guild, the inclued users, webhooks and the
             integrations to work with.
         """
-        self.id=int(data['id'])
-        self.type=AuditLogEvent.INSTANCES[int(data['action_type'])]
+        self.id = int(data['id'])
+        self.type = AuditLogEvent.INSTANCES[int(data['action_type'])]
         
         options = data.get('options')
         if (options is None):
@@ -772,16 +773,16 @@ class AuditLogEntry(object):
         
         self.details=details
         
-        user_id = data.get('user_id',None)
+        user_id = data.get('user_id')
         if user_id is None:
             user = None
         else:
             user = parent.users.get(int(user_id))
         self.user = user
         
-        self.reason = data.get('reason',None)
+        self.reason = data.get('reason')
         
-        change_datas = data.get('changes',None)
+        change_datas = data.get('changes')
         if (change_datas is None):
             changes = None
         else:
@@ -823,31 +824,31 @@ class AuditLogEntry(object):
                 ]
         
         result.append(', user=')
-        user=self.user
+        user = self.user
         if user is None:
-            user_repr='None'
+            user_repr = 'None'
         else:
-            user_repr=user.full_name
+            user_repr = user.full_name
         result.append(user_repr)
         
         result.append(', target=')
         result.append(repr(self.target))
         
         result.append(', change count=')
-        changes=self.changes
+        changes = self.changes
         if changes is None:
-            change_amount_repr='0'
+            change_amount_repr = '0'
         else:
-            change_amount_repr=repr(len(self.changes))
+            change_amount_repr = repr(len(self.changes))
         result.append(change_amount_repr)
         
-        reason=self.reason
+        reason = self.reason
         if reason is not None:
             result.append(', reason=')
             # use repr to escape special inserted characters
             result.append(repr(reason))
         
-        details=self.details
+        details = self.details
         if details is not None:
             result.append(', details=')
             result.append(repr(details))
@@ -857,33 +858,37 @@ class AuditLogEntry(object):
         return ''.join(result)
     
 def PermOW_from_logs(data):
-    self=object.__new__(PermOW)
-    id_=int(data['id'])
-    if data['type']=='role':
+    self = object.__new__(PermOW)
+    id_ = int(data['id'])
+    if data['type'] == 'role':
         try:
-            self.target=ROLES[id_]
+            target = ROLES[id_]
         except KeyError:
-            self.target=Unknown('Role',id_)
+            target = Unknown('Role', id_)
     else:
         try:
-            self.target=USERS[id_]
+            target = USERS[id_]
         except KeyError:
-            self.target=Unknown('User',id_)
+            target = Unknown('User', id_)
     
-    self.allow=data['allow']
-    self.deny=data['deny']
+    self.target = target
+    self.allow = data['allow']
+    self.deny = data['deny']
 
     return self
 
-def transform_nothing(name,data):
-    change=AuditLogChange()
-    change.attr=name
-    change.before=data.get('old_value',None)
-    change.after=data.get('new_value',None)
+def transform_nothing(name, data):
+    change = AuditLogChange()
+    change.attr = name
+    change.before = data.get('old_value')
+    change.after = data.get('new_value')
     return change
 
+def transform_deprecated(name, data):
+    return None
+
 def tranfrom_icon(name, data):
-    change=AuditLogChange()
+    change = AuditLogChange()
     if name == 'splash_hash':
         name = 'invite_splash'
     else:
@@ -892,209 +897,226 @@ def tranfrom_icon(name, data):
     
     change.before = Icon.from_base16_hash(data.get('old_value'))
     
-    change.after  = Icon.from_base16_hash(data.get('new_value'))
+    change.after = Icon.from_base16_hash(data.get('new_value'))
     
     return change
 
-def transform_bool__separated(name,data):
-    change=AuditLogChange()
-    change.attr='separated'
-    change.before=data.get('old_value',None)
-    change.after=data.get('new_value',None)
+def transform_bool__separated(name, data):
+    change = AuditLogChange()
+    change.attr = 'separated'
+    change.before = data.get('old_value')
+    change.after = data.get('new_value')
     return change
 
-def transform_channel(name,data):
-    change=AuditLogChange()
-    change.attr=name[:-3]
-    value=data.get('old_value',None)
+def transform_channel(name, data):
+    change = AuditLogChange()
+    change.attr = name[:-3]
+    
+    value = data.get('old_value')
     if value is None:
         change.before=None
     else:
-        value=int(value)
+        value = int(value)
         try:
-            change.before=CHANNELS[value]
+            before = CHANNELS[value]
         except KeyError:
-            change.before=Unknown('Channel',value)
-    value=data.get('new_value',None)
+            before = Unknown('Channel', value)
+        change.before = before
+    
+    value = data.get('new_value')
     if value is None:
-        change.after=None
+        change.after = None
     else:
-        value=int(value)
+        value = int(value)
         try:
-            change.after=CHANNELS[value]
+            after = CHANNELS[value]
         except KeyError:
-            change.after=Unknown('Channel',value)
+            after = Unknown('Channel', value)
+        change.after = after
+    
     return change
 
-def transform_color(name,data):
-    change=AuditLogChange()
-    change.attr='color'
-    value=data.get('old_value',None)
-    change.before=None if value is None else Color(value)
-    value=data.get('new_value',None)
-    change.after=None if value is None else Color(value)
+def transform_color(name, data):
+    change = AuditLogChange()
+    change.attr = 'color'
+    value = data.get('old_value')
+    change.before = None if value is None else Color(value)
+    value = data.get('new_value')
+    change.after = None if value is None else Color(value)
     return change
 
-def transform_content_filter(name,data):
-    change=AuditLogChange()
-    change.attr='content_filter'
-    value=data.get('old_value',None)
-    change.before=None if value is None else ContentFilterLevel.INSTANCES[value]
-    value=data.get('new_value',None)
-    change.after=None if value is None else ContentFilterLevel.INSTANCES[value]
+def transform_content_filter(name, data):
+    change = AuditLogChange()
+    change.attr = 'content_filter'
+    value = data.get('old_value')
+    change.before = None if value is None else ContentFilterLevel.INSTANCES[value]
+    value = data.get('new_value')
+    change.after = None if value is None else ContentFilterLevel.INSTANCES[value]
     return change
 
-def transform_int__days(name,data):
-    change=AuditLogChange()
-    change.attr='days'
-    change.before=data.get('old_value',None)
-    change.after=data.get('new_value',None)
+def transform_int__days(name, data):
+    change = AuditLogChange()
+    change.attr = 'days'
+    change.before = data.get('old_value')
+    change.after = data.get('new_value')
     return change
 
-def transform_int__slowmode(name,data):
-    change=AuditLogChange()
-    change.attr='slowmode'
-    change.before=data.get('old_value',None)
-    change.after=data.get('new_value',None)
+def transform_int__slowmode(name, data):
+    change = AuditLogChange()
+    change.attr = 'slowmode'
+    change.before = data.get('old_value')
+    change.after = data.get('new_value')
     return change
 
-def transform_message_notification(name,data):
-    change=AuditLogChange()
-    change.attr='message_notification'
-    before=data.get('old_value',None)
-    change.before=None if before is None else MessageNotificationLevel.INSTANCES[before]
-    after=data.get('new_value',None)
-    change.after=None if before is None else MessageNotificationLevel.INSTANCES[after]
+def transform_message_notification(name, data):
+    change  =AuditLogChange()
+    change.attr = 'message_notification'
+    before = data.get('old_value')
+    change.before = None if before is None else MessageNotificationLevel.INSTANCES[before]
+    after = data.get('new_value')
+    change.after = None if before is None else MessageNotificationLevel.INSTANCES[after]
     return change
 
-def transform_mfa(name,data):
-    change=AuditLogChange()
-    change.attr='mfa'
-    before=data.get('old_value',None)
-    change.before=None if before is None else MFA.INSTANCES[before]
-    after=data.get('new_value',None)
-    change.after=None if before is None else MFA.INSTANCES[after]
+def transform_mfa(name, data):
+    change = AuditLogChange()
+    change.attr = 'mfa'
+    before = data.get('old_value')
+    change.before = None if before is None else MFA.INSTANCES[before]
+    after = data.get('new_value')
+    change.after = None if before is None else MFA.INSTANCES[after]
     return change
 
-def transform_overwrites(name,data):
-    change=AuditLogChange()
-    change.attr='overwrites'
-    value=data.get('old_value',None)
-    change.before=None if value is None else [PermOW_from_logs(ow_data) for ow_data in value]
-    value=data.get('new_value',None)
-    change.after=None if value is None else [PermOW_from_logs(ow_data) for ow_data in value]
+def transform_overwrites(name, data):
+    change = AuditLogChange()
+    change.attr = 'overwrites'
+    value = data.get('old_value')
+    change.before = None if value is None else [PermOW_from_logs(ow_data) for ow_data in value]
+    value = data.get('new_value')
+    change.after = None if value is None else [PermOW_from_logs(ow_data) for ow_data in value]
     return change
 
-def transform_permission(name,data):
-    change=AuditLogChange()
-    change.attr=name
-    value=data.get('old_value',None)
-    change.before=None if value is None else Permission(value)
-    value=data.get('new_value',None)
-    change.after=None if value is None else Permission(value)
+def transform_permission(name, data):
+    change = AuditLogChange()
+    
+    if name.endswith('_new'):
+        name = name[:-4]
+    
+    change.attr = name
+    value = data.get('old_value')
+    change.before = None if value is None else Permission(value)
+    value = data.get('new_value')
+    change.after = None if value is None else Permission(value)
     return change
 
-def transform_region(name,data):
-    change=AuditLogChange()
-    change.attr='region'
-    before=data.get('old_value',None)
-    change.before=None if before is None else VoiceRegion.get(before)
-    after=data.get('new_value',None)
-    change.after=None if before is None else VoiceRegion.get(after)
+def transform_region(name, data):
+    change = AuditLogChange()
+    change.attr = 'region'
+    before = data.get('old_value')
+    change.before = None if before is None else VoiceRegion.get(before)
+    after = data.get('new_value')
+    change.after = None if before is None else VoiceRegion.get(after)
     return change
 
-def transform_role(name,data):
-    change=AuditLogChange()
-    change.attr='role'
-    if name=='$add':
-        change.before=None
-        change.after=roles=[]
+def transform_role(name, data):
+    change = AuditLogChange()
+    change.attr = 'role'
+    roles = []
+    if name == '$add':
+        before = None
+        after = roles
     else:
-        change.before=roles=[]
-        change.after=None
-
+        before = roles
+        after = None
+    
+    change.before = before
+    change.after = after
+    
     for element in data['new_value']:
-        role_id=int(element['id'])
+        role_id = int(element['id'])
         try:
-            role=ROLES[role_id]
+            role = ROLES[role_id]
         except KeyError:
-            role=Unknown('Role',role_id,element['name'])
+            role = Unknown('Role', role_id, element['name'])
         roles.append(role)
 
     return change
 
-def transform_snowfalke(name,data):
-    change=AuditLogChange()
-    change.attr=name
-    value=data.get('old_value',None)
-    change.before=None if value is None else int(value)
-    value=data.get('new_value',None)
-    change.after=None if value is None else int(value)
+def transform_snowfalke(name, data):
+    change = AuditLogChange()
+    change.attr = name
+    value = data.get('old_value')
+    change.before = None if value is None else int(value)
+    value = data.get('new_value')
+    change.after = None if value is None else int(value)
     return change
 
-def transform_str__vanity_code(name,data):
-    change=AuditLogChange()
-    change.attr='vanity_code'
-    change.before=data.get('old_value',None)
-    change.after=data.get('new_value',None)
+def transform_str__vanity_code(name, data):
+    change = AuditLogChange()
+    change.attr = 'vanity_code'
+    change.before = data.get('old_value')
+    change.after = data.get('new_value')
     return change
 
 def transform_system_channel_flags(name, data):
     change = AuditLogChange()
     change.attr = 'system_channel_flags'
-    before = data.get('old_value',None)
+    before = data.get('old_value')
     change.before = None if before is None else SystemChannelFlag(before)
-    after = data.get('new_value',None)
+    after = data.get('new_value')
     change.after = None if before is None else SystemChannelFlag(after)
     return change
 
-def transform_type(name,data):
+def transform_type(name, data):
     # if we talk about permission overwrite, type can be `str` too,
     # what we ignore
-    before=data.get('old_value',None)
+    before = data.get('old_value')
     if type(before) is str:
         return
     
-    after=data.get('new_value',None)
+    after = data.get('new_value')
     if type(after) is str:
         return
     
-    change=AuditLogChange()
-    change.attr='type'
-    change.before=before
-    change.after=after
+    change = AuditLogChange()
+    change.attr = 'type'
+    change.before = before
+    change.after = after
     return change
 
-def transform_user(name,data):
-    change=AuditLogChange()
-    change.attr=name[:-3]
-    value=data.get('old_value',None)
+def transform_user(name, data):
+    change = AuditLogChange()
+    change.attr = name[:-3]
+    value = data.get('old_value')
     if value is None:
-        change.before=None
+        before = None
     else:
-        value=int(value)
+        value = int(value)
         try:
-            change.before=USERS[value]
+            before = USERS[value]
         except KeyError:
-            change.before=Unknown('User',value)
-    value=data.get('new_value',None)
+            before = Unknown('User', value)
+    change.before = before
+    
+    value = data.get('new_value')
     if value is None:
-        change.after=None
+        after = None
     else:
-        value=int(value)
+        value = int(value)
         try:
-            change.after=USERS[value]
+            after = USERS[value]
         except KeyError:
-            change.after=Unknown('User',value)
+            after = Unknown('User', value)
+    change.after = after
+    
     return change
 
-def transform_verification_level(name,data):
-    change=AuditLogChange()
-    change.attr='verification_level'
-    value=data.get('old_value',None)
-    change.before=None if value is None else VerificationLevel.value[value]
-    value=data.get('new_value',None)
-    change.after=None if value is None else VerificationLevel.value[value]
+def transform_verification_level(name, data):
+    change = AuditLogChange()
+    change.attr = 'verification_level'
+    value = data.get('old_value')
+    change.before = None if value is None else VerificationLevel.value[value]
+    value = data.get('new_value')
+    change.after = None if value is None else VerificationLevel.value[value]
     return change
 
 TRANSFORMERS = {
@@ -1102,7 +1124,8 @@ TRANSFORMERS = {
     '$remove'               : transform_role,
     'account_id'            : transform_snowfalke,
     'afk_channel_id'        : transform_channel,
-    'allow'                 : transform_permission,
+    'allow'                 : transform_deprecated,
+    'allow_new'             : transform_permission,
     'application_id'        : transform_snowfalke,
     'avatar_hash'           : tranfrom_icon,
     'banner_hash'           : tranfrom_icon,
@@ -1113,7 +1136,8 @@ TRANSFORMERS = {
     # deaf (bool)
     # description (None or str)
     'default_message_notifications':transform_message_notification,
-    'deny'                  : transform_permission,
+    'deny'                  : transform_deprecated,
+    'deny_new'              : transform_permission,
     'discovery_splash_hash' : tranfrom_icon,
     # enable_emoticons (bool)
     # expire_behavior (int)
@@ -1135,7 +1159,8 @@ TRANSFORMERS = {
     # position (int)
     'prune_delete_days'     : transform_int__days,
     'permission_overwrites' : transform_overwrites,
-    'permissions'           : transform_permission,
+    'permissions'           : transform_deprecated,
+    'permissions_new'       : transform_permission,
     'public_updates_channel_id' : transform_channel,
     'rate_limit_per_user'   : transform_int__slowmode,
     'region'                : transform_region,
@@ -1153,6 +1178,7 @@ TRANSFORMERS = {
     # widget_enabled (bool)
         }
 
+del transform_deprecated
 del tranfrom_icon
 del transform_bool__separated
 del transform_channel

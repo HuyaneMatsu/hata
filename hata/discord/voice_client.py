@@ -4,6 +4,7 @@ __all__ = ('VoiceClient', )
 import socket as module_socket
 from threading import Event
 
+from ..backend.dereaddons_local import DOCS_ENABLED
 from ..backend.futures import Future, Task, sleep, future_or_timeout, Lock
 from ..backend.exceptions import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
 
@@ -13,6 +14,9 @@ from .player import AudioPlayer, AudioSource, PLAYER_DELAY
 from .reader import AudioReader, AudioStream
 from .gateway import DiscordGatewayVoice, SecretBox
 from .channel import ChannelVoice
+from .exceptions import VOICE_CLIENT_DISCONNECTC_CLOSE_CODE
+
+from . import guild
 
 class VoiceClient(object):
     """
@@ -34,10 +38,6 @@ class VoiceClient(object):
         The endpoint, where the voice client sends the audio data.
     _endpoint_ip : `None` or `tuple` of `int`
         The ip version of the `._endpoint` attribute.
-    _freezed : `bool`
-        Whether the ``VoiceClient`` is freezed and should be unfreezed when it's respective client gateway reconnects.
-    _freezed_resume : `bool`
-        Whether the VoiceClient was playin when it was freezed.
     _handshake_complete : `Future`
         Used for awaiting the connecting handshake with Discord.
     _ip : `None` or `tuple` of `int`
@@ -101,14 +101,13 @@ class VoiceClient(object):
         method, when the client's gateway receives response after connecting. If the client leaves the voice channel,
         then the socket is closed and set back to `None`.
     speaking : `int`
-        Whether the client is showed by Discord as `speaking`, then this attribute should is set as `1`. Can be modified, with the
-        ``.set_speaking``, however it is always adjusted to the voice client's current playing state.
+        Whether the client is showed by Discord as `speaking`, then this attribute should is set as `1`. Can be
+        modified, with the ``.set_speaking``, however it is always adjusted to the voice client's current playing state.
     """
     __slots__ = ('_audio_port', '_audio_source', '_audio_sources', '_audio_streams', '_encoder', '_endpoint',
-        '_endpoint_ip', '_freezed', '_freezed_resume', '_handshake_complete', '_ip', '_port', '_pref_volume',
-        '_secret_box', '_sequence', '_session_id', '_set_speaking_task', '_timestamp', '_token', '_video_source',
-        'call_after', 'channel', 'client', 'connected', 'gateway', 'guild', 'lock', 'player', 'queue', 'reader',
-        'socket', 'speaking', )
+        '_endpoint_ip', '_handshake_complete', '_ip', '_port', '_pref_volume', '_secret_box', '_sequence',
+        '_session_id', '_set_speaking_task', '_timestamp', '_token', '_video_source', 'call_after', 'channel', 'client',
+        'connected', 'gateway', 'guild', 'lock', 'player', 'queue', 'reader', 'socket', 'speaking', )
     
     def __new__(cls, client, channel):
         """
@@ -155,35 +154,33 @@ class VoiceClient(object):
         
         self = object.__new__(cls)
         
-        self.guild          = guild
-        self.channel        = channel
-        self.gateway        = DiscordGatewayVoice(self)
-        self.socket         = None
-        self.client         = client
-        self.connected      = Event() #this will be used at the AudioPlayer thread
-        self.queue          = []
-        self.player         = None
-        self.call_after     = cls._play_next
-        self.speaking       = 0
-        self.lock           = Lock(KOKORO)
-        self.reader         = None
+        self.guild = guild
+        self.channel = channel
+        self.gateway = DiscordGatewayVoice(self)
+        self.socket = None
+        self.client = client
+        self.connected = Event() #this will be used at the AudioPlayer thread
+        self.queue = []
+        self.player = None
+        self.call_after = cls._play_next
+        self.speaking = 0
+        self.lock = Lock(KOKORO)
+        self.reader = None
         
         self._handshake_complete = Future(KOKORO)
-        self._encoder       = OpusEncoder()
-        self._sequence      = 0
-        self._timestamp     = 0
-        self._audio_source  = 0
-        self._video_source  = 0
-        self._pref_volume   = 1.0
+        self._encoder = OpusEncoder()
+        self._sequence = 0
+        self._timestamp = 0
+        self._audio_source = 0
+        self._video_source = 0
+        self._pref_volume = 1.0
         self._set_speaking_task = None
-        self._endpoint      = None
-        self._port          = None
-        self._endpoint_ip   = None
-        self._secret_box    = None
-        self._audio_port    = None
-        self._ip            = None
-        self._freezed       = False
-        self._freezed_resume= False
+        self._endpoint = None
+        self._port = None
+        self._endpoint_ip = None
+        self._secret_box = None
+        self._audio_port = None
+        self._ip = None
         self._audio_sources = {}
         self._audio_streams = None
         
@@ -196,17 +193,17 @@ class VoiceClient(object):
     def _get_volume(self):
         return self._pref_volume
     
-    def _set_volume(self,value):
-        if value<0.:
-            value=0.
-        elif value>2.:
-            value=2.
+    def _set_volume(self, value):
+        if value < 0.:
+            value = 0.
+        elif value > 2.:
+            value = 2.
         
-        self._pref_volume=value
+        self._pref_volume = value
     
     volume = property(_get_volume,_set_volume)
     del _get_volume,_set_volume
-    if (__new__.__doc__ is not None):
+    if DOCS_ENABLED:
         volume.__doc__ = (
         """
         Get-set proparty for accessing the voice client's volume.
@@ -232,8 +229,8 @@ class VoiceClient(object):
     #methods
     async def set_speaking(self, value):
         """
-        A coroutine, what is used when changing the ``.speaking`` state of the voice client. By default when audio is played,
-        the speaking state is changed to `True` and meanwhile not, then to `False`.
+        A coroutine, what is used when changing the ``.speaking`` state of the voice client. By default when audio is
+        played, the speaking state is changed to `True` and meanwhile not, then to `False`.
         
         Parameters
         ----------
@@ -247,18 +244,18 @@ class VoiceClient(object):
         if (task is not None):
             await task
             
-        if self.speaking==value:
+        if self.speaking == value:
             return
 
-        self.speaking=value
+        self.speaking = value
         
-        task = Task(self.gateway._set_speaking(value),KOKORO)
+        task = Task(self.gateway._set_speaking(value), KOKORO)
         self._set_speaking_task = task
         
         try:
             await task
         finally:
-            self._set_speaking_task=None
+            self._set_speaking_task = None
     
     def listen_to(self, user, **kwargs):
         """
@@ -282,7 +279,7 @@ class VoiceClient(object):
         -------
         audio_stream : ``AudioStream``
         """
-        stream =  AudioStream(self, user, **kwargs)
+        stream = AudioStream(self, user, **kwargs)
         self._link_audio_stream(stream)
         return stream
     
@@ -607,13 +604,10 @@ class VoiceClient(object):
         
         player = self.player
         if (player is not None):
-            self.player=None
-            player.done=True
+            self.player = None
+            player.done = True
+            player.source = None
             player.resumed.set()
-        
-        reader = self.reader
-        if (reader is not None):
-            reader.stop()
     
     def is_connected(self):
         """
@@ -662,75 +656,89 @@ class VoiceClient(object):
         waiter : `None` or `Future`, Optional
             A Waiter what's result is set (or is raised to), when the voice client connects (or failed to connect).
         """
-        await self.gateway.start()
-        tries=0
-        while True:
-            if tries==5:
-                try:
-                    del self.client.voice_clients[self.guild.id]
-                except KeyError:
-                    pass
-                if (waiter is not None):
-                    waiter.set_exception(TimeoutError())
-                return
-            
-            self._secret_box=None
-            
-            try:
-                await self._start_handshake()
-            except TimeoutError:
-                tries+=1
-                continue
-            
-            try:
-                task=Task(self.gateway.connect(),KOKORO)
-                future_or_timeout(task,30.,)
-                await task
-                
-                self.connected.clear()
-                while True:
-                    task = Task(self.gateway._poll_event(), KOKORO)
-                    future_or_timeout(task, 60.)
-                    await task
-                    
-                    if self._secret_box is not None:
-                        break
-                    
-                self.connected.set()
-                
-            except (OSError, TimeoutError, ConnectionError, ConnectionClosed, WebSocketProtocolError, InvalidHandshake,
-                    ValueError) as err:
-                
-                if isinstance(err, ConnectionClosed) and (err.code == 4014):
-                    await self.disconnect(force=False)
+        try:
+            await self.gateway.start()
+            tries = 0
+            while True:
+                if tries == 5:
+                    if (waiter is not None):
+                        waiter.set_exception(TimeoutError())
                     return
                 
-                await sleep(1+(tries<<1),KOKORO)
-                tries+=1
-                await self._terminate_handshake()
-                continue
-            
-            if (waiter is not None):
-                waiter.set_result(self)
-                waiter = None
-            
-            tries=0
-            while True:
+                self._secret_box = None
+                
                 try:
-                    task = Task(self.gateway._poll_event(), KOKORO)
-                    future_or_timeout(task, 60.)
+                    await self._start_handshake()
+                except TimeoutError:
+                    tries+=1
+                    continue
+                except:
+                    await self.disconnect(force=True)
+                    raise
+                
+                try:
+                    task = Task(self.gateway.connect(), KOKORO)
+                    future_or_timeout(task, 30.,)
                     await task
-                except (OSError, TimeoutError, ConnectionClosed, WebSocketProtocolError,) as err:
                     
-                    if isinstance(err, ConnectionClosed) and (err.code in (1000, 1006, 4014)):
+                    self.connected.clear()
+                    while True:
+                        task = Task(self.gateway._poll_event(), KOKORO)
+                        future_or_timeout(task, 60.)
+                        await task
+                        
+                        if self._secret_box is not None:
+                            break
+                        
+                    self.connected.set()
+                
+                except (OSError, TimeoutError, ConnectionError, ConnectionClosed, WebSocketProtocolError,
+                        InvalidHandshake, ValueError) as err:
+                    
+                    if isinstance(err, ConnectionClosed) and (err.code == VOICE_CLIENT_DISCONNECTC_CLOSE_CODE):
                         await self.disconnect(force=False)
                         return
                     
-                    self.connected.clear()
-                    await sleep(5.,KOKORO)
+                    await sleep(1+(tries<<1), KOKORO)
+                    tries +=1
                     await self._terminate_handshake()
-                    break
-        
+                    continue
+                
+                except:
+                    await self.disconnect(force=True)
+                    raise
+                
+                if (waiter is not None):
+                    waiter.set_result(self)
+                    waiter = None
+                
+                tries = 0
+                while True:
+                    try:
+                        task = Task(self.gateway._poll_event(), KOKORO)
+                        future_or_timeout(task, 60.)
+                        await task
+                    except (OSError, TimeoutError, ConnectionClosed, WebSocketProtocolError,) as err:
+                        if isinstance(err, ConnectionClosed):
+                            code = err.code
+                            if code in (1000, 1006) or (code == VOICE_CLIENT_DISCONNECTC_CLOSE_CODE):
+                                await self.disconnect(force=False)
+                                return
+                        
+                        self.connected.clear()
+                        await sleep(5., KOKORO)
+                        await self._terminate_handshake()
+                        break
+                    
+                    except:
+                        await self.disconnect(force=True)
+                        raise
+        finally:
+            try:
+                del self.client.voice_clients[self.guild.id]
+            except KeyError:
+                pass
+    
     async def disconnect(self, force=False, terminate=True):
         """
         Disconnects the voice client.
@@ -751,38 +759,23 @@ class VoiceClient(object):
         if not (force or self.connected.is_set()):
             return
         
-        if self._freezed:
-            self.connected.clear()
-            await self.gateway.terminate()
-            if terminate:
-                await self._terminate_handshake()
-    
-            socket = self.socket
-            if (socket is not None):
-                self.socket = None
-                socket.close()
-                
-            return
-        
         self.queue.clear()
         player = self.player
         if (player is not None):
             self.player = None
             player.done = True
+            player.source = None
+            # Set connected so the player can do 1 full loop
+            self.connected.set()
             player.resumed.set()
-            await sleep(PLAYER_DELAY,KOKORO)
+            await sleep(PLAYER_DELAY, KOKORO)
         
         reader = self.reader
         if (reader is not None):
+            self.reader = None
             reader.stop()
         
         self.connected.clear()
-        
-        try:
-            del self.client.voice_clients[self.guild.id]
-        except KeyError:
-            #already disconnected
-            return
         
         try:
             await self.gateway.close()
@@ -794,77 +787,12 @@ class VoiceClient(object):
                 self.socket = None
                 socket.close()
     
-    def _freeze(self):
-        """
-        Freezes the voice client and pauses it's player.
-        """
-        if self._freezed:
-            return
-        
-        self._freezed=True
-        resume=self.is_playing()
-        self._freezed_resume=resume
-        if resume:
-            self.pause()
-    
-    def _unfreeze(self):
-        """
-        Unfreezes the voice client if needed.
-        """
-        if not self._freezed:
-            return
-        Task(self._unfreeze_task(),KOKORO)
-        
-    async def _unfreeze_task(self):
-        """
-        This coroutine ensured, when the voice client needs unfreezing.
-        """
-        if self.connected.is_set():
-            await self._kill_ghost(self.client, self.channel)
-            await sleep(1.0,KOKORO)
-            
-            self.client.voice_clients[self.guild.id] = self
-        
-        self._freezed=False
-        
-        self._handshake_complete=Future(KOKORO)
-        self._sequence      = 0
-        self._timestamp     = 0
-        self._audio_source  = 0
-        self._video_source  = 0
-        
-        self._set_speaking_task=None
-        self._endpoint      = None
-        self._port          = None
-        self._endpoint_ip   = None
-        self._secret_box    = None
-        self._audio_port    = None
-        self._ip            = None
-        
-        future=Future(KOKORO)
-        Task(self._connect(waiter=future),KOKORO)
-        
-        try:
-            await future
-        except TimeoutError:
-            self.stop()
-            
-            try:
-                del self.client.voice_clients[self.guild.id]
-            except KeyError:
-                pass
-            return
-        
-        if self._freezed_resume:
-            await sleep(.6,KOKORO)
-            self.resume()
-    
     @classmethod
     async def _kill_ghost(cls, client, channel):
         """
         When a client is restarted, it might happen that it will be in still in some voice channels. At this
         case this function is ensured to kill the ghost connection.
-
+        
         Parameters
         ----------
         client : ``Client``
@@ -1012,10 +940,6 @@ class VoiceClient(object):
         try:
             await self._handshake_complete
         except TimeoutError as err:
-            try:
-                del self.client.voice_clients[guild.id]
-            except KeyError:
-                pass
             await self._terminate_handshake()
             raise err
     
@@ -1054,19 +978,19 @@ class VoiceClient(object):
         gateway = self.client._gateway_for(self.guild)
         self._session_id = gateway.session_id
         token = data.get('token',None)
-        self._token=token
+        self._token = token
         endpoint = data.get('endpoint',None)
         
         if (endpoint is None) or (token is None):
             return
         
-        self._endpoint = endpoint.replace(':80','')
+        self._endpoint = endpoint.replace(':80','').replace(':443','')
         
         socket = self.socket
         if socket is not None:
             socket.close()
         
-        socket = module_socket.socket(module_socket.AF_INET,module_socket.SOCK_DGRAM)
+        socket = module_socket.socket(module_socket.AF_INET, module_socket.SOCK_DGRAM)
         socket.setblocking(False)
         self.socket = socket
         
@@ -1082,6 +1006,18 @@ class VoiceClient(object):
         """Stops and unallocates the resources by the voice client, if was not done already."""
         self.stop()
         self.connected.set()
+        
+        player = self.player
+        if (player is not None):
+            self.player = None
+            player.done = True
+            player.source = None
+            player.resumed.set()
+        
+        reader = self.reader
+        if (reader is not None):
+            self.reader = None
+            reader.stop()
         
         socket = self.socket
         if (socket is not None):
@@ -1115,6 +1051,8 @@ class VoiceClient(object):
         
         return ''.join(result)
 
-from . import guild
-guild.VoiceClient=VoiceClient
+
+guild.VoiceClient = VoiceClient
+
 del guild
+del DOCS_ENABLED

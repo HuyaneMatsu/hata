@@ -3,7 +3,7 @@ __all__ = ('PermOW', 'Role', 'RoleManagerType', 'cr_p_overwrite_object', 'cr_p_r
 
 from .bases import DiscordEntity
 from .client_core import ROLES
-from .others import random_id
+from .others import random_id, DATETIME_FORMAT_CODE
 from .color import Color
 from .permission import Permission
 from .user import PartialUser
@@ -32,21 +32,21 @@ def PartialRole(role_id):
     except KeyError:
         pass
     
-    role=object.__new__(Role)
-    role.id=role_id
+    role = object.__new__(Role)
+    role.id = role_id
     
-    role.color=Color(0)
-    role.guild=None
-    role.separated=False
+    role.color = Color()
+    role.guild = None
+    role.separated = False
     # id is set up
-    role.manager_type=ROLE_MANAGER_TYPE_NONE
+    role.manager_type = ROLE_MANAGER_TYPE_NONE
     role.manager_id = 0
-    role.mentionable=False
-    role.name=''
-    role.permissions=Permission.permission_none
-    role.position=1 # 0 is default role, so we go for 1
+    role.mentionable = False
+    role.name = ''
+    role.permissions = Permission.permission_none
+    role.position = 1 # 0 is default role, so we go for 1
     
-    ROLES[role_id]=role
+    ROLES[role_id] = role
     
     return role
 
@@ -226,40 +226,38 @@ class Role(DiscordEntity, immortal=True):
         -------
         role : ``Role``
         """
-        role_id=int(data['id'])
+        role_id = int(data['id'])
         try:
-            role=ROLES[role_id]
-            update=(role.guild is None)
+            role = ROLES[role_id]
+            update = (role.guild is None)
         except KeyError:
-            role=object.__new__(cls)
-            role.id=role_id
-            update=True
-            ROLES[role_id]=role
+            role = object.__new__(cls)
+            role.id = role_id
+            update = True
+            ROLES[role_id] = role
         
         if update:
             
-            guild.all_role[role.id]=role
-            role.guild=guild
+            guild.roles[role.id] = role
+            role.guild = guild
             
-            role.name=data['name']
+            role.name = data['name']
             
-            role.position=data.get('position',0)
+            role.position = data.get('position', 0)
             
-            role.color=Color(data.get('color',0))
+            role.color = Color(data.get('color', 0))
             
-            role.permissions=Permission(data['permissions'])
+            role.permissions = Permission(data['permissions_new'])
             
-            role.separated=data.get('hoist',False)
+            role.separated = data.get('hoist', False)
             
-            if data.get('managed',False):
+            if data.get('managed', False):
                 role._set_managed(data)
             else:
                 role.manager_id = 0
                 role.manager_type = ROLE_MANAGER_TYPE_NONE
             
-            role.mentionable=data.get('mentionable',False)
-            
-            guild.roles.append(role)
+            role.mentionable = data.get('mentionable', False)
         
         return role
     
@@ -285,7 +283,7 @@ class Role(DiscordEntity, immortal=True):
             The role's manager's id.
         manager_type : `RoleManagerType`
             The role's ``.manager_type``.
-        mentionable : `bool
+        mentionable : `bool`
             The role's ``.mentionable``.
         separated : `bool`
             The role's ``.separated``.
@@ -327,7 +325,7 @@ class Role(DiscordEntity, immortal=True):
                     pass
                 else:
                     value = preconvert_bool(value, key)
-                    processable.append((key,value))
+                    processable.append((key, value))
             
             try:
                 position = kwargs.pop('position')
@@ -343,7 +341,7 @@ class Role(DiscordEntity, immortal=True):
                 pass
             else:
                 permissions = preconvert_flag(permissions, 'permissions', Permission)
-                processable.append(('permissions',permissions))
+                processable.append(('permissions', permissions))
             
             try:
                 color = kwargs.pop('color')
@@ -351,7 +349,7 @@ class Role(DiscordEntity, immortal=True):
                 pass
             else:
                 color = preconvert_color(color)
-                processable.append(('color',color))
+                processable.append(('color', color))
             
             try:
                 manager_type = kwargs.pop('manager_type')
@@ -376,20 +374,20 @@ class Role(DiscordEntity, immortal=True):
             processable = None
         
         try:
-            role=ROLES[role_id]
+            role = ROLES[role_id]
         except KeyError:
-            role=object.__new__(cls)
-            role.id=role_id
+            role = object.__new__(cls)
+            role.id = role_id
             
-            role.color      = Color()
-            role.guild      = None
-            role.separated  = False
+            role.color = Color()
+            role.guild = None
+            role.separated = False
             role.manager_type = ROLE_MANAGER_TYPE_NONE
-            role.mentionable= False
-            role.name       = ''
-            role.permissions= Permission.permission_none
-            role.position   = 1
-            ROLES[role_id]  = role
+            role.mentionable = False
+            role.name = ''
+            role.permissions = Permission.permission_none
+            role.position = 1
+            ROLES[role_id] = role
         else:
             if (role.guild is not None):
                 return role
@@ -464,28 +462,27 @@ class Role(DiscordEntity, immortal=True):
         position = data['position']
         if self.position != position:
             self.position = position
-            guild.roles.sort()
             clear_permission_cache = True
         
-        self.name=data['name']
-        permissions = Permission(data['permissions'])
+        self.name = data['name']
+        
+        permissions = Permission(data['permissions_new'])
         if self.permissions != permissions:
             self.permissions = permissions
             clear_permission_cache = True
         
-        self.color=Color(data['color'])
-        self.separated=data['hoist']
+        self.color = Color(data['color'])
+        self.separated = data['hoist']
         
         if self.manager_type is ROLE_MANAGER_TYPE_UNSET:
             self._set_managed(data)
         
-        self.mentionable=data['mentionable']
-        self.guild._cache_perm.clear()
+        self.mentionable = data['mentionable']
         
         if clear_permission_cache:
-            guild._cache_perm.clear()
-            for channel in guild.all_channel.values():
-                channel._cache_perm.clear()
+            guild._cache_perm = None
+            for channel in guild.channels.values():
+                channel._cache_perm = None
         
     def __str__(self):
         """Returns teh role"s name or `'Partial'` if it has non."""
@@ -544,72 +541,70 @@ class Role(DiscordEntity, immortal=True):
         if self.position != position:
             old_attributes['position'] = self.position
             self.position = position
-            guild.roles.sort()
             clear_permission_cache = True
         
-        name=data['name']
-        if self.name!=name:
-            old_attributes['name']=self.name
-            self.name=name
+        name = data['name']
+        if self.name != name:
+            old_attributes['name'] = self.name
+            self.name = name
         
-        permissions=Permission(data['permissions'])
-        if self.permissions!=permissions:
-            old_attributes['permissions']=self.permissions
-            self.permissions=permissions
+        permissions = Permission(data['permissions_new'])
+        if self.permissions != permissions:
+            old_attributes['permissions'] = self.permissions
+            self.permissions = permissions
             clear_permission_cache = True
         
-        color=data['color']
-        if self.color!=color:
-            old_attributes['color']=self.color
-            self.color=Color(color)
+        color = data['color']
+        if self.color != color:
+            old_attributes['color'] = self.color
+            self.color = Color(color)
         
-        separated=data['hoist']
-        if self.separated!=separated:
-            old_attributes['separated']=self.separated
-            self.separated=separated
+        separated = data['hoist']
+        if self.separated != separated:
+            old_attributes['separated'] = self.separated
+            self.separated = separated
         
         if self.manager_type is ROLE_MANAGER_TYPE_UNSET:
             self._set_managed(data)
         
-        managed=data['managed']
-        if self.managed!=managed:
-            old_attributes['managed']=self.managed
-            self.managed=managed
+        managed = data['managed']
+        if self.managed != managed:
+            old_attributes['managed'] = self.managed
+            self.managed = managed
         
-        mentionable=data['mentionable']
-        if self.mentionable!=mentionable:
-            old_attributes['mentionable']=self.mentionable
-            self.mentionable=mentionable
+        mentionable = data['mentionable']
+        if self.mentionable != mentionable:
+            old_attributes['mentionable'] = self.mentionable
+            self.mentionable = mentionable
         
         if clear_permission_cache:
-            guild._cache_perm.clear()
-            for channel in guild.all_channel.values():
-                channel._cache_perm.clear()
+            guild._cache_perm = None
+            for channel in guild.channels.values():
+                channel._cache_perm = None
         
         return old_attributes
-
+    
     def _delete(self):
         """
         Removes the role's references.
         
         Used when the role is deleted.
         """
-        guild=self.guild
+        guild = self.guild
         if guild is None:
             return #already deleted
         
-        self.guild=None
+        self.guild = None
         
-        guild.roles.remove(self)
-        del guild.all_role[self.id]
+        del guild.roles[self.id]
         
-        guild._cache_perm.clear()
-        for channel in guild.all_channel.values():
-            channel._cache_perm.clear()
+        guild._cache_perm = None
+        for channel in guild.channels.values():
+            channel._cache_perm = None
         
         for user in guild.users.values():
             try:
-                profile=user.guild_profiles[guild]
+                profile = user.guild_profiles[guild]
             except KeyError:
                 #the user has no GuildProfile, it supposed to be impossible
                 continue
@@ -627,7 +622,7 @@ class Role(DiscordEntity, immortal=True):
         -------
         is_default : `bool`
         """
-        return self.position==0
+        return (self.position == 0)
     
     @property
     def mention(self):
@@ -655,6 +650,7 @@ class Role(DiscordEntity, immortal=True):
         
         Examples
         --------
+        ```
         >>>> from hata import Role, now_as_id
         >>>> role = Role.precreate(now_as_id(), name='admiralgeneral')
         >>>> role
@@ -668,13 +664,17 @@ class Role(DiscordEntity, immortal=True):
         >>>> # 'c' stands for created at.
         >>>> f'{role:c}'
         '2020.06.24-12:58:20'
+        ```
         """
         if not code:
-            return self.__str__()
-        if code=='m':
+            return str(self)
+        
+        if code == 'm':
             return self.mention
-        if code=='c':
-            return self.created_at.__format__('%Y.%m.%d-%H:%M:%S')
+        
+        if code == 'c':
+            return self.created_at.__format__(DATETIME_FORMAT_CODE)
+        
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
     @property
@@ -686,13 +686,13 @@ class Role(DiscordEntity, immortal=True):
         -------
         users : `list` of (``User`` or ``Client``) instances
         """
-        guild=self.guild
+        guild = self.guild
         if guild is None:
             users = []
-        elif self.position==0:
+        elif self.position == 0:
             users = list(guild.users.values())
         else:
-            role_id=self.id
+            role_id = self.id
             users= [user for user in guild.users.values() if self in user.guild_profiles[guild].roles]
         
         return users
@@ -756,7 +756,7 @@ class Role(DiscordEntity, immortal=True):
                 return True
             
             if self.position == other.position:
-                if self.id>other.id:
+                if self.id > other.id:
                     return True
         
             return False
@@ -812,9 +812,9 @@ class PermOW(object):
     
     Attributes
     ----------
-    allow : `int`
+    allow : ``Permission``
         The allowed permissions by the overwrite.
-    deny : `int`
+    deny : ``Permission``
         The denied permission by the overwrite.
     target : ``Client``, ``User`` or ``Role``
         The target entity of the overwrite.
@@ -830,14 +830,14 @@ class PermOW(object):
         data : `dict` of (`str`, `Any`) items
             Received permission overwrite data.
         """
-        id_=int(data['id'])
-        if data['type']=='role':
-            target=PartialRole(id_)
+        id_ = int(data['id'])
+        if data['type'] == 'role':
+            target = PartialRole(id_)
         else:
-            target=PartialUser(id_)
+            target = PartialUser(id_)
         self.target = target
-        self.allow=data['allow']
-        self.deny=data['deny']
+        self.allow = Permission(data['allow_new'])
+        self.deny = Permission(data['deny_new'])
     
     @classmethod
     def custom(cls, target, allow, deny):
@@ -859,12 +859,12 @@ class PermOW(object):
         """
         self = object.__new__(cls)
         self.target = target
-        self.allow = int(allow)
-        self.deny = int(deny)
+        self.allow = Permission(allow)
+        self.deny = Permission(deny)
         return self
     
     def __hash__(self):
-        """Returns teh permission overwrite's hash."""
+        """Returns the permission overwrite's hash."""
         return self.target.id^self.allow^self.deny
     
     def __repr__(self):
@@ -892,8 +892,8 @@ class PermOW(object):
         ------
         state : `int`
         """
-        allow=self.allow
-        deny=self.deny
+        allow = self.allow
+        deny = self.deny
         for index in Permission.__keys__.values():
             if (allow>>index)&1:
                 state = +1
@@ -914,9 +914,9 @@ class PermOW(object):
         name : str`
         state : `int`
         """
-        allow=self.allow
-        deny=self.deny
-        for key,index in Permission.__keys__.items():
+        allow = self.allow
+        deny = self.deny
+        for key, index in Permission.__keys__.items():
             if (allow>>index)&1:
                 state = +1
             elif (deny>>index)&1:
@@ -928,7 +928,7 @@ class PermOW(object):
     
     def __getitem__(self, key):
         """Returns the permission's state for the given permission name."""
-        index=Permission.__keys__[key]
+        index = Permission.__keys__[key]
         if (self.allow>>index)&1:
             state = +1
         elif (self.deny>>index)&1:
@@ -985,23 +985,23 @@ class PermOW(object):
             return True
         return False
         
-    def __eq__(self,other):
+    def __eq__(self, other):
         """Returns whether is this permission overwrite is same as the other."""
         if type(self) is not type(other):
             return NotImplemented
         
-        if self.target.id!=other.target.id:
+        if self.target.id != other.target.id:
             return False
         
-        if self.allow!=other.allow:
+        if self.allow != other.allow:
             return False
         
-        if self.deny!=other.deny:
+        if self.deny != other.deny:
             return False
         
         return True
     
-    def __gt__(self,other):
+    def __gt__(self, other):
         """Returns whether is this permission overwrite is at greater position in ordering than the order."""
         if type(self) is not type(other):
             return NotImplemented
@@ -1050,17 +1050,17 @@ def cr_p_role_object(name, id_=None, color=Color(0), separated=False, position=0
     role_data : `dict` of (`str`, `Any`) items
     """
     if id_ is None:
-        id_=random_id()
+        id_ = random_id()
     
     return {
-        'id'            : id_,
-        'name'          : name,
-        'color'         : color,
-        'hoist'         : separated,
-        'position'      : position,
-        'permissions'   : permissions,
-        'managed'       : managed,
-        'mentionable'   : mentionable,
+        'id'          : id_,
+        'name'        : name,
+        'color'       : color,
+        'hoist'       : separated,
+        'position'    : position,
+        'permissions' : permissions,
+        'managed'     : managed,
+        'mentionable' : mentionable,
             }
 
 def cr_p_overwrite_object(target, allow, deny):

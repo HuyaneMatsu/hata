@@ -1,6 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('ICON_TYPE_ANIMATED', 'ICON_TYPE_NONE', 'ICON_TYPE_STATIC', 'Icon', 'IconType',
-    'instance_or_id_to_instance', 'instance_or_id_to_snowflake', )
+__all__ = ('DiscordEntity', 'ICON_TYPE_ANIMATED', 'ICON_TYPE_NONE', 'ICON_TYPE_STATIC', 'Icon', 'IconType',
+    'IconSlot', 'instance_or_id_to_instance', 'instance_or_id_to_snowflake', )
 
 import sys
 
@@ -45,7 +45,7 @@ class DiscordEntityMeta(type):
         parent_count = len(class_parents)
         if parent_count > 0:
             parent = class_parents[0]
-            final_slots.update(getattr(parent,'__slots__',()))
+            final_slots.update(getattr(parent, '__slots__', ()))
             
             #Sublasses might miss hash!
             if class_attributes.get('__hash__', None) is None:
@@ -60,7 +60,7 @@ class DiscordEntityMeta(type):
             index = 1
             while index < parent_count:
                 parent = class_parents[index]
-                final_slots.update(getattr(parent,f'_{parent.__name__}__slots',()))
+                final_slots.update(getattr(parent, f'_{parent.__name__}__slots', ()))
                 index +=1
         
         slots = class_attributes.get('__slots__',)
@@ -69,7 +69,7 @@ class DiscordEntityMeta(type):
         
         if immortal:
             for parent in class_parents:
-                if hasattr(parent,'__weakref__'):
+                if hasattr(parent, '__weakref__'):
                     break
             else:
                 final_slots.add('__weakref__')
@@ -252,7 +252,7 @@ class FlagEnabler(object):
     def __call__(self):
         instance = self.instance
         shift = self.shift
-        return int.__new__(type(instance),(instance|(1<<self.shift)))
+        return int.__new__(type(instance), (instance|(1<<self.shift)))
 
 class FlagEnableDescriptor(FlagGetDescriptor):
     """
@@ -301,7 +301,7 @@ class FlagDisabler(object):
         instance = self.instance
         shift = self.shift
         if (instance>>shift)&1:
-            return int.__new__(type(instance),(instance^(1<<shift)))
+            return int.__new__(type(instance), (instance^(1<<shift)))
         else:
             return instance
 
@@ -333,8 +333,8 @@ class FlagMeta(type):
     """
     Metaclass for byte vize flags.
     """
-    def __new__(cls, class_name, class_parents, class_attributes, access_keyword=None, enable_keyword=None, disable_keyword=None,
-            baseclass=False):
+    def __new__(cls, class_name, class_parents, class_attributes, access_keyword=None, enable_keyword=None,
+            disable_keyword=None, baseclass=False):
         """
         Creates a byte vize flag type.
         
@@ -377,10 +377,10 @@ class FlagMeta(type):
             When any requirements are not satisfied.
         """
         if baseclass:
-            if (not class_parents) or (not issubclass(class_parents[0],int)):
+            if (not class_parents) or (not issubclass(class_parents[0], int)):
                 raise TypeError(f'`{class_name}` is not derived directly from `int`.')
             
-            class_keys = class_attributes.get('__keys__',_spaceholder)
+            class_keys = class_attributes.get('__keys__', _spaceholder)
             if class_keys is NotImplemented:
                 pass
             elif class_keys is _spaceholder:
@@ -416,10 +416,12 @@ class FlagMeta(type):
         
         for name, shift in keys.items():
             if (type(name) is not str):
-                raise TypeError(f'`__keys__`\'s keys should be `str` instances, meanwhile got at least 1 non `str`: {name!r}.')
+                raise TypeError('`__keys__`\'s keys should be `str` instances, meanwhile got at least 1 non `str`: '
+                    f'{name!r}.')
             
             if (type(shift) is not int):
-                raise TypeError(f'`__keys__`\'s values should be `int` instances, meanwhile got at least 1 non `int`: {shift!r}.')
+                raise TypeError('`__keys__`\'s values should be `int` instances, meanwhile got at least 1 non `int`: '
+                    f'{shift!r}.')
             
             if shift < 0 or shift > 63:
                 raise TypeError(f'`__keys__`\' values must be between 0 and 63, got: {shift!r}')
@@ -473,9 +475,9 @@ class FlagBase(int, metaclass = FlagMeta, baseclass=True):
     
     def __repr__(self):
         """Returns the reprsentation of the flag."""
-        return f'{self.__class__.__name__}({self!s})'
+        return f'{self.__class__.__name__}({int.__repr__(self)})'
     
-    def __getitem__(self,key):
+    def __getitem__(self, key):
         """Returns whether a specific flag of the given name is enableds."""
         return (self>>self.__keys__[key])&1
     
@@ -522,7 +524,7 @@ class FlagBase(int, metaclass = FlagMeta, baseclass=True):
     def __contains__(self, key):
         """Returns whether the specific flag of the given name is enabled."""
         try:
-            position=self.__keys__[key]
+            position = self.__keys__[key]
         except KeyError:
             return 0
         
@@ -530,19 +532,19 @@ class FlagBase(int, metaclass = FlagMeta, baseclass=True):
     
     def is_subset(self, other):
         """Returns whether self has the same amount or more flags disabled than other."""
-        return (self&other)==self
+        return (self&other) == self
     
     def is_superset(self, other):
         """Returns whether self has the same amount or more flags enabled than other."""
-        return (self|other)==self
+        return (self|other) == self
     
     def is_strict_subset(self, other):
         """Returns whether self has more flags disabled than other."""
-        return self!=other and (self&other)==self
+        return self != other and (self&other) == self
     
     def is_strict_superset(self, other):
         """Returns whether self has more flags enabled than other."""
-        return self!=other and (self|other)==self
+        return self != other and (self|other) == self
     
     __ge__ = is_superset
     __gt__ = is_strict_superset
@@ -564,6 +566,7 @@ class FlagBase(int, metaclass = FlagMeta, baseclass=True):
         
         Examples
         -------
+        ```
         >>> from hata import Permission
         >>> perm = Permission().update_by_keys(kick_users=True, ban_users=True)
         >>> list(perm)
@@ -571,22 +574,23 @@ class FlagBase(int, metaclass = FlagMeta, baseclass=True):
         >>> perm = perm.update_by_keys(manage_roles=True, kick_users=False)
         >>> list(perm)
         ['ban_users', 'manage_roles']
+        ```
         """
-        new=self
+        new = self
         for key, value in kwargs.items():
             try:
-                shift=self.__keys__[key]
+                shift = self.__keys__[key]
             except KeyError as err:
-                err.args=(f'Invalid key: {key!r}.',)
+                err.args = (f'Invalid key: {key!r}.',)
                 raise
             
             if value:
-                new|=(1<<shift)
+                new |= (1<<shift)
             else:
                 if (new>>shift)&1:
-                    new^=(1<<shift)
+                    new ^= (1<<shift)
         
-        return int.__new__(type(self),new)
+        return int.__new__(type(self), new)
 
 class ReverseFlagBase(FlagBase, baseclass=True):
     """
@@ -652,34 +656,34 @@ class ReverseFlagBase(FlagBase, baseclass=True):
     def __contains__(self, key):
         """Returns whether the specific flag of the given name is enabled."""
         try:
-            position=self.__keys__[key]
+            position = self.__keys__[key]
         except KeyError:
             return 0
         
         return ((self>>position)&1)^1
     
-    def is_subset(self,other):
+    def is_subset(self, other):
         """Returns whether self has the same amount or more flags disabled than other."""
-        return (self|other)==self
+        return (self|other) == self
     
-    def is_superset(self,other):
+    def is_superset(self, other):
         """Returns whether self has the same amount or more flags enabled than other."""
-        return (self&other)==self
+        return (self&other) == self
     
-    def is_strict_subset(self,other):
+    def is_strict_subset(self, other):
         """Returns whether self has more flags disabled than other."""
-        return self!=other and (self|other)==self
+        return self != other and (self|other) == self
     
-    def is_strict_superset(self,other):
+    def is_strict_superset(self, other):
         """Returns whether self has more flags enabled than other."""
-        return self!=other and (self&other)==self
+        return self != other and (self&other) == self
     
     __ge__ = is_superset
     __gt__ = is_strict_superset
     __lt__ = is_strict_subset
     __le__ = is_subset
     
-    def update_by_keys(self,**kwargs):
+    def update_by_keys(self, **kwargs):
         """
         Updates the source value with the given flags and returns a new one.
         
@@ -694,6 +698,7 @@ class ReverseFlagBase(FlagBase, baseclass=True):
         
         Examples
         --------
+        ```
         >>> from hata import SystemChannelFlag
         >>> flags = SystemChannelFlag()
         >>> list(flags)
@@ -701,22 +706,23 @@ class ReverseFlagBase(FlagBase, baseclass=True):
         >>> flags = flags.update_by_keys(boost=False)
         >>> list(flags)
         ['welcome']
+        ```
         """
-        new=self
+        new = self
         for key, value in kwargs.items():
             try:
-                shift=self.__keys__[key]
+                shift = self.__keys__[key]
             except KeyError as err:
-                err.args=(f'Invalid key:{key!r}.',)
+                err.args = (f'Invalid key:{key!r}.',)
                 raise
             
             if value:
                 if (new>>shift)&1:
-                    new^=(1<<shift)
+                    new ^= (1<<shift)
             else:
-                new|=(1<<shift)
+                new |= (1<<shift)
         
-        return int.__new__(type(self),new)
+        return int.__new__(type(self), new)
 
 class IconType(object):
     """
@@ -830,9 +836,9 @@ class IconType(object):
     STATIC = NotImplemented
     ANIMATED = NotImplemented
 
-IconType.NONE     = ICON_TYPE_NONE     = IconType('NONE'     , 0 ,)
-IconType.STATIC   = ICON_TYPE_STATIC   = IconType('STATIC'   , 1 ,)
-IconType.ANIMATED = ICON_TYPE_ANIMATED = IconType('ANIMATED' , 2 ,)
+IconType.NONE     = ICON_TYPE_NONE     = IconType('NONE'    , 0)
+IconType.STATIC   = ICON_TYPE_STATIC   = IconType('STATIC'  , 1)
+IconType.ANIMATED = ICON_TYPE_ANIMATED = IconType('ANIMATED', 2)
 
 class Icon(object):
     """
@@ -1039,10 +1045,12 @@ class IconSlot(object):
         added_instance_atttribute_name_hash = internal_name+'_hash'
         added_internal_attribute_name_type  = internal_name+'_type'
         
-        added_class_attributes = [
-            (f'{internal_name}_url'    , property(url_property) ),
-            (f'{internal_name}_url_as' , url_as_method          ),
-                ]
+        added_class_attributes = []
+        if (url_property is not None):
+            added_class_attributes.append((f'{internal_name}_url', property(url_property)))
+        
+        if (url_as_method is not None):
+            added_class_attributes.append((f'{internal_name}_url_as', url_as_method))
         
         locals_ = {}
         func_name = f'_set_{internal_name}'
@@ -1063,7 +1071,7 @@ class IconSlot(object):
             f''
             f'    self.{added_internal_attribute_name_type} = icon_type\n'
             f'    self.{added_instance_atttribute_name_hash} = icon_hash\n'
-                ),f'<{cls.__name__}>', 'exec', optimize=2), cls._compile_globals, locals_)
+                ), f'<{cls.__name__}>', 'exec', optimize=2), cls._compile_globals, locals_)
         
         added_class_attributes.append((func_name, locals_[func_name]),)
         
@@ -1091,7 +1099,7 @@ class IconSlot(object):
                 f'        old_attributes[{internal_name!r}] = Icon(self_icon_type, self_icon_hash)\n'
                 f'        self.{added_internal_attribute_name_type} = icon_type\n'
                 f'        self.{added_instance_atttribute_name_hash} = icon_hash\n'
-                    ),f'<{cls.__name__}>', 'exec', optimize=2), cls._compile_globals, locals_)
+                    ), f'<{cls.__name__}>', 'exec', optimize=2), cls._compile_globals, locals_)
             
             added_class_attributes.append((func_name, locals_[func_name]),)
         
@@ -1205,7 +1213,7 @@ class IconSlot(object):
         processable[icon_type_name] = icon_type
         processable[icon_hash_name] = icon_hash
 
-def instance_or_id_to_instance(obj, type_):
+def instance_or_id_to_instance(obj, type_, name):
     """
     Converts the given `obj` to it's `type_` representation.
     
@@ -1213,8 +1221,10 @@ def instance_or_id_to_instance(obj, type_):
     ----------
     obj : `int`, `str` or`type_` instance
         The object to convert.
-    type_ : `type`
+    type_ : `type` or (`tuple` of `type`)
         The type to convert.
+    name : `str`
+        The respective name of the object.
     
     Returns
     -------
@@ -1242,23 +1252,31 @@ def instance_or_id_to_instance(obj, type_):
             if 6<len(obj)<18 and obj.isdigit():
                 snowflake = int(obj)
             else:
-                raise ValueError(f'`obj` was given as `str` instance, but not as a valid snowflake, got {obj!r}.')
+                raise ValueError(f'`{name}` was given as `str` instance, but not as a valid snowflake, got {obj!r}.')
         
         elif issubclass(obj_type, int):
             snowflake = int(obj)
         else:
-            raise TypeError(f'`obj` can be given either as {type_.__name__} instance, or as `int` or `str` '
-                f'representing a snowflake, got {obj_type.__name__}.')
+            if type(type_) is tuple:
+                type_name = ', '.join(t.__name__ for t in type_)
+            else:
+                type_name = type_.__name__
+            
+            raise TypeError(f'`{name}` can be given either as {type_name} instance, or as `int` or `str` representing '
+                f'a snowflake, got {obj_type.__name__}.')
         
         if snowflake < 0 or snowflake>((1<<64)-1):
-            raise ValueError(f'`obj` was given either as `int` or as `str` instance, but not as represneting a '
+            raise ValueError(f'`{name}` was given either as `int` or as `str` instance, but not as represneting a '
                 f'`uint64`, got {obj!r}.')
-    
+        
+        if type(type_) is tuple:
+            type_ = type_[0]
+        
         instance = type_.precreate(snowflake)
     
     return instance
 
-def instance_or_id_to_snowflake(obj, type_):
+def instance_or_id_to_snowflake(obj, type_, name):
     """
     Validates the given `obj` whether it is instance of the given `type_`, or is a valid snowflake representation.
     
@@ -1266,8 +1284,10 @@ def instance_or_id_to_snowflake(obj, type_):
     ----------
     obj : `int`, `str` or`type_` instance
         The object to validate.
-    type_ : `type`
+    type_ : `type` of (`tuple` of `type`)
         Expected type.
+    name : `str`
+        The respective name of the object.
     
     Returns
     -------
@@ -1294,16 +1314,21 @@ def instance_or_id_to_snowflake(obj, type_):
             if 6<len(obj)<18 and obj.isdigit():
                 snowflake = int(obj)
             else:
-                raise ValueError(f'`obj` was given as `str` instance, but not as a valid snowflake, got {obj!r}.')
+                raise ValueError(f'`{name}` was given as `str` instance, but not as a valid snowflake, got {obj!r}.')
         
         elif issubclass(obj_type, int):
             snowflake = int(obj)
         else:
-            raise TypeError(f'`obj` can be given either as {type_.__name__} instance, or as `int` or `str` '
-                f'representing a snowflake, got {obj_type.__name__}.')
+            if type(type_) is tuple:
+                type_name = ', '.join(t.__name__ for t in type_)
+            else:
+                type_name = type_.__name__
+            
+            raise TypeError(f'`{name}` can be given either as {type_name} instance, or as `int` or `str` representing '
+                f'a snowflake, got {obj_type.__name__}.')
         
         if snowflake < 0 or snowflake>((1<<64)-1):
-            raise ValueError(f'`obj` was given either as `int` or as `str` instance, but not as represneting a '
+            raise ValueError(f'`{name}` was given either as `int` or as `str` instance, but not as represneting a '
                 f'`uint64`, got {obj!r}.')
     
     return snowflake

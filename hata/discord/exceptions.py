@@ -66,10 +66,10 @@ class DiscordException(Exception):
             Deserialized `json` response data if applicable.
         """
         Exception.__init__(self)
-        self.response=response
-        self.data=data
-        self._messages=None
-        self._code=None
+        self.response = response
+        self.data = data
+        self._messages = None
+        self._code = None
     
     @property
     def messages(self):
@@ -84,7 +84,7 @@ class DiscordException(Exception):
         -------
         messages : `list` of `str`
         """
-        messages=self._messages
+        messages = self._messages
         if messages is None:
             messages = self._cr_messages()
         return messages
@@ -102,17 +102,17 @@ class DiscordException(Exception):
         -------
         messages : `list` of `str`
         """
-        messages=[]
-        code=self.code
-        message_parts=[]
-        data=self.data
+        messages = []
+        code = self.code
+        message_parts = []
+        data = self.data
         if type(data) is dict:
-            message_base= data.get('message','')
+            message_base = data.get('message', '')
             error_datas = data.get('errors')
             if error_datas:
-                stack=[[(None,error_datas,)]]
+                stack = [[(None, error_datas,)]]
                 while True:
-                    line=stack[-1]
+                    line = stack[-1]
                     if not line:
                         del stack[-1]
                         if not stack:
@@ -126,13 +126,13 @@ class DiscordException(Exception):
                         if not message_parts:
                             continue
                         
-                        if message_parts[-1]!='.':
+                        if message_parts[-1] != '.':
                             continue
                         
                         del message_parts[-1]
                         continue
                     
-                    key,value=line[-1]
+                    key, value = line[-1]
                     
                     if type(value) is dict:
                         if (key is not None):
@@ -144,22 +144,22 @@ class DiscordException(Exception):
                                     message_parts.append('.')
                                 message_parts.append(key)
                         try:
-                            error_datas=value['_errors']
+                            error_datas = value['_errors']
                         except KeyError:
                             stack.append(list(value.items()))
                             continue
                         
                         for error_data in error_datas:
-                            error_code=error_data.pop('code','ERROR')
-                            error_message=error_data.pop('message','')
+                            error_code = error_data.pop('code', 'ERROR')
+                            error_message = error_data.pop('message', '')
                             if error_data:
-                                error_extra=' '.join(f'{key}={value!r}' for key,value in error_data.items())
+                                error_extra = ' '.join(f'{key}={value!r}' for key, value in error_data.items())
                                 if error_message:
-                                    error_message=f'{error_message!r} {error_extra}'
+                                    error_message = f'{error_message!r} {error_extra}'
                                 else:
-                                    error_message=error_extra
+                                    error_message = error_extra
                             elif error_message:
-                                error_message=repr(error_message)
+                                error_message = repr(error_message)
                             
                             if message_parts:
                                 message_parts.append('.')
@@ -170,7 +170,7 @@ class DiscordException(Exception):
                             if not message_parts:
                                 continue
                             
-                            if message_parts[-1]!='.':
+                            if message_parts[-1] != '.':
                                 continue
                             
                             del message_parts[-1]
@@ -185,7 +185,7 @@ class DiscordException(Exception):
                         if not message_parts:
                             continue
                             
-                        if message_parts[-1]!='.':
+                        if message_parts[-1] != '.':
                             continue
                         
                         del message_parts[-1]
@@ -204,7 +204,7 @@ class DiscordException(Exception):
                     if not message_parts:
                         continue
                     
-                    if message_parts[-1]!='.':
+                    if message_parts[-1] != '.':
                         continue
                     
                     del message_parts[-1]
@@ -227,7 +227,7 @@ class DiscordException(Exception):
         messages.append(''.join(message_parts))
         messages.reverse()
         
-        self._messages=messages
+        self._messages = messages
         return messages
     
     def __repr__(self):
@@ -246,7 +246,7 @@ class DiscordException(Exception):
         -------
         error_code : `int`
         """
-        code=self._code
+        code = self._code
         if code is None:
             code = self._cr_code()
         return code
@@ -262,11 +262,11 @@ class DiscordException(Exception):
         """
         data = self.data
         if type(data) is dict:
-            code=data.get('code',0)
+            code = data.get('code', 0)
         else:
-            code=0
+            code = 0
         
-        self._code=code
+        self._code = code
         return code
     
     @property
@@ -322,6 +322,7 @@ class ERROR_CODES:
     slowmode_ratelimited    = 20016
     channel_following_edit_ratelimited = 20022
     under_minimum_age       = 20024
+    channel_send_rate_limit = 20028
     
     max_guilds              = 30001 # 100
     max_friends             = 30001 # 10000
@@ -349,6 +350,7 @@ class ERROR_CODES:
     connection_rewoked      = 40012
     delete_account_transfer_team_ownership = 40028
     user_not_connected      = 40032
+    message_already_crossposted = 40033
     
     invalid_access          = 50001
     invalid_account_type    = 50002
@@ -478,3 +480,5 @@ class InvalidToken(BaseException):
     def __init__(self):
         BaseException.__init__(self,'Invalid token, please update it, then start the client again.')
     
+
+VOICE_CLIENT_DISCONNECTC_CLOSE_CODE = 4014

@@ -99,7 +99,7 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
     +---------------------------+-----------------------------------------------+
     | permission_deny_voice_con | 0b11101100000011111111111011101111            |
     +---------------------------+-----------------------------------------------+
-    | permission_deny_both      | permission_deny_text & permission_deny_voice  |
+    | permission_deny_both      | permission_deny_text|permission_deny_voice    |
     +---------------------------+-----------------------------------------------+
     """
     __keys__ = {
@@ -158,26 +158,26 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
     
     #guild specific permissions: manage_guild, kick_users, ban_users, administrator, change_nicknames, manage_nicknames
     
-    permission_all              = NotImplemented
-    permission_none             = NotImplemented
-    permission_private          = NotImplemented
-    permission_private_bot      = NotImplemented
-    permission_group            = NotImplemented
-    permission_group_owner      = NotImplemented
-    permission_deny_text        = NotImplemented
-    permission_deny_voice       = NotImplemented
-    permission_deny_voice_con   = NotImplemented
-    permission_deny_both        = NotImplemented
+    permission_all            = NotImplemented
+    permission_none           = NotImplemented
+    permission_private        = NotImplemented
+    permission_private_bot    = NotImplemented
+    permission_group          = NotImplemented
+    permission_group_owner    = NotImplemented
+    permission_deny_text      = NotImplemented
+    permission_deny_voice     = NotImplemented
+    permission_deny_voice_con = NotImplemented
+    permission_deny_both      = NotImplemented
 
-Permission.permission_all           = Permission(0b01111111111111111111111111111111)
-Permission.permission_none          = Permission(0b00000000000000000000000000000000)
-Permission.permission_private       = Permission(0b00000000000001111100110001000000)
-Permission.permission_private_bot   = Permission(0b00000000000001101100110001000000)
-Permission.permission_group         = Permission(0b00000000000001111100010001000000)
-Permission.permission_group_owner   = Permission(0b00000000000001111100110001000010)
-Permission.permission_deny_text     = Permission(0b11111111111111011000011111111111)
-Permission.permission_deny_voice    = Permission(0b11111100000011111111110011111111) #~voice
-Permission.permission_deny_voice_con= Permission(0b11101100000011111111111011101111) #~voice - manage_roles - manage_channel
-Permission.permission_deny_both     = Permission(Permission.permission_deny_text&Permission.permission_deny_voice)
+Permission.permission_all            = Permission(0b01111111111111111111111111111111)
+Permission.permission_none           = Permission(0b00000000000000000000000000000000)
+Permission.permission_private        = Permission(0b00000000000001111100110001000000)
+Permission.permission_private_bot    = Permission(0b00000000000001101100110001000000)
+Permission.permission_group          = Permission(0b00000000000001111100010001000000)
+Permission.permission_group_owner    = Permission(0b00000000000001111100110001000010)
+Permission.permission_deny_text      = Permission(0b11111111111111011000011111111111)
+Permission.permission_deny_voice     = Permission(0b11111100000011111111110011111111) #~voice
+Permission.permission_deny_voice_con = Permission(0b11101100000011111111111011101111) #~voice - manage_roles - manage_channel
+Permission.permission_deny_both      = Permission(Permission.permission_deny_text|Permission.permission_deny_voice)
 
 del FlagBase

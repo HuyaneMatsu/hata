@@ -6,6 +6,7 @@ from .user import User, ZEROUSER, USERS, UserBase
 from .exceptions import DiscordException, ERROR_CODES
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_preinstanced_type
 from .bases import ICON_TYPE_NONE, Icon
+from .http.URLS import WEBHOOK_URL_PATTERN
 
 from . import ratelimit
 
@@ -39,9 +40,13 @@ class WebhookType(object):
     +-----------------------+-----------+-------+
     | server                | SERVER    | 2     |
     +-----------------------+-----------+-------+
+    | system_dm             | SYSTEM_DM | 3     |
+    +-----------------------+-----------+-------+
+    | official              | OFFICIAL  | 4     |
+    +-----------------------+-----------+-------+
     """
     __slots__ = ('name', 'value')
-    INSTANCES = [NotImplemented] * 3
+    INSTANCES = [NotImplemented] * 5
     
     def __init__(self, value, name):
         """
@@ -57,7 +62,7 @@ class WebhookType(object):
         self.value = value
         self.name = name
         
-        self.INSTANCES[value]=self
+        self.INSTANCES[value] = self
     
     def __str__(self):
         """Returns the webhook type's name."""
@@ -72,13 +77,17 @@ class WebhookType(object):
         return f'{self.__class__.__name__}(value={self.value}, name={self.name!r})'
     
     # prefened
-    none        = NotImplemented
-    bot         = NotImplemented
-    server      = NotImplemented
+    none      = NotImplemented
+    bot       = NotImplemented
+    server    = NotImplemented
+    system_dm = NotImplemented
+    official  = NotImplemented
 
-WebhookType.none    = WebhookType(0,'NONE')
-WebhookType.bot     = WebhookType(1,'BOT')
-WebhookType.server  = WebhookType(2,'SERVER')
+WebhookType.none      = WebhookType(0, 'NONE')
+WebhookType.bot       = WebhookType(1, 'BOT')
+WebhookType.server    = WebhookType(2, 'SERVER')
+WebhookType.system_dm = WebhookType(3, 'SYSTEM_DM')
+WebhookType.official  = WebhookType(4, 'OFFICIAL')
 
 def PartialWebhook(webhook_id, token, type_=WebhookType.bot, channel=None):
     """
@@ -109,6 +118,7 @@ def PartialWebhook(webhook_id, token, type_=WebhookType.bot, channel=None):
         
         webhook.name = ''
         webhook.discriminator = 0
+        webhook.application_id = 0
         webhook.avatar_hash = 0
         webhook.avatar_type = ICON_TYPE_NONE
         
@@ -139,6 +149,8 @@ class Webhook(UserBase):
         The webhook's avatar's hash in `uint128`.
     avatar_type : `bool`
         The webhook's avatar's type.
+    application_id : `int`
+        The application's id what created the webhook. Defaults to `0` if not applicable.
     channel : `None` or ``ChannelText``
         The channel, where the webhook is going to send it's messages.
     token : `str`
@@ -152,7 +164,7 @@ class Webhook(UserBase):
     -----
     Instances of this class are weakreferable.
     """
-    __slots__ = ('channel', 'token', 'type', 'user', ) #default webhook
+    __slots__ = ('application_id', 'channel', 'token', 'type', 'user', ) #default webhook
 
     @property
     def is_bot(self):
@@ -199,16 +211,24 @@ class Webhook(UserBase):
         -------
         webhook : ``Webhook``
         """
-        webhook_id=int(data['id'])
+        webhook_id = int(data['id'])
         try:
-            webhook=USERS[webhook_id]
+            webhook = USERS[webhook_id]
         except KeyError:
-            webhook=object.__new__(cls)
-            USERS[webhook_id]=webhook
-            webhook.id=webhook_id
+            webhook = object.__new__(cls)
+            USERS[webhook_id] = webhook
+            webhook.id = webhook_id
         
         webhook._update_no_return(data)
-        webhook.type=WebhookType.INSTANCES[data['type']]
+        webhook.type = WebhookType.INSTANCES[data['type']]
+        
+        application_id = data.get('application_id')
+        if application_id is None:
+            application_id = 0
+        else:
+            application_id = int(application_id)
+        webhook.application_id = application_id
+        
         return webhook
     
     @classmethod
@@ -226,7 +246,7 @@ class Webhook(UserBase):
         -------
         webhook : `None` or ``Webhook``
         """
-        result=cls.urlpattern.fullmatch(url)
+        result = WEBHOOK_URL_PATTERN.fullmatch(url)
         if result is None:
             return None
         
@@ -246,28 +266,28 @@ class Webhook(UserBase):
         """
         self.channel = channel = ChannelText.precreate(int(data['channel_id']))
         if channel.clients:
-            channel.guild.webhooks[self.id]=self
+            channel.guild.webhooks[self.id] = self
         
-        token=data.get('token')
+        token = data.get('token')
         if (token is not None):
             self.token=token
-
-        name=data['name']
-        if name is None:
-            name=''
         
-        self.name=name
-
-        self.discriminator=0
-
+        name = data['name']
+        if name is None:
+            name = ''
+        
+        self.name = name
+        
+        self.discriminator = 0
+        
         self._set_avatar(data)
-            
+        
         try:
-            user_data=data['user']
+            user_data = data['user']
         except KeyError:
-            user=ZEROUSER
+            user = ZEROUSER
         else:
-            user=User(user_data)
+            user = User(user_data)
         self.user = user
     
     @classmethod
@@ -300,6 +320,8 @@ class Webhook(UserBase):
             The webhook's ``.user``.
         channel : ``ChannelText``, Optional
             The webhook's ``.channel``.
+        application_id : `int`
+            The application's id what created the webhook.
         
         Returns
         -------
@@ -344,7 +366,15 @@ class Webhook(UserBase):
                 pass
             else:
                 type_ = preconvert_preinstanced_type(type_, 'type', WebhookType)
-                processable.append(('type',type_))
+                processable.append(('type', type_))
+            
+            try:
+                application_id = kwargs.pop('application_id')
+            except KeyError:
+                pass
+            else:
+                application_id = preconvert_snowflake(application_id, 'application_id')
+                processable.append(('application_id', application_id))
             
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs}.')
@@ -353,21 +383,22 @@ class Webhook(UserBase):
             processable = None
         
         try:
-            webhook=USERS[webhook_id]
+            webhook = USERS[webhook_id]
         except KeyError:
-            webhook=object.__new__(cls)
+            webhook = object.__new__(cls)
             
-            webhook.id      = webhook_id
-            webhook.token   = ''
-            webhook.name    = ''
-            webhook.discriminator=0
+            webhook.id = webhook_id
+            webhook.token = ''
+            webhook.name = ''
+            webhook.discriminator = 0
             webhook.avatar_hash = 0
             webhook.avatar_type = ICON_TYPE_NONE
-            webhook.user    = ZEROUSER
+            webhook.user = ZEROUSER
             webhook.channel = None
-            webhook.type    = WebhookType.bot
+            webhook.type = WebhookType.bot
+            webhook.application_id = 0
             
-            USERS[webhook_id]=webhook
+            USERS[webhook_id] = webhook
         else:
             if not webhook.partial:
                 return webhook
@@ -396,20 +427,19 @@ class Webhook(UserBase):
         """
         Removes the webhook's references.
         """
-        channel=self.channel
+        channel = self.channel
         if channel is None:
             return
-        guild=channel.guild
+        guild = channel.guild
         if (guild is not None):
             try:
                 del guild.webhooks[self.id]
             except KeyError:
                 pass
-        self.channel=None
-        self.user=ZEROUSER 
+        self.channel = None
+        self.user = ZEROUSER
     
-    url=property(URLS.webhook_url)
-    urlpattern=URLS.webhook_urlpattern
+    url = property(URLS.webhook_url)
     
     @classmethod
     async def _from_follow_data(cls, data, source_channel, target_channel, client):
@@ -433,9 +463,9 @@ class Webhook(UserBase):
         -------
         webhook : ``Webhook``
         """
-        webhook_id=int(data['webhook_id'])
+        webhook_id = int(data['webhook_id'])
         
-        guild=source_channel.guild
+        guild = source_channel.guild
         if guild is None:
             try:
                 extra_data = await client.http.webhook_get(webhook_id)
@@ -460,22 +490,23 @@ class Webhook(UserBase):
             avatar_type = guild.icon_type
             name = f'{guild.name} #{source_channel.name}'
         
-        webhook=object.__new__(cls)
-        webhook.id          = webhook_id
-        webhook.name        = name
-        webhook.discriminator=0
+        webhook = object.__new__(cls)
+        webhook.id = webhook_id
+        webhook.name = name
+        webhook.discriminator = 0
         webhook.avatar_hash = avatar_hash
         webhook.avatar_type = avatar_type
-        webhook.channel     = target_channel
-        webhook.token       = ''
-        webhook.user        = client
-        webhook.type        = WebhookType.server
+        webhook.channel = target_channel
+        webhook.token = ''
+        webhook.user = client
+        webhook.type = WebhookType.server
+        webhook.application_id = 0
         
-        guild=target_channel.guild
+        guild = target_channel.guild
         if (guild is not None):
-            guild.webhooks[webhook_id]=webhook
+            guild.webhooks[webhook_id] = webhook
         
-        USERS[webhook_id]=webhook
+        USERS[webhook_id] = webhook
         
         return webhook
 
@@ -521,11 +552,11 @@ class WebhookRepr(UserBase):
         channel : ``ChannelText``
             The respective webhook's channel.
         """
-        self.id=webhook_id
-        self.discriminator=0
-        self.name=data['username']
+        self.id = webhook_id
+        self.discriminator = 0
+        self.name = data['username']
         self._set_avatar(data)
-        self.type=type_
+        self.type = type_
         self.channel = channel
     
     @property

@@ -4,21 +4,21 @@ __all__ = ('CallableAnalyzer', )
 from .dereaddons_local import function, MethodLike
 from .futures import iscoroutinefunction as is_coro
 
-CO_OPTIMIZED    = 1
-CO_NEWLOCALS    = 2
-CO_VARARGS      = 4
-CO_VARKEYWORDS  = 8
-CO_NESTED       = 16
-CO_GENERATOR    = 32
-CO_NOFREE       = 64
+CO_OPTIMIZED   = 1
+CO_NEWLOCALS   = 2
+CO_VARARGS     = 4
+CO_VARKEYWORDS = 8
+CO_NESTED      = 16
+CO_GENERATOR   = 32
+CO_NOFREE      = 64
 
-CO_COROUTINE            = 128
-CO_ITERABLE_COROUTINE   = 256
-CO_ASYNC_GENERATOR      = 512
+CO_COROUTINE           = 128
+CO_ITERABLE_COROUTINE  = 256
+CO_ASYNC_GENERATOR     = 512
 
-INSTANCE_TO_ASYNC_FALSE = 0
-INSTANCE_TO_ASYNC_TRUE  = 1
-INSTANCE_TO_ASYNC_CANNOT= 2
+INSTANCE_TO_ASYNC_FALSE  = 0
+INSTANCE_TO_ASYNC_TRUE   = 1
+INSTANCE_TO_ASYNC_CANNOT = 2
 
 ARGUMNET_POSITIONAL_ONLY        = 0
 ARGUMNET_POSITIONAL_AND_KEYWORD = 1
@@ -27,8 +27,7 @@ ARGUMENT_ARGS                   = 3
 ARGUMENT_KWARGS                 = 4
 
 class Argument(object):
-    __slots__ = ('annotation', 'default', 'has_annotation', 'has_default',
-        'name', 'positionality', 'reserved', )
+    __slots__ = ('annotation', 'default', 'has_annotation', 'has_default', 'name', 'positionality', 'reserved', )
     
     def __repr__(self):
         result=[]
@@ -107,7 +106,7 @@ class CallableAnalyzer(object):
         'real_function', )
     
     def __repr__(self):
-        result=[]
+        result = []
         result.append('<')
         result.append(self.__class__.__name__)
         
@@ -153,30 +152,30 @@ class CallableAnalyzer(object):
         while True:
             if isinstance(callable_, function):
                 
-                real_function=callable_
+                real_function = callable_
                 if is_coro(real_function):
-                    instance_to_async=INSTANCE_TO_ASYNC_FALSE
+                    instance_to_async = INSTANCE_TO_ASYNC_FALSE
                 else:
-                    instance_to_async=INSTANCE_TO_ASYNC_CANNOT
+                    instance_to_async = INSTANCE_TO_ASYNC_CANNOT
                 
-                method_allocation=0
+                method_allocation = 0
                 break
             
-            if isinstance(callable_,MethodLike):
+            if isinstance(callable_, MethodLike):
                 real_function=callable_
                 
                 if is_coro(real_function):
-                    instance_to_async=INSTANCE_TO_ASYNC_FALSE
+                    instance_to_async = INSTANCE_TO_ASYNC_FALSE
                 else:
-                    instance_to_async=INSTANCE_TO_ASYNC_CANNOT
+                    instance_to_async = INSTANCE_TO_ASYNC_CANNOT
                 
-                method_allocation=MethodLike.get_reserved_argcount(callable_)
+                method_allocation = MethodLike.get_reserved_argcount(callable_)
                 break
             
-            if not isinstance(callable_, type) and hasattr(type(callable_),'__call__'):
-                real_function=type(callable_).__call__
+            if not isinstance(callable_, type) and hasattr(type(callable_), '__call__'):
+                real_function = type(callable_).__call__
                 
-                if is_coro(real_function) or getattr(type(callable_),'__async_call__',0)==1:
+                if is_coro(real_function) or getattr(type(callable_), '__async_call__', 0) == 1:
                     instance_to_async = INSTANCE_TO_ASYNC_FALSE
                 else:
                     instance_to_async = INSTANCE_TO_ASYNC_CANNOT
@@ -184,7 +183,7 @@ class CallableAnalyzer(object):
                 if type(real_function) is function:
                     method_allocation = 1
                 else:
-                    method_allocation=MethodLike.get_reserved_argcount(real_function)
+                    method_allocation = MethodLike.get_reserved_argcount(real_function)
                 
                 break
             
@@ -199,9 +198,9 @@ class CallableAnalyzer(object):
                         if is_coro(real_function):
                             instance_to_async = INSTANCE_TO_ASYNC_FALSE
                         else:
-                            if hasattr(callable_,'__call__'):
-                                call=callable_.__call__
-                                if is_coro(call) or getattr(callable_,'__async_call__',0)==1:
+                            if hasattr(callable_, '__call__'):
+                                call = callable_.__call__
+                                if is_coro(call) or getattr(callable_, '__async_call__', 0) == 1:
                                     instance_to_async = INSTANCE_TO_ASYNC_TRUE
                                 else:
                                     instance_to_async = INSTANCE_TO_ASYNC_CANNOT
@@ -212,7 +211,7 @@ class CallableAnalyzer(object):
                             method_allocation = 1
                         else:
                             method_allocation = MethodLike.get_reserved_argcount(real_function)
-                    
+                        
                         break
                     
                     real_function = callable_.__init__
@@ -220,9 +219,9 @@ class CallableAnalyzer(object):
                         raise TypeError(f'`{callable_!r}.__init__` should be callable, got `{real_function!r}`')
                     
                     if real_function is not object.__init__:
-                        if hasattr(callable_,'__call__'):
+                        if hasattr(callable_, '__call__'):
                             call=callable_.__call__
-                            if is_coro(call) or getattr(callable_,'__async_call__',0)==1:
+                            if is_coro(call) or getattr(callable_, '__async_call__', 0) == 1:
                                 instance_to_async = INSTANCE_TO_ASYNC_TRUE
                             else:
                                 instance_to_async = INSTANCE_TO_ASYNC_CANNOT
@@ -241,7 +240,7 @@ class CallableAnalyzer(object):
                     
                     if hasattr(callable_,'__call__'):
                         call=callable_.__call__
-                        if is_coro(call) or getattr(callable_,'__async_call__',0)==1:
+                        if is_coro(call) or getattr(callable_, '__async_call__', 0) == 1:
                             instance_to_async = INSTANCE_TO_ASYNC_TRUE
                         else:
                             instance_to_async = INSTANCE_TO_ASYNC_CANNOT
@@ -265,10 +264,10 @@ class CallableAnalyzer(object):
             accepts_args = real_function.__code__.co_flags&CO_VARARGS
             keyword_only_argument_count = real_function.__code__.co_kwonlyargcount
             accepts_kwargs = real_function.__code__.co_flags&CO_VARKEYWORDS
-            positional_only_argcount = getattr(real_function.__code__,'co_posonlyargcount',0)
+            positional_only_argcount = getattr(real_function.__code__, 'co_posonlyargcount', 0)
             default_argument_values=real_function.__defaults__
             default_keyword_only_argument_values = real_function.__kwdefaults__
-            annotations = getattr(real_function,'__annotations__',None)
+            annotations = getattr(real_function, '__annotations__', None)
             if (annotations is None):
                 annotations = {}
             
@@ -282,7 +281,7 @@ class CallableAnalyzer(object):
             
             if accepts_args:
                 args_name = real_function.__code__.co_varnames[end]
-                end = end+1
+                end +=1
             else:
                 args_name= None
             
@@ -291,7 +290,7 @@ class CallableAnalyzer(object):
             else:
                 kwargs_name = None
             
-            names_to_defaults={}
+            names_to_defaults = {}
             if (default_argument_values is not None) and default_argument_values:
                 argument_index = argument_count - len(default_argument_values)
                 default_index = 0
@@ -299,10 +298,10 @@ class CallableAnalyzer(object):
                     name = argument_names[argument_index]
                     default = default_argument_values[default_index]
                     
-                    names_to_defaults[name]=default
+                    names_to_defaults[name] = default
                     
-                    argument_index+=1
-                    default_index+=1
+                    argument_index +=1
+                    default_index +=1
             
             if (default_keyword_only_argument_values is not None) and default_keyword_only_argument_values:
                 argument_index = keyword_only_argument_count - len(default_keyword_only_argument_values)
@@ -315,7 +314,8 @@ class CallableAnalyzer(object):
                     argument_index+=1
             
             if (method_allocation>argument_count) and (args_name is None):
-                raise TypeError(f'The passed object is a method like, but has not enought positional arguments: `{real_function!r}`')
+                raise TypeError(f'The passed object is a method like, but has not enought positional arguments: '
+                    f'`{real_function!r}`')
             
             index = 0
             while index < argument_count:
@@ -471,7 +471,7 @@ class CallableAnalyzer(object):
             if value.has_default:
                 break
             
-            count = count+1
+            count +=1
             continue
         
         return count
@@ -499,7 +499,7 @@ class CallableAnalyzer(object):
             if argument.reserved:
                 continue
             
-            count = count+1
+            count +=1
             continue
         
         return count
@@ -516,7 +516,7 @@ class CallableAnalyzer(object):
             if argument.has_default:
                 continue
             
-            count = count+1
+            count +=1
             continue
         
         return count
@@ -534,7 +534,7 @@ class CallableAnalyzer(object):
             if argument.has_default:
                 break
             
-            start = start+1
+            start +=1
             continue
         
         else:
@@ -548,7 +548,7 @@ class CallableAnalyzer(object):
             if argument.reserved:
                 continue
             
-            end = end+1
+            end +=1
             continue
         
         return start, end
@@ -558,4 +558,3 @@ class CallableAnalyzer(object):
     
     def accepts_kwargs(self):
         return (self.kwargs_argument is not None)
-    

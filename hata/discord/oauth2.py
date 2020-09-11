@@ -8,11 +8,11 @@ from time import time as time_now
 from .bases import DiscordEntity, IconSlot
 from .http import URLS
 from .integration import Integration
-from .others import PremiumType
+from .others import PremiumType, DATETIME_FORMAT_CODE
 from .user import UserBase, UserFlag
 
-DEFAULT_LOCALE='en-US'
-LOCALES={DEFAULT_LOCALE:DEFAULT_LOCALE}
+DEFAULT_LOCALE = 'en-US'
+LOCALES = {DEFAULT_LOCALE: DEFAULT_LOCALE}
 
 def parse_locale(data):
     '''
@@ -30,7 +30,7 @@ def parse_locale(data):
     locale : `str`
     '''
     try:
-        locale=data['locale']
+        locale = data['locale']
     except KeyError:
         return DEFAULT_LOCALE
     
@@ -53,7 +53,7 @@ def parse_preferred_locale(data):
     locale : `str`
     '''
     try:
-        locale=data['preferred_locale']
+        locale = data['preferred_locale']
     except KeyError:
         return DEFAULT_LOCALE
     
@@ -76,14 +76,14 @@ def parse_locale_optional(data):
     locale : `str` or `None`
     '''
     try:
-        locale=data['locale']
+        locale = data['locale']
     except KeyError:
         return None
     
     locale = LOCALES.setdefault(locale, locale)
     return locale
 
-OA2_RU_RP=re.compile('(https?://.+?)\?code=([a-zA-Z0-9]{30})')
+OA2_RU_RP = re.compile('(https?://.+?)\?code=([a-zA-Z0-9]{30})')
 
 def parse_oauth2_redirect_url(url):
     """
@@ -150,17 +150,17 @@ class Connection(DiscordEntity):
         data : `dict` of (`str`, `Any`)
             Received connection data.
         """
-        self.name=data['name']
-        self.type=data['type']
-        self.id=data['id']
-        self.revoked=data.get('revoked',False)
-        self.verified=data.get('verified',False)
-        self.show_activity=data.get('show_activity',False)
-        self.friend_sync=data.get('friend_sync',False)
-        self.visibility=data.get('visibility',0)
+        self.name = data['name']
+        self.type = data['type']
+        self.id = data['id']
+        self.revoked = data.get('revoked', False)
+        self.verified = data.get('verified', False)
+        self.show_activity = data.get('show_activity', False)
+        self.friend_sync = data.get('friend_sync', False)
+        self.visibility = data.get('visibility', 0)
         
         try:
-            integration_datas=data['integrations']
+            integration_datas = data['integrations']
         except KeyError:
             integrations = None
         else:
@@ -168,13 +168,14 @@ class Connection(DiscordEntity):
                 integrations = [Integration(integration_data) for integration_data in integration_datas]
             else:
                 integrations = None
-        self.integrations=integrations
+        self.integrations = integrations
 
 
-SCOPES={v:v for v in ('activities.read', 'activities.write', 'applications.builds.read', 'applications.builds.upload',
-    'applications.entitlements', 'applications.store.update', 'bot', 'connections', 'email', 'guilds', 'guilds.join',
-    'identify', 'messages.read', 'rpc', 'rpc.api', 'rpc.notifications.read', 'webhook.incoming')}
-# rest of scopes is ignorable
+SCOPES = {v: v for v in ('activities.read', 'activities.write', 'applications.builds.read',
+    'applications.builds.upload', 'applications.entitlements', 'applications.store.update', 'bot', 'connections',
+    'email', 'guilds', 'guilds.join', 'identify', 'messages.read', 'rpc', 'rpc.api', 'rpc.notifications.read',
+    'webhook.incoming')}
+# rest of scopes are ignorable
 
 class AO2Access(object):
     """
@@ -203,7 +204,7 @@ class AO2Access(object):
     TOKEN_TYPE : `str` = `'Bearer'`
         The access token's type.
     """
-    TOKEN_TYPE='Bearer'
+    TOKEN_TYPE = 'Bearer'
     
     __slots__ = ('access_token', 'created_at', 'expires_in', 'redirect_url', 'refresh_token', 'scopes',)
     def __init__(self, data, redirect_url):
@@ -218,17 +219,17 @@ class AO2Access(object):
             The redirect url with what the user granted the authorization code for the oauth2 scopes for the
             application.
         """
-        self.redirect_url=redirect_url
-        self.access_token=data['access_token']
-        self.refresh_token=data.get('refresh_token','')
-        self.expires_in=data['expires_in'] #default is 604800 (s) (1 week)
-        self.scopes=scopes=set()
+        self.redirect_url = redirect_url
+        self.access_token = data['access_token']
+        self.refresh_token = data.get('refresh_token', '')
+        self.expires_in = data['expires_in'] #default is 604800 (s) (1 week)
+        self.scopes = scopes = set()
         for scope in data['scope'].split():
             try:
                 scopes.add(SCOPES[scope])
             except KeyError:
                 pass
-        self.created_at=datetime.now() #important for renewing
+        self.created_at = datetime.utcnow() #important for renewing
         
     def _renew(self, data):
         """
@@ -239,14 +240,14 @@ class AO2Access(object):
         data : `None` or (`dict` of (`str`, `Any`))
             Requested access data.
         """
-        self.created_at=datetime.now()
+        self.created_at = datetime.utcnow()
         if data is None:
             return
         
-        self.access_token=data['access_token']
-        self.refresh_token=data.get('refresh_token','')
-        self.expires_in=data['expires_in']
-        scopes=self.scopes
+        self.access_token = data['access_token']
+        self.refresh_token = data.get('refresh_token', '')
+        self.expires_in = data['expires_in']
+        scopes = self.scopes
         scopes.clear()
         for scope in data['scope'].split():
             try:
@@ -256,7 +257,9 @@ class AO2Access(object):
     
     def __repr__(self):
         """Returns the representation of the achievement."""
-        return f'<{self.__class__.__name__} {"active" if (self.created_at.timestamp()+self.expires_in > time_now()) else "expired"}, access_token={self.access_token!r}, scopes count={len(self.scopes)}>'
+        state =  'active' if (self.created_at.timestamp()+self.expires_in > time_now()) else 'expired'
+        return (f'<{self.__class__.__name__} {state}, access_token={self.access_token!r}, scopes count='
+            f'{len(self.scopes)}>')
 
 
 class UserOA2(UserBase):
@@ -277,7 +280,7 @@ class UserOA2(UserBase):
         The user's avatar's hash in `uint128`.
     avatar_type : `bool`
         The user's avatar's type.
-    email : `str`
+    email : `None` or `str`
         The user's email. Defaults to empty string.
     flags : ``UserFlag``
         The user's user flags.
@@ -295,26 +298,26 @@ class UserOA2(UserBase):
     __slots__ = ('access', 'email', 'flags', 'locale', 'mfa', 'premium_type', 'system', 'verified', )
     
     def __init__(self, data, access):
-        self.access         = access
-        self.id             = int(data['id'])
-        self.name           = data['username']
-        self.discriminator  = int(data['discriminator'])
+        self.access = access
+        self.id = int(data['id'])
+        self.name = data['username']
+        self.discriminator = int(data['discriminator'])
         
         self._set_avatar(data)
         
-        self.mfa            = data.get('mfa_enabled',False)
-        self.verified       = data.get('verified',False)
-        self.email          = data.get('email','')
+        self.mfa = data.get('mfa_enabled', False)
+        self.verified = data.get('verified', False)
+        self.email = data.get('email')
         
         try:
             flags = data['flags']
         except KeyError:
-            flags = data.get('public_flags',0)
+            flags = data.get('public_flags', 0)
         
-        self.flags          = UserFlag(flags)
-        self.premium_type   = PremiumType.INSTANCES[data.get('premium_type',0)]
-        self.locale         = parse_locale(data)
-        self.system         = data.get('system',False)
+        self.flags = UserFlag(flags)
+        self.premium_type = PremiumType.INSTANCES[data.get('premium_type', 0)]
+        self.locale = parse_locale(data)
+        self.system = data.get('system', False)
     
     @property
     def partial(self):
@@ -431,8 +434,8 @@ class Achievement(DiscordEntity):
         data : `dict` of (`str`, `Any`) items
             Received achievement data.
         """
-        self.application_id=int(data['application_id'])
-        self.id=int(data['id'])
+        self.application_id = int(data['application_id'])
+        self.id = int(data['id'])
         
         self._update_no_return(data)
     
@@ -447,8 +450,10 @@ class Achievement(DiscordEntity):
     def __format__(self,code):
         if not code:
             return self.name
+        
         if code=='c':
-            return self.created_at.__format__('%Y.%m.%d-%H:%M:%S')
+            return self.created_at.__format__(DATETIME_FORMAT_CODE)
+        
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
     def _update(self, data):
@@ -484,25 +489,25 @@ class Achievement(DiscordEntity):
         """
         old_attributes = {}
         
-        name=data['name']['default']
-        if self.name!=name:
-            old_attributes['name']=self.name
-            self.name=name
+        name = data['name']['default']
+        if self.name != name:
+            old_attributes['name'] = self.name
+            self.name = name
         
-        description=data['description']['default']
-        if self.description!=description:
-            old_attributes['description']=self.description
-            self.description=description
+        description = data['description']['default']
+        if self.description != description:
+            old_attributes['description'] = self.description
+            self.description = description
         
-        secret=data['secret']
-        if self.secret!=secret:
-            old_attributes['secret']=self.secret
-            self.secret=secret
+        secret = data['secret']
+        if self.secret != secret:
+            old_attributes['secret'] = self.secret
+            self.secret = secret
         
-        secure=data['secure']
-        if self.secure!=secure:
-            old_attributes['secure']=self.secure
-            self.secure=secure
+        secure = data['secure']
+        if self.secure != secure:
+            old_attributes['secure'] = self.secure
+            self.secure = secure
         
         self._update_icon(data, old_attributes)
         
@@ -517,11 +522,11 @@ class Achievement(DiscordEntity):
         data : `dict` of (`str`, `Any`) items
             Achievement data received from Discord.
         """
-        self.name=data['name']['default']
-        self.description=data['description']['default']
+        self.name = data['name']['default']
+        self.description = data['description']['default']
         
-        self.secret=data['secret']
-        self.secure=data['secure']
+        self.secret = data['secret']
+        self.secure = data['secure']
         
         self._set_icon(data)
 

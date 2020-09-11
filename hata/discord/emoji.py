@@ -1,16 +1,19 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('BUILTIN_EMOJIS', 'Emoji', 'parse_emoji', 'reaction_mapping', 'reaction_mapping_line',)
+__all__ = ('BUILTIN_EMOJIS', 'Emoji', 'parse_emoji', 'parse_custom_emojis', 'reaction_mapping',
+    'reaction_mapping_line',)
+
+from ..backend.dereaddons_local import DOCS_ENABLED
 
 from .bases import DiscordEntity
 from .client_core import EMOJIS
-from .others import id_to_time, EMOJI_RP, DISCORD_EPOCH_START
+from .others import id_to_time, EMOJI_RP, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 from .http import URLS
 from .user import User, ZEROUSER
 from .preconverters import preconvert_str, preconvert_bool, preconvert_snowflake
 
 from . import activity
 
-UNICODE_EMOJI_LIMIT = 0b1000000000000000000000
+UNICODE_EMOJI_LIMIT = 1<<21
 
 BUILTIN_EMOJIS = {}
 UNICODE_TO_EMOJI = {}
@@ -28,32 +31,38 @@ def PartialEmoji(data):
     -------
     emoji : ``Emoji``
     """
-    emoji_id=data.get('id')
+    try:
+        name = data['name']
+    except KeyError:
+        name = data['emoji_name']
+        emoji_id = data.get('emoji_id')
+    else:
+        emoji_id = data.get('id')
+    
     if emoji_id is None:
-        name=data['name']
         try:
             return UNICODE_TO_EMOJI[name]
         except KeyError:
-            raise RuntimeError(f'Undefined emoji : {name.encode()!r}\nPlease open an issue with this message.') from None
+            raise RuntimeError(f'Undefined emoji : {name.encode()!r}\nPlease open an issue with this message.') \
+                from None
     
-    emoji_id=int(emoji_id)
+    emoji_id = int(emoji_id)
     
     try:
-        emoji=EMOJIS[emoji_id]
+        emoji = EMOJIS[emoji_id]
     except KeyError:
-        emoji           = object.__new__(Emoji)
-        emoji.id        = emoji_id
-        emoji.animated  = data.get('animated',False)
-        EMOJIS[emoji_id]= emoji
-        emoji.unicode   = None
-        emoji.guild     = None
+        emoji = object.__new__(Emoji)
+        emoji.id = emoji_id
+        emoji.animated = data.get('animated', False)
+        EMOJIS[emoji_id] = emoji
+        emoji.unicode = None
+        emoji.guild = None
     
     # name can change
-    name=data['name']
     if name is None:
-        name=''
+        name = ''
     
-    emoji.name=name
+    emoji.name = name
     
     return emoji
     
@@ -96,8 +105,8 @@ class Emoji(DiscordEntity, immortal=True):
         
     See Also
     --------
-    PartialEmoji : A function to create an emoji object from partial emoji data.
-    parse_emoji : Parses a partial emoji object out from text.
+    - ``PartialEmoji`` : A function to create an emoji object from partial emoji data.
+    - ``parse_emoji`` : Parses a partial emoji object out from text.
     """
     __slots__ = ('animated', 'available', 'guild', 'managed', 'name', 'require_colons', 'roles', 'unicode', 'user', )
     
@@ -119,14 +128,14 @@ class Emoji(DiscordEntity, immortal=True):
         -------
         emoji : ``Emoji``
         """
-        emoji_id=int(data['id'])
+        emoji_id = int(data['id'])
 
         try:
-            emoji=EMOJIS[emoji_id]
+            emoji = EMOJIS[emoji_id]
         except KeyError:
-            emoji=object.__new__(cls)
-            emoji.id=emoji_id
-            EMOJIS[emoji_id]=emoji
+            emoji = object.__new__(cls)
+            emoji.id = emoji_id
+            EMOJIS[emoji_id] = emoji
         else:
             # whenever we receive an emoji, it will have no user data included,
             # so it is enough if we check for user data only whenever we
@@ -134,33 +143,33 @@ class Emoji(DiscordEntity, immortal=True):
             if (emoji.guild is not None):
                 if not emoji.user.id:
                     try:
-                        user_data=data['user']
+                        user_data = data['user']
                     except KeyError:
                         pass
                     else:
-                        emoji.user=User(user_data)
+                        emoji.user = User(user_data)
                 return emoji
         
         name = data['name']
         if name is None:
-            name=''
+            name = ''
         
-        emoji.name          = name
-        emoji.animated      = data.get('animated',False)
-        emoji.require_colons= data.get('require_colons',True)
-        emoji.managed       = data.get('managed',False)
-        emoji.guild         = guild
-        emoji.available     = data.get('available',True)
-        emoji.user          = ZEROUSER
-        emoji.unicode       = None
+        emoji.name = name
+        emoji.animated = data.get('animated', False)
+        emoji.require_colons= data.get('require_colons', True)
+        emoji.managed = data.get('managed', False)
+        emoji.guild = guild
+        emoji.available = data.get('available', True)
+        emoji.user = ZEROUSER
+        emoji.unicode = None
         
         try:
-            role_ids=data['roles']
+            role_ids = data['roles']
         except KeyError:
-            roles=None
+            roles = None
         else:
             if role_ids:
-                roles={guild.all_role[int(role_id)] for role_id in role_ids}
+                roles = {guild.roles[int(role_id)] for role_id in role_ids}
             else:
                 roles = None
         
@@ -228,16 +237,16 @@ class Emoji(DiscordEntity, immortal=True):
             processable = None
         
         try:
-            emoji=EMOJIS[emoji_id]
+            emoji = EMOJIS[emoji_id]
         except KeyError:
-            emoji=object.__new__(cls)
+            emoji = object.__new__(cls)
             
-            emoji.name=''
-            emoji.animated=False
-            emoji.id        = emoji_id 
-            emoji.guild     = None
-            emoji.unicode   = None
-            emoji.user      = ZEROUSER
+            emoji.name = ''
+            emoji.animated = False
+            emoji.id = emoji_id 
+            emoji.guild = None
+            emoji.unicode = None
+            emoji.user = ZEROUSER
             
             EMOJIS[emoji_id]= emoji
         else:
@@ -278,6 +287,7 @@ class Emoji(DiscordEntity, immortal=True):
         
         Examples
         --------
+        ```
         >>> from hata import Emoji, now_as_id, BUILTIN_EMOJIS
         >>> emoji = Emoji.precreate(now_as_id(), name='nice')
         >>> emoji
@@ -304,22 +314,29 @@ class Emoji(DiscordEntity, immortal=True):
         '❤️'
         >>> f'{emoji:c}'
         '2015.01.01-00:00:00'
+        ```
         """
         if not code:
             return self.name
-        if code=='e':
-            if self.id<UNICODE_EMOJI_LIMIT:
+        
+        if code == 'e':
+            if self.id < UNICODE_EMOJI_LIMIT:
                 return self.unicode
+            
             if self.animated:
                 return f'<a:{self.name}:{self.id}>'
             else:
                 return f'<:{self.name}:{self.id}>'
-        if code=='r':
-            if self.id<UNICODE_EMOJI_LIMIT:
+        
+        if code == 'r':
+            if self.id < UNICODE_EMOJI_LIMIT:
                 return self.unicode
+            
             return f'{self.name}:{self.id}'
-        if code=='c':
-            return self.created_at.__format__('%Y.%m.%d-%H:%M:%S')
+        
+        if code == 'c':
+            return self.created_at.__format__(DATETIME_FORMAT_CODE)
+        
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
     @property
@@ -341,7 +358,7 @@ class Emoji(DiscordEntity, immortal=True):
         -------
         is_custom_emoji : `bool`
         """
-        return self.id>=UNICODE_EMOJI_LIMIT
+        return (self.id >= UNICODE_EMOJI_LIMIT)
 
     def is_unicode_emoji(self):
         """
@@ -351,7 +368,7 @@ class Emoji(DiscordEntity, immortal=True):
         -------
         is_custom_emoji : `bool`
         """
-        return self.id<UNICODE_EMOJI_LIMIT
+        return (self.id < UNICODE_EMOJI_LIMIT)
     
     @property
     def as_reaction(self):
@@ -362,8 +379,9 @@ class Emoji(DiscordEntity, immortal=True):
         -------
         as_reaction : `str`
         """
-        if self.id<UNICODE_EMOJI_LIMIT:
+        if self.id < UNICODE_EMOJI_LIMIT:
             return self.unicode
+        
         return f'{self.name}:{self.id}'
     
     @property
@@ -375,8 +393,9 @@ class Emoji(DiscordEntity, immortal=True):
         -------
         as_emoji : `str`
         """
-        if self.id<UNICODE_EMOJI_LIMIT:
+        if self.id < UNICODE_EMOJI_LIMIT:
             return self.unicode
+        
         if self.animated:
             return f'<a:{self.name}:{self.id}>'
         else:
@@ -426,41 +445,41 @@ class Emoji(DiscordEntity, immortal=True):
         data : `dict` of (`str`, `Any`) items
             Emojis data received from Discord
         """
-        self.require_colons=data.get('require_colons',True)
-        self.managed=data.get('managed',False)
+        self.require_colons = data.get('require_colons', True)
+        self.managed = data.get('managed', False)
         
-        self.animated=data.get('animated',False)
+        self.animated = data.get('animated', False)
         
-        name=data['name']
+        name = data['name']
         if name is None:
-            name=''
+            name = ''
         
-        self.name=name
+        self.name = name
         
         try:
-            role_ids=data['roles']
+            role_ids = data['roles']
         except KeyError:
-            roles=None
+            roles = None
         else:
             guild = self.guild
             if guild is None:
                 roles = None
             else:
                 if role_ids:
-                    roles={guild.all_role[int(role_id)] for role_id in role_ids}
+                    roles = {guild.roles[int(role_id)] for role_id in role_ids}
                 else:
                     roles = None
         
         self.roles = roles
         
         try:
-            user_data=data['user']
+            user_data = data['user']
         except KeyError:
             pass
         else:
-            self.user=User(user_data)
+            self.user = User(user_data)
 
-        self.available=data.get('available',True)
+        self.available = data.get('available', True)
             
     def _update(self, data):
         """
@@ -497,67 +516,97 @@ class Emoji(DiscordEntity, immortal=True):
         """
         old_attributes = {}
         
-        require_colons=data.get('require_colons',True)
-        if self.require_colons!=require_colons:
-            old_attributes['require_colons']=self.require_colons
-            self.require_colons=require_colons
+        require_colons = data.get('require_colons', True)
+        if self.require_colons != require_colons:
+            old_attributes['require_colons'] = self.require_colons
+            self.require_colons = require_colons
         
-        managed=data.get('managed',False)
-        if self.managed!=managed:
-            old_attributes['managed']=self.managed
-            self.managed=managed
+        managed = data.get('managed', False)
+        if self.managed != managed:
+            old_attributes['managed'] = self.managed
+            self.managed = managed
         
-        animated=data.get('animated',False)
-        if self.animated!=animated:
-            old_attributes['animated']=self.animated
-            self.animated=animated
+        animated = data.get('animated', False)
+        if self.animated != animated:
+            old_attributes['animated'] = self.animated
+            self.animated = animated
         
-        name=data['name']
+        name = data['name']
         if name is None:
-            name=''
-        if self.name!=name:
-            old_attributes['name']=self.name
-            self.name=name
+            name = ''
+        if self.name != name:
+            old_attributes['name'] = self.name
+            self.name = name
         
         try:
-            role_ids=data['roles']
+            role_ids = data['roles']
         except KeyError:
-            roles=None
+            roles = None
         else:
             guild = self.guild
             if guild is None:
                 roles = None
             else:
                 if role_ids:
-                    roles={guild.all_role[int(role_id)] for role_id in role_ids}
+                    roles = {guild.roles[int(role_id)] for role_id in role_ids}
                 else:
                     roles = None
         
-        if (self.roles is None):
-            if (roles is not None):
-                old_attributes['roles']=None
-                self.roles=roles
-        else:
-            if (roles is None):
-                old_attributes['roles']=self.roles
-                self.roles=None
-            elif self.roles!=roles:
-                old_attributes['roles']=self.roles
-                self.roles=roles
+        if self.roles != roles:
+            old_attributes['roles'] = self.roles
+            self.roles = roles
         
         try:
-            user_data=data['user']
+            user_data = data['user']
         except KeyError:
             pass
         else:
-            self.user=User(user_data)
+            self.user = User(user_data)
         
-        available=data.get('available',True)
-        if self.available!=available:
-            old_attributes['available']=self.available
-            self.available=available
+        available = data.get('available', True)
+        if self.available != available:
+            old_attributes['available'] = self.available
+            self.available = available
         
         return old_attributes
+    
+    @classmethod
+    def _from_parsed_group(cls, groups):
+        """
+        Creates a new emoji from the given parsed out groups.
+        
+        Parameters
+        ----------
+        groups : `tuple` ((`str` or `None`), `str`, `str`)
+            A tuple, which contains whether the emoji to create is animated (element 0), the emoji's name (element 1) and
+            the emoji's id. (element 2).
+        
+        Returns
+        -------
+        emoji : ``Emoji``
+        """
+        animated, name, emoji_id = groups
+        emoji_id = int(emoji_id)
+        
+        try:
+            emoji = EMOJIS[emoji_id]
+            if emoji.guild is None:
+                emoji.name = name
+        except KeyError:
+            emoji = object.__new__(cls)
+            emoji.id = emoji_id
+            emoji.animated = (animated is not None)
+            emoji.name = name
+            emoji.unicode = None
+            emoji.guild = None
+            emoji.available = True
+            emoji.require_colons = True
+            emoji.managed = False
+            emoji.user = ZEROUSER
+            emoji.roles = None
+            EMOJIS[emoji_id] = emoji
+        
+        return emoji
 
 class reaction_mapping_line(set):
     """
@@ -568,7 +617,7 @@ class reaction_mapping_line(set):
     unknown : `int`
         The amount of not known reacters.
     """
-    __slots__=('unknown',)
+    __slots__ = ('unknown',)
     
     def __init__(self, unknown):
         """
@@ -587,7 +636,10 @@ class reaction_mapping_line(set):
     
     def __repr__(self):
         """Returns the representation of the container."""
-        result=[self.__class__.__name__,'({']
+        result = [
+            self.__class__.__name__,
+            '({',
+                ]
         
         # set indexing is not public, so we need to do a check, like this
         if set.__len__(self):
@@ -595,11 +647,11 @@ class reaction_mapping_line(set):
                 result.append(repr(user))
                 result.append(', ')
             
-            result[-1]='}'
+            result[-1] = '}'
         else:
             result.append('}')
         
-        unknown=self.unknown
+        unknown = self.unknown
         if unknown:
             result.append(', unknown=')
             result.append(repr(unknown))
@@ -622,9 +674,9 @@ class reaction_mapping_line(set):
         -------
         self : ``reaction_mapping_line``
         """
-        self=set.__new__(cls)
+        self = set.__new__(cls)
         set.__init__(self, users)
-        self.unknown=0
+        self.unknown = 0
         return self
     
     def update(self, users):
@@ -636,10 +688,10 @@ class reaction_mapping_line(set):
         users : `list` of (``User`` or ``Client``) objects
             A `list` of users, who reacted on the respective `Message` with the respective ``Emoji``.
         """
-        ln_old=len(self)
+        ln_old = len(self)
         set.update(self,users)
-        ln_new=len(self)
-        self.unknown-=(ln_new-ln_old)
+        ln_new = len(self)
+        self.unknown -= (ln_new-ln_old)
     
     def copy(self):
         """
@@ -649,9 +701,9 @@ class reaction_mapping_line(set):
         -------
         new : ``reaction_mapping_line``
         """
-        new=set.__new__(type(self))
+        new = set.__new__(type(self))
         set.__init__(new,self)
-        new.unknown=self.unknown
+        new.unknown = self.unknown
         return new
     
     #executes an api request if we know we know all reacters
@@ -671,37 +723,37 @@ class reaction_mapping_line(set):
         -------
         users : `
         """
-        list_form=sorted(self)
+        list_form = sorted(self)
         
         after = after+1 # do not include the specified id
         
-        bot=0
-        top=len(list_form)
+        bot = 0
+        top = len(list_form)
         while True:
             if bot<top:
-                half=(bot+top)>>1
+                half = (bot+top)>>1
                 if list_form[half].id<after:
-                    bot=half+1
+                    bot = half+1
                 else:
-                    top=half
+                    top = half
                 continue
             break
         
         index = bot
         
-        length=len(list_form)
-        users=[]
+        length = len(list_form)
+        users = []
         
         while True:
-            if index==length:
+            if index == length:
                 break
             
-            if limit<=0:
+            if limit <= 0:
                 break
             
             users.append(list_form[index])
-            index+=1
-            limit-=1
+            index +=1
+            limit -=1
             continue
         
         return users
@@ -710,7 +762,7 @@ class reaction_mapping_line(set):
         """
         Clears the reaction mapping line by removing every ``User`` object from it.
         """
-        clients=[]
+        clients = []
         for user in self:
             if type(user) is User:
                 continue
@@ -740,14 +792,15 @@ class reaction_mapping(dict):
         data : `None` or `dict` of (`str`, `Any`) items
         """
         if (data is None) or (not data):
-            self.fully_loaded=True
+            self.fully_loaded = True
             return
-        self.fully_loaded=False
+        
+        self.fully_loaded = False
         for line in data:
-            self[PartialEmoji(line['emoji'])]=reaction_mapping_line(line.get('count',1))
+            self[PartialEmoji(line['emoji'])] = reaction_mapping_line(line.get('count', 1))
     
     emoji_count = property(dict.__len__)
-    if (__init__ is not None):
+    if DOCS_ENABLED:
         emoji_count.__doc__ = (
         """
         The amount of different emojis, which were added on the reaction mapping's respective ``Message``.
@@ -766,10 +819,10 @@ class reaction_mapping(dict):
         -------
         total_count : `int`
         """
-        count=0
+        count = 0
         for line in self.values():
-            count+=set.__len__(line)
-            count+=line.unknown
+            count += set.__len__(line)
+            count += line.unknown
         return count
     
     def clear(self):
@@ -793,10 +846,10 @@ class reaction_mapping(dict):
             The reacter user.
         """
         try:
-            line=self[emoji]
+            line = self[emoji]
         except KeyError:
-            line=reaction_mapping_line(0)
-            self[emoji]=line
+            line = reaction_mapping_line(0)
+            self[emoji] = line
         line.add(user)
     
     def remove(self, emoji, user):
@@ -811,7 +864,7 @@ class reaction_mapping(dict):
             The removed reacter user.
         """
         try:
-            line=self[emoji]
+            line = self[emoji]
         except KeyError:
             return
 
@@ -827,7 +880,7 @@ class reaction_mapping(dict):
                 return
         
         if line.unknown:
-            line.unknown-=1
+            line.unknown -=1
             if set.__len__(line):
                 if line.unknown:
                     return
@@ -850,7 +903,7 @@ class reaction_mapping(dict):
         -------
         line : `None` or ``reaction_mapping_line``
         """
-        line=self.pop(emoji,None)
+        line = self.pop(emoji, None)
         if line is None:
             return
         
@@ -867,10 +920,10 @@ class reaction_mapping(dict):
         """
         for line in self.values():
             if line.unknown:
-                self.fully_loaded=False
+                self.fully_loaded = False
                 return 
         
-        self.fully_loaded=True
+        self.fully_loaded = True
         
     #we call this when we get SOME reacters of an emoji
     def _update_some_users(self, emoji, users):
@@ -898,7 +951,7 @@ class reaction_mapping(dict):
         users : `list` of (``User`` or ``Client``) objects
             The added reacters.
         """
-        self[emoji]=reaction_mapping_line._full(users)
+        self[emoji] = reaction_mapping_line._full(users)
         self._full_check()
 
 def parse_emoji(text):
@@ -912,32 +965,35 @@ def parse_emoji(text):
     -------
     emoji : `None` or ``Emoji``
     """
-    custom=EMOJI_RP.fullmatch(text)
-    if custom is None:
-        try:
-            emoji=UNICODE_TO_EMOJI[text]
-        except KeyError:
-            return
-        else:
-            if text==emoji.unicode:
-                return emoji
+    parsed = EMOJI_RP.fullmatch(text)
+    if parsed is None:
+        emoji = UNICODE_TO_EMOJI.get(text)
+    else:
+        emoji = Emoji._from_parsed_group(parsed.groups())
     
-    args=custom.groups()
-    emoji_id            = int(args[3])
-    try:
-        emoji           = EMOJIS[emoji_id]
-        if emoji.guild is None:
-            emoji.name  = args[1]
-    except KeyError:
-        emoji           = object.__new__(Emoji)
-        emoji.id        = emoji_id
-        emoji.animated  = bool(args[0])
-        emoji.name      = args[1]
-        emoji.unicode   = None
-        emoji.guild     = None
-        emoji.available = True
-        
     return emoji
+
+
+def parse_custom_emojis(text):
+    """
+    Parses out every custom emoji from the given text.
+    
+    Parameters
+    ----------
+    text : `str`
+        Text, what might contain custom emojis.
+    
+    Returns
+    -------
+    emojis : `set` of ``Emoji``
+    """
+    emojis = set()
+    for groups in EMOJI_RP.findall(text):
+        emoji = Emoji._from_parsed_group(groups)
+        emojis.add(emoji)
+    
+    return emojis
+
 
 def generate_builtin_emojis():
     for emoji_id, element in enumerate((
@@ -4136,17 +4192,17 @@ def generate_builtin_emojis():
         name = element[1]
         
         emoji = object.__new__(Emoji)
-        emoji.animated      = False
-        emoji.id            = emoji_id
-        emoji.name          = name
-        emoji.unicode       = value
-        emoji.guild         = None
-        emoji.roles         = None
-        emoji.managed       = False
+        emoji.animated = False
+        emoji.id = emoji_id
+        emoji.name = name
+        emoji.unicode = value
+        emoji.guild = None
+        emoji.roles = None
+        emoji.managed = False
         emoji.require_colons= True
-        emoji.user          = ZEROUSER
-        emoji.available     = True
-        EMOJIS[emoji_id]    = emoji
+        emoji.user = ZEROUSER
+        emoji.available = True
+        EMOJIS[emoji_id] = emoji
         
         UNICODE_TO_EMOJI[value] = emoji
         
@@ -4163,8 +4219,9 @@ def generate_builtin_emojis():
 
 generate_builtin_emojis()
 
-activity.PartialEmoji=PartialEmoji
+activity.PartialEmoji = PartialEmoji
 
 del generate_builtin_emojis
 del activity
 del URLS
+del DOCS_ENABLED

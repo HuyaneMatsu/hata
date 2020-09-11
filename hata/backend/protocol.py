@@ -46,13 +46,13 @@ else:
 ZLIB_DECOMPRESSOR = zlib.decompressobj
 ZLIB_COMPRESSOR = zlib.compressobj
 
-WS_OP_CONT     = 0
-WS_OP_TEXT     = 1
-WS_OP_BINARY   = 2
+WS_OP_CONT   = 0
+WS_OP_TEXT   = 1
+WS_OP_BINARY = 2
 
-WS_OP_CLOSE    = 8
-WS_OP_PING     = 9
-WS_OP_PONG     = 10
+WS_OP_CLOSE  = 8
+WS_OP_PING   = 9
+WS_OP_PONG   = 10
 
 WS_DATA_OPCODES = (WS_OP_CONT,  WS_OP_TEXT, WS_OP_BINARY)
 WS_CTRL_OPCODES = (WS_OP_CLOSE, WS_OP_PING, WS_OP_PONG)
@@ -75,13 +75,22 @@ MAX_LINE_LENGTH = 8190
 
 WRITE_CHUNK_LIMIT = 65536
 
+CONNECTION_ERROR_EOF_NO_HTTP_HEADER = (
+    'Stream closed before any data was received. (Might be caused by bad connection on your side, like the other side '
+    'might have closed the stream before receiving the full payload.)'
+        )
+
+PAYLOAD_ERROR_EOF_AT_HTTP_HEADER = (
+    'EOF received meanwhile reading http headers.'
+        )
+
 class RawMessage(object):
     __slots__ = ('_upgraded', 'headers', )
     
     @property
     def close_connection(self):
         try:
-            connection=self.headers[CONNECTION]
+            connection = self.headers[CONNECTION]
         except KeyError:
             pass
         else:
@@ -98,7 +107,7 @@ class RawMessage(object):
         upgraded = self._upgraded
         if upgraded == 2:
             try:
-                connection=self.headers[CONNECTION]
+                connection = self.headers[CONNECTION]
             except KeyError:
                 upgraded = 0
             else:
@@ -154,20 +163,20 @@ class RawRequestMessage(RawMessage):
         self.path = path
         self.headers = headers
         self._upgraded = 2
-    
+
 #TODO: whats the fastest way on pypy ? casting 64 bit ints -> xor -> replace?
 _XOR_TABLE = [bytes(a^b for a in range(256)) for b in range(256)]
-def apply_mask(mask,data):
-    data_bytes=bytearray(data)
+def apply_mask(mask, data):
+    data_bytes = bytearray(data)
     for index in range(4):
-        data_bytes[index::4]=data_bytes[index::4].translate(_XOR_TABLE[mask[index]])
+        data_bytes[index::4] = data_bytes[index::4].translate(_XOR_TABLE[mask[index]])
     return data_bytes
 
 class Frame(object):
-    __slots__=('data', 'head1',)
+    __slots__ = ('data', 'head1',)
     def __init__(self, fin, opcode, data):
-        self.data=data
-        self.head1=(fin<<7)|opcode
+        self.data = data
+        self.head1 = (fin<<7)|opcode
     
     @property
     def fin(self):
@@ -193,13 +202,13 @@ class Frame(object):
         #check that this frame contains acceptable values.
         if self.head1&0b01110000:
             raise WebSocketProtocolError('Reserved bits must be 0')
-
-        opcode=self.head1&0b00001111
+        
+        opcode = self.head1&0b00001111
         if opcode in WS_DATA_OPCODES:
             return
         
         if opcode in WS_CTRL_OPCODES:
-            if len(self.data)>125:
+            if len(self.data) > 125:
                 raise WebSocketProtocolError('Control frame too long')
             if not self.head1&0b10000000:
                 raise WebSocketProtocolError('Fragmented control frame')
@@ -207,9 +216,9 @@ class Frame(object):
         
         raise WebSocketProtocolError(f'Invalid opcode: {opcode}')
 
-class StreamWriter(object):
+class HTTPStreamWriter(object):
     __slots__ = ('size', 'chunked', 'compresser', 'eof', 'length', 'loop', 'protocol', 'transport', )
-    def __init__(self, protocol, loop, compression, chunked):
+    def __init__(self, loop, protocol, compression, chunked):
         
         if (compression is None):
             compresser = None
@@ -222,20 +231,20 @@ class StreamWriter(object):
         
         self.compresser = compresser
         
-        self.protocol       = protocol
-        self.transport      = protocol.transport
+        self.protocol = protocol
+        self.transport = protocol.transport
         
-        self.loop           = loop
-        self.length         = None
-        self.chunked        = chunked
-        self.size           = 0
+        self.loop = loop
+        self.length = None
+        self.chunked = chunked
+        self.size = 0
         
-        self.eof            = False
-        self.compresser     = None
+        self.eof = False
+        self.compresser = None
     
-    def _write(self,chunk):
-        size=len(chunk)
-        self.size+=size
+    def _write(self, chunk):
+        size = len(chunk)
+        self.size += size
         
         transport = self.transport
         if (transport is None) or transport.is_closing():
@@ -258,28 +267,28 @@ class StreamWriter(object):
         
         length = self.length
         if (length is not None):
-            chunk_len=len(chunk)
-            if length>=chunk_len:
-                self.length=length-chunk_len
+            chunk_len = len(chunk)
+            if length >= chunk_len:
+                self.length = length-chunk_len
             else:
-                chunk=chunk[:length]
+                chunk = chunk[:length]
                 self.length=0
                 if not chunk:
                     return
         
         if chunk:
             if self.chunked:
-                chunk=b''.join([len(chunk).__format__('x').encode('ascii'),b'\r\n',chunk,b'\r\n'])
+                chunk = b''.join([len(chunk).__format__('x').encode('ascii'), b'\r\n', chunk, b'\r\n'])
             
             self._write(chunk)
             
-            if self.size>WRITE_CHUNK_LIMIT:
-                self.size=0
+            if self.size > WRITE_CHUNK_LIMIT:
+                self.size = 0
                 protocol = self.protocol
                 if protocol.transport is not None:
                     await protocol._drain_helper()
     
-    async def write_eof(self,chunk=b''):
+    async def write_eof(self, chunk=b''):
         if self.eof:
             return
         
@@ -287,16 +296,16 @@ class StreamWriter(object):
         if compresser is None:
             if self.chunked:
                 if chunk:
-                    chunk=b''.join([len(chunk).__format__('x').encode('ascii'),b'\r\n',chunk,b'\r\n0\r\n\r\n'])
+                    chunk = b''.join([len(chunk).__format__('x').encode('ascii'), b'\r\n', chunk, b'\r\n0\r\n\r\n'])
                 else:
-                    chunk=b'0\r\n\r\n'
+                    chunk = b'0\r\n\r\n'
         else:
             if chunk:
-                chunk=compresser.compress(chunk)
+                chunk = compresser.compress(chunk)
             
-            chunk=chunk+compresser.flush()
+            chunk = chunk+compresser.flush()
             if chunk and self.chunked:
-                chunk=b''.join([len(chunk).__format__('x').encode('ascii'),b'\r\n',chunk,b'\r\n0\r\n\r\n'])
+                chunk = b''.join([len(chunk).__format__('x').encode('ascii'), b'\r\n', chunk, b'\r\n0\r\n\r\n'])
         
         if chunk:
             self._write(chunk)
@@ -307,7 +316,7 @@ class StreamWriter(object):
         
         self.eof=True
         self.transport=None
-
+    
     async def drain(self):
         #Flush the write buffer.
         #
@@ -316,12 +325,12 @@ class StreamWriter(object):
         #await w.write(data)
         #await w.drain()
         protocol = self.protocol
-        if protocol.transport is not None:
+        if (protocol.transport is not None):
             await protocol._drain_helper()
 
-class ProtocolBase(object):
-    __slots__ = ('_chunks', '_drain_waiter', '_eof', '_offset', '_paused', 'exception', 'loop', 'payload_reader',
-        'payload_waiter', 'transport', )
+class ReadProtocolBase(object):
+    __slots__ = ('_chunks', '_eof', '_offset', '_paused', 'exception', 'loop', 'payload_reader',  'payload_waiter',
+        'transport', )
     
     def __init__(self, loop):
         self.loop = loop
@@ -333,25 +342,13 @@ class ProtocolBase(object):
         self.payload_reader = None
         self.payload_waiter = None
         self._paused = False
-        self._drain_waiter = None
-    
-    def _copy_attrs_to(self, other):
-        other.transport = self.transport
-        other.exception = self.exception
-        other._chunks = self._chunks
-        other._offset = self._offset
-        other._eof = self._eof
-        other.payload_reader = self.payload_reader
-        other.payload_waiter = self.payload_waiter
-        other._paused = self._paused
-        other._drain_waiter = self._drain_waiter
     
     def __repr__(self):
         result = [
             '<',
             self.__class__.__name__,
                 ]
-
+        
         if self._eof:
             result.append(' at eof')
             add_comma = True
@@ -361,7 +358,7 @@ class ProtocolBase(object):
         transport = self.transport
         if (transport is not None):
             if add_comma:
-                result.append(',')
+                result.append(', ')
             else:
                 add_comma = True
             
@@ -371,7 +368,7 @@ class ProtocolBase(object):
         exception = self.exception
         if (exception is not None):
             if add_comma:
-                result.append(',')
+                result.append(', ')
             else:
                 add_comma = True
             
@@ -381,7 +378,7 @@ class ProtocolBase(object):
         payload_reader = self.payload_reader
         if (payload_reader is not None):
             if add_comma:
-                result.append(',')
+                result.append(', ')
             
             result.append(' payload_reader=')
             result.append(repr(payload_reader))
@@ -401,29 +398,6 @@ class ProtocolBase(object):
             return True
         
         return False
-        
-    #compability method
-    def pause_writing(self):
-        self._paused = True
-    
-    #compability method
-    def resume_writing(self):
-        self._paused = False
-
-        drain_waiter = self._drain_waiter
-        if drain_waiter is None:
-            return
-        
-        self._drain_waiter = None
-        drain_waiter.set_result_if_pending(None)
-    
-    #compability method
-    async def _drain_helper(self):
-        if not self._paused:
-            return
-        drain_waiter = Future(self.loop)
-        self._drain_waiter = drain_waiter
-        await drain_waiter
     
     #compability method
     def connection_made(self, transport):
@@ -435,108 +409,16 @@ class ProtocolBase(object):
             self.eof_received()
         else:
             self.set_exception(exception)
-        
-        #wake up the writer if currently paused.
-        if not self._paused:
-            return
-        
-        drain_waiter = self._drain_waiter
-        if drain_waiter is None:
-            return
-        
-        self._drain_waiter=None
-        if drain_waiter.done():
-            return
-        
-        if exception is None:
-            drain_waiter.set_result(None)
-        else:
-            drain_waiter.set_exception(exception)
-        
-    # Basic writing
-    def write(self, data):
-        self.transport.write(data)
-    
-    def writelines(self, data):
-        self.transport.writelines(data)
-    
-    # Specific writings
-    def write_http_request(self, meth, path, headers, version = HttpVersion11):
-        result = [f'{meth} {path} HTTP/{version.major}.{version.major}\r\n']
-        extend = result.extend
-        for k, v in headers.items():
-            extend((k,': ',v,'\r\n'))
-        
-        result.append('\r\n')
-    
-        self.transport.write(''.join(result).encode())
-    
-    def write_http_response(self, status, headers, version = HttpVersion11, body = None):
-        result = [f'HTTP/{version.major}.{version.minor} {status.value} {status.phrase}\r\n']
-        extend = result.extend
-        for k, v in headers.items():
-            extend((k,': ',v,'\r\n'))
-        
-        result.append('\r\n')
-        
-        transport = self.transport
-        transport.write(''.join(result).encode())
-        if (body is not None) and body:
-            transport.write(body)
-    
-    def write_websocket_frame(self, frame, is_client):
-        # Prepare the header.
-        head1 = frame.head1
-        head2 = is_client<<7
-        
-        transport = self.transport
-        
-        length=len(frame.data)
-        if length<126:
-            header = PACK_LEN1(head1,head2|length)
-        elif length<65536:
-            header = PACK_LEN2(head1,head2|126,length)
-        else:
-            header = PACK_LEN3(head1,head2|127,length)
-        transport.write(header)
-        
-        #prepare the data.
-        if is_client:
-            mask=getrandbits(32).to_bytes(4,'big')
-            transport.write(mask)
-            data=apply_mask(mask,frame.data,)
-        else:
-            data=frame.data
-        
-        transport.write(data)
-    
-    def write_eof(self):
-        return self.transport.write_eof()
-    
-    def can_write_eof(self):
-        return self.transport.can_write_eof()
     
     def close(self):
-        return self.transport.close()
-    
-    def get_extra_info(self, name, default=None):
-        return self.transport.get_extra_info(name, default)
-    
-    async def drain(self):
-        #use after writing
-        exception = self.exception
-        if (exception is not None):
-            raise exception
-        
         transport = self.transport
         if (transport is not None):
-            if transport.is_closing():
-                #skip 1 loop, so connection_lost() will be called
-                future=Future(self.loop)
-                future.set_result(None)
-                await future
-        
-        await self._drain_helper()
+            transport.close()
+    
+    def get_extra_info(self, name, default=None):
+        transport = self.transport
+        if (transport is not None):
+            return transport.get_extra_info(name, default)
     
     # read related
     @property
@@ -574,9 +456,8 @@ class ProtocolBase(object):
         self.payload_waiter = None
         payload_waiter.set_exception_if_pending(exception)
         
-        payload_reader = self.payload_reader
+        self.payload_reader.close()
         self.payload_reader = None
-        payload_reader.close()
     
     #compability method
     def eof_received(self):
@@ -598,7 +479,7 @@ class ProtocolBase(object):
             args = err.args
             if not args:
                 result = None
-            elif len(args)==1:
+            elif len(args) == 1:
                 result = args[0]
             else:
                 result = args
@@ -642,7 +523,7 @@ class ProtocolBase(object):
                 args = err.args
                 if not args:
                     result = None
-                elif len(args)==1:
+                elif len(args) == 1:
                     result = args[0]
                 else:
                     result = args
@@ -680,7 +561,7 @@ class ProtocolBase(object):
                 args = err.args
                 if not args:
                     result = None
-                elif len(args)==1:
+                elif len(args) == 1:
                     result = args[0]
                 else:
                     result = args
@@ -697,6 +578,31 @@ class ProtocolBase(object):
             payload_waiter.set_exception(exception)
         
         return payload_waiter
+    
+    async def read(self, n=-1):
+        try:
+            return await self.set_payload_reader(self._read_until_eof() if n < 0 else self._read_exactly(n))
+        except EOFError as err:
+            return err.args[0]
+    
+    async def readexactly(self, n):
+        exception = self.exception
+        if (exception is not None):
+            raise exception
+        
+        if n < 1:
+            if n == 0:
+                return b''
+            
+            raise ValueError(f'`.readexactly` size can not be less than zero, got {n}')
+        
+        return await self.set_payload_reader(self._read_exactly(n))
+    
+    async def readline(self):
+        raise NotImplemented
+    
+    async def readuntil(self):
+        raise NotImplemented
     
     def _wait_for_data(self):
         if self._paused:
@@ -732,10 +638,10 @@ class ProtocolBase(object):
             # Because the result must be bytes, we slice it
             collected = chunk[offset:position]
             # Add 2 to position to compensate CRLF
-            position = position+2
+            position += 2
             
             # If the chunk is exhausted, remove it
-            if len(chunk)==position:
+            if len(chunk) == position:
                 del chunks[0]
                 self._offset = 0
             # Else, offset it, fast slicing!
@@ -770,7 +676,7 @@ class ProtocolBase(object):
                 
                 if chunk[0] == b'\n'[0]:
                     # If size is 1, we delete it
-                    if len(chunk)==1:
+                    if len(chunk) == 1:
                         del chunks[0]
                         self._offset = 0
                     # If more, fast slice it!
@@ -803,7 +709,7 @@ class ProtocolBase(object):
                 collected.append(memoryview(chunk)[:position])
                 
                 # Add 2 position to ompensate CRLF
-                position = position+2
+                position += 2
                 # If the chunk is fully exhausted remove it
                 if len(chunk) == position:
                     del chunks[0]
@@ -817,15 +723,16 @@ class ProtocolBase(object):
             # collected the data
             collected.append(chunk)
             del chunks[0]
-            n -=len(chunk)
+            n -= len(chunk)
             if n < 0:
-                raise PayloadError(f'Header line exceeds max line length: {MAX_LINE_LENGTH!r} by {-n!r} and CRLF still not found.')
+                raise PayloadError(f'Header line exceeds max line length: {MAX_LINE_LENGTH!r} by {-n!r} and CRLF still '
+                    f'not found.')
             
             continue
         
     def _read_exactly(self, n):
-        if n<1:
-            if n<0:
+        if n < 1:
+            if n < 0:
                 raise ValueError(f'.readexactly called with negative `n`: {n!r}')
             else:
                 return b''
@@ -845,7 +752,6 @@ class ProtocolBase(object):
         if offset == 0:
             if chunk_size > n:
                 self._offset = n
-                result = chunk[:n]
                 return chunk[:n]
             #chunk same size as the requested?
             elif chunk_size == n:
@@ -916,53 +822,74 @@ class ProtocolBase(object):
         
         return chunk, offset
     
-    def read_http_response(self):
-        chunk, offset = yield from self._read_http_helper()
-        
-        parsed = HTTP_STATUS_RP.match(chunk, offset)
-        if parsed is None:
-            # stupid fallback
-            line = yield from self._readtill_CRLF()
-            parsed = HTTP_STATUS_LINE_RP.fullmatch(line)
+    def _read_http_response(self):
+        try:
+            try:
+                chunk, offset = yield from self._read_http_helper()
+            except EOFError as err:
+                args = err.args
+                if (args is None) or (not args) or (not args[0]):
+                    raise ConnectionError(CONNECTION_ERROR_EOF_NO_HTTP_HEADER)
+                
+                raise
+            
+            parsed = HTTP_STATUS_RP.match(chunk, offset)
             if parsed is None:
-                raise PayloadError(f'Invalid status line: {line!r}.')
+                # stupid fallback
+                line = yield from self._readtill_CRLF()
+                parsed = HTTP_STATUS_LINE_RP.fullmatch(line)
+                if parsed is None:
+                    raise PayloadError(f'Invalid status line: {line!r}.')
+                
+                chunk, offset = yield from self._read_http_helper()
+            else:
+                offset = parsed.end()
+                
+            major, minor, status, reason = parsed.groups()
             
-            chunk, offset = yield from self._read_http_helper()
-        else:
-            offset = parsed.end()
-            
-        major, minor, status, reason = parsed.groups()
-        
-        headers = yield from self.read_http_headers(chunk, offset)
-        return RawResponseMessage(HttpVersion(int(major), int(minor)), int(status), reason, headers)
+            headers = yield from self._read_http_headers(chunk, offset)
+            return RawResponseMessage(HttpVersion(int(major), int(minor)), int(status), reason, headers)
+        except EOFError as err:
+            raise PayloadError(PAYLOAD_ERROR_EOF_AT_HTTP_HEADER) from err
     
-    def read_http_request(self):
-        chunk, offset = yield from self._read_http_helper()
-        
-        parsed = HTTP_REQUEST_RP.match(chunk, offset)
-        if parsed is None:
-            # stupid fallback
-            line = yield from self._readtill_CRLF()
-            parsed = HTTP_REQUEST_LINE_RP.fullmatch(line)
+    def _read_http_request(self):
+        try:
+            try:
+                chunk, offset = yield from self._read_http_helper()
+            except EOFError as err:
+                args = err.args
+                if (args is None) or (not args) or (not args[0]):
+                    raise ConnectionError(CONNECTION_ERROR_EOF_NO_HTTP_HEADER)
+                
+                raise
+            
+            parsed = HTTP_REQUEST_RP.match(chunk, offset)
             if parsed is None:
-                raise PayloadError(f'invalid request line: {line!r}')
+                # stupid fallback
+                line = yield from self._readtill_CRLF()
+                parsed = HTTP_REQUEST_LINE_RP.fullmatch(line)
+                if parsed is None:
+                    raise PayloadError(f'invalid request line: {line!r}')
+                
+                chunk, offset = yield from self._read_http_helper()
+            else:
+                offset = parsed.end()
             
-            chunk, offset = yield from self._read_http_helper()
-        else:
-            offset = parsed.end()
-        
-        meth, path, major, minor = parsed.groups()
-        
-        headers = yield from self.read_http_headers(chunk, offset)
-        return RawRequestMessage(HttpVersion(int(major), int(minor)), meth.upper().decode(), path.decode('ascii', 'surrogateescape'), headers)
+            meth, path, major, minor = parsed.groups()
+            
+            headers = yield from self._read_http_headers(chunk, offset)
+            path = path.decode('ascii', 'surrogateescape')
+            return RawRequestMessage(HttpVersion(int(major), int(minor)), meth.upper().decode(), path, headers)
+        except EOFError as err:
+            raise PayloadError(PAYLOAD_ERROR_EOF_AT_HTTP_HEADER) from err
     
-    def read_http_headers(self, chunk, offset):
+    def _read_http_headers(self, chunk, offset):
         headers = multidict_titled()
         chunks = self._chunks
         
-        end = chunk.find(b'\r\n',offset)
+        end = chunk.find(b'\r\n', offset)
         if end > offset:
-            middle = chunk.find(b':',offset, end)
+            middle = chunk.find(b':', offset, end)
             if middle <= offset:
                 raise PayloadError(f'Invalid header line: {chunk[offset:end]!r}')
             name = chunk[offset:middle].lstrip()
@@ -1039,14 +966,14 @@ class ProtocolBase(object):
                 
                 break
         
-        name = name.decode('utf-8','surrogateescape')
+        name = name.decode('utf-8', 'surrogateescape')
         
         while True:
             if chunk[offset] in (b'\t'[0], b' '[0]):
                 # continous
                 value = [value]
                 while True:
-                    end = chunk.find(b'\r\n',offset)
+                    end = chunk.find(b'\r\n', offset)
                     # most likely case if we find \r\n
                     if end > offset:
                         value.append(chunk[offset:end].strip())
@@ -1107,20 +1034,20 @@ class ProtocolBase(object):
                     # Not continous, leave loop
                     value = b' '.join(value)
                     break
-
+            
             # Store, nice!
-            headers[name] = value.decode('utf-8','surrogateescape')
+            headers[name] = value.decode('utf-8', 'surrogateescape')
             
             # Find end again
-            end = chunk.find(b'\r\n',offset)
+            end = chunk.find(b'\r\n', offset)
             # If we found and we arent at the end yet.
             if end > offset:
-                middle = chunk.find(b':',offset, end)
+                middle = chunk.find(b':', offset, end)
                 # New header line always must have b':', leave if not found, or if it is at the start.
                 if middle <= offset:
                     raise PayloadError(f'Invalid header line: {chunk[offset:end]!r}')
                 
-                name = chunk[offset:middle].lstrip().decode('utf-8','surrogateescape')
+                name = chunk[offset:middle].lstrip().decode('utf-8', 'surrogateescape')
                 value = chunk[middle+1:end].strip()
                 
                 # Add 2 to the offset, to apply \r\n
@@ -1176,7 +1103,7 @@ class ProtocolBase(object):
                     if middle <= 0:
                         raise PayloadError(f'Invalid header line: {chunk[offset:end]!r}')
                     
-                    name = chunk[:middle].lstrip().decode('utf-8','surrogateescape')
+                    name = chunk[:middle].lstrip().decode('utf-8', 'surrogateescape')
                     value = chunk[middle+1:end].strip()
                     
                     #Apply offset and update chunk data if needed.
@@ -1223,7 +1150,7 @@ class ProtocolBase(object):
                     if middle <= 0:
                         raise PayloadError(f'Invalid header line: {line!r}')
                     
-                    name = line[:middle].lstrip().decode('utf-8','surrogateescape')
+                    name = line[:middle].lstrip().decode('utf-8', 'surrogateescape')
                     value = line[middle+1:].strip()
                     
                     # Update the current chunk and offset state
@@ -1254,7 +1181,7 @@ class ProtocolBase(object):
                 if middle <= 0:
                     raise PayloadError(f'Invalid header line: {line!r}')
                 
-                name = line[:middle].lstrip().decode('utf-8','surrogateescape')
+                name = line[:middle].lstrip().decode('utf-8', 'surrogateescape')
                 value = line[middle+1:].strip()
                 
                 # Update the current chunk and offset state
@@ -1271,11 +1198,11 @@ class ProtocolBase(object):
                 continue
             continue
     
-    def read_websocket_frame(self, is_client, max_size):
+    def _read_websocket_frame(self, is_client, max_size):
         
-        head1,head2 = yield from self._read_exactly(2)
+        head1, head2 = yield from self._read_exactly(2)
         
-        if ((head2&0b10000000)>>7)==is_client:
+        if ((head2&0b10000000)>>7) == is_client:
             raise WebSocketProtocolError('Incorrect masking')
         
         length = head2&0b01111111
@@ -1296,11 +1223,11 @@ class ProtocolBase(object):
         else:
             mask = yield from self._read_exactly(4)
             data = yield from self._read_exactly(length)
-            data=apply_mask(mask,data)
+            data = apply_mask(mask,data)
         
-        frame=object.__new__(Frame)
-        frame.data=data
-        frame.head1=head1
+        frame = object.__new__(Frame)
+        frame.data = data
+        frame.head1 = head1
         
         return frame
     
@@ -1316,30 +1243,30 @@ class ProtocolBase(object):
             if message.chunked:
                 decompresser = self._decompresser_for(message.encoding)
                 if decompresser is None:
-                    return self.read_chunked()
+                    return self._read_chunked()
                 else:
-                    return self.read_chunked_encoded(decompresser)
+                    return self._read_chunked_encoded(decompresser)
             
-            if (length is not None) and (length>0):
+            if (length is not None) and (length > 0):
                 decompresser = self._decompresser_for(message.encoding)
                 if decompresser is None:
                     return self._read_exactly(length)
                 else:
-                    return self.read_exactly_encoded(length, decompresser)
+                    return self._read_exactly_encoded(length, decompresser)
         
         if (type(message) is RawRequestMessage) and (message.meth == METH_CONNECT):
             message.upgraded = True
-            return self.read_until_eof()
+            return self._read_until_eof()
         
-        if (type(message) is RawResponseMessage) and message.status>=199 and (length is None):
+        if (type(message) is RawResponseMessage) and message.status >= 199 and (length is None):
             if message.chunked:
                 decompresser = self._decompresser_for(message.encoding)
                 if decompresser is None:
-                    return self.read_chunked()
+                    return self._read_chunked()
                 else:
-                    return self.read_chunked_encoded(decompresser)
+                    return self._read_chunked_encoded(decompresser)
             
-            return self.read_until_eof()
+            return self._read_until_eof()
         
         return None
     
@@ -1347,15 +1274,15 @@ class ProtocolBase(object):
     def _decompresser_for(encoding):
         if (encoding is None):
             decompressor = None
-        elif encoding=='gzip':
+        elif encoding == 'gzip':
             decompressor=ZLIB_DECOMPRESSOR(wbits=16+zlib.MAX_WBITS)
-        elif encoding=='deflate':
+        elif encoding == 'deflate':
             decompressor=ZLIB_DECOMPRESSOR(wbits=-zlib.MAX_WBITS)
-        elif encoding=='br':
+        elif encoding == 'br':
             if BROTLI_DECOMPRESSOR is None:
                 raise ContentEncodingError('Can not decode content-encoding: brotli (br). Please install `brotlipy`.')
             decompressor = BROTLI_DECOMPRESSOR()
-        elif encoding=='identity':
+        elif encoding == 'identity':
             # I asume this is no encoding
             decompressor = None
         else:
@@ -1363,7 +1290,7 @@ class ProtocolBase(object):
         
         return decompressor
     
-    def read_chunked(self):
+    def _read_chunked(self):
         collected = []
         while True:
             chunk_length = yield from self._readtill_CRLF()
@@ -1377,7 +1304,7 @@ class ProtocolBase(object):
             except ValueError:
                 raise PayloadError(f'Not hexadecimal chunk size: {chunk_length!r}') from None
             
-            if chunk_length==0:
+            if chunk_length == 0:
                 end = yield from self._read_exactly(2)
                 if end != b'\r\n':
                     raise PayloadError(f'Recevied chunk does not end with b\'\\r\\n\', instead with: {end}')
@@ -1392,20 +1319,18 @@ class ProtocolBase(object):
         
         return b''.join(collected)
     
-    def read_until_eof(self):
-        if self._eof:
-            return b''
-        
+    def _read_until_eof(self):
         chunks = self._chunks
         
-        while True:
-            try:
-                yield from self._wait_for_data()
-            except CancelledError:
-                if self._eof:
-                    break
-                
-                raise
+        if not self._eof:
+            while True:
+                try:
+                    yield from self._wait_for_data()
+                except CancelledError:
+                    if self._eof:
+                        break
+                    
+                    raise
         
         if not chunks:
             return b''
@@ -1418,11 +1343,11 @@ class ProtocolBase(object):
         chunks.clear()
         return result
     
-    def read_exactly_encoded(self, length, decompressobj):
+    def _read_exactly_encoded(self, length, decompressobj):
         chunk = yield from self._read_exactly(length)
         return decompressobj.decompress(chunk)
     
-    def read_chunked_encoded(self, decompressobj):
+    def _read_chunked_encoded(self, decompressobj):
         collected = []
         while True:
             chunk_length = yield from self._readtill_CRLF()
@@ -1436,7 +1361,7 @@ class ProtocolBase(object):
             except ValueError:
                 raise PayloadError(f'Not hexadecimal chunk size: {chunk_length!r}') from None
             
-            if chunk_length==0:
+            if chunk_length == 0:
                 end = yield from self._read_exactly(2)
                 if end != b'\r\n':
                     raise PayloadError(f'Recevied chunk does not end with b\'\\r\\n\', instead with: {end}')
@@ -1458,5 +1383,181 @@ class ProtocolBase(object):
     
     def __call__(self):
         return self
+
+class ProtocolBase(ReadProtocolBase):
+    __slots__ = ('_drain_waiter', )
+    
+    def __init__(self, loop):
+        self.loop = loop
+        self.transport = None
+        self.exception = None
+        self._chunks = deque()
+        self._offset = 0
+        self._eof = False
+        self.payload_reader = None
+        self.payload_waiter = None
+        self._paused = False
+        
+        self._drain_waiter = None
+    
+    def _copy_attrs_to(self, other):
+        other.transport = self.transport
+        other.exception = self.exception
+        other._chunks = self._chunks
+        other._offset = self._offset
+        other._eof = self._eof
+        other.payload_reader = self.payload_reader
+        other.payload_waiter = self.payload_waiter
+        other._paused = self._paused
+        other._drain_waiter = self._drain_waiter
+    
+    #compability method
+    def pause_writing(self):
+        self._paused = True
+    
+    #compability method
+    def resume_writing(self):
+        self._paused = False
+        
+        drain_waiter = self._drain_waiter
+        if drain_waiter is None:
+            return
+        
+        self._drain_waiter = None
+        drain_waiter.set_result_if_pending(None)
+    
+    #compability method
+    async def _drain_helper(self):
+        if not self._paused:
+            return
+        drain_waiter = Future(self.loop)
+        self._drain_waiter = drain_waiter
+        await drain_waiter
+    
+    #compability method
+    def connection_lost(self, exception):
+        if exception is None:
+            self.eof_received()
+        else:
+            self.set_exception(exception)
+        
+        #wake up the writer if currently paused.
+        if not self._paused:
+            return
+        
+        drain_waiter = self._drain_waiter
+        if drain_waiter is None:
+            return
+        
+        self._drain_waiter = None
+        if drain_waiter.done():
+            return
+        
+        if exception is None:
+            drain_waiter.set_result(None)
+        else:
+            drain_waiter.set_exception(exception)
+    
+    # Basic writing
+    def write(self, data):
+        transport = self.transport
+        if transport is None:
+            raise RuntimeError('Protocol has no attached transport.')
+        
+        transport.write(data)
+    
+    def writelines(self, data):
+        transport = self.transport
+        if transport is None:
+            raise RuntimeError('Protocol has no attached transport.')
+        
+        transport.writelines(data)
+    
+    # Specific writings
+    def write_http_request(self, meth, path, headers, version = HttpVersion11):
+        transport = self.transport
+        if transport is None:
+            raise RuntimeError('Protocol has no attached transport.')
+        
+        result = [f'{meth} {path} HTTP/{version.major}.{version.major}\r\n']
+        extend = result.extend
+        for k, v in headers.items():
+            extend((k, ': ', v, '\r\n'))
+        
+        result.append('\r\n')
+        
+        transport.write(''.join(result).encode())
+    
+    def write_http_response(self, status, headers, version = HttpVersion11, body = None):
+        transport = self.transport
+        if transport is None:
+            raise RuntimeError('Protocol has no attached transport.')
+        
+        result = [f'HTTP/{version.major}.{version.minor} {status.value} {status.phrase}\r\n']
+        extend = result.extend
+        for k, v in headers.items():
+            extend((k, ': ', v, '\r\n'))
+        
+        result.append('\r\n')
+        
+        transport.write(''.join(result).encode())
+        if (body is not None) and body:
+            transport.write(body)
+    
+    def write_websocket_frame(self, frame, is_client):
+        transport = self.transport
+        if transport is None:
+            raise RuntimeError('Protocol has no attached transport.')
+        
+        # Prepare the header.
+        head1 = frame.head1
+        head2 = is_client<<7
+        
+        length = len(frame.data)
+        if length < 126:
+            header = PACK_LEN1(head1, head2|length)
+        elif length < 65536:
+            header = PACK_LEN2(head1, head2|126,length)
+        else:
+            header = PACK_LEN3(head1, head2|127,length)
+        transport.write(header)
+        
+        #prepare the data.
+        if is_client:
+            mask = getrandbits(32).to_bytes(4, 'big')
+            transport.write(mask)
+            data = apply_mask(mask, frame.data,)
+        else:
+            data = frame.data
+        
+        transport.write(data)
+    
+    def write_eof(self):
+        transport = self.transport
+        if (transport is not None):
+            transport.write_eof()
+    
+    def can_write_eof(self):
+        transport = self.transport
+        if (transport is None):
+            return False
+        
+        return transport.can_write_eof()
+    
+    async def drain(self):
+        #use after writing
+        exception = self.exception
+        if (exception is not None):
+            raise exception
+        
+        transport = self.transport
+        if (transport is not None):
+            if transport.is_closing():
+                #skip 1 loop, so connection_lost() will be called
+                future=Future(self.loop)
+                future.set_result(None)
+                await future
+        
+        await self._drain_helper()
 
 del re, Struct

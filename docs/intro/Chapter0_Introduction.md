@@ -7,8 +7,8 @@ works. This introduction will guide you through some common use cases until you 
 enough knowledge of the wrapper to be able to make more advanced and complex features.
 
 If you are new to Python then making a Discord bot (in any Python wrapper) is
-probably a bad idea. Creating a decent bot require intermediate Python knowledge.
-So to prevent frustration when learning, reading the documentation or understanding the 
+probably a bad idea. Creating a decent bot require intermediate Python knowledge,
+so to prevent frustration when learning, reading the documentation or understanding the 
 offered help - it is a great idea to have solid Python knowledge.
 
 Hata wrapper itself should cover the whole open Discord API (OAuth2 too) and 
@@ -26,5 +26,4 @@ has support to run it (most of the things from asyncio should work).
 
 One of the unique features of the wrapper is that it can run multiple clients at 
 the same time and all of them can execute requests through each other as well.
-They might be standalone but internally they all share resource between each other and 
-the bot meet only when an event is dispatched (each bot uses the same dispatch event parser).
+The clients might be standalone but internally they all share the same resources.

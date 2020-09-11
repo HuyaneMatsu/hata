@@ -54,7 +54,7 @@ When it happens, in the example above, we print out the client's full name and i
 
 Event function can take multiple arguments depending on the event, but all of them take `client` as the first one.
 The example we used is the most straightforward way but there are multiple ways of adding event listeners and there
-are multiple events that you can register. You can read about this [here](#Event-examples).
+are multiple events that you can register. You can read about this [Event Examples](#Event-examples).
 
 5.: The `message_create` is activated every time the client receives a message.
 It is triggered by bot messages as well, so first of all we want to filter them out.
@@ -63,11 +63,12 @@ Functionality is simple, if someone writes either `owo`, `uwu` or `0w0` the bot 
 And if someone writes message that starts with `ayy` the bot will reply with `lmao`.
 
 6.: At the end we run up our client(s) with calling the `start_clients` function.
-This should be at the end of your code, after you've written all of your bot functionality.
+This should be at the end of your code, after you've written all of your bot functionality, as it is blocking.
 
 ## Event examples
 
-There are multiple events you can register, read blabla to see them all.
+There are multiple events you can register, unfortunately currently there are only documented in the source code.
+You can take a look at [Client source code](https://github.com/HuyaneMatsu/hata/blob/0695fd613d76390c8668851631accc473031cc5c/hata/discord/client.py#L607) to see all events.
 
 You can register a event,  if you wish, in multiple ways so here are some examples:
 
@@ -142,7 +143,7 @@ Examples for the above errors:
 ## Formatting objects
 
 A lot of hata's built-in types have formatting support.
-Lets take `User` object that has name:test, ID:123 and discriminator:0007 as an example.
+Lets take `User` object that has name=test and discriminator=0007 as an example.
 
 We can format it, for example, with an f-string: `print(f'{user:f}')`
 which would result in `test#0007`
@@ -153,15 +154,16 @@ You can use these format codes:
 - `c` format code stands for the creation date when the user was created.
 - no format code is only the user name.
 
-These formats are also available as attributes or properties too:
+> `Client` instances are valid users too and they support the same formatting codes as well.
+
+Note that you can also use object attributes too, in the case of `User` you would be able to use
 
 - `.name`
 - `.full_name`
 - `.mention`
 - `.created_at`
+- etc
 
-The only difference is that `.created_at` returns `datetime` object, meanwhile
-formatting with `'c'` returns `str`.
-
-> `Client` instances, are valid users too and they support the same formatting
-> codes as well.
+You should look up attributes for the object you're using to know more about them.
+For now you can look trough the code or, while in our support Discord server, use command:
+`&docs WHAT_TO_SERACH_FOR` specific example would be `&docs User`

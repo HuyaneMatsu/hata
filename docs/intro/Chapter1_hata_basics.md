@@ -1,48 +1,40 @@
 # Hata basics
 
-Familiarly to other wrappers, hata use asynchronous environment and we can put
-different coroutine functions under different discord events, which are
-ensured when the mentioned event occurs.
+Similarly to other wrappers, Hata uses asynchronous environment.
 
 Lets continue with a simple example and then explain what happens.
 
 ###### Basic client example
 
 ```py
-import re
-
 from hata import Client, start_clients
-
-OWO_RP = re.compile('owo|uwu|0w0', re.I)
-AYY_RP = re.compile('ay+', re.I)
 
 TOKEN = ''
 NekoBot = Client(TOKEN)
 
+
 @NekoBot.events
 async def ready(client):
-    print(f'{client:f} ({client.id}) logged in')
+    print(f'{client.full_name} ({client.id}) logged in')
+
 
 @NekoBot.events
 async def message_create(client, message):
+    """Simple reply functionality based on message content."""
     if message.author.is_bot:
-        return
-    
-    content = message.content
-    
-    matched = OWO_RP.fullmatch(content)
-    if (matched is not None):
-        result = f'{content[0].upper()}{content[1].lower()}{content[2].upper()}'
-        await client.message_create(message.channel, result)
-        return
-    
-    matched = AYY_RP.fullmatch(content)
-    if (matched is not None):
-        result = 'lmao'
-        await client.message_create(message.channel, result)
-        return
+        return  # We will ignore messages from bot accounts
+
+    lowercase_content = message.content.lower()
+
+    if lowercase_content in ('owo', 'uwu', '0w0'):
+        await client.message_create(message.channel, lowercase_content)
+
+    elif lowercase_content.startswith('ayy'):
+        await client.message_create(message.channel, 'lmao')
+
 
 start_clients()
+
 ```
 
 1.: We import `Client` and `start_clients` from the library. If you get

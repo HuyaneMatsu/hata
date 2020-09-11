@@ -1,11 +1,13 @@
 # Events (extension)
 
 The last chapter was all about basic event handling and some example cases,
-but at this chapter we will look into one of hata's extension, into `commands`.
-It is a higher level modular command framework.
+but at this chapter we will look into one of Hata extension, the `commands` extension.
+It is a high-level modular command framework that allows you to easily create commands.
  
-All features of the extension can be setupped with using the
-`setup_ext_commands` function.
+All features of the extension can be setup with the `setup_ext_commands` function.
+
+After the client is created and `setup_ext_commands` is called on it you can register commands
+on said client using its new `.commands` attribute as a decorator:
 
 ```py
 from hata import Client, start_clients
@@ -16,32 +18,26 @@ NekoBot = Client(TOKEN)
 
 setup_ext_commands(NekoBot, 'n!')
 
+
 @NekoBot.commands
 async def pat(client, message):
     await client.message_create(message.channel, 'Puurs !')
 
-@NekoBot.commands
-async def say(client, message, content):
-    if content:
-        await client.message_create(message.channel, content)
-
 start_clients()
+
 ```
 
 `setup_ext_commands` function accepts more arguments:
 
 | name                  | type                                                      | default       | description                                                                                           |
 |-----------------------|-----------------------------------------------------------|---------------|-------------------------------------------------------------------------------------------------------|
-| client                | `[Client`](../ref/discord/Client.md)                      | *required*    | The client on what the extension will be setupped.                                                    |
-| prefix                | `str`, `iterable` of `str`, `callable` returnning `str`   | *required*    | The prefix used for by the client's [CommandProcesser](../ref/ext/commands/CommandProcesser.md)       |
-| ignorecase            | `bool`                                                    | `True`        | Whether the prefixe's case should be ignored.                                                         |
-| mention_prefix        | `bool`                                                    | `True`        | Whether the client should accept it's mention at the start of the messages as an alternative prefix.  |
-| default_category_name | `NoneType` / `str`                                        | `None`        | The CommandProcesser's default [Category](../ref/ext/commands/Category.md)'s name.                    |
+| client                | `[Client`](../ref/discord/Client.md)                      | *required*    | The client on which the extension will be setup.                                                      |
+| prefix                | `str`, `iterable` of `str` or `callable` returning `str`  | *required*    | The prefix used for by the client's [CommandProcesser](../ref/ext/commands/CommandProcesser.md)       |
+| ignorecase            | `bool`                                                    | `True`        | Whether the prefix case should be ignored.                                                            |
+| mention_prefix        | `bool`                                                    | `True`        | Whether the client should accept its mention at the start of the messages as an alternative prefix.   |
+| default_category_name | `NoneType` / `str`                                        | `None`        | The CommandProcesser default [Category](../ref/ext/commands/Category.md) name.                        |
 
 
-After the client is created and `setup_ext_commands` is called on it with a
-`prefix`, commands can be registered to the Client, with using it's new
-`.commands` attribute as a decorator.
 
 Every command must accept at least 2 argument, `client` and `message`, but you
 can add more arguments after it as well. These arguments, their annotations

@@ -107,7 +107,6 @@ class UnixReadPipeTransport(object):
             pipe.close()
     
     def _fatal_error(self, exception, message='Fatal error on pipe transport'):
-        # should be called by exception handler only
         if not (isinstance(exception, OSError) and (exception.errno == errno.EIO)):
             self.loop.render_exc_async(exception, [message, '\non: ', repr(self), '\n'])
         

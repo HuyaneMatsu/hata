@@ -14,7 +14,7 @@ _ignore_frame(__spec__.origin,  'run'           , 'result=func()'       ,)
 EventThread = NotImplemented
 
 class SyncWait(object):
-    __slots__=('_exception', '_result', '_waiter',)
+    __slots__ = ('_exception', '_result', '_waiter',)
     def __init__(self):
         self._exception = None
         self._result = None
@@ -56,7 +56,7 @@ class SyncQue(object):
                 waiter.set_result(element)
                 self._waiter = None
     
-    def set_exception(self,exception):
+    def set_exception(self, exception):
         with self._lock:
             #should we raise InvalidStateError?
             self._exception = exception
@@ -130,7 +130,7 @@ class SyncQue(object):
             result.append(')')
             return ''.join(result)
     
-    __str__=__repr__
+    __str__ = __repr__
 
     #deque operations
     
@@ -386,9 +386,9 @@ class Executor(object):
             executor.release()
         for executor in self.claimed_executors.values():
             executor.release()
-
+    
     __del__ = release_executors
-
+    
     def create_future(self):
         local_thread = current_thread()
         if not isinstance(local_thread, EventThread):
@@ -397,7 +397,7 @@ class Executor(object):
         
         return Future(local_thread)
     
-    def run_in_executor(self,func):
+    def run_in_executor(self, func):
         future = self.create_future()
         executor = self._get_free_executor()
         self.running_executors[executor._ident] = executor

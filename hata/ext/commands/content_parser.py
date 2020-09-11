@@ -11,7 +11,7 @@ except ImportError:
     relativedelta = None
 
 from ...env import CACHE_USER
-from ...backend.dereaddons_local import function, _spaceholder, MethodLike, method, module_property
+from ...backend.dereaddons_local import function, _spaceholder, MethodLike, method, module_property, DOCS_ENABLED
 from ...backend.analyzer import CallableAnalyzer
 
 from ...discord.bases import FlagBase
@@ -19,7 +19,7 @@ from ...discord.others import USER_MENTION_RP, ROLE_MENTION_RP, CHANNEL_MENTION_
 from ...discord.client import Client
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.emoji import parse_emoji, Emoji, EMOJIS
-from ...discord.client_core import USERS, CHANNELS, ROLES, GUILDS, MESSAGES
+from ...discord.client_core import USERS, CHANNELS, ROLES, GUILDS, MESSAGES, CLIENTS
 from ...discord.message import Message
 from ...discord.channel import ChannelBase, ChannelGuildBase, ChannelTextBase, ChannelText, ChannelPrivate, \
     ChannelVoice, ChannelGroup, ChannelCategory, ChannelStore, ChannelThread
@@ -276,7 +276,7 @@ def parse_user_mention(part, message):
     
     Returns
     -------
-    user : `None` or``UserBase`` instance
+    user : `None` or ``UserBase`` instance
     """
     user_mentions = message.user_mentions
     if user_mentions is None:
@@ -285,11 +285,60 @@ def parse_user_mention(part, message):
     parsed = USER_MENTION_RP.fullmatch(part)
     if parsed is None:
         return
-
+    
     user_id = int(parsed.group(1))
     for user in user_mentions:
         if user.id == user_id:
             return user
+
+if CACHE_USER:
+    def parse_client_mention(part, message):
+        user_mentions = message.user_mentions
+        if user_mentions is None:
+            return
+        
+        parsed = USER_MENTION_RP.fullmatch(part)
+        if parsed is None:
+            return
+        
+        user_id = int(parsed.group(1))
+        for user in user_mentions:
+            if user.id == user_id:
+                if type(user) is not Client:
+                    user = None
+                
+                return user
+else:
+    def parse_client_mention(part, message):
+        user_mentions = message.user_mentions
+        if user_mentions is None:
+            return
+        
+        parsed = USER_MENTION_RP.fullmatch(part)
+        if parsed is None:
+            return
+        
+        user_id = int(parsed.group(1))
+        for user in user_mentions:
+            if user.id == user_id:
+                return CLIENTS.get(user_id)
+
+if DOCS_ENABLED:
+    parse_client_mention.__doc__ = (
+    """
+    If the message's given part is a user mention, returns the respective client if applicable.
+    
+    Parameters
+    ----------
+    part : `str`
+        A part of a message's content.
+    message : ``Message``
+        The respective message of the given content part.
+    
+    Returns
+    -------
+    user : `None` or ``client`` instance
+    """)
 
 def parse_role_mention(part, message):
     """
@@ -304,7 +353,7 @@ def parse_role_mention(part, message):
     
     Returns
     -------
-    role : `None` or``Role`` instance
+    role : `None` or ``Role`` instance
     """
     role_mentions = message.role_mentions
     if role_mentions is None:
@@ -377,20 +426,39 @@ class ConverterFlag(FlagBase):
             }
     
     user_default = NotImplemented
+    user_all = NotImplemented
+    client_default = NotImplemented
+    client_all = NotImplemented
     role_default = NotImplemented
+    role_all = NotImplemented
     channel_default = NotImplemented
+    channel_all = NotImplemented
     emoji_default = NotImplemented
+    emoji_all = NotImplemented
     guild_default = NotImplemented
+    guild_all = NotImplemented
     message_default = NotImplemented
+    message_all = NotImplemented
     invite_default = NotImplemented
+    invite_all = NotImplemented
 
 ConverterFlag.user_default = ConverterFlag().update_by_keys(mention=True, name=True, id=True)
+ConverterFlag.user_all = ConverterFlag.user_default.update_by_keys(everywhere=True, profile=True)
+ConverterFlag.client_default = ConverterFlag().update_by_keys(mention=True, name=True, id=True)
+ConverterFlag.client_all = ConverterFlag.client_default.update_by_keys(everywhere=True)
 ConverterFlag.role_default = ConverterFlag().update_by_keys(mention=True, name=True, id=True)
+ConverterFlag.role_all = ConverterFlag.role_default.update_by_keys(everywhere=True)
 ConverterFlag.channel_default = ConverterFlag().update_by_keys(mention=True, name=True, id=True)
+ConverterFlag.channel_all = ConverterFlag.channel_default.update_by_keys(everywhere=True)
 ConverterFlag.emoji_default = ConverterFlag().update_by_keys(mention=True, name=True, id=True)
+ConverterFlag.emoji_all = ConverterFlag.emoji_default.update_by_keys(everywhere=True)
 ConverterFlag.guild_default = ConverterFlag().update_by_keys(id=True)
+ConverterFlag.guild_all = ConverterFlag.guild_default.update_by_keys(everywhere=True)
 ConverterFlag.message_default = ConverterFlag().update_by_keys(url=True, id=True)
+ConverterFlag.message_all = ConverterFlag.message_default.update_by_keys(everywhere=True)
 ConverterFlag.invite_default = ConverterFlag().update_by_keys(url=True, id=True)
+ConverterFlag.invite_all = ConverterFlag.invite_default
+
 
 CONVERTER_FLAG_URL = 1 << ConverterFlag.__keys__['url']
 CONVERTER_FLAG_MENTION = 1 << ConverterFlag.__keys__['mention']
@@ -1523,13 +1591,96 @@ ConverterSetting(
     converter = user_converter,
     uses_flags = True,
     default_flags = ConverterFlag.user_default,
-    all_flags = ConverterFlag().update_by_keys(
-        everywhere=True, id=True, name=True, mention=True, profile=True),
+    all_flags = ConverterFlag.user_all,
     alternative_type_name = 'user',
     default_type = User,
     alternative_types = [
         UserBase,
             ],
+        )
+
+async def client_converter(parser_ctx, content_parser_ctx):
+    part = content_parser_ctx.get_next()
+    if (part is None):
+        return None
+    
+    flags = parser_ctx.flags
+    message = content_parser_ctx.message
+    
+    if flags&CONVERTER_FLAG_ID:
+        parsed = ID_RP.fullmatch(part)
+        if (parsed is not None):
+            id_ = int(parsed.group(1))
+            
+            try:
+                client = CLIENTS[id_]
+            except KeyError:
+                pass
+            else:
+                if flags&CONVERTER_FLAG_EVERYWHERE:
+                    return client
+                
+                else:
+                    if client in message.channel.clients:
+                        return client
+    
+    if flags&CONVERTER_FLAG_MENTION:
+        client = parse_client_mention(part, message)
+        if (client is not None):
+            return client
+    
+    if flags&CONVERTER_FLAG_NAME:
+        if flags&CONVERTER_FLAG_EVERYWHERE:
+            clients = list(CLIENTS)
+        else:
+            clients = message.channel.clients
+        
+        if 1 < len(part) < 38:
+            if len(part) > 6 and part[-5] == '#':
+                try:
+                    discriminator = int(part[-4:])
+                except ValueError:
+                    pass
+                else:
+                    name_ = part[:-5]
+                    for client in clients:
+                        if (client.discriminator == discriminator) and (client.name == name_):
+                            return client
+            
+            if len(part) < 32:
+                pattern = re.compile(re.escape(part), re.I)
+                for client in clients:
+                    if (pattern.match(client.name) is not None):
+                        return client
+                
+                guild = message.channel.guild
+                if (guild is not None):
+                    for client in clients:
+                        try:
+                            guild_profile = client.guild_profiles[guild]
+                        except KeyError:
+                            continue
+                        
+                        nick = guild_profile.nick
+                        
+                        if nick is None:
+                            continue
+                        
+                        if pattern.match(nick) is None:
+                            continue
+                        
+                        return client
+    
+    return None
+    
+ConverterSetting(
+    converter = client_converter,
+    uses_flags = True,
+    default_flags = ConverterFlag.client_default,
+    all_flags = ConverterFlag.client_all,
+    alternative_type_name = 'client',
+    default_type = Client,
+    alternative_types = None,
         )
 
 async def channel_converter(parser_ctx, content_parser_ctx):
@@ -1594,8 +1745,7 @@ ConverterSetting(
     converter = channel_converter,
     uses_flags = True,
     default_flags = ConverterFlag.channel_default,
-    all_flags = ConverterFlag().update_by_keys(
-        everywhere=True, id=True, name=True, mention=True),
+    all_flags = ConverterFlag.channel_all,
     alternative_type_name = 'channel',
     default_type = ChannelBase,
     alternative_types = [
@@ -1660,8 +1810,7 @@ ConverterSetting(
     converter = role_converter,
     uses_flags = True,
     default_flags = ConverterFlag.role_default,
-    all_flags = ConverterFlag().update_by_keys(
-        everywhere=True, id=True, name=True, mention=True),
+    all_flags = ConverterFlag.role_all,
     alternative_type_name = 'role',
     default_type = Role,
     alternative_types = None,
@@ -1715,8 +1864,7 @@ ConverterSetting(
     converter = emoji_converter,
     uses_flags = True,
     default_flags = ConverterFlag.emoji_default,
-    all_flags = ConverterFlag().update_by_keys(
-        everywhere=True, id=True, name=True, mention=True),
+    all_flags = ConverterFlag.emoji_all,
     alternative_type_name = 'emoji',
     default_type = Emoji,
     alternative_types = None,
@@ -1749,9 +1897,8 @@ async def guild_converter(parser_ctx, content_parser_ctx):
 ConverterSetting(
     converter = guild_converter,
     uses_flags = True,
-    default_flags = ConverterFlag().guild_default,
-    all_flags = ConverterFlag().update_by_keys(
-        everywhere=True, id=True),
+    default_flags = ConverterFlag.guild_default,
+    all_flags = ConverterFlag.guild_all,
     alternative_type_name = 'guild',
     default_type = Guild,
     alternative_types = None,
@@ -1909,9 +2056,8 @@ async def message_converter(parser_ctx, content_parser_ctx):
 ConverterSetting(
     converter = message_converter,
     uses_flags = True,
-    default_flags = ConverterFlag().message_default,
-    all_flags = ConverterFlag().update_by_keys(
-        everywhere=True, id=True, url=True),
+    default_flags = ConverterFlag.message_default,
+    all_flags = ConverterFlag.message_all,
     alternative_type_name = 'message',
     default_type = Message,
     alternative_types = None,
@@ -1955,8 +2101,8 @@ async def invite_converter(parser_ctx, content_parser_ctx):
 ConverterSetting(
     converter = invite_converter,
     uses_flags = True,
-    default_flags = ConverterFlag().invite_default,
-    all_flags = ConverterFlag().invite_default,
+    default_flags = ConverterFlag.invite_default,
+    all_flags = ConverterFlag.invite_all,
     alternative_type_name = 'invite',
     default_type = Invite,
     alternative_types = None,
@@ -2038,7 +2184,7 @@ ConverterSetting(
     alternative_types = None,
         )
 
-RDELTA_KEYS = ('years','months', *TDELTA_KEYS)
+RDELTA_KEYS = ('years', 'months', *TDELTA_KEYS)
 
 if (relativedelta is not None):
     async def rdelta_converter(parser_ctx, content_parser_ctx):
@@ -2104,7 +2250,7 @@ PREREGISTERED_DEFAULT_CODES['message.channel.guild'] = prdc_mg
 del prdc_mg
 
 async def prdc_c(content_parser_ctx):
-    return content_parser_ctx.message.channel.guild
+    return content_parser_ctx.client
 
 PREREGISTERED_DEFAULT_CODES['client'] = prdc_c
 del prdc_c
@@ -3283,3 +3429,4 @@ class ContentParserMethod(MethodLike):
 
 del module_property
 del FlagBase
+del DOCS_ENABLED

@@ -157,9 +157,9 @@ class SubterraneanHelpCommand(object):
         
         Parameters
         ----------
-        color : `None`, `int`, ``Color``
+        color : `None`, `int`, ``Color``, Optional
             A color for the generated embeds.
-        prefix : `str`
+        prefix : `None` or `str`, Optional
             Prefix inserted before commands's display name.
         
         Raises
@@ -167,7 +167,7 @@ class SubterraneanHelpCommand(object):
         TypeError
             If `color` was not given as `None` or as `int` instance.
         ValueError
-            If the `color` was given as 7int` instance, but it's value is less than `0` or is over than `0xffffff`.
+            If the `color` was given as `int` instance, but it's value is less than `0` or is over than `0xffffff`.
         """
         if (color is not None):
             color = preconvert_color(color)

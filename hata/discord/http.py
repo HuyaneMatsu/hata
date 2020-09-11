@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 __all__ = ('DiscordHTTPClient', )
 
 import sys, re
@@ -29,7 +29,9 @@ class URLS:
     from ..env import CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DIS_ENDPOINT
     
     # v7 API includes special error messages
-    API_ENDPOINT = 'https://discord.com/api/v7' if (CUSTOM_API_ENDPOINT is None) else CUSTOM_API_ENDPOINT
+    API_VERSION = 7
+    
+    API_ENDPOINT = f'https://discord.com/api/v{API_VERSION}' if (CUSTOM_API_ENDPOINT is None) else CUSTOM_API_ENDPOINT
     CDN_ENDPOINT = 'https://cdn.discordapp.com' if (CUSTOM_CDN_ENDPOINT is None) else CUSTOM_CDN_ENDPOINT
     DIS_ENDPOINT = 'https://discord.com' if (CUSTOM_DIS_ENDPOINT is None) else CUSTOM_DIS_ENDPOINT
     

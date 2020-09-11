@@ -26,7 +26,7 @@ from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelT
 from .guild import Guild, PartialGuild, GuildEmbed, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
     DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen
 from .http import DiscordHTTPClient, URLS
-from .http.URLS import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDPOINT
+from .http.URLS import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDPOINT, API_VERSION
 from .role import Role, PermOW
 from .webhook import Webhook, PartialWebhook
 from .gateway import DiscordGateway, DiscordGatewaySharder
@@ -733,7 +733,7 @@ class Client(UserBase):
     
     loop = KOKORO
     
-    def __new__(cls, token, secret=None, client_id=0, activity=ActivityUnknown, status=None, is_bot=True,
+    def __new__(cls, token, secret=None, client_id=None, activity=ActivityUnknown, status=None, is_bot=True,
             shard_count=0, intents=-1, additional_owners=None, **kwargs):
         """
         Parameters
@@ -742,11 +742,12 @@ class Client(UserBase):
             A valid Discord token, what the client can use to interact with the Discord API.
         secret: `str`, optional
             Client secret used when interacting with oauth2 endpoints.
-        client_id : `int` ir `str`, optional
-            The client's `.id`. If passed as `str` will be converted to `int`.
+        client_id : `None`, `int` or `str`, optional
+            The client's `.id`. If passed as `str` will be converted to `int`. Defaults to `None`.
+            
             When more `Client` is started up, it is recommended to define their id initially. The wrapper can detect the
-            clients' id-s only when they are logging in, so the wrapper  needs to check if a ``User`` alterego of the client
-            exists anywhere, and if does will replace it.
+            clients' id-s only when they are logging in, so the wrapper  needs to check if a ``User`` alterego of the
+            client exists anywhere, and if does will replace it.
         activity : ``ActivityBase``, optional
             The client's preferred activity.
         status : `str` or ``Status``, optional
@@ -804,11 +805,15 @@ class Client(UserBase):
             raise TypeError(f'`secret` can be passed as `str` instance, got `{secret.__class__.__name__}`.')
         
         # client_id
-        client_id = preconvert_snowflake(client_id, 'client_id')
+        if client_id is None:
+            client_id = 0
+        else:
+            client_id = preconvert_snowflake(client_id, 'client_id')
         
         # activity
         if (not isinstance(activity, ActivityBase)) or (type(activity) is ActivityCustom):
-            raise TypeError(f'`activity` should have been passed as `{ActivityBase.__name__} instance (except {ActivityCustom.__name__}), got: {activity.__class__.__name__}.')
+            raise TypeError(f'`activity` should have been passed as `{ActivityBase.__name__} instance (except '
+                f'{ActivityCustom.__name__}), got: {activity.__class__.__name__}.')
         
         # status
         if (status is not None):
@@ -825,7 +830,8 @@ class Client(UserBase):
         elif isinstance(shard_count, int):
             shard_count = int(shard_count)
         else:
-            raise TypeError(f'`shard_count` should have been passed as `int` instance, got {shard_count.__class__.__name__}.')
+            raise TypeError(f'`shard_count` should have been passed as `int` instance, got '
+                f'{shard_count.__class__.__name__}.')
         
         if shard_count<0:
             raise ValueError(f'`shard_count` can be passed only as non negative `int`, got {shard_count!r}.')
@@ -8173,7 +8179,7 @@ class Client(UserBase):
             return self._gateway_url
         
         data = await self.client_gateway()
-        self._gateway_url = gateway_url = data['url']+'?encoding=json&v=6&compress=zlib-stream'
+        self._gateway_url = gateway_url = f'{data["url"]}?encoding=json&v={API_VERSION}&compress=zlib-stream'
         self._gateway_time = monotonic()
         
         return gateway_url

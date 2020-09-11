@@ -160,6 +160,48 @@ def graved_to_source_words(graved):
     
     return words
 
+def graved_to_escaped_words(graved):
+    """
+    Translates the given graved content to words where underscores are escaped..
+    
+    Parameters
+    ----------
+    graved : `None` or `list` of (`str`, ``Grave``) elements
+    
+    Returns
+    -------
+    words : `None` or `list` of `str`
+    """
+    if graved is None:
+        return None
+    
+    words = []
+    for element in graved:
+        if type(element) is str:
+            if words:
+                last = words[-1]
+                starter = last[0]
+                if element[0] in GRAMMAR_CHARS:
+                    add_space_before = False
+                elif starter == '`':
+                    add_space_before = True
+                else:
+                    add_space_before = True
+            else:
+                add_space_before = False
+            
+            local_words = element.replace('_', '\_').split(' ')
+            if (not add_space_before) and words:
+                words[-1] = words[-1]+local_words.pop(0)
+            
+            words.extend(local_words)
+        
+        else:
+            local_word = f'`{element.content}`'
+            words.append(local_word)
+    
+    return words
+
 class BuilderContext(object):
     """
     Builder context for converters.
@@ -190,7 +232,7 @@ class BuilderContext(object):
         return (f'{self.__class__.__name__}(indent_size={self.indent_size!r}, max_line_length='
             f'{self.max_line_length!r}, space_char={self.space_char!r}, word_converter={self.word_converter!r})')
 
-EMBED_SIZED_BUILDER_CONTEXT = BuilderContext(INDENT_SIZE_DEFAULT, SPACE_CHAR_UNICODE, 80, graved_to_words)
+EMBED_SIZED_BUILDER_CONTEXT = BuilderContext(INDENT_SIZE_DEFAULT, SPACE_CHAR_UNICODE, 79, graved_to_escaped_words)
 TEXT_BUILDER_CONTEXT = BuilderContext(INDENT_SIZE_DEFAULT, SPACE_CHAR_DEFAULT, 120, graved_to_words)
 TEXT_SOURCE_BUILDER_CONTEXT = BuilderContext(INDENT_SIZE_DEFAULT, SPACE_CHAR_DEFAULT, 120, graved_to_source_words)
 
@@ -1586,12 +1628,12 @@ def serialize_docs_embed_sized(docs):
         
         limit = EMBED_DESCRIPTION_MAX_SIZE
         if actual_chunk:
-            limit -=1
+            limit -= 1
         
         if actual_chunk_size+section_character_count <= limit:
             if actual_chunk:
                 actual_chunk.append('\n')
-                actual_chunk_size +=1
+                actual_chunk_size += 1
             
             section.render_to(actual_chunk)
             actual_chunk_size += section_character_count

@@ -5,7 +5,7 @@ from setuptools import setup
 HERE = pathlib.Path(__file__).parent
 
 # Lookup version
-version_search_pattern = re.compile('^__version__[ ]*=[ ]*((?:\'[^\']+\')|(?:\"[^\"]+\"))[ ]*$',re.M)
+version_search_pattern = re.compile('^__version__[ ]*=[ ]*((?:\'[^\']+\')|(?:\"[^\"]+\"))[ ]*$', re.M)
 parsed = version_search_pattern.search((HERE / 'hata' / '__init__.py').read_text())
 if parsed is None:
     raise RuntimeError('No version found in `__init__.py`')
@@ -23,6 +23,7 @@ setup(
         'hata.backend',
         'hata.discord',
         'hata.discord.bin',
+        'hata.ext.asyncio',
         'hata.ext.commands',
         'hata.ext.commands.helps',
         'hata.ext.extension_loader',

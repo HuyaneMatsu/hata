@@ -686,7 +686,7 @@ class basemethod(MethodLike):
         return self.__func__(self.__self__, self.__base__, *args, **kwargs)
     
     def __getattr__(self,name):
-        return getattr(self.__func__,name)
+        return getattr(self.__func__, name)
     
     __class_doc__ = None
     

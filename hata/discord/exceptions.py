@@ -350,6 +350,7 @@ class ERROR_CODES:
     connection_rewoked      = 40012
     delete_account_transfer_team_ownership = 40028
     user_not_connected      = 40032
+    message_already_crossposted = 40033
     
     invalid_access          = 50001
     invalid_account_type    = 50002

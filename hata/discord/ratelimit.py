@@ -1293,12 +1293,12 @@ class RATELIMIT_GROUPS:
     channel_follow              = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
     invite_get_channel          = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
     invite_create               = RatelimitGroup()
-    message_logs                = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
+    message_logs                = RatelimitGroup(LIMITER_CHANNEL)
     message_create              = RatelimitGroup(LIMITER_CHANNEL)
     message_delete_multiple     = RatelimitGroup(LIMITER_CHANNEL)
     message_delete              = RatelimitGroup(LIMITER_CHANNEL)
     message_delete_b2wo         = RatelimitGroup(LIMITER_CHANNEL)
-    message_get                 = RatelimitGroup(LIMITER_CHANNEL, optimistic=True)
+    message_get                 = RatelimitGroup(LIMITER_CHANNEL)
     message_edit                = RatelimitGroup(LIMITER_CHANNEL)
     message_ack                 = RatelimitGroup(optimistic=True) # untested
     message_crosspost           = RatelimitGroup(LIMITER_CHANNEL)
@@ -1425,7 +1425,7 @@ del DOCS_ENABLED
 ##INFO :
 ##    some endpoints might be off 1s
 ##    groups are not accurate now, because we use autogroups
-##    last group id: 102144
+##    last group id: 105728
 ##
 ##endpoint: https://cdn.discordapp.com/
 ##method  : GET
@@ -1562,7 +1562,11 @@ del DOCS_ENABLED
 ##method  : GET
 ##auth    : bot
 ##used at : message_logs
-##limits  : unlimited
+##limits  :
+##    group   : 105728
+##    limit   : 5
+##    reset   : 5
+##    limiter : channel_id
 ##
 ##endpoint: /channels/{channel_id}/messages
 ##method  : POST
@@ -1601,7 +1605,11 @@ del DOCS_ENABLED
 ##method  : GET
 ##auth    : bot
 ##used at : message_get
-##limits  : unlimited
+##limits  :
+##    group   : 103936
+##    limit   : 5
+##    reset   : 5
+##    limiter : channel_id
 ##
 ##endpoint: /channels/{channel_id}/messages/{message_id}
 ##method  : PATCH

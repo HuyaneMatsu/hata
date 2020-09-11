@@ -23,7 +23,7 @@ else:
 if sys.implementation.name == 'cpython':
     #on cpython bisect is 4~ times faster.
     import bisect
-    _relativeindex=bisect.bisect_left
+    _relativeindex = bisect.bisect_left
     del bisect
 
 else:
@@ -233,9 +233,28 @@ class ClientDictionary(object):
         array = self._ids
         index = _relativeindex(array, id_)
         if index == len(array) or array[index] != id_:
-            raise ValueError(f'{id_!r} is not in the {self.__class__.__name__}')
+            raise KeyError(f'{id_!r} is not in the {self.__class__.__name__}')
         return self._elements[index]
+    
+    def get(self, id_, default=None):
+        """
+        Returns the client of the client dictionary for the given id.
         
+        Parameters
+        ----------
+        default : `Any`, Optional
+            Default value to return value if the client is not found.
+        
+        Returns
+        -------
+        client : ``Client`` or `default`
+        """
+        array = self._ids
+        index = _relativeindex(array, id_)
+        if index == len(array) or array[index] != id_:
+            return default
+        return self._elements[index]
+    
     def __contains__(self, client):
         """Returns whether the client is at the container."""
         id_ = client.id

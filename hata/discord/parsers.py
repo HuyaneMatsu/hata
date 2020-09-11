@@ -4740,7 +4740,7 @@ class eventlist(list):
     _supports_from_class : `bool`
         If `type_` was passed when creating an eventlist and the it supports creation with a `from_class` class method.
     kwargs : `None` or `dict` of (`str`, `Any`) items
-        Keyword arguments used for each element when extending teh client's events with the event-list.
+        Keyword arguments used for each element when extending the client's events with the event-list.
     type : `None` or `type`
         If `type_` was passed when creating the eventlist, then each added element is prevaidated with the given type
         before adding them. Some extension classes might support behaviour.
@@ -5916,7 +5916,7 @@ async def default_error_event(client, name, err):
     """
     extracted = [
         client.full_name,
-        ' ignores occurred Exception at ',
+        ' ignores occurred exception at ',
         name,
         '\n',
             ]
@@ -5927,7 +5927,9 @@ async def default_error_event(client, name, err):
     
     if not isinstance(err, str):
         err = repr(err)
+    
     extracted.append(err)
+    extracted.append('\n')
     
     sys.stderr.write(''.join(extracted))
 
@@ -6259,7 +6261,7 @@ class EventDescriptor(object):
         Called when a user left (kicked or banned counts as well) from a guild. The `profile` argument is the user's
         respective guild profile for the guild.
     
-    integration_update(client, Client, guild: Guild):
+    integration_update(client: Client, guild: Guild):
         Called when an ``Integration`` of a guild is updated.
         
         No integration data is included with the received dispatch event, so it cannot be passed to the event

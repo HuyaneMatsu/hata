@@ -762,7 +762,7 @@ class ThreadSyncerCTX(object):
         self.enter_event.set()
         self.exit_event.wait()
 
-_HAS_IPv6=hasattr(module_socket,'AF_INET6')
+_HAS_IPv6 = hasattr(module_socket, 'AF_INET6')
 
 def _ipaddr_info(host, port, family, type, proto):
     # Try to skip getaddrinfo if "host" is already an IP. Users might have
@@ -1228,12 +1228,13 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
         self._csock = None
     
     def __repr__(self):
-        result=['<', self.__class__.__name__, '(', self._name]
+        result = ['<', self.__class__.__name__, '(', self._name]
         self.is_alive() # easy way to get ._is_stopped set when appropriate
-        if self._is_stopped:
-            result.append(' stopped')
+        if self._is_stopped or (not self.running):
+            state = ' stopped'
         else:
-            result.append(' started')
+            state = ' started'
+        result.append(state)
         
         if self._daemonic:
             result.append(' daemon')
@@ -1420,12 +1421,12 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
                     
                 event_list = None
                 
-                #process callbacks
+                # process callbacks
                 for _ in range(len(ready)):
-                    handle=ready.popleft()
+                    handle = ready.popleft()
                     if not handle.cancelled:
                         handle._run()
-                handle=None  #remove from locals (they said needed)
+                handle = None  # remove from locals or the gc derps out.
     
     def caller(self, awaitable, timeout=None):
         return self.ensure_future_threadsafe(awaitable).syncwrap().wait(timeout)
@@ -1508,9 +1509,9 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
         results = await gather((ag.aclose() for ag in closing_agens), self)
         
         for result, agen in zip(results, closing_agens):
-            exception=result.exception
+            exception = result.exception
             if exception is not None:
-                extracted=[
+                extracted = [
                     'Exception occured during shutting down asyncgen:\n',
                     repr(agen),
                         ]
@@ -1525,7 +1526,7 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
 
     def _asyncgen_firstiter_hook(self, agen):
         if self._asyncgens_shutdown_called:
-            pass #remove it later
+            pass # remove it later
         
         self._asyncgens.add(agen)
 
@@ -1737,7 +1738,7 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
         transport, protocol = await self._create_connection_transport(sock, protocol_factory, ssl, '', server_side=True)
         return transport, protocol
     
-    async def create_connection(self, protocol_factory,host=None, port=None, *, ssl=None, family=0, proto=0, flags=0,
+    async def create_connection(self, protocol_factory, host=None, port=None, *, ssl=None, family=0, proto=0, flags=0,
             sock=None, local_addr=None, server_hostname=None):
         
         if (server_hostname is not None) and (not ssl):

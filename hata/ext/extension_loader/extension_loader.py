@@ -406,7 +406,7 @@ class Extension(object):
     del _get_locked, _set_locked
     
     if DOCS_ENABLED:
-        extend_default_variables.__doc__ = ("""
+        locked.__doc__ = ("""
         Set-del descriptor to define whether the extension should be picked up by the `{}_all` methods of the
         extension loader.
         
@@ -620,7 +620,7 @@ class ExtensionLoader(object):
     **main.py**
     
     ```
-    from hata.extension_loader import EXTENSION_LOADER
+    from hata.ext.extension_loader import EXTENSION_LOADER
     from datetime import datetime
     
     cake = 'cake'
@@ -1242,7 +1242,7 @@ class ExtensionLoader(object):
     
     def load(self, name):
         """
-        Loads the extension with the given name.
+        Loads the extension with the given name. If the extension is already loaded, will do nothing.
         
         Returns
         -------
@@ -1256,7 +1256,7 @@ class ExtensionLoader(object):
             - No extension is added with the given name.
             - Loading the extension failed.
         """
-        task=Task(self._load(name), KOKORO)
+        task = Task(self._load(name), KOKORO)
         
         thread = current_thread()
         if thread is KOKORO:

@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-__all__ = ('AsyncQue', 'CancelledError', 'Future', 'FutureAsyncWrapper', 'FutureG', 'FutureSyncWrapper', 'FutureWM',
-    'InvalidStateError', 'Lock', 'ScarletExecutor', 'ScarletLock', 'Task', 'WaitContinously', 'WaitTillAll',
+__all__ = ('AsyncQue', 'CancelledError', 'Event', 'Future', 'FutureAsyncWrapper', 'FutureG', 'FutureSyncWrapper',
+    'FutureWM', 'InvalidStateError', 'Lock', 'ScarletExecutor', 'ScarletLock', 'Task', 'WaitContinously', 'WaitTillAll',
     'WaitTillExc', 'WaitTillFirst', 'enter_executor', 'future_or_timeout', 'gather', 'isawaitable', 'iscoroutine',
     'iscoroutinefunction', 'shield', 'sleep', )
 
 import sys, reprlib, linecache
-from types import GeneratorType, CoroutineType, MethodType as method, FunctionType as function
+from types import GeneratorType, CoroutineType, MethodType as method, FunctionType as function, coroutine
 from collections import deque
 from threading import current_thread, Lock as SyncLock, Event as SyncEvent
 
@@ -68,14 +68,14 @@ class InvalidStateError(Exception):
         if message is None:
             future = self.future
             message = (f'`{future.__class__.__name__}.{self.func_name}` was called, when `.state` is {future._state} '
-               'of {future!r}')
+               f'of {future!r}')
             self._message = message
         
         return message
 
 def iscoroutinefunction(func):
     """
-    Returns whether th given `obj` is a coroutine function, so is created with `async def`.
+    Returns whether the given `obj` is a coroutine function, so is created with `async def`.
     
     Parameters
     ----------
@@ -143,6 +143,18 @@ RETRIEVED = 'RETRIEVED'
 
 _IGNORED_FRAME_INFOS = {}
 def _ignore_frame(file, name, line):
+    """
+    When rendering an exception traceback, specified frames can be added to being stopped from rendering.
+    
+    Parameters
+    ----------
+    file : `str`
+        The name of the respective file.
+    name : `str`
+        The name of the respective function.
+    line : `str`
+        The respective line's stripped content.
+    """
     try:
         file_s = _IGNORED_FRAME_INFOS[file]
     except KeyError:
@@ -158,6 +170,22 @@ def _ignore_frame(file, name, line):
     name_s.add(line)
         
 def _should_ignore_frame(file, name, line):
+    """
+    Returnw whether the given frame should be ignored from rending.
+    
+    Parameters
+    ----------
+    file : `str`
+        The frame's respective file's name.
+    name : `str`
+        The frame's respective function's name.
+    line : `str`
+        The frame's respective stripped line.
+    
+    Returns
+    -------
+    should_ignore : `bool`
+    """
     try:
         file_s = _IGNORED_FRAME_INFOS[file]
     except KeyError:
@@ -188,6 +216,21 @@ _ignore_frame(dereaddons_local.__spec__.origin  , '__call__', 'return self.func(
 del dereaddons_local
 
 def render_frames_to_list(frames, extend=None):
+    """
+    Renders the given frames into a list of strings.
+    
+    Parameters
+    ----------
+    frames : `list` of (`frame` or ``_EXCFrameType``)
+        The frames to render.
+    extend : `None` or `list` of `str`
+        Whether the frames should be rendered into an already existing list.
+    
+    Returns
+    -------
+    extend : `list` of `str`
+        The rendered frames as a `list` of it's string parts.
+    """
     if extend is None:
         extend = []
     checked = set()
@@ -241,7 +284,7 @@ def render_frames_to_list(frames, extend=None):
         extend.append('\n')
         
     if count > 3:
-        count -=3
+        count -= 3
         extend.append('  [Previous line repeated ')
         extend.append(str(count))
         extend.append(' more times]\n')
@@ -429,7 +472,7 @@ def format_coroutine(coro):
 class Future(object):
     __slots__ = ('_blocking', '_callbacks', '_exception', '_loop', '_result', '_state')
 
-    #if arguments are not passed will not call `__del__`
+    # If arguments are not passed will not call `__del__`
     def __new__(cls, loop):
         self = object.__new__(cls)
         self._loop = loop
@@ -466,8 +509,7 @@ class Future(object):
             state = self._state
             
             if state is not PENDING:
-                # If the future is cancelled, we should not show up not retrieved
-                # message at `.__del__`
+                # If the future is cancelled, we should not show up not retrieved message at `.__del__`
                 if state is FINISHED:
                     self._state = RETRIEVED
                 return 0
@@ -571,11 +613,11 @@ class Future(object):
         count = 0
         index = len(callbacks)
         while index:
-            index -=1
+            index -= 1
             if callbacks[index] is func:
                 del callbacks[index]
-                count +=1
-    
+                count += 1
+        
         return count
     
     def set_result(self, result):
@@ -1471,7 +1513,7 @@ class Task(Future):
         
         if frame is None:
             return frames
-
+        
         while limit:
             limit -=1
             
@@ -1571,12 +1613,12 @@ class Task(Future):
     @staticmethod
     def _print_stack(self, limit, file):
         if file is None:
-            file=sys.stdout
-
+            file = sys.stdout
+        
         exception = self._exception
         
         if exception is None:
-            frames=self.get_stack(limit)
+            frames = self.get_stack(limit)
             if frames:
                 recursive = (frames[-1] is None)
                 if recursive:
@@ -1817,7 +1859,7 @@ class Task(Future):
 
 class AsyncQue(object):
     __slots__ = ('_exception', '_loop', '_results', '_waiter',)
-    def __new__(cls, loop, iterable=None, maxlen=None, exception = None):
+    def __new__(cls, loop, iterable=None, maxlen=None, exception=None):
         self = object.__new__(cls)
         self._loop = loop
         self._results = deque(maxlen=maxlen) if iterable is None else deque(iterable, maxlen=maxlen)
@@ -1833,7 +1875,7 @@ class AsyncQue(object):
             self._results.append(element)
         else:
             waiter.set_result_if_pending(element)
-            self._waiter=None
+            self._waiter = None
     
     def set_exception(self, exception):
         #should we raise InvalidStateError?
@@ -1945,16 +1987,17 @@ class FutureG(FutureWM):
     __slots__ = ('_blocking', '_callbacks', '_count', '_exception', '_loop', '_result', '_state',)
     
     class _Element(object):
-        __slots__ = ('exception', 'result',)
+        __slots__ = ('exception', 'result', 'return_exc')
         def __init__(self, result, exception):
             self.result = result
             self.exception = exception
+        
         def __call__(self):
             exception = self.exception
             if exception is None:
                 return self.result
             raise exception
-
+    
     def __new__(cls, loop, count):
         self = object.__new__(cls)
         self._loop = loop
@@ -1974,9 +2017,9 @@ class FutureG(FutureWM):
             raise InvalidStateError(self, 'set_result')
             
         self._result.append(self._Element(result, None))
-        if self._count!=len(self._result):
+        if self._count != len(self._result):
             return
-            
+        
         self._state = FINISHED
         self._loop._schedule_callbacks(self)
 
@@ -2014,14 +2057,15 @@ class FutureG(FutureWM):
         self._state = FINISHED
         self._loop._schedule_callbacks(self)
         return 1
-    
+
 class _gather_callback(object):
     __slots__ = ('target',)
     def __init__(self, target):
         self.target = target
+    
     def __call__(self, future):
         try:
-            result=future.result()
+            result = future.result()
         except BaseException as err:
             self.target.set_exception_if_pending(err)
         else:
@@ -2169,7 +2213,7 @@ class _chain_remover(object):
                 break
 
 def shield(awaitable, loop):
-    protected=loop.ensure_future(awaitable)
+    protected = loop.ensure_future(awaitable)
     if protected._state is not PENDING:
         return protected #already done, we can return
     
@@ -2338,7 +2382,7 @@ class WaitTillExc(WaitTillFirst):
     __slots__ = ()
     # `__new__` is same as `WaitTillFirst.__new__`
     # `__repr__` is same as `Future.__repr__`
-
+    
     class _wait_callback(object):
         __slots__ = ('_parent',)
         
@@ -2477,6 +2521,12 @@ class Lock(object):
     
     __await__ = __iter__
     
+    acquire = __aenter__
+    
+    def release(self):
+        future = self._waiters.pop()
+        future.set_result_if_pending(None)
+    
     def __repr__(self):
         result = [
             '<',
@@ -2553,6 +2603,94 @@ class ScarletLock(Lock):
         result.append('>')
         
         return ''.join(result)
+
+
+class Event(object):
+    """
+    Asynchronous equivalent to `threading.Event`.
+    
+    Attributes
+    ----------
+    _loop : ``EventThread``
+        The eventloop to what the event is bound.
+    _value : `bool`
+        The internal flag of the event, which defines, whether it is set.
+    _waiters : `list` of ``Future``
+        A list of futures waiting on the event to be set.
+    """
+    __slots__ = ('_loop', '_value', '_waiters',)
+    def __new__(cls, loop):
+        """
+        Creates a new event object bound to the given eventloop.
+        
+        Parameters
+        ----------
+        loop : ``EventThread``
+            The eventloop to what the event is bound.
+        """
+        self = object.__new__(cls)
+        self._loop = loop
+        self._value = False
+        self._waiters = []
+        return self
+    
+    def is_set(self):
+        """
+        Returns whether the event's internal flag is set as `True`.
+        
+        Returns
+        -------
+        is_set: `bool`
+        """
+        return self._value
+    
+    def set(self):
+        """
+        Sets the event's internal flag to `True`, waking up all the tasks waiting for it.
+        """
+        if self._value:
+            return
+        
+        self._value = True
+        waiters = self._waiters
+        for waiter in waiters:
+            waiter.set_result_if_pending(None)
+        
+        waiters.clear()
+    
+    def clear(self):
+        """
+        Clears the internal flag of the event.
+        """
+        self._value = False
+    
+    def __iter__(self):
+        """Waits util the event is set, or if it is already, returns immediately."""
+        if self._value:
+            return
+        
+        future = Future(self._loop)
+        self._waiters.append(future)
+        yield from future
+    
+    __await__ = __iter__
+    
+    wait = coroutine(__iter__)
+    
+    def __repr__(self):
+        """Returns the event's representation."""
+        result = [
+            '<',
+            self.__class__.__name__,
+                ]
+        
+        if self._value:
+            result.append(' set')
+        
+        result.append('>')
+        
+        return ''.join(result)
+
 
 class enter_executor(object):
     __slots__ = ('_enter_future', '_exit_future', '_fut_waiter', '_task')

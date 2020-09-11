@@ -1080,7 +1080,7 @@ class checks:
     from ...discord.guild import Guild
     from ...discord.permission import Permission
     from ...discord.role import Role
-    from ...discord.channel import ChannelBase
+    from ...discord.channel import ChannelBase, ChannelText
     from ...discord.parsers import check_argcount_and_convert
     
     def validate_checks(checks_):
@@ -2506,6 +2506,73 @@ class checks:
                 return True
             
             return False
+    
+    class nsfw_channel_only(_check_base):
+        """
+        Checks whether the message was sent to an nsfw channel.
+        
+        Attributes
+        ----------
+        handler : `None` or `async-callable`
+            An async callable what will be called when the check fails.
+        """
+        __slots__ = ()
+        def __new__(cls, handler=None):
+            """
+            Creates a check, what will validate whether the a received message of a client passes the given condition.
+            
+            Parameters
+            ----------
+            handler : `None` or `async-callable` or instanceable to `async-callable`
+                The handler to convert.
+                
+                If the handler is `async-callable` or if it would be instanced to it, then it should accept the
+                following arguments:
+                +-------------------+---------------------------+
+                | Respective name   | Type                      |
+                +===================+===========================+
+                | client            | ``Client``                |
+                +-------------------+---------------------------+
+                | message           | ``Message``               |
+                +-------------------+---------------------------+
+                | command           | ``Command``               |
+                +-------------------+---------------------------+
+                | check             | ``_check_base`` instance  |
+                +-------------------+---------------------------+
+            
+            Raises
+            ------
+            TypeError
+                If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
+            """
+            handler = _convert_handler(handler)
+            
+            self = object.__new__(cls)
+            self.handler = handler
+            return self
+        
+        async def __call__(self, client, message):
+            """
+            Calls the check to validate whether it passes with the given conditions.
+            
+            Parameters
+            ----------
+            client : ``Client``
+                The client who's received the message.
+            message : ``Message``
+                The received message.
+            
+            Returns
+            -------
+            passed : `bool`
+                Whether the check passed.
+            """
+            channel = message.channel
+            if (isinstance(channel, ChannelText) and channel.nsfw):
+                return True
+            
+            return False
+
 
 from .command.checks import validate_checks
 
@@ -3002,7 +3069,7 @@ class CommandProcesser(EventWaitforBase):
         
         default_category = Category(default_category_name)
         if (category_name_rule is not None):
-            default_category.display_name = default_category.name
+            default_category.display_name = category_name_rule(default_category.name)
         
         self = object.__new__(cls)
         self._category_name_rule = category_name_rule

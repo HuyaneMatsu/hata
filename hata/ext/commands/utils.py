@@ -1699,7 +1699,7 @@ class CooldownWrapper(CommandWrapper):
 
         Returns
         -------
-        wrapper : ``Cooldown._wrapper`` / ``CooldownWrapper``
+        wrapper : ``Cooldown._wrapper`` or ``CooldownWrapper``
             If `func` is given, then returns the created ``CooldownWrapper``, if not, then returns a wrapper,
             what can be used as a decorator.
         
@@ -1746,11 +1746,11 @@ class Cooldown(object):
     **Using a cooldown handler example:**
     
     ```
-    from hata import DiscordException, CancelledError, sleep
+    from hata import DiscordException, CancelledError, sleep, ERROR_CODES, KOKORO
     from hata.commands. import Cooldown
     
     class CooldownHandler:
-        __slots__=('cache',)
+        __slots__ = ('cache',)
         
         def __init__(self):
             self.cache = {}
@@ -1758,7 +1758,7 @@ class Cooldown(object):
         async def __call__(self, client, message, command, time_left):
             user_id = message.author.id
             try:
-                notification, waiter = self.cache[user_id]
+                notification,waiter = self.cache[user_id]
             except KeyError:
                 pass
             else:
@@ -1766,8 +1766,20 @@ class Cooldown(object):
                     try:
                         await client.message_edit(notification,
                             f'**{message.author:f}** please cool down, {time_left:.0f} seconds left!')
-                    except DiscordException:
-                        pass
+                    except BaseException as err:
+                        if isinstance(err, ConnectionError):
+                            return
+                        
+                        if isinstance(err, DiscordException):
+                            if err.code in (
+                                    ERROR_CODES.unknown_message, # message deleted
+                                    ERROR_CODES.unknown_channel, # channel deleted
+                                    ERROR_CODES.invalid_access, # client removed
+                                        ):
+                                return
+                        
+                        await client.events.error(client, f'{self!r}.__call__', err)
+                    
                     return
                 
                 waiter.cancel()
@@ -1775,22 +1787,49 @@ class Cooldown(object):
             try:
                 notification = await client.message_create(message.channel,
                     f'**{message.author:f}** please cool down, {time_left:.0f} seconds left!')
-            except DiscordException:
-                return
+            except BaseException as err:
+                if isinstance(err, ConnectionError):
+                    return
+                
+                if isinstance(err, DiscordException):
+                    if err.code in (
+                            ERROR_CODES.unknown_message, # message deleted
+                            ERROR_CODES.unknown_channel, # message's channel deleted
+                            ERROR_CODES.invalid_access, # client removed
+                            ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                            ERROR_CODES.invalid_message_send_user, # user has dm-s disallowed
+                                ):
+                        return
+                
+                await client.events.error(client, f'{self!r}.__call__', err)
             
-            waiter = client.loop.create_task(self.waiter(client, user_id, notification)
+            waiter = Task(self.waiter(client, user_id, notification), KOKORO)
             self.cache[user_id] = (notification, waiter)
-    
+        
         async def waiter(self, client, user_id, notification):
             try:
-                await sleep(30.)
+                await sleep(30., KOKORO)
             except CancelledError:
                 pass
+            
             del self.cache[user_id]
+            
             try:
                 await client.message_delete(notification)
-            except DiscordException:
-                pass
+            except BaseException as err:
+                if isinstance(err, ConnectionError):
+                    # no internet
+                    return
+                
+                if isinstance(err, DiscordException):
+                    if err.code in (
+                            ERROR_CODES.unknown_channel, # message's channel deleted
+                            ERROR_CODES.unknown_message, # message deleted
+                            ERROR_CODES.invalid_access, # client removed
+                                ):
+                        return
+                
+                await client.events.error(client, f'{self!r}.__call__', err)
     
     @Bot.commands
     @Cooldown('user', 30., handler=CooldownHandler())

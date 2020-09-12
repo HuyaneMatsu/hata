@@ -43,6 +43,17 @@ If you get `ImportError` or `ModuleNotFoundError` then the library is not correc
 2.: We define our TOKEN, which is a string.
 You can get one by registering your Bot with [Discord's application page](https://discordapp.com/developers/applications)
 
+**Note:** When creating your Discord bot application in Discord application page you should check both `presence intent`
+and `server member` intent in order for this example to work. If you did not do this or you want just some specific
+intents you can additionally pas `intents` kwarg to Client with value of 0 (default is `-1` which means ALL intents).
+
+So for example `NekoBot = Client(TOKEN, intents=0)` and above example will work if you did not check intents in application page.
+
+You can read more about which values represent what [here](https://github.com/HuyaneMatsu/hata/blob/0695fd613d76390c8668851631accc473031cc5c/hata/discord/parsers.py#L204)
+
+You can read more about Discord intents [here](https://support.discord.com/hc/en-us/articles/360040720412)
+
+
 3.: We create our `Client` instance and name it `NekoBot`. 
 When creating it we need to pass at least a token but it accepts [other, optional, attributes too.](https://github.com/HuyaneMatsu/hata/blob/0695fd613d76390c8668851631accc473031cc5c/hata/discord/client.py#L607)
 

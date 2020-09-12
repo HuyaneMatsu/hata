@@ -53,22 +53,22 @@ The `ready` event will be activated after the client finished logging in to Disc
 When it happens, in the example above, we print out the client's full name and it's ID.
 
 Event function can take multiple arguments depending on the event, but all of them take `client` as the first one.
-The example we used is the most straightforward way but there are multiple ways of adding event listeners and there
+The example we used is the most straightforward way but there are multiple ways of adding event handlers and there
 are multiple events that you can register. You can read about this [Event Examples](#Event-examples).
 
-5.: The `message_create` is activated every time the client receives a message.
+5.: The `message_create` is called every time the client receives a message.
 It is triggered by bot messages as well, so first of all we want to filter them out.
 Then we lowercase the message content (message.content is the text of the message) and check if it contains certain words.
 Functionality is simple, if someone writes either `owo`, `uwu` or `0w0` the bot will reply with the same message.
 And if someone writes message that starts with `ayy` the bot will reply with `lmao`.
 
 6.: At the end we run up our client(s) with calling the `start_clients` function.
-This should be at the end of your code, after you've written all of your bot functionality, as it is blocking.
+This line will block until the client(s) successfully login, then it will return either True or False depending on success.
 
 ## Event examples
 
-There are multiple events you can register, unfortunately currently there are only documented in the source code.
-You can take a look at [Client source code](https://github.com/HuyaneMatsu/hata/blob/0695fd613d76390c8668851631accc473031cc5c/hata/discord/client.py#L607) to see all events.
+There are multiple events you can register,
+you can take a look [here](https://github.com/HuyaneMatsu/hata/blob/0695fd613d76390c8668851631accc473031cc5c/hata/discord/parsers.py#L6011) to see all events.
 
 You can register a event,  if you wish, in multiple ways so here are some examples:
 

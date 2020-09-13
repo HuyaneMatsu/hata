@@ -43,16 +43,8 @@ If you get `ImportError` or `ModuleNotFoundError` then the library is not correc
 2.: We define our TOKEN, which is a string.
 You can get one by registering your Bot with [Discord's application page](https://discordapp.com/developers/applications)
 
-**Note:** When creating your Discord bot application in Discord application page you should check both `presence intent`
-and `server member` intent in order for this example to work. If you did not do this or you want just some specific
-intents you can additionally pas `intents` kwarg to Client with value of 0 (default is `-1` which means ALL intents).
-
-So for example `NekoBot = Client(TOKEN, intents=0)` and above example will work if you did not check intents in application page.
-
-You can read more about which values represent what [here](https://github.com/HuyaneMatsu/hata/blob/0695fd613d76390c8668851631accc473031cc5c/hata/discord/parsers.py#L204)
-
-You can read more about Discord intents [here](https://support.discord.com/hc/en-us/articles/360040720412)
-
+**Note:** In Discord application page please check both `presence intent` and `server member` intent under 
+"Bot/Privileged Gateway Intents" section. Intents are too broad for basic example but you can read more here [Intents](#Intents).
 
 3.: We create our `Client` instance and name it `NekoBot`. 
 When creating it we need to pass at least a token but it accepts [other, optional, attributes too.](https://github.com/HuyaneMatsu/hata/blob/0695fd613d76390c8668851631accc473031cc5c/hata/discord/client.py#L607)
@@ -75,6 +67,7 @@ And if someone writes message that starts with `ayy` the bot will reply with `lm
 
 6.: At the end we run up our client(s) with calling the `start_clients` function.
 This line will block until the client(s) successfully login, then it will return either True or False depending on success.
+If your bot fails to login because of bad intents read point 2 again.
 
 ## Event examples
 
@@ -150,6 +143,37 @@ Examples for the above errors:
     async def owowhatsthis(client):
         pass
     ```
+
+## Intents
+
+When you are creating your Discord bot in Discord application page you can check certain intents.
+Intents are basically certain permissions your bot is asking from Discord to do certain things (see member list, member
+statuses etc). If your bot needs certain intents but you did not check those intents in application page
+the bot will fail to login when you run the code.
+
+When you define the Hata client default value of `intents` is `-1` which means ALL intents, so it **will** fail to
+login if you did not check both `presence intent` and `server member` intent in application page.
+
+But you don't have to use the default value, you can use only intents you wish, so for example 
+`NekoBot = Client(TOKEN)` can be replaced with `NekoBot = Client(TOKEN, intents=int('1000000000', 2))`
+in [Basic client example](#Basic-client-example) since that code only requires `IntentFlag` of 9 which is required for 
+sending messages (and in that code we only need to send messages since it's a simple replying bot).
+By specifying specific intent like that we don't have to check intents in application page and it will save our
+resources as member lists, statuses etc will not be loaded.
+
+You can read more about IntentFlags and which values represent what [here](https://github.com/HuyaneMatsu/hata/blob/0695fd613d76390c8668851631accc473031cc5c/hata/discord/parsers.py#L204)
+(note that not all of IntentFlags require permissions from Discord, some are managed internally by Hata).
+
+**If you are beginner** it is recommended to use default value of ALL intents and check all intents in Discord application
+page (same how it's done in [Basic client example](#Basic-client-example)) so you don't have to bother with those
+until you are more experienced.
+
+You can read more about intents here [Discord blog](https://support.discord.com/hc/en-us/articles/360040720412)
+
+#### Multiple flags in intents
+
+If you'd like to have multiple IntentFlags example 1,4 and 9 then you would do `int('1000010010', 2)` which is just
+a binary number and 1s represent which IntentFlags you want. 
 
 ## Formatting objects
 

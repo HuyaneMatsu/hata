@@ -866,7 +866,7 @@ class Closer(object):
 
 class ChooseMenu(object):
     """
-    Familiar to ``Pagination``, but instaead of just displaying multiple pages of text, it allows the user to select
+    Familiar to ``Pagination``, but instead of just displaying multiple pages of text, it allows the user to select
     a displayed option.
     
     The class allows modifications and closing it's representations for every user. Also works at private channels.
@@ -882,7 +882,7 @@ class ChooseMenu(object):
     channel : ``ChannelTextBase`` instance
         The channel where the ``ChooseMenu`` is executed.
     client : ``Client``
-        The client who executes the ``Pagination``.
+        The client who executes the ``ChooseMenu``.
     embed : ``Embed`` (or any compatible)
             An embed base, what's description and footer will be rendered with the given choises and with information
             about the respective page.
@@ -907,7 +907,7 @@ class ChooseMenu(object):
             then it's element will be passed to the respective function.
     
     task_flag : `int`
-        A flag to store the state of the ``Pagination``.
+        A flag to store the state of the ``ChooseMenu``.
         
         Possible values:
         +---------------------------+-------+-----------------------------------------------------------------------+
@@ -926,7 +926,7 @@ class ChooseMenu(object):
         |                           |       | but expected.                                                         |
         +---------------------------+-------+-----------------------------------------------------------------------+
     timeout : `float`
-        The timeout of the ``Pagination`` in seconds.
+        The timeout of the ``ChooseMenu`` in seconds.
     timeouter : `None` or ``Timeouter``
         Executes the timing out feature on the ``ChooseMenu``.
     prefix : `None` or `str`
@@ -991,7 +991,7 @@ class ChooseMenu(object):
         Parameters
         ----------
         client : ``Client``
-            The client who executes the ``Pagination``.
+            The client who executes the ``ChooseMenu``.
         channel : ``ChannelTextBase`` instance
             The channel where the ``ChooseMenu`` is executed.
         choices : `indexable` of `Any`
@@ -1034,7 +1034,7 @@ class ChooseMenu(object):
             An embed base, what's description and footer will be rendered with the given choises and with information
             about the respective page. Defaults to an empty ``Embed`` instance.
         timeout : `float`, Optional
-            The timeout of the ``Pagination`` in seconds. Defaults to `240.0`.
+            The timeout of the ``ChooseMenu`` in seconds. Defaults to `240.0`.
         message : `None` or ``Message``, Optional
             The message on what the ``ChooseMenu`` will be executed. If not given a new message will be created.
             Defaults to `None`.
@@ -1196,7 +1196,7 @@ class ChooseMenu(object):
         Parameters
         ----------
         client : ``Client``
-            The client who executes the ``Pagination``
+            The client who executes the ``ChooseMenu``
         event : ``ReactionAddEvent``, ``ReactionDeleteEvent``
             The received event.
         """

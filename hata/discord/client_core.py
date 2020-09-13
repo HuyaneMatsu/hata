@@ -27,7 +27,7 @@ if sys.implementation.name == 'cpython':
     del bisect
 
 else:
-    def _relativeindex(array,value):
+    def _relativeindex(array, value):
         """
         Return the index where to insert item `value`  in list `array`, assuming `array` is sorted.
         
@@ -580,7 +580,6 @@ class Kokoro(object):
             
             if (self.last_answer+self.interval+HEARTBEAT_TIMEOUT)-perf_counter() <= 0.0:
                 self.should_beat = False
-                client = gateway.client
                 Task(gateway.terminate(), KOKORO)
                 break
             
@@ -591,7 +590,6 @@ class Kokoro(object):
                 await task
             except TimeoutError:
                 self.should_beat = False
-                client = gateway.client
                 Task(gateway.terminate(), KOKORO)
                 break
             except CancelledError:

@@ -39,13 +39,39 @@ start_clients()
 
 
 
-Every command must accept at least 2 argument, `client` and `message`, but you
-can add more arguments after it as well. These arguments, their annotations
-and default values are all checked.
+Every command must accept at least 2 arguments, `client` and `message`, but you
+can have additional arguments that can be parsed to certain types and they each can have default values.
+More on these in the next section.
 
-For example, if the command accepts 3 arguments and the last has no annotation,
-neither default value, the message's content will be passed, since the
-command's name till the next linebreak or till the end of it.
+## Command argument parser
+
+Commands can take additional arguments instead of the default `client` and `message`.
+
+If the command accepts 3 arguments (client and message by default + 3d additional argument) and that 3d argument 
+has no annotation nor default value, then the message content will be passed to that third argument (until newline).
+
+Example for the above case:
+```py
+@NekoBot.commands
+async def test(client, message, third):
+    print(third)
+```
+If we call command test with `n!test abc 123 zzz` this will print `third` which would be a string with value `abc 123 zzz`
+
+However if we call it with newline `n!test abc 123 zzz\nnewline` the newline(s) will be ignored and `third` would still
+be a string with value `abc 123 zzz`
+
+...
+
+Sometimes we want to deal with certain types inside our command, for example let's say we want a command that hugs a user:
+```py
+@NekoBot.commands
+async def hug(client, message, user):
+    ...
+```
+Let's say we call the above command with `n!hug @some_member_mention`, it would be easier for us if argument `user` was
+already a `User` object that we can use right away inside that function instead of string which we would then need to 
+additionally convert to user object inside our command.
 
 If the command's arguments are more complicated, as the default 2 argument,
 or the extended 3 argument case, then a parser function is generated for it.
@@ -65,7 +91,7 @@ from mention, name and id of the next word of the content. With using a
 default value, we can make sure, that the command will be called even if
 the parsing fails.
 
-Just some bultin and hata types are supported:
+Just some built-in and hata types are supported:
 
 | type          | description                                                                                                   |
 |---------------|---------------------------------------------------------------------------------------------------------------|

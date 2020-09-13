@@ -14,7 +14,7 @@ from ..backend.eventloop import EventThread
 from .client_core import KOKORO
 from .opus import FRAME_LENGTH, FRAME_SIZE, SAMPLES_PER_FRAME
 
-PLAYER_DELAY=FRAME_LENGTH/1000.0
+PLAYER_DELAY = FRAME_LENGTH/1000.0
 
 del FRAME_LENGTH
 
@@ -26,6 +26,12 @@ if os.name == 'nt':
     SUBPROCESS_STARTUP_INFO.wShowWindow = subprocess.SW_HIDE
 else:
     SUBPROCESS_STARTUP_INFO = None
+
+STREAM_OPTIONS = (
+    '-reconnect', '1',
+    # '-reconnect_streamed', '1',
+    # '-reconnect_delay_max', '3',
+        )
 
 class AudioSource(object):
     """
@@ -420,7 +426,7 @@ else:
     from youtube_dl.utils import DownloadError
     youtube_dl.utils.bug_reports_message = lambda: ''
     
-    YTdl=youtube_dl.YoutubeDL({
+    YTdl = youtube_dl.YoutubeDL({
         'format'            : 'bestaudio/best',
         'outtmpl'           : '%(extractor)s-%(id)s-%(title)s.%(ext)s',
         'restrictfilenames' : True,
@@ -496,7 +502,7 @@ else:
             
             if stream:
                 path = data['url']
-                before_options = ('-reconnect', '1', '-reconnect_streamed', '1', '-reconnect_delay_max', '3', )
+                before_options = STREAM_OPTIONS
             else:
                 path = YTdl.prepare_filename(data)
                 before_options = None
@@ -725,7 +731,7 @@ class AudioPlayer(Thread):
             
             self.source = None
             
-            extracted=[
+            extracted = [
                 'Exception occured at \n',
                 repr(self),
                 '\n',

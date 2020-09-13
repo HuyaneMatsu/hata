@@ -1134,14 +1134,14 @@ class WeakHasher(object):
         return getattr(self.reference, name)
 
 
-def add_weakref_to_set(set_, reference):
+def add_to_pending_removals(container, reference):
     """
     Adds the given weakrefrence to the given set.
     
     Parameters
     ----------
-    set_ : `set`
-        The set to add the weakreference to.
+    container : `Any`
+        The parent object, which is iterating right now, so it's items cannot be removed.
     reference : ``WeakReferer`` instance
         The weakreference to add to the set.
     """
@@ -1150,7 +1150,11 @@ def add_weakref_to_set(set_, reference):
     except TypeError:
         reference = WeakHasher(reference)
     
-    set_.add(reference)
+    pending_removals = container._pending_removals
+    if pending_removals is None:
+        container._pending_removals = pending_removals = set()
+    
+    pending_removals.add(reference)
 
 
 # speedup builtin stuff, Cpython is welcome
@@ -1226,7 +1230,7 @@ class _WeakValueDictionaryCallback(object):
             return
         
         if parent._iterating:
-            add_weakref_to_set(parent._pending_removals, reference)
+            add_to_pending_removals(parent, reference)
         else:
             try:
                 dict.__delitem__(parent, reference.key)
@@ -1241,12 +1245,11 @@ class _HybridValueDictionaryKeyIterator(object):
     def __iter__(self):
         parent = self._parent
         parent._iterating +=1
-        pending_removals = parent._pending_removals
         
         try:
             for key, (value_weakreferable, value_or_reference) in dict.items(parent):
                 if value_weakreferable and (value_or_reference() is None):
-                    add_weakref_to_set(pending_removals, value_or_reference)
+                    add_to_pending_removals(parent, value_or_reference)
                     continue
                 
                 yield key
@@ -1269,15 +1272,14 @@ class _HybridValueDictionaryValueIterator(object):
     
     def __iter__(self):
         parent = self._parent
-        parent._iterating +=1
-        pending_removals = parent._pending_removals
+        parent._iterating += 1
         
         try:
-            for key, (value_weakreferable, value_or_reference) in dict.items(parent):
+            for value_weakreferable, value_or_reference in dict.values(parent):
                 if value_weakreferable:
                     value = value_or_reference()
                     if value is None:
-                        add_weakref_to_set(pending_removals, value_or_reference)
+                        add_to_pending_removals(parent, value_or_reference)
                         continue
                 else:
                     value = value_or_reference
@@ -1291,12 +1293,11 @@ class _HybridValueDictionaryValueIterator(object):
     
     def __contains__(self, contains_value):
         parent = self._parent
-        pending_removals = parent._pending_removals
-        for key, (value_weakreferable, value_or_reference) in dict.items(parent):
+        for value_weakreferable, value_or_reference in dict.values(parent):
             if value_weakreferable:
                 value = value_or_reference()
                 if value is None:
-                    add_weakref_to_set(pending_removals, value_or_reference)
+                    add_to_pending_removals(parent, value_or_reference)
                     continue
             else:
                 value = value_or_reference
@@ -1322,14 +1323,13 @@ class _HybridValueDictionaryItemIterator(object):
     def __iter__(self):
         parent = self._parent
         parent._iterating +=1
-        pending_removals = parent._pending_removals
         
         try:
             for key, (value_weakreferable, value_or_reference) in dict.items(parent):
                 if value_weakreferable:
                     value = value_or_reference()
                     if value is None:
-                        add_weakref_to_set(pending_removals, key)
+                        add_to_pending_removals(parent, value_or_reference)
                         continue
                 else:
                     value = value_or_reference
@@ -1360,7 +1360,7 @@ class _HybridValueDictionaryItemIterator(object):
             value = value_or_reference()
             if value is None:
                 if parent._iterating:
-                    add_weakref_to_set(parent._pending_removals, value_or_reference)
+                    add_to_pending_removals(parent, value_or_reference)
                 else:
                     dict.__delitem__(parent, contains_key)
                 
@@ -1383,8 +1383,12 @@ class HybridValueDictionary(dict):
             return
         
         pending_removals = self._pending_removals
-        while pending_removals:
-            value_reference = pending_removals.pop()
+        if pending_removals is None:
+            return
+        
+        self._pending_removals = None
+        
+        for value_reference in pending_removals:
             key = value_reference.key
             try:
                 value_pair = dict.__getitem__(self, key)
@@ -1415,7 +1419,7 @@ class HybridValueDictionary(dict):
         if value_weakreferable:
             if value_or_reference() is None:
                 if self._iterating:
-                    add_weakref_to_set(self._pending_removals, value_or_reference)
+                    add_to_pending_removals(self, value_or_reference)
                 else:
                     dict.__delitem__(self, contains_key)
                 
@@ -1438,7 +1442,7 @@ class HybridValueDictionary(dict):
             value = value_or_reference()
             if value is None:
                 if self._iterating:
-                    add_weakref_to_set(self._pending_removals, value_or_reference)
+                    add_to_pending_removals(self, value_or_reference)
                 else:
                     dict.__delitem__(self, key)
                 
@@ -1452,7 +1456,7 @@ class HybridValueDictionary(dict):
     # __hash__ -> same
     
     def __init__(self, iterable=None):
-        self._pending_removals = set()
+        self._pending_removals = None
         self._iterating = 0
         self._callback = _WeakValueDictionaryCallback(self)
         if (iterable is not None):
@@ -1466,7 +1470,12 @@ class HybridValueDictionary(dict):
     # __le__ -> same
     
     def __len__(self):
-        return dict.__len__(self) - len(self._pending_removals)
+        length = dict.__len__(self)
+        pending_removals = self._pending_removals
+        if (pending_removals is not None):
+            length -= len(pending_removals)
+        
+        return length
     
     # __lt__ -> same
     # __ne__ -> same
@@ -1476,15 +1485,14 @@ class HybridValueDictionary(dict):
     
     def __repr__(self):
         result = [self.__class__.__name__, '({']
-        pending_removals = self._pending_removals
-        if dict.__len__(self) - len(pending_removals):
+        if len(self):
             limit = self.MAX_RERP_ELEMENT_LIMIT
             collected = 0
             for key, (value_weakreferable, value_or_reference) in dict.items(self):
                 if value_weakreferable:
                     value = value_or_reference()
                     if value is None:
-                        add_weakref_to_set(pending_removals, value_or_reference)
+                        add_to_pending_removals(self, value_or_reference)
                         continue
                 else:
                     value = value_or_reference
@@ -1498,7 +1506,7 @@ class HybridValueDictionary(dict):
                 if collected != limit:
                     continue
                 
-                leftover = dict.__len__(self) - len(pending_removals) - collected
+                leftover = len(self) - collected
                 if leftover:
                     result.append('...}, ')
                     result.append(str(leftover))
@@ -1535,22 +1543,20 @@ class HybridValueDictionary(dict):
     
     def clear(self):
         dict.clear(self)
-        self._pending_removals.clear()
+        self._pending_removals = None
     
     def copy(self):
         new = dict.__new__(type(self))
         new._iterating = 0
-        new._pending_removals = set()
+        new._pending_removals = None
         callback = _WeakValueDictionaryCallback(new)
         new._callback = callback
-        
-        pending_removals = self._pending_removals
         
         for key, (value_weakreferable, value_or_reference) in dict.items(self):
             if value_weakreferable:
                 value = value_or_reference()
                 if (value is None):
-                    add_weakref_to_set(pending_removals, value_or_reference)
+                    add_to_pending_removals(self, value_or_reference)
                     continue
                 
                 value_or_reference = KeyedReferer(value, callback, key)
@@ -1573,7 +1579,7 @@ class HybridValueDictionary(dict):
             value = value_or_reference()
             if value is None:
                 if self._iterating:
-                    add_weakref_to_set(self._pending_removals, value_or_reference)
+                    add_to_pending_removals(self, value_or_reference)
                 else:
                     dict.__delitem__(self, key)
                 
@@ -1704,12 +1710,11 @@ class _WeakValueDictionaryKeyIterator(object):
     def __iter__(self):
         parent = self._parent
         parent._iterating +=1
-        pending_removals = parent._pending_removals
         
         try:
             for key, value_reference in dict.items(parent):
                 if (value_reference() is None):
-                    add_weakref_to_set(pending_removals, value_reference)
+                    add_to_pending_removals(parent, value_reference)
                     continue
                 
                 yield key
@@ -1733,13 +1738,12 @@ class _WeakValueDictionaryValueIterator(object):
     def __iter__(self):
         parent = self._parent
         parent._iterating +=1
-        pending_removals = parent._pending_removals
         
         try:
-            for key, value_reference in dict.items(parent):
+            for value_reference in dict.values(parent):
                 value = value_reference()
                 if (value is None):
-                    add_weakref_to_set(pending_removals, value_reference)
+                    add_to_pending_removals(parent, value_reference)
                     continue
                 
                 yield value
@@ -1751,11 +1755,10 @@ class _WeakValueDictionaryValueIterator(object):
     
     def __contains__(self, contains_value):
         parent = self._parent
-        pending_removals = parent._pending_removals
-        for key, value_reference in dict.items(parent):
+        for value_reference in dict.values(parent):
             value = value_reference()
             if (value is None):
-                add_weakref_to_set(pending_removals, value_reference)
+                add_to_pending_removals(parent, value_reference)
                 continue
             
             if value == contains_value:
@@ -1780,13 +1783,12 @@ class _WeakValueDictionaryItemIterator(object):
     def __iter__(self):
         parent = self._parent
         parent._iterating +=1
-        pending_removals = parent._pending_removals
         
         try:
             for key, value_reference in dict.items(parent):
                 value = value_reference()
                 if (value is None):
-                    add_weakref_to_set(pending_removals, value_reference)
+                    add_to_pending_removals(parent, value_reference)
                     continue
                 
                 yield key, value
@@ -1814,7 +1816,7 @@ class _WeakValueDictionaryItemIterator(object):
         value = value_reference()
         if value is None:
             if parent._iterating:
-                add_weakref_to_set(parent._pending_removals, value_reference)
+                add_to_pending_removals(parent, value_reference)
             else:
                 dict.__delitem__(parent, contains_key)
             
@@ -1835,8 +1837,12 @@ class WeakValueDictionary(dict):
             return
         
         pending_removals = self._pending_removals
-        while pending_removals:
-            value_reference = pending_removals.pop()
+        if pending_removals is None:
+            return
+        
+        self._pending_removals = None
+        
+        for value_reference in pending_removals:
             key = value_reference.key
             try:
                 actual_value_reference = dict.__getitem__(self, key)
@@ -1863,7 +1869,7 @@ class WeakValueDictionary(dict):
             return True
         
         if self._iterating:
-            add_weakref_to_set(self._pending_removals, value_reference)
+            add_to_pending_removals(self, value_reference)
         else:
             dict.__delitem__(self, key)
         
@@ -1885,7 +1891,7 @@ class WeakValueDictionary(dict):
             return value
         
         if self._iterating:
-            add_weakref_to_set(self._pending_removals, value_reference)
+            add_to_pending_removals(self, value_reference)
         else:
             dict.__delitem__(self, key)
         
@@ -1895,7 +1901,7 @@ class WeakValueDictionary(dict):
     # __hash__ -> same
     
     def __init__(self, iterable=None):
-        self._pending_removals = set()
+        self._pending_removals = None
         self._iterating = 0
         self._callback = _WeakValueDictionaryCallback(self)
         if (iterable is not None):
@@ -1909,7 +1915,12 @@ class WeakValueDictionary(dict):
     # __le__ -> same
     
     def __len__(self):
-        return dict.__len__(self) - len(self._pending_removals)
+        length = dict.__len__(self)
+        pending_removals = self._pending_removals
+        if (pending_removals is not None):
+            length -= len(pending_removals)
+        
+        return length
     
     # __lt__ -> same
     # __ne__ -> same
@@ -1920,14 +1931,13 @@ class WeakValueDictionary(dict):
     def __repr__(self):
         result = [self.__class__.__name__, '({']
         
-        pending_removals = self._pending_removals
-        if dict.__len__(self) - len(pending_removals):
+        if len(self):
             limit = self.MAX_RERP_ELEMENT_LIMIT
             collected = 0
             for key, value_reference in dict.items(self):
                 value = value_reference()
                 if (value is None):
-                    add_weakref_to_set(pending_removals, value_reference)
+                    add_to_pending_removals(self, value_reference)
                     continue
                 
                 result.append(repr(key))
@@ -1939,7 +1949,7 @@ class WeakValueDictionary(dict):
                 if collected != limit:
                     continue
                 
-                leftover = dict.__len__(self) - len(pending_removals) - collected
+                leftover = len(self) - collected
                 if leftover:
                     result.append('...}, ')
                     result.append(str(leftover))
@@ -1969,20 +1979,18 @@ class WeakValueDictionary(dict):
     
     def clear(self):
         dict.clear(self)
-        self._pending_removals.clear()
+        self._pending_removals = None
     
     def copy(self):
         new = dict.__new__(type(self))
-        new._pending_removals = set()
+        new._pending_removals = None
         callback = _WeakValueDictionaryCallback(new)
         new._callback = callback
-        
-        pending_removals = self._pending_removals
         
         for key, value_reference in dict.items(self):
             value = value_reference()
             if value is None:
-                add_weakref_to_set(pending_removals, value_reference)
+                add_to_pending_removals(self, value_reference)
                 continue
             
             dict.__setitem__(new, key, KeyedReferer(value, callback, key))
@@ -2002,7 +2010,7 @@ class WeakValueDictionary(dict):
             return value
         
         if self._iterating:
-            add_weakref_to_set(self._pending_removals, value_reference)
+            add_to_pending_removals(self, value_reference)
         else:
             dict.__delitem__(self, key)
         
@@ -2111,7 +2119,7 @@ class _WeakKeyDictionaryCallback(object):
     __slots__ = ('_parent', )
     def __new__(cls, parent):
         parent = WeakReferer(parent)
-        self=object.__new__(cls)
+        self = object.__new__(cls)
         self._parent = parent
         return self
     
@@ -2121,7 +2129,7 @@ class _WeakKeyDictionaryCallback(object):
             return
         
         if parent._iterating:
-            add_weakref_to_set(parent._pending_removals, reference)
+            add_to_pending_removals(parent, reference)
         else:
             try:
                 dict.__delitem__(parent, reference)
@@ -2135,21 +2143,20 @@ class _WeakKeyDictionaryKeyIterator(object):
     
     def __iter__(self):
         parent = self._parent
-        parent._iterating +=1
-        pending_removals = parent._pending_removals
+        parent._iterating += 1
         
         try:
             for key_reference in dict.keys(parent):
                 key = key_reference()
                 if (key is None):
-                    add_weakref_to_set(pending_removals, key_reference)
+                    add_to_pending_removals(parent, key_reference)
                     continue
                 
                 yield key
                 continue
         
         finally:
-            parent._iterating -=1
+            parent._iterating -= 1
             parent._commit_removals()
     
     def __contains__(self, contains_key):
@@ -2166,12 +2173,11 @@ class _WeakKeyDictionaryValueIterator(object):
     def __iter__(self):
         parent = self._parent
         parent._iterating +=1
-        pending_removals = parent._pending_removals
         
         try:
             for key_reference, value in dict.items(parent):
                 if (key_reference() is None):
-                    add_weakref_to_set(pending_removals, key_reference)
+                    add_to_pending_removals(parent, key_reference)
                     continue
                 
                 yield value
@@ -2183,10 +2189,10 @@ class _WeakKeyDictionaryValueIterator(object):
     
     def __contains__(self, contains_value):
         parent = self._parent
-        pending_removals = parent._pending_removals
+        
         for key_reference, value in dict.items(parent):
             if (key_reference() is None):
-                add_weakref_to_set(pending_removals, key_reference)
+                add_to_pending_removals(parent, key_reference)
                 continue
             
             if value == contains_value:
@@ -2211,13 +2217,12 @@ class _WeakKeyDictionaryItemIterator(object):
     def __iter__(self):
         parent = self._parent
         parent._iterating +=1
-        pending_removals = parent._pending_removals
         
         try:
             for key_reference, value in dict.items(parent):
                 key = key_reference()
                 if (key is None):
-                    add_weakref_to_set(pending_removals, key_reference)
+                    add_to_pending_removals(parent, key_reference)
                     continue
                 
                 yield key, value
@@ -2260,14 +2265,17 @@ class WeakKeyDictionary(dict):
             return
         
         pending_removals = self._pending_removals
-        while pending_removals:
-            key_reference = pending_removals.pop()
-            
+        if pending_removals is None:
+            return
+        
+        self._pending_removals = None
+        
+        for key_reference in pending_removals:
             try:
                 dict.__delitem__(self, key_reference)
             except KeyError:
                 return
-        
+    
     # __class__ -> same
     
     def __contains__(self, key):
@@ -2297,7 +2305,7 @@ class WeakKeyDictionary(dict):
     # __hash__ -> same
     
     def __init__(self, iterable=None):
-        self._pending_removals = set()
+        self._pending_removals = None
         self._iterating = 0
         self._callback = _WeakKeyDictionaryCallback(self)
         if iterable is None:
@@ -2314,7 +2322,12 @@ class WeakKeyDictionary(dict):
     # __le__ -> same
     
     def __len__(self):
-        return dict.__len__(self) - len(self._pending_removals)
+        length = dict.__len__(self)
+        pending_removals = self._pending_removals
+        if (pending_removals is not None):
+            length -= len(pending_removals)
+        
+        return length
     
     # __lt__ -> same
     # __ne__ -> same
@@ -2325,14 +2338,13 @@ class WeakKeyDictionary(dict):
     def __repr__(self):
         result = [self.__class__.__name__, '({']
         
-        pending_removals = self._pending_removals
-        if dict.__len__(self) - len(pending_removals):
+        if len(self):
             limit = self.MAX_RERP_ELEMENT_LIMIT
             collected = 0
             for key_reference, value in dict.items(self):
                 key = key_reference()
                 if (key is None):
-                    add_weakref_to_set(pending_removals, key_reference)
+                    add_to_pending_removals(self, key_reference)
                     continue
                 
                 result.append(repr(key))
@@ -2340,11 +2352,11 @@ class WeakKeyDictionary(dict):
                 result.append(repr(value))
                 result.append(', ')
                 
-                collected +=1
+                collected += 1
                 if collected != limit:
                     continue
                 
-                leftover = dict.__len__(self) - len(pending_removals) - collected
+                leftover = len(self) - collected
                 if leftover:
                     result.append('...}, ')
                     result.append(str(leftover))
@@ -2375,20 +2387,18 @@ class WeakKeyDictionary(dict):
     
     def clear(self):
         dict.clear(self)
-        self._pending_removals.clear()
+        self._pending_removals = None
     
     def copy(self):
         new = dict.__new__(type(self))
-        new._pending_removals = set()
+        new._pending_removals = None
         callback = _WeakKeyDictionaryCallback(new)
         new._callback = callback
-        
-        pending_removals = self._pending_removals
         
         for key_reference, value in dict.items(self):
             key = key_reference()
             if key is None:
-                add_weakref_to_set(pending_removals, key_reference)
+                add_to_pending_removals(self, key_reference)
                 continue
             
             dict.__setitem__(new, WeakReferer(key, callback), value)
@@ -2431,7 +2441,7 @@ class WeakKeyDictionary(dict):
                 return key, value
             
             if self._iterating:
-                add_weakref_to_set(self._pending_removals, key_reference)
+                add_to_pending_removals(self, key_reference)
             else:
                 dict.__delitem__(self, key_reference)
             
@@ -2521,7 +2531,7 @@ class _WeakMapCallback(object):
             return
         
         if parent._iterating:
-            add_weakref_to_set(parent._pending_removals, reference)
+            add_to_pending_removals(parent, reference)
         else:
             try:
                 dict.__delitem__(parent, reference)
@@ -2531,25 +2541,24 @@ class _WeakMapCallback(object):
 class _WeakMapIterator(object):
     __slots__ = ('_parent', )
     def __init__(self, parent):
-        self._parent=parent
+        self._parent = parent
     
     def __iter__(self):
         parent = self._parent
-        parent._iterating +=1
-        pending_removals = parent._pending_removals
+        parent._iterating += 1
         
         try:
             for reference in dict.__iter__(parent):
                 key = reference()
                 if (key is None):
-                    add_weakref_to_set(pending_removals, reference)
+                    add_to_pending_removals(parent, reference)
                     continue
                 
                 yield key
                 continue
         
         finally:
-            parent._iterating -=1
+            parent._iterating -= 1
             parent._commit_removals()
     
     def __contains__(self, key):
@@ -2568,13 +2577,16 @@ class WeakMap(dict):
             return
         
         pending_removals = self._pending_removals
-        while pending_removals:
-            reference = pending_removals.pop()
-            
+        if pending_removals is None:
+            return
+        
+        for reference in pending_removals:
             try:
                 dict.__delitem__(self, reference)
             except KeyError:
                 pass
+        
+        self._pending_removals = None
     
     # __class__ -> same
     
@@ -2619,7 +2631,7 @@ class WeakMap(dict):
     # __hash__ -> same
     
     def __init__(self, iterable=None):
-        self._pending_removals = set()
+        self._pending_removals = None
         self._iterating = 0
         self._callback = _WeakMapCallback(self)
         if (iterable is not None):
@@ -2633,7 +2645,12 @@ class WeakMap(dict):
     # __le__ -> same
     
     def __len__(self):
-        return dict.__len__(self) - len(self._pending_removals)
+        length = dict.__len__(self)
+        pending_removals = self._pending_removals
+        if (pending_removals is not None):
+            length -= len(pending_removals)
+        
+        return length
     
     # __lt__ -> same
     # __ne__ -> same
@@ -2643,14 +2660,14 @@ class WeakMap(dict):
     
     def __repr__(self):
         result = [self.__class__.__name__, '({']
-        if dict.__len__(self) - len(self._pending_removals):
+        if len(self):
             limit = self.MAX_RERP_ELEMENT_LIMIT
             collected = 0
-            pending_removals = self._pending_removals
+            
             for reference in dict.__iter__(self):
                 key = reference()
                 if (key is None):
-                    add_weakref_to_set(pending_removals, reference)
+                    add_to_pending_removals(self, reference)
                     continue
                 
                 result.append(repr(key))
@@ -2660,7 +2677,7 @@ class WeakMap(dict):
                 if collected != limit:
                     continue
                 
-                leftover = dict.__len__(self) - len(pending_removals) - collected
+                leftover = len(self) - collected
                 if leftover:
                     result.append('...}, ')
                     result.append(str(leftover))
@@ -2687,20 +2704,18 @@ class WeakMap(dict):
     
     def clear(self):
         dict.clear(self)
-        self._pending_removals.clear()
+        self._pending_removals = None
     
     def copy(self):
         new = dict.__new__(type(self))
         new._iterating = False
-        new._pending_removals = set()
+        new._pending_removals = None
         new._callback = callback = _WeakMapCallback(new)
-        
-        pending_removals = self._pending_removals
         
         for reference in dict.__iter__(self):
             key = reference()
             if (key is None):
-                add_weakref_to_set(pending_removals, reference)
+                add_to_pending_removals(self, reference)
                 continue
             
             reference = WeakReferer(key, callback)
@@ -2726,7 +2741,7 @@ class WeakMap(dict):
             return real_key
         
         if self._iterating:
-            add_weakref_to_set(self._pending_removals, real_reference)
+            add_to_pending_removals(self, real_reference)
         else:
             dict.__delitem__(self, real_reference)
         
@@ -2748,7 +2763,7 @@ class WeakMap(dict):
                     return real_key
                 
                 if self._iterating:
-                    add_weakref_to_set(self._pending_removals, real_reference)
+                    add_to_pending_removals(self, real_reference)
                 else:
                     dict.__delitem__(self, real_reference)
         

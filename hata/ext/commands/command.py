@@ -170,6 +170,24 @@ class Command(object):
         Collection of content part parsers to parse argument for the command. Defaults to `None`.
     _parser_failure_handler : `Any`
         The internal slot used by the ``.parser_failure_handler`` property. Defaults to `None`.
+        
+        If given as an `async-callable`, then it should accept 5 arguments:
+        
+        +-----------------------+-------------------+---------------------------------------+
+        | Respective name       | Type              | Description                           |
+        +=======================+===================+=======================================+
+        | client                | ``Client``        | The respective client.                |
+        +-----------------------+-------------------+---------------------------------------+
+        | message               | ``Message``       | The respective message.               |
+        +-----------------------+-------------------+---------------------------------------+
+        | command               | ``Command``       | The respective command.               |
+        +-----------------------+-------------------+---------------------------------------+
+        | content               | `str`             | The message's content, from what the  |
+        |                       |                   | arguments would have be parsed.       |
+        +-----------------------+-------------------+---------------------------------------+
+        | args                  | `list` of `Any`   | The successfully parsed argument.     |
+        +-----------------------+-------------------+---------------------------------------+
+    
     _wrappers : `None`, `Any`, `list` of `async-callable`
         Additional wrappers, which run before the command is executed.
     """
@@ -1076,6 +1094,82 @@ def normalize_description(text):
 
 @modulize
 class checks:
+    """
+    Checks can be added to commands or to categories to limit their usage to set users or places.
+    
+    The implemented checks are the following:
+    
+    +--------------------------------+-----------------+--------------------------------------------------------------+
+    | Name                           | Extra parameter | Description                                                  |
+    +================================+=================+==============================================================+
+    | client_has_guild_permissions   | permissions     | Whether the client has the given permissions at the guild.   |
+    |                                |                 | (Fails in private channels.)                                 |
+    +--------------------------------+-----------------+--------------------------------------------------------------+
+    | client_has_permissions         | permissions     | Wehther the client has the given permissions at the channel. |
+    +--------------------------------+-----------------+--------------------------------------------------------------+
+    | custom                         | function        | Custom checks, to wrap a given `function`. (Can be async.)   |
+    +--------------------------------+-----------------+--------------------------------------------------------------+
+    | guild_only                     | N/A             | Whether the message was sent to a guild channel.             |
+    +--------------------------------+-----------------+--------------------------------------------------------------+
+    | guild_owner                    | N/A             | Wehther the message's author is the guild's owner.           |
+    |                                |                 | (Fails in private channels.)                                 |
+    +--------------------------------+-----------------+--------------------------------------------------------------+
+    | has_any_role                   | roles           | Whether the message's author has any of the given roles.     |
+    +--------------------------------+-----------------+--------------------------------------------------------------+
+    | has_guild_permissions          | permissions     | Whether the message's author has the given permissions at    |
+    |                                |                 | the guild. (Fails in private channels.)                      |
+    +--------------------------------+-----------------+--------------------------------------------------------------+
+    | has_permissions                | permissions     | Whether the message's author has the given permissions at    |
+    |                                |                 | the channel.                                                 |
+    +--------------------------------+-----------------+--------------------------------------------------------------+
+    | has_role                       | role            | Whether the message's author has the given role.             |
+    +--------------------------------+-----------------+--------------------------------------------------------------+
+    | is_any_channel                 | channels        | Whether the message was sent to any of the given channels.   |
+    +--------------------------------+-----------------+--------------------------------------------------------------+
+    | is_any_guild                   | guils           | Whether the message was sent to any of the given guilds.     |
+    +--------------------------------+-----------------+--------------------------------------------------------------+
+    | is_channel                     | channel         | Whether the message's channel is the given one.              |
+    +--------------------------------+-----------------+--------------------------------------------------------------+
+    | is_guild                       | guild           | Whether the message guild is the given one.                  |
+    +--------------------------------+-----------------+--------------------------------------------------------------+
+    | nsfw_channel_only              | N/A             | Whether the message's channel is nsfw.                       |
+    +--------------------------------+-----------------+--------------------------------------------------------------+
+    | owner_only                     | N/A             | Whether the message's author is an owner of the client.      |
+    +--------------------------------+-----------------+--------------------------------------------------------------+
+    | owner_or_guild_owner           | N/A             | `owner_only` or `guild_owner` (Fails in private channels.)   |
+    +--------------------------------+-----------------+--------------------------------------------------------------+
+    | owner_or_has_any_role          | roles           | `owner_only` or `has_any_role`                               |
+    +--------------------------------+-----------------+--------------------------------------------------------------+
+    | owner_or_has_guild_permissions | permissions     | `owner_only` or `has_guild_permissions`                      |
+    |                                |                 | (Fails in private channels.)                                 |
+    +--------------------------------+-----------------+--------------------------------------------------------------+
+    | owner_or_has_permissions       | permissions     | `owner_only` or `has_permissions`                            |
+    +--------------------------------+-----------------+--------------------------------------------------------------+
+    | owner_or_has_role              | role            | `owner_only` or `has_any_role`                               |
+    +--------------------------------+-----------------+--------------------------------------------------------------+
+    | private_only                   | N/A             | Whether the message's channel is a private channel.          |
+    +--------------------------------+-----------------+--------------------------------------------------------------+
+    
+    Every check also accepts an additional keyword parameter, called `handler`, what is called, when the respective
+    check fails (returns `False`).
+    
+    To a check's handler the following parameters are passed:
+    
+    +-------------------+---------------------------+
+    | Respective name   | Type                      |
+    +===================+===========================+
+    | client            | ``Client``                |
+    +-------------------+---------------------------+
+    | message           | ``Message``               |
+    +-------------------+---------------------------+
+    | command           | ``Command`` or `str`      |
+    +-------------------+---------------------------+
+    | check             | ``_check_base`` instance  |
+    +-------------------+---------------------------+
+    
+    If a command's check fails, then `command` is given as `Command` instance, tho checks can be added not only to
+    commands and at those cases, `command` is given as `str`.
+    """
     from ...discord.bases import instance_or_id_to_instance, instance_or_id_to_snowflake
     from ...discord.guild import Guild
     from ...discord.permission import Permission
@@ -1147,7 +1241,7 @@ class checks:
             +-------------------+---------------------------+
             | message           | ``Message``               |
             +-------------------+---------------------------+
-            | command           | ``Command``               |
+            | command           | ``Command`` or `str`      |
             +-------------------+---------------------------+
             | check             | ``_check_base`` instance  |
             +-------------------+---------------------------+
@@ -1223,7 +1317,7 @@ class checks:
                 +-------------------+---------------------------+
                 | message           | ``Message``               |
                 +-------------------+---------------------------+
-                | command           | ``Command``               |
+                | command           | ``Command`` or `str`      |
                 +-------------------+---------------------------+
                 | check             | ``_check_base`` instance  |
                 +-------------------+---------------------------+
@@ -1343,7 +1437,7 @@ class checks:
                 +-------------------+---------------------------+
                 | message           | ``Message``               |
                 +-------------------+---------------------------+
-                | command           | ``Command``               |
+                | command           | ``Command`` or `str`      |
                 +-------------------+---------------------------+
                 | check             | ``_check_base`` instance  |
                 +-------------------+---------------------------+
@@ -1454,7 +1548,7 @@ class checks:
                 +-------------------+---------------------------+
                 | message           | ``Message``               |
                 +-------------------+---------------------------+
-                | command           | ``Command``               |
+                | command           | ``Command`` or `str`      |
                 +-------------------+---------------------------+
                 | check             | ``_check_base`` instance  |
                 +-------------------+---------------------------+
@@ -1744,7 +1838,7 @@ class checks:
                 +-------------------+---------------------------+
                 | message           | ``Message``               |
                 +-------------------+---------------------------+
-                | command           | ``Command``               |
+                | command           | ``Command`` or `str`      |
                 +-------------------+---------------------------+
                 | check             | ``_check_base`` instance  |
                 +-------------------+---------------------------+
@@ -1853,7 +1947,7 @@ class checks:
                 +-------------------+---------------------------+
                 | message           | ``Message``               |
                 +-------------------+---------------------------+
-                | command           | ``Command``               |
+                | command           | ``Command`` or `str`      |
                 +-------------------+---------------------------+
                 | check             | ``_check_base`` instance  |
                 +-------------------+---------------------------+
@@ -1972,7 +2066,7 @@ class checks:
                 +-------------------+---------------------------+
                 | message           | ``Message``               |
                 +-------------------+---------------------------+
-                | command           | ``Command``               |
+                | command           | ``Command`` or `str`      |
                 +-------------------+---------------------------+
                 | check             | ``_check_base`` instance  |
                 +-------------------+---------------------------+
@@ -2044,7 +2138,7 @@ class checks:
                 +-------------------+---------------------------+
                 | message           | ``Message``               |
                 +-------------------+---------------------------+
-                | command           | ``Command``               |
+                | command           | ``Command`` or `str`      |
                 +-------------------+---------------------------+
                 | check             | ``_check_base`` instance  |
                 +-------------------+---------------------------+
@@ -2120,7 +2214,7 @@ class checks:
                 +-------------------+---------------------------+
                 | message           | ``Message``               |
                 +-------------------+---------------------------+
-                | command           | ``Command``               |
+                | command           | ``Command`` or `str`      |
                 +-------------------+---------------------------+
                 | check             | ``_check_base`` instance  |
                 +-------------------+---------------------------+
@@ -2198,7 +2292,7 @@ class checks:
                 +-------------------+---------------------------+
                 | message           | ``Message``               |
                 +-------------------+---------------------------+
-                | command           | ``Command``               |
+                | command           | ``Command`` or `str`      |
                 +-------------------+---------------------------+
                 | check             | ``_check_base`` instance  |
                 +-------------------+---------------------------+
@@ -2262,6 +2356,8 @@ class checks:
         ----------
         handler : `None` or `async-callable`
             An async callable what will be called when the check fails.
+        _is_async : `bool`
+            Whether ``.function`` is async.
         function : `callable`
             The custom check's function.
         """
@@ -2273,7 +2369,7 @@ class checks:
             Parameters
             ----------
             function : `callable`
-                The custom check what should pass.
+                The custom check what should pass. Can be async.
             handler : `None` or `async-callable` or instanceable to `async-callable`
                 The handler to convert.
                 
@@ -2286,7 +2382,7 @@ class checks:
                 +-------------------+---------------------------+
                 | message           | ``Message``               |
                 +-------------------+---------------------------+
-                | command           | ``Command``               |
+                | command           | ``Command`` or `str`      |
                 +-------------------+---------------------------+
                 | check             | ``_check_base`` instance  |
                 +-------------------+---------------------------+
@@ -2381,7 +2477,7 @@ class checks:
                 +-------------------+---------------------------+
                 | message           | ``Message``               |
                 +-------------------+---------------------------+
-                | command           | ``Command``               |
+                | command           | ``Command`` or `str`      |
                 +-------------------+---------------------------+
                 | check             | ``_check_base`` instance  |
                 +-------------------+---------------------------+
@@ -2455,7 +2551,7 @@ class checks:
                 +-------------------+---------------------------+
                 | message           | ``Message``               |
                 +-------------------+---------------------------+
-                | command           | ``Command``               |
+                | command           | ``Command`` or `str`      |
                 +-------------------+---------------------------+
                 | check             | ``_check_base`` instance  |
                 +-------------------+---------------------------+
@@ -2535,7 +2631,7 @@ class checks:
                 +-------------------+---------------------------+
                 | message           | ``Message``               |
                 +-------------------+---------------------------+
-                | command           | ``Command``               |
+                | command           | ``Command`` or `str`      |
                 +-------------------+---------------------------+
                 | check             | ``_check_base`` instance  |
                 +-------------------+---------------------------+
@@ -2860,30 +2956,30 @@ class CommandProcesser(EventWaitforBase):
         Command processer allows you to wait for a message at a channel or at a guild. If any message is received
         at a waited entity, then all the waiters are ensured with the client and with the received ``Message`` object.
         
-        > At this point no bot messages, or missing permissions are filtered out.
+        At this point no bot messages, or missing permissions are filtered out.
     
     - `commands`
         First bot messages are filtered out, then the channels, where the client cannot send messages
-        After the message's content is parsed out to `3` parts if possible: `prefix, `command-name` and `content`.
+        After the message's content is parsed out to `3` parts if possible: `prefix`, `command-name` and `content`.
         If a ``Command`` is added with the parsed `command-name` name or alias, then it will be ensured.
         
         If the command returns `0`, the command processer will act, like there is no command iwth the given name.
         
     - `invalid_command`
-        If `prefix` is valid, but the command not exists (or it returned `0`) will be called (if set) with `4`
-        arguments:
+        If `prefix` is valid, but the command not exists, or any of it's check failed, then `invalid_command` is called
+        with the following parameters:
         
-        +-------------------+---------------+
-        | Respective name   | Type          |
-        +===================+===============+
-        | client            | ``Client``    |
-        +-------------------+---------------+
-        | message           | ``Message``   |
-        +-------------------+---------------+
-        | command           | `str`         |
-        +-------------------+---------------+
-        | content           | `str`         |
-        +-------------------+---------------+
+        +-------------------+---------------+--------------------------------------------------------------------+
+        | Respective name   | Type          | Description                                                        |
+        +===================+===============+====================================================================+
+        | client            | ``Client``    | The respective client.                                             |
+        +-------------------+---------------+--------------------------------------------------------------------+
+        | message           | ``Message``   | The respective message.                                            |
+        +-------------------+---------------+--------------------------------------------------------------------+
+        | command           | `str`         | The command's name.                                                |
+        +-------------------+---------------+--------------------------------------------------------------------+
+        | content           | `str`         | The message'"s content after the prefix, till the first linebreak. |
+        +-------------------+---------------+--------------------------------------------------------------------|
     
     - `mention_prefix`
         If a message starts with the mention of the client, then the command procsser will act, like it was a command
@@ -2905,19 +3001,19 @@ class CommandProcesser(EventWaitforBase):
         If a command call was executed by the `commands` or by the `mention_prefix` part and the command raised, then
         `command_error` is called with the details:
         
-        +-------------------+-------------------+
-        | Respective name   | Type              |
-        +===================+===================+
-        | client            | ``Client``        |
-        +-------------------+-------------------+
-        | message           | ``Message``       |
-        +-------------------+-------------------+
-        | command           | ``Command``       |
-        +-------------------+-------------------+
-        | content           | `str`             |
-        +-------------------+-------------------+
-        | err               | ``BaseException`` |
-        +-------------------+-------------------+
+        +-------------------+-------------------+--------------------------------------------------------------------+
+        | Respective name   | Type              | Description                                                        |
+        +===================+===================+====================================================================+
+        | client            | ``Client``        | The respective client.                                             |
+        +-------------------+-------------------+--------------------------------------------------------------------+
+        | message           | ``Message``       | The respective message.                                            |
+        +-------------------+-------------------+--------------------------------------------------------------------+
+        | command           | ``Command``       | The respective command.                                            |
+        +-------------------+-------------------+--------------------------------------------------------------------+
+        | content           | `str`             | The message'"s content after the prefix, till the first linebreak. |
+        +-------------------+-------------------+--------------------------------------------------------------------+
+        | err               | ``BaseException`` | The occured exception.                                             |
+        +-------------------+-------------------+--------------------------------------------------------------------+
     
     Attributes
     ----------

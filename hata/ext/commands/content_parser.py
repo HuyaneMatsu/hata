@@ -400,21 +400,65 @@ class ConverterFlag(FlagBase):
     """
     Flags for a converter to describe by which rules it should convert.
     
-    +---------------+---------------+
-    | Rule name     | Shift value   |
-    +===============+===============+
-    | url           | 0             |
-    +---------------+---------------+
-    | mention       | 1             |
-    +---------------+---------------+
-    | name          | 2             |
-    +---------------+---------------+
-    | id            | 3             |
-    +---------------+---------------+
-    | everywhere    | 4             |
-    +---------------+---------------+
-    | profile       | 5             |
-    +---------------+---------------+
+    +---------------+---------------+-----------------------------------------------------------------------+
+    | Rule name     | Shift value   | Description                                                           |
+    +===============+===============+=======================================================================+
+    | url           | 0             | Whether the entity should be parsed from it's url.                    |
+    +---------------+---------------+-----------------------------------------------------------------------+
+    | mention       | 1             | Whether the entity should be parsed out from it's mention.            |
+    +---------------+---------------+-----------------------------------------------------------------------+
+    | name          | 2             | Whether the entity should be picked up by it's name.                  |
+    +---------------+---------------+-----------------------------------------------------------------------+
+    | id            | 3             | Whether the entity should be picked up by it's name.                  |
+    +---------------+---------------+-----------------------------------------------------------------------+
+    | everywhere    | 4             | Whether the entity should be searched out of the local scope.         |
+    |               |               | Mostly pairs with the `id` flag.                                      |
+    +---------------+---------------+-----------------------------------------------------------------------+
+    | profile       | 5             | User parser only. Can be used when user cache is disabled to          |
+    |               |               | esnure, that the user will have local guild profile if applicable.    |
+    +---------------+---------------+-----------------------------------------------------------------------|
+    
+    There are alredy precreated flags, which are the following:
+    +-------------------+-------------------------------------------+
+    | Name              | Included flags                            |
+    +===================+===========================================+
+    | user_default      | mention, name, id                         |
+    +-------------------+-------------------------------------------+
+    | user_all          | mention, name, id, everywhere, profile    |
+    +-------------------+-------------------------------------------+
+    | client_default    | mention, name, id                         |
+    +-------------------+-------------------------------------------+
+    | client_all        | mention, name, id, everywhere             |
+    +-------------------+-------------------------------------------+
+    | role_default      | mention, name, id                         |
+    +-------------------+-------------------------------------------+
+    | role_all          | mention, name, id, everywhere             |
+    +-------------------+-------------------------------------------+
+    | channel_default   | mention, name, id                         |
+    +-------------------+-------------------------------------------+
+    | channel_all       | mention, name, id, everywhere             |
+    +-------------------+-------------------------------------------+
+    | emoji_default     | mention, name, id                         |
+    +-------------------+-------------------------------------------+
+    | emoji_all         | mention, name, id, everywhere             |
+    +-------------------+-------------------------------------------+
+    | guild_default     | id                                        |
+    +-------------------+-------------------------------------------+
+    | guild_all         | id, everywhere                            |
+    +-------------------+-------------------------------------------+
+    | message_default   | url, id                                   |
+    +-------------------+-------------------------------------------+
+    | message_all       | url, id, everywhere                       |
+    +-------------------+-------------------------------------------+
+    | invite_default    | url, id                                   |
+    +-------------------+-------------------------------------------+
+    | invite_all        | url, id                                   |
+    +-------------------+-------------------------------------------+
+    
+    Note, if you use for example a `'user'` parser, then by default it will use the `user_default` flags, and it
+    will ignore everyting else, than `user_all`.
+    
+    Some parsers, like `int`, or `str` do not have any flags, what means, their behaviour cannot be altered.
     """
     __keys__ = {
         'url'       : 0,
@@ -2428,6 +2472,9 @@ class FlaggedAnnotation(object):
     """
     Flagged annotation to store an annotation type with it's flags.
     
+    This type of annotation can be used to define a multy-type parsers, not, like ``Converter``, which should not be
+    used for that.
+    
     Attributes
     ----------
     annotation : `type`
@@ -2599,8 +2646,41 @@ class Converter(object):
             Flags to use with the specified type's converter.
         default : `Any`, Optional
             Default object returned if conversion fails.
-        default_code : `str` or `async-callable` `funciton`, Optional
+        default_code : `str` or `async-funciton`, Optional
             Default code, what will be called, when the conversion fails. Mutually exclusive with `default`.
+            
+            Can be given as an `async-function`, or as a `str` represneting an already precreated one.
+            
+            The precreated ones are the following:
+            
+            +----------------------------------------+--------------------------------------------------------------+
+            | Name                                   | Description                                                  |
+            +========================================+==============================================================+
+            | `'message.author'`                     | Returns the message's author.                                |
+            +----------------------------------------+--------------------------------------------------------------+
+            | `'message.channel'`                    | Returns the message's channel.                               |
+            +----------------------------------------+--------------------------------------------------------------+
+            | `'message.guild'`                      | Returns the message's guild. (Can be `None`)                 |
+            +----------------------------------------+--------------------------------------------------------------+
+            | `'message.channel.guild'`              | Same as the `'message.guild'` one.                           |
+            +----------------------------------------+--------------------------------------------------------------+
+            | `'client'`                             | Returns the client, who received the message.                |
+            +----------------------------------------+--------------------------------------------------------------+
+            | `'rest'`                               | Returns the not yet used content of the message.             |
+            |                                        | (Can be empty string)                                        |
+            +----------------------------------------+--------------------------------------------------------------+
+            | `'message.guild.default_role'`         | Returns the message's guild's default role. (Can be `None`)  |
+            +----------------------------------------+--------------------------------------------------------------+
+            | `'message.channel.guild.default_role'` | Same as the `''message.guild.default_role''` one.            |
+            +----------------------------------------+--------------------------------------------------------------+
+            
+            Defining these might can be difficult, because first you need to get along with hata internals, but to
+            mention an example, the `'message.author'` precreated one equals to:
+            
+            ```py
+            async def precreated_default_code__message_author(content_parser_ctx: ContentParserContext):
+                return content_parser_ctx.message.author
+            ```
         
         Raises
         ------

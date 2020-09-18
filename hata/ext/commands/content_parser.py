@@ -291,55 +291,6 @@ def parse_user_mention(part, message):
         if user.id == user_id:
             return user
 
-if CACHE_USER:
-    def parse_client_mention(part, message):
-        user_mentions = message.user_mentions
-        if user_mentions is None:
-            return
-        
-        parsed = USER_MENTION_RP.fullmatch(part)
-        if parsed is None:
-            return
-        
-        user_id = int(parsed.group(1))
-        for user in user_mentions:
-            if user.id == user_id:
-                if type(user) is not Client:
-                    user = None
-                
-                return user
-else:
-    def parse_client_mention(part, message):
-        user_mentions = message.user_mentions
-        if user_mentions is None:
-            return
-        
-        parsed = USER_MENTION_RP.fullmatch(part)
-        if parsed is None:
-            return
-        
-        user_id = int(parsed.group(1))
-        for user in user_mentions:
-            if user.id == user_id:
-                return CLIENTS.get(user_id)
-
-if DOCS_ENABLED:
-    parse_client_mention.__doc__ = (
-    """
-    If the message's given part is a user mention, returns the respective client if applicable.
-    
-    Parameters
-    ----------
-    part : `str`
-        A part of a message's content.
-    message : ``Message``
-        The respective message of the given content part.
-    
-    Returns
-    -------
-    user : `None` or ``client`` instance
-    """)
-
 def parse_role_mention(part, message):
     """
     If the message's given part is a role mention, returns the respective role.
@@ -1669,8 +1620,8 @@ async def client_converter(parser_ctx, content_parser_ctx):
                         return client
     
     if flags&CONVERTER_FLAG_MENTION:
-        client = parse_client_mention(part, message)
-        if (client is not None):
+        client = parse_user_mention(part, message)
+        if (client is not None) and (type(client) is Client):
             return client
     
     if flags&CONVERTER_FLAG_NAME:

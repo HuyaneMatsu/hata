@@ -10,7 +10,7 @@ from weakref import WeakSet
 from ..backend.dereaddons_local import _spaceholder, DOCS_ENABLED
 
 from .bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
-from .client_core import CHANNELS
+from .client_core import CHANNELS, USERS
 from .permission import Permission
 from .http import URLS
 from .message import Message, MESSAGES
@@ -20,7 +20,6 @@ from .client_core import GC_CYCLER
 from .webhook import Webhook, WebhookRepr
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_bool
 from .others import DATETIME_FORMAT_CODE
-from .role import Role
 
 from . import webhook, message, ratelimit
 
@@ -1325,7 +1324,7 @@ class ChannelGuildBase(ChannelBase):
                 if overwrites:
                     overwrite = overwrites[0]
                     
-                    if overwrite.target is default_role:
+                    if overwrite.target_role is default_role:
                         base = (base&~overwrite.deny)|overwrite.allow
                 
                 return Permission(base)
@@ -1344,20 +1343,20 @@ class ChannelGuildBase(ChannelBase):
         if overwrites:
             overwrite = overwrites[0]
             
-            if overwrite.target is default_role:
+            if overwrite.target_role is default_role:
                 base = (base&~overwrite.deny)|overwrite.allow
             
             for overwrite in overwrites:
-                overwrtite_target = overwrite.target
-                if type(overwrtite_target) is Role:
+                overwrite_target_role = overwrite.target_role
+                if (overwrite_target_role is not None):
                     if roles is None:
                         continue
                     
-                    if overwrtite_target not in roles:
+                    if overwrite_target_role not in roles:
                         continue
                 
                 else:
-                    if overwrite.target is not user:
+                    if overwrite.target_user_id != user.id:
                         continue
                 
                 base = (base&~overwrite.deny)|overwrite.allow
@@ -1384,7 +1383,7 @@ class ChannelGuildBase(ChannelBase):
         if guild is None:
             return Permission.permission_none
         
-        if user == guild.owner:
+        if user.id == guild.owner_id:
             return Permission.permission_all
         
         result = self._permissions_for(user)
@@ -1449,7 +1448,7 @@ class ChannelGuildBase(ChannelBase):
         
         for overwrite_data in overwrites_data:
             overwrite = PermOW(overwrite_data)
-            if overwrite.target is default_role:
+            if overwrite.target_role is default_role:
                 overwrites.insert(0, overwrite)
             else:
                 overwrites.append(overwrite)
@@ -1948,7 +1947,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         if guild is None:
             return Permission.permission_none
         
-        if user == guild.owner:
+        if user.id == guild.owner_id:
             return Permission.permission_deny_voice
         
         result = self._permissions_for(user)
@@ -2593,7 +2592,7 @@ class ChannelVoice(ChannelGuildBase):
         if guild is None:
             return Permission.permission_none
         
-        if user == guild.owner:
+        if user.id == guild.owner_id:
             return Permission.permission_deny_text
         
         result = self._permissions_for(user)
@@ -2747,8 +2746,8 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         The channel's icon's type.
     name : `str`
         The channel's display name. Can be empty string if the channel has no name.
-    owner : ``User`` or ``Client``
-        The group channel's owner.
+    owner_id : `int`
+        The group channel's owner's id.
     
     Class Attributes
     ----------------
@@ -2761,7 +2760,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         The channel's Discord side type.
     """
     __slots__ = ('users', # private channel related
-        'name', 'owner',) #group channel related
+        'name', 'owner_id',) #group channel related
     
     icon = IconSlot('icon', 'icon', URLS.channel_group_icon_url, URLS.channel_group_icon_url_as)
     
@@ -2790,16 +2789,24 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         users.sort()
         self.users = users
         
-        owner_id = int(data['owner_id'])
-        for user in users:
-            if user.id == owner_id:
-                owner = user
-                break
-        else:
+        self.owner_id = int(data['owner_id'])
+    
+    @property
+    def owner(self):
+        """
+        Returns the group channel's owner.
+        
+        Returns
+        -------
+        owner : ``User`` or ``Client``
+            Defaults to `ZEROUSER`.
+        """
+        try:
+            owner = USERS[self.owner_id]
+        except KeyError:
             owner = ZEROUSER
-        
-        self.owner = owner
-        
+        return owner
+    
     @classmethod
     def _from_partial_data(cls, data, channel_id, partial_guild):
         """
@@ -2819,7 +2826,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         -------
         channel : ``ChannelGroup``
         """
-        self=object.__new__(cls)
+        self = object.__new__(cls)
         self._messageable_init()
         self.id = channel_id
         # even if we get recipients, we will ignore them
@@ -2827,11 +2834,11 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         
         self._set_icon(data)
         
-        name=data.get('name',None)
-        #should we transfer the recipients to name?
-        self.name='' if name is None else name
+        name = data.get('name',None)
+        # should we transfer the recipients to name?
+        self.name = '' if name is None else name
         
-        self.owner=ZEROUSER
+        self.owner = ZEROUSER
         
         return self
         
@@ -2866,11 +2873,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         users.sort()
         self.users = users
         
-        owner_id = int(data['owner_id'])
-        for user in users:
-            if user.id == owner_id:
-                self.owner = user
-                break
+        self.owner_id = int(data['owner_id'])
     
     def _update(self, data):
         """
@@ -2896,7 +2899,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         +---------------+---------------------------------------+
         | name          | `str`                                 |
         +---------------+---------------------------------------+
-        | owner         | ``User`` or ``Client``                |
+        | owner_id      | `int`                                 |
         +---------------+---------------------------------------+
         | users         | `list` of (``User`` or ``Client``)    |
         +---------------+---------------------------------------+
@@ -2920,18 +2923,12 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
             self.users = users
         
         owner_id = int(data['owner_id'])
-        if self.owner.id != owner_id:
-            for user in users:
-                if user.id == owner_id:
-                    owner = user
-                    break
-            else:
-                owner = ZEROUSER
-            old_attributes['owner'] = self.owner
-            self.owner = owner
+        if self.owner_id != owner_id:
+            old_attributes['owner_id'] = self.owner_id
+            self.owner_id = owner_id
         
         return old_attributes
-
+    
     def __str__(self):
         """Returns the channel's name."""
         name = self.name
@@ -2967,7 +2964,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         -------
         permission : ``Permission``
         """
-        if self.owner == user:
+        if self.owner_id == user.id:
             return Permission.permission_group_owner
         elif user in self.users:
             return Permission.permission_group
@@ -3037,8 +3034,8 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
             The channel's ``.name``.
         icon : `int`, Optional
             The channel's ``.icon``.
-        owner : ``User`` or ``Client, Optional
-            The channel's ``.owner``.
+        owner_id : `int` Optional
+            The channel's owner's id.
         
         Returns
         -------
@@ -3067,14 +3064,12 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
             cls.icon.preconvert(kwargs, processable)
             
             try:
-                owner = kwargs.pop('owner')
+                owner_id = kwargs.pop('owner_id')
             except KeyError:
                 pass
             else:
-                if not isinstance(owner,(User,Client)):
-                    raise TypeError(f'`owner` can be {User.__name__} or {Client.__name__} instance, got '
-                        f'{owner.__class__.__name__}.')
-                processable.append(('owner', owner))
+                owner_id = preconvert_snowflake(owner_id, 'owner_id')
+                processable.append(('owner_id', owner_id))
             
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs}')
@@ -3094,7 +3089,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
             channel.name = ''
             channel.icon_hash = 0
             channel.icon_type = ICON_TYPE_NONE
-            channel.owner = ZEROUSER
+            channel.owner_id = 0
             
             channel._messageable_init()
             
@@ -3581,7 +3576,7 @@ class ChannelStore(ChannelGuildBase):
         if guild is None:
             return Permission.permission_none
         
-        if user == guild.owner:
+        if user.id == guild.owner_id:
             return Permission.permission_deny_both
         
         result = self._permissions_for(user)
@@ -3876,7 +3871,7 @@ class ChannelThread(ChannelGuildBase):
         if guild is None:
             return Permission.permission_none
         
-        if user == guild.owner:
+        if user.id == guild.owner_id:
             return Permission.permission_deny_both
         
         result = self._permissions_for(user)
@@ -4205,7 +4200,7 @@ class ChannelGuildUndefnied(ChannelGuildBase):
         if guild is None:
             return Permission.permission_none
         
-        if user == guild.owner:
+        if user.id == guild.owner_id:
             return Permission.permission_deny_both
         
         result = self._permissions_for(user)

@@ -62,6 +62,7 @@ class ActivityTypes:
     spotify = 2
     watching = 3
     custom = 4
+    competing = 5
 
 
 class ActivityTimestamps(object):

@@ -10,7 +10,8 @@ from heapq import heappop, heappush
 from collections import deque
 
 from .dereaddons_local import alchemy_incendiary, WeakReferer, weakmethod, method, WeakCallable
-from .futures import Future, Task, gather, render_exc_to_list, iscoroutine, FutureAsyncWrapper, WaitTillFirst
+from .futures import Future, Task, Gatherer, render_exc_to_list, iscoroutine, FutureAsyncWrapper, WaitTillFirst, \
+    CancelledError
 from .transprotos import SSLProtocol, _SelectorSocketTransport
 from .executor import Executor
 from .analyzer import CallableAnalyzer
@@ -1506,18 +1507,18 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
         closing_agens = list(self._asyncgens)
         self._asyncgens.clear()
         
-        results = await gather((ag.aclose() for ag in closing_agens), self)
+        results = await Gatherer(self, (ag.aclose() for ag in closing_agens))
         
         for result, agen in zip(results, closing_agens):
             exception = result.exception
-            if exception is not None:
+            if (exception is not None) and (type(exception) is not CancelledError):
                 extracted = [
                     'Exception occured during shutting down asyncgen:\n',
                     repr(agen),
                         ]
                 render_exc_to_list(exception, extend=extracted)
                 sys.stderr.write(''.join(extracted))
-
+    
     def _asyncgen_finalizer_hook(self, agen):
         self._asyncgens.discard(agen)
         if self.running:
@@ -1773,7 +1774,7 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
             else:
                 f2 = None
             
-            await gather(fs, self)
+            await Gatherer(self, fs)
             
             infos = f1.result()
             if not infos:

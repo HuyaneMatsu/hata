@@ -5,7 +5,7 @@ from datetime import datetime
 
 from ..env import CACHE_USER, CACHE_PRESENCE
 
-from ..backend.dereaddons_local import DOCS_ENABLED
+from ..backend.dereaddons_local import DOCS_ENABLED, WeakKeyDictionary
 
 from .bases import DiscordEntity, FlagBase, IconSlot, ICON_TYPE_NONE
 from .client_core import USERS
@@ -17,6 +17,11 @@ from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool
     preconvert_flag
 
 from . import others
+
+if CACHE_USER:
+    GUILD_PROFILES_TYPE = dict
+else:
+    GUILD_PROFILES_TYPE = WeakKeyDictionary
 
 class UserFlag(FlagBase):
     """
@@ -85,18 +90,13 @@ class UserFlag(FlagBase):
         'early_verified_developer'  : 17,
             }
 
-if CACHE_USER:
-    def PartialUser(user_id):
-        try:
-            return USERS[user_id]
-        except KeyError:
-            pass
-        
-        return User._create_empty(user_id)
-
-else:
-    def PartialUser(user_id):
-        return User._create_empty(user_id)
+def PartialUser(user_id):
+    try:
+        return USERS[user_id]
+    except KeyError:
+        pass
+    
+    return User._create_empty(user_id)
 
 if DOCS_ENABLED:
     PartialUser.__doc__ = (
@@ -130,7 +130,7 @@ class GuildProfile(object):
     roles : `None` or `list` of ``Role``
         The user's roles at the guild.
         
-        > Feel free to use `.sort()` on it.
+        Feel free to use `.sort()` on it.
     """
     __slots__ = ('boosts_since', 'joined_at', 'nick', 'roles',)
     
@@ -538,7 +538,7 @@ class UserBase(DiscordEntity, immortal=True):
         """
         return DefaultAvatar.INSTANCES[self.discriminator%DefaultAvatar.COUNT]
     
-    #for sorting users
+    # for sorting users
     def __gt__(self, other):
         """Returns whether the user's id is greater than the other's."""
         if isinstance(other, UserBase):
@@ -616,9 +616,9 @@ class UserBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        guild_profiles : `dict` of (``Guild``, ``GuildPorfile``) items
+        guild_profiles : `dict` or ``WeakKeyDictionary`` of (``Guild``, ``GuildPorfile``) items
         """
-        return {}
+        return GUILD_PROFILES_TYPE()
     
     @property
     def is_bot(self):
@@ -1008,7 +1008,7 @@ class UserBase(DiscordEntity, immortal=True):
             if (emoji_roles is None):
                 return True
             
-            if guild.owner == self:
+            if guild.owner_id == self.id:
                 return True
             
             profile_roles = profile.roles
@@ -1075,7 +1075,7 @@ class UserBase(DiscordEntity, immortal=True):
             except KeyError:
                 return False
             
-            if guild.owner == self:
+            if guild.owner_id == self.id:
                 return True
             
             top_role = profile.get_top_role()
@@ -1112,7 +1112,7 @@ class UserBase(DiscordEntity, immortal=True):
             except KeyError:
                 return False
             
-            if guild.owner == self:
+            if guild.owner_id == self.id:
                 return True
             
             try:
@@ -1130,7 +1130,7 @@ class UserBase(DiscordEntity, immortal=True):
                 
                 return False
             
-            if guild.owner == user:
+            if guild.owner_id == user.id:
                 return False
             
             own_top_role = own_profile.get_top_role()
@@ -1161,7 +1161,7 @@ class User(UserBase):
         The user's avatar's hash in `uint128`.
     avatar_type : `bool`
         The user's avatar's type.
-    guild_profiles : `dict` of (``Guild``, ``GuildPorfile``) items
+    guild_profiles : `dict` or ``WeakKeyDictionary`` of (``Guild``, ``GuildPorfile``) items
         A dictionary, which contains the user's guild profiles. If a user is member of a guild, then it should
         have a respective guild profile accordingly.
     is_bot : `bool`
@@ -1206,7 +1206,7 @@ class User(UserBase):
             except KeyError:
                 user = object.__new__(cls)
                 user.id = user_id
-                user.guild_profiles = {}
+                user.guild_profiles = GUILD_PROFILES_TYPE()
                 user.status = Status.offline
                 user.statuses = {}
                 user.activities = None
@@ -1247,7 +1247,7 @@ class User(UserBase):
             except KeyError:
                 user = object.__new__(cls)
                 user.id = user_id
-                user.guild_profiles = {}
+                user.guild_profiles = GUILD_PROFILES_TYPE()
                 update = True
                 
                 USERS[user_id] = user
@@ -1271,7 +1271,7 @@ class User(UserBase):
     else:
         def __new__(cls, data, guild=None):
             try:
-                user_dat = data['user']
+                user_data = data['user']
                 member_data = data
             except KeyError:
                 user_data = data
@@ -1279,9 +1279,15 @@ class User(UserBase):
             
             user_id = int(user_data['id'])
             
-            user = object.__new__(cls)
-            user.id = user_id
-            user.guild_profiles = {}
+            try:
+                user = USERS[user_id]
+            except KeyError:
+                user = object.__new__(cls)
+                user.id = user_id
+                user.guild_profiles = GUILD_PROFILES_TYPE()
+                
+                USERS[user_id] = user
+            
             user.partial = False
             user.is_bot = user_data.get('bot', False)
             user._update_no_return(user_data)
@@ -1474,7 +1480,7 @@ class User(UserBase):
             except KeyError:
                 user = object.__new__(cls)
                 user.id = user_id
-                user.guild_profiles = {}
+                user.guild_profiles = GUILD_PROFILES_TYPE()
                 user.status = Status.offline
                 user.statuses = {}
                 user.activities = None
@@ -1514,7 +1520,7 @@ class User(UserBase):
             except KeyError:
                 user = object.__new__(cls)
                 user.id = user_id
-                user.guild_profiles = {}
+                user.guild_profiles = GUILD_PROFILES_TYPE()
                 
                 USERS[user_id] = user
             
@@ -1546,17 +1552,23 @@ class User(UserBase):
                 member_data = data
             
             user_id = int(user_data['id'])
-
-            user = object.__new__(cls)
-            user.id = user_id
-            user.guild_profiles = {}
+            
+            try:
+                user = USERS[user_id]
+            except KeyError:
+                user = object.__new__(cls)
+                user.id = user_id
+                user.guild_profiles = GUILD_PROFILES_TYPE()
+                
+                USERS[user_id] = user
+            
             user.partial = False
             user.is_bot = user_data.get('bot', False)
             user._update_no_return(user_data)
-
+            
             if (member_data is not None) and (guild is not None):
                 user.guild_profiles[guild] = GuildProfile(member_data, guild)
-        
+            
             return user
     
     if DOCS_ENABLED:
@@ -1885,7 +1897,7 @@ class User(UserBase):
             user.is_bot = False
             user.flags = UserFlag()
             
-            user.guild_profiles = {}
+            user.guild_profiles = GUILD_PROFILES_TYPE()
             user.partial = True
             
             user.status = Status.offline
@@ -1907,7 +1919,7 @@ class User(UserBase):
             user.is_bot = False
             user.flags = UserFlag()
             
-            user.guild_profiles = {}
+            user.guild_profiles = GUILD_PROFILES_TYPE()
             user.partial = True
             
             return user

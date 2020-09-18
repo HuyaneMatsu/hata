@@ -3,7 +3,7 @@ __all__ = ('PermOW', 'Role', 'RoleManagerType', 'cr_p_overwrite_object', 'cr_p_r
 
 from .bases import DiscordEntity
 from .client_core import ROLES
-from .others import random_id, DATETIME_FORMAT_CODE
+from .others import random_id, DATETIME_FORMAT_CODE, Unknown
 from .color import Color
 from .permission import Permission
 from .user import PartialUser
@@ -805,7 +805,7 @@ class Role(DiscordEntity, immortal=True):
         
         return NotImplemented
 
-#permission overwrite
+
 class PermOW(object):
     """
     Represents a permission overwrite of a guild channel.
@@ -816,10 +816,12 @@ class PermOW(object):
         The allowed permissions by the overwrite.
     deny : ``Permission``
         The denied permission by the overwrite.
-    target : ``Client``, ``User`` or ``Role``
-        The target entity of the overwrite.
+    target_role : `None`, ``Role`` or ``Unknown``
+        The target role entity of the overwrite if applicable. Defaults to `None`.
+    target_user_id : `int`
+        The target user id of the overwrite if applicable. Defaults to `0`.
     """
-    __slots__ = ('allow', 'deny', 'target',)
+    __slots__ = ('allow', 'deny', 'target_role', 'target_user_id')
 
     def __init__(self, data):
         """
@@ -832,12 +834,31 @@ class PermOW(object):
         """
         id_ = int(data['id'])
         if data['type'] == 'role':
-            target = PartialRole(id_)
+            target_role = PartialRole(id_)
+            target_user_id = 0
         else:
-            target = PartialUser(id_)
-        self.target = target
+            target_role = None
+            target_user_id = id_
+            
+        self.target_role = target_role
+        self.target_user_id = target_user_id
         self.allow = Permission(data['allow_new'])
         self.deny = Permission(data['deny_new'])
+    
+    @property
+    def target(self):
+        """
+        Returns the target entity of the overwrite.
+        
+        Returns
+        -------
+        target : ``Client``, ``User`` or ``Role``
+        """
+        target = self.target_role
+        if target is None:
+            target = PartialUser(self.target_user_id)
+        
+        return target
     
     @classmethod
     def custom(cls, target, allow, deny):
@@ -857,8 +878,16 @@ class PermOW(object):
         -------
         self : ``PermOW``
         """
+        if type(target) is Role:
+            target_role = target
+            target_user_id = 0
+        else:
+            target_role = None
+            target_user_id = target.id
+        
         self = object.__new__(cls)
-        self.target = target
+        self.target_role = target_role
+        self.target_user_id = target_user_id
         self.allow = Permission(allow)
         self.deny = Permission(deny)
         return self
@@ -881,7 +910,7 @@ class PermOW(object):
         """
         yield from Permission.__keys__.keys()
     
-    __iter__=keys
+    __iter__ = keys
     
     def values(self):
         """
@@ -961,42 +990,72 @@ class PermOW(object):
         
         Returns
         -------
-        id : `int`
+        id_ : `int`
         """
-        return self.target.id
+        target_role = self.target_role
+        if target_role is None:
+            id_ = self.target_user_id
+        else:
+            id_ = target_role.id
+        
+        return id_
     
     def __lt__(self, other):
         """Returns whether is this permission overwrite is at lower position in ordering than the order."""
         if type(self) is not type(other):
             return NotImplemented
         
-        self_target = self.target
-        other_target = other.target
+        self_target_role = self.target_role
+        if self_target_role is None:
+            self_target_type = 0
+            self_target_id = self_target_role.id
+        else:
+            self_target_type = 1
+            self_target_id = self.target_user_id
         
-        if type(self_target) is Role:
-            if type(other_target) is Role:
-                if self_target < other_target:
-                    return True
-                return False
+        other_target_role = other.target_role
+        if other_target_role is None:
+            other_target_type = 0
+            other_target_id = other_target_role.id
+        else:
+            other_target_type = 1
+            other_target_id = other.target_user_id
+        
+        if self_target_type < other_target_type:
             return True
-        if type(other_target) is Role:
-            return True
-        if self_target < other.target:
-            return True
+        
+        if self_target_type == other_target_type:
+            if self_target_type < other_target_type:
+                return True
+            
+            return False
+        
         return False
-        
+    
     def __eq__(self, other):
         """Returns whether is this permission overwrite is same as the other."""
         if type(self) is not type(other):
             return NotImplemented
         
-        if self.target.id != other.target.id:
-            return False
-        
         if self.allow != other.allow:
             return False
         
         if self.deny != other.deny:
+            return False
+        
+        self_target_role = self.target_role
+        if self_target_role is None:
+            self_target_id = self_target_role.id
+        else:
+            self_target_id = self.target_user_id
+        
+        other_target_role = other.target_role
+        if other_target_role is None:
+            other_target_id = other_target_role.id
+        else:
+            other_target_id = other.target_user_id
+        
+        if self_target_id != other_target_id:
             return False
         
         return True
@@ -1006,22 +1065,34 @@ class PermOW(object):
         if type(self) is not type(other):
             return NotImplemented
         
-        self_target = self.target
-        other_target = other.target
+        self_target_role = self.target_role
+        if self_target_role is None:
+            self_target_type = 0
+            self_target_id = self_target_role.id
+        else:
+            self_target_type = 1
+            self_target_id = self.target_user_id
         
-        if type(self_target) is Role:
-            if type(other_target) is Role:
-                if self_target > other_target:
-                    return True
-                return False
-            return False
-        if type(other_target) is Role:
-            return False
-        if self_target > other_target:
+        other_target_role = other.target_role
+        if other_target_role is None:
+            other_target_type = 0
+            other_target_id = other_target_role.id
+        else:
+            other_target_type = 1
+            other_target_id = other.target_user_id
+        
+        if self_target_type > other_target_type:
             return True
-        return True
-    
-def cr_p_role_object(name, id_=None, color=Color(0), separated=False, position=0, permissions=Permission(0),
+        
+        if self_target_type == other_target_type:
+            if self_target_type > other_target_type:
+                return True
+            
+            return False
+        
+        return False
+
+def cr_p_role_object(name, id_=None, color=Color(), separated=False, position=0, permissions=Permission(0),
         managed=False, mentionable=False):
     """
     Creates a json serializable object representing a ``Role``.

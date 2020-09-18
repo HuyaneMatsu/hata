@@ -19,7 +19,7 @@ from ..backend.helpers import BasicAuth
 from .others import Status, log_time_converter, DISCORD_EPOCH, VoiceRegion, ContentFilterLevel, PremiumType, \
     MessageNotificationLevel, image_to_base64, random_id, to_json, VerificationLevel, \
     RelationshipType, get_image_extension
-from .user import User, USERS, GuildProfile, UserBase, UserFlag, PartialUser
+from .user import User, USERS, GuildProfile, UserBase, UserFlag, PartialUser, GUILD_PROFILES_TYPE
 from .emoji import Emoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, \
     message_relativeindex, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES
@@ -308,6 +308,7 @@ class DiscoveryCategoryRequestCacher(object):
         ConnectionError
             If there is no internet connection, or there is no available cached result.
         DiscordException
+            If any exception was received from the Discord API.
         """
         if (monotonic() - self.timeout) < self._last_update:
             if self._active_request:
@@ -472,6 +473,7 @@ class DiscoveryTermRequestCacher(object):
         TypeError
             The given `arg` was not passed as `str` instance.
         DiscordException
+            If any exception was received from the Discord API.
         """
         # First check arg
         arg_type = arg.__class__
@@ -620,7 +622,7 @@ class Client(UserBase):
         The client's avatar's hash in `uint128`.
     avatar_type : `bool`
         The client's avatar's type.
-    guild_profiles : `dict` of (``Guild``, ``GuildPorfile``) items
+    guild_profiles : `dict` or ``GUILD_PROFILES_TYPE`` of (``Guild``, ``GuildPorfile``) items
         A dictionary, which contains the client's guild profiles. If a client is member of a guild, then it should
         have a respective guild profile accordingly.
     is_bot : `bool`
@@ -856,7 +858,7 @@ class Client(UserBase):
             
             index = 1
             for additional_owner in iter_(additional_owners):
-                index+=1
+                index += 1
                 if not isinstance(additional_owner,(int, UserBase)):
                     raise TypeError(f'User {index} at `additional_owners`  was not passed neither as `int` or as '
                         f'`{UserBase.__name__}` instance, got {additional_owner.__class__.__name__}')
@@ -937,7 +939,7 @@ class Client(UserBase):
         self.intents = intents
         self.running = False
         self.relationships = {}
-        self.guild_profiles = {}
+        self.guild_profiles = GUILD_PROFILES_TYPE()
         self._status = _status
         self.status = Status.offline
         self.statuses = {}
@@ -976,8 +978,8 @@ class Client(UserBase):
         """
         Fills up the client's instance attributes on login. If there is an already existing User object with the same
         id, the client will replace it at channel participans, at ``USERS`` weakreference dictionary, at
-        ``guild.users`` and at permission overwrites. This replacing is avoidable, if at the creation of the client
-        the ``.client_id`` argument is set.
+        ``guild.users``. This replacing is avoidable, if at the creation of the client the ``.client_id`` argument is
+        set.
         
         Parameters
         ----------
@@ -1003,10 +1005,6 @@ class Client(UserBase):
                         self.guild_profiles = guild_profiles
                         for guild in guild_profiles:
                             guild.users[client_id] = self
-                            for channel in guild.channels:
-                                for overwrite in channel.overwrites:
-                                    if overwrite.target is alterego:
-                                        overwrite.target = self
             
             # This part should run at both case, except when there is no alterego detected when caching users.
             for client in CLIENTS:
@@ -1100,6 +1098,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -1189,6 +1188,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -1335,6 +1335,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         See Also
         --------
@@ -1375,6 +1376,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -1411,6 +1413,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         headers = multidict_titled()
         headers[AUTHORIZATION] = f'Bearer {access.access_token}'
@@ -1435,6 +1438,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         headers = multidict_titled()
         headers[AUTHORIZATION] = f'Bearer {access.access_token}'
@@ -1454,6 +1458,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -1513,6 +1518,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         if type(access_or_compuser) is AO2Access:
             access = access_or_compuser
@@ -1565,6 +1571,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         headers = multidict_titled()
         headers[AUTHORIZATION] = f'Bearer {access.access_token}'
@@ -1584,6 +1591,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = await self.http.achievement_get_all(self.application.id)
         return [Achievement(achievement_data) for achievement_data in data]
@@ -1601,6 +1609,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = await self.http.achievement_get(self.application.id, achievement_id)
         return Achievement(data)
@@ -1636,6 +1645,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         icon_type = icon.__class__
         if not issubclass(icon_type, (bytes, bytearray, memoryview)):
@@ -1648,7 +1658,7 @@ class Client(UserBase):
         icon_data = image_to_base64(icon)
         
         data = {
-            'name'        : {
+            'name' : {
                 'default' : name,
                     },
             'description' : {
@@ -1696,6 +1706,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = {}
         
@@ -1744,6 +1755,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         await self.http.achievement_delete(self.application.id, achievement.id)
     #
@@ -1769,6 +1781,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -1808,6 +1821,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -1836,6 +1850,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -1862,6 +1877,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         try:
             eula = EULAS[eula_id]
@@ -1886,6 +1902,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         applications_data = await self.http.applications_detectable()
         return [Application(application_data) for application_data in applications_data]
@@ -1936,10 +1953,6 @@ class Client(UserBase):
             guild_profiles = self.guild_profiles
             for guild in guild_profiles:
                 guild.users[client_id] = self
-                for channel in guild.channels:
-                    for overwrite in channel.overwrites:
-                        if overwrite.target is alterego:
-                            overwrite.target = self
             
             for client in CLIENTS:
                 if (client is not self) and client.running:
@@ -1971,7 +1984,7 @@ class Client(UserBase):
         self.group_channels.clear()
         self.events.clear()
         
-        self.guild_profiles = {}
+        self.guild_profiles = GUILD_PROFILES_TYPE()
         self.status = Status.offline
         self.statuses = {}
         self._activity = ActivityUnknown
@@ -2018,6 +2031,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         url = attachment.proxy_url
         if (url is None) or (not url.startswith(CDN_ENDPOINT)):
@@ -2041,6 +2055,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         InvalidToken
             When the token of the client is invalid.
         """
@@ -2078,6 +2093,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         await self.http.channel_group_leave(channel.id)
     
@@ -2097,6 +2113,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         for user in users:
             await self.http.channel_group_user_add(channel.id, user.id)
@@ -2117,6 +2134,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         for user in users:
             await self.http.channel_group_user_delete(channel.id, user.id)
@@ -2145,6 +2163,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -2208,6 +2227,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -2237,6 +2257,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         try:
             channel = self.private_channels[user.id]
@@ -2260,6 +2281,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         result = []
         if (not self.is_bot):
@@ -2301,6 +2323,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -2725,6 +2748,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         if not isinstance(channel, ChannelGuildBase):
             raise TypeError(f'Only Guild channels can be edited with this method, got {channel.__class__.__name__}.')
@@ -2836,6 +2860,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         if category is None:
             category_id = None
@@ -2866,6 +2891,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -2898,6 +2924,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         if source_channel.type != 5:
             raise TypeError(f'`source_channel` must be type 5 (announcements) channel, got `{source_channel}`.')
@@ -2948,6 +2975,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         See Also
         --------
@@ -3002,6 +3030,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         if limit < 1 or limit > 100:
             raise ValueError(f'limit must be in <1, 100>, got {limit}')
@@ -3036,6 +3065,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = await self.http.message_get(channel.id, message_id)
         return channel._create_unknown_message(data)
@@ -3078,6 +3108,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         See Also
         --------
@@ -3356,6 +3387,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -3385,6 +3417,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -3613,6 +3646,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -3943,6 +3977,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         See Also
         --------
@@ -3989,6 +4024,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         await self.http.message_suppress_embeds(message.channel.id, message.id, {'suppress': suppress})
     
@@ -4006,6 +4042,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         await self.http.message_crosspost(message.channel.id, message.id)
     
@@ -4023,6 +4060,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         await self.http.message_pin(message.channel.id, message.id)
     
@@ -4040,6 +4078,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         await self.http.message_unpin(message.channel.id, message.id)
 
@@ -4062,6 +4101,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = await self.http.channel_pins(channel.id)
         return [channel._create_unknown_message(message_data) for message_data in data]
@@ -4086,6 +4126,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         while True:
             ln = len(channel.messages)
@@ -4136,6 +4177,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         messages = channel.messages
         if index < len(messages):
@@ -4174,6 +4216,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         if end >= len(channel.messages) and (not channel.message_history_reached_end) and \
                channel.cached_permissions_for(self).can_read_message_history:
@@ -4221,6 +4264,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -4265,6 +4309,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         await self.http.reaction_add(message.channel.id, message.id, emoji.as_reaction)
     
@@ -4286,6 +4331,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         if self == user:
             await self.http.reaction_delete_own(message.channel.id, message.id, emoji.as_reaction)
@@ -4308,6 +4354,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         await self.http.reaction_delete_emoji(message.channel.id, message.id, emoji.as_reaction)
     
@@ -4327,6 +4374,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         await self.http.reaction_delete_own(message.channel.id, message.id, emoji.as_reaction)
     
@@ -4344,6 +4392,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         await self.http.reaction_clear(message.channel.id, message.id)
     
@@ -4381,6 +4430,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -4452,6 +4502,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         reactions = message.reactions
         if not reactions:
@@ -4499,6 +4550,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         reactions = message.reactions
         if not reactions:
@@ -4544,6 +4596,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = await self.http.guild_preview(guild_id)
         return GuildPreview(data)
@@ -4566,6 +4619,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         await self.http.guild_user_delete(guild.id, user.id, reason)
     
@@ -4587,6 +4641,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -4625,6 +4680,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = {}
         if delete_message_days:
@@ -4651,6 +4707,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         await self.http.guild_ban_delete(guild.id, user.id, reason)
     
@@ -4672,6 +4729,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         # sadly guild_get does not returns channel and voice state data
         # at least we can request the channels
@@ -4760,6 +4818,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         await self.http.guild_leave(guild.id)
     
@@ -4777,6 +4836,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         await self.http.guild_delete(guild.id)
     
@@ -4840,6 +4900,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         if len(self.guild_profiles) > (9 if self.is_bot else 99):
             if self.is_bot:
@@ -4920,6 +4981,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         See Also
         --------
@@ -4962,6 +5024,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = {
             'days': days,
@@ -5053,6 +5116,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = {}
         
@@ -5154,7 +5218,7 @@ class Client(UserBase):
             data['public_updates_channel_id'] = None if public_updates_channel is None else public_updates_channel.id
         
         if (owner is not None):
-            if (guild.owner != self):
+            if (guild.owner_id != self.id):
                 raise ValueError('You must be owner to transfer ownership')
             data['owner_id'] = owner.id
         
@@ -5264,6 +5328,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = await self.http.guild_bans(guild.id)
         return [(User(ban_data['user']), ban_data.get('reason', None)) for ban_data in data]
@@ -5289,6 +5354,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = await self.http.guild_ban_get(guild.id, user_id)
         return User(data['user']), data.get('reason')
@@ -5311,6 +5377,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -5338,6 +5405,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = {}
         if (enabled is not None):
@@ -5369,6 +5437,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         if type(guild_or_id) is Guild:
             guild_id = guild_or_id.id
@@ -5406,6 +5475,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         guild_discovery_data = await self.http.guild_discovery_get(guild.id)
         return GuildDiscovery(guild_discovery_data, guild)
@@ -5449,6 +5519,7 @@ class Client(UserBase):
             - If `primary_category_id` was given as not primary ``DiscoveryCategory`` object.
             - If `emoji_discovery` was given as `int` instance, but not as `0` or `1`.
         DiscordException
+            If any exception was received from the Discord API.
         """
         if type(guild_or_discovery) is Guild:
             guild_id = guild_or_discovery.id
@@ -5553,6 +5624,7 @@ class Client(UserBase):
             - If `guild_or_discovery` was neither passed as type ``Guild`` or ``GuildDiscovery``.
             - If `category` was not passed neither as ``DiscoveryCategory`` or as `int` instance.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -5605,6 +5677,7 @@ class Client(UserBase):
             - If `guild_or_discovery` was neither passed as type ``Guild`` or ``GuildDiscovery``.
             - If `category` was not passed neither as ``DiscoveryCategory`` or as `int` instance.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -5652,6 +5725,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         discovery_category_datas = await self.http.discovery_categories()
         return [
@@ -5679,6 +5753,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = await self.http.discovery_validate_term({'term': term})
         return data['valid']
@@ -5704,6 +5779,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -5735,6 +5811,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -5772,6 +5849,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = await self.http.guild_regions(guild.id)
         voice_regions = []
@@ -5798,6 +5876,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = await self.http.voice_regions()
         voice_regions = []
@@ -5822,6 +5901,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = await self.http.guild_channels(guild.id)
         guild._sync_channels(data)
@@ -5841,6 +5921,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = await self.http.guild_roles(guild.id)
         guild._sync_roles(data)
@@ -5878,6 +5959,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         if limit < 1 or limit > 100:
             raise ValueError(f'Limit can be in <1, 100>, got {limit}')
@@ -5952,6 +6034,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = {}
         if (nick is not _spaceholder):
@@ -6019,6 +6102,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         # If the role is partial, it's guild is None.
         guild = role.guild
@@ -6045,6 +6129,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         # If the role is partial, it's guild is None.
         guild = role.guild
@@ -6069,6 +6154,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         # If the channel is partial, it's guild is None.
         guild = voice_channel
@@ -6093,6 +6179,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         await self.http.user_move(guild.id, user.id,{'channel_id':None})
     
@@ -6114,6 +6201,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = await self.http.user_get(user_id)
         return User._create_and_update(data)
@@ -6139,6 +6227,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = await self.http.guild_user_get(guild.id, user_id)
         return User._create_and_update(data, guild)
@@ -6167,6 +6256,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = {'query': query}
         
@@ -6204,6 +6294,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         if include_applications:
             data = {'include_applications': True}
@@ -6236,6 +6327,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = {
             'id'   : integration_id,
@@ -6271,6 +6363,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         guild = integration.role.guild
         if guild is None:
@@ -6317,6 +6410,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         guild = integration.role.guild
         if guild is None:
@@ -6337,6 +6431,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         guild = integration.role.guild
         if guild is None:
@@ -6366,6 +6461,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = {
             'allow' : allow,
@@ -6392,6 +6488,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         await self.http.permission_ow_delete(channel.id, overwrite.target.id, reason)
     
@@ -6424,6 +6521,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         if type(target) is Role:
             type_ = 'role'
@@ -6474,6 +6572,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         name_ln = len(name)
         if name_ln == 0 or name_ln > 80:
@@ -6513,6 +6612,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         See Also
         --------
@@ -6558,6 +6658,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -6592,6 +6693,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         See Also
         --------
@@ -6614,6 +6716,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = await self.http.webhook_get_token(webhook)
         webhook._update_no_return(data)
@@ -6636,6 +6739,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -6669,6 +6773,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -6712,6 +6817,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         See Also
         --------
@@ -6737,6 +6843,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         await self.http.webhook_delete_token(webhook)
             
@@ -6767,6 +6874,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         See Also
         --------
@@ -6830,6 +6938,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -6911,6 +7020,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = {}
         contains_content = False
@@ -6995,6 +7105,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = await self.http.emoji_get(guild.id, emoji_id)
         return Emoji(data, guild)
@@ -7013,6 +7124,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = await self.http.guild_emojis(guild.id)
         guild._sync_emojis(data)
@@ -7041,6 +7153,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -7077,6 +7190,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         guild = emoji.guild
         if guild is None:
@@ -7107,6 +7221,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         guild = emoji.guild
         if guild is None:
@@ -7155,6 +7270,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         vanity_code = guild.vanity_code
         if vanity_code is None:
@@ -7181,6 +7297,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         await self.http.vanity_edit(guild.id, {'code': code}, reason)
     
@@ -7212,6 +7329,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         if channel.type in (1, 4):
             raise TypeError(f'Cannot create invite from {channel.__class__.__name__}.')
@@ -7236,11 +7354,11 @@ class Client(UserBase):
     #     DiscordException BAD REQUEST (400), code=50035: Invalid Form Body
     #     target_user_type.GUILD_INVITE_INVALID_TARGET_USER_TYPE('Invalid target user type')
     # 'target_user_id' and 'target_user_type' together:
-    #    DiscordException BAD REQUEST (400), code=50035: Invalid Form Body
-    #    target_user_id.GUILD_INVITE_INVALID_STREAMER('The specified user is currently not streaming in this channel')
+    #     DiscordException BAD REQUEST (400), code=50035: Invalid Form Body
+    #     target_user_id.GUILD_INVITE_INVALID_STREAMER('The specified user is currently not streaming in this channel')
     # 'target_user_id' and 'target_user_type' with not correct channel:
-    #    DiscordException BAD REQUEST (400), code=50035: Invalid Form Body
-    #    target_user_id.GUILD_INVITE_INVALID_STREAMER('The specified user is currently not streaming in this channel')
+    #     DiscordException BAD REQUEST (400), code=50035: Invalid Form Body
+    #     target_user_id.GUILD_INVITE_INVALID_STREAMER('The specified user is currently not streaming in this channel')
     
     async def stream_invite_create(self, guild, user, max_age=0, max_uses=0, unique=True, temporary=False):
         """
@@ -7273,6 +7391,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         user_id = user.id
         try:
@@ -7331,6 +7450,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         while True:
             if not guild.channels:
@@ -7396,6 +7516,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = await self.http.invite_get(invite_code, {'with_counts': with_count})
         return Invite(data, False)
@@ -7417,6 +7538,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = await self.http.invite_get(invite.code, {'with_counts': with_count})
         if invite.partial:
@@ -7444,6 +7566,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = await self.http.invite_get_guild(guild.id)
         return [Invite(invite_data, False) for invite_data in data]
@@ -7466,6 +7589,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = await self.http.invite_get_channel(channel.id)
         return [Invite(invite_data, False) for invite_data in data]
@@ -7486,6 +7610,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         await self.http.invite_delete(invite.code, reason)
 
@@ -7510,6 +7635,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = await self.http.invite_delete(invite_code, reason)
         return Invite(data, False)
@@ -7549,6 +7675,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         guild = role.guild
         if guild is None:
@@ -7596,6 +7723,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         guild = role.guild
         if guild is None:
@@ -7632,6 +7760,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = {}
         if (name is not None):
@@ -7676,6 +7805,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         guild = role.guild
         if guild is None:
@@ -7727,6 +7857,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         # Nothing to move, nice
         if not roles:
@@ -8023,6 +8154,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         await self.http.relationship_delete(relationship.user.id)
     
@@ -8043,6 +8175,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = {}
         if (relationship_type is not None):
@@ -8064,6 +8197,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = {
             'username'      : user.name,
@@ -8081,6 +8215,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -8107,6 +8242,7 @@ class Client(UserBase):
         InvalidToken
             When the client's token is invalid.
         DiscordException
+            If any exception was received from the Discord API.
         """
         if self._gateway_requesting:
             gateway_waiter = self._gateway_waiter
@@ -8169,6 +8305,7 @@ class Client(UserBase):
         InvalidToken
             When the client's token is invalid.
         DiscordException
+            If any exception was received from the Discord API.
         
         Returns
         -------
@@ -8202,6 +8339,7 @@ class Client(UserBase):
         InvalidToken
             When the client's token is invalid.
         DiscordException
+            If any exception was received from the Discord API.
         """
         data = await self.client_gateway()
         self._gateway_url = data['url']+'?encoding=json&v=6&compress=zlib-stream'
@@ -8246,6 +8384,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         await self.http.hypesquad_house_change({'house_id':house.value})
     
@@ -8259,6 +8398,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         await self.http.hypesquad_house_leave()
     
@@ -8826,8 +8966,11 @@ class Client(UserBase):
         """
         application_owner = self.application.owner
         if type(application_owner) is Team:
-            return application_owner.owner
-        return application_owner
+            owner = application_owner.owner
+        else:
+            owner = application_owner
+        
+        return owner
     
     def is_owner(self, user):
         """
@@ -8847,7 +8990,7 @@ class Client(UserBase):
             if user in application_owner.accepted:
                 return True
         else:
-            if application_owner == user:
+            if application_owner is user:
                 return True
         
         additional_owner_ids = self._additional_owner_ids

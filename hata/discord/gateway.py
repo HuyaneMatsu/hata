@@ -1146,7 +1146,7 @@ class DiscordGatewaySharder(object):
         """
         Modifes the shard amount of the gateway sharder.
         
-        > Should be called only if every shard is down.
+        Should be called only if every shard is down.
         """
         gateways = self.gateways
         
@@ -1211,8 +1211,8 @@ class DiscordGatewaySharder(object):
                 task = Task(gateways[index].run(future), KOKORO)
                 waiter.add(task)
                 
-                index +=1
-                left_from_batch +=1
+                index += 1
+                left_from_batch += 1
                 if index == limit:
                     break
                 
@@ -1231,7 +1231,7 @@ class DiscordGatewaySharder(object):
                 waiter.reset()
                 
                 if type(result) is Future:
-                    left_from_batch -=1
+                    left_from_batch -= 1
                     
                     if left_from_batch:
                         continue

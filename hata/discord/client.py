@@ -2,7 +2,7 @@
 __all__ = ('Client', 'Typer', )
 
 import re, sys
-from time import monotonic, time as time_now
+from time import time as time_now
 from collections import deque
 from os.path import split as splitpath
 from threading import current_thread
@@ -11,7 +11,7 @@ from math import inf
 from ..env import CACHE_USER, CACHE_PRESENCE
 from ..backend.dereaddons_local import multidict_titled, _spaceholder, methodize, basemethod, change_on_switch
 from ..backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, WaitTillFirst, WaitTillExc
-from ..backend.eventloop import EventThread
+from ..backend.eventloop import EventThread, LOOP_TIME
 from ..backend.formdata import Formdata
 from ..backend.hdrs import AUTHORIZATION
 from ..backend.helpers import BasicAuth
@@ -71,7 +71,7 @@ class SingleUserChunker(object):
     
     def __init__(self, ):
         self.waiter = Future(KOKORO)
-        self.timer = KOKORO.call_at(monotonic()+USER_CHUNK_TIMEOUT, type(self)._cancel, self)
+        self.timer = KOKORO.call_at(LOOP_TIME()+USER_CHUNK_TIMEOUT, type(self)._cancel, self)
     
     def __call__(self, event):
         """
@@ -166,7 +166,7 @@ class MassUserChunker(object):
         """
         self.left = left
         self.waiter = Future(KOKORO)
-        self.last = now = monotonic()
+        self.last = now = LOOP_TIME()
         self.timer = KOKORO.call_at(now+USER_CHUNK_TIMEOUT, type(self)._cancel, self)
     
     def __call__(self, event):
@@ -185,7 +185,7 @@ class MassUserChunker(object):
         is_last : `bool`
             Whether the last chunk was received.
         """
-        self.last = monotonic()
+        self.last = LOOP_TIME()
         if event.index+1 != event.count:
             return False
         
@@ -209,7 +209,7 @@ class MassUserChunker(object):
         Cancels ``.waiter`` and ``.timer``. After this method was called, the waiting coroutine will remove it's
         reference from the event handler.
         """
-        now = monotonic()
+        now = LOOP_TIME()
         next_ = self.last + USER_CHUNK_TIMEOUT
         if next_ > now:
             self.timer = KOKORO.call_at(next_, type(self)._cancel, self)
@@ -310,7 +310,7 @@ class DiscoveryCategoryRequestCacher(object):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if (monotonic() - self.timeout) < self._last_update:
+        if (LOOP_TIME() - self.timeout) < self._last_update:
             if self._active_request:
                 waiter = self._waiter
                 if waiter is None:
@@ -344,7 +344,7 @@ class DiscoveryCategoryRequestCacher(object):
             raise
         
         else:
-            self._last_update = monotonic()
+            self._last_update = LOOP_TIME()
         
         finally:
             self._active_request = False
@@ -386,7 +386,7 @@ class TimedCacheUnit(object):
     result : `str`
         The cached response object.
     creation_time : `float`
-        The monotonic time when the last resposne was received.
+        The LOOP_TIME time when the last resposne was received.
     last_usage_time : `float`
         The monotnonic time when this unit was last tiem used.
     """
@@ -490,7 +490,7 @@ class DiscoveryTermRequestCacher(object):
         except KeyError:
             unit = None
         else:
-            now = monotonic()
+            now = LOOP_TIME()
             if self.timeout + unit.creation_time > now:
                 unit.last_usage_time = now
                 return unit.result
@@ -539,7 +539,7 @@ class DiscoveryTermRequestCacher(object):
                 
                 raise
             
-            unit.last_usage_time = monotonic()
+            unit.last_usage_time = LOOP_TIME()
             result = unit.result
         
         except BaseException as err:
@@ -553,14 +553,14 @@ class DiscoveryTermRequestCacher(object):
             if unit is None:
                 self.cached[arg] = unit = TimedCacheUnit()
             
-            now = monotonic()
+            now = LOOP_TIME()
             unit.last_usage_time = now
             unit.creation_time = now
             unit.result = result
         
         finally:
             # Do cleanup if needed
-            now = monotonic()
+            now = LOOP_TIME()
             if self._last_cleanup + self._minimal_cleanup_interval < now:
                 self._last_cleanup = now
                 
@@ -1105,7 +1105,7 @@ class Client(UserBase):
         The method's endpoint has long ratelimit reset, so consider using timeout and checking ratelimits with
         ``RatelimitProxy``.
         """
-        data={}
+        data = {}
         
         if (password is None):
             if not self.is_bot:
@@ -2169,7 +2169,7 @@ class Client(UserBase):
         -----
         No request is done if no optional paremeter is provided.
         """
-        data={}
+        data = {}
         
         if (name is not _spaceholder):
             if (name is None):
@@ -2660,7 +2660,7 @@ class Client(UserBase):
             ordered[index_0] = (type_index, channel_)
             
             #loop block step
-            index_0 +=1
+            index_0 += 1
             #loop block continue
             
             if type_ == 4:
@@ -2684,7 +2684,7 @@ class Client(UserBase):
                     ordered[index_0] = (type_index, channel_)
                     
                     #loop block end
-                    index_0 +=1
+                    index_0 += 1
                 
             #loop block end
         #loop ended
@@ -3202,17 +3202,17 @@ class Client(UserBase):
         form.add_field('payload_json', to_json(data))
         files = []
         
-        #checking structure
+        # checking structure
         
-        #case 1 dict like
+        # case 1 dict like
         if hasattr(type(file), 'items'):
             files.extend(file.items())
         
-        #case 2 tuple => file, filename pair
+        # case 2 tuple => file, filename pair
         elif isinstance(file, tuple):
             files.append(file)
         
-        #case 3 list like
+        # case 3 list like
         elif isinstance(file, (list, deque)):
             for element in file:
                 if type(element) is tuple:
@@ -3242,20 +3242,20 @@ class Client(UserBase):
             
             files.append((name, file),)
         
-        #checking the amount of files
-        #case 1 one file
+        # checking the amount of files
+        # case 1 one file
         if len(files) == 1:
             name, io = files[0]
             form.add_field('file', io, filename=name, content_type='application/octet-stream')
-        #case 2, no files -> return None, we should use the already existing data
+        # case 2, no files -> return None, we should use the already existing data
         elif len(files) == 0:
             return None
-        #case 3 maximum 10 files
+        # case 3 maximum 10 files
         elif len(files) < 11:
             for index, (name, io) in enumerate(files):
                 form.add_field(f'file{index}s', io, filename=name, content_type='application/octet-stream')
         
-        #case 4 more than 10 files
+        # case 4 more than 10 files
         else:
             raise ValueError('You can send maximum 10 files at once.')
         
@@ -3430,8 +3430,7 @@ class Client(UserBase):
         channel_id = channel.id
 
         if not isinstance(channel,ChannelGuildBase):
-            # Bulk delete is available only at guilds. At private or group
-            # channel you can delete only yours tho.
+            # Bulk delete is available only at guilds. At private or group channel you can delete only yours tho.
             for message in messages:
                 await self.http.message_delete(channel_id, message.id, reason)
                 
@@ -3473,7 +3472,7 @@ class Client(UserBase):
                 if message_limit:
                     message_ids = []
                     message_count = 0
-                    limit = int((time_now()-1209590.)*1000.-DISCORD_EPOCH)<<22 # 2 weeks -10s
+                    limit = int((time_now()-1209590.)*1000.-DISCORD_EPOCH)<<22 # 2 weeks - 10s
                     
                     while message_group_new:
                         own, message_id = message_group_new.popleft()
@@ -3487,8 +3486,7 @@ class Client(UserBase):
                         if (message_id+20971520000) < limit:
                             continue
                         
-                        # If the message is really older than the limit,
-                        # with ingoring the 10 second, then we move it.
+                        # If the message is really older than the limit, with ingoring the 10 second, then we move it.
                         if own:
                             group = message_group_old_own
                         else:
@@ -3528,11 +3526,9 @@ class Client(UserBase):
                     tasks.append(delete_new_task)
             
             if not tasks:
-                # It can happen, that there are no more tasks left,  at that case
-                # we check if there is more message left. Only at
-                # `message_group_new` can be anymore message, because there is a
-                # time intervallum of 10 seconds, what we do not move between
-                # categories.
+                # It can happen, that there are no more tasks left,  at that case we check if there is more message
+                # left. Only at `message_group_new` can be anymore message, because there is a time intervallum of 10
+                # seconds, what we do not move between categories.
                 if not message_group_new:
                     break
                 
@@ -3573,7 +3569,7 @@ class Client(UserBase):
                 # Should not happen
                 continue
     
-    #deletes from more channels
+    # deletes from more channel
     async def message_delete_multiple2(self, messages, reason=None):
         """
         Similar to ``.message_delete_multiple`, but it accepts messages from different channels. Groups them up by
@@ -7684,7 +7680,7 @@ class Client(UserBase):
         if (position is not None):
             await self.role_move(role, position, reason)
         
-        data={}
+        data = {}
         
         if (name is not None):
             name_ln = len(name)
@@ -8312,12 +8308,12 @@ class Client(UserBase):
         gateway_url : `str`
             The url to what the gateways' webscoket will be connected.
         """
-        if self._gateway_time > (monotonic()+60.0):
+        if self._gateway_time > (LOOP_TIME()+60.0):
             return self._gateway_url
         
         data = await self.client_gateway()
         self._gateway_url = gateway_url = f'{data["url"]}?encoding=json&v={API_VERSION}&compress=zlib-stream'
-        self._gateway_time = monotonic()
+        self._gateway_time = LOOP_TIME()
         
         return gateway_url
     
@@ -8343,7 +8339,7 @@ class Client(UserBase):
         """
         data = await self.client_gateway()
         self._gateway_url = data['url']+'?encoding=json&v=6&compress=zlib-stream'
-        self._gateway_time = monotonic()
+        self._gateway_time = LOOP_TIME()
         
         old_shard_count = self.shard_count
         if old_shard_count == 0:

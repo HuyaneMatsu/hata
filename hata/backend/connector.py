@@ -3,7 +3,6 @@ import socket as module_socket
 from functools import lru_cache
 from http.cookies import SimpleCookie
 from collections import defaultdict
-from time import monotonic
 from threading import current_thread
 
 try:
@@ -16,6 +15,7 @@ else:
 
 from .dereaddons_local import multidict_titled
 from .futures import shield, Task
+from .eventloop import LOOP_TIME
 
 from .hdrs import HOST, METH_GET, AUTHORIZATION, PROXY_AUTHORIZATION, METH_CONNECT
 from .reqrep import ClientRequest, Fingerprint, SSL_ALLOWED_TYPES
@@ -154,7 +154,7 @@ class ConnectorBase(object):
         if not connections:
             return
         
-        now = monotonic()
+        now = LOOP_TIME()
         to_remove_keys = []
         
         for key, connections_ in connections.items():
@@ -234,7 +234,7 @@ class ConnectorBase(object):
         except KeyError:
             return None
         
-        now = monotonic()
+        now = LOOP_TIME()
         while connections:
             protocol, time = connections.pop()
             if (protocol.transport is None):
@@ -280,7 +280,7 @@ class ConnectorBase(object):
             except KeyError:
                 connections = self.connections[key] = []
             
-            connections.append((protocol,monotonic()))
+            connections.append((protocol,LOOP_TIME()))
             
             if self.cleanup_handle is None:
                 self.cleanup_handle = self.loop.call_later_weak(KEEP_ALIVE_TIMEOUT, self._cleanup,)
@@ -358,14 +358,14 @@ class HostInfoCont(object):
     
         self = object.__new__(cls)
         self.index = 0
-        self.timestamp = monotonic()
+        self.timestamp = LOOP_TIME()
         self.addrs = addrs
         
         return self
     
     @property
     def expired(self):
-        return ((self.timestamp+DNS_CACHE_TIMEOUT) < monotonic())
+        return ((self.timestamp+DNS_CACHE_TIMEOUT) < LOOP_TIME())
     
     def next_addrs(self):
         result = []

@@ -450,11 +450,11 @@ class Extension(object):
             self._state = EXTENSION_STATE_LOADED
             return lib
         
-        if state==EXTENSION_STATE_LOADED:
+        if state == EXTENSION_STATE_LOADED:
             # return None -> already loaded
             return None
         
-        if state==EXTENSION_STATE_UNLOADED:
+        if state == EXTENSION_STATE_UNLOADED:
             # reload
             lib = self._lib
             
@@ -472,7 +472,7 @@ class Extension(object):
             
             reload_module(lib)
             
-            self._state=EXTENSION_STATE_LOADED
+            self._state = EXTENSION_STATE_LOADED
             return lib
         
         # no more cases

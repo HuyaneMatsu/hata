@@ -839,7 +839,7 @@ class PermOW(object):
         else:
             target_role = None
             target_user_id = id_
-            
+        
         self.target_role = target_role
         self.target_user_id = target_user_id
         self.allow = Permission(data['allow_new'])
@@ -1008,24 +1008,24 @@ class PermOW(object):
         self_target_role = self.target_role
         if self_target_role is None:
             self_target_type = 0
-            self_target_id = self_target_role.id
+            self_target_id = self.target_user_id
         else:
             self_target_type = 1
-            self_target_id = self.target_user_id
+            self_target_id = self_target_role.id
         
         other_target_role = other.target_role
         if other_target_role is None:
             other_target_type = 0
-            other_target_id = other_target_role.id
+            other_target_id = other.target_user_id
         else:
             other_target_type = 1
-            other_target_id = other.target_user_id
+            other_target_id = other_target_role.id
         
         if self_target_type < other_target_type:
             return True
         
         if self_target_type == other_target_type:
-            if self_target_type < other_target_type:
+            if self_target_id < other_target_id:
                 return True
             
             return False
@@ -1045,15 +1045,15 @@ class PermOW(object):
         
         self_target_role = self.target_role
         if self_target_role is None:
-            self_target_id = self_target_role.id
-        else:
             self_target_id = self.target_user_id
+        else:
+            self_target_id = self_target_role.id
         
         other_target_role = other.target_role
         if other_target_role is None:
-            other_target_id = other_target_role.id
-        else:
             other_target_id = other.target_user_id
+        else:
+            other_target_id = other_target_role.id
         
         if self_target_id != other_target_id:
             return False
@@ -1068,31 +1068,31 @@ class PermOW(object):
         self_target_role = self.target_role
         if self_target_role is None:
             self_target_type = 0
-            self_target_id = self_target_role.id
+            self_target_id = self.target_user_id
         else:
             self_target_type = 1
-            self_target_id = self.target_user_id
-        
+            self_target_id = self_target_role.id
+            
         other_target_role = other.target_role
         if other_target_role is None:
             other_target_type = 0
-            other_target_id = other_target_role.id
+            other_target_id = other.target_user_id
         else:
             other_target_type = 1
-            other_target_id = other.target_user_id
+            other_target_id = other_target_role.id
         
         if self_target_type > other_target_type:
             return True
         
         if self_target_type == other_target_type:
-            if self_target_type > other_target_type:
+            if self_target_id > other_target_id:
                 return True
             
             return False
         
         return False
 
-def cr_p_role_object(name, id_=None, color=Color(), separated=False, position=0, permissions=Permission(0),
+def cr_p_role_object(name, id_=None, color=Color(), separated=False, position=0, permissions=Permission(),
         managed=False, mentionable=False):
     """
     Creates a json serializable object representing a ``Role``.

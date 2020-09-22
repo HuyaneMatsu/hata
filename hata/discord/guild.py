@@ -987,7 +987,8 @@ class Guild(DiscordEntity, immortal=True):
                         channel_type(channel_data, client, guild)
                     else:
                         later.append((channel_type, channel_data),)
-                for channel_type,channel_data in later:
+                
+                for channel_type, channel_data in later:
                     channel_type(channel_data, client, guild)
             
             guild._update_no_return(data)
@@ -1000,7 +1001,8 @@ class Guild(DiscordEntity, immortal=True):
                 else:
                     for user_data in user_datas:
                         User(user_data, guild)
-                #if user caching is disabled, then presence caching is too.
+                
+                # If user caching is disabled, then presence caching is too.
                 try:
                     presence_data = data['presences']
                 except KeyError:

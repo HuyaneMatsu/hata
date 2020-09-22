@@ -3,9 +3,8 @@ __all__ = ('ChooseMenu', 'Closer', 'Cooldown', 'GUI_STATE_CANCELLED', 'GUI_STATE
     'GUI_STATE_SWITCHING_CTX', 'GUI_STATE_SWITCHING_PAGE', 'Timeouter', 'Pagination', 'WaitAndContinue',
     'ReactionAddWaitfor', 'ReactionDeleteWaitfor', 'multievent', 'wait_for_message', 'wait_for_reaction', )
 
-from time import monotonic
-
 from ...backend.futures import Task, Future
+from ...backend.eventloop import LOOP_TIME
 
 from ...discord.parsers import EventWaitforBase
 from ...discord.emoji import BUILTIN_EMOJIS
@@ -184,7 +183,7 @@ class Timeouter(object):
             handle.cancel()
             return
         
-        now = monotonic()
+        now = LOOP_TIME()
         next_step = self.handle.when
         
         planed_end = now+value
@@ -209,7 +208,7 @@ class Timeouter(object):
         if handle is None:
             return 0.0
         
-        return handle.when-monotonic()+self.timeout
+        return handle.when-LOOP_TIME()+self.timeout
 
 GUI_STATE_READY          = 0
 GUI_STATE_SWITCHING_PAGE = 1
@@ -1656,7 +1655,7 @@ class _CDUnit(object):
     Attributes
     ----------
     expires_at : `float`
-        When the cooldown unit will expire in monotonic time.
+        When the cooldown unit will expire in LOOP_TIME time.
     uses_left : `int`
         How much uses are left till the respective entity will be locked by cooldown.
     """
@@ -1668,7 +1667,7 @@ class _CDUnit(object):
         Parameters
         ----------
         expires_at : `float`
-            When the cooldown unit will expire in monotonic time.
+            When the cooldown unit will expire in LOOP_TIME time.
         uses_left : `int`
             How much uses are left till the respective entity will be locked by cooldown.
         """
@@ -2085,7 +2084,7 @@ class Cooldown(object):
             return
         
         yield False
-        yield value-monotonic()
+        yield value-LOOP_TIME()
         return
     
     @staticmethod
@@ -2111,7 +2110,7 @@ class Cooldown(object):
         try:
             unit = cache[id_]
         except KeyError:
-            at_ = monotonic()+self.reset
+            at_ = LOOP_TIME()+self.reset
             cache[id_] = _CDUnit(at_, self.limit)
             KOKORO.call_at(at_, dict.__delitem__, cache, id_)
             return 0.
@@ -2145,7 +2144,7 @@ class Cooldown(object):
         try:
             unit = cache[id_]
         except KeyError:
-            at_ = monotonic()+self.reset
+            at_ = LOOP_TIME()+self.reset
             cache[id_] = _CDUnit(at_, self.limit)
             KOKORO.call_at(at_, dict.__delitem__, cache, id_)
             return 0.
@@ -2186,7 +2185,7 @@ class Cooldown(object):
         try:
             unit = cache[id_]
         except KeyError:
-            at_ = monotonic()+self.reset
+            at_ = LOOP_TIME()+self.reset
             cache[id_] = _CDUnit(at_,self.limit)
             KOKORO.call_at(at_, dict.__delitem__, cache, id_)
             return 0.

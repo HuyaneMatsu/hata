@@ -736,7 +736,7 @@ class ActivityRich(ActivityBase):
         if (url is not None):
             url = preconvert_str(name, 'url', 0, 2048)
         
-        type_ = preconvert_int(type_, 'type_', 0, 4)
+        type_ = preconvert_int(type_, 'type_', 0, 5)
         
         if type_ == ActivityTypes.custom:
             raise RuntimeError(f'Custom activity cannot be created with `{cls.__name__}.__new__`.')

@@ -199,7 +199,7 @@ class Command(object):
         """
         The method used, when creating a `Command` object from a class.
         
-        > Extra `kwargs` are supported as well for the usecase.
+        Extra `kwargs` are supported as well for the usecase.
         
         Parameters
         ----------
@@ -1762,7 +1762,7 @@ class checks:
             if guild is None:
                 return False
             
-            if guild.owner == message.author:
+            if guild.owner_id == message.author.id:
                 return True
             
             return False
@@ -1798,7 +1798,7 @@ class checks:
                 return False
             
             user = message.author
-            if guild.owner == user:
+            if guild.owner_id == user.id:
                 return True
             
             if client.is_owner(user):

@@ -856,26 +856,7 @@ class AuditLogEntry(object):
         result.append('>')
         
         return ''.join(result)
-    
-def PermOW_from_logs(data):
-    self = object.__new__(PermOW)
-    id_ = int(data['id'])
-    if data['type'] == 'role':
-        try:
-            target = ROLES[id_]
-        except KeyError:
-            target = Unknown('Role', id_)
-    else:
-        try:
-            target = USERS[id_]
-        except KeyError:
-            target = Unknown('User', id_)
-    
-    self.target = target
-    self.allow = data['allow']
-    self.deny = data['deny']
 
-    return self
 
 def transform_nothing(name, data):
     change = AuditLogChange()
@@ -990,9 +971,9 @@ def transform_overwrites(name, data):
     change = AuditLogChange()
     change.attr = 'overwrites'
     value = data.get('old_value')
-    change.before = None if value is None else [PermOW_from_logs(ow_data) for ow_data in value]
+    change.before = None if value is None else [PermOW(ow_data) for ow_data in value]
     value = data.get('new_value')
-    change.after = None if value is None else [PermOW_from_logs(ow_data) for ow_data in value]
+    change.after = None if value is None else [PermOW(ow_data) for ow_data in value]
     return change
 
 def transform_permission(name, data):

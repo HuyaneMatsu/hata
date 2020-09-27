@@ -9,6 +9,7 @@ from ...backend.dereaddons_local import cached_property, MethodLike, module_prop
 from .qualpath import QualPath
 from .parser import DocString
 from .builder_text import serialize_docs_embed_sized, serialize_docs, serialize_docs_source_text
+from .builder_html import html_serialize_docs
 
 WrapperDescriptorType= object.__eq__.__class__
 MethodDescriptorType = int.bit_length.__class__
@@ -414,7 +415,139 @@ class UnitBase(object):
             return None
         
         return serialize_docs_embed_sized(docs)
+    
+    @cached_property
+    def html(self):
+        """
+        Renders the docstring to html.
+        
+        Returns
+        -------
+        docs : `None` or `str`
+        """
+        docs = self.docs
+        if docs is None:
+            return None
+        
+        return html_serialize_docs(docs, self)
+    
+    def lookup_reference(self, reference):
+        """
+        Returns the closest unit to the given unit.
+        
+        returns
+        -------
+        referred : `None` or ``UnitBase`` instance.
+            The referenced unit.
+        """
+        # Is local reference?
+        reference_parts = reference.split('.')
+        if not reference_parts:
+            return None
+        
+        reference_parts.reverse()
+        
+        if not reference_parts[-1]:
+            del reference_parts[-1]
+            if isinstance(self, FolderedUnit):
+                if not reference_parts:
+                    return self
+                
+                object_ = direct_lookup_in(self, reference_parts)
+                if (object_ is not None):
+                    return object_
+            
+            parent = MAPPED_OBJECTS.get(self.path.parent)
+            if parent is None:
+                return self
+            else:
+                return direct_lookup_in(parent, reference_parts)
+        
+        if isinstance(self, FolderedUnit):
+            object_ = lookup_from(self, reference_parts)
+            if (object_ is not None):
+                return object_
+        
+        path = self.path.parent
+        while path:
+            parent = MAPPED_OBJECTS.get(path)
+            if parent is None:
+                break
+            
+            object_ = lookup_from(parent, reference_parts)
+            if (object_ is not None):
+                return object_
+            
+            path = path.parent
 
+def direct_lookup_in(object_, reference_parts):
+    """
+    Looks up the given refernce in a foldered unit directly.
+    
+    Parameters
+    ----------
+    object_ : ``UnitBase`` instance
+        The folder to lookup up from.
+    reference_parts : `list` of `str`
+        Reference parts to lookup.
+        
+        The given `reference_parts` should be reversed from their original state.
+    
+    returns
+    -------
+    object_ : `None` or ``UnitBase``
+        The found object if applicable.
+    """
+    reference_parts = reference_parts.copy()
+    
+    while reference_parts:
+        if not isinstance(object_, FolderedUnit):
+            # Cannot move futher deep, the reference will not be found, leave.
+            object_ = None
+            break
+        
+        reference_part = reference_parts.pop()
+        try:
+            object_ = object_.references.get(reference_part)
+        except KeyError:
+            # Reference not be found, leave.
+            object_ = None
+            break
+    
+    # No more reference part to lookup, return object.
+    return object_
+
+def lookup_from(folder, reference_parts):
+    """
+    Looks up the given reference in the folder and in all of it's subfolders.
+    
+    Parameters
+    ----------
+    folder : ``UnitBase`` instance
+        The folder to look up from.
+    reference_parts : `list` of `str`
+        Reference parts to lookup.
+        
+        The given `reference_parts` should be reversed from their original state.
+    
+    Returns
+    -------
+    object_ : ``UnitBase``
+        The unitbase if anything found matching the references.
+    """
+    if not isinstance(folder, FolderedUnit):
+        return None
+    
+    search_for = reference_parts[-1]
+    
+    for sub_name, sub_object in folder.references.items():
+        if sub_name == search_for:
+            if len(reference_parts)  == 1:
+                return sub_object
+            else:
+                return lookup_from(sub_object, reference_parts[:-1])
+    
+    return None
 
 class AttributeUnitBase(UnitBase):
     """

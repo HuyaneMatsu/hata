@@ -3,13 +3,13 @@ __all__ = ('RATELIMIT_GROUPS', 'RatelimitProxy', )
 
 from email._parseaddr import _parsedate_tz
 from datetime import datetime, timedelta, timezone
-from time import monotonic
 from collections import deque
 from threading import current_thread
 
 from ..backend.dereaddons_local import modulize, WeakReferer, DOCS_ENABLED
 from ..backend.futures import Future
 from ..backend.hdrs import DATE
+from ..backend.eventloop import LOOP_TIME
 
 from .client_core import KOKORO
 from .others import Discord_hdrs
@@ -262,7 +262,7 @@ class RatelimitUnit(object):
     allocates : `int`
         The amount of done requests till next ratelimit reset.
     drop : `float`
-        The time of the next ratelimit reset in monotonic time.
+        The time of the next ratelimit reset in LOOP_TIME time.
     next : `None` or ``RatelimitUnit``
         The next ratelimit unit on the chain. It can happen that requests are done between two reset and we would need
         to store multiple ratelimit units and using a chain is still better than allocating a list every time.
@@ -278,7 +278,7 @@ class RatelimitUnit(object):
         allocates : `int`
             The amount of done requests till next ratelimit reset.
         drop : `float`
-            The time of the next ratelimit reset in monotonic time.
+            The time of the next ratelimit reset in LOOP_TIME time.
         """
         self.drop = drop
         self.allocates = allocates
@@ -296,7 +296,7 @@ class RatelimitUnit(object):
         allocates : `int`
             The amount of done requests till next ratelimit reset.
         drop : `float`
-            The time of the next ratelimit reset in monotonic time.
+            The time of the next ratelimit reset in LOOP_TIME time.
         """
         actual_drop = self.drop
         new_drop_max = drop+RATELIMIT_DROP_ROUND
@@ -667,7 +667,7 @@ class RatelimitHandler(object):
             else:
                 delay = delay2
         
-        drop = monotonic()+delay
+        drop = LOOP_TIME()+delay
         
         drops = self.drops
         if (drops is None):
@@ -1235,7 +1235,7 @@ class RatelimitProxy(object):
         Returns when the next ratelimit reset will happen of the represented ratelimit handler.
         
         If there is no active ratelimit handler represented or if the handler has has 0 used up limits, then returns
-        `0.0`. if there is any, then returns it in `monotonic` time.
+        `0.0`. if there is any, then returns it in `LOOP_TIME` time.
         
         Returns
         -------
@@ -1268,7 +1268,7 @@ class RatelimitProxy(object):
         if (drops is None) or (not drops):
             return 0.0
         
-        return drops[0].drop-monotonic()
+        return drops[0].drop-LOOP_TIME()
 
 @modulize
 class RATELIMIT_GROUPS:

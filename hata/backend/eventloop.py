@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('Cycler', 'EventThread', 'ThreadSyncerCTX', )
+__all__ = ('Cycler', 'EventThread', 'LOOP_TIME', 'LOOP_TIME_RESOLUTION', 'ThreadSyncerCTX', )
 
 import sys, errno, weakref, subprocess, os
 import socket as module_socket
@@ -9,8 +9,10 @@ from threading import current_thread, Thread, Event
 from heapq import heappop, heappush
 from collections import deque
 
-from .dereaddons_local import alchemy_incendiary, WeakReferer, weakmethod, method, WeakCallable
-from .futures import Future, Task, gather, render_exc_to_list, iscoroutine, FutureAsyncWrapper, WaitTillFirst
+from .dereaddons_local import alchemy_incendiary, WeakReferer, weakmethod, method, WeakCallable, DocProperty, \
+    WeakValueDictionary, DOCS_ENABLED
+from .futures import Future, Task, Gatherer, render_exc_to_list, iscoroutine, FutureAsyncWrapper, WaitTillFirst, \
+    CancelledError
 from .transprotos import SSLProtocol, _SelectorSocketTransport
 from .executor import Executor
 from .analyzer import CallableAnalyzer
@@ -30,15 +32,43 @@ del threading, _ignore_frame
 
 from . import executor, futures
 
+LOOP_TIME = module_time.monotonic
+LOOP_TIME_RESOLUTION = module_time.get_clock_info('monotonic').resolution
+
 class Handle(object):
+    """
+    Object returned by a callback registration method:
+    - ``EventThread.call_soon``
+    - ``EventThread.call_soon_threadsafe``.
+    
+    Attributes
+    ----------
+    func : `callable`
+        The wrapped function.
+    args : `tuple` of `Any`
+        Arguments to call ``.func`` with.
+    cancelled : `bool`
+        Whether the handle is cancelled.
+    """
     __slots__ = ('func', 'args', 'cancelled',)
     
     def __init__(self, func, args):
+        """
+        Creates a new ``Handle`` with the given parameters.
+        
+        Parameters
+        ----------
+        func : `callable`
+            The function. to wrap.
+        args : `tuple` of `Any`
+            Arguments to call `func` with.
+        """
         self.func = func
         self.args = args
         self.cancelled = False
     
     def __repr__(self):
+        """Returns the handle's representation."""
         result = [
             '<',
             self.__class__.__name__,
@@ -47,7 +77,7 @@ class Handle(object):
         if self.cancelled:
             result.append(' cancelled')
         else:
-            result.append(' function=')
+            result.append(' func=')
             result.append(repr(self.func))
             result.append('(')
             
@@ -59,7 +89,7 @@ class Handle(object):
                     arg = args[index]
                     result.append(repr(arg))
                     
-                    index +=1
+                    index += 1
                     if index == limit:
                         break
                     
@@ -73,12 +103,20 @@ class Handle(object):
         return ''.join(result)
     
     def cancel(self):
+        """Cancels the handle if not yet cancelled."""
         if not self.cancelled:
             self.cancelled = True
             self.func = None
             self.args = None
     
     def _run(self):
+        """
+        Calls the handle's function with it's arguments. If exception occurs meanwhile, renders it.
+        
+        Notes
+        -----
+        This method should be called only inside of an ``EventThread``.
+        """
         try:
             self.func(*self.args)
         except BaseException as err:
@@ -93,15 +131,44 @@ class Handle(object):
         self = None  # Needed to break cycles when an exception occurs.
 
 class TimerHandle(Handle):
+    """
+    Object returned by a callback registration method:
+    - ``EventThread.call_later``
+    - ``EventThread.call_at``.
+    
+    Attributes
+    ----------
+    func : `callable`
+        The wrapped function.
+    args : `tuple` of `Any`
+        Arguments to call ``.func`` with.
+    cancelled : `bool`
+        Whether the handle is cancelled.
+    when : `float`
+        The respective loop's time, when the handle should be called.
+    """
     __slots__ = ('when',)
     
     def __init__(self, when, func, args):
+        """
+        Creates a new ``TimerHandle`` with the given parameters.
+        
+        Parameters
+        ----------
+        when : `float`
+            The respective loop's time, when the handle should be called.
+        func : `callable`
+            The function. to wrap.
+        args : `tuple` of `Any`
+            Arguments to call `func` with.
+        """
         self.func = func
         self.args = args
         self.cancelled = False
         self.when = when
     
     def __repr__(self):
+        """Returns the timer handle's representation."""
         result = [
             '<',
             self.__class__.__name__,
@@ -110,7 +177,7 @@ class TimerHandle(Handle):
         if self.cancelled:
             result.append(' cancelled')
         else:
-            result.append(' function=')
+            result.append(' func=')
             result.append(repr(self.func))
             result.append('(')
             
@@ -122,7 +189,7 @@ class TimerHandle(Handle):
                     arg = args[index]
                     result.append(repr(arg))
                     
-                    index +=1
+                    index += 1
                     if index == limit:
                         break
                     
@@ -138,18 +205,22 @@ class TimerHandle(Handle):
         return ''.join(result)
     
     def __hash__(self):
+        """Returns the hash of the time, when the handle will be called."""
         return hash(self.when)
     
     def __gt__(self, other):
+        """Returns whether this timer handle should be called later than the other."""
         return self.when > other.when
     
     def __ge__(self, other):
+        """Returns whether this timer handle should be called later than the other, or whether the two are equal."""
         if self.when > other.when:
             return True
         
         return self.__eq__(other)
     
     def __eq__(self, other):
+        """Returns whether the two timer handles are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -159,6 +230,7 @@ class TimerHandle(Handle):
                 self.cancelled  == other.cancelled      )
     
     def __ne__(self, other):
+        """Returns whether the two timer handles are not equal."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -168,17 +240,59 @@ class TimerHandle(Handle):
                 self.cancelled  != other.cancelled      )
     
     def __le__(self, other):
+        """Returns whether this timer handle should be called earlier than the other, or whether the two are equal."""
         if self.when < other.when:
             return True
+        
         return self.__eq__(other)
     
     def __lt__(self, other):
+        """Returns whether this timer handle should be called earlier than the other."""
         return self.when < other.when
 
 class TimerWeakHandle(TimerHandle):
+    """
+    Object returned by a callback registration method:
+    - ``EventThread.call_later_weak``
+    - ``EventThread.call_at_weak``.
+    
+    Used when the respective `func`, might be garbage collected before it callback would run.
+    
+    Attributes
+    ----------
+    func : `callable`
+        The wrapped function.
+    args : `tuple` of `Any`
+        Arguments to call ``.func`` with.
+    cancelled : `bool`
+        Whether the handle is cancelled.
+    when : `float`
+        The respective loop's time, when the handle should be called.
+    
+    Notes
+    -----
+    This class also supports weakreferencing.
+    """
     __slots__ = ('__weakref__', )
     
     def __init__(self, when, func, args):
+        """
+        Creates a new ``TimerWeakHandle`` with the given parameters.
+        
+        Parameters
+        ----------
+        when : `float`
+            The respective loop's time, when the handle should be called.
+        func : `callable`
+            The function. to wrap.
+        args : `tuple` of `Any`
+            Arguments to call `func` with.
+        
+        Raises
+        ------
+        TypeError
+            `func` is not weakreferable.
+        """
         self.when = when
         callback = self._callback(self)
         try:
@@ -198,12 +312,37 @@ class TimerWeakHandle(TimerHandle):
             self.cancelled = False
         
     class _callback(object):
+        """
+        Weakreference callback used by ``TimerWeakHandle`` to cancel the respective handle, when it's `func` gets
+        gargabe collected.
+        
+        Attributes
+        ----------
+        handle : ``WeakReferer`` (``TimerWeakHandle``)
+            The respective handle.
+        """
         __slots__ = ('handle', )
         
         def __init__(self, handle):
+            """
+            Creates a new weakreference callback used by ``TimerWeakHandle``.
+            
+            Parameters
+            ----------
+            handle : ``TimerWeakHandle``
+                The respective handle.
+            """
             self.handle = WeakReferer(handle)
         
         def __call__(self, reference):
+            """
+            Called, when the respective `TimerWeakHandle.func` is garbage collected.
+            
+            Parameters
+            ----------
+            reference : ``WeakReferer`` instance
+                Weakreference to the dead `func`.
+            """
             handle = self.handle()
             if (handle is not None):
                 handle.cancel()
@@ -339,7 +478,7 @@ class CyclerCallable(object):
 
 class Cycler(object):
     """
-    Cycler of an ``EventThread`` to call the given functions every `n` amount of seconds.
+    Cycles the given functions on an eventloop, by calling them after every `n` amount of seconds.
     
     Attributes
     ----------
@@ -368,6 +507,7 @@ class Cycler(object):
             Callables, what the cycler will call.
         priority : `int`
             Priority order of the added callables, which define in which order the given `funcs` will be called.
+            Defaults to `0`
         
         Raises
         ------
@@ -697,7 +837,7 @@ class Cycler(object):
                 del funcs[index]
                 break
             
-            index +=1
+            index += 1
             continue
     
     def get_time_till_next_call(self):
@@ -714,10 +854,10 @@ class Cycler(object):
         if handle is None:
             return -1. #w ont be be called
         
-        at = handle.when-self.loop.time()
+        at = handle.when-LOOP_TIME()
         
         if at < 0.0:
-            return 0. #right now
+            return 0.0 # right now
         
         return at
     
@@ -733,20 +873,60 @@ class Cycler(object):
         """
         handle = self.handle
         if handle is None:
-            return -1. #wont be be called
+            return -1. # wont be be called
         return handle.when
 
 
 class ThreadSyncerCTX(object):
+    """
+    Thread syncer for ``EventThead``-s, to stop their execution, meanwhile they are used inside of a a `with` block.
+    The local thread's exection is stopped, meanwhile it waits for the ``EventThead`` top pause.
+    
+    Can be used as a context manager, like:
+    
+    ```
+    with ThreadSyncerCTX(LOOP):
+        # The eventloop is paused inside here.
+    ```
+    
+    Or, can be used with ``EventThead.enter()`` as well, like:
+    
+    ```
+    with LOOP.enter():
+        # The eventloop is paused inside here.
+    ```
+    
+    Attributes
+    ----------
+    loop : ``EventThread``
+        The respective eventloop.
+    enter_event : `threading.Event`
+        Threading event, which blocks the local thread, till the respective eventloop pauses.
+    exit_event : `threading.Event`
+        Blocks the respective eventloop, till the local thread gives the control back to it with exisint the `with`
+        block.
+    """
     __slots__ = ('loop', 'enter_event', 'exit_event')
     
     def __init__(self, loop):
+        """
+        Creates a new ``ThreadSyncerCTX`` bound to the given eventloop.
+        
+        Parameters
+        ----------
+        loop : ``EventThread``
+            The eventloop to pause.
+        """
         self.loop = loop
         self.enter_event = Event()
         self.exit_event = Event()
 
     def __enter__(self):
-        loop=self.loop
+        """
+        Blocks the local thread, till the respective ``EventThead`` pauses. If the ``EventThead`` is stopped already,
+        does nothing.
+        """
+        loop = self.loop
         if loop.running:
             handle = Handle(self._give_control_cb, ())
             loop._ready.append(handle)
@@ -756,32 +936,66 @@ class ThreadSyncerCTX(object):
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """Unpauses the respective ``EventThead``."""
         self.exit_event.set()
+        return False
     
     def _give_control_cb(self):
+        """
+        Callback used to pause the respective ``EventThread`` and give control to the other one.
+        """
         self.enter_event.set()
         self.exit_event.wait()
 
 _HAS_IPv6 = hasattr(module_socket, 'AF_INET6')
 
-def _ipaddr_info(host, port, family, type, proto):
-    # Try to skip getaddrinfo if "host" is already an IP. Users might have
-    # handled name resolution in their own code and pass in resolved IPs.
+def _ipaddr_info(host, port, family, type_, proto):
+    """
+    Gets the addres info for the given parmeters.
+    
+    Parameters
+    ----------
+    host : `str` or `bytes`
+        The host ip adress
+    port : `int`
+        The host port.
+    family : `AddressFamily` or `int`
+        Address family.
+    type_ : `SocketKind` or `int`
+        Socket type.
+    proto : `int`
+        Protocol type.
+    
+    Returns
+    -------
+    result : `None` or `tuple` (`AddressFamily` or `int`, `SocketKind` or `int`, `int`, `str`, `tuple` (`str, `int`))
+        If everything is correct, returns a `tuple` of 5 elements:
+        - family : Address family.
+        - type_ : Socket type.
+        - proto : Protocol type.
+        - cname : Represents the canonical name of the host. (Always empty string.)
+        - sockaddr : Socket address contianing the host and the port.
+    """
+    # Try to skip getaddrinfo if `host`koish is already an IP. Users might have handled name resolution in their own code
+    # and pass in resolved IPs.
     if not hasattr(module_socket, 'inet_pton'):
         return
     
     if proto not in (0, module_socket.IPPROTO_TCP, module_socket.IPPROTO_UDP) or (host is None):
         return
     
-    if type == module_socket.SOCK_STREAM:
+    if type_ == module_socket.SOCK_STREAM:
         proto = module_socket.IPPROTO_TCP
-    elif type == module_socket.SOCK_DGRAM:
+    elif type_ == module_socket.SOCK_DGRAM:
         proto = module_socket.IPPROTO_UDP
     else:
         return
     
     if port is None:
         port = 0
+    elif type(port) is int:
+        # Has the most chance.
+        pass
     elif isinstance(port, bytes) and port == b'':
         port = 0
     elif isinstance(port, str) and port == '':
@@ -790,15 +1004,15 @@ def _ipaddr_info(host, port, family, type, proto):
         # If port's a service name like "http", don't skip getaddrinfo.
         try:
             port = int(port)
-        except (TypeError,ValueError):
+        except (TypeError, ValueError):
             return
     
     if family == module_socket.AF_UNSPEC:
-        afs = [module_socket.AF_INET]
+        address_families = [module_socket.AF_INET]
         if _HAS_IPv6:
-            afs.append(module_socket.AF_INET6)
+            address_families.append(module_socket.AF_INET6)
     else:
-        afs = [family]
+        address_families = [family]
     
     if isinstance(host, bytes):
         host = host.decode('idna')
@@ -806,25 +1020,58 @@ def _ipaddr_info(host, port, family, type, proto):
     if '%' in host:
         return
     
-    for af in afs:
+    for family in address_families:
         try:
-            module_socket.inet_pton(af,host)
+            module_socket.inet_pton(family, host)
             # The host has already been resolved.
-            return af, type, proto,'', (host, port)
         except OSError:
             pass
-    # "host" is not an IP address.
+        else:
+            return family, type_, proto,'', (host, port)
+    
+    # `host` is not an IP address.
+    return None
 
-def _is_dgram_socket(sock):
-    return (sock.type&module_socket.SOCK_DGRAM) == module_socket.SOCK_DGRAM
+def _is_dgram_socket(socket):
+    """
+    Returns whether the given socket is dgram scoket.
+    
+    Parameters
+    ----------
+    socket : `socket.socket`
+        The socket to check.
+    
+    Returns
+    -------
+    is_dgram_socket : `bool`
+    """
+    return (socket.type&module_socket.SOCK_DGRAM) == module_socket.SOCK_DGRAM
 
-def _is_stream_socket(sock):
-    return (sock.type&module_socket.SOCK_STREAM) == module_socket.SOCK_STREAM
+def _is_stream_socket(socket):
+    """
+    Returns whether the given socket is stream socket.
+    
+    Parameters
+    ----------
+    socket : `socket.socket`
+        The socket to check.
+    
+    Returns
+    -------
+    is_stream_socket : `bool`
+    """
+    return (socket.type&module_socket.SOCK_STREAM) == module_socket.SOCK_STREAM
 
-
-_OLD_AGEN_HOOKS=sys.get_asyncgen_hooks()
+_OLD_AGEN_HOOKS = sys.get_asyncgen_hooks()
 
 def _asyncgen_firstiter_hook(agen):
+    """
+    Adds asyncgens to their respective eventloop. These async gens are stut down, when the loop is stopped.
+    
+    Parameters
+    ----------
+    agen : `async_generator`
+    """
     loop = current_thread()
     if isinstance(loop, EventThread):
         if loop._asyncgens_shutdown_called:
@@ -836,10 +1083,15 @@ def _asyncgen_firstiter_hook(agen):
     firstiter = _OLD_AGEN_HOOKS.firstiter
     if firstiter is not None:
         firstiter(agen)
-    
-    return
 
 def _asyncgen_finalizer_hook(agen):
+    """
+    Removes asyncgens from their respective eventloop.
+    
+    Parameters
+    ----------
+    agen : `async_generator`
+    """
     loop = current_thread()
     if isinstance(loop, EventThread):
         loop._asyncgens.discard(agen)
@@ -854,8 +1106,7 @@ def _asyncgen_finalizer_hook(agen):
     if finalizer is not None:
         finalizer(agen)
 
-sys.set_asyncgen_hooks(firstiter=_asyncgen_firstiter_hook,
-                       finalizer=_asyncgen_finalizer_hook)
+sys.set_asyncgen_hooks(firstiter=_asyncgen_firstiter_hook, finalizer=_asyncgen_finalizer_hook)
 
 
 if sys.platform == 'win32':
@@ -869,11 +1120,19 @@ if sys.platform == 'win32':
     EMPTY = []
     
     class DefaultSelector(DefaultSelector):
+        """
+        Selector subclass for windows to bypass default limit.
+        
+        Note, that this selector might become CPU heavy if the limit is passed and the sockets might become closed
+        if too much is open.
+        
+        I do not take credit for any missbehaviour.
+        """
         def _select(self, r, w, _, timeout=None):
             try:
                 result_r, result_w, result_x = select(r, w, w, timeout)
             except ValueError:
-                default_reader=current_thread()._ssock
+                default_reader = current_thread()._selfread_socket
                 r.remove(default_reader.fileno())
                 
                 sharded_r = []
@@ -890,7 +1149,7 @@ if sys.platform == 'win32':
                         count = 1
                     else:
                         sharded_r.append(reader)
-                        count=count+1
+                        count = count+1
                 
                 for writer in w:
                     if count == MAX_FD_S:
@@ -900,7 +1159,7 @@ if sys.platform == 'win32':
                         count = 1
                     else:
                         sharded_w.append(writer)
-                        count +=1
+                        count += 1
                 
                 collected_r = []
                 collected_w = []
@@ -909,13 +1168,13 @@ if sys.platform == 'win32':
                 
                 for iter_r, iter_w in sharded:
                     try:
-                        result_r, result_w, result_x=select(iter_r, iter_w, iter_w, 0.0)
+                        result_r, result_w, result_x = select(iter_r, iter_w, iter_w, 0.0)
                     except OSError:
                         remove = []
                         for reader in iter_r:
                             try:
                                 l = [reader]
-                                result_r, result_w, result_x=select(l, EMPTY, EMPTY, 0.0)
+                                result_r, result_w, result_x = select(l, EMPTY, EMPTY, 0.0)
                             except OSError:
                                 remove.append(reader)
                             else:
@@ -970,7 +1229,7 @@ if sys.platform == 'win32':
                     elif timeout > MAX_SLEEP:
                         timeout = MAX_SLEEP
                     
-                    result_r, result_w, result_x=select([default_reader], EMPTY, EMPTY, timeout)
+                    result_r, result_w, result_x = select([default_reader], EMPTY, EMPTY, timeout)
                     collected_r.extend(result_r)
                 
                 return collected_r, collected_w, EMPTY
@@ -983,8 +1242,8 @@ if sys.platform == 'win32':
                 remove = []
                 for reader in r:
                     try:
-                        l=[reader]
-                        result_r, result_w, result_x=select(l, EMPTY, EMPTY, 0.0)
+                        l = [reader]
+                        result_r, result_w, result_x = select(l, EMPTY, EMPTY, 0.0)
                     except OSError:
                         remove.append(reader)
                     else:
@@ -1008,7 +1267,7 @@ if sys.platform == 'win32':
                 for writer in w:
                     try:
                         l = [writer]
-                        result_r, result_w, result_x=select(EMPTY, l, l, 0.0)
+                        result_r, result_w, result_x = select(EMPTY, l, l, 0.0)
                     except OSError:
                         remove.append(writer)
                     else:
@@ -1042,41 +1301,95 @@ if sys.platform == 'win32':
                 return result_r, result_w, EMPTY
 
 class Server(object):
-    __slots__ = ('active_count', 'backlog', 'loop', 'protocol_factory', 'serving', 'sockets', 'ssl_context', 'waiters')
+    """
+    Server returned by ``EventThread.create_server``.
+    
+    Attributes
+    ----------
+    active_count : `int`
+        The amount of active connections bount to the server.
+    backlog : `int`
+        The maximum number of queued connections passed to ˙`listen()` (defaults to 100).
+    close_waiters : `None` or `list` of ``Future``
+        Futures, which are waiting for the server to close. If the server is already closed, set as `None`.
+    loop : ``EventThread``
+        The eventloop to what the server is bound to.
+    protocol_factory : `callable`
+        Factory function for creating a protocols.
+    serving : `bool`
+        Whether the server is serving.
+    sockets : `None` or `list` of `socket.socket`
+        The sockets served by the server. If the server is closed, then i set as `None`.
+    ssl_context : `None` or `ssl.SSLContext`
+        If ssl is enabled for the connections, then set as `ssl.SSLContext`.
+    """
+    __slots__ = ('active_count', 'backlog', 'close_waiters', 'loop', 'protocol_factory', 'serving', 'sockets',
+        'ssl_context', )
     
     def __init__(self, loop, sockets, protocol_factory, ssl_context, backlog):
+        """
+        Creates a new serevr with the given parameters.
+        
+        Parameters
+        ----------
+        loop : ``EventThread``
+            The eventloop to what the server will be bound to.
+        sockets : `list` of `socket.socket`
+            The sockets to serve by the server.
+        protocol_factory : `callable`
+            Factory function for creating a protocols.
+        ssl_context : `None` or `ssl.SSLContext`
+            To enable ssl for the connections, give it as  `ssl.SSLContext`.
+        backlog : `int`
+            The maximum number of queued connections passed to ˙`listen()` (defaults to 100).
+        """
         self.loop = loop
         self.sockets = sockets
         self.active_count = 0
-        self.waiters = []
+        self.close_waiters = []
         self.protocol_factory = protocol_factory
         self.backlog = backlog
         self.ssl_context = ssl_context
         self.serving = False
     
     def __repr__(self):
+        """Returns the server's representation."""
         return f'<{self.__class__.__name__} sockets={self.sockets!r}>'
 
     def _attach(self):
+        """
+        Adds `1` to the server active counter.
+        """
         self.active_count += 1
 
     def _detach(self):
+        """
+        Removes `1` from the server's active counter. If there no more active sockets of the server, then closes it.
+        """
         active_count = self.active_count-1
         self.active_count = active_count
         if active_count:
             return
         
         if (self.sockets is None):
-            self._wakeup()
+            self._wakeup_close_waiters()
 
-    def _wakeup(self):
-        waiters = self.waiters
-        self.waiters = None
-        for waiter in waiters:
-            if not waiter.done():
-                waiter.set_result(waiter)
+    def _wakeup_close_waiters(self):
+        """
+        Wakes up the server's clsoe waiters.
+        """
+        close_waiters = self.close_waiters
+        if close_waiters is None:
+            return
+        
+        self.close_waiters = None
+        for close_waiter in close_waiters:
+            close_waiter.set_result(None)
     
     def close(self):
+        """
+        Closes the server by stopping serving it's sockets and waking up it's close waiters.
+        """
         sockets = self.sockets
         if sockets is None:
             return
@@ -1090,9 +1403,12 @@ class Server(object):
         self.serving = False
         
         if self.active_count == 0:
-            self._wakeup()
-
+            self._wakeup_close_waiters()
+    
     async def start(self):
+        """
+        Starts the server by starting serving it's sockets.
+        """
         if self.serving:
             return
         
@@ -1107,62 +1423,116 @@ class Server(object):
             sock.listen(backlog)
             loop._start_serving(protocol_factory, sock, ssl_context, self, backlog)
         
-        # Skip ready ietration cycle, so all the callbacks added up ^ will run down
-        future=Future(loop)
+        # Skip one eventloop cycle, so all the callbacks added up ^ will run nefore returning.
+        future = Future(loop)
         future.set_result(None)
         await future
 
     async def wait_closed(self):
+        """
+        Blocks the task, till the sever is closes.
+        """
         if self.sockets is None:
             return
         
-        waiters=self.waiters
-        if waiters is None:
+        close_waiters = self.close_waiters
+        if close_waiters is None:
             return
         
-        waiter = Future(self.loop)
-        waiters.append(waiter)
-        await waiter
+        close_waiter = Future(self.loop)
+        close_waiters.append(close_waiter)
+        await close_waiter
 
 class EventThreadCTXManager(object):
-    __slots__ = ('thread', 'waiter',)
-    def __init__(self, thread):
+    """
+    Context manager of an ``EventThread``, which wraps it's runner. Whne the runner is started up, set it's ``waiter.``
+    allowing the strarter thread to continue.
+    
+    Attributes
+    ----------
+    thread : `None` or ``EventThread``
+        The wrapped eventloop.
+    thread_waiter : `None` or `threading.Event`
+       Threading event, what is set, when the thread is started up. Set as `None` after set.
+    """
+    __slots__ = ('thread', 'thread_waiter',)
+    def __new__(cls, thread):
+        """
+        Creates a new event thread context.
+        
+        Parameters
+        ----------
+        thread : ``EventThread``
+            The event thread to wrap.
+        
+        Returns
+        -------
+        self : ``EventThreadCTXManager``
+            The created instance
+        thread_waiter : `threading.Event`
+            Threading event, what is set, when the thread is started up.
+        """
+        thread_waiter = Event()
+        
+        self = object.__new__(cls)
         self.thread = thread
-        self.waiter = Event()
-
+        self.thread_waiter = thread_waiter
+        return self, thread_waiter
+    
     def __enter__(self):
-        thread = self.thread
-        if (thread is not current_thread()):
-            raise RuntimeError(f'{thread!r}.run called from an other thread: {current_thread()!r}')
+        """
+        Called, when the respective eventloop's runner started up.
         
-        if (thread.running):
-            raise RuntimeError(f'{thread!r}.run called when the thread is already running.')
+        Enters the eventloop runner setting it's waiter and finishes the loop's initialization.
         
-        if (thread._is_stopped):
-            raise RuntimeError(f'{thread!r}.run called when the thread is already stopped.')
+        Raises
+        ------
+        RuntimeError
+            - If ``EventThreadCTXManager.__enter__`` was called a second time.
+            - If called from a different thread as is bound to.
+            - If the ``EventThread`` is already running.
+            - If the ``EventThread`` is already stopped.
+        """
+        thread_waiter = self.thread_waiter
+        if thread_waiter is None:
+            raise RuntimeError(f'{EventThreadCTXManager.__class__.__name__}.__enter__ called with thread waiter lock set.')
         
-        thread.running = True
-        
-        ssock, csock = module_socket.socketpair()
-        ssock.setblocking(False)
-        csock.setblocking(False)
-        thread._ssock = ssock
-        thread._csock = csock
-        thread._internal_fds +=1
-        thread.add_reader(ssock.fileno(), thread._read_from_self)
-        
-        self.waiter.set()
-
+        try:
+            thread = self.thread
+            if (thread is not current_thread()):
+                raise RuntimeError(f'{thread!r}.run called from an other thread: {current_thread()!r}')
+            
+            if (thread.running):
+                raise RuntimeError(f'{thread!r}.run called when the thread is already running.')
+            
+            if (thread._is_stopped):
+                raise RuntimeError(f'{thread!r}.run called when the thread is already stopped.')
+            
+            thread.running = True
+            
+            selfread_socket, selfwrite_socket = module_socket.socketpair()
+            selfread_socket.setblocking(False)
+            selfwrite_socket.setblocking(False)
+            thread._selfread_socket = selfread_socket
+            thread._selfwrite_socket = selfwrite_socket
+            thread._internal_fds += 1
+            thread.add_reader(selfread_socket.fileno(), thread.emptyselfsocket)
+        finally:
+            thread_waiter.set()
+    
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """
+        When the eventloop's runner stops, it's context closes it.
+        """
         thread = self.thread
         self.thread = None
         
         thread.running = False
-        thread.remove_reader(thread._ssock.fileno())
-        thread._ssock.close()
-        thread._ssock = None
-        thread._csock.close()
-        thread._csock = None
+        thread.remove_reader(thread._selfread_socket.fileno())
+        thread._selfread_socket.close()
+        thread._selfread_socket = None
+        thread._selfwrite_socket.close()
+        thread._selfwrite_socket = None
         thread._internal_fds -= 1
         
         thread._ready.clear()
@@ -1171,11 +1541,29 @@ class EventThreadCTXManager(object):
         thread.cancel_executors()
         
         selector = thread.selector
-        if selector is not None:
-            selector.close()
+        if (selector is not None):
             thread.selector = None
+            selector.close()
+        
+        return False
+
 
 class EventThreadRunDescriptor(object):
+    __class_doc__ = ("""
+    Descriptor which desides, exactly which function of the ``EventThread`` is called, when using it's `.run` method.
+    
+    If called from class, returns `self`. If called from a non yet running eventloop, returns that's `.runner`. If
+    called from an already stopped eventloop, raises `RuntimeError`.
+    """)
+    
+    __instance_doc__ = ("""
+    `EventThread.run` is an overloaded method, with two usages. The first is when the thread starts up, it will run the
+    thread's "runner", ``EvenThread.runner``. The other one usage is, when the eventloop is running, then it returns
+    it's "caller", ``EvenThread.caller``.
+    
+    If the eventloop is already closed, raises ``RuntimeError``.
+    """)
+    
     def __get__(self, obj, type_):
         if obj is None:
             return self
@@ -1187,29 +1575,82 @@ class EventThreadRunDescriptor(object):
         else:
             raise RuntimeError(f'The {obj.__class__.__name__} is already stopped.')
     
-    def __set__(self, obj,value):
+    def __set__(self, obj, value):
         raise AttributeError('can\'t set attribute')
     
     def __delete__(self, obj):
         raise AttributeError('can\'t delete attribute')
+    
+    __doc__ = DocProperty()
 
 class EventThreadType(type):
+    """
+    Type of even thread, which manages their instances creation.
+    """
     def __call__(cls, daemon=False, name=None, **kwargs):
-        obj=Thread.__new__(cls)
+        """
+        Creates a new ``EventThread`` instance with the given parameters.
+        
+        Parameters
+        ----------
+        daemon : ``bool``
+            Whether the created thread should be daemon.
+        name : `str`
+            The created threa's name.
+        kwargs : keyword arguments
+            Additional event thread specific parameters.
+        
+        Other Parameters
+        ----------------
+        keep_executor_count : `int`
+            The minimal amount of executors, what the event thread should keep alive. Defaults to `1`.
+        
+        Returns
+        -------
+        obj : ``EventThread``
+            The created eventloop.
+        
+        Notes
+        -----
+        ``EventThread`` supports only an additional, `keep_executor_count` parameter, but it's subclasse's might
+        support other ones as well.
+        """
+        obj = Thread.__new__(cls)
         cls.__init__(obj, **kwargs)
         Thread.__init__(obj, daemon=daemon, name=name)
-        obj.ctx = EventThreadCTXManager(obj)
-        Thread.start(obj)
-        obj.ctx.waiter.wait()
+        
+        ctx, thread_waiter = EventThreadCTXManager(obj)
+        try:
+            obj.ctx = ctx
+            Thread.start(obj)
+        except:
+            thread_waiter.set()
+            raise
+        
+        thread_waiter.wait()
+        
         return obj
 
-class EventThread(Executor,Thread, metaclass=EventThreadType):
-    time = module_time.monotonic
-    _clock_resolution = module_time.get_clock_info('monotonic').resolution
-    __slots__=('__dict__', '__weakref__', '_asyncgens', '_asyncgens_shutdown_called', '_csock', '_internal_fds',
-        '_ready', '_scheduled', '_ssock', 'ctx', 'current_task', 'running', 'selector', 'should_run', 'transports',)
+class EventThread(Executor, Thread, metaclass=EventThreadType):
+    time = LOOP_TIME
+    time_resolution = LOOP_TIME_RESOLUTION
+    __slots__ = ('__dict__', '__weakref__', '_asyncgens', '_asyncgens_shutdown_called', '_selfwrite_socket',
+        '_internal_fds', '_ready', '_scheduled', '_selfread_socket', 'ctx', 'current_task', 'running', 'selector',
+        'should_run', 'transports',)
     
     def __init__(self, keep_executor_count=1):
+        """
+        Creates a new ``EventThread`` with the given parameters.
+        
+        Parameters
+        ----------
+        keep_executor_count : `int`
+            The minimal amount of executors, what the event thread should keep alive. Defaults to `1`.
+        
+        Notes
+        -----
+        This magic method is called by ``EventThreadType.__call__``, what does the other steps of the inilitation.
+        """
         Executor.__init__(self, keep_executor_count)
         self.should_run = True
         self.running = False
@@ -1222,12 +1663,13 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
         
         self._asyncgens = weakref.WeakSet()
         self._asyncgens_shutdown_called = False
-        self.transports = weakref.WeakValueDictionary()
+        self.transports = WeakValueDictionary()
         
-        self._ssock = None
-        self._csock = None
+        self._selfread_socket = None
+        self._selfwrite_socket = None
     
     def __repr__(self):
+        """Returns the event thread's representation."""
         result = ['<', self.__class__.__name__, '(', self._name]
         self.is_alive() # easy way to get ._is_stopped set when appropriate
         if self._is_stopped or (not self.running):
@@ -1244,9 +1686,6 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
             result.append(' ident=')
             result.append(str(ident))
         
-        frees = len(self.free_executors)
-        used = len(self.running_executors)+len(self.running_id_executors)+len(self.claimed_executors)
-        
         result.append(' executor info: free=')
         result.append(str(self.free_executor_count))
         result.append(', used=')
@@ -1259,70 +1698,247 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
     
     
     def call_later(self, delay, callback, *args):
+        """
+        Schedule callback to be called after the given delay.
+        
+        Parameters
+        ----------
+        delay : `float`
+            The delay after the `callback` whould be called.
+        callback : `callable`
+            The function to call later.
+        args : arguments
+            The arguments to call the `callback` with.
+        
+        Returns
+        -------
+        handle : `None` or ``TimerHandle``
+            The created handle is returned, what can be used to cancel it. If the eventloop is stopped, returns `None`.
+        """
         if self.running:
-            handle = TimerHandle(self.time()+delay, callback, args)
+            handle = TimerHandle(LOOP_TIME()+delay, callback, args)
             heappush(self._scheduled, handle)
             return handle
     
     def call_at(self, when, callback, *args):
+        """
+        Schedule callback to be called at the given loop time.
+        
+        Parameters
+        ----------
+        when : `float`
+            The exact loop time, when the callback should be called.
+        callback : `callable`
+            The function to call later.
+        args : arguments
+            The arguments to call the `callback` with.
+        
+        Returns
+        -------
+        handle : `None` or ``TimerHandle``
+            The created handle is returned, what can be used to cancel it. If the eventloop is stopped, returns `None`.
+        """
         if self.running:
             handle = TimerHandle(when, callback, args)
             heappush(self._scheduled, handle)
             return handle
     
     def call_later_weak(self, delay, callback, *args):
+        """
+        Schedule callback with weakreferencing it to be called after the given delay.
+        
+        Parameters
+        ----------
+        delay : `float`
+            The delay after the `callback` whould be called.
+        callback : `callable`
+            The function to call later.
+        args : arguments
+            The arguments to call the `callback` with.
+        
+        Returns
+        -------
+        handle : `None` or ``TimerWeakHandle``
+            The created handle is returned, what can be used to cancel it. If the eventloop is stopped, returns `None`.
+        
+        Raises
+        ------
+        TypeError
+            If `callback` cannot be weakreferred.
+        """
         if self.running:
-            handle = TimerWeakHandle(self.time()+delay, callback, args)
+            handle = TimerWeakHandle(LOOP_TIME()+delay, callback, args)
             heappush(self._scheduled, handle)
             return handle
     
     def call_at_weak(self, when, callback, *args):
+        """
+        Schedule callback with weakreferencing it to be called at the given loop time.
+        
+        Parameters
+        ----------
+        when : `float`
+            The exact loop time, when the callback should be called.
+        callback : `callable`
+            The function to call later.
+        args : arguments
+            The arguments to call the `callback` with.
+        
+        Returns
+        -------
+        handle : `None` or ``TimerWeakHandle``
+            The created handle is returned, what can be used to cancel it. If the eventloop is stopped, returns `None`.
+        
+        Raises
+        ------
+        TypeError
+            If `callback` cannot be weakreferred.
+        """
         if self.running:
-            handle = TimerHandle(when, callback, args)
+            handle = TimerWeakHandle(when, callback, args)
             heappush(self._scheduled, handle)
             return handle
     
-    def call_soon(self, func, *args):
+    def call_soon(self, callback, *args):
+        """
+        Schedules the callback to be called at the next iteration of the eventloop.
+        
+        Parameters
+        ----------
+        callback : `callable`
+            The function to call later.
+        args : arguments
+            The arguments to call the `callback` with.
+        
+        Returns
+        -------
+        handle : `None` or ``Handle``
+            The created handle is returned, what can be used to cancel it. If the eventloop is stopped, returns `None`.
+        """
         if self.running:
-            handle = Handle(func, args)
+            handle = Handle(callback, args)
             self._ready.append(handle)
             return handle
     
-    def call_soon_threadsafe(self, func, *args):
+    def call_soon_threadsafe(self, callback, *args):
+        """
+        Schedules the callback to be called at the next iteration of the eventloop. Wakes up the eventloop if sleeping,
+        so can be used from other threads as well.
+        
+        Parameters
+        ----------
+        callback : `callable`
+            The function to call later.
+        args : arguments
+            The arguments to call the `callback` with.
+        
+        Returns
+        -------
+        handle : `None` or ``Handle``
+            The created handle is returned, what can be used to cancel it. If the eventloop is stopped, returns `None`.
+        """
         if self.running:
-            handle = Handle(func, args)
+            handle = Handle(callback, args)
             self._ready.append(handle)
             self.wakeup()
             return handle
     
-    def cycle(self, cycle_time, *funcs):
-        return Cycler(self, cycle_time, *funcs)
-    
-    def _add_callback(self,handle):
-        if handle.cancelled:
-            return
-        self._ready.append(handle)
+    def cycle(self, cycle_time, *funcs, priority=0):
+        """
+        Cycles the given functions on an eventloop, by calling them after every `n` amount of seconds.
+        
+        Parameters
+        ----------
+        cycle_time : `float`
+            The time interval of the cycler to call the added functions.
+        *funcs : `callable`
+            Callables, what the cycler will call.
+        priority : `int`
+            Priority order of the added callables, which define in which order the given `funcs` will be called.
+            Defaults to `0`
+        
+        Returns
+        -------
+        cycler : ``Cycler``
+            A cycler with what the added function and the cycling can be managed.
+        """
+        return Cycler(self, cycle_time, *funcs, priority=priority)
     
     def _schedule_callbacks(self, future):
+        """
+        Schedules the callbacks of the given future.
+        
+        Parameters
+        ----------
+        future : ``Future`` instance
+            The future instance, what's callbacks should be ensured.
+        
+        Notes
+        -----
+        If the eventloop is not running, clears the callback instead of scheduling them.
+        """
+        callbacks = future._callbacks
         if self.running:
-            callbacks = future._callbacks
-            
             while callbacks:
                 handle = Handle(callbacks.pop(), (future,))
                 self._ready.append(handle)
-    
+        else:
+            callbacks.clear()
+        
     def create_future(self):
+        """
+        Creates a future bound to the eventloop.
+        
+        Returns
+        -------
+        future : ``Future``
+            The created future.
+        """
         return Future(self)
     
     def create_task(self, coro):
+        """
+        Creates a task wrapping the given coroutine.
+        
+        Parameters
+        ----------
+        coro : `coroutine` or `generator`
+            The coroutine, to wrap.
+        
+        Returns
+        -------
+        task : ``Task``
+            The created task instance.
+        """
         return Task(coro, self)
     
     def create_task_threadsafe(self, coro):
+        """
+        Creates a task wrapping the given coroutine and wakes up the eventloop. Wakes up the eventloop if sleeping, so
+        can be used from other threads as well.
+        
+        Parameters
+        ----------
+        coro : `coroutine` or `generator`
+            The coroutine, to wrap.
+        
+        Returns
+        -------
+        task : ``Task``
+            The created task instance.
+        """
         task = Task(coro, self)
         self.wakeup()
         return task
     
     def enter(self):
+        """
+        Can be used to pause the eventloop. Check ``ThreadSyncerCTX`` for more details.
+        
+        Returns
+        -------
+        thread_syncer : ``ThreadSyncerCTX``
+        """
         return ThreadSyncerCTX(self)
 
     # Ensures a future, coroutine, or an awaitable on this loop.
@@ -1357,7 +1973,7 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
             return coro_or_future
         
         type_ = type(coro_or_future)
-        if hasattr(type_,'__await__'):
+        if hasattr(type_, '__await__'):
             task = Task(type_.__await__(coro_or_future), self)
             self.wakeup()
             return task
@@ -1367,18 +1983,23 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
     run = EventThreadRunDescriptor()
     
     def runner(self):
+        """
+        Runs the eventloop, until ``.stop`` is called.
+        
+        Hata ``EventThread`` are created as already running eventloops.
+        """
         with self.ctx:
             key = None
             fileobj = None
             reader = None
             writer = None
             
-            ready = self._ready #use thread safe type with no lock
-            scheduled = self._scheduled #these can be added only from this thread
+            ready = self._ready # use thread safe type with no lock
+            scheduled = self._scheduled # these can be added only from this thread
             
             while self.should_run:
-                timeout = self.time()+self._clock_resolution #calculate limit
-                while scheduled: #handle 'later' callbacks that are ready.
+                timeout = LOOP_TIME()+LOOP_TIME_RESOLUTION # calculate limit
+                while scheduled: # handle 'later' callbacks that are ready.
                     handle = scheduled[0]
                     if handle.cancelled:
                         heappop(scheduled)
@@ -1393,8 +2014,8 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
                 if ready:
                     timeout = 0.
                 elif scheduled:
-                    #compute the desired timeout.
-                    timeout = scheduled[0].when-self.time()
+                    # compute the desired timeout.
+                    timeout = scheduled[0].when-LOOP_TIME()
                 else:
                     timeout = None
                 
@@ -1407,12 +2028,14 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
                             if reader.cancelled:
                                 self.remove_reader(fileobj)
                             else:
-                                self._add_callback(reader)
+                                if not reader.cancelled:
+                                    ready.append(reader)
                         if (writer is not None) and (mask&EVENT_WRITE):
                             if writer.cancelled:
                                 self.remove_writer(fileobj)
                             else:
-                                self._add_callback(writer)
+                                if not writer.cancelled:
+                                    ready.append(writer)
                     
                     key = None
                     fileobj = None
@@ -1426,9 +2049,33 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
                     handle = ready.popleft()
                     if not handle.cancelled:
                         handle._run()
-                handle = None  # remove from locals or the gc derps out.
+                handle = None # remove from locals or the gc derps out.
     
     def caller(self, awaitable, timeout=None):
+        """
+        Ensures the given awaitable on the eventloop and returns it's result when done.
+        
+        Parameters
+        ----------
+        awaitable : `awaitable`
+            The awaitable to run.
+        timeout : `None` or `float`, Optional
+            Timeout after the awaitable should be cancelled. Defaults to `None`.
+
+        Returns
+        -------
+        result : `Any`
+            Value returned by `awaitable`.
+        
+        Raises
+        ------
+        TypeError
+            If `awaitable` is not `awaitable`.
+        TimeoutError
+             If `awaitable` did not finish before the given `timeout` is over.
+        BaseException
+            Any exception raised by `awaitable`.
+        """
         return self.ensure_future_threadsafe(awaitable).syncwrap().wait(timeout)
     
     if __debug__:
@@ -1436,37 +2083,118 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
             future = self.run_in_executor(alchemy_incendiary(self._render_exc_sync, (exception, before, after, file),))
             future.__silence__()
             return future
-
-        def render_exc_maybe_async(self, exception, before=None, after=None, file=None):
-            if isinstance(current_thread(), EventThread):
-                future = self.run_in_executor(alchemy_incendiary(self._render_exc_sync, (exception, before, after,
-                    file),))
+        
+        @classmethod
+        def render_exc_maybe_async(cls, exception, before=None, after=None, file=None):
+            local_thread = current_thread()
+            if isinstance(local_thread, EventThread):
+                future = local_thread.run_in_executor(alchemy_incendiary(cls._render_exc_sync,
+                    (exception, before, after, file),))
                 future.__silence__()
             else:
-                self._render_exc_sync(exception, before, after, file)
-
+                cls._render_exc_sync(exception, before, after, file)
+    
     else:
         def render_exc_async(self, exception, before=None, after=None, file=None):
             return self.run_in_executor(alchemy_incendiary(self._render_exc_sync, (exception, before, after, file),))
-
-        def render_exc_maybe_async(self, exception, before=None, after=None, file=None):
-            if isinstance(current_thread(), EventThread):
-                self.run_in_executor(alchemy_incendiary(self._render_exc_sync, (exception, before, after, file),))
+        
+        @classmethod
+        def render_exc_maybe_async(cls, exception, before=None, after=None, file=None):
+            local_thread = current_thread()
+            if isinstance(local_thread, EventThread):
+                local_thread.run_in_executor(alchemy_incendiary(cls._render_exc_sync,
+                    (exception, before, after, file),))
             else:
-                self._render_exc_sync(exception, before, after, file)
+                cls._render_exc_sync(exception, before, after, file)
+    
+    if DOCS_ENABLED:
+        render_exc_async.__doc__ = (
+        """
+        Renders the given exception's traceback in a non blocking way.
+        
+        Parameters
+        ----------
+        exception : ``BaseException``
+            The exception to render.
+        before : `None` or `str`, `list` of `str`, Optional
+            Any content, what should go before the exception's traceback.
+            
+            If given as `str`, or if `list`, then the last element of it should end with linebreak.
+        after : `None` or `str`, `list` of `str`, Optional
+            Any content, what should go after the exception's traceback.
+            
+            If given as `str`, or if `list`, then the last element of it should end with linebreak.
 
+        file : `None` or `I/O stream`, Optional
+            The file to print the stack to. Defaults to `sys.stderr`.
+        
+        Returns
+        -------
+        future : ``Future``
+            Returns a future, what can be awaited to wait for the rendering to be done.
+        """)
+    
+    if DOCS_ENABLED:
+        render_exc_maybe_async.__doc__ = (
+        """
+        Renders the given exception's traceback. If called from an ``EventThread`` instance, then will not block it.
+        
+        This method is called from functons or methods, where being on an ``EventThread`` is not guaranteed.
+        
+        Parameters
+        ----------
+        exception : ``BaseException``
+            The exception to render.
+        before : `None` or `str`, `list` of `str`, Optional
+            Any content, what should go before the exception's traceback.
+            
+            If given as `str`, or if `list`, then the last element of it should end with linebreak.
+        after : `None` or `str`, `list` of `str`, Optional
+            Any content, what should go after the exception's traceback.
+            
+            If given as `str`, or if `list`, then the last element of it should end with linebreak.
 
+        file : `None` or `I/O stream`, Optional
+            The file to print the stack to. Defaults to `sys.stderr`.
+        """)
+    
     @staticmethod
     def _render_exc_sync(exception, before, after, file):
+        """
+        Renders the given exception in a blocking way.
+        
+        Parameters
+        ----------
+        exception : ``BaseException``
+            The exception to render.
+        before : `str`, `list` of `str`
+            Any content, what should go before the exception's traceback.
+            
+            If given as `str`, or if `list`, then the last element of it should end with linebreak.
+        after : `str`, `list` of `str`
+            Any content, what should go after the exception's traceback.
+            
+            If given as `str`, or if `list`, then the last element of it should end with linebreak.
+        file : `None` or `I/O stream`
+            The file to print the stack to. Defaults to `sys.stderr`.
+        """
+        extracted = []
+        
         if before is None:
-            extracted = []
+            pass
         elif type(before) is str:
-            extracted = [before]
+            extracted = before.append(before)
         elif type(before) is list:
-            extracted = before
+            for element in before:
+                if type(element) is str:
+                    extracted.append(element)
+                else:
+                    extracted.append(repr(element))
+                    extracted.append('\n')
         else:
             # ignore exception cases
-            extracted = [repr(before)]
+            extracted.append(repr(before))
+            extracted.append('\n')
         
         render_exc_to_list(exception, extend=extracted)
         
@@ -1475,17 +2203,26 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
         elif type(after) is str:
             extracted.append(after)
         elif type(after) is list:
-            extracted.extend(after)
+            for element in after:
+                if type(element) is str:
+                    extracted.append(element)
+                else:
+                    extracted.append(repr(element))
+                    extracted.append('\n')
         else:
             extracted.append(repr(after))
+            extracted.append('\n')
         
         if file is None:
             # ignore exception cases
-            file=sys.stderr
+            file = sys.stderr
         
         file.write(''.join(extracted))
     
     def stop(self):
+        """
+        Stops the eventloop. Threadsafe.
+        """
         if self.should_run:
             if current_thread() is self:
                 self._stop()
@@ -1494,6 +2231,11 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
                 self.wakeup()
 
     def _stop(self):
+        """
+        Stops the eventloop. Intrenal function of ``.stop``, called or queued up by it.
+        
+        Should be called only from the thread of the eventloop.
+        """
         self.release_executors()
         self.should_run = False
 
@@ -1506,11 +2248,11 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
         closing_agens = list(self._asyncgens)
         self._asyncgens.clear()
         
-        results = await gather((ag.aclose() for ag in closing_agens), self)
+        results = await Gatherer(self, (ag.aclose() for ag in closing_agens))
         
         for result, agen in zip(results, closing_agens):
             exception = result.exception
-            if exception is not None:
+            if (exception is not None) and (type(exception) is not CancelledError):
                 extracted = [
                     'Exception occured during shutting down asyncgen:\n',
                     repr(agen),
@@ -1518,21 +2260,9 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
                 render_exc_to_list(exception, extend=extracted)
                 sys.stderr.write(''.join(extracted))
 
-    def _asyncgen_finalizer_hook(self, agen):
-        self._asyncgens.discard(agen)
-        if self.running:
-            Task(agen.aclose(), self)
-            self.wakeup()
-
-    def _asyncgen_firstiter_hook(self, agen):
-        if self._asyncgens_shutdown_called:
-            pass # remove it later
-        
-        self._asyncgens.add(agen)
-
     def _make_socket_transport(self, sock, protocol, waiter=None, *, extra=None, server=None):
         return _SelectorSocketTransport(self, sock, protocol, waiter, extra, server)
-
+    
     def _make_ssl_transport(self, rawsock, protocol, sslcontext, waiter=None, *, server_side=False,
             server_hostname=None, extra=None, server=None):
         
@@ -1540,28 +2270,32 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
         _SelectorSocketTransport(self, rawsock, ssl_protocol, extra=extra, server=server)
         return ssl_protocol.app_transport
 
-    def _process_self_data(self, data):
-        pass
-
-    def _read_from_self(self):
+    def emptyselfsocket(self):
+        """
+        Reads all the data out from selfsocket.
+        
+        Familiar to asyncio eventloop's `._read_from_self`.
+        """
         while True:
             try:
-                data = self._ssock.recv(4096)
+                data = self._selfread_socket.recv(4096)
                 if not data:
                     break
-                self._process_self_data(data)
             except InterruptedError:
                 continue
             except BlockingIOError:
                 break
-
-    #_write_to_self, but wakeup is way more correct name
+    
     def wakeup(self):
-        #called from different threads, to wake up this one
-        csock = self._csock
-        if csock is not None:
+        """
+        Wakes up the eventloop. Threadsafe.
+        
+        Familiar as asyncio eventloop's `._write_to_self`.
+        """
+        selfwrite_socket = self._selfwrite_socket
+        if selfwrite_socket is not None:
             try:
-                csock.send(b'\0')
+                selfwrite_socket.send(b'\0')
             except OSError:
                 pass
 
@@ -1572,8 +2306,7 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
         self.remove_reader(sock.fileno())
         sock.close()
 
-    def _accept_connection(self, protocol_factory, sock,
-                           sslcontext=None, server=None, backlog=100):
+    def _accept_connection(self, protocol_factory, sock, sslcontext=None, server=None, backlog=100):
         # This method is only called once for each event loop tick where the
         # listening socket has triggered an EVENT_READ. There may be multiple
         # connections waiting for an .accept() so it is called in a loop.
@@ -1628,7 +2361,7 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
                 self.__class__.__name__,
                 '._accept_connection2\n',
                     ])
-
+    
     def _add_reader(self, fd, callback, *args):
         if not self.running:
             raise RuntimeError('Event loop is cancelled.')
@@ -1644,12 +2377,12 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
             self.selector.modify(fd, mask|EVENT_READ, (handle, writer))
             if reader is not None:
                 reader.cancel()
-
+    
     def remove_reader(self, fd):
         if not self.running:
             return False
         try:
-            key=self.selector.get_key(fd)
+            key = self.selector.get_key(fd)
         except KeyError:
             return False
 
@@ -1667,7 +2400,7 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
             return True
         
         return False
-
+    
     def _add_writer(self, fd, callback, *args):
         if not self.running:
             raise RuntimeError('Event loop is cancelled.')
@@ -1678,14 +2411,14 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
         except KeyError:
             self.selector.register(fd, EVENT_WRITE, (None, handle))
             return
-
+        
         mask = key.events
         reader, writer = key.data
         
         self.selector.modify(fd, mask|EVENT_WRITE, (reader, handle))
         if writer is not None:
             writer.cancel()
-
+    
     def remove_writer(self, fd):
         if not self.running:
             return False
@@ -1695,7 +2428,7 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
             return False
         
         mask = key.events
-        reader, writer=key.data
+        reader, writer = key.data
         #remove both writer and connector.
         mask &= ~EVENT_WRITE
         if mask:
@@ -1728,8 +2461,8 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
             return self._add_writer(fd, callback, *args)
 
     else:
-        add_writer=_add_writer
-        add_reader=_add_reader
+        add_writer = _add_writer
+        add_reader = _add_reader
 
     async def connect_accepted_socket(self, protocol_factory, sock, *, ssl=None):
         if not _is_stream_socket(sock):
@@ -1745,20 +2478,15 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
             raise ValueError('server_hostname is only meaningful with ssl')
         
         if (server_hostname is None) and ssl:
-            # Use host as default for server_hostname.  It is an error
-            # if host is empty or not set, e.g. when an
-            # already-connected socket was passed or when only a port
-            # is given.  To avoid this error, you can pass
-            # server_hostname='' -- this will bypass the hostname
-            # check.  (This also means that if host is a numeric
-            # IP/IPv6 address, we will attempt to verify that exact
-            # address; this will probably fail, but it is possible to
-            # create a certificate for a specific IP address, so we
-            # don't judge it here.)
+            # Use host as default for server_hostname. It is an error if host is empty or not set, e.g. when an
+            # already-connected socket was passed or when only a port is given.  To avoid this error, you can pass
+            # server_hostname='' -- this will bypass the hostname check. (This also means that if host is a numeric
+            # IP/IPv6 address, we will attempt to verify that exact address; this will probably fail, but it is
+            # possible to create a certificate for a specific IP address, so we don't judge it here.)
             if not host:
                 raise ValueError('You must set server_hostname when using ssl without a host')
             server_hostname = host
-
+        
         if (host is not None) or (port is not None):
             if (sock is not None):
                 raise ValueError('host/port and sock can not be specified at the same time')
@@ -1773,7 +2501,7 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
             else:
                 f2 = None
             
-            await gather(fs, self)
+            await Gatherer(self, fs)
             
             infos = f1.result()
             if not infos:
@@ -1830,8 +2558,7 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
             if sock is None:
                 raise ValueError('host and port was not specified and no sock specified')
             if not _is_stream_socket(sock):
-                # We allow AF_INET, AF_INET6, AF_UNIX as long as they
-                # are SOCK_STREAM.
+                # We allow AF_INET, AF_INET6, AF_UNIX as long as they are SOCK_STREAM.
                 # We support passing AF_UNIX sockets even though we have
                 # a dedicated API for that: create_unix_connection.
                 # Disallowing AF_UNIX in this method, breaks backwards
@@ -1865,12 +2592,12 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
         
         return transport, protocol
 
-    #await it
+    # await it
     def getaddrinfo(self, host, port, *, family=0, type=0, proto=0, flags=0):
         return self.run_in_executor(alchemy_incendiary(
             module_socket.getaddrinfo, (host, port, family, type, proto, flags,),))
     
-    #await it
+    # await it
     def getnameinfo(self, sockaddr, flags=0):
         return self.run_in_executor(alchemy_incendiary(
             module_socket.getnameinfo, (sockaddr, flags,),))
@@ -1888,7 +2615,7 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
         future.set_result([info])
         return future
 
-    #await it
+    # await it
     def sock_accept(self, sock):
         future = Future(self)
         self._sock_accept(future, False, sock)
@@ -2172,11 +2899,13 @@ class EventThread(Executor,Thread, metaclass=EventThreadType):
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs):
             raise NotImplementedError
 
+executor.EventThread = EventThread
+futures.EventThread = EventThread
+
 del module_time
 del subprocess
 del IS_UNIX
-
-executor.EventThread = EventThread
-futures.EventThread = EventThread
 del futures
 del executor
+del DocProperty
+del DOCS_ENABLED

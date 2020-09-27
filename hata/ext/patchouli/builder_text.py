@@ -313,7 +313,7 @@ class TableLine(object):
     @property
     def line_count(self):
         """
-        Returns to how much lines the given row is
+        Returns how much lines the given row is.
         
         Returns
         -------
@@ -324,7 +324,7 @@ class TableLine(object):
     @property
     def character_count(self):
         """
-        Returns how much character teh given row is from.
+        Returns how much character the given row is from.
         
         Returns
         -------
@@ -1614,6 +1614,11 @@ def serialize_docs_embed_sized(docs):
     Serializes the docs and returns a `list` of `str`, where each element has maximal length of the size of an embed
     description.
     
+    Parameters
+    ----------
+    docs : ``DocString``
+        The docstring to serialize.
+    
     Returns
     -------
     result_chunks : `list` of `str`
@@ -1679,6 +1684,11 @@ def serialize_docs(docs):
     """
     Serializes the given docs to one big string.
     
+    Parameters
+    ----------
+    docs : ``DocString``
+        The docstring to serialize.
+    
     Returns
     -------
     result : `str`
@@ -1693,6 +1703,11 @@ def serialize_docs(docs):
 def serialize_docs_source_text(docs):
     """
     Serializes the given docs to one big string with graves, like the source one.
+    
+    Parameters
+    ----------
+    docs : ``DocString``
+        The docstring to serialize.
     
     Returns
     -------

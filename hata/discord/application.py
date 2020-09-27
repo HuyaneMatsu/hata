@@ -5,7 +5,7 @@ __all__ = ('Application', 'ApplicationExecutable', 'ApplicationSubEntity', 'EULA
 from .bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
 from .http import URLS
 from .user import ZEROUSER, User
-from .client_core import TEAMS, EULAS, APPLICATIONS
+from .client_core import TEAMS, EULAS, APPLICATIONS, USERS
 
 class Application(DiscordEntity, immortal=True):
     """
@@ -359,14 +359,14 @@ class Team(DiscordEntity, immortal=True):
         The members of the team. Includes invited members as well.
     name : `str`
         The teams name.
-    owner : ``User`` or ``Client``
-        The team's owner.
+    owner_id : `int`
+        The team's owner's id.
     
     Notes
     -----
     Team objects support weakreferencig.
     """
-    __slots__ = ('members', 'name', 'owner',)
+    __slots__ = ('members', 'name', 'owner_id',)
     
     icon = IconSlot('icon', 'icon', URLS.team_icon_url, URLS.team_icon_url_as, add_updater = False)
     
@@ -396,17 +396,26 @@ class Team(DiscordEntity, immortal=True):
         team._set_icon(data)
         
         team.members = members = [TeamMember(team_member_data) for team_member_data in data['members']]
-        owner_id = int(data['owner_user_id'])
-        
-        for member in members:
-            user = member.user
-            if user.id == owner_id:
-                break
-        else:
-            user = ZEROUSER
-        
-        team.owner = user
+        team.owner_id = int(data['owner_user_id'])
         return team
+    
+    @property
+    def owner(self):
+        """
+        Returns the team's owner.
+        
+        Returns
+        -------
+        owner : ``Client`` or ``User``
+            Defaults to `ZEROUSER`.
+        """
+        owner_id = self.owner_id
+        try:
+            owner = USERS[owner_id]
+        except KeyError:
+            owner = ZEROUSER
+        
+        return owner
     
     @property
     def invited(self):
@@ -438,7 +447,7 @@ class Team(DiscordEntity, immortal=True):
     
     def __repr__(self):
         """Returns the team's representation."""
-        return f'<{self.__class__.__name__} owner={self.owner.full_name}, total count={len(self.members)}>'
+        return f'<{self.__class__.__name__} owner={self.owner.full_name}, total members={len(self.members)}>'
 
 class TeamMember(object):
     """

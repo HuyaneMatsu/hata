@@ -721,7 +721,7 @@ def PartialGuild(data):
     guild.message_notification = MessageNotificationLevel.only_mentions
     guild.mfa = MFA.none
     # name will be set down
-    guild.owner = ZEROUSER
+    guild.owner_id = 0
     guild.preferred_locale = DEFAULT_LOCALE
     guild.premium_tier = 0
     guild.public_updates_channel = None
@@ -841,8 +841,8 @@ class Guild(DiscordEntity, immortal=True):
         The required Multi-factor authentication level for the guild.
     name : `str`
         The name of the guild.
-    owner : ``User`` or ``Client``
-        The owner of the guild. At some cases it can be set as `ZEROUSER` as well.
+    owner_id : `int`
+        The guild's owner's id. Defaults to `0`.
     preferred_locale : `str`
         The preferred language of the guild. The guild must be a Community guild, defaults to `'en-US'`.
     premium_tier : `int`
@@ -895,7 +895,7 @@ class Guild(DiscordEntity, immortal=True):
     __slots__ = ('_boosters', '_cache_perm', 'afk_channel', 'afk_timeout', 'available', 'booster_count', 'channels',
         'clients', 'content_filter', 'description', 'embed_channel', 'embed_enabled', 'emojis', 'features',
         'has_animated_icon', 'is_large', 'max_presences', 'max_users', 'max_video_channel_users',
-        'message_notification', 'mfa', 'name', 'owner', 'preferred_locale', 'premium_tier', 'public_updates_channel',
+        'message_notification', 'mfa', 'name', 'owner_id', 'preferred_locale', 'premium_tier', 'public_updates_channel',
         'region', 'roles', 'roles', 'rules_channel', 'system_channel', 'system_channel_flags', 'user_count', 'users',
         'vanity_code', 'verification_level', 'voice_states', 'webhooks', 'webhooks_uptodate', 'widget_channel',
         'widget_enabled')
@@ -987,7 +987,8 @@ class Guild(DiscordEntity, immortal=True):
                         channel_type(channel_data, client, guild)
                     else:
                         later.append((channel_type, channel_data),)
-                for channel_type,channel_data in later:
+                
+                for channel_type, channel_data in later:
                     channel_type(channel_data, client, guild)
             
             guild._update_no_return(data)
@@ -1000,7 +1001,8 @@ class Guild(DiscordEntity, immortal=True):
                 else:
                     for user_data in user_datas:
                         User(user_data, guild)
-                #if user caching is disabled, then presence caching is too.
+                
+                # If user caching is disabled, then presence caching is too.
                 try:
                     presence_data = data['presences']
                 except KeyError:
@@ -1146,7 +1148,7 @@ class Guild(DiscordEntity, immortal=True):
             guild.message_notification = MessageNotificationLevel.only_mentions
             guild.mfa = MFA.none
             guild.name = ''
-            guild.owner = ZEROUSER
+            guild.owner_id = 0
             guild.preferred_locale = DEFAULT_LOCALE
             guild.premium_tier = 0
             guild.public_updates_channel = None
@@ -2102,7 +2104,7 @@ class Guild(DiscordEntity, immortal=True):
         --------
         ``.cached_permissions_for`` : Cached permission calculator.
         """
-        if user == self.owner:
+        if user.id == self.owner_id:
             return Permission.permission_all
         
         base = self.roles[self.id].permissions
@@ -2212,7 +2214,7 @@ class Guild(DiscordEntity, immortal=True):
         +---------------------------+-------------------------------+
         | name                      | `str`                         |
         +---------------------------+-------------------------------+
-        | owner                     | ``User`` or ``Client``        |
+        | owner_id                  | `int`                         |
         +---------------------------+-------------------------------+
         | preferred_locale          | `str`                         |
         +---------------------------+-------------------------------+
@@ -2336,13 +2338,13 @@ class Guild(DiscordEntity, immortal=True):
         
         owner_id = data.get('owner_id')
         if owner_id is None:
-            owner = ZEROUSER
+            owner_id = 0
         else:
-            owner = PartialUser(int(owner_id))
+            owner_id = int(owner_id)
         
-        if self.owner != owner:
-            old_attributes['owner'] = self.owner
-            self.owner = owner
+        if self.owner_id != owner_id:
+            old_attributes['owner_id'] = self.owner_id
+            self.owner_id = owner_id
         
         afk_channel_id = data['afk_channel_id']
         if afk_channel_id is None:
@@ -2512,10 +2514,10 @@ class Guild(DiscordEntity, immortal=True):
         
         owner_id = data.get('owner_id')
         if owner_id is None:
-            owner = ZEROUSER
+            owner_id = 0
         else:
-            owner = PartialUser(int(owner_id))
-        self.owner = owner
+            owner_id = int(owner_id)
+        self.owner_id= owner_id
         
         afk_channel_id = data.get('afk_channel_id')
         if afk_channel_id is None:
@@ -2682,6 +2684,24 @@ class Guild(DiscordEntity, immortal=True):
             emoji._delete()
     
     @property
+    def owner(self):
+        """
+        Returns the guild's owner's id.
+        
+        Returns
+        -------
+        owner : ``User`` or ``Client``
+            If user the guild has no owner, returns `ZEROUSER`.
+        """
+        owner_id = self.owner_id
+        if owner_id == 0:
+            owner = ZEROUSER
+        else:
+            owner = PartialUser(owner_id)
+        
+        return owner
+    
+    @property
     def emoji_limit(self):
         """
         The maximal amount of emojis, what the guild can have.
@@ -2693,6 +2713,7 @@ class Guild(DiscordEntity, immortal=True):
         limit = (50, 100, 150, 250)[self.premium_tier]
         if limit < 200 and (GuildFeature.more_emoji in self.features):
             limit = 200
+        
         return limit
     
     @property
@@ -2777,14 +2798,14 @@ class Guild(DiscordEntity, immortal=True):
         for emoji in self.emojis.values():
             if emoji.animated:
                 if emoji.managed:
-                    manged_animated +=1
+                    manged_animated += 1
                 else:
-                    normal_animated +=1
+                    normal_animated += 1
             else:
                 if emoji.managed:
-                    managed_static +=1
+                    managed_static += 1
                 else:
-                    normal_static +=1
+                    normal_static += 1
         
         return normal_static, normal_animated, managed_static, manged_animated
     

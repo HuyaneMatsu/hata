@@ -30,7 +30,7 @@ class Argument(object):
     __slots__ = ('annotation', 'default', 'has_annotation', 'has_default', 'name', 'positionality', 'reserved', )
     
     def __repr__(self):
-        result=[]
+        result = []
         result.append('<')
         result.append(self.__class__.__name__)
         

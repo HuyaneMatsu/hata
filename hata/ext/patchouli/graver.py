@@ -46,7 +46,7 @@ class DocWarning(object):
         return self
     
     def __repr__(self):
-        """Returns the represnetation of the docwarning."""
+        """Returns the representation of the docwarning."""
         return f'{self.__class__.__name__}(path={self.path!r}, reason={self.reason!r})'
     
     @property
@@ -461,7 +461,7 @@ class GravedCodeBlock(object):
     Attributes
     ----------
     lines : `list` of `str`
-        The lines of teh codeblock
+        The lines of the codeblock
     """
     __slots__ = ('lines', )
     def __new__(cls, parent, path):
@@ -491,7 +491,7 @@ class GravedCodeBlock(object):
         return self
     
     def __repr__(self):
-        """ Returns the graved code block's representation."""
+        """Returns the graved code block's representation."""
         return f'<{self.__class__.__name__} lines={self.lines!r}>'
 
 class GravedTable(object):
@@ -500,7 +500,7 @@ class GravedTable(object):
     
     Parameters
     ----------
-    array : `list` of (`None`, (`list` of (`str`, ``Grave``) elemenets)) elements
+    array : `list` of (`None`, (`list` of (`str`, ``Grave``) elements)) elements
         The elements of the table
     size : `tuple`  (`int`, `int`)
         The size of the table.
@@ -548,7 +548,7 @@ class GravedTable(object):
                     
                     break
                 else:
-                    y-=1
+                    y -= 1
                     continue
         
             array.extend(new_line)
@@ -567,7 +567,7 @@ class GravedTable(object):
         
         Yields
         ------
-        line : `list` of (`str`, `None`)
+        line : `list` of (`None`, (`list` of (`str`, ``Grave``) elements)
         """
         x, y = self.size
         array = self.array
@@ -583,7 +583,7 @@ class GravedTable(object):
             yield line
     
     def __repr__(self):
-        """Returns the graved table's represnetation."""
+        """Returns the graved table's representation."""
         result = [
             '<',
             self.__class__.__name__,
@@ -605,12 +605,12 @@ class GravedTable(object):
 
 def apply_warnings_to_path(warnings, path):
     """
-    Applies warning to teh given path.
+    Applies warning to the given path.
     
     Parameters
     ----------
     warnings : `list` of `str`
-        The warningd to apply.
+        The warning to apply.
     path : ``QualPath``
         The path of the respective docstring.
     """
@@ -672,7 +672,7 @@ class GravedListingElement(object):
         return self
     
     def __repr__(self):
-        """Returns the graved listing element's represnetation."""
+        """Returns the graved listing element's representation."""
         result = [
             '<',
             self.__class__.__name__,
@@ -733,5 +733,5 @@ class GravedListing(object):
         return self
     
     def __repr__(self):
-        """Returns the graved listing's represnetation."""
+        """Returns the graved listing's representation."""
         return f'<{self.__class__.__name__} elements={self.elements!r}>'

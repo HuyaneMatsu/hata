@@ -3,7 +3,6 @@ __all__ = ('EventBase', 'EventHandlerBase', 'EventWaitforBase', 'GuildUserChunkE
     'ReactionAddEvent', 'ReactionDeleteEvent', 'eventlist', )
 
 import sys, datetime
-from time import monotonic
 from datetime import datetime
 try:
     from _weakref import WeakSet
@@ -15,11 +14,12 @@ from ..backend.futures import Future, Task, iscoroutinefunction as iscoro
 from ..backend.dereaddons_local import function, RemovedDescriptor, _spaceholder, MethodLike, NEEDS_DUMMY_INIT, \
     WeakKeyDictionary, WeakReferer, DOCS_ENABLED
 from ..backend.analyzer import CallableAnalyzer
+from ..backend.eventloop import LOOP_TIME
 
 from .bases import FlagBase
 from .client_core import CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO
 from .user import User, PartialUser, USERS
-from .channel import CHANNEL_TYPES, ChannelGuildBase
+from .channel import CHANNEL_TYPES, ChannelGuildBase, ChannelPrivate
 from .others import Relationship, Gift
 from .guild import EMOJI_UPDATE_NEW, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, Guild
 from .emoji import PartialEmoji
@@ -960,10 +960,14 @@ def MESSAGE_CREATE__CAL(client, data):
     try:
         channel = CHANNELS[channel_id]
     except KeyError:
-        guild_sync(client, data, ('MESSAGE_CREATE', check_channel, channel_id))
-        return
-
-    message = channel._create_new_message(data)
+        if data.get('guild_id') is not None:
+            return
+        
+        channel = ChannelPrivate._create_dataless(channel_id)
+        message = channel._create_new_message(data)
+        channel._finish_dataless(client, message.author)
+    else:
+        message = channel._create_new_message(data)
     
     Task(client.events.message_create(client, message), KOKORO)
 
@@ -972,10 +976,14 @@ def MESSAGE_CREATE__OPT(client, data):
     try:
         channel = CHANNELS[channel_id]
     except KeyError:
-        guild_sync(client, data, ('MESSAGE_CREATE', check_channel, channel_id))
-        return
-    
-    channel._create_new_message(data)
+        if data.get('guild_id') is not None:
+            return
+        
+        channel = ChannelPrivate._create_dataless(channel_id)
+        message = channel._create_new_message(data)
+        channel._finish_dataless(client, message.author)
+    else:
+        channel._create_new_message(data)
 
 PARSER_DEFAULTS(
     'MESSAGE_CREATE',
@@ -992,14 +1000,17 @@ if ALLOW_DEAD_EVENTS:
         try:
             channel = CHANNELS[channel_id]
         except KeyError:
-            # Can happen that 1 client gets message or guild delete payload earlier, than the other message delete one,
-            # so do not sync guild at this case.
-            return
-        
-        message_id = int(data['id'])
-        message = channel._pop_message(message_id)
-        if message is None:
+            if data.get('guild_id') is not None:
+                return
+                
+            channel = ChannelPrivate._create_dataless(channel_id)
+            message_id = int(data['id'])
             message = MessageRepr(message_id, channel)
+        else:
+            message_id = int(data['id'])
+            message = channel._pop_message(message_id)
+            if message is None:
+                message = MessageRepr(message_id, channel)
         
         Task(client.events.message_delete(client, message), KOKORO)
     
@@ -1008,24 +1019,30 @@ if ALLOW_DEAD_EVENTS:
         try:
             channel = CHANNELS[channel_id]
         except KeyError:
-            # Can happen that 1 client gets message or guild delete payload earlier, than the other message delete one,
-            # so do not sync guild at this case.
-            return
-        
-        clients = filter_clients(channel.clients,
-            INTENT_GUILD_MESSAGES if isinstance(channel, ChannelGuildBase) else INTENT_DIRECT_MESSAGES)
-        
-        if clients.send(None) is not client:
-            clients.close()
-            return
-        
-        message_id = int(data['id'])
-        message = channel._pop_message(message_id)
-        if message is None:
+            if data.get('guild_id') is not None:
+                return
+                
+            channel = ChannelPrivate._create_dataless(channel_id)
+            message_id = int(data['id'])
             message = MessageRepr(message_id, channel)
-        
-        for client_ in clients:
-            Task(client_.events.message_delete(client_, message), KOKORO)
+            
+            Task(client.events.message_delete(client, message), KOKORO)
+            
+        else:
+            clients = filter_clients(channel.clients,
+                INTENT_GUILD_MESSAGES if isinstance(channel, ChannelGuildBase) else INTENT_DIRECT_MESSAGES)
+            
+            if clients.send(None) is not client:
+                clients.close()
+                return
+            
+            message_id = int(data['id'])
+            message = channel._pop_message(message_id)
+            if message is None:
+                message = MessageRepr(message_id, channel)
+            
+            for client_ in clients:
+                Task(client_.events.message_delete(client_, message), KOKORO)
         
 else:
     def MESSAGE_DELETE__CAL_SC(client, data):
@@ -1115,8 +1132,6 @@ if ALLOW_DEAD_EVENTS:
         try:
             channel = CHANNELS[channel_id]
         except KeyError:
-            # Can happen that 1 client gets message or guild delete payload earlier, than the other message delete one,
-            # so do not sync guild at this case.
             return
         
         message_ids = [int(message_id) for message_id in data['ids']]
@@ -1136,8 +1151,6 @@ if ALLOW_DEAD_EVENTS:
         try:
             channel = CHANNELS[channel_id]
         except KeyError:
-            # Can happen that 1 client gets message or guild delete payload earlier, than the other message delete one,
-            # so do not sync guild at this case.
             return
         
         clients = filter_clients(channel.clients, INTENT_GUILD_MESSAGES)
@@ -1209,7 +1222,7 @@ def MESSAGE_DELETE_BULK__OPT_SC(client, data):
     except KeyError:
         guild_sync(client, data, None)
         return
-
+    
     message_ids = [int(message_id) for message_id in data['ids']]
     channel._pop_multiple(message_ids)
 
@@ -1220,10 +1233,10 @@ def MESSAGE_DELETE_BULK__OPT_MC(client, data):
     except KeyError:
         guild_sync(client, data, None)
         return
-
+    
     if first_client(channel.clients, INTENT_GUILD_MESSAGES) is not client:
         return
-
+    
     message_ids = [int(message_id) for message_id in data['ids']]
     channel._pop_multiple(message_ids)
 
@@ -1243,9 +1256,21 @@ if ALLOW_DEAD_EVENTS:
         message_id = int(data['id'])
         message = MESSAGES.get(message_id)
         if message is None:
+            channel_id = int(data['channel_id'])
             try:
-                channel = CHANNELS[int(data['channel_id'])]
+                channel = CHANNELS[channel_id]
             except KeyError:
+                if data.get('guild_id') is not None:
+                    return
+                
+                if 'edited_timestamp' not in data:
+                    return
+                
+                channel = ChannelPrivate._create_dataless(channel_id)
+                message = Message._create_unlinked(message_id, data, channel)
+                channel._finish_dataless(client, message.author)
+                
+                Task(client.events.message_edit(client, message, None), KOKORO)
                 return
         
         else:
@@ -1283,9 +1308,21 @@ if ALLOW_DEAD_EVENTS:
         message_id = int(data['id'])
         message = MESSAGES.get(message_id)
         if message is None:
+            channel_id = int(data['channel_id'])
             try:
-                channel = CHANNELS[int(data['channel_id'])]
+                channel = CHANNELS[channel_id]
             except KeyError:
+                if data.get('guild_id') is not None:
+                    return
+                
+                if 'edited_timestamp' not in data:
+                    return
+                
+                channel = ChannelPrivate._create_dataless(channel_id)
+                message = Message._create_unlinked(message_id, data, channel)
+                channel._finish_dataless(client, message.author)
+                
+                Task(client.events.message_edit(client, message, None), KOKORO)
                 return
         
         else:
@@ -1545,7 +1582,22 @@ if ALLOW_DEAD_EVENTS:
             try:
                 channel = CHANNELS[channel_id]
             except KeyError:
+                if data.get('guild_id') is not None:
+                    return
+                
+                user_id = int(data['user_id'])
+                user = PartialUser(user_id)
+                emoji = PartialEmoji(data['emoji'])
+                
+                channel = ChannelPrivate._create_dataless(channel_id)
+                channel._finish_dataless(client, user)
+                message = MessageRepr(message_id, channel)
+                
+                event = ReactionAddEvent(message, emoji, user)
+                Task(client.events.reaction_add(client, event), KOKORO)
                 return
+        else:
+            channel = message.channel
         
         user_id = int(data['user_id'])
         user = PartialUser(user_id)
@@ -1567,8 +1619,20 @@ if ALLOW_DEAD_EVENTS:
             try:
                 channel = CHANNELS[channel_id]
             except KeyError:
+                if data.get('guild_id') is not None:
+                    return
+                
+                user_id = int(data['user_id'])
+                user = PartialUser(user_id)
+                emoji = PartialEmoji(data['emoji'])
+                
+                channel = ChannelPrivate._create_dataless(channel_id)
+                channel._finish_dataless(client, user)
+                message = MessageRepr(message_id, channel)
+                
+                event = ReactionAddEvent(message, emoji, user)
+                Task(client.events.reaction_add(client, event), KOKORO)
                 return
-            
         else:
             channel = message.channel
         
@@ -1676,6 +1740,7 @@ if ALLOW_DEAD_EVENTS:
             try:
                 channel = CHANNELS[channel_id]
             except KeyError:
+                # Guild channel only!
                 return
             
             message = MessageRepr(message_id, channel)
@@ -1698,6 +1763,7 @@ if ALLOW_DEAD_EVENTS:
             try:
                 channel = CHANNELS[channel_id]
             except KeyError:
+                # Guild channel only!
                 return
         else:
             channel = message.channel
@@ -1862,16 +1928,31 @@ if ALLOW_DEAD_EVENTS:
             try:
                 channel = CHANNELS[channel_id]
             except KeyError:
+                if data.get('guild_id') is not None:
+                    return
+                
+                user_id = int(data['user_id'])
+                user = PartialUser(user_id)
+                emoji = PartialEmoji(data['emoji'])
+                
+                channel = ChannelPrivate._create_dataless(channel_id)
+                channel._finish_dataless(client, user)
+                message = MessageRepr(message_id, channel)
+                
+                event = ReactionDeleteEvent(message, emoji, user)
+                Task(client.events.reaction_delete(client, event), KOKORO)
                 return
-            
-            message = MessageRepr(message_id, channel)
+        
         else:
             channel = message.channel
         
         user_id = int(data['user_id'])
         user = PartialUser(user_id)
         emoji = PartialEmoji(data['emoji'])
-        message.reactions.remove(emoji, user)
+        if message is None:
+            message = MessageRepr(message_id, channel)
+        else:
+            message.reactions.remove(emoji, user)
         
         event = ReactionDeleteEvent(message, emoji, user)
         Task(client.events.reaction_delete(client, event), KOKORO)
@@ -1884,6 +1965,19 @@ if ALLOW_DEAD_EVENTS:
             try:
                 channel = CHANNELS[channel_id]
             except KeyError:
+                if data.get('guild_id') is not None:
+                    return
+                
+                user_id = int(data['user_id'])
+                user = PartialUser(user_id)
+                emoji = PartialEmoji(data['emoji'])
+                
+                channel = ChannelPrivate._create_dataless(channel_id)
+                channel._finish_dataless(client, user)
+                message = MessageRepr(message_id, channel)
+                
+                event = ReactionDeleteEvent(message, emoji, user)
+                Task(client.events.reaction_delete(client, event), KOKORO)
                 return
             
         else:
@@ -1992,7 +2086,10 @@ if ALLOW_DEAD_EVENTS:
             try:
                 channel = CHANNELS[channel_id]
             except KeyError:
+                # Guild only!
                 return
+        else:
+            channel = message.channel
         
         emoji = PartialEmoji(data['emoji'])
         
@@ -2014,6 +2111,7 @@ if ALLOW_DEAD_EVENTS:
             try:
                 channel = CHANNELS[channel_id]
             except KeyError:
+                # Guild only!
                 return
         else:
             channel = message.channel
@@ -2115,7 +2213,7 @@ if CACHE_PRESENCE:
         try:
             user = USERS[user_id]
         except KeyError:
-            return #pretty much we dont care
+            return # pretty much we dont care
         
         while True:
             if user_data:
@@ -2181,7 +2279,7 @@ if CACHE_PRESENCE:
         try:
             user = USERS[user_id]
         except KeyError:
-            return #pretty much we dont care
+            return # pretty much we dont care
         
         if user_data:
             user._update_no_return(user_data)
@@ -2191,6 +2289,7 @@ if CACHE_PRESENCE:
 else:
     def PRESENCE_UPDATE__CAL_SC(client, data):
         return
+    
     PRESENCE_UPDATE__CAL_MC = PRESENCE_UPDATE__CAL_SC
     PRESENCE_UPDATE__OPT = PRESENCE_UPDATE__CAL_SC
 
@@ -2448,37 +2547,41 @@ del CHANNEL_UPDATE__CAL_SC, \
     CHANNEL_UPDATE__OPT_MC
 
 def CHANNEL_CREATE__CAL(client, data):
-    channel_type = data['type']
-    if channel_type in (1, 3):
-        channel = CHANNEL_TYPES[channel_type]._dispatch(data, client)
-        if channel is None:
-            return
-    else:
-        guild_id = int(data['guild_id'])
-        try:
-            guild = GUILDS[guild_id]
-        except KeyError:
-            guild_sync(client, data, 'CHANNEL_CREATE')
-            return
-        
-        channel = CHANNEL_TYPES[channel_type](data, client, guild)
+    channel_type = CHANNEL_TYPES[data['type']]
     
-    Task(client.events.channel_create(client, channel), KOKORO)
-
-def CHANNEL_CREATE__OPT(client, data):
-    channel_type = data['type']
-    if channel_type in (1, 3):
-        CHANNEL_TYPES[channel_type]._dispatch(data, client)
+    guild_id = data.get('guild_id')
+    if guild_id is None:
+        channel_type(data, client, None)
         return
     
-    guild_id = int(data['guild_id'])
+    guild_id = int(guild_id)
     try:
         guild = GUILDS[guild_id]
     except KeyError:
         guild_sync(client, data, 'CHANNEL_CREATE')
         return
     
-    CHANNEL_TYPES[channel_type](data, client, guild)
+    channel = channel_type(data, client, guild)
+    
+    Task(client.events.channel_create(client, channel), KOKORO)
+
+def CHANNEL_CREATE__OPT(client, data):
+    channel_type = CHANNEL_TYPES[data['type']]
+    
+    guild_id = data.get('guild_id')
+    if guild_id is None:
+        channel_type(data, client, None)
+        return
+    
+    guild_id = int(guild_id)
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        guild_sync(client, data, 'CHANNEL_CREATE')
+        return
+    
+    channel_type(data, client, guild)
+
 
 PARSER_DEFAULTS(
     'CHANNEL_CREATE',
@@ -5758,7 +5861,7 @@ class ReadyState(object):
             ready_left_counter -=1
         self.ready_left_counter = ready_left_counter
         
-        now = monotonic()
+        now = LOOP_TIME()
         self.last_guild = now
         self.last_ready = now
     
@@ -5772,7 +5875,7 @@ class ReadyState(object):
         guild_datas : `list` of `Any`
             Received guild datas.
         """
-        self.last_ready = monotonic()
+        self.last_ready = LOOP_TIME()
         self.ready_left_counter -=1
         self.guild_left_counter += len(guild_datas)
     
@@ -5781,7 +5884,7 @@ class ReadyState(object):
             if guild.is_large:
                 self.guilds.append(guild)
             
-            self.last_guild = monotonic()
+            self.last_guild = LOOP_TIME()
             guild_left_counter = self.guild_left_counter = self.guild_left_counter-1
             if (not guild_left_counter) and (not self.ready_left_counter):
                 self.wakeupper.set_result_if_pending(True)
@@ -5790,14 +5893,14 @@ class ReadyState(object):
         def feed(self, guild):
             self.guilds.append(guild)
             
-            self.last_guild = monotonic()
+            self.last_guild = LOOP_TIME()
             guild_left_counter = self.guild_left_counter = self.guild_left_counter-1
             if (not guild_left_counter) and (not self.ready_left_counter):
                 self.wakeupper.set_result_if_pending(True)
     
     else:
         def feed(self, guild):
-            self.last_guild = monotonic()
+            self.last_guild = LOOP_TIME()
             guild_left_counter = self.guild_left_counter = self.guild_left_counter-1
             if (not guild_left_counter) and (not self.ready_left_counter):
                 self.wakeupper.set_result_if_pending(True)
@@ -6051,7 +6154,7 @@ class EventDescriptor(object):
         +---------------+---------------------------------------+
         | overwrites    | `list` of ``PermOW``                  |
         +---------------+---------------------------------------+
-        | owner         | ``User`` or ``Client``                |
+        | owner_id      | `int`                                 |
         +---------------+---------------------------------------+
         | position      | `int`                                 |
         +---------------+---------------------------------------+
@@ -6224,7 +6327,7 @@ class EventDescriptor(object):
         +---------------------------+-------------------------------+
         | name                      | `str`                         |
         +---------------------------+-------------------------------+
-        | owner                     | ``User`` or ``Client``        |
+        | owner_id                  | `int`                         |
         +---------------------------+-------------------------------+
         | preferred_locale          | `str`                         |
         +---------------------------+-------------------------------+

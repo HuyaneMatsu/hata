@@ -601,7 +601,7 @@ class AudioReader(Thread):
             if not voice_client.connected.is_set():
                 voice_client.connected.wait()
             
-            socket=voice_client.socket
+            socket = voice_client.socket
             socketlist = [socket]
             while True:
                 

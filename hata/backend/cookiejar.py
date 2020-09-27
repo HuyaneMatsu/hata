@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-#https://github.com/squeaky-pl/zenchmarks/blob/master/vendor/aiohttp/cookiejar.py
+# https://github.com/squeaky-pl/zenchmarks/blob/master/vendor/aiohttp/cookiejar.py
 import pathlib, pickle, re
 from datetime import datetime, timezone
 from collections import defaultdict
@@ -8,10 +8,10 @@ from math import ceil
 
 from .url import URL
 from .helpers import is_ip_address
-
+from .eventloop import LOOP_TIME
 
 class CookieJar(object):
-   #Implements cookie storage adhering to RFC 6265.
+   # Implements cookie storage adhering to RFC 6265.
     
     DATE_TOKENS_RE = re.compile(
         '[\x09\x20-\x2F\x3B-\x40\x5B-\x60\x7B-\x7E]*(?P<token>[\x00-\x08\x0A-\x1F\d:a-zA-Z\x7F-\xFF]+)')
@@ -28,7 +28,7 @@ class CookieJar(object):
         self.cookies = defaultdict(SimpleCookie)
         self.host_only_cookies = set()
         self.unsafe = unsafe
-        self.next_expiration = ceil(loop.time())
+        self.next_expiration = ceil(LOOP_TIME())
         self.expirations = {}
     
     def save(self, file_path):
@@ -44,7 +44,7 @@ class CookieJar(object):
     def clear(self):
         self.cookies.clear()
         self.host_only_cookies.clear()
-        self.next_expiration = ceil(self.loop.time())
+        self.next_expiration = ceil(LOOP_TIME())
         self.expirations.clear()
     
     def __iter__(self):
@@ -56,7 +56,7 @@ class CookieJar(object):
         return sum(1 for i in self)
     
     def _do_expiration(self):
-        now = self.loop.time()
+        now = LOOP_TIME()
         if self.next_expiration>now:
             return
         if not self.expirations:
@@ -125,20 +125,20 @@ class CookieJar(object):
                 # Set the cookie's path to the response path
                 path = response_url.path
                 if not path.startswith('/'):
-                    path='/'
+                    path = '/'
                 else:
                     # Cut everything from the last slash to the end
-                    path=f'/{path[1:path.rfind("/")]}'
+                    path = f'/{path[1:path.rfind("/")]}'
                 cookie['path'] = path
 
             max_age = cookie['max-age']
             if max_age:
                 try:
                     delta_seconds = int(max_age)
-                    self._expire_cookie(self.loop.time()+delta_seconds, domain, name)
+                    self._expire_cookie(LOOP_TIME()+delta_seconds, domain, name)
                 except ValueError:
                     cookie['max-age'] = ''
-
+            
             else:
                 expires = cookie['expires']
                 if expires:
@@ -147,13 +147,13 @@ class CookieJar(object):
                         self._expire_cookie(expire_time.timestamp(), domain, name)
                     else:
                         cookie['expires'] = ''
-
+            
             self.cookies[domain][name] = cookie
-
+        
         self._do_expiration()
-
-    def filter_cookies(self, request_url=URL()):
-        #Returns this jar's cookies filtered by their attributes
+    
+    def filter_cookies(self, request_url = URL()):
+        # Returns this jar's cookies filtered by their attributes
         self._do_expiration()
         
         filtered = SimpleCookie()
@@ -185,8 +185,7 @@ class CookieJar(object):
             if is_not_secure and cookie['secure']:
                 continue
 
-            # It's critical we use the Morsel so the coded_value
-            # (based on cookie version) is preserved
+            # It's critical we use the Morsel so the coded_value (based on cookie version) is preserved
             mrsl_val = cookie.get(cookie.key, Morsel())
             mrsl_val.set(cookie.key, cookie.value, cookie.coded_value)
             filtered[name] = mrsl_val
@@ -195,7 +194,7 @@ class CookieJar(object):
 
     @staticmethod
     def _is_domain_match(domain, hostname):
-        #Implements domain matching adhering to RFC 6265.
+        # Implements domain matching adhering to RFC 6265.
         if hostname == domain:
             return True
 
@@ -211,7 +210,7 @@ class CookieJar(object):
 
     @staticmethod
     def _is_path_match(request_path, cookie_path):
-        #Implements path matching adhering to RFC 6265.
+        # Implements path matching adhering to RFC 6265.
         if not request_path.startswith('/'):
             request_path = '/'
         
@@ -224,13 +223,13 @@ class CookieJar(object):
         if cookie_path.endswith('/'):
             return True
         
-        non_matching=request_path[len(cookie_path):]
+        non_matching = request_path[len(cookie_path):]
         
         return non_matching.startswith('/')
     
     @classmethod
     def _parse_date(cls, date_str):
-        #Implements date string parsing adhering to RFC 6265.
+        # Implements date string parsing adhering to RFC 6265.
         if not date_str:
             return
         

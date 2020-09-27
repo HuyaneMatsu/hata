@@ -1,6 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 import sys, zlib
-from time import time as time_now, monotonic
+from time import time as time_now
 from collections import deque
 
 try:
@@ -14,6 +14,7 @@ else:
 from ..env import CACHE_PRESENCE
 from ..backend.futures import sleep, Task, future_or_timeout, WaitTillExc, WaitTillAll, Future, WaitContinously
 from ..backend.exceptions import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
+from ..backend.eventloop import LOOP_TIME
 
 from .others import to_json, from_json
 from .activity import ActivityUnknown
@@ -61,7 +62,7 @@ class GatewayRateLimiter(object):
         cancelled : `bool`
             Whether the respective gateway was closed.
         """
-        now = monotonic()
+        now = LOOP_TIME()
         if now >= self.resets_at:
             self.resets_at = now+GATEWAY_RATELIMIT_RESET
             remaining = GATEWAY_RATELIMIT_LIMIT
@@ -92,7 +93,7 @@ class GatewayRateLimiter(object):
                     break
                 
                 if not remaining:
-                    self.resets_at = resets_at = monotonic() + GATEWAY_RATELIMIT_RESET
+                    self.resets_at = resets_at = LOOP_TIME() + GATEWAY_RATELIMIT_RESET
                     wakeupper = KOKORO.call_at(resets_at + GATEWAY_RATELIMIT_RESET, type(self).wakeup, self)
                     break
                 
@@ -126,11 +127,11 @@ class GatewayRateLimiter(object):
                 ]
         
         resets_at = self.resets_at
-        if resets_at <= monotonic():
+        if resets_at <= LOOP_TIME():
             remaining = GATEWAY_RATELIMIT_LIMIT
         else:
             result.append(' resets_at=')
-            result.append(repr(monotonic()))
+            result.append(repr(LOOP_TIME()))
             result.append(' (monotnonic),')
             
             remaining = self.remaining
@@ -1146,7 +1147,7 @@ class DiscordGatewaySharder(object):
         """
         Modifes the shard amount of the gateway sharder.
         
-        > Should be called only if every shard is down.
+        Should be called only if every shard is down.
         """
         gateways = self.gateways
         
@@ -1211,8 +1212,8 @@ class DiscordGatewaySharder(object):
                 task = Task(gateways[index].run(future), KOKORO)
                 waiter.add(task)
                 
-                index +=1
-                left_from_batch +=1
+                index += 1
+                left_from_batch += 1
                 if index == limit:
                     break
                 
@@ -1231,7 +1232,7 @@ class DiscordGatewaySharder(object):
                 waiter.reset()
                 
                 if type(result) is Future:
-                    left_from_batch -=1
+                    left_from_batch -= 1
                     
                     if left_from_batch:
                         continue

@@ -89,11 +89,7 @@ already a `User` object that we can use right away inside that function instead 
 additionally convert to user object inside our command.
 
 
-
-
-
-For example, if the command accepts 3 arguments and the last has annotation given as `User` type, then the command's
-content parser will try to search for the user on local scope.
+For example we'll annotate it as User and have it's default value of None:
 ```
 from hata import User
 
@@ -104,7 +100,8 @@ async def hug(client, message, user: User = None):
     
     await client.message_create(message.channel, f'Hugs {user:m} !')
 ```
-If the user was not found and the argument has default value given as well, then that will be passed instead.
+- If the user was not found and the argument has default value given as well, then that will be passed instead.
+- If the user was not found (or not passed in command call aka just `n!hug`) then user will have default value, in this case `None`.
 
 The supported types are the following:
 
@@ -125,16 +122,16 @@ The supported types are the following:
 | N/A           | 'rest'                | N/A                                                                                                                                       |
 
 Notes:
-- If `'user'` is given as `UserBase`, then the parser behaviour will not be altered, it also means, that if it is given
+- If `'user'` is given as `UserBase` then the parser behaviour will not be altered, it also means, that if it is given
     `User`, then it will still let trough the `Client`-s as well.
-- If `'channel'` is given as a specific channel type, then every channel with different type will be ignored.
-- For using `'rdelta'` converter you must have `deateutil` installed.
-- `'rest'` converter returns the unused part of the message content, till the first linebreak.
+- If `'channel'` is given as a specific channel type then every channel with different type will be ignored.
+- For using `'rdelta'` converter you must have `dateutil` installed.
+- `'rest'` converter returns the unused part of the message content, until the first linebreak.
 
-If you do not give annotations for the extra parameters, then every one of them (except the last) will be interpreted as
-`str` parser, meanwhile the last of them will be interpreted as a `rest` parser. 
+If you do not give annotations for the extra parameters then every one of them (except the last) will be interpreted as
+`str` parser while the last of them will be interpreted as a `rest` parser. 
 Although you can use `*args` to get as much object of the given as possible.
-If at the case of `*args` no annotation is given, then instead of `rest` parser, it will be picked up as `str`.
+If at the case of `*args` no annotation is given then instead of `rest` parser it will be picked up as `str`.
 
 ```
 @NekoBot.commands
@@ -190,7 +187,7 @@ async def separate(client, message, *args):
     await client.message_create(message.channel, result)
 ```
 
-`separator` can be given as a `str` instance with length of `1`, or as a `tuple` of `2` `str` instances with length
+`separator` can be given as a `str` instance with length of `1` or as a `tuple` of 2 `str` instances with length
 `1`.
 
 Input-output examples:
@@ -202,23 +199,21 @@ Input-output examples:
 | `('*', '*')`  | `'Legacy of Lunatic Kingdom *Pandemonic Planet*'` | `'Legacy'`, `'of'`, `'Lunatic'`, `'Kingdom'`, `'Pandemonic Planet'`   |
 
 
-It also possible to customize parsers with `FlaggedAnnotation` or with `ConverterFlag`-s. For it, you need to import
-them with `ConverterFlag` as well.
+It is also possible to customize parsers with `FlaggedAnnotation` or with `ConverterFlag`.
 
-You can modify a `ConverterFlag` with it's `.update_by_keys` method, by giving a flag's name as keyword and it's new
-value.
+You can modify a `ConverterFlag` with its `.update_by_keys` method by giving flag name as keyword with its new value.
 
 `ConverterFlag` implements the following flags:
 | Name          | Description                                                                                                                       |
 |---------------|-----------------------------------------------------------------------------------------------------------------------------------|
-| url           | Whether the entity should be parsed from it's url.                                                                                |
-| mention       | Whether the entity should be parsed out from it's mention.                                                                        |
-| name          | Whether the entity should be picked up by it's name.                                                                              |
-| id            | Whether the entity should be picked up by it's name.                                                                              |
-| everywhere    | Whether the entity should be searched out of the local scope. Mostly pairs with the `id` flag.                                    |
-| profile       | User parser only. Can be used when user cache is disabled to ensure, that the user will have local guild profile if applicable.   |
+| url           | Whether the entity should be parsed from its url.                                                                                 |
+| mention       | Whether the entity should be parsed out from its mention.                                                                         |
+| name          | Whether the entity should be picked up by its name.                                                                               |
+| id            | Whether the entity should be picked up by its ID.                                                                                 |
+| everywhere    | Whether the entity should be searched in the local scope. Mostly pairs with the `id` flag.                                        |
+| profile       | User parser only. Can be used when user cache is disabled to ensure that the user will have local guild profile, if present.      |
 
-There are already pre-created flags for common usage, which are:
+There are already some pre-created flags for common usage:
 
 | Name              | Included flags                            |
 |-------------------|-------------------------------------------|
@@ -238,10 +233,10 @@ There are already pre-created flags for common usage, which are:
 | invite_default    | url, id                                   |
 | invite_all        | url, id                                   |
 
-Note, if you use for example a `'user'` parser, then by default it will use the `user_default` flags, and it
+- Note: If you use for example a `'user'` parser then by default it will use the `user_default` flags and it
 will ignore everything else than `user_all`.
 
-Some parsers, like `int`, or `str` do not have any flags, what means, their behaviour cannot be altered.
+Some parsers, like `int` or `str`, do not have any flags which means that their behaviour cannot be altered.
 
 ```py
 from hata import Embed
@@ -264,7 +259,7 @@ async def avatar(client, message, user: FlaggedAnnotation('user', ConverterFlag.
     await client.message_create(message.channel, embed=embed)
 ```
 
-The main difference, between `Converter` and `FlaggedAnnotation`, that `FlaggedAnnotation` can be used to build
+The main difference between `Converter` and `FlaggedAnnotation` is that `FlaggedAnnotation` can be used to build
 multi-type parsers.
 
 ```py
@@ -284,8 +279,8 @@ async def what_is_it(client, message, entity: ('user', 'channel', 'role') = None
     await client.message_create(message.channel, result)
 ```
 
-The command above will recognize the entities by their's `id`, `mention` and `name`, so If we want only `name`, we
-can define it like::
+The command above will recognize the entities by their `id`, `mention` and `name` so if we only want `name` we
+can define it like:
 
 ```py
 async def what_is_it(client, message, entity: (
@@ -306,9 +301,9 @@ async def what_is_it(client, message, entity: (
     await client.message_create(message.channel, result)
 ```
 
-The advantage of `Converter` is, that it can hold default values, or default code values as well.
+The advantage of `Converter` is that it can hold default values or default code values as well.
 
-We can modify the `avatar` command from above to use the `default` parameter, like:
+We can modify the `avatar` command from above to use the `default` parameter, example:
 
 ```py
 from hata.ext.commands import Converter
@@ -330,26 +325,26 @@ async def avatar(client, message, user: Converter('user', ConverterFlag.user_all
     await client.message_create(message.channel, embed=embed)
 ```
 
-Or to make it cooler, we can make it pass it the message's author, if the parser fails. To do this, there is the
+Or to make it cooler, we can make it pass it the message author (if the parser fails). To do this there is
 `default_code` parameter (mutually exclusive with the other `default` one!).
 
-`default_code` can be given as an `async-function`, or as a `str` representing one already precreated one.
+`default_code` can be given as an `async-function` or as a `str` representing already pre-created one.
 
-The pre-created ones are the following:
+The pre-created ones are:
 
 | Name                                      | Description                                                               |
 |-------------------------------------------|---------------------------------------------------------------------------|
-| `'message.author'`                        | Returns the message's author.                                             |
-| `'message.channel'`                       | Returns the message's channel.                                            |
-| `'message.guild'`                         | Returns the message's guild. (Can be `None`)                              |
+| `'message.author'`                        | Returns the message author.                                               |
+| `'message.channel'`                       | Returns the message channel.                                              |
+| `'message.guild'`                         | Returns the message guild (can be `None`).                                |
 | `'message.channel.guild'`                 | Same as the `'message.guild'` one.                                        |
-| `'client'`                                | Returns the client, who received the message.                             |
-| `'rest'`                                  | Returns the not yet used content of the message. (Can be empty string)    |
-| `'message.guild.default_role'`            | Returns the message's guild's default role. (Can be `None`)               |
+| `'client'`                                | Returns the client who received the message.                              |
+| `'rest'`                                  | Returns the unused content of the message (can be empty string)           |
+| `'message.guild.default_role'`            | Returns the message guild default role (can be `None`)                    |
 | `'message.channel.guild.default_role'`    | Same as the `''message.guild.default_role''` one.                         |
 
-Defining these might can be difficult, because first you need to get along with hata internals, but to mention
-an example, the `'message.author'` precreated one equals to:
+Defining these might be difficult because first you need to get along with hata internals.
+One example for the `'message.author'` pre-created one equals to:
 
 ```py
 async def precreated_default_code__message_author(content_parser_ctx: ContentParserContext):
@@ -373,7 +368,7 @@ async def avatar(client, message, user: Converter('user', ConverterFlag.user_all
     await client.message_create(message.channel, embed=embed)
 ```
 
-When adding a command, you can also add a handler, for the cases, when the command's content parser fails.
+When adding a command you can also add a handler for the cases when the commands content parser fails.
 
 The following parameters are passed to a parser failure handler.
 
@@ -382,7 +377,7 @@ The following parameters are passed to a parser failure handler.
 | client                | `Client`          | The respective client.                                                |
 | message               | `Message`         | The respective message.                                               |
 | command               | `Command`         | The respective command.                                               |
-| content               | `str`             | The message's content, from what the arguments would have be parsed.  |
+| content               | `str`             | The message content, from what the arguments would have be parsed.    |
 | args                  | `list` of `Any`   | The successfully parsed argument.                                     |
 
 Can be added to a command by passing it to the decorator:
@@ -519,7 +514,7 @@ Note that `invalid_command` and `command_error` also supports checks.
 
 ###### Invalid command
 
-Ensured when a command is referenced but it doesn't exist or if any of command check failed.
+Ensured when a command is referenced but it doesn't exist or check without handlers fails.
 
 The following arguments are passed to `invalid_command`:
 
@@ -565,9 +560,6 @@ If the command processer has no `command_error` or if your `command_error` raise
 
 #### Default event
 
-Similar to the normal `message_create` event but this one is called at the end of command processer call, if nothing
-else was picked up by it.
-
 ```py
 @NekoBot.commands
 async def default_event(client, message):
@@ -580,5 +572,7 @@ async def default_event(client, message):
         await client.message_create(message.channel, 'lmao')
 ```
 
-The advantage of using `default_event` over adding a new `message_create` event handler, that at this point bot 
-authors and channels, where the bot cannot reply are already filtered out.
+The advantage of using `default_event` over adding a new `message_create` event handler that at this point bot 
+authors/developers (as message authors) and channels where the bot cannot reply are already filtered out 
+(those messages will not trigger `default_event`).
+To see the actual flow of the command handler and when the default_event will trigger see [here](https://github.com/HuyaneMatsu/hata/blob/master/hata/ext/commands/command.py#L2951)

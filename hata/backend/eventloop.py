@@ -10,7 +10,7 @@ from heapq import heappop, heappush
 from collections import deque
 
 from .dereaddons_local import alchemy_incendiary, WeakReferer, weakmethod, method, WeakCallable, DocProperty, \
-    WeakValueDictionary, DOCS_ENABLED
+    DOCS_ENABLED
 from .futures import Future, Task, Gatherer, render_exc_to_list, iscoroutine, FutureAsyncWrapper, WaitTillFirst, \
     CancelledError
 from .transprotos import SSLProtocol, _SelectorSocketTransport
@@ -478,7 +478,7 @@ class CyclerCallable(object):
 
 class Cycler(object):
     """
-    Cycles the given functions on an eventloop, by calling them after every `n` amount of seconds.
+    Cycles the given functions on an event loop, by calling them after every `n` amount of seconds.
     
     Attributes
     ----------
@@ -499,7 +499,7 @@ class Cycler(object):
         
         Parameters
         ----------
-        loop : ``EventTHread``
+        loop : ``EventThread``
             The async event loop of the cycler, what it uses to ensure itself.
         cycle_time : `float`
             The time interval of the cycler to call the added functions.
@@ -520,8 +520,12 @@ class Cycler(object):
             - Any `func` accepts less or more reserved positional arguments than `1`.
         ValueError
             If `cycle_time` is negative or `0`.
+        
+        Notes
+        -----
+        If the respective event loop is not running yet, then creating a ``Cycler`` will not start it either.
         """
-        if not loop.running:
+        if not loop.running and not loop.should_run:
             raise RuntimeError('Event loop is closed.')
         
         cycle_time_type = cycle_time.__class__
@@ -564,10 +568,7 @@ class Cycler(object):
         if current_thread() is loop:
             handle = loop.call_later(cycle_time, cls._run, self)
         else:
-            self.handle = None
-            
-            with ThreadSyncerCTX(loop):
-                handle = loop.call_later(cycle_time, cls._run, self)
+            handle = loop.call_soon_threadsafe_lazy(loop.__class__.call_later, loop, cycle_time, cls._run, self)
         
         self.handle = handle
         
@@ -719,7 +720,7 @@ class Cycler(object):
     
     def set_cycle_time(self, cycle_time):
         """
-        Sets the cycle time of the cycler to teh gvien value.
+        Sets the cycle time of the cycler to the gvien value.
         
         Parameters
         ----------
@@ -886,36 +887,36 @@ class ThreadSyncerCTX(object):
     
     ```
     with ThreadSyncerCTX(LOOP):
-        # The eventloop is paused inside here.
+        # The event loop is paused inside here.
     ```
     
     Or, can be used with ``EventThead.enter()`` as well, like:
     
     ```
     with LOOP.enter():
-        # The eventloop is paused inside here.
+        # The event loop is paused inside here.
     ```
     
     Attributes
     ----------
     loop : ``EventThread``
-        The respective eventloop.
+        The respective event loop.
     enter_event : `threading.Event`
-        Threading event, which blocks the local thread, till the respective eventloop pauses.
+        Threading event, which blocks the local thread, till the respective event loop pauses.
     exit_event : `threading.Event`
-        Blocks the respective eventloop, till the local thread gives the control back to it with exisint the `with`
+        Blocks the respective event loop, till the local thread gives the control back to it with exisint the `with`
         block.
     """
     __slots__ = ('loop', 'enter_event', 'exit_event')
     
     def __init__(self, loop):
         """
-        Creates a new ``ThreadSyncerCTX`` bound to the given eventloop.
+        Creates a new ``ThreadSyncerCTX`` bound to the given event loop.
         
         Parameters
         ----------
         loop : ``EventThread``
-            The eventloop to pause.
+            The event loop to pause.
         """
         self.loop = loop
         self.enter_event = Event()
@@ -1066,7 +1067,7 @@ _OLD_AGEN_HOOKS = sys.get_asyncgen_hooks()
 
 def _asyncgen_firstiter_hook(agen):
     """
-    Adds asyncgens to their respective eventloop. These async gens are stut down, when the loop is stopped.
+    Adds asyncgens to their respective event loop. These async gens are stut down, when the loop is stopped.
     
     Parameters
     ----------
@@ -1086,7 +1087,7 @@ def _asyncgen_firstiter_hook(agen):
 
 def _asyncgen_finalizer_hook(agen):
     """
-    Removes asyncgens from their respective eventloop.
+    Removes asyncgens from their respective event loop.
     
     Parameters
     ----------
@@ -1313,7 +1314,7 @@ class Server(object):
     close_waiters : `None` or `list` of ``Future``
         Futures, which are waiting for the server to close. If the server is already closed, set as `None`.
     loop : ``EventThread``
-        The eventloop to what the server is bound to.
+        The event loop to what the server is bound to.
     protocol_factory : `callable`
         Factory function for creating a protocols.
     serving : `bool`
@@ -1333,7 +1334,7 @@ class Server(object):
         Parameters
         ----------
         loop : ``EventThread``
-            The eventloop to what the server will be bound to.
+            The event loop to what the server will be bound to.
         sockets : `list` of `socket.socket`
             The sockets to serve by the server.
         protocol_factory : `callable`
@@ -1423,7 +1424,7 @@ class Server(object):
             sock.listen(backlog)
             loop._start_serving(protocol_factory, sock, ssl_context, self, backlog)
         
-        # Skip one eventloop cycle, so all the callbacks added up ^ will run nefore returning.
+        # Skip one event loop cycle, so all the callbacks added up ^ will run nefore returning.
         future = Future(loop)
         future.set_result(None)
         await future
@@ -1451,7 +1452,7 @@ class EventThreadCTXManager(object):
     Attributes
     ----------
     thread : `None` or ``EventThread``
-        The wrapped eventloop.
+        The wrapped event loop.
     thread_waiter : `None` or `threading.Event`
        Threading event, what is set, when the thread is started up. Set as `None` after set.
     """
@@ -1472,18 +1473,16 @@ class EventThreadCTXManager(object):
         thread_waiter : `threading.Event`
             Threading event, what is set, when the thread is started up.
         """
-        thread_waiter = Event()
-        
         self = object.__new__(cls)
         self.thread = thread
-        self.thread_waiter = thread_waiter
-        return self, thread_waiter
+        self.thread_waiter = Event()
+        return self
     
     def __enter__(self):
         """
-        Called, when the respective eventloop's runner started up.
+        Called, when the respective event loop's runner started up.
         
-        Enters the eventloop runner setting it's waiter and finishes the loop's initialization.
+        Enters the event loop runner setting it's waiter and finishes the loop's initialization.
         
         Raises
         ------
@@ -1495,7 +1494,7 @@ class EventThreadCTXManager(object):
         """
         thread_waiter = self.thread_waiter
         if thread_waiter is None:
-            raise RuntimeError(f'{EventThreadCTXManager.__class__.__name__}.__enter__ called with thread waiter lock set.')
+            raise RuntimeError(f'{self.__class__.__name__}.__enter__ called with thread waiter lock set.')
         
         try:
             thread = self.thread
@@ -1515,14 +1514,13 @@ class EventThreadCTXManager(object):
             selfwrite_socket.setblocking(False)
             thread._selfread_socket = selfread_socket
             thread._selfwrite_socket = selfwrite_socket
-            thread._internal_fds += 1
             thread.add_reader(selfread_socket.fileno(), thread.emptyselfsocket)
         finally:
             thread_waiter.set()
     
     def __exit__(self, exc_type, exc_val, exc_tb):
         """
-        When the eventloop's runner stops, it's context closes it.
+        When the event loop's runner stops, it's context closes it.
         """
         thread = self.thread
         self.thread = None
@@ -1533,7 +1531,6 @@ class EventThreadCTXManager(object):
         thread._selfread_socket = None
         thread._selfwrite_socket.close()
         thread._selfwrite_socket = None
-        thread._internal_fds -= 1
         
         thread._ready.clear()
         thread._scheduled.clear()
@@ -1549,20 +1546,24 @@ class EventThreadCTXManager(object):
 
 
 class EventThreadRunDescriptor(object):
-    __class_doc__ = ("""
-    Descriptor which desides, exactly which function of the ``EventThread`` is called, when using it's `.run` method.
-    
-    If called from class, returns `self`. If called from a non yet running eventloop, returns that's `.runner`. If
-    called from an already stopped eventloop, raises `RuntimeError`.
-    """)
-    
-    __instance_doc__ = ("""
-    `EventThread.run` is an overloaded method, with two usages. The first is when the thread starts up, it will run the
-    thread's "runner", ``EvenThread.runner``. The other one usage is, when the eventloop is running, then it returns
-    it's "caller", ``EvenThread.caller``.
-    
-    If the eventloop is already closed, raises ``RuntimeError``.
-    """)
+    if DOCS_ENABLED:
+        __class_doc__ = ("""
+        Descriptor which desides, exactly which function of the ``EventThread`` is called, when using it's `.run`
+        method.
+        
+        If called from class, returns `self`. If called from a non yet running event loop, returns that's `.runner`. If
+        called from an already stopped event loop, raises `RuntimeError`.
+        """)
+        
+        __instance_doc__ = ("""
+        ``EventThread.run`` is an overloaded method, with two usages. The first is when the thread starts up, it will
+        run the thread's "runner", ``EvenThread.runner``. The other one usage is, when the event loop is running, then
+        it returns it's "caller", ``EvenThread.caller``.
+        
+        If the event loop is already closed, raises ``RuntimeError``.
+        """)
+        
+        __doc__ = DocProperty()
     
     def __get__(self, obj, type_):
         if obj is None:
@@ -1570,24 +1571,32 @@ class EventThreadRunDescriptor(object):
         
         if obj.running:
             return obj.caller
-        elif not obj._is_stopped:
-            return obj.runner
-        else:
-            raise RuntimeError(f'The {obj.__class__.__name__} is already stopped.')
+        
+        if not obj.started:
+            if obj._started.is_set():
+                obj.started = True
+                return obj.runner
+            else:
+                obj._do_start()
+                return obj.caller
+        
+        if not obj._is_stopped:
+            return obj.caller
+        
+        raise RuntimeError(f'The {obj.__class__.__name__} is already stopped.')
     
     def __set__(self, obj, value):
         raise AttributeError('can\'t set attribute')
     
     def __delete__(self, obj):
         raise AttributeError('can\'t delete attribute')
-    
-    __doc__ = DocProperty()
+
 
 class EventThreadType(type):
     """
     Type of even thread, which manages their instances creation.
     """
-    def __call__(cls, daemon=False, name=None, **kwargs):
+    def __call__(cls, daemon=False, name=None, start_later=True, **kwargs):
         """
         Creates a new ``EventThread`` instance with the given parameters.
         
@@ -1597,6 +1606,8 @@ class EventThreadType(type):
             Whether the created thread should be daemon.
         name : `str`
             The created threa's name.
+        start_later : `bool`
+            Whether the event loop should be started only later
         kwargs : keyword arguments
             Additional event thread specific parameters.
         
@@ -1608,7 +1619,7 @@ class EventThreadType(type):
         Returns
         -------
         obj : ``EventThread``
-            The created eventloop.
+            The created event loop.
         
         Notes
         -----
@@ -1619,24 +1630,57 @@ class EventThreadType(type):
         cls.__init__(obj, **kwargs)
         Thread.__init__(obj, daemon=daemon, name=name)
         
-        ctx, thread_waiter = EventThreadCTXManager(obj)
-        try:
-            obj.ctx = ctx
-            Thread.start(obj)
-        except:
-            thread_waiter.set()
-            raise
+        obj.ctx = EventThreadCTXManager(obj)
         
-        thread_waiter.wait()
+        if not start_later:
+            obj._do_start()
         
         return obj
 
+
 class EventThread(Executor, Thread, metaclass=EventThreadType):
+    """
+    Event loops run asynchronous tasks and callbacks, perform network IO operations, and run subprocesses.
+    
+    At hata event loops are represented by ``EventThread``-s, which do not block the source thread , as they say, they
+    use their own thread for it.
+    
+    Attributes
+    ----------
+    _asyncgens: `WeakSet` of `async_generator`
+        The asynchornous generators bound to the event loop.
+    _asyncgens_shutdown_called : `bool`
+        Whether the event loop's asynchoronous generators where shut down.
+    _selfwrite_socket : `socket.socket`
+        Socket, which can be used to wake up the thread by writing into it.
+    _ready : `deque` of ``Handle`` instances
+        Ready to run handles of the eventloop.
+    _scheduled : `list` of ``TimerHandle`` instances.
+        Scheduled timer handles, which will be moved to `_ready` when their `when` becomes lower or equal to the
+        respective looptime.
+    _selfread_socket : `socket.socket`
+        Socket, which reads from ``._selfwrite_socket``.
+    ctx : ``EventThreadCTXManager``
+        Context of the eventloop to ensure it's safe startup and closing.
+    current_task : `None` or ``Task``
+        The actually running task of the event thread. Set only meanwhile a task is executed.
+    running : `bool`
+        Whether the eventloop is running.
+    selector : `selectors.Default_selector`
+        Selector to poll from scckets.
+    should_run : `bool`
+        Whether the event loop should do more loops.
+    started : `bool`
+        Whether the eventloop was already started.
+    
+    Notes
+    -----
+    Event threads support weakreferencing and dynamic attribute names as well.
+    """
     time = LOOP_TIME
     time_resolution = LOOP_TIME_RESOLUTION
-    __slots__ = ('__dict__', '__weakref__', '_asyncgens', '_asyncgens_shutdown_called', '_selfwrite_socket',
-        '_internal_fds', '_ready', '_scheduled', '_selfread_socket', 'ctx', 'current_task', 'running', 'selector',
-        'should_run', 'transports',)
+    __slots__ = ('__dict__', '__weakref__', '_asyncgens', '_asyncgens_shutdown_called', '_selfwrite_socket', '_ready',
+        '_scheduled', '_selfread_socket', 'ctx', 'current_task', 'running', 'selector', 'should_run', 'started',)
     
     def __init__(self, keep_executor_count=1):
         """
@@ -1654,25 +1698,78 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         Executor.__init__(self, keep_executor_count)
         self.should_run = True
         self.running = False
+        self.started = False
         self.selector = DefaultSelector()
         
         self._ready = deque()
         self._scheduled = []
         self.current_task = None
-        self._internal_fds = 0
         
         self._asyncgens = weakref.WeakSet()
         self._asyncgens_shutdown_called = False
-        self.transports = WeakValueDictionary()
         
         self._selfread_socket = None
         self._selfwrite_socket = None
+    
+    def is_started(self):
+        """
+        Returns whether the thread was started.
+        
+        Returns
+        -------
+        is_started : `bool`
+        """
+        thread_waiter = self.ctx.thread_waiter
+        if thread_waiter is None:
+            return True
+        
+        if thread_waiter.is_set():
+            return True
+        
+        return False
+    
+    def _maybe_start(self):
+        """
+        Starts the event loop's thread if not yet started.
+        
+        Returns
+        -------
+        started : `bool`
+            Whether the thread was strated up.
+        """
+        if self.is_started():
+            return False
+        
+        self._do_start()
+        return True
+    
+    def _do_start(self):
+        """
+        Starts the event loop's thread.
+        
+        If the evemtéoop is already started will ot start it again.
+        """
+        thread_waiter = self.ctx.thread_waiter
+        # set as `None` if already started.
+        if thread_waiter is None:
+            return
+        
+        if not self._started.is_set():
+            try:
+                Thread.start(self)
+            except:
+                thread_waiter.set()
+                raise
+        
+        thread_waiter.wait()
     
     def __repr__(self):
         """Returns the event thread's representation."""
         result = ['<', self.__class__.__name__, '(', self._name]
         self.is_alive() # easy way to get ._is_stopped set when appropriate
-        if self._is_stopped or (not self.running):
+        if self.is_started():
+            state = ' created'
+        elif self._is_stopped or (not self.running):
             state = ' stopped'
         else:
             state = ' started'
@@ -1713,12 +1810,15 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         Returns
         -------
         handle : `None` or ``TimerHandle``
-            The created handle is returned, what can be used to cancel it. If the eventloop is stopped, returns `None`.
+            The created handle is returned, what can be used to cancel it. If the event loop is stopped, returns `None`.
         """
-        if self.running:
-            handle = TimerHandle(LOOP_TIME()+delay, callback, args)
-            heappush(self._scheduled, handle)
-            return handle
+        if not self.running:
+            if not self._maybe_start():
+                return None
+        
+        handle = TimerHandle(LOOP_TIME()+delay, callback, args)
+        heappush(self._scheduled, handle)
+        return handle
     
     def call_at(self, when, callback, *args):
         """
@@ -1736,12 +1836,15 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         Returns
         -------
         handle : `None` or ``TimerHandle``
-            The created handle is returned, what can be used to cancel it. If the eventloop is stopped, returns `None`.
+            The created handle is returned, what can be used to cancel it. If the event loop is stopped, returns `None`.
         """
-        if self.running:
-            handle = TimerHandle(when, callback, args)
-            heappush(self._scheduled, handle)
-            return handle
+        if not self.running:
+            if not self._maybe_start():
+                return None
+        
+        handle = TimerHandle(when, callback, args)
+        heappush(self._scheduled, handle)
+        return handle
     
     def call_later_weak(self, delay, callback, *args):
         """
@@ -1759,17 +1862,20 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         Returns
         -------
         handle : `None` or ``TimerWeakHandle``
-            The created handle is returned, what can be used to cancel it. If the eventloop is stopped, returns `None`.
+            The created handle is returned, what can be used to cancel it. If the event loop is stopped, returns `None`.
         
         Raises
         ------
         TypeError
             If `callback` cannot be weakreferred.
         """
-        if self.running:
-            handle = TimerWeakHandle(LOOP_TIME()+delay, callback, args)
-            heappush(self._scheduled, handle)
-            return handle
+        if not self.running:
+            if not self._maybe_start():
+                return None
+        
+        handle = TimerWeakHandle(LOOP_TIME()+delay, callback, args)
+        heappush(self._scheduled, handle)
+        return handle
     
     def call_at_weak(self, when, callback, *args):
         """
@@ -1787,21 +1893,24 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         Returns
         -------
         handle : `None` or ``TimerWeakHandle``
-            The created handle is returned, what can be used to cancel it. If the eventloop is stopped, returns `None`.
+            The created handle is returned, what can be used to cancel it. If the event loop is stopped, returns `None`.
         
         Raises
         ------
         TypeError
             If `callback` cannot be weakreferred.
         """
-        if self.running:
-            handle = TimerWeakHandle(when, callback, args)
-            heappush(self._scheduled, handle)
-            return handle
+        if not self.running:
+            if not self._maybe_start():
+                return None
+        
+        handle = TimerWeakHandle(when, callback, args)
+        heappush(self._scheduled, handle)
+        return handle
     
     def call_soon(self, callback, *args):
         """
-        Schedules the callback to be called at the next iteration of the eventloop.
+        Schedules the callback to be called at the next iteration of the event loop.
         
         Parameters
         ----------
@@ -1813,16 +1922,19 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         Returns
         -------
         handle : `None` or ``Handle``
-            The created handle is returned, what can be used to cancel it. If the eventloop is stopped, returns `None`.
+            The created handle is returned, what can be used to cancel it. If the event loop is stopped, returns `None`.
         """
-        if self.running:
-            handle = Handle(callback, args)
-            self._ready.append(handle)
-            return handle
+        if not self.running:
+            if not self._maybe_start():
+                return None
+        
+        handle = Handle(callback, args)
+        self._ready.append(handle)
+        return handle
     
     def call_soon_threadsafe(self, callback, *args):
         """
-        Schedules the callback to be called at the next iteration of the eventloop. Wakes up the eventloop if sleeping,
+        Schedules the callback to be called at the next iteration of the event loop. Wakes up the event loop if sleeping,
         so can be used from other threads as well.
         
         Parameters
@@ -1835,17 +1947,55 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         Returns
         -------
         handle : `None` or ``Handle``
-            The created handle is returned, what can be used to cancel it. If the eventloop is stopped, returns `None`.
+            The created handle is returned, what can be used to cancel it. If the event loop is stopped, returns `None`.
+        """
+        if not self.running:
+            if not self._maybe_start():
+                return None
+        
+        handle = Handle(callback, args)
+        self._ready.append(handle)
+        self.wakeup()
+        return handle
+    
+    def call_soon_threadsafe_lazy(self, callback, *args):
+        """
+        Schedules the callback to be called at the next iteration of the event loop. If the evnetloop is already
+        running, wakes it up.
+        
+        Parameters
+        ----------
+        callback : `callable`
+            The function to call later.
+        args : arguments
+            The arguments to call the `callback` with.
+        
+        Returns
+        -------
+        handle : `None` or ``Handle``
+            The created handle is returned, what can be used to cancel it. If the event loop is stopped, returns `None`.
         """
         if self.running:
-            handle = Handle(callback, args)
-            self._ready.append(handle)
+            should_wakeup = True
+        else:
+            if self.is_started():
+                should_wakeup = True
+            elif self.should_run:
+                should_wakeup = False
+            else:
+                return None
+        
+        handle = Handle(callback, args)
+        self._ready.append(handle)
+        
+        if should_wakeup:
             self.wakeup()
-            return handle
-    
+        
+        return handle
+        
     def cycle(self, cycle_time, *funcs, priority=0):
         """
-        Cycles the given functions on an eventloop, by calling them after every `n` amount of seconds.
+        Cycles the given functions on an event loop, by calling them after every `n` amount of seconds.
         
         Parameters
         ----------
@@ -1875,19 +2025,21 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         Notes
         -----
-        If the eventloop is not running, clears the callback instead of scheduling them.
+        If the event loop is not running, clears the callback instead of scheduling them.
         """
         callbacks = future._callbacks
-        if self.running:
-            while callbacks:
-                handle = Handle(callbacks.pop(), (future,))
-                self._ready.append(handle)
-        else:
-            callbacks.clear()
+        if not self.running:
+            if not self._maybe_start():
+                callbacks.clear()
+                return
         
+        while callbacks:
+            handle = Handle(callbacks.pop(), (future,))
+            self._ready.append(handle)
+    
     def create_future(self):
         """
-        Creates a future bound to the eventloop.
+        Creates a future bound to the event loop.
         
         Returns
         -------
@@ -1914,8 +2066,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
     
     def create_task_threadsafe(self, coro):
         """
-        Creates a task wrapping the given coroutine and wakes up the eventloop. Wakes up the eventloop if sleeping, so
-        can be used from other threads as well.
+        Creates a task wrapping the given coroutine and wakes up the event loop. Wakes up the event loop if sleeping,
+        what means it is safe to use from other threads as well.
         
         Parameters
         ----------
@@ -1933,17 +2085,39 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
     
     def enter(self):
         """
-        Can be used to pause the eventloop. Check ``ThreadSyncerCTX`` for more details.
+        Can be used to pause the event loop. Check ``ThreadSyncerCTX`` for more details.
         
         Returns
         -------
         thread_syncer : ``ThreadSyncerCTX``
         """
         return ThreadSyncerCTX(self)
-
-    # Ensures a future, coroutine, or an awaitable on this loop.
-    # Returns a Future or a Task bound to this thread.
+    
     def ensure_future(self, coro_or_future):
+        """
+        Ensures the given coroutine or future on the event loop. Returns an awaitable ``Future`` instance.
+        
+        Parameters
+        ----------
+        coro_or_future : `awaitable`
+            The coroutinr or future to ensure.
+        
+        Returns
+        -------
+        future : ``Future`` instance.
+            The return type depends on `coro_or_future`'s type.
+            
+            - If `coro_or_future` is given as `coroutine` or as `generator`, returns a ``Task`` instance.
+            - If `coro_or_future` is given as ``Future`` instance, bound to the current event loop, returns it.
+            - If `coro_or_future`is given as ``Future`` instance, bound to an other event loop, returns a
+                ``FutureAsyncWrapper``.
+            - If `coro_or_future` defines an `__await__` megiv metho,d then returns a ``Task`` instance.
+        
+        Raises
+        ------
+        TypeError
+            If `coro_or_future` is not `awaitable`.
+        """
         if iscoroutine(coro_or_future):
             return Task(coro_or_future, self)
         
@@ -1957,11 +2131,33 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             return Task(type_.__await__(coro_or_future), self)
         
         raise TypeError('A Future, a coroutine or an awaitable is required.')
-
-    # Ensures a future, coroutine, or an awaitable on this loop.
-    # If the future is bound to an another thread, it wakes self up.
-    # Returns a Future or a Task bound to this thread.
+    
     def ensure_future_threadsafe(self, coro_or_future):
+        """
+        Ensures the given coroutine or future on the event loop. Returns an awaitable ``Future`` instance. Wakes up
+        the event loop if sleeping, what means it is safe to use from other threads as well.
+        
+        Parameters
+        ----------
+        coro_or_future : `awaitable`
+            The coroutinr or future to ensure.
+        
+        Returns
+        -------
+        future : ``Future`` instance.
+            The return type depends on `coro_or_future`'s type.
+            
+            - If `coro_or_future` is given as `coroutine` or as `generator`, returns a ``Task`` instance.
+            - If `coro_or_future` is given as ``Future`` instance, bound to the current event loop, returns it.
+            - If `coro_or_future`is given as ``Future`` instance, bound to an other event loop, returns a
+                ``FutureAsyncWrapper``.
+            - If `coro_or_future` defines an `__await__` megiv metho,d then returns a ``Task`` instance.
+        
+        Raises
+        ------
+        TypeError
+            If `coro_or_future` is not `awaitable`.
+        """
         if iscoroutine(coro_or_future):
             task = Task(coro_or_future, self)
             self.wakeup()
@@ -1969,7 +2165,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         if isinstance(coro_or_future, Future):
             if coro_or_future._loop is not self:
-                coro_or_future=FutureAsyncWrapper(coro_or_future, self)
+                coro_or_future = FutureAsyncWrapper(coro_or_future, self)
             return coro_or_future
         
         type_ = type(coro_or_future)
@@ -1984,9 +2180,9 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
     
     def runner(self):
         """
-        Runs the eventloop, until ``.stop`` is called.
+        Runs the event loop, until ``.stop`` is called.
         
-        Hata ``EventThread`` are created as already running eventloops.
+        Hata ``EventThread`` are created as already running event loops.
         """
         with self.ctx:
             key = None
@@ -2053,7 +2249,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
     
     def caller(self, awaitable, timeout=None):
         """
-        Ensures the given awaitable on the eventloop and returns it's result when done.
+        Ensures the given awaitable on the event loop and returns it's result when done.
         
         Parameters
         ----------
@@ -2221,7 +2417,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
     
     def stop(self):
         """
-        Stops the eventloop. Threadsafe.
+        Stops the event loop. Threadsafe.
         """
         if self.should_run:
             if current_thread() is self:
@@ -2232,21 +2428,25 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
 
     def _stop(self):
         """
-        Stops the eventloop. Intrenal function of ``.stop``, called or queued up by it.
+        Stops the event loop. Intrenal function of ``.stop``, called or queued up by it.
         
-        Should be called only from the thread of the eventloop.
+        Should be called only from the thread of the event loop.
         """
         self.release_executors()
         self.should_run = False
 
     async def shutdown_asyncgens(self):
+        """
+        Shuts down the asynchornous generators running on the eventloop.
+        """
         self._asyncgens_shutdown_called = True
         
-        if not len(self._asyncgens):
+        asyncgens = self._asyncgens
+        if asyncgens:
             return
         
-        closing_agens = list(self._asyncgens)
-        self._asyncgens.clear()
+        closing_agens = list(asyncgens)
+        asyncgens.clear()
         
         results = await Gatherer(self, (ag.aclose() for ag in closing_agens))
         
@@ -2261,20 +2461,67 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                 sys.stderr.write(''.join(extracted))
 
     def _make_socket_transport(self, sock, protocol, waiter=None, *, extra=None, server=None):
+        """
+        Creates a socket transport with the given parameters.
+        
+        Parameters
+        ----------
+        sock : `socket.socket`
+            The socket, what the ransport will use.
+        protocol : `Any`
+            The protocol of the transport.
+        waiter : `None` or ``Future``, Opional
+            Waiter, what's result should be set, whne the transport is ready to use.
+        extra : `None` or `dict` of (`str`, `Any`) item, Optional
+            Optional transport informations.
+        server : `None` or ``Server``, Optional
+            The server to what the created socket will be attached to.
+        
+        Returns
+        -------
+        transport : ``_SelectorSocketTransport``
+        """
         return _SelectorSocketTransport(self, sock, protocol, waiter, extra, server)
     
-    def _make_ssl_transport(self, rawsock, protocol, sslcontext, waiter=None, *, server_side=False,
+    def _make_ssl_transport(self, sock, protocol, sslcontext, waiter=None, *, server_side=False,
             server_hostname=None, extra=None, server=None):
+        """
+        Creates an ssl transport with the given parameters.
+        
+        Parameters
+        ----------
+        sock : `socket.socket`
+            The socket, what the ransport will use.
+        protocol : `Any`
+            The protocol of the transport. The given protocol is wrapped into an ``SSLProtocol``
+        sslcontext : ``ssl.SSLContext``
+            Ssl context of the respective connection.
+        waiter : `None` or ``Future``, Opional
+            Waiter, what's result should be set, whne the transport is ready to use.
+        server_side : `bool`, Optional
+            Whether the created ssl transport is a server side. Defaults to `False`.
+        server_hostname : `None` or `str`
+            The
+        extra : `None` or `dict` of (`str`, `Any`) item, Optional
+            Optional transport informations.
+        server : `None` or ``Server``, Optional
+            The server to what the created socket will be attached to.
+        
+        Returns
+        -------
+        transport : ``_SSLProtocolTransport``
+            The created ssl transport.
+        """
         
         ssl_protocol = SSLProtocol(self, protocol, sslcontext, waiter, server_side, server_hostname)
-        _SelectorSocketTransport(self, rawsock, ssl_protocol, extra=extra, server=server)
+        _SelectorSocketTransport(self, sock, ssl_protocol, extra=extra, server=server)
         return ssl_protocol.app_transport
-
+    
     def emptyselfsocket(self):
         """
         Reads all the data out from selfsocket.
         
-        Familiar to asyncio eventloop's `._read_from_self`.
+        Familiar to asyncio event loop's `._read_from_self`.
         """
         while True:
             try:
@@ -2288,29 +2535,35 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
     
     def wakeup(self):
         """
-        Wakes up the eventloop. Threadsafe.
+        Wakes up the event loop. Threadsafe.
         
-        Familiar as asyncio eventloop's `._write_to_self`.
+        Familiar as asyncio event loop's `._write_to_self`.
         """
         selfwrite_socket = self._selfwrite_socket
-        if selfwrite_socket is not None:
-            try:
-                selfwrite_socket.send(b'\0')
-            except OSError:
-                pass
+        if selfwrite_socket is None:
+            if self.running:
+                return
+            
+            if not self._maybe_start():
+                return
+        
+        try:
+            selfwrite_socket.send(b'\0')
+        except OSError:
+            pass
 
     def _start_serving(self, protocol_factory, sock, sslcontext=None, server=None, backlog=100):
+        
         self.add_reader(sock.fileno(), self._accept_connection, protocol_factory, sock, sslcontext, server, backlog)
-
+    
     def _stop_serving(self, sock):
         self.remove_reader(sock.fileno())
         sock.close()
-
+    
     def _accept_connection(self, protocol_factory, sock, sslcontext=None, server=None, backlog=100):
-        # This method is only called once for each event loop tick where the
-        # listening socket has triggered an EVENT_READ. There may be multiple
-        # connections waiting for an .accept() so it is called in a loop.
-        # See https://bugs.python.org/issue27906 for more details.
+        # This method is only called once for each event loop tick where the listening socket has triggered an
+        # EVENT_READ. There may be multiple connections waiting for an .accept() so it is called in a loop. See
+        # https://bugs.python.org/issue27906 for more details.
         for _ in range(backlog):
             try:
                 conn, addr = sock.accept()
@@ -2362,9 +2615,22 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                 '._accept_connection2\n',
                     ])
     
-    def _add_reader(self, fd, callback, *args):
+    def add_reader(self, fd, callback, *args):
+        """
+        Registers read callback for the given fd.
+        
+        Parameters
+        ----------
+        fd : `int`
+            The respective file descriptor.
+        callback : `callable`
+            The function, what is called, when data is received on the respective file descriptor.
+        *args : Arguments
+            Arguments to call `callback` with.
+        """
         if not self.running:
-            raise RuntimeError('Event loop is cancelled.')
+            if not self._maybe_start():
+                raise RuntimeError('Event loop stopped.')
         
         handle = Handle(callback, args)
         try:
@@ -2379,8 +2645,23 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                 reader.cancel()
     
     def remove_reader(self, fd):
+        """
+        Removes a read callback for the given fd.
+        
+        Parameters
+        ----------
+        fd : `int`
+            The respective file descriptor.
+        
+        Returns
+        -------
+        removed : `bool`
+            Whether a reader callback was removed.
+        """
         if not self.running:
-            return False
+            if not self._maybe_start():
+                return False
+        
         try:
             key = self.selector.get_key(fd)
         except KeyError:
@@ -2401,9 +2682,22 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         return False
     
-    def _add_writer(self, fd, callback, *args):
+    def add_writer(self, fd, callback, *args):
+        """
+        Registers a write callback for the given fd.
+        
+        Parameters
+        ----------
+        fd : `int`
+            The respective file descriptor.
+        callback : `callable`
+            The function, what is called, when data the respective file descriptor becames writable.
+        *args : Arguments
+            Arguments to call `callback` with.
+        """
         if not self.running:
-            raise RuntimeError('Event loop is cancelled.')
+            if not self._maybe_start():
+                raise RuntimeError('Event loop is cancelled.')
         
         handle = Handle(callback, args)
         try:
@@ -2420,8 +2714,23 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             writer.cancel()
     
     def remove_writer(self, fd):
+        """
+        Removes a write callback for the given fd.
+        
+        Parameters
+        ----------
+        fd : `int`
+            The respective file descriptor.
+        
+        Returns
+        -------
+        removed : `bool`
+            Whether a writer callback was removed.
+        """
         if not self.running:
-            return False
+            if not self._maybe_start():
+                return False
+        
         try:
             key = self.selector.get_key(fd)
         except KeyError:
@@ -2429,7 +2738,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         mask = key.events
         reader, writer = key.data
-        #remove both writer and connector.
+        # remove both writer and connector.
         mask &= ~EVENT_WRITE
         if mask:
             self.selector.modify(fd, mask, (reader, None))
@@ -2441,29 +2750,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             return True
         
         return False
-
-    if __debug__:
-        def _ensure_fd_no_transport(self, fd):
-            try:
-                transport = self.transports[fd]
-            except KeyError:
-                return
-
-            if not transport.is_closing():
-                raise RuntimeError(f'File descriptor {fd!r} is used by transport {transport!r}')
-
-        def add_reader(self, fd, callback, *args):
-            self._ensure_fd_no_transport(fd)
-            return self._add_reader(fd, callback, *args)
-
-        def add_writer(self, fd, callback, *args):
-            self._ensure_fd_no_transport(fd)
-            return self._add_writer(fd, callback, *args)
-
-    else:
-        add_writer = _add_writer
-        add_reader = _add_reader
-
+    
     async def connect_accepted_socket(self, protocol_factory, sock, *, ssl=None):
         if not _is_stream_socket(sock):
             raise ValueError(f'A Stream Socket was expected, got {sock!r}')
@@ -2649,7 +2936,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         return (await future)
 
     def _sock_connect(self, future, sock, address):
-        fd=sock.fileno()
+        fd = sock.fileno()
         try:
             sock.connect(address)
         except (BlockingIOError, InterruptedError):
@@ -2658,16 +2945,16 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             # becomes writable to be notified when the connection succeed or
             # fails.
             self.add_writer(fd, self._sock_connect_cb, future, sock, address)
-            future.add_done_callback(self._sock_connect_one(fd),)
+            future.add_done_callback(self._sock_connect_done(fd),)
         except BaseException as err:
             future.set_exception(err)
         else:
             future.set_result(None)
     
-    class _sock_connect_one(object):
+    class _sock_connect_done(object):
         __slots__ = ('fd',)
         def __init__(self, fd):
-            self.fd=fd
+            self.fd = fd
         def __call__(self, future):
             future._loop.remove_writer(self.fd)
     
@@ -2687,7 +2974,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         else:
             future.set_result(None)
     
-    #await it
+    # await it
     def sock_recv(self, sock, n):
         future = Future(self)
         self._sock_recv(future, False, sock, n)
@@ -2854,18 +3141,17 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         return Server(self, sockets, protocol_factory, ssl, backlog)
         
-    #should be async
+    # should be async
     def create_unix_connection(self, protocol_factory, path, *, ssl=None, sock=None, server_hostname=None):
         raise NotImplementedError
     
-    #should be async
+    # should be async
     def create_unix_server(self, protocol_factory, path=None, *, sock=None, backlog=100, ssl=None):
         raise NotImplementedError
     
     if IS_UNIX:
         async def connect_read_pipe(self, protocol, pipe):
             return await UnixReadPipeTransport(self, pipe, protocol)
-        
         
         async def connect_write_pipe(self, protocol, pipe):
             return await UnixWritePipeTransport(self, pipe, protocol)

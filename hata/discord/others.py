@@ -742,7 +742,7 @@ class Status(object):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`str`, ``Status``) items
-        A container what stores the predefined statuses in `value` - `status relation. This container is acccessed
+        A container what stores the predefined statuses in `value` - `status` relation. This container is acccessed
         when translating status value to ``Status`` object.
     
     Each predefined status also can be accessed as a class attribute:

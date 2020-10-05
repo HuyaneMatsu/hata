@@ -1494,7 +1494,7 @@ class WaitAndContinue(object):
         The check what is called whith the received parameters whenever an event is received.
     event : `async-callable`
         The respective event handler on what the waiting is executed.
-    future : `Future`
+    future : ``Future``
         The waiter future what's result will be set when the check returns non `False` value.
     target : ``DiscordEntity``
         The target entity on what the waiting is executed.
@@ -1508,8 +1508,8 @@ class WaitAndContinue(object):
         
         Parameters
         ----------
-        future : `Future`
-            The waiter future what's result will be set when the check returns non `False` value.
+        future : ``Future`
+            The waiter future `what's result will be set when the check returns non `False` value.
         check : `callable`
             The check what is called whith the received parameters whenever an event is received.
         target : ``DiscordEntity``
@@ -1600,7 +1600,7 @@ class WaitAndContinue(object):
 
 def wait_for_reaction(client, message, check, timeout):
     """
-    Executes waiting for reaction on a message with a `Future` instance.
+    Executes waiting for reaction on a message with a ``Future`` instance.
     
     Parameters
     ----------
@@ -1615,7 +1615,7 @@ def wait_for_reaction(client, message, check, timeout):
     
     Returns
     -------
-    future : `Future`
+    future : ``Future``
         The waiter future, what should be awaited.
     """
     future = Future(KOKORO)
@@ -1625,7 +1625,7 @@ def wait_for_reaction(client, message, check, timeout):
 
 def wait_for_message(client, channel, check, timeout):
     """
-    Executes waiting for messages at a channel with a `Future` instance.
+    Executes waiting for messages at a channel with a ``Future`` instance.
     
     Parameters
     ----------
@@ -1640,7 +1640,7 @@ def wait_for_message(client, channel, check, timeout):
     
     Returns
     -------
-    future : `Future`
+    future : ``Future``
         The waiter future, what should be awaited.
     """
     future = Future(KOKORO)

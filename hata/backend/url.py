@@ -1,10 +1,13 @@
 ﻿# -*- coding: utf-8 -*-
-#https://github.com/squeaky-pl/zenchmarks/blob/master/vendor/yarl/__init__.py
+# https://github.com/squeaky-pl/zenchmarks/blob/master/vendor/yarl/__init__.py
 from ipaddress import ip_address
 from urllib.parse import SplitResult, parse_qsl, urljoin, urlsplit, urlunsplit
+from math import isinf, isnan
 
 from .dereaddons_local import multidict,cached_property
 from .quote import quote, unquote
+
+NoneType = type(None)
 
 DEFAULT_PORTS = {
     'http'  : 80,
@@ -86,7 +89,7 @@ class URL:
     __slots__ = ('_cache', '_val', )
 
     def __new__(cls, val='', encoded=False):
-        if isinstance(val,cls):
+        if isinstance(val, cls):
             return val
         
         self = object.__new__(cls)
@@ -100,7 +103,7 @@ class URL:
             raise TypeError(f'Constructor parameter should be str, got {val.__class__.__name__}')
         
         if not encoded:
-            if not val[1]:  # netloc
+            if not val[1]:
                 netloc = ''
             else:
                 netloc = val.hostname
@@ -313,10 +316,17 @@ class URL:
     def path(self):
         return unquote(self.raw_path)
     
-    # A multidict representing parsed query parameters in decoded representation.
-    # Empty value if URL has no query part.
     @cached_property
     def query(self):
+        """
+        A multidict representing parsed query parameters in decoded representation.
+        
+        An empty multidict is returned if the url has no query parts.
+        
+        Returns
+        -------
+        query : `multidict of (`str`, `Any`) items
+        """
         return multidict(parse_qsl(self.query_string, keep_blank_values=True))
     
     # Encoded query part of URL.
@@ -504,19 +514,41 @@ class URL:
         
         if query is None:
             query = ''
-        elif hasattr(query,'__getitem__') and hasattr(query,'keys'):
+        elif hasattr(query,'__getitem__') and hasattr(query, 'keys'):
             lst = []
             for k, v in query.items():
-                if isinstance(v, str):
+                v_type = v.__class__
+                if v_type is str:
                     pass
-                elif type(v) is int:
+                elif v_type is int:
                     v = str(v)
-                elif type(v) is bool:
+                elif v_type is bool:
                     v = 'true' if v else 'false'
-                elif v is None:
+                elif v_type is NoneType:
                     v = 'null'
+                elif v_type is float:
+                    if isinf(v):
+                         raise ValueError('`inf` is not a supported query string parameter value.')
+                    if isnan(v):
+                        raise ValueError('`nan` is not a supported query string parameter value.')
+                    v = str(v)
+                elif issubclass(v_type, str):
+                    v = str(v)
+                elif issubclass(v_type, int):
+                    v = str(int(v))
+                elif issubclass(v_type, bool):
+                    v = 'true' if bool(v) else 'false'
+                elif issubclass(v_type, float):
+                    v = float(v)
+                    if isinf(v):
+                         raise ValueError('`inf` is not a supported query string parameter value.')
+                    if isnan(v):
+                        raise ValueError('`nan` is not a supported query string parameter value.')
+                    v = str(v)
                 else:
-                    raise TypeError(f'Invalid variable type: mapping value should be str or int, got {v!r}')
+                    raise TypeError(f'`{v_type}` instances are not supported as query string parameter values, got '
+                        f'{v!r}.')
+                
                 lst.append(f'{quote(k, safe="/?:@", qs=True)}={quote(v, safe="/?:@", qs=True)}')
             query = '&'.join(lst)
         elif isinstance(query, str):

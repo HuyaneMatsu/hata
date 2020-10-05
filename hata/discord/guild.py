@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('DiscoveryCategory', 'Guild', 'GuildDiscovery', 'GuildEmbed', 'GuildFeature', 'GuildPreview', 'GuildWidget',
+__all__ = ('DiscoveryCategory', 'Guild', 'GuildDiscovery', 'GuildFeature', 'GuildPreview', 'GuildWidget',
     'GuildWidgetChannel', 'GuildWidgetUser', 'SystemChannelFlag', 'WelcomeChannel', 'WelcomeScreen', )
 
 import re, reprlib
@@ -293,64 +293,6 @@ class SystemChannelFlag(ReverseFlagBase):
 
 SystemChannelFlag.NONE = SystemChannelFlag(0b11)
 SystemChannelFlag.ALL  = SystemChannelFlag(0b00)
-
-class GuildEmbed(object):
-    """
-    Represents a guild's embed.
-    
-    Attributes
-    ----------
-    channel : ``Channeltext``
-        The respective guild's embed channel.
-    enabled : `bool`
-        Whether respective guild's embed is enabled.
-    guild : ``Guild``
-        The guild of the guild embed.
-    """
-    __slots__ = ('channel', 'enabled', 'guild',)
-    def __init__(self, data, guild):
-        """
-        Creates a new guild embed.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Guild embed data received from Discord.
-        guild : ``Guild``
-            The guild of the guild embed.
-        """
-        self.guild = guild
-        self.enabled = guild.embed_enabled = data['enabled']
-        channel_id = data['channel_id']
-        if (channel_id is not None):
-            channel = guild.channels.get(int(channel_id))
-        else:
-            channel = None
-        self.channel = guild.embed_channel=channel
-    
-    @classmethod
-    def from_guild(cls, guild):
-        """
-        Creates a guild embed directly from a ``Guild``.
-        
-        Parameters
-        ----------
-        guild : ``Guild``
-            The guild to create the guild embed from.
-        
-        Returns
-        -------
-        guild_embed : ``GuildEmbed``
-        """
-        self = object.__new__(cls)
-        self.enabled = guild.embed_enabled
-        self.channel = guild.embed_channel
-        self.guild = guild
-        return self
-
-    def __repr__(self):
-        """Returns the representation of the guild embed."""
-        return f'<{self.__class__.__name__} of guild {self.guild!r}>'
 
 class GuildWidgetUser(DiscordEntity):
     """
@@ -707,8 +649,6 @@ def PartialGuild(data):
     guild.clients = []
     guild.content_filter = ContentFilterLevel.disabled
     # description will be set down
-    guild.embed_channel = None
-    guild.embed_enabled = False
     guild.emojis = {}
     guild.features = []
     # icon_type will be set down
@@ -775,8 +715,7 @@ def PartialGuild(data):
     
     return guild
 
-#discord does not sends `embed_channel`, `embed_enabled`, `widget_channel`,
-#`widget_enabled`, `max_presences`, `max_users` correctly and thats sad.
+#discord does not send `widget_channel`, `widget_enabled`, `max_presences`, `max_users` correctly and thats sad.
 class Guild(DiscordEntity, immortal=True):
     """
     Represents a Discord guild (or server).
@@ -811,10 +750,6 @@ class Guild(DiscordEntity, immortal=True):
         The guild's discovery splashe's hash in `uint128`. The guild must be a discoverable.
     discovery_splash_type : ``IconType``
         The guild's discovery splashe's type.
-    embed_channel : `None` or ``ChannelText``
-        The channel to where the guild's embed widget will generate the invite to.
-    embed_enabled : `bool`
-        If the guild embeddable. Linked to ``.embed_channel``.
     emojis : `dict` of (`int`, ``Emoji``) items
         The emojis of the guild stored in `emoji_id` - `emoji` relation.
     features : `list` of ``GuildFeature``
@@ -885,20 +820,17 @@ class Guild(DiscordEntity, immortal=True):
     -----
     When a guild is loaded first time, some of it's attrbiutes might not reflect their real value. These are the
     following:
-    - ``.embed_channel``
-    - ``.embed_enabled``
     - ``.max_presences``
     - ``.max_users``
     - ``.widget_channel``
     - ``.widget_enabled``
     """
     __slots__ = ('_boosters', '_cache_perm', 'afk_channel', 'afk_timeout', 'available', 'booster_count', 'channels',
-        'clients', 'content_filter', 'description', 'embed_channel', 'embed_enabled', 'emojis', 'features',
-        'has_animated_icon', 'is_large', 'max_presences', 'max_users', 'max_video_channel_users',
-        'message_notification', 'mfa', 'name', 'owner_id', 'preferred_locale', 'premium_tier', 'public_updates_channel',
-        'region', 'roles', 'roles', 'rules_channel', 'system_channel', 'system_channel_flags', 'user_count', 'users',
-        'vanity_code', 'verification_level', 'voice_states', 'webhooks', 'webhooks_uptodate', 'widget_channel',
-        'widget_enabled')
+        'clients', 'content_filter', 'description', 'emojis', 'features', 'has_animated_icon', 'is_large',
+        'max_presences', 'max_users', 'max_video_channel_users', 'message_notification', 'mfa', 'name', 'owner_id',
+        'preferred_locale', 'premium_tier', 'public_updates_channel', 'region', 'roles', 'roles', 'rules_channel',
+        'system_channel', 'system_channel_flags', 'user_count', 'users', 'vanity_code', 'verification_level',
+        'voice_states', 'webhooks', 'webhooks_uptodate', 'widget_channel', 'widget_enabled')
     
     banner = IconSlot('banner', 'banner', URLS.guild_banner_url, URLS.guild_banner_url_as)
     icon = IconSlot('icon', 'icon', URLS.guild_icon_url, URLS.guild_icon_url_as)
@@ -1133,8 +1065,6 @@ class Guild(DiscordEntity, immortal=True):
             guild.description = None
             guild.discovery_splash_hash = 0
             guild.discovery_splash_type = ICON_TYPE_NONE
-            guild.embed_channel = None
-            guild.embed_enabled = False
             guild.emojis = {}
             guild.features = []
             guild.has_animated_icon = False
@@ -1227,37 +1157,7 @@ class Guild(DiscordEntity, immortal=True):
         
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
-    embed_url = URLS.guild_embed_url
     widget_url = URLS.guild_widget_url
-    
-    def _update_embed(self, data):
-        """
-        On requesting a guild's embed it's respective attributes get updated.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Guild embed's data received from Discord.
-        """
-        self.embed_enabled = data.get('enabled', False)
-        
-        channel_id = data.get('id')
-        if channel_id is None:
-            embed_channel = None
-        else:
-            embed_channel = self.channels[int(channel_id)]
-        self.embed_channel = embed_channel
-    
-    @property
-    def embed(self):
-        """
-        Returns the guild's embed based on the guild's current embed information.
-        
-        Returns
-        -------
-        guild_embed : ``GuildEmbed``
-        """
-        return GuildEmbed.from_guild(self)
 
     def _delete(self, client):
         """
@@ -2192,10 +2092,6 @@ class Guild(DiscordEntity, immortal=True):
         +---------------------------+-------------------------------+
         | discovery_splash          | ``Icon``                      |
         +---------------------------+-------------------------------+
-        | embed_channel             | `None` or ``ChannelText``     |
-        +---------------------------+-------------------------------+
-        | embed_enabled             | `bool`                        |
-        +---------------------------+-------------------------------+
         | features                  | `list` of ``GuildFeature``    |
         +---------------------------+-------------------------------+
         | icon                      | ``Icon``                      |
@@ -2370,21 +2266,6 @@ class Guild(DiscordEntity, immortal=True):
             old_attributes['widget_channel'] = self.widget_channel
             self.widget_channel = widget_channel
         
-        embed_enabled = data.get('embed_enabled', False)
-        if self.embed_enabled != embed_enabled:
-            old_attributes['embed_enabled'] = self.embed_enabled
-            self.embed_enabled = embed_enabled
-
-        embed_channel_id = data.get('embed_channel_id')
-        if embed_channel_id is None:
-            embed_channel = None
-        else:
-            embed_channel = self.channels[int(embed_channel_id)]
-        
-        if self.embed_channel is not embed_channel:
-            old_attributes['embed_channel'] = self.embed_channel
-            self.embed_channel = embed_channel
-        
         rules_channel_id = data.get('rules_channel_id')
         if rules_channel_id is None:
             rules_channel = None
@@ -2534,15 +2415,6 @@ class Guild(DiscordEntity, immortal=True):
         else:
             widget_channel = self.channels[int(widget_channel_id)]
         self.widget_channel = widget_channel
-        
-        self.embed_enabled = data.get('embed_enabled', False)
-
-        embed_channel_id = data.get('embed_channel_id')
-        if embed_channel_id is None:
-            embed_channel = None
-        else:
-            embed_channel = self.channels[int(embed_channel_id)]
-        self.embed_channel = embed_channel
         
         rules_channel_id = data.get('rules_channel_id')
         if rules_channel_id is None:

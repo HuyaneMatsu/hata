@@ -821,10 +821,6 @@ def str_guild(guild, index=None, **kwargs):
     if (widget_channel is not None):
         result.append(f'- widget channel: {widget_channel.name} {widget_channel.id}', 1)
     
-    embed_channel = guild.embed_channel
-    if (embed_channel is not None):
-        result.append(f'- embed channel : {embed_channel.name} {embed_channel.id}', 1)
-    
     rules_channel = guild.rules_channel
     if (rules_channel is not None):
         result.append(f'- rules channel : {rules_channel.name} {rules_channel.id}', 1)

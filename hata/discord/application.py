@@ -92,12 +92,12 @@ class Application(DiscordEntity, immortal=True):
     @classmethod
     def _create_empty(cls):
         """
-        Creates an empty application, witth it's defualt attributes set.
+        Creates an empty application, witth it's default attributes set.
         
         Returns
         -------
         self : ``Application``
-            The created application
+            The created application.
         """
         self = object.__new__(cls)
         
@@ -143,7 +143,7 @@ class Application(DiscordEntity, immortal=True):
         
         Returns
         -------
-        self : `˙Application``
+        self : ``Application``
             The created or updated application.
         """
         application_id = int(data['id'])

@@ -118,7 +118,7 @@ class Connection(DiscordEntity):
     integrations : `None` or (`list` of ``Integration``)
         A list (if any) of guild inegrations which are attached to the connection.
     name : `str`
-        The username of teh connected account.
+        The username of the connected account.
     revoked : `bool`
         Whether the connection is revoked.
     show_activity : `bool`

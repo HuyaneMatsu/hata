@@ -32,7 +32,7 @@ class GatewayRateLimiter(object):
     
     Attributes
     ----------
-    queue : `deque` of `Future`
+    queue : `deque` of ``Future``
         The queue of the ratelimit handler. It is filled up with futures, if the handler's limit is exhausted.
         These futures are removed and their result is set, when the limit is reset.
     remaining : `int`
@@ -259,7 +259,7 @@ class DiscordGateway(object):
         
         Parameters
         -----------
-        waiter : `Future`, Optional
+        waiter : ``Future``, Optional
             A waiter future what is set, when the gateway finished connecting and started polling events.
         
         Raises
@@ -1196,8 +1196,8 @@ class DiscordGatewaySharder(object):
         limit = len(gateways)
         
         # At every step we add up to max_concurrency gateways to launch up. When a gateway is launched up, the waiter
-        # yields a `Future` and if the same amount of `Future` is yielded as gateway started up, then we do the next
-        # loop. An exception is, when the waiter yielded a `Task`, because t–en 1 of our gateway stopped with no
+        # yields a ``Future`` and if the same amount of ``Future`` is yielded as gateway started up, then we do the next
+        # loop. An exception is, when the waiter yielded a ``Task``, because t–en 1 of our gateway stopped with no
         # internet stop, or it was stopped by the client, so we abort all the launching and return.
         waiter = WaitContinously(None, KOKORO)
         while True:

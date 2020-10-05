@@ -709,7 +709,7 @@ class ActivityRich(ActivityBase):
     
     def __new__(cls, name, url=None, type_=ActivityTypes.game):
         """
-        Creates a new activity with teh given parameters.
+        Creates a new activity with the given parameters.
         
         Parameters
         ----------

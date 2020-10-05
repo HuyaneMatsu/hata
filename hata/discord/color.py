@@ -76,7 +76,7 @@ class Color(int):
         
         Returns
         -------
-        tuple_value : `tuple` of 3 `int`-s
+        tuple_value : `tuple` (`int`, `int`, `int`)
         """
         return (self>>16, (self>>8)&0x00ff, self&0x0000ff)
     

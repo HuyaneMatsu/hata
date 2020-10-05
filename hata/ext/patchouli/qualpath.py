@@ -9,10 +9,12 @@ class QualPath(object):
     ----------
     _hash : `None` or `int`
         Cached slot for the hash of the qualpath.
+    _str : `None` or `str`
+        Cached slot for `str` of the qualpath.
     parts : `list` of `str`
         Broken down parts of the module path.
     """
-    __slots__ = ('_hash', 'parts', )
+    __slots__ = ('_hash', '_str', 'parts',)
     
     def __new__(cls, *paths):
         """
@@ -60,11 +62,16 @@ class QualPath(object):
         self = object.__new__(cls)
         self.parts = parts
         self._hash = None
+        self._str = None
         return self
     
     def __str__(self):
         """Returns the qualpath's parts joined together."""
-        return '.'.join(self.parts)
+        str_ = self._str
+        if str_ is None:
+            self._str = str_ = '.'.join(self.parts)
+        
+        return str_
     
     def __repr__(self):
         """Returns the qualpath's represnetation."""
@@ -164,9 +171,10 @@ class QualPath(object):
                 new = object.__new__(type(self))
                 new.parts = self_parts[:index]
                 new._hash = None
+                new._str = None
                 return new
             
-            index +=1
+            index += 1
             if index == limit:
                 return self
     
@@ -193,43 +201,6 @@ class QualPath(object):
         """Returns whether the path has any parts."""
         return (True if self.parts else False)
     
-    def endswith(self, value):
-        """
-        Returns whether self ends with the given value.
-        
-        Parameters
-        ----------
-        value : `str`
-        
-        Returns
-        -------
-        endswith : `bool`
-        """
-        parts = self.parts
-        if not parts:
-            return False
-        
-        return (parts[-1] == value)
-    
-    def endswith_multy(self, values):
-        """
-        Returns whether self ends with the given inexable container.
-        
-        Parameters
-        ----------
-        values : `indexable-container` of `str`
-        
-        Returns
-        -------
-        endswith : `bool`
-        """
-        parts = self.parts
-        values_length = len(values)
-        if len(parts) < values_length:
-            return False
-        
-        return (parts[-values_length:] == values)
-    
     @property
     def parent(self):
         """
@@ -242,4 +213,5 @@ class QualPath(object):
         new = object.__new__(type(self))
         new.parts = self.parts[:-1]
         new._hash = None
+        new._str = None
         return new

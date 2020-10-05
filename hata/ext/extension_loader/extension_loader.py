@@ -874,7 +874,7 @@ class ExtensionLoader(object):
     on the same thread as the clients, that is why they can be async as well.
     
     These methods also act differently depending from which thread they were called from. Whenever they are called from
-    the client's thread, a `Task` is returned what can be `awaited`. If called from other `EventThread`, then the task
+    the client's thread, a ``Task`` is returned what can be `awaited`. If called from other ``EventThread``, then the task
     is asyncwrapped and that is returned. When calling from any other thread (like the main thread for example), the
     task is syncwrapped and the thread is blocked till the extension's loading is finished.
     
@@ -1009,7 +1009,7 @@ class ExtensionLoader(object):
     
     def add(self, name, entry_point=None, exit_point=None, extend_default_variables=True, locked=False, **variables):
         """
-        Adds an extension to teh extension laoder
+        Adds an extension to the extension laoder
         
         Parameters
         ----------
@@ -1208,8 +1208,8 @@ class ExtensionLoader(object):
         
         Returns
         -------
-        task : `None`, `Task`, `FutureAsyncWrapper`
-            If the method is called from an `EventThread`, then returns an awaitable, what will yield when the
+        task : `None`, ``Task``, ``FutureAsyncWrapper``
+            If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
             loading is done. However if called from a sync thread, will block till the loading is done.
         
         Raises
@@ -1246,8 +1246,8 @@ class ExtensionLoader(object):
         
         Returns
         -------
-        task : `None`, `Task`, `FutureAsyncWrapper`
-            If the method is called from an `EventThread`, then returns an awaitable, what will yield when the
+        task : `None`, ``Task``, ``FutureAsyncWrapper``
+            If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
             loading is done. However if called from a sync thread, will block till the loading is done.
         
         Raises
@@ -1291,8 +1291,8 @@ class ExtensionLoader(object):
         
         Returns
         -------
-        task : `None`, `Task`, `FutureAsyncWrapper`
-            If the method is called from an `EventThread`, then returns an awaitable, what will yield when the
+        task : `None`, ``Task``, ``FutureAsyncWrapper``
+            If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
             unloading is done. However if called from a sync thread, will block till the unloading is done.
         
         Raises
@@ -1336,8 +1336,8 @@ class ExtensionLoader(object):
         
         Returns
         -------
-        task : `None`, `Task`, `FutureAsyncWrapper`
-            If the method is called from an `EventThread`, then returns an awaitable, what will yield when the
+        task : `None`, ``Task``, ``FutureAsyncWrapper``
+            If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
             reloading is done. However if called from a sync thread, will block till the reloading is done.
         
         Raises
@@ -1383,8 +1383,8 @@ class ExtensionLoader(object):
         
         Returns
         -------
-        task : `None`, `Task`, `FutureAsyncWrapper`
-            If the method is called from an `EventThread`, then returns an awaitable, what will yield when the
+        task : `None`, ``Task``, ``FutureAsyncWrapper``
+            If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
             loading is done. However if called from a sync thread, will block till the loading is done.
         
         Raises
@@ -1438,8 +1438,8 @@ class ExtensionLoader(object):
         
         Returns
         -------
-        task : `None`, `Task`, `FutureAsyncWrapper`
-            If the method is called from an `EventThread`, then returns an awaitable, what will yield when the
+        task : `None`, ``Task``, ``FutureAsyncWrapper``
+            If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
             unloading is done. However if called from a sync thread, will block till the unloading is done.
         
         Raises
@@ -1493,8 +1493,8 @@ class ExtensionLoader(object):
         
         Returns
         -------
-        task : `None`, `Task`, `FutureAsyncWrapper`
-            If the method is called from an `EventThread`, then returns an awaitable, what will yield when the
+        task : `None`, ``Task``, ``FutureAsyncWrapper``
+            If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
             reloading is done. However if called from a sync thread, will block till the reloading is done.
         
         Raises

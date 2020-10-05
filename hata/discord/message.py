@@ -741,6 +741,8 @@ class Message(DiscordEntity, immortal=True):
     """
     Represents a message from Discord.
     
+    Attributes
+    ----------
     id : `int`
         The unique identificator number of the message.
     _channel_mentions : `None` or `list` of (``UnknownCrossMention`` or ``ChannelBase`` instances)
@@ -764,11 +766,13 @@ class Message(DiscordEntity, immortal=True):
         Cross guild reference to the original message of crospost messages.
     edited : `None` or `datetime`
         The time when the message was edited, or `None` if it was not.
-        > Pinning or (un)supressing a mesage will not change it's edited value.
+        
+        Pinning or (un)supressing a mesage will not change it's edited value.
     embeds : `None` or `list` of ``EmbedCore``
         List of embeds included with the message if any.
-        > If a message contains links, then those embeds' might not be included with the source payload and those
-        > will be added only later.
+        
+        If a message contains links, then those embeds' might not be included with the source payload and those
+        will be added only later.
     everyone_mention : `bool`
         Whether the message contains `@everyone` or `@here`.
     flags : ``MessageFlag``
@@ -2295,9 +2299,11 @@ class MessageType(object):
     +-------------------------------------------+---------------------------------------------------+-------+
     | thread_created                            | convert_thread_created                            | 18    |
     +-------------------------------------------+---------------------------------------------------+-------+
+    | inline_reply                              | convert_default                                   | 19    |
+    +-------------------------------------------+---------------------------------------------------+-------+
     """
     # class related
-    INSTANCES = [NotImplemented] * 19
+    INSTANCES = [NotImplemented] * 20
     
     # object related
     __slots__ = ('convert', 'name', 'value', )
@@ -2352,6 +2358,7 @@ class MessageType(object):
     discovery_requalified = NotImplemented
     discovery_grace_period_initial_warning = NotImplemented
     discovery_grace_period_final_warning = NotImplemented
+    inline_reply = NotImplemented
 
 def convert_default(self):
     escape = re.escape
@@ -2561,6 +2568,7 @@ MessageType.discovery_grace_period_initial_warning = MessageType(16, 'discovery_
 MessageType.discovery_grace_period_final_warning = MessageType(17, 'discovery_grace_period_final_warning',
     convert_discovery_grace_period_final_warning)
 MessageType.thread_created = MessageType(18, 'thread_created', convert_thread_created)
+MessageType.inline_reply = MessageType(19, 'inline_reply', convert_default)
 
 del convert_default
 del convert_add_user

@@ -275,7 +275,7 @@ class LocalAudio(AudioSource):
     @staticmethod
     def _create_process(args, stdin):
         """
-        Creates the subprocess of the audio source. This method should never run on an `EventThread`.
+        Creates the subprocess of the audio source. This method should never run on an ``EventThread``.
         
         Paremeters
         ----------

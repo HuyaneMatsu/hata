@@ -4,7 +4,7 @@ __all__ = ('DiscordEntity', 'ICON_TYPE_ANIMATED', 'ICON_TYPE_NONE', 'ICON_TYPE_S
 
 import sys
 
-from ..backend.dereaddons_local import _spaceholder
+from ..backend.dereaddons_local import _spaceholder, DOCS_ENABLED, DocProperty
 
 id_to_time = NotImplemented
 
@@ -993,6 +993,8 @@ class Icon(object):
 
 
 class IconSlot(object):
+    if DOCS_ENABLED:
+        __class_doc__ = (
     """
     Interal icon slotter to represent an icon of a discord entitiy.
     
@@ -1011,7 +1013,19 @@ class IconSlot(object):
     ----------------
     _compile_globals : `dict` of (`str`, `Any`)
         Compile time globals for the generated functions.
+    """)
+        
+        __instance_doc__ = (
     """
+    Returns the respective icon.
+    
+    Returns
+    -------
+    icon : ``Icon``
+    """)
+        
+        __doc__ = DocProperty()
+    
     __slots__ = ('internal_name', 'discord_side_name', 'added_instance_atttributes', 'added_class_attributes')
     
     _compile_globals = {
@@ -1121,7 +1135,7 @@ class IconSlot(object):
             class_attributes[name] = value
     
     def __get__(self, obj, objtype=None):
-        """Returns self if called from class, meanwhile an Icon if called from an object."""
+        """Returns self if called from class, meanwhile an ``Icon`` if called from an object."""
         if obj is None:
             return self
         
@@ -1334,3 +1348,5 @@ def instance_or_id_to_snowflake(obj, type_, name):
     return snowflake
 
 del sys
+del DOCS_ENABLED
+del DocProperty

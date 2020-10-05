@@ -12,9 +12,9 @@ def _create_transport_context(server_side, server_hostname):
     # Client side may pass ssl=True to use a default
     # context; in that case the sslcontext passed is None.
     # The default is secure for client connections.
-    sslcontext=ssl.create_default_context()
+    sslcontext = ssl.create_default_context()
     if not server_hostname:
-        sslcontext.check_hostname=False
+        sslcontext.check_hostname = False
     return sslcontext
 
 if hasattr(module_socket, 'TCP_NODELAY'):
@@ -246,14 +246,14 @@ class SSLProtocol(object):
         '_session_established', '_sslcontext', '_waiter', '_write_backlog', '_write_buffer_size', 'app_protocol',
         'app_transport', 'loop', 'server_hostname', 'server_side', 'sslpipe', 'transport',)
     
-    def __init__(self, loop, app_protocol, sslcontext, waiter, server_side=False, server_hostname='',
+    def __init__(self, loop, app_protocol, sslcontext, waiter, server_side=False, server_hostname=None,
             call_connection_made=True):
         
-        if not sslcontext:
+        if sslcontext is None:
             sslcontext = _create_transport_context(server_side, server_hostname)
         
         self.server_side = server_side
-        if (not server_hostname) and server_side:
+        if (server_hostname is not None) and server_side:
             server_hostname = None
         
         self.server_hostname = server_hostname
@@ -501,7 +501,6 @@ class _SelectorSocketTransport(object):
         self.closing = False  # Set when close() called.
         if server is not None:
             server._attach()
-        loop.transports[self._sock_fd] = self
         
         self.eof = False
         self.paused = False
@@ -514,7 +513,7 @@ class _SelectorSocketTransport(object):
         loop.call_soon(protocol.connection_made, self)
         
         #only start reading when connection_made() has been called
-        loop.call_soon(loop._add_reader, self._sock_fd, self._read_ready)
+        loop.call_soon(loop.add_reader, self._sock_fd, self._read_ready)
         if (waiter is not None):
             # only wake up the waiter when connection_made() has been called
             loop.call_soon(Future.set_result_if_pending, waiter, None)
@@ -543,33 +542,36 @@ class _SelectorSocketTransport(object):
         if (loop is not None) and loop.running:
         
             try:
-                key=loop.selector.get_key(self._sock_fd)
+                key = loop.selector.get_key(self._sock_fd)
             except KeyError:
-                polling=0
+                polling = 0
             else:
-                polling=key.events&selectors.EVENT_READ
-
+                polling = key.events&selectors.EVENT_READ
+            
+            result.append(' read=')
             if polling:
-                result.append(' read=polling')
+                state = 'polling'
             else:
-                result.append(' read=idle')
+                state = 'idle'
+            result.append(state)
 
             try:
-                key=loop.selector.get_key(self._sock_fd)
+                key = loop.selector.get_key(self._sock_fd)
             except KeyError:
-                polling=0
+                polling = 0
             else:
-                polling=key.events&selectors.EVENT_WRITE
+                polling = key.events&selectors.EVENT_WRITE
 
             result.append(' write=<')
             if polling:
-                result.append('polling')
+                state = 'polling'
             else:
-                result.append('idle')
+                state = 'idle'
+            result.append(state)
 
             result.append(', bufsize=')
             
-            bufsize=self.get_write_buffer_size()
+            bufsize = self.get_write_buffer_size()
             result.append(str(bufsize))
             result.append('>')
         result.append('>')
@@ -638,7 +640,7 @@ class _SelectorSocketTransport(object):
         self._force_close(None)
 
     def set_protocol(self, protocol):
-        self.protocol=protocol
+        self.protocol = protocol
 
     def get_protocol(self):
         return self.protocol
@@ -656,7 +658,7 @@ class _SelectorSocketTransport(object):
             self._conn_lost += 1
             self.loop.remove_writer(self._sock_fd)
             self.loop.call_soon(self._call_connection_lost, None)
-
+    
     def _fatal_error(self, exception, message='Fatal error on transport'):
         # Should be called from exception handler only.
         if not isinstance(exception, (BrokenPipeError, ConnectionResetError, ConnectionAbortedError)):
@@ -715,7 +717,7 @@ class _SelectorSocketTransport(object):
         self.paused = False
         if self.closing:
             return
-        self.loop._add_reader(self._sock_fd, self._read_ready)
+        self.loop.add_reader(self._sock_fd, self._read_ready)
     
     def _read_ready(self):
         if self._conn_lost:
@@ -763,7 +765,7 @@ class _SelectorSocketTransport(object):
                 if not data:
                     return
             # Not all was written; register write handler.
-            self.loop._add_writer(self._sock_fd, self._write_ready)
+            self.loop.add_writer(self._sock_fd, self._write_ready)
         
         # Add it to the buffer.
         self.buffer.extend(data)
@@ -773,7 +775,7 @@ class _SelectorSocketTransport(object):
         if self._conn_lost:
             return
         try:
-            n=self.socket.send(self.buffer)
+            n = self.socket.send(self.buffer)
         except (BlockingIOError, InterruptedError):
             pass
         except Exception as err:

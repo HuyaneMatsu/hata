@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 __all__ = ('AuditLog', 'AuditLogEntry', 'AuditLogEvent', 'AuditLogIterator', 'AuditLogChange', )
 
+from ..env import API_VERSION
+
 from .others import VerificationLevel, ContentFilterLevel, Unknown, now_as_id, id_to_time, MessageNotificationLevel, \
     VoiceRegion, MFA
 from .client_core import CHANNELS, USERS, ROLES, MESSAGES
@@ -1048,8 +1050,7 @@ def transform_system_channel_flags(name, data):
     return change
 
 def transform_type(name, data):
-    # if we talk about permission overwrite, type can be `str` too,
-    # what we ignore
+    # If we talk about permission overwrite, type can be `str` too, what we ignore
     before = data.get('old_value')
     if type(before) is str:
         return
@@ -1105,8 +1106,8 @@ TRANSFORMERS = {
     '$remove'               : transform_role,
     'account_id'            : transform_snowfalke,
     'afk_channel_id'        : transform_channel,
-    'allow'                 : transform_deprecated,
-    'allow_new'             : transform_permission,
+    'allow'                 : transform_deprecated if API_VERSION in (6, 7) else transform_permission,
+    'allow_new'             : transform_permission if API_VERSION in (6, 7) else transform_deprecated,
     'application_id'        : transform_snowfalke,
     'avatar_hash'           : tranfrom_icon,
     'banner_hash'           : tranfrom_icon,
@@ -1117,8 +1118,8 @@ TRANSFORMERS = {
     # deaf (bool)
     # description (None or str)
     'default_message_notifications':transform_message_notification,
-    'deny'                  : transform_deprecated,
-    'deny_new'              : transform_permission,
+    'deny'                  : transform_deprecated if API_VERSION in (6, 7) else transform_permission,
+    'deny_new'              : transform_permission if API_VERSION in (6, 7) else transform_deprecated,
     'discovery_splash_hash' : tranfrom_icon,
     # enable_emoticons (bool)
     # expire_behavior (int)
@@ -1140,8 +1141,8 @@ TRANSFORMERS = {
     # position (int)
     'prune_delete_days'     : transform_int__days,
     'permission_overwrites' : transform_overwrites,
-    'permissions'           : transform_deprecated,
-    'permissions_new'       : transform_permission,
+    'permissions'           : transform_deprecated if API_VERSION in (6, 7) else transform_permission,
+    'permissions_new'       : transform_permission if API_VERSION in (6, 7) else transform_deprecated,
     'public_updates_channel_id' : transform_channel,
     'rate_limit_per_user'   : transform_int__slowmode,
     'region'                : transform_region,
@@ -1311,3 +1312,5 @@ class AuditLogChange(object):
     def __repr__(self):
         """Returns the representation of the audit log change."""
         return f'{self.__class__.__name__}(attr={self.attr!r}, before={self.before!r}, after={self.after!r})'
+
+del API_VERSION

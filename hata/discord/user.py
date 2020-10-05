@@ -685,7 +685,7 @@ class UserBase(DiscordEntity, immortal=True):
         guild : `None` or ``Guild``
             The guild, where the user's color will be checked.
             
-            > Can be given as `None`.
+            Can be given as `None`.
 
         Returns
         -------
@@ -702,7 +702,7 @@ class UserBase(DiscordEntity, immortal=True):
         guild : `None` or ``Guild``
             The guild, where the user's nick will be checked.
             
-            > Can be given as `None`.
+            Can be given as `None`.
 
         Returns
         -------
@@ -771,7 +771,7 @@ class UserBase(DiscordEntity, immortal=True):
         guild : ``Guild`` or `None`
             The guild where the user's top role will be looked up.
             
-            > Can be given as `None`.
+            Can be given as `None`.
         default : `Any`
             If the user is not a member of the guild, or if has no roles there, zhen the given default value is returned.
             Defaults to `None`.
@@ -828,7 +828,7 @@ class UserBase(DiscordEntity, immortal=True):
         guild : ``Guild`` or `None`
             The guild where the users' top roles will be checked.
             
-            > Can be given as `None`.
+            Can be given as `None`.
         
         Returns
         -------
@@ -846,7 +846,7 @@ class UserBase(DiscordEntity, immortal=True):
             guild : `None` or ``Guild``
                 The guild, where the user's color will be checked.
                 
-                > Can be given as `None`.
+                Can be given as `None`.
     
             Returns
             -------
@@ -871,7 +871,7 @@ class UserBase(DiscordEntity, immortal=True):
             guild : `None` or ``Guild``
                 The guild, where the user's nick will be checked.
                 
-                > Can be given as `None`.
+                Can be given as `None`.
     
             Returns
             -------
@@ -960,7 +960,7 @@ class UserBase(DiscordEntity, immortal=True):
             guild : ``Guild`` or `None`
                 The guild where the user's top role will be looked up.
                 
-                > Can be given as `None`.
+                Can be given as `None`.
             default : `Any`
                 If the user is not a member of the guild, or if has no roles there, the given default value is returned.
                 Defaults to `None`.
@@ -1098,7 +1098,7 @@ class UserBase(DiscordEntity, immortal=True):
             guild : ``Guild`` or `None`
                 The guild where the users' top roles will be checked.
                 
-                > Can be given as `None`.
+                Can be given as `None`.
             
             Returns
             -------
@@ -1151,6 +1151,8 @@ class User(UserBase):
     """
     Represents a Discord user.
     
+    Attributes
+    ----------
     id : `int`
         The user's unique identificator number.
     name : str
@@ -2059,7 +2061,7 @@ class ActivityUpdate(object):
     
     def __init__(self, activity, old_attributes):
         """
-        Creates a new activity change instance with teh given parameters.
+        Creates a new activity change instance with the given parameters.
         
         activity : ``ActivityBase`` instance
             The updated activity.

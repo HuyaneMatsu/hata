@@ -1,26 +1,34 @@
 # -*- coding: utf-8 -*-
-__all__ = ('AttributeUnitBase', 'ClassAttributeUnit', 'FolderedUnit', 'FunctionUnit', 'InstanceAttributeUnit', \
-    'MAPPED_OBJECTS', 'ModuleUnit', 'ObjectedUnitBase', 'PropertyUnit', 'TypeUnit', 'UnitBase', 'map_module', )
+__all__ = ('AttributeUnitBase', 'ClassAttributeUnit', 'FolderedUnit', 'FunctionUnit', 'InstanceAttributeUnit',
+    'MAPPED_OBJECTS', 'ModuleUnit', 'ObjectedUnitBase', 'PropertyUnit', 'TypeUnit', 'UnitBase', 'map_module',
+    'search_paths')
 
 import sys, re
-from types import FunctionType, BuiltinFunctionType, BuiltinMethodType, MethodType, GetSetDescriptorType, MemberDescriptorType
+from types import FunctionType, BuiltinFunctionType, BuiltinMethodType, MethodType, GetSetDescriptorType, \
+    MemberDescriptorType
 
-from ...backend.dereaddons_local import cached_property, MethodLike, module_property
+from ...backend.dereaddons_local import cached_property, MethodLike, module_property, basemethod, weakmethod
+from ...discord.bases import IconSlot
 from .qualpath import QualPath
 from .parser import DocString
-from .builder_text import serialize_docs_embed_sized, serialize_docs, serialize_docs_source_text
+from .builder_text import serialize_docs_embed_sized, serialize_docs, serialize_docs_source_text, generate_preview_for
 from .builder_html import html_serialize_docs
 
-WrapperDescriptorType= object.__eq__.__class__
+html_serialize_docs_extended = NotImplemented
+
+WrapperDescriptorType = object.__eq__.__class__
 MethodDescriptorType = int.bit_length.__class__
 SlotWrapperType = object.__lt__.__class__
 
 METHOD_TYPES = {
+    GetSetDescriptorType,
     BuiltinMethodType,
     MethodType,
     WrapperDescriptorType,
     MethodDescriptorType,
     MethodLike,
+    basemethod,
+    weakmethod,
         }
 
 FUNCTION_TYPES = {
@@ -112,10 +120,10 @@ PROPERTY_TYPES = {
     property,
     cached_property,
     module_property,
+    IconSlot,
         }
 
 ATTRIBUTE_TYPES = {
-    GetSetDescriptorType,
     MemberDescriptorType,
         }
 
@@ -343,6 +351,23 @@ class UnitBase(object):
         """Returns the unit's represnetation."""
         return f'<{self.__class__.__name__} name={self.name}, path={self.path!s}>'
     
+    @property
+    def parent(self):
+        """
+        Returns the parent object of the unit if applicable.
+        
+        Returns
+        -------
+        parent : `None` or ``UnitBase`` instance
+        """
+        parent_path = self.path.parent
+        if parent_path:
+            parent = MAPPED_OBJECTS.get(parent_path)
+        else:
+            parent = None
+        
+        return parent
+    
     def _get_raw_docstring(self):
         """
         Returns the raw docstring of the represented object.
@@ -430,6 +455,64 @@ class UnitBase(object):
             return None
         
         return html_serialize_docs(docs, self)
+    
+    @cached_property
+    def html_extended(self):
+        """
+        Renders the extended docstring to html.
+        
+        This html renderer will not only render only the given docstring, but render it with the other related
+        docstrings.
+        
+        Returns
+        -------
+        html_extended : `None` or `str`
+        """
+        html_extended, _ = html_serialize_docs_extended(self, True, False)
+        return html_extended
+    
+    @cached_property
+    def html_extended_structure(self):
+        """
+        Creates the extended docstring's html structure.
+        
+        Returns
+        -------
+        html_extended_structure : `None` or ``Structure``
+        """
+        _, html_extended_structure = html_serialize_docs_extended(self, False, True)
+        return html_extended_structure
+    
+    @cached_property
+    def html_extended_with_structure(self):
+        """
+        Renders the extended docstring to html and returns it's structure as well.
+        
+        Returns
+        -------
+        html_extended : `None` or `str`
+        html_extended_structure : `None` or ``Structure``
+        """
+        html_extended, html_extended_structure = html_serialize_docs_extended(self, True, True)
+        cache = self._cache
+        cache['html_extended'] = html_extended
+        cache['html_extended_structure'] = html_extended_structure
+        return html_extended, html_extended_structure
+        
+    @cached_property
+    def preview(self):
+        """
+        Generates preview for the docstring.
+        
+        Returns
+        -------
+        preview : `None` or `str`
+        """
+        docs = self.docs
+        if docs is None:
+            return None
+        
+        return generate_preview_for(docs)
     
     def lookup_reference(self, reference):
         """
@@ -545,7 +628,12 @@ def lookup_from(folder, reference_parts):
             if len(reference_parts)  == 1:
                 return sub_object
             else:
-                return lookup_from(sub_object, reference_parts[:-1])
+                object_ = lookup_from(sub_object, reference_parts[:-1])
+        else:
+            object_ = lookup_from(sub_object, reference_parts)
+        
+        if object_ is not None:
+            return object_
     
     return None
 
@@ -828,7 +916,8 @@ class FolderedUnit(ObjectedUnitBase):
     
     def __repr__(self):
         """Returns the foldered unit's represnetation."""
-        return f'<{self.__class__.__name__} name={self.name!r}, path={self.path!s}, references={self.references!r}>'
+        return (f'<{self.__class__.__name__} name={self.name!r}, path={self.path!s}, reference count='
+            f'{len(self.references)!r}>')
 
 
 class TypeUnit(FolderedUnit):
@@ -957,13 +1046,21 @@ def map_module(module_name):
     Returns
     -------
     root : ``ModulePath``
+    
+    Raises
+    ------
+    LookupError
+        No loaded module is named as `module_name`.
     """
     try:
         return MAPPED_OBJECTS[module_name]
     except KeyError:
         pass
     
-    main_module_object = sys.modules[module_name]
+    try:
+        main_module_object = sys.modules[module_name]
+    except KeyError:
+        raise LookupError(f'No loaded module is named as {module_name!r}') from None
     
     module_name_pattern = re.compile(f'{re.escape(module_name)}(?:\..*)?')
     modules = []
@@ -975,3 +1072,52 @@ def map_module(module_name):
     root = ModuleUnit(module_name, QualPath(module_name), main_module_object, modules)
     return root
 
+def search_paths(value):
+    """
+    Returns all the found units with the given value in their path. Case insensitive.
+    
+    Parameters
+    ----------
+    value : `str`
+        The query string.
+    
+    Returns
+    -------
+    paths : `set` of ``QualPath``
+    """
+    pattern = re.compile(re.escape(value), re.I)
+    paths = set()
+    for path in MAPPED_OBJECTS:
+        if pattern.search(str(path)) is None:
+            continue
+        
+        while True:
+            parent = path.parent
+            if not parent:
+                break
+            
+            if pattern.search(str(parent)) is None:
+                break
+            
+            if pattern.search(path.parts[-1]) is not None:
+                break
+            
+            path = parent
+            continue
+        
+        paths.add(path)
+    
+    return paths
+
+
+del IconSlot
+del cached_property
+del module_property
+del basemethod
+del weakmethod
+del FunctionType
+del BuiltinFunctionType
+del BuiltinMethodType
+del MethodType
+del GetSetDescriptorType
+del MemberDescriptorType

@@ -11,6 +11,8 @@ from ..backend.hdrs import METH_PATCH, METH_GET, METH_DELETE, METH_POST, METH_PU
     AUTHORIZATION
 from ..backend.quote import quote
 
+from .. env import API_VERSION
+
 from .exceptions import DiscordException, ERROR_CODES
 from .others import to_json, from_json, Discord_hdrs
 from .ratelimit import ratelimit_global, RATELIMIT_GROUPS, RatelimitHandler, NO_SPECIFIC_RATELIMITER
@@ -26,16 +28,13 @@ class URLS:
     VALID_ICON_SIZES = {1<<x for x in range(4,13)}
     VALID_ICON_FORMATS_EXTENDED = (*VALID_ICON_FORMATS,'gif',)
     
-    from ..env import CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DIS_ENDPOINT
-    
-    # v7 API includes special error messages
-    API_VERSION = 7
+    from ..env import CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DIS_ENDPOINT, API_VERSION
     
     API_ENDPOINT = f'https://discord.com/api/v{API_VERSION}' if (CUSTOM_API_ENDPOINT is None) else CUSTOM_API_ENDPOINT
     CDN_ENDPOINT = 'https://cdn.discordapp.com' if (CUSTOM_CDN_ENDPOINT is None) else CUSTOM_CDN_ENDPOINT
     DIS_ENDPOINT = 'https://discord.com' if (CUSTOM_DIS_ENDPOINT is None) else CUSTOM_DIS_ENDPOINT
     
-    del CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DIS_ENDPOINT
+    del CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DIS_ENDPOINT, API_VERSION
     
     from .bases import ICON_TYPE_NONE, ICON_TYPE_STATIC
     
@@ -358,29 +357,6 @@ class URLS:
                 prefix = 'a_'
 
         return f'{CDN_ENDPOINT}/banners/{guild.id}/{prefix}{guild.banner_hash:0>32x}.{ext}{end}'
-    
-    def guild_embed_url(guild, style='shield'):
-        """
-        Returns the guild's embed image's url in `.png` format.
-        
-        Parameters
-        ----------
-        style : `str`
-            The embed image's style. Can be any of: `'shield'`, `'banner1'`, `'banner2'`, `'banner3'`, `'banner4'`.
-        
-        Returns
-        -------
-        url : `str`
-        
-        Raises
-        ------
-        ValueError
-            If `style` was not passed as any of the expected values.
-        """
-        if STYLE_PATTERN.match(style) is None:
-            raise ValueError(f'Invalid style: {style!r}')
-        
-        return f'{API_ENDPOINT}/guilds/{guild.id}/embed.png?style={style}'
     
     def guild_widget_url(guild, style='shield'):
         """
@@ -1136,13 +1112,13 @@ class DiscordHTTPClient(HTTPClient):
     
     Attributes
     ----------
-    connector : `TCPConnector`
+    connector : ``TCPConnector``
         TCP connector of the session. Each Discord Http client shares the same.
-    cookie_jar : `CookieJar`
+    cookie_jar : ``CookieJar``
         Cookie storage of the session.
-    global_lock : `None` or `Future`
+    global_lock : `None` or ``Future``
         Waiter for Discord requests, set when the respective client gets limited globally.
-    handlers : `WeakMap` of ``RatelimitHandler``
+    handlers : ``WeakMap`` of ``RatelimitHandler``
         Ratelimit handlers of the Discord requests.
     headers : `multidict_titled`
         Headers used by every every Discord request.
@@ -1155,7 +1131,7 @@ class DiscordHTTPClient(HTTPClient):
         
     Class Attributes
     ----------------
-    CONREFCOUNTS : `WeakKeyDictionary` of (`EventThread`, ``_ConnectorRefCounter``) items
+    CONREFCOUNTS : ``WeakKeyDictionary`` of (``EventThread``, ``_ConnectorRefCounter``) items
         Container to store the connector(s) for Discord http clients. One connector is used by each Discord http client
         running on the same loop.
     """
@@ -1193,7 +1169,9 @@ class DiscordHTTPClient(HTTPClient):
         headers = multidict_titled()
         headers[USER_AGENT] = LIB_USER_AGENT
         headers[AUTHORIZATION] = f'Bot {client.token}' if client.is_bot else client.token
-        headers[RATELIMIT_PRECISION] = 'millisecond'
+        
+        if API_VERSION in (6, 7):
+            headers[RATELIMIT_PRECISION] = 'millisecond'
         
         self.headers = headers
         self.global_lock = None

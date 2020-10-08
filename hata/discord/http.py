@@ -1485,7 +1485,7 @@ class DiscordHTTPClient(HTTPClient):
     
     async def message_delete_multiple(self, channel_id, data, reason):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.message_delete_multiple, channel_id),
-            METH_POST, f'{API_ENDPOINT}/channels/{channel_id}/messages/bulk_delete', data, reason=reason)
+            METH_POST, f'{API_ENDPOINT}/channels/{channel_id}/messages/bulk-delete', data, reason=reason)
     
     async def message_edit(self, channel_id, message_id, data):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.message_edit, channel_id),
@@ -1746,7 +1746,7 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.role_move, guild_id),
             METH_PATCH, f'{API_ENDPOINT}/guilds/{guild_id}/roles', data, reason=reason)
     
-    #emoji
+    # emoji
     
     async def emoji_get(self, guild_id, emoji_id):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.emoji_get, guild_id),
@@ -1768,7 +1768,7 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.emoji_delete, guild_id),
             METH_DELETE, f'{API_ENDPOINT}/guilds/{guild_id}/emojis/{emoji_id}', reason=reason)
     
-    #relations
+    # relations
     
     async def relationship_delete(self, user_id):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.relationship_delete, NO_SPECIFIC_RATELIMITER),
@@ -1782,7 +1782,7 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.relationship_friend_request, NO_SPECIFIC_RATELIMITER),
             METH_POST, f'{API_ENDPOINT}/users/@me/relationships', data)
     
-    #webhook
+    # webhook
     
     async def webhook_create(self, channel_id, data):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.webhook_create, channel_id),

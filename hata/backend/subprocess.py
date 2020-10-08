@@ -18,7 +18,7 @@ class UnixReadPipeTransport(object):
         fileno = pipe.fileno()
         mode = os.fstat(fileno).st_mode
         if not (S_ISFIFO(mode) or S_ISSOCK(mode) or S_ISCHR(mode)):
-            raise ValueError('Pipe transport is for pipes/sockets only.')
+            raise ValueError('Pipe transport is only for pipes, sockets and character devices.')
         
         self = object.__new__(cls)
         if extra is None:
@@ -470,7 +470,7 @@ class AsyncProcess(object):
     '_pending_calls', '_stdin_closed', '_subprocess_stderr_protocol', '_subprocess_stdin_protocol',
     '_subprocess_stdout_protocol', 'closed', 'loop', 'pid', 'process', 'returncode', 'stderr', 'stdin', 'stdout', )
     
-    async def __new__(cls, loop, args, shell, stdin, stdout, stderr, bufsize, extra=None, **kwargs):
+    async def __new__(cls, loop, args, shell, stdin, stdout, stderr, bufsize, extra, popen_kwargs):
         if stdin == PIPE:
             # Use a socket pair for stdin, since not all platforms support selecting read events on the write end of a
             # socket (which we use in order to detect closing of the other end).  Notably this is needed on AIX, and
@@ -484,7 +484,7 @@ class AsyncProcess(object):
         
         try:
             process = Popen(args, shell=shell, stdin=stdin_r, stdout=stdout, stderr=stderr, universal_newlines=False,
-                bufsize=bufsize, **kwargs)
+                bufsize=bufsize, **popen_kwargs)
             
             if (stdin_w is not None):
                 stdin_r.close()

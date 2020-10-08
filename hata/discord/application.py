@@ -1,11 +1,12 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('Application', 'ApplicationExecutable', 'ApplicationSubEntity', 'EULA', 'Team', 'TeamMember', \
-    'TeamMembershipState', 'ThirdPartySKU', )
+__all__ = ('Application', 'ApplicationExecutable', 'ApplicationSubEntity', 'EULA', 'Team', 'TeamMember',
+    'ThirdPartySKU', )
 
 from .bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
 from .http import URLS
 from .user import ZEROUSER, User
 from .client_core import TEAMS, EULAS, APPLICATIONS, USERS
+from .preinstanced import TeamMembershipState
 
 class Application(DiscordEntity, immortal=True):
     """
@@ -395,7 +396,7 @@ class Team(DiscordEntity, immortal=True):
         
         team._set_icon(data)
         
-        team.members = members = [TeamMember(team_member_data) for team_member_data in data['members']]
+        team.members = [TeamMember(team_member_data) for team_member_data in data['members']]
         team.owner_id = int(data['owner_user_id'])
         return team
     
@@ -478,11 +479,12 @@ class TeamMember(object):
         permissions.sort()
         self.permissions = permissions
         self.user = User(data['user'])
-        self.state = TeamMembershipState.INSTANCES[data['membership_state']]
+        self.state = TeamMembershipState.get(data['membership_state'])
     
     def __repr__(self):
         """Returns the team member's representation."""
-        return f'<{self.__class__.__name__} user={self.user.full_name} state={self.state.name} permissions={self.permissions}>'
+        return (f'<{self.__class__.__name__} user={self.user.full_name} state={self.state.name} permissions='
+            f'{self.permissions}>')
     
     def __hash__(self):
         """Returns the team member's hash value, what is equal to it's user's id."""
@@ -503,71 +505,6 @@ class TeamMember(object):
             return False
         
         return True
-
-class TeamMembershipState(object):
-    """
-    Represents a ``TeamMemember``'s state at a ``Team``.
-    
-    Attributes
-    ----------
-    name : `str`
-        The name of state.
-    value : `int`
-        The Discord side identificator value of the team membership state.
-        
-    Class Attributes
-    ----------------
-    INSTANCES : `list` of ``TeamMembershipState``
-        Stores the created team membership state instances. This container is accessed when translating a Discord
-        team membership state's value to it's representation.
-    
-    Every predefined team membership state can be accessed as class attribute as well:
-    +-----------------------+-----------+-------+
-    | Class attribute name  | name      | value |
-    +=======================+===========+=======+
-    | NONE                  | NONE      | 0     |
-    +-----------------------+-----------+-------+
-    | INVITED               | INVITED   | 1     |
-    +-----------------------+-----------+-------+
-    | ACCEPTED              | ACCEPTED  | 2     |
-    +-----------------------+-----------+-------+
-    """
-    # class related
-    INSTANCES = [NotImplemented] * 3
-    
-    # object related
-    __slots__ = ('name', 'value',)
-    
-    def __init__(self,value,name):
-        self.value = value
-        self.name = name
-        
-        self.INSTANCES[value] = self
-    
-    def __int__(self):
-        """Retruns the team membership state's value."""
-        return self.value
-    
-    def __hash__(self):
-        """Returns the hash value of the team mebership state, what equals to it's value."""
-        return self.value
-    
-    def __str__(self):
-        """Returns the team membership state's name."""
-        return self.name
-    
-    def __repr__(self):
-        """Returns the team membership state's representation."""
-        return f'{self.__class__.__name__}(value={self.value}, name={self.name!r})'
-    
-    # predefined
-    NONE     = None
-    INVITED  = None
-    ACCEPTED = None
-
-TeamMembershipState.NONE     = TeamMembershipState(0, 'NONE')
-TeamMembershipState.INVITED  = TeamMembershipState(1, 'INVITED')
-TeamMembershipState.ACCEPTED = TeamMembershipState(2, 'ACCEPTED')
 
 class ApplicationSubEntity(DiscordEntity):
     """

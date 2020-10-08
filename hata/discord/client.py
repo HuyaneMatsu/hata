@@ -16,9 +16,8 @@ from ..backend.formdata import Formdata
 from ..backend.hdrs import AUTHORIZATION
 from ..backend.helpers import BasicAuth
 
-from .others import Status, log_time_converter, DISCORD_EPOCH, VoiceRegion, ContentFilterLevel, PremiumType, \
-    MessageNotificationLevel, image_to_base64, random_id, to_json, VerificationLevel, \
-    RelationshipType, get_image_extension
+from .others import log_time_converter, DISCORD_EPOCH, image_to_base64, random_id, to_json, RelationshipType, \
+    get_image_extension
 from .user import User, USERS, GuildProfile, UserBase, UserFlag, PartialUser, GUILD_PROFILES_TYPE
 from .emoji import Emoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, \
@@ -46,6 +45,8 @@ from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool
     preconvert_flag, preconvert_preinstanced_type
 from .permission import Permission
 from .bases import ICON_TYPE_NONE
+from .preinstanced import Status, VoiceRegion, ContentFilterLevel, PremiumType, VerificationLevel, \
+    MessageNotificationLevel
 
 from . import client_core, message, webhook, channel, invite
 
@@ -1037,7 +1038,7 @@ class Client(UserBase):
         self.verified = data.get('verified', False)
         self.email = data.get('email')
         self.flags = UserFlag(data.get('flags', 0))
-        self.premium_type = PremiumType.INSTANCES[data.get('premium_type', 0)]
+        self.premium_type = PremiumType.get(data.get('premium_type', 0))
         self.locale = parse_locale(data)
         
         self.partial = False
@@ -1268,16 +1269,9 @@ class Client(UserBase):
         """
         if status is None:
             status = self._status
-        elif isinstance(status, str):
-            try:
-                status = Status.INSTANCES[status]
-            except KeyError as err:
-                raise ValueError(f'Invalid status {status}') from err
-            self._status = status
-        elif isinstance(status, Status):
-            self._status = status
         else:
-            raise TypeError(f'`status` can be type `str` or `{Status.__name__}`, got {status.__class__.__name__}')
+            status = preconvert_preinstanced_type(status, 'status', Status)
+            self._status = status
         
         status = status.value
         
@@ -4985,7 +4979,7 @@ class Client(UserBase):
         data = {
             'name'                          : name,
             'icon'                          : icon_data,
-            'region'                        : region.id,
+            'region'                        : region.value,
             'verification_level'            : verification_level.value,
             'default_message_notifications' : message_notification_level.value,
             'explicit_content_filter'       : content_filter_level.value,
@@ -5279,7 +5273,7 @@ class Client(UserBase):
             data['owner_id'] = owner.id
         
         if (region is not None):
-            data['region'] = region.id
+            data['region'] = region.value
         
         if (afk_timeout is not None):
             if afk_timeout not in (60, 300, 900, 1800, 3600):
@@ -6510,7 +6504,7 @@ class Client(UserBase):
         
         Returns
         -------
-        permission_overwrit : PermOW
+        permission_overwrite : ``PermOW``
             A permission overwrite, what estimatedly is same as the one what Discord will create.
         
         Raises
@@ -9180,7 +9174,7 @@ class Client(UserBase):
             old_attributes['email'] = self.email
             self.email = email
         
-        premium_type = PremiumType.INSTANCES[data.get('premium_type', 0)]
+        premium_type = PremiumType.get(data.get('premium_type', 0))
         if self.premium_type is not premium_type:
             old_attributes['premium_type'] = premium_type
             self.premium_type = premium_type
@@ -9233,7 +9227,7 @@ class Client(UserBase):
         
         self.email = data.get('email')
         
-        self.premium_type = PremiumType.INSTANCES[data.get('premium_type', 0)]
+        self.premium_type = PremiumType.get(data.get('premium_type', 0))
         
         self.mfa = data.get('mfa_enabled', False)
         

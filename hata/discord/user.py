@@ -9,12 +9,13 @@ from ..backend.dereaddons_local import DOCS_ENABLED, WeakKeyDictionary
 
 from .bases import DiscordEntity, FlagBase, IconSlot, ICON_TYPE_NONE
 from .client_core import USERS
-from .others import parse_time, Status, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
-from .color import Color, DefaultAvatar
+from .others import parse_time, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
+from .color import Color
 from .activity import ActivityUnknown, Activity
 from .http import URLS
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool, preconvert_discriminator, \
     preconvert_flag
+from .preinstanced import Status, DefaultAvatar
 
 from . import others
 
@@ -525,7 +526,7 @@ class UserBase(DiscordEntity, immortal=True):
         -------
         default_avatar_url : `str`
         """
-        return DefaultAvatar.INSTANCES[self.discriminator%DefaultAvatar.COUNT].url
+        return DefaultAvatar.for_(self).url
     
     @property
     def default_avatar(self):
@@ -536,7 +537,7 @@ class UserBase(DiscordEntity, immortal=True):
         -------
         default_avatar : ``DefaultAvatar``
         """
-        return DefaultAvatar.INSTANCES[self.discriminator%DefaultAvatar.COUNT]
+        return DefaultAvatar.for_(self)
     
     # for sorting users
     def __gt__(self, other):
@@ -1643,7 +1644,7 @@ class User(UserBase):
             status = data['status']
             if self.status.value != status:
                 old_attributes['status'] = self.status
-                self.status = Status.INSTANCES[status]
+                self.status = Status.get(status)
         
         activity_datas = data['activities']
         
@@ -1737,7 +1738,7 @@ class User(UserBase):
         data : `dict` of (`str`, `Any`) items
             Received guild member data.
         """
-        self.status = Status.INSTANCES[data['status']]
+        self.status = Status.get(data['status'])
         
         try:
             # not included sometimes

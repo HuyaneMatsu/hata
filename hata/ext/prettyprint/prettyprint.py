@@ -689,7 +689,7 @@ def str_channel_category(channel, index=None, write_parents=True, overwrites=Fal
         result.append('- DELETED', 1)
         return result
     
-    channels = channel.channels_list
+    channels = channel.channel_list
     if channels:
         result.append(str_list(channels, write_parents=write_parents, overwrites=overwrites, **kwargs), 1)
     
@@ -832,8 +832,8 @@ def str_guild(guild, index=None, **kwargs):
     if guild.booster_count:
         result.append(f'- boosters : {guild.booster_count}', 1)
         result.append(f'- premium tier : {guild.premium_tier}', 1)
-    result.append(str_list(guild.channels_list, write_parents=False), 1)
-    result.append(str_list(guild.roles_list, write_parents=False), 1)
+    result.append(str_list(guild.channel_list, write_parents=False), 1)
+    result.append(str_list(guild.role_list, write_parents=False), 1)
     if guild.voice_states:
         voice_states = multidict()
         for voice_state in guild.voice_states.values():

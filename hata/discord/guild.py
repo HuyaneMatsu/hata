@@ -1,6 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('DiscoveryCategory', 'Guild', 'GuildDiscovery', 'GuildFeature', 'GuildPreview', 'GuildWidget',
-    'GuildWidgetChannel', 'GuildWidgetUser', 'SystemChannelFlag', 'WelcomeChannel', 'WelcomeScreen', )
+__all__ = ('DiscoveryCategory', 'Guild', 'GuildDiscovery', 'GuildPreview', 'GuildWidget', 'GuildWidgetChannel',
+    'GuildWidgetUser', 'SystemChannelFlag', 'WelcomeChannel', 'WelcomeScreen', )
 
 import re, reprlib
 
@@ -10,8 +10,7 @@ from ..backend.futures import Task
 
 from .bases import DiscordEntity, ReverseFlagBase, IconSlot, ICON_TYPE_NONE
 from .client_core import GUILDS, DISCOVERY_CATEGORIES, CHANNELS, KOKORO
-from .others import EMOJI_NAME_RP, VoiceRegion, Status, VerificationLevel, MessageNotificationLevel, MFA, \
-    ContentFilterLevel, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
+from .others import EMOJI_NAME_RP, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 from .user import User, PartialUser, VoiceState, UserBase, ZEROUSER
 from .role import Role
 from .channel import CHANNEL_TYPES, ChannelCategory, ChannelText
@@ -22,6 +21,8 @@ from .emoji import Emoji, PartialEmoji
 from .webhook import Webhook, WebhookRepr
 from .oauth2 import parse_preferred_locale, DEFAULT_LOCALE
 from .preconverters import preconvert_snowflake, preconvert_str
+from .preinstanced import GuildFeature, VoiceRegion, Status, VerificationLevel, MessageNotificationLevel, MFA, \
+    ContentFilterLevel
 
 from . import ratelimit
 
@@ -32,215 +33,6 @@ LARGE_LIMIT = 250 #can be between 50 and 250
 EMOJI_UPDATE_NEW    = 0
 EMOJI_UPDATE_DELETE = 1
 EMOJI_UPDATE_EDIT   = 2
-
-class GuildFeature(object):
-    """
-    Represents the event type of an ``AuditLogEntry``.
-
-    Attributes
-    ----------
-    value : `int`
-        The Discord side identificator value of the guild feature.
-    
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``GuildFeature``) items
-        Stores the predefined ``GuildFeature`` instances.
-    
-    Every predefined guild feature can be accessed as class attribute as well:
-    
-    +-------------------------------+-------------------------------+
-    | Class attribute names         | Value                         |
-    +===============================+===============================+
-    | animated_icon                 | ANIMATED_ICON                 |
-    +-------------------------------+-------------------------------+
-    | banner                        | BANNER                        |
-    +-------------------------------+-------------------------------+
-    | commerce                      | COMMERCE                      |
-    +-------------------------------+-------------------------------+
-    | community                     | COMMUNITY                     |
-    +-------------------------------+-------------------------------+
-    | discoverable                  | DISCOVERABLE                  |
-    +-------------------------------+-------------------------------+
-    | enabled_discoverable_before   | ENABLED_DISCOVERABLE_BEFORE   |
-    +-------------------------------+-------------------------------+
-    | featurable                    | FEATURABLE                    |
-    +-------------------------------+-------------------------------+
-    | member_list_disabled          | MEMBER_LIST_DISABLED          |
-    +-------------------------------+-------------------------------+
-    | more_emoji                    | MORE_EMOJI                    |
-    +-------------------------------+-------------------------------+
-    | news                          | NEWS                          |
-    +-------------------------------+-------------------------------+
-    | partnered                     | PARTNERED                     |
-    +-------------------------------+-------------------------------+
-    | public                        | PUBLIC                        |
-    +-------------------------------+-------------------------------+
-    | public_disabled               | PUBLIC_DISABLED               |
-    +-------------------------------+-------------------------------+
-    | relay_enabled                 | RELAY_ENABLED                 |
-    +-------------------------------+-------------------------------+
-    | invite_splash                 | INVITE_SPLASH                 |
-    +-------------------------------+-------------------------------+
-    | vanity                        | VANITY_URL                    |
-    +-------------------------------+-------------------------------+
-    | verified                      | VERIFIED                      |
-    +-------------------------------+-------------------------------+
-    | vip                           | VIP_REGIONS                   |
-    +-------------------------------+-------------------------------+
-    | welcome_screen                | WELCOME_SCREEN_ENABLED        |
-    +-------------------------------+-------------------------------+
-    """
-    # class related
-    INSTANCES = {}
-    
-    @classmethod
-    def get(cls, value):
-        """
-        Accessed to get a guild feature from `.INSTANCES` by it's `value`. If no predefined guild feature is found,
-        creates a new one.
-        
-        Parameters
-        ----------
-        value : `str`
-            The identificator value of the guild feature.
-        
-        Returns
-        -------
-        guild_feature : ``GuildFeature``
-        """
-        try:
-            guild_feature = cls.INSTANCES[value]
-        except KeyError:
-            guild_feature = cls(value)
-        
-        return guild_feature
-    
-    # object related
-    __slots__ = ('value',)
-    
-    def __init__(self, value):
-        """
-        Creates a new guild feature and stores it at `.INSTANCES`.
-        
-        Parameters
-        ----------
-        value : `str`
-            The identificator value of the guild feature.
-        """
-        self.value = value
-        self.INSTANCES[value] = self
-    
-    def __str__(self):
-        """Returns the guild feature's value."""
-        return self.value
-    
-    name = property(__str__)
-    if DOCS_ENABLED:
-        name.__doc__ = (
-        """
-        Returns the guild feature's value.
-        
-        Returns
-        -------
-        name : `str`
-        """)
-    
-    def __repr__(self):
-        """Returns the representation of the guild feature."""
-        return f'{self.__class__.__name__}(value={self.value!r})'
-    
-    def __gt__(self, other):
-        """Whether this feature's value is greater than the other's."""
-        if type(self) is type(other):
-            return self.value > other.value
-        if isinstance(other, str):
-            return self.value > other
-        return NotImplemented
-    
-    def __ge__(self, other):
-        """Whether this feature's value is greater or equal than the other's."""
-        if type(self) is type(other):
-            return self.value >= other.value
-        if isinstance(other, str):
-            return self.value >= other
-        return NotImplemented
-    
-    def __eq__(self, other):
-        """Whether this feature's value is equal to the other's."""
-        if type(self) is type(other):
-            return self.value == other.value
-        if isinstance(other, str):
-            return self.value == other
-        return NotImplemented
-    
-    def __ne__(self, other):
-        """Whether this feature's value is not equal to the other's."""
-        if type(self) is type(other):
-            return self.value != other.value
-        if isinstance(other, str):
-            return self.value != other
-        return NotImplemented
-    
-    def __le__(self, other):
-        """Whether this feature's value is lower or equal than the other's."""
-        if type(self) is type(other):
-            return self.value <= other.value
-        if isinstance(other, str):
-            return self.value <= other
-        return NotImplemented
-    
-    def __lt__(self, other):
-        """Whether this feature's value is lower than the other's."""
-        if type(self) is type(other):
-            return self.value < other.value
-        if isinstance(other, str):
-            return self.value < other
-        return  NotImplemented
-    
-    def __hash__(self):
-        return hash(self.value)
-    
-    # predefined
-    animated_icon               = NotImplemented
-    banner                      = NotImplemented
-    commerce                    = NotImplemented
-    discoverable                = NotImplemented
-    enabled_discoverable_before = NotImplemented
-    featurable                  = NotImplemented
-    member_list_disabled        = NotImplemented
-    more_emoji                  = NotImplemented
-    news                        = NotImplemented
-    partnered                   = NotImplemented
-    public                      = NotImplemented
-    public_disabled             = NotImplemented
-    relay_enabled               = NotImplemented
-    invite_splash               = NotImplemented
-    vanity                      = NotImplemented
-    verified                    = NotImplemented
-    vip                         = NotImplemented
-    welcome_screen              = NotImplemented
-
-
-GuildFeature.animated_icon              = GuildFeature('ANIMATED_ICON')
-GuildFeature.banner                     = GuildFeature('BANNER')
-GuildFeature.commerce                   = GuildFeature('COMMERCE')
-GuildFeature.community                  = GuildFeature('COMMUNITY')
-GuildFeature.discoverable               = GuildFeature('DISCOVERABLE')
-GuildFeature.enabled_discoverable_before= GuildFeature('ENABLED_DISCOVERABLE_BEFORE')
-GuildFeature.featurable                 = GuildFeature('FEATURABLE')
-GuildFeature.member_list_disabled       = GuildFeature('MEMBER_LIST_DISABLED')
-GuildFeature.more_emoji                 = GuildFeature('MORE_EMOJI')
-GuildFeature.news                       = GuildFeature('NEWS')
-GuildFeature.partnered                  = GuildFeature('PARTNERED')
-GuildFeature.public                     = GuildFeature('PUBLIC')
-GuildFeature.public_disabled            = GuildFeature('PUBLIC_DISABLED')
-GuildFeature.relay_enabled              = GuildFeature('RELAY_ENABLED')
-GuildFeature.invite_splash              = GuildFeature('INVITE_SPLASH')
-GuildFeature.vanity                     = GuildFeature('VANITY_URL')
-GuildFeature.verified                   = GuildFeature('VERIFIED')
-GuildFeature.vip                        = GuildFeature('VIP_REGIONS')
-GuildFeature.welcome_screen             = GuildFeature('WELCOME_SCREEN_ENABLED')
 
 COMMUNITY_FEATURES = {GuildFeature.community, GuildFeature.discoverable, GuildFeature.public}
 
@@ -328,7 +120,7 @@ class GuildWidgetUser(DiscordEntity):
         self.id = int(data['id'])
         self.discriminator = int(data['discriminator'])
         self.avatar_url = data['avatar_url']
-        self.status = Status.INSTANCES[data['status']]
+        self.status = Status.get(data['status'])
         try:
             activity_data = data['game']
         except KeyError:
@@ -702,7 +494,7 @@ def PartialGuild(data):
         except KeyError:
             pass
         else:
-            guild.verification_level = VerificationLevel.INSTANCES[verification_level]
+            guild.verification_level = VerificationLevel.get(verification_level)
         
         try:
             features = data['features']
@@ -1510,7 +1302,7 @@ class Guild(DiscordEntity, immortal=True):
             except KeyError:
                 pass
             else:
-                user.status = Status.INSTANCES[presence['status']]
+                user.status = Status.get(presence['status'])
                 user.statuses = presence['client_status']
                 user.activities = [Activity(activity_data) for activity_data in presence['activities']]
     
@@ -2166,22 +1958,22 @@ class Guild(DiscordEntity, immortal=True):
             old_attributes['afk_timeout'] = self.afk_timeout
             self.afk_timeout = afk_timeout
         
-        verification_level = VerificationLevel.INSTANCES[data['verification_level']]
+        verification_level = VerificationLevel.get(data['verification_level'])
         if self.verification_level is not verification_level:
             old_attributes['verification_level'] = self.verification_level
             self.verification_level = verification_level
 
-        message_notification = MessageNotificationLevel.INSTANCES[data['default_message_notifications']]
+        message_notification = MessageNotificationLevel.get(data['default_message_notifications'])
         if self.message_notification is not message_notification:
             old_attributes['message_notification'] = self.message_notification
             self.message_notification = message_notification
         
-        mfa = MFA.INSTANCES[data['mfa_level']]
+        mfa = MFA.get(data['mfa_level'])
         if self.mfa is not mfa:
             old_attributes['mfa'] = self.mfa
             self.mfa = mfa
         
-        content_filter = ContentFilterLevel.INSTANCES[data.get('explicit_content_filter', 0)]
+        content_filter = ContentFilterLevel.get(data.get('explicit_content_filter', 0))
         if self.content_filter is not content_filter:
             old_attributes['content_filter'] = self.content_filter
             self.content_filter = content_filter
@@ -2354,13 +2146,13 @@ class Guild(DiscordEntity, immortal=True):
         
         self.afk_timeout = data['afk_timeout']
         
-        self.verification_level = VerificationLevel.INSTANCES[data['verification_level']]
+        self.verification_level = VerificationLevel.get(data['verification_level'])
         
-        self.message_notification = MessageNotificationLevel.INSTANCES[data['default_message_notifications']]
+        self.message_notification = MessageNotificationLevel.get(data['default_message_notifications'])
         
-        self.mfa = MFA.INSTANCES[data['mfa_level']]
+        self.mfa = MFA.get(data['mfa_level'])
         
-        self.content_filter = ContentFilterLevel.INSTANCES[data.get('explicit_content_filter', 0)]
+        self.content_filter = ContentFilterLevel.get(data.get('explicit_content_filter', 0))
 
         self.available = (not data.get('unavailable', False))
         

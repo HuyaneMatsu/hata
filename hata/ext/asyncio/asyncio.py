@@ -851,13 +851,13 @@ class StreamReaderProtocol(FlowControlMixin, Protocol):
         self._client_connected_cb = client_connected_cb
         self._over_ssl = False
         self._closed = self._loop.create_future()
-
+    
     @property
     def _stream_reader(self):
         if self._stream_reader_wr is None:
             return None
         return self._stream_reader_wr()
-
+    
     def connection_made(self, transport):
         if self._reject_connection:
             transport.abort()
@@ -868,7 +868,7 @@ class StreamReaderProtocol(FlowControlMixin, Protocol):
         if reader is not None:
             reader.set_transport(transport)
         
-        self._over_ssl = transport.get_extra_info('sslcontext') is not None
+        self._over_ssl = (transport.get_extra_info('sslcontext') is not None)
         if self._client_connected_cb is not None:
             self._stream_writer = StreamWriter(transport, self, reader, self._loop)
             res = self._client_connected_cb(reader, self._stream_writer)

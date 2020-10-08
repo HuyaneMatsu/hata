@@ -9,6 +9,8 @@ from ..backend.dereaddons_local import DOCS_ENABLED
 from .others import ROLE_MENTION_RP, USER_MENTION_RP, CHANNEL_MENTION_RP, parse_time, urlcutter
 from .color import Color
 
+from . import preinstanced
+
 EXTRA_EMBED_TYPES = ('application_news', 'article', 'gifv', 'image', 'link', 'video')
 
 def _convert_content(content, message):
@@ -818,7 +820,7 @@ class EmbedCore(object):
     ----------
     author : `None` or ``EmbedAuthor``
         Author information.
-    color : `None`, `Color` or `int`
+    color : `None`, ``Color`` or `int`
         The color code of the embed. Passing `0` means black, not like at the case of roles.
     description : `None` or `str`
         The main content of the embed.
@@ -833,7 +835,7 @@ class EmbedCore(object):
     thumbnail : `None` or ``EmbedThumbnail``
         Thumbnail information.
     timestamp : `None` or `datetime`
-        Timestamp of the embed's content. Shows up next to the `footer` separated with a `'|'` character.
+        Timestamp of the embed's content. Shows up next to the ``.footer`` separated with a `'|'` character.
     title : `None` or `str`
         The title of the embed. Shows at the top with intense white characters.
     type : `None` or `str`
@@ -870,7 +872,7 @@ class EmbedCore(object):
         self.color = color
         self.url = url
         self.timestamp = timestamp
-        self.type = type_ #must be `rich` for webhook embeds
+        self.type = type_ # must be `rich` for webhook embeds
         self.footer = None
         self.image = None
         self.thumbnail = None
@@ -1391,7 +1393,7 @@ class Embed(object):
         """
         return self.data
     
-    #author
+    # author
     def _get_author(self):
         try:
             author_data = self.data['author']
@@ -1450,7 +1452,7 @@ class Embed(object):
         self.data['author'] = author_data
         return self
     
-    #color
+    # color
     def _get_color(self):
         return self.data.get('color', None)
     
@@ -1473,7 +1475,7 @@ class Embed(object):
         Accepts and returns `None` or a ``Color`` (/ `int`) object.
         """)
     
-    #description
+    # description
     def _get_description(self):
         return self.data.get('description', None)
     
@@ -1496,7 +1498,7 @@ class Embed(object):
         Accepts and returns `None` or a `str` instance.
         """)
     
-    #fields
+    # fields
     def _get_fields(self):
         try:
             field_datas = self.data['fields']
@@ -1706,7 +1708,7 @@ class Embed(object):
             err.args = ('Index out of the fields\' range.', )
             raise
     
-    #footer
+    # footer
     def _get_footer(self):
         try:
             footer_data = self.data['footer']
@@ -1759,7 +1761,7 @@ class Embed(object):
         self.data['footer'] = footer_data
         return self
     
-    #image
+    # image
     def _get_image(self):
         try:
             image_data = self.data['image']
@@ -1807,7 +1809,7 @@ class Embed(object):
         self.data['image'] = image_data
         return self
     
-    #provider
+    # provider
     def _get_provider(self):
         try:
             provider_data = self.data['provider']
@@ -1910,7 +1912,7 @@ class Embed(object):
         Accepts and returns `None` or a `datetime` object.
         """)
     
-    #title
+    # title
     def _get_title(self):
         return self.data.get('title', None)
     
@@ -1934,7 +1936,7 @@ class Embed(object):
         Accepts and returns `None` or a `str` instance.
         """)
     
-    #type
+    # type
     def _get_type(self):
         return self.data.get('type', None)
     
@@ -1957,7 +1959,7 @@ class Embed(object):
         Accepts and returns `None` or a `str` instance.
         """)
     
-    #url
+    # url
     def _get_url(self):
         return self.data.get('url', None)
     
@@ -1980,7 +1982,7 @@ class Embed(object):
         Accepts and returns `None` or a `str` instance.
         """)
     
-    #video
+    # video
     def _get_video(self):
         try:
             video_data = self.data['video']
@@ -2007,7 +2009,7 @@ class Embed(object):
         Embed videos cannot be set, they are receive only.
         """)
     
-    #rest
+    # rest
     def _get_source(self):
         return EmbedCore.from_data(self.data)
     
@@ -2287,4 +2289,8 @@ class _EmbedFieldsReflection(object):
         for field_data in reversed(self.data):
             yield EmbedField.from_data(field_data)
 
+
+preinstanced._convert_content = _convert_content
+
 del DOCS_ENABLED
+del preinstanced

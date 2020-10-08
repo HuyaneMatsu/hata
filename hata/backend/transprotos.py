@@ -10,12 +10,12 @@ def _create_transport_context(server_side, server_hostname):
         raise ValueError('Server side SSL needs a valid SSLContext')
     
     # Client side may pass ssl=True to use a default
-    # context; in that case the sslcontext passed is None.
+    # context; in that case the ssl_context passed is None.
     # The default is secure for client connections.
-    sslcontext = ssl.create_default_context()
+    ssl_context = ssl.create_default_context()
     if not server_hostname:
-        sslcontext.check_hostname = False
-    return sslcontext
+        ssl_context.check_hostname = False
+    return ssl_context
 
 if hasattr(module_socket, 'TCP_NODELAY'):
     def _set_nodelay(sock):
@@ -243,14 +243,14 @@ class _SSLProtocolTransport(object):
         
 class SSLProtocol(object):
     __slots__=('_call_connection_made', '_extra', '_handshake_start_time', '_in_handshake', '_in_shutdown',
-        '_session_established', '_sslcontext', '_waiter', '_write_backlog', '_write_buffer_size', 'app_protocol',
+        '_session_established', '_ssl_context', '_waiter', '_write_backlog', '_write_buffer_size', 'app_protocol',
         'app_transport', 'loop', 'server_hostname', 'server_side', 'sslpipe', 'transport',)
     
-    def __init__(self, loop, app_protocol, sslcontext, waiter, server_side=False, server_hostname=None,
+    def __init__(self, loop, app_protocol, ssl_context, waiter, server_side=False, server_hostname=None,
             call_connection_made=True):
         
-        if sslcontext is None:
-            sslcontext = _create_transport_context(server_side, server_hostname)
+        if ssl_context is None:
+            ssl_context = _create_transport_context(server_side, server_hostname)
         
         self.server_side = server_side
         if (server_hostname is not None) and server_side:
@@ -258,10 +258,10 @@ class SSLProtocol(object):
         
         self.server_hostname = server_hostname
         
-        self._sslcontext=sslcontext
+        self._ssl_context=ssl_context
         # SSL-specific extra info. More info are set when the handshake
         # completes.
-        self._extra = {'sslcontext': sslcontext}
+        self._extra = {'sslcontext': ssl_context}
 
         # App data write buffering
         self._write_backlog = deque()
@@ -294,7 +294,7 @@ class SSLProtocol(object):
     
     def connection_made(self, transport):
         self.transport=transport
-        self.sslpipe=_SSLPipe(self._sslcontext, self.server_side, self.server_hostname)
+        self.sslpipe=_SSLPipe(self._ssl_context, self.server_side, self.server_hostname)
         self._start_handshake()
 
     def connection_lost(self, exception):

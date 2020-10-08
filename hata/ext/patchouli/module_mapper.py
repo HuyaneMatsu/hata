@@ -215,15 +215,10 @@ def map_types_and_functions(obj, references, path, from_type):
         
         attr_value_type = attr_value.__class__
         
-        # Porcess only hashables
-        hashhable = (getattr(obj, '__hash__', None) is not None)
-        if hashhable:
-            try:
-                hash(attr_value)
-            except (TypeError, RuntimeError):
-                hashhable = False
-        
-        if (not hashhable):
+        # Process only hashables
+        try:
+            hash(attr_value)
+        except (TypeError, RuntimeError):
             if not from_type:
                 continue
             
@@ -232,6 +227,10 @@ def map_types_and_functions(obj, references, path, from_type):
             
             if attr_name in IGNORED_CLASS_ATTRIBUTE_NAMES:
                 continue
+            
+            
+            if attr_name == 'timestamp':
+                print(attr_value, attr_value_type)
             
             references[attr_name] = ClassAttributeUnit(attr_name, QualPath(path, attr_name))
             continue

@@ -6,9 +6,9 @@ from collections import deque
 try:
     import nacl.secret
 except ImportError:
-    SecretBox=None
+    SecretBox = None
 else:
-    SecretBox=nacl.secret.SecretBox
+    SecretBox = nacl.secret.SecretBox
     del nacl
 
 from ..env import CACHE_PRESENCE

@@ -13,6 +13,8 @@ from .color import Color
 from .http import URLS
 from .preconverters import preconvert_str, preconvert_int
 
+from . import preinstanced
+
 PartialEmoji = NotImplemented
 
 DEFAULT_CUSTM_ID = 'UNKNOWN'
@@ -1491,7 +1493,11 @@ def Activity(activity_data):
     
     return activity_type.from_data(activity_data)
 
+
+preinstanced.ActivityTypes = ActivityTypes
+
 del URLS
 del Color
 del FlagBase
 del modulize
+del preinstanced

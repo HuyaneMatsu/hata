@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__all__ = ('Invite', 'InviteTargetType')
+__all__ = ('Invite', )
 
 from datetime import datetime
 
@@ -13,76 +13,9 @@ from .client_core import GUILDS, CHANNELS, INVITES
 from .user import User, ZEROUSER
 from .guild import PartialGuild, Guild
 from .channel import PartialChannel, ChannelText, ChannelGroup, ChannelVoice, ChannelStore
+from .preinstanced import InviteTargetType
 
 Client = NotImplemented
-
-class InviteTargetType(object):
-    """
-    Represents an ``Invite``'s target's type.
-    
-    Attributes
-    ----------
-    name : `str`
-        The name of the target type.
-    value : `int`
-        The Discord side identificator value of the target type.
-    
-    Class Attributes
-    ----------------
-    INSTANCES : `list` of ``InviteTargetType``
-        Stores the predefined ``InviteTargetType`` instances. These can be accessed with their `value` as index.
-    
-    Every predefind invite target type can be accessed as class attribute as well:
-    
-    +-----------------------+-----------+-------+
-    | Class attribute name  | name      | value |
-    +=======================+===========+=======+
-    | NONE                  | NONE      | 0     |
-    +-----------------------+-----------+-------+
-    | STREAM                | STREAM    | 1     |
-    +-----------------------+-----------+-------+
-    """
-    # class related
-    INSTANCES = [NotImplemented] * 2
-    
-    # object related
-    __slots__ = ('name', 'value')
-    
-    def __init__(self, value, name):
-        """
-        Creates an ``InviteTargetType`` and stores it at the classe's `.INSTANCES` class attribute as well.
-        
-        Parameters
-        ----------
-        value : `int`
-            The Discord side identificator value of the invite target type.
-        name : `str`
-            The name of invite target type.
-        """
-        self.value = value
-        self.name = name
-        
-        self.INSTANCES[value] = self
-    
-    def __str__(self):
-        """Returns the ivnite target type's name."""
-        return self.name
-    
-    def __int__(self):
-        """Returns the invite target type's value."""
-        return self.value
-    
-    def __repr__(self):
-        """Returns the invite target type's representation."""
-        return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r})'
-    
-    # predefined
-    NONE   = NotImplemented
-    STREAM = NotImplemented
-
-InviteTargetType.NONE   = InviteTargetType(0, 'NONE')
-InviteTargetType.STREAM = InviteTargetType(1, 'STREAM')
-
 
 class Invite(DiscordEntity, immortal=True):
     """
@@ -304,7 +237,7 @@ class Invite(DiscordEntity, immortal=True):
             created_at = parse_time(created_at_data)
         self.created_at = created_at
         
-        self.target_type = InviteTargetType.INSTANCES[data.get('target_user_type', 0)]
+        self.target_type = InviteTargetType.get(data.get('target_user_type', 0))
         
         try:
             target_user_data = data['target_user']
@@ -406,7 +339,7 @@ class Invite(DiscordEntity, immortal=True):
         except KeyError:
             pass
         else:
-            self.target_type = InviteTargetType.INSTANCES[target_type_value]
+            self.target_type = InviteTargetType.get(target_type_value)
         
         try:
             target_user_data = data['target_user']

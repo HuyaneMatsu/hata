@@ -120,7 +120,7 @@ class Connection(object):
 
 
 class ConnectorBase(object):
-    __slots__=('__weakref__', 'acquired', 'acquired_per_host', 'cleanup_handle', 'closed', 'connections', 'cookies',
+    __slots__ = ('__weakref__', 'acquired', 'acquired_per_host', 'cleanup_handle', 'closed', 'connections', 'cookies',
         'force_close', 'loop', )
     #Base connector class.
     #force_close - Set to True to force close and do reconnect
@@ -309,28 +309,27 @@ class HostInfo(object):
         self.flags = 0
         
         return self
-
     
     def __eq__(self, other):
         if type(self) is not type(other):
             return NotImplemented
         
-        if self.hostname!=other.hostname:
+        if self.hostname != other.hostname:
             return False
         
-        if self.host!=other.host:
+        if self.host != other.host:
             return False
         
-        if self.port!=other.port:
+        if self.port != other.port:
             return False
         
-        if self.family!=other.family:
+        if self.family != other.family:
             return False
         
-        if self.proto!=other.proto:
+        if self.proto != other.proto:
             return False
         
-        if self.flags!=other.flags:
+        if self.flags != other.flags:
             return False
         
         return True
@@ -408,8 +407,7 @@ class TCPConnector(ConnectorBase):
     #    after each request (and between redirects).
 
 
-    def __new__(cls, loop, fingerprint=None, family=0, ssl_context=None, ssl=None, local_addr=None,
-            force_close=False, ):
+    def __new__(cls, loop, fingerprint=None, family=0, ssl=None, local_addr=None, force_close=False, ):
         
         if not isinstance(ssl, SSL_ALLOWED_TYPES):
             raise TypeError(f'`ssl` should be one of instance of: {SSL_ALLOWED_TYPES!r}, but got `{ssl!r}` instead.')
@@ -528,12 +526,12 @@ class TCPConnector(ConnectorBase):
         if verified:
             return module_ssl.create_default_context()
         else:
-            sslcontext = module_ssl.SSLContext(module_ssl.PROTOCOL_SSLv23)
-            sslcontext.options|=module_ssl.OP_NO_SSLv2
-            sslcontext.options|=module_ssl.OP_NO_SSLv3
-            sslcontext.options|=module_ssl.OP_NO_COMPRESSION
-            sslcontext.set_default_verify_paths()
-            return sslcontext
+            ssl_context = module_ssl.SSLContext(module_ssl.PROTOCOL_SSLv23)
+            ssl_context.options |= module_ssl.OP_NO_SSLv2
+            ssl_context.options |= module_ssl.OP_NO_SSLv3
+            ssl_context.options |= module_ssl.OP_NO_COMPRESSION
+            ssl_context.set_default_verify_paths()
+            return ssl_context
     
     def get_ssl_context(self, request):
         #Logic to get the correct SSL context
@@ -555,30 +553,32 @@ class TCPConnector(ConnectorBase):
         if module_ssl is None:
             raise RuntimeError('SSL is not supported')
         
-        sslcontext = request.ssl
-        if isinstance(sslcontext, module_ssl.SSLContext):
-            return sslcontext
+        ssl_context = request.ssl
+        if isinstance(ssl_context, module_ssl.SSLContext):
+            return ssl_context
         
-        if (sslcontext is not None):
+        if (ssl_context is not None):
             return self.make_ssl_context(False) #not verified or fingerprinted
         
-        sslcontext = self.ssl
+        ssl_context = self.ssl
         
-        if isinstance(sslcontext, module_ssl.SSLContext):
-            return sslcontext
+        if isinstance(ssl_context, module_ssl.SSLContext):
+            return ssl_context
         
-        return self.make_ssl_context((sslcontext is None), )
-
+        return self.make_ssl_context((ssl_context is None), )
+    
     def get_fingerprint(self, request):
-        if isinstance(request.ssl,Fingerprint):
-            return request.ssl
+        maybe_fingerprint = request.ssl
+        if type(maybe_fingerprint) is Fingerprint:
+            return maybe_fingerprint
         
-        if isinstance(self.ssl,Fingerprint):
-            return self.ssl
+        maybe_fingerprint = self.ssl
+        if type(maybe_fingerprint) is Fingerprint:
+            return maybe_fingerprint
     
     async def create_direct_connection(self, request):
         
-        sslcontext  = self.get_ssl_context(request)
+        ssl_context  = self.get_ssl_context(request)
         fingerprint = self.get_fingerprint(request)
         
         last_error = None
@@ -587,15 +587,15 @@ class TCPConnector(ConnectorBase):
             try:
                 transport, protocol = await self.loop.create_connection(ProtocolBase(self.loop),
                     host_info.host, host_info.port,
-                    ssl = sslcontext,
+                    ssl = ssl_context,
                     family = host_info.family,
                     proto = host_info.proto,
                     flags = host_info.flags,
                     local_addr = self.local_addr,
-                    server_hostname = (host_info.hostname if sslcontext else None),
+                    server_hostname = (host_info.hostname if ssl_context else None),
                         )
             except ssl_errors as err:
-                err.key=request.connection_key
+                err.key = request.connection_key
                 raise
             except OSError as err:
                 last_error = OSError(request.connection_key, err)
@@ -608,20 +608,20 @@ class TCPConnector(ConnectorBase):
                 except ValueError as err:
                     transport.close()
                     transport.abort()
-                    last_error=err
+                    last_error = err
                     continue
             
             return transport, protocol
         
         raise last_error
     
-
+    
     async def create_proxy_connection(self, request):
         headers = multidict_titled()
         
         headers[HOST] = request.headers[HOST]
         
-        proxy_request = ClientRequest(METH_GET, request.proxy_url, self.loop, headers=headers,auth=request.proxy_auth,
+        proxy_request = ClientRequest(METH_GET, request.proxy_url, self.loop, headers=headers, auth=request.proxy_auth,
             ssl=request.ssl)
         
         # create connection to proxy server
@@ -632,7 +632,7 @@ class TCPConnector(ConnectorBase):
         # response.
         protocol.force_close()
         
-        auth=proxy_request.headers.pop(AUTHORIZATION, None)
+        auth = proxy_request.headers.pop(AUTHORIZATION, None)
         if auth is not None:
             if not request.is_ssl():
                 request.headers[PROXY_AUTHORIZATION] = auth
@@ -640,7 +640,7 @@ class TCPConnector(ConnectorBase):
                 proxy_request.headers[PROXY_AUTHORIZATION] = auth
         
         if request.is_ssl():
-            sslcontext = self.get_ssl_context(request)
+            ssl_context = self.get_ssl_context(request)
             proxy_request.method = METH_CONNECT
             proxy_request.url = request.url
             key = (request.connection_key, None, None)
@@ -668,8 +668,8 @@ class TCPConnector(ConnectorBase):
                     transport.close()
                 
                 try:
-                    transport, protocol= await self.loop.create_connection(ProtocolBase(self.loop),
-                        ssl=sslcontext, sock=rawsock, server_hostname=request.host,)
+                    transport, protocol = await self.loop.create_connection(ProtocolBase(self.loop),
+                        ssl=ssl_context, sock=rawsock, server_hostname=request.host,)
                 except ssl_errors as err:
                     err.key = request.connection_key
                     raise

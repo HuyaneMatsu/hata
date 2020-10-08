@@ -91,7 +91,7 @@ class ConnectionKey(object):
         # self.proxy_header_hash = proxy_header_hash # int / None
     
     def __repr__(self):
-        return f'<{self.__class__.__name__} host={self.host}, port={self.port}>'
+        return f'<{self.__class__.__name__} host={self.host!r}, port={self.port!r}>'
     
     def __eq__(self, other):
         if type(self) is not type(other):

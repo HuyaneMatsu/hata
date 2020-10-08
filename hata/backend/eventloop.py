@@ -3326,7 +3326,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         """
         future = Future(self)
         self._sock_recv(future, False, sock, n)
-        await future
+        return await future
 
     def _sock_recv(self, future, registered, sock, n):
         """

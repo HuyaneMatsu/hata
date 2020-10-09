@@ -1346,14 +1346,14 @@ class RATELIMIT_GROUPS:
     guild_discovery_add_subcategory = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     guild_discovery_get         = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     guild_discovery_edit        = RatelimitGroup(LIMITER_GUILD, optimistic=True)
-    guild_embed_get             = RatelimitGroup(LIMITER_GUILD, optimistic=True) # will be removed, do not bother with testing
-    guild_embed_edit            = RatelimitGroup(LIMITER_GUILD, optimistic=True) # will be removed, do not bother with testing
+    guild_embed_get             = RatelimitGroup(LIMITER_GUILD, optimistic=True) # deprecated
+    guild_embed_edit            = RatelimitGroup(LIMITER_GUILD, optimistic=True) # deprecated
     guild_emojis                = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     emoji_create                = RatelimitGroup(LIMITER_GUILD)
     emoji_delete                = RatelimitGroup(LIMITER_GUILD)
     emoji_get                   = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     emoji_edit                  = RatelimitGroup()
-    integration_get_all         = RatelimitGroup() # untested
+    integration_get_all         = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     integration_create          = RatelimitGroup() # untested
     integration_delete          = RatelimitGroup() # untested
     integration_edit            = RatelimitGroup() # untested

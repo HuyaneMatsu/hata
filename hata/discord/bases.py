@@ -213,7 +213,7 @@ class ReverseFlagGetDescriptor(FlagGetDescriptor):
     """
     Returns the flag descriptor's owner's reversed value at a specific byte vize position.
     
-    This type is a reversed version of ``FlagGetDescriptor``, so it returns `0` when th value has `1` at the specific
+    This type is a reversed version of ``FlagGetDescriptor``, so it returns `0` when the value has `1` at the specific
     byte vize position.
     
     Attributes
@@ -453,7 +453,7 @@ class FlagBase(int, metaclass = FlagMeta, baseclass=True):
     """
     Base class for byte vize flags.
     
-    Class attributes
+    Class Attributes
     ----------------
     __getter_class__ : ``FlagGetDescriptor``
         Flag value getter descriptor for subclasses.
@@ -512,7 +512,7 @@ class FlagBase(int, metaclass = FlagMeta, baseclass=True):
         Yields the items of the flag.
         
         Yields
-        -------
+        ------
         name : `str`
             The name of the specific flag
         enabled : `int` (`0` or `1`)
@@ -596,7 +596,7 @@ class ReverseFlagBase(FlagBase, baseclass=True):
     """
     Base class for reversed byte vize flags.
     
-    Class attributes
+    Class Attributes
     ----------------
     __getter_class__ : ``ReverseFlagGetDescriptor``
         Flag value getter descriptor for subclasses.
@@ -737,7 +737,7 @@ class IconType(object):
         
     Class Attributes
     ----------------
-    Every predefind icon type can be accessed as class attribute as well:
+    Every predefined icon type can be accessed as class attribute as well:
     
     +-----------------------+---------------+-------+
     | Class attribute name  | name          | value |

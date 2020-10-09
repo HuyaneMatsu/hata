@@ -398,7 +398,7 @@ class VoiceClient(object):
             return
         
         try:
-            voice_client_actual_stream = audio_streams[user_id]
+            audio_streams[user_id]
         except KeyError:
             return
         
@@ -694,7 +694,6 @@ class VoiceClient(object):
                 
                 except (OSError, TimeoutError, ConnectionError, ConnectionClosed, WebSocketProtocolError,
                         InvalidHandshake, ValueError) as err:
-                    
                     if isinstance(err, ConnectionClosed) and (err.code == VOICE_CLIENT_DISCONNECTC_CLOSE_CODE):
                         await self.disconnect(force=False)
                         return

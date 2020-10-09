@@ -27,6 +27,7 @@ from .role import Role
 from .exceptions import DiscordException, ERROR_CODES
 from .invite import Invite
 from .message import EMBED_UPDATE_NONE, Message, MessageRepr
+from .integration import Integration
 
 class EVENT_SYSTEM_CORE(object):
     """
@@ -233,7 +234,9 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
     +---------------------------+---------------+-----------------------+-----------------------------------+
     | INTENT_GUILD_EMOJIS       | 3             | guild_emojis          | GUILD_EMOJIS_UPDATE               |
     +---------------------------+---------------+-----------------------+-----------------------------------+
-    | INTENT_GUILD_INTEGRATIONS | 4             | guild_integrations    | GUILD_INTEGRATIONS_UPDATE         |
+    | INTENT_GUILD_INTEGRATIONS | 4             | guild_integrations    | INTEGRATION_CREATE                |
+    |                           |               |                       | INTEGRATION_DELETE                |
+    |                           |               |                       | GUILD_INTEGRATIONS_UPDATE         |
     +---------------------------+---------------+-----------------------+-----------------------------------+
     | INTENT_GUILD_WEBHOOKS     | 5             | guild_webhooks        | WEBHOOKS_UPDATE                   |
     +---------------------------+---------------+-----------------------+-----------------------------------+
@@ -791,13 +794,15 @@ async def sync_task(queue_id, coro, queue):
     except (DiscordException, ConnectionError):
         return
     else:
-        for client, data, parser_and_checker in queue:
+        # Fix infinit loops by do not dispatching again on error
+        for index in range(len(queue)):
+            client, data, parser_and_checker = queue[index]
             if type(parser_and_checker) is str:
                 PARSERS[parser_and_checker](client, data)
                 continue
             
             parser_name, checker, value = parser_and_checker
-            if checker(guild,value):
+            if checker(guild, value):
                 PARSERS[parser_name](client, data)
     finally:
         del SYNC_REQUESTS[queue_id]
@@ -874,7 +879,7 @@ class EventBase(object):
         return
         yield # This is intentional. Python stuff... Do not ask, just accept.
 
-#we dont call ready from this function directly
+# we dont call ready from this function directly
 def READY(client, data):
     ready_state = client.ready_state
     guild_datas = data['guilds']
@@ -3386,7 +3391,7 @@ if CACHE_PRESENCE:
             users.append(user)
         
         try:
-            presence_datas=data['presences']
+            presence_datas = data['presences']
         except KeyError:
             pass
         else:
@@ -3429,6 +3434,60 @@ PARSER_DEFAULTS(
     GUILD_MEMBERS_CHUNK,
     GUILD_MEMBERS_CHUNK)
 del GUILD_MEMBERS_CHUNK
+
+def INTEGRATION_CREATE__CAL(client, data):
+    guild_id = int(data['guild_id'])
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        guild_sync(client, data, 'INTEGRATION_CREATE')
+        return
+    
+    integration = Integration(data)
+    
+    Task(client.events.integration_create(client, guild, integration), KOKORO)
+
+def INTEGRATION_CREATE__OPT(client, data):
+    pass
+
+PARSER_DEFAULTS(
+    'INTEGRATION_CREATE',
+    INTEGRATION_CREATE__CAL,
+    INTEGRATION_CREATE__CAL,
+    INTEGRATION_CREATE__OPT,
+    INTEGRATION_CREATE__OPT)
+del INTEGRATION_CREATE__CAL, \
+    INTEGRATION_CREATE__OPT
+
+def INTEGRATION_DELETE__CAL(client, data):
+    guild_id = int(data['guild_id'])
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        guild_sync(client, data, 'INTEGRATION_DELETE')
+        return
+    
+    integration_id = int(data['id'])
+    try:
+        application_id = data['application_id']
+    except KeyError:
+        application_id = None
+    else:
+        application_id = int(application_id)
+    
+    Task(client.events.integration_delete(client, guild, integration_id, application_id), KOKORO)
+
+def INTEGRATION_DELETE__OPT(client, data):
+    pass
+
+PARSER_DEFAULTS(
+    'INTEGRATION_DELETE',
+    INTEGRATION_DELETE__CAL,
+    INTEGRATION_DELETE__CAL,
+    INTEGRATION_DELETE__OPT,
+    INTEGRATION_DELETE__OPT)
+del INTEGRATION_DELETE__CAL, \
+    INTEGRATION_DELETE__OPT
 
 def GUILD_INTEGRATIONS_UPDATE__CAL(client, data):
     guild_id = int(data['guild_id'])
@@ -4191,6 +4250,8 @@ EVENTS.add_default('guild_delete'               , 3 , 'GUILD_DELETE'            
 EVENTS.add_default('guild_ban_add'              , 3 , 'GUILD_BAN_ADD'                           , )
 EVENTS.add_default('guild_ban_delete'           , 3 , 'GUILD_BAN_REMOVE'                        , )
 EVENTS.add_default('guild_user_chunk'           , 2 , 'GUILD_MEMBERS_CHUNK'                     , )
+EVENTS.add_default('integration_create'         , 3 , 'INTEGRATION_CREATE'                      , )
+EVENTS.add_default('integration_delete'         , 4 , 'INTEGRATION_DELETE'                      , )
 EVENTS.add_default('integration_update'         , 2 , 'GUILD_INTEGRATIONS_UPDATE'               , )
 EVENTS.add_default('role_create'                , 2 , 'GUILD_ROLE_CREATE'                       , )
 EVENTS.add_default('role_delete'                , 3 , 'GUILD_ROLE_DELETE'                       , )
@@ -6360,6 +6421,15 @@ class EventDescriptor(object):
             profile: ``GuildProfile``):
         Called when a user left (kicked or banned counts as well) from a guild. The `profile` argument is the user's
         respective guild profile for the guild.
+    
+    integration_create(client: ``Client``, guild: ``Guild``, integration: ``Integration``):
+        Called when an integration is created inside of a guild. Includes cases when bots are added to the guild as
+        well.
+    
+    integration_delete(client: ``Client``, guild: ``Guild``, integration_id: `int`, \
+            application_id: Union[`None`, `int`]):
+        Called when a guild has one of it's integrations deleted. If the integration is bound to an application, like
+        a bot, then `application_id` is given as `int`.
     
     integration_update(client: ``Client``, guild: ``Guild``):
         Called when an ``Integration`` of a guild is updated.

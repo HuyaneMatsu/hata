@@ -642,11 +642,14 @@ class Role(DiscordEntity, immortal=True):
         """
         guild = self.guild
         if guild is None:
-            return #already deleted
+            return # already deleted
         
         self.guild = None
         
-        del guild.roles[self.id]
+        try:
+            del guild.roles[self.id]
+        except KeyError:
+            pass
         
         guild._cache_perm = None
         for channel in guild.channels.values():
@@ -656,10 +659,15 @@ class Role(DiscordEntity, immortal=True):
             try:
                 profile = user.guild_profiles[guild]
             except KeyError:
-                #the user has no GuildProfile, it supposed to be impossible
+                # the user has no ``GuildProfile``, it supposed to be impossible
                 continue
+            
+            roles = profile.roles
+            if roles is None:
+                continue
+            
             try:
-                profile.roles.remove(self)
+                roles.remove(self)
             except ValueError:
                 pass
     

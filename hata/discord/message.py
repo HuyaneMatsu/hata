@@ -113,7 +113,7 @@ class Attachment(DiscordEntity):
     height : `int`
         The height of the attachment if applicable. Defaults to `0`.
     name : `str`
-        The name of th attachment.
+        The name of the attachment.
     proxy_url : `str`
         Proxied url of the attachment.
     size : `int`

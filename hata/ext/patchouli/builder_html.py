@@ -70,7 +70,7 @@ def create_relative_link(source, target):
     return quote(url, safe=':@', protected='/')
 
 
-def graved_link(reference, object_, linker):
+def graved_link(reference, object_, path, linker):
     """
     Converts the given graved link to it's html text form.
     
@@ -80,6 +80,8 @@ def graved_link(reference, object_, linker):
         A reference, what's link should be clickable.
     object_ : ``UnitBase`` instance
         The respective object.
+    path : ``QualPath``
+        Path of the respective object to avoid incorrect link generation in subclasses.
     linker : `func`
         Function, which creates a relative link between two units.
     
@@ -99,7 +101,7 @@ def graved_link(reference, object_, linker):
             '</code>'
                 )
     
-    url = linker(object_.path, referred_object.path)
+    url = linker(path, referred_object.path)
     
     return (
         f'<a href="{url}">'
@@ -131,7 +133,7 @@ def graved_text(text):
         '</code>'
             )
 
-def graved_to_escaped(graved, object_, linker):
+def graved_to_escaped(graved, object_, path, linker):
     """
     Translates the given graved content to html escaped words.
     
@@ -141,6 +143,8 @@ def graved_to_escaped(graved, object_, linker):
         Graved content.
     object_ : ``UnitBase``
         The respective unit.
+    path : ``QualPath``
+        Path of the respective object to avoid incorrect link generation in subclasses.
     linker : `func`
         Function, which creates relative link between two units.
     
@@ -177,7 +181,7 @@ def graved_to_escaped(graved, object_, linker):
             content = element.content
             
             if element.type == GRAVE_TYPE_GLOBAL_REFERENCE:
-                local_word = graved_link(content, object_, linker)
+                local_word = graved_link(content, object_, path, linker)
             else:
                 local_word = graved_text(content)
             
@@ -198,7 +202,7 @@ def graved_to_escaped(graved, object_, linker):
     return ''.join(escaped_parts)
 
 
-def description_serializer(description, object_, linker):
+def description_serializer(description, object_, path, linker):
     """
     Serializes the given description.
     
@@ -208,6 +212,8 @@ def description_serializer(description, object_, linker):
         The table to serialize
     object_ : ``UnitBase``
         The respective unit.
+    path : ``QualPath``
+        Path of the respective object to avoid incorrect link generation in subclasses.
     linker : `func`
         Function which creates relative link between two unit.
     
@@ -216,11 +222,11 @@ def description_serializer(description, object_, linker):
     html_part : `str`
     """
     yield '<p>'
-    content = graved_to_escaped(description.content, object_, linker)
+    content = graved_to_escaped(description.content, object_, path, linker)
     yield content
     yield '</p>'
 
-def attribute_description_serializer(description, object_, linker):
+def attribute_description_serializer(description, object_, path, linker):
     """
     Serializes the given attribute description.
     
@@ -230,6 +236,8 @@ def attribute_description_serializer(description, object_, linker):
         The table to serialize
     object_ : ``UnitBase``
         The respective unit.
+    path : ``QualPath``
+        Path of the respective object to avoid incorrect link generation in subclasses.
     linker : `func`
         Function which creates relative link between two unit.
     
@@ -253,11 +261,11 @@ def attribute_description_serializer(description, object_, linker):
     if yield_space:
         yield ' '
     
-    content = graved_to_escaped(description.content, object_, linker)
+    content = graved_to_escaped(description.content, object_, path, linker)
     yield content
     yield '</p>'
 
-def code_block_serializer(code_block, object_, linker):
+def code_block_serializer(code_block, object_, path, linker):
     """
     Serializes the given description.
     
@@ -267,6 +275,10 @@ def code_block_serializer(code_block, object_, linker):
         The table to serialize
     object_ : ``UnitBase``
         The respective unit.
+    path : ``QualPath``
+        Path of the respective object to avoid incorrect link generation in subclasses.
+    linker : `func`
+        Function which creates relative link between two unit.
     
     Yields
     ------
@@ -286,7 +298,7 @@ def code_block_serializer(code_block, object_, linker):
     yield '</pre></div>'
 
 
-def table_serializer(table, object_, linker ):
+def table_serializer(table, object_, path, linker):
     """
     Serializes the given table.
     
@@ -296,6 +308,8 @@ def table_serializer(table, object_, linker ):
         The table to serialize
     object_ : ``UnitBase``
         The respective unit.
+    path : ``QualPath``
+        Path of the respective object to avoid incorrect link generation in subclasses.
     linker : `func`
         Function, which creates relative link between two units.
     
@@ -308,7 +322,7 @@ def table_serializer(table, object_, linker ):
     for element in head_line:
         yield '<th>'
         
-        content = graved_to_escaped(element, object_, linker)
+        content = graved_to_escaped(element, object_, path, linker)
         if (content is not None):
             yield content
         
@@ -323,7 +337,7 @@ def table_serializer(table, object_, linker ):
             for element in line:
                 yield '<td>'
                 
-                content = graved_to_escaped(element, object_, linker)
+                content = graved_to_escaped(element, object_, path, linker)
                 if (content is not None):
                     yield content
                 
@@ -336,7 +350,7 @@ def table_serializer(table, object_, linker ):
     yield '</table>'
 
 
-def listing_element_serializer(listing_element, object_, linker):
+def listing_element_serializer(listing_element, object_, path, linker):
     """
     Serializes the given listing element.
     
@@ -346,6 +360,8 @@ def listing_element_serializer(listing_element, object_, linker):
         The listing element to seralize.
     object_ : ``UnitBase``
         The respective unit.
+    path : ``QualPath``
+        Path of the respective object to avoid incorrect link generation in subclasses.
     linker : `func`
         Function, which creates relative link between two units.
     
@@ -356,17 +372,17 @@ def listing_element_serializer(listing_element, object_, linker):
     yield '<li>'
     head = listing_element.head
     if (head is not None):
-        head = graved_to_escaped(head, object_, linker)
+        head = graved_to_escaped(head, object_, path, linker)
         yield head
     
     content = listing_element.content
     if (content is not None):
-        yield from sub_section_serializer(content, object_, linker)
+        yield from sub_section_serializer(content, object_, path, linker)
     
     yield '</li>'
 
 
-def listing_serializer(listing, object_, linker):
+def listing_serializer(listing, object_, path, linker):
     """
     Serializes the given listing.
     
@@ -376,6 +392,8 @@ def listing_serializer(listing, object_, linker):
         The listing element to seralize.
     object_ : ``UnitBase``
         The respective unit.
+    path : ``QualPath``
+        Path of the respective object to avoid incorrect link generation in subclasses.
     linker : `func`
         Function, which creates relative link between two units.
     
@@ -386,7 +404,7 @@ def listing_serializer(listing, object_, linker):
     yield '<ul>'
     
     for listing_element in listing.elements:
-        yield from listing_element_serializer(listing_element, object_, linker)
+        yield from listing_element_serializer(listing_element, object_, path, linker)
     
     yield '</ul>'
 
@@ -428,10 +446,10 @@ def section_serializer(section, object_):
     """
     section_name, section_parts = section
     yield from section_title_serializer(section_name)
-    yield from sub_section_serializer(section_parts, object_, create_relative_link)
+    yield from sub_section_serializer(section_parts, object_, object_.path, create_relative_link)
 
 
-def sub_section_serializer(sub_section, object_, linker):
+def sub_section_serializer(sub_section, object_, path, linker):
     """
     Deserializes the given sub-section to converters.
     
@@ -441,6 +459,8 @@ def sub_section_serializer(sub_section, object_, linker):
         The source sub-section..
     object_ : ``UnitBase``
         The respective unit.
+    path : ``QualPath``
+        Path of the respective object to avoid incorrect link generation in subclasses.
     linker : `func`
         Function, which creates relative link between two units.
     
@@ -453,10 +473,10 @@ def sub_section_serializer(sub_section, object_, linker):
         converter = CONVERTER_TABLE[type(element)]
         if converter is sub_section_serializer:
             yield '<div class="sub_section">'
-            yield from converter(element, object_, linker)
+            yield from converter(element, object_, path, linker)
             yield '</div>'
         else:
-            yield from converter(element, object_, linker)
+            yield from converter(element, object_, path, linker)
 
 
 CONVERTER_TABLE = {

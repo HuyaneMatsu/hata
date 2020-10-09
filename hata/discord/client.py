@@ -26,7 +26,7 @@ from .guild import Guild, PartialGuild, GuildWidget, GuildFeature, GuildPreview,
     COMMUNITY_FEATURES, WelcomeScreen
 from .http import DiscordHTTPClient, URLS
 from .http.URLS import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDPOINT
-from .role import Role, PermOW, PERMOW_TYPE_ROLE, PERMOW_TYPE_USER
+from .role import Role, PermOW, PERMOW_TYPE_ROLE, PERMOW_TYPE_USER, PERMISSION_KEY
 from .webhook import Webhook, PartialWebhook
 from .gateway import DiscordGateway, DiscordGatewaySharder
 from .parsers import EventDescriptor, _with_error, IntentFlag, PARSER_DEFAULTS
@@ -607,6 +607,38 @@ class DiscoveryTermRequestCacher(object):
     
     __call__ = execute
 
+class UserGuildPermission(object):
+    """
+    Reprents a user's permissions inside of a guild. Returned by ``Client.user_guilds``.
+    
+    Attributes
+    ----------
+    owner : `bool`
+        Whether the user is the owner of the guild.
+    permission : ``Permission``
+        The user's prermisisons at the guild.
+    """
+    __slots__ = ('owner', 'permission', )
+    def __init__(self, data):
+        """
+        Creates a ``GuildPermission`` object form user guild data.
+        """
+        self.owner = data['owner']
+        self.permission = Permission(data[PERMISSION_KEY])
+    
+    def __repr__(self):
+        """Returns the user guild permission's representation."""
+        return f'<{self.__class__.__name__}  owner={self.owner}, permissions={int.__repr__(self.permission)}>'
+    
+    def __len__(self):
+        """Helper for unpacking if needed."""
+        return 2
+    
+    def __iter__(self):
+        """Unpacks the user guild permission."""
+        yield self.owner
+        yield self.permission
+
 class Client(UserBase):
     """
     Discord client class used to interact with the Discord API.
@@ -741,6 +773,8 @@ class Client(UserBase):
     def __new__(cls, token, secret=None, client_id=None, activity=ActivityUnknown, status=None, is_bot=True,
             shard_count=0, intents=-1, additional_owners=None, **kwargs):
         """
+        Creates a new ``Client`` instance with the given pramateres.
+        
         Parameters
         ----------
         token : `str`
@@ -1559,8 +1593,8 @@ class Client(UserBase):
         
         Returns
         -------
-        guilds : `list of ``Guild`` objects
-            The guilds of the respective user. Not loaded guilds will show up as partial ones.
+        guilds_and_permissions : `list` of `tuple` (``Guild``, ``UserGuildPermission``)
+            The guilds and the user's permissions in each of them. Not loaded guilds will show up as partial ones.
         
         Raises
         ------
@@ -1572,7 +1606,7 @@ class Client(UserBase):
         headers = multidict_titled()
         headers[AUTHORIZATION] = f'Bearer {access.access_token}'
         data = await self.http.user_guilds(headers)
-        return [PartialGuild(guild_data) for guild_data in data]
+        return [(PartialGuild(guild_data), UserGuildPermission(guild_data)) for guild_data in data]
     
     async def achievement_get_all(self):
         """
@@ -1635,9 +1669,9 @@ class Client(UserBase):
         Raises
         ------
         ValueError
-            If the ``icon``'s format is not any of the expected ones.
+            If the `icon`'s format is not any of the expected ones.
         TypeError
-            If ``icon`` was not passed as `bytes-like`.
+            If `icon` was not passed as `bytes-like`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -6413,7 +6447,7 @@ class Client(UserBase):
     
     async def integration_sync(self, integration):
         """
-        Sync th givn integration's state.
+        Sync the given integration's state.
         Parameters
         ----------
         integration : ``Integation``
@@ -7159,7 +7193,7 @@ class Client(UserBase):
         
         image = image_to_base64(image)
         
-        data={
+        data = {
             'name'     : name,
             'image'    : image,
             'role_ids' : [role.id for role in roles]
@@ -7169,7 +7203,7 @@ class Client(UserBase):
     
     async def emoji_delete(self, emoji, reason=None):
         """
-        Deletes th given emoji.
+        Deletes the given emoji.
         
         Parameters
         ----------
@@ -8884,29 +8918,45 @@ class Client(UserBase):
         
         self.running = False
         shard_count = self.shard_count
+        
+        # cancel shards
         if shard_count:
             for gateway in self.gateway.gateways:
                 gateway.kokoro.cancel()
-            
+        else:
+            self.gateway.kokoro.cancel()
+        
+        # Stop voice clients
+        voice_clients = self.voice_clients
+        if voice_clients:
+            tasks = []
             for voice_client in self.voice_clients.values():
-                await voice_client.disconnect()
+                tasks.append(Task(voice_client.disconnect(), KOKORO))
             
-            if (not self.is_bot):
-                await self.http.client_logout()
-            
+            future = WaitTillAll(tasks, KOKORO)
+            tasks = None # clear references
+            await future
+            future = None # clear references
+        
+        if (not self.is_bot):
+            await self.http.client_logout()
+        
+        if shard_count:
+            tasks = []
             for gateway in self.gateway.gateways:
                 websocket = gateway.websocket
                 if (websocket is not None) and websocket.open:
-                    await gateway.close()
+                    tasks.append(Task(gateway.close(), KOKORO))
+            
+            if tasks:
+                future = WaitTillAll(tasks, KOKORO)
+                tasks = None # clear references
+                await future
+                future = None # clear references
+            else:
+                tasks = None # clear references
+        
         else:
-            self.gateway.kokoro.cancel()
-            
-            for voice_client in self.voice_clients.values():
-                await voice_client.disconnect()
-            
-            if (not self.is_bot):
-                await self.http.client_logout()
-            
             websocket = self.gateway.websocket
             if (websocket is not None) and websocket.open:
                 await self.gateway.close()

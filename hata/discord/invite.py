@@ -145,7 +145,7 @@ class Invite(DiscordEntity, immortal=True):
         return self.url
     
     def __repr__(self):
-        """Returns th represnetation of the invite."""
+        """Returns the represnetation of the invite."""
         return f'<{self.__class__.__name__} code={self.code!r}>'
     
     def __hash__(self):

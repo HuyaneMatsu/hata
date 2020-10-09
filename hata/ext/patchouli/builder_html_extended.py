@@ -268,7 +268,7 @@ def get_tier_for(path):
     Parameters
     ----------
     path : ``QualPath``
-        The respective unit.
+        The respective unit's path.
     
     Returns
     -------
@@ -289,6 +289,33 @@ def get_tier_for(path):
         continue
     
     return tier
+
+def get_parent_path_of(path):
+    """
+    Returns the given path 0 tier parent path.
+    
+    Parameters
+    ----------
+    path : ``QualPath``
+        The respective unit's path
+    
+    Returns
+    -------
+    parent_path : ``QualPath``
+    """
+    while True:
+        parent = path.parent
+        unit = MAPPED_OBJECTS.get(parent)
+        if unit is None:
+            break
+        
+        if type(unit) is ModuleUnit:
+            break
+        
+        path = parent
+        continue
+    
+    return path
 
 def name_sort_key(name):
     """
@@ -405,7 +432,8 @@ class SimpleSection(object):
             yield str(tier)
             yield '>'
         
-        yield from sub_section_serializer(self.content, object_, create_relative_sectionated_link)
+        
+        yield from sub_section_serializer(self.content, object_, get_parent_path_of(path), create_relative_sectionated_link)
         return
     
     def structurize(self):
@@ -738,6 +766,7 @@ class AttributeSection(object):
         prefix = get_anchor_prefix_for(path)
         
         tier = get_tier_for(path)+1
+        parent_path = get_parent_path_of(path)
         
         if prefix:
             prefixed_title = f'{prefix}-{anchor_escape(title)}'
@@ -790,7 +819,7 @@ class AttributeSection(object):
                 if yield_space:
                     yield ' '
                 
-                yield graved_to_escaped(maybe_head.content, object_, create_relative_sectionated_link)
+                yield graved_to_escaped(maybe_head.content, object_, parent_path, create_relative_sectionated_link)
                 yield '</div>'
                 atrribute_content = atrribute_content[1:]
                 if not atrribute_content:
@@ -799,7 +828,7 @@ class AttributeSection(object):
                 yield '</div>'
             
             yield '<div class="sub_section">'
-            yield from sub_section_serializer(atrribute_content, object_, create_relative_sectionated_link)
+            yield from sub_section_serializer(atrribute_content, object_, parent_path, create_relative_sectionated_link)
             yield '</div>'
             continue
         
@@ -808,7 +837,7 @@ class AttributeSection(object):
             return
         
         extra_content = extra.sections[0][1]
-        yield from sub_section_serializer(extra_content, object_, create_relative_sectionated_link)
+        yield from sub_section_serializer(extra_content, object_, parent_path, create_relative_sectionated_link)
         return
     
     def structurize(self):

@@ -1,12 +1,11 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('Attachment', 'EMBED_UPDATE_EMBED_ADD', 'EMBED_UPDATE_EMBED_REMOVE', 'EMBED_UPDATE_NONE',
-    'EMBED_UPDATE_SIZE_UPDATE', 'Message', 'MessageActivity', 'MessageActivityType', 'MessageApplication',
-    'MessageFlag', 'MessageReference', 'MessageRepr', 'MessageType', 'UnknownCrossMention', )
+    'EMBED_UPDATE_SIZE_UPDATE', 'Message', 'MessageActivity', 'MessageApplication', 'MessageFlag', 'MessageReference',
+    'MessageRepr', 'UnknownCrossMention', )
 
-import re
 from datetime import datetime
 
-from ..backend.dereaddons_local import any_to_any, _spaceholder, BaseMethodDescriptor
+from ..backend.dereaddons_local import _spaceholder, BaseMethodDescriptor
 
 from .bases import DiscordEntity, FlagBase, IconSlot
 from .http import URLS
@@ -17,8 +16,9 @@ from .emoji import reaction_mapping
 from .embed import EmbedCore, EXTRA_EMBED_TYPES
 from .webhook import WebhookRepr, PartialWebhook, WebhookType, Webhook
 from .role import Role
-from .preconverters import preconvert_flag, preconvert_bool, preconvert_snowflake, preconvert_str
-from .activity import ActivityTypes
+from .preconverters import preconvert_flag, preconvert_bool, preconvert_snowflake, preconvert_str, \
+    preconvert_preinstanced_type
+from .preinstanced import MessageType, MessageActivityType
 
 from . import ratelimit
 
@@ -61,88 +61,6 @@ class MessageFlag(FlagBase):
         'has_thread'             : 5,
             }
 
-class MessageActivityType(object):
-    """
-    Represents a ``MessageActivity``'s type.
-    
-    Attributes
-    ----------
-    name : `str`
-        The name of the message activity type.
-    value : `int`
-        The Discord side identificator value of the message activity type.
-    
-    Class Attributes
-    ----------------
-    INSTANCES : `list` of ``MessageActivityType``
-        Stores the predefined ``MessageActivityType`` instances. These can be accessed with their `value` as index.
-    
-    Every predefind message activity type can be accessed as class attribute as well:
-    
-    +-----------------------+---------------+-------+
-    | Class attribute name  | name          | value |
-    +=======================+===============+=======+
-    | none                  | none          | 0     |
-    +-----------------------+---------------+-------+
-    | join                  | join          | 1     |
-    +-----------------------+---------------+-------+
-    | spectate              | spectate      | 2     |
-    +-----------------------+---------------+-------+
-    | listen                | listen        | 3     |
-    +-----------------------+---------------+-------+
-    | watch                 | watch         | 4     |
-    +-----------------------+---------------+-------+
-    | join_request          | join_request  | 5     |
-    +-----------------------+---------------+-------+
-    """
-    # class related
-    INSTANCES = [NotImplemented] * 6
-    
-    # object related
-    __slots__ = ('name', 'value', )
-    
-    def __init__(self, value, name):
-        """
-        Creates an ``MessageActivityType`` and stores it at the classe's `.INSTANCES` class attribute as well.
-        
-        Parameters
-        ----------
-        value : `int`
-            The Discord side identificator value of the message activity type.
-        name : `str`
-            The name of the message activity type.
-        """
-        self.value = value
-        self.name = name
-        
-        self.INSTANCES[value] = self
-    
-    def __str__(self):
-        """Returns the message activity type's name."""
-        return self.name
-    
-    def __int__(self):
-        """Returns the message activity type's value."""
-        return self.value
-    
-    def __repr__(self):
-        """Returns the represnetation of the message activity type."""
-        return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r})'
-    
-    none         = NotImplemented
-    join         = NotImplemented
-    spectate     = NotImplemented
-    listen       = NotImplemented
-    watch        = NotImplemented
-    join_request = NotImplemented
-
-MessageActivityType.none         = MessageActivityType(0, 'none')
-MessageActivityType.join         = MessageActivityType(1, 'join')
-MessageActivityType.spectate     = MessageActivityType(2, 'spectate')
-MessageActivityType.listen       = MessageActivityType(3, 'listen')
-MessageActivityType.watch        = MessageActivityType(4, 'watch')
-MessageActivityType.join_request = MessageActivityType(5, 'join_request')
-
 class MessageActivity(object):
     """
     Might be sent with a ``Message``, if it has rich presence-related chat embeds.
@@ -165,7 +83,7 @@ class MessageActivity(object):
             Message activity data.
         """
         self.party_id = data.get('party_id','')
-        self.type = MessageActivityType.INSTANCES[data['type']]
+        self.type = MessageActivityType.get(data['type'])
 
     def __eq__(self, other):
         """Returns whether the two message activitys are equal."""
@@ -195,7 +113,7 @@ class Attachment(DiscordEntity):
     height : `int`
         The height of the attachment if applicable. Defaults to `0`.
     name : `str`
-        The name of th attachment.
+        The name of the attachment.
     proxy_url : `str`
         Proxied url of the attachment.
     size : `int`
@@ -741,6 +659,8 @@ class Message(DiscordEntity, immortal=True):
     """
     Represents a message from Discord.
     
+    Attributes
+    ----------
     id : `int`
         The unique identificator number of the message.
     _channel_mentions : `None` or `list` of (``UnknownCrossMention`` or ``ChannelBase`` instances)
@@ -764,11 +684,13 @@ class Message(DiscordEntity, immortal=True):
         Cross guild reference to the original message of crospost messages.
     edited : `None` or `datetime`
         The time when the message was edited, or `None` if it was not.
-        > Pinning or (un)supressing a mesage will not change it's edited value.
+        
+        Pinning or (un)supressing a mesage will not change it's edited value.
     embeds : `None` or `list` of ``EmbedCore``
         List of embeds included with the message if any.
-        > If a message contains links, then those embeds' might not be included with the source payload and those
-        > will be added only later.
+        
+        If a message contains links, then those embeds' might not be included with the source payload and those
+        will be added only later.
     everyone_mention : `bool`
         Whether the message contains `@everyone` or `@here`.
     flags : ``MessageFlag``
@@ -916,7 +838,7 @@ class Message(DiscordEntity, immortal=True):
         self.pinned = data.get('pinned', False)
         self.everyone_mention = data.get('mention_everyone', False)
         self.tts = data.get('tts', False)
-        self.type = MessageType.INSTANCES[data['type']]
+        self.type = MessageType.get(data['type'])
         
         attachment_datas = data['attachments']
         if attachment_datas:
@@ -1439,7 +1361,7 @@ class Message(DiscordEntity, immortal=True):
         
         for name in ('type_', 'type'):
             try:
-                type_=kwargs.pop('type')
+                type_ = kwargs.pop('type')
             except KeyError:
                 continue
             
@@ -1449,15 +1371,7 @@ class Message(DiscordEntity, immortal=True):
             type_found = False
         
         if type_found:
-            if type(type_) is MessageType:
-                # This is as it should be
-                pass
-            elif (type(type_) is int) and (type_ >= 0) and (type_<len(MessageType.INSTANCES)):
-                # For second attemt, lets check int and it's value as well
-                type_=MessageType.INSTANCES[type_]
-            else:
-                raise TypeError(f'`{name}` should be type `{MessageType.__name__}`, got `{type_!r}`')
-            
+            type_ = preconvert_preinstanced_type(type_, 'type_', MessageType)
         else:
             if base is None:
                 type_ = MessageType.default
@@ -2232,356 +2146,6 @@ class Message(DiscordEntity, immortal=True):
         except KeyError:
             return False
         return (user in reacters)
-
-class MessageType(object):
-    """
-    Represnets a ``Message``'s type.
-    
-    Attributes
-    ----------
-    convert : `function`
-        The converter function of the message type, what tries to convert the message's content to it's Discord side
-        representation.
-    name : `str`
-        The name of the message type.
-    value : `int`
-        The Discord side identificator value of the message type.
-        
-    Class Attributes
-    ----------------
-    INSTANCES : `list` of ``MessageType``
-        Stores the predefined ``MessageType`` instances. These can be accessed with their `value` as index.
-    
-    Every predefind message type can be accessed as class attribute as well:
-    
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | Class attribute name & name               | convert                                           | value |
-    +===========================================+===================================================+=======+
-    | default                                   | convert_default                                   | 0     |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | add_user                                  | convert_add_user                                  | 1     |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | remove_user                               | convert_remove_user                               | 2     |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | call                                      | convert_call                                      | 3     |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | channel_name_change                       | convert_channel_name_change                       | 4     |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | channel_icon_change                       | convert_channel_icon_change                       | 5     |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | new_pin                                   | convert_new_pin                                   | 6     |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | welcome                                   | convert_welcome                                   | 7     |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | new_guild_sub                             | convert_new_guild_sub                             | 8     |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | new_guild_sub_t1                          | convert_new_guild_sub_t1                          | 9     |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | new_guild_sub_t2                          | convert_new_guild_sub_t2                          | 10    |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | new_guild_sub_t3                          | convert_new_guild_sub_t3                          | 11    |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | new_follower_channel                      | convert_new_follower_channel                      | 12    |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | stream                                    | convert_stream                                    | 13    |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | discovery_disqualified                    | convert_discovery_disqualified                    | 14    |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | discovery_requalified                     | convert_discovery_requalified                     | 15    |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | discovery_grace_period_initial_warning    | convert_discovery_grace_period_initial_warning    | 16    |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | discovery_grace_period_final_warning      | convert_discovery_grace_period_final_warning      | 17    |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | thread_created                            | convert_thread_created                            | 18    |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    """
-    # class related
-    INSTANCES = [NotImplemented] * 19
-    
-    # object related
-    __slots__ = ('convert', 'name', 'value', )
-    
-    def __init__(self, value, name, convert):
-        """
-        Creates an ``InviteTargetType`` and stores it at the classe's `.INSTANCES` class attribute as well.
-        
-        Parameters
-        ----------
-        value : `int`
-            The Discord side identificator value of the message type.
-        name : `str`
-            The name of the message type.
-        convert : `function`
-            The converter function of the message type.
-        """
-        self.value = value
-        self.name = name
-        self.convert = convert
-        
-        self.INSTANCES[value]=self
-    
-    def __str__(self):
-        """Returns the message type's name."""
-        return self.name
-    
-    def __int__(self):
-        """Returns the message type's value."""
-        return self.value
-    
-    def __repr__(self):
-        """Returns the representation of the message type."""
-        return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r}, covert={self.convert!r})'
-    
-    # predefined
-    default = NotImplemented
-    add_user = NotImplemented
-    remove_user = NotImplemented
-    call = NotImplemented
-    channel_name_change = NotImplemented
-    channel_icon_change = NotImplemented
-    new_pin = NotImplemented
-    welcome = NotImplemented
-    new_guild_sub = NotImplemented
-    new_guild_sub_t1 = NotImplemented
-    new_guild_sub_t2 = NotImplemented
-    new_guild_sub_t3 = NotImplemented
-    new_follower_channel = NotImplemented
-    stream = NotImplemented
-    discovery_disqualified = NotImplemented
-    discovery_requalified = NotImplemented
-    discovery_grace_period_initial_warning = NotImplemented
-    discovery_grace_period_final_warning = NotImplemented
-
-def convert_default(self):
-    escape = re.escape
-    transformations = {
-        '@everyone':'@\u200beveryone',
-        '@here':'@\u200bhere'
-            }
-    
-    guild = self.channel.guild
-    if guild is None:
-        user_mentions = self.user_mentions
-        if user_mentions is not None:
-            for user in user_mentions:
-                transformations[escape(f'<@{user.id}>')] = f'@{user.name}'
-    else:
-        channel_mentions = self.channel_mentions
-        if channel_mentions is not None:
-            for channel in channel_mentions:
-                transformations[escape(f'<#{channel.id}>')] = f'#{channel.name}'
-        
-        user_mentions = self.user_mentions
-        if user_mentions is not None:
-            for user in user_mentions:
-                profile = user.guild_profiles.get(guild, None)
-                if (profile is None) or (profile.nick is None):
-                    name = f'@{user.name}'
-                else:
-                    name = f'@{profile.nick}'
-                    
-                transformations[escape(f'<@!{user.id}>')] = name
-                transformations[escape(f'<@{user.id}>')] = name
-        
-        role_mentions = self.role_mentions
-        if role_mentions is not None:
-            for role in role_mentions:
-                transformations[escape(f'<@&{role.id}>')] = f'@{role.name}'
-    
-    return re.compile("|".join(transformations)).sub(lambda mention:transformations[escape(mention.group(0))],self.content)
-
-def convert_add_user(self):
-    return f'{self.author.name} added {self.user_mentions[0].name} to the group.'
-
-def convert_remove_user(self):
-    return f'{self.author.name} removed {self.user_mentions[0].name} from the group.'
-
-def convert_call(self):
-    if any_to_any(self.channel.clients, self.call.users):
-        return f'{self.author.name} started a call.'
-    if self.call.ended_timestamp is None:
-        return f'{self.author.name} started a call \N{EM DASH} Join the call.'
-    return f'You missed a call from {self.author.name}'
-
-def convert_channel_name_change(self):
-    return f'{self.author.name} changed the channel name: {self.content}'
-
-def convert_channel_icon_change(self):
-    return f'{self.author.name} changed the channel icon.'
-
-def convert_new_pin(self):
-    return f'{self.author.name} pinned a message to this channel.'
-
-#TODO: this system changed, just pulled out the new texts from the js client source, but the calculation is bad
-def convert_welcome(self):
-    #tuples with immutable elements are stored directly
-    join_messages = (
-        '{0} just joined the server - glhf!',
-        '{0} just joined. Everyone, look busy!',
-        '{0} just joined. Can I get a heal?',
-        '{0} joined your party.',
-        '{0} joined. You must construct additional pylons.',
-        'Ermagherd. {0} is here.',
-        'Welcome, {0}. Stay awhile and listen.',
-        'Welcome, {0}. We were expecting you ( ͡° ͜ʖ ͡°)',
-        'Welcome, {0}. We hope you brought pizza.',
-        'Welcome {0}. Leave your weapons by the door.',
-        'A wild {0} appeared.',
-        'Swoooosh. {0} just landed.',
-        'Brace yourselves. {0} just joined the server.',
-        '{0} just joined... or did they?',
-        '{0} just arrived. Seems OP - please nerf.',
-        '{0} just slid into the server.',
-        'A {0} has spawned in the server.',
-        'Big {0} showed up!',
-        'Where’s {0}? In the server!',
-        '{0} hopped into the server. Kangaroo!!',
-        '{0} just showed up. Hold my beer.',
-        'Challenger approaching - {0} has appeared!',
-        'It\'s a bird! It\'s a plane! Nevermind, it\'s just {0}.',
-        'It\'s {0}! Praise the sun! [T]/',
-        'Never gonna give {0} up. Never gonna let {0} down.',
-        '{0} has joined the battle bus.',
-        'Cheers, love! {0}\'s here!',
-        'Hey! Listen! {0} has joined!',
-        'We\'ve been expecting you {0}',
-        'It\'s dangerous to go alone, take {0}!',
-        '{0} has joined the server! It\'s super effective!',
-        'Cheers, love! {0} is here!',
-        '{0} is here, as the prophecy foretold.',
-        '{0} has arrived. Party\'s over.',
-        'Ready player {0}',
-        '{0} is here to kick butt and chew bubblegum. And {0} is all out of gum.',
-        'Hello. Is it {0} you\'re looking for?',
-        '{0} has joined. Stay a while and listen!',
-        'Roses are red, violets are blue, {0} joined this server with you',
-            )
-
-    return join_messages[int(self.created_at.timestamp())%len(join_messages)].format(self.author.name)
-
-def convert_new_guild_sub(self):
-    guild = self.channel.guild
-    if guild is None:
-        guild_name = 'None'
-    else:
-        guild_name = guild.name
-    return f'{self.author.name} boosted {guild_name} with Nitro!'
-
-def convert_new_guild_sub_t1(self):
-    guild = self.channel.guild
-    if guild is None:
-        guild_name = 'None'
-    else:
-        guild_name = guild.name
-        
-    return f'{self.author.name} boosted {guild_name} with Nitro! {guild_name} has achieved level 1!'
-
-def convert_new_guild_sub_t2(self):
-    guild = self.channel.guild
-    if guild is None:
-        guild_name = 'None'
-    else:
-        guild_name = guild.name
-    
-    return f'{self.author.name} boosted {guild_name} with Nitro! {guild_name} has achieved level 2!'
-
-def convert_new_guild_sub_t3(self):
-    guild = self.channel.guild
-    if guild is None:
-        guild_name = 'None'
-    else:
-        guild_name = guild.name
-        
-    return f'{self.author.name} boosted {guild_name} with Nitro! {guild_name} has achieved level 3!'
-
-def convert_new_follower_channel(self):
-    channel = self.channel
-    guild = channel.guild
-    if guild is None:
-        guild_name = 'None'
-    else:
-        guild_name = guild.name
-    
-    user_name = self.author.name_at(guild)
-    
-    return (f'{user_name} has added {guild_name} #{channel.name} to this channel. Its most important updates '
-        'will show up here.')
-
-def convert_stream(self):
-    user = self.author
-    for activity in user.activities:
-        if activity.type == ActivityTypes.stream:
-            activity_name = activity.name
-            break
-    else:
-        activity_name = 'Unknown'
-    
-    user_name = user.name_at(self.guild)
-    
-    return f'{user_name} is live! Now streaming {activity_name}'
-
-def convert_discovery_disqualified(self):
-    return ('This server has been removed from Server Discovery because it no longer passes all the requirements. '
-        'Check `Server Settings` for more details.')
-
-def convert_discovery_requalified(self):
-    return 'This server is eligible for Server Discovery again and has been automatically relisted!'
-
-def convert_discovery_grace_period_initial_warning(self):
-    return ('This server has failed Discovery activity requirements for 1 week. If this server fails for 4 weeks in '
-        'a row, it will be automatically removed from Discovery.')
-
-def convert_discovery_grace_period_final_warning(self):
-    return ('This server has failed Discovery activity requirements for 3 weeks in a row. If this server fails for 1 '
-        'more week, it will be removed from Discovery.')
-
-def convert_thread_created(self):
-    user_name = self.author.name_at(self.guild)
-    return f'{user_name} started a thread'
-
-MessageType.default = MessageType(0, 'default', convert_default)
-MessageType.add_user = MessageType(1, 'add_user', convert_add_user)
-MessageType.remove_user = MessageType(2, 'remove_user', convert_remove_user)
-MessageType.call = MessageType(3, 'call', convert_call)
-MessageType.channel_name_change = MessageType(4, 'channel_name_change', convert_channel_name_change)
-MessageType.channel_icon_change = MessageType(5, 'channel_icon_change', convert_channel_icon_change)
-MessageType.new_pin = MessageType(6, 'new_pin', convert_new_pin)
-MessageType.welcome = MessageType(7, 'welcome', convert_welcome)
-MessageType.new_guild_sub = MessageType(8, 'new_guild_sub', convert_new_guild_sub)
-MessageType.new_guild_sub_t1 = MessageType(9, 'new_guild_sub_t1', convert_new_guild_sub_t1)
-MessageType.new_guild_sub_t2 = MessageType(1, 'new_guild_sub_t2', convert_new_guild_sub_t2)
-MessageType.new_guild_sub_t3 = MessageType(11, 'new_guild_sub_t3', convert_new_guild_sub_t3)
-MessageType.new_follower_channel = MessageType(12, 'new_follower_channel', convert_new_follower_channel)
-MessageType.stream = MessageType(13, 'stream', convert_stream)
-MessageType.discovery_disqualified = MessageType(14, 'discovery_disqualified', convert_discovery_disqualified)
-MessageType.discovery_requalified = MessageType(15, 'discovery_requalified', convert_discovery_requalified)
-MessageType.discovery_grace_period_initial_warning = MessageType(16, 'discovery_grace_period_initial_warning',
-    convert_discovery_grace_period_initial_warning)
-MessageType.discovery_grace_period_final_warning = MessageType(17, 'discovery_grace_period_final_warning',
-    convert_discovery_grace_period_final_warning)
-MessageType.thread_created = MessageType(18, 'thread_created', convert_thread_created)
-
-del convert_default
-del convert_add_user
-del convert_remove_user
-del convert_call
-del convert_channel_name_change
-del convert_channel_icon_change
-del convert_new_pin
-del convert_welcome
-del convert_new_guild_sub
-del convert_new_guild_sub_t1
-del convert_new_guild_sub_t2
-del convert_new_guild_sub_t3
-del convert_new_follower_channel
-del convert_stream
-del convert_discovery_disqualified
-del convert_discovery_requalified
-del convert_discovery_grace_period_initial_warning
-del convert_discovery_grace_period_final_warning
-del convert_thread_created
-
 
 ratelimit.Message = Message
 

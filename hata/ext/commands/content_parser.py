@@ -367,7 +367,7 @@ class ConverterFlag(FlagBase):
     +---------------+---------------+-----------------------------------------------------------------------+
     | profile       | 5             | User parser only. Can be used when user cache is disabled to          |
     |               |               | esnure, that the user will have local guild profile if applicable.    |
-    +---------------+---------------+-----------------------------------------------------------------------|
+    +---------------+---------------+-----------------------------------------------------------------------+
     
     There are alredy precreated flags, which are the following:
     +-------------------+-------------------------------------------+
@@ -1208,7 +1208,7 @@ class ConverterSetting(object):
     converter : `async-function`
         The converter function.
     default_flags : ``ConverterFlag``
-        The detault flags whith what teh converter will be used if not defining any specific.
+        The detault flags whith what the converter will be used if not defining any specific.
     default_type : `None` or `type`
         The default annotation type of the converter.
     uses_flags : `bool`
@@ -1227,7 +1227,7 @@ class ConverterSetting(object):
         uses_flags : `bool`
             Whether the converter processes any flags.
         default_flags : ``ConverterFlag``
-            The detault flags whith what teh converter will be used if not defining any specific.
+            The detault flags whith what the converter will be used if not defining any specific.
         all_flags : ``ConverterFlag``
              All the flags which the converter picks up.
         alternative_type_name : `None` or `str`

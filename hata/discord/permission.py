@@ -153,10 +153,10 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
         -------
         result : ``Permission``
         """
-        #1st denies permissions, then allows
+        # 1st denies permissions, then allows
         return type(self)((self&~deny)|allow)
     
-    #guild specific permissions: manage_guild, kick_users, ban_users, administrator, change_nicknames, manage_nicknames
+    # guild specific permissions: manage_guild, kick_users, ban_users, administrator, change_nicknames, manage_nicknames
     
     permission_all            = NotImplemented
     permission_none           = NotImplemented

@@ -320,34 +320,12 @@ class _execution_ended_cb(object):
         
         return self.executor is other.executor
 
-
-class _id_execution_ended_cb(object):
-    __slots__ = ('id', 'parent',)
-    def __init__(self, parent, id_):
-        self.parent = parent
-        self.id = id_
-    
-    def __call__(self, future):
-        future._loop.call_soon_threadsafe(self.parent._id_execution_ended, self.id)
-        
-    def __eq__(self, other):
-        if type(self) is type(other):
-            return self.id == other.id
-        return NotImplemented
-
-    def __ne__(self, other):
-        if type(self) is type(other):
-            return self.id != other.id
-        return NotImplemented
-
 class Executor(object):
-    __slots__ = ('claimed_executors', 'free_executors', 'keep_executor_count', 'running_executors',
-        'running_id_executors',)
+    __slots__ = ('claimed_executors', 'free_executors', 'keep_executor_count', 'running_executors',)
     
     def __init__(self, keep_executor_count=1):
         self.free_executors = deque()
         self.running_executors = {}
-        self.running_id_executors = {}
         self.claimed_executors = {}
         self.keep_executor_count = keep_executor_count
 
@@ -357,7 +335,7 @@ class Executor(object):
     
     @property
     def used_executor_count(self):
-        return len(self.running_executors)+len(self.running_id_executors)+len(self.claimed_executors)
+        return len(self.running_executors)+len(self.claimed_executors)
     
     @property
     def free_executor_count(self):
@@ -370,8 +348,6 @@ class Executor(object):
         self.free_executors.clear()
         for executor in self.running_executors.values():
             executor.cancel()
-        for executor in self.running_id_executors.values():
-            executor.cancel()
         for executor in self.claimed_executors.values():
             executor.cancel()
 
@@ -381,8 +357,6 @@ class Executor(object):
             executor.release()
         self.free_executors.clear()
         for executor in self.running_executors.values():
-            executor.release()
-        for executor in self.running_id_executors.values():
             executor.release()
         for executor in self.claimed_executors.values():
             executor.release()
@@ -408,26 +382,6 @@ class Executor(object):
     def _execution_ended(self, executor):
         try:
             del self.running_executors[executor._ident]
-        except KeyError:
-            return
-        self._sync_keep(executor)
-    
-    def run_in_id_executor(self, func, id_):
-        future = self.create_future()
-        if id_ in self.running_id_executors:
-            future.set_exception(ReferenceError)
-            return future
-        
-        executor = self._get_free_executor()
-        self.running_id_executors[id_] = executor
-        future.add_done_callback(_id_execution_ended_cb(self, id_))
-        executor.queue.set_result(ExecutionPair(func, future,),)
-        
-        return future
-    
-    def _id_execution_ended(self, id_):
-        try:
-            executor = self.running_id_executors.pop(id_)
         except KeyError:
             return
         self._sync_keep(executor)

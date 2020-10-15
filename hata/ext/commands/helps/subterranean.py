@@ -317,7 +317,7 @@ class SubterraneanHelpCommand(object):
     
     async def command_not_found(self, client, message, name):
         """
-        Called, when no command or category was found with teh given name,
+        Called, when no command or category was found with the given name,
         
         Parameters
         ----------

@@ -53,7 +53,7 @@ class global_lock_canceller:
     Cancels the global lock on a discord http session by setting it as `None` causing all the new requests to not be
     globally locked.
     
-    The already waiting requests are free'd up by the source `Future`, what's callback this is.
+    The already waiting requests are free'd up by the source `8Future``, what's callback this is.
     
     Attributes
     ----------
@@ -78,7 +78,7 @@ class global_lock_canceller:
         
         Parameters
         ----------
-        future : `Future`
+        future : ``Future``
             The global locker of the session.
         """
         self.session.global_lock = None
@@ -98,7 +98,7 @@ def ratelimit_global(session, retry_after):
     
     Returns
     -------
-    future : `Future`
+    future : ``Future``
         Waiter future till the global lock is over.
     """
     future = session.global_lock
@@ -192,7 +192,7 @@ class RatelimitGroup(object):
             +-------------------+-------------------+
         
         optimistic : `bool`, Optional
-            Whether teh ratelimit group is optimistic.
+            Whether the ratelimit group is optimistic.
         """
         self = object.__new__(cls)
         self.limiter = limiter
@@ -397,8 +397,8 @@ class RatelimitHandler(object):
         The `id` of the Discord Entity based on what the handler is limiter.
     parent : ``RatelimitGroup``
         The ratelimit group of the ratelimit handler.
-    queue : `None` or (`deque` of `Future`)
-        Queue of `Future` objects of waiting requests.
+    queue : `None` or (`deque` of ``Future``)
+        Queue of ``Future`` objects of waiting requests.
     wakeupper : `None` or `TimerHandle`
         Wakeupups the ratelimit handler, when it's ratelimits are reset.
     
@@ -1346,14 +1346,14 @@ class RATELIMIT_GROUPS:
     guild_discovery_add_subcategory = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     guild_discovery_get         = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     guild_discovery_edit        = RatelimitGroup(LIMITER_GUILD, optimistic=True)
-    guild_embed_get             = RatelimitGroup(LIMITER_GUILD, optimistic=True) # will be removed, do not bother with testing
-    guild_embed_edit            = RatelimitGroup(LIMITER_GUILD, optimistic=True) # will be removed, do not bother with testing
+    guild_embed_get             = RatelimitGroup(LIMITER_GUILD, optimistic=True) # deprecated
+    guild_embed_edit            = RatelimitGroup(LIMITER_GUILD, optimistic=True) # deprecated
     guild_emojis                = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     emoji_create                = RatelimitGroup(LIMITER_GUILD)
     emoji_delete                = RatelimitGroup(LIMITER_GUILD)
     emoji_get                   = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     emoji_edit                  = RatelimitGroup()
-    integration_get_all         = RatelimitGroup() # untested
+    integration_get_all         = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     integration_create          = RatelimitGroup() # untested
     integration_delete          = RatelimitGroup() # untested
     integration_edit            = RatelimitGroup() # untested

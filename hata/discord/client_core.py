@@ -418,11 +418,11 @@ class Kokoro(object):
     
     Attributes
     ----------
-    beat_task : `None` or `Task`
+    beat_task : `None` or ``Task``
         The beat task of kokoro's gateway. Set by ``._task`` meanwhile it's gateway is connected.
-    beat_waiter : `None` or `Future`
+    beat_waiter : `None` or ``Future``
         `.beater` task's waiter. Sleeps `.beater` between two beat.
-    beater : `None` or `Task` of ``._keep_beating``
+    beater : `None` or ``Task`` of ``._keep_beating``
         A task what sends a beating payload to Discord. Set only meanwhile kokoro is in the middle of a beat.
     gateway : ``DiscordGateway`` or ``DiscordGatewayVoice``
         Kokoro's owner gateway.
@@ -439,9 +439,9 @@ class Kokoro(object):
         Whether the kokoro should run and restart itself.
     should_beat : `bool`
         Whether the kokoro should keep beating.
-    task : `None` or `Task` of ``._start``
+    task : `None` or ``Task`` of ``._start``
         The main keep alive task of kokoro.
-    ws_waiter : `None` or `Future`
+    ws_waiter : `None` or ``Future``
         The waiter of kokoro, what waits for it's geteway to connect it's websocket.
     
     Class attributes
@@ -553,12 +553,12 @@ class Kokoro(object):
         
         The control flow of tze method is the following:
             - If `.should_beat` is not `True`, break out.
-            - Wait `.interval` time and set the waiting `Future` to `self.beat_waiter`. If kokoro is cancelled, or
+            - Wait `.interval` time and set the waiting ``Future`` to `self.beat_waiter`. If kokoro is cancelled, or
                 if it should beat now, it is cancelled and we repeat the loop.
             - If we did not get answer since last beating (what is triggered first from outside), then we stop the
                 gateway. We also break out from the loop to terminate the beating state and we will wait for the
                 websocket to connect again.
-            - We beat one with starting `gateway._beat` as a `Task` and setting it to `.beat_task`. If the task is
+            - We beat one with starting `gateway._beat` as a ``Task`` and setting it to `.beat_task`. If the task is
                 not completed before it's respective timeout, we stop the gateway here as well. We also break out
                 from the loop to terminate the beating state and we will wait for the websocket to connect again.
                 This task can also be cancelled. If cancellation occures, we repeat the loop.

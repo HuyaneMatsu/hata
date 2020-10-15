@@ -689,7 +689,7 @@ def str_channel_category(channel, index=None, write_parents=True, overwrites=Fal
         result.append('- DELETED', 1)
         return result
     
-    channels = channel.channels_list
+    channels = channel.channel_list
     if channels:
         result.append(str_list(channels, write_parents=write_parents, overwrites=overwrites, **kwargs), 1)
     
@@ -821,10 +821,6 @@ def str_guild(guild, index=None, **kwargs):
     if (widget_channel is not None):
         result.append(f'- widget channel: {widget_channel.name} {widget_channel.id}', 1)
     
-    embed_channel = guild.embed_channel
-    if (embed_channel is not None):
-        result.append(f'- embed channel : {embed_channel.name} {embed_channel.id}', 1)
-    
     rules_channel = guild.rules_channel
     if (rules_channel is not None):
         result.append(f'- rules channel : {rules_channel.name} {rules_channel.id}', 1)
@@ -836,8 +832,8 @@ def str_guild(guild, index=None, **kwargs):
     if guild.booster_count:
         result.append(f'- boosters : {guild.booster_count}', 1)
         result.append(f'- premium tier : {guild.premium_tier}', 1)
-    result.append(str_list(guild.channels_list, write_parents=False), 1)
-    result.append(str_list(guild.roles_list, write_parents=False), 1)
+    result.append(str_list(guild.channel_list, write_parents=False), 1)
+    result.append(str_list(guild.role_list, write_parents=False), 1)
     if guild.voice_states:
         voice_states = multidict()
         for voice_state in guild.voice_states.values():
@@ -961,30 +957,35 @@ def str_invite(invite, index=None,write_parents=True, **kwargs):
 
     return result
 
-def str_list(list_, mixed=True, name=None, **kwargs):
+def str_list(list_, index=None, mixed=True, name=None, **kwargs):
     result = PrettyBlock()
+    
+    if index is None:
+        start = ''
+    else:
+        start = f'{index}.: '
+    
     if not list_:
         if name is not None:
-            result.append(f'{name}s: (0)')
+            result.append(f'{start}{name}s: (0)')
         else:
-            result.append('Empty list')
+            result.append(f'{start}Empty {list_.__class__}')
         return result
     type_name = list_[0].__class__.__name__
     if name is None:
         name = type_name
-    result.append(f'{name}s: ({len(list_)})')
+    result.append(f'{start}{name}s: ({len(list_)})')
     if mixed:
-        func = PRETTY_PRINTERS[type_name]
-        for index, value in enumerate(list_, 1):
-            result.append(PRETTY_PRINTERS[value.__class__.__name__](value, index=index, **kwargs), 1)
+        for index, value in enumerate(list_, 0):
+            result.append(PRETTY_PRINTERS[value.__class__.__name__](value, index=index, **kwargs), 0)
     else:
         func = PRETTY_PRINTERS[type_name]
-        for index, value in enumerate(list_, 1):
-            result.append(func(value, index=index, **kwargs), 1)
-
+        for index, value in enumerate(list_, 0):
+            result.append(func(value, index=index, **kwargs), 0)
+    
     return result
 
-def str_dict(dict_,mixed=False,name=None, **kwargs):
+def str_dict(dict_, mixed=False, name=None, **kwargs):
     result = PrettyBlock()
     if not dict_:
         result.append('Empty')
@@ -1143,44 +1144,74 @@ def str_connection(connection, index=None, **kwargs):
 
 def str_integration(integration, index=None, **kwargs):
     result = PrettyBlock()
-
+    
     if index is None:
         start = ''
     else:
         start = f'{index}.: '
-
+    
     result.append(f'{start}Integration:')
     result.append(f'- name: {integration.name!r}', 1)
     result.append(f'- type: {integration.type}', 1)
     result.append(f'- {"enabled" if integration.enabled else "disabled"}', 1)
-    result.append(f'- {"syncing" if integration.syncing else "not syncing"}', 1)
-    
-    role = integration.role
-    result.append(f'- role : {role.name!r} ({role.id})', 1)
-    guild = role.guild
-    if guild is None:
-        result.append('- role already deleted', 1)
-    else:
-        result.append(f'- guild : {guild.name} ({guild.id})', 1)
-    result.append(f'- expire behavior : {integration.expire_behavior}', 1)
-    result.append(f'- expire grace period : {integration.expire_grace_period}', 1)
-    
-    user = integration.user
-    if (user is not ZEROUSER):
-        result.append(f'- user : {user.full_name!r} ({user.id}', 1)
     
     result.append(f'Account:', 1)
     result.append(str_integration_account(integration.account, head_line=False, **kwargs), 1)
-    
-    result.append(f'- synced at : {integration.synced_at:{DATETIME_FORMAT_CODE}}', 1)
-    subscriber_count = integration.subscriber_count
-    if subscriber_count:
-        result.append(f'- subscriber count: {subscriber_count}', 1)
     
     application = integration.application
     if (application is not None):
         result.append('Application:', 1)
         result.append(str_integration_application(application, head_line=False, **kwargs), 1)
+    
+    detail = integration.detail
+    if (detail is not None):
+        result.append('Detail:', 1)
+        result.append(str_integration_detail(detail, head_line=False, **kwargs), 1)
+    
+    return result
+
+def str_integration_detail(detail, index=None, head_line=True, **kwargs):
+    result = PrettyBlock()
+    
+    if head_line:
+        if index is None:
+            start = ''
+        else:
+            start = f'{index}.:'
+        
+        result.append(f'{start}Integration Detail:')
+    
+    if detail.syncing:
+        result.append(f'- syncing', 1)
+    
+    role = detail.role
+    if (role is not None):
+        result.append(f'- role : {role.name!r} ({role.id})', 1)
+        guild = role.guild
+        if guild is None:
+            result.append('- role already deleted', 1)
+        else:
+            result.append(f'- guild : {guild.name} ({guild.id})', 1)
+    
+    expire_behavior = detail.expire_behavior
+    if expire_behavior != -1:
+        result.append(f'- expire behavior : {expire_behavior}', 1)
+    
+    expire_grace_period = detail.expire_grace_period
+    if expire_grace_period != -1:
+        result.append(f'- expire grace period : {expire_grace_period}', 1)
+    
+    user = detail.user
+    if (user is not ZEROUSER):
+        result.append(f'- user : {user.full_name!r} ({user.id})', 1)
+    
+    synced_at = detail.synced_at
+    if synced_at != DISCORD_EPOCH_START:
+        result.append(f'- synced at : {synced_at:{DATETIME_FORMAT_CODE}}', 1)
+    
+    subscriber_count = detail.subscriber_count
+    if subscriber_count:
+        result.append(f'- subscriber count: {subscriber_count}', 1)
     
     return result
 
@@ -1657,7 +1688,7 @@ def str_message_repr(message, index=None, **kwargs):
     else:
         start = f'{index}.: '
     
-    result.append(f'{start}MessagRepr {message.id}::')
+    result.append(f'{start}MessagRepr {message.id}:')
     channel = message.channel
     result.append(f'- channel {channel.id} ({channel.__class__.__name__}, {channel.type})', 1)
     
@@ -1667,6 +1698,18 @@ def str_message_repr(message, index=None, **kwargs):
     
     return result
 
+def str_user_guild_permission(user_guild_permission, index=None, **kwargs):
+    result = PrettyBlock()
+    if index is None:
+        start = ''
+    else:
+        start = f'{index}.: '
+    
+    result.append(f'{start}UserGuildPermission:')
+    result.append(f'- owner: {user_guild_permission.owner}', 1)
+    result.append(f'- permission: {int.__repr__(user_guild_permission.permission)}', 1)
+    
+    return result
 
 PRETTY_PRINTERS['Message'] = str_message
 PRETTY_PRINTERS['reaction_mapping'] = str_reaction_mapping
@@ -1713,3 +1756,6 @@ PRETTY_PRINTERS['IntegrationAccount'] = str_integration_account
 PRETTY_PRINTERS['Application'] = str_application
 PRETTY_PRINTERS['Team'] = str_team
 PRETTY_PRINTERS['MessageRepr'] = str_message_repr
+PRETTY_PRINTERS['IntegrationDetail'] = str_integration_detail
+PRETTY_PRINTERS['tuple'] = str_list
+PRETTY_PRINTERS['UserGuildPermission'] = str_user_guild_permission

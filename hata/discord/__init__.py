@@ -21,6 +21,7 @@ from .others import *
 from .parsers import *
 from .permission import *
 from .player import *
+from .preinstanced import *
 from .ratelimit import *
 from .role import *
 from .user import *
@@ -50,6 +51,7 @@ __all__ = (
     *parsers.__all__            ,
     *permission.__all__         ,
     *player.__all__             ,
+    *preinstanced.__all__       ,
     *ratelimit.__all__          ,
     *role.__all__               ,
     *user.__all__               ,

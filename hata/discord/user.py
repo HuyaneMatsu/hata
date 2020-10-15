@@ -9,12 +9,13 @@ from ..backend.dereaddons_local import DOCS_ENABLED, WeakKeyDictionary
 
 from .bases import DiscordEntity, FlagBase, IconSlot, ICON_TYPE_NONE
 from .client_core import USERS
-from .others import parse_time, Status, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
-from .color import Color, DefaultAvatar
+from .others import parse_time, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
+from .color import Color
 from .activity import ActivityUnknown, Activity
 from .http import URLS
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool, preconvert_discriminator, \
     preconvert_flag
+from .preinstanced import Status, DefaultAvatar
 
 from . import others
 
@@ -525,7 +526,7 @@ class UserBase(DiscordEntity, immortal=True):
         -------
         default_avatar_url : `str`
         """
-        return DefaultAvatar.INSTANCES[self.discriminator%DefaultAvatar.COUNT].url
+        return DefaultAvatar.for_(self).url
     
     @property
     def default_avatar(self):
@@ -536,7 +537,7 @@ class UserBase(DiscordEntity, immortal=True):
         -------
         default_avatar : ``DefaultAvatar``
         """
-        return DefaultAvatar.INSTANCES[self.discriminator%DefaultAvatar.COUNT]
+        return DefaultAvatar.for_(self)
     
     # for sorting users
     def __gt__(self, other):
@@ -685,7 +686,7 @@ class UserBase(DiscordEntity, immortal=True):
         guild : `None` or ``Guild``
             The guild, where the user's color will be checked.
             
-            > Can be given as `None`.
+            Can be given as `None`.
 
         Returns
         -------
@@ -702,7 +703,7 @@ class UserBase(DiscordEntity, immortal=True):
         guild : `None` or ``Guild``
             The guild, where the user's nick will be checked.
             
-            > Can be given as `None`.
+            Can be given as `None`.
 
         Returns
         -------
@@ -771,7 +772,7 @@ class UserBase(DiscordEntity, immortal=True):
         guild : ``Guild`` or `None`
             The guild where the user's top role will be looked up.
             
-            > Can be given as `None`.
+            Can be given as `None`.
         default : `Any`
             If the user is not a member of the guild, or if has no roles there, zhen the given default value is returned.
             Defaults to `None`.
@@ -828,7 +829,7 @@ class UserBase(DiscordEntity, immortal=True):
         guild : ``Guild`` or `None`
             The guild where the users' top roles will be checked.
             
-            > Can be given as `None`.
+            Can be given as `None`.
         
         Returns
         -------
@@ -846,7 +847,7 @@ class UserBase(DiscordEntity, immortal=True):
             guild : `None` or ``Guild``
                 The guild, where the user's color will be checked.
                 
-                > Can be given as `None`.
+                Can be given as `None`.
     
             Returns
             -------
@@ -871,7 +872,7 @@ class UserBase(DiscordEntity, immortal=True):
             guild : `None` or ``Guild``
                 The guild, where the user's nick will be checked.
                 
-                > Can be given as `None`.
+                Can be given as `None`.
     
             Returns
             -------
@@ -960,7 +961,7 @@ class UserBase(DiscordEntity, immortal=True):
             guild : ``Guild`` or `None`
                 The guild where the user's top role will be looked up.
                 
-                > Can be given as `None`.
+                Can be given as `None`.
             default : `Any`
                 If the user is not a member of the guild, or if has no roles there, the given default value is returned.
                 Defaults to `None`.
@@ -1098,7 +1099,7 @@ class UserBase(DiscordEntity, immortal=True):
             guild : ``Guild`` or `None`
                 The guild where the users' top roles will be checked.
                 
-                > Can be given as `None`.
+                Can be given as `None`.
             
             Returns
             -------
@@ -1151,6 +1152,8 @@ class User(UserBase):
     """
     Represents a Discord user.
     
+    Attributes
+    ----------
     id : `int`
         The user's unique identificator number.
     name : str
@@ -1641,7 +1644,7 @@ class User(UserBase):
             status = data['status']
             if self.status.value != status:
                 old_attributes['status'] = self.status
-                self.status = Status.INSTANCES[status]
+                self.status = Status.get(status)
         
         activity_datas = data['activities']
         
@@ -1735,7 +1738,7 @@ class User(UserBase):
         data : `dict` of (`str`, `Any`) items
             Received guild member data.
         """
-        self.status = Status.INSTANCES[data['status']]
+        self.status = Status.get(data['status'])
         
         try:
             # not included sometimes
@@ -2059,7 +2062,7 @@ class ActivityUpdate(object):
     
     def __init__(self, activity, old_attributes):
         """
-        Creates a new activity change instance with teh given parameters.
+        Creates a new activity change instance with the given parameters.
         
         activity : ``ActivityBase`` instance
             The updated activity.

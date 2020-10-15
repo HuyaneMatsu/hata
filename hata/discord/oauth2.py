@@ -8,8 +8,9 @@ from time import time as time_now
 from .bases import DiscordEntity, IconSlot
 from .http import URLS
 from .integration import Integration
-from .others import PremiumType, DATETIME_FORMAT_CODE
+from .others import DATETIME_FORMAT_CODE
 from .user import UserBase, UserFlag
+from .preinstanced import PremiumType
 
 DEFAULT_LOCALE = 'en-US'
 LOCALES = {DEFAULT_LOCALE: DEFAULT_LOCALE}
@@ -118,7 +119,7 @@ class Connection(DiscordEntity):
     integrations : `None` or (`list` of ``Integration``)
         A list (if any) of guild inegrations which are attached to the connection.
     name : `str`
-        The username of teh connected account.
+        The username of the connected account.
     revoked : `bool`
         Whether the connection is revoked.
     show_activity : `bool`
@@ -315,7 +316,7 @@ class UserOA2(UserBase):
             flags = data.get('public_flags', 0)
         
         self.flags = UserFlag(flags)
-        self.premium_type = PremiumType.INSTANCES[data.get('premium_type', 0)]
+        self.premium_type = PremiumType.get(data.get('premium_type', 0))
         self.locale = parse_locale(data)
         self.system = data.get('system', False)
     

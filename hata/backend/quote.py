@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-#https://github.com/squeaky-pl/zenchmarks/blob/master/vendor/yarl/quoting.py
+# https://github.com/squeaky-pl/zenchmarks/blob/master/vendor/yarl/quoting.py
 from string import ascii_letters, ascii_lowercase, digits
 
 BASCII_LOWERCASE = ascii_lowercase.encode('ascii')
@@ -14,10 +14,13 @@ ALLOWED          = f'{UNRESERVED}{SUB_DELIMS_WO_QS}'
 def quote(value, safe='', protected='', qs=False):
     if value is None:
         return None
+    
     if not isinstance(value, str):
-        raise TypeError("Argument should be str")
+        raise TypeError(f'Argument should be str, got {value.__class__.__name__}.')
+    
     if not value:
         return ''
+    
     value = value.encode('utf8')
     result = bytearray()
     pct = b''
@@ -32,20 +35,23 @@ def quote(value, safe='', protected='', qs=False):
             if char in BASCII_LOWERCASE:
                 char -= 32
             pct.append(char)
-            if len(pct) == 3:  # pragma: no branch   # peephole optimizer
+            if len(pct) == 3:
                 pct = bytes(pct)
                 try:
                     unquoted = chr(int(pct[1:].decode('ascii'), base=16))
                 except ValueError:
-                    raise ValueError(f'Unallowed PCT {pct}')
+                    raise ValueError(f'Unallowed PCT: {pct!r}.')
+                
                 if unquoted in protected:
                     result.extend(pct)
                 elif unquoted in safe:
                     result.append(ord(unquoted))
                 else:
                     result.extend(pct)
+                
                 pct = b''
             continue
+            
         elif char == b'%'[0]:
             pct = bytearray()
             pct.append(char)

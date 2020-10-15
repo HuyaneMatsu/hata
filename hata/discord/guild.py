@@ -1,6 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('DiscoveryCategory', 'Guild', 'GuildDiscovery', 'GuildEmbed', 'GuildFeature', 'GuildPreview', 'GuildWidget',
-    'GuildWidgetChannel', 'GuildWidgetUser', 'SystemChannelFlag', 'WelcomeChannel', 'WelcomeScreen', )
+__all__ = ('DiscoveryCategory', 'Guild', 'GuildDiscovery', 'GuildPreview', 'GuildWidget', 'GuildWidgetChannel',
+    'GuildWidgetUser', 'SystemChannelFlag', 'WelcomeChannel', 'WelcomeScreen', )
 
 import re, reprlib
 
@@ -10,8 +10,7 @@ from ..backend.futures import Task
 
 from .bases import DiscordEntity, ReverseFlagBase, IconSlot, ICON_TYPE_NONE
 from .client_core import GUILDS, DISCOVERY_CATEGORIES, CHANNELS, KOKORO
-from .others import EMOJI_NAME_RP, VoiceRegion, Status, VerificationLevel, MessageNotificationLevel, MFA, \
-    ContentFilterLevel, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
+from .others import EMOJI_NAME_RP, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 from .user import User, PartialUser, VoiceState, UserBase, ZEROUSER
 from .role import Role
 from .channel import CHANNEL_TYPES, ChannelCategory, ChannelText
@@ -22,6 +21,8 @@ from .emoji import Emoji, PartialEmoji
 from .webhook import Webhook, WebhookRepr
 from .oauth2 import parse_preferred_locale, DEFAULT_LOCALE
 from .preconverters import preconvert_snowflake, preconvert_str
+from .preinstanced import GuildFeature, VoiceRegion, Status, VerificationLevel, MessageNotificationLevel, MFA, \
+    ContentFilterLevel
 
 from . import ratelimit
 
@@ -32,215 +33,6 @@ LARGE_LIMIT = 250 #can be between 50 and 250
 EMOJI_UPDATE_NEW    = 0
 EMOJI_UPDATE_DELETE = 1
 EMOJI_UPDATE_EDIT   = 2
-
-class GuildFeature(object):
-    """
-    Represents the event type of an ``AuditLogEntry``.
-
-    Attributes
-    ----------
-    value : `int`
-        The Discord side identificator value of the guild feature.
-    
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``GuildFeature``) items
-        Stores the predefined ``GuildFeature`` instances.
-    
-    Every predefined guild feature can be accessed as class attribute as well:
-    
-    +-------------------------------+-------------------------------+
-    | Class attribute names         | Value                         |
-    +===============================+===============================+
-    | animated_icon                 | ANIMATED_ICON                 |
-    +-------------------------------+-------------------------------+
-    | banner                        | BANNER                        |
-    +-------------------------------+-------------------------------+
-    | commerce                      | COMMERCE                      |
-    +-------------------------------+-------------------------------+
-    | community                     | COMMUNITY                     |
-    +-------------------------------+-------------------------------+
-    | discoverable                  | DISCOVERABLE                  |
-    +-------------------------------+-------------------------------+
-    | enabled_discoverable_before   | ENABLED_DISCOVERABLE_BEFORE   |
-    +-------------------------------+-------------------------------+
-    | featurable                    | FEATURABLE                    |
-    +-------------------------------+-------------------------------+
-    | member_list_disabled          | MEMBER_LIST_DISABLED          |
-    +-------------------------------+-------------------------------+
-    | more_emoji                    | MORE_EMOJI                    |
-    +-------------------------------+-------------------------------+
-    | news                          | NEWS                          |
-    +-------------------------------+-------------------------------+
-    | partnered                     | PARTNERED                     |
-    +-------------------------------+-------------------------------+
-    | public                        | PUBLIC                        |
-    +-------------------------------+-------------------------------+
-    | public_disabled               | PUBLIC_DISABLED               |
-    +-------------------------------+-------------------------------+
-    | relay_enabled                 | RELAY_ENABLED                 |
-    +-------------------------------+-------------------------------+
-    | invite_splash                 | INVITE_SPLASH                 |
-    +-------------------------------+-------------------------------+
-    | vanity                        | VANITY_URL                    |
-    +-------------------------------+-------------------------------+
-    | verified                      | VERIFIED                      |
-    +-------------------------------+-------------------------------+
-    | vip                           | VIP_REGIONS                   |
-    +-------------------------------+-------------------------------+
-    | welcome_screen                | WELCOME_SCREEN_ENABLED        |
-    +-------------------------------+-------------------------------+
-    """
-    # class related
-    INSTANCES = {}
-    
-    @classmethod
-    def get(cls, value):
-        """
-        Accessed to get a guild feature from `.INSTANCES` by it's `value`. If no predefined guild feature is found,
-        creates a new one.
-        
-        Parameters
-        ----------
-        value : `str`
-            The identificator value of the guild feature.
-        
-        Returns
-        -------
-        guild_feature : ``GuildFeature``
-        """
-        try:
-            guild_feature = cls.INSTANCES[value]
-        except KeyError:
-            guild_feature = cls(value)
-        
-        return guild_feature
-    
-    # object related
-    __slots__ = ('value',)
-    
-    def __init__(self, value):
-        """
-        Creates a new guild feature and stores it at `.INSTANCES`.
-        
-        Parameters
-        ----------
-        value : `str`
-            The identificator value of the guild feature.
-        """
-        self.value = value
-        self.INSTANCES[value] = self
-    
-    def __str__(self):
-        """Returns the guild feature's value."""
-        return self.value
-    
-    name = property(__str__)
-    if DOCS_ENABLED:
-        name.__doc__ = (
-        """
-        Returns the guild feature's value.
-        
-        Returns
-        -------
-        name : `str`
-        """)
-    
-    def __repr__(self):
-        """Returns the representation of the guild feature."""
-        return f'{self.__class__.__name__}(value={self.value!r})'
-    
-    def __gt__(self, other):
-        """Whether this feature's value is greater than the other's."""
-        if type(self) is type(other):
-            return self.value > other.value
-        if isinstance(other, str):
-            return self.value > other
-        return NotImplemented
-    
-    def __ge__(self, other):
-        """Whether this feature's value is greater or equal than the other's."""
-        if type(self) is type(other):
-            return self.value >= other.value
-        if isinstance(other, str):
-            return self.value >= other
-        return NotImplemented
-    
-    def __eq__(self, other):
-        """Whether this feature's value is equal to the other's."""
-        if type(self) is type(other):
-            return self.value == other.value
-        if isinstance(other, str):
-            return self.value == other
-        return NotImplemented
-    
-    def __ne__(self, other):
-        """Whether this feature's value is not equal to the other's."""
-        if type(self) is type(other):
-            return self.value != other.value
-        if isinstance(other, str):
-            return self.value != other
-        return NotImplemented
-    
-    def __le__(self, other):
-        """Whether this feature's value is lower or equal than the other's."""
-        if type(self) is type(other):
-            return self.value <= other.value
-        if isinstance(other, str):
-            return self.value <= other
-        return NotImplemented
-    
-    def __lt__(self, other):
-        """Whether this feature's value is lower than the other's."""
-        if type(self) is type(other):
-            return self.value < other.value
-        if isinstance(other, str):
-            return self.value < other
-        return  NotImplemented
-    
-    def __hash__(self):
-        return hash(self.value)
-    
-    # predefined
-    animated_icon               = NotImplemented
-    banner                      = NotImplemented
-    commerce                    = NotImplemented
-    discoverable                = NotImplemented
-    enabled_discoverable_before = NotImplemented
-    featurable                  = NotImplemented
-    member_list_disabled        = NotImplemented
-    more_emoji                  = NotImplemented
-    news                        = NotImplemented
-    partnered                   = NotImplemented
-    public                      = NotImplemented
-    public_disabled             = NotImplemented
-    relay_enabled               = NotImplemented
-    invite_splash               = NotImplemented
-    vanity                      = NotImplemented
-    verified                    = NotImplemented
-    vip                         = NotImplemented
-    welcome_screen              = NotImplemented
-
-
-GuildFeature.animated_icon              = GuildFeature('ANIMATED_ICON')
-GuildFeature.banner                     = GuildFeature('BANNER')
-GuildFeature.commerce                   = GuildFeature('COMMERCE')
-GuildFeature.community                  = GuildFeature('COMMUNITY')
-GuildFeature.discoverable               = GuildFeature('DISCOVERABLE')
-GuildFeature.enabled_discoverable_before= GuildFeature('ENABLED_DISCOVERABLE_BEFORE')
-GuildFeature.featurable                 = GuildFeature('FEATURABLE')
-GuildFeature.member_list_disabled       = GuildFeature('MEMBER_LIST_DISABLED')
-GuildFeature.more_emoji                 = GuildFeature('MORE_EMOJI')
-GuildFeature.news                       = GuildFeature('NEWS')
-GuildFeature.partnered                  = GuildFeature('PARTNERED')
-GuildFeature.public                     = GuildFeature('PUBLIC')
-GuildFeature.public_disabled            = GuildFeature('PUBLIC_DISABLED')
-GuildFeature.relay_enabled              = GuildFeature('RELAY_ENABLED')
-GuildFeature.invite_splash              = GuildFeature('INVITE_SPLASH')
-GuildFeature.vanity                     = GuildFeature('VANITY_URL')
-GuildFeature.verified                   = GuildFeature('VERIFIED')
-GuildFeature.vip                        = GuildFeature('VIP_REGIONS')
-GuildFeature.welcome_screen             = GuildFeature('WELCOME_SCREEN_ENABLED')
 
 COMMUNITY_FEATURES = {GuildFeature.community, GuildFeature.discoverable, GuildFeature.public}
 
@@ -294,64 +86,6 @@ class SystemChannelFlag(ReverseFlagBase):
 SystemChannelFlag.NONE = SystemChannelFlag(0b11)
 SystemChannelFlag.ALL  = SystemChannelFlag(0b00)
 
-class GuildEmbed(object):
-    """
-    Represents a guild's embed.
-    
-    Attributes
-    ----------
-    channel : ``Channeltext``
-        The respective guild's embed channel.
-    enabled : `bool`
-        Whether respective guild's embed is enabled.
-    guild : ``Guild``
-        The guild of the guild embed.
-    """
-    __slots__ = ('channel', 'enabled', 'guild',)
-    def __init__(self, data, guild):
-        """
-        Creates a new guild embed.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Guild embed data received from Discord.
-        guild : ``Guild``
-            The guild of the guild embed.
-        """
-        self.guild = guild
-        self.enabled = guild.embed_enabled = data['enabled']
-        channel_id = data['channel_id']
-        if (channel_id is not None):
-            channel = guild.channels.get(int(channel_id))
-        else:
-            channel = None
-        self.channel = guild.embed_channel=channel
-    
-    @classmethod
-    def from_guild(cls, guild):
-        """
-        Creates a guild embed directly from a ``Guild``.
-        
-        Parameters
-        ----------
-        guild : ``Guild``
-            The guild to create the guild embed from.
-        
-        Returns
-        -------
-        guild_embed : ``GuildEmbed``
-        """
-        self = object.__new__(cls)
-        self.enabled = guild.embed_enabled
-        self.channel = guild.embed_channel
-        self.guild = guild
-        return self
-
-    def __repr__(self):
-        """Returns the representation of the guild embed."""
-        return f'<{self.__class__.__name__} of guild {self.guild!r}>'
-
 class GuildWidgetUser(DiscordEntity):
     """
     Represents an user object sent with a ``GuildWidget``'s data.
@@ -386,7 +120,7 @@ class GuildWidgetUser(DiscordEntity):
         self.id = int(data['id'])
         self.discriminator = int(data['discriminator'])
         self.avatar_url = data['avatar_url']
-        self.status = Status.INSTANCES[data['status']]
+        self.status = Status.get(data['status'])
         try:
             activity_data = data['game']
         except KeyError:
@@ -707,8 +441,6 @@ def PartialGuild(data):
     guild.clients = []
     guild.content_filter = ContentFilterLevel.disabled
     # description will be set down
-    guild.embed_channel = None
-    guild.embed_enabled = False
     guild.emojis = {}
     guild.features = []
     # icon_type will be set down
@@ -762,7 +494,7 @@ def PartialGuild(data):
         except KeyError:
             pass
         else:
-            guild.verification_level = VerificationLevel.INSTANCES[verification_level]
+            guild.verification_level = VerificationLevel.get(verification_level)
         
         try:
             features = data['features']
@@ -775,8 +507,7 @@ def PartialGuild(data):
     
     return guild
 
-#discord does not sends `embed_channel`, `embed_enabled`, `widget_channel`,
-#`widget_enabled`, `max_presences`, `max_users` correctly and thats sad.
+#discord does not send `widget_channel`, `widget_enabled`, `max_presences`, `max_users` correctly and thats sad.
 class Guild(DiscordEntity, immortal=True):
     """
     Represents a Discord guild (or server).
@@ -811,10 +542,6 @@ class Guild(DiscordEntity, immortal=True):
         The guild's discovery splashe's hash in `uint128`. The guild must be a discoverable.
     discovery_splash_type : ``IconType``
         The guild's discovery splashe's type.
-    embed_channel : `None` or ``ChannelText``
-        The channel to where the guild's embed widget will generate the invite to.
-    embed_enabled : `bool`
-        If the guild embeddable. Linked to ``.embed_channel``.
     emojis : `dict` of (`int`, ``Emoji``) items
         The emojis of the guild stored in `emoji_id` - `emoji` relation.
     features : `list` of ``GuildFeature``
@@ -885,20 +612,17 @@ class Guild(DiscordEntity, immortal=True):
     -----
     When a guild is loaded first time, some of it's attrbiutes might not reflect their real value. These are the
     following:
-    - ``.embed_channel``
-    - ``.embed_enabled``
     - ``.max_presences``
     - ``.max_users``
     - ``.widget_channel``
     - ``.widget_enabled``
     """
     __slots__ = ('_boosters', '_cache_perm', 'afk_channel', 'afk_timeout', 'available', 'booster_count', 'channels',
-        'clients', 'content_filter', 'description', 'embed_channel', 'embed_enabled', 'emojis', 'features',
-        'has_animated_icon', 'is_large', 'max_presences', 'max_users', 'max_video_channel_users',
-        'message_notification', 'mfa', 'name', 'owner_id', 'preferred_locale', 'premium_tier', 'public_updates_channel',
-        'region', 'roles', 'roles', 'rules_channel', 'system_channel', 'system_channel_flags', 'user_count', 'users',
-        'vanity_code', 'verification_level', 'voice_states', 'webhooks', 'webhooks_uptodate', 'widget_channel',
-        'widget_enabled')
+        'clients', 'content_filter', 'description', 'emojis', 'features', 'has_animated_icon', 'is_large',
+        'max_presences', 'max_users', 'max_video_channel_users', 'message_notification', 'mfa', 'name', 'owner_id',
+        'preferred_locale', 'premium_tier', 'public_updates_channel', 'region', 'roles', 'roles', 'rules_channel',
+        'system_channel', 'system_channel_flags', 'user_count', 'users', 'vanity_code', 'verification_level',
+        'voice_states', 'webhooks', 'webhooks_uptodate', 'widget_channel', 'widget_enabled')
     
     banner = IconSlot('banner', 'banner', URLS.guild_banner_url, URLS.guild_banner_url_as)
     icon = IconSlot('icon', 'icon', URLS.guild_icon_url, URLS.guild_icon_url_as)
@@ -1133,8 +857,6 @@ class Guild(DiscordEntity, immortal=True):
             guild.description = None
             guild.discovery_splash_hash = 0
             guild.discovery_splash_type = ICON_TYPE_NONE
-            guild.embed_channel = None
-            guild.embed_enabled = False
             guild.emojis = {}
             guild.features = []
             guild.has_animated_icon = False
@@ -1227,37 +949,7 @@ class Guild(DiscordEntity, immortal=True):
         
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
-    embed_url = URLS.guild_embed_url
     widget_url = URLS.guild_widget_url
-    
-    def _update_embed(self, data):
-        """
-        On requesting a guild's embed it's respective attributes get updated.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Guild embed's data received from Discord.
-        """
-        self.embed_enabled = data.get('enabled', False)
-        
-        channel_id = data.get('id')
-        if channel_id is None:
-            embed_channel = None
-        else:
-            embed_channel = self.channels[int(channel_id)]
-        self.embed_channel = embed_channel
-    
-    @property
-    def embed(self):
-        """
-        Returns the guild's embed based on the guild's current embed information.
-        
-        Returns
-        -------
-        guild_embed : ``GuildEmbed``
-        """
-        return GuildEmbed.from_guild(self)
 
     def _delete(self, client):
         """
@@ -1610,7 +1302,7 @@ class Guild(DiscordEntity, immortal=True):
             except KeyError:
                 pass
             else:
-                user.status = Status.INSTANCES[presence['status']]
+                user.status = Status.get(presence['status'])
                 user.statuses = presence['client_status']
                 user.activities = [Activity(activity_data) for activity_data in presence['activities']]
     
@@ -2192,10 +1884,6 @@ class Guild(DiscordEntity, immortal=True):
         +---------------------------+-------------------------------+
         | discovery_splash          | ``Icon``                      |
         +---------------------------+-------------------------------+
-        | embed_channel             | `None` or ``ChannelText``     |
-        +---------------------------+-------------------------------+
-        | embed_enabled             | `bool`                        |
-        +---------------------------+-------------------------------+
         | features                  | `list` of ``GuildFeature``    |
         +---------------------------+-------------------------------+
         | icon                      | ``Icon``                      |
@@ -2270,22 +1958,22 @@ class Guild(DiscordEntity, immortal=True):
             old_attributes['afk_timeout'] = self.afk_timeout
             self.afk_timeout = afk_timeout
         
-        verification_level = VerificationLevel.INSTANCES[data['verification_level']]
+        verification_level = VerificationLevel.get(data['verification_level'])
         if self.verification_level is not verification_level:
             old_attributes['verification_level'] = self.verification_level
             self.verification_level = verification_level
 
-        message_notification = MessageNotificationLevel.INSTANCES[data['default_message_notifications']]
+        message_notification = MessageNotificationLevel.get(data['default_message_notifications'])
         if self.message_notification is not message_notification:
             old_attributes['message_notification'] = self.message_notification
             self.message_notification = message_notification
         
-        mfa = MFA.INSTANCES[data['mfa_level']]
+        mfa = MFA.get(data['mfa_level'])
         if self.mfa is not mfa:
             old_attributes['mfa'] = self.mfa
             self.mfa = mfa
         
-        content_filter = ContentFilterLevel.INSTANCES[data.get('explicit_content_filter', 0)]
+        content_filter = ContentFilterLevel.get(data.get('explicit_content_filter', 0))
         if self.content_filter is not content_filter:
             old_attributes['content_filter'] = self.content_filter
             self.content_filter = content_filter
@@ -2369,21 +2057,6 @@ class Guild(DiscordEntity, immortal=True):
         if self.widget_channel is not widget_channel:
             old_attributes['widget_channel'] = self.widget_channel
             self.widget_channel = widget_channel
-        
-        embed_enabled = data.get('embed_enabled', False)
-        if self.embed_enabled != embed_enabled:
-            old_attributes['embed_enabled'] = self.embed_enabled
-            self.embed_enabled = embed_enabled
-
-        embed_channel_id = data.get('embed_channel_id')
-        if embed_channel_id is None:
-            embed_channel = None
-        else:
-            embed_channel = self.channels[int(embed_channel_id)]
-        
-        if self.embed_channel is not embed_channel:
-            old_attributes['embed_channel'] = self.embed_channel
-            self.embed_channel = embed_channel
         
         rules_channel_id = data.get('rules_channel_id')
         if rules_channel_id is None:
@@ -2473,13 +2146,13 @@ class Guild(DiscordEntity, immortal=True):
         
         self.afk_timeout = data['afk_timeout']
         
-        self.verification_level = VerificationLevel.INSTANCES[data['verification_level']]
+        self.verification_level = VerificationLevel.get(data['verification_level'])
         
-        self.message_notification = MessageNotificationLevel.INSTANCES[data['default_message_notifications']]
+        self.message_notification = MessageNotificationLevel.get(data['default_message_notifications'])
         
-        self.mfa = MFA.INSTANCES[data['mfa_level']]
+        self.mfa = MFA.get(data['mfa_level'])
         
-        self.content_filter = ContentFilterLevel.INSTANCES[data.get('explicit_content_filter', 0)]
+        self.content_filter = ContentFilterLevel.get(data.get('explicit_content_filter', 0))
 
         self.available = (not data.get('unavailable', False))
         
@@ -2534,15 +2207,6 @@ class Guild(DiscordEntity, immortal=True):
         else:
             widget_channel = self.channels[int(widget_channel_id)]
         self.widget_channel = widget_channel
-        
-        self.embed_enabled = data.get('embed_enabled', False)
-
-        embed_channel_id = data.get('embed_channel_id')
-        if embed_channel_id is None:
-            embed_channel = None
-        else:
-            embed_channel = self.channels[int(embed_channel_id)]
-        self.embed_channel = embed_channel
         
         rules_channel_id = data.get('rules_channel_id')
         if rules_channel_id is None:

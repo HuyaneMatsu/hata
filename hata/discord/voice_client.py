@@ -38,7 +38,7 @@ class VoiceClient(object):
         The endpoint, where the voice client sends the audio data.
     _endpoint_ip : `None` or `tuple` of `int`
         The ip version of the `._endpoint` attribute.
-    _handshake_complete : `Future`
+    _handshake_complete : ``Future``
         Used for awaiting the connecting handshake with Discord.
     _ip : `None` or `tuple` of `int`
         The ip to what the voice client's gateway connects.
@@ -47,12 +47,12 @@ class VoiceClient(object):
     _pref_volume : `float`
         The preferred volume of the voice client. can be between `0.0` and `2.0`.
     _secret_box : `None` or `nacl.secret.SecretBox`
-        Data encoder of teh voice client.
+        Data encoder of the voice client.
     _sequence : `int`
         Counter to define the sent data's sequence for Discord.
     _session_id : `None` or `str`
         The session id of the voice client's owner client's shard.
-    _set_speaking_task : `None` or `Task`
+    _set_speaking_task : `None` or ``Task``
         Synchronization task for the `.set_speaking` coroutine.
     _timestamp : `int`
         A timestamp identificaotr to tell Discord how much frames we sent to it.
@@ -113,7 +113,7 @@ class VoiceClient(object):
         """
         Creates a ``VoiceClient`` instance. If any of the required libraries are not present, raises `RuntimeError`.
         
-        If the voice client was succesfully created, returns a `Future`, what is a waiter for it's ``._connect``
+        If the voice client was succesfully created, returns a ``Future``, what is a waiter for it's ``._connect``
         method. If connecting failed, then the future will raise `TimeoutError`.
         
         Parameters
@@ -125,7 +125,7 @@ class VoiceClient(object):
         
         Returns
         -------
-        waiter : `Future`
+        waiter : ``Future``
         
         Raises
         ------
@@ -325,7 +325,7 @@ class VoiceClient(object):
     
     def _unlink_audio_stream(self, audio_stream):
         """
-        Unlinks the given audio stream from teh voice client causing it to stop receiving audio.
+        Unlinks the given audio stream from the voice client causing it to stop receiving audio.
         
         Parameters
         ----------
@@ -398,7 +398,7 @@ class VoiceClient(object):
             return
         
         try:
-            voice_client_actual_stream = audio_streams[user_id]
+            audio_streams[user_id]
         except KeyError:
             return
         
@@ -653,7 +653,7 @@ class VoiceClient(object):
         
         Parameters
         ----------
-        waiter : `None` or `Future`, Optional
+        waiter : `None` or ``Future``, Optional
             A Waiter what's result is set (or is raised to), when the voice client connects (or failed to connect).
         """
         try:
@@ -694,7 +694,6 @@ class VoiceClient(object):
                 
                 except (OSError, TimeoutError, ConnectionError, ConnectionClosed, WebSocketProtocolError,
                         InvalidHandshake, ValueError) as err:
-                    
                     if isinstance(err, ConnectionClosed) and (err.code == VOICE_CLIENT_DISCONNECTC_CLOSE_CODE):
                         await self.disconnect(force=False)
                         return

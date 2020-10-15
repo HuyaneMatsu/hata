@@ -7,7 +7,7 @@ stuff:
 
 - Fast and simple asynchronous framework to write concurrent code using async/await syntax, but also great for
     embedding into a threaded system.
-- Usage of [Privileged Intents](https://github.com/discordapp/discord-api-docs/issues/1363).
+- Usage of Privileged Intents
 - Running more clients from the same instance.
 - Shared entity cache between shards and clients.
 - Feature rich API for common usacases.
@@ -70,7 +70,7 @@ Hata leaves the main thread free, `client.start()` blocks it only till the clien
 can still use the `start_clients` function, what as it says, starts up all the non-running clients parallelly, so go
 ahead and start python with `-i` option, then interact with the clients from your interactive console in runtime.
 """
-__version__ = '1.0.39'
+__version__ = '1.0.42'
 
 from .env import BACKEND_ONLY
 

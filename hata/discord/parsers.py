@@ -27,6 +27,7 @@ from .role import Role
 from .exceptions import DiscordException, ERROR_CODES
 from .invite import Invite
 from .message import EMBED_UPDATE_NONE, Message, MessageRepr
+from .integration import Integration
 
 class EVENT_SYSTEM_CORE(object):
     """
@@ -233,7 +234,9 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
     +---------------------------+---------------+-----------------------+-----------------------------------+
     | INTENT_GUILD_EMOJIS       | 3             | guild_emojis          | GUILD_EMOJIS_UPDATE               |
     +---------------------------+---------------+-----------------------+-----------------------------------+
-    | INTENT_GUILD_INTEGRATIONS | 4             | guild_integrations    | GUILD_INTEGRATIONS_UPDATE         |
+    | INTENT_GUILD_INTEGRATIONS | 4             | guild_integrations    | INTEGRATION_CREATE                |
+    |                           |               |                       | INTEGRATION_DELETE                |
+    |                           |               |                       | GUILD_INTEGRATIONS_UPDATE         |
     +---------------------------+---------------+-----------------------+-----------------------------------+
     | INTENT_GUILD_WEBHOOKS     | 5             | guild_webhooks        | WEBHOOKS_UPDATE                   |
     +---------------------------+---------------+-----------------------+-----------------------------------+
@@ -588,7 +591,7 @@ class PARSER_DEFAULTS(object):
         """
         Creates a new parser defaults object with the given name and with the given parsers.
         
-        The created parser defaults are stored at teh classe's `.all` attribute and also the default parser, so
+        The created parser defaults are stored at the classe's `.all` attribute and also the default parser, so
         `opt_sc` is set to the global `PARSERS` variable.
         
         Parameters
@@ -791,13 +794,15 @@ async def sync_task(queue_id, coro, queue):
     except (DiscordException, ConnectionError):
         return
     else:
-        for client, data, parser_and_checker in queue:
+        # Fix infinit loops by do not dispatching again on error
+        for index in range(len(queue)):
+            client, data, parser_and_checker = queue[index]
             if type(parser_and_checker) is str:
                 PARSERS[parser_and_checker](client, data)
                 continue
             
             parser_name, checker, value = parser_and_checker
-            if checker(guild,value):
+            if checker(guild, value):
                 PARSERS[parser_name](client, data)
     finally:
         del SYNC_REQUESTS[queue_id]
@@ -874,7 +879,7 @@ class EventBase(object):
         return
         yield # This is intentional. Python stuff... Do not ask, just accept.
 
-#we dont call ready from this function directly
+# we dont call ready from this function directly
 def READY(client, data):
     ready_state = client.ready_state
     guild_datas = data['guilds']
@@ -3386,7 +3391,7 @@ if CACHE_PRESENCE:
             users.append(user)
         
         try:
-            presence_datas=data['presences']
+            presence_datas = data['presences']
         except KeyError:
             pass
         else:
@@ -3429,6 +3434,60 @@ PARSER_DEFAULTS(
     GUILD_MEMBERS_CHUNK,
     GUILD_MEMBERS_CHUNK)
 del GUILD_MEMBERS_CHUNK
+
+def INTEGRATION_CREATE__CAL(client, data):
+    guild_id = int(data['guild_id'])
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        guild_sync(client, data, 'INTEGRATION_CREATE')
+        return
+    
+    integration = Integration(data)
+    
+    Task(client.events.integration_create(client, guild, integration), KOKORO)
+
+def INTEGRATION_CREATE__OPT(client, data):
+    pass
+
+PARSER_DEFAULTS(
+    'INTEGRATION_CREATE',
+    INTEGRATION_CREATE__CAL,
+    INTEGRATION_CREATE__CAL,
+    INTEGRATION_CREATE__OPT,
+    INTEGRATION_CREATE__OPT)
+del INTEGRATION_CREATE__CAL, \
+    INTEGRATION_CREATE__OPT
+
+def INTEGRATION_DELETE__CAL(client, data):
+    guild_id = int(data['guild_id'])
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        guild_sync(client, data, 'INTEGRATION_DELETE')
+        return
+    
+    integration_id = int(data['id'])
+    try:
+        application_id = data['application_id']
+    except KeyError:
+        application_id = None
+    else:
+        application_id = int(application_id)
+    
+    Task(client.events.integration_delete(client, guild, integration_id, application_id), KOKORO)
+
+def INTEGRATION_DELETE__OPT(client, data):
+    pass
+
+PARSER_DEFAULTS(
+    'INTEGRATION_DELETE',
+    INTEGRATION_DELETE__CAL,
+    INTEGRATION_DELETE__CAL,
+    INTEGRATION_DELETE__OPT,
+    INTEGRATION_DELETE__OPT)
+del INTEGRATION_DELETE__CAL, \
+    INTEGRATION_DELETE__OPT
 
 def GUILD_INTEGRATIONS_UPDATE__CAL(client, data):
     guild_id = int(data['guild_id'])
@@ -4191,6 +4250,8 @@ EVENTS.add_default('guild_delete'               , 3 , 'GUILD_DELETE'            
 EVENTS.add_default('guild_ban_add'              , 3 , 'GUILD_BAN_ADD'                           , )
 EVENTS.add_default('guild_ban_delete'           , 3 , 'GUILD_BAN_REMOVE'                        , )
 EVENTS.add_default('guild_user_chunk'           , 2 , 'GUILD_MEMBERS_CHUNK'                     , )
+EVENTS.add_default('integration_create'         , 3 , 'INTEGRATION_CREATE'                      , )
+EVENTS.add_default('integration_delete'         , 4 , 'INTEGRATION_DELETE'                      , )
 EVENTS.add_default('integration_update'         , 2 , 'GUILD_INTEGRATIONS_UPDATE'               , )
 EVENTS.add_default('role_create'                , 2 , 'GUILD_ROLE_CREATE'                       , )
 EVENTS.add_default('role_delete'                , 3 , 'GUILD_ROLE_DELETE'                       , )
@@ -5758,7 +5819,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         
 def EventWaitforMeta__new__(cls, class_name, class_parents, class_attributes):
     """
-    Subclasses `EventWaitforBase``.
+    Subclasses ``EventWaitforBase``.
     
     Parameters
     ----------
@@ -5835,7 +5896,7 @@ class ReadyState(object):
         The time when the last guild's data was received.
     last_ready : `float`
         The time when the last shard got a ready event.
-    wakeupper : `Future`
+    wakeupper : ``Future``
         A Future what wakes up the `__await__` generator of the ready state.
     """
     __slots__ = ('guild_left_counter', 'ready_left_counter', 'guilds', 'last_guild', 'last_ready', 'wakeupper', )
@@ -6114,26 +6175,26 @@ async def DEFAULT_EVENT(*args):
 class EventDescriptor(object):
     """
     After a client gets a dispatch event from Discord, it's parser might ensure an event. These events are stored
-    inside of a ``EventDescriptor`` and can be accessed through `client.events`.
+    inside of a ``EventDescriptor`` and can be accessed through ``Client.events``.
     
     Each added event should be an async callable accepting a predifind amount of positional arguments.
     
     Attributes
     ----------
-    client_reference : `WeakReferer`
+    client_reference : ``WeakReferer``
         Weak reference to the parent client to avoid reference loops.
     
     Additonal Event Attributes
     --------------------------
-    channel_create(client: Client, channel: ChannelBase)
+    channel_create(client: ``Client``, channel: ``ChannelBase``)
         Called when a channel is created.
         
         At hata wrapper this event is called only the first time when a private (or group) channel is created.
     
-    channel_delete(client: Client, channel: ChannelBase)
+    channel_delete(client: ``Client``, channel: ``ChannelBase``)
         Called when a channel is deleted.
     
-    channel_edit(client: Client, channel: Channel, old_attributes: dict)
+    channel_edit(client: ``Client``, channel: ``ChannelBase``, old_attributes: `dict`)
         Called when a channel is edited. The passed `old_attributes` argument contains the channel's overwritten
         attributes in `attribute-name` - `old-value` relation.
         
@@ -6169,16 +6230,16 @@ class EventDescriptor(object):
         | users         | `list` of (``User`` or ``Client``)    |
         +---------------+---------------------------------------+
     
-    channel_group_user_add(client: Client, channel: ChannelGroup, user: UserBase):
+    channel_group_user_add(client: ``Client``, channel: ``ChannelGroup``, user: Union[``Client``, ``User``]):
         Called when a user is added to a group channel.
     
-    channel_group_user_delete(client: Client, channel: ChanneGroup, user: UserBase):
+    channel_group_user_delete(client: ``Client``, channel: ``ChanneGroup``, user: Union[``Client``, ``User``]):
         Called when a user is removed from a group channel.
     
-    channel_pin_update(client: Client, channel: ChannelTextBase):
+    channel_pin_update(client: ``Client``, channel: ``ChannelTextBase``):
         Called when a channel's pins are updated.
     
-    client_edit(client: Client, old_attributes: dict):
+    client_edit(client: ``Client``, old_attributes: `dict`):
         Called when the client is edited. The passed `old_attributes` argument contains the client's overwritten
         attributes in `attribute-name` - `old-value` relation.
         
@@ -6206,7 +6267,7 @@ class EventDescriptor(object):
         | verified              | `bool`            |
         +-----------------------+-------------------+
     
-    embed_update(client: Client, message: Message, change_state: int):
+    embed_update(client: ``Client``, message: ``Message``, change_state: `int`):
         Called when a mesasge is not edited, only it's embeds are updated.
         
         Possible `change_state` values:
@@ -6223,17 +6284,17 @@ class EventDescriptor(object):
         | EMBED_UPDATE_EMBED_REMOVE | 3     |
         +---------------------------+-------+
         
-        > At the case of `EMBED_UPDATE_NONE` the event is of cource not called.
+        At the case of `EMBED_UPDATE_NONE` the event is of cource not called.
     
-    emoji_create(client: Client, emoji: Emoji):
+    emoji_create(client: ``Client``, emoji: ``Emoji``):
         Called when an emoji is created at a guild.
     
-    emoji_delete(client: Client, emoji: Emoji, guild: Guild):
+    emoji_delete(client: ``Client``, emoji: ``Emoji``, guild: ``Guild``):
         Called when an emoji is deleted.
         
         Deleted emoji's `.guild` attribute is set to `None`.
         
-    emoji_edit(client : Client, emoji: Emoji, old_attributes: dict):
+    emoji_edit(client : Client, emoji: ``Emoji``, old_attributes: `dict`):
         Called when an emoji is edited. The passed `old_attributes` argument contains the emoji's overwritten
         attributes in `attribute-name` - `old-value` relation.
         
@@ -6255,7 +6316,7 @@ class EventDescriptor(object):
         | roles             | `None` or `set` of ``Role``   |
         +-------------------+-------------------------------+
     
-    error(client: Client, name: str, err: Any):
+    error(client: ``Client``, name: `str`, err: `Any`):
         Called when an unexpected error happens. Mostly the user itself should define where it is called, because
         it is not Discord event bound, but an internal event.
         
@@ -6264,23 +6325,23 @@ class EventDescriptor(object):
         
         This event has a default handler called ``default_error_event``, what writes an error message to `sys.stderr`.
     
-    gift_update(client: Client, gift: Gift):
+    gift_update(client: ``Client``, gift: ``Gift``):
         Called when a gift code is sent to a channel.
     
-    guild_ban_add(client: Client, guild:Guild, user:UseBase):
+    guild_ban_add(client: ``Client``, guild: ``Guild``, user: Union[``Client``, ``User``]):
         Called when a user is banned from a guild.
     
-    guild_ban_delete(client: Client, guild: Guild, user:UseBase):
+    guild_ban_delete(client: ``Client``, guild: ``Guild``, user: Union[``Client``, ``User``]):
         Called when a user is unbanned at a guild.
     
-    guild_create(client: Client, guild: Guild):
+    guild_create(client: ``Client``, guild: ``Guild``):
         Called when a client joins or creates a guild.
     
-    guild_delete(client: Client, guild: Guild, profile: GuildProfile):
+    guild_delete(client: ``Client``, guild: ``Guild``, profile: ``GuildProfile``):
         Called when the guild is deleted or just the client left (kicked or banned as well) from it. The `profile`
         argument is the client's respective guild profile for the guild.
     
-    guild_edit(client: Client, guild: Guild, old_attributes: dict):
+    guild_edit(client: ``Client``, guild: ``Guild``, old_attributes: `dict`):
         Called when a guild is edited. The passed `old_attributes` argument contains the guild's overwritten attributes
         in `attribute-name` - `old-value` relation.
         
@@ -6304,10 +6365,6 @@ class EventDescriptor(object):
         | description               | `None` or `str`               |
         +---------------------------+-------------------------------+
         | discovery_splash          | ``Icon``                      |
-        +---------------------------+-------------------------------+
-        | embed_channel             | `None` or ``ChannelText``     |
-        +---------------------------+-------------------------------+
-        | embed_enabled             | `bool`                        |
         +---------------------------+-------------------------------+
         | features                  | `list` of ``GuildFeature``    |
         +---------------------------+-------------------------------+
@@ -6352,40 +6409,50 @@ class EventDescriptor(object):
         | widget_enabled            | `bool`                        |
         +---------------------------+-------------------------------+
     
-    guild_user_add(client: Client, guild: Guild, user: UserBase):
+    guild_user_add(client: ``Client``, guild: ``Guild``, user: Union[``Client``, ``User``]):
         Called when a user jois a guild.
     
-    guild_user_chunk(client: Client, event: GuildUserChunkEvent):
+    guild_user_chunk(client: ``Client``, event: GuildUserChunkEvent):
         Called when a client receives a chunk of users from Discord requested by through it's gateway.
         
         The event has a default handler called ``ChunkWaiter``.
     
-    guild_user_delete(client: Client, guild: Guild, user: UserBase, profile: GuildProfile):
+    guild_user_delete(client: ``Client``, guild: ``Guild``, user: Union[``Client``, ``User``], \
+            profile: ``GuildProfile``):
         Called when a user left (kicked or banned counts as well) from a guild. The `profile` argument is the user's
         respective guild profile for the guild.
     
-    integration_update(client: Client, guild: Guild):
+    integration_create(client: ``Client``, guild: ``Guild``, integration: ``Integration``):
+        Called when an integration is created inside of a guild. Includes cases when bots are added to the guild as
+        well.
+    
+    integration_delete(client: ``Client``, guild: ``Guild``, integration_id: `int`, \
+            application_id: Union[`None`, `int`]):
+        Called when a guild has one of it's integrations deleted. If the integration is bound to an application, like
+        a bot, then `application_id` is given as `int`.
+    
+    integration_update(client: ``Client``, guild: ``Guild``):
         Called when an ``Integration`` of a guild is updated.
         
         No integration data is included with the received dispatch event, so it cannot be passed to the event
         handler either.
     
-    invite_create(client: Client, invite: Invite):
+    invite_create(client: ``Client``, invite: Invite):
         Called when an invite is created  at a guild.
     
-    invite_delete(client: Client, invite: Invite):
+    invite_delete(client: ``Client``, invite: Invite):
         Called when an invite is deleted at a guild.
     
-    message_create(client: Client, message: Message):
+    message_create(client: ``Client``, message: ``Message``):
         Called when a message is sent to any of the client's text channels.
     
-    message_delete(client: Client, message: Union[Message, MessageRepr]):
+    message_delete(client: ``Client``, message: Union[``Message``, ``MessageRepr``]):
         Called when a loaded message is deleted.
         
         Note, `HATA_ALLOW_DEAD_EVENTS` enviromental variable is given as `True`, and an uncached message is deleted,
         then `message` is given as ``MessageRepr`` instance.
     
-    message_edit(client: Client, message: Message, old_attributes: Union[None, dict]):
+    message_edit(client: ``Client``, message: ``Message``, old_attributes: Union[`None`, `dict`]):
         Called when a loaded message is edited. The passed `old_attributes` argument contains the message's overwritten
         attributes in `attribute-name` - `old-value` relation.
         
@@ -6426,58 +6493,82 @@ class EventDescriptor(object):
         Note, if `HATA_ALLOW_DEAD_EVENTS` enviromental variable is given as `True`, and an uncached message is updated,
         then `old_attributes` is given as `None`.
     
-    reaction_add(client: Client, event: ReactionAddEvent):
+    reaction_add(client: ``Client``, event: ReactionAddEvent):
         Called when a user reacts on a message with the given emoji.
     
-    reaction_clear(client: Client, message: Union[Message, MessageRepr], old_reactions: Union[None, reaction_mapping]):
+    reaction_clear(client: ``Client``, message: Union[``Message``, ``MessageRepr``], \
+            old_reactions: Union[`None`, ``reaction_mapping``]):
         Called when the reactions of a message are cleared. The passed `old_reactions` argument are the old reactions
         of the message.
     
         Note, if `HATA_ALLOW_DEAD_EVENTS` enviromental variable is given as `True`, and the reactions are removed from
         and uncached message, then `message` is given as ``MessageRepr`` and `old_reactions` as `None`.
     
-    reaction_delete(client: Client, event: ReactionDeleteEvent):
+    reaction_delete(client: ``Client``, event: ``ReactionDeleteEvent``):
         Called when a user removes it's reaction from a message.
     
-    reaction_delete_emoji(client: Client, message: Union[Message, MessageRepr], \
-            users: Union[None, reaction_mapping_line]):
+    reaction_delete_emoji(client: ``Client``, message: Union[``Message``, ``MessageRepr``], \
+            users: Union[`None`, ``reaction_mapping_line``]):
         Called when all the reactions of a specified emoji are removed from a message. The passed `users` argument
         are the old reacter users of the given emoji.
         
         Note, if `HATA_ALLOW_DEAD_EVENTS` enviromental variable is given as `True`, and the reactions are removed from
         and uncached message, then `message` is given as ``MessageRepr`` and `users` as `None`.
     
-    ready(client: Client):
+    ready(client: ``Client``):
         Called when the client finishes logging in. The event might be called more times, because the clients might
         dis- and reconnect.
     
-    relationship_add(client: Client, new_relationship: Relationship):
+    relationship_add(client: ``Client``, new_relationship: ``Relationship``):
         Called when the client gets a new relationship independetly from it's type.
     
-    relationship_change(client: Client, old_relationship: Relationship, new_relationship: Relationship):
+    relationship_change(client: ``Client``, old_relationship: ``Relationship``, new_relationship: ``Relationship``):
         Called when one of the client's relationships change.
     
-    relationship_delete(client: Client, old_relationship: Relationship):
+    relationship_delete(client: ``Client``, old_relationship: ``Relationship``):
         Called when a relationship of a client is removed.
     
-    role_create(client: Client, role: Role):
+    role_create(client: ``Client``, role: ``Role``):
         Called whne a role is created at a guild.
     
-    role_delete(client: Client, role: Role, guild: Guild):
+    role_delete(client: ``Client``, role: ``Role``, guild: ``Guild``):
         Called when a role is deleted from a guild.
         
         Deleted role's `.guild` attribute is set as `None`.
     
-    typing(client: Client, channel: ChannelTextBase, user: UserBase, timestamp: datetime):
+    role_edit(client: ``Client``, role: ``Role``, old_attributes: `dict`):
+        Called when a role is edited.
+        
+        Every item in `old_attributes` is optional and they can be any of the following:
+        
+        +---------------+-------------------+
+        | Keys          | Values            |
+        +===============+===================+
+        | color         | ``Color``         |
+        +---------------+-------------------+
+        | managed       | `bool`            |
+        +---------------+-------------------+
+        | mentionable   | `bool`            |
+        +---------------+-------------------+
+        | name          | `str`             |
+        +---------------+-------------------+
+        | permissions   | ``Permission``    |
+        +---------------+-------------------+
+        | position      | `int`             |
+        +---------------+-------------------+
+        | separated     | `bool`            |
+        +---------------+-------------------+
+    
+    typing(client: ``Client``, channel: ``ChannelTextBase``, user: Union[``Client``, ``User``], timestamp: `datetime`):
         Called when a user is typing at a channel. The `timestamp` argument represents when the typing started.
         
         However a typing requests stands for 8 seconds, but the official Discord client usually just spams it.
     
-    user_edit(client: Client, user: User, old_attributes: dict):
+    user_edit(client: ``Client``, user: Union[``Client``, ``User``], old_attributes: `dict`):
         Called when a user is edited This event not includes guild profile changes. The passed `old_attributes`
         argument contains the message's overwritten attributes in `attribute-name` - `old-value` relation.
         
-        Every item in `old_attributes` is optional and it's items can be any of the following:
+        Every item in `old_attributes` is optional they can be any of the following:
         
         +---------------+---------------+
         | Keys          | Values        |
@@ -6491,7 +6582,7 @@ class EventDescriptor(object):
         | name          | `str`         |
         +---------------+---------------+
     
-    user_presence_update(client: Client, user: UserBase, old_attributes: dict):
+    user_presence_update(client: ``Client``, user: Union[``Client``, ``User``], old_attributes: `dict`):
         Called when a user's presence is updated.
         
         The passed `old_attributes` argument contain the user's changed presence related attributes in
@@ -6508,7 +6599,7 @@ class EventDescriptor(object):
         | statuses      | `dict` of (`str`, `str`) items    |
         +---------------+-----------------------------------+
         
-    user_profile_edit(client : Client, user: UserBase, guild: Guild, old_attributes: dict):
+    user_profile_edit(client : Client, user: Union[``Client``, ``User``], guild: ``Guild``, old_attributes: `dict`):
         Called when a user's ``GuildProfile`` is updated. The passed `old_attributes` argument contains the message's
         overwritten attributes in `attribute-name` - `old-value` relation.
         
@@ -6524,7 +6615,7 @@ class EventDescriptor(object):
         | roles             | `None` or `list` of ``Role``  |
         +-------------------+-------------------------------+
     
-    voice_state_update(client: Client, state: VoiceState, action: str, old_attributes: Union[None, dict]):
+    voice_state_update(client: ``Client``, state: ``VoiceState``, action: `str`, old_attributes: Union[`None`, `dict`]):
         Called when a voice state is updated inside of a ``ChannelVoice``.
         
         The `action` argument can be any of the following:
@@ -6534,7 +6625,7 @@ class EventDescriptor(object):
         +===================+=======+
         | leave             | `'l'` |
         +-------------------+-------+
-        | join              | `'j`' |
+        | join              | `'j'` |
         +-------------------+-------+
         | update            | `'u'` |
         +-------------------+-------+
@@ -6562,7 +6653,7 @@ class EventDescriptor(object):
         | self_video    | `bool`            |
         +---------------+-------------------+
     
-    webhook_update(client: Client, channel: ChannelGuildBase):
+    webhook_update(client: ``Client``, channel: ``ChannelGuildBase``):
         Called when a webhook of a channel is updated. Discord not provides further details tho.
     """
     __slots__ = ('client_reference', *sorted(EVENTS.defaults))

@@ -1,10 +1,10 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('DiscordEntity', 'ICON_TYPE_ANIMATED', 'ICON_TYPE_NONE', 'ICON_TYPE_STATIC', 'Icon', 'IconType',
-    'IconSlot', 'instance_or_id_to_instance', 'instance_or_id_to_snowflake', )
+    'IconSlot', 'PreinstancedBase', 'instance_or_id_to_instance', 'instance_or_id_to_snowflake', )
 
 import sys
 
-from ..backend.dereaddons_local import _spaceholder
+from ..backend.dereaddons_local import _spaceholder, DOCS_ENABLED, DocProperty
 
 id_to_time = NotImplemented
 
@@ -213,7 +213,7 @@ class ReverseFlagGetDescriptor(FlagGetDescriptor):
     """
     Returns the flag descriptor's owner's reversed value at a specific byte vize position.
     
-    This type is a reversed version of ``FlagGetDescriptor``, so it returns `0` when th value has `1` at the specific
+    This type is a reversed version of ``FlagGetDescriptor``, so it returns `0` when the value has `1` at the specific
     byte vize position.
     
     Attributes
@@ -453,7 +453,7 @@ class FlagBase(int, metaclass = FlagMeta, baseclass=True):
     """
     Base class for byte vize flags.
     
-    Class attributes
+    Class Attributes
     ----------------
     __getter_class__ : ``FlagGetDescriptor``
         Flag value getter descriptor for subclasses.
@@ -512,7 +512,7 @@ class FlagBase(int, metaclass = FlagMeta, baseclass=True):
         Yields the items of the flag.
         
         Yields
-        -------
+        ------
         name : `str`
             The name of the specific flag
         enabled : `int` (`0` or `1`)
@@ -596,7 +596,7 @@ class ReverseFlagBase(FlagBase, baseclass=True):
     """
     Base class for reversed byte vize flags.
     
-    Class attributes
+    Class Attributes
     ----------------
     __getter_class__ : ``ReverseFlagGetDescriptor``
         Flag value getter descriptor for subclasses.
@@ -737,7 +737,7 @@ class IconType(object):
         
     Class Attributes
     ----------------
-    Every predefind icon type can be accessed as class attribute as well:
+    Every predefined icon type can be accessed as class attribute as well:
     
     +-----------------------+---------------+-------+
     | Class attribute name  | name          | value |
@@ -993,6 +993,8 @@ class Icon(object):
 
 
 class IconSlot(object):
+    if DOCS_ENABLED:
+        __class_doc__ = (
     """
     Interal icon slotter to represent an icon of a discord entitiy.
     
@@ -1011,7 +1013,19 @@ class IconSlot(object):
     ----------------
     _compile_globals : `dict` of (`str`, `Any`)
         Compile time globals for the generated functions.
+    """)
+        
+        __instance_doc__ = (
     """
+    Returns the respective icon.
+    
+    Returns
+    -------
+    icon : ``Icon``
+    """)
+        
+        __doc__ = DocProperty()
+    
     __slots__ = ('internal_name', 'discord_side_name', 'added_instance_atttributes', 'added_class_attributes')
     
     _compile_globals = {
@@ -1121,7 +1135,7 @@ class IconSlot(object):
             class_attributes[name] = value
     
     def __get__(self, obj, objtype=None):
-        """Returns self if called from class, meanwhile an Icon if called from an object."""
+        """Returns self if called from class, meanwhile an ``Icon`` if called from an object."""
         if obj is None:
             return self
         
@@ -1333,4 +1347,204 @@ def instance_or_id_to_snowflake(obj, type_, name):
     
     return snowflake
 
+
+class PreinstancedBase(object):
+    """
+    Base class for preinstanced types.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `NoneType` = `NotImplemented`
+        The instances of the preinstanced type. Subclasses should overwrite it as `dict`.
+    VALUE_TYPE : `type` = `NoneType`
+        The preinstanced object's value's type. Subclasses should overwrite it.
+    DEFAULT_NAME : `str` = `'Undefined'`
+        The default name to use as the preinstanced objects'.
+    """
+    INSTANCES = NotImplemented
+    VALUE_TYPE = None.__class__
+    DEFAULT_NAME = 'Undefined'
+    
+    __slots__ = ('name', 'value',)
+    
+    @classmethod
+    def get(cls, value):
+        """
+        Returns the value's representation. If the value is already preinstanced, returns that, else creates a new
+        object.
+        
+        Parameters
+        ----------
+        value : ``.VALUE_TYPE``
+            The value to get it's represnetation.
+        
+        Returns
+        -------
+        obj_ : ``PreinstancedBase`` instance
+        """
+        try:
+            obj_ = cls.INSTANCES[value]
+        except KeyError:
+            obj_ = cls._from_value(value)
+        
+        return obj_
+   
+    @classmethod
+    def _from_value(cls, value):
+        """
+        Creates a new preinstanced object from the given value.
+        
+        Parameters
+        ----------
+        value : ``.VALUE_TYPE``
+            The value what has no representation yet.
+        
+        Returns
+        -------
+        self : ``PreinstancedBase`` instance
+            The created object.
+        """
+        self = object.__new__(cls)
+        self.value = value
+        self.name = cls.DEFAULT_NAME
+        self.INSTANCES[value] = self
+        return self
+    
+    def __init__(self, value, name):
+        """
+        Creates a new preinstanced instance.
+        
+        Parameters
+        ----------
+        value : ``.VALUE_TYPE``
+            The value of the preinstanced object.
+        name : `str`
+            The object's name.
+        """
+        self.value = value
+        self.name = name
+        self.INSTANCES[value] = self
+    
+    def __gt__(self, other):
+        """Returns whether self's value is greater than the other object's."""
+        other_type = other.__class__
+        self_type = self.__class__
+        if other_type is self_type:
+            other_value = other.value
+        elif other_type is self_type.VALUE_TYPE:
+            other_value = other
+        else:
+            return NotImplemented
+        
+        if self.value > other_value:
+            return True
+        else:
+            return False
+    
+    def __ge__(self, other):
+        """Returns whether self's value is greater or equal to the other object's."""
+        if self is other:
+            return True
+        
+        other_type = other.__class__
+        self_type = self.__class__
+        if other_type is self_type:
+            other_value = other.value
+        elif other_type is self_type.VALUE_TYPE:
+            other_value = other
+        else:
+            return NotImplemented
+        
+        if self.value >= other_value:
+            return True
+        else:
+            return False
+    
+    def __eq__(self, other):
+        """Returns whether self's value equals to the other object's."""
+        if self is other:
+            return True
+        
+        other_type = other.__class__
+        self_type = self.__class__
+        if other_type is self_type:
+            other_value = other.value
+        elif other_type is self_type.VALUE_TYPE:
+            other_value = other
+        else:
+            return NotImplemented
+        
+        if self.value == other_value:
+            return True
+        else:
+            return False
+    
+    def __ne__(self, other):
+        """Returns whether self's not equals to the other object's."""
+        if self is other:
+            return False
+        
+        other_type = other.__class__
+        self_type = self.__class__
+        if other_type is self_type:
+            other_value = other.value
+        elif other_type is self_type.VALUE_TYPE:
+            other_value = other
+        else:
+            return NotImplemented
+        
+        if self.value != other_value:
+            return True
+        else:
+            return False
+
+    def __le__(self, other):
+        """Returns whether self's value is less or equal to the other object's."""
+        if self is other:
+            return True
+        
+        other_type = other.__class__
+        self_type = self.__class__
+        if other_type is self_type:
+            other_value = other.value
+        elif other_type is self_type.VALUE_TYPE:
+            other_value = other
+        else:
+            return NotImplemented
+        
+        if self.value <= other_value:
+            return True
+        else:
+            return False
+
+    def __lt__(self, other):
+        """Returns whether self's value is less than the other object's."""
+        other_type = other.__class__
+        self_type = self.__class__
+        if other_type is self_type:
+            other_value = other.value
+        elif other_type is self_type.VALUE_TYPE:
+            other_value = other
+        else:
+            return NotImplemented
+        
+        if self.value < other_value:
+            return True
+        else:
+            return False
+    
+    def __hash__(self):
+        """Returns the hash of the preinstanced object."""
+        return hash(self.value)
+    
+    def __str__(self):
+        """Returns the name of the preinstanced object."""
+        return self.name
+    
+    def __repr__(self):
+        """Returns the representation of the preinstanced object."""
+        return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r})'
+
 del sys
+del DOCS_ENABLED
+del DocProperty

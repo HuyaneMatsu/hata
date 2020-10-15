@@ -22,7 +22,7 @@ DEFAULT_EXECUTABLE = 'ffmpeg'
 
 if os.name == 'nt':
     SUBPROCESS_STARTUP_INFO = subprocess.STARTUPINFO()
-    SUBPROCESS_STARTUP_INFO.dwFlags |=subprocess.STARTF_USESHOWWINDOW
+    SUBPROCESS_STARTUP_INFO.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     SUBPROCESS_STARTUP_INFO.wShowWindow = subprocess.SW_HIDE
 else:
     SUBPROCESS_STARTUP_INFO = None
@@ -275,7 +275,7 @@ class LocalAudio(AudioSource):
     @staticmethod
     def _create_process(args, stdin):
         """
-        Creates the subprocess of the audio source. This method should never run on an `EventThread`.
+        Creates the subprocess of the audio source. This method should never run on an ``EventThread``.
         
         Paremeters
         ----------

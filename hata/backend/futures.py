@@ -304,7 +304,7 @@ class _EXCFrameType(object):
     
     def __init__(self, tb):
         """
-        Creates a new ``_EXCFrameType`` instance with teh given traceback.
+        Creates a new ``_EXCFrameType`` instance with the given traceback.
         
         tb : `traceback`
             The traceback to wrap.
@@ -2531,7 +2531,7 @@ class Task(Future):
     A Future-like object that runs a Python coroutine.
     
     Tasks are used to run coroutines in event loops. If a coroutine awaits on a ``Future`, the ``Task`` suspends the
-    execution of the coroutine and waits for the completion of the ``Future``. When the `Future`` is done, the
+    execution of the coroutine and waits for the completion of the ``Future``. When the ``Future`` is done, the
     execution of the wrapped coroutine resumes.
     
     Attributes
@@ -3204,7 +3204,7 @@ class AsyncQue(object):
     __slots__ = ('_exception', '_loop', '_results', '_waiter',)
     def __new__(cls, loop, iterable=None, maxlen=None, exception=None):
         """
-        Creates a new ``AsyncQue`` instance with teh given parameter.
+        Creates a new ``AsyncQue`` instance with the given parameter.
         
         Paraneters
         ----------
@@ -3507,7 +3507,7 @@ class FGElement(object):
     __slots__ = ('exception', 'result',)
     def __init__(self, result, exception):
         """
-        Creates a new ``FGElement`` with teh given parameters.
+        Creates a new ``FGElement`` with the given parameters.
         
         Parameters
         ----------
@@ -3969,7 +3969,7 @@ def future_or_timeout(future, timeout):
     Not like in asyncio, ``Task`` exception can be set as well.
     
     For futures, which wait for more results and exceptions like ``Gatherer``, `TimeoutError` gives only 1 result,
-    rigging it's results. This is not the case of `FutureWM`, because that stops when the first exception is received.
+    rigging it's results. This is not the case of ``FutureWM``, because that stops when the first exception is received.
     
     If `future_or_timeout` is used on ``WaitTillFirst``, ``WaitTillAll`` or on ``WaitTillAll``, then they stop
     collecting their result at the point, when the timeout occures and they yield their actual result at that point
@@ -4117,7 +4117,7 @@ def shield(awaitable, loop):
     Returns
     -------
     un_protected : ``Future`` instance
-        If the given `awaitable` is a finished task, returns it, else returns a `Future``, to what the original
+        If the given `awaitable` is a finished task, returns it, else returns a ``Future``, to what the original
         awaitable's result will be chained to.
     """
     protected = loop.ensure_future(awaitable)
@@ -4213,7 +4213,7 @@ class WaitTillFirst(Future):
         
         return self
     
-    # `__repr__` is same as `Future.__repr__`
+    # `__repr__` is same as ``Future.__repr__``
     
     class _wait_callback(object):
         """
@@ -4345,13 +4345,13 @@ class WaitTillFirst(Future):
         non-retrieved exceptions.
         """)
     
-    # `cancelled` is same as `Future.cancelled`
-    # `done` is same as `Future.done`
-    # `pending` is same as `Future.pending`
-    # `result` is same as `Future.result`
-    # `exception` is same as `Future.exception`
-    # `add_done_callback` is same as `Future.add_done_callback`
-    # `remove_done_callback` is same as `Future.remove_done_callback`
+    # `cancelled` is same as ``Future.cancelled``
+    # `done` is same as ``Future.done``
+    # `pending` is same as ``Future.pending``
+    # `result` is same as ``Future.result``
+    # `exception` is same as ``Future.exception``
+    # `add_done_callback` is same as ``Future.add_done_callback``
+    # `remove_done_callback` is same as ``Future.remove_done_callback``
     
     def set_result(self, result):
         """
@@ -4459,13 +4459,13 @@ class WaitTillFirst(Future):
         self._exception = exception
         return 1
     
-    # `__iter__` is same as `Future.__iter__`
-    # `__await__` is same as `Future.__await__`
+    # `__iter__` is same as ``Future.__iter__``
+    # `__await__` is same as ``Future.__await__``
     # if __debug__:
-    #    `__del__` is same as `Future.__del__`
-    #    `__silence__` is same as `Future.__silence__`
-    #    `__silence_cb__` is same as `Future.__silence_cb__`
-    # `cancel_handles` is same as `Future.cancel_handles`
+    #    `__del__` is same as ``Future.__del__``
+    #    `__silence__` is same as ``Future.__silence__``
+    #    `__silence_cb__` is same as ``Future.__silence_cb__``
+    # `cancel_handles` is same as ``Future.cancel_handles``
     
     def clear(self):
         """
@@ -4478,8 +4478,8 @@ class WaitTillFirst(Future):
         """
         raise RuntimeError(f'{self.__class__.__name__} does not support `.clear` operation')
     
-    # `syncwrap` is same as `Future.syncwrap`
-    # `asyncwrap` is same as `Future.asyncwrap`
+    # `syncwrap` is same as ``Future.syncwrap``
+    # `asyncwrap` is same as ``Future.asyncwrap``
     
 class WaitTillExc(WaitTillFirst):
     """
@@ -4527,8 +4527,8 @@ class WaitTillExc(WaitTillFirst):
         Callback added to the waited futures.
     """
     __slots__ = ()
-    # `__new__` is same as `WaitTillFirst.__new__`
-    # `__repr__` is same as `Future.__repr__`
+    # `__new__` is same as ``WaitTillFirst.__new__``
+    # `__repr__` is same as ``Future.__repr__``
     
     class _wait_callback(object):
         """
@@ -4579,31 +4579,31 @@ class WaitTillExc(WaitTillFirst):
             
             parent._mark_as_finished()
     
-    # `futures_done` is same as `WaitTillFirst.futures_done`
-    # `futures_pending` is same as `WaitTillFirst.futures_pending`
-    # `cancel` is same as `WaitTillFirst.cancel`
-    # `cancelled` is same as `Future.cancelled`
-    # `done` is same as `Future.done`
-    # `pending` is same as `Future.pending`
-    # `result` is same as `Future.result`
-    # `exception` is same as `Future.exception`
-    # `add_done_callback` is same as `Future.add_done_callback`
-    # `remove_done_callback` is same as `Future.remove_done_callback`
-    # `set_result` is same as `WaitTillFirst.set_result`
-    # `set_result_if_pending` is same as `WaitTillFirst.set_result_if_pending`
-    # `set_exception` is same as `WaitTillFirst.set_exception`
-    # `set_exception_if_pending` is same as `WaitTillFirst.set_exception_if_pending`
-    # `__iter__` is same as `Future.__iter__`
-    # `__await__` is same as `Future.__await__`
+    # `futures_done` is same as ``WaitTillFirst.futures_done``
+    # `futures_pending` is same as ``WaitTillFirst.futures_pending``
+    # `cancel` is same as ``WaitTillFirst.cancel``
+    # `cancelled` is same as ``Future.cancelled``
+    # `done` is same as ``Future.done``
+    # `pending` is same as ``Future.pending``
+    # `result` is same as ``Future.result``
+    # `exception` is same as ``Future.exception``
+    # `add_done_callback` is same as ``Future.add_done_callback``
+    # `remove_done_callback` is same as ``Future.remove_done_callback``
+    # `set_result` is same as ``WaitTillFirst.set_result``
+    # `set_result_if_pending` is same as ``WaitTillFirst.set_result_if_pending``
+    # `set_exception` is same as ``WaitTillFirst.set_exception``
+    # `set_exception_if_pending` is same as ``WaitTillFirst.set_exception_if_pending``
+    # `__iter__` is same as ``Future.__iter__``
+    # `__await__` is same as ``Future.__await__``
     # if __debug__:
-    #    `__del__` is same as `Future.__del__`
-    #    `__silence__` is same as `Future.__silence__`
-    #    `__silence_cb__` is same as `Future.__silence_cb__`
-    # `cancel_handles` is same as `Future.cancel_handles`
-    # `clear` is same as `WaitTillFirst.clear`
-    # `sleep` is same as `WaitTillFirst.clear`
-    # `syncwrap` is same as `Future.cancel_handles`
-    # `asyncwrap` is same as `Future.cancel_handles`
+    #    `__del__` is same as ``Future.__del__``
+    #    `__silence__` is same as ``Future.__silence__``
+    #    `__silence_cb__` is same as ``Future.__silence_cb__``
+    # `cancel_handles` is same as ``Future.cancel_handles``
+    # `clear` is same as ``WaitTillFirst.clear``
+    # `sleep` is same as ``WaitTillFirst.clear``
+    # `syncwrap` is same as ``Future.cancel_handles``
+    # `asyncwrap` is same as ``Future.cancel_handles``
 
 class WaitTillAll(WaitTillFirst):
     """
@@ -4651,8 +4651,8 @@ class WaitTillAll(WaitTillFirst):
         Callback added to the waited futures.
     """
     __slots__ = ()
-    # `__new__` is same as `WaitTillFirst.__new__`
-    # `__repr__` is same as `Future.__repr__`
+    # `__new__` is same as ``WaitTillFirst.__new__``
+    # `__repr__` is same as ``Future.__repr__``
 
     class _wait_callback(object):
         """
@@ -4702,31 +4702,31 @@ class WaitTillAll(WaitTillFirst):
             
             parent._mark_as_finished()
     
-    # `futures_done` is same as `WaitTillFirst.futures_done`
-    # `futures_pending` is same as `WaitTillFirst.futures_pending`
-    # `cancel` is same as `WaitTillFirst.cancel`
-    # `cancelled` is same as `Future.cancelled`
-    # `done` is same as `Future.done`
-    # `pending` is same as `Future.pending`
-    # `result` is same as `Future.result`
-    # `exception` is same as `Future.exception`
-    # `add_done_callback` is same as `Future.add_done_callback`
-    # `remove_done_callback` is same as `Future.remove_done_callback`
-    # `set_result` is same as `WaitTillFirst.set_result`
-    # `set_result_if_pending` is same as `WaitTillFirst.set_result_if_pending`
-    # `set_exception` is same as `WaitTillFirst.set_exception`
-    # `set_exception_if_pending` is same as `WaitTillFirst.set_exception_if_pending`
-    # `__iter__` is same as `Future.__iter__`
-    # `__await__` is same as `Future.__await__`
+    # `futures_done` is same as ``WaitTillFirst.futures_done``
+    # `futures_pending` is same as ``WaitTillFirst.futures_pending``
+    # `cancel` is same as ``WaitTillFirst.cancel``
+    # `cancelled` is same as ``Future.cancelled``
+    # `done` is same as ``Future.done``
+    # `pending` is same as ``Future.pending``
+    # `result` is same as ``Future.result``
+    # `exception` is same as ``Future.exception``
+    # `add_done_callback` is same as ``Future.add_done_callback``
+    # `remove_done_callback` is same as ``Future.remove_done_callback``
+    # `set_result` is same as ``WaitTillFirst.set_result``
+    # `set_result_if_pending` is same as ``WaitTillFirst.set_result_if_pending``
+    # `set_exception` is same as ``WaitTillFirst.set_exception``
+    # `set_exception_if_pending` is same as ``WaitTillFirst.set_exception_if_pending``
+    # `__iter__` is same as ``Future.__iter__``
+    # `__await__` is same as ``Future.__await__``
     # if __debug__:
-    #    `__del__` is same as `Future.__del__`
-    #    `__silence__` is same as `Future.__silence__`
-    #    `__silence_cb__` is same as `Future.__silence_cb__`
-    # `cancel_handles` is same as `Future.cancel_handles`
-    # `clear` is same as `WaitTillFirst.clear`
-    # `sleep` is same as `WaitTillFirst.clear`
-    # `syncwrap` is same as `Future.cancel_handles`
-    # `asyncwrap` is same as `Future.cancel_handles`
+    #    `__del__` is same as ``Future.__del__``
+    #    `__silence__` is same as ``Future.__silence__``
+    #    `__silence_cb__` is same as ``Future.__silence_cb__``
+    # `cancel_handles` is same as ``Future.cancel_handles``
+    # `clear` is same as ``WaitTillFirst.clear``
+    # `sleep` is same as ``WaitTillFirst.clear``
+    # `syncwrap` is same as ``Future.cancel_handles``
+    # `asyncwrap` is same as ``Future.cancel_handles``
 
 class Lock(object):
     """
@@ -5045,7 +5045,7 @@ class enter_executor(object):
     Attributes
     ----------
     _enter_future : `None` or ``Future``
-        The future, what blocks the task's teh execution, meanwhile the thread switch is taking place.
+        The future, what blocks the task's the execution, meanwhile the thread switch is taking place.
     _exit_future : `None` or ``Future``
         The future, what blocks the task's execution, meanwhile the thread is switching back.
     _fut_waiter : `None` or ``Future`` instance
@@ -5732,7 +5732,7 @@ class WaitContinously(WaitTillFirst):
         
         return self
     
-    # `__repr__` is same as `Future.__repr__`
+    # `__repr__` is same as ``Future.__repr__``
     
     class _wait_callback(object):
         """
@@ -5884,8 +5884,8 @@ class WaitContinously(WaitTillFirst):
             future.cancel()
             done.add(future)
     
-    # `futures_done` same as `WaitTillFirst.futures_done`
-    # `futures_pending` same as `WaitTillFirst.futures_pending`
+    # `futures_done` same as ``WaitTillFirst.futures_done``
+    # `futures_pending` same as ``WaitTillFirst.futures_pending``
     
     def cancel(self):
         """
@@ -5945,9 +5945,9 @@ class WaitContinously(WaitTillFirst):
             
         return 1
     
-    # `cancelled` is same as `Future.cancelled`
-    # `done` is same as `Future.done`
-    # `pending` is same as `Future.pending`
+    # `cancelled` is same as ``Future.cancelled``
+    # `done` is same as ``Future.done``
+    # `pending` is same as ``Future.pending``
     
     def result(self):
         """
@@ -6065,11 +6065,11 @@ class WaitContinously(WaitTillFirst):
         # cancelled
         return 0
     
-    # `exception` is same as `Future.exception`
-    # `add_done_callback` is same as `Future.add_done_callback`
-    # `remove_done_callback` is same as `Future.remove_done_callback`
-    # `set_result` is same as `WaitTillFirst.set_result`
-    # `set_result_if_pending` is same as `WaitTillFirst.set_result_if_pending`
+    # `exception` is same as ``Future.exception``
+    # `add_done_callback` is same as ``Future.add_done_callback``
+    # `remove_done_callback` is same as ``Future.remove_done_callback``
+    # `set_result` is same as ``WaitTillFirst.set_result``
+    # `set_result_if_pending` is same as ``WaitTillFirst.set_result_if_pending``
     
     def set_exception(self, exception):
         """
@@ -6148,15 +6148,15 @@ class WaitContinously(WaitTillFirst):
         self._exception = exception
         return 1
     
-    # `__iter__` is same as `Future.__iter__`
-    # `__await__` is same as `Future.__await__`
+    # `__iter__` is same as ``Future.__iter__``
+    # `__await__` is same as ``Future.__await__``
     # if __debug__:
-    #    `__del__` is same as `Future.__del__`
-    #    `__silence__` is same as `Future.__silence__`
-    #    `__silence_cb__` is same as `Future.__silence_cb__`
-    # `cancel_handles` is same as `Future.cancel_handles`
-    # `clear` same as `WaitTilLFirst.clear`.
-    # `syncwrap` is same as `Future.syncwrap`
-    # `asyncwrap` is same as `Future.asyncwrap`
+    #    `__del__` is same as ``Future.__del__``
+    #    `__silence__` is same as ``Future.__silence__``
+    #    `__silence_cb__` is same as ``Future.__silence_cb__``
+    # `cancel_handles` is same as ``Future.cancel_handles``
+    # `clear` same as ``WaitTilLFirst.clear``
+    # `syncwrap` is same as ``Future.syncwrap``
+    # `asyncwrap` is same as ``Future.asyncwrap``
 
 del DOCS_ENABLED

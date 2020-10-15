@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-__all__ = ('AuditLog', 'AuditLogEntry', 'AuditLogEvent', 'AuditLogIterator', 'AuditLogChange', )
+__all__ = ('AuditLog', 'AuditLogEntry', 'AuditLogIterator', 'AuditLogChange', )
 
-from .others import VerificationLevel, ContentFilterLevel, Unknown, now_as_id, id_to_time, MessageNotificationLevel, \
-    VoiceRegion, MFA
+from ..env import API_VERSION
+
+from .others import Unknown, now_as_id, id_to_time
 from .client_core import CHANNELS, USERS, ROLES, MESSAGES
 from .permission import Permission
 from .color import Color
@@ -12,225 +13,8 @@ from .role import PermOW
 from .integration import Integration
 from .guild import SystemChannelFlag
 from .bases import Icon
-
-class AuditLogEvent(object):
-    """
-    Represents the event type of an ``AuditLogEntry``.
-    
-    Attributes
-    ----------
-    name : `str`
-        The name of audit log event.
-    value : `int`
-        The Discord side identificator value of the audit log event.
-    
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``AuditLogEvent``) items
-        Stores the predefined ``AuditLogEvent`` instances. These can be accessed with their `value` as key.
-    
-    Every predefined audit log event can be accessed as class attribute as well:
-    
-    +---------------------------+---------------------------+-------+
-    | Class attribute name      | name                      | value |
-    +===========================+===========================+=======+
-    | GUILD_UPDATE              | GUILD_UPDATE              |  1    |
-    +---------------------------+---------------------------+-------+
-    | CHANNEL_CREATE            | CHANNEL_CREATE            | 10    |
-    +---------------------------+---------------------------+-------+
-    | CHANNEL_UPDATE            | CHANNEL_UPDATE            | 11    |
-    +---------------------------+---------------------------+-------+
-    | CHANNEL_DELETE            | CHANNEL_DELETE            | 12    |
-    +---------------------------+---------------------------+-------+
-    | CHANNEL_OVERWRITE_CREATE  | CHANNEL_OVERWRITE_CREATE  | 13    |
-    +---------------------------+---------------------------+-------+
-    | CHANNEL_OVERWRITE_UPDATE  | CHANNEL_OVERWRITE_UPDATE  | 14    |
-    +---------------------------+---------------------------+-------+
-    | CHANNEL_OVERWRITE_DELETE  | CHANNEL_OVERWRITE_DELETE  | 15    |
-    +---------------------------+---------------------------+-------+
-    | MEMBER_KICK               | MEMBER_KICK               | 20    |
-    +---------------------------+---------------------------+-------+
-    | MEMBER_PRUNE              | MEMBER_PRUNE              | 21    |
-    +---------------------------+---------------------------+-------+
-    | MEMBER_BAN_ADD            | MEMBER_BAN_ADD            | 22    |
-    +---------------------------+---------------------------+-------+
-    | MEMBER_BAN_REMOVE         | MEMBER_BAN_REMOVE         | 23    |
-    +---------------------------+---------------------------+-------+
-    | MEMBER_UPDATE             | MEMBER_UPDATE             | 24    |
-    +---------------------------+---------------------------+-------+
-    | MEMBER_ROLE_UPDATE        | MEMBER_ROLE_UPDATE        | 25    |
-    +---------------------------+---------------------------+-------+
-    | MEMBER_MOVE               | MEMBER_MOVE               | 26    |
-    +---------------------------+---------------------------+-------+
-    | MEMBER_DISCONNECT         | MEMBER_DISCONNECT         | 27    |
-    +---------------------------+---------------------------+-------+
-    | BOT_ADD                   | BOT_ADD                   | 28    |
-    +---------------------------+---------------------------+-------+
-    | ROLE_CREATE               | ROLE_CREATE               | 30    |
-    +---------------------------+---------------------------+-------+
-    | ROLE_UPDATE               | ROLE_UPDATE               | 31    |
-    +---------------------------+---------------------------+-------+
-    | ROLE_DELETE               | ROLE_DELETE               | 32    |
-    +---------------------------+---------------------------+-------+
-    | INVITE_CREATE             | INVITE_CREATE             | 40    |
-    +---------------------------+---------------------------+-------+
-    | INVITE_UPDATE             | INVITE_UPDATE             | 41    |
-    +---------------------------+---------------------------+-------+
-    | INVITE_DELETE             | INVITE_DELETE             | 42    |
-    +---------------------------+---------------------------+-------+
-    | WEBHOOK_CREATE            | WEBHOOK_CREATE            | 50    |
-    +---------------------------+---------------------------+-------+
-    | WEBHOOK_UPDATE            | WEBHOOK_UPDATE            | 51    |
-    +---------------------------+---------------------------+-------+
-    | WEBHOOK_DELETE            | WEBHOOK_DELETE            | 52    |
-    +---------------------------+---------------------------+-------+
-    | EMOJI_CREATE              | EMOJI_CREATE              | 60    |
-    +---------------------------+---------------------------+-------+
-    | EMOJI_UPDATE              | EMOJI_UPDATE              | 61    |
-    +---------------------------+---------------------------+-------+
-    | EMOJI_DELETE              | EMOJI_DELETE              | 62    |
-    +---------------------------+---------------------------+-------+
-    | MESSAGE_DELETE            | MESSAGE_DELETE            | 72    |
-    +---------------------------+---------------------------+-------+
-    | MESSAGE_BULK_DELETE       | MESSAGE_BULK_DELETE       | 73    |
-    +---------------------------+---------------------------+-------+
-    | MESSAGE_PIN               | MESSAGE_PIN               | 74    |
-    +---------------------------+---------------------------+-------+
-    | MESSAGE_UNPIN             | MESSAGE_UNPIN             | 75    |
-    +---------------------------+---------------------------+-------+
-    | INTEGRATION_CREATE        | INTEGRATION_CREATE        | 80    |
-    +---------------------------+---------------------------+-------+
-    | INTEGRATION_UPDATE        | INTEGRATION_UPDATE        | 81    |
-    +---------------------------+---------------------------+-------+
-    | INTEGRATION_DELETE        | INTEGRATION_DELETE        | 82    |
-    +---------------------------+---------------------------+-------+
-    """
-    # class related
-    INSTANCES = {}
-    
-    # object related
-    __slots__ = ('name', 'value', )
-    
-    def __init__(self, value, name):
-        """
-        Creates an ``AuditLogEvent`` and stores it at the classe's `.INSTANCES` class attribute as well.
-        
-        Parameters
-        ----------
-        value : `int`
-            The Discord side identificator value of the audit log event.
-        name : `str`
-            The name of audit log event.
-        """
-        self.value = value
-        self.name = name
-        
-        self.INSTANCES[value] = self
-    
-    def __int__(self):
-        """Returns the value of the audit log event."""
-        return self.value
-    
-    def __hash__(self):
-        """Returns the hash value of the audit log event, what equals to it's value."""
-        return self.value
-    
-    def __str__(self):
-        """Returns the name of the audit log event."""
-        return self.name
-    
-    def __repr__(self):
-        """Returns the representation of the audit log event."""
-        return f'{self.__class__.__name__}(value={self.value}, name={self.name!r})'
-    
-    # predefined
-    GUILD_UPDATE             = NotImplemented
-    
-    CHANNEL_CREATE           = NotImplemented
-    CHANNEL_UPDATE           = NotImplemented
-    CHANNEL_DELETE           = NotImplemented
-    CHANNEL_OVERWRITE_CREATE = NotImplemented
-    CHANNEL_OVERWRITE_UPDATE = NotImplemented
-    CHANNEL_OVERWRITE_DELETE = NotImplemented
-    
-    MEMBER_KICK              = NotImplemented
-    MEMBER_PRUNE             = NotImplemented
-    MEMBER_BAN_ADD           = NotImplemented
-    MEMBER_BAN_REMOVE        = NotImplemented
-    MEMBER_UPDATE            = NotImplemented
-    MEMBER_ROLE_UPDATE       = NotImplemented
-    MEMBER_MOVE              = NotImplemented
-    MEMBER_DISCONNECT        = NotImplemented
-    BOT_ADD                  = NotImplemented
-    
-    ROLE_CREATE              = NotImplemented
-    ROLE_UPDATE              = NotImplemented
-    ROLE_DELETE              = NotImplemented
-    
-    INVITE_CREATE            = NotImplemented
-    INVITE_UPDATE            = NotImplemented
-    INVITE_DELETE            = NotImplemented
-    
-    WEBHOOK_CREATE           = NotImplemented
-    WEBHOOK_UPDATE           = NotImplemented
-    WEBHOOK_DELETE           = NotImplemented
-    
-    EMOJI_CREATE             = NotImplemented
-    EMOJI_UPDATE             = NotImplemented
-    EMOJI_DELETE             = NotImplemented
-    
-    MESSAGE_DELETE           = NotImplemented
-    MESSAGE_BULK_DELETE      = NotImplemented
-    MESSAGE_PIN              = NotImplemented
-    MESSAGE_UNPIN            = NotImplemented
-    
-    INTEGRATION_CREATE       = NotImplemented
-    INTEGRATION_UPDATE       = NotImplemented
-    INTEGRATION_DELETE       = NotImplemented
-
-AuditLogEvent.GUILD_UPDATE             = AuditLogEvent( 1, 'GUILD_UPDATE')
-
-AuditLogEvent.CHANNEL_CREATE           = AuditLogEvent(10, 'CHANNEL_CREATE')
-AuditLogEvent.CHANNEL_UPDATE           = AuditLogEvent(11, 'CHANNEL_UPDATE')
-AuditLogEvent.CHANNEL_DELETE           = AuditLogEvent(12, 'CHANNEL_DELETE')
-AuditLogEvent.CHANNEL_OVERWRITE_CREATE = AuditLogEvent(13, 'CHANNEL_OVERWRITE_CREATE')
-AuditLogEvent.CHANNEL_OVERWRITE_UPDATE = AuditLogEvent(14, 'CHANNEL_OVERWRITE_UPDATE')
-AuditLogEvent.CHANNEL_OVERWRITE_DELETE = AuditLogEvent(15, 'CHANNEL_OVERWRITE_DELETE')
-
-AuditLogEvent.MEMBER_KICK              = AuditLogEvent(20, 'MEMBER_KICK')
-AuditLogEvent.MEMBER_PRUNE             = AuditLogEvent(21, 'MEMBER_PRUNE')
-AuditLogEvent.MEMBER_BAN_ADD           = AuditLogEvent(22, 'MEMBER_BAN_ADD')
-AuditLogEvent.MEMBER_BAN_REMOVE        = AuditLogEvent(23, 'MEMBER_BAN_REMOVE')
-AuditLogEvent.MEMBER_UPDATE            = AuditLogEvent(24, 'MEMBER_UPDATE')
-AuditLogEvent.MEMBER_ROLE_UPDATE       = AuditLogEvent(25, 'MEMBER_ROLE_UPDATE')
-AuditLogEvent.MEMBER_MOVE              = AuditLogEvent(26, 'MEMBER_MOVE')
-AuditLogEvent.MEMBER_DISCONNECT        = AuditLogEvent(27, 'MEMBER_DISCONNECT')
-AuditLogEvent.BOT_ADD                  = AuditLogEvent(28, 'MEMBER_ROLE_UPDATE')
-
-AuditLogEvent.ROLE_CREATE              = AuditLogEvent(30, 'ROLE_CREATE')
-AuditLogEvent.ROLE_UPDATE              = AuditLogEvent(31, 'ROLE_UPDATE')
-AuditLogEvent.ROLE_DELETE              = AuditLogEvent(32, 'ROLE_DELETE')
-
-AuditLogEvent.INVITE_CREATE            = AuditLogEvent(40, 'INVITE_CREATE')
-AuditLogEvent.INVITE_UPDATE            = AuditLogEvent(41, 'INVITE_UPDATE')
-AuditLogEvent.INVITE_DELETE            = AuditLogEvent(42, 'INVITE_DELETE')
-
-AuditLogEvent.WEBHOOK_CREATE           = AuditLogEvent(50, 'WEBHOOK_CREATE')
-AuditLogEvent.WEBHOOK_UPDATE           = AuditLogEvent(51, 'WEBHOOK_UPDATE')
-AuditLogEvent.WEBHOOK_DELETE           = AuditLogEvent(52, 'WEBHOOK_DELETE')
-
-AuditLogEvent.EMOJI_CREATE             = AuditLogEvent(60, 'EMOJI_CREATE')
-AuditLogEvent.EMOJI_UPDATE             = AuditLogEvent(61, 'EMOJI_UPDATE')
-AuditLogEvent.EMOJI_DELETE             = AuditLogEvent(62, 'EMOJI_DELETE')
-
-AuditLogEvent.MESSAGE_DELETE           = AuditLogEvent(72, 'MESSAGE_DELETE')
-AuditLogEvent.MESSAGE_BULK_DELETE      = AuditLogEvent(73, 'MESSAGE_BULK_DELETE')
-AuditLogEvent.MESSAGE_PIN              = AuditLogEvent(74, 'MESSAGE_PIN')
-AuditLogEvent.MESSAGE_UNPIN            = AuditLogEvent(75, 'MESSAGE_UNPIN')
-
-AuditLogEvent.INTEGRATION_CREATE       = AuditLogEvent(80, 'INTEGRATION_CREATE')
-AuditLogEvent.INTEGRATION_UPDATE       = AuditLogEvent(81, 'INTEGRATION_UPDATE')
-AuditLogEvent.INTEGRATION_DELETE       = AuditLogEvent(82, 'INTEGRATION_DELETE')
+from .preinstanced import AuditLogEvent, VerificationLevel, ContentFilterLevel, MessageNotificationLevel, VoiceRegion, \
+    MFA
 
 class AuditLog(object):
     """
@@ -753,25 +537,25 @@ class AuditLogEntry(object):
             integrations to work with.
         """
         self.id = int(data['id'])
-        self.type = AuditLogEvent.INSTANCES[int(data['action_type'])]
+        self.type = AuditLogEvent.get(int(data['action_type']))
         
         options = data.get('options')
         if (options is None):
             details = None
         else:
             details = {}
-            for key,value in options.items():
-                result=DETAIL_CONVERSIONS.get(key,DETAIL_CONVERTER_DEFAULT)(key,value,options)
+            for key, value in options.items():
+                result = DETAIL_CONVERSIONS.get(key, DETAIL_CONVERTER_DEFAULT)(key, value, options)
                 if result is None:
                     continue
                 
-                key, value=result
-                details[key]=value
+                key, value = result
+                details[key] = value
             
             if not details:
                 details = None
         
-        self.details=details
+        self.details = details
         
         user_id = data.get('user_id')
         if user_id is None:
@@ -930,9 +714,9 @@ def transform_content_filter(name, data):
     change = AuditLogChange()
     change.attr = 'content_filter'
     value = data.get('old_value')
-    change.before = None if value is None else ContentFilterLevel.INSTANCES[value]
+    change.before = None if value is None else ContentFilterLevel.get(value)
     value = data.get('new_value')
-    change.after = None if value is None else ContentFilterLevel.INSTANCES[value]
+    change.after = None if value is None else ContentFilterLevel.get(value)
     return change
 
 def transform_int__days(name, data):
@@ -953,18 +737,18 @@ def transform_message_notification(name, data):
     change  =AuditLogChange()
     change.attr = 'message_notification'
     before = data.get('old_value')
-    change.before = None if before is None else MessageNotificationLevel.INSTANCES[before]
+    change.before = None if before is None else MessageNotificationLevel.get(before)
     after = data.get('new_value')
-    change.after = None if before is None else MessageNotificationLevel.INSTANCES[after]
+    change.after = None if before is None else MessageNotificationLevel.get(after)
     return change
 
 def transform_mfa(name, data):
     change = AuditLogChange()
     change.attr = 'mfa'
     before = data.get('old_value')
-    change.before = None if before is None else MFA.INSTANCES[before]
+    change.before = None if before is None else MFA.get(before)
     after = data.get('new_value')
-    change.after = None if before is None else MFA.INSTANCES[after]
+    change.after = None if before is None else MFA.get(after)
     return change
 
 def transform_overwrites(name, data):
@@ -1048,8 +832,7 @@ def transform_system_channel_flags(name, data):
     return change
 
 def transform_type(name, data):
-    # if we talk about permission overwrite, type can be `str` too,
-    # what we ignore
+    # If we talk about permission overwrite, type can be `str` too, what we ignore
     before = data.get('old_value')
     if type(before) is str:
         return
@@ -1105,8 +888,8 @@ TRANSFORMERS = {
     '$remove'               : transform_role,
     'account_id'            : transform_snowfalke,
     'afk_channel_id'        : transform_channel,
-    'allow'                 : transform_deprecated,
-    'allow_new'             : transform_permission,
+    'allow'                 : transform_deprecated if API_VERSION in (6, 7) else transform_permission,
+    'allow_new'             : transform_permission if API_VERSION in (6, 7) else transform_deprecated,
     'application_id'        : transform_snowfalke,
     'avatar_hash'           : tranfrom_icon,
     'banner_hash'           : tranfrom_icon,
@@ -1117,8 +900,8 @@ TRANSFORMERS = {
     # deaf (bool)
     # description (None or str)
     'default_message_notifications':transform_message_notification,
-    'deny'                  : transform_deprecated,
-    'deny_new'              : transform_permission,
+    'deny'                  : transform_deprecated if API_VERSION in (6, 7) else transform_permission,
+    'deny_new'              : transform_permission if API_VERSION in (6, 7) else transform_deprecated,
     'discovery_splash_hash' : tranfrom_icon,
     # enable_emoticons (bool)
     # expire_behavior (int)
@@ -1140,8 +923,8 @@ TRANSFORMERS = {
     # position (int)
     'prune_delete_days'     : transform_int__days,
     'permission_overwrites' : transform_overwrites,
-    'permissions'           : transform_deprecated,
-    'permissions_new'       : transform_permission,
+    'permissions'           : transform_deprecated if API_VERSION in (6, 7) else transform_permission,
+    'permissions_new'       : transform_permission if API_VERSION in (6, 7) else transform_deprecated,
     'public_updates_channel_id' : transform_channel,
     'rate_limit_per_user'   : transform_int__slowmode,
     'region'                : transform_region,
@@ -1311,3 +1094,5 @@ class AuditLogChange(object):
     def __repr__(self):
         """Returns the representation of the audit log change."""
         return f'{self.__class__.__name__}(attr={self.attr!r}, before={self.before!r}, after={self.after!r})'
+
+del API_VERSION

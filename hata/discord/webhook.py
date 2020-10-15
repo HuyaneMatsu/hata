@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('Webhook', 'WebhookRepr', 'WebhookType')
+__all__ = ('Webhook', 'WebhookRepr', )
 
 from .http import URLS
 from .user import User, ZEROUSER, USERS, UserBase
@@ -7,87 +7,12 @@ from .exceptions import DiscordException, ERROR_CODES
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_preinstanced_type
 from .bases import ICON_TYPE_NONE, Icon
 from .http.URLS import WEBHOOK_URL_PATTERN
+from .preinstanced import WebhookType
 
 from . import ratelimit
 
 ChannelText = NotImplemented
 Client = NotImplemented
-
-class WebhookType(object):
-    """
-    Represents a webhook's type.
-    
-    Attributes
-    ----------
-    name : `str`
-        The name of the webhook type.
-    value : `int`
-        The discord side identificator value of the webhook type.
-    
-    Class Attributes
-    ----------------
-    INSTANCES : `list` of ``WebhookType``
-        Stores the predefined ``WebhookType`` instances. These can be accessed with their `value` as index.
-    
-    Every predefind webhook type can be accessed as class attribute as well:
-    
-    +-----------------------+-----------+-------+
-    | Class attribute name  | name      | value |
-    +=======================+===========+=======+
-    | none                  | NONE      | 0     |
-    +-----------------------+-----------+-------+
-    | bot                   | BOT       | 1     |
-    +-----------------------+-----------+-------+
-    | server                | SERVER    | 2     |
-    +-----------------------+-----------+-------+
-    | system_dm             | SYSTEM_DM | 3     |
-    +-----------------------+-----------+-------+
-    | official              | OFFICIAL  | 4     |
-    +-----------------------+-----------+-------+
-    """
-    __slots__ = ('name', 'value')
-    INSTANCES = [NotImplemented] * 5
-    
-    def __init__(self, value, name):
-        """
-        Creates a new ``WebhookType`` instance and stores it at the classe's `.INSTANCES` class attribute as well.
-        
-        Parameters
-        ----------
-        value : `int`
-            The discord side identificator value of the webhook type.
-        name : `str`
-            The name of the webhook type.
-        """
-        self.value = value
-        self.name = name
-        
-        self.INSTANCES[value] = self
-    
-    def __str__(self):
-        """Returns the webhook type's name."""
-        return self.name
-    
-    def __int__(self):
-        """Returns the webhook type's value."""
-        return self.value
-    
-    def __repr__(self):
-        """Returns the webhook type's representation."""
-        return f'{self.__class__.__name__}(value={self.value}, name={self.name!r})'
-    
-    # prefened
-    none      = NotImplemented
-    bot       = NotImplemented
-    server    = NotImplemented
-    system_dm = NotImplemented
-    official  = NotImplemented
-
-WebhookType.none      = WebhookType(0, 'NONE')
-WebhookType.bot       = WebhookType(1, 'BOT')
-WebhookType.server    = WebhookType(2, 'SERVER')
-WebhookType.system_dm = WebhookType(3, 'SYSTEM_DM')
-WebhookType.official  = WebhookType(4, 'OFFICIAL')
 
 def PartialWebhook(webhook_id, token, type_=WebhookType.bot, channel=None):
     """
@@ -110,9 +35,9 @@ def PartialWebhook(webhook_id, token, type_=WebhookType.bot, channel=None):
     webhook : ``Webhook``
     """
     try:
-        webhook=USERS[webhook_id]
+        webhook = USERS[webhook_id]
     except KeyError:
-        webhook=object.__new__(Webhook)
+        webhook = object.__new__(Webhook)
         
         webhook.id = webhook_id
         
@@ -127,7 +52,7 @@ def PartialWebhook(webhook_id, token, type_=WebhookType.bot, channel=None):
         
         webhook.type = type_
         
-        USERS[webhook_id]=webhook
+        USERS[webhook_id] = webhook
     
     webhook.token = token
     return webhook
@@ -164,7 +89,7 @@ class Webhook(UserBase):
     -----
     Instances of this class are weakreferable.
     """
-    __slots__ = ('application_id', 'channel', 'token', 'type', 'user', ) #default webhook
+    __slots__ = ('application_id', 'channel', 'token', 'type', 'user', ) # default webhook
 
     @property
     def is_bot(self):
@@ -220,7 +145,7 @@ class Webhook(UserBase):
             webhook.id = webhook_id
         
         webhook._update_no_return(data)
-        webhook.type = WebhookType.INSTANCES[data['type']]
+        webhook.type = WebhookType.get(data['type'])
         
         application_id = data.get('application_id')
         if application_id is None:

@@ -18,7 +18,7 @@ class UnixReadPipeTransport(object):
         fileno = pipe.fileno()
         mode = os.fstat(fileno).st_mode
         if not (S_ISFIFO(mode) or S_ISSOCK(mode) or S_ISCHR(mode)):
-            raise ValueError('Pipe transport is for pipes/sockets only.')
+            raise ValueError('Pipe transport is only for pipes, sockets and character devices.')
         
         self = object.__new__(cls)
         if extra is None:
@@ -42,7 +42,7 @@ class UnixReadPipeTransport(object):
             await future
             
             protocol.connection_made(self)
-            loop._add_reader(fileno, self._read_ready)
+            loop.add_reader(fileno, self._read_ready)
         
         except:
             self.close()
@@ -86,7 +86,7 @@ class UnixReadPipeTransport(object):
             return
         
         self._paused = False
-        self.loop._add_reader(self.fileno, self._read_ready)
+        self.loop.add_reader(self.fileno, self._read_ready)
     
     def set_protocol(self, protocol):
         self.protocol = protocol
@@ -178,7 +178,7 @@ class UnixWritePipeTransport(object):
             # On AIX, the reader trick (to be notified when the read end of the  socket is closed) only works for
             # sockets. On other platforms it works for pipes and sockets.
             if is_socket or (is_fifo and not IS_AIX):
-                loop._add_reader(fileno, self._read_ready)
+                loop.add_reader(fileno, self._read_ready)
         except:
             self.close()
             raise
@@ -231,7 +231,7 @@ class UnixWritePipeTransport(object):
             if n > 0:
                 data = memoryview(data)[n:]
             
-            self.loop._add_writer(self.fileno, self._write_ready)
+            self.loop.add_writer(self.fileno, self._write_ready)
         
         buffer.extend(data)
         self._maybe_pause_protocol()
@@ -470,7 +470,7 @@ class AsyncProcess(object):
     '_pending_calls', '_stdin_closed', '_subprocess_stderr_protocol', '_subprocess_stdin_protocol',
     '_subprocess_stdout_protocol', 'closed', 'loop', 'pid', 'process', 'returncode', 'stderr', 'stdin', 'stdout', )
     
-    async def __new__(cls, loop, args, shell, stdin, stdout, stderr, bufsize, extra=None, **kwargs):
+    async def __new__(cls, loop, args, shell, stdin, stdout, stderr, bufsize, extra, popen_kwargs):
         if stdin == PIPE:
             # Use a socket pair for stdin, since not all platforms support selecting read events on the write end of a
             # socket (which we use in order to detect closing of the other end).  Notably this is needed on AIX, and
@@ -484,7 +484,7 @@ class AsyncProcess(object):
         
         try:
             process = Popen(args, shell=shell, stdin=stdin_r, stdout=stdout, stderr=stderr, universal_newlines=False,
-                bufsize=bufsize, **kwargs)
+                bufsize=bufsize, **popen_kwargs)
             
             if (stdin_w is not None):
                 stdin_r.close()
@@ -893,7 +893,7 @@ class AsyncProcess(object):
         _, pending = await future
         
         if pending:
-            # timeout occured, cancel teh read tasks and raise TimeoutExpired.
+            # timeout occured, cancel the read tasks and raise TimeoutExpired.
             for task in pending:
                 task.cancel()
             

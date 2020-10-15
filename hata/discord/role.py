@@ -1,9 +1,13 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('PermOW', 'Role', 'RoleManagerType', 'cr_p_overwrite_object', 'cr_p_role_object', )
 
+from ..backend.dereaddons_local import DOCS_ENABLED
+
+from ..env import API_VERSION
+
 from .bases import DiscordEntity
 from .client_core import ROLES
-from .others import random_id, DATETIME_FORMAT_CODE, Unknown
+from .others import random_id, DATETIME_FORMAT_CODE
 from .color import Color
 from .permission import Permission
 from .user import PartialUser
@@ -13,6 +17,52 @@ from .preconverters import preconvert_snowflake, preconvert_str, preconvert_colo
 from . import ratelimit
 
 PartialIntegration = NotImplemented
+
+if API_VERSION in (6, 7):
+    PERMISSION_KEY = 'permissions_new'
+    PERMISSION_ALLOW_KEY = 'allow_new'
+    PERMISSION_DENY_KEY = 'deny_new'
+    
+    PERMOW_TYPE_ROLE = 'role'
+    PERMOW_TYPE_USER = 'member'
+    
+    def get_permow_key_value(data):
+        """
+        Returns the permission overwrite's type's value.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received permission overwrite data.
+        
+        Returns
+        -------
+        type_value : `str`
+        """
+        return data['type']
+else:
+    PERMISSION_KEY = 'permissions'
+    PERMISSION_ALLOW_KEY = 'allow'
+    PERMISSION_DENY_KEY = 'deny'
+    
+    PERMOW_TYPE_ROLE = 0
+    PERMOW_TYPE_USER = 1
+    
+    def get_permow_key_value(data):
+        """
+        Returns the permission overwrite's type's value.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received permission overwrite data.
+        
+        Returns
+        -------
+        type_value : `int`
+        """
+        return int(data['type'])
+
 
 def PartialRole(role_id):
     """
@@ -247,7 +297,7 @@ class Role(DiscordEntity, immortal=True):
             
             role.color = Color(data.get('color', 0))
             
-            role.permissions = Permission(data['permissions_new'])
+            role.permissions = Permission(data[PERMISSION_KEY])
             
             role.separated = data.get('hoist', False)
             
@@ -466,7 +516,7 @@ class Role(DiscordEntity, immortal=True):
         
         self.name = data['name']
         
-        permissions = Permission(data['permissions_new'])
+        permissions = Permission(data[PERMISSION_KEY])
         if self.permissions != permissions:
             self.permissions = permissions
             clear_permission_cache = True
@@ -485,7 +535,7 @@ class Role(DiscordEntity, immortal=True):
                 channel._cache_perm = None
         
     def __str__(self):
-        """Returns teh role"s name or `'Partial'` if it has non."""
+        """Returns the role"s name or `'Partial'` if it has non."""
         name = self.name
         if not name:
             name = 'Partial'
@@ -548,7 +598,7 @@ class Role(DiscordEntity, immortal=True):
             old_attributes['name'] = self.name
             self.name = name
         
-        permissions = Permission(data['permissions_new'])
+        permissions = Permission(data[PERMISSION_KEY])
         if self.permissions != permissions:
             old_attributes['permissions'] = self.permissions
             self.permissions = permissions
@@ -592,11 +642,14 @@ class Role(DiscordEntity, immortal=True):
         """
         guild = self.guild
         if guild is None:
-            return #already deleted
+            return # already deleted
         
         self.guild = None
         
-        del guild.roles[self.id]
+        try:
+            del guild.roles[self.id]
+        except KeyError:
+            pass
         
         guild._cache_perm = None
         for channel in guild.channels.values():
@@ -606,10 +659,15 @@ class Role(DiscordEntity, immortal=True):
             try:
                 profile = user.guild_profiles[guild]
             except KeyError:
-                #the user has no GuildProfile, it supposed to be impossible
+                # the user has no ``GuildProfile``, it supposed to be impossible
                 continue
+            
+            roles = profile.roles
+            if roles is None:
+                continue
+            
             try:
-                profile.roles.remove(self)
+                roles.remove(self)
             except ValueError:
                 pass
     
@@ -822,7 +880,7 @@ class PermOW(object):
         The target user id of the overwrite if applicable. Defaults to `0`.
     """
     __slots__ = ('allow', 'deny', 'target_role', 'target_user_id')
-
+    
     def __init__(self, data):
         """
         Creates a permission overwrite from the given data received from Discord.
@@ -833,7 +891,7 @@ class PermOW(object):
             Received permission overwrite data.
         """
         id_ = int(data['id'])
-        if data['type'] == 'role':
+        if get_permow_key_value(data) == PERMOW_TYPE_ROLE:
             target_role = PartialRole(id_)
             target_user_id = 0
         else:
@@ -842,8 +900,8 @@ class PermOW(object):
         
         self.target_role = target_role
         self.target_user_id = target_user_id
-        self.allow = Permission(data['allow_new'])
-        self.deny = Permission(data['deny_new'])
+        self.allow = Permission(data[PERMISSION_ALLOW_KEY])
+        self.deny = Permission(data[PERMISSION_DENY_KEY])
     
     @property
     def target(self):
@@ -969,19 +1027,33 @@ class PermOW(object):
     
     @property
     def type(self):
+        if type(self.target) is Role:
+            type_ = PERMOW_TYPE_ROLE
+        else:
+            type_ = PERMOW_TYPE_USER
+        return type_
+    
+    if DOCS_ENABLED:
+        if API_VERSION in (6, 7):
+            type.__doc__ = (
         """
-        Returns the Discord side identificator type permission overwrite.
+        Returns the Discord side identificator value permission overwrite.
         
         Returns
         -------
         type_ : `str`
             Can be either `'role'` or `'member'`
-        """
-        if type(self.target) is Role:
-            type_ = 'role'
+        """)
         else:
-            type_ = 'member'
-        return type_
+            type.__doc__ = (
+        """
+        Returns the Discord side identificator value permission overwrite.
+        
+        Returns
+        -------
+        type_ : `int`
+            Can be either 0` or `1`
+        """)
     
     @property
     def id(self):
@@ -1154,10 +1226,12 @@ def cr_p_overwrite_object(target, allow, deny):
         'allow' : allow,
         'deny'  : deny,
         'id'    : target.id,
-        'type'  : 'role' if type(target) is Role else 'member',
+        'type'  : PERMOW_TYPE_ROLE if type(target) is Role else PERMOW_TYPE_USER,
             }
 
 ratelimit.Role = Role
 
 del ratelimit
 del DiscordEntity
+del API_VERSION
+del DOCS_ENABLED

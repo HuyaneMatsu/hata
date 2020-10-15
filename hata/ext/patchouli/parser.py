@@ -3,7 +3,7 @@ __all__ = ('DocString', )
 import re, sys
 
 from .graver import build_graves_on_subsection, GravedListing, GravedListingElement, GravedTable, GravedDescription, \
-    GravedCodeBlock, DocWarning
+    GravedCodeBlock, DocWarning, GravedAttributeDescription
 
 SECTION_NAME_RP = re.compile('(?:[A-Z][a-z]*)(?: [A-Z][a-z]*)*')
 SECTION_UNDERLINE_RP = re.compile('[\-]+')
@@ -16,7 +16,7 @@ TABLE_TEXT_SPLITTER = re.compile('(?:\| )?(.*?) \|')
 LISTING_HEAD_LINE_RP = re.compile('[\-]+[ \t]*(.*)')
 
 ATTRIBUTE_SECTION_NAME_RP = re.compile('.*?attributes?', re.I)
-ATTRIBUTE_NAME_RP = re.compile('([A-Za-z_][0-9A-Za-z_]*) *: *')
+ATTRIBUTE_NAME_RP = re.compile('([A-Za-z_][0-9A-Za-z_]*) *([\:\(]) *')
 
 del TABLE_BORDER_PATTERN
 del TABLE_TEXT_PATTERN
@@ -103,7 +103,7 @@ def remove_indents(lines):
         
         # Remove indents
         if ignore_index:
-            for index in range(len(lines)):
+            for index in range(first_line_filled, len(lines)):
                 line = lines[index]
                 
                 lines[index] = line[ignore_index:]
@@ -149,7 +149,7 @@ def parse_sections(lines):
                 continue
             
             section_name = line
-            index +=1
+            index += 1
         else:
             section_lines.append(line)
         
@@ -191,7 +191,7 @@ def detect_table(lines, index, limit):
         if (TABLE_ANY_RP.fullmatch(line) is not None):
             line2 = lines[index+1]
             if (TABLE_ANY_RP.fullmatch(line2) is not None):
-                index +=2
+                index += 2
                 while True:
                     if index == limit:
                         break
@@ -274,7 +274,7 @@ class TextTable(object):
                     splitted_part = splitted_line[index]
                     splitted_part = splitted_part.lstrip().rstrip(RSTRIP_IGNORE)
                     if not splitted_part:
-                        plitted_part = None
+                        splitted_part = None
                     
                     splitted_line[index] = splitted_part
                 
@@ -457,7 +457,7 @@ class TextTable(object):
             line = []
             for _ in range(x):
                 element = array[index]
-                index +=1
+                index += 1
                 
                 line.append(element)
             
@@ -679,11 +679,11 @@ def detect_code_block(lines, index, limit):
         
         line = lines[index]
         if not line:
-            index +=1
+            index += 1
             continue
         
-        if line=='```':
-            index +=1
+        if line == '```':
+            index += 1
             
             if found_starter:
                 return index
@@ -692,14 +692,18 @@ def detect_code_block(lines, index, limit):
             continue
         
         if found_starter:
-            index+=1
+            index += 1
             continue
         
         return source_index
 
 class TextCodeBlock(object):
     """
-    Represnets a docstring part in a docstring.
+    Represnets a codeblock part in a docstring.
+    
+    Attributes
+    ----------
+    _lines : `list` of `str`
     """
     __slots__ = ('_lines', )
     def __new__(cls, lines, start, end):
@@ -720,9 +724,9 @@ class TextCodeBlock(object):
         self : `None` or ``TextCodeBlock``
             Returns `Nonee` if would create an empty code block.
         """
-        start +=1
+        start += 1
         if lines[end-1] == '```':
-            end -=1
+            end -= 1
         
         if start >= end:
             return None
@@ -857,7 +861,7 @@ def parse_section(lines):
                 ):
             
             detected_end = detecter(lines, index, limit)
-            if detected_end==index:
+            if detected_end == index:
                 continue
             
             built = builder(lines, index, detected_end)
@@ -1147,7 +1151,7 @@ class TextListing(object):
             if index == 0:
                 break
             
-            index -=1
+            index -= 1
             section_parts = sections[index]
             
             while True:
@@ -1259,6 +1263,9 @@ def parse_docstring(text, path):
     return result
 
 
+def convert_extra_attribute_section_name(name):
+    return '___'+name.lower().replace(' ', '_')
+
 def get_attribute_docs_from(sections):
     """
     Gets the attribute doc parts from the given sections.
@@ -1299,30 +1306,44 @@ def get_attribute_docs_from(sections):
             if parsed is None:
                 break
             
-            attr_name = parsed.group(1)
+            attr_name, attr_separator = parsed.groups()
             attr_head = part.content.copy()
             starter_continous = starter[parsed.end():]
             if starter_continous:
                 attr_head[0] = starter_continous
             else:
                 if len(attr_head) == 1:
-                    attr_head = None
+                    attr_head = []
                 else:
                     del attr_head[0]
             
-            index +=1
+            index += 1
             if index == limit:
                 attr_body = None
             else:
                 part = section[index]
                 if type(part) is list:
                     attr_body = part
-                    index +=1
+                    index += 1
                 else:
                     attr_body = None
             
-            result[attr_name] = DocString._create_attribute_docstring_parts(attr_head, attr_body)
+            result[attr_name] = DocString._create_attribute_docstring_part(attr_name, attr_separator, attr_head, attr_body)
             continue
+        
+        extra = []
+        while True:
+            if index == limit:
+                break
+            
+            part = section[index]
+            index += 1
+            extra.append(part)
+            continue
+        
+        if extra:
+            name = convert_extra_attribute_section_name(name)
+            result[name] = DocString._create_attribute_docstring_extra(extra)
     
     return result
 
@@ -1361,26 +1382,54 @@ class DocString(object):
         return f'<{self.__class__.__name__} sections={self.sections!r}>'
     
     @classmethod
-    def _create_attribute_docstring_parts(cls, attr_head, attr_body):
+    def _create_attribute_docstring_part(cls, attr_name, attr_separator, attr_head, attr_body):
         """
         Creates an attribute docstring.
+        
+        Parameters
+        ----------
+        attr_name : `str`
+            The name of the respective attribute.
+        attr_separator : `str`
+            Separator used between the attribute's name and it's type description.
+        attr_head : `None` or `str`
+            The attribute description following the attribute's name.
+        attr_body : `None` or `list` of `Any`
+            Extra content after the attribute's head.
+        
+        Returns
+        -------
+        self : ``DocString``
         """
-        section = []
-        if (attr_head is not None):
-            head = object.__new__(GravedDescription)
-            head.content = attr_head
-            
-            section.append(head)
+        head = GravedAttributeDescription(attr_name, attr_separator, attr_head)
+        
+        section = [head]
         
         if (attr_body is not None):
             section.extend(attr_body)
         
-        if not section:
-            return None
-        
         self = object.__new__(cls)
         self._attribute_sections = None
         self.sections = [(None, section)]
+        return self
+    
+    @classmethod
+    def _create_attribute_docstring_extra(cls, attr_body):
+        """
+        Creates an attribute docstring.
+        
+        Parameters
+        ----------
+        attr_body : `None` or `list` of `Any`
+            The extra content.
+        
+        Returns
+        -------
+        self : ``DocString``
+        """
+        self = object.__new__(cls)
+        self._attribute_sections = None
+        self.sections = [(None, attr_body)]
         return self
     
     def attribute_docstring_for(self, name):
@@ -1390,7 +1439,7 @@ class DocString(object):
         Parameters
         ----------
         name : `str`
-            The name of the attribute
+            The name of the attribute.
         
         Returns
         -------
@@ -1400,6 +1449,26 @@ class DocString(object):
         if attribute_sections is None:
             self._attribute_sections = attribute_sections = get_attribute_docs_from(self.sections)
         
+        return attribute_sections.get(name)
+    
+    def extra_attribute_docstring_for(self, name):
+        """
+        Gets the extra docstring for the given attribute section name.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name of the attribute section.
+        
+        Returns
+        -------
+        docstring : `None` or ``Docstring``
+        """
+        attribute_sections = self._attribute_sections
+        if attribute_sections is None:
+            self._attribute_sections = attribute_sections = get_attribute_docs_from(self.sections)
+        
+        name = convert_extra_attribute_section_name(name)
         return attribute_sections.get(name)
 
 del re

@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from html import escape as html_escape
-from .graver import GRAMMAR_CHARS, GRAVE_TYPE_GLOBAL_REFERENCE, GravedListing, GravedDescription, GravedTable, \
-    GravedCodeBlock
+
 from ...backend.quote import quote
+
+from .graver import GRAMMAR_CHARS, GRAVE_TYPE_GLOBAL_REFERENCE, GravedListing, GravedDescription, GravedTable, \
+    GravedCodeBlock, DO_NOT_ADD_SPACE_AFTER , GravedAttributeDescription
 
 def create_relative_link(source, target):
     """
@@ -10,18 +12,18 @@ def create_relative_link(source, target):
     
     Parameters
     ----------
-    source : ``UnitBase`` instance
-        Source object.
-    target : ``UnitBase`` instance
-        Target object.
+    source : ``QualPath``
+        Source object's path.
+    target : ``QualPath``
+        Target object path.
     
     Returns
     -------
     url : `str`
-        Gneerated relative url.
+        Generated relative url.
     """
-    source_parts = source.path.parts.copy()
-    target_parts = target.path.parts.copy()
+    source_parts = source.parts.copy()
+    target_parts = target.parts.copy()
     
     last_removed = None
     while source_parts and target_parts and source_parts[0] == target_parts[0]:
@@ -46,23 +48,29 @@ def create_relative_link(source, target):
                 url = '/'.join([last_removed, *target_parts])
     elif len(source_parts) == 1:
         if len(target_parts) == 0:
-            url = './'
+            if last_removed is None:
+                url = '/'
+            else:
+                url = '../'+last_removed
         elif len(target_parts) == 1:
             url = target_parts[0]
         else:
             url = '/'.join(target_parts)
     else:
         if len(target_parts) == 0:
-            url = '../'*(len(source_parts)-1)
+            if last_removed is None:
+                url = '/'
+            else:
+                url = '../'*(len(source_parts)) + last_removed
         elif len(target_parts) == 1:
             url = '../'*(len(source_parts)-1) + target_parts[0]
         else:
-            url = '../'*(len(source_parts)-1) + '/'.join(target_parts[0])
+            url = '../'*(len(source_parts)-1) + '/'.join(target_parts)
     
     return quote(url, safe=':@', protected='/')
 
 
-def graved_link(reference, object_):
+def graved_link(reference, object_, path, linker):
     """
     Converts the given graved link to it's html text form.
     
@@ -72,6 +80,10 @@ def graved_link(reference, object_):
         A reference, what's link should be clickable.
     object_ : ``UnitBase`` instance
         The respective object.
+    path : ``QualPath``
+        Path of the respective object to avoid incorrect link generation in subclasses.
+    linker : `func`
+        Function, which creates a relative link between two units.
     
     Returns
     -------
@@ -89,10 +101,10 @@ def graved_link(reference, object_):
             '</code>'
                 )
     
-    url = create_relative_link(object_, referred_object)
+    url = linker(path, referred_object.path)
     
     return (
-        f'<a href="{url}" title="{reference_escaped}">'
+        f'<a href="{url}">'
             '<code>'
                 '<span>'
                     f'{reference_escaped}'
@@ -121,7 +133,7 @@ def graved_text(text):
         '</code>'
             )
 
-def graved_to_escaped(graved, object_):
+def graved_to_escaped(graved, object_, path, linker):
     """
     Translates the given graved content to html escaped words.
     
@@ -131,6 +143,10 @@ def graved_to_escaped(graved, object_):
         Graved content.
     object_ : ``UnitBase``
         The respective unit.
+    path : ``QualPath``
+        Path of the respective object to avoid incorrect link generation in subclasses.
+    linker : `func`
+        Function, which creates relative link between two units.
     
     Returns
     -------
@@ -165,16 +181,28 @@ def graved_to_escaped(graved, object_):
             content = element.content
             
             if element.type == GRAVE_TYPE_GLOBAL_REFERENCE:
-                local_word = graved_link(content, object_)
+                local_word = graved_link(content, object_, path, linker)
             else:
                 local_word = graved_text(content)
             
             words.append(local_word)
     
-    return ' '.join(words)
+    escaped_parts = []
+    
+    for word in words:
+        if not word:
+            continue
+        
+        escaped_parts.append(word)
+        if word[-1] not in DO_NOT_ADD_SPACE_AFTER:
+            escaped_parts.append(' ')
+    
+    del escaped_parts[-1]
+    
+    return ''.join(escaped_parts)
 
 
-def description_serializer(description, object_):
+def description_serializer(description, object_, path, linker):
     """
     Serializes the given description.
     
@@ -184,18 +212,60 @@ def description_serializer(description, object_):
         The table to serialize
     object_ : ``UnitBase``
         The respective unit.
+    path : ``QualPath``
+        Path of the respective object to avoid incorrect link generation in subclasses.
+    linker : `func`
+        Function which creates relative link between two unit.
     
     Yields
     ------
     html_part : `str`
     """
     yield '<p>'
-    content = graved_to_escaped(description.content, object_)
+    content = graved_to_escaped(description.content, object_, path, linker)
     yield content
     yield '</p>'
 
+def attribute_description_serializer(description, object_, path, linker):
+    """
+    Serializes the given attribute description.
+    
+    Parameters
+    ----------
+    description : ``GravedAttributeDescription``
+        The table to serialize
+    object_ : ``UnitBase``
+        The respective unit.
+    path : ``QualPath``
+        Path of the respective object to avoid incorrect link generation in subclasses.
+    linker : `func`
+        Function which creates relative link between two unit.
+    
+    Yields
+    ------
+    html_part : `str`
+    """
+    yield '<p>'
+    yield html_escape(description.name)
+    separator = description.separator
+    if separator == '(':
+        yield_space = False
+    else:
+        yield_space = True
+    
+    if yield_space:
+        yield ' '
+    
+    yield html_escape(separator)
+    
+    if yield_space:
+        yield ' '
+    
+    content = graved_to_escaped(description.content, object_, path, linker)
+    yield content
+    yield '</p>'
 
-def code_block_serializer(code_block, object_):
+def code_block_serializer(code_block, object_, path, linker):
     """
     Serializes the given description.
     
@@ -205,6 +275,10 @@ def code_block_serializer(code_block, object_):
         The table to serialize
     object_ : ``UnitBase``
         The respective unit.
+    path : ``QualPath``
+        Path of the respective object to avoid incorrect link generation in subclasses.
+    linker : `func`
+        Function which creates relative link between two unit.
     
     Yields
     ------
@@ -224,7 +298,7 @@ def code_block_serializer(code_block, object_):
     yield '</pre></div>'
 
 
-def table_serializer(table, object_):
+def table_serializer(table, object_, path, linker):
     """
     Serializes the given table.
     
@@ -234,6 +308,10 @@ def table_serializer(table, object_):
         The table to serialize
     object_ : ``UnitBase``
         The respective unit.
+    path : ``QualPath``
+        Path of the respective object to avoid incorrect link generation in subclasses.
+    linker : `func`
+        Function, which creates relative link between two units.
     
     Yields
     ------
@@ -244,7 +322,7 @@ def table_serializer(table, object_):
     for element in head_line:
         yield '<th>'
         
-        content = graved_to_escaped(element, object_)
+        content = graved_to_escaped(element, object_, path, linker)
         if (content is not None):
             yield content
         
@@ -259,7 +337,7 @@ def table_serializer(table, object_):
             for element in line:
                 yield '<td>'
                 
-                content = graved_to_escaped(element, object_)
+                content = graved_to_escaped(element, object_, path, linker)
                 if (content is not None):
                     yield content
                 
@@ -272,7 +350,7 @@ def table_serializer(table, object_):
     yield '</table>'
 
 
-def listing_element_serializer(listing_element, object_):
+def listing_element_serializer(listing_element, object_, path, linker):
     """
     Serializes the given listing element.
     
@@ -282,6 +360,10 @@ def listing_element_serializer(listing_element, object_):
         The listing element to seralize.
     object_ : ``UnitBase``
         The respective unit.
+    path : ``QualPath``
+        Path of the respective object to avoid incorrect link generation in subclasses.
+    linker : `func`
+        Function, which creates relative link between two units.
     
     Yields
     ------
@@ -290,17 +372,17 @@ def listing_element_serializer(listing_element, object_):
     yield '<li>'
     head = listing_element.head
     if (head is not None):
-        head = graved_to_escaped(head, object_)
+        head = graved_to_escaped(head, object_, path, linker)
         yield head
     
     content = listing_element.content
     if (content is not None):
-        yield from sub_section_serializer(content, object_)
+        yield from sub_section_serializer(content, object_, path, linker)
     
     yield '</li>'
 
 
-def listing_serializer(listing, object_):
+def listing_serializer(listing, object_, path, linker):
     """
     Serializes the given listing.
     
@@ -310,6 +392,10 @@ def listing_serializer(listing, object_):
         The listing element to seralize.
     object_ : ``UnitBase``
         The respective unit.
+    path : ``QualPath``
+        Path of the respective object to avoid incorrect link generation in subclasses.
+    linker : `func`
+        Function, which creates relative link between two units.
     
     Yields
     ------
@@ -318,7 +404,7 @@ def listing_serializer(listing, object_):
     yield '<ul>'
     
     for listing_element in listing.elements:
-        yield from listing_element_serializer(listing_element, object_)
+        yield from listing_element_serializer(listing_element, object_, path, linker)
     
     yield '</ul>'
 
@@ -341,8 +427,7 @@ def section_title_serializer(title):
     
     yield '<h2>'
     yield html_escape(title)
-    yield '</h2>'
-
+    yield '<div class="underline"><div></h2>'
 
 def section_serializer(section, object_):
     """
@@ -361,10 +446,10 @@ def section_serializer(section, object_):
     """
     section_name, section_parts = section
     yield from section_title_serializer(section_name)
-    yield from sub_section_serializer(section_parts, object_)
+    yield from sub_section_serializer(section_parts, object_, object_.path, create_relative_link)
 
 
-def sub_section_serializer(sub_section, object_):
+def sub_section_serializer(sub_section, object_, path, linker):
     """
     Deserializes the given sub-section to converters.
     
@@ -374,6 +459,10 @@ def sub_section_serializer(sub_section, object_):
         The source sub-section..
     object_ : ``UnitBase``
         The respective unit.
+    path : ``QualPath``
+        Path of the respective object to avoid incorrect link generation in subclasses.
+    linker : `func`
+        Function, which creates relative link between two units.
     
     Yields
     -----------
@@ -384,10 +473,10 @@ def sub_section_serializer(sub_section, object_):
         converter = CONVERTER_TABLE[type(element)]
         if converter is sub_section_serializer:
             yield '<div class="sub_section">'
-            yield from converter(element, object_)
+            yield from converter(element, object_, path, linker)
             yield '</div>'
         else:
-            yield from converter(element, object_)
+            yield from converter(element, object_, path, linker)
 
 
 CONVERTER_TABLE = {
@@ -396,6 +485,7 @@ CONVERTER_TABLE = {
     GravedDescription : description_serializer,
     GravedTable : table_serializer,
     GravedCodeBlock : code_block_serializer,
+    GravedAttributeDescription : attribute_description_serializer,
         }
 
 
@@ -420,3 +510,4 @@ def html_serialize_docs(docs, object_):
         result.extend(section_serializer(section, object_))
     
     return ''.join(result)
+

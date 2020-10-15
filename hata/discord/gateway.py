@@ -6,9 +6,9 @@ from collections import deque
 try:
     import nacl.secret
 except ImportError:
-    SecretBox=None
+    SecretBox = None
 else:
-    SecretBox=nacl.secret.SecretBox
+    SecretBox = nacl.secret.SecretBox
     del nacl
 
 from ..env import CACHE_PRESENCE
@@ -32,7 +32,7 @@ class GatewayRateLimiter(object):
     
     Attributes
     ----------
-    queue : `deque` of `Future`
+    queue : `deque` of ``Future``
         The queue of the ratelimit handler. It is filled up with futures, if the handler's limit is exhausted.
         These futures are removed and their result is set, when the limit is reset.
     remaining : `int`
@@ -259,7 +259,7 @@ class DiscordGateway(object):
         
         Parameters
         -----------
-        waiter : `Future`, Optional
+        waiter : ``Future``, Optional
             A waiter future what is set, when the gateway finished connecting and started polling events.
         
         Raises
@@ -317,7 +317,7 @@ class DiscordGateway(object):
                 
                 await sleep(1.0, KOKORO)
     
-    #connecting, message receive and processing
+    # connecting, message receive and processing
     
     async def _connect(self, resume=False):
         """
@@ -368,7 +368,7 @@ class DiscordGateway(object):
             
             return
 
-    #w8s for the next event
+    # w8s for the next event
     async def _poll_event(self):
         """
         Waits for sockets from Discord till it collected a full one. If it did, decompresses and processes it.
@@ -879,8 +879,8 @@ class DiscordGatewayVoice(object):
             raise TimeoutError
         
         if operation == self.READY:
-            #need to ignore interval
-            #kokoro.interval=data['heartbeat_interval']/100.
+            # need to ignore interval
+            # kokoro.interval = data['heartbeat_interval']/100.
             await self._initial_connection(data)
             return
         
@@ -1069,14 +1069,16 @@ class DiscordGatewayVoice(object):
         packet = bytearray(70)
         packet[0:4] = voice_client._audio_source.to_bytes(4, 'big')
         voice_client.socket.sendto(packet, (voice_client._endpoint_ip, voice_client._audio_port))
+        
         received = await KOKORO.sock_recv(voice_client.socket, 70)
+        
         # the ip is ascii starting at the 4th byte and ending at the first null
         voice_client._ip = ip = received[4:received.index(0, 4)].decode('ascii')
         voice_client._port = port = int.from_bytes(received[-2:],'big')
         
         await self._select_protocol(ip, port)
         await self._client_connect()
-    
+        
     async def _client_connect(self):
         """
         Sends a `CLIENT_CONNECT` packet to Discord.
@@ -1196,8 +1198,8 @@ class DiscordGatewaySharder(object):
         limit = len(gateways)
         
         # At every step we add up to max_concurrency gateways to launch up. When a gateway is launched up, the waiter
-        # yields a `Future` and if the same amount of `Future` is yielded as gateway started up, then we do the next
-        # loop. An exception is, when the waiter yielded a `Task`, because t–en 1 of our gateway stopped with no
+        # yields a ``Future`` and if the same amount of ``Future`` is yielded as gateway started up, then we do the next
+        # loop. An exception is, when the waiter yielded a ``Task``, because t–en 1 of our gateway stopped with no
         # internet stop, or it was stopped by the client, so we abort all the launching and return.
         waiter = WaitContinously(None, KOKORO)
         while True:

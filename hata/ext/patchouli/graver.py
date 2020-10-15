@@ -112,6 +112,13 @@ GRAMMAR_CHARS = {
     ':',
     '(',
     ')',
+    ']',
+    '[',
+        }
+
+DO_NOT_ADD_SPACE_AFTER = {
+    '(',
+    '[',
         }
 
 class Grave(object):
@@ -289,7 +296,7 @@ def build_graves(text):
                     reference = text[grave_start:grave_end]
                     content.append(Grave(reference, GRAVE_TYPE_GLOBAL_REFERENCE))
                 
-                grave_end +=1
+                grave_end += 1
         
         else:
             # single graves cannot be empty
@@ -307,7 +314,7 @@ def build_graves(text):
                 else:
                     content.append(Grave(reference, GRAVE_TYPE_EXPRESSION))
         
-        grave_end+=1
+        grave_end += 1
     
     for index in reversed(range(len(content))):
         part = content[index]
@@ -451,8 +458,50 @@ class GravedDescription(object):
         return self
     
     def __repr__(self):
-        """ Returns the graved description's representation."""
+        """Returns the graved description's representation."""
         return f'<{self.__class__.__name__} content={graved_to_source_text(self.content)!r}>'
+
+class GravedAttributeDescription(object):
+    """
+    Represnts an attribute's graved header part.
+    
+    Attributes
+    ----------
+    name : `str`
+        The respective attribute's name.
+    separator : `str`
+        Separator used between the attribute's name and it's type description.
+    content : `str`
+        The type description of the attribute.
+    """
+    __slots__ = ('name', 'separator', 'content')
+    def __new__(cls, name, separator, content):
+        """
+        Creates a ``GravedAttributeDescription`` instacne with the given parameters.
+        
+        Attributes
+        ----------
+        name : `str`
+            The respective attribute's name.
+        separator : `str`
+            Separator used between the attribute's name and it's type description.
+        content : `str`
+            The type description of the attribute.
+        
+        Returns
+        -------
+        self : ``GravedAttributeDescription``
+        """
+        self = object.__new__(cls)
+        self.name = name
+        self.separator = separator
+        self.content = content
+        return self
+    
+    def __repr__(self):
+        """Returns the graved description's representation."""
+        return (f'<{self.__class__.__name__} name={self.name!r}, seprator={self.separator!r}, content='
+            f'{graved_to_source_text(self.content)!r}>')
 
 class GravedCodeBlock(object):
     """

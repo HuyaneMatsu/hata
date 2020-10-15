@@ -2,7 +2,7 @@
 from math import ceil
 
 from .graver import GRAMMAR_CHARS, GravedDescription, GravedCodeBlock, GravedTable, GravedListing, \
-    GRAVE_TYPE_GLOBAL_REFERENCE
+    GRAVE_TYPE_GLOBAL_REFERENCE, DO_NOT_ADD_SPACE_AFTER, GravedAttributeDescription
 
 INDENT_SIZE_DEFAULT = 4
 
@@ -71,7 +71,55 @@ def sizify(words, max_length):
     
     return lines
 
-def graved_to_words(graved):
+def preview_string(graved):
+    """
+    Creates preview string of the given graved content.
+    
+    Parameters
+    ----------
+    graved : `None` or `list` of (`str`, ``Grave``) elements
+    
+    Returns
+    ------
+    content : `None` or `str`
+    """
+    if graved is None:
+        return None
+    
+    words = []
+    for element in graved:
+        if type(element) is str:
+            if words:
+                last = words[-1]
+                starter = last[0]
+                if element[0] in GRAMMAR_CHARS:
+                    add_space_before = False
+                elif starter == '`':
+                    add_space_before = True
+                else:
+                    add_space_before = True
+            else:
+                add_space_before = False
+            
+            if words and words[-1] == ' ':
+                if (not add_space_before) or(len(words)>1 and words[-2][-1] in DO_NOT_ADD_SPACE_AFTER) :
+                    del words[1]
+        
+        else:
+            element = element.content
+        
+        words.append(element)
+        words.append(' ')
+    
+    if words:
+        del words[-1]
+        content = ''.join(words)
+    else:
+        content = None
+    
+    return content
+
+def graved_to_single_graved_words(graved):
     """
     Translates the given graved content to words.
     
@@ -233,7 +281,7 @@ class BuilderContext(object):
             f'{self.max_line_length!r}, space_char={self.space_char!r}, word_converter={self.word_converter!r})')
 
 EMBED_SIZED_BUILDER_CONTEXT = BuilderContext(INDENT_SIZE_DEFAULT, SPACE_CHAR_UNICODE, 79, graved_to_escaped_words)
-TEXT_BUILDER_CONTEXT = BuilderContext(INDENT_SIZE_DEFAULT, SPACE_CHAR_DEFAULT, 120, graved_to_words)
+TEXT_BUILDER_CONTEXT = BuilderContext(INDENT_SIZE_DEFAULT, SPACE_CHAR_DEFAULT, 120, graved_to_single_graved_words)
 TEXT_SOURCE_BUILDER_CONTEXT = BuilderContext(INDENT_SIZE_DEFAULT, SPACE_CHAR_DEFAULT, 120, graved_to_source_words)
 
 class TableLine(object):
@@ -1017,7 +1065,7 @@ class CodeBlockConverter(object):
 
 class DescriptionConverter(object):
     """
-    Converter class for descriptions when building a text.
+    Converter class for descriptions when building text.
     
     Attributes
     ----------
@@ -1170,6 +1218,55 @@ class DescriptionConverter(object):
         to_extend.append('<<END>>')
         return ''.join(to_extend)
 
+class AttributeDescriptionConverter(DescriptionConverter):
+    """
+    Converter class for attribute descriptions, when when building text.
+    
+    Attributes
+    ----------
+    lines : `list` of `str`
+        The lines of the listing element's head.
+    indent : `int`
+        The indent level of the description.
+    """
+    def __new__(cls, attribute_description, indent_level, optimal_fit, builder_context):
+        """
+        Creates a new description to text converter.
+        
+        Parameters
+        ----------
+        attribute_description : ``GravedAttributeDescription``
+            The source description.
+        indent_level : `int`
+            The number of how far is the description indented.
+        optimal_fit : `int`
+            The preferred maximal line length of the description.
+        builder_context : ``BuilderContext``
+            Context to define some building details.
+        
+        Yields
+        ------
+        self : ``AttributeDescriptionConverter``
+        """
+        separator = attribute_description.separator
+        
+        if separator == '(':
+            spacing = ''
+        else:
+            spacing = ' '
+        
+        words = [f'{attribute_description.name}{spacing}{separator}']
+        
+        words.extend(builder_context.word_converter(content = attribute_description.content))
+        lines  = sizify(words, optimal_fit)
+        
+        indention = builder_context.indent*indent_level
+        lines = [f'{indention}{line}\n' for line in lines]
+        
+        self = object.__new__(cls)
+        self.lines = lines
+        self.indent = indent_level
+        yield self
 
 def listing_converter(listing, indent_level, optimal_fit, builder_context):
     """
@@ -1201,12 +1298,14 @@ def listing_converter(listing, indent_level, optimal_fit, builder_context):
 
 class ListingHeadConverter(DescriptionConverter):
     """
-    Converter class for listing element heads when building a text.
+    Converter class for listing element heads when building text.
     
     Attributes
     ----------
     lines : `list` of `str`
         The lines of the listing element's head.
+    indent : `int`
+        The indent level of the description.
     """
     def __new__(cls, head, indent_level, optimal_fit, builder_context):
         """
@@ -1225,7 +1324,7 @@ class ListingHeadConverter(DescriptionConverter):
         
         Yields
         ------
-        self : ``DescriptionConverter``
+        self : ``ListingHeadConverter``
         """
         new_lines = []
         if head is None:
@@ -1283,6 +1382,7 @@ CONVERTER_TABLE = {
     list : sub_section_converter,
     GravedListing : listing_converter,
     GravedDescription : DescriptionConverter,
+    GravedAttributeDescription : AttributeDescriptionConverter,
     GravedTable : TableConverter,
     GravedCodeBlock : CodeBlockConverter,
         }
@@ -1719,3 +1819,65 @@ def serialize_docs_source_text(docs):
         SectionConverter(section, TEXT_SOURCE_BUILDER_CONTEXT).render_to(result)
     
     return ''.join(result)
+
+def generate_preview_for(docs, length=200, min_cut_off=20, end='...'):
+    """
+    Gnereates preview for the given docs.
+    
+    Parameters
+    ----------
+    docs : ``DocString``
+        The docstring to serialize.
+    length : `int`, Optional.
+        The maximal length of the generated preview. Defaults to `200`.
+    min_cut_off : `int`
+        The minimal length after with new section part will not be added to the preview.
+    end : `str`, Optional
+        Ending string, what is added to the preview if a section would be cut in half. Defaults to `'...`'.
+    
+    Returns
+    -------
+    preview : `str`
+    """
+    min_cut_off = min_cut_off+len(end)+2
+    
+    name, sub_section = docs.sections[0]
+    if name is not None:
+        return None
+    
+    generated_parts = []
+    for section_part in sub_section:
+        # Skip Attribute description from previews.
+        if type(section_part) is GravedAttributeDescription:
+            continue
+        
+        if type(section_part) is not GravedDescription:
+            break
+        
+        preview_part = preview_string(section_part.content)
+        if preview_part is None:
+            break
+        
+        length -= len(preview_part)
+        if length < 0:
+            preview_part = preview_part[:length-len(end)]
+            generated_parts.append(preview_part)
+            generated_parts.append(end)
+            break
+        
+        generated_parts.append(preview_part)
+        if length < min_cut_off:
+            break
+        
+        length -= 2
+        generated_parts.append('\n\n')
+        continue
+    
+    if generated_parts:
+        if generated_parts[-1] == '\n\n':
+            del generated_parts[-1]
+        preview = ''.join(generated_parts)
+    else:
+        preview = None
+    
+    return preview

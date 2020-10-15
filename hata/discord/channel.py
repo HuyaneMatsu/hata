@@ -1904,8 +1904,6 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
             guild.system_channel = None
         if self is guild.widget_channel:
             guild.widget_channel = None
-        if self is guild.embed_channel:
-            guild.embed_channel = None
         if self is guild.rules_channel:
             guild.rules_channel = None
         if self is guild.public_updates_channel:

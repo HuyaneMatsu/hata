@@ -3473,7 +3473,7 @@ class CommandProcesser(EventWaitforBase):
                 if not prefix:
                     raise ValueError('Prefix cannot be passed as empty string.')
                 
-                PREFIX_RP=re.compile(re.escape(prefix), flag)
+                PREFIX_RP = re.compile(re.escape(prefix), flag)
                 def get_prefix_for(message):
                     return prefix
             
@@ -3708,8 +3708,8 @@ class CommandProcesser(EventWaitforBase):
             
             command.category = category
         
-        commands=self.commands
-        name=command.name
+        commands = self.commands
+        name = command.name
         
         would_overwrite = commands.get(name)
         if (would_overwrite is not None) and (would_overwrite.name!=name):
@@ -3719,7 +3719,7 @@ class CommandProcesser(EventWaitforBase):
         alters = command._alters
         for alter in alters:
             try:
-                overwrites=commands[alter]
+                overwrites = commands[alter]
             except KeyError:
                 continue
             
@@ -3795,7 +3795,7 @@ class CommandProcesser(EventWaitforBase):
             - If `name` was given as one of `default_event`, `invalid_command`, `command_error`, but the command
                 processer's respective attribute is different than the given `func`.
         ValueError
-            - If `func` was given as type ``Command`` and `name` was not given as `None`, neitehr as 1 of it's aliases.
+            - If `func` was given as type ``Command`` and `name` was not given as `None`, neither as 1 of it's aliases.
             _ If `func` was given as type ``Command`` there is no command added with the given `name`.
             - If `func` was given as type ``Command``, but the added command with the given `name` is different.
             - If `func` was not given type ``Command`` and the given `name` is not a name of a command of the command
@@ -3962,7 +3962,7 @@ class CommandProcesser(EventWaitforBase):
         result = await self.prefixfilter(message)
         
         if result is None:
-            #start goto if needed
+            # start goto if needed
             while self.mention_prefix:
                 mentions = message.mentions
                 if mentions is None:
@@ -3979,8 +3979,8 @@ class CommandProcesser(EventWaitforBase):
                 if result is None:
                     break
                 
-                command_name,content=result.groups()
-                command_name=command_name.lower()
+                command_name,content = result.groups()
+                command_name = command_name.lower()
                 
                 try:
                     command = self.commands[command_name]
@@ -4019,11 +4019,11 @@ class CommandProcesser(EventWaitforBase):
                 break
         
         else:
-            command_name,content=result
-            command_name=command_name.lower()
+            command_name,content = result
+            command_name = command_name.lower()
             
             try:
-                command=self.commands[command_name]
+                command = self.commands[command_name]
             except KeyError:
                 invalid_command = self._invalid_command
                 if (invalid_command is not None):
@@ -4149,9 +4149,9 @@ class CommandProcesser(EventWaitforBase):
         -------
         command_count : `int`
         """
-        count=0
+        count = 0
         for category in self.categories:
-            count+=len(category.commands)
+            count += len(category.commands)
         
         return count
     

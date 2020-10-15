@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from .color import Color
+from .bases import PreinstancedBase
 
 def preconvert_snowflake(snowflake, name):
     """
@@ -236,12 +237,12 @@ def preconvert_preinstanced_type(value, name, type_):
         The value to convert.
     name : `str`
         The name of the value.
-    type_ : `type`
+    type_ : ``PreinstancedBase`` instance
         The preinstanced type.
     
     Returns
     -------
-    value : `type_`
+    value : ``PreinstancedBase`` instance
     
     Raises
     ------
@@ -250,35 +251,21 @@ def preconvert_preinstanced_type(value, name, type_):
     ValueError
         If there is no preinstanced object for the given `value`.
     """
-    if type(value) is type_:
-        return value
-    
-    INSTANCES = type_.INSTANCES
-    if type(INSTANCES) is list:
-        expected_type = int
-    elif type(INSTANCES) is dict:
-        if INSTANCES:
-            expected_type = type(next(iter(INSTANCES)))
+    value_type = value.__class__
+    if (value_type is not type_):
+        value_expected_type = type_.VALUE_TYPE
+        if value_type is value_expected_type:
+            pass
+        elif issubclass(value_type, value_expected_type):
+            value = value_expected_type(value)
         else:
-            expected_type = None
-    else:
-        raise NotImplementedError
-    
-    # GOTO
-    while True:
-        if (expected_type is not None):
-            if (not isinstance(value, expected_type)):
-                raise TypeError(f'`{name}` can be passed as {type_.__name__} or as {expected_type.__name__} instance, '
-                    f'got {value.__class__.__name__}.')
-            
-            try:
-                value = INSTANCES[value]
-            except LookupError:
-                pass
-            else:
-                break
+            raise TypeError(f'`{name}` can be passed as {type_.__name__} or as {value_expected_type.__name__} '
+                f'instance, got {value_type.__name__}.')
         
-        raise ValueError(f'There is no predefined `{name}` for the following value: {value!r}.')
+        try:
+            value = type_.INSTANCES[value]
+        except LookupError:
+            raise ValueError(f'There is no predefined `{name}` for the following value: {value!r}.') from None
     
     return value
 

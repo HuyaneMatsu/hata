@@ -9,12 +9,13 @@ from threading import current_thread, Thread, Event
 from heapq import heappop, heappush
 from collections import deque
 from ssl import SSLContext, create_default_context
+from stat import S_ISSOCK
 
 from .dereaddons_local import alchemy_incendiary, WeakReferer, weakmethod, method, WeakCallable, DocProperty, \
     DOCS_ENABLED
 from .futures import Future, Task, Gatherer, render_exc_to_list, iscoroutine, FutureAsyncWrapper, WaitTillFirst, \
     CancelledError
-from .transprotos import SSLProtocol, _SelectorSocketTransport
+from .transprotos import SSLProtocol, _SelectorSocketTransport, _SelectorDatagramTransport
 from .executor import Executor
 from .analyzer import CallableAnalyzer
 
@@ -1063,6 +1064,29 @@ def _is_stream_socket(socket):
     """
     return (socket.type&module_socket.SOCK_STREAM) == module_socket.SOCK_STREAM
 
+def _set_reuseport(sock):
+    """
+    Tells to the kernel to allow this endpoint to be bound to the same port as an other existing endpoint already
+    might be bound to.
+    
+    Parameters
+    ----------
+    sock : `socket.socket`.
+        The socket to set reuse to.
+    
+    Raises
+    ------
+    ValueError
+        `reuse_port` is not supported by socket module.
+    """
+    if not hasattr(module_socket, 'SO_REUSEPORT'):
+        raise ValueError('`reuse_port` not supported by socket module.')
+    else:
+        try:
+            sock.setsockopt(module_socket.SOL_SOCKET, module_socket.SO_REUSEPORT, 1)
+        except OSError:
+            raise ValueError('`reuse_port` not supported by socket module, `SO_REUSEPORT` defined but not implemented.')
+
 _OLD_AGEN_HOOKS = sys.get_asyncgen_hooks()
 
 def _asyncgen_firstiter_hook(agen):
@@ -1647,6 +1671,14 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
     
     Attributes
     ----------
+    claimed_executors : `set` of ``ExecutorThread``
+        Claimed executors, which are given back to the executor on release.
+    free_executors : `deque`
+        The free (or not used) executors of the executor.
+    keep_executor_count : `int`
+        The minimal amount of executors to keep alive (or not close).
+    running_executors : `set` of ``ExecutorThread``
+        The executors under use.
     _asyncgens: `WeakSet` of `async_generator`
         The asynchornous generators bound to the event loop.
     _asyncgens_shutdown_called : `bool`
@@ -1804,7 +1836,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             The delay after the `callback` whould be called.
         callback : `callable`
             The function to call later.
-        args : arguments
+        *args : arguments
             The arguments to call the `callback` with.
         
         Returns
@@ -1830,7 +1862,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             The exact loop time, when the callback should be called.
         callback : `callable`
             The function to call later.
-        args : arguments
+        *args : arguments
             The arguments to call the `callback` with.
         
         Returns
@@ -1856,7 +1888,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             The delay after the `callback` whould be called.
         callback : `callable`
             The function to call later.
-        args : arguments
+        *args : arguments
             The arguments to call the `callback` with.
         
         Returns
@@ -1887,7 +1919,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             The exact loop time, when the callback should be called.
         callback : `callable`
             The function to call later.
-        args : arguments
+        *args : arguments
             The arguments to call the `callback` with.
         
         Returns
@@ -1916,7 +1948,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         ----------
         callback : `callable`
             The function to call later.
-        args : arguments
+        *args : arguments
             The arguments to call the `callback` with.
         
         Returns
@@ -1941,7 +1973,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         ----------
         callback : `callable`
             The function to call later.
-        args : arguments
+        *args : arguments
             The arguments to call the `callback` with.
         
         Returns
@@ -1967,7 +1999,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         ----------
         callback : `callable`
             The function to call later.
-        args : arguments
+        *args : arguments
             The arguments to call the `callback` with.
         
         Returns
@@ -2726,7 +2758,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             key = self.selector.get_key(fd)
         except KeyError:
             return False
-
+        
         mask = key.events
         reader, writer = key.data
         mask &= ~EVENT_READ
@@ -3379,12 +3411,11 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         if type(data) is not memoryview:
             data = memoryview(data)
         
-        
         if data:
             future = Future(self)
             self._sock_sendall(future, False, sock, data)
             await future
-
+    
     def _sock_sendall(self, future, registered, sock, data):
         """
         Added writer callback by ``.sock_sendall``. This method is repeated till the whole data is exhausted.
@@ -3423,8 +3454,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                 data = data[n:]
             self.add_writer(fd, self._sock_sendall, future, True, sock, data)
     
-    # should be async
-    def create_datagram_endpoint(self, protocol_factory, local_addr=None, remote_addr=None, *, family=0, proto=0,
+    async def create_datagram_endpoint(self, protocol_factory, local_addr=None, remote_addr=None, *, family=0, proto=0,
             flags=0, reuse_port=False, allow_broadcast=False, sock=None):
         """
         Creates a datagram connection. The socket type will be `SOCK_DGRAM`.
@@ -3433,22 +3463,32 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         ----------
         protocol_factory : `callable`
             Factory function for creating a protocols.
-        local_addr : `tuple` of (`None` or  `str`, `None` or `int`), Optional
+        local_addr : `None`, `tuple` of (`None` or  `str`, `None` or `int`), `str`, `bytes`, Optional
             Can be given as a `tuple` (`local_host`, `local_port`) to bind the socket locally. The `local_host` and
             `local_port` are looked up by ``.getaddrinfo``.
             
+            If `family` is given as `AF_UNIX`, then also can be given as path of a file or a file descriptor.
+            
             Mutually exclusive with the `sock` parameter.
-        remote_addr : `tuple` of (`None` or  `str`, `None` or `int`), Optional
+        remote_addr : `None`, `tuple` of (`None` or  `str`, `None` or `int`), `str`, `bytes`, Optional
             Can be given as a `tuple` (`remote_host`, `remote_port`) to connect the socket to remove address. The
             `remote_host` and `remote_port` are looked up by ``.getaddrinfo``.
+            
+            If `family` is given as `AF_UNIX`, then also can be given as path of a file or a file descriptor.
             
             Mutually exclusive with the `sock` parameter.
         family : `AddressFamily` or `int`, Optional
             Can be either `AF_INET`, `AF_INET6` or `AF_UNIX`.
+            
+            Mutually exclusive with the `sock` parameter.
         proto : `int`, Optional
             Can be used to narrow host resolution. Is passed to ``.getaddrinfo``.
+            
+            Mutually exclusive with the `sock` parameter.
         flags : `int`, Optional
             Can be used to narrow host resolution. Is passed to ``.getaddrinfo``.
+            
+            Mutually exclusive with the `sock` parameter.
         reuse_port : `bool`, Optional
             Tells to the kernel to allow this endpoint to be bound to the same port as an other existing endpoint
             already might be bound to.
@@ -3461,12 +3501,196 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             
             Mutually exclusive with `host` and `port` parameters.
         
-        Raises
-        ------
-        NotImplementedError
+        Returns
+        -------
+        transport : ``_SelectorDatagramTransport``
+            The created datagram transport.
+        protocol : `Any`
+            The protocol returned by `protocol_factory`.
         """
-        raise NotImplementedError
-
+        if sock is not None:
+            if sock.type != module_socket.SOCK_DGRAM:
+                raise ValueError(f'A UDP socket was expected, got {sock!r}.')
+            
+            if (local_addr is not None) or (remote_addr is not None) or family  or proto or flags or reuse_port or \
+                    allow_broadcast:
+                
+                collected = []
+                if (local_addr is not None):
+                    collected.append(('local_addr', local_addr))
+                
+                if (remote_addr is not None):
+                    collected.append(('remote_addr', remote_addr))
+                    
+                if family:
+                    collected.append(('family', family))
+                
+                if proto:
+                    collected.append(('proto', proto))
+                
+                if flags:
+                    collected.append(('flags', flags))
+                
+                if reuse_port:
+                    collected.append(('reuse_port', reuse_port))
+                
+                if allow_broadcast:
+                    collected.append(('allow_broadcast', allow_broadcast))
+                
+                error_message_parts = ['Socket modifier keyword arguments can not be used when `sock` is given: ']
+                
+                index = 0
+                limit = len(error_message_parts)
+                while True:
+                    name, value = collected[index]
+                    error_message_parts.append(name)
+                    error_message_parts.append('=')
+                    error_message_parts.append(repr(value))
+                    
+                    index += 1
+                    if index == limit:
+                        break
+                    
+                    error_message_parts.append(', ')
+                    continue
+                
+                error_message_parts.append('.')
+                
+                raise ValueError(''.join(error_message_parts))
+            
+            sock.setblocking(False)
+            remote_address = None
+        else:
+            address_info = []
+            
+            if (local_addr is None) and (remote_addr is None):
+                if family == 0:
+                    raise ValueError(f'Unexpected address family: {family!r}.')
+                
+                address_info.append((family, proto, None, None))
+            
+            elif hasattr(module_socket, 'AF_UNIX') and family == module_socket.AF_UNIX:
+                if __debug__:
+                    if (local_addr is not None):
+                        local_addr_type = local_addr.__class__
+                        if not issubclass(local_addr_type, (str, bytes)):
+                            raise TypeError('`local_addr` should be given as `None` or as `str` or `bytes` instance, '
+                                f'if `family` is given as ``AF_UNIX`, got {local_addr_type.__name__}')
+                    
+                    if (remote_addr is not None):
+                        remote_addr_type = remote_addr.__class__
+                        if not issucbalss(remote_addr_type, (str, bytes)):
+                            raise TypeError('`remote_addr` should be given as `None` or as `str` or `bytes` instance, '
+                                f'if `family` is given as ``AF_UNIX`, got {remote_addr_type.__name__}')
+                
+                if (local_addr is not None) and local_addr and \
+                        (local_addr[0] != (0 if isinstance(local_addr, bytes) else '\x00')):
+                    try:
+                        if S_ISSOCK(os.stat(local_addr).st_mode):
+                            os.remove(local_addr)
+                    except FileNotFoundError:
+                        pass
+                    except OSError as err:
+                        # Directory may have permissions only to create socket.
+                        sys.stderr.write(f'Unable to check or remove stale UNIX socket {local_addr!r}: {err!s}.\n')
+                
+                address_info.append((family, proto, local_addr, remote_addr))
+            
+            else:
+                # join address by (family, protocol)
+                addr_infos = {}
+                if (local_addr is not None):
+                    infos = await self._ensure_resolved(local_addr, family=family, type=module_socket.SOCK_DGRAM,
+                        proto=proto, flags=flags)
+                    
+                    if not infos:
+                        raise OSError('getaddrinfo() returned empty list')
+                    
+                    for it_family, _, it_proto, _, address_value_local in infos:
+                        value = addr_infos[(it_family, it_proto)] = (address_value_local, None)
+                
+                if (remote_addr is not None):
+                    infos = await self._ensure_resolved(remote_addr, family=family, type=module_socket.SOCK_DGRAM,
+                        proto=proto, flags=flags)
+                    
+                    if not infos:
+                        raise OSError('getaddrinfo() returned empty list')
+                    
+                    
+                    for it_family, _, it_proto, _, address_value_remote in infos:
+                        key = (it_family, it_proto)
+                        
+                        try:
+                            value = addr_infos[key]
+                        except KeyError:
+                            address_value_local = None
+                        else:
+                            address_value_local = value[0]
+                        
+                        addr_infos[key] = (address_value_local, address_value_remote)
+                
+                for key, (address_value_local, address_value_remote) in addr_infos.items():
+                    if (local_addr is not None) and (address_value_local is None):
+                        continue
+                    
+                    if (remote_addr is not None) and (address_value_remote is None):
+                        continue
+                    
+                    address_info.append((*key, address_value_local, address_value_remote))
+                
+                if not address_info:
+                    raise ValueError('Can not get address information.')
+            
+            exception = None
+            
+            for family, proto, local_address, remote_address in address_info:
+                try:
+                    sock = module_socket.socket(family=family, type=module_socket.SOCK_DGRAM, proto=proto)
+                    
+                    if reuse_port:
+                        _set_reuseport(sock)
+                    
+                    if allow_broadcast:
+                        sock.setsockopt(module_socket.SOL_SOCKET, module_socket.SO_BROADCAST, 1)
+                    
+                    sock.setblocking(False)
+                    
+                    if (local_addr is not None):
+                        sock.bind(local_address)
+                    
+                    if (remote_addr is not None):
+                        if not allow_broadcast:
+                            await self.sock_connect(sock, remote_address)
+                
+                except BaseException as err:
+                    if (sock is not None):
+                        sock.close()
+                        sock = None
+                    
+                    if not isinstance(err, OSError):
+                        raise
+                    
+                    if (exception is None):
+                        exception = err
+                    
+                else:
+                    break
+            
+            else:
+                raise exception
+        
+        protocol = protocol_factory()
+        waiter = Future(self)
+        transport = _SelectorDatagramTransport(self, sock, protocol, remote_address, waiter, None)
+        
+        try:
+            await waiter
+        except:
+            transport.close()
+            raise
+        
+        return transport, protocol
+    
     def _create_server_getaddrinfo(self, host, port, family, flags):
         """
         Gets address info for the given parameters. This method is used by ``.create_server``, when resolving hosts.

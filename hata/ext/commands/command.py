@@ -13,7 +13,7 @@ from ...discord.client_core import KOKORO
 
 from .content_parser import CommandContentParser
 
-COMMAND_RP=re.compile(' *([^ \t\\n]*) *(.*)')
+COMMAND_RP = re.compile(' *([^ \t\\n]*) *(.*)')
 
 AUTO_DASH_MAIN_CHAR = '-'
 AUTO_DASH_APPLICABLES = ('-', '_')
@@ -122,7 +122,7 @@ def generate_alters_for(name):
                     generated_sub = generated[index]
                     generated_sub.append(char)
                     
-                    index+=1
+                    index += 1
         
         connected = [''.join(generated_sub) for generated_sub in generated]
         alters.extend(connected)

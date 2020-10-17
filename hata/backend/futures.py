@@ -9,7 +9,7 @@ from types import GeneratorType, CoroutineType, MethodType as method, FunctionTy
 from collections import deque
 from threading import current_thread, Lock as SyncLock, Event as SyncEvent
 
-from .dereaddons_local import alchemy_incendiary, DOCS_ENABLED
+from .dereaddons_local import alchemy_incendiary, DOCS_ENABLED, copy_func
 
 class CancelledError(BaseException):
     """The Future or Task was cancelled."""
@@ -86,7 +86,7 @@ def iscoroutinefunction(func):
     iscoroutinefunction : `bool`
     """
     if isinstance(func, (function, method)) and func.__code__.co_flags&0x180:
-        return True #the result MUST be converted to `1`
+        return True # the result MUST be converted to `1`
     return (getattr(func, '__async_call__', False) == True)
 
 def iscoroutine(obj):
@@ -245,7 +245,7 @@ def render_frames_to_list(frames, extend=None):
         code = frame.f_code
         file_name = code.co_filename
         name = code.co_name
-
+        
         if last_file_name == file_name and last_line_number == line_number and last_name == name:
             count += 1
             if count > 2:
@@ -3317,7 +3317,7 @@ class AsyncQue(object):
         
         return (yield from waiter)
     
-    result = coroutine(__await__)
+    result = coroutine(copy_func(__await__))
     
     def result_no_wait(self):
         """
@@ -5012,17 +5012,21 @@ class Event(object):
     
     __await__ = __iter__
     
-    wait = coroutine(__iter__)
+    wait = coroutine(copy_func(__iter__))
     
     def __repr__(self):
         """Returns the event's representation."""
         result = [
             '<',
             self.__class__.__name__,
+            ' ',
                 ]
         
         if self._value:
-            result.append(' set')
+            state = 'set'
+        else:
+            state = 'unset'
+        result.append(state)
         
         result.append('>')
         
@@ -6160,3 +6164,4 @@ class WaitContinously(WaitTillFirst):
     # `asyncwrap` is same as ``Future.asyncwrap``
 
 del DOCS_ENABLED
+del copy_func

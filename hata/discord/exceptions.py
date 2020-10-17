@@ -688,7 +688,8 @@ class DiscordGatewayException(BaseException):
     CODETABLE = {
         4011 : 'A gateway would have handled too many guilds, resharding is required.',
         4013 : 'An invalid intent is one that is not meaningful and not documented.',
-        4014 : 'A disallowed intent is one which you have not enabled for your bot or one that your bot is not whitelisted to use.',
+        4014 : 'A disallowed intent is one which you have not enabled for your bot or one that your bot is not '
+               'whitelisted to use.',
             }
     
     def __init__(self, code):
@@ -729,4 +730,4 @@ class InvalidToken(BaseException):
         BaseException.__init__(self,'Invalid token, please update it, then start the client again.')
     
 
-VOICE_CLIENT_DISCONNECTC_CLOSE_CODE = 4014
+VOICE_CLIENT_DISCONNECT_CLOSE_CODE = 4014

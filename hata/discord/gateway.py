@@ -21,7 +21,7 @@ from .activity import ActivityUnknown
 from .parsers import PARSERS
 from .guild import LARGE_LIMIT
 from .client_core import Kokoro, KOKORO
-from .exceptions import DiscordGatewayException, VOICE_CLIENT_DISCONNECTC_CLOSE_CODE
+from .exceptions import DiscordGatewayException, VOICE_CLIENT_DISCONNECT_CLOSE_CODE
 
 GATEWAY_RATELIMIT_LIMIT = 120
 GATEWAY_RATELIMIT_RESET = 60.0
@@ -797,7 +797,11 @@ class DiscordGatewayVoice(object):
         InvalidHandshake
         WebSocketProtocolError
         """
-        self.kokoro.terminate()
+        kokoro = self.kokoro
+        if (kokoro is not None):
+            kokoro.terminate()
+            del kokoro
+        
         websocket = self.websocket
         if (websocket is not None) and (not websocket.closed):
             await websocket.close(4000)
@@ -805,7 +809,12 @@ class DiscordGatewayVoice(object):
         
         gateway = f'wss://{self.client._endpoint}/?v=4'
         self.websocket = await self.client.client.http.connect_ws(gateway)
-        self.kokoro.start_beating()
+        
+        kokoro = self.kokoro
+        if kokoro is None:
+            self.kokoro = kokoro = await Kokoro(self)
+        kokoro.start_beating()
+        del kokoro
         
         if resume:
             await self._resume()
@@ -825,7 +834,7 @@ class DiscordGatewayVoice(object):
         """
         websocket = self.websocket
         if websocket is None:
-            raise ConnectionClosed(VOICE_CLIENT_DISCONNECTC_CLOSE_CODE, None)
+            raise ConnectionClosed(VOICE_CLIENT_DISCONNECT_CLOSE_CODE, None)
         
         message = await websocket.recv()
         await self._received_message(message)
@@ -1065,16 +1074,19 @@ class DiscordGatewayVoice(object):
         voice_client._audio_source = data['ssrc']
         voice_client._audio_port = data['port']
         voice_client._endpoint_ip = data['ip']
-        
         packet = bytearray(70)
         packet[0:4] = voice_client._audio_source.to_bytes(4, 'big')
-        voice_client.socket.sendto(packet, (voice_client._endpoint_ip, voice_client._audio_port))
         
-        received = await KOKORO.sock_recv(voice_client.socket, 70)
+        voice_client.send_packet(packet)
+        
+        protocol = voice_client._protocol
+        # Make sure, that the voice client's reader do not wanna read our data away from us.
+        protocol.cancel_current_reader()
+        received = await protocol.read(70)
         
         # the ip is ascii starting at the 4th byte and ending at the first null
         voice_client._ip = ip = received[4:received.index(0, 4)].decode('ascii')
-        voice_client._port = port = int.from_bytes(received[-2:],'big')
+        voice_client._port = port = int.from_bytes(received[-2:], 'big')
         
         await self._select_protocol(ip, port)
         await self._client_connect()
@@ -1113,6 +1125,7 @@ class DiscordGatewayVoice(object):
                 }
         
         await self.send_as_json(data)
+
 
 class DiscordGatewaySharder(object):
     """

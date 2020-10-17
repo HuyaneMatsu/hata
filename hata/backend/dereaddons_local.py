@@ -830,6 +830,24 @@ class methodize(object):
     def __delete__(self, obj):
         raise AttributeError('can\'t delete attribute')
 
+def copy_func(old):
+    """
+    Copiest he given function.
+    
+    Parameters
+    ----------
+    old : `function`
+        The function to copy.
+    
+    Returns
+    -------
+    new : `functions`
+        The new created function.
+    """
+    new = function(old.__code__, old.__globals__, name=old.__name__, argdefs=old.__defaults__, closure=old.__closure__)
+    new.__kwdefaults__ = old.__kwdefaults__
+    return new
+
 class sortedlist(list):
     __slots__ = ('_reversed', )
     

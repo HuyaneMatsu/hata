@@ -240,9 +240,9 @@ class _SSLProtocolTransport(object):
     def abort(self):
         self.ssl_protocol._abort()
 
-        
+
 class SSLProtocol(object):
-    __slots__=('_call_connection_made', '_extra', '_handshake_start_time', '_in_handshake', '_in_shutdown',
+    __slots__ = ('_call_connection_made', '_extra', '_handshake_start_time', '_in_handshake', '_in_shutdown',
         '_session_established', '_ssl_context', '_waiter', '_write_backlog', '_write_buffer_size', 'app_protocol',
         'app_transport', 'loop', 'server_hostname', 'server_side', 'sslpipe', 'transport',)
     
@@ -258,7 +258,7 @@ class SSLProtocol(object):
         
         self.server_hostname = server_hostname
         
-        self._ssl_context=ssl_context
+        self._ssl_context = ssl_context
         # SSL-specific extra info. More info are set when the handshake
         # completes.
         self._extra = {'sslcontext': ssl_context}
@@ -285,7 +285,7 @@ class SSLProtocol(object):
         if waiter is None:
             return
         
-        self._waiter=None
+        self._waiter = None
         if waiter.pending():
             if exception is None:
                 waiter.set_result(None)
@@ -293,8 +293,8 @@ class SSLProtocol(object):
                 waiter.set_exception(exception)
     
     def connection_made(self, transport):
-        self.transport=transport
-        self.sslpipe=_SSLPipe(self._ssl_context, self.server_side, self.server_hostname)
+        self.transport = transport
+        self.sslpipe = _SSLPipe(self._ssl_context, self.server_side, self.server_hostname)
         self._start_handshake()
 
     def connection_lost(self, exception):
@@ -378,8 +378,8 @@ class SSLProtocol(object):
                 self._wakeup_waiter(err)
                 return
             raise
-
-
+        
+        
         # Add extra info that becomes available after handshake.
         extra = self._extra
         extra['peercert'] = peercert
@@ -420,7 +420,7 @@ class SSLProtocol(object):
                 for chunk in ssldata:
                     transport.write(chunk)
 
-                if offset<len(data):
+                if offset < len(data):
                     self._write_backlog[0] = (data, offset)
                     # A short write means that a write is blocked on a read
                     # We need to enable reading if it is paused!
@@ -471,30 +471,40 @@ class SSLProtocol(object):
 
 
 class _SelectorSocketTransport(object):
-    __slots__=('__weakref__', '_extra', 'loop', 'protocol', '_low_water', '_high_water', '_protocol_paused', 'socket',
-        '_sock_fd', '_protocol_connected', 'server', 'buffer', '_conn_lost', 'closing', 'eof', 'paused',)
+    __slots__ = ('_extra', 'loop', 'protocol', '_low_water', '_high_water', '_protocol_paused', 'socket', '_sock_fd',
+        '_protocol_connected', 'server', 'buffer', '_conn_lost', 'closing', 'eof', 'paused',)
     
     def __init__(self, loop, sock, protocol, waiter=None, extra=None, server=None):
-
+        
         if extra is None:
             extra = {}
+        
         self._extra = extra
         self.loop = loop
         self._protocol_paused = False
         self._set_write_buffer_limits()
         
-        self._extra['socket'] = sock
-        self._extra['sockname'] = sock.getsockname()
+        extra['socket'] = sock
+        
+        try:
+            sockname = sock.getsockname()
+        except OSError:
+            sockname = None
+        extra['sockname'] = sockname
+        
         if 'peername' not in extra:
             try:
-                extra['peername'] = sock.getpeername()
+                peername = sock.getpeername()
             except module_socket.error:
-                extra['peername'] = None
+                peername = None
+            extra['peername'] = peername
         
         self.socket = sock
         self._sock_fd = sock.fileno()
+        
         self.protocol = protocol
         self._protocol_connected = True
+        
         self.server = server
         self.buffer = bytearray()
         self._conn_lost = 0  # Set when call to connection_lost scheduled.
@@ -504,9 +514,8 @@ class _SelectorSocketTransport(object):
         
         self.eof = False
         self.paused = False
-
-        # Disable the Nagle algorithm -- small writes will be
-        # sent without waiting for the TCP ACK.  This generally
+        
+        # Disable the Nagle algorithm -- small writes will be sent without waiting for the TCP ACK.  This generally
         # decreases the latency (in some cases significantly.)
         _set_nodelay(sock)
         
@@ -574,6 +583,7 @@ class _SelectorSocketTransport(object):
             bufsize = self.get_write_buffer_size()
             result.append(str(bufsize))
             result.append('>')
+        
         result.append('>')
         
         return ''.join(result)
@@ -624,11 +634,13 @@ class _SelectorSocketTransport(object):
                 high = 65536
             else:
                 high = low<<2
+        
         if low is None:
             low = high>>2
         
         if not high >= low >= 0:
-            raise ValueError(f'high ({high}) must be >= low ({low}) must be >= 0')
+            raise ValueError(f'`high` ({high}) must be `>= low` ({low}) must be `>= 0`.')
+        
         self._high_water = high
         self._low_water = low
 
@@ -660,7 +672,6 @@ class _SelectorSocketTransport(object):
             self.loop.call_soon(self._call_connection_lost, None)
     
     def _fatal_error(self, exception, message='Fatal error on transport'):
-        # Should be called from exception handler only.
         if not isinstance(exception, (BrokenPipeError, ConnectionResetError, ConnectionAbortedError)):
             self.loop.render_exc_async(exception, [
                 message,
@@ -683,7 +694,7 @@ class _SelectorSocketTransport(object):
             self.closing = True
             self.loop.remove_reader(self._sock_fd)
         
-        self._conn_lost +=1
+        self._conn_lost += 1
         self.loop.call_soon(self._call_connection_lost, exception)
     
     def _call_connection_lost(self, exception):
@@ -698,7 +709,7 @@ class _SelectorSocketTransport(object):
             server = self.server
             if (server is not None):
                 server._detach()
-                self.server=None
+                self.server = None
     
     def get_write_buffer_size(self):
         return len(self.buffer)
@@ -714,9 +725,11 @@ class _SelectorSocketTransport(object):
     def resume_reading(self):
         if not self.paused:
             raise RuntimeError('Not paused')
+        
         self.paused = False
         if self.closing:
             return
+        
         self.loop.add_reader(self._sock_fd, self._read_ready)
     
     def _read_ready(self):
@@ -774,6 +787,7 @@ class _SelectorSocketTransport(object):
     def _write_ready(self):
         if self._conn_lost:
             return
+        
         try:
             n = self.socket.send(self.buffer)
         except (BlockingIOError, InterruptedError):
@@ -785,20 +799,369 @@ class _SelectorSocketTransport(object):
         else:
             if n:
                 del self.buffer[:n]
+            
             self._maybe_resume_protocol()  # May append to buffer.
             if not self.buffer:
                 self.loop.remove_writer(self._sock_fd)
+                
                 if self.closing:
                     self._call_connection_lost(None)
+                
                 elif self.eof:
                     self.socket.shutdown(module_socket.SHUT_WR)
     
     def write_eof(self):
         if self.eof:
             return
+        
         self.eof = True
+        
         if not self.buffer:
             self.socket.shutdown(module_socket.SHUT_WR)
     
     def can_write_eof(self):
         return True
+
+
+class _SelectorDatagramTransport(object):
+    __slots__ = ('_extra', 'loop', '_protocol_paused', '_high_water', '_low_water', 'protocol', '_sock_fd',
+        'buffer', '_conn_lost', 'socket', '_protocol_connected', 'closing', 'address')
+    
+    def __init__(self, loop, sock, protocol, address=None, waiter=None, extra=None):
+        if extra is None:
+            extra = {}
+        
+        self._extra = extra
+        
+        self.loop = loop
+        self._protocol_paused = False
+        self._set_write_buffer_limits()
+        
+        extra['socket'] = sock
+        
+        try:
+            sockname = sock.getsockname()
+        except OSError:
+            sockname = None
+        extra['sockname'] = sockname
+        
+        if 'peername' not in extra:
+            try:
+                peername = sock.getpeername()
+            except module_socket.error:
+                peername = None
+            
+            extra['peername'] = peername
+        
+        self.socket = sock
+        self._sock_fd = sock.fileno()
+        
+        self._protocol_connected = False
+        self.protocol = protocol
+        
+        self.buffer = deque()
+        self._conn_lost = 0 # Set when call to connection_lost scheduled.
+        self.closing = False # Set when close() called.
+        
+        self.address = address
+        self.loop.call_soon(self.protocol.connection_made, self)
+        # only start reading when connection_made() has been called
+        self.loop.call_soon(self._add_reader, self._sock_fd, self._read_ready)
+        
+        if waiter is not None:
+            # only wake up the waiter when connection_made() has been called
+            self.loop.call_soon(Future.set_result_if_pending, waiter, None)
+    
+    def get_extra_info(self, name, default=None):
+        return self._extra.get(name, default)
+    
+    def is_reading(self):
+        raise NotImplementedError
+    
+    def pause_reading(self):
+        raise NotImplementedError
+    
+    def resume_reading(self):
+        raise NotImplementedError
+    
+    def write(self, data):
+        raise NotImplementedError
+    
+    def writelines(self, list_of_data):
+        data = b''.join(list_of_data)
+        self.write(data)
+    
+    def write_eof(self):
+        raise NotImplementedError
+    
+    def can_write_eof(self):
+        raise NotImplementedError
+    
+    def _maybe_pause_protocol(self):
+        size = self.get_write_buffer_size()
+        if size <= self._high_water:
+            return
+        
+        if self._protocol_paused:
+            return
+            
+        self._protocol_paused = True
+        try:
+            self.protocol.pause_writing()
+        except Exception as err:
+            self.loop.render_exc_async(err, [
+                'Exception occured at:\n',
+                repr(self),
+                '._maybe_pause_protocol\n',
+                    ])
+    
+    def _maybe_resume_protocol(self):
+        if (not self._protocol_paused) or (self.get_write_buffer_size() > self._low_water):
+            return
+        
+        self._protocol_paused = False
+        try:
+            self.protocol.resume_writing()
+        except Exception as err:
+            self.loop.render_exc_async(err, [
+                'Exception occured at:\n',
+                repr(self),
+                '._maybe_resume_protocol\n',
+                    ])
+    
+    def get_write_buffer_limits(self):
+        return (self._low_water, self._high_water)
+    
+    def _set_write_buffer_limits(self, high=None, low=None):
+        if high is None:
+            if low is None:
+                high = 65536
+            else:
+                high = low<<2
+        
+        if low is None:
+            low = high>>2
+        
+        if not high >= low >= 0:
+            raise ValueError(f'`high` ({high}) must be `>= low` ({low}) must be `>= 0`.')
+        
+        self._high_water = high
+        self._low_water = low
+    
+    def set_write_buffer_limits(self, high=None, low=None):
+        self._set_write_buffer_limits(high=high, low=low)
+        self._maybe_pause_protocol()
+    
+    def __repr__(self):
+        result = [
+            '<',
+            self.__class__.__name__,
+                ]
+        
+        if self.socket is None:
+            result.append(' closed')
+        elif self.closing:
+            result.append(' closing')
+        
+        result.append(' fd=')
+        result.append(repr(self._sock_fd))
+        
+        loop = self.loop
+        #is the transport open?
+        if (loop is not None) and loop.running:
+            try:
+                key = loop.selector.get_key(self._sock_fd)
+            except KeyError:
+                polling = 0
+            else:
+                polling = key.events&selectors.EVENT_READ
+            
+            result.append(' read=')
+            if polling:
+                state = 'polling'
+            else:
+                state = 'idle'
+            result.append(state)
+            
+            try:
+                key = loop.selector.get_key(self._sock_fd)
+            except KeyError:
+                polling = 0
+            else:
+                polling = key.events&selectors.EVENT_WRITE
+            
+            result.append(' write=<')
+            if polling:
+                state = 'polling'
+            else:
+                state = 'idle'
+            result.append(state)
+            
+            result.append(', bufsize=')
+            
+            bufsize = self.get_write_buffer_size()
+            result.append(str(bufsize))
+            result.append('>')
+        
+        result.append('>')
+        
+        return ''.join(result)
+    
+    def abort(self):
+        self._force_close(None)
+    
+    def set_protocol(self, protocol):
+        self.protocol = protocol
+        self._protocol_connected = True
+    
+    def get_protocol(self):
+        return self.protocol
+    
+    def is_closing(self):
+        return self.closing
+    
+    def close(self):
+        if self.closing:
+            return
+        
+        self.closing = True
+        self.loop.remove_reader(self._sock_fd)
+        if not self.buffer:
+            self._conn_lost += 1
+            self.loop.remove_writer(self._sock_fd)
+            self.loop.call_soon(self._call_connection_lost, None)
+    
+    def __del__(self):
+        socket = self.socket
+        if socket is not None:
+            socket.close()
+    
+    def _fatal_error(self, exception, message='Fatal error on transport'):
+        if not isinstance(exception, OSError):
+            self.loop.render_exc_async(exception, [
+                message,
+                ' exception occured\n',
+                repr(self),
+                '\n',
+                    ])
+        
+        self._force_close(exception)
+    
+    def _force_close(self, exception):
+        if self._conn_lost:
+            return
+        
+        if self.buffer:
+            self.buffer.clear()
+            self.loop.remove_writer(self._sock_fd)
+        
+        if not self.closing:
+            self.closing = True
+            self.loop.remove_reader(self._sock_fd)
+        
+        self._conn_lost += 1
+        self.loop.call_soon(self._call_connection_lost, exception)
+    
+    def _call_connection_lost(self, exception):
+        try:
+            if self._protocol_connected:
+                self.protocol.connection_lost(exception)
+        finally:
+            self.socket.close()
+            self.socket = None
+            self.protocol = None
+            self.loop = None
+    
+    def _add_reader(self, fd, callback, *args):
+        if self.closing:
+            return
+        
+        self.loop.add_reader(fd, callback, *args)
+    
+    def get_write_buffer_size(self):
+        size = 0
+        for data, addr in self.buffer:
+            size += len(data)
+        
+        return size
+    
+    def _read_ready(self):
+        if self._conn_lost:
+            return
+        try:
+            data, addr = self.socket.recvfrom(MAX_SIZE)
+        except (BlockingIOError, InterruptedError):
+            pass
+        except OSError as err:
+            self.protocol.error_received(err)
+        except (SystemExit, KeyboardInterrupt):
+            raise
+        except BaseException as err:
+            self._fatal_error(err, 'Fatal read error on datagram transport')
+        else:
+            self.protocol.datagram_received(data, addr)
+    
+    def sendto(self, data, addr=None):
+        if not isinstance(data, (bytes, bytearray, memoryview)):
+            raise TypeError(f'data argument must be a bytes-like object, not {type(data).__name__!r}')
+        
+        if not data:
+            return
+        
+        address = self.address
+        if (address is not None):
+            if (addr is not None) or (addr != address):
+                raise ValueError(f'Invalid address: must be `None` or `{address!r}`, got {addr!r}.')
+            addr = address
+        
+        if self._conn_lost and (address is not None):
+            self._conn_lost += 1
+            return
+        
+        buffer = self.buffer
+        if not buffer:
+            # Attempt to send it right away first.
+            try:
+                if self._extra['peername'] is None:
+                    self.socket.sendto(data, addr)
+                else:
+                    self.socket.send(data)
+            except (BlockingIOError, InterruptedError):
+                self.loop.add_writer(self._sock_fd, self._sendto_ready)
+            except OSError as err:
+                self.protocol.error_received(err)
+                return
+            except BaseException as err:
+                self._fatal_error(err, 'Fatal write error on datagram transport')
+                return
+            else:
+                return
+        
+        # Ensure that what we buffer is immutable.
+        buffer.append((bytes(data), addr))
+        self._maybe_pause_protocol()
+    
+    def _sendto_ready(self):
+        buffer = self.buffer
+        while buffer:
+            data, addr = buffer.popleft()
+            try:
+                if self._extra['peername'] is None:
+                    self.socket.sendto(data, addr)
+                else:
+                    self.socket.send(data)
+            except (BlockingIOError, InterruptedError):
+                buffer.appendleft((data, addr))  # Try again later.
+                break
+            except OSError as err:
+                self.protocol.error_received(err)
+                return
+            except BaseException as err:
+                self._fatal_error(err, 'Fatal write error on datagram transport')
+                return
+        
+        self._maybe_resume_protocol() # May append to buffer.
+        if not buffer:
+            self.loop.remove_writer(self._sock_fd)
+            if self.closing:
+                self._call_connection_lost(None)

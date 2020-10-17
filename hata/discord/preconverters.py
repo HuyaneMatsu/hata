@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from .color import Color
-from .bases import PreinstancedBase
 
 def preconvert_snowflake(snowflake, name):
     """

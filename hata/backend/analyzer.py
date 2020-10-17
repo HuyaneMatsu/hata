@@ -27,9 +27,47 @@ ARGUMENT_ARGS                   = 3
 ARGUMENT_KWARGS                 = 4
 
 class Argument(object):
+    """
+    Represents a callable's argument.
+    
+    Attributes
+    ----------
+    annotation : `Any`
+        The argument's annotation if applicable. Defaults to `None`.
+    default : `Any`
+        The default value of teh argument if applicable. Defaults to `None`.
+    has_annotation : `bool`
+        Whether the argument has annotation.
+    has_default : `bool`
+        Whether the argument has default value.
+    name : `str`
+        The argument's name.
+    positionality : `int`
+        Whether the argument is positional, keyword or such.
+        
+        Can be set one of the following:
+        +-----------------------------------+-----------+
+        | Respective Name                   | Value     |
+        +===================================+===========+
+        | ARGUMNET_POSITIONAL_ONLY          | 0         |
+        +-----------------------------------+-----------+
+        | ARGUMNET_POSITIONAL_AND_KEYWORD   | 1         |
+        +-----------------------------------+-----------+
+        | ARGUMENT_KEYWORD_ONLY             | 2         |
+        +-----------------------------------+-----------+
+        | ARGUMENT_ARGS                     | 3         |
+        +-----------------------------------+-----------+
+        | ARGUMENT_KWARGS                   | 4         |
+        +-----------------------------------+-----------+
+    reserved : `bool`
+        Whether the argument is reserved.
+        
+        For example at the case of methods, teh first argument is reserved for the `self` argument.
+    """
     __slots__ = ('annotation', 'default', 'has_annotation', 'has_default', 'name', 'positionality', 'reserved', )
     
     def __repr__(self):
+        """Returns the argument's representation."""
         result = []
         result.append('<')
         result.append(self.__class__.__name__)
@@ -54,6 +92,13 @@ class Argument(object):
         return ''.join(result)
     
     def is_positional_only(self):
+        """
+        Returns whether the argument is positional only.
+        
+        Returns
+        -------
+        is_positional_only : `bool`
+        """
         positionality = self.positionality
         if positionality == ARGUMNET_POSITIONAL_ONLY:
             return True
@@ -61,6 +106,13 @@ class Argument(object):
         return False
     
     def is_positional(self):
+        """
+        Returns whether the argument is positional.
+        
+        Returns
+        -------
+        is_positional : `bool`
+        """
         positionality = self.positionality
         if positionality == ARGUMNET_POSITIONAL_ONLY:
             return True
@@ -71,6 +123,13 @@ class Argument(object):
         return False
     
     def is_keyword(self):
+        """
+        Returns whether the argument can be used as a keyword argument.
+        
+        Returns
+        -------
+        is_keyword : `bool`
+        """
         positionality = self.positionality
         if positionality == ARGUMNET_POSITIONAL_AND_KEYWORD:
             return True
@@ -81,6 +140,13 @@ class Argument(object):
         return False
     
     def is_keyword_only(self):
+        """
+        Returns whether they argument is keyword only.
+        
+        Returns
+        -------
+        is_keyword_only : `bool`
+        """
         positionality = self.positionality
         if positionality == ARGUMENT_KEYWORD_ONLY:
             return True
@@ -88,6 +154,13 @@ class Argument(object):
         return False
     
     def is_args(self):
+        """
+        Returns whether the argument is an `*args` argument.
+        
+        Returns
+        -------
+        is_args : `bool`
+        """
         positionality = self.positionality
         if positionality == ARGUMENT_ARGS:
             return True
@@ -95,6 +168,13 @@ class Argument(object):
         return False
     
     def is_kwargs(self):
+        """
+        Returns whether the argument is an `**kwargs` argument.
+        
+        Returns
+        -------
+        is_kwargs : `bool`
+        """
         positionality = self.positionality
         if positionality == ARGUMENT_KWARGS:
             return True
@@ -102,10 +182,44 @@ class Argument(object):
         return False
 
 class CallableAnalyzer(object):
+    """
+    Analyzer for callables.
+    
+    Can analyze functions, methods, callable objects and types or such.
+    
+    Attributes
+    ----------
+    args_argument : `None` or ``Argument``
+        If the analyzed callable has `*args` argument, then this attribute is set to it. Defautls to `None`.
+    arguments : `list` of ``Argument``
+        The analyzed callable's argumnets.
+    callable : `callable`
+        The analyzed object.
+    instance_to_async : `int`
+        Whether the analyzed object can be instanced to async.
+        
+        +---------------------------+-----------+-------------------------------------------+
+        | Respective Name           | Value     | Description                               |
+        +===========================+===========+===========================================+
+        | INSTANCE_TO_ASYNC_FALSE   | 0         | Whether the object is async.              |
+        +---------------------------+-----------+-------------------------------------------+
+        | INSTANCE_TO_ASYNC_TRUE    | 1         | Whether the object is on async callable,  |
+        |                           |           | but after instancing it, returns one.     |
+        +---------------------------+-----------+-------------------------------------------+
+        | INSTANCE_TO_ASYNC_CANNOT  | 2         | Whether the object is not async.          |
+        +---------------------------+-----------+-------------------------------------------+
+    kwargs_argument : `None` or ``Argument``
+        If the analyzed callable has `**kwargs`, then this attribute is set to it. Defautls to `None`.
+    method_allocation : `int`
+        How much argument is allocated if the analyzed callable is method if applicable.
+    real_function : `callable`
+        The function wrapped by the given callable.
+    """
     __slots__ = ('args_argument', 'arguments', 'callable', 'instance_to_async', 'kwargs_argument', 'method_allocation',
         'real_function', )
     
     def __repr__(self):
+        """Returns the callable analyzer's representation."""
         result = []
         result.append('<')
         result.append(self.__class__.__name__)
@@ -149,6 +263,22 @@ class CallableAnalyzer(object):
         return ''.join(result)
     
     def __new__(cls, callable_, as_method=False):
+        """
+        Analyzes the given callable.
+        
+        Parameters
+        ----------
+        callable_ : `callable`
+            The callable to analyze.
+        as_method : `bool`, Optional
+            Whether the given `callable` is given as a `function`, but it should be analyzed as a `method`. Defaults
+            to `False`.
+        
+        Raises
+        ------
+        TypeError
+            If the given object is not callable, or could not be used as probably intended.
+        """
         while True:
             if isinstance(callable_, function):
                 
@@ -250,10 +380,10 @@ class CallableAnalyzer(object):
                 
                 break
             
-            raise TypeError(f'Expected function, method or a callable object, got {callable_!r}')
+            raise TypeError(f'Expected function, method or a callable object, got {callable_!r}.')
         
         if as_method and type(callable_) is function:
-            method_allocation +=1
+            method_allocation += 1
         
         if (real_function is not None) and ( not hasattr(real_function, '__code__')):
             raise TypeError(f'Expected function, got `{real_function!r}`')
@@ -315,7 +445,7 @@ class CallableAnalyzer(object):
             
             if (method_allocation>argument_count) and (args_name is None):
                 raise TypeError(f'The passed object is a method like, but has not enought positional arguments: '
-                    f'`{real_function!r}`')
+                    f'`{real_function!r}`.')
             
             index = 0
             while index < argument_count:
@@ -438,12 +568,26 @@ class CallableAnalyzer(object):
         return self
     
     def is_async(self):
+        """
+        Returns whether the analyzed callable is async.
+        
+        Returns
+        -------
+        is_async : `bool`
+        """
         if self.instance_to_async == INSTANCE_TO_ASYNC_FALSE:
             return True
         
         return False
     
     def can_instance_to_async_callable(self):
+        """
+        Returns whether the analyzed callable can be instanced to async.
+        
+        Returns
+        -------
+        can_instance_to_async_callable : `bool`
+        """
         if self.instance_to_async != INSTANCE_TO_ASYNC_TRUE:
             return False
         
@@ -460,9 +604,25 @@ class CallableAnalyzer(object):
     
     # call `.can_instance_async_callable` before
     def instance_to_async_callable(self):
+        """
+        Instances the analyzed callable.
+        
+        Should be called only after a ``.can_instance_async_callable`` call, if it returned `True`.
+        
+        Returns
+        -------
+        instance_to_async_callable : `Any`
+        """
         return self.callable()
     
     def get_non_default_keyword_only_argument_count(self):
+        """
+        Returns the amount of non default keyword only arguments of the analyzed callable.
+        
+        Returns
+        -------
+        non_default_keyword_only_argument_count : `int`
+        """
         count = 0
         for value in self.arguments:
             if not value.is_keyword_only():
@@ -471,12 +631,19 @@ class CallableAnalyzer(object):
             if value.has_default:
                 break
             
-            count +=1
+            count += 1
             continue
         
         return count
     
     def get_non_reserved_positional_arguments(self):
+        """
+        Returns the non reserved positional arguments of the analyzed callable.
+        
+        Returns
+        -------
+        non_reserved_positional_arguments : `list` of ``Argument``
+        """
         result = []
         for argument in self.arguments:
             if not argument.is_positional():
@@ -491,6 +658,13 @@ class CallableAnalyzer(object):
         return result
     
     def get_non_reserved_positional_argument_count(self):
+        """
+        Returns the amount of the non reserved positional arguments of the analyzed callable.
+        
+        Returns
+        -------
+        non_reserved_positional_arguments : `int`
+        """
         count = 0
         for argument in self.arguments:
             if not argument.is_positional():
@@ -505,6 +679,13 @@ class CallableAnalyzer(object):
         return count
     
     def get_non_reserved_non_default_argument_count(self):
+        """
+        Returns the amount of the non reserved non default arguments of the analyzed callable.
+        
+        Returns
+        -------
+        non_reserved_non_default_argument_count : `int`
+        """
         count = 0
         for argument in self.arguments:
             if not argument.is_positional():
@@ -522,6 +703,21 @@ class CallableAnalyzer(object):
         return count
 
     def get_non_reserved_positional_argument_range(self):
+        """
+        Returns the minimal and the maximal amount how much non reserved positional arguments the analyzed callable
+        expects / accepts.
+        
+        Returns
+        -------
+        start : `int`
+            The minimal amount of non reserved arguments, what the analyzed callable expects.
+        end : `int`
+            The maximal amount of non reserved arguments, what the analyzed callable accepts.
+        
+        Notes
+        -----
+        `*args` argument is ignored from the calculation.
+        """
         iterator = iter(self.arguments)
         start = 0
         for argument in iterator:
@@ -534,13 +730,13 @@ class CallableAnalyzer(object):
             if argument.has_default:
                 break
             
-            start +=1
+            start += 1
             continue
         
         else:
             return start, start
         
-        end=start
+        end = start
         for argument in iterator:
             if not argument.is_positional():
                 return start, end
@@ -548,13 +744,27 @@ class CallableAnalyzer(object):
             if argument.reserved:
                 continue
             
-            end +=1
+            end += 1
             continue
         
         return start, end
     
     def accepts_args(self):
+        """
+        Returns whether the analyzed callable accepts `*args` argument.
+        
+        Returns
+        -------
+        accepts_args : `bool`
+        """
         return (self.args_argument is not None)
     
     def accepts_kwargs(self):
+        """
+        Returns whether the analyzed callable accepts `**kwargs` argument.
+        
+        Returns
+        -------
+        accepts_kwargs : `bool`
+        """
         return (self.kwargs_argument is not None)

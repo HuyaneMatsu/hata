@@ -24,7 +24,7 @@ from .helpers import is_ip_address
 from .websocket import ProtocolBase
 
 KEEP_ALIVE_TIMEOUT = 15.0
-    
+
 class Connection(object):
     __slots__ = ('callbacks', 'connector', 'key', 'loop', 'protocol',)
     def __init__(self, connector, key, protocol, loop):

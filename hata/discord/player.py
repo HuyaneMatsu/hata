@@ -2,14 +2,12 @@
 __all__ = ('DownloadError', 'LocalAudio', 'YTAudio')
 
 import os, sys, subprocess, shlex
-from threading import Event, Thread, current_thread
-from time import perf_counter, sleep as blocking_sleep
+from time import perf_counter
 from audioop import mul as audio_mul
 from pathlib import Path
 
 from ..backend.dereaddons_local import alchemy_incendiary
-from ..backend.futures import render_exc_to_list
-from ..backend.eventloop import EventThread
+from ..backend.futures import render_exc_to_list, Task, Event, sleep, CancelledError
 
 from .client_core import KOKORO
 from .opus import FRAME_LENGTH, FRAME_SIZE, SAMPLES_PER_FRAME
@@ -33,6 +31,7 @@ STREAM_OPTIONS = (
     # '-reconnect_delay_max', '3',
         )
 
+
 class AudioSource(object):
     """
     Base class for audio sources.
@@ -49,13 +48,15 @@ class AudioSource(object):
     NEEDS_ENCODE = True
     REPEATABLE = False
     
-    def read(self):
+    async def read(self):
         """
         Reads 20ms audio data.
         
+        This method is a coroutine.
+        
         Indicates end of stream by returning `None`.
         
-        > Subclasses should implement it.
+        Subclasses should implement it.
         
         Returns
         -------
@@ -63,17 +64,19 @@ class AudioSource(object):
         """
         return None
     
-    def cleanup(self):
+    async def cleanup(self):
         """
         Cleans up the allocated resources by the audio source.
         
-        > Subclasses should overwrite it.
+        This method is a coroutine.
+        
+        Subclasses should overwrite it.
         """
         pass
     
     def __del__(self):
         """Cleans up the audio source if ``.cleanup`` was not called for any reason."""
-        self.cleanup()
+        Task(self.cleanup(), KOKORO)
     
     @property
     def title(self):
@@ -101,63 +104,14 @@ class AudioSource(object):
         """
         return None
     
-    def postprocess(self):
+    async def postprocess(self):
         """
         Called before the audio of the source would be played.
         
-        This method can be implemented as blocking.
+        This method is a coroutine.
         """
         pass
 
-class PCMAudio(AudioSource):
-    """
-    Represents raw 16-bit 48KHz stereo PCM audio source.
-    
-    Attributes
-    -----------
-    stream : `Any`
-        PCM (Pulse Code Modulation) output.
-    
-    Class Attributes
-    ----------------
-    NEEDS_ENCODE : `bool` = `True`
-        Whether the source is not opus encoded.
-    REPEATABLE : `bool` = `False`
-        Whether the source can be repeated after it is exhausted once.
-    """
-    __slots__ = ('stream',)
-    
-    def __new__(cls, stream):
-        """
-        Creates a new ``PCMAudio`` source.
-        
-        Parameters
-        ----------
-        stream : `Any`
-            Opus decoded PCM (Pulse Code Modulation).
-        
-        Returns
-        -------
-        self : ``PCMAudio``
-        """
-        self = object.__new__(cls)
-        self.stream = stream
-        return self
-
-    def read(self):
-        """
-        Reads 20ms audio data.
-        
-        Indicates end of stream by returning `None`
-        
-        Returns
-        -------
-        audio_data : `bytes` or `None`
-        """
-        result = self.stream.read(FRAME_SIZE)
-        if (result is not None) and (len(result) != FRAME_SIZE):
-            result = None
-        return result
 
 class LocalAudio(AudioSource):
     """
@@ -190,7 +144,7 @@ class LocalAudio(AudioSource):
     @staticmethod
     def _create_process_preprocess(source, executable, pipe, before_options, options):
         """
-        Creates a a subprocess instance to the given source.
+        Creates a subprocesse's args to open.
         
         Parameters
         ----------
@@ -207,6 +161,8 @@ class LocalAudio(AudioSource):
         
         Returns
         -------
+        executable : `str`
+            The executable's name.
         args : `list` of `str`
             Subprocess arguments.
         stdin : `None or `file-like`
@@ -243,7 +199,7 @@ class LocalAudio(AudioSource):
                 raise TypeError('The given `source` should be given as `str` or as `Path` instance, got '
                     f'{source_type}.')
         
-        args = [executable]
+        args = []
         
         if (before_options is not None):
             if isinstance(before_options, str):
@@ -270,43 +226,13 @@ class LocalAudio(AudioSource):
         
         args.append('pipe:1')
         
-        return args, (source if pipe else None)
+        return executable, args, (source if pipe else None)
     
-    @staticmethod
-    def _create_process(args, stdin):
-        """
-        Creates the subprocess of the audio source. This method should never run on an ``EventThread``.
-        
-        Paremeters
-        ----------
-        args : `list` of `str`
-            Subprocess arguments.
-        stdin : `None or `file-like`
-            Input for the postprocess.
-        
-        Returns
-        -------
-        process : `subprocess.Popen`
-        
-        Raises
-        ------
-        ValueError
-            - Executable as not found.
-            - Popen failed.
-        """
-        try:
-            process = subprocess.Popen(args, stdin=stdin, stdout=subprocess.PIPE,
-                startupinfo=SUBPROCESS_STARTUP_INFO)
-        except FileNotFoundError:
-            raise ValueError(f'{args[0]} was not found.') from None
-        except subprocess.SubprocessError as err:
-            raise ValueError(f'Popen failed: {err.__class__.__name__}: {err}') from err
-        
-        return process
-    
-    def postprocess(self):
+    async def postprocess(self):
         """
         Creates the process of the audio player.
+        
+        This method is a coroutine.
         
         Raises
         ------
@@ -316,17 +242,27 @@ class LocalAudio(AudioSource):
         """
         process = self.process
         if process is None:
-            process = self._create_process(*self._process_args)
+            executable, args, stdin = self._process_args
+            try:
+                process = await KOKORO.subprocess_exec(executable, args, stdin=stdin, stdout=subprocess.PIPE,
+                    startupinfo=SUBPROCESS_STARTUP_INFO)
+            except FileNotFoundError:
+                raise ValueError(f'{executable!r} was not found.') from None
+            except subprocess.SubprocessError as err:
+                raise ValueError(f'Opening subprocess failed: {err.__class__.__name__}: {err}') from err
+            
             self.process = process
             self._stdout = process.stdout
     
     __slots__ = ('_process_args', '_stdout', 'path', 'process', 'title', )
     
-    #use __new__, so __del__ wont run
+    # use __new__, so __del__ wont run
     async def __new__(cls, source, executable=DEFAULT_EXECUTABLE, pipe=False, before_options=None,
             options=None, title=None):
         """
         Creates a new ``LocalAudio`` instance.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -377,9 +313,11 @@ class LocalAudio(AudioSource):
         
         return self
     
-    def read(self):
+    async def read(self):
         """
         Reads 20ms audio data.
+        
+        This method is a coroutine.
         
         Indicates end of stream by returning zero `None`.
         
@@ -392,8 +330,8 @@ class LocalAudio(AudioSource):
             result = None
         else:
             try:
-                result = stdout.read(FRAME_SIZE)
-            except ValueError:
+                result = await stdout.read(FRAME_SIZE)
+            except CancelledError:
                 result = None
             else:
                 if len(result) != FRAME_SIZE:
@@ -401,21 +339,24 @@ class LocalAudio(AudioSource):
         
         return result
     
-    def cleanup(self):
+    async def cleanup(self):
         """
-        Closes ``.process`.`
+        Closes ``.process``.
+        
+        This method is a coroutine.
         """
         process = self.process
         if process is None:
             return
         
-        process.kill()
+        await process.kill()
         if process.poll() is None:
-            process.communicate()
+            await process.communicate()
         
         self._stdout = None
         self.process = None
- 
+
+
 try:
     import youtube_dl
 except ImportError:
@@ -515,6 +456,8 @@ else:
             """
             Creates a new ``YTAudio`` instance.
             
+            This method is a coroutine.
+            
             Parameters
             ----------
             url : `str`
@@ -537,11 +480,7 @@ else:
                     method.
                 - If `pipe` was given as `False`, meanwhile `source` was not given as `str` or `Path` instance.
             """
-            loop = current_thread()
-            if isinstance(loop, EventThread):
-                path, data, args = await loop.run_in_executor(alchemy_incendiary(cls._preprocess,(cls, url, stream)))
-            else:
-                path, data, args = cls._preprocess(cls, url, stream)
+            path, data, args = await KOKORO.run_in_executor(alchemy_incendiary(cls._preprocess,(cls, url, stream)))
             
             # Create self only at the end, so the `__del__` wont pick it up
             self = object.__new__(cls)
@@ -554,7 +493,8 @@ else:
             
             return self
 
-class AudioPlayer(Thread):
+
+class AudioPlayer(object):
     """
     Sends voice data through the voice client's socket.
     
@@ -564,12 +504,16 @@ class AudioPlayer(Thread):
         The voice client of audio player.
     done : `bool`
         Whether the audio player finished playing it's source.
-    resumed : `threading.Event`
+    resumed_waiter : `threading.Event`
         Indicates whether the the audio player is not paused.
     source : ``AudioSource`` instance
         The audio source what the player reads each 20 ms.
+    should_update : `bool`
+        Whether the voice client should update itself.
+    task : `None` or ``Task``
+        Audio reader task. Set as `None` if the reader is stopped.
     """
-    __slots__ = ('client', 'done', 'resumed', 'source')
+    __slots__ = ('client', 'done', 'resumed_waiter', 'should_update', 'source', 'task')
     
     def __init__(self, voice_client, source):
         """
@@ -582,42 +526,23 @@ class AudioPlayer(Thread):
         source : ``AudioSource`` instance
             The audio source what the player reads each 20 ms.
         """
-        Thread.__init__(self, daemon=True)
         self.source = source
         self.client = voice_client
+        
+        resumed_waiter = Event(KOKORO)
+        resumed_waiter.set()    # we are not paused
+        self.resumed_waiter = resumed_waiter
+        self.should_update = True
         self.done = False
         
-        resumed = Event()
-        resumed.set()    #we are not paused
-        self.resumed = resumed
-        
-        Thread.start(self)
+        self.task = Task(self.run(), KOKORO)
     
-    @staticmethod
-    async def _run_call_after(voice_client, last_source):
+    async def run(self):
         """
-        Called when playing an ``AudioSource`` of the audio player finished.
+        The main runner of ``AudioPlayer``. Is instantly started inside of a ``Task`` as the player is created.
         
-        Parameters
-        ----------
-        voice_client : ``VoiceClient``
-            The parent voice client of the ``AudioPlayer``.
-        last_source : ``AudioSource``
-            The play played audio.
-        
-        Returns
-        -------
-        should_stop : `bool`
-            Whether the player should stop.
+        This method is a coroutine.
         """
-        lock = voice_client.lock
-        if lock.locked():
-            await lock
-        else:
-            async with lock:
-                await voice_client.call_after(voice_client, last_source)
-    
-    def run(self):
         voice_client = self.client
         start = perf_counter()
         loops = 0
@@ -626,68 +551,42 @@ class AudioPlayer(Thread):
         
         try:
             while True:
-                if not self.resumed.is_set():
-                    self.resumed.wait()
+                if self.should_update:
+                    source = await self.update(source)
+                    if source is None:
+                        break
+                    
                     start = perf_counter()
                     loops = 0
                     continue
                 
-                #are we disconnected from voice?
+                # are we disconnected from voice?
                 if not voice_client.connected.is_set():
-                    voice_client.connected.wait()
+                    await voice_client.connected
                     start = perf_counter()
                     loops = 0
                     continue
                 
-                loops +=1
+                loops += 1
                 
-                new_source = self.source
-                if (new_source is None):
-                    if (voice_client.player is not self):
-                        break
-                    
-                    if (source is not None):
-                        source.cleanup()
-                        source = None
-                    
-                    self.resumed.clear()
-                    continue
+                data = await source.read()
                 
-                if (new_source is not source):
-                    if (source is not None):
-                        source.cleanup()
-                        source = None
-                    
-                    source = new_source
-                    new_source = None
-                    source.postprocess()
-                
-                data = source.read()
-                
-                if self.done or (data is None):
-                    self.resumed.clear()
-                    source.cleanup()
+                if data is None:
                     self.source = None
+                    await source.cleanup()
+                    self.pause()
                     
-                    if (voice_client.player is not self):
-                        break
+                    async with voice_client.lock:
+                        await voice_client.call_after(voice_client, source)
                     
-                    KOKORO.create_task_threadsafe(self._run_call_after(voice_client, source)).syncwrap().wait()
-                    
-                    source = self.source
-                    if (source is None):
-                        self.done = True
-                        self.resumed.set()
-                        break
-                    
-                    source.postprocess()
+                    source = None
                     continue
                 
                 sequence = voice_client._sequence
                 if sequence == 65535:
                     sequence = 0
                 else:
-                    sequence +=1
+                    sequence += 1
                 voice_client._sequence = sequence
                 
                 if source.NEEDS_ENCODE:
@@ -707,10 +606,7 @@ class AudioPlayer(Thread):
                 nonce = header+b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
                 packet = bytearray(header)+voice_client._secret_box.encrypt(bytes(data), nonce).ciphertext
                 
-                try:
-                    voice_client.socket.sendto(packet, (voice_client._endpoint_ip, voice_client._audio_port))
-                except BlockingIOError:
-                    pass
+                voice_client.send_packet(packet)
                 
                 timestamp = voice_client._timestamp+SAMPLES_PER_FRAME
                 if timestamp > 4294967295:
@@ -720,24 +616,122 @@ class AudioPlayer(Thread):
                 delay = PLAYER_DELAY+((start+PLAYER_DELAY*loops)-perf_counter())
                 if delay < 0.0:
                     continue
-                blocking_sleep(delay)
+                await sleep(delay, KOKORO)
         except BaseException as err:
-            voice_client.player = None
+            if voice_client.player is self:
+                voice_client.player = None
+            
             self.done = True
-            self.resumed.set()
-            if (source is not None):
-                source.cleanup()
-                source = None
             
             self.source = None
+            if (source is not None):
+                await source.cleanup()
+                source = None
             
-            extracted = [
+            if isinstance(err, CancelledError):
+                return
+            
+            await KOKORO.render_exc_async(err, before=[
                 'Exception occured at \n',
                 repr(self),
                 '\n',
-                    ]
-            render_exc_to_list(err, extend=extracted)
-            sys.stderr.write(''.join(extracted))
+                    ])
             
         else:
-            voice_client.player = None
+            if voice_client.player is self:
+                voice_client.player = None
+        
+        finally:
+            self.task = None
+    
+    async def update(self, actual_source):
+        """
+        Updates the player if ``.should_update`` is set as `True`.
+        
+        Waits for it's resumed waiter to be set if paused. If the voice player's source is updated, then initializes it
+        as well and closes the old one too.
+        
+        Parameters
+        ----------
+        actual_source : `None` or ``AudioSource`` instance
+            The actual audiio source of the player.
+        
+        Returns
+        -------
+        new_source : `None` or `AudioSource`` instance
+            New source of the player to play.
+            
+            Can be same as the `actual_source`.
+        """
+        resumed_waiter = self.resumed_waiter
+        if not resumed_waiter.is_set():
+            await resumed_waiter
+        
+        self.should_update = False
+        new_source = self.source
+        if (new_source is None):
+            if (self.client.player is not self):
+                self.done = True
+                return None
+            
+            if (actual_source is not None):
+                await actual_source.cleanup()
+            
+            return None
+        
+        if (new_source is actual_source):
+            return actual_source
+        
+        if (actual_source is not None):
+            await actual_source.cleanup()
+        
+        await new_source.postprocess()
+        return new_source
+    
+    def pause(self):
+        """
+        Pauses the player.
+        """
+        self.resumed_waiter.clear()
+        self.should_update = True
+    
+    def resume(self):
+        """
+        Resumes the player if paused.
+        """
+        resumed_waiter = self.resumed_waiter
+        if not resumed_waiter.is_set():
+            resumed_waiter.set()
+            self.should_update = True
+    
+    def stop(self):
+        """
+        Stops the player if running.
+        """
+        if self.done:
+            return
+        
+        self.done = True
+        task = self.task
+        if (task is not None):
+            task.cancel()
+        
+        self.should_update = True
+        self.resumed_waiter.set()
+    
+    def set_source(self, source):
+        """
+        Sets they player source.
+        
+        Parameters
+        ----------
+        source : `None` or ``AudioSource`` instance
+            The new source of the player.
+        """
+        self.source = source
+        self.should_update = True
+        
+        resumed_waiter = self.resumed_waiter
+        if not resumed_waiter.is_set():
+            resumed_waiter.set()
+

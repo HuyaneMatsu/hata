@@ -5,7 +5,7 @@ from struct import Struct
 from collections import deque
 
 from .dereaddons_local import multidict_titled
-from .futures import Future, CancelledError
+from .futures import Future, CancelledError, Task, future_or_timeout
 
 from .hdrs import CONNECTION, CONTENT_ENCODING, CONTENT_LENGTH, TRANSFER_ENCODING, METH_CONNECT
 from .exceptions import PayloadError, WebSocketProtocolError, ContentEncodingError
@@ -314,8 +314,8 @@ class HTTPStreamWriter(object):
         if protocol.transport is not None:
             await protocol._drain_helper()
         
-        self.eof=True
-        self.transport=None
+        self.eof = True
+        self.transport = None
     
     async def drain(self):
         #Flush the write buffer.
@@ -399,11 +399,11 @@ class ReadProtocolBase(object):
         
         return False
     
-    #compability method
+    # compability method
     def connection_made(self, transport):
         self.transport = transport
     
-    #compability method
+    # compability method
     def connection_lost(self, exception):
         if exception is None:
             self.eof_received()
@@ -459,7 +459,7 @@ class ReadProtocolBase(object):
         self.payload_reader.close()
         self.payload_reader = None
     
-    #compability method
+    # compability method
     def eof_received(self):
         self._eof = True
         
@@ -488,7 +488,13 @@ class ReadProtocolBase(object):
             self.payload_reader = None
             self.payload_waiter = None
             payload_waiter.set_result_if_pending(result)
-        
+        except GeneratorExit as err:
+            payload_waiter = self.payload_waiter
+            self.payload_reader = None
+            self.payload_waiter = None
+            exception = CancelledError()
+            exception.__cause__ = err
+            payload_waiter.set_exception_if_pending(exception)
         except BaseException as err:
             payload_waiter = self.payload_waiter
             self.payload_reader = None
@@ -497,7 +503,7 @@ class ReadProtocolBase(object):
         
         return False
     
-    #compability method
+    # compability method
     def data_received(self, data):
         if not data:
             return
@@ -511,7 +517,7 @@ class ReadProtocolBase(object):
                 if (transport is not None):
                     try:
                         transport.pause_reading()
-                    except (AttributeError,NotImplemented):
+                    except (AttributeError, NotImplementedError):
                         #cant be paused
                         self.transport = None
                     else:
@@ -532,7 +538,13 @@ class ReadProtocolBase(object):
                 self.payload_reader = None
                 self.payload_waiter = None
                 payload_waiter.set_result_if_pending(result)
-            
+            except GeneratorExit as err:
+                payload_waiter = self.payload_waiter
+                self.payload_reader = None
+                self.payload_waiter = None
+                exception = CancelledError()
+                exception.__cause__ = err
+                payload_waiter.set_exception_if_pending(exception)
             except BaseException as err:
                 payload_waiter = self.payload_waiter
                 self.payload_reader = None
@@ -549,8 +561,23 @@ class ReadProtocolBase(object):
         if future.cancelled():
             self.eof_received()
     
+    def cancel_current_reader(self):
+        """
+        Cancels the current reader task of the protocol.
+        """
+        payload_reader = self.payload_reader
+        if payload_reader is None:
+            return
+        
+        self.payload_reader = None
+        payload_reader.close()
+        
+        payload_waiter = self.payload_waiter
+        self.payload_waiter = None
+        payload_waiter.cancel()
+    
     def set_payload_reader(self, payload_reader):
-        assert self.payload_reader is None, 'Payload reader already set'
+        assert self.payload_reader is None, 'Payload reader already set!'
         
         payload_waiter = Future(self.loop)
         exception = self.exception
@@ -567,7 +594,10 @@ class ReadProtocolBase(object):
                     result = args
                 
                 payload_waiter.set_result_if_pending(result)
-            
+            except GeneratorExit as err:
+                exception = CancelledError()
+                exception.__cause__ = err
+                payload_waiter.set_exception_if_pending(exception)
             except BaseException as err:
                 payload_waiter.set_exception_if_pending(err)
             
@@ -594,15 +624,34 @@ class ReadProtocolBase(object):
             if n == 0:
                 return b''
             
-            raise ValueError(f'`.readexactly` size can not be less than zero, got {n}')
+            raise ValueError(f'`.readexactly` size can not be less than zero, got {n}.')
         
         return await self.set_payload_reader(self._read_exactly(n))
     
     async def readline(self):
-        raise NotImplemented
+        raise NotImplementedError
     
     async def readuntil(self):
-        raise NotImplemented
+        raise NotImplementedError
+    
+    async def readonce(self):
+        """
+        Waits till exactly one chunk is of data is received.
+        
+        Returns
+        -------
+        data : `bytes`
+        
+        Raises
+        ------
+        Any
+            Connection lost exception if applicable.
+        """
+        exception = self.exception
+        if (exception is not None):
+            raise exception
+        
+        return await self.set_payload_reader(self._read_once())
     
     def _wait_for_data(self):
         if self._paused:
@@ -716,7 +765,7 @@ class ReadProtocolBase(object):
                     self._offset = 0
                 # Fast slice the rest of the chunk with offset
                 else:
-                    self._offset=position
+                    self._offset = position
                 
                 return b''.join(collected)
             
@@ -753,7 +802,7 @@ class ReadProtocolBase(object):
             if chunk_size > n:
                 self._offset = n
                 return chunk[:n]
-            #chunk same size as the requested?
+            # chunk same size as the requested?
             elif chunk_size == n:
                 del chunks[0]
                 # offset is already 0, nice!
@@ -768,7 +817,7 @@ class ReadProtocolBase(object):
             if chunk_size > end:
                 self._offset = end
                 return chunk[offset:end]
-            #chunksize + offset end when the requested's end is.
+            # chunksize + offset end when the requested's end is.
             elif chunk_size == end:
                 del chunks[0]
                 self._offset = 0
@@ -1326,7 +1375,7 @@ class ReadProtocolBase(object):
             while True:
                 try:
                     yield from self._wait_for_data()
-                except CancelledError:
+                except (CancelledError, GeneratorExit):
                     if self._eof:
                         break
                     
@@ -1381,8 +1430,293 @@ class ReadProtocolBase(object):
         
         return b''.join(collected)
     
+    def _read_once(self):
+        """
+        Reader task for reading exactly one chunk out.
+        
+        Returns
+        -------
+        chunk : `bytes`
+            The read chunk. Returns empty `bytes` on eof.
+        
+        Raises
+        ------
+        CancelledError
+            If the reader task is cancelled not by receiving eof.
+        """
+        chunks = self._chunks
+        if not chunks:
+            try:
+                yield from self._wait_for_data()
+            except (CancelledError, GeneratorExit):
+                if self._eof:
+                    return b''
+                
+                raise
+        
+        chunk = chunks.popleft()
+        offset = self._offset
+        if offset:
+            self._offset = 0
+            chunk = chunk[offset:]
+        
+        return chunk
+    
     def __call__(self):
         return self
+
+
+class DatagramAddressedReadProtocol(object):
+    """
+    Datagram reader protocool for reading from payloads form multiple addresses.
+    
+    ``DatagramAddressedReadProtocol`` can also be used as a factory of itself, because when called, returns itself.
+    
+    Attributes
+    ----------
+    by_address : `dict` of (`tuple` (`str`, `int`), ``ReadProtocolBase``) items
+        Dictionary to store the alive readers by address.
+    loop : ``EventThread``
+        The loop to what the protocol is bound to.
+    transport : `Any`
+        Asynchronous transport implementation, what calls the protocol's ``.datagram_received`` when data is
+        received.
+    waiters : `None`, `list` of `Future`
+        Waiters for any payload receive if applicable.
+    """
+    __slots__ = ('by_address', 'loop', 'transport', 'waiters',)
+    def __init__(self, loop):
+        """
+        Creates a new ``DatagramAddressedReadProtocol`` instance bound to teh given loop.
+        
+        Parameters
+        ----------
+        loop : ``EventThread``
+            The loop to what the protocol gonna be bound to.
+        """
+        self.loop = loop
+        self.by_address = {}
+        self.transport = None
+        self.waiters = None
+    
+    def __call__(self):
+        """
+        Returns the protocol itself allowing ``DatagramAddressedReadProtocol`` to be it's own factory.
+        
+        Returns
+        -------
+        self : ``DatagramAddressedReadProtocol``
+        """
+        return self
+    
+    def connection_made(self, transport):
+        """
+        Called when a connection is made.
+        
+        Parameters
+        ----------
+        transport : `Any`
+            Asynchronous transport implementation, what calls the protocol's ``.datagram_received`` when data is
+            received.
+        """
+        self.transport = transport
+        for reader_protocol in self.by_address.values():
+            reader_protocol.connection_made(transport)
+    
+    def connection_lost(self, exception):
+        """
+        Called when the connection is lost or closed.
+        
+        Parameters
+        ----------
+        exception : `None` or `BaseException` instance
+            Defines whether the connection is closed, or except was received.
+            
+            If the connection was closed, then `err` is given as `None`. This can happen at the case, when eof is
+            received as well.
+        """
+        for reader_protocol in self.by_address.values():
+            if exception is None:
+                reader_protocol.eof_received()
+            else:
+                reader_protocol.set_exception(exception)
+    
+    def pause_writing(self):
+        """
+        Called when the transport's buffer goes over the high-water mark.
+        
+        ``.pause_writing`` is called when the buffer goes over the high-water mark, and eventually
+        ``.resume_writing`` is called when the buffer size reaches the low-water mark.
+        """
+    
+    def resume_writing(self):
+        """
+        Called when the transport's buffer drains below the low-water mark.
+        
+        See ``.pause_writing`` for details.
+        """
+    
+    def datagram_received(self, data, address):
+        """
+        Called when some datagram is received.
+        
+        Parameters
+        ----------
+        data : `bytes`
+            The received data.
+        address : `tuple` (`str`, `int`)
+            The address from where teh data was received.
+        """
+        by_address = self.by_address
+        try:
+            protocol = by_address[address]
+        except KeyError:
+            protocol = ReadProtocolBase(self.loop)
+            protocol.connection_made(self.transport)
+            by_address[address] = protocol
+        
+        protocol.data_received(data)
+        
+        waiters = self.waiters
+        if (waiters is not None):
+            self.waiters = None
+            result = (address, protocol)
+            for waiter in waiters:
+                waiter.set_result_if_pending(result)
+    
+    def error_received(self, exception):
+        """
+        Called when a send or receive operation raises an `OSError`, but not `BlockingIOError`, nor `InterruptedError`.
+        
+        Parameteres
+        -----------
+        exception : `OSError`
+            The catched exception.
+        """
+    
+    async def wait_for_receive(self, address=None, timeout=None):
+        """
+        Can be used to wait for payload to receive. Note, that this method should be used onyl initially, because the
+        reader protocols implement the reading.
+        
+        
+        This method is a corotuine.
+        
+        Parameters
+        ----------
+        address : `None`, `tuple` (`str`, `int`), Optional
+            The address of which payload is waiter for.
+        timeout : `None` or `
+        
+        Returns
+        -------
+        result : `None` or ``ReadProtocolBase`` or (`tuple` (`str`, `int`), ``ReadProtocolBase``)
+            - If `timeout` is given and timeot occures, then returns `None`.
+            - if `address` is given and data is received from ir, then returns the respective ``ReadProtocolBase``.
+            - If `address` is not given, then returns a `tuple` of the respective `address` and protocol.
+        """
+        if timeout is None:
+            if address is None:
+                waiters = self.waiters
+                if waiters is None:
+                    self.waiters = waiters = []
+                
+                waiter = Future(self.loop)
+                waiters.append(waiter)
+                
+                return await waiter
+            else:
+                while True:
+                    waiters = self.waiters
+                    if waiters is None:
+                        self.waiters = waiters = []
+                    
+                    waiter = Future(self.loop)
+                    waiters.append(waiter)
+                    
+                    address, protocol = await waiter
+                    if address == address:
+                        return protocol
+                    
+                    continue
+        
+        else:
+            waiter = Task(self.wait_for_receive(address))
+            future_or_timeout(waiter, timeout)
+            
+            try:
+                result = await waiter
+            except TimeoutError:
+                result = None
+            
+            return result
+    
+    def close(self):
+        """
+        Closes the protocol by closing it's transport if applicable.
+        """
+        transport = self.transport
+        if (transport is not None):
+            transport.close()
+
+
+class DatagramMergerReadProtocol(ReadProtocolBase):
+    """
+    Datagram protocol, which merges all the data received from any address.
+    
+    Attributes
+    ----------
+    _chunks : `dequeue` of `bytes`
+        The received data chunks.
+    _eof : `bool`
+        Whether the protocol received end of file.
+    _offset : `int`
+        The index till the oldest not yet fully exhausted data chunk is used up.
+    _paused : `bool`
+        Whether the transport is paused reading.
+    exception : `None` or `BaseException` instance
+        The exception with what the respective connection is lost, if any.
+    loop : ``EventThread``
+        The eventloop to what the protocol is bound to.
+    payload_reader : `generator`
+        Payloader reader generator, what is continued when data, eof or any exception is received.
+    payload_waiter : ``Future``
+        Payload waiter future, what can be awaited to receive the ``.payload_reader``'s result if done.
+        
+        If cancelled or marked by done or any other methods, the payload reader will not be cancelled.
+    transport : `Any`
+        Asynchonous transport implementation.
+    """
+    __slots__ = ()
+    
+    def pause_writing(self):
+        """
+        Called when the transport's buffer goes over the high-water mark.
+        
+        ``.pause_writing`` is called when the buffer goes over the high-water mark, and eventually
+        ``.resume_writing`` is called when the buffer size reaches the low-water mark.
+        """
+    
+    def resume_writing(self):
+        """
+        Called when the transport's buffer drains below the low-water mark.
+        
+        See ``.pause_writing`` for details.
+        """
+    
+    def datagram_received(self, data, address):
+        """
+        Called when some datagram is received.
+        
+        Parameters
+        ----------
+        data : `bytes`
+            The received data.
+        address : `tuple` (`str`, `int`)
+            The address from where teh data was received.
+        """
+        self.data_received(data)
+
 
 class ProtocolBase(ReadProtocolBase):
     __slots__ = ('_drain_waiter', )
@@ -1411,11 +1745,11 @@ class ProtocolBase(ReadProtocolBase):
         other._paused = self._paused
         other._drain_waiter = self._drain_waiter
     
-    #compability method
+    # compability method
     def pause_writing(self):
         self._paused = True
     
-    #compability method
+    # compability method
     def resume_writing(self):
         self._paused = False
         
@@ -1426,7 +1760,7 @@ class ProtocolBase(ReadProtocolBase):
         self._drain_waiter = None
         drain_waiter.set_result_if_pending(None)
     
-    #compability method
+    # compability method
     async def _drain_helper(self):
         if not self._paused:
             return
@@ -1434,7 +1768,7 @@ class ProtocolBase(ReadProtocolBase):
         self._drain_waiter = drain_waiter
         await drain_waiter
     
-    #compability method
+    # compability method
     def connection_lost(self, exception):
         if exception is None:
             self.eof_received()

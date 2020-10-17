@@ -389,11 +389,11 @@ def filter_clients(clients, flag_shift):
             yield client
             break
         
-        index +=1
+        index += 1
         continue
         
     yield client
-    index +=1
+    index += 1
     
     while True:
         if index == limit:
@@ -403,7 +403,7 @@ def filter_clients(clients, flag_shift):
         if (client.intents>>flag_shift)&1:
             yield client
         
-        index +=1
+        index += 1
         continue
 
 def filter_clients_or_me(clients, flag_shift, me):
@@ -460,7 +460,7 @@ def filter_clients_or_me(clients, flag_shift, me):
     yield
     
     yield client
-    index +=1
+    index += 1
     
     while True:
         if index == limit:

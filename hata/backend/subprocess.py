@@ -1,6 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 import os, sys, errno
-from stat import S_ISCHR, S_ISFIFO,S_ISSOCK
+from stat import S_ISCHR, S_ISFIFO, S_ISSOCK
 from subprocess import TimeoutExpired, PIPE, Popen
 from socket import socketpair as create_socketpair
 
@@ -10,6 +10,8 @@ from .protocol import ReadProtocolBase
 IS_AIX = sys.platform.startswith('aix')
 LIMIT = 1<<16
 MAX_READ_SIZE = 262144
+
+PROCESS_EXIT_DELAY_LIMIT = 10
 
 class UnixReadPipeTransport(object):
     
@@ -649,7 +651,7 @@ class AsyncProcess(object):
                 except ProcessLookupError:
                     pass
         
-        self.loop.call_soon(self.__class__._process_exited, self)
+        self.loop.call_soon(self.__class__._process_exited, self, 0)
     
     __del__ = close
     
@@ -738,8 +740,19 @@ class AsyncProcess(object):
         if (reader is not None):
             reader.data_received(data)
     
-    def _process_exited(self):
+    def _process_exited(self, delayed):
         returncode = self.process.poll()
+        if returncode is None:
+            if delayed == PROCESS_EXIT_DELAY_LIMIT:
+                # do not wait more
+                returncode = 255
+            else:
+                # not yet exited, delay a little bit.
+                delayed += 1
+                
+                self.loop.call_later(0.01*delayed, self.__class__._process_exited, self, delayed)
+                return
+        
         self.returncode = returncode
         
         pending_calls = self._pending_calls
@@ -886,37 +899,41 @@ class AsyncProcess(object):
             stderr_task = Task(self._read_close_stderr_stream(), loop)
             tasks.append(stderr_task)
         
-        future = WaitTillAll(tasks, loop)
-        if (timeout is not None):
-            future_or_timeout(future, timeout)
-        
-        _, pending = await future
-        
-        if pending:
-            # timeout occured, cancel the read tasks and raise TimeoutExpired.
-            for task in pending:
-                task.cancel()
+        if tasks:
+            future = WaitTillAll(tasks, loop)
+            if (timeout is not None):
+                future_or_timeout(future, timeout)
             
-            process = self.process
-            if process is None:
-                args = None
+            _, pending = await future
+            
+            if pending:
+                # timeout occured, cancel the read tasks and raise TimeoutExpired.
+                for task in pending:
+                    task.cancel()
+                
+                process = self.process
+                if process is None:
+                    args = None
+                else:
+                    args = process.args
+                
+                raise TimeoutExpired(args, timeout)
+            
+            if (stdin_task is not None):
+                stdin_task.result()
+            
+            if (stdout_task is None):
+                stdout = None
             else:
-                args = process.args
+                stdout = stdout_task.result()
             
-            raise TimeoutExpired(args, timeout)
-        
-        if (stdin_task is not None):
-            stdin_task.result()
-        
-        if (stdout_task is None):
+            if (stderr_task is None):
+                stderr = None
+            else:
+                stderr = stderr_task.result()
+        else:
             stdout = None
-        else:
-            stdout = stdout_task.result()
-        
-        if (stderr_task is None):
             stderr = None
-        else:
-            stderr = stderr_task.result()
         
         await self.wait()
         

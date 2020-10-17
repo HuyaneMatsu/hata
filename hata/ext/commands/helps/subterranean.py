@@ -98,7 +98,7 @@ class SubterraneanHelpHelp(object):
         
         return Embed('help',
             'Shows the help command of the client.\n'
-            f'Try `{prefix}!help` for displaying the categories or the commands of it.',
+            f'Try `{prefix}help` for displaying the categories or the commands of it.',
             color = self.color)
 
 

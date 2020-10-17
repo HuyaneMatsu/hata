@@ -30,7 +30,7 @@ def _convert_content(content, message):
     """
     transformations = {
         '@everyone':'@\u200beveryone',
-        '@here':'@\u200bhere'
+        '@here':'@\u200bhere',
             }
     
     guild = message.channel.guild
@@ -80,7 +80,8 @@ def _convert_content(content, message):
             
             transformations[re_escape(f'<@&{id_}>')] = f'@{role.name}'
         
-        return re_compile('|'.join(transformations)).sub(lambda mention:transformations[re_escape(mention.group(0))],content)
+        return re_compile('|'.join(transformations)).sub(
+            lambda mention: transformations[re_escape(mention.group(0))], content)
 
 class EmbedThumbnail(object):
     """
@@ -127,10 +128,10 @@ class EmbedThumbnail(object):
         embed_thumbnail : ``EmbedThumbnail``
         """
         self = object.__new__(cls)
-        self.url = data.get('url',None)
-        self.proxy_url = data.get('proxy_url',None)
-        self.height = data.get('height',0)
-        self.width = data.get('width',0)
+        self.url = data.get('url', None)
+        self.proxy_url = data.get('proxy_url', None)
+        self.height = data.get('height', 0)
+        self.width = data.get('width', 0)
         
         return self
     

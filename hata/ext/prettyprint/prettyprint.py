@@ -151,14 +151,14 @@ def str_message(message, index=None, **kwargs):
     if message.type is not MessageType.default:
         result.append(f'--------------------\n{message.clean_content}\n--------------------', -1)
     elif message.content:
-        content=message.clean_content
-        content_ln=len(content)
+        content = message.clean_content
+        content_ln = len(content)
         result.append(f'- content: (len={content_ln})', 1)
-        if content_ln>500:
-            content=content[:500].replace('`', '\\`')
+        if content_ln > 500:
+            content = content[:500].replace('`', '\\`')
             result.append(f'--------------------\n{content}\n... +{content_ln-500} more\n--------------------', -1)
         else:
-            content=content.replace('`', '\\`')
+            content = content.replace('`', '\\`')
             result.append(f'--------------------\n{content}\n--------------------', -1)
     
     channel = message.channel
@@ -184,7 +184,7 @@ def str_message(message, index=None, **kwargs):
     
     activity = message.activity
     if (activity is not None):
-        line=['- activity: ', activity.type.name]
+        line = ['- activity: ', activity.type.name]
         party_id=activity.party_id
         if party_id:
             line.append('(')
@@ -270,6 +270,12 @@ def str_message(message, index=None, **kwargs):
         result.append(f'- channel id : {cross_reference.channel_id}', 2)
         result.append(f'- guild id : {cross_reference.guild_id}', 2)
     
+    stickers = message.stickers
+    if (attachments is not None):
+        result.append(f'Stickers: ({len(stickers)})', 1)
+        for index, sticker in enumerate(stickers, 1):
+            result.append(str_sticker(sticker, index), 1)
+    
     return result
 
 def str_reaction_mapping(reactions, index=None, **kwargs): #ignore index, 1 message can have only 1
@@ -333,17 +339,48 @@ def str_attachment(attachment, index=None, **kwargs):
         start = ''
     else:
         start = f'{index}.: '
-    result.append(f'{start}Attachment: ({attachment.id}):')
-    result.append(f'- name     : {attachment.name}', 1)
-    result.append(f'- url      : {attachment.url}', 1)
-    result.append(f'- proxy_url: {attachment.proxy_url}', 1)
-    result.append(f'- size     : {attachment.size}', 1)
+    result.append(f'{start}Attachment:')
+    result.append(f'- id : {attachment.id}', 1)
+    result.append(f'- name : {attachment.name}', 1)
+    result.append(f'- url : {attachment.url}', 1)
+    result.append(f'- proxy_url : {attachment.proxy_url}', 1)
+    result.append(f'- size : {attachment.size}', 1)
     if attachment.height:
-        result.append(f'- height   : {attachment.height}', 1)
+        result.append(f'- height : {attachment.height}', 1)
     if attachment.width:
-        result.append(f'- width    : {attachment.width}', 1)
+        result.append(f'- width : {attachment.width}', 1)
     return result
+
+def str_sticker(sticker, index=None, **kwargs):
+    result = PrettyBlock()
+    if index is None:
+        start = ''
+    else:
+        start = f'{index}.: '
+    result.append(f'{start}Sticker:')
+    result.append(f'- id : {sticker.id}', 1)
+    type_ = sticker.type
+    result.append(f'- type: {type_.name} ({type_.value})')
+    result.append(f'- name : {sticker.name}', 1)
+    result.append(f'- pack_id : {sticker.pack_id}', 1)
+    result.append(f'- description : {description!r}', 1)
     
+    tags = sticker.tags
+    if tags is not None:
+        result.append(f'- tags: ({len(tags)})', 1)
+        for index, tag in enumerate(tags):
+            result.append(f'{index}.: {tag}', 2)
+    
+    asset = sticker.asset
+    if asset:
+        result.append(f'- asset : {asset.as_base16_hash}', 1)
+    
+    preview_asset = sticker.preview_asset
+    if preview_asset:
+        result.append(f'- preview_asset : {preview_asset.as_base16_hash}', 1)
+    
+    return result
+
 def str_embed_core(embed, index=None, **kwargs):
     result = PrettyBlock()
     if index is None:

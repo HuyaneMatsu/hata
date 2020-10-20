@@ -54,7 +54,7 @@ class multievent(object):
     more.
     
     Attributes
-    ----------
+    ----------line
     events : `tuple` of `Any`
         A `tuple` of the contained event handlers.
     """

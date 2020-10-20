@@ -878,9 +878,17 @@ class ChannelTextBase:
                     except KeyError:
                         pass
                     
+                    message.deleted = True
                     return message
         
-        return MESSAGES.pop(delete_id, None)
+        try:
+            message = MESSAGES.pop(delete_id)
+        except KeyError:
+            message = None
+        else:
+            message.deleted = True
+        
+        return message
     
     def _pop_multiple(self, delete_ids):
         """
@@ -923,6 +931,7 @@ class ChannelTextBase:
                     except KeyError:
                         missed.append(delete_id)
                     else:
+                        message.deleted = True
                         found.append(message)
                         
                     delete_index += 1
@@ -942,6 +951,8 @@ class ChannelTextBase:
                     del MESSAGES[delete_id]
                 except KeyError:
                     pass
+                
+                message.deleted = True
                 found.append(message)
                 
                 messages_ln -= 1
@@ -959,6 +970,7 @@ class ChannelTextBase:
             except KeyError:
                 missed.append(delete_id)
             else:
+                message.deleted = True
                 found.append(message)
             
             continue

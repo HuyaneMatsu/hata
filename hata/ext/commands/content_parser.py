@@ -33,9 +33,7 @@ from ...discord.invite import Invite
 
 NUMERIC_CONVERSION_LIMIT = 100
 
-DELTA_RP = re.compile('([\+\-]?\d+) *([a-zA-Z]+)')
-PARSER_RP = re.compile('(?:"(.+?)"|(\S+))[^"\S]*')
-
+DELTA_RP = re.compile('([\+\-]?\d+)[ \t]*([a-zA-Z]+)')
 CHANNEL_MESSAGE_RP = re.compile('(\d{7,21})-(\d{7,21})')
 
 CONTENT_ARGUMNET_SEPARATORS = {}
@@ -143,21 +141,21 @@ class ContentArgumentSeparator(object):
         except KeyError:
             pass
         
-        if  separator_type is str:
+        if separator_type is str:
             escaped = re.escape(separator)
-            rp = re.compile(f'[^{escaped}\S]*(?:{escaped}[^{escaped}\S]*)+')
+            rp = re.compile(f'[^{escaped}\S]*(?:{escaped}[^{escaped}\S]*)+', re.M|re.S)
             caller = cls._rule_single
         
         else:
             start, end = separator
             if start == end:
                 escaped = re.escape(start)
-                rp = re.compile(f'(?:{escaped}(.+?){escaped}|(\S+))[^{escaped}\S]*')
+                rp = re.compile(f'(?:{escaped}(.+?){escaped}|(\S+))[^{escaped}\S]*', re.M|re.S)
             
             else:
                 start_escaped = re.escape(start)
                 end_escaped = re.escape(end)
-                rp = re.compile(f'(?:{start_escaped}(.+?){end_escaped}|(\S+))[^{start_escaped}\S]*')
+                rp = re.compile(f'(?:{start_escaped}(.+?){end_escaped}|(\S+))[^{start_escaped}\S]*', re.M|re.S)
             
             caller = cls._rule_inter
         
@@ -471,7 +469,7 @@ class ContentParserContext(object):
     client : ``Client``
         The respective client.
     content : `str`
-        A message's content after it's prefix, but only till first linebreak if applicable.
+        A message's content after it's prefix.
     index : `int`
         The index, of the last character's end.
     last_part : `str` or `None`
@@ -502,7 +500,7 @@ class ContentParserContext(object):
         message : ``Message``
             The respective message.
         content : `str`
-            A message's content after it's prefix, but only till first linebreak if applicable.
+            A message's content after it's prefix.
         """
         self.separator = separator
         self.client = client

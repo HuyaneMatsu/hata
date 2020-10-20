@@ -1183,9 +1183,9 @@ class IconSlot(object):
             The internal name of the icon.
         discord_side_name : `str`
             The discord side name of the icon.
-        url_property : `function`
+        url_property : `None` or `function`
             A function what will be used as a property when accessing the icon' url.
-        url_as_method : `function`
+        url_as_method : `None` or `function`
             A function what will be used a method when creating a formatted icon url.
         add_updater : `bool`, Optional
             Whether the icon slot should add updater methods to the class. Defaults to `True`.

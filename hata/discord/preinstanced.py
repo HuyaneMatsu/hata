@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 __all__ = ('AuditLogEvent', 'ContentFilterLevel', 'DefaultAvatar', 'FriendRequestFlag', 'GuildFeature',
     'HypesquadHouse', 'InviteTargetType', 'MFA', 'MessageActivityType', 'MessageNotificationLevel', 'MessageType',
-    'PremiumType', 'RelationshipType', 'Status', 'TeamMembershipState', 'Theme', 'VerificationLevel', 'VoiceRegion',
-    'WebhookType', )
+    'PremiumType', 'RelationshipType', 'Status', 'StickerType', 'TeamMembershipState', 'Theme', 'VerificationLevel',
+    'VoiceRegion', 'WebhookType', )
 
 from ..backend.dereaddons_local import DOCS_ENABLED, any_to_any
 
@@ -1938,7 +1938,7 @@ class WebhookType(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``WebhookType``) items
-        Stores the predefined ``WebhookType`` instances. These can be accessed with their `value` as index.
+        Stores the predefined ``WebhookType`` instances. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The webhook types' values' type.
     DEFAULT_NAME : `str` = `'Undefined'`
@@ -1993,7 +1993,7 @@ class InviteTargetType(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `list` of ``InviteTargetType``
-        Stores the predefined ``InviteTargetType`` instances. These can be accessed with their `value` as index.
+        Stores the predefined ``InviteTargetType`` instances. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The invite target types' values' type.
     DEFAULT_NAME : `str` = `'Undefined'`
@@ -2020,6 +2020,58 @@ class InviteTargetType(PreinstancedBase):
 
 InviteTargetType.NONE   = InviteTargetType(0, 'NONE')
 InviteTargetType.STREAM = InviteTargetType(1, 'STREAM')
+
+
+class StickerType(PreinstancedBase):
+    """
+    Represents a message sticker's format's type.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the message sticket format type.
+    value : `int`
+        The Discord side identificator value of the message sticker format type.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `list` of ``InviteTargetType``
+        Stores the predefined ``StickerType`` instances. These can be accessed with their `value` as key.
+    VALUE_TYPE : `type` = `int`
+        The message stickerformat types' values' type.
+    DEFAULT_NAME : `str` = `'UNDEFINED'`
+        The default name of the messgae sticket types.
+    
+    Every predefind sticket format type can be accessed as class attribute as well:
+    
+    +-----------------------+-----------+-------+
+    | Class attribute name  | name      | value |
+    +=======================+===========+=======+
+    | NONE                  | NONE      | 0     |
+    +-----------------------+-----------+-------+
+    | PNG                   | PNG       | 1     |
+    +-----------------------+-----------+-------+
+    | APNG                  | APNG      | 2     |
+    +-----------------------+-----------+-------+
+    | LOTTIE                | LOTTIE    | 3     |
+    +-----------------------+-----------+-------+
+    """
+    INSTANCES = {}
+    VALUE_TYPE = int
+    DEFAULT_NAME = 'UNDEFINED'
+    
+    __slots__ = ()
+    
+    # predefined
+    NONE   = NotImplemented
+    PNG    = NotImplemented
+    APNG   = NotImplemented
+    LOTTIE = NotImplemented
+
+StickerType.NONE   = StickerType(0, 'NONE')
+StickerType.PNG    = StickerType(1, 'PNG')
+StickerType.APNG   = StickerType(2, 'APNG')
+StickerType.LOTTIE = StickerType(3, 'LOTTIE')
 
 
 others.RelationshipType = RelationshipType

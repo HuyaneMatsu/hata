@@ -1,7 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('Attachment', 'EMBED_UPDATE_EMBED_ADD', 'EMBED_UPDATE_EMBED_REMOVE', 'EMBED_UPDATE_NONE',
     'EMBED_UPDATE_SIZE_UPDATE', 'Message', 'MessageActivity', 'MessageApplication', 'MessageFlag', 'MessageReference',
-    'MessageRepr', 'UnknownCrossMention', )
+    'MessageRepr', 'Sticker', 'UnknownCrossMention', )
 
 from datetime import datetime
 
@@ -18,7 +18,7 @@ from .webhook import WebhookRepr, PartialWebhook, WebhookType, Webhook
 from .role import Role
 from .preconverters import preconvert_flag, preconvert_bool, preconvert_snowflake, preconvert_str, \
     preconvert_preinstanced_type
-from .preinstanced import MessageType, MessageActivityType
+from .preinstanced import MessageType, MessageActivityType, StickerType
 
 from . import ratelimit
 
@@ -101,7 +101,7 @@ class MessageActivity(object):
     def __repr__(self):
         """Returns the message activity's representation."""
         return f'<{self.__class__.__name__} type={self.type.name} ({self.type.value}), party_id={self.party_id!r}>'
-    
+
 class Attachment(DiscordEntity):
     """
     Represents an attachment of a ``Message``.
@@ -212,6 +212,74 @@ class MessageApplication(DiscordEntity):
     def __repr__(self):
         """Returns the represnetation of the message application."""
         return f'<{self.__class__.__name__} name={self.name!r}, id={self.id}>'
+
+
+class Sticker(DiscordEntity):
+    """
+    Represents a ``Message``'s sticker.
+    
+    Attributes
+    ----------
+    id : `int`
+        The unique identificator number of the sticker.
+    pack_id : `int`
+        The unique indetificator number of the pack from the sticker is.
+    name : `str`
+        The sticker's name.
+    description : `str`
+        The sticket's description.
+    tags : None` or `list` of `str`
+        Tags of the stcikers if applicable.
+    asset_value : `int`
+        The sticker's asset's hash as `uint128`.
+    asset_type : ``IconType``
+        The sticker's asset's type.
+    preview_asset_value : `int`
+        The sticker's preview asset's hash as `uint128`.
+    preview_asset_type : ``IconType``
+        The sticker's preview asset's type.
+    type : ``StickerType``
+        The sticker's formats type.
+    """
+    __slots__ = ('description', 'name', 'pack_id', 'tags', 'type')
+    
+    asset = IconSlot('asset', 'asset', None, None, add_updater=False)
+    preview_asset = IconSlot('preview_asset', 'preview_asset', None, None, add_updater=False)
+    
+    def __new__(cls, data):
+        """
+        Creates a new ``MessageSticker`` from the given received data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Message sticker data.
+        """
+        # use `__new__`, since we might switch to caching stickers.
+        self = object.__new__(cls)
+        self.id = int(data['id'])
+        
+        self.description = data['description']
+        self.name = data['name']
+        self.pack_id = int(data['pack_id'])
+        
+        tags = data.get('tags')
+        if tags is not None:
+            tags = tags.split(',')
+        self.tags = tags
+        
+        self.type = StickerType.get(data['format_type'])
+        
+        self._set_asset(data)
+        self._set_preview_asset(data)
+    
+    def __str__(self):
+        """Returns the sticker's name."""
+        return self.name
+    
+    def __repr__(self):
+        """Returns the sticker's representation."""
+        return f'<{self.__class__.__name__} id={self.id!r}, name={self.name!r}>'
 
 class MessageReference(object):
     """
@@ -682,6 +750,8 @@ class Message(DiscordEntity, immortal=True):
         then it will be represented with a ``UnknownCrossMention`` instead.
     cross_reference : `None` or ``MessageReference``
         Cross guild reference to the original message of crospost messages.
+    deleted : `bool`
+        Whether the message is deleted.
     edited : `None` or `datetime`
         The time when the message was edited, or `None` if it was not.
         
@@ -704,6 +774,10 @@ class Message(DiscordEntity, immortal=True):
         A dictionary like object, which contains the reactions on the message.
     role_mentions : `None` or `list` of ``Role``
         The mentioned roles by the message if any.
+    stickers : `None` or `list` of ``Sticker``
+        The stickers sent with the message.
+        
+        Bots currently can only receive messages with stickers, not send.
     tts : `bool`
         Whether the message is "text to speech".
     type : ``MessageType``
@@ -712,8 +786,8 @@ class Message(DiscordEntity, immortal=True):
         The mentioned users by the message if any.
     """
     __slots__ = ('_channel_mentions', 'activity', 'application', 'attachments', 'author', 'channel', 'content',
-        'cross_mentions', 'cross_reference', 'edited', 'embeds', 'everyone_mention', 'flags', 'nonce', 'pinned',
-        'reactions', 'role_mentions', 'tts', 'type', 'user_mentions',)
+        'cross_mentions', 'cross_reference', 'deleted', 'edited', 'embeds', 'everyone_mention', 'flags', 'nonce',
+        'pinned', 'reactions', 'role_mentions', 'stickers', 'tts', 'type', 'user_mentions',)
     
     def __new__(cls, data, channel):
         """
@@ -769,6 +843,7 @@ class Message(DiscordEntity, immortal=True):
         channel : ``ChanneltextBase`` instance
             Source channel.
         """
+        self.deleted = False
         self.channel = channel
         guild = channel.guild
         webhook_id = data.get('webhook_id')
@@ -858,6 +933,13 @@ class Message(DiscordEntity, immortal=True):
         self.content = data['content']
         self.flags = MessageFlag(data.get('flags', 0))
         
+        sticker_datas = data.get('stickers')
+        if sticker_datas is  None:
+            stickers = None
+        else:
+            stickers = [Sticker(sticker_data) for sticker_data in sticker_datas]
+        self.stickers = sticker_datas
+        
         user_mention_datas = data['mentions']
         if user_mention_datas:
             user_mentions = [User(user_mention_data, guild) for user_mention_data in user_mention_datas]
@@ -913,79 +995,105 @@ class Message(DiscordEntity, immortal=True):
         Other Parameters
         ----------------
         activity : `None` or ``MessageActivity``, Optional
-            The `.activity` attribute the message.
+            The ``.activity`` attribute the message.
+            
             If called as classmethod defaults to `None`.
         application : `None` or ``MessageApplication``., Optional
-            The `.application` attribute the message.
+            The ``.application`` attribute the message.
+            
             If called as a classmethod defaults to `None`.
         attachments : `None` or (`list` of ``Attachment``), Optional
-            The `.attachments` attribute of the message. If passed as an empty list, then will be as `None` instead.
+            The ``.attachments`` attribute of the message. If passed as an empty list, then will be as `None` instead.
+            
             If called as a classmethod defaults to `None`.
         author : `None`, ``Client``, ``User``, ``Webhook`` or ``WebhookRepr``, Optional
-            The `.author` attribute of the message. If passed as `None` then it will be set as `ZEROUSER` instead.
+            The ``.author`` attribute of the message. If passed as `None` then it will be set as `ZEROUSER` instead.
+            
             If called as a classmethod, defaults to `ZEROUSER`.
         channel : `ChannelTextBase` instance, Optional if called as method
-            The `.channel` attribute of the message.
+            The ``.channel`` attribute of the message.
+            
             If called as a clasmethod this attribute must be passed, or `TypeError` is raised.
         content : `str`, Optional
-            The `.content` attribute of the message. Can be between length `0` and `2000`.
+            The ``.content`` attribute of the message. Can be between length `0` and `2000`.
+            
             If called as a classmethod defaults to `''` (empty string).
         cross_mentions : `None` or (`list` of (``UnknownCrossMetntion`` or ``ChannelGUildBase`` instances)), Optional
             The `.cross_mentions` attribute of the message. If passed as an empty list, then will be set `None` instead.
+            
             If called as a classmethod defaults to `None`.
         cross_reference : `None` or ``MessageReference``, Optional
-            The `.cross_reference` attribute of the message.
+            The ``.cross_reference`` attribute of the message.
+            
             If called as a classmethod defaults to `None`.
+        deleted : `bool`, Optional
+            The ``.deleted`` attribute of the message. If called as a class method, defaults to `True`.
         edited : `None` or `datetime`, Optional.
-            The `.edited` attribute of the message.
+            The ``.edited`` attribute of the message.
+            
             If called as a classmethod, defaults to `None`.
         embeds : `None` or (`list` of ( ``EmbedCore`` or any embed compatible)), Optional
-            The `.embeds` attribute of the message. If passed as an empty list, then is set as `None` instead. If
+            The ``.embeds`` attribute of the message. If passed as an empty list, then is set as `None` instead. If
             passed as list and it contains any embeds, which are not type ``EmbedCore``, then those will be converted
             to ``EmbedCore`` as well.
+            
             If called as a classmethod defaults to `None`.
         everyone_mention : `bool` or `int` instance (`0` or `1`), Optional
-            The `.everyone_mention` attribute of the message. Accepts other `int` instance as `bool` as well, but
+            The ``.everyone_mention`` attribute of the message. Accepts other `int` instance as `bool` as well, but
             their value still cannot be other than `0` or `1`.
+            
             If called as a classmethod, defaults to `False`.
         flags : ``MessageFlag`` or `int`, Optional
-            The `.flags` attribute of the message. If passed as other `int` instances than ``MessageFlag``, then will
+            The ``.flags`` attribute of the message. If passed as other `int` instances than ``MessageFlag``, then will
             be converted to ``MessageFlag``.
-            If called as a classmethod defaults to `MesageFlag()`.
+            
+            If called as a classmethod defaults to `MesageFlag(0)`.
         id : `int` or `str`, Optional
-            The `.id` attribute of the message. If passed as `str`, will be converted to `int`.
+            The ``.id`` attribute of the message. If passed as `str`, will be converted to `int`
+            .
             If called as a classmethod defaults to `0`.
         id_ : `int` or `str`, Optional.
             Alias of `id`.
         message_id : `int` or `str`, Optional
             Alias of `id`.
         nonce : `None` or `str`, Optional.
-            The `.nonce` attribute of the message. If passed as `str` can be between length `0` and `32`.
+            The ``.nonce`` attribute of the message. If passed as `str` can be between length `0` and `32`.
+            
             If called as a classmethod defaults to `None`.
         pinned :  : `bool` or `int` instance (`0` or `1`), Optional
-            The `.pinned` attribute of the message. Accepts other `int` instances as `bool` as well, but their value
+            The ``.pinned`` attribute of the message. Accepts other `int` instances as `bool` as well, but their value
             still cannot be other than `0` or `1`.
+            
             If called as a classmethod, defaults to `False`.
         reactions : `None` or ``reaction_mapping``, Optional.
-            The `.reactions` attribute of the message. If passed as `None` will be set as an empty
+            The ``.reactions`` attribute of the message. If passed as `None` will be set as an empty
             ``reaction_mapping``.
+            
             If called as a classmethod defaults to empty ``reaction_mapping``.
         role_mentions : `None` or (`list` of ``Role``), Optional
-            The `.role_mentions` attribute of the message. If passed as an empty `list`, will be set as `None`
+            The ``.role_mentions`` attribute of the message. If passed as an empty `list`, will be set as `None`
             instead.
+            
             If called as a classmethod defaults to `None`.
+        stickers : `None` or `list` of ``Sticker``, Optional
+            The ``.stickers`` attribute of the message.
+            
+            If called as a classmethod, defaults to `None`.
         tts :  : `bool` or `int` instance (`0` or `1`), Optional
-            The `.tts` attribute of the message. Accepts other `int` instances as `bool` as well, but their value
+            The ``.tts`` attribute of the message. Accepts other `int` instances as `bool` as well, but their value
             still cannot be other than `0` or `1`.
+            
             If called as a classmethod, defaults to `False`.
         type : ``MessageType`` or `int`, Optional
-            The `.type` attribute of the message. If passed as `int`, it will be converted to it's wrapper side
+            The ``.type`` attribute of the message. If passed as `int`, it will be converted to it's wrapper side
             ``MessageType`` representation.
+            
             If called as a classmethod defaults to ``Messagetype.default`
         type_ : ``MesageType`` or `int`, Optional
             Alias of ``type`.
         user_mentions : `None` or (`list` of (``User`` or ``Client``)), Optional
-            The `.user_mentions` attribute of the message. If passed as an empty list will be set as `None` instead.
+            The ``.user_mentions`` attribute of the message. If passed as an empty list will be set as `None` instead.
+            
             If called as a classmethod defaults to `None`.
         
         Returns
@@ -1060,12 +1168,12 @@ class Message(DiscordEntity, immortal=True):
                     raise TypeError(f'`attachments` should be `None` or `list` of type `{Attachment.__name__}`, got '
                         f'`{attachments!r}`')
                 
-                attachment_ln = len(attachments)
+                attachments_ln = len(attachments)
                 if validate:
-                    if attachment_ln > 10:
-                        raise ValueError(f'`attachments` should have maximal length of `10`, got `{attachment_ln!r}`')
+                    if attachments_ln > 10:
+                        raise ValueError(f'`attachments` should have maximal length of `10`, got `{attachments_ln!r}`')
                 
-                if attachment_ln:
+                if attachments_ln:
                     for attachment in attachments:
                         if (type(attachment) is not Attachment):
                             raise TypeError(f'`attachments` `list` contains at least 1 non `{Attachment.__name__}` '
@@ -1117,9 +1225,8 @@ class Message(DiscordEntity, immortal=True):
         
         if validate:
             if (cross_reference is not None) and (type(channel) is not ChannelText):
-                raise ValueError(
-                    f'Only `{ChannelText.__name__}` can have `cross_reference` set as not `None`, but `channel` is set '
-                    f'as `{channel!r}`')
+                raise ValueError(f'Only `{ChannelText.__name__}` can have `cross_reference` set as not `None`, but '
+                    f'`channel` is set as `{channel!r}`')
         
         try:
             cross_mentions = kwargs.pop('cross_mentions')
@@ -1152,6 +1259,16 @@ class Message(DiscordEntity, immortal=True):
         if validate:
             if (cross_reference is None) and (cross_mentions is not None):
                 raise ValueError('`cross_mentions` are supported, only if `cross_reference` is provided')
+        
+        try:
+            deleted = kwargs.pop('deleted')
+        except KeyError:
+            if base is None:
+                deleted = True
+            else:
+                deleted = base.deleted
+        else:
+            deleted = preconvert_bool(deleted, 'deleted')
         
         for name in ('message_id', 'id', 'id_'):
             try:
@@ -1350,6 +1467,28 @@ class Message(DiscordEntity, immortal=True):
                     f'`{ChannelGuildBase}` subclasse\'s instance; `{channel!r}`')
         
         try:
+            stickers = kwargs.pop('stickers')
+        except KeyError:
+            if base is None:
+                stickers = None
+            else:
+                stickers = base.stickers
+        else:
+            if (type(stickers) is not list):
+                raise TypeError(f'`stickers` should be `None` or `list` of type `{Sticker.__name__}`, got '
+                    f'`{stickers!r}`')
+            
+            sticker_ln = len(attachments)
+            if sticker_ln:
+                for sticker in stickers:
+                    if (type(sticker) is not Sticker):
+                        raise TypeError(f'`stickers` `list` contains at least 1 non `{Sticker.__name__}` object, '
+                            f'`{sticker!r}`')
+            else:
+                # We should not have empty attachment list, lets fix it
+                stickers = None
+        
+        try:
             tts = kwargs.pop('tts')
         except KeyError:
             if base is None:
@@ -1419,6 +1558,7 @@ class Message(DiscordEntity, immortal=True):
         message.content = content
         message.cross_mentions = cross_mentions
         message.cross_reference = cross_reference
+        message.deleted = deleted
         message.edited = edited
         message.embeds = embeds
         message.everyone_mention = everyone_mention
@@ -1428,6 +1568,7 @@ class Message(DiscordEntity, immortal=True):
         message.pinned = pinned
         message.reactions = reactions
         message.role_mentions = role_mentions
+        self.stickers = stickers
         message.tts = tts
         message.type = type_
         message.user_mentions = user_mentions
@@ -1437,8 +1578,8 @@ class Message(DiscordEntity, immortal=True):
     def _parse_channel_mentions(self):
         """
         Looks up the ``.contents`` of the message and searches channel mentions in them. If non, then sets
-        `.channel_mentions` as `None`, else it sets it as a `list` of ``ChannelBase`` (and ``UnknownCrossMention``)
-        instances. Invalid channel mentions are ignored.
+        ``.channel_mentions`` as `None`, else as a `list` of ``ChannelBase`` (and ``UnknownCrossMention``) instances.
+        Invalid channel mentions are ignored.
         """
         content = self.content
         channel_mentions = []
@@ -1482,8 +1623,24 @@ class Message(DiscordEntity, immortal=True):
         return channel_mentions
     
     def __repr__(self):
-        """Returns the represnetation of the message."""
-        return f'<{self.__class__.__name__} id={self.id}, ln={len(self)}, author={self.author.full_name}>'
+        """Returns the representation of the message."""
+        result = [
+            '<',
+            self.__class__.__name__,
+                ]
+        
+        if self.deleted:
+            result.append(' deleted')
+        
+        result.append(' id=')
+        result.append(repr(self.id))
+        result.append(', ln=')
+        result.append(repr(len(self)))
+        result.append(', author=')
+        result.append(repr(self.author.full_name))
+        result.append('>')
+        
+        return ''.join(result)
     
     __str__ = __repr__
     

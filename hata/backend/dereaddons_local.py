@@ -86,14 +86,49 @@ class DocProperty(object):
     def __delete__(self, obj):
         raise AttributeError('can\'t delete attribute')
 
-def any_to_any(v1, v2):
-    for v in v1:
-        if v in v2:
+def any_to_any(container1, container2):
+    """
+    Returns whether any value of `container1` is in `container2` as well.
+    
+    Parameters
+    ----------
+    container1 : `iterable-container`
+        Any iterable container.
+    container2 : `iterable-container`
+        Any iterable container.
+
+    Returns
+    -------
+    contains : `bool`
+    """
+    for value in container1:
+        if value in container2:
             return True
+    
     return False
 
-def where(self, key):
-    for value in self:
+def where(container, key):
+    """
+    Returns the first element from the givne container on what `key` returns `True`.
+    
+    Parameters
+    ----------
+    container : `iterable-container`
+        Any iterable container.
+    key : `function`
+        Function used to determine whether an element of `container` meets our expectations.
+    
+    Returns
+    -------
+    value : `Any`
+        An element of `container`.
+    
+    Raises
+    ------
+    LookupError
+        On non of the elements was `true` returned by they `key.
+    """
+    for value in container:
         if key(value):
             break
     else:
@@ -208,11 +243,51 @@ def change_on_switch(list_, value, new_position, key=None):
     
     return result
 
+
 class KeepType(object):
+    """
+    A decorator, what can be used to add features to an already existing class, by defining a new one, what will extend
+    the old one's functionality.
+    
+    Note, that already existing attributes will not be overwritten and neither of the followingly named attributes
+    either:
+        - `__name__`
+        - `__qualname__`
+        - `__weakref__`
+        - `__dict__`
+        - `__slots__`
+    
+    Attributes
+    ----------
+    old_class : `type` instance
+        The old class to extend.
+    
+    Class Attributes
+    ----------------
+    _ignored_attr_names : `set` of `str`
+        Attribute names to ignore when extending.
+    """
     __slots__ = ('old_class')
     _ignored_attr_names = {'__name__', '__qualname__', '__weakref__', '__dict__', '__slots__'}
     
     def __new__(cls, old_class, *, new_class=None):
+        """
+        Creates a new ``KeepType`` instance with given `old_class` to extend. Can be used as a decorator if `new_class`
+        parameter is not given.
+        
+        Parameters
+        ----------
+        old_class : `type` instance
+            The old clas to extend.
+        new_class : `None` or `type` instance, Optional
+            The new class to extend the old classe's functionality with.
+        
+        Returns
+        -------
+        obj : ``KeepType`` or `type` instance
+            If only `old_class` attribute is given, then returns itself enabling using it as a decorator, but if
+            `new_class` is given as well, then returns the extended `old_class`.
+        """
         self = object.__new__(cls)
         self.old_class = old_class
         
@@ -222,6 +297,19 @@ class KeepType(object):
         return self(new_class)
     
     def __call__(self, new_class):
+        """
+        Calls the ``KeepType`` extending it's old ``.old_class`` with the new given `new_class`.
+        
+        Parameters
+        ----------
+        new_class : `type` instance
+            The new class to extend the old classe's functionality with.
+        
+        Returns
+        -------
+        old_class : `type` instance
+            The extended old class.
+        """
         old_class = self.old_class
         ignored_attr_names = self._ignored_attr_names
         for name in dir(new_class):
@@ -238,149 +326,366 @@ class KeepType(object):
 
 _spaceholder = object()
 
+
 class _multidict_items(object):
+    """
+    ``multidict`` item iterator.
+    
+    Attributes
+    ----------
+    _parent : ``multidict``
+        The parent multidict.
+    """
     __slots__ = ('_parent',)
     def __init__(self, parent):
+        """
+        Creates a new ``multidict`` item iterator.
+        
+        Parameters
+        ----------
+        parent : ``multidict``
+            The parent multidict.
+        """
         self._parent = parent
     
     def __len__(self):
+        """Returns the respective ``multidict``'s length."""
         return len(self._parent)
     
     def __iter__(self):
+        """
+        Iterates over the respective ``multidict``'s items.
+        
+        Yields
+        -------
+        item : `tuple` (`Any`, `Any`)
+            Items of the respective multidict as `key` - `value` pairs.
+        """
         for key, values in dict.items(self._parent):
             for value in values:
                 yield key, value
     
     def __contains__(self, item):
+        """Returns whether the respective multidict contains the given item."""
+        key, value = item
         parent = self._parent
         try:
-            values = parent[item[0]]
+            values = parent[key]
         except KeyError:
             return False
-        return item[1] in values
+        return value in values
 
-class _multidict_values(_multidict_items):
-    __slots__ = ()
+
+class _multidict_values(object):
+    """
+    ``multidict`` value iterator.
+    
+    Attributes
+    ----------
+    _parent : ``multidict``
+        The parent multidict.
+    """
+    __slots__ = ('_parent',)
+    def __init__(self, parent):
+        """
+        Creates a new ``multidict`` value iterator.
+        
+        Parameters
+        ----------
+        parent : ``multidict``
+            The parent multidict.
+        """
+        self._parent = parent
+    
+    def __len__(self):
+        """Returns the respective ``multidict``'s length."""
+        return len(self._parent)
+    
     def __iter__(self):
+        """
+        Iterates over the respective ``multidict``'s values.
+        
+        Yields
+        -------
+        value : `Any`
+            Values of the respective multidict.
+        """
         for values in dict.values(self._parent):
             yield from values
     
     def __contains__(self, value):
+        """Returns whether the respective multidict contains the given value."""
         for values in dict.values(self._parent):
             if value in values:
                 return True
         return False
     
 class multidict(dict):
+    """
+    Dictionary subclass, which can hold multiple values bound to a single key.
+    """
     __slots__ = ()
     def __init__(self, iterable=None):
-        if not iterable:
-            dict.__init__(self)
-            return
+        """
+        Creates a new ``multidict`` instance.
         
-        if isinstance(iterable, multidict):
-            dict.__init__(self, iterable)
-            return
-        
+        Parameters
+        ----------
+        iterable : `None` or `iterable`, Optional
+            Iterable to update the created multidict initially.
+            
+            Can be given as one of the following:
+                - ``multidict`` instance.
+                - `dict` instance.
+                - `iterable` of `key` - `value` pairs.
+        """
         dict.__init__(self)
+        
+        if (iterable is None) or (not iterable):
+            return
+        
         getitem = dict.__getitem__
         setitem = dict.__setitem__
         
-        if isinstance(iterable, dict):
+        if isinstance(iterable, multidict):
+            for key, values in dict.items(iterable):
+                setitem(self, key, values.copy())
+        
+        elif isinstance(iterable, dict):
             for key, value in iterable.items():
                 setitem(self, key, [value])
-            return
         
-        for key, value in iterable:
-            try:
-                getitem(self, key).append(value)
-            except KeyError:
-                setitem(self, key, [value])
+        else:
+            for key, value in iterable:
+                try:
+                    getitem(self, key).append(value)
+                except KeyError:
+                    setitem(self, key, [value])
     
     def __getitem__(self, key):
+        """
+        Returns the multiydict's `value` for the given `key`. If the `key` has more values, then returns the 0th of
+        them.
+        """
         return dict.__getitem__(self, key)[0]
     
     def __setitem__(self, key, value):
+        """Adds the given `key` - `value` pair to the multidict."""
         try:
             line = dict.__getitem__(self, key)
-            if value not in line:
-                line.append(value)
         except KeyError:
             dict.__setitem__(self, key, [value])
-            
+        else:
+            if value not in line:
+                line.append(value)
+    
     def __delitem__(self, key):
+        """Removes the `value` for the given `key` from the multidict. If the `key` has more values, then removes only
+        the 0th of them.
+        """
         my_list = dict.__getitem__(self, key)
         if len(my_list) == 1:
             dict.__delitem__(self, key)
         else:
             del my_list[0]
-
+    
     def extend(self, mapping):
+        """
+        Extends the multidict with the given `mapping`'s items.
+        
+        Parameters
+        ----------
+        mapping : `Any`
+            Any mapping type, what has `.items` attribute.
+        """
         getitem = dict.__getitem__
         setitem = dict.__setitem__
         for key, value in mapping.items():
             try:
-                line=getitem(self, key)
-                if value not in line:
-                    line.append(value)
+                values = getitem(self, key)
             except KeyError:
                 setitem(self, key, [value])
+            else:
+                if value not in values:
+                    values.append(value)
     
     def getall(self, key, default=None):
+        """
+        Returns all the values matching the given `key`.
+        
+        Parameters
+        ----------
+        key : `Any`
+            The `key` to match.
+        default : `Any`, Optional
+            Default value to return if `key` is not present in the multidict. Defaults to `None`.
+        
+        Returns
+        -------
+        values : `default or `list` of `Any`
+            The values for the given `key` if present.
+        """
         try:
-            return dict.__getitem__(self, key)
+            return dict.__getitem__(self, key).copy()
         except KeyError:
             return default
-        
+    
     def getone(self, key, default=None):
+        """
+        Returns the 0th value matching the given `key`.
+        
+        Parameters
+        ----------
+        key : `Any`
+            The key to match.
+        default : `Any`, Optional
+            Default value to return if `key` is not present in the multidict. Defaults to `None`.
+        
+        Returns
+        -------
+        value : `default` or `Any`
+            The value for the given key if present.
+        """
         try:
-            return dict.__getitem__(self, key)[0]
+            values =  dict.__getitem__(self, key)
         except KeyError:
             return default
-        
+        else:
+            return values[0]
+    
     get = getone
-        
+    
     def setdefault(self, key, default=None):
+        """
+        Returns the value for the given `key`.
+        
+        If the `key` is not present in the multidict, then set's the given `default` value as it.
+        
+        Parameters
+        ----------
+        key : `Any`
+            The key to match.
+        default : `Any`, Optional
+            Default value to set and return if `key` is nto present in the multidict.
+        
+        Returns
+        -------
+        value : `default` or `Any`
+            The first value for which `key` matched, or `default` if none.
+        """
         try:
-            return dict.__getitem__(self, key)[0]
+            values = dict.__getitem__(self, key)
         except KeyError:
             pass
+        else:
+            return values[0]
+        
         dict.__setitem__(self, key, [default])
         return default
-
+    
     def popall(self, key, default=_spaceholder):
+        """
+        Removes all the values from the multidict which the given `key` matched.
+        
+        Parameters
+        ----------
+        key : `Any`
+            The key to match.
+        default : `Any`, Optional
+            Default value to return if `key` is not present in the multidict.
+        
+        Returns
+        -------
+        values : `default` or `list` of `Any`
+            The matched values. If `key` is not present, but `default` value is given, then returns that.
+        
+        Raises
+        ------
+        KeyError
+            if `key` is not present in the multidict and `default` value is not given either.
+        """
         try:
             return dict.pop(self, key)
         except KeyError:
             if default is not _spaceholder:
                 return default
             raise
-
+    
     def popone(self, key, default=_spaceholder):
+        """
+        Remvoes the first value from the multidict, which matches the given `key`.
+        
+        Parameters
+        ----------
+        key : `Any`
+            The key to match.
+        default : `Any`, Optional
+            Default value to return if `key` is not present in the multidict.
+        
+        Returns
+        -------
+        value : `default` or `list` of `Any`
+            The 0th matched value. If `key` is not present, but `default` value is given, then returns that.
+        
+        raises
+        ------
+        KeyError
+            if `key` is not present in the multidict and `default` value is not given either.
+        """
         try:
-            return dict.__getitem__(self, key).pop(0)
+            values =  dict.__getitem__(self, key)
         except KeyError:
             if default is not _spaceholder:
                 return default
             raise
-        
+        else:
+            value = values.pop(0)
+            if not values:
+                dict.__delitem__(self, key)
+            
+            return value
+    
     pop = popone   
     
-    #inheritable:
+    # inheritable:
     def copy(self):
+        """
+        Copies the multidict.
+        
+        Returns
+        -------
+        new : ``multidict`` instance
+            The new multidict.
+        """
         new = dict.__new__(type(self))
         setitem = dict.__setitem__
         for key, values in dict.items(self):
             setitem(new, key, values.copy())
+        
         return new
     
     def items(self):
+        """
+        Returns an item iterator for the multidict.
+        
+        Returns
+        -------
+        items : ``_multidict_items``
+        """
         return _multidict_items(self)
     
     def values(self):
+        """
+        Returns a value iterator for the multidict.
+        
+        Returns
+        -------
+        items : ``_multidict_values``
+        """
         return _multidict_values(self)
     
     def __repr__(self):
+        """Returns the multidict's representation."""
         result = [
             self.__class__.__name__,
             '({',
@@ -402,9 +707,18 @@ class multidict(dict):
     __str__ = __repr__
 
     def kwargs(self):
+        """
+        Converts the multidict to `**kwargs`-able dictionary. If a `key` has more values, then always returns the last
+        value for it.
+        
+        Returns
+        -------
+        result : `dict` of (`Any`, `Any`) items
+        """
         result = {}
-        for key, value in dict.items(self):
-            result[key] = value[-1]
+        for key, values in dict.items(self):
+            result[key] = values[-1]
+        
         return result
 
 class multidict_titled(multidict):
@@ -486,7 +800,7 @@ class multidict_titled(multidict):
         return multidict.popone(self, key, default)
     
     pop = popone
-    
+
 class titledstr(str):
     def __new__(cls, value='', encoding=sys.getdefaultencoding(), errors='strict'):
         if type(value) is cls:
@@ -554,7 +868,7 @@ def listdifference(list1, list2):
                     break
                 value2 = list2[index2]
                 difference[1].append(value2)
-                index2 +=1
+                index2 += 1
 
             break
         if index2 == ln2:
@@ -563,7 +877,7 @@ def listdifference(list1, list2):
                     break
                 value1 = list1[index1]
                 difference[0].append(value1)
-                index1 +=1
+                index1 += 1
 
             break
         
@@ -571,17 +885,17 @@ def listdifference(list1, list2):
         value2 = list2[index2]
         if value1 < value2:
             difference[0].append(value1)
-            index1 +=1
+            index1 += 1
             continue
         if value1 > value2:
             difference[1].append(value2)
-            index2 +=1
+            index2 += 1
             continue
         if value1 != value2:
             difference[0].append(value1)
             difference[1].append(value2)
-        index1 +=1
-        index2 +=1
+        index1 += 1
+        index2 += 1
     
     return difference
 

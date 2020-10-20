@@ -126,7 +126,7 @@ Notes:
     `User`, then it will still let trough the `Client`-s as well.
 - If `'channel'` is given as a specific channel type then every channel with different type will be ignored.
 - For using `'rdelta'` converter you must have `dateutil` installed.
-- `'rest'` converter returns the unused part of the message content, until the first linebreak.
+- `'rest'` converter returns the unused part of the message content.
 
 If you do not give annotations for the extra parameters then every one of them (except the last) will be interpreted as
 `str` parser while the last of them will be interpreted as a `rest` parser. 
@@ -332,16 +332,16 @@ Or to make it cooler, we can make it pass it the message author (if the parser f
 
 The pre-created ones are:
 
-| Name                                      | Description                                                               |
-|-------------------------------------------|---------------------------------------------------------------------------|
-| `'message.author'`                        | Returns the message author.                                               |
-| `'message.channel'`                       | Returns the message channel.                                              |
-| `'message.guild'`                         | Returns the message guild (can be `None`).                                |
-| `'message.channel.guild'`                 | Same as the `'message.guild'` one.                                        |
-| `'client'`                                | Returns the client who received the message.                              |
-| `'rest'`                                  | Returns the unused content of the message (can be empty string)           |
-| `'message.guild.default_role'`            | Returns the message guild default role (can be `None`)                    |
-| `'message.channel.guild.default_role'`    | Same as the `''message.guild.default_role''` one.                         |
+| Name                                      | Description                                                           |
+|-------------------------------------------|-----------------------------------------------------------------------|
+| `'message.author'`                        | Returns the message author.                                           |
+| `'message.channel'`                       | Returns the message channel.                                          |
+| `'message.guild'`                         | Returns the message guild (can be `None`).                            |
+| `'message.channel.guild'`                 | Same as the `'message.guild'` one.                                    |
+| `'client'`                                | Returns the client who received the message.                          |
+| `'rest'`                                  | Returns the unused content of the message (can be empty string).      |
+| `'message.guild.default_role'`            | Returns the message guild default role (can be `None`).               |
+| `'message.channel.guild.default_role'`    | Same as the `''message.guild.default_role''` one.                     |
 
 Defining these might be difficult because first you need to get along with hata internals.
 One example for the `'message.author'` pre-created one equals to:
@@ -518,12 +518,12 @@ Ensured when a command is referenced but it doesn't exist or check without handl
 
 The following arguments are passed to `invalid_command`:
 
-| Respective name   | Type          | Description                                                        |
-|-------------------|---------------|--------------------------------------------------------------------|
-| client            | ``Client``    | The respective client.                                             |
-| message           | ``Message``   | The respective message.                                            |
-| command           | `str`         | The command name.                                                  |
-| content           | `str`         | The message content after the prefix, till the first linebreak.    |
+| Respective name   | Type          | Description                               |
+|-------------------|---------------|-------------------------------------------|
+| client            | ``Client``    | The respective client.                    |
+| message           | ``Message``   | The respective message.                   |
+| command           | `str`         | The command name.                         |
+| content           | `str`         | The message content after the prefix.     |
 
 Example of invalid_command definition:
 
@@ -539,13 +539,13 @@ Ensured when an exception occurs inside of a command.
 
 The following arguments are passed to `command_error`:
 
-| Respective name   | Type              | Description                                                        |
-|-------------------|-------------------|--------------------------------------------------------------------|
-| client            | ``Client``        | The respective client.                                             |
-| message           | ``Message``       | The respective message.                                            |
-| command           | ``Command``       | The respective command.                                            |
-| content           | `str`             | The message content after the prefix, till the first linebreak.    |
-| err               | ``BaseException`` | The occurred exception.                                            |
+| Respective name   | Type              | Description                               |
+|-------------------|-------------------|-------------------------------------------|
+| client            | ``Client``        | The respective client.                    |
+| message           | ``Message``       | The respective message.                   |
+| command           | ``Command``       | The respective command.                   |
+| content           | `str`             | The message content after the prefix.     |
+| err               | ``BaseException`` | The occurred exception.                   |
 
 Example of command_error definition:
 

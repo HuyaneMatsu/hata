@@ -1463,25 +1463,13 @@ class DiscordHTTPClient(HTTPClient):
             METH_POST, f'{API_ENDPOINT}/channels/{channel_id}/messages', data)
     
     async def message_delete(self, channel_id, message_id, reason):
-        try:
-            result = await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.message_delete, channel_id),
-                METH_DELETE, f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}', reason=reason)
-            return result
-        except DiscordException as err:
-            if err.code == ERROR_CODES.unknown_message: # already deleted
-                return
-            raise
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.message_delete, channel_id),
+            METH_DELETE, f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}', reason=reason)
     
-    # after 2 week else
+    # after 2 week else & not own
     async def message_delete_b2wo(self, channel_id, message_id, reason):
-        try:
-            result = await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.message_delete_b2wo, channel_id),
-                METH_DELETE, f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}', reason=reason)
-            return result
-        except DiscordException as err:
-            if err.code == ERROR_CODES.unknown_message: # already deleted
-                return
-            raise
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.message_delete_b2wo, channel_id),
+            METH_DELETE, f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}', reason=reason)
     
     async def message_delete_multiple(self, channel_id, data, reason):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.message_delete_multiple, channel_id),

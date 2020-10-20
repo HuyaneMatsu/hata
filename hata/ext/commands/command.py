@@ -13,7 +13,7 @@ from ...discord.client_core import KOKORO
 
 from .content_parser import CommandContentParser
 
-COMMAND_RP = re.compile(' *([^ \t\\n]*) *(.*)')
+COMMAND_RP = re.compile('[ \t\\n]*([^ \t\\n]*)[ \t\\n]*(.*)', re.M|re.S)
 
 AUTO_DASH_MAIN_CHAR = '-'
 AUTO_DASH_APPLICABLES = ('-', '_')
@@ -254,33 +254,33 @@ class Command(object):
         if not issubclass(klass_type, type):
             raise TypeError(f'Expected `type` instance, got {klass_type.__name__}.')
         
-        name = getattr(klass,'name',None)
+        name = getattr(klass, 'name', None)
         if name is None:
             name = klass.__name__
         
-        command = getattr(klass,'command',None)
+        command = getattr(klass, 'command', None)
         if command is None:
             while True:
-                command = getattr(klass,name,None)
+                command = getattr(klass, name, None)
                 if (command is not None):
                     break
                 
                 raise ValueError('`command` class attribute is missing.')
         
         
-        description = getattr(klass,'description',None)
+        description = getattr(klass, 'description', None)
         if description is None:
             description = klass.__doc__
         
-        aliases = getattr(klass,'aliases',None)
+        aliases = getattr(klass, 'aliases', None)
         
-        category = getattr(klass,'category',None)
+        category = getattr(klass, 'category', None)
         
-        checks_=getattr(klass,'checks',None)
+        checks_ = getattr(klass, 'checks', None)
         if checks_ is None:
-            checks_=getattr(klass,'checks_',None)
+            checks_ = getattr(klass, 'checks_', None)
         
-        parser_failure_handler=getattr(klass,'parser_failure_handler',None)
+        parser_failure_handler = getattr(klass, 'parser_failure_handler', None)
         
         separator = getattr(klass, 'separator', None)
         
@@ -2969,17 +2969,17 @@ class CommandProcesser(EventWaitforBase):
         If `prefix` is valid, but the command not exists, or any of it's check failed, then `invalid_command` is called
         with the following parameters:
         
-        +-------------------+---------------+--------------------------------------------------------------------+
-        | Respective name   | Type          | Description                                                        |
-        +===================+===============+====================================================================+
-        | client            | ``Client``    | The respective client.                                             |
-        +-------------------+---------------+--------------------------------------------------------------------+
-        | message           | ``Message``   | The respective message.                                            |
-        +-------------------+---------------+--------------------------------------------------------------------+
-        | command           | `str`         | The command's name.                                                |
-        +-------------------+---------------+--------------------------------------------------------------------+
-        | content           | `str`         | The message'"s content after the prefix, till the first linebreak. |
-        +-------------------+---------------+--------------------------------------------------------------------|
+        +-------------------+---------------+-------------------------------------------+
+        | Respective name   | Type          | Description                               |
+        +===================+===============+===========================================+
+        | client            | ``Client``    | The respective client.                    |
+        +-------------------+---------------+-------------------------------------------+
+        | message           | ``Message``   | The respective message.                   |
+        +-------------------+---------------+-------------------------------------------+
+        | command           | `str`         | The command's name.                       |
+        +-------------------+---------------+-------------------------------------------+
+        | content           | `str`         | The message'"s content after the prefix.  |
+        +-------------------+---------------+-------------------------------------------|
     
     - `mention_prefix`
         If a message starts with the mention of the client, then the command procsser will act, like it was a command
@@ -3001,19 +3001,19 @@ class CommandProcesser(EventWaitforBase):
         If a command call was executed by the `commands` or by the `mention_prefix` part and the command raised, then
         `command_error` is called with the details:
         
-        +-------------------+-------------------+--------------------------------------------------------------------+
-        | Respective name   | Type              | Description                                                        |
-        +===================+===================+====================================================================+
-        | client            | ``Client``        | The respective client.                                             |
-        +-------------------+-------------------+--------------------------------------------------------------------+
-        | message           | ``Message``       | The respective message.                                            |
-        +-------------------+-------------------+--------------------------------------------------------------------+
-        | command           | ``Command``       | The respective command.                                            |
-        +-------------------+-------------------+--------------------------------------------------------------------+
-        | content           | `str`             | The message'"s content after the prefix, till the first linebreak. |
-        +-------------------+-------------------+--------------------------------------------------------------------+
-        | err               | ``BaseException`` | The occured exception.                                             |
-        +-------------------+-------------------+--------------------------------------------------------------------+
+        +-------------------+-------------------+-------------------------------------------+
+        | Respective name   | Type              | Description                               |
+        +===================+===================+===========================================+
+        | client            | ``Client``        | The respective client.                    |
+        +-------------------+-------------------+-------------------------------------------+
+        | message           | ``Message``       | The respective message.                   |
+        +-------------------+-------------------+-------------------------------------------+
+        | command           | ``Command``       | The respective command.                   |
+        +-------------------+-------------------+-------------------------------------------+
+        | content           | `str`             | The message'"s content after the prefix.  |
+        +-------------------+-------------------+-------------------------------------------+
+        | err               | ``BaseException`` | The occured exception.                    |
+        +-------------------+-------------------+-------------------------------------------+
     
     Attributes
     ----------
@@ -3049,7 +3049,7 @@ class CommandProcesser(EventWaitforBase):
     commands : `dict` of (`str`, `Command`) items
         Command `alternaetive-name` - ``Command`` relation used to lookup commands.
         
-        > `Command_processer.commands` is not the same as `Client.commands` !
+        `Command_processer.commands` is not the same as `Client.commands` !
     
     get_prefix_for : `callable`
         A function to get the client's preffered prefix for the given message.
@@ -3061,8 +3061,8 @@ class CommandProcesser(EventWaitforBase):
         | message           | ``Message``   |
         +-------------------+---------------+
         
-        > Note, that if the ``CommandProcesser``-s `prefix` was set as an `async-callable`, then ``get_prefix_for``
-        > will return an `awaitable` as well.
+        Note, that if the ``CommandProcesser``-s `prefix` was set as an `async-callable`, then ``get_prefix_for``
+        will return an `awaitable` as well.
     
     mention_prefix : `bool`
         Whether the command processer accepts the respective client's mention as an alternative prefix.
@@ -3438,6 +3438,8 @@ class CommandProcesser(EventWaitforBase):
         else:
             flag = 0
         
+        flag |= re.M|re.S
+        
         while True:
             if callable(prefix):
                 analyzed = CallableAnalyzer(prefix)
@@ -3459,7 +3461,7 @@ class CommandProcesser(EventWaitforBase):
                 else:
                     async def prefixfilter(message):
                         practical_prefix = prefix(message)
-                        if re.match(re.escape(practical_prefix), message.content,flag) is None:
+                        if re.match(re.escape(practical_prefix), message.content, flag) is None:
                             return
                         result = COMMAND_RP.match(message.content, len(practical_prefix))
                         if result is None:
@@ -3477,7 +3479,7 @@ class CommandProcesser(EventWaitforBase):
                 def get_prefix_for(message):
                     return prefix
             
-            elif isinstance(prefix,(list,tuple)):
+            elif isinstance(prefix, (list, tuple)):
                 if not prefix:
                     raise ValueError(f'Prefix fed as empty {prefix.__class__.__name__}: {prefix!r}')
                 
@@ -3488,11 +3490,11 @@ class CommandProcesser(EventWaitforBase):
                     if not prefix_:
                         raise ValueError('Prefix cannot be passed as empty string.')
                 
-                PREFIX_RP = re.compile("|".join(re.escape(prefix_) for prefix_ in prefix), flag)
+                PREFIX_RP = re.compile('|'.join(re.escape(prefix_) for prefix_ in prefix), flag)
                 practical_prefix = prefix[0]
                 
                 def get_prefix_for(message):
-                    result=PREFIX_RP.match(message.content)
+                    result = PREFIX_RP.match(message.content)
                     if result is None:
                         return practical_prefix
                     else:
@@ -3538,7 +3540,7 @@ class CommandProcesser(EventWaitforBase):
             If any of these is given as `name`, then the given `func` with it's `checks` will be added as their
             property representation.
             
-            > Giving `func` as ``Command`` instance is always checked and added first tho.
+            Giving `func` as ``Command`` instance is always checked and added first tho.
         
         description : `Any`, Optional, Optional
             Description for the command. Defaults to `None`.
@@ -3750,7 +3752,7 @@ class CommandProcesser(EventWaitforBase):
                     except KeyError:
                         pass
             
-            category=would_overwrite.category
+            category = would_overwrite.category
             if (category is not None):
                 category.commands.remove(would_overwrite)
         

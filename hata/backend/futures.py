@@ -3004,121 +3004,49 @@ class Task(Future):
         """
         raise RuntimeError(f'{self.__class__.__name__} does not support `.clear` operation')
     
-    if __debug__:
-        def __step(self, exception=None):
-            if self._state is not PENDING:
-                raise InvalidStateError(self, '__step', message = \
-                    f'`{self.__class__.__name__}.__step` already done of {self!r}, exception={exception!r}')
-            
-            if self._must_cancel:
-                exception = self._must_exception(exception)
-            
-            coro = self._coro
-            self._fut_waiter = None
-            
-            self._loop.current_task = self
-            
-            # call either coro.throw(err) or coro.send(None).
-            try:
-                if exception is None:
-                    result = coro.send(None)
-                else:
-                    result = coro.throw(exception)
-            except StopIteration as exception:
-                if self._must_cancel:
-                    # the task is cancelled meanwhile
-                    self._must_cancel = False
-                    Future.set_exception(self, CancelledError())
-                else:
-                    Future.set_result(self, exception.value)
-            except CancelledError:
-                Future.cancel(self)
-            except BaseException as exception:
-                Future.set_exception(self, exception)
+    def __step(self, exception=None):
+        if self._state is not PENDING:
+            raise InvalidStateError(self, '__step', message = \
+                f'`{self.__class__.__name__}.__step` already done of {self!r}, exception={exception!r}')
+        
+        if self._must_cancel:
+            exception = self._must_exception(exception)
+        
+        coro = self._coro
+        self._fut_waiter = None
+        
+        self._loop.current_task = self
+        
+        # call either coro.throw(err) or coro.send(None).
+        try:
+            if exception is None:
+                result = coro.send(None)
             else:
-                try:
-                    blocking = result._blocking
-                except AttributeError:
-                    if result is None:
-                        # Bare yield relinquishes control for one event loop iteration.
-                        self._loop.call_soon(self.__step)
-                    elif isinstance(result, GeneratorType):
-                        # Yielding a generator is just wrong.
-                        new_exception = RuntimeError(f'`yield` was used instead of `yield from` in '
-                            f'{self.__class__.__name__} {self!r} with `{result!r}`')
-                        self._loop.call_soon(self.__step, new_exception)
-                    else:
-                        # Yielding something else is an error.
-                        new_exception = RuntimeError(f'{self.__class__.__name__} got bad yield: `{result!r}`')
-                        self._loop.call_soon(self.__step, new_exception)
-                else:
-                    if blocking:
-                        if self._loop is not result._loop:
-                            new_exception = RuntimeError(f'{self.__class__.__name__} {self!r} got a Future {result!r} '
-                                f'attached to a different loop')
-                            self._loop.call_soon(self.__step, new_exception)
-                        elif result is self:
-                            new_exception = RuntimeError(f'{self.__class__.__name__} cannot await on itself: {self!r}')
-                            self._loop.call_soon(self.__step, new_exception)
-                        else:
-                            result._blocking = False
-                            result.add_done_callback(self.__wakeup)
-                            self._fut_waiter = result
-                            if self._must_cancel:
-                                if result.cancel():
-                                    self._must_cancel = False
-                    else:
-                        new_exception = RuntimeError(f'`yield` was used instead of `yield from` in task {self!r} with '
-                            f'{result!r}')
-                        self._loop.call_soon(self.__step, new_exception)
-            finally:
-                self._loop.current_task = None
-                self = None # Need to set `self` as `None`, or `self` might never get garbage collected.
-    else:
-        def __step(self, exception=None):
-            if self._state is not PENDING:
-                raise InvalidStateError(self, '__step', message = \
-                    f'`{self.__class__.__name__}.__step` already done of {self!r}, exception={exception!r}')
-            
+                result = coro.throw(exception)
+        except StopIteration as exception:
             if self._must_cancel:
-                exception = self._must_exception(exception)
-            
-            coro = self._coro
-            self._fut_waiter = None
-            
-            self._loop.current_task = self
-            
-            # call either coro.throw(err) or coro.send(None).
-            try:
-                if exception is None:
-                    result = coro.send(None)
-                else:
-                    result = coro.throw(exception)
-            except StopIteration as exception:
-                if self._must_cancel:
-                    # the task is cancelled meanwhile
-                    self._must_cancel = False
-                    Future.set_exception(self, CancelledError())
-                else:
-                    Future.set_result(self, exception.value)
-            except CancelledError:
-                Future.cancel(self)
-            except BaseException as exception:
-                Future.set_exception(self, exception)
+                # the task is cancelled meanwhile
+                self._must_cancel = False
+                Future.set_exception(self, CancelledError())
             else:
-                if hasattr(result, '_blocking'):
-                    result._blocking = False
-                    result.add_done_callback(self.__wakeup)
-                    self._fut_waiter = result
-                    if self._must_cancel:
-                        if self._fut_waiter.cancel():
-                            self._must_cancel = False
-                else:
-                    self._loop.call_soon(self.__step)
-            
-            finally:
-                self._loop.current_task = None
-                self = None # Need to set `self` as `None`, or `self` might never get garbage collected.
+                Future.set_result(self, exception.value)
+        except (CancelledError, GeneratorExit):
+            Future.cancel(self)
+        except BaseException as exception:
+            Future.set_exception(self, exception)
+        else:
+            if isinstance(result, Future) and result._blocking:
+                result._blocking = False
+                result.add_done_callback(self.__wakeup)
+                self._fut_waiter = result
+                if self._must_cancel:
+                    if result.cancel():
+                        self._must_cancel = False
+            else:
+                self._loop.call_soon(self.__step)
+        finally:
+            self._loop.current_task = None
+            self = None # Need to set `self` as `None`, or `self` might never get garbage collected.
     
     if DOCS_ENABLED:
         __step.__doc__ = (

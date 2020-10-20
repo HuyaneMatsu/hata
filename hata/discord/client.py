@@ -3482,12 +3482,19 @@ class Client(UserBase):
         The ratelimit group is different for own or for messages newer than 2 weeks than for message's of others,
         which are older than 2 weeks.
         """
+        if message.deleted:
+            return
+        
         if (message.author == self) or (message.id > int((time_now()-1209590.)*1000.-DISCORD_EPOCH)<<22):
             # own or new
-            await self.http.message_delete(message.channel.id, message.id, reason)
+            coro = self.http.message_delete(message.channel.id, message.id, reason)
         else:
-            await self.http.message_delete_b2wo(message.channel.id, message.id, reason)
-    
+            coro = self.http.message_delete_b2wo(message.channel.id, message.id, reason)
+        
+        await coro
+        # If the coro raises, do not switch `message.deleted` to `True`.
+        message.deleted = True
+        
     
     async def message_delete_multiple(self, messages, reason=None):
         """
@@ -3517,11 +3524,11 @@ class Client(UserBase):
         channel = messages[0].channel
         channel_id = channel.id
 
-        if not isinstance(channel,ChannelGuildBase):
+        if not isinstance(channel, ChannelGuildBase):
             # Bulk delete is available only at guilds. At private or group channel you can delete only yours tho.
             for message in messages:
                 await self.http.message_delete(channel_id, message.id, reason)
-                
+            
             return
         
         message_group_new = deque()
@@ -3531,6 +3538,9 @@ class Client(UserBase):
         bulk_delete_limit = int((time_now()-1209600.)*1000.-DISCORD_EPOCH)<<22 # 2 weeks
         
         for message in messages:
+            if message.deleted:
+                continue
+            
             message_id = message.id
             own = (message.author == self)
             
@@ -3765,7 +3775,7 @@ class Client(UserBase):
         
         last_message_id = before
         
-        messages_=channel.messages
+        messages_ = channel.messages
         if messages_:
             before_index = message_relativeindex(messages_, before)
             after_index = message_relativeindex(messages_, after)
@@ -4091,7 +4101,7 @@ class Client(UserBase):
             data['flags'] = flags
         
         await self.http.message_edit(message.channel.id, message.id, data)
-
+    
     async def message_suppress_embeds(self, message, suppress=True):
         """
         Suppresses or unsuppressed the given message's embeds.

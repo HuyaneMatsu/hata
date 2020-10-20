@@ -478,6 +478,8 @@ class ERROR_CODES:
     +---------------------------------------------------+-----------+-------+
     | cannot_add_user_to_guild_where_bot_is_not         | 50036     | -     |
     +---------------------------------------------------+-----------+-------+
+    | invalid_sticker_sent                              | 50081     | -     |
+    +---------------------------------------------------+-----------+-------+
     | invalid_API_version                               | 50041     | -     |
     +---------------------------------------------------+-----------+-------+
     | invalid_gift_redemption_exhausted                 | 50050     | -     |
@@ -636,6 +638,7 @@ class ERROR_CODES:
     invalid_gift_redemption_owned = 50051
     invalid_gift_self_redemption = 50054
     cannot_delete_community_channel = 50074
+    invalid_sticker_sent    = 50081
     invalid_gift_redemption_subscription_managed = 100021
     invalid_gift_redemption_subscription_incompatible = 100023
     invalid_gift_redemption_invoice_open = 100024

@@ -938,7 +938,7 @@ class Message(DiscordEntity, immortal=True):
             stickers = None
         else:
             stickers = [Sticker(sticker_data) for sticker_data in sticker_datas]
-        self.stickers = sticker_datas
+        self.stickers = stickers
         
         user_mention_datas = data['mentions']
         if user_mention_datas:
@@ -1547,38 +1547,39 @@ class Message(DiscordEntity, immortal=True):
         if kwargs:
             raise TypeError(f'Unused aruments: {", ".join(list(kwargs))}')
         
-        message = object.__new__(cls)
+        self = object.__new__(cls)
         
-        message._channel_mentions = _channel_mentions
-        message.activity = activity
-        message.application = application
-        message.attachments = attachments
-        message.author = author
-        message.channel = channel
-        message.content = content
-        message.cross_mentions = cross_mentions
-        message.cross_reference = cross_reference
-        message.deleted = deleted
-        message.edited = edited
-        message.embeds = embeds
-        message.everyone_mention = everyone_mention
-        message.flags = flags
-        message.id = message_id
-        message.nonce = nonce
-        message.pinned = pinned
-        message.reactions = reactions
-        message.role_mentions = role_mentions
+        self._channel_mentions = _channel_mentions
+        self.activity = activity
+        self.application = application
+        self.attachments = attachments
+        self.author = author
+        self.channel = channel
+        self.content = content
+        self.cross_mentions = cross_mentions
+        self.cross_reference = cross_reference
+        self.deleted = deleted
+        self.edited = edited
+        self.embeds = embeds
+        self.everyone_mention = everyone_mention
+        self.flags = flags
+        self.id = message_id
+        self.nonce = nonce
+        self.pinned = pinned
+        self.reactions = reactions
+        self.role_mentions = role_mentions
         self.stickers = stickers
-        message.tts = tts
-        message.type = type_
-        message.user_mentions = user_mentions
+        self.tts = tts
+        self.type = type_
+        self.user_mentions = user_mentions
         
-        return message
+        return self
         
     def _parse_channel_mentions(self):
         """
         Looks up the ``.contents`` of the message and searches channel mentions in them. If non, then sets
         ``.channel_mentions`` as `None`, else as a `list` of ``ChannelBase`` (and ``UnknownCrossMention``) instances.
+        
         Invalid channel mentions are ignored.
         """
         content = self.content
@@ -1852,24 +1853,24 @@ class Message(DiscordEntity, immortal=True):
             user_mentions.sort()
         else:
             user_mentions = None
-
+        
         if self.user_mentions != user_mentions:
             old_attributes['user_mentions'] = self.user_mentions
             self.user_mentions = user_mentions
         
         if guild is None:
             return old_attributes
-
+        
         self._channel_mentions = _spaceholder
-
+        
         cross_mention_datas = data.get('mention_channels')
         if cross_mention_datas is None:
             cross_mentions = None
         else:
             cross_mentions = [UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas]
             cross_mentions.sort()
-
-        if self.cross_mentions !=cross_mentions:
+        
+        if self.cross_mentions != cross_mentions:
             old_attributes['cross_mentions'] = self.cross_mentions
             self.cross_mentions = cross_mentions
         
@@ -1889,11 +1890,11 @@ class Message(DiscordEntity, immortal=True):
                 role_mentions.sort()
             else:
                 role_mentions = None
-
+        
         if self.role_mentions != role_mentions:
             old_attributes['role_mentions'] = self.role_mentions
             self.role_mentions = role_mentions
-
+        
         return old_attributes
     
     def _update_no_return(self, data):
@@ -1966,10 +1967,8 @@ class Message(DiscordEntity, immortal=True):
         self.embeds = embeds
         
         self.content = data['content']
-
+        
         user_mention_datas = data['mentions']
-
-        guild = self.channel.guild
         
         guild = self.channel.guild
         
@@ -1980,12 +1979,12 @@ class Message(DiscordEntity, immortal=True):
             user_mentions = None
         
         self.user_mentions = user_mentions
-
+        
         if guild is None:
             return
-
+        
         self._channel_mentions = _spaceholder
-
+        
         cross_mention_datas = data.get('mention_channels')
         if cross_mention_datas is None:
             cross_mentions = None

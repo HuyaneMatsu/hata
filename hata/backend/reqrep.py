@@ -405,7 +405,7 @@ class ClientRequest(object):
         if (self.method in METH_POST_ALL) and (CONTENT_TYPE not in self.headers):
             self.headers[CONTENT_TYPE] = 'application/octet-stream'
         
-        connection_type=self.headers.get(CONNECTION)
+        connection_type = self.headers.get(CONNECTION)
         
         if ((connection_type is None) or (not connection_type)) and (not self.keep_alive()):
             connection_type = 'close'
@@ -470,10 +470,7 @@ class ClientResponse:
         if self.closed:
             return
         
-        connection = self.connection
-        if (connection is not None):
-            connection.release()
-            self._cleanup_writer()                
+        self._release_connection()
     
     def __repr__(self):
         ascii_encodable_url = str(self.url)
@@ -486,7 +483,8 @@ class ClientResponse:
         self.connection = connection
         protocol = connection.protocol
         
-        self.raw_message = message = await protocol.set_payload_reader(protocol._read_http_response())
+        payload_waiter = protocol.set_payload_reader(protocol._read_http_response())
+        self.raw_message = message = await payload_waiter
         protocol.handle_payload_waiter_cancellation()
         payload_reader = protocol.get_payload_reader_task(message)
         if (payload_reader is None):
@@ -517,17 +515,40 @@ class ClientResponse:
             return
         
         self.payload_waiter = None
-        connection = self.connection
-        if (connection is not None):
+        if (self.connection is not None):
             # websocket, protocol could be None because connection could be detached
-            if (connection.protocol is not None) and self.raw_message.upgraded:
+            if (self.connection.protocol is not None) and self.raw_message.upgraded:
                 return
             
-            connection.release()
-            self.connection = None
+            self._release_connection()
         
         self.closed = True
         self._cleanup_writer()
+    
+    def _release_connection(self):
+        """
+        Releases the response's connection.
+        
+        If the conenction type is "close", closes the protocol as well.
+        """
+        connection = self.connection
+        if connection is None:
+            return
+        
+        headers = self.headers
+        if (headers is not None):
+            try:
+                connection_type = headers[CONNECTION]
+            except KeyError:
+                pass
+            else:
+                if connection_type == 'close':
+                    protocol = connection.protocol
+                    if (protocol is not None):
+                        protocol.close()
+        
+        connection.release()
+        self.connection = None
     
     # If content is still present
     def _notify_content(self):
@@ -645,9 +666,6 @@ class ClientResponse:
             return
         self.closed = True
         
-        connection = self.connection
-        if (connection is not None):
-            connection.release()
-            self.connection = None
+        self._release_connection()
         
         self._cleanup_writer()

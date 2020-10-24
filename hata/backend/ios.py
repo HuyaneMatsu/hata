@@ -20,7 +20,7 @@ class ReuBytesIO(BytesIO):
     or use it with the `with` syntax.
     
     Should be used instead of `BytesIO` when sending it with http requests. Since the buffer is closed when a request
-    is sent, at the case of received errors repeat ccould nto be executed.
+    is sent, at the case of received errors repeat could not be executed.
     
     Attributes
     ----------
@@ -902,7 +902,7 @@ class ReuAsyncIO(AsyncIO):
     callig ``.close``. Use ``.real_close`` to close it for real, or use it with the `with` syntax.
     
     Should be used instead of `BytesIO` when sending it with http requests. Since the buffer is closed when a request
-    is sent, at the case of received errors repeat ccould nto be executed.
+    is sent, at the case of received errors repeat could not be executed.
     
     Attributes
     ----------

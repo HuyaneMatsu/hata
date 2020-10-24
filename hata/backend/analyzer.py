@@ -35,7 +35,7 @@ class Argument(object):
     annotation : `Any`
         The argument's annotation if applicable. Defaults to `None`.
     default : `Any`
-        The default value of teh argument if applicable. Defaults to `None`.
+        The default value of the argument if applicable. Defaults to `None`.
     has_annotation : `bool`
         Whether the argument has annotation.
     has_default : `bool`
@@ -62,7 +62,7 @@ class Argument(object):
     reserved : `bool`
         Whether the argument is reserved.
         
-        For example at the case of methods, teh first argument is reserved for the `self` argument.
+        For example at the case of methods, the first argument is reserved for the `self` argument.
     """
     __slots__ = ('annotation', 'default', 'has_annotation', 'has_default', 'name', 'positionality', 'reserved', )
     

@@ -27,7 +27,7 @@ class Structure(object):
     __slots__ = ( 'title', 'prefixed_title', 'childs')
     def __init__(self, title, prefixed_title, childs):
         """
-        Creates a nw structure object with teh given parameters.
+        Creates a nw structure object with the given parameters.
         
         Parameters
         ----------

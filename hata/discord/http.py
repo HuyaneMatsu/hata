@@ -1275,8 +1275,8 @@ class DiscordHTTPClient(HTTPClient):
                     if not try_again:
                         raise ConnectionError('Invalid adress or no connection with Discord') from err
                     
-                    #os cant handle more, need to wait for the blocking job to be done
-                    await sleep(0.5/try_again,self.loop)
+                    # os cant handle more, need to wait for the blocking job to be done
+                    await sleep(0.5/try_again, self.loop)
                     #invalid adress causes OSError too, but we will let it run 5 times, then raise a ConnectionError
                     try_again -= 1
                     continue
@@ -1292,6 +1292,9 @@ class DiscordHTTPClient(HTTPClient):
                     return response_data
                 
                 if status == 429:
+                    if 'code' in response_data: # Can happen at the case of ratelimit ban
+                        raise DiscordException(response, response_data)
+                    
                     retry_after = response_data.get('retry_after', 0)/1000.
                     if response_data.get('global', False):
                         await ratelimit_global(self, retry_after)
@@ -1301,7 +1304,7 @@ class DiscordHTTPClient(HTTPClient):
                 
                 if status in (500, 502, 503) and try_again:
                     await sleep(10./try_again, self.loop)
-                    try_again -=1
+                    try_again -= 1
                     continue
                 
                 lock.exit(response_headers)

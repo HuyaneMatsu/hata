@@ -191,7 +191,42 @@ class _SSLProtocolTransport(object):
         self.ssl_protocol = ssl_protocol
         self.app_protocol = app_protocol
         self.closed = False
-
+    
+    def __repr__(self):
+        result = [
+            '<',
+            self.__class__.__name__,
+            ' ',
+                ]
+        
+        if self.closed:
+            result.append('closed')
+            add_comma = True
+        else:
+            add_comma = False
+        
+        ssl_protocol = self.ssl_protocol
+        if (ssl_protocol is not None):
+            if add_comma:
+                result.append(', ')
+            else:
+                add_comma = True
+            
+            result.append('ssl_protocol=')
+            result.append(ssl_protocol.__class__.__name__)
+        
+        app_protocol = self.ssl_protocol
+        if (app_protocol is not None):
+            if add_comma:
+                result.append(', ')
+            
+            result.append('app_protocol=')
+            result.append(app_protocol.__class__.__name__)
+        
+        result.append('>')
+        
+        return ''.join(result)
+    
     def get_extra_info(self, name, default=None):
         return self.ssl_protocol._get_extra_info(name, default)
     
@@ -201,10 +236,10 @@ class _SSLProtocolTransport(object):
      
     def get_protocol(self):
         return self.app_protocol
-
+    
     def is_closing(self):
         return self.closed
-
+    
     def close(self):
         self.closed = True
         self.ssl_protocol._start_shutdown()
@@ -296,7 +331,7 @@ class SSLProtocol(object):
         self.transport = transport
         self.sslpipe = _SSLPipe(self._ssl_context, self.server_side, self.server_hostname)
         self._start_handshake()
-
+    
     def connection_lost(self, exception):
         if self._session_established:
             self._session_established = False
@@ -308,27 +343,27 @@ class SSLProtocol(object):
     
     def pause_writing(self):
         self.app_protocol.pause_writing()
-
+    
     def resume_writing(self):
         self.app_protocol.resume_writing()
-
+    
     def data_received(self, data):
         try:
             ssldata, appdata = self.sslpipe.feed_ssldata(data)
         except ssl.SSLError:
             self._abort()
             return
-
+        
         for chunk in ssldata:
             self.transport.write(chunk)
-
+        
         for chunk in appdata:
             if chunk:
                 self.app_protocol.data_received(chunk)
                 continue
             self._start_shutdown()
             break
-
+    
     def eof_received(self):
         try:
             self._wakeup_waiter(ConnectionResetError)

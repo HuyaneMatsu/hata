@@ -458,13 +458,15 @@ class multidict(dict):
         else:
             for key, value in iterable:
                 try:
-                    getitem(self, key).append(value)
+                    values = getitem(self, key)
                 except KeyError:
                     setitem(self, key, [value])
+                else:
+                    values.append(value)
     
     def __getitem__(self, key):
         """
-        Returns the multiydict's `value` for the given `key`. If the `key` has more values, then returns the 0th of
+        Returns the multidict's `value` for the given `key`. If the `key` has more values, then returns the 0th of
         them.
         """
         return dict.__getitem__(self, key)[0]
@@ -480,7 +482,8 @@ class multidict(dict):
                 line.append(value)
     
     def __delitem__(self, key):
-        """Removes the `value` for the given `key` from the multidict. If the `key` has more values, then removes only
+        """
+        Removes the `value` for the given `key` from the multidict. If the `key` has more values, then removes only
         the 0th of them.
         """
         my_list = dict.__getitem__(self, key)
@@ -566,7 +569,7 @@ class multidict(dict):
         key : `Any`
             The key to match.
         default : `Any`, Optional
-            Default value to set and return if `key` is nto present in the multidict.
+            Default value to set and return if `key` is not present in the multidict.
         
         Returns
         -------
@@ -613,7 +616,7 @@ class multidict(dict):
     
     def popone(self, key, default=_spaceholder):
         """
-        Remvoes the first value from the multidict, which matches the given `key`.
+        Removes the first value from the multidict, which matches the given `key`.
         
         Parameters
         ----------
@@ -722,87 +725,247 @@ class multidict(dict):
         return result
 
 class multidict_titled(multidict):
+    """
+    ``multidict`` subclass, what can be used to hold http headers.
+    
+    It's keys are always upper cased.
+    """
     __slots__ = ()
     def __init__(self, iterable=None):
-        if not iterable:
-            dict.__init__(self)
-            return
+        """
+        Creates a new ``multidict_titled`` instance.
         
-        if type(iterable) is type(self):
-            dict.__init__(self, iterable)
-            return
-        
+        Parameters
+        ----------
+        iterable : `None` or `iterable`, Optional
+            Iterable to update the created multidict initially.
+            
+            Can be given as one of the following:
+                - ``multidict`` instance.
+                - `dict` instance.
+                - `iterable` of `key` - `value` pairs.
+        """
         dict.__init__(self)
+        
+        if (iterable is None) or (not iterable):
+            return
+        
         getitem = dict.__getitem__
         setitem = dict.__setitem__
         
-        if isinstance(iterable, multidict):
-            for key, value in iterable:
-                setitem(self, key.title(), value)
-            return
+        if type(iterable) is type(self):
+            for key, values in dict.items(iterable):
+                setitem(self, key, values.copy())
         
-        if isinstance(iterable, dict):
+        elif isinstance(iterable, multidict):
+            for key, values in dict.items(iterable):
+                setitem(self, key.title(), values.copy())
+        
+        elif isinstance(iterable, dict):
             for key, value in iterable.items():
-                setitem(self, key, [value])
-            return
-        
-        for key, value in iterable:
-            key = key.title()
-            try:
-                getitem(self, key).append(value)
-            except KeyError:
+                key = key.title()
                 setitem(self, key, [value])
         
+        else:
+            for key, value in iterable:
+                key = key.title()
+                try:
+                    values = getitem(self, key)
+                except KeyError:
+                    setitem(self, key, [value])
+                else:
+                    values.append(value)
+    
     def __getitem__(self, key):
+        """
+        Returns the multidict's `value` for the given `key`. If the `key` has more values, then returns the 0th of
+        them.
+        """
         key = key.title()
         return dict.__getitem__(self, key)[0]
     
     def __setitem__(self, key, value):
+        """Adds the given `key` - `value` pair to the multidict."""
         key = key.title()
         multidict.__setitem__(self, key, value)
     
     def __delitem__(self, key):
+        """
+        Removes the `value` for the given `key` from the multidict. If the `key` has more values, then removes only
+        the 0th of them.
+        """
         key = key.title()
         multidict.__delitem__(self, key)
     
     def extend(self, mapping):
+        """
+        Extends the multidict titled with the given `mapping`'s items.
+        
+        Parameters
+        ----------
+        mapping : `Any`
+            Any mapping type, what has `.items` attribute.
+        """
         getitem = dict.__getitem__
         setitem = dict.__setitem__               
         for key, value in mapping.items():
-            key=key.title()
+            key = key.title()
             try:
-                line=getitem(self, key)
-                if value not in line:
-                    line.append(value)
+                values = getitem(self, key)
             except KeyError:
                 setitem(self, key, [value])
+            else:
+                if value not in values:
+                    values.append(value)
     
     def getall(self, key, default=None):
+        """
+        Returns all the values matching the given `key`.
+        
+        Parameters
+        ----------
+        key : `Any`
+            The `key` to match.
+        default : `Any`, Optional
+            Default value to return if `key` is not present in the multidict. Defaults to `None`.
+        
+        Returns
+        -------
+        values : `default or `list` of `Any`
+            The values for the given `key` if present.
+        """
         key = key.title()
         return multidict.getall(self, key, default)
     
     def getone(self, key, default=None):
+        """
+        Returns the 0th value matching the given `key`.
+        
+        Parameters
+        ----------
+        key : `Any`
+            The key to match.
+        default : `Any`, Optional
+            Default value to return if `key` is not present in the multidict. Defaults to `None`.
+        
+        Returns
+        -------
+        value : `default` or `Any`
+            The value for the given key if present.
+        """
         key = key.title()
         return multidict.getone(self, key, default)
     
     get = getone
     
     def setdefault(self, key, default=None):
+        """
+        Returns the value for the given `key`.
+        
+        If the `key` is not present in the multidict, then set's the given `default` value as it.
+        
+        Parameters
+        ----------
+        key : `Any`
+            The key to match.
+        default : `Any`, Optional
+            Default value to set and return if `key` is not present in the multidict.
+        
+        Returns
+        -------
+        value : `default` or `Any`
+            The first value for which `key` matched, or `default` if none.
+        """
         key = key.title()
         return multidict.setdefault(self, key, default)
     
     def popall(self, key, default=_spaceholder):
+        """
+        Removes all the values from the multidict which the given `key` matched.
+        
+        Parameters
+        ----------
+        key : `Any`
+            The key to match.
+        default : `Any`, Optional
+            Default value to return if `key` is not present in the multidict.
+        
+        Returns
+        -------
+        values : `default` or `list` of `Any`
+            The matched values. If `key` is not present, but `default` value is given, then returns that.
+        
+        Raises
+        ------
+        KeyError
+            if `key` is not present in the multidict and `default` value is not given either.
+        """
         key = key.title()
         return multidict.popall(self, key, default)
 
     def popone(self, key, default=_spaceholder):
+        """
+        Removes the first value from the multidict, which matches the given `key`.
+        
+        Parameters
+        ----------
+        key : `Any`
+            The key to match.
+        default : `Any`, Optional
+            Default value to return if `key` is not present in the multidict.
+        
+        Returns
+        -------
+        value : `default` or `list` of `Any`
+            The 0th matched value. If `key` is not present, but `default` value is given, then returns that.
+        
+        raises
+        ------
+        KeyError
+            if `key` is not present in the multidict and `default` value is not given either.
+        """
         key = key.title()
         return multidict.popone(self, key, default)
     
     pop = popone
 
 class titledstr(str):
+    """
+    String subclass, what's insatnces are titlecased.
+    """
     def __new__(cls, value='', encoding=sys.getdefaultencoding(), errors='strict'):
+        """
+        Return a titlecased string version of object. If object is not provided, returns the empty string. Otherwise,
+        the behavior of `t`itledstr`` depends on whether encoding or errors is given, as follows.
+
+        If neither encoding nor errors is given, `titledstr(object)` returns `object.__str__().title()`, which is the
+        "informal" or nicely printable string representation of object. For string objects, this is `string.title()`.
+        If object does not have a `__str__()` method, then `titledstr()` falls back to returning `repr(object).title()`.
+        
+        If at least one of encoding or errors is given, object should be a `bytes-like` object. In this case, if object
+        is a `byte-like` object, then `titledstr(bytes, encoding, errors)` is equivalent to
+        `bytes.decode(encoding, errors).title()`. Otherwise, the bytes object underlying the buffer object is obtained
+        before calling `bytes.decode().title()`.
+
+        Passing a `bytes-like` object to ``titledstr`` without the encoding or errors arguments falls under the first
+        case of returning the informal string representation.
+        
+        Parameters
+        ----------
+        value : `Any`, Optional
+            The value, whats representation or encoded version is returned.
+        encoding : `str`, Optional
+            Encoding to use when decoing a `bytes-like`.
+        errors : `str`, Optional
+            May be given to set a different error handling scheme when decoding from `bytes-like`. The default `errors`
+             value is `'strict'`, meaning that encoding errors raise a `UnicodeError`. Other possible values are
+             `'ignore'`, `'replace'`, `'xmlcharrefreplace'`, `'backslashreplace'` and any other name registered via
+             `codecs.register_error()`.
+        
+        Returns
+        -------
+        self : ``titledstr``
+        """
         if type(value) is cls:
             return value
         if isinstance(value,(bytes, bytearray, memoryview)):
@@ -815,6 +978,16 @@ class titledstr(str):
         return str.__new__(cls, value)
     
     def title(self):
+        """
+        Return a titlecased version of the string where words start with an uppercase character and the remaining
+        characters are lowercase.
+        
+        At the case of `titledstr`-s, this method always retursn itself.
+        
+        Returns
+        -------
+        self : `str`
+        """
         return self
 
 def listdifference(list1, list2):
@@ -900,13 +1073,33 @@ def listdifference(list1, list2):
     return difference
 
 class cached_property(object):
+    """
+    Cached property, what can be used as a method decorator. It operates almost like python's `@property`, but it puts
+    the result of the method to the respective instance's `_cache`, preferably type `dict` attribute.
+    
+    Attributes
+    ----------
+    fget : `function`
+        Getter method of the cached property.
+    name : `str`
+        The name of the cached property.
+    """
     __slots__ = ('fget', 'name',)
-    #Use as a class method decorator.  It operates almost exactly like
-    #the Python `@property` decorator, but it puts the result of the
-    #method it decorates into the instance dict after the first call,
-    #effectively replacing the function it decorates with an instance
-    #variable.
+    
     def __new__(cls, fget):
+        """
+        Creates a new cached property instance with the given getter.
+        
+        Parameters
+        ----------
+        fget : `function`
+            Getter method of the cached property.
+
+        Raises
+        ------
+        TypeError
+            If `fget` has no name or it's name is not `str` instance.
+        """
         name = getattr(fget, '__name__', None)
         
         name_type = name.__class__
@@ -947,13 +1140,52 @@ class cached_property(object):
         raise AttributeError('can\'t delete attribute')
 
 class alchemy_incendiary(object):
+    """
+    Function wrapper familiar to `functools.partial`.
+    
+    Used by hata to run functions inside of executors.
+    
+    Attributes
+    ----------
+    args : `tuple` of `Any`
+        Arguments to call `func` with.
+    func : `callable`
+        The function to call.
+    kwargs : `None` of `dict` of (`str`, `Any`) items
+        Keyword arguemnts to call func with if applicable.
+    """
     __slots__ = ('args', 'func', 'kwargs',)
     def __init__(self, func, args, kwargs=None):
+        """
+        Creates a new `alchemy_incendiary` instance with the given parameters.
+        
+        Parameters
+        ----------
+        func : `callable`
+            The function to call.
+        args : `tuple` of `Any`
+            Arguments to call `func` with.
+        kwargs : `None` of `dict` of (`str`, `Any`) items, Optional
+            Keyword arguemnts to call func with if applicable.
+        """
         self.func = func
         self.args = args
         self.kwargs = kwargs
     
     def __call__(self):
+        """
+        Calls the ``alchemy_incendiary``'s inner function with t's arguments and keyword arguments.
+        
+        Returns
+        -------
+        result : `Any`
+            The returned value by ``.func``.
+        
+        Raises
+        ------
+        BaseException
+            The raised exception by ``.func``.
+        """
         kwargs = self.kwargs
         if kwargs is None:
             return self.func(*self.args)
@@ -961,13 +1193,29 @@ class alchemy_incendiary(object):
         return self.func(*self.args, **kwargs)
 
 class SubCheckType(type):
+    """
+    Metaclass, which can be used for subclass checks. It's type instances shoud implement a `.__subclasses__`
+    class attrbiute, which contain's all of it's "subclasses".
+    """
     def __instancecheck__(cls, instance):
+        """Retuns whether the given instance's type is a subclass of the respective type."""
         return (type(instance) in cls.__subclasses__)
 
     def __subclasscheck__(cls, klass):
+        """Retuns whether the given type is a subclass of the respective type."""
         return (klass in cls.__subclasses__)
 
 class MethodLike(metaclass=SubCheckType):
+    """
+    Base class for methods.
+    
+    Class Attributes
+    ----------------
+    __subclasses__ : `set` of `type`
+        Registered method types.
+    __reserved_argcount__ : `int` = `1`
+        The amount of reserved arguments by a method subclass.
+    """
     __subclasses__ = {method}
     __slots__ = ()
     def __init_subclass__(cls):
@@ -977,26 +1225,94 @@ class MethodLike(metaclass=SubCheckType):
     
     @classmethod
     def get_reserved_argcount(cls, instance):
-        klass = type(instance)
-        reserved_argcount = getattr(klass, '__reserved_argcount__',-1)
+        """
+        Returns the givne `instance`'s reserved argcount.
+        
+        Parameters
+        ----------
+        instance : `method-like`
+            A method like object.
+        
+        Returns
+        -------
+        reserved_argcount : `int`
+            Reserved argcount of the given method like.
+        
+        Raises
+        ------
+        TypeError
+            If `instance` is not given as a `method-like`.
+        """
+        instance_type = instance.__class__
+        reserved_argcount = getattr(instance_type, '__reserved_argcount__', -1)
         if reserved_argcount != -1:
             return reserved_argcount
         
-        if klass in cls.__subclasses__:
+        if instance_type in cls.__subclasses__:
             return cls.__reserved_argcount__
-
-        raise TypeError(f'Expected a method like, got {instance!r}')
+        
+        raise TypeError(f'Expected a method like, got {instance_type.__name__}.')
 
 class basemethod(MethodLike):
+    """
+    A `method-like`, which always passes to it's function the respective type and an instance. The instance might be
+    given as `None` if used as a classmethod.
+    
+    Attributes
+    ----------
+    __base__ : `Any`
+        The instance from where the method was called from. Might be `None` if used as a classmethod.
+    __func__ : `function`
+        The method's function to call.
+    __self__ : `type`
+        The class from where the method was called from.
+    
+    Class Attributes
+    ----------------
+    __reserved_argcount__ : `int` = `2`
+        The amount of reserved arguments by basemethods.
+    """
     __slots__ = ('__base__', '__func__', '__self__', )
     __reserved_argcount__ = 2
     
     def __init__(self, func, cls, base):
+        """
+        Creates a new basemethod with the given parameters.
+        
+        Parameters
+        ----------
+        func : `function`
+            The method's function to call.
+        cls : `type`
+            The class from where the method was called from.
+        base : `Any`
+            The instance from where the method was called from. Can be givne as `None` as well.
+        """
         self.__base__ = base
         self.__func__ = func
         self.__self__ = cls
     
     def __call__(self, *args, **kwargs):
+        """
+        Calls the basemethod with the given prameters.
+        
+        Parameters
+        ----------
+        *args : Arguments
+            Argumnets to call the internal function with.
+        **kwargs : Keyword arguments
+            Keyword arguments to call the internal function with.
+        
+        Returns
+        -------
+        result : `Any`
+            The object returned by the internal function.
+        
+        Raises
+        ------
+        BaseException
+            Exception raised by the internal function.
+        """
         return self.__func__(self.__self__, self.__base__, *args, **kwargs)
     
     def __getattr__(self,name):
@@ -1006,13 +1322,36 @@ class basemethod(MethodLike):
     
     @property
     def __instance__doc__(self):
+        """
+        Returns the ``basemethod``'s internal function's docstring.
+        
+        Returns
+        -------
+        docstring : `None` or `str`
+        """
         return self.__func__.__doc__
     
     __doc__ = DocProperty()
 
 class BaseMethodDescriptor(object):
+    """
+    Descriptor, which can be used as a decorato to wrap a function to a basemethod.
+    
+    Attributes
+    ----------
+    fget : `function`
+        The wrapped function.
+    """
     __slots__ = ('fget',)
     def __init__(self, fget):
+        """
+        Creates a new ``BaseMethodDescriptor`` instance with the given parameter.
+        
+        Parameters
+        ----------
+        fget : `function`
+            The function to wrap.
+        """
         self.fget = fget
     
     def __get__(self, obj, type_):
@@ -1044,6 +1383,27 @@ del wrapper_descriptor
 del method_descriptor
 
 def _modulize_function(old, globals_, source_module, module_name, module_path):
+    """
+    Changes the given function's scopes and qualname if they were defined inside of a modulized class.
+    
+    Parameters
+    ----------
+    old : `function`
+        A function present inside of a modulized class.
+    globals_ : `dict` of (`str`, `Any`)
+        Global variabls of the respective module.
+    source_module : `module`
+        The module, where the modulzed class was defined.
+    module_name : `str`
+        The newly created module's name.
+    module_path : `str`
+        The newly created module's path.
+
+    Returns
+    -------
+    new : `function`
+        Newly recreated function if applicable.
+    """
     if old.__module__ != source_module:
         return old
     
@@ -1057,6 +1417,22 @@ def _modulize_function(old, globals_, source_module, module_name, module_path):
     return new
 
 def _modulize_type(klass, globals_, source_module, module_name, module_path):
+    """
+    Changes the given classe's scopes and qualname if they were defined inside of a modulized class.
+    
+    Parameters
+    ----------
+    klass : `type`
+        A class present inside of a modulized class.
+    globals_ : `dict` of (`str`, `Any`)
+        Global variabls of the respective module.
+    source_module : `module`
+        The module, where the modulzed class was defined.
+    module_name : `str`
+        The newly created module's name.
+    module_path : `str`
+        The newly created module's path.
+    """
     if klass.__module__ != source_module:
         return
     
@@ -1080,8 +1456,29 @@ def _modulize_type(klass, globals_, source_module, module_name, module_path):
             _modulize_type(value, globals_, source_module, module_name, module_path)
 
 def modulize(klass):
-    if not isinstance(klass,type):
-        raise TypeError('Only types can be modulized')
+    """
+    Transforms the given class to a module.
+    
+    Every functions and classes defined inside of given class, which are also present at trandfomration as well, will
+    have their global scope modified.
+    
+    Parameters
+    ----------
+    klass : `type`
+        The class to transform to module.
+    
+    Returns
+    -------
+    result_module : `module`
+        The created module object.
+    
+    Raises
+    ------
+    TypeError
+        If `klaass` is not given as `type`.
+    """
+    if not isinstance(klass, type):
+        raise TypeError('Only types can be modulized.')
     
     source_module = klass.__module__
     module_name = klass.__name__
@@ -1125,10 +1522,26 @@ def modulize(klass):
         module.__setattr__(result_module, name, value)
     
     return result_module
-    
+
 class methodize(object):
+    """
+    Wraps a type to as a method, allowing instancing it with it's parent instance object passed by default.
+    
+    Attributes
+    ----------
+    klass : `type`
+        The type to instance as a method.
+    """
     __slots__ = ('klass',)
     def __init__(self, klass):
+        """
+        Creates a new ``methodize`` instance with the given class.
+        
+        Parameters
+        ----------
+        klass : `type`
+             The type to instance as a method.
+        """
         self.klass = klass
     
     def __get__(self, obj, type_):
@@ -1163,6 +1576,14 @@ def copy_func(old):
     return new
 
 class sortedlist(list):
+    """
+    An auto sorted list.
+    
+    Attributes
+    ----------
+    _reversed : `bool`
+        Whether the list is reversed.
+    """
     __slots__ = ('_reversed', )
     
     __setitem__ = RemovedDescriptor()
@@ -1176,13 +1597,24 @@ class sortedlist(list):
     __imul__ = RemovedDescriptor()
     append = RemovedDescriptor()
     
-    def __init__(self, it=None, reverse=False):
+    def __init__(self, iterable=None, reverse=False):
+        """
+        Creates a new ``sortedlist`` instance with the given parameters.
+        
+        Parameters
+        ----------
+        it : `None` or `iterable`, Optional
+            An iterable to extend the created list with.
+        reverse : `bool`, Optional
+            Whether the created list should be reversed sorted.
+        """
         self._reversed = reverse
-        if (it is not None):
-            self.extend(it)
+        if (iterable is not None):
+            self.extend(iterable)
             list.sort(self, reverse=reverse)
     
     def __repr__(self):
+        """Returns the sortedlist's representation."""
         result = [self.__class__.__name__, '([']
         
         limit = len(self)
@@ -1223,7 +1655,21 @@ class sortedlist(list):
     reverse = property(_get_reverse, _set_reverse)
     del _get_reverse, _set_reverse
     
+    if DOCS_ENABLED:
+        reverse.__doc__ = (
+    """
+    A get-set descriptor to check or set how the sortedlist sorted.
+    """)
+    
     def add(self, value):
+        """
+        Adds a new value to the sortedlist.
+        
+        Parameters
+        ----------
+        value : `Any`
+            The value to insert to the sortedlist.
+        """
         index = self.relativeindex(value)
         if index == len(self):
             # If the the index is at the end, then we just list append it.
@@ -1241,6 +1687,16 @@ class sortedlist(list):
         return
     
     def remove(self, value):
+        """
+        Removes the given value from the sortedlist.
+        
+        If the value is not in the list will not raise.
+        
+        Parameters
+        ----------
+        value : `Any`
+            The value to remove.
+        """
         index = self.relativeindex(value)
         if index == len(self):
             # The element is not at self, leave
@@ -1248,23 +1704,30 @@ class sortedlist(list):
         
         element = self[index]
         if element != value:
-            # The element is different as the already added one att the
-            # correct position, leave.
+            # The element is different as the already added one att the correct position, leave.
             return
         
         # No more speccial case, remove it.
         list.__delitem__(self, index)
     
-    def extend(self, other):
+    def extend(self, iterable):
+        """
+        Extends the sortedlist with the given iterable object.
+        
+        Parameters
+        ----------
+        iterable : `iterable`
+            Iterable object to extend the sortedlist with.
+        """
         ln = len(self)
         insert = list.insert
         bot = 0
         if self._reversed:
-            if type(self) is not type(other):
-                other = sorted(other, reverse=True)
-            elif not other._reversed:
-                other = reversed(other)
-            for value in other:
+            if type(self) is not type(iterable):
+                other = sorted(iterable, reverse=True)
+            elif not iterable._reversed:
+                other = reversed(iterable)
+            for value in iterable:
                 top = ln
                 while True:
                     if bot < top:
@@ -1278,11 +1741,11 @@ class sortedlist(list):
                 insert(self, bot, value)
                 ln +=1
         else:
-            if type(self) is not type(other):
-                other = sorted(other)
-            elif other._reversed:
-                other = reversed(other)
-            for value in other:
+            if type(self) is not type(iterable):
+                other = sorted(iterable)
+            elif iterable._reversed:
+                other = reversed(iterable)
+            for value in iterable:
                 top = ln
                 while True:
                     if bot < top:
@@ -1294,9 +1757,10 @@ class sortedlist(list):
                         continue
                     break
                 insert(self, bot, value)
-                ln +=1
+                ln += 1
     
     def __contains__(self, value):
+        """Returns whether the sortedlist contains the given value."""
         index = self.relativeindex(value)
         if index == len(self):
             return False
@@ -1307,12 +1771,26 @@ class sortedlist(list):
         return False
     
     def index(self, value):
+        """Returns the index of the given value inside of the sortedlist."""
         index = self.relativeindex(value)
         if index == len(self) or self[index] != value:
-            raise ValueError(f'{value!r} is not in the {self.__class__.__name__}')
+            raise ValueError(f'{value!r} is not in the {self.__class__.__name__}.')
         return index
     
     def relativeindex(self, value):
+        """
+        Returns the relative index of the given value if it would be inside of the sortedlist.
+        
+        Parameters
+        ----------
+        value : `Any`
+            The object's what's relative index is returned.
+        
+        Returns
+        -------
+        relativeindex : `bool`
+            The index where the given value would be inserted or should be inside of the srotedlist.
+        """
         bot = 0
         top = len(self)
         if self._reversed:
@@ -1338,6 +1816,21 @@ class sortedlist(list):
         return bot
     
     def keyedrelativeindex(self, value, key):
+        """
+        Returns the relative index of the given value if it would be inside of the sortedlist.
+        
+        Parameters
+        ----------
+        value : `Any`
+            The object's what's relative index is returned.
+        key : `callable`
+            A function that serves as a key for the sort comparison.
+        
+        Returns
+        -------
+        relativeindex : `bool`
+            The index where the given value would be inserted or should be inside of the srotedlist.
+        """
         bot = 0
         top = len(self)
         if self._reversed:
@@ -1363,38 +1856,94 @@ class sortedlist(list):
         return bot
     
     def copy(self):
+        """
+        Copies the sortedlist.
+        
+        Returns
+        -------
+        new : ``sortedlist``
+        """
         new = list.__new__(type(self))
-        new._reversed=self._reversed
+        new._reversed = self._reversed
         list.extend(new, self)
         return new
     
     def resort(self):
+        """
+        Resorts the sortedlist.
+        """
         list.sort(self, reverse=self._reversed)
     
     def get(self, value, key, default=None):
-        index = self.keyedrelativeindex(value, key)
-        if index==len(self):
-            return default
+        """
+        Gets an element from the sortedlist, what passed trough `key` equals to the given value.
         
-        object_ = self[index]
-        if key(object_)==value:
-            return object_
+        Parameters
+        ----------
+        value : `Any`
+            The value to search in the sortedlist.
+        key : `callable`
+            A function that serves as a key for the sort comparison.
+        default : `Any`, Optional
+            Default value to returns if no matching element was present. Defaults to `None`.
         
-        return default
-    
-    def pop(self, value, key, default=None):
+        Returns
+        -------
+        element : `Any` or `default`
+            The matched element or the `default` value if not found.
+        """
         index = self.keyedrelativeindex(value, key)
         if index == len(self):
             return default
         
-        object_ = self[index]
-        if key(object_) == value:
+        element = self[index]
+        if key(element) == value:
+            return element
+        
+        return default
+    
+    def pop(self, value, key, default=None):
+        """
+        Gets and remvoves element from the sortedlist, what's is passed trough `key` equals to the given value.
+        
+        Parameters
+        ----------
+        value : `Any`
+            The value to search in the sortedlist.
+        key : `callable`
+            A function that serves as a key for the sort comparison.
+        default : `Any`, Optional
+            Default value to returns if no matching element was present. Defaults to `None`.
+        
+        Returns
+        -------
+        element : `Any` or `default`
+            The matched element or the `default` value if not found.
+        """
+        index = self.keyedrelativeindex(value, key)
+        if index == len(self):
+            return default
+        
+        element = self[index]
+        if key(element) == value:
             del self[index]
-            return object_
+            return element
         
         return default
 
 def isweakreferable(object_):
+    """
+    Returns whether the given object is weakreferable.
+    
+    Parameters
+    ----------
+    object_ : `Any`
+        The object to check.
+    
+    Returns
+    -------
+    isweakreferable : `bool`
+    """
     slots = getattr(type(object_), '__slots__', None)
     if (slots is not None) and ('__weakref__' in slots):
         return True
@@ -1491,6 +2040,11 @@ def add_to_pending_removals(container, reference):
 
 # speedup builtin stuff, Cpython is welcome
 class WeakReferer(WeakrefType):
+    """
+    Weakreferences to an object.
+    
+    After calling it returns the referenced object or `None` if already dead.
+    """
     __slots__ = ()
     if NEEDS_DUMMY_INIT:
         def __init__(self, *args, **kwargs):
@@ -1499,15 +2053,60 @@ class WeakReferer(WeakrefType):
         __init__ = object.__init__
 
 class KeyedReferer(WeakReferer):
+    """
+    Weakreferences an object with a key, what can be used to identify it.
+    
+    Attributes
+    ----------
+    key : `Any`
+        Key to identify the weakreferenced object.
+    """
     __slots__ = ('key', )
     def __new__(cls, obj, callback, key, ):
+        """
+        Creates a new ``KeyedReferer`` insatnce with the given parameters.
+        
+        Parameters
+        ----------
+        obj : `Any`
+            The object to weakreference.
+        callback : `Any`
+            Callback running when the object is garbage collected.
+        key : `Any`
+            Key to identify the weakreferenced object.
+        """
         self = WeakReferer.__new__(cls, obj, callback)
         self.key = key
         return self
 
 class WeakCallable(WeakReferer):
+    """
+    Weakreferences a callable object.
+    
+    When the object is called, calls the weakreferenced object if not yet collected.
+    """
     __slots__ = ()
     def __call__(self, *args, **kwargs):
+        """
+        Calls the wakreferenced object if not yet collected.
+        
+        Parameters
+        ----------
+        *args : Arguments
+            Argumnets to call the weakreferenced callable with.
+        **kwargs : Keyword arguments
+            Keyowrd arguments to call the weakreferenced callable with..
+        
+        Returns
+        -------
+        result : `Any`
+            The returned value by the referenced object. Returns `None` if the object is already collected.
+        
+        Raises
+        ------
+        BaseException
+            Raised exception by the referenced callable.
+        """
         self = WeakReferer.__call__(self)
         if self is None:
             return
@@ -1515,48 +2114,152 @@ class WeakCallable(WeakReferer):
         return self(*args, **kwargs)
     
     def is_alive(self):
+        """
+        Returns whether the ``WeakCallable`` is still alive (the referred object by it is not collected yet.)
+        
+        Returns
+        -------
+        is_alive : `bool`
+        """
         return (WeakReferer.__call__(self) is not None)
 
 class weakmethod(WeakReferer, MethodLike):
-    __slots__ = ('__func__')
+    """
+    A method like, what weakreferences it's object not blocking it from being garbage collected.
+    
+    Attributes
+    ----------
+    __func__ : `callable`
+        The function to call as a method.
+    
+    Class Attributes
+    ----------------
+    __reserved_argcount__ : `int` = `1`
+        The amount of reserved arguments by weakmethod.
+    """
+    __slots__ = ('__func__',)
     __reserved_argcount__ = 1
     
     def __new__(cls, obj, func, callback=None):
+        """
+        Creates a new ``weakmethod`` instance with the given parameter.
+        
+        Parameters
+        ----------
+        obj : `Any`
+            The object to weakreference and pass to `func`.
+        func : `callable`
+            The function to call as a method.
+        callback : `Any`, Optional
+            Callback running when the object is garbage collected.
+        """
         self = WeakReferer.__new__(cls, obj, callback)
         self.__func__ = func
         return self
     
     @property
     def __self__(self):
+        """
+        Returns the weakreferenced object by the ``weakmethod`` or `None`if it was already garbage collected.
+        
+        Returns
+        -------
+        obj : `Any`
+            The weakreferenced object if not yet garbage collected. Defaults to `None`.
+        """
         return WeakReferer.__call__(self)
     
     def __call__(self, *args, **kwargs):
+        """
+        Calls the weakmethod object's function with it's object if not yet collected.
+        
+        Parameters
+        ----------
+        *args : Arguments
+            Argumnets to call the function with.
+        **kwargs : Keyword arguments
+            Keyowrd arguments to call the function with.
+        
+        Returns
+        -------
+        result : `Any`
+            The returned value by the function. Returns `None` if the object is already collected.
+        
+        Raises
+        ------
+        BaseException
+            Raised exception by the function.
+        """
         obj = WeakReferer.__call__(self)
         if obj is None:
             return
+        
         return self.__func__(obj, *args, **kwargs)
     
     def is_alive(self):
+        """
+        Returns whether the ``weakmethod``'s object is still alive (the referred object by it is not collected yet.)
+        
+        Returns
+        -------
+        is_alive : `bool`
+        """
         return (WeakReferer.__call__(self) is not None)
     
-    def __getattr__(self,name):
+    def __getattr__(self, name):
         return getattr(self.__func__, name)
     
     @classmethod
     def from_method(cls, method_, callback=None):
+        """
+        Creates a new ``weakmethod`` instance from the given `method`.
+        
+        Parameters
+        ----------
+        method_ : `method`
+            The method tu turn into ``weakmethod``.
+        callback : `Any`, Optional
+            Callback running when the respective object is garbage collected.
+        """
         self = WeakReferer.__new__(cls, method_.__self__, callback)
         self.__func__ = method_.__func__
         return self
 
+
 class _WeakValueDictionaryCallback(object):
+    """
+    Callback used by ``WeakValueDictionary``-s and by ``HybridValueDictionary``-s.
+    
+    Attributes
+    ----------
+    _parent : ``WeakReferer`` to (``WeakValueDictionary`` or ``HybridValueDictionary``)
+        The parent weak or hybrid value dictionary.
+    """
     __slots__ = ('_parent', )
     def __new__(cls, parent):
+        """
+        Creates a new ``_WeakValueDictionaryCallback`` instance bound to the given ``WeakValueDictionary`` or
+        ``HybridValueDictionary`` instance.
+        
+        Parameters
+        ----------
+        parent : ``WeakValueDictionary`` or ``HybridValueDictionary``
+            The parent weak or hybrid value dictionary.
+        """
         parent = WeakReferer(parent)
         self = object.__new__(cls)
         self._parent = parent
         return self
     
     def __call__(self, reference):
+        """
+        Called when a value of the respective weak or hybrid value dictionary is garbage collected.
+        
+        Parameters
+        ----------
+        reference : ``KeyedReferer``
+            Weakreference to the respective object.
+        """
         parent = self._parent()
         if parent is None:
             return
@@ -1569,14 +2272,38 @@ class _WeakValueDictionaryCallback(object):
             except KeyError:
                 pass
 
+
 class _HybridValueDictionaryKeyIterator(object):
+    """
+    Key iterator for ``HybridValueDictionary``-s.
+    
+    Attributes
+    ----------
+    _parent : ``WeakReferer`` to ``HybridValueDictionary``
+        The parent hybrid value dictionary.
+    """
     __slots__ = ('_parent',)
     def __init__(self, parent):
+        """
+        Creates a new ``_HybridValueDictionaryKeyIterator`` instance bound to the given ``HybridValueDictionary``.
+        
+        Parameters
+        ----------
+        parent : ``HybridValueDictionary``
+            The parent hybrid value dictionary.
+        """
         self._parent = parent
     
     def __iter__(self):
+        """
+        Iterates over a hybrid value dictionary's keys.
+        
+        Yields
+        ------
+        key : `Any`
+        """
         parent = self._parent
-        parent._iterating +=1
+        parent._iterating += 1
         
         try:
             for key, (value_weakreferable, value_or_reference) in dict.items(parent):
@@ -1588,21 +2315,47 @@ class _HybridValueDictionaryKeyIterator(object):
                 continue
         
         finally:
-            parent._iterating -=1
+            parent._iterating -= 1
             parent._commit_removals()
     
     def __contains__(self, contains_key):
+        """Returns whether the respective ``HybridValueDictionary`` contains the given key."""
         return (contains_key in self._parent)
     
     def __len__(self):
+        """Returns the respective ``HybridValueDictionary``'s length."""
         return len(self._parent)
 
+
 class _HybridValueDictionaryValueIterator(object):
+    """
+    Value iterator for ``HybridValueDictionary``-s.
+    
+    Attributes
+    ----------
+    _parent : ``WeakReferer`` to ``HybridValueDictionary``
+        The parent hybrid value dictionary.
+    """
     __slots__ = ('_parent',)
     def __init__(self, parent):
+        """
+        Creates a new ``_HybridValueDictionaryValueIterator`` instance bound to the given ``HybridValueDictionary``.
+        
+        Parameters
+        ----------
+        parent : ``HybridValueDictionary``
+            The parent hybrid value dictionary.
+        """
         self._parent = parent
     
     def __iter__(self):
+        """
+        Iterates over a hybrid value dictionary's values.
+        
+        Yields
+        ------
+        value : `Any`
+        """
         parent = self._parent
         parent._iterating += 1
         
@@ -1624,6 +2377,7 @@ class _HybridValueDictionaryValueIterator(object):
             parent._commit_removals()
     
     def __contains__(self, contains_value):
+        """Returns whether the respective ``HybridValueDictionary`` contains the given value."""
         parent = self._parent
         for value_weakreferable, value_or_reference in dict.values(parent):
             if value_weakreferable:
@@ -1645,16 +2399,41 @@ class _HybridValueDictionaryValueIterator(object):
         return result
     
     def __len__(self):
+        """Returns the respective ``HybridValueDictionary``'s length."""
         return len(self._parent)
 
+
 class _HybridValueDictionaryItemIterator(object):
+    """
+    Item iterator for ``HybridValueDictionary``-s.
+    
+    Attributes
+    ----------
+    _parent : ``WeakReferer`` to ``HybridValueDictionary``
+        The parent hybrid value dictionary.
+    """
     __slots__ = ('_parent',)
     def __init__(self, parent):
+        """
+        Creates a new ``_HybridValueDictionaryItemIterator`` instance bound to the given ``HybridValueDictionary``.
+        
+        Parameters
+        ----------
+        parent : ``HybridValueDictionary``
+            The parent hybrid value dictionary.
+        """
         self._parent = parent
     
     def __iter__(self):
+        """
+        Iterates over a hybrid value dictionary's items.
+        
+        Yields
+        ------
+        item : `tuple` (`Any`, `Any`)
+        """
         parent = self._parent
-        parent._iterating +=1
+        parent._iterating += 1
         
         try:
             for key, (value_weakreferable, value_or_reference) in dict.items(parent):
@@ -1670,10 +2449,11 @@ class _HybridValueDictionaryItemIterator(object):
                 continue
         
         finally:
-            parent._iterating -=1
+            parent._iterating -= 1
             parent._commit_removals()
     
     def __contains__(self, contains_item):
+        """Returns whether the respective ``HybridValueDictionary`` contains the given item."""
         if not isinstance(contains_item, tuple):
             return False
         
@@ -1703,14 +2483,40 @@ class _HybridValueDictionaryItemIterator(object):
         return (value == contains_value)
     
     def __len__(self):
+        """Returns the respective ``HybridValueDictionary``'s length."""
         return len(self._parent)
 
+
 class HybridValueDictionary(dict):
+    """
+    Hybrid value dictionaryies store tehir's values weakly referenced if applicable.
+    
+    Attributes
+    ----------
+    _pending_removals : `None` or `set` of (``KeyedReferer`` or ``WeakHasher``)
+        Pending removals of the hybrid value dictionary if applicable.
+    _iterating : `int`
+        Whether the hybrid value dictionary is iterating and how much times.
+    _callback : ``_WeakValueDictionaryCallback``
+        Callback added to the ``HybridValueDictionary``'s weak elements.
+    
+    Class Attributes
+    ----------------
+    MAX_RERP_ELEMENT_LIMIT : `int` = `50`
+        The maximal amount of items to render by ``.__repr__``.
+    
+    Notes
+    -----
+    ``HybridValueDictionary`` instances are weakreferable.
+    """
     __slots__ = ('__weakref__', '_pending_removals', '_iterating', '_callback')
     
     MAX_RERP_ELEMENT_LIMIT = 50
     
     def _commit_removals(self):
+        """
+        Commits the pending removals of the hybrid value dictionary if applicable.
+        """
         if self._iterating:
             return
         
@@ -1742,6 +2548,7 @@ class HybridValueDictionary(dict):
     # __class__ -> same
     
     def __contains__(self, contains_key):
+        """Returns whether the hybrid value dictionary contains the given key."""
         value_pair = dict.get(self, contains_key, None)
         if value_pair is None:
             return False
@@ -1769,6 +2576,7 @@ class HybridValueDictionary(dict):
     # __getattribute__ -> same
     
     def __getitem__(self, key):
+        """Gets the value of the hybrid value dictionary which matches the given key."""
         value_weakreferable, value_or_reference = dict.__getitem__(self, key)
         if value_weakreferable:
             value = value_or_reference()
@@ -1788,6 +2596,14 @@ class HybridValueDictionary(dict):
     # __hash__ -> same
     
     def __init__(self, iterable=None):
+        """
+        Creates a new ``HybridValueDictionary`` instance from the given iterable.
+        
+        Parameters
+        ----------
+        iterable : `iterable`, Optional
+            Iterable to update the created dictionary with.
+        """
         self._pending_removals = None
         self._iterating = 0
         self._callback = _WeakValueDictionaryCallback(self)
@@ -1797,11 +2613,13 @@ class HybridValueDictionary(dict):
     # __init_subclass__ -> same
     
     def __iter__(self):
+        """Returns a ``_HybridValueDictionaryKeyIterator`` iterating over the hybrid value dictionary's keys."""
         return iter(_HybridValueDictionaryKeyIterator(self))
     
     # __le__ -> same
     
     def __len__(self):
+        """Returns the length of the hybrid value dictionary."""
         length = dict.__len__(self)
         pending_removals = self._pending_removals
         if (pending_removals is not None):
@@ -1816,6 +2634,7 @@ class HybridValueDictionary(dict):
     # __redue_ex__ -> we do not care
     
     def __repr__(self):
+        """Returns the representation of the hybrid value dictionary."""
         result = [self.__class__.__name__, '({']
         if len(self):
             limit = self.MAX_RERP_ELEMENT_LIMIT
@@ -1834,7 +2653,7 @@ class HybridValueDictionary(dict):
                 result.append(repr(value))
                 result.append(', ')
                 
-                collected +=1
+                collected += 1
                 if collected != limit:
                     continue
                 
@@ -1858,6 +2677,7 @@ class HybridValueDictionary(dict):
     #__setattr__ -> same
     
     def __setitem__(self, key, value):
+        """Adds the given `key` - `value` pair to the hybrid value dictionary."""
         if isweakreferable(value):
             value_weakreferable = True
             value_or_reference = KeyedReferer(value, self._callback, key)
@@ -1874,10 +2694,20 @@ class HybridValueDictionary(dict):
     # __subclasshook__ -> same
     
     def clear(self):
+        """
+        Clears the hybrid value dictionary.
+        """
         dict.clear(self)
         self._pending_removals = None
     
     def copy(self):
+        """
+        Copies the hybrid value dictionary.
+        
+        Returns
+        -------
+        new : ``HybridValueDictionary``
+        """
         new = dict.__new__(type(self))
         new._iterating = 0
         new._pending_removals = None
@@ -1901,6 +2731,21 @@ class HybridValueDictionary(dict):
         return new
     
     def get(self, key, default=None):
+        """
+        Gets the value of the hybrid value dictionary which matches the given key.
+        
+        Parameters
+        ----------
+        key : `Any`
+            A key to match.
+        default : `Any`, Optional
+            Default value to return if the given `key` could not be matched. Defaults to `None`.
+        
+        Returns
+        -------
+        value : `Any` or `default`
+            The key's matched value. If no value was matched returns the `default` value.
+        """
         value_pair = dict.get(self, key, default)
         if value_pair is default:
             return default
@@ -1922,13 +2767,47 @@ class HybridValueDictionary(dict):
         return value
     
     def items(self):
+        """
+        Returns item iterator for the hybrid value dictionary.
+        
+        Returns
+        -------
+        item_iterator : ``_HybridValueDictionaryItemIterator``
+        """
         return _HybridValueDictionaryItemIterator(self)
     
     def keys(self):
+        """
+        Returns key iterator for the hybrid value dictionary.
+        
+        Returns
+        -------
+        key_iterator : ``_HybridValueDictionaryKeyIterator``
+        """
         return _HybridValueDictionaryKeyIterator(self)
     
     # need goto for better codestyle
     def pop(self, key, default=_spaceholder):
+        """
+        Pops the value of the hybrid value dictionary which matches the given key.
+        
+        Parameters
+        ----------
+        key : `Any`
+            A key to match.
+        default : `Any`, Optional
+            Default value to return if the given `key` could not be matched.
+        
+        Returns
+        -------
+        value : `Any` or `default`
+            The key's matched value. If no value was matched and `default` value is given, then returns that.
+        
+        Raises
+        ------
+        KeyError
+            If `key` could not be matched and `default` value is was not given either.
+        """
         value_pair = dict.pop(self, key, _spaceholder)
         
         if (value_pair is not default):
@@ -1947,6 +2826,18 @@ class HybridValueDictionary(dict):
         return default
     
     def popitem(self):
+        """
+        Pops an item of the hybrid value dictionary.
+        
+        Returns
+        -------
+        item : `tuple` (`Any`, `Any`)
+        
+        Raises
+        ------
+        KeyError
+            If the hybrid value dictionary is empty.
+        """
         while dict.__len__(self):
             key, (value_weakreferable, value_or_reference) = dict.popitem(self)
             if value_weakreferable:
@@ -1961,6 +2852,23 @@ class HybridValueDictionary(dict):
         raise KeyError('popitem(): dictionary is empty.')
     
     def setdefault(self, key, default=None):
+        """
+        Returns the value for the given `key`.
+        
+        If the `key` is not present in the hybrid value dictionary, then set's the given `default` value as it.
+        
+        Parameters
+        ----------
+        key : `Any`
+            The key to match.
+        default : `Any`, Optional
+            Default value to set and return if `key` is not present in the hybrid value dictionary.
+        
+        Returns
+        -------
+        value : `default` or `Any`
+            The matched value, or `default` if none.
+        """
         value_pair = dict.get(self, key, None)
         if (value_pair is not None):
             value_weakreferable, value_or_reference = value_pair
@@ -1974,22 +2882,44 @@ class HybridValueDictionary(dict):
         self[key] = default
         return default
     
-    def update(self, other):
-        if hasattr(type(other), 'items'):
-            for key, value in other.items():
+    def update(self, iterable):
+        """
+        Updates the hybrid value dictionary with the given iterable's elements.
+        
+        Parameters
+        ----------
+        iterable : `iterable`
+            Iterable to extend the hybrid value dictionary with.
+            
+            Can be given as an object, wich:
+            - supports `.items` iterator.
+            - supports `.keys` and `.__getitem__`.
+            - is `iterable` and each iteration returns a sequence with 2 elements.
+        
+        Raises
+        ------
+        TypeError
+            The given `iterable` is not `iterable`.
+        ValueError
+            The the given `iterable` sot supports neither `.items` or (`.keys` and `.__getitem__`) and one of it's
+            element's length is not `2`.
+        """
+        iterable_type = iterable.__class__
+        if hasattr(iterable_type, 'items'):
+            for key, value in iterable.items():
                 self[key] = value
             return
         
-        if hasattr(type(other), 'keys') and hasattr(type(other), '__getitem__'):
-            for key in other.keys():
-                value = other[key]
+        if hasattr(iterable_type, 'keys') and hasattr(iterable_type, '__getitem__'):
+            for key in iterable.keys():
+                value = iterable[key]
                 self[key] = value
             return
         
-        if hasattr(type(other), '__iter__'):
-            index = -1
-            for item in other:
-                index +=1
+        if hasattr(iterable_type, '__iter__'):
+            index = - 1
+            for item in iterable:
+                index += 1
                 
                 try:
                     iterator = iter(item)
@@ -2017,7 +2947,7 @@ class HybridValueDictionary(dict):
                 
                 length = 3
                 for _ in iterator:
-                    length +=1
+                    length += 1
                     if length > 9000:
                         break
                 
@@ -2029,19 +2959,50 @@ class HybridValueDictionary(dict):
                 raise ValueError(f'Dictionary update sequence element #{index} has length {length}; 2 is required.')
             return
         
-        raise TypeError(f'{other.__class__.__name__!r} object is not iterable')
+        raise TypeError(f'{iterable_type.__name__!r} object is not iterable.')
     
     def values(self):
+        """
+        Returns value iterator for the hybrid value dictionary.
+        
+        Returns
+        -------
+        value_iterator : ``_HybridValueDictionaryValueIterator``
+        """
         return _HybridValueDictionaryValueIterator(self)
 
+
 class _WeakValueDictionaryKeyIterator(object):
+    """
+    Key iterator for ``WeakValueDictionary``-s.
+    
+    Attributes
+    ----------
+    _parent : ``WeakReferer`` to ``WeakValueDictionary``
+        The parent weak value dictionary.
+    """
     __slots__ = ('_parent',)
     def __init__(self, parent):
+        """
+        Creates a new ``_WeakValueDictionaryKeyIterator`` instance bound to the given ``WeakValueDictionary``.
+        
+        Parameters
+        ----------
+        parent : ``WeakValueDictionary``
+            The parent weak value dictionary.
+        """
         self._parent = parent
     
     def __iter__(self):
+        """
+        Iterates over a weak value dictionary's keys.
+        
+        Yields
+        ------
+        key : `Any`
+        """
         parent = self._parent
-        parent._iterating +=1
+        parent._iterating += 1
         
         try:
             for key, value_reference in dict.items(parent):
@@ -2053,23 +3014,49 @@ class _WeakValueDictionaryKeyIterator(object):
                 continue
         
         finally:
-            parent._iterating -=1
+            parent._iterating -= 1
             parent._commit_removals()
     
     def __contains__(self, key):
+        """Returns whether the respective ``WeakValueDictionary`` contains the given key."""
         return (key in self._parent)
     
     def __len__(self):
+        """Returns the respective ``WeakValueDictionary``'s length."""
         return len(self._parent)
 
+
 class _WeakValueDictionaryValueIterator(object):
+    """
+    Value iterator for ``WeakValueDictionary``-s.
+    
+    Attributes
+    ----------
+    _parent : ``WeakReferer`` to ``WeakValueDictionary``
+        The parent weak value dictionary.
+    """
     __slots__ = ('_parent',)
     def __init__(self, parent):
+        """
+        Creates a new ``_WeakValueDictionaryValueIterator`` instance bound to the given ``WeakValueDictionary``.
+        
+        Parameters
+        ----------
+        parent : ``WeakValueDictionary``
+            The parent weak value dictionary.
+        """
         self._parent = parent
     
     def __iter__(self):
+        """
+        Iterates over a weak value dictionary's values.
+        
+        Yields
+        ------
+        value : `Any`
+        """
         parent = self._parent
-        parent._iterating +=1
+        parent._iterating += 1
         
         try:
             for value_reference in dict.values(parent):
@@ -2082,10 +3069,11 @@ class _WeakValueDictionaryValueIterator(object):
                 continue
         
         finally:
-            parent._iterating -=1
+            parent._iterating -= 1
             parent._commit_removals()
     
     def __contains__(self, contains_value):
+        """Returns whether the respective ``WeakValueDictionary`` contains the given value."""
         parent = self._parent
         for value_reference in dict.values(parent):
             value = value_reference()
@@ -2105,16 +3093,41 @@ class _WeakValueDictionaryValueIterator(object):
         return result
     
     def __len__(self):
+        """Returns the respective ``WeakValueDictionary``'s length."""
         return len(self._parent)
 
+
 class _WeakValueDictionaryItemIterator(object):
+    """
+    Item iterator for ``WeakValueDictionary``-s.
+    
+    Attributes
+    ----------
+    _parent : ``WeakReferer`` to ``WeakValueDictionary``
+        The parent weak value dictionary.
+    """
     __slots__ = ('_parent',)
     def __init__(self, parent):
+        """
+        Creates a new ``_WeakValueDictionaryItemIterator`` instance bound to the given ``WeakValueDictionary``.
+        
+        Parameters
+        ----------
+        parent : ``WeakValueDictionary``
+            The parent weak value dictionary.
+        """
         self._parent = parent
     
     def __iter__(self):
+        """
+        Iterates over a weak value dictionary's items.
+        
+        Yields
+        ------
+        item : `tuple` (`Any`, `Any`)
+        """
         parent = self._parent
-        parent._iterating +=1
+        parent._iterating += 1
         
         try:
             for key, value_reference in dict.items(parent):
@@ -2127,10 +3140,11 @@ class _WeakValueDictionaryItemIterator(object):
                 continue
         
         finally:
-            parent._iterating -=1
+            parent._iterating -= 1
             parent._commit_removals()
     
     def __contains__(self, contains_item):
+        """Returns whether the respective ``WeakValueDictionary`` contains the given item."""
         if not isinstance(contains_item, tuple):
             return False
         
@@ -2157,14 +3171,40 @@ class _WeakValueDictionaryItemIterator(object):
         return (value == contains_value)
     
     def __len__(self):
+        """Returns the respective ``WeakValueDictionary``'s length."""
         return len(self._parent)
 
+
 class WeakValueDictionary(dict):
+    """
+    Weak value dictionary, which stores it's values weakly referenced.
+    
+    Attributes
+    ----------
+    _pending_removals : `None` or `set` of (``KeyedReferer`` or ``WeakHasher``)
+        Pending removals of the weak value dictionary if applicable.
+    _iterating : `int`
+        Whether the weak value dictionary is iterating and how much times.
+    _callback : ``_WeakValueDictionaryCallback``
+        Callback added to the ``WeakValueDictionary``'s weak values.
+    
+    Class Attributes
+    ----------------
+    MAX_RERP_ELEMENT_LIMIT : `int` = `50`
+        The maximal amount of items to render by ``.__repr__``.
+    
+    Notes
+    -----
+    ``WeakValueDictionary`` instances are weakreferable.
+    """
     __slots__ = ('__weakref__', '_pending_removals', '_iterating', '_callback')
     
     MAX_RERP_ELEMENT_LIMIT = 50
     
     def _commit_removals(self):
+        """
+        Commits the pending removals of the weak value dictionary if applicable.
+        """
         if self._iterating:
             return
         
@@ -2192,6 +3232,7 @@ class WeakValueDictionary(dict):
     # __class__ -> same
     
     def __contains__(self, key):
+        """Returns whether the weak value dictionary contains the given key."""
         value_reference = dict.get(self, key, None)
         if value_reference is None:
             return False
@@ -2217,6 +3258,7 @@ class WeakValueDictionary(dict):
     # __getattribute__ -> same
     
     def __getitem__(self, key):
+        """Gets the value of the weak value dictionary which matches the given key."""
         value_reference = dict.__getitem__(self, key)
         value = value_reference()
         if (value is not None):
@@ -2233,6 +3275,14 @@ class WeakValueDictionary(dict):
     # __hash__ -> same
     
     def __init__(self, iterable=None):
+        """
+        Creates a new ``WeakValueDictionary`` instance from the given iterable.
+        
+        Parameters
+        ----------
+        iterable : `iterable`, Optional
+            Iterable to update the created dictionary with.
+        """
         self._pending_removals = None
         self._iterating = 0
         self._callback = _WeakValueDictionaryCallback(self)
@@ -2242,11 +3292,13 @@ class WeakValueDictionary(dict):
     # __init_subclass__ -> same
     
     def __iter__(self):
+        """Returns a ``_WeakValueDictionaryKeyIterator`` iterating over the weak value dictionary's keys."""
         return iter(_WeakValueDictionaryKeyIterator(self))
     
     # __le__ -> same
     
     def __len__(self):
+        """Returns the length of the weak value dictionary."""
         length = dict.__len__(self)
         pending_removals = self._pending_removals
         if (pending_removals is not None):
@@ -2261,6 +3313,7 @@ class WeakValueDictionary(dict):
     # __redue_ex__ -> we do not care
     
     def __repr__(self):
+        """Returns the representation of the weak value dictionary."""
         result = [self.__class__.__name__, '({']
         
         if len(self):
@@ -2301,6 +3354,7 @@ class WeakValueDictionary(dict):
     #__setattr__ -> same
     
     def __setitem__(self, key, value):
+        """Adds the given `key` - `value` pair to the weak value dictionary."""
         dict.__setitem__(self, key, KeyedReferer(value, self._callback, key))
     
     # __sizeof__ -> same
@@ -2310,10 +3364,20 @@ class WeakValueDictionary(dict):
     # __subclasshook__ -> same
     
     def clear(self):
+        """
+        Clears the weak value dictionary.
+        """
         dict.clear(self)
         self._pending_removals = None
     
     def copy(self):
+        """
+        Copies the weak value dictionary.
+        
+        Returns
+        -------
+        new : ``WeakValueDictionary``
+        """
         new = dict.__new__(type(self))
         new._pending_removals = None
         callback = _WeakValueDictionaryCallback(new)
@@ -2333,6 +3397,21 @@ class WeakValueDictionary(dict):
         return new
     
     def get(self, key, default=None):
+        """
+        Gets the value of the weak value dictionary which matches the given key.
+        
+        Parameters
+        ----------
+        key : `Any`
+            A key to match.
+        default : `Any`, Optional
+            Default value to return if the given `key` could not be matched. Defaults to `None`.
+        
+        Returns
+        -------
+        value : `Any` or `default`
+            The key's matched value. If no value was matched returns the `default` value.
+        """
         value_reference = dict.get(self, key, default)
         if value_reference is default:
             return default
@@ -2349,12 +3428,46 @@ class WeakValueDictionary(dict):
         return default
     
     def items(self):
+        """
+        Returns item iterator for the weak value dictionary.
+        
+        Returns
+        -------
+        item_iterator : ``_WeakValueDictionaryItemIterator``
+        """
         return _WeakValueDictionaryItemIterator(self)
     
     def keys(self):
+        """
+        Returns key iterator for the weak value dictionary.
+        
+        Returns
+        -------
+        key_iterator : ``_WeakValueDictionaryKeyIterator``
+        """
         return _WeakValueDictionaryKeyIterator(self)
     
     def pop(self, key, default=_spaceholder):
+        """
+        Pops the value of the weak value dictionary which matches the given key.
+        
+        Parameters
+        ----------
+        key : `Any`
+            A key to match.
+        default : `Any`, Optional
+            Default value to return if the given `key` could not be matched.
+        
+        Returns
+        -------
+        value : `Any` or `default`
+            The key's matched value. If no value was matched and `default` value is given, then returns that.
+        
+        Raises
+        ------
+        KeyError
+            If `key` could not be matched and `default` value is was not given either.
+        """
         value_reference = dict.pop(self, key, _spaceholder)
         if (value_reference is not _spaceholder):
             value = value_reference()
@@ -2367,6 +3480,18 @@ class WeakValueDictionary(dict):
         return default
     
     def popitem(self):
+        """
+        Pops an item of the weak value dictionary.
+        
+        Returns
+        -------
+        item : `tuple` (`Any`, `Any`)
+        
+        Raises
+        ------
+        KeyError
+            If the weak value dictionary is empty.
+        """
         while dict.__len__(self):
             key, value_reference = dict.popitem(self)
             value = value_reference()
@@ -2378,6 +3503,23 @@ class WeakValueDictionary(dict):
         raise KeyError('popitem(): dictionary is empty.')
     
     def setdefault(self, key, default):
+        """
+        Returns the value for the given `key`.
+        
+        If the `key` is not present in the weak value dictionary, then set's the given `default` value as it.
+        
+        Parameters
+        ----------
+        key : `Any`
+            The key to match.
+        default : `Any`, Optional
+            Default value to set and return if `key` is not present in the weak value dictionary.
+        
+        Returns
+        -------
+        value : `default` or `Any`
+            The matched value, or `default` if none.
+        """
         value_reference = dict.get(self, key, _spaceholder)
         if (value_reference is not _spaceholder):
             value = value_reference()
@@ -2387,22 +3529,44 @@ class WeakValueDictionary(dict):
         self[key] = default
         return default
     
-    def update(self, other):
-        if hasattr(type(other), 'items'):
-            for key, value in other.items():
+    def update(self, iterable):
+        """
+        Updates the weak value dictionary with the given iterable's elements.
+        
+        Parameters
+        ----------
+        iterable : `iterable`
+            Iterable to extend the weak value dictionary with.
+            
+            Can be given as an object, wich:
+            - supports `.items` iterator.
+            - supports `.keys` and `.__getitem__`.
+            - is `iterable` and each iteration returns a sequence with 2 elements.
+        
+        Raises
+        ------
+        TypeError
+            The given `iterable` is not `iterable`.
+        ValueError
+            The the given `iterable` sot supports neither `.items` or (`.keys` and `.__getitem__`) and one of it's
+            element's length is not `2`.
+        """
+        iterable_type = iterable.__class__
+        if hasattr(iterable_type, 'items'):
+            for key, value in iterable.items():
                 self[key] = value
             return
         
-        if hasattr(type(other), 'keys') and hasattr(type(other), '__getitem__'):
-            for key in other.keys():
-                value = other[key]
+        if hasattr(iterable_type, 'keys') and hasattr(iterable_type, '__getitem__'):
+            for key in iterable.keys():
+                value = iterable[key]
                 self[key] = value
             return
         
-        if hasattr(type(other), '__iter__'):
+        if hasattr(iterable_type, '__iter__'):
             index = -1
-            for item in other:
-                index +=1
+            for item in iterable:
+                index += 1
                 
                 try:
                     iterator = iter(item)
@@ -2430,7 +3594,7 @@ class WeakValueDictionary(dict):
                 
                 length = 3
                 for _ in iterator:
-                    length +=1
+                    length += 1
                     if length > 9000:
                         break
                 
@@ -2442,20 +3606,52 @@ class WeakValueDictionary(dict):
                 raise ValueError(f'Dictionary update sequence element #{index} has length {length}; 2 is required.')
             return
         
-        raise TypeError(f'{other.__class__.__name__!r} object is not iterable')
+        raise TypeError(f'{iterable_type.__name__!r} object is not iterable')
     
     def values(self):
+        """
+        Returns value iterator for the weak value dictionary.
+        
+        Returns
+        -------
+        value_iterator : ``_WeakValueDictionaryValueIterator``
+        """
         return _WeakValueDictionaryValueIterator(self)
 
+
 class _WeakKeyDictionaryCallback(object):
+    """
+    Callback used by ``WeakKeyDictionary``-s.
+    
+    Attributes
+    ----------
+    _parent : ``WeakReferer`` to ``WeakValueDictionary``
+        The parent weak key dictionary.
+    """
     __slots__ = ('_parent', )
     def __new__(cls, parent):
+        """
+        Creates a new ``_WeakKeyDictionaryCallback`` instance bound to the given ``WeakKeyDictionary`` instance.
+        
+        Parameters
+        ----------
+        parent : ``WeakKeyDictionary``
+            The parent weak key dictionary.
+        """
         parent = WeakReferer(parent)
         self = object.__new__(cls)
         self._parent = parent
         return self
     
     def __call__(self, reference):
+        """
+        Called when a key of the respective weak key dictionary is garbage collected.
+        
+        Parameters
+        ----------
+        reference : ``WeakReferer``
+            Weakreference to the respective object.
+        """
         parent = self._parent()
         if parent is None:
             return
@@ -2468,12 +3664,37 @@ class _WeakKeyDictionaryCallback(object):
             except KeyError:
                 pass
 
+
+
 class _WeakKeyDictionaryKeyIterator(object):
+    """
+    Key iterator for ``WeakKeyDictionary``-s.
+    
+    Attributes
+    ----------
+    _parent : ``WeakReferer`` to ``WeakKeyDictionary``
+        The parent weak key dictionary.
+    """
     __slots__ = ('_parent',)
     def __init__(self, parent):
+        """
+        Creates a new ``_WeakKeyDictionaryKeyIterator`` instance bound to the given ``WeakKeyDictionary``.
+        
+        Parameters
+        ----------
+        parent : ``WeakKeyDictionary``
+            The parent weak key dictionary.
+        """
         self._parent = parent
     
     def __iter__(self):
+        """
+        Iterates over a weak key dictionary's keys.
+        
+        Yields
+        ------
+        key : `Any`
+        """
         parent = self._parent
         parent._iterating += 1
         
@@ -2492,19 +3713,45 @@ class _WeakKeyDictionaryKeyIterator(object):
             parent._commit_removals()
     
     def __contains__(self, contains_key):
+        """Returns whether the respective ``WeakKeyDictionary`` contains the given key."""
         return (contains_key in self._parent)
     
     def __len__(self):
+        """Returns the respective ``WeakKeyDictionary``'s length."""
         return len(self._parent)
 
+
 class _WeakKeyDictionaryValueIterator(object):
+    """
+    Value iterator for ``WeakKeyDictionary``-s.
+    
+    Attributes
+    ----------
+    _parent : ``WeakReferer`` to ``WeakKeyDictionary``
+        The parent weak key dictionary.
+    """
     __slots__ = ('_parent',)
     def __init__(self, parent):
+        """
+        Creates a new ``_WeakKeyDictionaryValueIterator`` instance bound to the given ``WeakKeyDictionary``.
+        
+        Parameters
+        ----------
+        parent : ``WeakKeyDictionary``
+            The parent weak key dictionary.
+        """
         self._parent = parent
     
     def __iter__(self):
+        """
+        Iterates over a weak key dictionary's values.
+        
+        Yields
+        ------
+        value : `Any`
+        """
         parent = self._parent
-        parent._iterating +=1
+        parent._iterating += 1
         
         try:
             for key_reference, value in dict.items(parent):
@@ -2516,10 +3763,11 @@ class _WeakKeyDictionaryValueIterator(object):
                 continue
         
         finally:
-            parent._iterating -=1
+            parent._iterating -= 1
             parent._commit_removals()
     
     def __contains__(self, contains_value):
+        """Returns whether the respective ``WeakKeyDictionary`` contains the given value."""
         parent = self._parent
         
         for key_reference, value in dict.items(parent):
@@ -2539,16 +3787,41 @@ class _WeakKeyDictionaryValueIterator(object):
         return result
     
     def __len__(self):
+        """Returns the respective ``WeakKeyDictionary``'s length."""
         return len(self._parent)
 
+
 class _WeakKeyDictionaryItemIterator(object):
+    """
+    Item iterator for ``WeakKeyDictionary``-s.
+    
+    Attributes
+    ----------
+    _parent : ``WeakReferer`` to ``WeakKeyDictionary``
+        The parent weak key dictionary.
+    """
     __slots__ = ('_parent',)
     def __init__(self, parent):
+        """
+        Creates a new ``_WeakKeyDictionaryItemIterator`` instance bound to the given ``WeakKeyDictionary``.
+        
+        Parameters
+        ----------
+        parent : ``WeakKeyDictionary``
+            The parent weak key dictionary.
+        """
         self._parent = parent
     
     def __iter__(self):
+        """
+        Iterates over a weak key dictionary's items.
+        
+        Yields
+        ------
+        item : `tuple` (`Any`, `Any`)
+        """
         parent = self._parent
-        parent._iterating +=1
+        parent._iterating += 1
         
         try:
             for key_reference, value in dict.items(parent):
@@ -2561,10 +3834,11 @@ class _WeakKeyDictionaryItemIterator(object):
                 continue
         
         finally:
-            parent._iterating -=1
+            parent._iterating -= 1
             parent._commit_removals()
     
     def __contains__(self, contains_item):
+        """Returns whether the respective ``WeakKeyDictionary`` contains the given item."""
         if not isinstance(contains_item, tuple):
             return False
         
@@ -2585,14 +3859,39 @@ class _WeakKeyDictionaryItemIterator(object):
         return (value == contains_value)
     
     def __len__(self):
+        """Returns the respective ``WeakKeyDictionary``'s length."""
         return len(self._parent)
 
 class WeakKeyDictionary(dict):
+    """
+    Weak key dictionary, which stores it's keys weakly referenced.
+    
+    Attributes
+    ----------
+    _pending_removals : `None` or `set` of ``WeakReferer``
+        Pending removals of the weak key dictionary if applicable.
+    _iterating : `int`
+        Whether the weak key dictionary is iterating and how much times.
+    _callback : ``_WeakValueDictionaryCallback``
+        Callback added to the ``WeakKeyDictionary``'s weak keys.
+    
+    Class Attributes
+    ----------------
+    MAX_RERP_ELEMENT_LIMIT : `int` = `50`
+        The maximal amount of items to render by ``.__repr__``.
+    
+    Notes
+    -----
+    ``WeakKeyDictionary`` instances are weakreferable.
+    """
     __slots__ = ('__weakref__', '_pending_removals', '_iterating', '_callback')
     
     MAX_RERP_ELEMENT_LIMIT = 50
     
     def _commit_removals(self):
+        """
+        Commits the pending removals of the weak key dictionary if applicable.
+        """
         if self._iterating:
             return
         
@@ -2611,6 +3910,7 @@ class WeakKeyDictionary(dict):
     # __class__ -> same
     
     def __contains__(self, key):
+        """Returns whether the weak key dictionary contains the given key."""
         try:
             key = WeakReferer(key)
         except TypeError:
@@ -2621,6 +3921,7 @@ class WeakKeyDictionary(dict):
     # __delattr__ -> same
     
     def __delitem__(self, key):
+        """Deletes the value of the weak key dictionary which matches the given key."""
         dict.__delitem__(self, WeakReferer(key))
     
     # __dir__ -> same
@@ -2629,31 +3930,39 @@ class WeakKeyDictionary(dict):
     # __format__ -> same
     # __ge__ -> same
     # __getattribute__ -> same
-
+    
     def __getitem__(self, key):
+        """Gets the value of the weak key dictionary which matches the given key."""
         return dict.__getitem__(self, WeakReferer(key))
     
     # __gt__ -> same
     # __hash__ -> same
     
     def __init__(self, iterable=None):
+        """
+        Creates a new ``WeakKeyDictionary`` instance from the given iterable.
+        
+        Parameters
+        ----------
+        iterable : `iterable`, Optional
+            Iterable to update the created dictionary with.
+        """
         self._pending_removals = None
         self._iterating = 0
         self._callback = _WeakKeyDictionaryCallback(self)
-        if iterable is None:
-            return
-        
-        self.update(iterable)
-        return
+        if (iterable is not None):
+            self.update(iterable)
     
     # __init_subclass__ -> same
     
     def __iter__(self):
+        """Returns a ``_WeakKeyDictionaryKeyIterator`` iterating over the weak key dictionary's keys."""
         return iter(_WeakKeyDictionaryKeyIterator(self))
     
     # __le__ -> same
     
     def __len__(self):
+        """Returns the length of the weak key dictionary."""
         length = dict.__len__(self)
         pending_removals = self._pending_removals
         if (pending_removals is not None):
@@ -2668,6 +3977,7 @@ class WeakKeyDictionary(dict):
     # __redue_ex__ -> we do not care
     
     def __repr__(self):
+        """Returns the representation of the weak key dictionary."""
         result = [self.__class__.__name__, '({']
         
         if len(self):
@@ -2709,6 +4019,7 @@ class WeakKeyDictionary(dict):
     #__setattr__ -> same
     
     def __setitem__(self, key, value):
+        """Adds the given `key` - `value` pair to the weak key dictionary."""
         dict.__setitem__(self, WeakReferer(key, self._callback), value)
     
     # __sizeof__ -> same
@@ -2718,10 +4029,20 @@ class WeakKeyDictionary(dict):
     # __subclasshook__ -> same
     
     def clear(self):
+        """
+        Clears the weak key dictionary.
+        """
         dict.clear(self)
         self._pending_removals = None
     
     def copy(self):
+        """
+        Copies the weak key dictionary.
+        
+        Returns
+        -------
+        new : ``WeakValueDictionary``
+        """
         new = dict.__new__(type(self))
         new._pending_removals = None
         callback = _WeakKeyDictionaryCallback(new)
@@ -2741,15 +4062,64 @@ class WeakKeyDictionary(dict):
         return new
     
     def get(self, key, default=None):
+        """
+        Gets the value of the weak key dictionary which matches the given key.
+        
+        Parameters
+        ----------
+        key : `Any`
+            A key to match.
+        default : `Any`, Optional
+            Default value to return if the given `key` could not be matched. Defaults to `None`.
+        
+        Returns
+        -------
+        value : `Any` or `default`
+            The key's matched value. If no value was matched returns the `default` value.
+        """
         return dict.get(self, WeakReferer(key), default)
     
     def items(self):
+        """
+        Returns item iterator for the weak key dictionary.
+        
+        Returns
+        -------
+        item_iterator : ``_WeakKeyDictionaryItemIterator``
+        """
         return _WeakKeyDictionaryItemIterator(self)
     
     def keys(self):
+        """
+        Returns key iterator for the weak key dictionary.
+        
+        Returns
+        -------
+        key_iterator : ``_WeakKeyDictionaryKeyIterator``
+        """
         return _WeakKeyDictionaryKeyIterator(self)
     
     def pop(self, key, default=_spaceholder):
+        """
+        Pops the value of the weak key dictionary which matches the given key.
+        
+        Parameters
+        ----------
+        key : `Any`
+            A key to match.
+        default : `Any`, Optional
+            Default value to return if the given `key` could not be matched.
+        
+        Returns
+        -------
+        value : `Any` or `default`
+            The key's matched value. If no value was matched and `default` value is given, then returns that.
+        
+        Raises
+        ------
+        KeyError
+            If `key` could not be matched and `default` value is was not given either.
+        """
         try:
             key_reference = WeakReferer(key)
         except TypeError:
@@ -2765,6 +4135,18 @@ class WeakKeyDictionary(dict):
         return default
     
     def popitem(self):
+        """
+        Pops an item of the key value dictionary.
+        
+        Returns
+        -------
+        item : `tuple` (`Any`, `Any`)
+        
+        Raises
+        ------
+        KeyError
+            If the weak key dictionary is empty.
+        """
         while dict.__len__(self):
             key_reference, value = dict.popitem(self)
             key = key_reference()
@@ -2782,6 +4164,23 @@ class WeakKeyDictionary(dict):
         raise KeyError('popitem(): dictionary is empty.')
     
     def setdefault(self, key, default=None):
+        """
+        Returns the value for the given `key`.
+        
+        If the `key` is not present in the weak key dictionary, then set's the given `default` value as it.
+        
+        Parameters
+        ----------
+        key : `Any`
+            The key to match.
+        default : `Any`, Optional
+            Default value to set and return if `key` is not present in the weak value dictionary.
+        
+        Returns
+        -------
+        value : `default` or `Any`
+            The matched value, or `default` if none.
+        """
         value = dict.get(self, key, _spaceholder)
         if (value is not _spaceholder):
             return value
@@ -2789,22 +4188,44 @@ class WeakKeyDictionary(dict):
         self[key] = default
         return default
     
-    def update(self, other):
-        if hasattr(type(other), 'items'):
-            for key, value in other.items():
+    def update(self, iterable):
+        """
+        Updates the weak key dictionary with the given iterable's elements.
+        
+        Parameters
+        ----------
+        iterable : `iterable`
+            Iterable to extend the weak key dictionary with.
+            
+            Can be given as an object, wich:
+            - supports `.items` iterator.
+            - supports `.keys` and `.__getitem__`.
+            - is `iterable` and each iteration returns a sequence with 2 elements.
+        
+        Raises
+        ------
+        TypeError
+            The given `iterable` is not `iterable`.
+        ValueError
+            The the given `iterable` sot supports neither `.items` or (`.keys` and `.__getitem__`) and one of it's
+            element's length is not `2`.
+        """
+        iterable_type = iterable.__class__
+        if hasattr(iterable_type, 'items'):
+            for key, value in iterable.items():
                 self[key] = value
             return
         
-        if hasattr(type(other), 'keys') and hasattr(type(other), '__getitem__'):
-            for key in other.keys():
-                value = other[key]
+        if hasattr(iterable_type, 'keys') and hasattr(iterable_type, '__getitem__'):
+            for key in iterable.keys():
+                value = iterable[key]
                 self[key] = value
             return
         
-        if hasattr(type(other), '__iter__'):
+        if hasattr(iterable_type, '__iter__'):
             index = -1
-            for item in other:
-                index +=1
+            for item in iterable:
+                index += 1
                 
                 try:
                     iterator=iter(item)
@@ -2832,7 +4253,7 @@ class WeakKeyDictionary(dict):
                 
                 length = 3
                 for _ in iterator:
-                    length +=1
+                    length += 1
                     if length > 9000:
                         break
                 
@@ -2844,20 +4265,52 @@ class WeakKeyDictionary(dict):
                 raise ValueError(f'Dictionary update sequence element #{index} has length {length}; 2 is required.')
             return
         
-        raise TypeError(f'{other.__class__.__name__!r} object is not iterable')
+        raise TypeError(f'{iterable_type.__name__!r} object is not iterable')
     
     def values(self):
+        """
+        Returns value iterator for the weak key dictionary.
+        
+        Returns
+        -------
+        value_iterator : ``_WeakKeyDictionaryValueIterator``
+        """
         return _WeakKeyDictionaryValueIterator(self)
 
+
 class _WeakMapCallback(object):
+    """
+    Callback used by ``WeakMap``-s.
+    
+    Attributes
+    ----------
+    _parent : ``WeakReferer`` to ``WeakMap``
+        The parent weak map.
+    """
     __slots__ = ('_parent', )
     def __new__(cls, parent):
+        """
+        Creates a new ``_WeakMapCallback`` instance bound to the given ``WeakMap`` instance.
+        
+        Parameters
+        ----------
+        parent : ``WeakMap``
+            The parent weak map.
+        """
         parent = WeakReferer(parent)
         self = object.__new__(cls)
         self._parent = parent
         return self
     
     def __call__(self, reference):
+        """
+        Called when an element of the respective weak map is garbage collected.
+        
+        Parameters
+        ----------
+        reference : ``WeakReferer``
+            Weakreference to the respective object.
+        """
         parent = self._parent()
         if parent is None:
             return
@@ -2870,12 +4323,36 @@ class _WeakMapCallback(object):
             except KeyError:
                 pass
 
+
 class _WeakMapIterator(object):
+    """
+    Iterator for ``WeakKeyDictionary``-s.
+    
+    Attributes
+    ----------
+    _parent : ``WeakReferer`` to ``WeakMap``
+        The parent weak map.
+    """
     __slots__ = ('_parent', )
     def __init__(self, parent):
+        """
+        Creates a new ``_WeakMapIterator`` instance bound to the given ``WeakMap``.
+        
+        Parameters
+        ----------
+        parent : ``WeakMap``
+            The parent weak map.
+        """
         self._parent = parent
     
     def __iter__(self):
+        """
+        Iterates over a weak map.
+        
+        Yields
+        ------
+        key : `Any`
+        """
         parent = self._parent
         parent._iterating += 1
         
@@ -2894,17 +4371,45 @@ class _WeakMapIterator(object):
             parent._commit_removals()
     
     def __contains__(self, key):
+        """Returns whether the respective ``WeakMap`` contains the given key."""
         return (key in self._parent)
     
     def __len__(self):
+        """Returns the respective ``WeakMap``'s length."""
         return len(self._parent)
 
+
 class WeakMap(dict):
+    """
+    Weak map is a mix of weak dictionaries and weak sets. Can be used to retrieve an already existing weakreferenced
+    value from itself.
+    
+    Attributes
+    ----------
+    _pending_removals : `None` or `set` of ``WeakReferer``
+        Pending removals of the weak map if applicable.
+    _iterating : `int`
+        Whether the weak map is iterating and how much times.
+    _callback : ``_WeakMapCallback``
+        Callback added to the ``WeakMap``'s weak keys.
+    
+    Class Attributes
+    ----------------
+    MAX_RERP_ELEMENT_LIMIT : `int` = `50`
+        The maximal amount of items to render by ``.__repr__``.
+    
+    Notes
+    -----
+    ``WeakMap`` instances are weakreferable.
+    """
     __slots__ = ('__weakref__', '_pending_removals', '_iterating', '_callback')
     
     MAX_RERP_ELEMENT_LIMIT = 50
     
     def _commit_removals(self):
+        """
+        Commits the pending removals of the weak map if applicable.
+        """
         if self._iterating:
             return
         
@@ -2923,6 +4428,7 @@ class WeakMap(dict):
     # __class__ -> same
     
     def __contains__(self, key):
+        """Returns whether the weak map contains the given key."""
         try:
             reference = WeakReferer(key)
         except TypeError:
@@ -2933,6 +4439,7 @@ class WeakMap(dict):
     # __delattr__ -> same
     
     def __delitem__(self, key):
+        """Deletes the given key from the weak map"""
         try:
             reference = WeakReferer(key)
         except TypeError:
@@ -2952,6 +4459,7 @@ class WeakMap(dict):
     # __getattribute__ -> same
     
     def __getitem__(self, key):
+        """Gets the already existing key from the weak map, which matches teh given one."""
         try:
             reference = WeakReferer(key)
         except TypeError:
@@ -2963,6 +4471,14 @@ class WeakMap(dict):
     # __hash__ -> same
     
     def __init__(self, iterable=None):
+        """
+        Creates a new ``WeakMap`` instance from the given iterable.
+        
+        Parameters
+        ----------
+        iterable : `iterable`, Optional
+            Iterable to update the created map with.
+        """
         self._pending_removals = None
         self._iterating = 0
         self._callback = _WeakMapCallback(self)
@@ -2972,11 +4488,13 @@ class WeakMap(dict):
     # __init_subclass__ -> same
     
     def __iter__(self):
+        """Returns a ``_WeakMapIterator`` iterating over the weak map's keys."""
         return iter(_WeakMapIterator(self))
     
     # __le__ -> same
     
     def __len__(self):
+        """Returns the length of the weak map."""
         length = dict.__len__(self)
         pending_removals = self._pending_removals
         if (pending_removals is not None):
@@ -2991,6 +4509,7 @@ class WeakMap(dict):
     # __redue_ex__ -> we do not care
     
     def __repr__(self):
+        """Returns the weak map's representation."""
         result = [self.__class__.__name__, '({']
         if len(self):
             limit = self.MAX_RERP_ELEMENT_LIMIT
@@ -3035,10 +4554,20 @@ class WeakMap(dict):
     # __subclasshook__ -> same
     
     def clear(self):
+        """
+        Clear's the weak map.
+        """
         dict.clear(self)
         self._pending_removals = None
     
     def copy(self):
+        """
+        Copies the weak map.
+        
+        Returns
+        -------
+        new : ``WeakMap``
+        """
         new = dict.__new__(type(self))
         new._iterating = False
         new._pending_removals = None
@@ -3059,6 +4588,21 @@ class WeakMap(dict):
         return new
     
     def get(self, key, default=None):
+        """
+        Gets the key of the weak map, which matches the given one.
+        
+        Parameters
+        ----------
+        key : `Any`
+            A key to match.
+        default : `Any`, Optional
+            Default value to return if the given `key` could not be matched. Defaults to `None`.
+        
+        Returns
+        -------
+        real_key : `Any` or `default`
+            The matched key. If no key was matched returns the `default` value.
+        """
         try:
             reference = WeakReferer(key)
         except TypeError:
@@ -3083,6 +4627,26 @@ class WeakMap(dict):
     keys = RemovedDescriptor()
     
     def pop(self, key, default=_spaceholder):
+        """
+        Pops a key from the weak map which matches the given one.
+        
+        Parameters
+        ----------
+        key : `Any`
+            A key to match.
+        default : `Any`, Optional
+            Default value to return if the given `key` could not be matched.
+        
+        Returns
+        -------
+        real_key : `Any` or `default`
+            The matched key. If no key was matched and `default` value is given, then returns that.
+        
+        Raises
+        ------
+        KeyError
+            If `key` could not be matched and `default` value is was not given either.
+        """
         try:
             reference = WeakReferer(key)
         except TypeError:
@@ -3110,6 +4674,20 @@ class WeakMap(dict):
     values = RemovedDescriptor()
     
     def set(self, key):
+        """
+        Sets a key to the weakmap and then returns it. If they given key is already present in the weakmap, returns
+        that instead.
+        
+        Parameters
+        ----------
+        key : `Any`
+            A key to match.
+        
+        Returns
+        -------
+        real_key : `Any`
+            The matched key, or the given one.
+        """
         reference = WeakReferer(key, self._callback)
         real_reference = dict.get(self, reference, None)
         if (real_reference is not None):

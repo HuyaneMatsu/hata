@@ -639,6 +639,59 @@ class UserGuildPermission(object):
         yield self.owner
         yield self.permission
 
+class MultiClientMessageDeleteSequenceSharder(object):
+    """
+    Helper class of multi client message sequence deleter.
+    
+    Attributes
+    ----------
+    client : ``Client``
+        The respective client.
+    can_read_message_history : `int`
+        Whether the `client` can read message history at the respective channel.
+    can_manage_messages : `int`
+        Whether the respective client can manage messages at the respective channel.
+    delete_mass_task : `None` or ``Task``
+        Task of bulk deleting messages.
+    delete_new_task : `None` or ``Task``
+        Task of deleting new or own messages.
+    delete_old_task : `None` or ``Task``
+        task of deleting other's old messages.
+    """
+    __slots__ = ('can_manage_messages', 'can_read_message_history', 'client', 'delete_mass_task', 'delete_new_task',
+        'delete_old_task', )
+    def __new__(cls, client, channel):
+        """
+        Creates a new helper instance of a multi client message sequence deleter.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            A client who would execute the delete task.
+        channel : ``ChannelTextBase``
+            Channel, from wheret he client would delete messages.
+        
+        Returns
+        -------
+        self : `None` or ``MultiClientMessageDeleteSequenceSharder``
+            If the respective client could not contribute to any task, returns `None`.
+        """
+        permissions = channel.cached_permissions_for(client)
+        if not permissions.can_view_channel:
+            return None
+        
+        self = object.__new__(cls)
+        self.client = client
+        self.can_read_message_history = permissions.can_read_message_history
+        self.can_manage_messages = permissions.can_manage_messages
+        
+        self.delete_mass_task = None
+        self.delete_new_task = None
+        self.delete_old_task = None
+        
+        return self
+    
+
 class Client(UserBase):
     """
     Discord client class used to interact with the Discord API.
@@ -1007,25 +1060,15 @@ class Client(UserBase):
         CLIENTS.append(self)
         
         if client_id:
-            USERS[client_id] = self
+            self._maybe_replace_alterego()
         
         return self
     
-    def _init_on_ready(self, data):
+    def _maybe_replace_alterego(self):
         """
-        Fills up the client's instance attributes on login. If there is an already existing User object with the same
-        id, the client will replace it at channel participans, at ``USERS`` weakreference dictionary, at
-        ``guild.users``. This replacing is avoidable, if at the creation of the client the ``.client_id`` argument is
-        set.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Data requested from Discord by the ``.client_login_static`` method.
+        Replaces the type ``User`` alterego of the client if applicable.
         """
-        client_id = int(data['id'])
-        if self.id != client_id:
-            CLIENTS.update(self, client_id)
+        client_id = self.id
         
         # GOTO
         while True:
@@ -1064,6 +1107,26 @@ class Client(UserBase):
             
             break
         
+        USERS[client_id] = self
+    
+    def _init_on_ready(self, data):
+        """
+        Fills up the client's instance attributes on login. If there is an already existing User object with the same
+        id, the client will replace it at channel participans, at ``USERS`` weakreference dictionary, at
+        ``guild.users``. This replacing is avoidable, if at the creation of the client the ``.client_id`` argument is
+        set.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Data requested from Discord by the ``.client_login_static`` method.
+        """
+        client_id = int(data['id'])
+        if self.id != client_id:
+            CLIENTS.update(self, client_id)
+        
+        self._maybe_replace_alterego()
+        
         self.name = data['username']
         self.discriminator = int(data['discriminator'])
         self._set_avatar(data)
@@ -1076,8 +1139,6 @@ class Client(UserBase):
         self.locale = parse_locale(data)
         
         self.partial = False
-        
-        USERS[client_id] = self
     
     _update_presence = User._update_presence
     _update_presence_no_return = User._update_presence_no_return
@@ -3485,7 +3546,7 @@ class Client(UserBase):
         if message.deleted:
             return
         
-        if (message.author == self) or (message.id > int((time_now()-1209590.)*1000.-DISCORD_EPOCH)<<22):
+        if (message.author is self) or (message.id > int((time_now()-1209590.)*1000.-DISCORD_EPOCH)<<22):
             # own or new
             coro = self.http.message_delete(message.channel.id, message.id, reason)
         else:
@@ -3718,6 +3779,8 @@ class Client(UserBase):
         Deletes messages between an intervallum determined by `before` and `after`. They can be passed as `int`, or as
         a ``DiscordEntitiy`` instance or as a `datetime` object.
         
+        If the client has no `manage_messages` permission at the channel, then returns instantly.
+        
         Parameters
         ----------
         channel : ``ChannelTextBase`` instance
@@ -3786,14 +3849,14 @@ class Client(UserBase):
                         break
                     
                     message_ = messages_[before_index]
-                    before_index +=1
+                    before_index += 1
                     
                     if (filter is not None):
                         if not filter(message_):
                             continue
                     
                     last_message_id = message_.id
-                    own = (message_.author == self)
+                    own = (message_.author is self)
                     if last_message_id > time_limit:
                         message_group_new.append((own, last_message_id,),)
                     else:
@@ -3804,9 +3867,10 @@ class Client(UserBase):
                         group.append(last_message_id)
                     
                     # Check if we reached the limit
-                    limit -=1
+                    limit -= 1
                     if limit:
                         continue
+                    
                     should_request = False
                     break
         
@@ -3847,7 +3911,7 @@ class Client(UserBase):
                         if message_id < time_limit:
                             break
                         
-                        collected +=1
+                        collected += 1
                         continue
                     
                     if collected == 0:
@@ -3880,7 +3944,7 @@ class Client(UserBase):
                         
                         while True:
                             # Cannot start at index = len(...), so we instantly do -1
-                            message_limit -=1
+                            message_limit -= 1
                             
                             own, message_id = message_group_new[message_limit]
                             # Check if we should not move -> leave
@@ -3914,18 +3978,16 @@ class Client(UserBase):
                     tasks.append(delete_old_task)
             
             if not tasks:
-                # It can happen, that there are no more tasks left,  at that case
-                # we check if there is more message left. Only at
-                # `message_group_new` can be anymore message, because there is a
-                # time intervallum of 10 seconds, what we do not move between
-                # categories.
+                # It can happen, that there are no more tasks left, at that case we check if there is more message
+                # left. Only at `message_group_new` can be anymore message, because there is a time intervallum of
+                # 10 seconds, what we do not move between categories.
                 if not message_group_new:
                     break
                 
                 # We really have at least 1 message at that interval.
                 own, message_id = message_group_new.popleft()
-                # We will delete that message with old endpoint if not own, to make
-                # Sure it will not block the other endpoint for 2 minutes with any chance.
+                # We will delete that message with old endpoint if not own, to make sure it will not block the other
+                # endpoint for 2 minutes with any chance.
                 if own:
                     delete_new_task = Task(self.http.message_delete(channel_id, message_id, reason=reason), KOKORO)
                     task = delete_new_task
@@ -3941,7 +4003,7 @@ class Client(UserBase):
                 tasks.remove(task)
                 try:
                     result = task.result()
-                except (DiscordException, ConnectionError):
+                except:
                     for task in tasks:
                         task.cancel()
                     raise
@@ -3957,8 +4019,7 @@ class Client(UserBase):
                         if received_count == 0:
                             continue
                     
-                    # We dont really care about the limit, because we check
-                    # message id when we delete too.
+                    # We dont really care about the limit, because we check message id when we delete too.
                     time_limit = int((time_now()-1209600.)*1000.-DISCORD_EPOCH)<<22 # 2 weeks
                     
                     for message_data in result:
@@ -3970,19 +4031,16 @@ class Client(UserBase):
                                 should_request = False
                                 break
                             
-                            # If filter is `None`, we just have to decide, if we
-                            # were the author or nope.
+                            # If filter is `None`, we just have to decide, if we were the author or nope.
                             
-                            # Try to get user id, first start it with trying to get
-                            # author data. The default author_id will be 0, because
-                            # thats sure not the id of the client.
+                            # Try to get user id, first start it with trying to get author data. The default author_id
+                            # will be 0, because thats sure not the id of the client.
                             try:
                                 author_data = message_data['author']
                             except KeyError:
                                 author_id = 0
                             else:
-                                # If we have author data, lets select the user's data
-                                # from it
+                                # If we have author data, lets select the user's data from it
                                 try:
                                     user_data = author_data['user']
                                 except KeyError:
@@ -4021,7 +4079,7 @@ class Client(UserBase):
                             group.append(last_message_id)
                         
                         # Did we reach the amount limit?
-                        limit -=1
+                        limit -= 1
                         if limit:
                             continue
                         
@@ -4041,6 +4099,392 @@ class Client(UserBase):
                     continue
                  
                 # Should not happen
+                continue
+    
+    async def multi_client_message_delete_sequence(self, channel, after=None, before=None, limit=None, filter=None,
+            reason=None):
+        """
+        Deletes messages between an intervallum determined by `before` and `after`. They can be passed as `int`, or as
+        a ``DiscordEntitiy`` instance or as a `datetime` object.
+        
+        Not like ``.message_delete_sequence``, this method uses up all he clients at the respective channel to delete
+        messages an not only the one from what it was called from.
+        
+        If non of the clients have `manage_messages` permission, then returns instantly.
+        
+        Parameters
+        ----------
+        channel : ``ChannelTextBase`` instance
+            The channel, where the deletion should take place.
+        after : `int`, ``DiscordEntity`` or `datetime`, Optional
+            The timestamp after the messages were created, which will be deleted.
+        before : `int`, ``DiscordEntity`` or `datetime`, Optional
+            The timestamp before the messages were created, which will be deleted.
+        limit : `int`, Optional
+            The maximal amount of messages to delete.
+        filter : `callable`, Optional
+            A callable filter, what should accept a message object as argument and return either `True` or `False`.
+        reason : `str`, Optional
+            Shows up at the respective guild's audit logs.
+        
+        Raises
+        ------
+        TypeError
+            If `after` or `before` was passed with an unexpected type.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        
+        Notes
+        -----
+        This method uses up to 4 different endpoint groups too as ``.message_delete_sequence``, but tries to
+        pararellize the them between more clients as well.
+        """
+        # Check permissions
+        sharders = []
+        
+        for client in channel.clients:
+            sharder = MultiClientMessageDeleteSequenceSharder(client, channel)
+            if sharder is None:
+                continue
+            
+            sharders.append(sharder)
+        
+        if not sharders:
+            return
+        
+        for sharder in sharders:
+            if sharder.can_manage_messages:
+                break
+        else:
+            return
+        
+        before = 9223372036854775807 if before is None else log_time_converter(before)
+        after = 0 if after is None else log_time_converter(after)
+        limit = 9223372036854775807 if limit is None else limit
+        
+        # Check for reversed intervals
+        if before < after:
+            return
+        
+        # Check if we are done already
+        if limit <= 0:
+            return
+        
+        message_group_new = deque()
+        message_group_old = deque()
+        message_group_old_own = deque()
+        
+        # Check if we can request more messages
+        if channel.message_history_reached_end:
+            should_request = False
+        else:
+            for sharder in sharders:
+                if sharder.can_read_message_history:
+                    should_request = True
+                    break
+            else:
+                should_request = False
+        
+        last_message_id = before
+        
+        is_own_getter = {}
+        for index in range(len(sharders)):
+            is_own_getter[sharders[index].client.id] = index
+        
+        messages_ = channel.messages
+        if messages_:
+            before_index = message_relativeindex(messages_, before)
+            after_index = message_relativeindex(messages_, after)
+            if before_index != after_index:
+                time_limit = int((time_now()-1209600.)*1000.-DISCORD_EPOCH)<<22
+                while True:
+                    if before_index == after_index:
+                        break
+                    
+                    message_ = messages_[before_index]
+                    before_index += 1
+                    
+                    if (filter is not None):
+                        if not filter(message_):
+                            continue
+                    
+                    last_message_id = message_.id
+                    whos = is_own_getter.get(message_.author.id, -1)
+                    if last_message_id > time_limit:
+                        message_group_new.append((whos, last_message_id,),)
+                    else:
+                        if whos == -1:
+                            message_group_old.append(last_message_id)
+                        else:
+                            message_group_old_own.append((whos, last_message_id,),)
+                    
+                    # Check if we reached the limit
+                    limit -= 1
+                    if limit:
+                        continue
+                    
+                    should_request = False
+                    break
+        
+        tasks = []
+        # Handle requesting together, since we need to know, till where the last request yielded.
+        get_mass_task = None
+        # Loop the sharders when requesting, so ratelimits are used up.
+        get_mass_task_next = 0
+        
+        channel_id = channel.id
+        
+        while True:
+            if should_request and (get_mass_task is None):
+                # Will break since `should_request` is set to `True` only if at least of the sharders have
+                # `read_message_history` permission
+                while True:
+                    if get_mass_task_next >= len(sharders):
+                        get_mass_task_next = 0
+                    
+                    sharder = sharders[get_mass_task_next]
+                    if sharder.can_read_message_history:
+                        break
+                    
+                    get_mass_task_next += 1
+                    continue
+                
+                request_data = {
+                    'limit': 100,
+                    'before': last_message_id,
+                        }
+                
+                get_mass_task = Task(sharder.client.http.message_logs(channel_id, request_data), KOKORO)
+                tasks.append(get_mass_task)
+            
+            for sharder in sharders:
+                if (sharder.can_manage_messages) and (sharder.delete_mass_task is None):
+                    message_limit = len(message_group_new)
+                    # If there are more messages, we are waiting for other tasks
+                    if message_limit:
+                        time_limit = int((time_now()-1209590.)*1000.-DISCORD_EPOCH)<<22 # 2 weeks -10s
+                        collected = 0
+                        
+                        while True:
+                            if collected == message_limit:
+                                break
+                            
+                            if collected == 100:
+                                break
+                            
+                            whos, message_id = message_group_new[collected]
+                            if message_id < time_limit:
+                                break
+                            
+                            collected += 1
+                            continue
+                        
+                        if collected == 0:
+                            pass
+                        
+                        elif collected == 1:
+                            # Delete the message if we dont delete a new message already
+                            for sub_sharder in sharders:
+                                if (sub_sharder.can_manage_messages) and (sharder.delete_new_task is None):
+                                    # We collected 1 message -> We cannot use mass delete on this.
+                                    whos, message_id = message_group_new.popleft()
+                                    delete_new_task = Task(sub_sharder.client.http.message_delete(channel_id,
+                                        message_id, reason=reason), KOKORO)
+                                    sub_sharder.delete_new_task = delete_new_task
+                                    tasks.append(delete_new_task)
+                                    break
+                        else:
+                            message_ids = []
+                            while collected:
+                                collected -= 1
+                                whos, message_id = message_group_new.popleft()
+                                message_ids.append(message_id)
+                            
+                            delete_mass_task = Task(sharder.client.http.message_delete_multiple(channel_id,
+                                {'messages': message_ids}, reason=reason), KOKORO)
+                            sharder.delete_mass_task = delete_mass_task
+                            tasks.append(delete_mass_task)
+                        
+                        # After we checked what is at this group, lets move the others from it's end, if needed ofc
+                        message_limit = len(message_group_new)
+                        if message_limit:
+                            # timelimit -> 2 week
+                            time_limit = time_limit-20971520000
+                            
+                            while True:
+                                # Cannot start at index = len(...), so we instantly do -1
+                                message_limit -= 1
+                                
+                                whos, message_id = message_group_new[message_limit]
+                                # Check if we should not move -> leave
+                                if message_id > time_limit:
+                                    break
+                                
+                                del message_group_new[message_limit]
+                                if whos == -1:
+                                    message_group_old.appendleft(message_id)
+                                else:
+                                    message_group_old_own.appendleft((whos, message_group_old,),)
+                                
+                                if message_limit:
+                                    continue
+                                
+                                break
+            
+            # Check old own messages only, mass delete speed is pretty good by itself.
+            if message_group_old_own:
+                # Check who's is the last message. And delete with it. These speed is pretty fast.
+                # I doubt it needs further speedup, since deleting not own messages are the bottleneck of message
+                # deletions.
+                whos, message_id = message_group_old_own[0]
+                sharder = sharders[whos]
+                if sharder.delete_new_task is None:
+                    del message_group_old_own[0]
+                    delete_new_task = Task(sharder.client.http.message_delete(channel_id, message_id,
+                        reason=reason), KOKORO)
+                    sharder.delete_new_task = delete_new_task
+                    tasks.append(delete_new_task)
+            
+            if message_group_old:
+                for sharder in sharders:
+                    if (sharder.delete_old_task is None):
+                        message_id = message_group_old.popleft()
+                        delete_old_task = Task(sharder.client.http.message_delete_b2wo(channel_id, message_id,
+                            reason=reason), KOKORO)
+                        sharder.delete_old_task = delete_old_task
+                        tasks.append(delete_old_task)
+                        
+                        if not message_group_old:
+                            break
+            
+            if not tasks:
+                # It can happen, that there are no more tasks left, at that case we check if there is more message
+                # left. Only at `message_group_new` can be anymore message, because there is a time intervallum of
+                # 10 seconds, what we do not move between categories.
+                if not message_group_new:
+                    break
+                
+                # We really have at least 1 message at that interval.
+                whos, message_id = message_group_new.popleft()
+                # We will delete that message with old endpoint if not own, to make sure it will not block the other
+                # endpoint for 2 minutes with any chance.
+                if whos == -1:
+                    for sharder in sharders:
+                        if sharder.can_manage_messages:
+                            task = Task(sharder.client.http.message_delete_b2wo(channel_id, message_id,
+                                reason=reason), KOKORO)
+                            sharder.delete_old_task = task
+                            break
+                else:
+                    sharder = sharders[whos]
+                    task = Task(sharder.client.http.message_delete(channel_id, message_id, reason=reason), KOKORO)
+                    sharder.delete_new_task = task
+                
+                tasks.append(task)
+            
+            done, pending = await WaitTillFirst(tasks, KOKORO)
+            
+            for task in done:
+                tasks.remove(task)
+                try:
+                    result = task.result()
+                except:
+                    for task in tasks:
+                        task.cancel()
+                    raise
+                
+                if task is get_mass_task:
+                    get_mass_task = None
+                    
+                    received_count = len(result)
+                    if received_count < 100:
+                        should_request = False
+                        
+                        # We got 0 messages, move on the next task
+                        if received_count == 0:
+                            continue
+                    
+                    # We dont really care about the limit, because we check message id when we delete too.
+                    time_limit = int((time_now()-1209600.)*1000.-DISCORD_EPOCH)<<22 # 2 weeks
+                    
+                    for message_data in result:
+                        if (filter is None):
+                            last_message_id = int(message_data['id'])
+                            
+                            # Did we reach the after limit?
+                            if last_message_id < after:
+                                should_request = False
+                                break
+                            
+                            # If filter is `None`, we just have to decide, if we were the author or nope.
+                            
+                            # Try to get user id, first start it with trying to get author data. The default author_id
+                            # will be 0, because thats sure not the id of the client.
+                            try:
+                                author_data = message_data['author']
+                            except KeyError:
+                                author_id = 0
+                            else:
+                                # If we have author data, lets select the user's data from it
+                                try:
+                                    user_data = author_data['user']
+                                except KeyError:
+                                    user_data = author_data
+                                
+                                try:
+                                    author_id = user_data['id']
+                                except KeyError:
+                                    author_id = 0
+                                else:
+                                    author_id = int(author_id)
+                        else:
+                            message_ = channel._create_unknown_message(message_data)
+                            last_message_id = message_.id
+                            
+                            # Did we reach the after limit?
+                            if last_message_id < after:
+                                should_request = False
+                                break
+                            
+                            if not filter(message_):
+                                continue
+                            
+                            author_id = message_.author.id
+                        
+                        whos = is_own_getter.get(author_id, -1)
+                        
+                        if last_message_id > time_limit:
+                            message_group_new.append((whos, last_message_id,),)
+                        else:
+                            if whos == -1:
+                                message_group_old.append(last_message_id)
+                            else:
+                                message_group_old_own.append((whos, last_message_id,),)
+                        
+                        # Did we reach the amount limit?
+                        limit -= 1
+                        if limit:
+                            continue
+                        
+                        should_request = False
+                        break
+                
+                for sharder in sharders:
+                    if task is sharder.delete_mass_task:
+                        sharder.delete_mass_task = None
+                        break
+                    
+                    if task is sharder.delete_new_task:
+                        sharder.delete_new_task = None
+                        break
+                    
+                    if task is sharder.delete_old_task:
+                        sharder.delete_old_task = None
+                        break
+                
+                # Else case should happen.
                 continue
     
     async def message_edit(self, message, content=None, embed=_spaceholder, allowed_mentions=_spaceholder,
@@ -8345,7 +8789,7 @@ class Client(UserBase):
         gateway_url : `str`
             The url to what the gateways' webscoket will be connected.
         """
-        if self._gateway_time > (LOOP_TIME()+60.0):
+        if self._gateway_time > (LOOP_TIME()-60.0):
             return self._gateway_url
         
         data = await self.client_gateway()
@@ -8375,7 +8819,7 @@ class Client(UserBase):
             If any exception was received from the Discord API.
         """
         data = await self.client_gateway()
-        self._gateway_url = data['url']+'?encoding=json&v=6&compress=zlib-stream'
+        self._gateway_url = f'{data["url"]}?encoding=json&v={API_VERSION}&compress=zlib-stream'
         self._gateway_time = LOOP_TIME()
         
         old_shard_count = self.shard_count
@@ -8459,7 +8903,7 @@ class Client(UserBase):
         if self.running:
             raise RuntimeError(f'{self!r} is already running!')
         
-        task = Task(self.connect(),KOKORO)
+        task = Task(self.connect(), KOKORO)
         
         thread = current_thread()
         if thread is KOKORO:
@@ -8577,7 +9021,7 @@ class Client(UserBase):
                     # and it was not the wrapper causing them, so it is time to say STOP.
                     # I also know `GeneratorExit` will show up as RuntimeError, but it is already a RuntimeError.
                     try:
-                        await KOKORO.render_exc_async(err,[
+                        await KOKORO.render_exc_async(err, [
                             'Ignoring unexpected outer Task or coroutine cancellation at ',
                             repr(self),
                             '._connect:\n',

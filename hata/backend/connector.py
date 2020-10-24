@@ -92,7 +92,7 @@ class Connection(object):
         protocol = self.protocol
         if (protocol is not None):
             self.connector.release(self.key, protocol, should_close=True)
-            self.protocol=None
+            self.protocol = None
     
     def release(self):
         self._run_callbacks()
@@ -280,7 +280,7 @@ class ConnectorBase(object):
             except KeyError:
                 connections = self.connections[key] = []
             
-            connections.append((protocol,LOOP_TIME()))
+            connections.append((protocol, LOOP_TIME()))
             
             if self.cleanup_handle is None:
                 self.cleanup_handle = self.loop.call_later_weak(KEEP_ALIVE_TIMEOUT, self._cleanup,)

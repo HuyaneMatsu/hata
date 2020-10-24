@@ -652,7 +652,7 @@ def build_indent(lines, start, end):
 
 def detect_code_block(lines, index, limit):
     """
-    Detects a code block and returns it's last line +1's index, or the source index if nto found.
+    Detects a code block and returns it's last line +1's index, or the source index if not found.
     
     Parameters
     ----------

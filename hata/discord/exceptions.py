@@ -1,6 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('DiscordException', 'DiscordGatewayException', 'ERROR_CODES', 'InvalidToken',)
 
+from ..backend.hdrs import RETRY_AFTER
+
 class DiscordException(Exception):
     """
     Represents an exception raised by Discord, when it respons with a not expected response code.
@@ -37,9 +39,9 @@ class DiscordException(Exception):
     | 5XX   | SERVER ERROR          | raise         |
     +-------+-----------------------+---------------+
     
-    > \* For five times a request can fail with `OsError` or return `501` / `502` response code. If the request fails
-    > with these cases for the fifth try and the last one resulted `501` or `502` response code, then
-    > ``DiscordException`` will be raised.
+    \* For five times a request can fail with `OsError` or return `501` / `502` response code. If the request fails
+    with these cases for the fifth try and the last one resulted `501` or `502` response code, then
+    ``DiscordException`` will be raised.
     
     Attributes
     ----------
@@ -210,8 +212,8 @@ class DiscordException(Exception):
                     del message_parts[-1]
                     
         else:
-            message_base=''
-
+            message_base = ''
+        
         message_parts.append(f'{self.__class__.__name__} {self.response.reason} ({self.response.status})')
         
         if code:
@@ -227,6 +229,14 @@ class DiscordException(Exception):
         messages.append(''.join(message_parts))
         messages.reverse()
         
+        if self.response.status == 429:
+            try:
+                retry_after = self.response.headers[RETRY_AFTER]
+            except KeyError:
+                pass
+            else:
+                messages.append(f'{RETRY_AFTER}: {retry_after}')
+        
         self._messages = messages
         return messages
     
@@ -234,7 +244,7 @@ class DiscordException(Exception):
         """Returns the representation of the object."""
         return '\n'.join(self.messages)
     
-    __str__=__repr__
+    __str__ = __repr__
     
     @property
     def code(self):

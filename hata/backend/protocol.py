@@ -469,11 +469,13 @@ class ReadProtocolBase(object):
         
         try:
              payload_reader.throw(CancelledError())
-        except CancelledError:
+        except CancelledError as err:
+            new_exception = ConnectionError('Connection closed unexpectedly with EOF.')
+            new_exception.__cause__ = err
             payload_waiter = self.payload_waiter
             self.payload_reader = None
             self.payload_waiter = None
-            payload_waiter.cancel()
+            payload_waiter.set_exception_if_pending(new_exception)
         
         except StopIteration as err:
             args = err.args
@@ -581,6 +583,7 @@ class ReadProtocolBase(object):
         
         payload_waiter = Future(self.loop)
         exception = self.exception
+        
         if (exception is None):
             try:
                 payload_reader.send(None)
@@ -1487,7 +1490,7 @@ class DatagramAddressedReadProtocol(object):
     __slots__ = ('by_address', 'loop', 'transport', 'waiters',)
     def __init__(self, loop):
         """
-        Creates a new ``DatagramAddressedReadProtocol`` instance bound to teh given loop.
+        Creates a new ``DatagramAddressedReadProtocol`` instance bound to the given loop.
         
         Parameters
         ----------
@@ -1565,7 +1568,7 @@ class DatagramAddressedReadProtocol(object):
         data : `bytes`
             The received data.
         address : `tuple` (`str`, `int`)
-            The address from where teh data was received.
+            The address from where the data was received.
         """
         by_address = self.by_address
         try:
@@ -1713,7 +1716,7 @@ class DatagramMergerReadProtocol(ReadProtocolBase):
         data : `bytes`
             The received data.
         address : `tuple` (`str`, `int`)
-            The address from where teh data was received.
+            The address from where the data was received.
         """
         self.data_received(data)
 

@@ -3030,7 +3030,7 @@ class Task(Future):
                 Future.set_exception(self, CancelledError())
             else:
                 Future.set_result(self, exception.value)
-        except (CancelledError, GeneratorExit):
+        except CancelledError:
             Future.cancel(self)
         except BaseException as exception:
             Future.set_exception(self, exception)

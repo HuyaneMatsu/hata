@@ -2,8 +2,6 @@
 import socket as module_socket
 from functools import lru_cache
 from http.cookies import SimpleCookie
-from collections import defaultdict
-from threading import current_thread
 
 try:
     import ssl as module_ssl
@@ -13,7 +11,7 @@ except ImportError:
 else:
     ssl_errors = (module_ssl.SSLError, module_ssl.CertificateError)
 
-from .dereaddons_local import multidict_titled
+from .dereaddons_local import imultidict
 from .futures import shield, Task
 from .eventloop import LOOP_TIME
 
@@ -26,32 +24,105 @@ from .websocket import ProtocolBase
 KEEP_ALIVE_TIMEOUT = 15.0
 
 class Connection(object):
-    __slots__ = ('callbacks', 'connector', 'key', 'loop', 'protocol',)
-    def __init__(self, connector, key, protocol, loop):
+    """
+    Reusable connection used by connectors to remember their details.
+    
+    Attributes
+    ----------
+    callbacks : `list` of `callable`
+        Callables to run when the connection is ``.close``-d, ``.release``-d or ``.detach``-ed. They should accept no
+        parameters.
+    connector : ``ConnectorBase`` instance
+        The respective connector of the connection.
+    key : ``ConnectionKey``
+        A key which contains information about the host.
+    protocol : `None` or ``ReadProtocolBase`` instance
+        The connection's actual protocol. Set as `None` if the connection is ``.close``-d, ``.release``-d or
+        ``.detach``-ed.
+    """
+    __slots__ = ('callbacks', 'connector', 'key', 'protocol',)
+    def __init__(self, connector, key, protocol):
+        """
+        Creates a new ``Connection`` instance with the given parameters.
+        
+        connector : ``ConnectorBase`` instance
+            The respective connector of the connection.
+        key : `tuple` (`str`, `int`)
+            The host and the port to what the connection is connected too.
+        protocol : ``ReadProtocolBase`` instance
+            The connection's actual protocol.
+        """
         self.connector = connector
         self.key = key
         self.protocol = protocol
-        self.loop = loop
         self.callbacks = []
     
     def __repr__(self):
-        return f'<{self.__class__.__name__} to {self.key}>'
+        """Returns the representation of the connection."""
+        result = [
+            '<',
+            self.__class__.__name__,
+            ' to ',
+            repr(self.key),
+                ]
+        
+        if self.closed:
+            result.append(' closed')
+        
+        result.append('>')
+        
+        return ''.join(result)
     
     def __del__(self):
-        if self.loop.running:
+        """Relreases the connector if not yet released."""
+        connector = self.connector
+        if connector.loop.running:
             protocol = self.protocol
             if (protocol is not None):
-                self.connector.release(self.key, protocol, should_close=True)
+                connector.release(self.key, protocol, should_close=True)
     
     @property
     def transport(self):
-        return self.protocol.transport
+        """
+        Returns the connection's ``.protocol``'s transport if applicable.
+        
+        Returns
+        -------
+        transport : `Any`
+            Defaults to `None`.
+        """
+        protocol = self.protocol
+        if protocol is None:
+            return None
+        
+        return protocol.transport
     
     @property
     def writer(self):
-        return self.protocol.writer
+        """
+        Returns the connection's ``.protocol``'s writer if applicable.
+        
+        Returns
+        -------
+        writer : `Any`
+            Defaults to `None`.
+        """
+        protocol = self.protocol
+        if protocol is None:
+            return None
+        
+        return protocol.writer
     
     def add_callback(self, callback):
+        """
+        Adds a callback to the connection. If the connection is already closed runs it instantly.
+        
+        Parameters
+        ----------
+        callback : `callable`
+            Callable to run when the connection is ``.close``-d, ``.release``-d or ``.detach``-ed. Should accept no
+            parameters.
+        """
         if callback is None:
             return
         
@@ -62,7 +133,7 @@ class Connection(object):
         try:
             callback()
         except BaseException as err:
-            current_thread().render_exc_async(err,[
+            self.connector.loop.render_exc_async(err, [
                 'Exception occured at ',
                 repr(self),
                 '.add_callback\nAt running ',
@@ -71,6 +142,9 @@ class Connection(object):
                     ])
     
     def _run_callbacks(self):
+        """
+        Runs the added callbacks of the connection.
+        """
         callbacks = self.callbacks
         while callbacks:
             callback = callbacks.pop()
@@ -78,7 +152,7 @@ class Connection(object):
             try:
                 callback()
             except BaseException as err:
-                current_thread().render_exc_async(err,[
+                self.connector.loop.render_exc_async(err, [
                     'Exception occured at ',
                     repr(self),
                     '._run_callbacks\nAt running ',
@@ -87,133 +161,207 @@ class Connection(object):
                         ])
     
     def close(self):
+        """
+        Closes the connection by running it's callbacks and releasing with the intent of closing.
+        """
         self._run_callbacks()
         
         protocol = self.protocol
         if (protocol is not None):
-            self.connector.release(self.key, protocol, should_close=True)
             self.protocol = None
+            self.connector.release(self.key, protocol, should_close=True)
+    
     
     def release(self):
+        """
+        Closes the connection by running it's callbacks and relesing it.
+        """
         self._run_callbacks()
         
         protocol = self.protocol
         if (protocol is not None):
-            self.connector.release(self.key, protocol, should_close=protocol.should_close())
             self.protocol = None
+            self.connector.release(self.key, protocol, should_close=protocol.should_close())
+    
     
     def detach(self):
+        """
+        Detaches the connection from it ``.connector``.
+        
+        Note, that with detaching, the connection set it's ``.protocol`` as `None`, so you should save an insatnce of
+        it down before.
+        """
         self._run_callbacks()
         
         protocol = self.protocol
         if (protocol is not None):
-            self.connector.release_acquired(self.key, protocol)
             self.protocol = None
+            self.connector.release_acquired_protocols(self.key, protocol)
+           
     
     @property
     def closed(self):
+        """
+        Returns whether the connection is closed.
+        
+        Returns
+        -------
+        closed : `bool`
+        """
         protocol = self.protocol
         if protocol is None:
             return True
         
-        return (protocol.transport is None)
+        if protocol.transport is None:
+            return True
+        
+        return False
 
 
 class ConnectorBase(object):
-    __slots__ = ('__weakref__', 'acquired', 'acquired_per_host', 'cleanup_handle', 'closed', 'connections', 'cookies',
-        'force_close', 'loop', )
-    #Base connector class.
-    #force_close - Set to True to force close and do reconnect
-    #    after each request (and between redirects).
+    """
+    Base connector class.
+    
+    Attributes
+    ----------
+    acquired_protocols : `set` of ``ReadProtocolBase``
+        Acqured protocols of the connector.
+    acquired_protocols_per_host : `dict` of (``ConnectionKey``, `set` of ``ReadProtocolBase``) items
+        Acquired protocols for each host.
+    alive_protocols_per_host : `dict` of (``ConnectionKey``, `list` of `tuple` (``ReadProtocolBase``, `float`)) items
+        Alive, not used protocols for each host. Each element of the values stores when the connection was last used
+        as well.
+    cleanup_handle : `None` or ``TimerWeakHandle``
+        Weak handle, which cleans up the timed out connections of the connector.
+    closed : `bool`
+        Whether the connectorr is closed.
+    cookies : `http.cookies.SimpleCookie`
+        Cookies of the connection.
+    force_close : `bool`
+        Whether after each request (and between redirects) the connections should be closed.
+    loop : ``EventThread``
+        The event loop to what the connectior is bound to.
+    
+    Notes
+    -----
+    Connectors support weakreferencing.
+    """
+    __slots__ = ('__weakref__', 'acquired_protocols', 'acquired_protocols_per_host', 'alive_protocols_per_host',
+        'cleanup_handle', 'closed',  'cookies', 'force_close', 'loop', )
     
     def __new__(cls, loop, force_close=False,):
+        """
+        Creates a new connector bound to the given loop.
+        
+        Parameters
+        ----------
+        loop : ``EventThread``
+            The event loop to what the connector is bound to.
+        force_close : `bool`, Optional
+            Whether after each request (and between redirects) the connections should be closed. Defaults to `False`.
+        """
         self = object.__new__(cls)
         self.loop = loop
         self.closed = False
-        self.connections = {}
-        self.acquired = set()
-        self.acquired_per_host = defaultdict(set)
+        self.alive_protocols_per_host = {}
+        self.acquired_protocols = set()
+        self.acquired_protocols_per_host = {}
         self.force_close = force_close
         self.cookies = SimpleCookie()
         self.cleanup_handle = None
         return self
     
     def __del__(self):
-        if (not self.closed) and self.connections:
+        """
+        Closes the connector if not yet closed.
+        """
+        if (not self.closed) and self.alive_protocols_per_host:
             self.close()
     
     def _cleanup(self):
+        """
+        Cleans ups the expired connections of the connector.
+        """
         handle = self.cleanup_handle
         if (handle is not None):
             # Cancelling the currently running handle does nothing.
             handle.cancel()
             self.cleanup_handle = None
         
-        #Cleanup unused transports.
-        connections = self.connections
-        if not connections:
+        # Cleanup unused transports.
+        alive_protocols_per_host = self.alive_protocols_per_host
+        if not alive_protocols_per_host:
             return
         
         now = LOOP_TIME()
         to_remove_keys = []
         
-        for key, connections_ in connections.items():
-            for index in reversed(range(len(connections_))):
-                protocol, time = connections_[index]
+        for key, alive_protocols_for_host in alive_protocols_per_host.items():
+            for index in reversed(range(len(alive_protocols_for_host))):
+                protocol, time = alive_protocols_for_host[index]
                 
                 if time + KEEP_ALIVE_TIMEOUT < now:
                     continue
                 
-                del connections_[index]
+                del alive_protocols_for_host[index]
                 transport = protocol.transport
                 if key.is_ssl and (transport is not None):
                     transport.abort()
             
-            if not connections_:
+            if not alive_protocols_for_host:
                 to_remove_keys.append(key)
         
         for key in to_remove_keys:
-            del connections[key]
+            del alive_protocols_per_host[key]
         
-        if connections:
+        if alive_protocols_per_host:
             self.cleanup_handle = self.loop.call_later_weak(KEEP_ALIVE_TIMEOUT, self._cleanup,)
     
-    def drop_acquired_per_host(self, key, val):
-        acquired_per_host = self.acquired_per_host
-        try:
-            connections = acquired_per_host[key]
-        except KeyError:
-            return
-        
-        connections.remove(val)
-        
-        if not connections:
-            del acquired_per_host[key]
-    
     def close(self):
-        #Close all opened transports.
+        """
+        Closes the connector and it's connections.
+        """
         if self.closed:
             return
         
         self.closed = True
-
+        
         try:
             if not self.loop.running:
                 return
             
-            for connections in self.connections.values():
-                for transport, time in connections:
-                    transport.close()
+            for alive_protocols_for_host in self.alive_protocols_per_host.values():
+                for protocol, time in alive_protocols_for_host:
+                    protocol.close()
             
-            for transport in self.acquired:
-                transport.close()
-
+            for protocol in self.acquired_protocols:
+                protocol.close()
+        
         finally:
-            self.connections.clear()
-            self.acquired.clear()
+            self.alive_protocols_per_host.clear()
+            self.acquired_protocols.clear()
     
     async def connect(self, request):
-        #Get from pool or create new connection.
+        """
+        Gets connection from connection pool or creates a new one.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        request : ``ClientRequest``
+            Respective request, which requires a connection.
+        
+        Returns
+        -------
+        connection : ``Connection``
+            The created connection.
+        
+        Raises
+        ------
+        ConnectionError
+            Connector closed.
+        """
         key = request.connection_key
         
         protocol = self.get_protocol(key)
@@ -223,20 +371,40 @@ class ConnectorBase(object):
                 protocol.close()
                 raise ConnectionError('Connector is closed.')
         
-        self.acquired.add(protocol)
-        self.acquired_per_host[key].add(protocol)
+        self.acquired_protocols.add(protocol)
         
-        return Connection(self, key, protocol, self.loop)
+        acquired_protocols_per_host = self.acquired_protocols_per_host
+        try:
+            acquired_protocols_for_host = acquired_protocols_per_host[key]
+        except KeyError:
+            acquired_protocols_for_host = acquired_protocols_per_host[key] = set()
+        
+        acquired_protocols_for_host.add(protocol)
+        
+        return Connection(self, key, protocol)
     
     def get_protocol(self, key):
+        """
+        Gets a protocol for the given connection key.
+        
+        Parameters
+        ----------
+        key : ``ConnectionKey``
+            A key which contains information about the host.
+
+        Returns
+        -------
+        protocol : `None` or ``ReadProtocolBase`` instance
+            Protocol connected to the respective host. Defaults to `None` if there is not any.
+        """
         try:
-            connections = self.connections[key]
+            alive_protocols_for_host = self.alive_protocols_per_host[key]
         except KeyError:
             return None
         
         now = LOOP_TIME()
-        while connections:
-            protocol, time = connections.pop()
+        while alive_protocols_for_host:
+            protocol, time = alive_protocols_for_host.pop()
             if (protocol.transport is None):
                 continue
             
@@ -246,28 +414,64 @@ class ConnectorBase(object):
                 if key.is_ssl and (transport is not None):
                     transport.abort()
             else:
-                if not connections:
-                    del self.connections[key]
+                if not alive_protocols_for_host:
+                    del self.alive_protocols_per_host[key]
                 
                 return protocol
         
-        del self.connections[key]
+        del self.alive_protocols_per_host[key]
     
-    def release_acquired(self, key, protocol):
+    def release_acquired_protocols(self, key, protocol):
+        """
+        Removes the given acqured protocol from the connector.
+        
+        Parameters
+        ----------
+        key : ``ConnectionKey``
+            A key which contains information about the host.
+        protocol : ``ReadProtocolBase`` instance
+            The connected protocol to the respective host.
+        """
         if self.closed:
             return
         
         try:
-            self.acquired.remove(protocol)
-            self.drop_acquired_per_host(key, protocol)
+            self.acquired_protocols.remove(protocol)
         except KeyError:
             pass
-    
+        
+        acquired_protocols_per_host = self.acquired_protocols_per_host
+        try:
+            acquired_protocols_for_host = acquired_protocols_per_host[key]
+        except KeyError:
+            pass
+        else:
+            try:
+                acquired_protocols_for_host.remove(protocol)
+            except KeyError:
+                pass
+            else:
+                if not acquired_protocols_for_host:
+                    del acquired_protocols_per_host[key]
+        
     def release(self, key, protocol, should_close=False):
+        """
+        Releases the given protocol from the connector. If the connection should not be closed, not closes it, instead
+        stores it for future reuse.
+        
+        Parameters
+        ----------
+        key : ``ConnectionKey``
+            A key which contains information about the host.
+        protocol : ``ReadProtocolBase``
+            Protocol of the released connection.
+        should_close : `bool`
+            Whether the respective connection should be closed.
+        """
         if self.closed:
             return
         
-        self.release_acquired(key, protocol)
+        self.release_acquired_protocols(key, protocol)
         
         if should_close or self.force_close or protocol.should_close():
             transport = protocol.transport
@@ -276,30 +480,78 @@ class ConnectorBase(object):
                 transport.abort()
         else:
             try:
-                connections = self.connections[key]
+                alive_protocols_for_host = self.alive_protocols_per_host[key]
             except KeyError:
-                connections = self.connections[key] = []
+                alive_protocols_for_host = self.alive_protocols_per_host[key] = []
             
-            connections.append((protocol, LOOP_TIME()))
+            alive_protocols_for_host.append((protocol, LOOP_TIME()))
             
             if self.cleanup_handle is None:
                 self.cleanup_handle = self.loop.call_later_weak(KEEP_ALIVE_TIMEOUT, self._cleanup,)
     
     async def create_connection(self, request):
-        #not implemented
-        pass
+        """
+        Creates a new connection for the given request.
+        
+        Parameters
+        ----------
+        request : ``ClientRequest``
+            Request to create connection for.
+        
+        Returns
+        -------
+        protocol : ``ReadProtocolBase`` instance
+            The created protocol connected to the respective host.
+        
+        Raises
+        ------
+        NotImplementedError
+            ``ConnectorBase`` do not implements ``.create_connection``. Subclasses should do it.
+        """
+        raise NotImplementedError
 
 DNS_CACHE_TIMEOUT = 10.0
 
 class HostInfo(object):
+    """
+    Resolved informations about a host.
+    
+    Attributes
+    ----------
+    hostname : `str`
+        The hosts's name.
+    host : `str`
+        The host's ip adress.
+    port : `int`
+        Port to connect to the host.
+    family : `AddressFamily` or `int`
+        Address family.
+    proto : `int`
+        Protocol type.
+    flags : `int`
+        Bitmask for `getaddrinfo`.
+    """
     __slots__ = ('hostname', 'host', 'port', 'family', 'proto', 'flags', )
     
     def __repr__(self):
+        """Returns the host info's representation."""
         return f'<{self.__class__.__name__}, hostname={self.hostname!r}, host={self.host!r}, port={self.port!r}, ' \
                f'family={self.family!r}, proto={self.proto!r}, flags={self.flags!r}>'
     
     @classmethod
     def from_ip(cls, host, port, family):
+        """
+        Creates a host info instance from the given parameters.
+        
+        Parameters
+        ----------
+        host : `str`
+            The host's ip adress.
+        port : `int`
+            Port to connect to the host.
+        family : `AddressFamily` or `int`
+            Address family.
+        """
         self = object.__new__(cls)
         self.hostname = host
         self.host = host
@@ -310,7 +562,31 @@ class HostInfo(object):
         
         return self
     
+    @classmethod
+    def from_addressinfo(cls, host, addressinfo):
+        """
+        Creates a host info instance from the given parameters.
+        
+        Parameters
+        ----------
+        host : `str`
+            The host's ip adress.
+        addressinfo : `tuple` (`AddressFamily` or `int`, `SocketKind` or `int`, `int`, `str`, `tuple` (`str, `int`))
+            An address info returned by `getaddrinfo`.
+        """
+        self = object.__new__(cls)
+        self.hostname = host
+        adress = addressinfo[4]
+        self.host = adress[0]
+        self.port = adress[1]
+        self.family = addressinfo[0]
+        self.proto = addressinfo[2]
+        self.flags = module_socket.AI_NUMERICHOST
+        
+        return self
+    
     def __eq__(self, other):
+        """Returns whether the two host infos are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -333,55 +609,84 @@ class HostInfo(object):
             return False
         
         return True
-
+    
     def __hash__(self):
+        """Returns the host infos hash value."""
         return hash(self.hostname) ^ hash(self.host) ^ (self.port << 17 ) ^ hash(self.family) ^ hash(self.proto) ^ \
                hash(self.flags)
 
+
 class HostInfoCont(object):
-    __slots__ = ('addrs', 'index', 'timestamp')
+    """
+    ``HostInfo`` oontainer, which rotates it's hosts.
     
-    def __new__(cls, host, infos):
-        addrs = []
-        for element in infos:
-            unit = HostInfo()
-            unit.hostname = host
-            adress = element[4]
-            unit.host = adress[0]
-            unit.port = adress[1]
-            unit.family = element[0]
-            unit.proto = element[2]
-            unit.flags = module_socket.AI_NUMERICHOST
-            
-            addrs.append(unit)
+    Attributes
+    ----------
+    index : `int`
+        Index to determine since the next yielded addresses will start. Used for cycle host infos.
+    timestamp : `int`
+        Monotonic time determining when the container was created.
+    host_infos : `list` of ``HostInfo``
+        A list of the contained host informations.
+    """
+    __slots__ = ('host_infos', 'index', 'timestamp')
     
+    def __new__(cls, host, address_infos):
+        """
+        Creates a new host container from the given parameters.
+        
+        Parameters
+        ----------
+        host : `str`
+            The host's name.
+        address_infos : `list` of tuple` \
+                (`AddressFamily` or `int`, `SocketKind` or `int`, `int`, `str`, `tuple` (`str, `int`))
+            Address infos returned by `getaddrinfo`.
+        """
         self = object.__new__(cls)
         self.index = 0
         self.timestamp = LOOP_TIME()
-        self.addrs = addrs
+        self.host_infos = [HostInfo.from_addressinfo(host, address_info) for address_info in address_infos]
         
         return self
     
     @property
     def expired(self):
-        return ((self.timestamp+DNS_CACHE_TIMEOUT) < LOOP_TIME())
+        """
+        Returns whether the host info container exprired.
+        
+        Returns
+        -------
+        expired : `bool`
+        """
+        if (self.timestamp+DNS_CACHE_TIMEOUT) < LOOP_TIME():
+            return True
+        
+        return False
     
-    def next_addrs(self):
+    def next_addresses(self):
+        """
+        Gets the next cycled addresses from the container.
+        
+        Returns
+        -------
+        result : `list` of ``HostInfo``
+        """
         result = []
         
-        addrs = self.addrs
+        host_infos = self.host_infos
         index = self.index
-        limit = len(addrs)
+        limit = len(host_infos)
         left = limit
         
         while True:
-            value = addrs[index]
-            result.append(value)
-            index +=1
+            host_info = host_infos[index]
+            result.append(host_info)
+            index += 1
             if index == limit:
                 index = 0
             
-            left -=1
+            left -= 1
             if left:
                 continue
             
@@ -391,24 +696,67 @@ class HostInfoCont(object):
         return result
 
     def __repr__(self):
-        return f'<{self.__class__.__name__} addrs={self.addrs!r}, index={self.index!r}, timestamp={self.timestamp!r}>'
+        """Returns the host info container's representation."""
+        return f'<{self.__class__.__name__} host_infos={self.host_infos!r}, index={self.index!r}, ' \
+            f'timestamp={self.timestamp!r}>'
     
 class TCPConnector(ConnectorBase):
-    __slots__ = ('acquired', 'acquired_per_host', 'cached_hosts', 'closed', 'force_close', 'connections', 'cookies',
-        'dns_events', 'family', 'local_addr', 'loop', 'ssl', 'use_dns_cache', 'waiters',)
-    #TCP connector.
-    #fingerprint - Pass the binary md5, sha1, or sha256
-    #    digest of the expected certificate in DER format to verify
-    #    that the certificate the server presents matches. See also
-    #    https://en.wikipedia.org/wiki/Transport_Layer_Security#Certificate_pinning
-    #family - socket address family
-    #local_addr - local tuple of (host, port) to bind socket to
-    #force_close - Set to True to force close and do reconnect
-    #    after each request (and between redirects).
-
-
-    def __new__(cls, loop, fingerprint=None, family=0, ssl=None, local_addr=None, force_close=False, ):
+    """
+    Base connector class.
+    
+    Attributes
+    ----------
+    acquired_protocols : `set` of ``ReadProtocolBase``
+        Acqured protocols of the connector.
+    acquired_protocols_per_host : `dict` of (``ConnectionKey``, `set` of ``ReadProtocolBase``) items
+        Acquired protocols for each host.
+    alive_protocols_per_host : `dict` of (``ConnectionKey``, `list` of `tuple` (``ReadProtocolBase``, `float`)) items
+        Alive, not used protocols for each host. Each element of the values stores when the connection was last used
+        as well.
+    cleanup_handle : `None` or ``TimerWeakHandle``
+        Weak handle, which cleans up the timed out connections of the connector.
+    closed : `bool`
+        Whether the connectorr is closed.
+    cookies : `http.cookies.SimpleCookie`
+        Cookies of the connection.
+    force_close : `bool`
+        Whether after each request (and between redirects) the connections should be closed.
+    loop : ``EventThread``
+        The event loop to what the connectior is bound to.
+    cached_hosts : `dict` of (`tuple` (`str`, `int`), ``HostInfoCont``) items
+        Cached resolved host informations.
+    dns_events : `dict` of (`tuple` (`str`, `int`), ``Task`` of ``.resolve``) items
+        Active host info resolving events of the connector.
+    family : `AddressFamily` or `int`
+        Address family of the created socket if any.
+    local_addr : `None` or `tuple` of (`None` or  `str`, `None` or `int`)
+        Can be given as a `tuple` (`local_host`, `local_port`) to bind created sockets locally.
+    ssl : `ssl.SSLContext`, `bool`, ``Fingerprint``, `NoneType`
+        Whether and what type of ssl should the connector use.
+    
+    Notes
+    -----
+    Connectors support weakreferencing.
+    """
+    __slots__ = ('cached_hosts', 'dns_events', 'family', 'local_addr',  'ssl', )
+    
+    def __new__(cls, loop, family=0, ssl=None, local_addr=None, force_close=False, ):
+        """
+        Creates a new ``TCPCOnnector`` instance with the given parameters.
         
+        Parameters
+        ----------
+        loop : ``EventThread``
+            The event loop to what the connector is bound to.
+        family : `AddressFamily` or `int`
+            Address family of the created socket if any. Defaults to `0`.
+        ssl : `ssl.SSLContext`, `bool`, ``Fingerprint``, `NoneType`, Optional
+            Whether and what type of ssl should the connector use. Defaults to `None`.
+        local_addr : `None` or `tuple` of (`None` or  `str`, `None` or `int`), Optional
+            Can be given as a `tuple` (`local_host`, `local_port`) to bind created sockets locally. Defaults to `None`.
+        force_close : `bool`, Optional
+            Whether after each request (and between redirects) the connections should be closed. Defaults to `False`.
+        """
         if not isinstance(ssl, SSL_ALLOWED_TYPES):
             raise TypeError(f'`ssl` should be one of instance of: {SSL_ALLOWED_TYPES!r}, but got `{ssl!r}` instead.')
         
@@ -421,35 +769,63 @@ class TCPConnector(ConnectorBase):
         self.local_addr = local_addr
         
         return self
-
+    
     def close(self):
+        """
+        Closes the connector, it's dns lookup events and it's connections.
+        """
         for event in self.dns_events.values():
             event.cancel()
         
         ConnectorBase.close(self)
     
-    def clear_dns_cache(self, host=None, port=None):
-        if (host is not None) and (port is not None):
-            try:
-                del self.cached_hosts[(host, port)]
-            except KeyError:
-                pass
-        else:
-            self.cached_hosts.clear()
-    
-    async def resolve(self, host, port=0, family=module_socket.AF_INET):
+    async def resolve(self, host, port):
+        """
+        Resolves a host and returns it's result.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        host : `None` or `str`, Optional
+            To what network interfaces should the connection be bound.
+        port : `None` or `int`, Optional
+            The port of the `host`.
+        
+        Returns
+        -------
+        result : ``HostInfoCont`` or ``BaseException``
+            A host info container containing the resolved addresses or the cacthed exception.
+        """
         try:
-            infos = await self.loop.getaddrinfo(host, port, type=module_socket.SOCK_STREAM, family=family)
+            infos = await self.loop.getaddrinfo(host, port, type=module_socket.SOCK_STREAM, family=self.family)
         except BaseException as err:
             return err
         
         return HostInfoCont(host, infos,)
     
     async def resolver_task(self, key,):
+        """
+        Resolves addresses for the given `host` - `port` key.
+        
+        If there is a ``.resolve`` task for the given `key`, then awaits on that's result instead.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        key : `tuple`, (`None` or `str`, `None` or `int`)
+            A tuple containing a `host`, `port` par to resolve.
+        
+        Returns
+        -------
+        result : ``HostInfoCont`` or ``BaseException``
+            A host info container containing the resolved addresses or the cacthed exception.
+        """
         try:
             event = self.dns_events[key]
         except KeyError:
-            event = Task(self.resolve(*key, family=self.family), self.loop)
+            event = Task(self.resolve(*key), self.loop)
             self.dns_events[key] = event
             hostinfo = await event
             if type(hostinfo) is HostInfoCont:
@@ -461,6 +837,26 @@ class TCPConnector(ConnectorBase):
         return hostinfo
     
     async def resolve_host_iterator(self, request):
+        """
+        A coroutine generator, which yields host infos to which the request can connect to.
+        
+        Parameters
+        ----------
+        request : ``ClientRequest``
+            Respective request, which requires a connection.
+        
+        Yields
+        ------
+        host_info : ``HostInfo``
+            Resolved host information.
+        
+        Raises
+        ------
+        ConnectionError
+            No hosts were resolved.
+        BaseException
+            Any other catched exception.
+        """
         host = request.url.raw_host
         port = request.port
         
@@ -478,7 +874,7 @@ class TCPConnector(ConnectorBase):
             if expired:
                 task = shield(self.resolver_task(key), self.loop)
             
-            addrs = host_infos.next_addrs()
+            addrs = host_infos.next_addresses()
             for hostinfo in addrs:
                 yield hostinfo
             
@@ -490,7 +886,7 @@ class TCPConnector(ConnectorBase):
                     else:
                         raise host_infos
                 
-                for hostinfo in host_infos.next_addrs():
+                for hostinfo in host_infos.next_addresses():
                     if hostinfo in addrs:
                         continue
                     
@@ -507,51 +903,84 @@ class TCPConnector(ConnectorBase):
             else:
                 raise host_infos
         
-        for hostinfo in host_infos.next_addrs():
+        for hostinfo in host_infos.next_addresses():
             yield hostinfo
     
     async def create_connection(self, request):
-        #Has same keyword arguments as BaseEventLoop.create_connection.
+        """
+        Creates connection for the request and returns teh created protocol.
         
-        if request.proxy_url:
-            _, protocol = await self.create_proxy_connection(request)
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        request : ``ClientRequest``
+            Respective request.
+        
+        Returns
+        -------
+        protocol : ``ReadProtocolBase``
+        
+        Raises
+        ------
+        ssl.SSLError
+        ssl.CertificateError
+        OSError
+        RuntimeError
+            If transport does not expose socket instance.
+        """
+        if request.proxy_url is None:
+            coro = self.create_direct_connection(request)
         else:
-            _, protocol = await self.create_direct_connection(request)
-
+            coro = self.create_proxy_connection(request)
+        
+        _, protocol = await coro
         return protocol
     
     @staticmethod
     @lru_cache(None)
     def make_ssl_context(verified):
+        """
+        Creates an ssl context.
+        
+        Parameters
+        ----------
+        verified : `bool`
+            Whether the created ssl context should veify..
+        
+        Returns
+        -------
+        ssl_context : `ssl.SSLContext`
+        """
         if verified:
-            return module_ssl.create_default_context()
+            ssl_context = module_ssl.create_default_context()
         else:
             ssl_context = module_ssl.SSLContext(module_ssl.PROTOCOL_SSLv23)
             ssl_context.options |= module_ssl.OP_NO_SSLv2
             ssl_context.options |= module_ssl.OP_NO_SSLv3
             ssl_context.options |= module_ssl.OP_NO_COMPRESSION
             ssl_context.set_default_verify_paths()
-            return ssl_context
+        return ssl_context
     
     def get_ssl_context(self, request):
-        #Logic to get the correct SSL context
+        """
+        Gets ssl context for the respective request.
         
-        #0. if request.ssl is False, return None
+        Parameters
+        ----------
+        request : ``ClientRequest``
+            Respective request.
         
-        #1. if ssl_context is specified in request, use it
-        #2. if _ssl_context is specified in self, use it
-        #3. otherwise:
-        #    1. if verify_ssl is not specified in request, use self.ssl_context
-        #       (will generate a default context according to self.verify_ssl)
-        #    2. if verify_ssl is True in request, generate a default SSL context
-        #    3. if verify_ssl is False in request, generate a SSL context that
-        #       won't verify
-        
+        Returns
+        -------
+        ssl_context : `None` or `ssl.SSLContext`
+            Returns `None` if the request is not `ssl`.
+        """
         if not request.is_ssl():
-            return
+            return None
         
         if module_ssl is None:
-            raise RuntimeError('SSL is not supported')
+            raise RuntimeError('SSL is not supported.')
         
         ssl_context = request.ssl
         if isinstance(ssl_context, module_ssl.SSLContext):
@@ -565,9 +994,24 @@ class TCPConnector(ConnectorBase):
         if isinstance(ssl_context, module_ssl.SSLContext):
             return ssl_context
         
-        return self.make_ssl_context((ssl_context is None), )
+        if ssl_context is None:
+            return self.make_ssl_context(True)
+        
+        return self.make_ssl_context(False)
     
     def get_fingerprint(self, request):
+        """
+        Gets fingerprint for the respective request.
+        
+        Parameters
+        ----------
+        request : ``ClientRequest``
+            Respective request.
+        
+        Returns
+        -------
+        fingerprint : `None` or ``Fingerprint``
+        """
         maybe_fingerprint = request.ssl
         if type(maybe_fingerprint) is Fingerprint:
             return maybe_fingerprint
@@ -577,7 +1021,26 @@ class TCPConnector(ConnectorBase):
             return maybe_fingerprint
     
     async def create_direct_connection(self, request):
+        """
+        Creates adirect connection for the given request and returns the created protocol.
         
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        request : ``ClientRequest``
+            Respective request.
+        
+        Returns
+        -------
+        protocol : ``ReadProtocolBase``
+        
+        Raises
+        ------
+        ssl.SSLError
+        ssl.CertificateError
+        OSError
+        """
         ssl_context  = self.get_ssl_context(request)
         fingerprint = self.get_fingerprint(request)
         
@@ -617,7 +1080,29 @@ class TCPConnector(ConnectorBase):
     
     
     async def create_proxy_connection(self, request):
-        headers = multidict_titled()
+        """
+        Creates a proxy connection for the given request and returns the created protocol.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        request : ``ClientRequest``
+            Respective request.
+        
+        Returns
+        -------
+        protocol : ``ReadProtocolBase``
+        
+        Raises
+        ------
+        ssl.SSLError
+        ssl.CertificateError
+        OSError
+        RuntimeError
+            If transport does not expose socket instance.
+        """
+        headers = imultidict()
         
         headers[HOST] = request.headers[HOST]
         
@@ -627,9 +1112,8 @@ class TCPConnector(ConnectorBase):
         # create connection to proxy server
         transport, protocol = await self.create_direct_connection(proxy_request)
         
-        # Many HTTP proxies has buggy keepalive support.  Let's not
-        # reuse connection but close it after processing every
-        # response.
+        # Many HTTP proxies has buggy keepalive support.  Let's not reuse connection but close it after processing
+        # every response.
         protocol.force_close()
         
         auth = proxy_request.headers.pop(AUTHORIZATION, None)
@@ -644,10 +1128,9 @@ class TCPConnector(ConnectorBase):
             proxy_request.method = METH_CONNECT
             proxy_request.url = request.url
             key = (request.connection_key, None, None)
-            connection = Connection(self, key, protocol, self.loop)
+            connection = Connection(self, key, protocol)
             proxy_response = await proxy_request.send(connection)
             try:
-                connection.protocol.set_response_params()
                 response = await proxy_response.start(connection)
             except BaseException:
                 proxy_response.close()
@@ -655,13 +1138,12 @@ class TCPConnector(ConnectorBase):
                 raise
             else:
                 connection.protocol = None
-                connection.protocol.transport = None
                 try:
                     if response.status != 200:
                         raise ProxyError(response.status, response.reason, response.headers)
                     rawsock = transport.get_extra_info('socket', None)
                     if rawsock is None:
-                        raise RuntimeError('Transport does not expose socket instance')
+                        raise RuntimeError('Transport does not expose socket instance.')
                     # Duplicate the socket, so now we can close proxy transport
                     rawsock = rawsock.dup()
                 finally:

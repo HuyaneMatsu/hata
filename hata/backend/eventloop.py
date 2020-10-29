@@ -3704,7 +3704,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         family : `AddressFamily` or `int`
             The family of the address.
         flags : `int`
-            Bitmask for bitmask for `getaddrinfo`.
+            Bitmask for `getaddrinfo`.
         
         Returns
         -------
@@ -3735,7 +3735,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             Can be given either as `socket.AF_INET` or `socket.AF_INET6` to force the socket to use `IPv4` or `IPv6`.
             If not given, then  will be determined from host name.
         flags : `int`
-            Bitmask for bitmask for `getaddrinfo`.
+            Bitmask for `getaddrinfo`.
         sock : `None` or `socket.socket`, Optional
             Can be specified in order to use a preexisting socket object.
             

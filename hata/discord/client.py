@@ -9,7 +9,7 @@ from threading import current_thread
 from math import inf
 
 from ..env import CACHE_USER, CACHE_PRESENCE, API_VERSION
-from ..backend.dereaddons_local import multidict_titled, _spaceholder, methodize, basemethod, change_on_switch
+from ..backend.dereaddons_local import imultidict, _spaceholder, methodize, basemethod, change_on_switch
 from ..backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, WaitTillFirst, WaitTillExc
 from ..backend.eventloop import EventThread, LOOP_TIME
 from ..backend.formdata import Formdata
@@ -298,7 +298,9 @@ class DiscoveryCategoryRequestCacher(object):
     
     async def execute(self, client):
         """
-        Executes the request and returns''s it's result or raises.
+        Executes the request and returnsit's result or raises.
+        
+        This method is a coroutine.
         
         Returns
         -------
@@ -461,7 +463,9 @@ class DiscoveryTermRequestCacher(object):
     
     async def execute(self, client, arg):
         """
-        Executes the request and returns''s it's result or raises.
+        Executes the request and returns it's result or raises.
+        
+        This method is a coroutine.
         
         Returns
         -------
@@ -1167,6 +1171,8 @@ class Client(UserBase):
         Edits the client. Only the provided parameters will be changed. Every argument what refers to a user
         account is not tested.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         password : `str`, Optional
@@ -1268,6 +1274,8 @@ class Client(UserBase):
         Changes the client's nick at the specified Guild. A nick name's length can be between 1-32. An extra argument
         reason is accepted as well, what will show zp at the respective guild's audit logs.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         guild : ``Guild``
@@ -1329,6 +1337,8 @@ class Client(UserBase):
         """
         Requests the client's connections. For a bot account this request will always return an empty list.
         
+        This method is a coroutine.
+        
         Returns
         -------
         connections : `list` of ``Connection`` objects
@@ -1344,6 +1354,8 @@ class Client(UserBase):
     async def client_edit_presence(self, activity=None, status=None, afk=False):
         """
         Changes the client's presence (status and activity). If a parameter is not defined, it will not be changed.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -1407,6 +1419,8 @@ class Client(UserBase):
         """
         Activates a user's oauth2 code.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         redirect_url : `str`
@@ -1441,7 +1455,7 @@ class Client(UserBase):
             'scope'         : ' '.join(scopes),
                 }
         
-        data = await self.http.oauth2_token(data, multidict_titled())
+        data = await self.http.oauth2_token(data, imultidict())
         if len(data) == 1:
             return
         
@@ -1451,6 +1465,8 @@ class Client(UserBase):
         """
         Similar to ``.activate_authorization_code``, but it requests the application's owner's access. It does not
         requires the redirect_url and the code argument either.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -1478,7 +1494,7 @@ class Client(UserBase):
             'scope'      : ' '.join(scopes),
                 }
         
-        headers = multidict_titled()
+        headers = imultidict()
         headers[AUTHORIZATION] = BasicAuth(str(self.id), self.secret).encode()
         data = await self.http.oauth2_token(data, headers)
         return AO2Access(data, '')
@@ -1489,6 +1505,8 @@ class Client(UserBase):
         Request the a user's information with oauth2 access token. By default a bot account should be able to request
         every public infomation about a user (but you do not need oauth2 for that). If the access token has email
         or/and identify scopes, then more information should show up like this.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -1506,7 +1524,7 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        headers = multidict_titled()
+        headers = imultidict()
         headers[AUTHORIZATION] = f'Bearer {access.access_token}'
         data = await self.http.user_info(headers)
         return UserOA2(data, access)
@@ -1515,6 +1533,8 @@ class Client(UserBase):
         """
         Requests a user's connections. This method will work only if the access token has the `'connections'` scope. At
         the returned list includes the user's hidden connections as well.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -1531,7 +1551,7 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        headers = multidict_titled()
+        headers = imultidict()
         headers[AUTHORIZATION] = f'Bearer {access.access_token}'
         data = await self.http.user_connections(headers)
         return [Connection(connection_data) for connection_data in data]
@@ -1539,6 +1559,8 @@ class Client(UserBase):
     async def renew_access_token(self, access):
         """
         Renews the access token of an ``OA2Access``.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -1573,13 +1595,15 @@ class Client(UserBase):
                 'scope'         : ' '.join(access.scopes),
                     }
         
-        data = await self.http.oauth2_token(data, multidict_titled())
+        data = await self.http.oauth2_token(data, imultidict())
         
         access._renew(data)
     
     async def guild_user_add(self, guild, access_or_compuser, user=None, nick=None, roles=[], mute=False, deaf=False):
         """
         Adds the passed to the guild. The user must have granted you the `'guilds.join'` oauth2 scope.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -1647,6 +1671,8 @@ class Client(UserBase):
         Requests a user's guilds with it's ``OA2Access``. The user must provide the `'guilds'` oauth2  scope for this
         request to succeed.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         access: ``OA2Access`` or ``UserOA2``
@@ -1664,7 +1690,7 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        headers = multidict_titled()
+        headers = imultidict()
         headers[AUTHORIZATION] = f'Bearer {access.access_token}'
         data = await self.http.user_guilds(headers)
         return [(PartialGuild(guild_data), UserGuildPermission(guild_data)) for guild_data in data]
@@ -1672,6 +1698,8 @@ class Client(UserBase):
     async def achievement_get_all(self):
         """
         Requests all the achievements of the client's application and returns them.
+        
+        This method is a coroutine.
         
         Returns
         -------
@@ -1691,6 +1719,8 @@ class Client(UserBase):
         """
         Requests one of the client's achievements by it's id.
         
+        This method is a coroutine.
+        
         Returns
         -------
         achievement : ``Achievement``
@@ -1708,6 +1738,8 @@ class Client(UserBase):
     async def achievement_create(self, name, description, icon, secret=False, secure=False):
         """
         Creates an achievment for the client's application and returns it.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -1767,6 +1799,8 @@ class Client(UserBase):
             icon=_spaceholder):
         """
         Edits the passed achievemnt with the specified parameters. All parameter is optional.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -1836,6 +1870,8 @@ class Client(UserBase):
         """
         Deletes the passed achievement.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         achievement : ``Achievement``
@@ -1858,6 +1894,8 @@ class Client(UserBase):
         """
         Requests the achievements of a user with it's oauth2 access.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         access : ``OA2Access`` or ``UserOA2``
@@ -1879,7 +1917,7 @@ class Client(UserBase):
         This endpoint is unintentionally documented and will never work. For reference:
         ``https://github.com/discordapp/discord-api-docs/issues/1230``.
         """
-        headers = multidict_titled()
+        headers = imultidict()
         headers[AUTHORIZATION] = f'Bearer {access.access_token}'
         
         data = await self.http.user_achievements(self.application.id, headers)
@@ -1897,6 +1935,8 @@ class Client(UserBase):
         """
         Updates the `user`'s achievement with the given percentage. The  achevement should be `secure`. This
         method only updates the achievement's percentage.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -1922,10 +1962,12 @@ class Client(UserBase):
         data = {'percent_complete': percent_complete}
         await self.http.user_achievement_update(user.id, self.application.id, achievement.id, data)
     
-    #hooman only
+    # hooman only
     async def application_get(self, application_id):
         """
         Requst a specific application by it's id.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -1953,7 +1995,9 @@ class Client(UserBase):
     async def eula_get(self, eula_id):
         """
         Requests the eula with the given id.
-
+        
+        This method is a coroutine.
+        
         Parameters
         ----------
         eula_id : `int`
@@ -1983,7 +2027,9 @@ class Client(UserBase):
     async def applications_detectable(self):
         """
         Requst the detectable applications
-
+        
+        This method is a coroutine.
+        
         Returns
         -------
         applications : `list` of ``Application``
@@ -2087,6 +2133,8 @@ class Client(UserBase):
         Requests an url and returns the response's content. A shortcut option for doing a get request with the
         client's http and reading it.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         url : `str`
@@ -2107,6 +2155,8 @@ class Client(UserBase):
     async def download_attachment(self, attachment):
         """
         Downloads an attachment object's file. This method always prefers the proxy url of the attachment if applicable.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -2135,6 +2185,8 @@ class Client(UserBase):
         """
         The first step at loggin in is requesting the client's user data. This method is also used to check whether
         the token of the client is valid.
+        
+        This method is a coroutine.
         
         Returns
         -------
@@ -2174,6 +2226,8 @@ class Client(UserBase):
         """
         Leaves the client from the specified group channel.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         channel : ``ChannelGroup``
@@ -2191,6 +2245,8 @@ class Client(UserBase):
     async def channel_group_user_add(self, channel, *users):
         """
         Adds the users to the given group channel.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -2213,6 +2269,8 @@ class Client(UserBase):
         """
         Removes the users from the given group channel.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         channel : ``ChannelGroup``
@@ -2233,6 +2291,8 @@ class Client(UserBase):
     async def channel_group_edit(self, channel, name=_spaceholder, icon=_spaceholder):
         """
         Edits the given group channel. Only the provided parameters will be edited.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -2296,10 +2356,12 @@ class Client(UserBase):
         if data:
             await self.http.channel_group_edit(channel.id, data)
     
-    #user only
+    # user account only
     async def channel_group_create(self, users):
         """
         Creates a group channel with the given users.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -2333,6 +2395,11 @@ class Client(UserBase):
     
     async def channel_private_create(self, user):
         """
+        Creates a private channel with the given user. If there is an already cahced private channel with the user,
+        returns that.
+        
+        This method is a coroutine.
+        
         Parameters
         ----------
         user : ``User`` or ``Client`` object
@@ -2357,11 +2424,12 @@ class Client(UserBase):
             channel = ChannelPrivate(data, self)
         return channel
 
-    #returns an empty list for bots
     async def channel_private_get_all(self):
         """
         Request the client's private + group channels and returns them in a list. At the case of bot accounts the
         request returns an empty list, so we skip it.
+        
+        This method is a coroutine.
         
         Returns
         -------
@@ -2388,6 +2456,8 @@ class Client(UserBase):
         Moves a guild channel to the given visual position under it's category, or guild. If the algorithm can not
         place the channel exactly on that location, it will place it as close, as it can. If there is nothing to
         move, then the request is skipped.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -2490,13 +2560,13 @@ class Client(UserBase):
                     ordered.append((index_0, index_1, type_index, channel_),)
                     
                     #loop block end
-                    index_1 +=1
+                    index_1 += 1
                 #reseting inner
                 index_1 = 0
                 #loop ended
             
             #loop block end
-            index_0 +=1
+            index_0 += 1
         #loop ended
         
         #prepare loop
@@ -2514,7 +2584,7 @@ class Client(UserBase):
                 break
 
             #loop block end
-            index_0 +=1
+            index_0 += 1
         #loop ended
 
         restricted_positions = []
@@ -2531,11 +2601,11 @@ class Client(UserBase):
                 #loop block start
                 
                 if info_line[0] > last_index:
-                    last_index +=1
+                    last_index += 1
                     restricted_positions.append(index_0)
                 
                 #loop block end
-                index_0 +=1
+                index_0 += 1
             #loop ended
         else:
             #loop start
@@ -2546,7 +2616,7 @@ class Client(UserBase):
                 category_index = index_0 #we might need it
                 #loop block start
                 if info_line[3] is category:
-                    index_0 +=1
+                    index_0 += 1
                     #loop preapre
                     #loop start
                     while True:
@@ -2560,12 +2630,12 @@ class Client(UserBase):
                         restricted_positions.append(index_0)
                         
                         #loop block end
-                        index_0 +=1
+                        index_0 += 1
                     #loop ended
                     break
                 
                 #loop block end
-                index_0 +=1
+                index_0 += 1
             #loop ended
                 
         index_0 = (4, 2, 0).index(channel.ORDER_GROUP)
@@ -2589,7 +2659,7 @@ class Client(UserBase):
                     break
                 info_line = ordered[restricted_positions[index_0]]
                 #next step mixin
-                index_0 +=1
+                index_0 += 1
                 info_line_2=ordered[restricted_positions[index_0]]
                 #loop block start
                 
@@ -2633,7 +2703,7 @@ class Client(UserBase):
             end_goto = False
             #setup GOTO from loop ended
             
-            index_0 +=1
+            index_0 += 1
             while True:
                 if index_0 == limit_0:
                     break
@@ -2649,7 +2719,7 @@ class Client(UserBase):
                     #GOTO ended inner 1
 
                 #loop block end
-                index_0 +=1
+                index_0 += 1
             #loop ended
 
             #GOTO end
@@ -2666,9 +2736,9 @@ class Client(UserBase):
         ordered.insert(result_position, ordered[original_position])
         higher_flag = (result_position < original_position)
         if higher_flag:
-            original_position +=1
+            original_position += 1
         else:
-            result_position -=1
+            result_position -= 1
         del ordered[original_position]
         
         if channel.type == 4:
@@ -2689,7 +2759,7 @@ class Client(UserBase):
                 channels_to_move.append(info_line)
                 
                 #loop block end
-                index_0 +=1
+                index_0 += 1
             #loop ended
             
             insert_to = result_position+1
@@ -2699,7 +2769,7 @@ class Client(UserBase):
             limit_0 = 0
             #loop start
             while True:
-                index_0 -=1
+                index_0 -= 1
                 info_line = channels_to_move[index_0]
                 #loop block start
                 
@@ -2727,7 +2797,7 @@ class Client(UserBase):
                 del ordered[delete_from]
                 
                 #loop block end
-                index_0 +=1
+                index_0 += 1
             #loop ended
         
         # reset
@@ -2801,6 +2871,8 @@ class Client(UserBase):
         """
         Edits the given guild channel. Different channel types accept different parameters and they ignore the rest.
         Only the passed parameters will be edited of the channel.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -2896,6 +2968,8 @@ class Client(UserBase):
         Creates a new channel at the given `given`. If the channel is successfully created returns it. The unused
         parameters of the created channel's type are ignored.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         guild : ``Guild``
@@ -2970,6 +3044,8 @@ class Client(UserBase):
         """
         Deletes the specified guild channel.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         channel : ``ChannelGuildBase`` instance
@@ -2994,6 +3070,8 @@ class Client(UserBase):
         """
         Follows the `source_channel` with the `target_channel`. Returns the webhook, what will crosspost the published
         messages.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -3030,7 +3108,7 @@ class Client(UserBase):
         webhook = await Webhook._from_follow_data(data, source_channel, target_channel, self)
         return webhook
     
-    #messages
+    # messages
     
     async def message_logs(self, channel, limit=100, after=None, around=None, before=None):
         """
@@ -3039,6 +3117,8 @@ class Client(UserBase):
         If there is at least 1 message overlap between the received and the loaded messages, the wrapper will chain
         the channel's message history up. If this happens the channel will get on a queue to have it's messages again
         limited to the default one, but requesting old messages more times, will cause it to extend.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -3095,13 +3175,15 @@ class Client(UserBase):
         data = await self.http.message_logs(channel.id, data)
         return channel._process_message_chunk(data)
     
-    #if u have 0-1-2 messages at a channel, and you wanna store the messages.
-    #the other wont store it, because it wont see anything what allows channeling
+    # If you have 0-1-2 messages at a channel, and you wanna store the messages. The other wont store it, because it
+    # wont see anything what allows channeling.
     async def message_logs_fromzero(self, channel, limit=100):
         """
         If the `channel` has `1` or less messages loaded use this method instead of ``.message_logs`` to request the
         newest messages there, because this method makes sure, the returned messages will be chained at the
         channel's message history.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -3140,6 +3222,8 @@ class Client(UserBase):
         """
         Requests a specific message by it's id at the given `channel`.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         channel : ``ChannelTextBase`` instance
@@ -3165,6 +3249,8 @@ class Client(UserBase):
             message_reference=None, tts=False, nonce=None):
         """
         Creates and returns a message at the given `channel`. If there is nothing to send, then returns `None`.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -3524,6 +3610,8 @@ class Client(UserBase):
         """
         Deletes the given message.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         message : ``Message``
@@ -3560,6 +3648,8 @@ class Client(UserBase):
     async def message_delete_multiple(self, messages, reason=None):
         """
         Deletes the given messages. The messages needs to be from the same channel.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -3637,7 +3727,7 @@ class Client(UserBase):
                         own, message_id = message_group_new.popleft()
                         if message_id > limit:
                             message_ids.append(message_id)
-                            message_count +=1
+                            message_count += 1
                             if message_count == 100:
                                 break
                             continue
@@ -3735,6 +3825,8 @@ class Client(UserBase):
         channel and creates ``.message_delete_multiple`` tasks for them. Returns when all the task are finished.
         If any exception was rasised meanwhile, then returns each of them in a list.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         messages : `list` of ``Message`` objects
@@ -3780,6 +3872,8 @@ class Client(UserBase):
         a ``DiscordEntitiy`` instance or as a `datetime` object.
         
         If the client has no `manage_messages` permission at the channel, then returns instantly.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -3928,7 +4022,7 @@ class Client(UserBase):
                     else:
                         message_ids = []
                         while collected:
-                            collected -=1
+                            collected -= 1
                             own, message_id = message_group_new.popleft()
                             message_ids.append(message_id)
                         
@@ -4111,6 +4205,8 @@ class Client(UserBase):
         messages an not only the one from what it was called from.
         
         If non of the clients have `manage_messages` permission, then returns instantly.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -4492,6 +4588,8 @@ class Client(UserBase):
         """
         Edits the given `message`.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         message : ``Message``
@@ -4550,6 +4648,8 @@ class Client(UserBase):
         """
         Suppresses or unsuppressed the given message's embeds.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         message : ``Message`` object
@@ -4570,6 +4670,8 @@ class Client(UserBase):
         """
         Crossposts the given message. The message's channel must be an announcements (type 5) channel.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         message : ``Message`` object
@@ -4587,6 +4689,8 @@ class Client(UserBase):
     async def message_pin(self, message):
         """
         Pins the given message.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -4606,6 +4710,8 @@ class Client(UserBase):
         """
         Unpins the given message.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         message : ``Message`` object
@@ -4623,6 +4729,8 @@ class Client(UserBase):
     async def channel_pins(self, channel):
         """
         Returns the pinned messages at the given channel.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -4649,6 +4757,8 @@ class Client(UserBase):
         """
         An internal function to load the messages at the given channel till the given index. Should not be called if
         the channel reached it's message history's end.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -4695,6 +4805,8 @@ class Client(UserBase):
         Returns the message at the given channel at the specific index. Can be used to load `index` amount of messages
         at the channel.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         channel : ``ChannelTextBase``
@@ -4735,6 +4847,8 @@ class Client(UserBase):
         """
         Returns a list of the message between the `start` - `end` area. If the client has no permission to request
         messages, or there are no messages at the given area returns an empty list.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -4792,6 +4906,8 @@ class Client(UserBase):
         """
         Sends a typing event to the given channel.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         channel : ``ChannelTextBase`` instance
@@ -4810,7 +4926,7 @@ class Client(UserBase):
         """
         await self.http.typing(channel.id)
 
-    #with context
+    # With context
     def keep_typing(self, channel, timeout=300.):
         """
         Returns a ``Typer`` object, what will keep sending typing events at the given channel. It can be used as a
@@ -4835,6 +4951,8 @@ class Client(UserBase):
         """
         Adds a reaction on the given message.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         message : ``Message`` object
@@ -4854,6 +4972,8 @@ class Client(UserBase):
     async def reaction_delete(self, message, emoji, user):
         """
         Removes the specified reaction of the user from the given message.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -4880,6 +5000,8 @@ class Client(UserBase):
         """
         Removes all the reaction of the specified emoji from the given message.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         message : ``Message`` object
@@ -4899,6 +5021,8 @@ class Client(UserBase):
     async def reaction_delete_own(self, message, emoji):
         """
         Removes the specified reaction of the client from the given message.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -4920,6 +5044,8 @@ class Client(UserBase):
         """
         Removes all the reactions from the given message.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         message : ``Message`` object
@@ -4939,9 +5065,11 @@ class Client(UserBase):
     async def reaction_users(self, message, emoji, limit=None, after=None):
         """
         Requests the users, who reacted on the given message with the given emoji.
-    
+        
         If the message has no reacters at all or no reacters with that emoji, returns an empty list. If we know the
         emoji's every reacters we query the parameters from that.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -5024,6 +5152,8 @@ class Client(UserBase):
         If the message has no reacters at all or no reacters with that emoji returns an empty list. If the emoji's
         every reacters are known, then do requests are done.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         message : ``Message`` object
@@ -5062,7 +5192,7 @@ class Client(UserBase):
                 users.extend(User(user_data) for user_data in user_datas)
                 
                 data['after'] = users[-1].id
-                limit -=100
+                limit -= 100
             
             reactions._update_all_users(emoji, users)
         else:
@@ -5077,6 +5207,8 @@ class Client(UserBase):
         
         Like the other reaction getting methods, this method prefers using the internal cache as well over doing a
         request.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -5120,6 +5252,8 @@ class Client(UserBase):
         """
         Requests the preview of a public guild.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         guild_id : `int`
@@ -5143,6 +5277,8 @@ class Client(UserBase):
         """
         Removes the given user from the guild.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         guild : ``Guild`` object
@@ -5164,6 +5300,8 @@ class Client(UserBase):
     async def welcome_screen_get(self, guild):
         """
         Requests the given guild's welcome screen.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -5200,6 +5338,8 @@ class Client(UserBase):
         """
         Bans the given user from the guild.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         guild : ``Guild`` object
@@ -5231,6 +5371,8 @@ class Client(UserBase):
         """
         Unbans the user from the given guild.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         guild : ``Guild`` object
@@ -5252,6 +5394,8 @@ class Client(UserBase):
     async def guild_sync(self, guild_id):
         """
         Syncs a guild by it's id with the wrapper. Used internally if desync is detected when parsing dispatch events.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -5346,6 +5490,8 @@ class Client(UserBase):
         """
         The client leaves the given guild.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         guild : ``Guild``
@@ -5363,6 +5509,8 @@ class Client(UserBase):
     async def guild_delete(self, guild):
         """
         Deletes the given guild. The client must be the owner of the guild.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -5393,6 +5541,8 @@ class Client(UserBase):
         """
         Creates a guild with the given parameter. A user account cant be member of 100 guilds maximum and a bot
         account can create a guild only if it is member of less than 10 guilds.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -5487,13 +5637,14 @@ class Client(UserBase):
             data['afk_timeout'] = afk_timeout
         
         data = await self.http.guild_create(data)
-        #we can create only partial, because the guild data is not completed usually
+        # we can create only partial, because the guild data is not completed usually
         return PartialGuild(data)
     
-    #kicks inactive users
     async def guild_prune(self, guild, days, roles=[], count=False, reason=None):
         """
         Kicks the members of the guild which were inactive since x days.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -5550,7 +5701,10 @@ class Client(UserBase):
         days : `int`
             The amount of days since atleast the users need to inactive. Needs to be at least `1`.
         roles : `list` of ``Role`` objects, Optional
-            By default pruning would kick only the users without any roles, but it can be defined which roles to include.
+            By default pruning would kick only the users without any roles, but it can be defined which roles to
+            include.
+        
+        This method is a coroutine.
         
         Returns
         -------
@@ -5581,6 +5735,8 @@ class Client(UserBase):
             system_channel_flags=None, add_feature=None, remove_feature=None, reason=None):
         """
         Edis the guild with the given parameters.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -5828,7 +5984,7 @@ class Client(UserBase):
                             except KeyError:
                                 pass
                             
-                            index +=1
+                            index += 1
                             continue
                         
                         break
@@ -5850,6 +6006,8 @@ class Client(UserBase):
     async def guild_bans(self, guild):
         """
         Returns the guild's bans.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -5874,6 +6032,8 @@ class Client(UserBase):
     async def guild_ban_get(self, guild, user_id):
         """
         Returns the guild's ban entry for the given user id.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -5900,6 +6060,8 @@ class Client(UserBase):
     async def guild_widget_get(self, guild_or_id):
         """
         Returns the guild's widget.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -5942,6 +6104,8 @@ class Client(UserBase):
         
         The client must have `manage_guild` permission to execute this method.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         guild : ``Guild``
@@ -5967,6 +6131,8 @@ class Client(UserBase):
         Edits the guild's discovery metadata.
         
         The client must have `manage_guild` permission to execute this method.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -6050,7 +6216,7 @@ class Client(UserBase):
                             f'elemnet at index {index} is not `str` instance, got {keyword.__class__.__name__}.')
                     
                     keywords_processed.add(keyword)
-                    index +=1
+                    index += 1
                 
                 keywords = keywords_processed
             else:
@@ -6089,6 +6255,8 @@ class Client(UserBase):
         Adds a discovery subcategory to the guild.
         
         The client must have `manage_guild` permission to execute this method.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -6142,6 +6310,8 @@ class Client(UserBase):
         Removes a discovery subcategory of the guild.
         
         The client must have `manage_guild` permission to execute this method.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -6197,6 +6367,8 @@ class Client(UserBase):
         """
         Returns a list of discovery categories, which can be used when editing guild discovery.
         
+        This method is a coroutine.
+        
         Returns
         -------
         discovery_categories : `list` of ``DiscoveryCategory``
@@ -6220,6 +6392,8 @@ class Client(UserBase):
     async def discovery_validate_term(self, term):
         """
         Checks whether the given discovery search term is valid.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -6245,6 +6419,8 @@ class Client(UserBase):
     async def guild_users(self, guild):
         """
         Requests all the users of the guild and returns them.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -6283,6 +6459,8 @@ class Client(UserBase):
         """
         Requests all the guilds of the client.
         
+        This method is a coroutine.
+        
         Returns
         -------
         guilds : `list` of ``Guilds` objects
@@ -6312,6 +6490,8 @@ class Client(UserBase):
     async def guild_regions(self, guild):
         """
         Requests the available voice regions for the given guild and returns them and the optiomal ones.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -6347,6 +6527,8 @@ class Client(UserBase):
         """
         Returns all the voice regions.
         
+        This method is a coroutine.
+        
         Returns
         -------
         voice_regions : `list` of ``VoiceRegion`` objects
@@ -6372,6 +6554,8 @@ class Client(UserBase):
         Requests the given guild's channels and if there any desync between the wrapper and Discord, applies the
         changes.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         guild : ``Guild``
@@ -6391,6 +6575,8 @@ class Client(UserBase):
         """
         Requests the given guild's roles and if there any desync between the wrapper and Discord, applies the
         changes.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -6412,6 +6598,8 @@ class Client(UserBase):
         Request a batch of audit logs of the guild and returns them. The `after`, `around` and the `before` arguments
         are mutually exclusive and they can be passed as `int`, or as a ``DiscordEntitiy`` instance or as a `datetime`
         object.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -6466,6 +6654,8 @@ class Client(UserBase):
         """
         Returns an audit log iterator for the given guild.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         guild : ``Guild``
@@ -6481,12 +6671,14 @@ class Client(UserBase):
         """
         return AuditLogIterator(self, guild, user=user, event=event)
     
-    #users
+    # users
     
     async def user_edit(self, guild, user, nick=_spaceholder, deaf=None, mute=None, voice_channel=_spaceholder,
             roles=None, reason=None):
         """
         Edits the user at the given guild.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -6569,6 +6761,8 @@ class Client(UserBase):
         """
         Adds the role on the user.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         user : ``Client`` or ``User``
@@ -6595,6 +6789,8 @@ class Client(UserBase):
     async def user_role_delete(self, user, role, reason=None):
         """
         Deletes the role from the user.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -6623,6 +6819,8 @@ class Client(UserBase):
         """
         Moves the user to the givn voice channel. The user must be in a voice channel at the respective guild already.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         user : ``Client`` or ``User``
@@ -6648,6 +6846,8 @@ class Client(UserBase):
         """
         Kicks the user from the guild's voice channels. The user must be in a voice channel at the guild.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         user : ``Client`` or ``User``
@@ -6667,6 +6867,8 @@ class Client(UserBase):
     async def user_get(self, user_id):
         """
         Gets an user by it's id. If the user is already loaded updates it.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -6692,6 +6894,8 @@ class Client(UserBase):
         Gets an user and it's profile at a guild. The user must be the member of the guild. If the user is already
         loaded updates it.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         guild : ``Guild``
@@ -6716,6 +6920,8 @@ class Client(UserBase):
     async def guild_user_search(self, guild, query, limit=1):
         """
         Gets an user and it's profile at a guild by it's name. If the users are already loaded updates it.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -6759,6 +6965,8 @@ class Client(UserBase):
         """
         Requests the integrations of the given guild.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         guild : ``Guild``
@@ -6788,6 +6996,8 @@ class Client(UserBase):
     async def integration_create(self, guild, integration_id, type_):
         """
         Creates an integration at the given guild.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -6821,6 +7031,8 @@ class Client(UserBase):
         """
         Edits the given integration.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         integration : ``Integration``
@@ -6846,7 +7058,15 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild = integration.role.guild
+        detail = integration.detail
+        if detail is None:
+            return
+        
+        role = detail.role
+        if role is None:
+            return
+        
+        guild = role.guild
         if guild is None:
             return
         
@@ -6881,6 +7101,8 @@ class Client(UserBase):
         """
         Deletes the given integration.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         integration : ``Integation``
@@ -6893,7 +7115,15 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild = integration.role.guild
+        detail = integration.detail
+        if detail is None:
+            return
+        
+        role = detail.role
+        if role is None:
+            return
+        
+        guild = role.guild
         if guild is None:
             return
         
@@ -6902,6 +7132,9 @@ class Client(UserBase):
     async def integration_sync(self, integration):
         """
         Sync the given integration's state.
+        
+        This method is a coroutine.
+        
         Parameters
         ----------
         integration : ``Integation``
@@ -6914,7 +7147,15 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild = integration.role.guild
+        detail = integration.detail
+        if detail is None:
+            return
+        
+        role = detail.role
+        if role is None:
+            return
+        
+        guild = role.guild
         if guild is None:
             return
         
@@ -6923,6 +7164,8 @@ class Client(UserBase):
     async def permission_ow_edit(self, channel, overwrite, allow, deny, reason=None):
         """
         Edits the given prmission overwrite.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -6955,6 +7198,8 @@ class Client(UserBase):
         """
         Deletes the given permission overwrite.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         channel : ˙˙ChannelGuildBase`` instance
@@ -6976,6 +7221,8 @@ class Client(UserBase):
     async def permission_ow_create(self, channel, target, allow, deny, reason=None):
         """
         Creates a permission overwrite at the given channel.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -7028,6 +7275,8 @@ class Client(UserBase):
         """
         Creates a webhook at the given channel.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         channel : ``ChannelText``
@@ -7079,6 +7328,8 @@ class Client(UserBase):
         """
         Requests the webhook by it's id.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         webhook_id : `int`
@@ -7123,6 +7374,8 @@ class Client(UserBase):
         """
         Requests the webhook through Discord's webhook API.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         webhook_id : `int`
@@ -7164,6 +7417,8 @@ class Client(UserBase):
         """
         Updates the given webhook.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         webhook : ``Webhook``
@@ -7187,6 +7442,8 @@ class Client(UserBase):
         """
         Updates the given webhook through Discord's webhook API.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         webhook : ``Webhook``
@@ -7205,6 +7462,8 @@ class Client(UserBase):
     async def webhook_get_channel(self, channel):
         """
         Requests the webhooks of the channel.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -7239,6 +7498,8 @@ class Client(UserBase):
     async def webhook_get_guild(self, guild):
         """
         Requests the webhooks of the given guild.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -7286,7 +7547,9 @@ class Client(UserBase):
         
     async def webhook_delete(self, webhook):
         """
-        Delets the webhook.
+        Deletes the webhook.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -7310,6 +7573,8 @@ class Client(UserBase):
         """
         Deletes the webhook through Discord's webhook API.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         webhook : ``Webhook``
@@ -7328,10 +7593,12 @@ class Client(UserBase):
         """
         await self.http.webhook_delete_token(webhook)
             
-    #later there gonna be more stuff thats why 2 different
+    # later there gonna be more stuff thats why 2 different
     async def webhook_edit(self, webhook, name=None, avatar=_spaceholder, channel=None):
         """
         Edits and updates the given webhook.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -7399,6 +7666,8 @@ class Client(UserBase):
         """
         Edits and updates the given webhook through Discord's webhook API.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         webhook : ``Webhook``
@@ -7461,6 +7730,8 @@ class Client(UserBase):
         """
         Sends a message with the given webhook. If there is nothing to send, or if `wait` was not passed as `True`
         returns `None`.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -7570,6 +7841,8 @@ class Client(UserBase):
         Requests the emoji by it's id at the given guild. If the client's logging in is finished, then it should have
         it's every emoji loaded already.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         guild : ``Guild``
@@ -7595,6 +7868,8 @@ class Client(UserBase):
         """
         Syncs the given guild's emojis with the wrapper.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         guild : ``Guild``
@@ -7612,7 +7887,9 @@ class Client(UserBase):
     
     async def emoji_create(self, guild, name, image, roles=[], reason=None):
         """
-        Creates an emoji at the givn guild.
+        Creates an emoji at the given guild.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -7626,6 +7903,11 @@ class Client(UserBase):
             Whether the created emoji should be limited only to users with any of the specified roles.
         reason : `str`, Optional
             Will show up at the guild's audit logs.
+        
+        Returns
+        -------
+        emoji : ``Emoji``
+            The created emoji.
         
         Raises
         ------
@@ -7653,11 +7935,16 @@ class Client(UserBase):
             'role_ids' : [role.id for role in roles]
                 }
         
-        await self.http.emoji_create(guild.id, data, reason)
+        data = await self.http.emoji_create(guild.id, data, reason)
+        emoji = Emoji(data, guild)
+        emoji.user = self
+        return emoji
     
     async def emoji_delete(self, emoji, reason=None):
         """
         Deletes the given emoji.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -7682,6 +7969,8 @@ class Client(UserBase):
     async def emoji_edit(self, emoji, name=None, roles=_spaceholder, reason=None):
         """
         Edits the given emoji.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -7734,7 +8023,9 @@ class Client(UserBase):
         
     async def vanity_invite(self, guild):
         """
-        Returns the vanity invite of the givn guild.
+        Returns the vanity invite of the given guild.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -7764,6 +8055,8 @@ class Client(UserBase):
         """
         Edits the given guild's vanity invite's code.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         guild : ``Guild``
@@ -7785,6 +8078,8 @@ class Client(UserBase):
     async def invite_create(self, channel, max_age=0, max_uses=0, unique=True, temporary=False):
         """
         Creates an invite at the given channel with the given parameters.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -7846,6 +8141,8 @@ class Client(UserBase):
         Creates an STREAM invite at the given guild for the specific user. The user must be streaming at the guild,
         when the invite is created.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         guild : ``Guild``
@@ -7895,10 +8192,11 @@ class Client(UserBase):
         data = await self.http.invite_create(voice_state.channel.id, data)
         return Invite(data, False)
     
-    #u cannot create invite from guild, but this chooses a prefered channel
     async def invite_create_pref(self, guild, *args, **kwargs):
         """
         Creates an invite to the guild's preferred channel.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -7977,6 +8275,8 @@ class Client(UserBase):
         """
         Requests a partial invite with the given code.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         invite_code : `str`
@@ -8002,6 +8302,8 @@ class Client(UserBase):
         """
         Updates the given invite. Because this method uses the same endpoint as ``.invite_get``, no new information
         is received if `with_count` is passed as `False`.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -8029,6 +8331,8 @@ class Client(UserBase):
         """
         Gets the invites of the given guild.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         guild : ``Guild``
@@ -8051,6 +8355,8 @@ class Client(UserBase):
     async def invite_get_channel(self, channel):
         """
         Gets the invites of the given channel.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -8075,6 +8381,8 @@ class Client(UserBase):
         """
         Deletes the given invite.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         invite : ``Invite``
@@ -8094,6 +8402,8 @@ class Client(UserBase):
     async def invite_delete_by_code(self, invite_code, reason=None):
         """
         Deletes the invite by it's code and returns it.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -8123,6 +8433,8 @@ class Client(UserBase):
             position=None, reason=None):
         """
         Edits the role with the given parameters.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -8188,6 +8500,8 @@ class Client(UserBase):
         """
         Deletes the given role.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         role : ``Role``
@@ -8212,6 +8526,8 @@ class Client(UserBase):
             reason=None):
         """
         Creates a role at the given guild.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -8265,6 +8581,8 @@ class Client(UserBase):
         """
         Moves the given role.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         role : ``Role``
@@ -8315,6 +8633,8 @@ class Client(UserBase):
         Partial roles are ignored and if passed any, every role's position after it is reduced. If there are roles
         passed with different guilds, then `ValueError` will be raised. If there are roles passed with the same
         position, then their positions will be sorted out.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -8396,7 +8716,7 @@ class Client(UserBase):
                 
                 # default and moving to default, lets delete it
                 del roles_valid[index]
-                limit -=1
+                limit -= 1
                 continue
                 
             else:
@@ -8404,7 +8724,7 @@ class Client(UserBase):
                 if position == 0:
                     raise ValueError(f'Role cannot be moved to position `0`.')
             
-            index +=1
+            index += 1
             continue
         
         if not limit:
@@ -8419,7 +8739,7 @@ class Client(UserBase):
             if len(roles) == ln:
                 raise ValueError(f'{Role.__name__} `{role!r}` is duped.')
             
-            ln +=1
+            ln += 1
             continue
         
         # Now that we have the roles, lets order them
@@ -8435,7 +8755,7 @@ class Client(UserBase):
             if last_position != position:
                 last_position = position
                 
-                index +=1
+                index += 1
                 if index == limit:
                     break
                 
@@ -8456,14 +8776,14 @@ class Client(UserBase):
                     break
                 
                 roles.append(role)
-                sub_index +=1
+                sub_index += 1
                 continue
             
             # We have all the roles with the same target position.
             # Now we order them by their actual position.
             roles.sort()
             
-            index -=1
+            index -= 1
             sub_index = 0
             sub_limit = len(roles)
             while True:
@@ -8472,7 +8792,7 @@ class Client(UserBase):
                 real_position = last_position+sub_index
                 roles_valid[real_index] = (role, real_position)
                 
-                sub_index +=1
+                sub_index += 1
                 if sub_index == sub_limit:
                     break
                 
@@ -8489,7 +8809,7 @@ class Client(UserBase):
                 real_position = position+added_position
                 roles_valid[real_index] = (role, real_position)
                 
-                real_index +=1
+                real_index += 1
                 continue
             
             
@@ -8508,9 +8828,9 @@ class Client(UserBase):
             role, position = roles_valid[index]
             
             if role.guild is None:
-                push +=1
+                push += 1
                 del roles_valid[index]
-                limit -=1
+                limit -= 1
             
             else:
                 if push:
@@ -8530,13 +8850,13 @@ class Client(UserBase):
         # Check role guild
         guild = roles_valid[0][0].guild
         
-        index=1
+        index = 1
         while True:
-            if index==limit:
+            if index == limit:
                 break
             
             guild_ = roles_valid[index][0].guild
-            index=index+1
+            index += 1
             
             if guild is guild_:
                 continue
@@ -8567,7 +8887,7 @@ class Client(UserBase):
                         break
                     
                     role = roles_leftover[index_leftover]
-                    index_leftover +=1
+                    index_leftover += 1
                     target_order.append(role)
                     continue
                 
@@ -8579,7 +8899,7 @@ class Client(UserBase):
                         break
                     
                     role = roles_valid[index_valid][0]
-                    index_valid +=1
+                    index_valid += 1
                     target_order.append(role)
                     continue
                 
@@ -8588,8 +8908,8 @@ class Client(UserBase):
             
             role, position = roles_valid[index_valid]
             if position == position_target:
-                position_target +=1
-                index_valid +=1
+                position_target += 1
+                index_valid += 1
                 target_order.append(role)
                 continue
             
@@ -8616,10 +8936,12 @@ class Client(UserBase):
         await self.http.role_move(guild.id, data, reason)
     
     # Relationship related
-    #hooman only
+    # hooman only
     async def relationship_delete(self, relationship):
         """
         Deletes the given relationship.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -8640,6 +8962,8 @@ class Client(UserBase):
         """
         Creates a relationship with the given user.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         user : ``Client`` or ``User``
@@ -8659,10 +8983,12 @@ class Client(UserBase):
             data['type'] = relationship_type.value
         await self.http.relationship_create(user.id, data)
     
-    #hooman only
+    # hooman only
     async def relationship_friend_request(self, user):
         """
         Sends a friend request to the given user.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -8682,10 +9008,12 @@ class Client(UserBase):
                 }
         await self.http.relationship_friend_request(data)
     
-    #bot only!
+    # bot only!
     async def update_application_info(self):
         """
         Updates the client's application's info.
+        
+        This method is a coroutine.
         
         Raises
         ------
@@ -8707,6 +9035,8 @@ class Client(UserBase):
         Requests the gateway information for the client.
         
         Only `1` request can be done at a time and every other will yield the result of first started one.
+        
+        This method is a coroutine.
         
         Returns
         -------
@@ -8775,6 +9105,8 @@ class Client(UserBase):
         Requests the client's gateway url. To avoid unreasoned requests when sharding, if this request was done at the
         last `60` seconds then returns the last generated url.
         
+        This method is a coroutine.
+        
         Raises
         ------
         ConnectionError
@@ -8803,6 +9135,8 @@ class Client(UserBase):
         Reshards the client. And also updates it's gatewas url as a sidenote.
         
         Should be called only if every shard is down.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -8847,10 +9181,12 @@ class Client(UserBase):
             else:
                 self.gateway = DiscordGateway(self)
     
-    #user account only
+    # user account only
     async def hypesquad_house_change(self, house):
         """
         Changes the client's hypesquad house.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -8865,10 +9201,12 @@ class Client(UserBase):
         """
         await self.http.hypesquad_house_change({'house_id':house.value})
     
-    #user account only
+    # user account only
     async def hypesquad_house_leave(self):
         """
         Leaves the client from it's current hypesquad house.
+        
+        This method is a coroutine.
         
         Raises
         ------
@@ -8950,6 +9288,8 @@ class Client(UserBase):
         
         If you want to start the connecting process consider using the toplevel ``.start`` or ``start_clients`` instead.
         
+        This method is a coroutine.
+        
         Returns
         -------
         success : `bool`
@@ -9011,6 +9351,8 @@ class Client(UserBase):
     async def _connect(self):
         """
         Connects the client's gateway(s) to Discord and reconnects them if needed.
+        
+        This method is a coroutine.
         """
         try:
             while True:
@@ -9126,6 +9468,8 @@ class Client(UserBase):
         If not every library is installed, raises `RuntimeError`, or if the voice client fails to connect raises
         `TimeoutError`.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         channel : ``ChannelVoice``
@@ -9161,6 +9505,8 @@ class Client(UserBase):
         """
         Delays the client's "ready" till it receives all of it guild's data. If caching is allowed (so by default),
         then it waits additional time till it requests all the members of it's guilds.
+        
+        This method is a coroutine.
         """
         ready_state = self.ready_state
         try:
@@ -9181,6 +9527,8 @@ class Client(UserBase):
         """
         Requests the members of the client's guilds. Called after the client is started up and user caching is
         enabled (so by default).
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -9238,6 +9586,8 @@ class Client(UserBase):
         The function requests all the members of given guilds without putting too much pressure on the respective
         gateway's ratelimits.
         
+        This function is a coroutine.
+        
         Parameters
         ----------
         gateway : ``DiscordGateway``
@@ -9267,6 +9617,8 @@ class Client(UserBase):
         """
         Requests the members of the given guild. Called when the client joins a guild and user caching is enabled
         (so by default).
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -9308,6 +9660,8 @@ class Client(UserBase):
         
         This method uses the client's gateway to request the users. If any of the parameters do not match their
         expected value or if timeout occures, returns an empty list instead of raising.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -9366,6 +9720,8 @@ class Client(UserBase):
         """
         Disconnects the client and closes it's wewbsocket(s). Till the client goes offline, it might take even over
         than `1` minute. Because bot accounts can not logout, so they need to wait for timeout.
+        
+        This method is a coroutine.
         """
         if not self.running:
             return
@@ -9571,7 +9927,7 @@ class Client(UserBase):
         index = 0
         while True:
             user = users[index]
-            index +=1
+            index += 1
             if not isinstance(user, (int, UserBase)):
                 raise TypeError(f'User {index} was not passed neither as `int` or as `{UserBase.__name__}` instance, '
                     f'got {user.__class__.__name__}.')
@@ -9913,6 +10269,8 @@ class Typer(object):
     async def run(self):
         """
         The coroutine what keeps sending the typing requests.
+        
+        This method is a coroutine.
         """
         # js client's typing is 8s
         while self.timeout > 0.:

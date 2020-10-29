@@ -591,7 +591,11 @@ class SubterraneanHelpCommand(object):
         command : ``Command``
             The respective command.
         """
-        description_parts = ['Usage : `', command.display_name]
+        prefix = client.command_processer.get_prefix_for(message)
+        if isawaitable(prefix):
+            prefix = await prefix
+        
+        description_parts = ['Usage : `', str(prefix), command.display_name]
         
         command_arg_parser = command.parser
         if command_arg_parser is None:

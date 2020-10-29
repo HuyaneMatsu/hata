@@ -46,7 +46,7 @@ class BasicAuth(object):
     
     @classmethod
     def decode(cls, auth_header, encoding='latin1'):
-        #Create a BasicAuth object from an Authorization HTTP header.
+        # Create a BasicAuth object from an Authorization HTTP header.
         split = auth_header.strip().split(' ')
         if len(split) == 2:
             if split[0].strip().lower() != 'basic':
@@ -65,13 +65,13 @@ class BasicAuth(object):
         self.password = password
         self.encoding = encoding
         return self
-
+    
     def encode(self):
-        #Encode credentials.
+        # Encode credentials.
         credits_ = (f'{self.login}:{self.password}').encode(self.encoding)
         subv = base64.b64encode(credits_).decode(self.encoding)
         return f'Basic {subv}'
-
+    
     def __repr__(self):
         return f'{self.__class__.__name__}(login={self.login}, password={self.password}, encoding={self.encoding})'
 

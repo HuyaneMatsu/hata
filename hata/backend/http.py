@@ -1,6 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('HTTPClient', )
-from .dereaddons_local import multidict_titled
+from .dereaddons_local import imultidict
 
 from .helpers import Timeout, tcp_nodelay
 from .url import URL
@@ -26,7 +26,7 @@ class HTTPClient(object):
             connector = TCPConnector(loop)
         
         self.connector = connector
-        self.cookie_jar = CookieJar(loop)
+        self.cookie_jar = CookieJar()
         
     async def _request(self, method, url, headers, data=None, params=None, redirect=3):
         history = []
@@ -110,11 +110,11 @@ class HTTPClient(object):
         response.history = tuple(history)
         return response
         
-    async def _request2(self, method, url, headers=None, params=None, data=None, auth=None, redirects=10, read_until_eof=True,
+    async def _request2(self, method, url, headers=None, params=None, data=None, auth=None, redirects=10,
             proxy_url=None, proxy_auth=None, timeout=DEFAULT_TIMEOUT, ssl=None):
 
-        # Transform headers to multidict_titled
-        headers = multidict_titled(headers)
+        # Transform headers to imultidict
+        headers = imultidict(headers)
         
         if (headers and auth is not None and AUTHORIZATION in headers):
             raise ValueError('Can\'t combine \'Authorization\' header with \'auth\' argument')
@@ -142,15 +142,9 @@ class HTTPClient(object):
                       proxy_auth, ssl)
                 
                 connection = await self.connector.connect(request)
-
+                
                 tcp_nodelay(connection.transport, True)
-
-                connection.protocol.set_response_params(
-                    skip_payload    = (method.upper() == METH_HEAD),
-                    read_until_eof  = read_until_eof,
-                    auto_decompress = True,
-                    read_timeout    = None,)
-
+                
                 try:
                     response = await request.send(connection)
                     try:
@@ -161,14 +155,14 @@ class HTTPClient(object):
                 except:
                     connection.close()
                     raise
-
-                #we do nothing with os error
-
-                self.cookie_jar.update_cookies(response.cookies,response.url)
-
+                
+                # we do nothing with os error
+                
+                self.cookie_jar.update_cookies(response.cookies, response.url)
+                
                 # redirects
                 if response.status in (301, 302, 303, 307) and redirects:
-                    redirects -=1
+                    redirects -= 1
                     history.append(response)
                     if not redirects:
                         response.close()
@@ -194,19 +188,19 @@ class HTTPClient(object):
                     response.release()
                     
                     redirect_url = URL(redirect_url)
-
+                    
                     scheme = redirect_url.scheme
                     if scheme not in ('http', 'https', ''):
                         response.close()
                         raise ValueError('Can redirect only to http or https')
                     elif not scheme:
                         redirect_url = url.join(redirect_url)
-
+                    
                     url = redirect_url
                     params = None
                     await response.release()
                     continue
-
+                
                 break
         
         response.history = tuple(history)
@@ -244,47 +238,47 @@ class HTTPClient(object):
     
     def request(self, meth, url, headers=None, **kwargs):
         if headers is None:
-            headers = multidict_titled()
+            headers = imultidict()
         return RequestCM(self._request(meth, url, headers, **kwargs))
     
     def request2(self, meth, url, headers=None, **kwargs):
         if headers is None:
-            headers = multidict_titled()
+            headers = imultidict()
         return RequestCM(self._request2(meth, url, headers, **kwargs))
     
     def get(self, url, headers=None, **kwargs):
         if headers is None:
-            headers = multidict_titled()
+            headers = imultidict()
         return RequestCM(self._request(METH_GET, url, headers, **kwargs))
     
     def options(self, url, headers=None, **kwargs):
         if headers is None:
-            headers = multidict_titled()
+            headers = imultidict()
         return RequestCM(self._request(METH_OPTIONS, url, headers, **kwargs))
     
     def head(self, url, headers=None, **kwargs):
         if headers is None:
-            headers = multidict_titled()
+            headers = imultidict()
         return RequestCM(self._request(METH_HEAD, url, headers, **kwargs))
     
     def port(self, url, headers=None, **kwargs):
         if headers is None:
-            headers = multidict_titled()
+            headers = imultidict()
         return RequestCM(self._request(METH_POST, url, headers, **kwargs))
     
     def put(self, url, headers=None, **kwargs):
         if headers is None:
-            headers = multidict_titled()
+            headers = imultidict()
         return RequestCM(self._request(METH_PUT, url, headers, **kwargs))
     
     def patch(self, url, headers=None, **kwargs):
         if headers is None:
-            headers = multidict_titled()
+            headers = imultidict()
         return RequestCM(self._request(METH_PATCH, url, headers, **kwargs))
     
     def delete(self, url, headers=None, **kwargs):
         if headers is None:
-            headers = multidict_titled()
+            headers = imultidict()
         return RequestCM(self._request(METH_DELETE, url, headers, **kwargs))
 
     def connect_ws(self, url, **kwargs):

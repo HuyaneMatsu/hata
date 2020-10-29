@@ -1,8 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('BaseMethodDescriptor', 'KeepType', 'KeyedReferer', 'RemovedDescriptor', 'WeakCallable', 'WeakKeyDictionary',
     'WeakMap', 'WeakReferer', 'WeakValueDictionary', 'alchemy_incendiary', 'any_to_any', 'cached_property',
-    'isweakreferable', 'listdifference', 'methodize', 'module_property', 'modulize', 'multidict', 'multidict_titled',
-    'titledstr', 'weakmethod', )
+    'imultidict', 'istr', 'isweakreferable', 'listdifference', 'methodize', 'module_property', 'modulize', 'multidict',
+    'weakmethod', )
 
 from types import \
     MethodType              as method, \
@@ -724,16 +724,16 @@ class multidict(dict):
         
         return result
 
-class multidict_titled(multidict):
+class imultidict(multidict):
     """
     ``multidict`` subclass, what can be used to hold http headers.
     
-    It's keys are always upper cased.
+    It's keys ignore casing.
     """
     __slots__ = ()
     def __init__(self, iterable=None):
         """
-        Creates a new ``multidict_titled`` instance.
+        Creates a new ``imultidict`` instance.
         
         Parameters
         ----------
@@ -759,16 +759,16 @@ class multidict_titled(multidict):
         
         elif isinstance(iterable, multidict):
             for key, values in dict.items(iterable):
-                setitem(self, key.title(), values.copy())
+                setitem(self, istr(key), values.copy())
         
         elif isinstance(iterable, dict):
             for key, value in iterable.items():
-                key = key.title()
+                key = istr(key)
                 setitem(self, key, [value])
         
         else:
             for key, value in iterable:
-                key = key.title()
+                key = istr(key)
                 try:
                     values = getitem(self, key)
                 except KeyError:
@@ -781,12 +781,12 @@ class multidict_titled(multidict):
         Returns the multidict's `value` for the given `key`. If the `key` has more values, then returns the 0th of
         them.
         """
-        key = key.title()
+        key = istr(key)
         return dict.__getitem__(self, key)[0]
     
     def __setitem__(self, key, value):
         """Adds the given `key` - `value` pair to the multidict."""
-        key = key.title()
+        key = istr(key)
         multidict.__setitem__(self, key, value)
     
     def __delitem__(self, key):
@@ -794,7 +794,7 @@ class multidict_titled(multidict):
         Removes the `value` for the given `key` from the multidict. If the `key` has more values, then removes only
         the 0th of them.
         """
-        key = key.title()
+        key = istr(key)
         multidict.__delitem__(self, key)
     
     def extend(self, mapping):
@@ -809,7 +809,7 @@ class multidict_titled(multidict):
         getitem = dict.__getitem__
         setitem = dict.__setitem__               
         for key, value in mapping.items():
-            key = key.title()
+            key = istr(key)
             try:
                 values = getitem(self, key)
             except KeyError:
@@ -834,7 +834,7 @@ class multidict_titled(multidict):
         values : `default or `list` of `Any`
             The values for the given `key` if present.
         """
-        key = key.title()
+        key = istr(key)
         return multidict.getall(self, key, default)
     
     def getone(self, key, default=None):
@@ -853,7 +853,7 @@ class multidict_titled(multidict):
         value : `default` or `Any`
             The value for the given key if present.
         """
-        key = key.title()
+        key = istr(key)
         return multidict.getone(self, key, default)
     
     get = getone
@@ -876,7 +876,7 @@ class multidict_titled(multidict):
         value : `default` or `Any`
             The first value for which `key` matched, or `default` if none.
         """
-        key = key.title()
+        key = istr(key)
         return multidict.setdefault(self, key, default)
     
     def popall(self, key, default=_spaceholder):
@@ -900,7 +900,7 @@ class multidict_titled(multidict):
         KeyError
             if `key` is not present in the multidict and `default` value is not given either.
         """
-        key = key.title()
+        key = istr(key)
         return multidict.popall(self, key, default)
 
     def popone(self, key, default=_spaceholder):
@@ -924,31 +924,37 @@ class multidict_titled(multidict):
         KeyError
             if `key` is not present in the multidict and `default` value is not given either.
         """
-        key = key.title()
+        key = istr(key)
         return multidict.popone(self, key, default)
     
     pop = popone
 
-class titledstr(str):
+
+class istr(str):
     """
-    String subclass, what's insatnces are titlecased.
+    Strings, which have their casing ignored.
+    
+    Attributes
+    ----------
+    _casefold : `str`
+        Casefolded version of the string.
     """
+    __slots__ = '_casefold'
     def __new__(cls, value='', encoding=sys.getdefaultencoding(), errors='strict'):
         """
-        Return a titlecased string version of object. If object is not provided, returns the empty string. Otherwise,
-        the behavior of `t`itledstr`` depends on whether encoding or errors is given, as follows.
-
-        If neither encoding nor errors is given, `titledstr(object)` returns `object.__str__().title()`, which is the
-        "informal" or nicely printable string representation of object. For string objects, this is `string.title()`.
-        If object does not have a `__str__()` method, then `titledstr()` falls back to returning `repr(object).title()`.
+        Return an string which ignores casing. If object is not provided, returns the empty string. Otherwise, the
+        behavior of ``istr`` depends on whether encoding or errors is given, as follows.
+        
+        If neither encoding nor errors is given, `istr(object)` returns `object.__str__()`, which is the "informal" or
+        nicely printable string representation of object. For string objects, this is `string`. If object does not have
+        a `__str__()` method, then `istr()` falls back to returning `repr(object)`.
         
         If at least one of encoding or errors is given, object should be a `bytes-like` object. In this case, if object
-        is a `byte-like` object, then `titledstr(bytes, encoding, errors)` is equivalent to
-        `bytes.decode(encoding, errors).title()`. Otherwise, the bytes object underlying the buffer object is obtained
-        before calling `bytes.decode().title()`.
-
-        Passing a `bytes-like` object to ``titledstr`` without the encoding or errors arguments falls under the first
-        case of returning the informal string representation.
+        is a `byte-like` object, then `istr(bytes, encoding, errors)` is equivalent to `bytes.decode(encoding, errors)`.
+        Otherwise, the bytes object underlying the buffer object is obtained before calling `bytes.decode()`.
+        
+        Passing a `bytes-like` object to ``istr`` without the encoding or errors arguments falls under the first case
+        of returning the informal string representation.
         
         Parameters
         ----------
@@ -964,31 +970,40 @@ class titledstr(str):
         
         Returns
         -------
-        self : ``titledstr``
+        self : ``istr``
         """
         if type(value) is cls:
             return value
+        
         if isinstance(value,(bytes, bytearray, memoryview)):
-            val = str(value, encoding, errors)
+            value = str(value, encoding, errors)
         elif isinstance(value, str):
             pass
         else:
             value = str(value)
-        value = value.title()
-        return str.__new__(cls, value)
-    
-    def title(self):
-        """
-        Return a titlecased version of the string where words start with an uppercase character and the remaining
-        characters are lowercase.
         
-        At the case of `titledstr`-s, this method always retursn itself.
-        
-        Returns
-        -------
-        self : `str`
-        """
+        self = str.__new__(cls, value)
+        self._casefold = str.casefold(value)
         return self
+    
+    def __hash__(self):
+        """Returns the string's hash value."""
+        return hash(self._casefold)
+    
+    def __eq__(self, other):
+        """Returns whether the two strings are equal."""
+        other_type = other.__class__
+        if other_type is type(self):
+            other_value = other._casefold
+        elif other_type is str:
+            other_value = other.casefold()
+        elif issubclass(other, str):
+            other_value = str.casefold(other)
+        else:
+            return NotImplemented
+        
+        return (self._casefold == other_value)
+
 
 def listdifference(list1, list2):
     """
@@ -2489,7 +2504,7 @@ class _HybridValueDictionaryItemIterator(object):
 
 class HybridValueDictionary(dict):
     """
-    Hybrid value dictionaryies store tehir's values weakly referenced if applicable.
+    Hybrid value dictionaryies store their's values weakly referenced if applicable.
     
     Attributes
     ----------
@@ -4459,7 +4474,7 @@ class WeakMap(dict):
     # __getattribute__ -> same
     
     def __getitem__(self, key):
-        """Gets the already existing key from the weak map, which matches teh given one."""
+        """Gets the already existing key from the weak map, which matches the given one."""
         try:
             reference = WeakReferer(key)
         except TypeError:
@@ -4721,7 +4736,7 @@ class module_property(object):
             module = str(module)
         else:
             module = cls.__module__
-            
+        
         self = object.__new__(cls)
         self.fget = fget
         self.module = module

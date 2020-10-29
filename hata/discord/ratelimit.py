@@ -35,7 +35,7 @@ def parsedate_to_datetime(data):
     
     Parameters
     ----------
-    data : `multidict_titled`
+    data : ``imultidict``
 
     Returns
     -------
@@ -590,7 +590,7 @@ class RatelimitHandler(object):
         
         Parameters
         ----------
-        headers : `None` or `multidict_titled`
+        headers : `None` or `imultidict`
             Response headers
         """
         current_size = self.parent.size
@@ -790,7 +790,7 @@ class RatelimitHandlerCTX(object):
         
         Parameters
         ----------
-        headers : `None` or `multidict_titled`
+        headers : `None` or `imultidict`
             Response headers.
         """
         assert not self.exited, '`RatelimitHandlerCTX.exit` was already called.'
@@ -1272,6 +1272,1253 @@ class RatelimitProxy(object):
 
 @modulize
 class RATELIMIT_GROUPS:
+    """
+    Defines the ratelimit groups by hata. Hata uses burst half automatic ratelimit handler.
+    
+    Burst ratelimit handler means, if (for example) 30 requests can be done to an endpoint before it resets, it will
+    let 30 requests to pass trough, and with 31th will wait till the limits expires.
+    
+    Half automatic, since it automatically detects ratelimit sizes with it's first request, but it do not detects
+    which endpoints are limited together and by which id, since they are set by their ratelimit group.
+    
+    It is optimistic, since Discord do not limits every endpoint, but endpoints which will be potenationally changed
+    are marked as optimistic. They have a limiter set, but their limit can be subject of change. The implementation
+    lets trough 1 more requst with each cycle, starting from `1`, till it reaches a set `n` limit. If any of the
+    requests return ratelimit information, then changes the endpoints limitations to it. The increased pararellity
+    starting by `1` is to ensure, that the endpoint is mapped by first request. The increasing pararellity represents
+    the descresing chance of getting any ratelimit information back.
+    
+    Limit Guides
+    ------------
+    The following shortenings are used inside of group descriptions:
+    - `N/A` : Not applicable
+    - `UN` : Unknown
+    - `OPT` : Optimistic
+    
+    Limiter types:
+    - `UNLIMITED`
+    - `GLOBAL`
+    - `channel_id`
+    - `guild_id`
+    - `webhook_id`
+    
+    Required auth types:
+    - `N/A` (No auth required.)
+    - `UN` (Unknown, not bot.)
+    - `application`
+    - `bearer`
+    - `bot`
+    - `user`
+    
+    Content Delivery Network Endpoint
+    ---------------------------------
+    - Endpoint : `https://cdn.discordapp.com/`
+    - Method : `GET`
+    - Required auth : `N/A`
+    - Limiter : `UNLIMITED`
+    - Limit : `N/A`
+    - Resets after : `N/A`
+    
+    Shared Groups
+    -------------
+    - GROUP_REACTION_MODIFY
+        - Used by : `reaction_clear`, `reaction_delete_emoji`, `reaction_delete_own`, `reaction_add`, `reaction_delete`
+        - Limiter : `channel_id`
+        - Limit : `1`
+        - Resets after : `0.25`
+    
+    - GROUP_PIN_MODIFY
+        - Used by : `message_unpin`, `message_pin`
+        - Limiter : `channel_id`
+        - Limit : `5`
+        - Resets after : `4.0`
+    
+    - GROUP_USER_MODIFY
+        - Used by : `user_edit`, `user_move`
+        - Limiter : `guild_id`
+        - Limit : `10`
+        - Resets after : `10.0`
+    
+    - GROUP_USER_ROLE_MODIFY
+        - Used by : `user_role_delete`, `user_role_add`
+        - Limiter : `guild_id`
+        - Limit : `10`
+        - Resets after : `10.0`
+    
+    Group Details
+    -----------
+    - oauth2_token
+        - Endpoint : `oauth2/token`
+        - Method : `POST`
+        - Required auth : `application`
+        - Limiter : `GLOBAL`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - application_get
+        - Endpoint : `/applications/{application_id}`
+        - Method : `GET`
+        - Required auth : `UN`
+        - Limiter : `GLOBAL`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Untested.
+    
+    - achievement_get_all
+        - Endpoint : `/applications/{application_id}/achievements`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `5`
+        - Resets after : `5.0`
+    
+    - achievement_create
+        - Endpoint : `/applications/{application_id}/achievements`
+        - Method : `POST`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `5`
+        - Resets after : `5.0`
+    
+    - achievement_delete
+        - Endpoint : `/applications/{application_id}/achievements/{achievement_id}`
+        - Method : `DELETE`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `5`
+        - Resets after : `5.0`
+    
+    - achievement_get
+        - Endpoint : `/applications/{application_id}/achievements/{achievement_id}`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `5`
+        - Resets after : `5.0`
+    
+    - achievement_edit
+        - Endpoint : `/applications/{application_id}/achievements/{achievement_id}`
+        - Method : `PATCH`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `5`
+        - Resets after : `5.0`
+    
+    - applications_detectable
+        - Endpoint : `/applications/detectable`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - client_logout
+        - Endpoint : `/auth/logout`
+        - Method : `POST`
+        - Required auth : `user`
+        - Limiter : `GLOBAL`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+        - Notes : Untested.
+    
+    - channel_delete
+        - Endpoint : `/channels/{channel_id}`
+        - Method : `DELETE`
+        - Required auth : `bot`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+
+    - channel_group_leave
+        - Endpoint : `/channels/{channel_id}`
+        - Method : `DELETE`
+        - Required auth : `user`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+        - Notes : Untested.
+    
+    - channel_edit
+        - Endpoint : `/channels/{channel_id}`
+        - Method : `PATCH`
+        - Required auth : `bot`
+        - Limiter : `channel_id`
+        - Limit : `5`
+        - Resets after : `15`
+        - Notes : Has sublimits.
+    
+    - channel_group_edit
+        - Endpoint : `/channels/{channel_id}`
+        - Method : `PATCH`
+        - Required auth : `user`
+        - Limiter : `channel_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Untested.
+    
+    - channel_follow
+        - Endpoint : `/channels/{channel_id}/followers`
+        - Method : `POST`
+        - Required auth : `bot`
+        - Limiter : `channel_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - invite_get_channel
+        - Endpoint : `/channels/{channel_id}/invites`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `channel_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - invite_create
+        - Endpoint : `/channels/{channel_id}/invites`
+        - Method : `POST`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `5`
+        - Resets after : `15.0`
+    
+    - message_logs
+        - Endpoint : `/channels/{channel_id}/messages`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `channel_id`
+        - Limit : `5`
+        - Resets after : `5.0`
+    
+    - message_create
+        - Endpoint : `/channels/{channel_id}/messages`
+        - Method : `POST`
+        - Required auth : `bot`
+        - Limiter : `channel_id`
+        - Limit : `5`
+        - Resets after : `4.0`
+    
+    - message_delete_multiple
+        - Endpoint : `/channels/{channel_id}/messages/bulk-delete`
+        - Method : `POST`
+        - Required auth : `bot`
+        - Limiter : `channel_id`
+        - Limit : `1`
+        - Resets after : `3.0`
+    
+    - message_delete
+        - Endpoint : `/channels/{channel_id}/messages/{message_id}`
+        - Method : `DELETE`
+        - Required auth : `bot`
+        - Limiter : `channel_id`
+        - Limit : `3`
+        - Resets after : `1.0`
+        - Notes : Applicable for messages posted by the bot or which are younger than 2 weeks. Has sublimits.
+    
+    - message_delete_b2wo
+        - Endpoint : `/channels/{channel_id}/messages/{message_id}`
+        - Method : `DELETE`
+        - Required auth : `bot`
+        - Limiter : `channel_id`
+        - Limit : `30`
+        - Resets after : `120.0`
+        - Notes : Applicable for messages which are not posted by the bot and are older than 2 weeks. Has sublimits.
+    
+    - message_get
+        - Endpoint : `/channels/{channel_id}/messages/{message_id}`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `channel_id`
+        - Limit : `5`
+        - Resets after : `5.0`
+    
+    - message_edit
+        - Endpoint : `/channels/{channel_id}/messages/{message_id}`
+        - Method : `PATCH`
+        - Required auth : `bot`
+        - Limiter : `channel_id`
+        - Limit : `5`
+        - Resets after : `4.0`
+    
+    - message_ack
+        - Endpoint : `/channels/{channel_id}/messages/{message_id}/ack`
+        - Method : `POST`
+        - Required auth : `user`
+        - Limiter : `GLOBAL`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - message_crosspost
+        - Endpoint : `/channels/{channel_id}/messages/{message_id}/crosspost`
+        - Method : `POST`
+        - Required auth : `bot`
+        - Limiter : `channel_id`
+        - Limit : `10`
+        - Resets after : `3600.0`
+    
+    - reaction_clear
+        - Endpoint : `/channels/{channel_id}/messages/{message_id}/reactions`
+        - Method : `DELETE`
+        - Required auth : `bot`
+        - Limiter : `channel_id`
+        - Limit : `1`
+        - Resets after : `0.25`
+    
+    - reaction_delete_emoji
+        - Endpoint : `/channels/{channel_id}/messages/{message_id}/reactions/{reaction}`
+        - Method : `DELETE`
+        - Required auth : `bot`
+        - Limiter : `channel_id`
+        - Limit : `1`
+        - Resets after : `0.25`
+    
+    - reaction_users
+        - Endpoint : `/channels/{channel_id}/messages/{message_id}/reactions/{reaction}`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `channel_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - reaction_delete_own
+        - Endpoint : `/channels/{channel_id}/messages/{message_id}/reactions/{reaction}/@me`
+        - Method : `DELETE`
+        - Required auth : `bot`
+        - Limiter : `channel_id`
+        - Limit : `1`
+        - Resets after : `0.25`
+    
+    - reaction_add
+        - Endpoint : `/channels/{channel_id}/messages/{message_id}/reactions/{reaction}/@me`
+        - Method : `PUT`
+        - Required auth : `bot`
+        - Limiter : `channel_id`
+        - Limit : `1`
+        - Resets after : `0.25`
+    
+    - reaction_delete
+        - Endpoint : `/channels/{channel_id}/messages/{message_id}/reactions/{reaction}/{user_id}`
+        - Method : `DELETE`
+        - Required auth : `bot`
+        - Limiter : `channel_id`
+        - Limit : `1`
+        - Resets after : `0.25`
+    
+    - message_suppress_embeds
+        - Endpoint : `/channels/{channel_id}/messages/{message_id}/suppress-embeds`
+        - Method : `POST`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `3`
+        - Resets after : `1`
+    
+    - permission_ow_delete
+        - Endpoint : `/channels/{channel_id}/permissions/{overwrite_id}`
+        - Method : `DELETE`
+        - Required auth : `bot`
+        - Limiter : `channel_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - permission_ow_create
+        - Endpoint : `/channels/{channel_id}/permissions/{overwrite_id}`
+        - Method : `PUT`
+        - Required auth : `bot`
+        - Limiter : `channel_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - channel_pins
+        - Endpoint : `/channels/{channel_id}/pins`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `1`
+        - Resets after : `5`
+    
+    - channel_pins_ack
+        - Endpoint : `/channels/{channel_id}/pins/ack`
+        - Method : `POST`
+        - Required auth : `user`
+        - Limiter : `GLOBAL`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Untested.
+    
+    - message_unpin
+        - Endpoint : `/channels/{channel_id}/pins/{message_id}`
+        - Method : `DELETE`
+        - Required auth : `bot`
+        - Limiter : `channel_id`
+        - Limit : `5`
+        - Resets after : `4`
+    
+    - message_pin
+        - Endpoint : `/channels/{channel_id}/pins/{message_id}`
+        - Method : `PUT`
+        - Required auth : `bot`
+        - Limiter : `channel_id`
+        - Limit : `5`
+        - Resets after : `4`
+    
+    - channel_group_users
+        - Endpoint : `/channels/{channel_id}/recipients/`
+        - Method : `GET`
+        - Required auth : `user`
+        - Limiter : `channel_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Untested.
+    
+    - channel_group_user_delete
+        - Endpoint : `/channels/{channel_id}/recipients/{user_id}`
+        - Method : `DELETE`
+        - Required auth : `user`
+        - Limiter : `channel_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Untested.
+    
+    - channel_group_user_add
+        - Endpoint : `/channels/{channel_id}/recipients/{user_id}`
+        - Method : `PUT`
+        - Required auth : `user`
+        - Limiter : `channel_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Untested.
+        
+    - channel_thread_start
+        - Endpoint : `/channels/{channel_id}/threads`
+        - Method : `POST`
+        - Required auth : `UN`
+        - Limiter : `channel_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Untested.
+    
+    - thread_users
+        - Endpoint : `/channels/{channel_id}/threads/participants`
+        - Method : `GET`
+        - Required auth : `UN`
+        - Limiter : `channel_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Untested.
+    
+    - thread_user_delete
+        - Endpoint : `/channels/{channel_id}/threads/participants/{user_id}`
+        - Method : `DELETE`
+        - Required auth : `UN`
+        - Limiter : `channel_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Untested.
+    
+    - thread_user_add
+        - Endpoint : `/channels/{channel_id}/threads/participants/{user_id}`
+        - Method : `POST`
+        - Required auth : `UN`
+        - Limiter : `channel_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Untested.
+    
+    - typing
+        - Endpoint : `/channels/{channel_id}/typing`
+        - Method : `POST`
+        - Required auth : `bot`
+        - Limiter : `channel_id`
+        - Limit : `5`
+        - Resets after : `5.0`
+    
+    - webhook_get_channel
+        - Endpoint : `/channels/{channel_id}/webhooks`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `channel_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - webhook_create
+        - Endpoint : `/channels/{channel_id}/webhooks`
+        - Method : `POST`
+        - Required auth : `bot`
+        - Limiter : `channel_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - discovery_categories
+        - Endpoint : `/channels/{channel_id}/webhooks`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `10`
+        - Resets after : `120.0`
+    
+    - discovery_validate_term
+        - Endpoint : `/discovery/valid-term`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `10`
+        - Resets after : `10.0`
+    
+    - client_gateway_hooman
+        - Endpoint : `/gateway`
+        - Method : `GET`
+        - Required auth : `user`
+        - Limiter : `GLOBAL`
+        - Limit : `UN`
+        - Resets after : `UN`
+        - Notes : Untested.
+    
+    - client_gateway_bot
+        - Endpoint : `/gateway/bot`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `2`
+        - Resets after : `5`
+    
+    - guild_create
+        - Endpoint : `/guilds`
+        - Method : `POST`
+        - Required auth : `bot`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+    
+    - guild_delete
+        - Endpoint : `/guilds/{guild_id}`
+        - Method : `DELETE`
+        - Required auth : `bot`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+    
+    - guild_get
+        - Endpoint : `/guilds/{guild_id}`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - guild_edit
+        - Endpoint : `/guilds/{guild_id}`
+        - Method : `PATCH`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - guild_ack
+        - Endpoint : `/guilds/{guild_id}/ack`
+        - Method : `POST`
+        - Required auth : `user`
+        - Limiter : `GLOBAL`
+        - Limit : `UN`
+        - Resets after : `UN`
+        - Notes : Untested.
+    
+    - audit_logs
+        - Endpoint : `/guilds/{guild_id}/audit-logs`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - guild_bans
+        - Endpoint : `/guilds/{guild_id}/bans`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - guild_ban_delete
+        - Endpoint : `/guilds/{guild_id}/bans/{user_id}`
+        - Method : `DELETE`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - guild_ban_get
+        - Endpoint : `/guilds/{guild_id}/bans/{user_id}`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - guild_ban_add
+        - Endpoint : `/guilds/{guild_id}/bans/{user_id}`
+        - Method : `PUT`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - guild_channels
+        - Endpoint : `/guilds/{guild_id}/channels`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - channel_move
+        - Endpoint : `/guilds/{guild_id}/channels`
+        - Method : `PATCH`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - channel_create
+        - Endpoint : `/guilds/{guild_id}/channels`
+        - Method : `POST`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - guild_discovery_delete_subcategory
+        - Endpoint : `/guilds/{guild_id}/discovery-categories/{category_id}`
+        - Method : `DELETE`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - guild_discovery_add_subcategory
+        - Endpoint : `/guilds/{guild_id}/discovery-categories/{category_id}`
+        - Method : `POST`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - guild_discovery_get
+        - Endpoint : `/guilds/{guild_id}/discovery-metadata`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - guild_discovery_edit
+        - Endpoint : `/guilds/{guild_id}/discovery-metadata`
+        - Method : `PATCH`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - guild_embed_get
+        - Endpoint : `/guilds/{guild_id}/embed`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Deprecated. Works on v6, v7.
+    
+    - guild_embed_edit
+        - Endpoint : `/guilds/{guild_id}/embed`
+        - Method : `PATCH`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Deprecated. Works on v6, v7.
+    
+    - guild.embed_url
+        - Endpoint : `/guilds/{guild_id}/embed.png`
+        - Method : `GET`
+        - Required auth : `N/A`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+        - Notes : Deprecated. Works on v6, v7.
+    
+    - guild_emojis
+        - Endpoint : `/guilds/{guild_id}/emojis`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - emoji_create
+        - Endpoint : `/guilds/{guild_id}/emojis`
+        - Method : `POST`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `50`
+        - Resets after : `3600.0`
+    
+    - emoji_delete
+        - Endpoint : `/guilds/{guild_id}/emojis`
+        - Method : `DELETE`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `1`
+        - Resets after : `2.0`
+    
+    - emoji_get
+        - Endpoint : `/guilds/{guild_id}/emojis/{emoji_id}`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - emoji_edit
+        - Endpoint : `/guilds/{guild_id}/emojis/{emoji_id}`
+        - Method : `PATCH`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `1`
+        - Resets after : `2.0`
+    
+    - integration_get_all
+        - Endpoint : `/guilds/{guild_id}/integrations`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - integration_create
+        - Endpoint : `/guilds/{guild_id}/integrations`
+        - Method : `POST`
+        - Required auth : `UN`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Untested.
+    
+    - integration_delete
+        - Endpoint : `/guilds/{guild_id}/integrations/{integration_id}`
+        - Method : `DELETE`
+        - Required auth : `UN`
+        - Limiter : `GLOBAL`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Untested.
+    
+    - integration_edit
+        - Endpoint : `/guilds/{guild_id}/integrations/{integration_id}`
+        - Method : `PATCH`
+        - Required auth : `UN`
+        - Limiter : `GLOBAL`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Untested.
+    
+    - integration_edit
+        - Endpoint : `/guilds/{guild_id}/integrations/{integration_id}/sync`
+        - Method : `POST`
+        - Required auth : `UN`
+        - Limiter : `GLOBAL`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Untested.
+    
+    - invite_get_guild
+        - Endpoint : `/guilds/{guild_id}/invites`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - guild_users
+        - Endpoint : `/guilds/{guild_id}/members`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `10`
+        - Resets after : `10.0`
+    
+    - client_edit_nick
+        - Endpoint : `/guilds/{guild_id}/members/@me/nick`
+        - Method : `PATCH`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `1`
+        - Resets after : `1.0`
+    
+    - guild_user_delete
+        - Endpoint : `/guilds/{guild_id}/members/{user_id}`
+        - Method : `DELETE`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `5`
+        - Resets after : `1.0`
+    
+    - guild_user_get
+        - Endpoint : `/guilds/{guild_id}/members/{user_id}`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `5`
+        - Resets after : `1.0`
+    
+    - user_edit, user_move
+        - Endpoint : `/guilds/{guild_id}/members/{user_id}`
+        - Method : `PATCH`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `10`
+        - Resets after : `10.0`
+    
+    - guild_user_add
+        - Endpoint : `/guilds/{guild_id}/members/{user_id}`
+        - Method : `PUT`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `10`
+        - Resets after : `10.0`
+    
+    - guild_user_search
+        - Endpoint : `/guilds/{guild_id}/members/search`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `10`
+        - Resets after : `10.0`
+    
+    - user_role_delete
+        - Endpoint : `/guilds/{guild_id}/members/{user_id}/roles/{role_id}`
+        - Method : `DELETE`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `10`
+        - Resets after : `10.0`
+    
+    - user_role_add
+        - Endpoint : `/guilds/{guild_id}/members/{user_id}/roles/{role_id}`
+        - Method : `PUT`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `10`
+        - Resets after : `10.0`
+    
+    - guild_preview
+        - Endpoint : `/guilds/{guild_id}/preview`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `5`
+        - Resets after : `5.0`
+    
+    - guild_prune_estimate
+        - Endpoint : `/guilds/{guild_id}/prune`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - guild_prune
+        - Endpoint : `/guilds/{guild_id}/prune`
+        - Method : `POST`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - guild_regions
+        - Endpoint : `/guilds/{guild_id}/regions`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - guild_roles
+        - Endpoint : `/guilds/{guild_id}/roles`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - role_move
+        - Endpoint : `/guilds/{guild_id}/roles`
+        - Method : `PATCH`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - role_create
+        - Endpoint : `/guilds/{guild_id}/roles`
+        - Method : `POST`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `250`
+        - Resets after : `172800.0`
+    
+    - role_delete
+        - Endpoint : `/guilds/{guild_id}/roles/{role_id}`
+        - Method : `DELETE`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - role_edit
+        - Endpoint : `/guilds/{guild_id}/roles/{role_id}`
+        - Method : `PATCH`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `1000`
+        - Resets after : `86400.0`
+    
+    - vanity_get
+        - Endpoint : `/guilds/{guild_id}/vanity-url`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - vanity_get
+        - Endpoint : `/guilds/{guild_id}/vanity-url`
+        - Method : `PATCH`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Untested.
+    
+    - welcome_screen_get
+        - Endpoint : `/guilds/{guild_id}/welcome-screen`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - webhook_get_guild
+        - Endpoint : `/guilds/{guild_id}/webhooks`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - guild_widget_get
+        - Endpoint : `/guilds/{guild_id}/widget.json`
+        - Method : `GET`
+        - Required auth : `N/A`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+    
+    - guild.widget_url
+        - Endpoint : `/guilds/{guild_id}/widget.png`
+        - Method : `GET`
+        - Required auth : `N/A`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+    
+    - hypesquad_house_leave
+        - Endpoint : `/hypesquad/online`
+        - Method : `DELETE`
+        - Required auth : `user`
+        - Limiter : `GLOBAL`
+        - Limit : `UN`
+        - Resets after : `UN`
+        - Notes : Untested.
+    
+    - hypesquad_house_change
+        - Endpoint : `/hypesquad/online`
+        - Method : `POST`
+        - Required auth : `user`
+        - Limiter : `GLOBAL`
+        - Limit : `UN`
+        - Resets after : `UN`
+        - Notes : Untested.
+    
+    - invite_delete
+        - Endpoint : `/invites/{invite_code}`
+        - Method : `DELETE`
+        - Required auth : `bot`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+    
+    - invite_get
+        - Endpoint : `/invites/{invite_code}`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `250`
+        - Resets after : `6.0`
+    
+    - client_application_info
+        - Endpoint : `/oauth2/applications/@me`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - bulk_ack
+        - Endpoint : `/read-states/ack-bulk`
+        - Method : `POST`
+        - Required auth : `user`
+        - Limiter : `GLOBAL`
+        - Limit : `UN`
+        - Resets after : `UN`
+        - Notes : Untested.
+    
+    - eula_get
+        - Endpoint : `/store/eulas/{eula_id}`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - user_info
+        - Endpoint : `/users/@me`
+        - Method : `GET`
+        - Required auth : `bearer`
+        - Limiter : `GLOBAL`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - client_user
+        - Endpoint : `/users/@me`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - client_edit
+        - Endpoint : `/users/@me`
+        - Method : `PATCH`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `2`
+        - Resets after : `3600.0`
+    
+    - user_achievements
+        - Endpoint : `/users/@me/applications/{application_id}/achievements`
+        - Method : `GET`
+        - Required auth : `bearer`
+        - Limiter : `GLOBAL`
+        - Limit : `2`
+        - Resets after : `5.0`
+        - Notes : Untested.
+    
+    - user_achievement_update
+        - Endpoint : `/users/{user_id}/applications/{application_id}/achievements/{achievement_id}`
+        - Method : `PUT`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `5`
+        - Resets after : `5.0`
+    
+    - channel_private_get_all
+        - Endpoint : `/users/@me/channels`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - channel_private_create
+        - Endpoint : `/users/@me/channels`
+        - Method : `POST`
+        - Required auth : `bot`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+    
+    - client_connections
+        - Endpoint : `/users/@me/connections`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - user_connections
+        - Endpoint : `/users/@me/connections`
+        - Method : `GET`
+        - Required auth : `bearer`
+        - Limiter : `GLOBAL`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - guild_get_all
+        - Endpoint : `/users/@me/guilds`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `1`
+        - Resets after : `1.0`
+    
+    - user_guilds
+        - Endpoint : `/users/@me/guilds`
+        - Method : `GET`
+        - Required auth : `bearer`
+        - Limiter : `GLOBAL`
+        - Limit : `1`
+        - Resets after : `1.0`
+    
+    - guild_leave
+        - Endpoint : `/users/@me/guilds/{guild_id}`
+        - Method : `DELETE`
+        - Required auth : `bot`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+    
+    - relationship_friend_request
+        - Endpoint : `/users/@me/relationships`
+        - Method : `POST`
+        - Required auth : `user`
+        - Limiter : `GLOBAL`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Untested.
+    
+    - relationship_delete
+        - Endpoint : `/users/@me/relationships/{user_id}`
+        - Method : `DELETE`
+        - Required auth : `user`
+        - Limiter : `GLOBAL`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Untested.
+    
+    - relationship_create
+        - Endpoint : `/users/@me/settings`
+        - Method : `PUT`
+        - Required auth : `user`
+        - Limiter : `GLOBAL`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Untested.
+    
+    - client_get_settings
+        - Endpoint : `/users/@me/settings`
+        - Method : `GET`
+        - Required auth : `user`
+        - Limiter : `GLOBAL`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Untested.
+    
+    - client_edit_settings
+        - Endpoint : `/users/@me/settings`
+        - Method : `PATCH`
+        - Required auth : `user`
+        - Limiter : `GLOBAL`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Untested.
+    
+    - user_get
+        - Endpoint : `/users/{user_id}`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `30`
+        - Resets after : `30.0`
+    
+    - channel_group_create
+        - Endpoint : `/users/{user_id}/channels`
+        - Method : `POST`
+        - Required auth : `user`
+        - Limiter : `GLOBAL`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Untested.
+    
+    - user_get_profile
+        - Endpoint : `users/{user_id}/profile`
+        - Method : `GET`
+        - Required auth : `user`
+        - Limiter : `GLOBAL`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Untested.
+    
+    - voice_regions
+        - Endpoint : `/voice/regions`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - webhook_delete
+        - Endpoint : `/webhooks/{webhook_id}`
+        - Method : `DELETE`
+        - Required auth : `bot`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+    
+    - webhook_get
+        - Endpoint : `/webhooks/{webhook_id}`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+    
+    - webhook_edit
+        - Endpoint : `/webhooks/{webhook_id}`
+        - Method : `PATCH`
+        - Required auth : `bot`
+        - Limiter : `webhook_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - webhook_delete_token
+        - Endpoint : `/webhooks/{webhook_id}/{webhook_token}`
+        - Method : `DELETE`
+        - Required auth : `N/A`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+    
+    - webhook_get_token
+        - Endpoint : `/webhooks/{webhook_id}/{webhook_token}`
+        - Method : `GET`
+        - Required auth : `N/A`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+    
+    - webhook_edit_token
+        - Endpoint : `/webhooks/{webhook_id}/{webhook_token}`
+        - Method : `PATCH`
+        - Required auth : `N/A`
+        - Limiter : `webhook_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - webhook_send
+        - Endpoint : `/webhooks/{webhook_id}/{webhook_token}`
+        - Method : `POST`
+        - Required auth : `N/A`
+        - Limiter : `webhook_id`
+        - Limit : `5`
+        - Resets after : `2.0`
+    """
     GROUP_REACTION_MODIFY       = RatelimitGroup(LIMITER_CHANNEL)
     GROUP_PIN_MODIFY            = RatelimitGroup(LIMITER_CHANNEL)
     GROUP_USER_MODIFY           = RatelimitGroup(LIMITER_GUILD) # both has the same endpoint
@@ -1349,15 +2596,15 @@ class RATELIMIT_GROUPS:
     guild_embed_get             = RatelimitGroup(LIMITER_GUILD, optimistic=True) # deprecated
     guild_embed_edit            = RatelimitGroup(LIMITER_GUILD, optimistic=True) # deprecated
     guild_emojis                = RatelimitGroup(LIMITER_GUILD, optimistic=True)
-    emoji_create                = RatelimitGroup(LIMITER_GUILD)
-    emoji_delete                = RatelimitGroup(LIMITER_GUILD)
+    emoji_create                = RatelimitGroup()
+    emoji_delete                = RatelimitGroup()
     emoji_get                   = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     emoji_edit                  = RatelimitGroup()
     integration_get_all         = RatelimitGroup(LIMITER_GUILD, optimistic=True)
-    integration_create          = RatelimitGroup() # untested
-    integration_delete          = RatelimitGroup() # untested
-    integration_edit            = RatelimitGroup() # untested
-    integration_sync            = RatelimitGroup() # untested
+    integration_create          = RatelimitGroup(optimistic=True) # untested
+    integration_delete          = RatelimitGroup(optimistic=True) # untested
+    integration_edit            = RatelimitGroup(optimistic=True) # untested
+    integration_sync            = RatelimitGroup(optimistic=True) # untested
     invite_get_guild            = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     guild_users                 = RatelimitGroup(LIMITER_GUILD)
     client_edit_nick            = RatelimitGroup()
@@ -1366,9 +2613,9 @@ class RATELIMIT_GROUPS:
     user_edit                   = GROUP_USER_MODIFY
     user_move                   = GROUP_USER_MODIFY
     guild_user_add              = RatelimitGroup(LIMITER_GUILD)
+    guild_user_search           = RatelimitGroup(LIMITER_GUILD)
     user_role_delete            = GROUP_USER_ROLE_MODIFY
     user_role_add               = GROUP_USER_ROLE_MODIFY
-    guild_user_search           = RatelimitGroup(LIMITER_GUILD)
     guild_preview               = RatelimitGroup()
     guild_prune_estimate        = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     guild_prune                 = RatelimitGroup(LIMITER_GUILD, optimistic=True)
@@ -1421,1064 +2668,3 @@ class RATELIMIT_GROUPS:
 
 del modulize
 del DOCS_ENABLED
-
-##INFO :
-##    some endpoints might be off 1s
-##    groups are not accurate now, because we use autogroups
-##    last group id: 105728
-##
-##endpoint: https://cdn.discordapp.com/
-##method  : GET
-##auth    : none
-##used at :
-##limits  : unlimited
-##
-##endpoint: oauth2/token
-##method  : POST
-##auth    : application
-##used at : oauth2_token
-##limits  : unlimited
-##
-##endpoint: /applications/{application_id}
-##method  : GET
-##auth    : user
-##used at : application_get
-##limits  : UNTESTED
-##
-##endpoint: /applications/{application_id}/achievements
-##method  : GET
-##auth    : bot
-##used at : achievement_get_all
-##limits  :
-##    group   : 75264
-##    limit   : 5
-##    reset   : 5
-##    limiter : GLOBAL
-##
-##endpoint: /applications/{application_id}/achievements
-##method  : POST
-##auth    : bot
-##used at : achievement_create
-##limits  :
-##    group   : 78848
-##    limit   : 5
-##    reset   : 5
-##    limiter : GLOBAL
-##
-##endpoint: /applications/{application_id}/achievements/{achievement_id}
-##method  : DELETE
-##auth    : bot
-##used at : achievement_delete
-##limits  :
-##    group   : 82432
-##    limit   : 5
-##    reset   : 5
-##    limiter : GLOBAL
-##
-##endpoint: /applications/{application_id}/achievements/{achievement_id}
-##method  : GET
-##auth    : bot
-##used at : achievement_get
-##limits  :
-##    group   : 77056
-##    limit   : 5
-##    reset   : 5
-##    limiter : GLOBAL
-##
-##endpoint: /applications/{application_id}/achievements/{achievement_id}
-##method  : PATCH
-##auth    : bot
-##used at : achievement_edit
-##limits  :
-##    group   : 80640
-##    limit   : 5
-##    reset   : 5
-##    limiter : GLOBAL
-##
-##endpoint: /applications/detectable
-##method  : GET
-##auth    : UNKNOWN
-##used at : applications_detectable
-##limits  : UNLIMITED
-##
-##endpoint: /auth/logout
-##method  : POST
-##auth    : user
-##used at : client_logout
-##limits  : UNTESTED
-##
-##endpoint: /channels/{channel_id}
-##method  : DELETE
-##auth    : bot
-##used at : channel_delete
-##limits  : unlimited
-##
-##endpoint: /channels/{channel_id}
-##method  : DELETE
-##auth    : user
-##used at : channel_group_leave
-##limits  : UNTESTED
-##
-##endpoint: /channels/{channel_id}
-##method  : PATCH
-##auth    : bot
-##used at : channel_edit
-##limits  :
-##limits  :
-##    group   : 91392
-##    limit   : 5
-##    reset   : 15
-##    limiter : channel_id
-##
-##endpoint: /channels/{channel_id}
-##method  : PATCH
-##auth    : user
-##used at : channel_group_edit
-##limits  : UNTESTED
-##
-##endpoint: /channels/{channel_id}/followers
-##method  : POT
-##auth    : bot
-##used at : channel_follow
-##limits  : unlimited
-##
-##endpoint: /channels/{channel_id}/invites
-##method  : GET
-##auth    : bot
-##used at : invite_get_channel
-##limits  : unlimited
-##
-##endpoint: /channels/{channel_id}/invites
-##method  : POST
-##auth    : bot
-##used at : invite_create
-##limits  :
-##    group   : 39424
-##    limit   : 5
-##    reset   : 15
-##    limiter : GLOBAL
-##
-##endpoint: /channels/{channel_id}/messages
-##method  : GET
-##auth    : bot
-##used at : message_logs
-##limits  :
-##    group   : 105728
-##    limit   : 5
-##    reset   : 5
-##    limiter : channel_id
-##
-##endpoint: /channels/{channel_id}/messages
-##method  : POST
-##auth    : bot
-##used at : message_create
-##limits  :
-##    group   : 28672
-##    limit   : 5
-##    reset   : 4
-##    limiter : channel_id
-##
-##endpoint: /channels/{channel_id}/messages/bulk_delete
-##method  : POST
-##auth    : bot
-##used at : message_delete_multiple
-##limits  :
-##    group   : 30464
-##    limit   : 1
-##    reset   : 3
-##    limiter : channel_id
-##
-##endpoint: /channels/{channel_id}/messages/{message_id}
-##method  : DELETE
-##auth    : bot
-##used at : message_delete / message_delete_b2wo
-##limits  : `newer than 14 days` or `own` / `else`
-##    group   : 71680 / 87808
-##    limit   : 3 / 30
-##    reset   : 1 / 120
-##    limiter : channel_id
-##comment :
-##    For newer messages ratelimit is not every time included, but we ll ignore
-##    those, because we cannot detect, at which cases ar those applied.
-##
-##endpoint: /channels/{channel_id}/messages/{message_id}
-##method  : GET
-##auth    : bot
-##used at : message_get
-##limits  :
-##    group   : 103936
-##    limit   : 5
-##    reset   : 5
-##    limiter : channel_id
-##
-##endpoint: /channels/{channel_id}/messages/{message_id}
-##method  : PATCH
-##auth    : bot
-##used at : message_edit
-##limits  :
-##    group   : 32256
-##    limit   : 5
-##    reset   : 4
-##    limiter : channel_id
-##
-##endpoint: /channels/{channel_id}/messages/{message_id}/ack
-##method  : POST
-##auth    : user
-##used at : message_ack
-##limits  : UNTESTED
-##
-##endpoint: /channels/{channel_id}/messages/{message_id}/crosspost
-##method  : POST
-##auth    : bot
-##used at : message_crosspost
-##limits  :
-##    group : 96768
-##    limit : 10
-##    reset : 3600
-##    limiter : channel_id
-##
-##endpoint: /channels/{channel_id}/messages/{message_id}/reactions
-##method  : DELETE
-##auth    : bot
-##used at : reaction_clear
-##limits  :
-##    group   : 26880
-##    limit   : 1
-##    reset   : 0.25
-##    limiter : channel_id
-##
-##endpoint: /channels/{channel_id}/messages/{message_id}/reactions/{reaction}
-##method  : DELETE
-##auth    : bot
-##used at : reaction_delete_emoji
-##limits  :
-##    group   : 26880
-##    limit   : 1
-##    reset   : 0.25
-##    limiter : channel_id
-##
-##endpoint: /channels/{channel_id}/messages/{message_id}/reactions/{reaction}
-##method  : GET
-##auth    : bot
-##used at : reaction_users
-##limits  : unlimited
-##
-##endpoint: /channels/{channel_id}/messages/{message_id}/reactions/{reaction}/@me
-##method  : DELETE
-##auth    : bot
-##used at : reaction_delete_own
-##limits  :
-##    group   : 26880
-##    limit   : 1
-##    reset   : 0.25
-##    limiter : channel_id
-##
-##endpoint: /channels/{channel_id}/messages/{message_id}/reactions/{reaction}/@me
-##method  : PUT
-##auth    : bot
-##used at : reaction_add
-##limits  :
-##    group   : 26880
-##    limit   : 1
-##    reset   : 0.25
-##    limiter : channel_id
-##
-##endpoint: /channels/{channel_id}/messages/{message_id}/reactions/{reaction}/{user_id}
-##method  : DELETE
-##auth    : bot
-##used at : reaction_delete
-##limits  :
-##    group   : 26880
-##    limit   : 1
-##    reset   : 0.25
-##    limiter : channel_id
-##
-##endpoint: /channels/{channel_id}/messages/{message_id}/suppress-embeds
-##method  : POST
-##auth    : bot
-##used at : message_suppress_embeds
-##limits  :
-##    group   : 73472
-##    limit   : 3
-##    reset   : 1
-##    limiter : GLOBAL
-##
-##endpoint: /channels/{channel_id}/permissions/{overwrite_id}
-##method  : DELETE
-##auth    : bot
-##used at : permission_ow_delete
-##limits  : unlimited
-##
-##endpoint: /channels/{channel_id}/permissions/{overwrite_id}
-##method  : PUT
-##auth    : bot
-##used at : permission_ow_create
-##limits  : unlimited
-##
-##endpoint: /channels/{channel_id}/pins
-##method  : PUT
-##auth    : bot
-##used at : channel_pins
-##limits  :
-##    group   : 35840
-##    limit   : 1
-##    reset   : 5
-##    limiter : GLOBAL
-##
-##endpoint: /channels/{channel_id}/pins/ack
-##method  : POST
-##auth    : user
-##used at : channel_pins_ack
-##limits  : UNTESTED
-##
-##endpoint: /channels/{channel_id}/pins/{message_id}
-##method  : DELETE
-##auth    : bot
-##used at : message_unpin
-##limits  :
-##    group   : 34048
-##    limit   : 5
-##    reset   : 4
-##    limiter : channel_id
-##
-##endpoint: /channels/{channel_id}/pins/{message_id}
-##method  : PUT
-##auth    : bot
-##used at : message_pin
-##limits  :
-##    group   : 34048
-##    limit   : 5
-##    reset   : 4
-##    limiter : channel_id
-##
-##endpoint: /channels/{channel_id}/recipients/
-##method  : DELETE
-##auth    : user
-##used at : channel_group_users
-##limits  : UNTESTED
-##
-##endpoint: /channels/{channel_id}/recipients/{user_id}
-##method  : DELETE
-##auth    : user
-##used at : channel_group_user_delete
-##limits  : UNTESTED
-##
-##endpoint: /channels/{channel_id}/recipients/{user_id}
-##method  : PUT
-##auth    : user
-##used at : channel_group_user_add
-##limits  : UNTESTED
-##
-##endpoint: /channels/{channel_id}/threads'
-##method  : POST
-##auth    : bot
-##user at : channel_thread_start
-##limits  : UNTESTED
-##
-##endpoint: /channels/{channel_id}/threads/participants'
-##method  : GET
-##auth    : UNDEFINED
-##user at : thread_users
-##limits  : UNTESTED
-##
-##endpoint: /channels/{channel_id}/threads/participants/{user_id}'
-##method  : DELETE
-##auth    : UNDEFINED
-##user at : thread_user_delete
-##limits  : UNTESTED
-##
-##endpoint: /channels/{channel_id}/threads/participants/{user_id}'
-##method  : POST
-##auth    : UNDEFINED
-##user at : thread_user_add
-##limits  : UNTESTED
-##
-##endpoint: /channels/{channel_id}/typing
-##method  : POST
-##auth    : bot
-##used at : typing
-##limits  :
-##    group   : 37632
-##    limit   : 5
-##    reset   : 5
-##    limiter : channel_id
-##
-##endpoint: /channels/{channel_id}/webhooks
-##method  : GET
-##auth    : bot
-##used at : webhook_get_channel
-##limits  : unlimited
-##
-##endpoint: /channels/{channel_id}/webhooks
-##method  : POST
-##auth    : bot
-##used at : webhook_create
-##limits  : unlimited
-##
-##endpoint: /discovery/categories
-##method  : GET
-##auth    : bot
-##used at : discovery_categories
-##limits  :
-##    group   : 100352
-##    limit   : 10
-##    reset   : 120
-##    limiter : GLOBAL
-##
-##endpoint: /discovery/valid-term
-##method  : GET
-##auth    : bot
-##used at : discovery_validate_term
-##limits  :
-##    group   : 102144
-##    limit   : 10
-##    reset   : 10
-##    limiter : GLOBAL
-##
-##endpoint: /gateway
-##method  : GET
-##auth    : user
-##used at : client_gateway_hooman
-##limits  : UNTESTED
-##
-##endpoint: /gateway/bot
-##method  : GET
-##auth    : bot
-##used at : client_gateway_bot
-##limits  :
-##    group   : 41216
-##    limit   : 2
-##    reset   : 5
-##    limiter : GLOBAL
-##
-##endpoint: /guilds
-##method  : POST
-##auth    : bot
-##used at : guild_create
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}
-##method  : DELETE
-##auth    : bot
-##used at : guild_delete
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}
-##method  : GET
-##auth    : bot
-##used at : guild_get
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}
-##method  : PATCH
-##auth    : bot
-##used at : guild_edit
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/ack
-##method  : POST
-##auth    : user
-##used at : guild_ack
-##limits  : UNTESTED
-##
-##endpoint: /guilds/{guild_id}/audit-logs
-##method  : GET
-##auth    : bot
-##used at : audit_logs
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/bans
-##method  : GET
-##auth    : bot
-##used at : guild_bans
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/bans/{user_id}
-##method  : DELETE
-##auth    : bot
-##used at : guild_ban_delete
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/bans/{user_id}
-##method  : GET
-##auth    : bot
-##used at : guild_ban_get
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/bans/{user_id}
-##method  : PUT
-##auth    : bot
-##used at : guild_ban_add
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/channels
-##method  : GET
-##auth    : bot
-##used at : guild_channels
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/channels
-##method  : PATCH
-##auth    : bot
-##used at : channel_move
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/channels
-##method  : POST
-##auth    : bot
-##used at : channel_create
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/discovery-categories/{category_id}
-##method  : DELETE
-##auth    : bot
-##used at : guild_discovery_delete_subcategory
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/discovery-categories/{category_id}
-##method  : POST
-##auth    : bot
-##used at : guild_discovery_add_subcategory
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/discovery-metadata
-##method  : GET
-##auth    : bot
-##used at : guild_discovery_get
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/discovery-metadata
-##method  : PATCH
-##auth    : bot
-##used at : guild_discovery_edit
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/embed
-##method  : GET
-##auth    : bot
-##used at : guild_embed_get
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/embed
-##method  : PATCH
-##auth    : bot
-##used at : guild_embed_edit
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/embed.png
-##method  : GET
-##auth    : none
-##used at : guild.embed_url
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/emojis
-##method  : GET
-##auth    : bot
-##used at : guild_emojis
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/emojis
-##method  : POST
-##auth    : bot
-##used at : emoji_create
-##limits  :
-##    group   : 43008
-##    limit   : 50
-##    reset   : 3600
-##    limiter : guild_id
-##
-##endpoint: /guilds/{guild_id}/emojis/{emoji_id}
-##method  : DELETE
-##auth    : bot
-##used at : emoji_delete
-##limits  :
-##    group   : 44800
-##    limit   : 1
-##    reset   : 3
-##    limiter : GLOBAL
-##
-##endpoint: /guilds/{guild_id}/emojis/{emoji_id}
-##method  : GET
-##auth    : bot
-##used at : emoji_get
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/emojis/{emoji_id}
-##method  : PATCH
-##auth    : bot
-##used at : emoji_edit
-##limits  :
-##    group   : 46592
-##    limit   : 1
-##    reset   : 3
-##    limiter : GLOBAL
-##
-##endpoint: /guilds/{guild_id}/integrations
-##method  : GET
-##auth    : bot
-##used at : integration_get_all
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/integrations
-##method  : POST
-##auth    : bot
-##used at : integration_create
-##limits  : UNTESTED
-##
-##endpoint: /guilds/{guild_id}/integrations/{integration_id}
-##method  : DELETE
-##auth    : bot
-##used at : integration_delete
-##limits  : UNTESTED
-##
-##endpoint: /guilds/{guild_id}/integrations/{integration_id}
-##method  : PATCH
-##auth    : bot
-##used at : integration_edit
-##limits  : UNTESTED
-##
-##endpoint: /guilds/{guild_id}/integrations/{integration_id}/sync
-##method  : POST
-##auth    : bot
-##used at : integration_sync
-##limits  : UNTESTED
-##
-##endpoint: /guilds/{guild_id}/invites
-##method  : GET
-##auth    : bot
-##used at : invite_get_guild
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/members
-##method  : GET
-##auth    : bot
-##used at : guild_users
-##limits  :
-##    group   : 68096
-##    limit   : 10
-##    reset   : 10
-##    limiter : guild_id
-##
-##endpoint: /guilds/{guild_id}/members/@me/nick
-##method  : PATCH
-##auth    : bot
-##used at : client_edit_nick
-##limits  :
-##    group   : 48384
-##    limit   : 1
-##    reset   : 2
-##    limiter : GLOBAL
-##
-##endpoint: /guilds/{guild_id}/members/{user_id}
-##method  : DELETE
-##auth    : bot
-##used at : guild_user_delete
-##limits  :
-##    group   : 50176
-##    limit   : 5
-##    reset   : 2
-##    limiter : guild_id
-##
-##endpoint: /guilds/{guild_id}/members/{user_id}
-##method  : GET
-##auth    : bot
-##used at : guild_user_get
-##limits  :
-##    group   : 69888
-##    limit   : 5
-##    reset   : 1
-##    limiter : guild_id
-##
-##endpoint: /guilds/{guild_id}/members/{user_id}
-##method  : PATCH
-##auth    : bot
-##used at : user_edit, user_move
-##limits  :
-##    group   : 51968
-##    limit   : 10
-##    reset   : 10
-##    limiter : guild_id
-##
-##endpoint: /guilds/{guild_id}/members/{user_id}
-##method  : PUT
-##auth    : bot
-##used at : guild_user_add
-##limits  :
-##    group   : 53760
-##    limit   : 10
-##    reset   : 10
-##    limiter : guild_id
-##
-##endpoint: /guilds/{guild_id}/members/search
-##method  : GET
-##auth    : bot
-##used at : guild_user_search
-##limits  :
-##    group   : 98560
-##    limit   : 10
-##    reset   : 10
-##    limiter : guild_id
-##
-##endpoint: /guilds/{guild_id}/members/{user_id}/roles/{role_id}
-##method  : DELETE
-##auth    : bot
-##used at : user_role_delete
-##limits  :
-##    group   : 55552
-##    limit   : 10
-##    reset   : 10
-##    limiter : guild_id
-##
-##endpoint: /guilds/{guild_id}/members/{user_id}/roles/{role_id}
-##method  : PUT
-##auth    : bot
-##used at : user_role_add
-##limits  :
-##    group   : 55552
-##    limit   : 10
-##    reset   : 10
-##    limiter : guild_id
-##
-##endpoint: /guilds/{guild_id}/preview
-##method  : GET
-##auth    : bot
-##used at : guild_preview
-##limits   :
-##    group   : 89600
-##    limit   : 5
-##    reset   : 5
-##    limiter : GLOBAL
-##
-##endpoint: /guilds/{guild_id}/prune
-##method  : GET
-##auth    : bot
-##used at : guild_prune_estimate
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/prune
-##method  : POST
-##auth    : bot
-##used at : guild_prune
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/regions
-##method  : GET
-##auth    : bot
-##used at : guild_regions
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/roles
-##method  : GET
-##auth    : bot
-##used at : guild_roles
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/roles
-##method  : PATCH
-##auth    : bot
-##used at : role_move
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/roles
-##method  : POST
-##auth    : bot
-##used at : role_create
-##limits  : unlimited
-##    group   : 94976
-##    limit   : 250
-##    reset   : 172800
-##    limiter : guild_id
-##
-##endpoint: /guilds/{guild_id}/roles/{role_id}
-##method  : DELETE
-##auth    : bot
-##used at : role_delete
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/roles/{role_id}
-##method  : PATCH
-##auth    : bot
-##used at : role_edit
-##limits  :
-##    group   : 93184
-##    limit   : 1000
-##    reset   : 86400
-##    limiter : guild_id
-##
-##endpoint: /guilds/{guild_id}/vanity-url
-##method  : GET
-##auth    : bot
-##used at : vanity_get
-##limits  : UNTESTED
-##
-##endpoint: /guilds/{guild_id}/vanity-url
-##method  : PATCH
-##auth    : bot
-##used at : vanity_edit
-##limits  : UNTESTED
-##
-##endpoint: /guilds/{guild_id}/welcome-screen
-##method  : GET
-##auth    : bot
-##used at : welcome_screen_get
-##limits  : UNLIMITED
-##
-##endpoint: /guilds/{guild_id}/webhooks
-##method  : GET
-##auth    : bot
-##used at : webhook_get_guild
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/widget.json
-##method  : GET
-##auth    : none
-##used at : guild_widget_get
-##limits  : unlimited
-##
-##endpoint: /guilds/{guild_id}/widget.png
-##method  : GET
-##auth    : none
-##used at : guild.widget_url
-##limits  : unlimited
-##
-##endpoint: /hypesquad/online
-##method  : DELETE
-##auth    : user
-##used at : hypesquad_house_leave
-##limits  : UNTESTED
-##
-##endpoint: /hypesquad/online
-##method  : POST
-##auth    : user
-##used at : hypesquad_house_change
-##limits  : UNTESTED
-##
-##endpoint: /invites/{invite_code}
-##method  : DELETE
-##auth    : bot
-##used at : invite_delete
-##limits  : unlimited
-##
-##endpoint: /invites/{invite_code}
-##method  : GET
-##auth    : bot
-##used at : invite_get
-##limits  :
-##    group   : 57344
-##    limit   : 250
-##    reset   : 6
-##    limiter : GLOBAL
-##
-##endpoint: /oauth2/applications/@me
-##method  : GET
-##auth    : bot
-##used at : client_application_info
-##limits  : unlimited
-##
-##endpoint: /read-states/ack-bulk
-##method  : GET
-##auth    : user
-##used at : bulk_ack
-##limits  : UNTESTED
-##
-##endpoint: /store/eulas/{eula_id}
-##method  : GET
-##auth    : UNDEFINED
-##used at : eula_get
-##limits  : UNLIMITED
-##
-##endpoint: /users/@me
-##method  : GET
-##auth    : bearer
-##used at : user_info
-##limits  : unlimited
-##
-##endpoint: /users/@me
-##method  : GET
-##auth    : bot
-##used at : client_user
-##limits  : unlimited
-##
-##endpoint: /users/@me
-##method  : PATCH
-##auth    : bot
-##used at : client_edit
-##limits  :
-##    group   : 59136
-##    limit   : 2
-##    reset   : 3600
-##    limiter : GLOBAL
-##
-##endpoint: /users/@me/applications/{application_id}/achievements
-##method  : GET
-##auth    : bearer
-##used at : user_achievements
-##limits  : UNTESTED
-##    group   : 84224
-##    limit   : 2
-##    reset   : 5
-##    limiter : GLOBAL
-##
-##endpoint: /users/{user_id}/applications/{application_id}/achievements/{achievement_id}
-##method  : PUT
-##auth    : bot
-##used at : user_achievement_update
-##limits  :
-##    group   : 86016
-##    limit   : 5
-##    reset   : 5
-##    limiter : GLOBAL
-##
-##endpoint: /users/@me/channels
-##method  : GET
-##auth    : bot
-##used at : channel_private_get_all
-##limits  : unlimited
-##
-##endpoint: /users/@me/channels
-##method  : POST
-##auth    : bot
-##used at : channel_private_create
-##limits  : unlimited
-##
-##endpoint: /users/@me/connections
-##method  : GET
-##auth    : bot
-##used at : client_connections
-##limits  : unlimited
-##
-##endpoint: /users/@me/connections
-##method  : GET
-##auth    : bearer
-##used at : user_connections
-##limits  : unlimited
-##
-##endpoint: /users/@me/guilds
-##method  : GET
-##auth    : bot
-##used at : guild_get_all
-##limits  :
-##    group   : 62720
-##    limit   : 1
-##    reset   : 1
-##    limiter : GLOBAL
-##
-##endpoint: /users/@me/guilds
-##method  : GET
-##auth    : bearer
-##used at : user_guilds
-##limits  :
-##    group   : 60928
-##    limit   : 1
-##    reset   : 1
-##    limiter : GLOBAL
-##
-##endpoint: /users/@me/guilds/{guild_id}
-##method  : DELETE
-##auth    : bot
-##used at : guild_leave
-##limits  : unlimited
-##
-##endpoint: /users/@me/relationships
-##method  : POST
-##auth    : user
-##used at : relationship_friend_request
-##limits  : UNTESTED
-##
-##endpoint: /users/@me/relationships/{user_id}
-##method  : DELETE
-##auth    : user
-##used at : relationship_delete
-##limits  : UNTESTED
-##
-##endpoint: /users/@me/relationships/{user_id}
-##method  : PUT
-##auth    : user
-##used at : relationship_create
-##limits  : UNTESTED
-##
-##endpoint: /users/@me/settings
-##method  : GET
-##auth    : user
-##used at : client_get_settings
-##limits  : UNTESTED
-##
-##endpoint: /users/@me/settings
-##method  : PATCH
-##auth    : user
-##used at : client_edit_settings
-##limits  : UNTESTED
-##
-##endpoint: /users/{user_id}
-##method  : GET
-##auth    : bot
-##used at : user_get
-##limits  :
-##    group   : 64512
-##    limit   : 30
-##    reset   : 30
-##    limiter : GLOBAL
-##
-##endpoint: /users/{user_id}/channels
-##method  : POST
-##auth    : user
-##used at : channel_group_create
-##limits  : UNTESTED
-##
-##endpoint: /users/{user_id}/profile
-##method  : GET
-##auth    : user
-##used at : user_get_profle
-##limits  : UNTESTED
-##
-##endpoint: /voice/regions
-##method  : GET
-##auth    : bot
-##used at : voice_regions
-##limits  : unlimited
-##
-##endpoint: /webhooks/{webhook_id}
-##method  : DELETE
-##auth    : bot
-##used at : webhook_delete
-##limits  : unlimited
-##
-##endpoint: /webhooks/{webhook_id}
-##method  : GET
-##auth    : bot
-##used at : webhook_get
-##limits  : unlimited
-##
-##endpoint: /webhooks/{webhook_id}
-##method  : PATCH
-##auth    : bot
-##used at : webhook_edit
-##limits  : unlimited
-##
-##endpoint: webhooks/{webhook_id}/{webhook_token}
-##method  : DELETE
-##auth    : none
-##used at : webhook_delete_token
-##limits  : unlimited
-##
-##endpoint: webhooks/{webhook_id}/{webhook_token}
-##method  : GET
-##auth    : none
-##used at : webhook_get_token
-##limits  : unlimited
-##
-##endpoint: webhooks/{webhook_id}/{webhook_token}
-##method  : PATCH
-##auth    : none
-##used at : webhook_edit_token
-##limits  : unlimited
-##
-##endpoint: webhooks/{webhook_id}/{webhook_token}
-##method  : POST
-##auth    : none
-##used at : webhook_send
-##limits  :
-##    group   : 66304
-##    limit   : 5
-##    reset   : 2
-##    limiter : webhook_id

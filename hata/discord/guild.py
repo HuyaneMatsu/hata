@@ -2304,7 +2304,7 @@ class Guild(DiscordEntity, immortal=True):
             try:
                 emoji = emojis[emoji_id]
             except KeyError:
-                emoji = Emoji(emoji_data,self)
+                emoji = Emoji(emoji_data, self)
                 emojis[emoji_id] = emoji
                 changes.append((EMOJI_UPDATE_NEW,emoji, None),)
             else:

@@ -8,7 +8,7 @@ from collections import OrderedDict
 from binascii import Error as BinasciiError
 from email.utils import formatdate
 
-from .dereaddons_local import multidict_titled
+from .dereaddons_local import imultidict
 from .futures import Future, Task, AsyncQue, future_or_timeout, shield, CancelledError, WaitTillAll, iscoroutine, Lock
 
 from .url import URL
@@ -260,15 +260,16 @@ class WebSocketCommonProtocol(ProtocolBase):
             text = True
         elif frame.opcode == WS_OP_BINARY:
             text = False
-        else: #frame.opcode == OP_CONT:
-            raise WebSocketProtocolError('Unexpected opcode')
+        else: # frame.opcode == OP_CONT:
+            raise WebSocketProtocolError(f'Unexpected opcode, got {frame.opcode!r}, expected {WS_OP_TEXT!r} or '
+                f'{WS_OP_BINARY!r}.')
         
-        #we got a whole frame, nice
+        # we got a whole frame, nice
         if frame.fin:
             return frame.data.decode('utf-8') if text else frame.data
         
-        max_size=self.max_size #set max size to BIG number to ignore it
-        chunks=[]
+        max_size = self.max_size # set max size to BIG number to ignore it
+        chunks = []
         
         if text:
             decoder = codecs.getincrementaldecoder('utf-8')(errors='strict')
@@ -279,15 +280,15 @@ class WebSocketCommonProtocol(ProtocolBase):
         while True:
             append(frame)
             max_size -= len(frame.data)
-
+            
             if frame.fin:
                 break
             
             frame = await self.read_data_frame(max_size=max_size)
             if frame is None:
-                raise WebSocketProtocolError('Incomplete fragmented message')
+                raise WebSocketProtocolError('Incomplete fragmented message.')
             if frame.opcode != WS_OP_CONT:
-                raise WebSocketProtocolError('Unexpected opcode')
+                raise WebSocketProtocolError(f'Unexpected opcode, got {frame.opcode!r}, expected {WS_OP_CONT!r}.')
         
         return ('' if text else b'').join(chunks)
     
@@ -320,14 +321,14 @@ class WebSocketCommonProtocol(ProtocolBase):
             if length >= 2:
                 code = int.from_bytes(data[:2], 'big')
                 if not (code in EXTERNAL_CLOSE_CODES or 2999 < code < 5000):
-                    raise WebSocketProtocolError(f'Invalid status code {code}')
+                    raise WebSocketProtocolError(f'Invalid status code {code}.')
                 reason = data[2:].decode('utf-8')
                 self.close_code = code
                 self.close_reason = reason
             elif length == 0:
                 self.close_code = 1005
             else:
-                raise WebSocketProtocolError(f'Close frame too short: {length}')
+                raise WebSocketProtocolError(f'Close frame too short: {length}.')
 
             await self.write_close_frame(frame.data)
             return False
@@ -348,7 +349,7 @@ class WebSocketCommonProtocol(ProtocolBase):
     async def write_frame(self, opcode, data,_expected_state=OPEN):
         # Defensive assertion for protocol compliance.
         if self.state is not _expected_state:
-            raise Exception(f'Cannot write to a WebSocket in the {self.state} state')
+            raise Exception(f'Cannot write to a WebSocket in the {self.state} state.')
 
         #we write only 1 frame at a time, so we 'queue' it
         async with self._drain_lock:
@@ -500,10 +501,10 @@ class WSClient(WebSocketCommonProtocol):
         if secure:
             connection_kwargs.setdefault('ssl', True)
         elif connection_kwargs.get('ssl', None) is not None:
-            raise ValueError(f'{cls.__name__} received a SSL context for a ws:// URI, use a wss:// URI to enable TLS')
+            raise ValueError(f'{cls.__name__} received a SSL context for a ws:// URI, use a wss:// URI to enable TLS.')
         
         if compression is not None and compression != 'deflate':
-            raise ValueError(f'Unsupported compression: {compression}')
+            raise ValueError(f'Unsupported compression: {compression}.')
         
         if connection_kwargs.get('sock') is None:
             host = url.host
@@ -515,7 +516,7 @@ class WSClient(WebSocketCommonProtocol):
         
         # building headers
         sec_key = b64encode(int.to_bytes(getrandbits(128), length=16, byteorder='big')).decode()
-        request_headers = multidict_titled()
+        request_headers = imultidict()
         
         request_headers[UPGRADE] = 'websocket'
         request_headers[CONNECTION] = 'Upgrade'
@@ -543,20 +544,20 @@ class WSClient(WebSocketCommonProtocol):
 
         if extra_headers is not None:
             # we use expecially items, so we check that
-            if isinstance(extra_headers, multidict_titled) or hasattr(extra_headers, 'items'):
+            if isinstance(extra_headers, imultidict) or hasattr(extra_headers, 'items'):
                 for name, value in extra_headers.items():
                     request_headers[name] = value
             else:
-                raise TypeError('extra_headers should be dictlike with \'.items\' method, got '
+                raise TypeError('`extra_headers` should be dictlike with `.items` method, got '
                     f'{extra_headers.__class__.__name__} instance.')
         
         async with http_client.request(METH_GET, url, request_headers) as response:
            
             if response.raw_message.version != HttpVersion11:
-                raise ValueError(f'Unsupported HTTP version: {response.raw_message.version}')
+                raise ValueError(f'Unsupported HTTP version: {response.raw_message.version}.')
             
             if response.status != 101:
-                raise InvalidHandshake(f'Invalid status code: {response.status}')
+                raise InvalidHandshake(f'Invalid status code: {response.status!r}.')
             
             response_headers = response.headers
             connections = []
@@ -566,7 +567,7 @@ class WSClient(WebSocketCommonProtocol):
                     connections.extend(parse_connections(received_connection))
             
             if not any(value.lower() == 'upgrade' for value in connections):
-                raise InvalidHandshake(f'Invalid connection, no upgrade found, got {connections!r}')
+                raise InvalidHandshake(f'Invalid connection, no upgrade found, got {connections!r}.')
             
             upgrade = []
             received_upgrades = response_headers.getall(UPGRADE)
@@ -575,25 +576,25 @@ class WSClient(WebSocketCommonProtocol):
                     upgrade.extend(parse_upgrades(received_upgrade))
             
             if len(upgrade) != 1 and upgrade[0].lower() != 'websocket': # ignore case
-                raise InvalidHandshake(f'Expected \'WebSocket\' for \'Upgrade\', but got {upgrade!r}')
+                raise InvalidHandshake(f'Expected \'WebSocket\' for \'Upgrade\', but got {upgrade!r}.')
             
             expected_key = b64encode(hashlib.sha1((sec_key+WS_KEY).encode()).digest()).decode()
             received_keys = response_headers.getall(SEC_WEBSOCKET_ACCEPT)
             if received_keys is None:
-                raise InvalidHandshake(f'Expected 1 secret key \'{expected_key}\', but received 0')
+                raise InvalidHandshake(f'Expected 1 secret key {expected_key!r}, but received 0.')
             if len(received_keys) > 1:
-                raise InvalidHandshake(f'Expected 1 secret key \'{expected_key}\', but received more : {received_keys}')
+                raise InvalidHandshake(f'Expected 1 secret key {expected_key!r}, but received more: {received_keys!r}.')
             
             received_key = received_keys[0]
             if received_key != expected_key:
-                raise InvalidHandshake(f'Expected secret key \'{expected_key}\', but got \'{received_key}\'')
+                raise InvalidHandshake(f'Expected secret key {expected_key}, but got {received_key!r}.')
 
             #extensions
             accepted_extensions = []
             received_extensions = response_headers.getall(SEC_WEBSOCKET_EXTENSIONS)
             if (received_extensions is not None):
                 if available_extensions is None:
-                    raise InvalidHandshake(f'No extensions supported, but received {received_extensions!r}')
+                    raise InvalidHandshake(f'No extensions supported, but received {received_extensions!r}.')
                 
                 parsed_extension_values = []
                 for value in received_extensions:
@@ -607,25 +608,25 @@ class WSClient(WebSocketCommonProtocol):
                             break
                     else:
                         # no matching extension
-                        raise InvalidHandshake(f'Unsupported extension: name = {name}, params = {params}')
+                        raise InvalidHandshake(f'Unsupported extension: name={name!r}, params={params!r}.')
             
             subprotocol = None
-            received_subprotocols=response_headers.getall(SEC_WEBSOCKET_PROTOCOL)
+            received_subprotocols = response_headers.getall(SEC_WEBSOCKET_PROTOCOL)
             if (received_subprotocols is not None):
                 if available_subprotocols is None:
-                    raise InvalidHandshake('No subprotocols supported, btu received {received_subprotocol!r}')
+                    raise InvalidHandshake(f'No subprotocols supported, but received {received_subprotocols!r}.')
                 
                 parsed_subprotocol_values = []
                 for received_subprotocol in received_subprotocols:
                     parsed_subprotocol_values.extend(parse_subprotocols(received_subprotocol))
                 
                 if len(parsed_subprotocol_values) > 1:
-                    raise InvalidHandshake(f'Multiple subprotocols: {parsed_subprotocol_values!r}')
+                    raise InvalidHandshake(f'Multiple subprotocols: {parsed_subprotocol_values!r}.')
                 
                 subprotocol = parsed_subprotocol_values[0]
                 
                 if subprotocol not in available_subprotocols:
-                    raise InvalidHandshake(f'Unsupported subprotocol: {subprotocol}')
+                    raise InvalidHandshake(f'Unsupported subprotocol: {subprotocol}.')
             
             connection = response.connection
             protocol = connection.protocol
@@ -711,7 +712,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
             
             request_headers = request.headers
             if self.server.is_serving():
-                path=request.path
+                path = request.path
                 
                 request_processer = self.request_processer
                 if request_processer is None:
@@ -725,16 +726,16 @@ class WSServerProtocol(WebSocketCommonProtocol):
                     raise AbortHandshake(*early_response)
                 
             else:
-                raise AbortHandshake(SERVICE_UNAVAILABLE, multidict_titled(), b'Server is shutting down.\n',)
+                raise AbortHandshake(SERVICE_UNAVAILABLE, 'Server is shutting down.')
             
             connections = []
-            connection_headers=request_headers.getall(CONNECTION)
+            connection_headers = request_headers.getall(CONNECTION)
             if (connection_headers is not None):
                 for connection_header in connection_headers:
                     connections.extend(parse_connections(connection_header))
         
             if not any(value.lower() == 'upgrade' for value in connections):
-                raise InvalidUpgrade(f'Invalid connection, no upgrade found, got {connections!r}')
+                raise InvalidUpgrade(f'Invalid connection, no upgrade found, got {connections!r}.')
             
             upgrade = []
             upgrade_headers = request_headers.getall(UPGRADE)
@@ -743,7 +744,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
                     upgrade.extend(parse_upgrades(upgrade_header))
             
             if len(upgrade) != 1 and upgrade[0].lower() != 'websocket': #ignore case
-                raise InvalidUpgrade(f'Expected \'WebSocket\' for \'Upgrade\', but got {upgrade!r}')
+                raise InvalidUpgrade(f'Expected \'WebSocket\' for \'Upgrade\', but got {upgrade!r}.')
             
             received_keys = request_headers.getall(SEC_WEBSOCKET_KEY)
             if received_keys is None:
@@ -757,21 +758,21 @@ class WSServerProtocol(WebSocketCommonProtocol):
             try:
                 raw_key = b64decode(key.encode(), validate=True)
             except BinasciiError:
-                raise InvalidHandshake(f'Invalid {SEC_WEBSOCKET_KEY!r}: {key!r}')
+                raise InvalidHandshake(f'Invalid {SEC_WEBSOCKET_KEY!r}: {key!r}.')
             
             if len(raw_key) != 16:
-                raise InvalidHandshake(f'Invalid {SEC_WEBSOCKET_KEY!r}, should be length 16; {key!r}')
+                raise InvalidHandshake(f'Invalid {SEC_WEBSOCKET_KEY!r}, should be length 16; {key!r}.')
             
-            sw_version=request_headers.getall(SEC_WEBSOCKET_VERSION)
+            sw_version = request_headers.getall(SEC_WEBSOCKET_VERSION)
             if sw_version is None:
-                raise InvalidHandshake(f'Missing {SEC_WEBSOCKET_VERSION!r} values at headers')
+                raise InvalidHandshake(f'Missing {SEC_WEBSOCKET_VERSION!r} values at headers.')
             
             if len(sw_version) > 1:
-                raise InvalidHandshake(f'Multiple {SEC_WEBSOCKET_VERSION!r} values at headers')
+                raise InvalidHandshake(f'Multiple {SEC_WEBSOCKET_VERSION!r} values at headers.')
             
             sw_version = sw_version[0]
             if sw_version != '13':
-                raise InvalidHandshake(f'Invalid {SEC_WEBSOCKET_VERSION!r}: {sw_version!r}')
+                raise InvalidHandshake(f'Invalid {SEC_WEBSOCKET_VERSION!r}: {sw_version!r}.')
             
             while True:
                 origins = self.origins
@@ -874,7 +875,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
             
             self.subprotocol = subprotocol_header
             
-            response_headers = multidict_titled()
+            response_headers = imultidict()
     
             response_headers[UPGRADE] = 'websocket'
             response_headers[CONNECTION] = 'Upgrade'
@@ -906,16 +907,20 @@ class WSServerProtocol(WebSocketCommonProtocol):
             return False
         except BaseException as err:
             if isinstance(err, AbortHandshake):
-                status = err.status
+                status = err.code
                 headers = err.headers
-                body = err.body
+                if headers is None:
+                    headers = imultidict()
+                body = err.message
+                if not body.endswith('\n'):
+                    body = body+b'\n'
             elif isinstance(err, InvalidOrigin):
                 status = FORBIDDEN
-                headers = multidict_titled()
+                headers = imultidict()
                 body = f'Failed to open a WebSocket connection: {err}.\n'.encode()
             elif isinstance(err, InvalidUpgrade):
                 status = UPGRADE_REQUIRED
-                headers = multidict_titled()
+                headers = imultidict()
                 headers[UPGRADE] = 'websocket'
                 body = (
                     f'Failed to open a WebSocket connection: {err}.\n\n'
@@ -923,13 +928,13 @@ class WSServerProtocol(WebSocketCommonProtocol):
                         ).encode()
             elif isinstance(err, InvalidHandshake):
                 status = BAD_REQUEST
-                headers = multidict_titled()
+                headers = imultidict()
                 body = f'Failed to open a WebSocket connection: {err}.\n'.encode()
             else:
                 status = INTERNAL_SERVER_ERROR
-                headers = multidict_titled()
+                headers = imultidict()
                 body = b'Failed to open a WebSocket connection.\n'
-                
+            
             headers.setdefault(DATE, formatdate(usegmt=True))
             headers.setdefault(SERVER, '')
             headers.setdefault(CONTENT_LENGTH, repr(len(body)))
@@ -981,10 +986,10 @@ class WSServer(object):
         
         if (extra_headers is None):
             pass
-        elif type(extra_headers) is multidict_titled:
+        elif type(extra_headers) is imultidict:
             pass
         elif hasattr(type(extra_headers), 'items'):
-            extra_headers_local = multidict_titled()
+            extra_headers_local = imultidict()
             
             for name, value in extra_headers.items():
                 extra_headers_local[name] = value

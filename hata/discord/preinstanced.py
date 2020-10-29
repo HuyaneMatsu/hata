@@ -1572,6 +1572,7 @@ class GuildFeature(PreinstancedBase):
     animated_icon               = NotImplemented
     banner                      = NotImplemented
     commerce                    = NotImplemented
+    community                   = NotImplemented
     discoverable                = NotImplemented
     enabled_discoverable_before = NotImplemented
     featurable                  = NotImplemented

@@ -21,7 +21,7 @@ except ImportError:
         err.msg = message
         raise err from None
 
-from .dereaddons_local import multidict_titled
+from .dereaddons_local import imultidict
 from .futures import Task, CancelledError
 from .hdrs import METH_POST_ALL, METH_CONNECT, SET_COOKIE, CONTENT_LENGTH, CONNECTION, ACCEPT, ACCEPT_ENCODING, \
     HOST, TRANSFER_ENCODING, COOKIE, CONTENT_ENCODING, AUTHORIZATION, CONTENT_TYPE
@@ -67,7 +67,7 @@ class Fingerprint(object):
             raise ValueError(self.fingerprint, got, host, port)
 
 if module_ssl is None:
-    SSL_ALLOWED_TYPES = type(None)
+    SSL_ALLOWED_TYPES = (type(None), )
 else:
     SSL_ALLOWED_TYPES = (module_ssl.SSLContext, bool, Fingerprint, type(None))
 
@@ -186,7 +186,7 @@ class ClientRequest(object):
         self.writer = None
         
         self.update_host(url)
-        self.headers = multidict_titled(headers)
+        self.headers = imultidict(headers)
         self.update_auto_headers()
         self.update_cookies(cookies)
         self.update_content_encoding(data)
@@ -344,11 +344,16 @@ class ClientRequest(object):
     
     
     def update_proxy(self, proxy_url, proxy_auth):
-        if proxy_url:
+        if proxy_url is not None:
             if proxy_auth.scheme != 'http':
-                raise ValueError('Only http proxies are supported')
-            if not isinstance(proxy_auth, BasicAuth):
-                raise ValueError('proxy_auth must be None or BasicAuth')
+                raise ValueError(f'Only http proxies are supported, got {proxy_url!r}.')
+            
+            if (proxy_auth is not None):
+                proxy_auth_type = proxy_auth.__class__
+                if proxy_auth_type is not BasicAuth:
+                    raise ValueError(f'`proxy_auth` must be `None` or `{BasicAuth.__name__}`, got '
+                        f'{proxy_auth_type.__name__}.')
+        
         self.proxy_url = proxy_url
         self.proxy_auth = proxy_auth
     
@@ -452,7 +457,7 @@ class ClientResponse:
         self.body = None
         self.status = None  # Status-Code
         self.payload_waiter = None  # Data stream
-        self.headers = None  # Response headers, multidict_titled
+        self.headers = None  # Response headers, imultidict
         self.connection = None  # current connection
         
         self.raw_message = None

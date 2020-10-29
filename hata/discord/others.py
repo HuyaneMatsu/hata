@@ -14,7 +14,7 @@ try:
 except ImportError:
     relativedelta = None
 
-from ..backend.dereaddons_local import titledstr, modulize
+from ..backend.dereaddons_local import istr, modulize
 
 from .bases import DiscordEntity
 
@@ -804,13 +804,13 @@ class Gift(object):
 @modulize
 class Discord_hdrs:
     # to receive
-    AUDIT_LOG_REASON = titledstr('X-Audit-Log-Reason')
-    RATELIMIT_REMAINING = titledstr('X-Ratelimit-Remaining')
-    RATELIMIT_RESET = titledstr('X-Ratelimit-Reset')
-    RATELIMIT_RESET_AFTER = titledstr('X-Ratelimit-Reset-After')
-    RATELIMIT_LIMIT = titledstr('X-Ratelimit-Limit')
+    AUDIT_LOG_REASON = istr('X-Audit-Log-Reason')
+    RATELIMIT_REMAINING = istr('X-Ratelimit-Remaining')
+    RATELIMIT_RESET = istr('X-Ratelimit-Reset')
+    RATELIMIT_RESET_AFTER = istr('X-Ratelimit-Reset-After')
+    RATELIMIT_LIMIT = istr('X-Ratelimit-Limit')
     # to send
-    RATELIMIT_PRECISION = titledstr('X-RateLimit-Precision')
+    RATELIMIT_PRECISION = istr('X-RateLimit-Precision')
 
 def urlcutter(url):
     """
@@ -904,6 +904,6 @@ def urlcutter(url):
 bases.id_to_time = id_to_time
 
 del re
-del titledstr
+del istr
 del modulize
 del bases

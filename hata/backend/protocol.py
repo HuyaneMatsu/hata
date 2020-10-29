@@ -4,7 +4,7 @@ from random import getrandbits
 from struct import Struct
 from collections import deque
 
-from .dereaddons_local import multidict_titled
+from .dereaddons_local import imultidict
 from .futures import Future, CancelledError, Task, future_or_timeout
 
 from .hdrs import CONNECTION, CONTENT_ENCODING, CONTENT_LENGTH, TRANSFER_ENCODING, METH_CONNECT
@@ -936,7 +936,7 @@ class ReadProtocolBase(object):
             raise PayloadError(PAYLOAD_ERROR_EOF_AT_HTTP_HEADER) from err
     
     def _read_http_headers(self, chunk, offset):
-        headers = multidict_titled()
+        headers = imultidict()
         chunks = self._chunks
         
         end = chunk.find(b'\r\n', offset)
@@ -1231,7 +1231,7 @@ class ReadProtocolBase(object):
                 middle = line.find(b':')
                 # If the middle was not found, or it is the first character, bad line
                 if middle <= 0:
-                    raise PayloadError(f'Invalid header line: {line!r}')
+                    raise PayloadError(f'Invalid header line: {line!r}.')
                 
                 name = line[:middle].lstrip().decode('utf-8', 'surrogateescape')
                 value = line[middle+1:].strip()
@@ -1255,7 +1255,7 @@ class ReadProtocolBase(object):
         head1, head2 = yield from self._read_exactly(2)
         
         if ((head2&0b10000000)>>7) == is_client:
-            raise WebSocketProtocolError('Incorrect masking')
+            raise WebSocketProtocolError('Incorrect masking.')
         
         length = head2&0b01111111
         
@@ -1267,7 +1267,7 @@ class ReadProtocolBase(object):
             length, = UNPACK_LEN3(data)
         
         if (max_size is not None) and length>max_size:
-            raise PayloadError(f'Payload length exceeds size limit ({length} > {max_size} bytes)')
+            raise PayloadError(f'Payload length exceeds size limit ({length} > {max_size} bytes).')
         
         #Read the data.
         if is_client:
@@ -1289,7 +1289,7 @@ class ReadProtocolBase(object):
             if length.isdigit():
                 length = int(length)
             else:
-                raise PayloadError(f'{CONTENT_LENGTH} must be a non negative int, got: {length!r}')
+                raise PayloadError(f'{CONTENT_LENGTH} must be a non negative int, got: {length!r}.')
         
         if (not message.upgraded):
             if message.chunked:
@@ -1354,18 +1354,18 @@ class ReadProtocolBase(object):
             try:
                 chunk_length = int(chunk_length,16)
             except ValueError:
-                raise PayloadError(f'Not hexadecimal chunk size: {chunk_length!r}') from None
+                raise PayloadError(f'Not hexadecimal chunk size: {chunk_length!r}.') from None
             
             if chunk_length == 0:
                 end = yield from self._read_exactly(2)
                 if end != b'\r\n':
-                    raise PayloadError(f'Recevied chunk does not end with b\'\\r\\n\', instead with: {end}')
+                    raise PayloadError(f'Recevied chunk does not end with b\'\\r\\n\', instead with: {end}.')
                 break
             
             chunk = yield from self._read_exactly(chunk_length)
             end = yield from self._read_exactly(2)
             if end != b'\r\n':
-                raise PayloadError(f'Recevied chunk does not end with b\'\\r\\n\', instead with: {end}')
+                raise PayloadError(f'Recevied chunk does not end with b\'\\r\\n\', instead with: {end}.')
             
             collected.append(chunk)
         
@@ -1411,18 +1411,18 @@ class ReadProtocolBase(object):
             try:
                 chunk_length = int(chunk_length,16)
             except ValueError:
-                raise PayloadError(f'Not hexadecimal chunk size: {chunk_length!r}') from None
+                raise PayloadError(f'Not hexadecimal chunk size: {chunk_length!r}.') from None
             
             if chunk_length == 0:
                 end = yield from self._read_exactly(2)
                 if end != b'\r\n':
-                    raise PayloadError(f'Recevied chunk does not end with b\'\\r\\n\', instead with: {end}')
+                    raise PayloadError(f'Recevied chunk does not end with b\'\\r\\n\', instead with: {end}.')
                 break
             
             chunk = yield from self._read_exactly(chunk_length)
             end = yield from self._read_exactly(2)
             if end != b'\r\n':
-                raise PayloadError(f'Recevied chunk does not end with b\'\\r\\n\', instead with: {end}')
+                raise PayloadError(f'Recevied chunk does not end with b\'\\r\\n\', instead with: {end}.')
             
             try:
                 chunk = decompressobj.decompress(chunk)

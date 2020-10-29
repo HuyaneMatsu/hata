@@ -4,7 +4,7 @@ from io import StringIO, TextIOBase, BytesIO, BufferedRandom, IOBase, BufferedRe
 from collections import deque
 from urllib.parse import parse_qsl, unquote, urlencode
 
-from .dereaddons_local import multidict_titled, multidict
+from .dereaddons_local import imultidict, multidict
 from .ios import AsyncIO
 
 from .hdrs import CONTENT_DISPOSITION, CONTENT_ENCODING, CONTENT_LENGTH, CONTENT_TRANSFER_ENCODING, CONTENT_TYPE
@@ -49,7 +49,7 @@ class payload_superclass:
         self.encoding = encoding
         self.filename = filename
         if (headers is not None) and headers:
-            headers = multidict_titled(headers)
+            headers = imultidict(headers)
             self.headrs = headers
             if content_type is sentinel and CONTENT_TYPE in headers:
                 content_type = headers[CONTENT_TYPE]
@@ -80,7 +80,7 @@ class payload_superclass:
     def set_content_disposition(self, disptype, params, quote_fields=True):
         headers = self.headers
         if headers is None:
-            headers = multidict_titled()
+            headers = imultidict()
             self.headers = headers
         else:
             headers.popall(CONTENT_DISPOSITION, None)
@@ -686,7 +686,7 @@ class MultipartWriter(payload_superclass):
         payload_superclass.__init__(self, None, content_type=f'multipart/{subtype}; boundary={self.boundary_value}')
         
         self.parts = []
-        self.headers = multidict_titled()
+        self.headers = imultidict()
         self.headers[CONTENT_TYPE] = self.content_type
     
     @property
@@ -742,7 +742,7 @@ class MultipartWriter(payload_superclass):
     def append(self, obj,headers=None):
         #Adds a new body part to multipart writer.
         if headers is None:
-            headers = multidict_titled()
+            headers = imultidict()
         
         if isinstance(obj, payload_superclass):
             if obj.headers is None:
@@ -807,7 +807,7 @@ class MultipartWriter(payload_superclass):
     def append_json(self, obj,headers=None):
         #Helper to append JSON part.
         if headers is None:
-            headers = multidict_titled()
+            headers = imultidict()
             
         return self.append_payload(JsonPayload(obj, headers=headers))
 
@@ -815,7 +815,7 @@ class MultipartWriter(payload_superclass):
         #Helper to append form urlencoded part.
         
         if headers is None:
-            headers = multidict_titled()
+            headers = imultidict()
         
         obj_type = obj.__class__
         if hasattr(obj_type, 'keys') and hasattr(obj_type, '__getitem__'): #mapping type

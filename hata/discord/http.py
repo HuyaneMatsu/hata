@@ -3,7 +3,7 @@ __all__ = ('DiscordHTTPClient', )
 
 import sys, re
 
-from ..backend.dereaddons_local import multidict_titled, modulize, WeakMap, WeakKeyDictionary
+from ..backend.dereaddons_local import imultidict, modulize, WeakMap, WeakKeyDictionary
 from ..backend.futures import sleep
 from ..backend.http import HTTPClient, RequestCM
 from ..backend.connector import TCPConnector
@@ -1120,7 +1120,7 @@ class DiscordHTTPClient(HTTPClient):
         Waiter for Discord requests, set when the respective client gets limited globally.
     handlers : ``WeakMap`` of ``RatelimitHandler``
         Ratelimit handlers of the Discord requests.
-    headers : `multidict_titled`
+    headers : `imultidict`
         Headers used by every every Discord request.
     loop : ``EventThread``
         The event loop of the http session.
@@ -1166,7 +1166,7 @@ class DiscordHTTPClient(HTTPClient):
         
         HTTPClient.__init__(self, loop, proxy_url, proxy_auth, connector = connector)
         
-        headers = multidict_titled()
+        headers = imultidict()
         headers[USER_AGENT] = LIB_USER_AGENT
         headers[AUTHORIZATION] = f'Bot {client.token}' if client.is_bot else client.token
         
@@ -1224,7 +1224,7 @@ class DiscordHTTPClient(HTTPClient):
             Payload to request with.
         params : `Any`, Optional
             Query parameters.
-        headers : `multidict_titled`, Optional
+        headers : `imultidict`, Optional
             Headers to do the request with. If passed then the session's own headers wont be used.
         reason : `str`, Optional
             Shows up at the request's respective guild if applicable.
@@ -1675,7 +1675,7 @@ class DiscordHTTPClient(HTTPClient):
     
     async def guild_widget_get(self, guild_id):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.guild_widget_get, guild_id),
-            METH_GET, f'{API_ENDPOINT}/guilds/{guild_id}/widget.json', headers=multidict_titled())
+            METH_GET, f'{API_ENDPOINT}/guilds/{guild_id}/widget.json', headers=imultidict())
     
     async def guild_users(self, guild_id, data):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.guild_users, guild_id),
@@ -1793,11 +1793,11 @@ class DiscordHTTPClient(HTTPClient):
     
     async def webhook_get_token(self, webhook):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.webhook_get_token, webhook.id),
-            METH_GET, webhook.url, headers=multidict_titled())
+            METH_GET, webhook.url, headers=imultidict())
     
     async def webhook_delete_token(self, webhook):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.webhook_delete_token, webhook.id),
-            METH_DELETE, webhook.url, headers=multidict_titled())
+            METH_DELETE, webhook.url, headers=imultidict())
     
     async def webhook_delete(self, webhook_id):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.webhook_delete, webhook_id),
@@ -1805,7 +1805,7 @@ class DiscordHTTPClient(HTTPClient):
     
     async def webhook_edit_token(self, webhook, data):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.webhook_edit_token, webhook.id),
-            METH_PATCH, webhook.url, data, headers=multidict_titled())
+            METH_PATCH, webhook.url, data, headers=imultidict())
     
     async def webhook_edit(self, webhook_id, data):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.webhook_edit, webhook_id),
@@ -1813,7 +1813,7 @@ class DiscordHTTPClient(HTTPClient):
     
     async def webhook_send(self, webhook, data, wait):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.webhook_send, webhook.id),
-            METH_POST, f'{webhook.url}?wait={wait:d}', data, headers=multidict_titled())
+            METH_POST, f'{webhook.url}?wait={wait:d}', data, headers=imultidict())
     
     #user
     
@@ -1866,7 +1866,7 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.achievement_delete, NO_SPECIFIC_RATELIMITER),
             METH_DELETE, f'{API_ENDPOINT}/applications/{application_id}/achievements/{achievement_id}')
     
-    async def user_achievements(self, application_id,headers):
+    async def user_achievements(self, application_id, headers):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.user_achievements, NO_SPECIFIC_RATELIMITER),
             METH_GET, f'{API_ENDPOINT}/users/@me/applications/{application_id}/achievements', headers=headers)
     

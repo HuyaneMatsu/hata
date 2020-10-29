@@ -506,7 +506,12 @@ class FunctionOrPropertySerializer(object):
                 section_parts[section_type_value] = SimpleSection(section_name, section_content, object_, path)
                 continue
             
-            section_parts[SECTION_TYPE_X] = SimpleSection(section_name, section_content, object_, path)
+            try:
+                exising = section_parts[SECTION_TYPE_X]
+            except KeyError:
+                exising = section_parts[SECTION_TYPE_X] = []
+            
+            exising.append(SimpleSection(section_name, section_content, object_, path))
             continue
         
         self.content = [part[1] for part in sorted(section_parts.items())]
@@ -951,8 +956,12 @@ class TypeSerializer(object):
                     existing.append(AttributeSection(section_name, mentioned_names, object_, path))
                     continue
                 
+                try:
+                    exising = section_parts[SECTION_TYPE_X]
+                except KeyError:
+                    exising = section_parts[SECTION_TYPE_X] = []
                 
-                section_parts[SECTION_TYPE_X] = SimpleSection(section_name, section_content, object_, path)
+                exising.append(SimpleSection(section_name, section_content, object_, path))
                 continue
         
         collected_instance_attributes = []
@@ -1263,8 +1272,12 @@ class ModuleSerializer(object):
                     existing.append(AttributeSection(section_name, mentioned_names, object_))
                     continue
                 
+                try:
+                    exising = section_parts[SECTION_TYPE_X]
+                except KeyError:
+                    exising = section_parts[SECTION_TYPE_X] = []
                 
-                section_parts[SECTION_TYPE_X] = SimpleSection(section_name, section_content, object_, path)
+                exising.append(SimpleSection(section_name, section_content, object_, path))
                 continue
         
         collected_functions = []

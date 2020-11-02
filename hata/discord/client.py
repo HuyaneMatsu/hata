@@ -673,7 +673,7 @@ class MultiClientMessageDeleteSequenceSharder(object):
         client : ``Client``
             A client who would execute the delete task.
         channel : ``ChannelTextBase``
-            Channel, from wheret he client would delete messages.
+            Channel, from where the client would delete messages.
         
         Returns
         -------

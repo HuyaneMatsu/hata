@@ -682,19 +682,19 @@ class _SelectorSocketTransport(object):
     def set_write_buffer_limits(self, high=None, low=None):
         self._set_write_buffer_limits(high=high, low=low)
         self._maybe_pause_protocol()
-
+    
     def abort(self):
         self._force_close(None)
-
+    
     def set_protocol(self, protocol):
         self.protocol = protocol
-
+    
     def get_protocol(self):
         return self.protocol
-
+    
     def is_closing(self):
         return self.closing
-
+    
     def close(self):
         if self.closing:
             return

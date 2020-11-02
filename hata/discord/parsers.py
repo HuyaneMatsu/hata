@@ -4353,7 +4353,7 @@ def check_name(func, name):
         name = name.lower()
     return name
 
-def check_argcount_and_convert(func, expected, errormsg=None):
+def check_argcount_and_convert(func, expected, *, name='event', error_message=None):
     """
     If needed converts the given `func` to an async callable and then checks whether it expects the specified
     amount of non reserved positional arguments.
@@ -4377,7 +4377,9 @@ def check_argcount_and_convert(func, expected, errormsg=None):
         The callable, what's type and argument count will checked.
     expected : `int`
         The amount of arguments, what would be passed to the given `func` when called at the future.
-    errormsg : `str`, Optional
+    name : `str`, Optiona
+        The event's name, what is checked and converted. Defaults to `'event'`.
+    error_message : `str`, Optional
         A specified error message with what a `TypeError` will be raised at the end, if the given `func` is not async
         and neither cannot be converted to an async callable.
     
@@ -4396,8 +4398,8 @@ def check_argcount_and_convert(func, expected, errormsg=None):
     if analyzer.is_async():
         min_, max_ = analyzer.get_non_reserved_positional_argument_range()
         if min_ > expected:
-            raise TypeError(f'`{func!r}` excepts at least `{min_!r}` non reserved arguments, meanwhile the event '
-                'expects to pass `{expected!r}`.')
+            raise TypeError(f'A `{name}` should accept `{expected!r}` arguments, meanwhile the given callable expects '
+                f'at least `{min_!r}`, got `{func!r}`.')
         
         if min_ == expected:
             return func
@@ -4409,8 +4411,8 @@ def check_argcount_and_convert(func, expected, errormsg=None):
         if analyzer.accepts_args():
             return func
         
-        raise TypeError(f'`{func!r}` expects maximum `{max_!r}` non reserved arguments, meanwhile the event expects '
-            f'to pass `{expected!r}`.')
+        raise TypeError(f'A `{name}` should accept `{expected}` arguments, meanwhile the given callable expects up to '
+            f'`{max_!r}`, got `{func!r}`.')
     
     if analyzer.can_instance_to_async_callable():
         sub_analyzer = CallableAnalyzer(func.__call__, as_method=True)
@@ -4418,8 +4420,8 @@ def check_argcount_and_convert(func, expected, errormsg=None):
             min_, max_ = sub_analyzer.get_non_reserved_positional_argument_range()
             
             if min_ > expected:
-                raise TypeError(f'After instancing `{func!r}` would still except at least `{min_!r}` non reserved '
-                    f'arguments, meanwhile the event expects to pass `{expected!r}`.')
+                raise TypeError(f'A `{name}` should accept `{expected!r}` arguments, meanwhile the given callable '
+                    f'after instancing expects at least `{min_!r}`, got `{func!r}`.')
             
             if min_ == expected:
                 func = analyzer.instance_to_async_callable()
@@ -4434,16 +4436,16 @@ def check_argcount_and_convert(func, expected, errormsg=None):
                 func = analyzer.instance_to_async_callable()
                 return func
             
-            raise TypeError(f'After instancing `{func!r}` would still expects maximum `{max_!r}` non reserved '
-                f'arguments, meanwhile the event expects to pass `{expected!r}`.')
+            raise TypeError(f'A `{name}` should accept `{expected}` arguments, meanwhile the given callable after '
+                f'instancing expects up to `{max_!r}`, got `{func!r}`.')
             
             func = analyzer.instance_to_async_callable()
             return func
     
-    if errormsg is None:
-        errormsg = f'Not async callable type, or cannot be instance to async: `{func!r}`.'
+    if error_message is None:
+        error_message = f'Not async callable type, or cannot be instance to async: `{func!r}`.'
     
-    raise TypeError(errormsg)
+    raise TypeError(error_message)
 
 def compare_converted(converted, non_converted):
     # function, both should be functions
@@ -6410,7 +6412,7 @@ class EventDescriptor(object):
         +---------------------------+-------------------------------+
     
     guild_user_add(client: ``Client``, guild: ``Guild``, user: Union[``Client``, ``User``]):
-        Called when a user jois a guild.
+        Called when a user joins a guild.
     
     guild_user_chunk(client: ``Client``, event: GuildUserChunkEvent):
         Called when a client receives a chunk of users from Discord requested by through it's gateway.
@@ -6706,7 +6708,7 @@ class EventDescriptor(object):
         
         name = check_name(func, name)
         argcount = EVENTS.get_argcount(name)
-        func = check_argcount_and_convert(func, argcount)
+        func = check_argcount_and_convert(func, argcount, name=name)
         
         if overwrite:
             setattr(self, name, func)

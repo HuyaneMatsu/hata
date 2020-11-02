@@ -10,6 +10,12 @@ except ImportError:
     ssl_errors = ()
 else:
     ssl_errors = (module_ssl.SSLError, module_ssl.CertificateError)
+    
+    SSL_CONTEXT_VERIFIED = module_ssl.create_default_context()
+    
+    SSL_CONTEXT_UNVERIFIED = module_ssl.SSLContext(module_ssl.PROTOCOL_SSLv23)
+    SSL_CONTEXT_UNVERIFIED.options |= module_ssl.OP_NO_SSLv2|module_ssl.OP_NO_SSLv3|module_ssl.OP_NO_COMPRESSION
+    SSL_CONTEXT_UNVERIFIED.set_default_verify_paths()
 
 from .dereaddons_local import imultidict
 from .futures import shield, Task
@@ -171,7 +177,6 @@ class Connection(object):
             self.protocol = None
             self.connector.release(self.key, protocol, should_close=True)
     
-    
     def release(self):
         """
         Closes the connection by running it's callbacks and relesing it.
@@ -182,7 +187,6 @@ class Connection(object):
         if (protocol is not None):
             self.protocol = None
             self.connector.release(self.key, protocol, should_close=protocol.should_close())
-    
     
     def detach(self):
         """
@@ -197,8 +201,7 @@ class Connection(object):
         if (protocol is not None):
             self.protocol = None
             self.connector.release_acquired_protocols(self.key, protocol)
-           
-    
+   
     @property
     def closed(self):
         """
@@ -908,7 +911,7 @@ class TCPConnector(ConnectorBase):
     
     async def create_connection(self, request):
         """
-        Creates connection for the request and returns teh created protocol.
+        Creates connection for the request and returns the created protocol.
         
         This method is a coroutine.
         
@@ -987,7 +990,7 @@ class TCPConnector(ConnectorBase):
             return ssl_context
         
         if (ssl_context is not None):
-            return self.make_ssl_context(False) #not verified or fingerprinted
+            return SSL_CONTEXT_UNVERIFIED # not verified or fingerprinted
         
         ssl_context = self.ssl
         
@@ -995,9 +998,9 @@ class TCPConnector(ConnectorBase):
             return ssl_context
         
         if ssl_context is None:
-            return self.make_ssl_context(True)
+            return SSL_CONTEXT_VERIFIED
         
-        return self.make_ssl_context(False)
+        return SSL_CONTEXT_UNVERIFIED
     
     def get_fingerprint(self, request):
         """
@@ -1106,15 +1109,15 @@ class TCPConnector(ConnectorBase):
         
         headers[HOST] = request.headers[HOST]
         
-        proxy_request = ClientRequest(METH_GET, request.proxy_url, self.loop, headers=headers, auth=request.proxy_auth,
-            ssl=request.ssl)
+        proxy_request = ClientRequest(self.loop, METH_GET, request.proxy_url, headers, None, None, None,
+            request.proxy_auth, None, None, request.ssl)
         
         # create connection to proxy server
         transport, protocol = await self.create_direct_connection(proxy_request)
         
-        # Many HTTP proxies has buggy keepalive support.  Let's not reuse connection but close it after processing
+        # Many HTTP proxies has buggy keepalive support. Let's not reuse connection but close it after processing
         # every response.
-        protocol.force_close()
+        protocol.close()
         
         auth = proxy_request.headers.pop(AUTHORIZATION, None)
         if auth is not None:
@@ -1127,16 +1130,10 @@ class TCPConnector(ConnectorBase):
             ssl_context = self.get_ssl_context(request)
             proxy_request.method = METH_CONNECT
             proxy_request.url = request.url
-            key = (request.connection_key, None, None)
-            connection = Connection(self, key, protocol)
-            proxy_response = await proxy_request.send(connection)
+            connection = Connection(self, request.connection_key, protocol)
+            
+            response = await proxy_request.send(connection)
             try:
-                response = await proxy_response.start(connection)
-            except BaseException:
-                proxy_response.close()
-                connection.close()
-                raise
-            else:
                 connection.protocol = None
                 try:
                     if response.status != 200:
@@ -1150,8 +1147,8 @@ class TCPConnector(ConnectorBase):
                     transport.close()
                 
                 try:
-                    transport, protocol = await self.loop.create_connection(ProtocolBase(self.loop),
-                        ssl=ssl_context, sock=rawsock, server_hostname=request.host,)
+                    transport, protocol = await self.loop.create_connection(ProtocolBase(self.loop), ssl=ssl_context,
+                        sock=rawsock, server_hostname=request.host,)
                 except ssl_errors as err:
                     err.key = request.connection_key
                     raise
@@ -1159,7 +1156,7 @@ class TCPConnector(ConnectorBase):
                     raise OSError(request.connection_key, err) from err
             
             finally:
-                proxy_response.close()
+                response.close()
         
         return transport, protocol
 

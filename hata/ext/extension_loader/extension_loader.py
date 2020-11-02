@@ -170,7 +170,8 @@ class Extension(object):
     
     def __new__(cls, name, entry_point, exit_point, extend_default_variables, locked, default_variables, ):
         """
-        Creates an extension with the given parameters. If an extension already exists with the given name, returns that.
+        Creates an extension with the given parameters. If an extension already exists with the given name, returns
+        that.
         
         Parameters
         ----------
@@ -745,8 +746,8 @@ class ExtensionLoader(object):
     EXTENSION_LOADER.add(['cute_commands', 'nice_commands'])
     ```
     
-    > If an extension's file is not found, then `.add` will raise  `ModuleNotFoundError`. If the passed argument is not
-    > `str` instance or not `iterable` of `str`, `TypeError` is raised.
+    If an extension's file is not found, then `.add` will raise  `ModuleNotFoundError`. If the passed argument is not
+    `str` instance or not `iterable` of `str`, `TypeError` is raised.
     
     Loading
     -------
@@ -768,7 +769,7 @@ class ExtensionLoader(object):
     EXTENSION_LOADER.load_extension('cute_commands')
     ```
     
-    > `.load_extension` method supports all the keyword argumnts as `.add`.
+    `.load_extension` method supports all the keyword argumnts as `.add`.
     
     ##### Passing variables to extensions
     
@@ -778,8 +779,8 @@ class ExtensionLoader(object):
     EXTENSION_LOADER.add_default_variables(cake=cake, now=now)
     ```
     
-    > Adding or removing variables wont change the already loaded extensions' state, those needs to be reloaded to see
-    > them.
+    Adding or removing variables wont change the already loaded extensions' state, those needs to be reloaded to see
+    them.
     
     Or pass variables to just specific extensions:
     
@@ -836,7 +837,7 @@ class ExtensionLoader(object):
     EXTENSION_LOADER.add('cute_commands', exit_point='exit')
     ```
     
-    > There are also methods for reloaing: `.reload(name)` and `.reload_all()`
+    There are also methods for reloaing: `.reload(name)` and `.reload_all()`
     
     Removing Extensions
     -------------------
@@ -853,7 +854,7 @@ class ExtensionLoader(object):
     EXTENSION_LOADER.remove(['cute_commands', 'nice_commands'])
     ```
     
-    > Removing loaded extension will yield `RuntimeError`.
+    Removing loaded extension will yield `RuntimeError`.
     
     Threading Model
     ---------------
@@ -1048,11 +1049,11 @@ class ExtensionLoader(object):
                 f'got {exit_point.__clas__.__name__}.')
         
         if variables:
-            default_variables=HybridValueDictionary(variables)
+            default_variables = HybridValueDictionary(variables)
             for key, value in variables.items():
                 if key in PROTECTED_NAMES:
                     raise ValueError(f'The passed {key!r} is a protected variable name of module type.')
-                default_variables[key]=value
+                default_variables[key] = value
         else:
             default_variables = None
         
@@ -1095,18 +1096,35 @@ class ExtensionLoader(object):
                         f'{name_type.__class__}')
                 
                 names.append(name)
-                index +=1
+                index += 1
             
             for name in names:
-                self.extensions[name] = Extension(name, entry_point, exit_point, extend_default_variables, locked, default_variables)
+                extension = Extension(name, entry_point, exit_point, extend_default_variables, locked,
+                    default_variables)
+                
+                self.extensions[name] = extension
+                
+                dot_index = name.rfind('.')
+                if dot_index != -1:
+                    name = name[dot_index+1:]
+                    
+                    self.extensions.setdefault(name, extension)
             
             return
         else:
             raise TypeError(f'`{self.__class__.__name__}.add` expected `str` or `iterable of str` as `name`, got '
                 f'`{name_type.__name__}`.')
         
-        self.extensions[name] = Extension(name, entry_point, exit_point, extend_default_variables, locked, default_variables)
-    
+        extension = Extension(name, entry_point, exit_point, extend_default_variables, locked, default_variables)
+        
+        self.extensions[name] = extension
+        
+        dot_index = name.rfind('.')
+        if dot_index != -1:
+            name = name[dot_index+1:]
+            
+            self.extensions.setdefault(name, extension)
+        
     def remove(self, name):
         """
         Removes one or more extensions from the extension loader.
@@ -1147,7 +1165,7 @@ class ExtensionLoader(object):
                         f'{name_type.__class__}')
                 
                 names.append(name)
-                index +=1
+                index += 1
             
             collected = []
             extensions = self.extensions

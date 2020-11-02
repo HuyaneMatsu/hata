@@ -11,13 +11,13 @@ from .hdrs import CONTENT_TYPE, CONTENT_TRANSFER_ENCODING, CONTENT_LENGTH
 from .multipart import MultipartWriter, create_payload, BytesPayload
 
 
-#Helper class for multipart/form-data and
-#application/x-www-form-urlencoded body generation.
+# Helper class for multipart/form-data and
+# application/x-www-form-urlencoded body generation.
 
 class Formdata(object):
-
+    
     __slots__ = ('fields', 'is_multipart', 'quote_fields', 'writer', )
-
+    
     def __init__(self, quote_fields=True):
         self.writer = MultipartWriter('form-data')
         self.fields = []
@@ -36,14 +36,15 @@ class Formdata(object):
         
         while data:
             field = data.pop(0)
-            if isinstance(field, IOBase):
+            fiend_type = field.__class__
+            if issubclass(fiend_type, IOBase):
                 self.add_field(getattr(field, 'name', 'unknown'), field)
-            elif isinstance(field, multidict):
+            elif issubclass(fiend_type, multidict):
                 data.extend(field.items())
-            elif isinstance(field, (tuple, list)) and len(field) == 2:
+            elif issubclass(fiend_type, (tuple, list)) and len(field) == 2:
                 self.add_field(*field)
             else:
-                raise TypeError(f'Formdata.fromfields got unhandleable type: {type(field)!r}')
+                raise TypeError(f'`Formdata.fromfields` got unhandleable type: {fiend_type.__name__}.')
                 
         return self
         
@@ -60,7 +61,7 @@ class Formdata(object):
         
         if (filename is not None):
             if not isinstance(filename, str):
-                raise TypeError(f'Filename must be an instance of str. Got: {filename!r}')
+                raise TypeError(f'Filename must be an instance of `str`, got: {filename.__class__.__name__}.')
         if (filename is None) and isinstance(value, IOBase):
             filename = getattr(value, 'name', name)
         if (filename is not None):
@@ -70,12 +71,12 @@ class Formdata(object):
         header = {}
         if content_type is not None:
             if not isinstance(content_type, str):
-                raise TypeError(f'Content_type must be an instance of str. Got: {content_type!r}')
+                raise TypeError(f'Content_type must be an instance of str. Got: {content_type!r}.')
             header[CONTENT_TYPE] = content_type
             self.is_multipart = True
         if transfer_encoding is not None:
             if not isinstance(transfer_encoding, str):
-                raise TypeError(f'Transfer_encoding must be an instance of str. Got: {transfer_encoding!r}')
+                raise TypeError(f'Transfer_encoding must be an instance of str. Got: {transfer_encoding!r}.')
             header[CONTENT_TRANSFER_ENCODING] = transfer_encoding
             self.is_multipart = True
 
@@ -106,7 +107,7 @@ class Formdata(object):
             
             except Exception as err:
                 raise TypeError(f'Can not serialize value: type: {type(value)!r}, header: {header!r}, value: '
-                    f'{value!r}') from err
+                    f'{value!r}.') from err
             
             if type_options:
                 part.set_content_disposition('form-data', type_options.kwargs(), quote_fields=self.quote_fields)
@@ -115,14 +116,14 @@ class Formdata(object):
             self.writer.append_payload(part)
         
         return self.writer
-
+    
     def __call__(self, encoding='utf-8'):
         if self.is_multipart:
             return self._gen_form_data(encoding)
         else:
             return self._gen_form_urlencoded(encoding)
     
-    def add_json(self,data):
+    def add_json(self, data):
         if data:
             type_options = multidict()
             type_options['name'] = 'data_json'

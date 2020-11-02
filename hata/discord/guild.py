@@ -596,7 +596,7 @@ class Guild(DiscordEntity, immortal=True):
         The minimal verification needed to join to guild.
     voice_states : `dict` of (`int`, ``VoiceState``) items
         Each user at a voice channel is represented by a ``VoiceState`` object. voice state are stored in
-        `respecitve user's id` - `voice state` relation.
+        `respective user's id` - `voice state` relation.
     webhooks : `dict` of (`int`, ``Webhook``) items
         The guild's webhooks if requested in `webhook_id` - `webhook` relation. This container is updated when a new
         request is done.

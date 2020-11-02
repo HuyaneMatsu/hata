@@ -80,10 +80,10 @@ To install the package use:
 ``` shell
 
 # Linux/OS X
-$ python3 -m pip install https://github.com/HuyaneMatsu/hata/archive/master.zip
+$ python3 -m pip install hata
 
 # Windows
-$ python -m pip install https://github.com/HuyaneMatsu/hata/archive/master.zip
+$ python -m pip install hata
 
 ```
 

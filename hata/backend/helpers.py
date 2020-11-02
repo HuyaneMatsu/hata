@@ -20,60 +20,138 @@ HttpVersion11 = HttpVersion(1,1)
 del namedtuple
 
 class BasicAuth(object):
-    # Http basic authentication helper.
-    # login      = str
-    # password   = str
-    # encoding   = str ('latin1' by default)
-    __slots__ = ('login', 'password', 'encoding',)
+    """
+    Http basic authorization implementation.
     
-    def __new__(cls, login, password='', encoding='latin1'):
-        if login is None:
-            raise ValueError('None is not allowed as login value')
+    Attributes
+    ----------
+    username : `str`
+        Authorization login username.
+    password : `str`
+        Authorization password. Can be empty string.
+    encoding : `str`
+        Encoding used to encode the authorization headers. Defaults to ``.DEFAULT_ENCODING``.
+    
+    Class Attributes
+    ----------------
+    DEFAULT_ENCODING : `str` = `'latin1'`
+        Default encoding used to encode and decode the authorzation headers.
+    """
+    DEFAULT_ENCODING = 'latin1'
+    __slots__ = ('username', 'password', 'encoding',)
+    
+    def __new__(cls, username, password='', encoding=DEFAULT_ENCODING):
+        """
+        Creates a new ``BasicAuth`` instance with the given parameters.
+        
+        Attributes
+        ----------
+        username : `str`
+            Authorization login name.
+        password : `str`, Optional
+            Authorization password. Can be empty string.
+        encoding : `str`, Optional
+            Encoding used to encode the authorization headers. Defaults to `'latin1'`.
+        
+        Raises
+        ------
+        ValueError
+            If `username` is given as `None`.
+            If `username` contains `':'` character.
+            If password is given as `None`.
+        """
+        if username is None:
+            raise ValueError('`None` is not allowed as `login` value.')
+        
+        if ':' in username:
+            raise ValueError(f'`\':\'` is not allowed in `login` (RFC 1945#section-11.1), got {username!r}.')
         
         if password is None:
-            raise ValueError('None is not allowed as password value')
-        
-        if ':' in login:
-            raise ValueError('A ":" is not allowed in login (RFC 1945#section-11.1)')
+            raise ValueError('`None` is not allowed as `password` value.')
         
         self = object.__new__(cls)
         
-        self.login = login
+        self.username = username
         self.password = password
         self.encoding = encoding
         
         return self
     
     @classmethod
-    def decode(cls, auth_header, encoding='latin1'):
-        # Create a BasicAuth object from an Authorization HTTP header.
+    def decode(cls, auth_header, encoding=DEFAULT_ENCODING):
+        """
+        Creates a new ``BasicAuth`` instance from the given HTTP header value and.
+        
+        Parameters
+        ----------
+        auth_header : `str`
+            Authorization header value.
+        encoding : `str`, Optional
+            Encoding used to encode the authorization headers. Defaults to `'latin1'`.
+        
+        Returns
+        -------
+        self : ``BasicAuth``.
+        
+        Raises
+        ------
+        ValueError
+            If the authorization method is not `'basic'`.
+            If cannot parse the authorization headers.
+            Cannot decode authorization header.
+        """
         split = auth_header.strip().split(' ')
         if len(split) == 2:
             if split[0].strip().lower() != 'basic':
-                raise ValueError(f'Unknown authorization method {split[0]}')
+                raise ValueError(f'Unknown authorization method: {split[0]!r}.')
             to_decode = split[1]
         else:
-            raise ValueError('Could not parse authorization header.')
+            raise ValueError(f'Could not parse authorization header from: {auth_header!r}.')
         
         try:
             username, _, password = base64.b64decode(to_decode.encode('ascii')).decode(encoding).partition(':')
-        except binascii.Error:
-            raise ValueError('Invalid base64 encoding.')
+        except binascii.Error as err:
+            raise ValueError('Invalid base64 encoding.') from err
         
         self = object.__new__(cls)
-        self.login = username
+        self.username = username
         self.password = password
         self.encoding = encoding
         return self
     
     def encode(self):
-        # Encode credentials.
-        credits_ = (f'{self.login}:{self.password}').encode(self.encoding)
+        """
+        Encodes the authorization to it's header value.
+        
+        Returns
+        -------
+        auth_header : `str`
+        """
+        credits_ = (f'{self.username}:{self.password}').encode(self.encoding)
         subv = base64.b64encode(credits_).decode(self.encoding)
         return f'Basic {subv}'
     
     def __repr__(self):
-        return f'{self.__class__.__name__}(login={self.login}, password={self.password}, encoding={self.encoding})'
+        """Returns the basic auth's representation."""
+        result = [
+            self.__class__.__name__,
+            '(username=',
+            repr(self.username),
+                ]
+        
+        password = self.password
+        if password:
+            result.append(', password=')
+            result.append(repr(password))
+        
+        encoding = self.encoding
+        if encoding != self.DEFAULT_ENCODING:
+            result.append(' encoding=')
+            result.append(repr(encoding))
+        
+        result.append(')')
+        
+        return ''.join(result)
 
 _ipv4_pattern = '^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
 _ipv6_pattern = (
@@ -88,77 +166,180 @@ _ipv6_pattern = (
         )
 
 _ipv4_regex = re.compile(_ipv4_pattern)
-_ipv6_regex = re.compile(_ipv6_pattern, flags=re.IGNORECASE)
+_ipv6_regex = re.compile(_ipv6_pattern, flags=re.I)
 _ipv4_regexb = re.compile(_ipv4_pattern.encode('ascii'))
-_ipv6_regexb = re.compile(_ipv6_pattern.encode('ascii'), flags=re.IGNORECASE)
+_ipv6_regexb = re.compile(_ipv6_pattern.encode('ascii'), flags=re.I)
 
-del _ipv4_pattern,_ipv6_pattern,re
+del _ipv4_pattern, _ipv6_pattern, re
 
 def is_ip_address(host):
+    """
+    Returns whether the given `host` is an ip address.
+    
+    Parameters
+    ----------
+    host : `str` or `bytes-like`
+        Host value.
+    
+    Returns
+    -------
+    is_ip_address : `bool`
+    
+    Raises
+    ------
+    TypeError
+        If `host` was not given neither as `str`, or as `bytes-like`.
+    """
     if host is None:
         return False
     
     if isinstance(host, str):
-        if _ipv4_regex.match(host) or _ipv6_regex.match(host):
+        if _ipv4_regex.match(host) is not None:
             return True
-        else:
-            return False
         
-    if isinstance(host, (bytes,bytearray,memoryview)):
-        if _ipv4_regexb.match(host) or _ipv6_regexb.match(host):
+        if _ipv6_regex.match(host) is not None:
             return True
-        else:
-            return False
+        
+        return False
+        
+    if isinstance(host, (bytes, bytearray, memoryview)):
+        if _ipv4_regexb.match(host) is not None:
+            return True
+        
+        if _ipv6_regexb.match(host) is not None:
+            return True
+        
+        return False
     
-    raise TypeError(f'{host} [{type(host)}] is not a str or bytes')
+    raise TypeError(f'`host` should be given as `str` or as `bytes-like`, got {host.__class__.__name__}.')
 
+
+TIMEOUT_STATE_NONE = 0
+TIMEOUT_STATE_TIMEOUTED = 1
+TIMEOUT_STATE_CANCELLED = 2
+TIMEOUT_STATE_EXITED = 3
 
 class Timeout(object):
-    __slots__ = ('_handle', '_loop', '_task', '_timeouted')
+    """
+    Implements async timeout feature as a context manager.
+    
+    Attributes
+    ----------
+    _handle : `None` or ``TimerHandle``
+        Timer handle to cancel the respective task when it occures. After timeout occures, or the timeouter is
+        cancelled, set as `None`.
+    _loop : ``EventThread``
+        The event loop to what the timeouter is bound to.
+    _task : `None` or ``Task``
+        The respective task what will be cancelled. Set as `None` at creation and when calcelled or exited.
+    _state : `int`
+        The timeouter's state.
+        
+        Can be one of the following:
+        +---------------------------+-------+
+        | Respective name           | Value |
+        +===========================+=======+
+        | TIMEOUT_STATE_NONE        | 0     |
+        +---------------------------+-------+
+        | TIMEOUT_STATE_TIMEOUTED   | 1     |
+        +---------------------------+-------+
+        | TIMEOUT_STATE_CANCELLED   | 2     |
+        +---------------------------+-------+
+        | TIMEOUT_STATE_EXITED      | 3     |
+        +---------------------------+-------+
+    """
+    __slots__ = ('_handle', '_loop', '_task', '_state')
     def __new__(cls, loop, timeout):
+        """
+        Creates a new timeouter instance bund to the given loop.
+        
+        The timeout starts when the timeouter is created.
+        
+        Parameters
+        ----------
+        loop : ``EventThread``
+            The event loop to what the timeouter will be bound to.
+        timeout : `float`
+            Time in seconds after the task is cancelled. When the cancelation reaches the context manager, raises
+            `TimeoutError` instead.
+        """
         self = object.__new__(cls)
         self._loop = loop
-        self._handle = loop.call_later(timeout, cls._cancel, self)
+        self._handle = loop.call_later(timeout, cls._timeout, self)
         self._task = None
-        self._timeouted = False
+        self._state = TIMEOUT_STATE_NONE
         return self
     
     def cancel(self):
-        handle = self._handle
-        if handle is None:
+        """
+        Cancels the timeouter.
+        
+        If already cancelled, does nothing.
+        """
+        if self._state == TIMEOUT_STATE_CANCELLED:
             return
         
-        handle.cancel()
-        self._handle = None
+        self._state = TIMEOUT_STATE_CANCELLED
+        
+        handle = self._handle
+        if (handle is not None):
+            self._handle = None
+            handle.cancel()
+        
         self._task = None
     
     def __enter__(self):
-        if (self._handle is None):
-            raise TimeoutError from None
+        """
+        Enters the timeouter as a context manager.
         
+        Returns
+        -------
+        self : ``Timeout``
+        
+        Raises
+        ------
+        RuntimeError
+            ``Timeout`` entered outside of a ``Task``.
+        TimeoutError
+            Timeout already occured.
+        """
         task = self._loop.current_task
         if (task is None):
-            raise RuntimeError('Timeout should be used inside a task!')
+            raise RuntimeError('`Timeout` entered outside of a `Task`!')
         
-        self._task = task
+        state = self._state
+        if state == TIMEOUT_STATE_NONE:
+            self._task = task
+        elif state == TIMEOUT_STATE_TIMEOUTED:
+            raise TimeoutError
+        elif state == TIMEOUT_STATE_CANCELLED:
+            pass
+        else:
+            raise RuntimeError('`Timeout` already used up.')
+        
         return self
     
-    def _cancel(self):
-        handle = self._handle
-        if handle is None:
+    def _timeout(self):
+        """
+        Timeouts the timeouter if not yet timeouted nor cancelled.
+        """
+        if self._state != TIMEOUT_STATE_NONE:
             return
         
-        self._handle = None
+        self._state = TIMEOUT_STATE_TIMEOUTED
         
-        self._timeouted = True
+        handle = self._handle
+        if (handle is not None):
+            self._handle = None
         
         task = self._task
-        if task is None:
-            return
-        
-        task.cancel()
+        if (task is not None):
+            task.cancel()
     
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """
+        Exits from the timeouter. If the timeout occures, then raises ``TimeoutError`` from the received cancellation.
+        """
         handle = self._handle
         if (handle is not None):
             self._handle = None
@@ -166,7 +347,9 @@ class Timeout(object):
         
         self._task = None
         
-        if self._timeouted and (exc_type is CancelledError):
+        state = self._state
+        self._state = TIMEOUT_STATE_EXITED
+        if (state == TIMEOUT_STATE_TIMEOUTED) and (exc_type is CancelledError):
             raise TimeoutError from None
         
         return False
@@ -176,21 +359,31 @@ class Timeout(object):
 
 
 def content_disposition_header(disptype, params, quote_fields=True):
-    # Sets Content-Disposition header.
-    #
-    # disptype is a disposition type: inline, attachment, form-data.
-    # Should be valid extension token (see RFC 2183)
-    #
-    # params is a dict with disposition params.
-
+    """
+    Creates Content-Disposition header value.
+    
+    Parameters
+    ----------
+    disptype : `str`
+        Disposition type. Can be one of following: `'inline'`, `'attachment'`, '`form-data`'.
+    params : `dict` of (`str`, `str`) items
+        Disposition parameters.
+    quote_fields : `bool`
+        Whether field values should be quoted.
+    
+    Returns
+    -------
+    value : `str`
+    """
     if not disptype or not (TOKEN > set(disptype)):
-        raise ValueError(f'bad content disposition type {disptype!r}')
-    value = disptype
+        raise ValueError(f'Bad content disposition type {disptype!r}.')
+    
     if params:
-        param_parts = [value]
+        param_parts = [disptype]
         for key, val in params.items():
-            if not key or not (TOKEN > set(key)):
-                raise ValueError(f'bad content disposition parameter {key!r}={val!r}')
+            if (not key) or (not (TOKEN > set(key))):
+                raise ValueError(f'Bad content disposition parameter {key!r}={val!r}.')
+            
             if quote_fields:
                 val = quote(val, '')
             
@@ -198,11 +391,24 @@ def content_disposition_header(disptype, params, quote_fields=True):
             
             if key == 'filename':
                 param_parts.append(f'filename*=utf-8\'\'{val}')
-                
+        
         value = '; '.join(param_parts)
+    else:
+        value = disptype
+    
     return value
 
 def tcp_nodelay(transport, value):
+    """
+    Sets or removes tcp nodlay socket option to the given transport's socket if applicable.
+    
+    Parameters
+    ----------
+    transport : `Any`
+        Asynchoronous transport implementation.
+    value : `bool`
+        Value to set tcp nodelay to.
+    """
     socket = transport.get_extra_info('socket')
     
     if socket is None:
@@ -210,8 +416,6 @@ def tcp_nodelay(transport, value):
     
     if socket.family not in (module_socket.AF_INET, module_socket.AF_INET6):
         return
-    
-    value = bool(value)
     
     # socket may be closed already, on windows OSError get raised
     try:

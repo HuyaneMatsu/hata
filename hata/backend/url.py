@@ -607,12 +607,12 @@ class URL:
         if not isinstance(url, URL):
             raise TypeError('url should be URL')
         return URL(urljoin(str(self), str(url)), encoded=True)
-
+    
     # Return decoded human readable string for URL representation.
     def human_repr(self):
         return urlunsplit(SplitResult(self.scheme, self._make_netloc(self.user, self.password, self.host,
             self._val.port), self.path, self.query_string, self.fragment))
-
+    
     def extend_query(self, params):
         if params:
             query = multidict(self.query)

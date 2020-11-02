@@ -434,6 +434,7 @@ Currently implemented checks are as follows:
 | is_any_guild                   | guilds          | Whether the message was sent to any of the given guilds.                                           |
 | is_channel                     | channel         | Whether the message was sent in specific channel.                                                  |
 | is_guild                       | guild           | Whether the message was sent in specific guild.                                                    |
+| is_in_voice                    | N/A             | Whether the user is in a voice channel in the respective guild.                                    |
 | nsfw_channel_only              | N/A             | Whether the message was sent in NSFW channel.                                                      |
 | owner_only                     | N/A             | Whether the message author is the owner of the client.                                             |
 | owner_or_guild_owner           | N/A             | `owner_only` or `guild_owner` (fails in private channels).                                         |

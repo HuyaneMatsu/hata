@@ -959,14 +959,14 @@ class istr(str):
         Parameters
         ----------
         value : `Any`, Optional
-            The value, whats representation or encoded version is returned.
+            The value, what is representation or encoded version is returned.
         encoding : `str`, Optional
             Encoding to use when decoing a `bytes-like`.
         errors : `str`, Optional
             May be given to set a different error handling scheme when decoding from `bytes-like`. The default `errors`
-             value is `'strict'`, meaning that encoding errors raise a `UnicodeError`. Other possible values are
-             `'ignore'`, `'replace'`, `'xmlcharrefreplace'`, `'backslashreplace'` and any other name registered via
-             `codecs.register_error()`.
+            value is `'strict'`, meaning that encoding errors raise a `UnicodeError`. Other possible values are
+            `'ignore'`, `'replace'`, `'xmlcharrefreplace'`, `'backslashreplace'` and any other name registered via
+            `codecs.register_error()`.
         
         Returns
         -------
@@ -1574,7 +1574,7 @@ class methodize(object):
 
 def copy_func(old):
     """
-    Copiest he given function.
+    Copies the given function.
     
     Parameters
     ----------

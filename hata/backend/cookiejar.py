@@ -19,7 +19,7 @@ class CookieJar(object):
     cookies : `defaultdict` of (`str`, `http.cookies.SimpleCookie`) items
         Dictionary contianing the sotred cookies.
     expirations : `dict` of (`tuple` (`str`, `str`), `float`) item
-        Cookie expirations. The keys are a domain, name pairs, meanwhile teh values are their expirations.
+        Cookie expirations. The keys are a domain, name pairs, meanwhile the values are their expirations.
     host_only_cookies : `set` of `tuple` (`str`, `str`)
         Reference of hosts only cookies in tuples as `host-name`, `host` pairs.
     next_expiration : `float`
@@ -44,7 +44,7 @@ class CookieJar(object):
         Parameters
         ----------
         unsafe : `bool`
-            Whether unsafe cookies are added to teh jar as well. Defaults to `False`.
+            Whether unsafe cookies are added to the jar as well. Defaults to `False`.
         """
         self.cookies = defaultdict(SimpleCookie)
         self.host_only_cookies = set()

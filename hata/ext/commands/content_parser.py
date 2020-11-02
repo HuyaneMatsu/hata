@@ -2866,7 +2866,7 @@ class CommandContentParser(object):
             raise TypeError(f'`{real_analyzer.real_function!r}` has default argument set as it\'s first not '
                 'reserved, meanwhile it should not have.')
         
-        if client_argument.has_annotation and (client_argument.annoation is not Client):
+        if client_argument.has_annotation and (client_argument.annotation is not Client):
             raise TypeError(f'`{real_analyzer.real_function!r}` has annotation at the client\'s argument slot, '
                 f'what is not `{Client.__name__}`.')
         
@@ -2875,7 +2875,7 @@ class CommandContentParser(object):
             raise TypeError(f'`{real_analyzer.real_function!r}` has default argument set as it\'s first not '
                 f'reserved, meanwhile it should not have.')
         
-        if message_argument.has_annotation and (message_argument.annoation is not Message):
+        if message_argument.has_annotation and (message_argument.annotation is not Message):
             raise TypeError(f'`{real_analyzer.real_function!r}` has annotation at the message\'s argument slot '
                 f'what is not `{Message.__name__}`.')
         
@@ -3142,7 +3142,7 @@ class ContentParser(CommandContentParser):
         is_method = preconvert_bool(is_method, 'is_method')
         
         if (handler is not None):
-            handler = check_argcount_and_convert(handler, 6,
+            handler = check_argcount_and_convert(handler, 6, name='handler', error_message= \
                 '`ContentParser` expects to pass `6` arguments to it\'s `handler`: client, message, content_parser, '
                 'content, args, obj (can be `None`).')
         

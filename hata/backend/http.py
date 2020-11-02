@@ -41,30 +41,21 @@ class HTTPClient(object):
                     proxy_url = URL(proxy_url)
                 
                 request = ClientRequest(self.loop, method, url, headers, data, params, cookies, None, proxy_url,
-                    self.proxy_auth)
+                    self.proxy_auth, None)
                 
                 connection = await self.connector.connect(request)
                 
                 tcp_nodelay(connection.transport, True)
                 
-                try:
-                    response = await request.send(connection)
-                    try:
-                        await response.start(connection)
-                    except:
-                        response.close()
-                        raise
-                except:
-                    connection.close()
-                    raise
+                response = await request.send(connection)
                 
-                #we do nothing with os error
+                # we do nothing with os error
                 
                 self.cookie_jar.update_cookies(response.cookies, response.url)
                 
                 # redirects
                 if response.status in (301, 302, 303, 307) and redirect:
-                    redirect -=1
+                    redirect -= 1
                     history.append(response)
                     if not redirect:
                         response.close()
@@ -91,6 +82,7 @@ class HTTPClient(object):
                     if scheme not in ('http', 'https', ''):
                         response.close()
                         raise ValueError('Can redirect only to http or https')
+                    
                     elif not scheme:
                         redirect_url = url.join(redirect_url)
                     
@@ -145,16 +137,7 @@ class HTTPClient(object):
                 
                 tcp_nodelay(connection.transport, True)
                 
-                try:
-                    response = await request.send(connection)
-                    try:
-                        await response.start(connection)
-                    except:
-                        response.close()
-                        raise
-                except:
-                    connection.close()
-                    raise
+                response = await request.send(connection)
                 
                 # we do nothing with os error
                 

@@ -514,7 +514,15 @@ class FunctionOrPropertySerializer(object):
             exising.append(SimpleSection(section_name, section_content, object_, path))
             continue
         
-        self.content = [part[1] for part in sorted(section_parts.items())]
+        content = []
+        for part in sorted(section_parts.items()):
+            sub_section = part[1]
+            if type(sub_section) is list:
+                content.extend(sub_section)
+            else:
+                content.append(sub_section)
+        
+        self.content = content
     
     def serialize(self):
         """
@@ -562,7 +570,6 @@ class FunctionOrPropertySerializer(object):
         -------
         structure : ``Structure``
         """
-        
         content = self.content
         if content is None:
             childs = None

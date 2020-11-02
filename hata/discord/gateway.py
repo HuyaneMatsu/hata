@@ -550,7 +550,7 @@ class DiscordGateway(object):
     
     async def close(self):
         """
-        Cancels the gateway's ``.kokoro`` and closes it's `.websocket`` with close code of `1000`.
+        Cancels the gateway's ``.kokoro`` and closes it's ``.websocket`` with close code of `1000`.
         """
         self.kokoro.cancel()
         self.ratelimit_handler.cancel()
@@ -949,7 +949,7 @@ class DiscordGatewayVoice(object):
     
     async def close(self):
         """
-        Cancels the gateway's ``.kokoro`` and closes it's `.websocket`` with close code of `1000`.
+        Cancels the gateway's ``.kokoro`` and closes it's ``.websocket`` with close code of `1000`.
         """
         self.ratelimit_handler.cancel()
         
@@ -1276,14 +1276,14 @@ class DiscordGatewaySharder(object):
         -------
         latency : `float`
         """
-        total = 0
+        total = 0.0
         count = 0
         for gateway in self.gateways:
             kokoro = gateway.kokoro
             if kokoro is None:
                 continue
-            total +=kokoro.latency
-            count +=1
+            total += kokoro.latency
+            count += 1
         
         if count:
             return total/count

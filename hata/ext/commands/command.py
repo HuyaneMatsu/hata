@@ -158,7 +158,7 @@ class Command(object):
     name : `str`
         The command's name. Always lower case.
         
-        > Always lower case.
+        Always lower case.
     _alters : `set` of `str`
         Alternative name, whith what the command can be called.
     _category_hint : `str` or `None`
@@ -533,6 +533,7 @@ class Command(object):
         
         if (parser_failure_handler is not None):
             parser_failure_handler = check_argcount_and_convert(parser_failure_handler, 5,
+                name='parser_failure_handler', error_message= \
                 '`parser_failure_handler` expected 5 arguments (client, message, command, content, args).')
         
         parser, command = CommandContentParser(command, separator)
@@ -648,8 +649,8 @@ class Command(object):
         if parser_failure_handler is None:
             return
         
-        parser_failure_handler = check_argcount_and_convert(parser_failure_handler, 5,
-            '`parser_failure_handler` expected 5 arguments (client, message, command, content, args).')
+        parser_failure_handler = check_argcount_and_convert(parser_failure_handler, 5, name='parser_failure_handler',
+            error_message='`parser_failure_handler` expected 5 arguments (client, message, command, content, args).')
         self._parser_failure_handler=parser_failure_handler
     
     def _del_parser_failure_handler(self):
@@ -1132,6 +1133,9 @@ class checks:
     +--------------------------------+-----------------+--------------------------------------------------------------+
     | is_guild                       | guild           | Whether the message guild is the given one.                  |
     +--------------------------------+-----------------+--------------------------------------------------------------+
+    | is_in_voice                    | N/A             | Whether the user is in a voice channel in the respective     |
+    |                                |                 | guild.                                                       |
+    +--------------------------------+-----------------+--------------------------------------------------------------+
     | nsfw_channel_only              | N/A             | Whether the message's channel is nsfw.                       |
     +--------------------------------+-----------------+--------------------------------------------------------------+
     | owner_only                     | N/A             | Whether the message's author is an owner of the client.      |
@@ -1256,8 +1260,8 @@ class checks:
             If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
         """
         if (handler is not None):
-            handler = check_argcount_and_convert(handler, 4, '`handler` expects to pass 4 arguments (client, '
-                'message, command, check).')
+            handler = check_argcount_and_convert(handler, 4, name='handler', error_message= \
+                '`handler` expects to pass 4 arguments (client, message, command, check).')
         return handler
     
     def _convert_permissions(permissions):
@@ -2668,6 +2672,76 @@ class checks:
                 return True
             
             return False
+    
+    class is_in_voice(_check_base):
+        """
+        Checks whether the message was sent by a user who is in any of the respective guild's voice channel.
+        
+        Attributes
+        ----------
+        handler : `None` or `async-callable`
+            An async callable what will be called when the check fails.
+        """
+        __slots__ = ()
+        def __new__(cls, handler=None):
+            """
+            Creates a check, what will validate whether the a received message was sent by a user who is any of the
+            respective guild's voice channel.
+            
+            Parameters
+            ----------
+            handler : `None` or `async-callable` or instanceable to `async-callable`
+                The handler to convert.
+                
+                If the handler is `async-callable` or if it would be instanced to it, then it should accept the
+                following arguments:
+                +-------------------+---------------------------+
+                | Respective name   | Type                      |
+                +===================+===========================+
+                | client            | ``Client``                |
+                +-------------------+---------------------------+
+                | message           | ``Message``               |
+                +-------------------+---------------------------+
+                | command           | ``Command`` or `str`      |
+                +-------------------+---------------------------+
+                | check             | ``_check_base`` instance  |
+                +-------------------+---------------------------+
+            
+            Raises
+            ------
+            TypeError
+                If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
+            """
+            handler = _convert_handler(handler)
+            
+            self = object.__new__(cls)
+            self.handler = handler
+            return self
+        
+        async def __call__(self, client, message):
+            """
+            Calls the check to validate whether it passes with the given conditions.
+            
+            Parameters
+            ----------
+            client : ``Client``
+                The client who's received the message.
+            message : ``Message``
+                The received message.
+            
+            Returns
+            -------
+            passed : `bool`
+                Whether the check passed.
+            """
+            guild = message.channel.guild
+            if guild is None:
+                return
+            
+            if message.author.id in guild.voice_states:
+                return True
+            
+            return False
 
 
 from .command.checks import validate_checks
@@ -3602,16 +3676,16 @@ class CommandProcesser(EventWaitforBase):
         if (name is not None):
             # called every time, but only if every other fails
             if name == 'default_event':
-                func = check_argcount_and_convert(func, 2, '`default_event` expects 2 arguments (client, '
-                    'message).')
+                func = check_argcount_and_convert(func, 2, name='default_event', error_message= \
+                    '`default_event` expects 2 arguments (client, message).')
                 checks_processed = validate_checks(checks)
                 self._default_event = func
                 self._default_event_checks = checks_processed
                 return func
             
             if name == 'command_error':
-                func = check_argcount_and_convert(func, 5, '`invalid_command` expected 5 arguments (client, message, '
-                    'command, content, exception).')
+                func = check_argcount_and_convert(func, 5, name='command_error', error_message= \
+                    '`command_error` expected 5 arguments (client, message, command, content, exception).')
                 checks_processed = validate_checks(checks)
                 self._command_error = func
                 self._command_error_checks = checks_processed
@@ -3619,8 +3693,8 @@ class CommandProcesser(EventWaitforBase):
             
             # called when user used bad command after the preset prefix, called if a command fails
             if name == 'invalid_command':
-                func = check_argcount_and_convert(func, 4, '`invalid_command` expected 4 arguments (client, message, '
-                    'command, content).')
+                func = check_argcount_and_convert(func, 4, name='invalid_command', error_message= \
+                    '`invalid_command` expected 4 arguments (client, message, command, content).')
                 checks_processed = validate_checks(checks)
                 self._invalid_command = func
                 self._invalid_command_checks = checks_processed
@@ -4161,8 +4235,8 @@ class CommandProcesser(EventWaitforBase):
         return self._default_event
     
     def _set_default_event(self, default_event):
-        default_event = check_argcount_and_convert(default_event, 2, '`default_event` expects 2 arguments (client, '
-            'message).')
+        default_event = check_argcount_and_convert(default_event, 2, name=default_event, error_message=\
+            '`default_event` expects 2 arguments (client, message).')
         self._default_event = default_event
     
     def _del_default_event(self):
@@ -4212,8 +4286,8 @@ class CommandProcesser(EventWaitforBase):
         return self._command_error
     
     def _set_command_error(self, command_error):
-        command_error = check_argcount_and_convert(command_error, 4, '`invalid_command` expected 4 arguments (client, message, '
-            'command, content).')
+        command_error = check_argcount_and_convert(command_error, 4, name='invalid_command', error_message= \
+            '`invalid_command` expected 4 arguments (client, message, command, content).')
         
         self._command_error = command_error
     
@@ -4271,8 +4345,8 @@ class CommandProcesser(EventWaitforBase):
         return self._invalid_command
     
     def _set_invalid_command(self, invalid_command):
-        invalid_command = check_argcount_and_convert(invalid_command, 4, '`invalid_command` expected 4 arguments (client, message, '
-            'command, content).')
+        invalid_command = check_argcount_and_convert(invalid_command, 4, name='invalid_command', error_message= \
+            '`invalid_command` expected 4 arguments (client, message, command, content).')
         self._invalid_command = invalid_command
     
     def _del_invalid_command(self):

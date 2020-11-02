@@ -291,7 +291,7 @@ class EmbedImage(object):
     proxy_url : `str` or `None`
         A proxied url of the image.
     url : `str` or `None`
-        The url of the iamge.
+        The url of the image.
     width : `int`
         The width of the image. Defaults to `0`.
     """

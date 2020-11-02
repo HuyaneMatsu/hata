@@ -684,7 +684,7 @@ class _execution_ended_cb(object):
         future._loop.call_soon_threadsafe(parent.__class__._execution_ended, parent, self.executor)
     
     def __eq__(self, other):
-        """Returns whether the two execution ended callbacks aret he same."""
+        """Returns whether the two execution ended callbacks are the same."""
         if type(self) is not type(other):
             return NotImplemented
         

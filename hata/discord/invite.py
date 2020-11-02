@@ -37,10 +37,12 @@ class Invite(DiscordEntity, immortal=True):
         The creator of the invite. If not included, then set as `ZEROUSER`.
     max_age : `None` or `int`
         The time in seconds after the invite will expire. If not included, then set as `None`.
-        > If the invite was created with max age as `0`, then this value will be negative instead of the expected `0`.
+        
+        If the invite was created with max age as `0`, then this value will be negative instead of the expected `0`.
     max_uses : `None` or `int`
         How much times the invite can be used. If not included, then set as `None`.
-        > If the invite has no use limit, then this value is set as `0`.
+        
+        If the invite has no use limit, then this value is set as `0`.
     online_count : `int`
         The amount of online users at the respective guild (or group channel). If not included, then set as `0`.
     partial : `bool`
@@ -51,7 +53,8 @@ class Invite(DiscordEntity, immortal=True):
         The target of the invite if applicable. Defaults to `ZEROUSER`.
     temporary : `bool`
         Whether this invite only grants temporary membership.
-        > When the user goes offline, they get kicked, execept if they got a role meanwhile.
+        
+        When the user goes offline, they get kicked, execept if they got a role meanwhile.
     user_count : `int`
         The amount of users at the respective guild (or group channel). If not included, then set as `0`.
     uses : `None` or `int`

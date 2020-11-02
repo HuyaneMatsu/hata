@@ -42,7 +42,7 @@ def create_payload(data, *args, **kwargs):
     return type_(data, *args, **kwargs)
 
 
-class payload_superclass:
+class PayloadBase:
     _default_content_type = 'application/octet-stream'
     def __init__(self, value, *, headers=None, content_type=sentinel, filename=None, encoding=None, **kwargs):
         self.value = value
@@ -75,7 +75,7 @@ class payload_superclass:
             mime = mimetypes.guess_type(self.filename)[0]
             return 'application/octet-stream' if mime is None else mime
         else:
-            return payload_superclass._default_content_type
+            return PayloadBase._default_content_type
     
     def set_content_disposition(self, disptype, params, quote_fields=True):
         headers = self.headers
@@ -88,13 +88,13 @@ class payload_superclass:
         headers[CONTENT_DISPOSITION] = content_disposition_header(disptype, params, quote_fields=quote_fields)
 
 
-class BytesPayload(payload_superclass):
+class BytesPayload(PayloadBase):
     
     def __init__(self, value, *args, **kwargs):
         if 'content_type' not in kwargs:
             kwargs['content_type'] = 'application/octet-stream'
         
-        payload_superclass.__init__(self, value, *args, **kwargs)
+        PayloadBase.__init__(self, value, *args, **kwargs)
         
         self._size = len(value)
     
@@ -126,13 +126,13 @@ class StringIOPayload(StringPayload):
         StringPayload.__init__(self, value.read() *args, **kwargs)
 
 
-class IOBasePayload(payload_superclass):
+class IOBasePayload(PayloadBase):
 
     def __init__(self, value, disposition='attachment', *args, **kwargs):
         if 'filename' not in kwargs:
             kwargs['filename'] = getattr(value, 'name', None)
         
-        payload_superclass.__init__(self, value, *args, **kwargs)
+        PayloadBase.__init__(self, value, *args, **kwargs)
         
         if (self.filename is not None) and (disposition is not None):
             self.set_content_disposition(disposition, {'filename': self.filename})
@@ -214,13 +214,13 @@ class JsonPayload(BytesPayload):
             **kwargs)
 
 
-class AsyncIterablePayload(payload_superclass):
+class AsyncIterablePayload(PayloadBase):
     
     def __init__(self, value, *args, **kwargs):
         if 'content_type' not in kwargs:
             kwargs['content_type'] = 'application/octet-stream'
         
-        payload_superclass.__init__(self, value, *args, **kwargs)
+        PayloadBase.__init__(self, value, *args, **kwargs)
         
         self._iter = value.__aiter__()
     
@@ -244,10 +244,10 @@ class AsyncIOPayload(IOBasePayload):
             self.value.close()
 
 
-class BodyPartReaderPayload(payload_superclass):
+class BodyPartReaderPayload(PayloadBase):
 
     def __init__(self, value, *args, **kwargs):
-        payload_superclass.__init__(self, value, *args, **kwargs)
+        PayloadBase.__init__(self, value, *args, **kwargs)
 
         params = {}
         if value.name is not None:
@@ -670,7 +670,7 @@ class BodyPartReader(object):
 
 
         
-class MultipartWriter(payload_superclass):
+class MultipartWriter(PayloadBase):
     __slots__ = ('_boundary', '_content_type', '_size', 'encoding', 'filename', 'haders', 'parts', 'value')
     
     def __init__(self, subtype='mixed', boundary=None):
@@ -683,7 +683,7 @@ class MultipartWriter(payload_superclass):
                 raise ValueError('boundary should contains ASCII only chars')
         
         self._boundary = boundary
-        payload_superclass.__init__(self, None, content_type=f'multipart/{subtype}; boundary={self.boundary_value}')
+        PayloadBase.__init__(self, None, content_type=f'multipart/{subtype}; boundary={self.boundary_value}')
         
         self.parts = []
         self.headers = imultidict()
@@ -739,14 +739,14 @@ class MultipartWriter(payload_superclass):
         
         return f'"{quoted_value_content.decode("ascii")}"'
     
-    def append(self, obj,headers=None):
+    def append(self, obj, headers=None):
         #Adds a new body part to multipart writer.
         if headers is None:
             headers = imultidict()
         
-        if isinstance(obj, payload_superclass):
+        if isinstance(obj, PayloadBase):
             if obj.headers is None:
-                obj.headers=headers
+                obj.headers = headers
             else:
                 obj.headers.update(headers)
         else:

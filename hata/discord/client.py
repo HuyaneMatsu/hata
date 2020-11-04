@@ -9082,7 +9082,14 @@ class Client(UserBase):
                 
                 break
             
-            self._gateway_max_concurrency = data['session_start_limit'].get('max_concurrency', 1)
+            try:
+                session_start_limit_data = data['session_start_limit']
+            except KeyError:
+                gateway_max_concurrency = 1
+            else:
+                gateway_max_concurrency = session_start_limit_data.get('max_concurrency', 1)
+            
+            self._gateway_max_concurrency = gateway_max_concurrency
         except BaseException as err:
             self._gateway_requesting = False
             gateway_waiter = self._gateway_waiter

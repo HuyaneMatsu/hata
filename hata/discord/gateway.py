@@ -861,6 +861,35 @@ class DiscordGatewayVoice(object):
         except KeyError:
             data = None
         
+        if operation == self.CLIENT_CONNECT:
+            user_id = int(data['user_id'])
+            try:
+                audio_source = data['audio_ssrc']
+            except KeyError:
+                pass
+            else:
+                self.client._update_audio_source(user_id, audio_source)
+            
+            try:
+                video_source = data['video_ssrc']
+            except KeyError:
+                pass
+            else:
+                self.client._update_video_source(user_id, video_source)
+            
+            return
+        
+        if operation == self.SPEAKING:
+            user_id = int(data['user_id'])
+            audio_source = data['ssrc']
+            self.client._update_audio_source(user_id, audio_source)
+            return
+        
+        if operation == self.CLIENT_DISCONNECT:
+            user_id = int(data['user_id'])
+            self.client._remove_source(user_id)
+            return
+        
         kokoro = self.kokoro
         
         if operation == self.HELLO:
@@ -895,24 +924,6 @@ class DiscordGatewayVoice(object):
         
         if operation == self.INVALIDATE_SESSION:
             await self._identify()
-            return
-        
-        if operation == self.SPEAKING:
-            user_id = int(data['user_id'])
-            source = data['ssrc']
-            self.client._update_audio_source(user_id, source)
-            return
-        
-        if operation == self.CLIENT_CONNECT:
-            user_id = int(data['user_id'])
-            audio_source = data['audio_ssrc']
-            #video_source = data['video_ssrc']
-            self.client._update_audio_source(user_id, audio_source)
-            return
-        
-        if operation == self.CLIENT_DISCONNECT:
-            user_id = int(data['user_id'])
-            self.client._remove_audio_source(user_id)
             return
         
         # Ignore VIDEO_SESSION_DESCRIPTION and VIDEO_SINK for now

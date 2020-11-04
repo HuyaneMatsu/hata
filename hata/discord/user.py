@@ -1164,7 +1164,7 @@ class User(UserBase):
         The user's avatar's hash in `uint128`.
     avatar_type : `bool`
         The user's avatar's type.
-    guild_profiles : `dict` or ``WeakKeyDictionary`` of (``Guild``, ``GuildPorfile``) items
+    guild_profiles : `dict` or ``WeakKeyDictionary`` of (``Guild``, ``GuildProfile``) items
         A dictionary, which contains the user's guild profiles. If a user is member of a guild, then it should
         have a respective guild profile accordingly.
     is_bot : `bool`

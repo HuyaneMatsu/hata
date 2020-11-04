@@ -3388,7 +3388,7 @@ class CommandProcesser(EventWaitforBase):
         
         Accepts and returns `None`, or `str` instance.
         
-        > If given as not `None` or `str` instance, raises `TypeError`.
+        If given as not `None` or `str` instance, raises `TypeError`.
         """)
     
     def create_category(self, name, checks=None, description=None):

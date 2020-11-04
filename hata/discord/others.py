@@ -576,7 +576,7 @@ if (relativedelta is not None):
             If delta was neither passed as `datetime` or as `relativedelta` instance.
         """
         if type(delta) is datetime:
-            delta = relativedelta(datetime.utcnow(),delta)
+            delta = relativedelta(datetime.utcnow(), delta)
         elif type(delta) is relativedelta:
             pass
         else:
@@ -587,7 +587,7 @@ if (relativedelta is not None):
             if limit == 0:
                 break
             
-            if value<0:
+            if value < 0:
                  value = -value
             elif value == 0:
                 continue

@@ -1239,7 +1239,7 @@ class Guild(DiscordEntity, immortal=True):
         try:
             is_large = data['large']
         except KeyError:
-            is_large = (self.user_count>=LARGE_LIMIT)
+            is_large = (self.user_count >= LARGE_LIMIT)
         self.is_large = is_large
         
         self._update_no_return(data)
@@ -1295,16 +1295,14 @@ class Guild(DiscordEntity, immortal=True):
             Guild's users' presences' data.
         """
         users = self.users
-        for presence in data:
-            user_id = int(presence['user']['id'])
+        for presence_data in data:
+            user_id = int(presence_data['user']['id'])
             try:
                 user = users[user_id]
             except KeyError:
                 pass
             else:
-                user.status = Status.get(presence['status'])
-                user.statuses = presence['client_status']
-                user.activities = [Activity(activity_data) for activity_data in presence['activities']]
+                user._update_presence_no_return(presence_data)
     
     def _sync_channels(self, data):
         """
@@ -2350,7 +2348,7 @@ class Guild(DiscordEntity, immortal=True):
     @property
     def owner(self):
         """
-        Returns the guild's owner's id.
+        Returns the guild's owner's.
         
         Returns
         -------

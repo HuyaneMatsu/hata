@@ -6495,8 +6495,11 @@ class EventDescriptor(object):
         Note, if `HATA_ALLOW_DEAD_EVENTS` enviromental variable is given as `True`, and an uncached message is updated,
         then `old_attributes` is given as `None`.
     
-    reaction_add(client: ``Client``, event: ReactionAddEvent):
+    reaction_add(client: ``Client``, event: ``ReactionAddEvent``):
         Called when a user reacts on a message with the given emoji.
+        
+        Note, if `HATA_ALLOW_DEAD_EVENTS` enviromental variable is given as `True`, and the reaction is added on an
+        uncached message, then `message` is given as ``MessageRepr``.
     
     reaction_clear(client: ``Client``, message: Union[``Message``, ``MessageRepr``], \
             old_reactions: Union[`None`, ``reaction_mapping``]):
@@ -6508,6 +6511,9 @@ class EventDescriptor(object):
     
     reaction_delete(client: ``Client``, event: ``ReactionDeleteEvent``):
         Called when a user removes it's reaction from a message.
+        
+        Note, if `HATA_ALLOW_DEAD_EVENTS` enviromental variable is given as `True`, and the reaction is removed from
+        and uncached message, then `message` is given as ``MessageRepr``.
     
     reaction_delete_emoji(client: ``Client``, message: Union[``Message``, ``MessageRepr``], \
             users: Union[`None`, ``reaction_mapping_line``]):

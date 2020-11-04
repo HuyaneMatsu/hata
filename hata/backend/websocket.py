@@ -41,34 +41,121 @@ EXTERNAL_CLOSE_CODES = (1000, 1001, 1002, 1003, 1007, 1008, 1009, 1010, 1011,)
 HTTPClient = NotImplemented
 
 class WebSocketCommonProtocol(ProtocolBase):
-    __slots__ = ('_drain_lock', 'close_code', 'close_connection_task', 'close_reason', 'connection_lost_waiter',
-        'extensions', 'host', 'max_queue', 'max_size', 'messages', 'over_ssl', 'pings', 'port', 'read_limit', 'secure',
-        'source', 'state', 'subprotocol', 'timeout', 'transfer_data_exc', 'transfer_data_task', 'write_limit', )
+    """
+    Websocket protocol base whcih implement common functions between the client and the server side.
     
-    is_client = True #placeholder for subclasses
+    Attributes
+    ----------
+    _chunks : `deque` of `bytes`
+        Right feed, left pop queue, used to store the received data chunks.
+    _eof : `bool`
+        Whether the protocol received end of file.
+    _offset : `int`
+        Byte offset, of the used up data of the most-left chunk.
+    _paused : `bool`
+        Whether the protocol's respective transport's reading is paused. Defaults to `False`.
+        
+        Also note, that not every transport supports pausing.
+    exception : `None` or `BaseException`
+        Exception set by ``.set_exception``, when an unexpected exception occures meanwhile reading from socket.
+    loop : ``EventThread``
+        The eventloop to what the protocol is bound to.
+    payload_reader : `None` or `generator`
+        Payloader reader generator, what gets the control back, when data, eof or any exception is received.
+    payload_waiter : `None` of ``Future``
+        Payload waiter of the protocol, what's result is set, when the ``.payload_reader`` generator returns.
+        
+        If cancelled or marked by done or any other methods, the payload reader will not be cancelled.
+    transport : `None` or `Any`
+        Asynchornous tarnsport implementation. Is set meanwhile the protocol is alive.
+    _drain_waiter : `None` or ``Future``
+        A future, what is used to block the writing task, till it's writen data is drained.
+    _drain_lock : ``Lock``
+        Asynchornous lock to ensure, that only `1` frame is written in `1` time.
+    close_code : `int`
+        The websocket's close code if applicable. Defaults to `0`.
+    close_connection_task : `None` or ``Task`` of ``.close_connection``
+        A task, what is present meanwhile the webscoket is closing to avoid race condition.
+    close_timeout : `float`
+        The maximal duration in seconds what is waited for response after close frame is sent. Defaults to `10.0`.
+    close_reason : `None` or `str`
+        The reason, why the websocket was closed. Set only after the websocket is closed. Close reason might not be
+        recevied tho.
+    connection_lost_waiter : ``Future``
+        A future, what's result is set as `None`, when the connection is closed. Used to wait for close frames.
+        
+        ``shield`` it if using from outside.
+    extensions : `None` or (`list` of `Any`)
+        Websocket extensions. Defaults to `None`, if there is not any.
+    host : `str`
+        The respective server's address to connect to.
+    max_queue : `None` or `int`
+        Max queue size of ``.messages``. If a new payload is added to a full queue, the oldest element of it is removed.
+         Defaults to `None`.
+    max_size : `int`
+        Max payload size to receive. If a payload exceeds it, ``PayloadError`` is raised. Defaults to `67108864` bytes.
+    messages : ``AsyncQue``
+        An asynchronous queue of the received messages.
+    is_ssl : `bool`
+        Whether the connection is secure. Defaults to `False`.
+    pings : `OrderedDict` of (`bytes`, ``Future``) items
+        An ordered dictionary of ping payloads and of their waiter futures.
+    port : `int`
+        The respective server's port to connect to.
+    state : `str`
+        The webscoket's state.
+        
+        Can be set as 1 of the following values:
+        
+        +-------------------+-------------------+
+        | Respective name   | Value             |
+        +===================+===================+
+        | CONNECTING        | `'CONNECTING'`    |
+        +-------------------+-------------------+
+        | OPEN              | `'OPEN'`          |
+        +-------------------+-------------------+
+        | CLOSING           | `'CLOSING'`       |
+        +-------------------+-------------------+
+        | CLOSED            | `'CLOSED'`        |
+        +-------------------+-------------------+
+        
+        Note, that state is compared by memory address and not by value.
+    subprotocol : `None`, `str` or `Any`
+        Choosed subprotocol at handshake. Defaults to `None` and might be set as `str` or as a subprotocol
+        implementation. Choosed from the availablee subprotocols by their priority order.
+    transfer_data_exc : `None` or `BaseException``
+        Exception catched meanwhile processing received data.
+    transfer_data_task : `None` or ``Task`` of ``.transfer_data``
+        Data receiving task.
     
-    def __init__(self, loop, host, port, *, secure=None, timeout=10., max_size=1<<26, max_queue=None, read_limit=1<<16,
-            write_limit=1<<16):
+    Class Attributes
+    ----------------
+    is_client : `bool` = `False`
+        Whether the websocket protocol is client or server side.
+    """
+    __slots__ = ('_drain_lock', 'close_code', 'close_connection_task', 'close_timeout', 'close_reason',
+        'connection_lost_waiter', 'extensions', 'host', 'is_ssl', 'max_queue', 'max_size', 'messages', 'pings', 'port',
+        'state', 'subprotocol', 'transfer_data_exc', 'transfer_data_task', )
+    
+    is_client = True # placeholder for subclasses
+    
+    def __init__(self, loop, host, port, *, is_ssl=None, close_timeout=10., max_size=1<<26, max_queue=None):
         
         ProtocolBase.__init__(self, loop)
         
         self.host = host
         self.port = port
-        self.secure = secure
-        self.timeout = timeout
-        self.max_size = max_size #set it to a BIG number if u wanna ignore max size
+        self.is_ssl = is_ssl
+        self.close_timeout = close_timeout
+        self.max_size = max_size # set it to a BIG number if u wanna ignore max size
         self.max_queue = max_queue
-        self.read_limit = read_limit
-        self.write_limit = write_limit
-        
-        self.over_ssl = False #we will set it later
         
         self._drain_lock = Lock(loop)
         
         self.state = CONNECTING
         
-        self.extensions  = None #set from outside
-        self.subprotocol = None #set from outside
+        self.extensions  = None # set from outside
+        self.subprotocol = None # set from outside
         
         self.close_code = 0
         self.close_reason = None
@@ -83,24 +170,74 @@ class WebSocketCommonProtocol(ProtocolBase):
         self.close_connection_task = None
     
     def connection_open(self):
+        """
+        Method called when the connection is established at the end of the handshake.
+        
+        Marks the webcoket as open and start it's ``.transfer_data_task`` and ``.close_connection_task``.
+        """
         self.state = OPEN
-        self.transfer_data_task = Task(self.transfer_data(), self.loop)
-        self.close_connection_task = Task(self.close_connection(), self.loop)
+        loop = self.loop
+        self.transfer_data_task = Task(self.transfer_data(), loop)
+        self.close_connection_task = Task(self.close_connection(), loop)
     
     @property
     def local_address(self):
+        """
+        Local address of the connection as a `tuple` of host and port. If the connection is not open yet, returns
+        `None`.
+        
+        Returns
+        -------
+        local_address : `None` or `tuple` of (`str`, `int`)
+        """
         return self.get_extra_info('sockname')
     
     @property
     def remote_address(self):
+        """
+        Remote address of the connection as a `tuple` of host and port. If the connection is not open yet, returns
+        `None`.
+        
+        Returns
+        -------
+        remote_address : `None` or `tuple` of (`str`, `int`)
+        """
         return self.get_extra_info('peername')
     
     @property
     def open(self):
-        return self.state is OPEN and not self.transfer_data_task.done()
+        """
+        Returns whether the webscoket is open.
+        
+        If the webcoket is closed, ``ConnectionClosed`` is raised when using it.
+        
+        Returns
+        -------
+        open : `bool`
+        """
+        if self.state is not OPEN:
+            return False
+        
+        transfer_data_task = self.transfer_data_task
+        if transfer_data_task is None:
+            return False
+        
+        if self.transfer_data_task.done():
+            return False
+        
+        return True
     
     @property
     def closed(self):
+        """
+        Returns whether the websocket is closed.
+        
+        Note, meanwhile connection is establishing, ``.open`` and ``.close`` will return `False`.
+        
+        Returns
+        -------
+        closed : `bool`
+        """
         return self.state is CLOSED
     
     #await it
@@ -124,20 +261,19 @@ class WebSocketCommonProtocol(ProtocolBase):
         await self.write_frame(opcode, data)
 
     async def close(self, code=1000, reason=''):
-        # if no close frame is received within the timeout
-        # we cancel the connection
+        # if no close frame is received within the close_timeout we cancel the connection
         try:
             task = Task(self.write_close_frame(self._serialize_close(code, reason)), self.loop)
-            future_or_timeout(task, self.timeout)
+            future_or_timeout(task, self.close_timeout)
             await task
         except TimeoutError:
             self.fail_connection()
         
         try:
             # if close() is cancelled durlng the wait, self.transfer_data_task
-            # is cancelled before the timeout elapses
+            # is cancelled before the close_timeout elapses
             task = self.transfer_data_task
-            future_or_timeout(task, self.timeout)
+            future_or_timeout(task, self.close_timeout)
             await task
         except (TimeoutError,CancelledError):
             pass
@@ -157,24 +293,22 @@ class WebSocketCommonProtocol(ProtocolBase):
         if type(data) is str:
             data.encode('utf-8')
         
-        # Protect against duplicates if a payload is explicitly set.
-        if data in self.pings:
-            raise ValueError('Already waiting for a pong with the same data')
-        
-        # Generate a unique random payload otherwise.
-        while data in self.pings:
+        pings = self.pings
+        while data in pings:
             data = getrandbits(32).to_bytes(4, 'big')
         
-        self.pings[data] = Future(self.loop)
+        waiter = Future(self.loop)
+        pings[data] = waiter
         
         await self.write_frame(WS_OP_PING, data)
         
-        return shield(self.pings[data], self.loop)
+        await waiter
     
     async def pong(self, data=b''):
         await self.ensure_open()
         if type(data) is str:
             data.encode('utf-8')
+        
         await self.write_frame(WS_OP_PONG, data)
     
     # Private methods - no guarantees.
@@ -239,7 +373,7 @@ class WebSocketCommonProtocol(ProtocolBase):
             self.fail_connection(1011)
         
         else:
-            # connection wa closed
+            # connection was closed
             exception = ConnectionClosed(self.close_code or 1000, None, self.close_reason)
             
             # If we are a client and we receive this, we closed our own
@@ -343,7 +477,7 @@ class WebSocketCommonProtocol(ProtocolBase):
             ping_id = b''
             while ping_id != frame.data:
                 ping_id, pong_waiter = self.pings.popitem(0)
-                pong_waiter.set_result(None)
+                pong_waiter.set_result_if_pending(None)
         return True
     
     async def write_frame(self, opcode, data,_expected_state=OPEN):
@@ -354,7 +488,7 @@ class WebSocketCommonProtocol(ProtocolBase):
         #we write only 1 frame at a time, so we 'queue' it
         async with self._drain_lock:
             try:
-                frame=Frame(True, opcode, data)
+                frame = Frame(True, opcode, data)
                 
                 extensions = self.extensions
                 if (extensions is not None):
@@ -401,7 +535,7 @@ class WebSocketCommonProtocol(ProtocolBase):
                     return
         finally:
             #finally ensures that the transport never remains open
-            if self.connection_lost_waiter.done() and not self.secure:
+            if self.connection_lost_waiter.done() and not self.is_ssl:
                 return
             
             #Close the TCP connection
@@ -419,7 +553,7 @@ class WebSocketCommonProtocol(ProtocolBase):
         if self.connection_lost_waiter.pending():
             try:
                 task = shield(self.connection_lost_waiter, self.loop)
-                future_or_timeout(task, self.timeout)
+                future_or_timeout(task, self.close_timeout)
                 await task
             except TimeoutError:
                 pass
@@ -462,8 +596,6 @@ class WebSocketCommonProtocol(ProtocolBase):
     
     # compability method (overwrite)
     def connection_made(self, transport):
-        transport.set_write_buffer_limits(self.write_limit)
-        self.over_ssl = (transport.get_extra_info('sslcontext') is not None)
         self.transport = transport
     
     # compability method (overwrite)
@@ -480,7 +612,7 @@ class WebSocketCommonProtocol(ProtocolBase):
     # compability method (overwrite)
     def eof_received(self):
         ProtocolBase.eof_received(self)
-        return (not self.over_ssl)
+        return (not self.is_ssl)
 
 class WSClient(WebSocketCommonProtocol):
     is_client = True
@@ -497,8 +629,8 @@ class WSClient(WebSocketCommonProtocol):
             websocket_kwargs = {}
         
         url = URL(url)
-        secure = (url.scheme == 'wss')
-        if secure:
+        is_ssl = (url.scheme == 'wss')
+        if is_ssl:
             connection_kwargs.setdefault('ssl', True)
         elif connection_kwargs.get('ssl', None) is not None:
             raise ValueError(f'{cls.__name__} received a SSL context for a ws:// URI, use a wss:// URI to enable TLS.')
@@ -523,7 +655,7 @@ class WSClient(WebSocketCommonProtocol):
         request_headers[SEC_WEBSOCKET_KEY] = sec_key
         request_headers[SEC_WEBSOCKET_VERSION] = '13'
         
-        if url.port == (443 if secure else 80):
+        if url.port == (443 if is_ssl else 80):
             request_headers[HOST] = url.host
         else:
             request_headers[HOST] = f'{url.host}:{url.port}'
@@ -540,7 +672,7 @@ class WSClient(WebSocketCommonProtocol):
             request_headers[SEC_WEBSOCKET_EXTENSIONS] = build_extensions(available_extensions)
             
         if available_subprotocols is not None:
-            request_headers[SEC_WEBSOCKET_PROTOCOL]=build_subprotocols(available_subprotocols)
+            request_headers[SEC_WEBSOCKET_PROTOCOL] = build_subprotocols(available_subprotocols)
 
         if extra_headers is not None:
             # we use expecially items, so we check that
@@ -649,7 +781,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
         'origins', 'request_processer', 'server', 'subprotocol_selector', 'request', 'response_headers')
     
     def __init__(self, server):
-        handler, host, port, secure, origins, available_extensions, available_subprotocols , extra_headers, \
+        handler, host, port, is_ssl, origins, available_extensions, available_subprotocols , extra_headers, \
         request_processer, subprotocol_selector, websocket_kwargs = server.proto_args
         
         self.handler = handler
@@ -662,7 +794,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
         self.subprotocol_selector = subprotocol_selector
         self.handler_task = None
         
-        WebSocketCommonProtocol.__init__(self, server.loop, host, port, secure=secure, **websocket_kwargs)
+        WebSocketCommonProtocol.__init__(self, server.loop, host, port, is_ssl=is_ssl, **websocket_kwargs)
         
         self.request = None
         self.response_headers = None
@@ -857,7 +989,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
                 
                 subprotocol_selector = self.subprotocol_selector
                 if (subprotocol_selector is not None):
-                    subprotocol_header=subprotocol_selector(parsed_header_subprotocols, available_subprotocols)
+                    subprotocol_header = subprotocol_selector(parsed_header_subprotocols, available_subprotocols)
                     break
                     
                 subprotocols = set(parsed_header_subprotocols)
@@ -975,7 +1107,7 @@ class WSServer(object):
         if websocket_kwargs is None:
             websocket_kwargs = {}
         
-        secure = (kwargs.get("ssl") is not None)
+        is_ssl = (kwargs.get("ssl") is not None)
         
         if (compression is not None):
             if compression != 'deflate':
@@ -1008,7 +1140,7 @@ class WSServer(object):
         self.websockets = set()
         self.close_connection_task = None
         self.server = None
-        self.proto_args = (handler, host, port, secure, origins, available_extensions, available_subprotocols,
+        self.proto_args = (handler, host, port, is_ssl, origins, available_extensions, available_subprotocols,
             extra_headers, request_processer, subprotocol_selector, websocket_kwargs)
         
         factory = functools.partial(protocol, self,)

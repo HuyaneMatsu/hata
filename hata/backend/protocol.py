@@ -4,7 +4,7 @@ from random import getrandbits
 from struct import Struct
 from collections import deque
 
-from .dereaddons_local import imultidict
+from .dereaddons_local import imultidict, DOCS_ENABLED
 from .futures import Future, CancelledError, Task, future_or_timeout
 
 from .hdrs import CONNECTION, CONTENT_ENCODING, CONTENT_LENGTH, TRANSFER_ENCODING, METH_CONNECT
@@ -85,23 +85,19 @@ PAYLOAD_ERROR_EOF_AT_HTTP_HEADER = (
         )
 
 class RawMessage(object):
-    __slots__ = ('_upgraded', 'headers', )
+    """
+    Base class of ``RawResponseMessage`` and ``RawRequestMessage``.
     
-    @property
-    def close_connection(self):
-        try:
-            connection = self.headers[CONNECTION]
-        except KeyError:
-            pass
-        else:
-            connection = connection.lower()
-            if connection.lower() == 'keep-alive':
-                return True
-            
-            if connection == 'close':
-                return False
+    Attributes
+    ----------
+    _upgraded : `int`
+        Whether the connection is upgraded.
         
-        return False # deside?
+        Is only set when the ``.upgraded`` property is accessed as `0` or `1`. Till is set as `2`.
+    headers : ``imultidict``
+        The headers of the http message.
+    """
+    __slots__ = ('_upgraded', 'headers', )
     
     def _get_upgraded(self):
         upgraded = self._upgraded
@@ -123,31 +119,83 @@ class RawMessage(object):
     upgraded = property(_get_upgraded, _set_upgraded)
     del _get_upgraded, _set_upgraded
     
-    def set_upgraded(self, upgraded):
-        self._upgraded = upgraded
+    if DOCS_ENABLED:
+        upgraded.__doc__ = ("""
+        A get-set descriptor to access whether the message is upgraded. On first access the upgrade state is detected
+        from the headers.
+        """)
     
     @property
     def chunked(self):
+        """
+        Returns whether the respective http message' body is chunked.
+        
+        Returns
+        -------
+        chunked : `bool`
+        """
         try:
             transfer_encoding = self.headers[TRANSFER_ENCODING]
         except KeyError:
             return False
         
-        return ('chunked' in transfer_encoding)
+        return ('chunked' in transfer_encoding.lower())
     
     @property
     def encoding(self):
+        """
+        Returns the body encoding set in the http message's header.
+        
+        Returns
+        -------
+        encoding : `None` or `str`
+            If no encoding is set, defaults to `None`.
+        """
         try:
             encoding = self.headers[CONTENT_ENCODING]
         except KeyError:
-            return
+            encoding = None
+        else:
+            encoding = encoding.lower()
         
-        return encoding.lower()
+        return encoding
 
 class RawResponseMessage(RawMessage):
+    """
+    Represents a raw http response message.
+    
+    Attributes
+    ----------
+    _upgraded : `int`
+        Whether the connection is upgraded.
+        
+        Is only set when the ``.upgraded`` property is accessed as `0` or `1`. Till is set as `2`.
+    headers : ``imultidict``
+        The headers of the http message.
+    version : ``HttpVersion``
+        The http version of the response.
+    status : `int`
+        The response's status.
+    reason : `bytes`
+        Reason included with the response. Might be empty.
+    """
     __slots__ = ('version', 'status', 'reason',)
     
     def __init__(self, version, status, reason, headers):
+        """
+        Creates a new ``RawResponseMessage`` instance with the given parameters.
+        
+        Parameters
+        ----------
+        version : ``HttpVersion``
+            The http version of the response.
+        status : `int`
+            The response's status.
+        reason : `bytes`
+            Reason included with the response. Might be empty.
+        headers : ``imultidict``
+            The headers of the http message.
+        """
         self.version = version
         self.status = status
         self.reason = reason
@@ -155,9 +203,41 @@ class RawResponseMessage(RawMessage):
         self._upgraded = 2
 
 class RawRequestMessage(RawMessage):
+    """
+    Represents a raw http request message.
+    
+    Attributes
+    ----------
+    _upgraded : `int`
+        Whether the connection is upgraded.
+        
+        Is only set when the ``.upgraded`` property is accessed as `0` or `1`. Till is set as `2`.
+    headers : ``imultidict``
+        The headers of the http message.
+    version : ``HttpVersion``
+        The http version of the response.
+    meth : `int`
+        The request's method.
+    path : `str`
+        The requested path.
+    """
     __slots__ = ('version', 'meth', 'path',)
     
     def __init__(self, version, meth, path, headers):
+        """
+        Creates a new ``RawRequestMessage`` instance with the given parameters.
+        
+        Parameters
+        ----------
+        version : ``HttpVersion``
+            The http version of the response.
+        meth : `int`
+            The request's method.
+        path : `str`
+            The requested path.
+        headers : ``imultidict``
+            The headers of the http message.
+        """
         self.version = version
         self.meth = meth
         self.path = path
@@ -329,6 +409,37 @@ class HTTPStreamWriter(object):
             await protocol._drain_helper()
 
 class ReadProtocolBase(object):
+    """
+    Asynchronous protocol, what implements common reading operations.
+    
+    Hata backend uses optimistic generator based chunked readers, which have really long and complicated
+    implementattion, but their speed is pretty good.
+    
+    Attributes
+    ----------
+    _chunks : `deque` of `bytes`
+        Right feed, left pop queue, used to store the received data chunks.
+    _eof : `bool`
+        Whether the protocol received end of file.
+    _offset : `int`
+        Byte offset, of the used up data of the most-left chunk.
+    _paused : `bool`
+        Whether the protocol's respective transport's reading is paused. Defaults to `False`.
+        
+        Also note, that not every transport supports pausing.
+    exception : `None` or `BaseException`
+        Exception set by ``.set_exception``, when an unexpected exception occures meanwhile reading from socket.
+    loop : ``EventThread``
+        The eventloop to what the protocol is bound to.
+    payload_reader : `None` or `generator`
+        Payloader reader generator, what gets the control back, when data, eof or any exception is received.
+    payload_waiter : `None` of ``Future``
+        Payload waiter of the protocol, what's result is set, when the ``.payload_reader`` generator returns.
+        
+        If cancelled or marked by done or any other methods, the payload reader will not be cancelled.
+    transport : `None` or `Any`
+        Asynchornous tarnsport implementation. Is set meanwhile the protocol is alive.
+    """
     __slots__ = ('_chunks', '_eof', '_offset', '_paused', 'exception', 'loop', 'payload_reader',  'payload_waiter',
         'transport', )
     
@@ -417,7 +528,9 @@ class ReadProtocolBase(object):
     
     def get_extra_info(self, name, default=None):
         transport = self.transport
-        if (transport is not None):
+        if transport is None:
+            return default
+        else:
             return transport.get_extra_info(name, default)
     
     # read related
@@ -1669,26 +1782,28 @@ class DatagramMergerReadProtocol(ReadProtocolBase):
     
     Attributes
     ----------
-    _chunks : `dequeue` of `bytes`
-        The received data chunks.
+    _chunks : `deque` of `bytes`
+        Right feed, left pop queue, used to store the received data chunks.
     _eof : `bool`
         Whether the protocol received end of file.
     _offset : `int`
-        The index till the oldest not yet fully exhausted data chunk is used up.
+        Byte offset, of the used up data of the most-left chunk.
     _paused : `bool`
-        Whether the transport is paused reading.
-    exception : `None` or `BaseException` instance
-        The exception with what the respective connection is lost, if any.
+        Whether the protocol's respective transport's reading is paused. Defaults to `False`.
+        
+        Also note, that not every transport supports pausing.
+    exception : `None` or `BaseException`
+        Exception set by ``.set_exception``, when an unexpected exception occures meanwhile reading from socket.
     loop : ``EventThread``
         The eventloop to what the protocol is bound to.
-    payload_reader : `generator`
-        Payloader reader generator, what is continued when data, eof or any exception is received.
-    payload_waiter : ``Future``
-        Payload waiter future, what can be awaited to receive the ``.payload_reader``'s result if done.
+    payload_reader : `None` or `generator`
+        Payloader reader generator, what gets the control back, when data, eof or any exception is received.
+    payload_waiter : `None` of ``Future``
+        Payload waiter of the protocol, what's result is set, when the ``.payload_reader`` generator returns.
         
         If cancelled or marked by done or any other methods, the payload reader will not be cancelled.
-    transport : `Any`
-        Asynchonous transport implementation.
+    transport : `None` or `Any`
+        Asynchornous tarnsport implementation. Is set meanwhile the protocol is alive.
     """
     __slots__ = ()
     
@@ -1722,6 +1837,36 @@ class DatagramMergerReadProtocol(ReadProtocolBase):
 
 
 class ProtocolBase(ReadProtocolBase):
+    """
+    Read-write asynchronous protocol implementation.
+    
+    Attributes
+    ----------
+    _chunks : `deque` of `bytes`
+        Right feed, left pop queue, used to store the received data chunks.
+    _eof : `bool`
+        Whether the protocol received end of file.
+    _offset : `int`
+        Byte offset, of the used up data of the most-left chunk.
+    _paused : `bool`
+        Whether the protocol's respective transport's reading is paused. Defaults to `False`.
+        
+        Also note, that not every transport supports pausing.
+    exception : `None` or `BaseException`
+        Exception set by ``.set_exception``, when an unexpected exception occures meanwhile reading from socket.
+    loop : ``EventThread``
+        The eventloop to what the protocol is bound to.
+    payload_reader : `None` or `generator`
+        Payloader reader generator, what gets the control back, when data, eof or any exception is received.
+    payload_waiter : `None` of ``Future``
+        Payload waiter of the protocol, what's result is set, when the ``.payload_reader`` generator returns.
+        
+        If cancelled or marked by done or any other methods, the payload reader will not be cancelled.
+    transport : `None` or `Any`
+        Asynchornous tarnsport implementation. Is set meanwhile the protocol is alive.
+    _drain_waiter : `None` or ``Future``
+        A future, what is used to block the writing task, till it's writen data is drained.
+    """
     __slots__ = ('_drain_waiter', )
     
     def __init__(self, loop):
@@ -1890,8 +2035,8 @@ class ProtocolBase(ReadProtocolBase):
         transport = self.transport
         if (transport is not None):
             if transport.is_closing():
-                #skip 1 loop, so connection_lost() will be called
-                future=Future(self.loop)
+                # skip 1 loop, so connection_lost() will be called
+                future = Future(self.loop)
                 future.set_result(None)
                 await future
         

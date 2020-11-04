@@ -32,7 +32,7 @@ class VoiceClient(object):
     _audio_sources : `dict` of (`int`, `int`) items
         `user_id` - `audio_source` mapping used by ``AudioStream``-s.
     _audio_streams : `None` or `dict` of (`int`, (``AudioStream`` or (`list` of ``AudioStream``)) items
-        `user_id` - ``AudioStream``(s) mapping for linking ``AudioStream`` to their respective user..
+        `user_id` - ``AudioStream``(s) mapping for linking ``AudioStream`` to their respective user.
     _encoder : ``OpusEncoder``
         Encode not opus encoded audio data.
     _endpoint : `None` or `str`
@@ -69,6 +69,8 @@ class VoiceClient(object):
         Asynchornous transport of the voice client to communicate with it's socket.
     _video_source : `int`
         An identificator sent by Discord what should be sent back with every video packet.
+    _video_sources : `dict` of (`int`, `int`) items
+        `user_id` - `video_source` mapping. Not used for now.
     call_after : `callable` (`awaitable`)
         A coroutine function what is awaited, when the voice clients's current audio finishes playing. By default
         this attribute is set to the ``._play_next`` function of the voice client (plays the next audio at the voice
@@ -112,8 +114,8 @@ class VoiceClient(object):
     __slots__ = ('_audio_port', '_audio_source', '_audio_sources', '_audio_streams', '_encoder', '_endpoint',
         '_endpoint_ip', '_handshake_complete', '_ip', '_port', '_pref_volume', '_protocol', '_secret_box', '_sequence',
         '_session_id', '_set_speaking_task', '_socket', '_timestamp', '_token', '_transport', '_video_source',
-        'call_after', 'channel', 'client', 'connected', 'gateway', 'guild', 'lock', 'player', 'queue', 'reader',
-        'speaking',)
+        '_video_sources', 'call_after', 'channel', 'client', 'connected', 'gateway', 'guild', 'lock', 'player', 'queue',
+        'reader', 'speaking',)
     
     def __new__(cls, client, channel):
         """
@@ -190,6 +192,7 @@ class VoiceClient(object):
         self._audio_port = None
         self._ip = None
         self._audio_sources = {}
+        self._video_sources = {}
         self._audio_streams = None
         
         client.voice_clients[guild.id] = self
@@ -383,10 +386,10 @@ class VoiceClient(object):
                         if reader_actual_stream is audio_stream:
                             del reader_audio_streams[source]
     
-    def _remove_audio_source(self, user_id):
+    def _remove_source(self, user_id):
         """
-        Unlinks the audio streams's source listening to the given user (id), causing the affected audio stream(s)
-        to stop receiving audio data at the meanwhile.
+        Unlinks the audio and video streams's source listening to the given user (id), causing the affected audio
+        stream(s) to stop receiving audio data at the meanwhile.
         
         Parameters
         ----------
@@ -397,23 +400,24 @@ class VoiceClient(object):
         try:
             voice_source = voice_sources.pop(user_id)
         except KeyError:
-            return
-        
-        audio_streams = self._audio_streams
-        if (audio_streams is None):
-            return
+            pass
+        else:
+            audio_streams = self._audio_streams
+            if (audio_streams is not None):
+                try:
+                    audio_streams[user_id]
+                except KeyError:
+                    pass
+                else:
+                    reader = self.reader
+                    if (reader is not None):
+                        try:
+                            del reader.audio_streams[voice_source]
+                        except KeyError:
+                            pass
         
         try:
-            audio_streams[user_id]
-        except KeyError:
-            return
-        
-        reader = self.reader
-        if (reader is None):
-            return
-        
-        try:
-            del reader.audio_streams[voice_source]
+            del self._video_sources[user_id]
         except KeyError:
             pass
     
@@ -497,6 +501,19 @@ class VoiceClient(object):
                     reader_new_stream.append(voice_client_actual_stream)
                 
                 reader_audio_streams[audio_source] = reader_new_stream
+    
+    def _update_video_source(self, user_id, video_source):
+        """
+        Updates (or adds) an `user-id` - `video-source` relation to the voice client.
+        
+        Parameters
+        ----------
+        user_id : `int`
+            The respective user's id.
+        video_source : `int`
+            Video source identitifcator of the user.
+        """
+        self._video_sources[user_id] = video_source
     
     def get_audio_streams(self):
         """

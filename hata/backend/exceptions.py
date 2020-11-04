@@ -171,7 +171,7 @@ class ConnectionClosed(Exception):
         Parameters
         ----------
         code : `int`
-            Websocket closecode.
+            The websocket close code.
         exception : `None` or `BaseException`
             Source exception if applicable.
         reason : `None or `str`, Optional

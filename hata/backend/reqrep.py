@@ -531,7 +531,7 @@ class ClientRequest(object):
                     path = f'{path}?{url.raw_query_string}'
             
             protocol = connection.protocol
-            writer = HTTPStreamWriter(self.loop, protocol, self.compression, self.chunked)
+            writer = HTTPStreamWriter(protocol, self.compression, self.chunked)
             
             protocol.write_http_request(self.method, path, self.headers)
             

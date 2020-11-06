@@ -5631,11 +5631,11 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         try:
             actual = self.waitfors[target]
             if type(actual) is asynclist:
-                actual.append(waiter)
+                list.append(actual, waiter)
             else:
                 self.waitfors[target] = container = asynclist()
-                container.append(actual)
-                container.append(waiter)
+                list.append(container, actual)
+                list.append(container, waiter)
         except KeyError:
             self.waitfors[target] = waiter
     
@@ -5697,7 +5697,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
             return None
         
         if type(element) is asynclist:
-            for element in element:
+            for element in list.__iter__(element):
                 if is_method:
                     if not isinstance(element, MethodLike):
                         continue
@@ -5764,7 +5764,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
             return result
         
         if type(element) is asynclist:
-            for element in element:
+            for element in list.__iter__(element):
                 if is_method:
                     if not isinstance(element, MethodLike):
                         continue
@@ -5814,11 +5814,11 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
             pass
         else:
             if type(event) is asynclist:
-                for event in event:
+                for event in list.__iter__(event):
                     Task(event(*args), KOKORO)
             else:
                 Task(event(*args), KOKORO)
-        
+
 def EventWaitforMeta__new__(cls, class_name, class_parents, class_attributes):
     """
     Subclasses ``EventWaitforBase``.
@@ -6103,7 +6103,7 @@ class asynclist(list):
     """
     Container used by parsers to call more events and by waitfor events to call more waiters.
     """
-    __slots__ = ('_attribute_cache')
+    __slots__ = ()
     
     def __init__(self, iterable=None):
         """
@@ -6125,7 +6125,7 @@ class asynclist(list):
         *args : Additional position arguments
             Arguments to call with the contained async callables.
         """
-        for coro in self:
+        for coro in list.__iter__(self):
             Task(coro(*args), KOKORO)
     
     def __repr__(self):
@@ -6134,35 +6134,59 @@ class asynclist(list):
             self.__class__.__name__,
             '([']
         
-        index = 0
-        limit = len(self)
-        if index != limit:
+        
+        limit = list.__len__(self)
+        if limit:
+            index = 0
             while True:
-                element = self[index]
+                element = list.__getitem__(self, index)
                 result.append(repr(element))
+                
+                index += 1
                 if index == limit:
                     break
                 
                 result.append(', ')
-                index +=1
+                continue
         
         result.append('])')
         
         return ''.join(result)
-        
-    def __getattr__(self, name):
+    
+    def __getattribute__(self, name):
         """Gets the given attribute from the elements of the asynclist."""
         if not isinstance(name, str):
-            raise TypeError(f'Attribute name must be string, not `{type(name).__name__}`.')
+            raise TypeError(f'Attribute name must be string, not `{name.__class__.__name__}`.')
+        print(name)
+        try:
+            attribute = object.__getattribute__(self, name)
+        except AttributeError:
+            pass
+        else:
+            if attribute is not _spaceholder:
+                return attribute
         
-        for coro in self:
-            attribute = getattr(coro, name,_spaceholder)
+        for coro in list.__iter__(self):
+            attribute = getattr(coro, name, _spaceholder)
             if attribute is _spaceholder:
                 continue
             
             return attribute
         
         raise AttributeError(f'`{self.__class__.__name__}` object has no attribte `{name}`.')
+    
+    append = _spaceholder
+    clear = _spaceholder
+    copy = _spaceholder
+    count = _spaceholder
+    extend = _spaceholder
+    index = _spaceholder
+    insert = _spaceholder
+    pop = _spaceholder
+    remove = _spaceholder
+    reverse = _spaceholder
+    sort = _spaceholder
+
 
 async def DEFAULT_EVENT(*args):
     """
@@ -6736,12 +6760,12 @@ class EventDescriptor(object):
             return func
         
         if type(actual) is asynclist:
-            actual.append(func)
+            list.append(actual, func)
             return func
         
         new = asynclist()
-        new.append(actual)
-        new.append(func)
+        list.append(new, actual)
+        list.append(new, func)
         object.__setattr__(self, name, new)
         return func
     
@@ -6908,26 +6932,27 @@ class EventDescriptor(object):
             return
         
         if type(actual) is asynclist:
-            for index in reversed(range(len(actual))):
-                element = actual[index]
+            for index in reversed(range(list.__len__(actual))):
+                element = list.__getitem__(actual, index)
                 if by_type:
                     element = type(element)
                 
                 if element != func:
                     continue
                 
-                del actual[index]
-                count -=1
+                list.__delitem__(actual, index)
+                count -= 1
                 if count == 0:
                     break
                 
                 continue
             
-            if len(actual) > 1:
+            length = list.__len__(actual)
+            if length > 1:
                 return
             
-            if len(actual) == 0:
-                actual = actual[0]
+            if length == 1:
+                actual = list.__getitem__(actual, 0)
                 object.__setattr__(self, name, actual)
                 return
         

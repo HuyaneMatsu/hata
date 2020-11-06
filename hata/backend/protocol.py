@@ -247,41 +247,161 @@ class RawRequestMessage(RawMessage):
 #TODO: whats the fastest way on pypy ? casting 64 bit ints -> xor -> replace?
 _XOR_TABLE = [bytes(a^b for a in range(256)) for b in range(256)]
 def apply_mask(mask, data):
+    """
+    Applies websocket mask on the given data and returns a new instance.
+    
+    Parameters
+    ----------
+    data : `bytes-like`
+        Data to appply the mask to.
+    mask : `bytes`
+        `uint32` websocket mask in bytes.
+    """
     data_bytes = bytearray(data)
     for index in range(4):
         data_bytes[index::4] = data_bytes[index::4].translate(_XOR_TABLE[mask[index]])
     return data_bytes
 
 class Frame(object):
+    """
+    Represents a webscoket frame.
+    
+    Attributes
+    ----------
+    data : `bytes`
+        The data of the frame.
+    head1 : `int`
+        The first bytes of websocket frame's, because it holds all the required data needed.
+    """
     __slots__ = ('data', 'head1',)
     def __init__(self, fin, opcode, data):
+        """
+        Creates a websocket frame.
+        
+        Paramateres
+        -----------
+        fin : `bool`
+            Whether this websocket frame is a final webscoket frame. When sending websocket frames, the data of frames
+            it collected, till a final frame is received.
+        opcode : `int`
+            The operation code of the websocket.
+            
+            Can be 1 of the following:
+            
+            +-------------------+-------+
+            | Respective name   | Value |
+            +===================+=======+
+            | WS_OP_CONT        | 0     |
+            +-------------------+-------+
+            | WS_OP_TEXT        | 1     |
+            +-------------------+-------+
+            | WS_OP_BINARY      | 2     |
+            +-------------------+-------+
+            | WS_OP_CLOSE       | 8     |
+            +-------------------+-------+
+            | WS_OP_PING        | 9     |
+            +-------------------+-------+
+            | WS_OP_PONG        | 10    |
+            +-------------------+-------+
+        
+        data : `bytes`
+            The data to ship with the webscoket frame.
+        """
         self.data = data
         self.head1 = (fin<<7)|opcode
     
     @property
     def fin(self):
+        """
+        Returns whether the websocket frame is final.
+        
+        Returns
+        -------
+        fin : `bool`
+        """
         return (self.head1&0b10000000)>>7
     
     @property
     def rsv1(self):
+        """
+        Returns the first reserved bit of the websocket frame's head.
+        
+        Defaults to `0˙
+        
+        Returns
+        -------
+        rsv1 : `int`
+        """
         return (self.head1&0b01000000)>>6
     
     @property
     def rsv2(self):
+        """
+        Returns the second reserved bit of the websocket frame's head.
+        
+        Defaults to `0˙
+        
+        Returns
+        -------
+        rsv2 : `int`
+        """
         return (self.head1&0b00100000)>>5
     
     @property
     def rsv3(self):
+        """
+        Returns the third reserved bit of the websocket frame's head.
+        
+        Defaults to `0˙
+        
+        Returns
+        -------
+        rsv3 : `int`
+        """
         return (self.head1&0b00010000)>>4
     
     @property
     def opcode(self):
+        """
+        Returns the websocket frame's opcode.
+        
+        Returns
+        -------
+        opcode : `int`
+            Can be one of the following values:
+            
+            +-------------------+-------+
+            | Respective name   | Value |
+            +===================+=======+
+            | WS_OP_CONT        | 0     |
+            +-------------------+-------+
+            | WS_OP_TEXT        | 1     |
+            +-------------------+-------+
+            | WS_OP_BINARY      | 2     |
+            +-------------------+-------+
+            | WS_OP_CLOSE       | 8     |
+            +-------------------+-------+
+            | WS_OP_PING        | 9     |
+            +-------------------+-------+
+            | WS_OP_PONG        | 10    |
+            +-------------------+-------+
+        """
         return  self.head1&0b00001111
     
     def check(self):
-        #check that this frame contains acceptable values.
+        """
+        Check that this frame contains acceptable values.
+        
+        Raises
+        ------
+        WebSocketProtocolError
+            - If the reserved bits are not `0`.
+            - If the frame is a control frame, but is too long for one.
+            - If the webscoket frame is fragmented frame. (Might be supported if people request is.)
+            - If the frame opcode is not any of the expected ones.
+        """
         if self.head1&0b01110000:
-            raise WebSocketProtocolError('Reserved bits must be 0')
+            raise WebSocketProtocolError('Reserved bits must be 0.')
         
         opcode = self.head1&0b00001111
         if opcode in WS_DATA_OPCODES:
@@ -289,17 +409,46 @@ class Frame(object):
         
         if opcode in WS_CTRL_OPCODES:
             if len(self.data) > 125:
-                raise WebSocketProtocolError('Control frame too long')
+                raise WebSocketProtocolError('Control frame too long.')
             if not self.head1&0b10000000:
-                raise WebSocketProtocolError('Fragmented control frame')
+                raise WebSocketProtocolError('Fragmented control frame.')
             return
         
-        raise WebSocketProtocolError(f'Invalid opcode: {opcode}')
+        raise WebSocketProtocolError(f'Invalid opcode: {opcode}.')
 
 class HTTPStreamWriter(object):
-    __slots__ = ('size', 'chunked', 'compresser', 'eof', 'length', 'loop', 'protocol', 'transport', )
-    def __init__(self, loop, protocol, compression, chunked):
+    """
+    Http writer used by ``ClientRequest``.
+    
+    Attributes
+    ----------
+    size : `int`
+        The amount of written data in bytes. If reaches a limit, drain lock is awaited.
+    chunked : `bool`
+        Whether the http message's content is chunked.
+    compresser : `None` or `lib.compressobj`
+        Decompressor used to compress the sent data. Defaults to `None` if no compression is given.
+    eof : `bool`
+        Whether ``.write_eof`` was called.
+    protocol : `Any`
+        Asynchornous transport implementation.
+    transport : `None` or `Any`
+        Asynchoronous transport implementation. Set as `None` if at eof.
+    """
+    __slots__ = ('size', 'chunked', 'compresser', 'eof', 'protocol', 'transport', )
+    def __init__(self, protocol, compression, chunked):
+        """
+        Creates a new ``HTTPStreamWriter`` with the given parameter.
         
+        Parameters
+        ----------
+        protocol : `Any`
+            Asynchornous transport implementation.
+        compression : `None` or `str`
+            The compression's type to encode the written content with.
+        chunked : `bool`
+            Whether the given data should be written with chunking.
+        """
         if (compression is None):
             compresser = None
         elif compression == 'gzip':
@@ -314,8 +463,6 @@ class HTTPStreamWriter(object):
         self.protocol = protocol
         self.transport = protocol.transport
         
-        self.loop = loop
-        self.length = None
         self.chunked = chunked
         self.size = 0
         
@@ -323,52 +470,78 @@ class HTTPStreamWriter(object):
         self.compresser = None
     
     def _write(self, chunk):
+        """
+        Writes the given chunk of data to the writer's ``.transport``.
+        
+        Parameters
+        ----------
+        chunk : `bytes-like`
+            The data to write.
+        
+        Raises
+        ------
+        ConnectionResetError
+            Cannot write to closing transport.
+        """
         size = len(chunk)
         self.size += size
         
         transport = self.transport
         if (transport is None) or transport.is_closing():
-            raise ConnectionResetError('Cannot write to closing transport')
+            raise ConnectionResetError('Cannot write to closing transport.')
         
         transport.write(chunk)
     
-    async def write(self, chunk,):
-        #Writes chunk of data to a stream.
-        #
-        #write_eof() indicates end of stream.
-        #writer can't be used after write_eof() method being called.
-        #write() return drain future.
+    async def write(self, chunk):
+        """
+        Writes the given chunk of data to the writer's ``.transport``.
         
+        Compresses and "chunks" the `chunk` if applicable. If after writing the respective buffer limit is reached,
+        waits for drainlock.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        chunk : `bytes-like`
+            The data to write.
+        
+        Raises
+        ------
+        ConnectionResetError
+            Cannot write to closing transport.
+        """
         compresser = self.compresser
         if (compresser is not None):
             chunk = compresser.compress(chunk)
-            if not chunk:
-                return
         
-        length = self.length
-        if (length is not None):
-            chunk_len = len(chunk)
-            if length >= chunk_len:
-                self.length = length-chunk_len
-            else:
-                chunk = chunk[:length]
-                self.length=0
-                if not chunk:
-                    return
+        if not chunk:
+            return
         
-        if chunk:
-            if self.chunked:
-                chunk = b''.join([len(chunk).__format__('x').encode('ascii'), b'\r\n', chunk, b'\r\n'])
-            
-            self._write(chunk)
-            
-            if self.size > WRITE_CHUNK_LIMIT:
-                self.size = 0
-                protocol = self.protocol
-                if protocol.transport is not None:
-                    await protocol._drain_helper()
+        if self.chunked:
+            chunk = b''.join([len(chunk).__format__('x').encode('ascii'), b'\r\n', chunk, b'\r\n'])
+        
+        self._write(chunk)
+        
+        if self.size > WRITE_CHUNK_LIMIT:
+            self.size = 0
+            protocol = self.protocol
+            if protocol.transport is not None:
+                await protocol._drain_helper()
     
     async def write_eof(self, chunk=b''):
+        """
+        Write end of stream to the writer's ``.transport`` and marks it as it is at eof.
+        
+        If the writer is already at eof, does nothing.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        chunk : `bytes-like`
+            The data to write.
+        """
         if self.eof:
             return
         
@@ -382,8 +555,10 @@ class HTTPStreamWriter(object):
         else:
             if chunk:
                 chunk = compresser.compress(chunk)
+                chunk = chunk+compresser.flush()
+            else:
+                chunk = compresser.flush()
             
-            chunk = chunk+compresser.flush()
             if chunk and self.chunked:
                 chunk = b''.join([len(chunk).__format__('x').encode('ascii'), b'\r\n', chunk, b'\r\n0\r\n\r\n'])
         
@@ -398,15 +573,13 @@ class HTTPStreamWriter(object):
         self.transport = None
     
     async def drain(self):
-        #Flush the write buffer.
-        #
-        #The intended use is to write
-        #
-        #await w.write(data)
-        #await w.drain()
+        """
+        Flushes the write buffer.
+        """
         protocol = self.protocol
         if (protocol.transport is not None):
             await protocol._drain_helper()
+
 
 class ReadProtocolBase(object):
     """
@@ -455,6 +628,7 @@ class ReadProtocolBase(object):
         self._paused = False
     
     def __repr__(self):
+        """Returns the transport's representation."""
         result = [
             '<',
             self.__class__.__name__,
@@ -499,6 +673,13 @@ class ReadProtocolBase(object):
         return ''.join(result)
     
     def should_close(self):
+        """
+        Returns the protocol should be closed.
+        
+        Returns
+        -------
+        should_close : `bool`
+        """
         if (self.payload_waiter is not None):
             return True
         
@@ -510,23 +691,58 @@ class ReadProtocolBase(object):
         
         return False
     
-    # compability method
     def connection_made(self, transport):
+        """
+        Called when a connection is made.
+        
+        Parameters
+        ----------
+        transport : `Any`
+            Asynchronous transport implementation, what calls the protocol's ``.data_received`` when data is
+            received.
+        """
         self.transport = transport
     
-    # compability method
     def connection_lost(self, exception):
+        """
+        Called when the connection is lost or closed.
+        
+        Parameters
+        ----------
+        exception : `None` or `BaseException` instance
+            Defines whether the connection is closed, or an exception was received.
+            
+            If the connection was closed, then `err` is given as `None`. This can happen at the case, when eof is
+            received as well.
+        """
         if exception is None:
             self.eof_received()
         else:
             self.set_exception(exception)
     
     def close(self):
+        """
+        Closes the protocol by closing it's transport if applicable.
+        """
         transport = self.transport
         if (transport is not None):
             transport.close()
     
     def get_extra_info(self, name, default=None):
+        """
+        Gets optional transport information.
+        
+        Parameters
+        ----------
+        name : `str`
+            The extra information's name to get.
+        default : `Any`
+            Default value to return if `name` could not be macthed. Defaults to `None`.
+        
+        Returns
+        -------
+        info : `default`, `Any`
+        """
         transport = self.transport
         if transport is None:
             return default
@@ -536,18 +752,27 @@ class ReadProtocolBase(object):
     # read related
     @property
     def size(self):
+        """
+        Returns the received and not yet processed data's size by the protocol.
+        
+        Returns
+        -------
+        size : `int`
+        """
         result = - self._offset
         for chunk in self._chunks:
             result += len(chunk)
         
         return result
     
-    def _maybe_resume_tranport(self):
-        if self._paused and len(self._chunks) < CHUNK_LIMIT:
-            self._paused = False
-            self.transport.resume_reading()
-    
     def at_eof(self):
+        """
+        Reutnrs whether the protocol is at eof. If at eof, but has content left, then returns `False` however.
+        
+        Returns
+        -------
+        at_eof : `bool`
+        """
         if not self._eof:
             return False
         
@@ -560,6 +785,14 @@ class ReadProtocolBase(object):
         return True
     
     def set_exception(self, exception):
+        """
+        Called by ``.connection_lost`` if the connection is closed by an exception, or can be called if any method
+        of the protocol raises an unexpected exception.
+        
+        Parameters
+        ----------
+        exception : `BaseException` instance
+        """
         self.exception = exception
         
         payload_waiter = self.payload_waiter
@@ -572,13 +805,17 @@ class ReadProtocolBase(object):
         self.payload_reader.close()
         self.payload_reader = None
     
-    # compability method
     def eof_received(self):
+        """
+        ``.connection_lost`` without expection causes eof.
+        
+        Marks the protocols as it is at eof and stops payload processing if applicable.
+        """
         self._eof = True
         
         payload_reader = self.payload_reader
         if payload_reader is None:
-            return
+            return False
         
         try:
              payload_reader.throw(CancelledError())
@@ -618,8 +855,15 @@ class ReadProtocolBase(object):
         
         return False
     
-    # compability method
     def data_received(self, data):
+        """
+        Called when some data is received.
+        
+        Parameters
+        ----------
+        data : `bytes`
+            The received data.
+        """
         if not data:
             return
         
@@ -666,19 +910,35 @@ class ReadProtocolBase(object):
                 self.payload_waiter = None
                 payload_waiter.set_exception_if_pending(err)
     
-    # If you expect that the payload waiter will be cancelled from outside, call this method.
     def handle_payload_waiter_cancellation(self):
+        """
+        If you expect, that the payload waiter will be cancelled from outside, call this method to thorw eof into the
+        protocol at that case.
+        """
         payload_waiter = self.payload_waiter
         if (payload_waiter is not None):
             payload_waiter.add_done_callback(self._payload_waiter_cancellation_cb)
     
     def _payload_waiter_cancellation_cb(self, future):
+        """
+        Callback to the ``.payload_waiter`` by ``.handle_payload_waiter_cancellation`` to thorw eof into the
+        ``.payload_reader`` task if payload waiter is cancelled from outside.
+        
+        Parameters
+        ----------
+        future : ``Future``
+            The respective ``.payload_waiter``.
+        """
         if future.cancelled():
             self.eof_received()
     
     def cancel_current_reader(self):
         """
         Cancels the current reader task of the protocol.
+        
+        Notes
+        -----
+        The used data by the payload reader task cannot be reused.
         """
         payload_reader = self.payload_reader
         if payload_reader is None:
@@ -894,7 +1154,7 @@ class ReadProtocolBase(object):
                     f'not found.')
             
             continue
-        
+    
     def _read_exactly(self, n):
         if n < 1:
             if n < 0:
@@ -1646,7 +1906,7 @@ class DatagramAddressedReadProtocol(object):
         Parameters
         ----------
         exception : `None` or `BaseException` instance
-            Defines whether the connection is closed, or except was received.
+            Defines whether the connection is close, or an exception was received.
             
             If the connection was closed, then `err` is given as `None`. This can happen at the case, when eof is
             received as well.

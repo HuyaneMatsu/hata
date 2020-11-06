@@ -87,13 +87,13 @@ def setup_ext_commands(client, prefix, **kwargs):
             break
         
         if type(event_message_create) is asynclist:
-            for event in event_message_create:
-                if isinstance(event,CommandProcesser):
+            for event in list.__iter__(event_message_create):
+                if isinstance(event, CommandProcesser):
                     raise RuntimeError(f'The client already has a `{CommandProcesser.__name__}` instance added as '
                         f'event.')
             break
         
-        if isinstance(event_message_create,CommandProcesser):
+        if isinstance(event_message_create, CommandProcesser):
             raise RuntimeError(f'The client already has a `{CommandProcesser.__name__}` instance added as event.')
         
         break
@@ -109,7 +109,7 @@ def setup_ext_commands(client, prefix, **kwargs):
             break
         
         if type(event_reaction_add) is asynclist:
-            for event in event_reaction_add:
+            for event in list.__iter__(event_reaction_add):
                 if isinstance(event, EventWaitforBase):
                     break
             else:
@@ -130,7 +130,7 @@ def setup_ext_commands(client, prefix, **kwargs):
             break
         
         if type(event_reaction_delete) is asynclist:
-            for event in event_reaction_add:
+            for event in list.__iter__(event_reaction_add):
                 if isinstance(event, EventWaitforBase):
                     break
             else:

@@ -1838,7 +1838,7 @@ async def emoji_converter(parser_ctx, content_parser_ctx):
                 guild = message.channel.guild
                 if (guild is not None):
                     try:
-                        emoji = guild.EMOJIS[id_]
+                        emoji = guild.emojis[id_]
                     except KeyError:
                         pass
                     else:

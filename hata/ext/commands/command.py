@@ -1180,6 +1180,7 @@ class checks:
     from ...discord.role import Role
     from ...discord.channel import ChannelBase, ChannelText
     from ...discord.parsers import check_argcount_and_convert
+    from ...backend.analyzer import CallableAnalyzer
     
     def validate_checks(checks_):
         """

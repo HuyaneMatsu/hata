@@ -21,7 +21,8 @@ from .client_core import CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO
 from .user import User, PartialUser, USERS
 from .channel import CHANNEL_TYPES, ChannelGuildBase, ChannelPrivate
 from .others import Relationship, Gift
-from .guild import EMOJI_UPDATE_NEW, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, Guild
+from .guild import EMOJI_UPDATE_NEW, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, VOICE_STATE_NONE, VOICE_STATE_JOIN, \
+    VOICE_STATE_LEAVE, VOICE_STATE_UPDATE, Guild
 from .emoji import PartialEmoji
 from .role import Role
 from .exceptions import DiscordException, ERROR_CODES
@@ -136,6 +137,9 @@ INTENT_EVENTS = {
         'GUILD_EMOJIS_UPDATE',
             ),
     INTENT_GUILD_INTEGRATIONS : (
+        'INTEGRATION_CREATE',
+        'INTEGRATION_DELETE',
+        'INTEGRATION_UPDATE',
         'GUILD_INTEGRATIONS_UPDATE',
             ),
     INTENT_GUILD_WEBHOOKS : (
@@ -236,6 +240,7 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
     +---------------------------+---------------+-----------------------+-----------------------------------+
     | INTENT_GUILD_INTEGRATIONS | 4             | guild_integrations    | INTEGRATION_CREATE                |
     |                           |               |                       | INTEGRATION_DELETE                |
+    |                           |               |                       | INTEGRATION_UPDATE                |
     |                           |               |                       | GUILD_INTEGRATIONS_UPDATE         |
     +---------------------------+---------------+-----------------------+-----------------------------------+
     | INTENT_GUILD_WEBHOOKS     | 5             | guild_webhooks        | WEBHOOKS_UPDATE                   |
@@ -3489,6 +3494,31 @@ PARSER_DEFAULTS(
 del INTEGRATION_DELETE__CAL, \
     INTEGRATION_DELETE__OPT
 
+def INTEGRATION_UPDATE__CAL(client, data):
+    guild_id = int(data['guild_id'])
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        guild_sync(client, data, 'INTEGRATION_UPDATE')
+        return
+    
+    integration = Integration(data)
+    
+    Task(client.events.integration_edit(client, guild, integration), KOKORO)
+
+def INTEGRATION_UPDATE__OPT(client, data):
+    pass
+
+PARSER_DEFAULTS(
+    'INTEGRATION_UPDATE',
+    INTEGRATION_UPDATE__CAL,
+    INTEGRATION_UPDATE__CAL,
+    INTEGRATION_UPDATE__OPT,
+    INTEGRATION_UPDATE__OPT)
+del INTEGRATION_UPDATE__CAL, \
+    INTEGRATION_UPDATE__OPT
+
+
 def GUILD_INTEGRATIONS_UPDATE__CAL(client, data):
     guild_id = int(data['guild_id'])
     try:
@@ -3510,6 +3540,7 @@ PARSER_DEFAULTS(
     GUILD_INTEGRATIONS_UPDATE__OPT)
 del GUILD_INTEGRATIONS_UPDATE__CAL, \
     GUILD_INTEGRATIONS_UPDATE__OPT
+
 
 def GUILD_ROLE_CREATE__CAL_SC(client, data):
     guild_id = int(data['guild_id'])
@@ -3804,50 +3835,68 @@ del WEBHOOKS_UPDATE__CAL, \
 
 def VOICE_STATE_UPDATE__CAL_SC(client, data):
     try:
-        id_ = int(data['guild_id'])
+        guild_id = data['guild_id']
     except KeyError:
         # Do not handle outside of guild calls
         return
     else:
+        guild_id = int(guild_id)
         try:
-            guild = GUILDS[id_]
+            guild = GUILDS[guild_id]
         except KeyError:
             guild_sync(client, data, 'VOICE_STATE_UPDATE')
             return
     
     try:
-        user = User(data['member'], guild)
+        user_data = data['member']
     except KeyError:
-        user = User(data['user'])
-    result = guild._update_voice_state(data, user)
+        user_data = data['user']
     
-    if result is None:
+    user = User(user_data)
+    
+    action, voice_state, old_attributes = guild._update_voice_state(data, user)
+    
+    if action == VOICE_STATE_NONE:
         return
     
-    #need to comapre id, because if caching is disabled,
-    #the objects will be different.
-    if user == client:
+    if user is client:
         try:
-            voice_client = client.voice_clients[id_]
+            voice_client = client.voice_clients[guild_id]
         except KeyError:
             pass
         else:
-            if result[1] == 'l':
+            if action == VOICE_STATE_JOIN or action == VOICE_STATE_UPDATE:
+                # If the action is join or update, set the voice client's channel.
+                voice_client.channel = voice_state.channel
+            elif action == VOICE_STATE_LEAVE:
+                # If the user is client, then disconnect it.
                 Task(voice_client.disconnect(force=True, terminate=False), KOKORO)
-            else:
-                voice_client.channel = result[0].channel
     
-    Task(client.events.voice_state_update(client, *result), KOKORO)
+    if action == VOICE_STATE_JOIN:
+        event = client.events.user_voice_join
+        if (event is not DEFAULT_EVENT):
+            Task(event(client, voice_state), KOKORO)
+    
+    elif action == VOICE_STATE_LEAVE:
+        event = client.events.user_voice_leave
+        if (event is not DEFAULT_EVENT):
+            Task(event(client, voice_state), KOKORO)
+        
+    elif action == VOICE_STATE_UPDATE:
+        event = client.events.user_voice_update
+        if (event is not DEFAULT_EVENT):
+            Task(event(client, voice_state, old_attributes), KOKORO)
 
 def VOICE_STATE_UPDATE__CAL_MC(client, data):
     try:
-        id_ = int(data['guild_id'])
+        guild_id = data['guild_id']
     except KeyError:
         # Do not handle outside of guild calls
         return
     else:
+        guild_id = int(guild_id)
         try:
-            guild = GUILDS[id_]
+            guild = GUILDS[guild_id]
         except KeyError:
             guild_sync(client, data, 'VOICE_STATE_UPDATE')
             return
@@ -3858,77 +3907,96 @@ def VOICE_STATE_UPDATE__CAL_MC(client, data):
         return
     
     try:
-        user = User(data['member'], guild)
+        user_data = data['member']
     except KeyError:
-        user = User(data['user'])
-    result = guild._update_voice_state(data, user)
+        user_data = data['user']
     
-    if result is None:
+    user = User(user_data)
+    
+    action, voice_state, old_attributes = guild._update_voice_state(data, user)
+    
+    if action == VOICE_STATE_NONE:
         return
     
+    if type(user) is not User:
+        try:
+            voice_client = user.voice_clients[guild_id]
+        except KeyError:
+            pass
+        else:
+            if action == VOICE_STATE_JOIN or action == VOICE_STATE_UPDATE:
+                # If the action is join or update, set the voice client's channel.
+                voice_client.channel = voice_state.channel
+            elif action == VOICE_STATE_LEAVE:
+                # If the user is client, then disconnect it.
+                Task(voice_client.disconnect(force=True, terminate=False), KOKORO)
+    
     for client_ in clients:
-        #need to comapre id, because if caching is disabled,
-        #the objects will be different.
-        if user == client_:
-            try:
-                voice_client = client_.voice_clients[id_]
-            except KeyError:
-                pass
-            else:
-                if result[1] == 'l':
-                    Task(voice_client.disconnect(force=True, terminate=False), KOKORO)
-                else:
-                    voice_client.channel = result[0].channel
+        if action == VOICE_STATE_JOIN:
+            event = client_.events.user_voice_join
+            if (event is not DEFAULT_EVENT):
+                Task(event(client, voice_state), KOKORO)
         
-        Task(client_.events.voice_state_update(client_, *result), KOKORO)
+        elif action == VOICE_STATE_LEAVE:
+            event = client_.events.user_voice_leave
+            if (event is not DEFAULT_EVENT):
+                Task(event(client, voice_state), KOKORO)
+            
+        elif action == VOICE_STATE_UPDATE:
+            event = client_.events.user_voice_update
+            if (event is not DEFAULT_EVENT):
+                Task(event(client, voice_state, old_attributes), KOKORO)
 
 def VOICE_STATE_UPDATE__OPT_SC(client, data):
     try:
-        id_ = int(data['guild_id'])
+        guild_id = data['guild_id']
     except KeyError:
         # Do not handle outside of guild calls
         return
     else:
+        guild_id = int(guild_id)
         try:
-            guild = GUILDS[id_]
+            guild = GUILDS[guild_id]
         except KeyError:
             guild_sync(client, data, 'VOICE_STATE_UPDATE')
             return
     
     try:
-        user = User(data['member'], guild)
+        user_data = data['member']
     except KeyError:
-        user = User(data['user'])
+        user_data = data['user']
     
-    result = guild._update_voice_state_restricted(data, user)
+    user = User(user_data)
     
-    if result is None:
+    action, voice_state = guild._update_voice_state_restricted(data, user)
+    
+    if action == VOICE_STATE_NONE:
         return
     
-    #need to comapre id, because if caching is disabled,
-    #the objects will be different.
-    if user != client:
-        return
-    
-    try:
-        voice_client = client.voice_clients[id_]
-    except KeyError:
-        return
-    
-    if result is _spaceholder:
-        Task(voice_client.disconnect(force=True, terminate=False), KOKORO)
-    else:
-        voice_client.channel = result
+    if user is client:
+        try:
+            voice_client = client.voice_clients[guild_id]
+        except KeyError:
+            pass
+        else:
+            if action == VOICE_STATE_JOIN or action == VOICE_STATE_UPDATE:
+                # If the action is join or update, set the voice client's channel.
+                voice_client.channel = voice_state.channel
+            elif action == VOICE_STATE_LEAVE:
+                # If the user is client, then disconnect it.
+                Task(voice_client.disconnect(force=True, terminate=False), KOKORO)
+
 
 def VOICE_STATE_UPDATE__OPT_MC(client, data):
     try:
-        id_ = int(data['guild_id'])
+        guild_id = data['guild_id']
     except KeyError:
         # Do not handle outside of guild calls
         return
     else:
+        guild_id = int(guild_id)
         try:
-            guild = GUILDS[id_]
+            guild = GUILDS[guild_id]
         except KeyError:
             guild_sync(client, data, 'VOICE_STATE_UPDATE')
             return
@@ -3937,31 +4005,29 @@ def VOICE_STATE_UPDATE__OPT_MC(client, data):
         return
     
     try:
-        user = User(data['member'], guild)
+        user_data = data['member']
     except KeyError:
-        user = User(data['user'])
-    result = guild._update_voice_state_restricted(data, user)
+        user_data = data['user']
     
-    if result is None:
+    user = User(user_data)
+    
+    action, voice_state = guild._update_voice_state_restricted(data, user)
+    
+    if action == VOICE_STATE_NONE:
         return
     
-    for client in guild.clients:
-        #need to comapre id, because if caching is disabled,
-        #the objects will be different.
-        if user == client:
-            break
-    else:
-        return
-    
-    try:
-        voice_client = client.voice_clients[id_]
-    except KeyError:
-        return
-    
-    if result is _spaceholder:
-        Task(voice_client.disconnect(force=True, terminate=False), KOKORO)
-    else:
-        voice_client.channel = result
+    if type(user) is not User:
+        try:
+            voice_client = user.voice_clients[guild_id]
+        except KeyError:
+            pass
+        else:
+            if action == VOICE_STATE_JOIN or action == VOICE_STATE_UPDATE:
+                # If the action is join or update, set the voice client's channel.
+                voice_client.channel = voice_state.channel
+            elif action == VOICE_STATE_LEAVE:
+                # If the user is client, then disconnect it.
+                Task(voice_client.disconnect(force=True, terminate=False), KOKORO)
 
 PARSER_DEFAULTS(
     'VOICE_STATE_UPDATE',
@@ -4252,12 +4318,15 @@ EVENTS.add_default('guild_ban_delete'           , 3 , 'GUILD_BAN_REMOVE'        
 EVENTS.add_default('guild_user_chunk'           , 2 , 'GUILD_MEMBERS_CHUNK'                     , )
 EVENTS.add_default('integration_create'         , 3 , 'INTEGRATION_CREATE'                      , )
 EVENTS.add_default('integration_delete'         , 4 , 'INTEGRATION_DELETE'                      , )
+EVENTS.add_default('integration_edit'           , 3 , 'INTEGRATION_UPDATE'                      , )
 EVENTS.add_default('integration_update'         , 2 , 'GUILD_INTEGRATIONS_UPDATE'               , )
 EVENTS.add_default('role_create'                , 2 , 'GUILD_ROLE_CREATE'                       , )
 EVENTS.add_default('role_delete'                , 3 , 'GUILD_ROLE_DELETE'                       , )
 EVENTS.add_default('role_edit'                  , 3 , 'GUILD_ROLE_UPDATE'                       , )
 EVENTS.add_default('webhook_update'             , 2 , 'WEBHOOKS_UPDATE'                         , )
-EVENTS.add_default('voice_state_update'         , 4 , 'VOICE_STATE_UPDATE'                      , )
+EVENTS.add_default('user_voice_join'            , 2 , 'VOICE_STATE_UPDATE'                      , )
+EVENTS.add_default('user_voice_leave'           , 2 , 'VOICE_STATE_UPDATE'                      , )
+EVENTS.add_default('user_voice_update'          , 3 , 'VOICE_STATE_UPDATE'                      , )
 EVENTS.add_default('typing'                     , 4 , 'TYPING_START'                            , )
 EVENTS.add_default('invite_create'              , 2 , 'INVITE_CREATE'                           , )
 EVENTS.add_default('invite_delete'              , 2 , 'INVITE_DELETE'                           , )
@@ -6157,7 +6226,7 @@ class asynclist(list):
         """Gets the given attribute from the elements of the asynclist."""
         if not isinstance(name, str):
             raise TypeError(f'Attribute name must be string, not `{name.__class__.__name__}`.')
-        print(name)
+        
         try:
             attribute = object.__getattribute__(self, name)
         except AttributeError:
@@ -6457,6 +6526,9 @@ class EventDescriptor(object):
         Called when a guild has one of it's integrations deleted. If the integration is bound to an application, like
         a bot, then `application_id` is given as `int`.
     
+    integration_edit(client: ``Client``, guild: ``Guild``, integration: ``Integration``):
+        Called when an integration is edited inside of a guild.
+    
     integration_update(client: ``Client``, guild: ``Guild``):
         Called when an ``Integration`` of a guild is updated.
         
@@ -6647,23 +6719,14 @@ class EventDescriptor(object):
         | roles             | `None` or `list` of ``Role``  |
         +-------------------+-------------------------------+
     
-    voice_state_update(client: ``Client``, state: ``VoiceState``, action: `str`, old_attributes: Union[`None`, `dict`]):
-        Called when a voice state is updated inside of a ``ChannelVoice``.
-        
-        The `action` argument can be any of the following:
-        
-        +-------------------+-------+
-        | Respective name   | Value |
-        +===================+=======+
-        | leave             | `'l'` |
-        +-------------------+-------+
-        | join              | `'j'` |
-        +-------------------+-------+
-        | update            | `'u'` |
-        +-------------------+-------+
-        
-        If `action` is given as `'u'`, then the `old_attributes` argument will be given as a `dict` with the voice
-        state's updated attributes within `attribute-name` - `old-attribute` relation.
+    user_voice_join(client: ``Client``, voice_state: ``VoiceState``)
+        Called when a user joins a voice channel.
+    
+    user_voice_leave(client: ``client``, voice_state: ``VoiceState``)
+        Called when a user leaves from a voice channel.
+    
+    user_voice_update(client: ``Client``, voice_state: ``VoiceState``, old_attributes: `dict`):
+        Called when a voice state of a user is updated.
         
         Every item in `old_attributes` is optional and they can be the following:
         

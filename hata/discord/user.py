@@ -2085,6 +2085,7 @@ class ActivityUpdate(object):
         yield self.activity
         yield self.old_attributes
 
+
 class VoiceState(object):
     """
     Represents a user at a ``ChannelVoice``.

@@ -13,8 +13,27 @@ from .protocol import ZLIB_COMPRESSOR, BROTLI_COMPRESSOR
 from .exceptions import ContentEncodingError
 
 BIG_CHUNK_LIMIT = 1<<16
+DEFAULT_CONTENT_TYPE = 'application/octet-stream'
+    
+VALID_TCHAR_RP = re.compile(br'\A[!#$%&\'*+\-.^_`|~\w]+\Z')
+INVALID_QDTEXT_CHAR_RP = re.compile(br'[\x00-\x08\x0A-\x1F\x7F]')
 
-def create_payload(data, *args, **kwargs):
+def create_payload(data, kwargs):
+    """
+    Creates a new ``PayloadBase`` instance with the given parameters.
+    
+    Parameters
+    ----------
+    data : (`list` of ``PayloadBase`` instances), ``BodyPartReader``, `bytes`, `bytearray`, `memoryview`, `str`, \
+            `BytesIO`, `StringIO`, `TextIOBase`, `BufferedReader`, `BufferedRandom`, `IOBase`, ``AsyncIO``, \
+            `async-iterable` instance
+    kwargs : `dict` of (`str`, (`None` or `str`)) items
+        Keyword arguments for the payload.
+    
+    Returns
+    -------
+    payload : ``PayloadBase``
+    """
     data_type = data.__class__
     if issubclass(data_type, BodyPartReader):
         type_ = BodyPartReaderPayload
@@ -37,231 +56,677 @@ def create_payload(data, *args, **kwargs):
     elif hasattr(data_type, '__aiter__'):
         type_ = AsyncIterablePayload
     else:
-        raise LookupError
+        raise LookupError(data_type)
     
-    return type_(data, *args, **kwargs)
+    return type_(data, kwargs)
 
 
-class PayloadBase:
-    _default_content_type = 'application/octet-stream'
-    def __init__(self, value, *, headers=None, content_type=sentinel, filename=None, encoding=None, **kwargs):
-        self.value = value
-        self.encoding = encoding
-        self.filename = filename
-        if (headers is not None) and headers:
-            headers = imultidict(headers)
-            self.headrs = headers
-            if content_type is sentinel and CONTENT_TYPE in headers:
-                content_type = headers[CONTENT_TYPE]
-        else:
-            self.headers = None
+class PayloadBase(object):
+    """
+    Base class for payloads.
+    
+    Attributes
+    ----------
+    content_type : `None` or `str`
+        The payload's content type.
+    data : (`list` of ``PayloadBase`` instances), ``BodyPartReader``, `bytes`, `bytearray`, `memoryview`, `str`, \
+            `BytesIO`, `StringIO`, `TextIOBase`, `BufferedReader`, `BufferedRandom`, `IOBase`, ``AsyncIO``, \
+            `async-iterable` instance
+        The payload itself.
+    filename : `None` or `str`
+        The payload's file's name if applicable.
+    encoding : `None` or`str`
+        Encoding used to encode the payload's data.
+    headers : `imultidict` of (`str`, `str`) items
+        Payload specific headers.
+    size : `None` or `int`
+        The payload's size if applicable.
+    """
+    __slots__ = ('content_type', 'data', 'encoding', 'filename', 'headers', 'size', )
+    def __init__(self, data, kwargs):
+        """
+        Creates a new ``PayloadBase`` instance.
         
-        if content_type is sentinel:
-            content_type = None
+        Parameters
+        ----------
+        data : (`list` of ``PayloadBase`` instances), ``BodyPartReader``, `bytes`, `bytearray`, `memoryview`, `str`, \
+                `BytesIO`, `StringIO`, `TextIOBase`, `BufferedReader`, `BufferedRandom`, `IOBase`, ``AsyncIO``, \
+                `async-iterable` instance
+            The payload's data.
+        kwargs : `dict` of (`str`, `Any`) items
+            Additional keyword arguments.
+        """
+        self.data = data
+        self.encoding = kwargs.get('encoding')
+        self.filename = filename = kwargs.get('filename')
+        self.size = None
         
-        self._content_type = content_type
-        self._size = None
-
-    #at some places (1 at least) it is porperty so must change everywhere)
-    @property
-    def size(self):
-        return self._size
-    
-    @property
-    def content_type(self):
-        if self._content_type is not None:
-            return self._content_type
-        elif (self.filename is not None):
-            mime = mimetypes.guess_type(self.filename)[0]
-            return 'application/octet-stream' if mime is None else mime
-        else:
-            return PayloadBase._default_content_type
-    
-    def set_content_disposition(self, disptype, params, quote_fields=True):
-        headers = self.headers
-        if headers is None:
+        headers = kwargs.get('headers')
+        if (headers is None) or (not headers):
             headers = imultidict()
-            self.headers = headers
         else:
-            headers.popall(CONTENT_DISPOSITION, None)
+            headers = imultidict(headers)
+            if ('content_type' not in kwargs) and (CONTENT_TYPE in headers):
+                content_type = headers[CONTENT_TYPE]
         
-        headers[CONTENT_DISPOSITION] = content_disposition_header(disptype, params, quote_fields=quote_fields)
-
-
-class BytesPayload(PayloadBase):
+        self.headers = headers
+        
+        content_type = kwargs.get('content_type')
+        if content_type is None:
+            if filename is None:
+                content_type = DEFAULT_CONTENT_TYPE
+            else:
+                mime = mimetypes.guess_type(self.filename)[0]
+                if mime is None:
+                    content_type = DEFAULT_CONTENT_TYPE
+                else:
+                    content_type = mime
+        
+        self.content_type = content_type
     
-    def __init__(self, value, *args, **kwargs):
-        if 'content_type' not in kwargs:
-            kwargs['content_type'] = 'application/octet-stream'
+    def set_content_disposition(self, disposition_type, params, quote_fields=True):
+        """
+        Sets content disposition header to the payload.
         
-        PayloadBase.__init__(self, value, *args, **kwargs)
-        
-        self._size = len(value)
+        Parameters
+        ----------
+        disposition_type : `str`
+            The disposition's type.
+        params : `dict` of (`str`, `str`) items
+            Additional parameters.
+        quote_fields : `bool`
+            Whether field values should be quoted.
+        """
+        headers = self.headers
+        headers.popall(CONTENT_DISPOSITION, None)
+        headers[CONTENT_DISPOSITION] = content_disposition_header(disposition_type, params, quote_fields=quote_fields)
     
     async def write(self, writer):
-        await writer.write(self.value)
+        """
+        Writes the payload to the given http writer.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        writer : ``HTTPStreamWriter``
+            Http writer to write the payload's data to.
+        """
+        pass
+
+class BytesPayload(PayloadBase):
+    """
+    Payload class for `bytes-like` objects.
+    
+    Attributes
+    ----------
+    content_type : `None` or `str`
+        The payload's content type.
+    data : `bytes`, `bytearray`, `memoryview` instance
+        The payload itself.
+    filename : `None` or `str`
+        The payload's file's name if applicable.
+    encoding : `None` or`str`
+        Encoding used to encode the payload's data.
+    headers : ``imultidict`` of (`str`, `str`) items
+        Payload specific headers.
+    size : `None` or `int`
+        The payload's size if applicable.
+    """
+    __slots__ = ()
+    
+    def __init__(self, data, kwargs):
+        """
+        Creates a new ``BytesPayload`` instance.
+        
+        Parameters
+        ----------
+        data : `bytes`, `bytearray`, `memoryview` instance
+            The payload's data.
+        kwargs : `dict` of (`str`, `Any`) items
+            Additional keyword arguments.
+        """
+        kwargs.setdefault('content_type', DEFAULT_CONTENT_TYPE)
+        
+        PayloadBase.__init__(self, data, kwargs)
+        
+        self.size = len(data)
+    
+    async def write(self, writer):
+        """
+        Writes the payload to the given http writer.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        writer : ``HTTPStreamWriter``
+            Http writer to write the payload's data to.
+        """
+        await writer.write(self.data)
 
 
 class StringPayload(BytesPayload):
-
-    def __init__(self, value, *args, encoding=None, content_type=None, **kwargs):
+    """
+    Payload class for `bytes-like` objects.
+    
+    Attributes
+    ----------
+    content_type : `None` or `str`
+        The payload's content type.
+    data : `bytes`
+        The payload itself.
+    filename : `None` or `str`
+        The payload's file's name if applicable.
+    encoding : `None` or`str`
+        Encoding used to encode the payload's data.
+    headers : ``imultidict`` of (`str`, `str`) items
+        Payload specific headers.
+    size : `None` or `int`
+        The payload's size if applicable.
+    """
+    __slots__ = ()
+    def __init__(self, data, kwargs):
+        """
+        Creates a new ``StringPayload`` instance.
+        
+        Parameters
+        ----------
+        data : `str` instance
+            The payload's data.
+        kwargs : `dict` of (`str`, `Any`) items
+            Additional keyword arguments.
+        """
+        encoding = kwargs.get('encoding')
+        content_type = kwargs.get('content_type')
         if encoding is None:
             if content_type is None:
                 encoding = 'utf-8'
                 content_type = 'text/plain; charset=utf-8'
+                
+                kwargs['content_type'] = content_type
             else:
                 mimetype = MimeType(content_type)
                 encoding = mimetype.params.get('charset', 'utf-8')
+            
+            kwargs['encoding'] = encoding
+        
         else:
             if content_type is None:
                 content_type = f'text/plain; charset={encoding}'
+                kwargs['content_type'] = content_type
         
-        BytesPayload.__init__(self, value.encode(encoding), encoding=encoding, content_type=content_type, *args,
-            **kwargs)
+        data = data.encode(encoding)
+        
+        BytesPayload.__init__(self, data, kwargs)
 
 
 class StringIOPayload(StringPayload):
+    """
+    Payload class for string io objects.
     
-    def __init__(self, value, *args, **kwargs):
-        StringPayload.__init__(self, value.read() *args, **kwargs)
+    Attributes
+    ----------
+    content_type : `None` or `str`
+        The payload's content type.
+    data : `bytes`
+        The payload itself.
+    filename : `None` or `str`
+        The payload's file's name if applicable.
+    encoding : `None` or`str`
+        Encoding used to encode the payload's data.
+    headers : ``imultidict`` of (`str`, `str`) items
+        Payload specific headers.
+    size : `None` or `int`
+        The payload's size if applicable.
+    """
+    __slots__ = ()
+    def __init__(self, data, kwargs):
+        """
+        Creates a new ``StringIOPayload`` instance.
+        
+        Parameters
+        ----------
+        data : `StringIO` instance
+            The payload's data.
+        kwargs : `dict` of (`str`, `Any`) items
+            Additional keyword arguments.
+        """
+        data = data.read()
+        StringPayload.__init__(self, data, kwargs)
 
 
 class IOBasePayload(PayloadBase):
-
-    def __init__(self, value, disposition='attachment', *args, **kwargs):
+    """
+    Payload class for `IOBase` instances.
+    
+    Attributes
+    ----------
+    content_type : `None` or `str`
+        The payload's content type.
+    data : `IOBase` instance
+        The payload itself.
+    filename : `None` or `str`
+        The payload's file's name if applicable.
+    encoding : `None` or`str`
+        Encoding used to encode the payload's data.
+    headers : ``imultidict`` of (`str`, `str`) items
+        Payload specific headers.
+    size : `None` or `int`
+        The payload's size if applicable.
+    """
+    __slots__ = ()
+    def __init__(self, data, kwargs):
+        """
+        Creates a new ``IOBasePayload`` instance.
+        
+        Parameters
+        ----------
+        data : `IOBase` instance
+            The payload's data.
+        kwargs : `dict` of (`str`, `Any`) items
+            Additional keyword arguments.
+        """
         if 'filename' not in kwargs:
-            kwargs['filename'] = getattr(value, 'name', None)
+            kwargs['filename'] = getattr(data, 'name', None)
         
-        PayloadBase.__init__(self, value, *args, **kwargs)
+        PayloadBase.__init__(self, data, kwargs)
         
-        if (self.filename is not None) and (disposition is not None):
-            self.set_content_disposition(disposition, {'filename': self.filename})
+        try:
+            disposition  = kwargs['disposition']
+        except KeyError:
+            disposition = 'attachment'
+        else:
+            disposition = None
+        
+        if (disposition is not None):
+            filename = self.filename
+            if (filename is not None):
+                self.set_content_disposition(disposition, {'filename': filename})
     
     async def write(self, writer):
+        """
+        Writes the payload to the given http writer.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        writer : ``HTTPStreamWriter``
+            Http writer to write the payload's data to.
+        """
+        data = self.data
         try:
             while True:
-                chunk = self.value.read(BIG_CHUNK_LIMIT)
+                chunk = data.read(BIG_CHUNK_LIMIT)
                 if chunk:
                     await writer.write(chunk)
                 else:
                     break
         finally:
-            self.value.close()
+            data.close()
 
 
 class TextIOPayload(IOBasePayload):
+    """
+    Payload class for `TextIOBase` instances.
     
-    def __init__(self, value, *args, encoding=None, content_type=None, **kwargs):
+    Attributes
+    ----------
+    content_type : `None` or `str`
+        The payload's content type.
+    data : `TextIOBase` instance
+        The payload itself.
+    filename : `None` or `str`
+        The payload's file's name if applicable.
+    encoding : `None` or`str`
+        Encoding used to encode the payload's data.
+    headers : ``imultidict`` of (`str`, `str`) items
+        Payload specific headers.
+    size : `None` or `int`
+        The payload's size if applicable.
+    """
+    __slots__ = ()
+    
+    def __init__(self, data, kwargs):
+        """
+        Creates a new ``TextIOPayload`` instance.
         
+        Parameters
+        ----------
+        data : `TextIOBase` instance
+            The payload's data.
+        kwargs : `dict` of (`str`, `Any`) items
+            Additional keyword arguments.
+        """
+        encoding = kwargs.get('encoding')
+        content_type = kwargs.get('content_type')
         if encoding is None:
             if content_type is None:
                 encoding = 'utf-8'
                 content_type = 'text/plain; charset=utf-8'
+                
+                kwargs['content_type'] = content_type
             else:
                 mimetype = MimeType(content_type)
                 encoding = mimetype.params.get('charset', 'utf-8')
+            
+            kwargs['encoding'] = encoding
         else:
             if content_type is None:
                 content_type = f'text/plain; charset={encoding}'
+                kwargs['content_type'] = content_type
         
-        IOBasePayload.__init__(self, value, content_type=content_type, encoding=encoding, *args, **kwargs)
-
-    @property
-    def size(self):
+        IOBasePayload.__init__(self, data, kwargs)
+        
         try:
-            return os.fstat(self.value.fileno()).st_size - self.value.tell()
+            size = os.fstat(data.fileno()).st_size - data.tell()
         except OSError:
-            return None
-
+            # `data.fileno()` is not supported. Example: `io.BufferedReader(io.BytesIO(b'data'))`
+            size = None
+        
+        self.size = size
+    
     async def write(self, writer):
+        """
+        Writes the payload to the given http writer.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        writer : ``HTTPStreamWriter``
+            Http writer to write the payload's data to.
+        """
+        data = self.data
         try:
             while True:
-                chunk=self.value.read(BIG_CHUNK_LIMIT)
+                chunk = data.read(BIG_CHUNK_LIMIT)
                 if chunk:
                     await writer.write(chunk.encode(self.encoding))
                 else:
                     break
         finally:
-            self.value.close()
+            data.close()
 
 
 class BytesIOPayload(IOBasePayload):
-
-    @property
-    def size(self):
-        position = self.value.tell()
-        end = self.value.seek(0, os.SEEK_END)
-        self.value.seek(position)
-        return end-position
+    """
+    Payload class for `BytesIO` instances.
+    
+    Attributes
+    ----------
+    content_type : `None` or `str`
+        The payload's content type.
+    data : `BytesIO` instance
+        The payload itself.
+    filename : `None` or `str`
+        The payload's file's name if applicable.
+    encoding : `None` or`str`
+        Encoding used to encode the payload's data.
+    headers : ``imultidict`` of (`str`, `str`) items
+        Payload specific headers.
+    size : `None` or `int`
+        The payload's size if applicable.
+    """
+    def __init__(self, data, kwargs):
+        """
+        Creates a new ``BytesIOPayload`` instance.
+        
+        Parameters
+        ----------
+        data : `BytesIO` instance
+            The payload's data.
+        kwargs : ``imultidict`` of (`str`, `str`) items
+            Additional keyword arguments.
+        """
+        IOBasePayload.__init__(self, data, kwargs)
+        
+        position = data.tell()
+        end = data.seek(0, os.SEEK_END)
+        data.seek(position)
+        self.size = end-position
 
 
 class BufferedReaderPayload(IOBasePayload):
+    """
+    Payload class for `BufferedReader` and for `BufferedRandom` instances.
     
-    @property
-    def size(self):
+    Attributes
+    ----------
+    content_type : `None` or `str`
+        The payload's content type.
+    data : `BufferedReader`, `BufferedRandom` instance
+        The payload itself.
+    filename : `None` or `str`
+        The payload's file's name if applicable.
+    encoding : `None` or`str`
+        Encoding used to encode the payload's data.
+    headers : ``imultidict`` of (`str`, `str`) items
+        Payload specific headers.
+    size : `None` or `int`
+        The payload's size if applicable.
+    """
+    __slots__ = ()
+    def __init__(self, data, kwargs):
+        """
+        Creates a new ``BufferedReaderPayload`` instance.
+        
+        Parameters
+        ----------
+        data : `BufferedReader`, `BufferedRandom` instance
+            The payload's data.
+        kwargs : `dict` of (`str`, `Any`) items
+            Additional keyword arguments.
+        """
+        IOBasePayload.__init__(self, data, kwargs)
         try:
-            return os.fstat(self.value.fileno()).st_size - self.value.tell()
+            size = os.fstat(data.fileno()).st_size - data.tell()
         except OSError:
-            # data.fileno() is not supported, e.g.
-            # io.BufferedReader(io.BytesIO(b'data'))
-            return None
+            # `data.fileno()` is not supported. Example: `io.BufferedReader(io.BytesIO(b'data'))`
+            size = None
+        
+        self.size = size
 
 
 class JsonPayload(BytesPayload):
-
-    def __init__(self, value, encoding='utf-8', content_type='application/json', dumps=json.dumps, *args, **kwargs):
-        BytesPayload.__init__(self,dumps(value).encode(encoding), content_type=content_type, encoding=encoding, *args,
-            **kwargs)
+    """
+    Payload class for `json` data.
+    
+    Attributes
+    ----------
+    content_type : `None` or `str`
+        The payload's content type.
+    data :`bytes`
+        The payload itself.
+    filename : `None` or `str`
+        The payload's file's name if applicable.
+    encoding : `None` or`str`
+        Encoding used to encode the payload's data.
+    headers : ``imultidict`` of (`str`, `str`) items
+        Payload specific headers.
+    size : `None` or `int`
+        The payload's size if applicable.
+    """
+    __slots__ = ()
+    def __init__(self, data, kwargs):
+        """
+        Creates a new ``AsyncIterablePayload`` instance.
+        
+        Parameters
+        ----------
+        data : `None`, `str`, `int`, `float`, `list` of repeat, `dict` of (`str`, repeat) items
+            The payload's data.
+        kwargs : `dict` of (`str`, `Any`) items
+            Additional keyword arguments.
+        """
+        encoding = kwargs.get('encoding')
+        if (encoding is None):
+            kwargs['encoding'] = encoding = 'utf-8'
+        
+        data = json.dumps(data).encode(encoding)
+        
+        kwargs.setdefault('content_type', 'application/json')
+        BytesPayload.__init__(self, data, kwargs)
 
 
 class AsyncIterablePayload(PayloadBase):
+    """
+    Payload class for `async-iterable`-s.
     
-    def __init__(self, value, *args, **kwargs):
-        if 'content_type' not in kwargs:
-            kwargs['content_type'] = 'application/octet-stream'
+    Attributes
+    ----------
+    content_type : `None` or `str`
+        The payload's content type.
+    data :`async-iterable`
+        The payload itself.
+    filename : `None` or `str`
+        The payload's file's name if applicable.
+    encoding : `None` or`str`
+        Encoding used to encode the payload's data.
+    headers : ``imultidict`` of (`str`, `str`) items
+        Payload specific headers.
+    size : `None` or `int`
+        The payload's size if applicable.
+    """
+    __slots__ = ('_iterator')
+    
+    def __init__(self, data, kwargs):
+        """
+        Creates a new ``AsyncIterablePayload`` instance.
         
-        PayloadBase.__init__(self, value, *args, **kwargs)
+        Parameters
+        ----------
+        data : `async-iterable`
+            The payload's data.
+        kwargs : `dict` of (`str`, `Any`) items
+            Additional keyword arguments.
+        """
+        kwargs.setdefault('content_type', DEFAULT_CONTENT_TYPE)
         
-        self._iter = value.__aiter__()
+        PayloadBase.__init__(self, data, kwargs)
+        self._iterator = data.__class__.__aiter__(data)
     
     async def write(self, writer):
+        """
+        Writes the payload to the given http writer.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        writer : ``HTTPStreamWriter``
+            Http writer to write the payload's data to.
+        """
+        iterator = self._iterator
+        anext = iterator.__class__.__anext__
         try:
             while True:
-                chunk = await self._iter.__anext__()
+                chunk = await anext(iterator)
                 await writer.write(chunk)
         except StopAsyncIteration:
-            self._iter = None
+            self._iterator = None
+
 
 class AsyncIOPayload(IOBasePayload):
+    """
+    Payload class for ``AsyncIO`` instances.
+    
+    Attributes
+    ----------
+    content_type : `None` or `str`
+        The payload's content type.
+    data :`async-iterable`
+        The payload itself.
+    filename : `None` or `str`
+        The payload's file's name if applicable.
+    encoding : `None` or`str`
+        Encoding used to encode the payload's data.
+    headers : ``imultidict`` of (`str`, `str`) items
+        Payload specific headers.
+    size : `None` or `int`
+        The payload's size if applicable.
+    """
     async def write(self, writer):
+        """
+        Writes the payload to the given http writer.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        writer : ``HTTPStreamWriter``
+            Http writer to write the payload's data to.
+        """
+        data = self.data
         try:
             while True:
-                chunk = await self.value.read(BIG_CHUNK_LIMIT)
+                chunk = await data.read(BIG_CHUNK_LIMIT)
                 await writer.write(chunk)
-                if len(chunk)<BIG_CHUNK_LIMIT:
+                if len(chunk) < BIG_CHUNK_LIMIT:
                     break
         finally:
-            self.value.close()
+            data.close()
 
 
 class BodyPartReaderPayload(PayloadBase):
-
-    def __init__(self, value, *args, **kwargs):
-        PayloadBase.__init__(self, value, *args, **kwargs)
-
+    """
+    Payload class for ``BodyPartReader``.
+    
+    Attributes
+    ----------
+    content_type : `None` or `str`
+        The payload's content type.
+    data :``BodyPartReader``
+        The payload itself.
+    filename : `None` or `str`
+        The payload's file's name if applicable.
+    encoding : `None` or`str`
+        Encoding used to encode the payload's data.
+    headers : ``imultidict`` of (`str`, `str`) items
+        Payload specific headers.
+    size : `None` or `int`
+        The payload's size if applicable.
+    """
+    def __init__(self, data, kwargs):
+        """
+        Creates a new ``BodyPartReaderPayload`` instance.
+        
+        Parameters
+        ----------
+        data : ``BodyPartReader``
+            The payload's data.
+        kwargs : `dict` of (`str`, `Any`) items
+            Additional keyword arguments.
+        """
+        PayloadBase.__init__(self, data, kwargs)
+        
         params = {}
-        if value.name is not None:
-            params['name']=value.name
-        if value.filename is not None:
-            params['filename'] = value.filename
+        name = data.name
+        if (name is not None):
+            params['name'] = name
+        
+        filename = data.filename
+        if (filename is not None):
+            params['filename'] = filename
         
         if params:
-            self.set_content_disposition('attachment', **params)
+            self.set_content_disposition('attachment', params)
     
     async def write(self, writer):
-        field = self.value
+        """
+        Writes the payload to the given http writer.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        writer : ``HTTPStreamWriter``
+            Http writer to write the payload's data to.
+        """
+        field = self.data
         while True:
-            chunk=await field.read_chunk(size=65536)
+            chunk = await field.read_chunk(size=65536)
             if chunk:
                 await writer.write(field.decode(chunk))
             else:
@@ -347,8 +812,8 @@ def parse_content_disposition(header):
     if not header:
         return None, {}
 
-    disptype, *parts = header.split(';')
-    if not is_token(disptype):
+    disposition_type, *parts = header.split(';')
+    if not is_token(disposition_type):
         return None, {}
 
     params = {}
@@ -405,7 +870,7 @@ def parse_content_disposition(header):
         
         params[key] = value
     
-    return disptype.lower(), params
+    return disposition_type.lower(), params
 
 
 def content_disposition_filename(params,name='filename'):
@@ -578,8 +1043,8 @@ class BodyPartReader(object):
         #     header
         
         data = await self.read(decode=True)
-        # see https://www.w3.org/TR/html5/forms.html#multipart/form-data-encoding-algorithm # NOQA
-        # and https://dvcs.w3.org/hg/xhr/raw-file/tip/Overview.html#dom-xmlhttprequest-send # NOQA
+        # see https://www.w3.org/TR/html5/forms.html#multipart/form-data-encoding-algorithm
+        # and https://dvcs.w3.org/hg/xhr/raw-file/tip/Overview.html#dom-xmlhttprequest-send
         encoding = encoding or self.get_charset(default='utf-8')
         return data.decode(encoding)
 
@@ -669,49 +1134,54 @@ class BodyPartReader(object):
         return content_disposition_filename(params, 'filename')
 
 
-        
 class MultipartWriter(PayloadBase):
-    __slots__ = ('_boundary', '_content_type', '_size', 'encoding', 'filename', 'haders', 'parts', 'value')
+    """
+    Multipart body writer.
+    
+    Attributes
+    ----------
+    content_type : `None` or `str`
+        The payload's content type.
+    data : `list` of ``PayloadBase`` instances
+        The contained payloads.
+    filename : `None` or `str`
+        The payload's file's name if applicable.
+    encoding : `None` or`str`
+        Encoding used to encode the payload's data.
+    headers : ``imultidict`` of (`str`, `str`) items
+        Payload specific headers.
+    size : `None` or `int`
+        The payload's size if applicable.
+    _boundary : `bytes`
+        Boundary to matk the payload's start and end.
+    """
+    __slots__ = ('_boundary', )
     
     def __init__(self, subtype='mixed', boundary=None):
+        """
+        Creates a new ``MultipartWriter`` instance with the given parameters.
+        
+        Parameters
+        ----------
+        subtype : `str`, Optional
+            The subtype of the mutlipart writer. Defaults to `'mixed'`, but also can `'form-data'` for example.
+        boundary : `Nome` or `str`, Optional
+            Boundary to matk the payload's start and end. If not given or gvien as `None`, then is autogenerated.
+        
+        Raises
+        ------
+        UnicodeEncodeError
+            `boundary` is given as `str`, but is not `ascii` encodable.
+        ValueError
+            `boundary` contains invalid character.
+        """
         if (boundary is None):
             boundary = uuid.uuid4().hex.encode('ascii')
         else:
             try:
                 boundary = boundary.encode('ascii')
-            except UnicodeEncodeError:
-                raise ValueError('boundary should contains ASCII only chars')
-        
-        self._boundary = boundary
-        PayloadBase.__init__(self, None, content_type=f'multipart/{subtype}; boundary={self.boundary_value}')
-        
-        self.parts = []
-        self.headers = imultidict()
-        self.headers[CONTENT_TYPE] = self.content_type
-    
-    @property
-    def boundary(self):
-        return self._boundary.decode('ascii')
-    
-    def __enter__(self):
-        return self
-    
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
-    
-    def __iter__(self):
-        return iter(self.parts)
-    
-    def __len__(self):
-        return len(self.parts)
-    
-    _valid_tchar_regex = re.compile(br"\A[!#$%&'*+\-.^_`|~\w]+\Z")
-    _invalid_qdtext_char_regex = re.compile(br"[\x00-\x08\x0A-\x1F\x7F]")
-
-    @property
-    def boundary_value(self):
-        #Wrap boundary parameter value in quotes, if necessary.
-        #Reads self.boundary and returns a unicode sting.
+            except UnicodeEncodeError as err:
+                raise ValueError('boundary should contains ASCII only chars') from err
         
         # Refer to RFCs 7231, 7230, 5234.
         #
@@ -726,141 +1196,262 @@ class MultipartWriter(PayloadBase):
         #                  / DIGIT / ALPHA
         #                  ; any VCHAR, except delimiters
         # VCHAR          = %x21-7E
-        value = self._boundary
-        if self._valid_tchar_regex.match(value) is not None:
-            return value.decode('ascii')
         
-        if self._invalid_qdtext_char_regex.search(value) is not None:
-            raise ValueError('boundary value contains invalid characters')
-        
-        # escape %x5C and %x22
-        quoted_value_content = value.replace(b'\\',b'\\\\')
-        quoted_value_content = quoted_value_content.replace(b'"', b'\\"')
-        
-        return f'"{quoted_value_content.decode("ascii")}"'
-    
-    def append(self, obj, headers=None):
-        #Adds a new body part to multipart writer.
-        if headers is None:
-            headers = imultidict()
-        
-        if isinstance(obj, PayloadBase):
-            if obj.headers is None:
-                obj.headers = headers
-            else:
-                obj.headers.update(headers)
-        else:
-            try:
-                return self.append_payload(create_payload(obj, headers=headers))
-            except LookupError as err:
-                raise TypeError from err
-    
-    def append_payload(self,payload):
-        #Adds a new body part to multipart writer.
-        
-        # content-type
-        if CONTENT_TYPE not in payload.headers:
-            payload.headers[CONTENT_TYPE] = payload.content_type
-
-        # compression
-        try:
-            encoding = payload.headers[CONTENT_ENCODING].lower()
-        except KeyError:
-            encoding = None
-        else:
-            if encoding in ('deflate', 'gzip', 'br', ):
-                pass
-            elif encoding in ('', 'identity'):
-                encoding = None
-            else:
-                raise RuntimeError(f'unknown content encoding: {encoding}')
-        
-        # te encoding
-        try:
-            te_encoding = payload.headers[CONTENT_TRANSFER_ENCODING].lower()
-        except KeyError:
-            te_encoding = None
-        else:
-            if te_encoding == '':
-                te_encoding = None
-            elif te_encoding in ('base64', 'quoted-printable'):
-                pass
-            elif te_encoding == 'binary':
-                te_encoding = None
-            else:
-                raise RuntimeError(f'unknown content transfer encoding: {te_encoding}')
-        
-        # size
-        size = payload.size
-        
-        if (size is not None) and (encoding is None) and (te_encoding is None):
-            payload.headers[CONTENT_LENGTH]=str(size)
-        
-        # render headers
-        headers = ''.join([f'{k}: {v}\r\n' for k, v in payload.headers.items()]).encode('utf-8') + b'\r\n'
-        
-        self.parts.append((payload, headers, encoding, te_encoding))
-        
-        return payload
-
-    
-    def append_json(self, obj,headers=None):
-        #Helper to append JSON part.
-        if headers is None:
-            headers = imultidict()
+        if VALID_TCHAR_RP.match(boundary) is None:
+            if INVALID_QDTEXT_CHAR_RP.search(boundary) is not None:
+                raise ValueError('Boundary value contains invalid characters.')
             
-        return self.append_payload(JsonPayload(obj, headers=headers))
-
-    def append_form(self, obj, headers=None):
-        #Helper to append form urlencoded part.
+            # escape %x5C and %x22
+            quoted_boundary = boundary.replace(b'\\', b'\\\\')
+            quoted_boundary = quoted_boundary.replace(b'"', b'\\"')
+            quoted_boundary = quoted_boundary.decode('ascii')
+            quoted_boundary = f'"{quoted_boundary}"'
+        else:
+            quoted_boundary = boundary.decode('ascii')
         
-        if headers is None:
-            headers = imultidict()
+        kwargs = {'content_type': f'multipart/{subtype}; boundary={quoted_boundary}'}
         
-        obj_type = obj.__class__
-        if hasattr(obj_type, 'keys') and hasattr(obj_type, '__getitem__'): #mapping type
-            obj = list(obj.items())
-            
-        data = urlencode(obj, doseq=True)
-
-        return self.append_payload(
-            StringPayload(data, headers=headers, content_type='application/x-www-form-urlencoded'))
+        PayloadBase.__init__(self, [], kwargs)
+        
+        self._boundary = boundary
+        self.headers[CONTENT_TYPE] = self.content_type
     
     @property
-    def size(self):
-        if not self.parts:
-            return 0
+    def boundary(self):
+        """
+        Returns the multipart writer's boundary as string.
         
-        total = 0
-        for part,headers, encoding,te_encoding in self.parts:
-            if encoding or te_encoding or part.size is None:
-                return None
-            total += 6+len(self._boundary)+part.size+len(headers)
-            # b'--'+self._boundary+b'\r\n' # b'\r\n'
+        Returns
+        -------
+        boundary : `str`
+        """
+        return self._boundary.decode('ascii')
+    
+    def append(self, body_part, headers=None):
+        """
+        Adds a new body part to the ``MultipartWriter``.
         
-        total += 6+len(self._boundary)
-        # b'--'+self._boundary+b'--\r\n'
+        Parameters
+        ----------
+        body_part : ``PayloadBase``, ``BodyPartReader``, `bytes`, `bytearray`, `memoryview`, `BytesIO`, `StringIO`, \
+            `TextIOBase`, `BufferedReader`, `BufferedRandom`, `IOBase`, ``AsyncIO``, `async-iterable` instance
+        headers : `None` or ``imultidict`` of (`str`, `str`) items, Optional
+            Optional headers for the field.
         
-        return total
+        Returns
+        -------
+        payload : ``PayloadBase``
+            The created payload.
+        
+        Raises
+        ------
+        TypeError
+            Cannot create payload from the givne `body_part`.
+        Raises
+        ------
+        RuntimeError
+            - The `payload`'s content has unknown content-encoding.
+            - The `payload`'s content has unknown content-transfer-encoding.
+        """
+        if headers is None:
+            headers = imultidict()
+        
+        if isinstance(body_part, PayloadBase):
+            if (headers is not None):
+                body_part.headers.update(headers)
+            
+            payload = body_part
+        else:
+            kwargs = {}
+            if (headers is not None):
+                kwargs['headers'] = headers
+            
+            try:
+                payload = create_payload(body_part, kwargs)
+            except LookupError as err:
+                raise TypeError(f'Cannot create payload from: {body_part!r}') from err
+        
+        self.append_payload(payload)
+        return payload
+    
+    def append_payload(self, payload):
+        """
+        Adds a payload to the multipart writer.
+        
+        Parameters
+        ----------
+        payload : ``PayloadBase`` instance
+            The payload to add to the body.
+        
+        Raises
+        ------
+        RuntimeError
+            - The `payload`'s content has unknown content-encoding.
+            - The `payload`'s content has unknown content-transfer-encoding.
+        """
+        # content-type
+        payload_headers = payload.headers
+        if CONTENT_TYPE not in payload_headers:
+            payload_headers[CONTENT_TYPE] = payload.content_type
+        
+        # content-encoding or compression
+        try:
+            content_encoding = payload_headers[CONTENT_ENCODING].lower()
+        except KeyError:
+            content_encoding = None
+        else:
+            if content_encoding in ('deflate', 'gzip', 'br', ):
+                pass
+            elif content_encoding in ('', 'identity'):
+                content_encoding = None
+            else:
+                raise RuntimeError(f'Unknown content-encoding: {content_encoding!r}.')
+        
+        # te-encoding
+        try:
+            transfer_encoding = payload_headers[CONTENT_TRANSFER_ENCODING].lower()
+        except KeyError:
+            transfer_encoding = None
+        else:
+            if transfer_encoding == '':
+                transfer_encoding = None
+            elif transfer_encoding in ('base64', 'quoted-printable'):
+                pass
+            elif transfer_encoding == 'binary':
+                transfer_encoding = None
+            else:
+                raise RuntimeError(f'Unknown content transfer encoding: {transfer_encoding!r}.')
+        
+        # Set size to payload headers if applicable.
+        size = payload.size
+        if (size is not None) and (content_encoding is None) and (transfer_encoding is None):
+            payload_headers[CONTENT_LENGTH] = str(size)
+        
+        # Render headers.
+        result = []
+        extend = result.extend
+        for k, v in payload_headers.items():
+            extend((k, ': ', v, '\r\n'))
+        
+        result.append('\r\n')
+        
+        headers = ''.join(result).encode('utf-8')
+        
+        # Calculate new size.
+        data = self.data
+        if data:
+            size = self.size
+        else:
+            size = 6+len(self._boundary)
+            # b'--'+self._boundary+b'--\r\n'
+        
+        if (size is not None):
+            if (content_encoding is not None) or (transfer_encoding is not None) or (payload.size is None):
+                size = None
+            else:
+                size += 6+len(self._boundary)+payload.size+len(headers)
+                # b'--'+self._boundary+b'\r\n' ... data ... b'\r\n'
+            
+            self.size = size
+        
+        # Add part.
+        data.append((payload, headers, content_encoding, transfer_encoding))
+    
+    
+    def append_json(self, obj, headers=None):
+        """
+        Helper method to add a json field.
+        
+        Parameters
+        ----------
+        obj : `None`, `str`, `int`, `float`, `list` of repeat, `dict` of (`str`, repeat) items
+            The payload's data.
+        headers : `None` or ``imultidict`` of (`str`, `str`) items, Optional
+            Optional headers for the json field.
+
+        Returns
+        -------
+        payload : ``JsonPayload``
+            The created json payload.
+        
+        Raises
+        ------
+        RuntimeError
+            - The `payload`'s content has unknown content-encoding.
+            - The `payload`'s content has unknown content-transfer-encoding.
+        """
+        kwargs = {}
+        if (headers is not None):
+            kwargs['headers'] = headers
+        
+        payload = JsonPayload(obj, kwargs)
+        self.append_payload(payload)
+        return payload
+    
+    
+    def append_form(self, obj, headers=None):
+        """
+        Helper method to add urlencoded field.
+        
+        Parameters
+        ----------
+        obj : `mapping` of (`str`, `Any`) items, `sequence` of `tuple` (`str`, `Any`) items
+            The object, what should be percent encoded for a post request.
+        headers : `None` or ``imultidict`` of (`str`, `str`) items, Optional
+            Optional headers for the urlencoded field.
+        
+        Returns
+        -------
+        payload : ``StringPayload``
+            The created string payload.
+        
+        Raises
+        ------
+        RuntimeError
+            - The `payload`'s content has unknown content-encoding.
+            - The `payload`'s content has unknown content-transfer-encoding.
+        """
+        if hasattr(obj.__class__, 'items'): # mapping type
+            obj = list(obj.items())
+        
+        data = urlencode(obj, doseq=True)
+        
+        kwargs = {'content_type': 'application/x-www-form-urlencoded'}
+        
+        if (headers is not None):
+            kwargs['headers'] = headers
+        
+        payload = StringPayload(data, kwargs)
+        self.append_payload(payload)
+        return payload
+    
     
     async def write(self, writer, close_boundary=True):
-        #Writes body
-        parts = self.parts
-        if not parts:
+        """
+        Writes the payloads of the multipart writer to the given http writer.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        writer : ``HTTPStreamWriter``
+            Http writer to write the payload's data to.
+        close_boundary : `bool`, Optional
+            Whether the multypart's payload should be closed with it's boundary.
+        """
+        data = self.data
+        if not data:
             return
         
-        for part, headers, encoding, te_encoding in parts:
-            await writer.write(b'--'+self._boundary+b'\r\n') #fb strings pls!
+        for part, headers, content_encoding, transfer_encoding in data:
+            await writer.write(b'--' + self._boundary + b'\r\n') # fb strings pls!
             await writer.write(headers)
             
-            if (encoding is not None) or (te_encoding is not None):
-                w = MultipartPayloadWriter(writer)
-                if (encoding is not None):
-                    w.enable_compression(encoding)
-                if (te_encoding is not None):
-                    w.enable_encoding(te_encoding)
-                await part.write(w)
-                await w.write_eof()
+            if (content_encoding is not None) or (transfer_encoding is not None):
+                multipart_payload_writer = MultipartPayloadWriter(writer, content_encoding, transfer_encoding)
+                
+                await part.write(multipart_payload_writer)
+                await multipart_payload_writer.write_eof()
             else:
                 await part.write(writer)
             await writer.write(b'\r\n')
@@ -869,49 +1460,50 @@ class MultipartWriter(PayloadBase):
             await writer.write(b'--'+self._boundary+b'--\r\n')
 
 
-class MultipartPayloadWriter:
-    __slots__ = ('compressor', 'encoding', 'encoding_buffer', 'writer',)
+class MultipartPayloadWriter(object):
+    __slots__ = ('compressor', 'encoding_buffer', 'transfer_encoding', 'writer',)
     
-    def __init__(self, writer):
-        self.writer = writer
-        self.encoding = None
-        self.compressor = None
-        self.encoding_buffer = None
-    
-    def enable_encoding(self, encoding):
-        if encoding == 'base64':
-            self.encoding = encoding
-            self.encoding_buffer = bytearray()
+    def __init__(self, writer, content_encoding, transfer_encoding):
         
-        elif encoding == 'quoted-printable':
-            self.encoding = encoding
-    
-    def enable_compression(self, encoding):
-        if encoding == 'gzip':
+        if content_encoding == 'gzip':
             compressor = ZLIB_COMPRESSOR(wbits=16+zlib.MAX_WBITS)
-        elif encoding == 'deflate':
+        elif content_encoding == 'deflate':
             compressor = ZLIB_COMPRESSOR(wbits=-zlib.MAX_WBITS)
-        elif encoding == 'br':
+        elif content_encoding == 'br':
             if BROTLI_COMPRESSOR is None:
                 raise ContentEncodingError('Can not decode content-encoding: brotli (br). Please install `brotlipy`.')
             compressor = BROTLI_COMPRESSOR()
-        elif encoding == 'identity':
+        elif content_encoding == 'identity':
             # I asume this is no encoding
             compressor = None
         else:
-            raise ContentEncodingError(f'Can not decode content-encoding: {encoding!r}.')
+            raise ContentEncodingError(f'Can not decode content-encoding: {content_encoding!r}.')
         
+        if transfer_encoding == 'base64':
+            transfer_encoding = transfer_encoding
+            encoding_buffer = bytearray()
+        else:
+            if transfer_encoding == 'quoted-printable':
+                transfer_encoding = transfer_encoding
+            else:
+                transfer_encoding = None
+            encoding_buffer = None
+        
+        self.writer = writer
+        self.transfer_encoding = transfer_encoding
         self.compressor = compressor
+        self.encoding_buffer = encoding_buffer
     
     async def write_eof(self):
         compressor = self.compressor
         if (compressor is not None):
-            chunk = compressor.flush()
             self.compressor = None
+            chunk = compressor.flush()
+                
             if chunk:
                 await self.write(chunk)
         
-        if self.encoding == 'base64':
+        if self.transfer_encoding == 'base64':
             encoding_buffer = self.encoding_buffer
             if encoding_buffer:
                 await self.writer.write(base64.b64encode(encoding_buffer))
@@ -924,8 +1516,8 @@ class MultipartPayloadWriter:
                 if not chunk:
                     return
         
-        encoding = self.encoding
-        if encoding == 'base64':
+        transfer_encoding = self.transfer_encoding
+        if transfer_encoding == 'base64':
             encoding_buffer = self.encoding_buffer
             encoding_buffer.extend(chunk)
             
@@ -937,7 +1529,7 @@ class MultipartPayloadWriter:
                     encoding_chunk = base64.b64encode(encoding_chunk)
                     await self.writer.write(encoding_chunk)
         
-        elif encoding == 'quoted-printable':
+        elif transfer_encoding == 'quoted-printable':
             await self.writer.write(binascii.b2a_qp(chunk))
             
         else:

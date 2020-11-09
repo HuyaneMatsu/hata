@@ -467,7 +467,6 @@ class HTTPStreamWriter(object):
         self.size = 0
         
         self.eof = False
-        self.compresser = None
     
     def _write(self, chunk):
         """
@@ -617,6 +616,14 @@ class ReadProtocolBase(object):
         'transport', )
     
     def __init__(self, loop):
+        """
+        Creates a new ``ReadProtocolBase`` instance.
+        
+        Parameters
+        ----------
+        loop : ``EventThread``
+            The respective event loop, what the protocol uses for it's asynchronous tasks.
+        """
         self.loop = loop
         self.transport = None
         self.exception = None
@@ -952,6 +959,19 @@ class ReadProtocolBase(object):
         payload_waiter.cancel()
     
     def set_payload_reader(self, payload_reader):
+        """
+        Stes payload reader to the protocol.
+        
+        Parameters
+        ----------
+        payload_reader : `generator`
+            A generator, what gets control, every time a chunk is received, till it returns or raises.
+        
+        Returns
+        -------
+        payload_waiter : ``Future``
+            Waiter, to what the result of the `payload_reader` is set.
+        """
         assert self.payload_reader is None, 'Payload reader already set!'
         
         payload_waiter = Future(self.loop)
@@ -986,12 +1006,47 @@ class ReadProtocolBase(object):
         return payload_waiter
     
     async def read(self, n=-1):
+        """
+        Reads up to `n` amount of bytes from the protocol.
+        
+        If `n` is given as a negative integer, then will read until eof.
+        
+        Parameters
+        ----------
+        n : `int`
+            The amount of bytes to read. Defaults to `-1`.
+        
+        Returns
+        -------
+        result : `bytes`
+        """
         try:
             return await self.set_payload_reader(self._read_until_eof() if n < 0 else self._read_exactly(n))
         except EOFError as err:
             return err.args[0]
     
     async def readexactly(self, n):
+        """
+        Read exactly `n` bytes from the protocol.
+        
+        Parameters
+        ----------
+        n : `int`
+            The amount of bytes to read. Cannot be negative.
+        
+        Returns
+        -------
+        result : `str`
+        
+        Raises
+        ------
+        ValueError
+            If `n` is less than `0`.
+        EOFError
+            Connection lost before `0` bytes were received.
+        BaseException
+            Connection lost exception if applicable.
+        """
         exception = self.exception
         if (exception is not None):
             raise exception
@@ -1020,7 +1075,7 @@ class ReadProtocolBase(object):
         
         Raises
         ------
-        Any
+        BaseException
             Connection lost exception if applicable.
         """
         exception = self.exception
@@ -1030,6 +1085,21 @@ class ReadProtocolBase(object):
         return await self.set_payload_reader(self._read_once())
     
     def _wait_for_data(self):
+        """
+        Payload reader task helper, what waits for 1 chunk to be receive, then adds it to ``._chunks`` and also returns
+        it as well.
+        
+        This method is a generator.
+        
+        Returns
+        -------
+        chunk : `bytes`
+        
+        Raises
+        ------
+        CancelledError
+            If the reader task is cancelled not by receiving eof.
+        """
         if self._paused:
             self._paused = False
             self.transport.resume_reading()
@@ -1039,6 +1109,23 @@ class ReadProtocolBase(object):
         return chunk
     
     def _readtill_CRLF(self):
+        """
+        Payload reader task helper, what returns a received line untill `CRLF` (`\\r\\n`). Note, that `CRLF` is not
+        includedi n the returned value, tho they are added to the read offset.
+        
+        This method is a generator.
+        
+        Returns
+        -------
+        collected : `bytes`
+        
+        Raises
+        ------
+        EOFError
+            Connection lost before a line could be read.
+        CancelledError
+            If the reader task is cancelled not by receiving eof.
+        """
         exception = self.exception
         if (exception is not None):
             raise exception
@@ -1156,9 +1243,32 @@ class ReadProtocolBase(object):
             continue
     
     def _read_exactly(self, n):
+        """
+        Payload reader task, what reads exactly `n` bytes from the protocol.
+        
+        This method is a generator.
+        
+        Parameters
+        ----------
+        n : `int`
+            The amount of bytes to read.
+        
+        Returns
+        -------
+        collected : `bytes`
+        
+        Raises
+        ------
+        ValueError
+            If `n` is given as a negative integer.
+        EofError
+            Connection lost before `n` bytes were received.
+        CancelledError
+            If the reader task is cancelled not by receiving eof.
+        """
         if n < 1:
             if n < 0:
-                raise ValueError(f'.readexactly called with negative `n`: {n!r}')
+                raise ValueError(f'.readexactly called with negative `n`: {n!r}.')
             else:
                 return b''
         
@@ -1234,6 +1344,25 @@ class ReadProtocolBase(object):
             return b''.join(collected)
     
     def _read_http_helper(self):
+        """
+        Payload reader task helper. Returns if any chunk is already received, or waits for a new one.
+        
+        This method is a generator.
+        
+        Returns
+        -------
+        chunk : `bytes`
+            A received chunk of data.
+        offset : `int`
+            The offset, till the chunk was already used up.
+        
+        Raises
+        ------
+        EOFError
+            Connection lsot before a chunk was received.
+        CancelledError
+            If the reader task is cancelled not by receiving eof.
+        """
         chunks = self._chunks
         if chunks:
             chunk = chunks[0]
@@ -1248,6 +1377,24 @@ class ReadProtocolBase(object):
         return chunk, offset
     
     def _read_http_response(self):
+        """
+        Payload reader task, which reads an http response's status line and headers.
+        
+        This method is a generator.
+        
+        Returns
+        -------
+        response_message : ``RawResponseMessage``
+        
+        Raises
+        ------
+        ConnectionError
+            Connection lost before enough data was received.
+        PayloadError
+            Invalid data received.
+        CancelledError
+            If the reader task is cancelled not by receiving eof.
+        """
         try:
             try:
                 chunk, offset = yield from self._read_http_helper()
@@ -1278,6 +1425,24 @@ class ReadProtocolBase(object):
             raise PayloadError(PAYLOAD_ERROR_EOF_AT_HTTP_HEADER) from err
     
     def _read_http_request(self):
+        """
+        Payload reader task, which reads an http request's status line and headers.
+        
+        This method is a generator.
+        
+        Returns
+        -------
+        response_message : ``RawResponseMessage``
+        
+        Raises
+        ------
+        ConnectionError
+            Connection lost before enough data was received.
+        PayloadError
+            Invalid data received.
+        CancelledError
+            If the reader task is cancelled not by receiving eof.
+        """
         try:
             try:
                 chunk, offset = yield from self._read_http_helper()
@@ -1309,87 +1474,90 @@ class ReadProtocolBase(object):
             raise PayloadError(PAYLOAD_ERROR_EOF_AT_HTTP_HEADER) from err
     
     def _read_http_headers(self, chunk, offset):
+        """
+        Payload reader task helper, which reads an http headers.
+        
+        This method is a generator.
+        
+        Parameters
+        ----------
+        chunk : `bytes`
+            The actual chunk from what we are reading.
+        offset : `int`
+            The offset, till the actual chunk is exhausted.
+        
+        Returns
+        -------
+        headers : ``imultidict``
+        
+        Raises
+        ------
+        EOfError
+            Connection lost before headers were closed.
+        PayloadError
+            Invalid data received.
+        CancelledError
+            If the reader task is cancelled not by receiving eof.
+        """
         headers = imultidict()
         chunks = self._chunks
         
         end = chunk.find(b'\r\n', offset)
+        # At this case something is in the irst line, but is it a header?
         if end > offset:
             middle = chunk.find(b':', offset, end)
             if middle <= offset:
                 raise PayloadError(f'Invalid header line: {chunk[offset:end]!r}')
+            
             name = chunk[offset:middle].lstrip()
             value = chunk[middle+1:end].strip()
             offset = end+2
         
         # Found \r\n instantly, we done!
+        # The case, when there is nothing inside of the headers.
         elif end == offset:
             # If we are at the end of a chunk, remove it and save the offset.
-            offset +=2
+            offset += 2
             if offset == len(chunk):
                 del chunks[0]
                 offset = 0
             
             self._offset = offset
             return headers
+        # End is -1, so the header line ends at the incoming chunk, maybe?
         else:
-            # This aint a real `while True`, just a Python GOTO
-            while True:
-                # we are at the end?
-                if len(chunk) == offset:
-                    del chunks[0]
-                    
-                    # read a new chunk, because thats pretty simple
-                    if chunks:
-                        chunk = chunks[0]
-                    else:
-                        if self._eof:
-                            raise EOFError(b'')
-                        
-                        chunk = yield from self._wait_for_data()
-                    
-                    end = chunk.find(b'\r\n')
-                    # If we are at the end now, we get end as 0 and offset is 0, beause we just started a new chunk
-                    if end == 0:
-                        self._offset = 2
-                        return headers
-                    
-                    middle = chunk.find(b':', 0, end)
-                    if middle <= 0:
-                        raise PayloadError(f'Invalid header line: {chunk[offset:end]!r}')
-                    else:
-                        name = chunk[:middle].lstrip()
-                        value = chunk[middle+1:end].strip()
-                        offset = end+2
-                else:
-                    # Store offset
-                    self._offset = offset
-                    #  try getting a full line
-                    line = yield from self._readtill_CRLF()
-                    # no headers at all? OK, I guess
-                    if not line:
-                        # because ._readtill_CRLF updates the chunk and the offset state for us, not needed to store it.
-                        return headers
-                    
-                    middle = line.find(b':')
-                    if middle <= 0:
-                        #Nothing to do, no more case
-                        raise PayloadError(f'Invalid header line: {line!r}')
-                    
-                    name = line[:middle]
-                    value = line[middle+1:]
+            # we are at the end?
+            if len(chunk) == offset:
+                del chunks[0]
+                offset = 0
+            
+            # Store offset
+            self._offset = offset
+            # try getting a full line
+            line = yield from self._readtill_CRLF()
+            # no headers at all? OK, I guess
+            if not line:
+                # because ._readtill_CRLF updates the chunk and the offset state for us, not needed to store it.
+                return headers
+            
+            middle = line.find(b':')
+            if middle <= 0:
+                # Nothing to do, no more case
+                raise PayloadError(f'Invalid header line: {line!r}')
+            
+            name = line[:middle]
+            value = line[middle+1:]
+            
+            # Jump on this part at the end if not done, we will need this for checking continous lines.
+            if chunks:
+                chunk = chunks[0]
+                offset = self._offset
+            else:
+                if self._eof:
+                    raise EOFError(b'')
                 
-                # Jump on this part at the if not done, we will need this for checking continous lines.
-                if chunks:
-                    chunk = chunks[0]
-                    offset = self._offset
-                else:
-                    if self._eof:
-                        raise EOFError(b'')
-                    
-                    chunk = yield from self._wait_for_data()
-                    offset = 0
-                
-                break
+                chunk = yield from self._wait_for_data()
+                offset = 0
         
         name = name.decode('utf-8', 'surrogateescape')
         
@@ -1413,7 +1581,7 @@ class ReadProtocolBase(object):
                             else:
                                 if self._eof:
                                     raise EOFError(b'')
-                                    
+                                
                                 chunk = yield from self._wait_for_data()
                             
                             offset = 0
@@ -1495,7 +1663,7 @@ class ReadProtocolBase(object):
             # Next case, if we are at the end.
             if end == offset:
                 # Update offset to include \r\n
-                offset +=2
+                offset += 2
                 # If we are at the of the chunk, remove it
                 if offset == len(chunk):
                     del chunks[0]
@@ -1624,7 +1792,24 @@ class ReadProtocolBase(object):
             continue
     
     def _read_websocket_frame(self, is_client, max_size):
+        """
+        Payload reader task, which reads a webscoket frame.
         
+        This method is a generator.
+        
+        Returns
+        -------
+        frame : ``Frame``
+        
+        Raises
+        ------
+        EofError
+            Connection lost before a full frame was received.
+        PayloadError
+            Payload length over max size limit.
+        CancelledError
+            If the reader task is cancelled not by receiving eof.
+        """
         head1, head2 = yield from self._read_exactly(2)
         
         if ((head2&0b10000000)>>7) == is_client:
@@ -1639,7 +1824,7 @@ class ReadProtocolBase(object):
             data = yield from self._read_exactly(8)
             length, = UNPACK_LEN3(data)
         
-        if (max_size is not None) and length>max_size:
+        if (max_size is not None) and length > max_size:
             raise PayloadError(f'Payload length exceeds size limit ({length} > {max_size} bytes).')
         
         #Read the data.
@@ -1657,6 +1842,19 @@ class ReadProtocolBase(object):
         return frame
     
     def get_payload_reader_task(self, message):
+        """
+        Gets payload reader task for the given raw http message.
+        
+        Parameters
+        ----------
+        message : ``RawMessage`` instance
+            Raw http message. Can be either request or response.
+
+        Returns
+        -------
+        payload_reader_task : `None` or `generator`
+            Payload reader task if applicable.
+        """
         length = message.headers.get(CONTENT_LENGTH)
         if (length is not None):
             if length.isdigit():
@@ -1696,26 +1894,65 @@ class ReadProtocolBase(object):
         return None
     
     @staticmethod
-    def _decompresser_for(encoding):
-        if (encoding is None):
+    def _decompresser_for(content_encoding):
+        """
+        Gets decompress object for the given content-encoding if applicable.
+        
+        Parameters
+        ----------
+        content_encoding : `None` or `str`
+            Content encoding of a respective http message.
+        
+        Returns
+        -------
+        decompressor : `None`, `zlib.decompressobj`, `brotli.Decompressor`, `BROTLI_COMPRESSOR`
+        
+        Raises
+        ------
+        ContentEncodingError
+            - `'content_encoding'` was given as `'br'` meanwhile brotli or brolipy are not installed.
+            - `'content_encoding'` is not an from the expected values.
+        CancelledError
+            If the reader task is cancelled not by receiving eof.
+        """
+        if (content_encoding is None):
             decompressor = None
-        elif encoding == 'gzip':
-            decompressor=ZLIB_DECOMPRESSOR(wbits=16+zlib.MAX_WBITS)
-        elif encoding == 'deflate':
-            decompressor=ZLIB_DECOMPRESSOR(wbits=-zlib.MAX_WBITS)
-        elif encoding == 'br':
+        elif content_encoding == 'gzip':
+            decompressor = ZLIB_DECOMPRESSOR(wbits=16+zlib.MAX_WBITS)
+        elif content_encoding == 'deflate':
+            decompressor = ZLIB_DECOMPRESSOR(wbits=-zlib.MAX_WBITS)
+        elif content_encoding == 'br':
             if BROTLI_DECOMPRESSOR is None:
                 raise ContentEncodingError('Can not decode content-encoding: brotli (br). Please install `brotlipy`.')
             decompressor = BROTLI_DECOMPRESSOR()
-        elif encoding == 'identity':
+        elif content_encoding == 'identity':
             # I asume this is no encoding
             decompressor = None
         else:
-            raise ContentEncodingError(f'Can not decode content-encoding: {encoding!r}.')
+            raise ContentEncodingError(f'Can not decode content-encoding: {content_encoding!r}.')
         
         return decompressor
     
     def _read_chunked(self):
+        """
+        Payload reader task, what reads a chunked http message, till it ends.
+        
+        This method is a generator.
+        
+        Returns
+        -------
+        collected : `bytes`
+        
+        Raises
+        ------
+        ConnectionError
+            Connection lost before enough data was received.
+        PayloadError
+            - Chunk size is not hexadecimal.
+            - Chunk not ends with CRLF.
+        CancelledError
+            If the reader task is cancelled not by receiving eof.
+        """
         collected = []
         while True:
             chunk_length = yield from self._readtill_CRLF()
@@ -1725,7 +1962,7 @@ class ReadProtocolBase(object):
                 chunk_length = chunk_length[:index]
             
             try:
-                chunk_length = int(chunk_length,16)
+                chunk_length = int(chunk_length, 16)
             except ValueError:
                 raise PayloadError(f'Not hexadecimal chunk size: {chunk_length!r}.') from None
             
@@ -1745,6 +1982,20 @@ class ReadProtocolBase(object):
         return b''.join(collected)
     
     def _read_until_eof(self):
+        """
+        Payload reader task, which reads the protocol unitil EOF is hit.
+        
+        This method is a generator.
+        
+        Returns
+        -------
+        collected : `bytes`
+        
+        Raises
+        ------
+        CancelledError
+            If the reader task is cancelled not by receiving eof.
+        """
         chunks = self._chunks
         
         if not self._eof:
@@ -1764,15 +2015,72 @@ class ReadProtocolBase(object):
         if offset:
             chunks[0] = memoryview(chunks[0])[offset:]
         
-        result = b''.join(chunks)
+        collected = b''.join(chunks)
         chunks.clear()
-        return result
+        return collected
     
     def _read_exactly_encoded(self, length, decompressobj):
+        """
+        Payload reader task, what reads exactly `n` bytes from the protocol, then decompresses it with the given
+        decompress object.
+        
+        This method is a generator.
+        
+        Parameters
+        ----------
+        length : `int`
+            The amount of bytes to read.
+        decompressobj : `zlib.decompressobj`, `brotli.Decompressor`, `BROTLI_COMPRESSOR`
+            Decompressor used to decompress the data afetr receiving it.
+        
+        Returns
+        -------
+        collected : `bytes`
+        
+        Raises
+        ------
+        ValueError
+            If `n` is given as a negative integer.
+        EofError
+            Connection lost before `n` bytes were received.
+        PayloadError
+            Cannot decompress a chunk.
+        CancelledError
+            If the reader task is cancelled not by receiving eof.
+        """
         chunk = yield from self._read_exactly(length)
-        return decompressobj.decompress(chunk)
+        try:
+            return decompressobj.decompress(chunk)
+        except COMPRESSION_ERRORS:
+            raise PayloadError('Cannot decompress chunk') from None
     
     def _read_chunked_encoded(self, decompressobj):
+        """
+        Payload reader task, what reads a chunked http message, till it ends. After receiving a "chunk", decompresses
+        it.
+        
+        This method is a generator.
+        
+        Parameters
+        ----------
+        decompressobj : `zlib.decompressobj`, `brotli.Decompressor`, `BROTLI_COMPRESSOR`
+            Decompressor used to decompress the data afetr receiving it.
+            
+        Returns
+        -------
+        collected : `bytes`
+        
+        Raises
+        ------
+        ConnectionError
+            Connection lost before enough data was received.
+        PayloadError
+            - Chunk size is not hexadecimal.
+            - Chunk not ends with CRLF.
+            - Cannot decopress a chunk.
+        CancelledError
+            If the reader task is cancelled not by receiving eof.
+        """
         collected = []
         while True:
             chunk_length = yield from self._readtill_CRLF()
@@ -1810,6 +2118,8 @@ class ReadProtocolBase(object):
         """
         Reader task for reading exactly one chunk out.
         
+        This method is a generator.
+        
         Returns
         -------
         chunk : `bytes`
@@ -1839,6 +2149,13 @@ class ReadProtocolBase(object):
         return chunk
     
     def __call__(self):
+        """
+        Calling a ``ReadProtocolBase`` returns itself, enabling using itself as a one time use protocol factory.
+        
+        Returns
+        -------
+        self : ``ReadProtocolBase`` instance
+        """
         return self
 
 
@@ -2130,6 +2447,14 @@ class ProtocolBase(ReadProtocolBase):
     __slots__ = ('_drain_waiter', )
     
     def __init__(self, loop):
+        """
+        Creates a new ``ReadProtocolBase`` instance.
+        
+        Parameters
+        ----------
+        loop : ``EventThread``
+            The respective event loop, what the protocol uses for it's asynchronous tasks.
+        """
         self.loop = loop
         self.transport = None
         self.exception = None
@@ -2143,6 +2468,16 @@ class ProtocolBase(ReadProtocolBase):
         self._drain_waiter = None
     
     def _copy_attrs_to(self, other):
+        """
+        Copies the protocol's attributes to an other one.
+        
+        Can be used to change a protocol's type by creating an other one and copying the old's attributes.
+        
+        Parameters
+        ----------
+        other : ``ProtocolBase`` instance
+            The other protocol to copy self's attributes to.
+        """
         other.transport = self.transport
         other.exception = self.exception
         other._chunks = self._chunks
@@ -2153,12 +2488,21 @@ class ProtocolBase(ReadProtocolBase):
         other._paused = self._paused
         other._drain_waiter = self._drain_waiter
     
-    # compability method
     def pause_writing(self):
+        """
+        Called when the transport's buffer goes over the high-water mark.
+        
+        ``.pause_writing`` is called when the buffer goes over the high-water mark, and eventually
+        ``.resume_writing`` is called when the buffer size reaches the low-water mark.
+        """
         self._paused = True
     
-    # compability method
     def resume_writing(self):
+        """
+        Called when the transport's buffer drains below the low-water mark.
+        
+        See ``.pause_writing`` for details.
+        """
         self._paused = False
         
         drain_waiter = self._drain_waiter
@@ -2168,22 +2512,36 @@ class ProtocolBase(ReadProtocolBase):
         self._drain_waiter = None
         drain_waiter.set_result_if_pending(None)
     
-    # compability method
     async def _drain_helper(self):
+        """
+        Called when the trasnport buffer aftre writing goes ove the high limit mark to wait till it is drained.
+        
+        This method is a coroutine.
+        """
         if not self._paused:
             return
         drain_waiter = Future(self.loop)
         self._drain_waiter = drain_waiter
         await drain_waiter
     
-    # compability method
     def connection_lost(self, exception):
+        """
+        Called when the connection is lost or closed.
+        
+        Parameters
+        ----------
+        exception : `None` or `BaseException` instance
+            Defines whether the connection is closed, or an exception was received.
+            
+            If the connection was closed, then `err` is given as `None`. This can happen at the case, when eof is
+            received as well.
+        """
         if exception is None:
             self.eof_received()
         else:
             self.set_exception(exception)
         
-        #wake up the writer if currently paused.
+        # wake up the writer if currently paused.
         if not self._paused:
             return
         
@@ -2200,8 +2558,20 @@ class ProtocolBase(ReadProtocolBase):
         else:
             drain_waiter.set_exception(exception)
     
-    # Basic writing
     def write(self, data):
+        """
+        Writes the given data to the protocol's transport.
+        
+        Parameters
+        ----------
+        data : `bytes-like`
+            The data to write.
+        
+        Raises
+        ------
+        RuntimeError
+            Protocol has no attached transport.
+        """
         transport = self.transport
         if transport is None:
             raise RuntimeError('Protocol has no attached transport.')
@@ -2209,14 +2579,45 @@ class ProtocolBase(ReadProtocolBase):
         transport.write(data)
     
     def writelines(self, data):
+        """
+        Writes the given lines to the protocol's transport.
+        
+        Parameters
+        ----------
+        data : `iterable` of `bytes-like`
+            The lines to write.
+        
+        Raises
+        ------
+        RuntimeError
+            Protocol has no attached transport.
+        """
         transport = self.transport
         if transport is None:
             raise RuntimeError('Protocol has no attached transport.')
         
         transport.writelines(data)
     
-    # Specific writings
-    def write_http_request(self, meth, path, headers, version = HttpVersion11):
+    def write_http_request(self, meth, path, headers, version=HttpVersion11):
+        """
+        Writes an http request to the protocol's transport.
+        
+        Parameters
+        ----------
+        meth : `str`
+            The request's method.
+        path : `str`
+            The request's path.
+        headers : ``imultidict``
+            Request headers.
+        version : ``HttpVersion``, Optional
+            Http version of the request. Defaults to `HttpVersion11`.
+        
+        Raises
+        ------
+        RuntimeError
+            Protocol has no attached transport.
+        """
         transport = self.transport
         if transport is None:
             raise RuntimeError('Protocol has no attached transport.')
@@ -2230,7 +2631,26 @@ class ProtocolBase(ReadProtocolBase):
         
         transport.write(''.join(result).encode())
     
-    def write_http_response(self, status, headers, version = HttpVersion11, body = None):
+    def write_http_response(self, status, headers, version=HttpVersion11, body=None):
+        """
+        Writes an http response to the protocol's transport.
+        
+        Parameters
+        ----------
+        status : `http.HTTPStatus`
+            The response's statis.
+        headers : ``imultidict``
+            Response headers.
+        version : ``HttpVersion``, Optional
+            Http version of the response. Defaults to `HttpVersion11`.
+        body : `None` or `bytes-like`, Optional
+            Http response body.
+        
+        Raises
+        ------
+        RuntimeError
+            Protocol has no attached transport.
+        """
         transport = self.transport
         if transport is None:
             raise RuntimeError('Protocol has no attached transport.')
@@ -2247,6 +2667,21 @@ class ProtocolBase(ReadProtocolBase):
             transport.write(body)
     
     def write_websocket_frame(self, frame, is_client):
+        """
+        Writes a websocket frame to the protocol.
+        
+        Parameters
+        ----------
+        frame : ``Frame``
+            The websocket frame to write.
+        is_client : `bool`
+            Whether the respective websocket is client or server side.
+        
+        Raises
+        ------
+        RuntimeError
+            Protocol has no attached transport.
+        """
         transport = self.transport
         if transport is None:
             raise RuntimeError('Protocol has no attached transport.')
@@ -2264,7 +2699,7 @@ class ProtocolBase(ReadProtocolBase):
             header = PACK_LEN3(head1, head2|127,length)
         transport.write(header)
         
-        #prepare the data.
+        # prepare the data.
         if is_client:
             mask = getrandbits(32).to_bytes(4, 'big')
             transport.write(mask)
@@ -2275,11 +2710,21 @@ class ProtocolBase(ReadProtocolBase):
         transport.write(data)
     
     def write_eof(self):
+        """
+        Writes eof to the transport's protocol if applicable.
+        """
         transport = self.transport
         if (transport is not None):
             transport.write_eof()
     
     def can_write_eof(self):
+        """
+        Returns whether ``.write_eof`` will write eof successfully.
+        
+        Returns
+        -------
+        can_write_eof : `bool`
+        """
         transport = self.transport
         if (transport is None):
             return False
@@ -2287,7 +2732,17 @@ class ProtocolBase(ReadProtocolBase):
         return transport.can_write_eof()
     
     async def drain(self):
-        #use after writing
+        """
+        Blocks till the write buffer is drained.
+        
+        This method is a coroutine.
+        
+        Raises
+        ------
+        BaseException
+            Connection lost exception if applicable.
+        """
+        # use after writing
         exception = self.exception
         if (exception is not None):
             raise exception

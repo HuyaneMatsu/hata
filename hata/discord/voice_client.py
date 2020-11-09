@@ -102,7 +102,7 @@ class VoiceClient(object):
     lock : `Lock`
         A lock used meanwile changing the currently playing audio to not modifying it pararelly.
     player : ``AudioPlayer``
-        The actual player of the ``VoiceClient.md``. If the voice client is not playing nor paused, then set as `None`.
+        The actual player of the ``VoiceClient``. If the voice client is not playing nor paused, then set as `None`.
     queue : `list` of ``AudioSource`` instances
         A list of the scheduled audios.
     reader : `None` or ``AudioReader``
@@ -522,7 +522,7 @@ class VoiceClient(object):
         Returns
         -------
         streams : `list` of `tuple` (``User`` or ``Client``, ``AudioStream``)
-            Audio streams as a `list` oof `tuples` of their respective listened `user` and `stream`.
+            Audio streams as a `list` of `tuples` of their respective listened `user` and `stream`.
         """
         streams = []
         voice_client_audio_streams = self._audio_streams

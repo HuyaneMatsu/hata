@@ -3361,7 +3361,7 @@ class Client(UserBase):
         Notes
         -----
         Accepted `io` types with check order are:
-        - `BodyPartReader` instance
+        - ``BodyPartReader`` instance
         - `bytes`, `bytearray`, `memoryview` instance
         - `str` instance
         - `BytesIO` instance
@@ -6817,7 +6817,7 @@ class Client(UserBase):
     
     async def user_voice_move(self, user, voice_channel):
         """
-        Moves the user to the givn voice channel. The user must be in a voice channel at the respective guild already.
+        Moves the user to the given voice channel. The user must be in a voice channel at the respective guild already.
         
         This method is a coroutine.
         

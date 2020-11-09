@@ -359,7 +359,7 @@ class ClientRequest(object):
                     data = data()
                 else:
                     try:
-                        data = create_payload(data, disposition=None)
+                        data = create_payload(data, {'disposition': None})
                     except LookupError:
                         data = Formdata.fromfields(data)()
                 

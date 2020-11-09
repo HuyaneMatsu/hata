@@ -1747,7 +1747,7 @@ class RATELIMIT_GROUPS:
         - Resets after : `OPT`
     
     - discovery_categories
-        - Endpoint : `/channels/{channel_id}/webhooks`
+        - Endpoint : `/discovery/categories`
         - Method : `GET`
         - Required auth : `bot`
         - Limiter : `GLOBAL`

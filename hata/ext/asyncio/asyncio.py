@@ -17,16 +17,32 @@ __all__ = ('ALL_COMPLETED', 'AbstractChildWatcher', 'AbstractEventLoop', 'Abstra
     'staggered_race', 'start_server', 'to_thread', 'wait', 'wait_for', 'wrap_future', )
 
 import sys, warnings
-from threading import current_thread, enumerate as list_threads
+from threading import current_thread, enumerate as list_threads, main_thread
 from subprocess import PIPE
 
-from ...backend.dereaddons_local import WeakReferer, alchemy_incendiary, KeepType
+from ...env import BACKEND_ONLY
+from ...backend.dereaddons_local import WeakReferer, alchemy_incendiary, KeepType, WeakKeyDictionary
 from ...backend.eventloop import EventThread
 from ...backend.futures import Future as HataFuture, Lock as HataLock, AsyncQue, Task as HataTask, WaitTillFirst, \
     WaitTillAll, WaitTillExc, future_or_timeout, sleep as hata_sleep, shield as hata_shield, WaitContinously, \
     Event as HataEvent
+from ...backend.executor import Executor
 
 IS_UNIX = (sys.platform != 'win32')
+
+EVENTLOOP_RELATION = WeakKeyDictionary()
+del WeakKeyDictionary
+
+for thread in list_threads():
+    if isinstance(thread, EventThread) and thread.should_run:
+        EVENTLOOP_RELATION[main_thread()] = thread
+        break
+else:
+    if (not BACKEND_ONLY):
+        from ...discord.client_core import KOKORO
+        EVENTLOOP_RELATION[main_thread()] = KOKORO
+        del KOKORO
+
 
 # Additions to EventThread
 @KeepType(EventThread)
@@ -71,7 +87,7 @@ class EventThread:
     # Required by dpy 3.8
     def close(self):
         self.stop()
-
+    
     def call_exception_handler(self, context):
         message = context.pop('message')
         exception = context.pop('exception', None)
@@ -106,6 +122,19 @@ class EventThread:
             extracted.append('*no exception provided*\n')
             sys.stderr.write(''.join(extracted))
 
+# Required by aiohttp 3.7
+async def asyncio_run_in_executor(self, executor, func, *args):
+    # We ignroe the executro parameter.
+    # First handle if the call is from hata.
+    if type(func) is alchemy_incendiary:
+        func.args = (*func.args, *args)
+    else:
+        func = alchemy_incendiary(func, args)
+    
+    return await Executor.run_in_executor(self, func)
+
+EventThread.run_in_executor = asyncio_run_in_executor
+del asyncio_run_in_executor
 
 # Reimplement asyncio features
 
@@ -153,7 +182,7 @@ def set_event_loop_policy():
 
 def get_event_loop():
     """
-    Return a hata v event loop.
+    Return a hata event loop.
     
     When called from a coroutine or a callback (e.g. scheduled with call_soon or similar API), this function will
     always return the running event loop.
@@ -161,19 +190,45 @@ def get_event_loop():
     If there is no running event loop set, the function will return the result of
     `get_event_loop_policy().get_event_loop()` call.
     """
+    # If local thread is eventloop, return that.
     local_thread = current_thread()
     if isinstance(local_thread, EventThread):
         return local_thread
     
-    return EventThread()
+    # If we asked for eventlloop, return that
+    try:
+        eventloop = EVENTLOOP_RELATION[local_thread]
+    except KeyError:
+        pass
+    else:
+        return eventloop
+    
+    # Maybe there is a running loop?
+    if EVENTLOOP_RELATION:
+        for eventloop in EVENTLOOP_RELATION.values():
+            if eventloop.should_run:
+                EVENTLOOP_RELATION[local_thread] = eventloop
+                return eventloop
+     
+    # No eventoops yet, create and return
+    eventloop = EventThread()
+    EVENTLOOP_RELATION[local_thread] = eventloop
+    return eventloop
 
 def set_event_loop(self, loop):
     """Set the event loop."""
-    assert current_thread() is loop
+    local_thread = current_thread()
+    assert (local_thread is loop) or (not isinstance(local_thread, EventThread))
+    EVENTLOOP_RELATION[local_thread] = loop
     
 def new_event_loop():
     """Equivalent to calling get_event_loop_policy().new_event_loop()."""
-    return EventThread()
+    eventloop =  EventThread()
+    local_thread = current_thread()
+    if not isinstance(local_thread, EventThread):
+        EVENTLOOP_RELATION.setdefault(local_thread, eventloop)
+    
+    return eventloop
 
 def get_child_watcher():
     """Equivalent to calling get_event_loop_policy().get_child_watcher()."""
@@ -2102,3 +2157,5 @@ class Popen:
         raise NotImplementedError
 
 
+del BACKEND_ONLY
+del main_thread

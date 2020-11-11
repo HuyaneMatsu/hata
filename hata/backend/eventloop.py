@@ -3607,7 +3607,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                         raise OSError('getaddrinfo() returned empty list')
                     
                     for it_family, _, it_proto, _, address_value_local in infos:
-                        value = addr_infos[(it_family, it_proto)] = (address_value_local, None)
+                        addr_infos[(it_family, it_proto)] = (address_value_local, None)
                 
                 if (remote_addr is not None):
                     infos = await self._ensure_resolved(remote_addr, family=family, type=module_socket.SOCK_DGRAM,

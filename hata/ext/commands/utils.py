@@ -1606,10 +1606,10 @@ def wait_for_reaction(client, message, check, timeout):
     ----------
     client : ``Client``
         The client who's `reaction_add` event will be used.
-    check : `callable`
-        The check what is called whith the received parameters whenever an event is received.
     message : ``Message``
         The target message on what new reactons will be checked.
+    check : `callable`
+        The check what is called whith the received parameters whenever an event is received.
     timeout : `float`
         The timeout after `TimeoutError` will be raised to the waiter future.
     
@@ -1631,10 +1631,10 @@ def wait_for_message(client, channel, check, timeout):
     ----------
     client : ``Client``
         The client who's `message_create` event will be used.
-    check : `callable`
-        The check what is called whith the received parameters whenever an event is received.
     channel : ``ChannelBase``
         The target channel where the new messages will be checked.
+    check : `callable`
+        The check what is called whith the received parameters whenever an event is received.
     timeout : `float`
         The timeout after `TimeoutError` will be raised to the waiter future.
     

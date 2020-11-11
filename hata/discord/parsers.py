@@ -5471,7 +5471,7 @@ class EventHandlerBase(object):
 
 class EventWaitforMeta(type):
     """
-    Metaclass for `waitfor` events handlers
+    Metaclass for `waitfor` event handlers
     
     The defaultly supported events are the following:
     - `message_create`
@@ -5729,7 +5729,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
             return
         
         try:
-            container.remove(waiter)
+            list.remove(container, waiter)
         except ValueError:
             pass
         else:
@@ -5766,7 +5766,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
             return None
         
         if type(element) is asynclist:
-            for element in list.__iter__(element):
+            for element in element:
                 if is_method:
                     if not isinstance(element, MethodLike):
                         continue
@@ -5833,7 +5833,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
             return result
         
         if type(element) is asynclist:
-            for element in list.__iter__(element):
+            for element in element:
                 if is_method:
                     if not isinstance(element, MethodLike):
                         continue
@@ -5883,7 +5883,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
             pass
         else:
             if type(event) is asynclist:
-                for event in list.__iter__(event):
+                for event in event:
                     Task(event(*args), KOKORO)
             else:
                 Task(event(*args), KOKORO)
@@ -6242,7 +6242,7 @@ class asynclist(list):
             
             return attribute
         
-        raise AttributeError(f'`{self.__class__.__name__}` object has no attribte `{name}`.')
+        raise AttributeError(f'`{self.__class__.__name__}` object has no attribute `{name}`.')
     
     append = _spaceholder
     clear = _spaceholder

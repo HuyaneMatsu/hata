@@ -3372,7 +3372,7 @@ class Client(UserBase):
         - ``AsyncIO`` instance
         - `async-iterable`
         
-        Raises `TypeError` at the case of invalid `io` type .
+        Raises `TypeError` at the case of invalid `io` type.
         
         There are two predefined datatypes specialized to send files:
         - ``ReuBytesIO``

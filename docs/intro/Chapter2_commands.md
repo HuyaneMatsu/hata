@@ -115,6 +115,7 @@ The supported types are the following:
 | Guild         | 'guild'               | N/A                                                                                                                                       |
 | Message       | 'message'             | N/A                                                                                                                                       |
 | Invite        | 'invite'              | N/A                                                                                                                                       |
+| Color         | 'color'               | N/A                                                                                                                                       |
 | str           | N/A                   | N/A                                                                                                                                       |
 | int           | N/A                   | N/A                                                                                                                                       |
 | timedelta     | 'tdelta'              | N/A                                                                                                                                       |

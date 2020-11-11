@@ -4,6 +4,7 @@ __all__ = ('Converter', 'ConverterFlag', 'ContentParser', 'FlaggedAnnotation')
 #TODO: ask python for GOTO already
 import re
 from datetime import timedelta
+from math import floor
 
 try:
     from dateutil.relativedelta import relativedelta
@@ -30,11 +31,58 @@ from ...discord.preconverters import preconvert_flag, preconvert_bool
 from ...discord.guild import Guild
 from ...discord.http.URLS import MESSAGE_JUMP_URL_RP, INVITE_URL_PATTERN
 from ...discord.invite import Invite
+from ...discord.color import Color
 
 NUMERIC_CONVERSION_LIMIT = 100
 
 DELTA_RP = re.compile('([\+\-]?\d+)[ \t]*([a-zA-Z]+)')
 CHANNEL_MESSAGE_RP = re.compile('(\d{7,21})-(\d{7,21})')
+
+COLOR_RGB_INT_RP = re.compile(
+    '(25[0-5]|2[0-4][0-9]|1[0-9]{2}|0?[0-9]{0,2})[ \t\n]+'
+    '(25[0-5]|2[0-4][0-9]|1[0-9]{2}|0?[0-9]{0,2})[ \t\n]+'
+    '(25[0-5]|2[0-4][0-9]|1[0-9]{2}|0?[0-9]{0,2})'
+        )
+
+COLOR_RGB_FLOAT_RP = re.compile(
+    '([01]|0?\.[0-9]{1,32})[ \t\n]+'
+    '([01]|0?\.[0-9]{1,32})[ \t\n]+'
+    '([01]|0?\.[0-9]{1,32})'
+        )
+
+COLOR_HEX_6_RP = re.compile('(?:0x|#)?([0-9a-f]{6})') # matches html length 6, hex, hex int.
+
+COLOR_HTML_3_RP = re.compile('#([0-9a-f]{3})')
+
+COLOR_DEC_RP = re.compile(
+    '(1677721[0-5]|1677720[0-9]|16777[0-1][0-9]{2}|1677[0-6][0-9]{3}|'
+    '167[0-6][0-9]{4}|16[0-6][0-9]{5}|1[0-5][0-9]{6}|0?[0-9]{1,7}|)'
+        )
+
+COLOR_BY_NAME = {}
+
+for color, *names in (
+        (Color(0xFFFFFF), 'white'       ,                                 ),
+        (Color(0xc0c0c0), 'silver'      , 'light gray'  ,                 ),
+        (Color(0x808080), 'gray'        , 'dark gray'   ,                 ),
+        (Color(0x000000), 'black'       ,                                 ),
+        (Color(0xFF0000), 'red'         , 'high red'    ,                 ),
+        (Color(0x800000), 'maroon'      , 'low red'     ,                 ),
+        (Color(0xFFFF00), 'yellow'      ,                                 ),
+        (Color(0x808000), 'olive'       , 'brown'       ,                 ),
+        (Color(0x00FF00), 'lime'        , 'high green'  ,                 ),
+        (Color(0x008000), 'green'       , 'low green'   ,                 ),
+        (Color(0x00FFFF), 'aqua'        , 'cyan'        , 'high cyan'   , ),
+        (Color(0x008080), 'teal'        , 'low cyan'    ,                 ),
+        (Color(0x0000FF), 'blue'        , 'high blue'   ,                 ),
+        (Color(0x000080), 'navy'        , 'low blue'    ,                 ),
+        (Color(0xFF00FF), 'fuchsia'     , 'magenta'     , 'high magenta', ),
+        (Color(0x800080), 'purple'      , 'low magenta' ,                 ),
+            ):
+    for name in names:
+        COLOR_BY_NAME[name] = color
+
+del color, names, name
 
 CONTENT_ARGUMNET_SEPARATORS = {}
 
@@ -2101,6 +2149,64 @@ ConverterSetting(
     alternative_types = None,
         )
 
+
+async def color_converter(parser_ctx, content_parser_ctx):
+    part = content_parser_ctx.get_next()
+    if (part is None):
+        return None
+    
+    part = part.lower()
+    
+    parsed = COLOR_HEX_6_RP.fullmatch(part)
+    if (parsed is not None):
+        return Color(parsed.group(1), base=16)
+    
+    try:
+        return COLOR_BY_NAME[part]
+    except KeyError:
+        pass
+    
+    parsed = COLOR_RGB_INT_RP.fullmatch(part)
+    if (parsed is not None):
+        red, green, blue = parsed.groups()
+        red = int(red)
+        green = int(green)
+        blue = int(blue)
+        return Color((red<<16)|(green<<8)|blue)
+    
+    parsed = COLOR_RGB_FLOAT_RP.fullmatch(part)
+    if (parsed is not None):
+        red, green, blue = parsed.groups()
+        red = floor(float(red)*255.0)
+        green = floor(float(green)*255.0)
+        blue = floor(float(blue)*255.0)
+        return Color((red<<16)|(green<<8)|blue)
+    
+    parsed = COLOR_HTML_3_RP.fullmatch(part)
+    if (parsed is not None):
+        raw_value = int(parsed.group(1), base=16)
+        red = (raw_value>>8)*17
+        green = ((raw_value>>4)&0xf)*17
+        blue = (raw_value&0xf)*17
+        return Color((red<<16)|(green<<8)|blue)
+    
+    parsed = COLOR_DEC_RP.fullmatch(part)
+    if (parsed is not None):
+        return Color(parsed.group(1))
+    
+    return None
+
+ConverterSetting(
+    converter = color_converter,
+    uses_flags = False,
+    default_flags = ConverterFlag(),
+    all_flags = ConverterFlag(),
+    alternative_type_name = 'color',
+    default_type = Color,
+    alternative_types = None,
+        )
+
+
 async def str_converter(parser_ctx, content_parser_ctx):
     return content_parser_ctx.get_next()
 
@@ -2114,6 +2220,7 @@ ConverterSetting(
     alternative_types = None,
         )
 
+
 async def int_converter(parser_ctx, content_parser_ctx):
     part = content_parser_ctx.get_next()
     if part is None:
@@ -2125,9 +2232,9 @@ async def int_converter(parser_ctx, content_parser_ctx):
     try:
         int_ = int(part)
     except ValueError:
-        return None
-    else:
-        return int_
+        int_ = None
+    
+    return int_
 
 ConverterSetting(
     converter = int_converter,

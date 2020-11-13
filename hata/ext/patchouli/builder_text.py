@@ -402,6 +402,8 @@ class TableConverter(object):
         """
         Creates a new table to text converter.
         
+        This method is a generator.
+        
         Parameters
         ----------
         table : ``GravedTable``
@@ -709,6 +711,8 @@ class CodeBlockConverter(object):
     def __new__(cls, code_block, indent_level, optimal_fit, builder_context):
         """
         Creates a new code block to text converter.
+        
+        This method is a generator.
         
         Parameters
         ----------
@@ -1079,6 +1083,8 @@ class DescriptionConverter(object):
         """
         Creates a new description to text converter.
         
+        This method is a generator.
+        
         Parameters
         ----------
         description : ``GravedDescription``
@@ -1233,6 +1239,8 @@ class AttributeDescriptionConverter(DescriptionConverter):
         """
         Creates a new description to text converter.
         
+        This method is a generator.
+        
         Parameters
         ----------
         attribute_description : ``GravedAttributeDescription``
@@ -1271,6 +1279,8 @@ class AttributeDescriptionConverter(DescriptionConverter):
 def listing_converter(listing, indent_level, optimal_fit, builder_context):
     """
     Deserializes the given listing to converters.
+    
+    This function is a generator.
     
     Parameters
     ----------
@@ -1311,6 +1321,8 @@ class ListingHeadConverter(DescriptionConverter):
         """
         Creates a new listing head to text converter.
         
+        This method is a generator.
+        
         Parameters
         ----------
         head : `None` or `list` of (`str`, ``Grave``)
@@ -1349,6 +1361,8 @@ class ListingHeadConverter(DescriptionConverter):
 def sub_section_converter(sub_section, indent_level, optimal_fit, builder_context):
     """
     Deserializes the given sub-section to converters.
+    
+    This method is a generator.
     
     Parameters
     ----------
@@ -1400,6 +1414,8 @@ class SectionTitleConverter(DescriptionConverter):
     def __new__(cls, title):
         """
         Creates a new section title to text converter.
+        
+        This method is a generator.
         
         Parameters
         ----------

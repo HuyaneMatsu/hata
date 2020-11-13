@@ -5,14 +5,14 @@ from .bases import DiscordEntity, IconSlot
 from .client_core import INTEGRATIONS
 from .user import User, ZEROUSER
 from .others import parse_time, DISCORD_EPOCH_START
-from .role import PartialRole
+from .role import create_partial_role
 from .http import URLS
 
 from . import role
 
 INTEGRATION_TYPE_DISCORD = 'discord'
 
-def PartialIntegration(integration_id, role=None):
+def create_partial_integration(integration_id, role=None):
     """
     Creates an integartion with the given id.
     
@@ -212,7 +212,7 @@ class IntegrationDetail(object):
         except KeyError:
             role = None
         else:
-            role = PartialRole(int(role_id))
+            role = create_partial_role(int(role_id))
         self.role =  role
         
         self.expire_behavior = data.get('expire_behavior', -1)
@@ -362,7 +362,7 @@ class IntegrationApplication(DiscordEntity):
 
 
 # Scopes
-role.PartialIntegration = PartialIntegration
+role.create_partial_integration = create_partial_integration
 
 del DiscordEntity
 del role

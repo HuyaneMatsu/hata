@@ -544,6 +544,8 @@ class RatelimitHandler(object):
         Waits till a respective can be started.
         
         Should be called before the ratelimit handler is used inside of it's context manager.
+        
+        This method is a coroutine.
         """
         size = self.parent.size
         if size < 1:
@@ -1197,6 +1199,8 @@ class RatelimitProxy(object):
     async def wait_till_limits_expire(self):
         """
         Waits till the represented ratelimits expire.
+        
+        This method is a coroutine.
         
         Raises
         ------

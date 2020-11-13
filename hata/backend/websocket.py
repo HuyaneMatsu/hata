@@ -139,8 +139,29 @@ class WebSocketCommonProtocol(ProtocolBase):
     
     is_client = True # placeholder for subclasses
     
-    def __init__(self, loop, host, port, *, is_ssl=None, close_timeout=10., max_size=1<<26, max_queue=None):
+    def __init__(self, loop, host, port, *, is_ssl=False, close_timeout=10., max_size=1<<26, max_queue=None):
+        """
+        Initializes the ``WebSocketCommonProtocol`` with setting it's common attributes.
         
+        Parameters
+        ----------
+        loop : ``EventThread``
+            The respective event loop, what the protocol uses for it's asynchronous tasks.
+        host : `str`
+            The respective server's address to connect to.
+        port : `int`
+            The respective server's port to connect to.
+        is_ssl : `bool`, Optional
+            Whether the connection is secure. Defaults to `False`.
+        close_timeout : `float`, Optional
+            The maximal duration in seconds what is waited for response after close frame is sent. Defaults to `10.0`.
+        max_size : `int`, Optional
+            Max payload size to receive. If a payload exceeds it, ``PayloadError`` is raised. Defaults to `67108864`
+            bytes.
+        max_queue : `None` or `int`, Optional
+            Max queue size of ``.messages``. If a new payload is added to a full queue, the oldest element of it is
+            removed. Defaults to `None`.
+         """
         ProtocolBase.__init__(self, loop)
         
         self.host = host
@@ -240,8 +261,16 @@ class WebSocketCommonProtocol(ProtocolBase):
         """
         return self.state is CLOSED
     
-    #await it
     def recv(self):
+        """
+        Returns a future, what can be awaited to receive the next message of the websocket.
+        
+        Returns
+        -------
+        future : ``Future``
+            The future returns `bytes` or `str` instance respectivel to the received payload's type. If the websocket
+            is closed, ``ConnectionClosed`` is raised.
+        """
         return self.messages.result()
     
     def recv_no_wait(self):
@@ -278,7 +307,7 @@ class WebSocketCommonProtocol(ProtocolBase):
         except (TimeoutError,CancelledError):
             pass
         
-        #quit for the close connection task to close the TCP connection.
+        # quit for the close connection task to close the TCP connection.
         await shield(self.close_connection_task, self.loop)
     
     @staticmethod
@@ -316,7 +345,7 @@ class WebSocketCommonProtocol(ProtocolBase):
     async def ensure_open(self):
         state = self.state
         if state is OPEN:
-            #if self.transfer_data_task exited without a closing handshake.
+            # if self.transfer_data_task exited without a closing handshake.
             if self.transfer_data_task.done():
                 await shield(self.close_connection_task, self.loop)
                 raise ConnectionClosed(self.close_code, None, self.close_reason)
@@ -334,16 +363,24 @@ class WebSocketCommonProtocol(ProtocolBase):
         raise Exception('WebSocket connection isn\'t established yet')
     
     async def transfer_data(self):
+        """
+        The transfer data task of a websocket keeps reading it's messages and putting it into it's ``.messages``
+        ``AsyncQue``.
+        
+        Meanwhile runs, it wrapped inside of a ``Task`` and can be accessed as ``.transfer_data_task``.
+        
+        This method is a coroutine.
+        """
         try:
             while True:
                 message = await self.read_message()
-                #exit the loop when receiving a close frame.
+                # exit the loop when receiving a close frame.
                 if message is None:
                     break
                 
                 self.messages.set_result(message)
         except CancelledError as err:
-            #we alrady failed connection
+            # we alrady failed connection
             exception = ConnectionClosed(self.close_code or 1000, err, self.close_reason)
         
         except WebSocketProtocolError as err:
@@ -351,7 +388,7 @@ class WebSocketCommonProtocol(ProtocolBase):
             self.fail_connection(1002)
         
         except (ConnectionError, EOFError, TimeoutError) as err:
-            exception=ConnectionClosed(1006, err)
+            exception = ConnectionClosed(1006, err)
             self.fail_connection(1006)
         
         except UnicodeDecodeError as err:
@@ -368,7 +405,7 @@ class WebSocketCommonProtocol(ProtocolBase):
                 repr(self),
                 '.transfer_data\n',
                     ])
-            #should not happen
+            # should not happen
             exception = ConnectionClosed(1011, err)
             self.fail_connection(1011)
         
@@ -1107,7 +1144,7 @@ class WSServer(object):
         if websocket_kwargs is None:
             websocket_kwargs = {}
         
-        is_ssl = (kwargs.get("ssl") is not None)
+        is_ssl = (kwargs.get('ssl') is not None)
         
         if (compression is not None):
             if compression != 'deflate':

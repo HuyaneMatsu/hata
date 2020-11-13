@@ -206,6 +206,8 @@ def description_serializer(description, object_, path, linker):
     """
     Serializes the given description.
     
+    This function is a generator.
+    
     Parameters
     ----------
     description : ``GravedDescription``
@@ -229,6 +231,8 @@ def description_serializer(description, object_, path, linker):
 def attribute_description_serializer(description, object_, path, linker):
     """
     Serializes the given attribute description.
+    
+    This function is a generator.
     
     Parameters
     ----------
@@ -269,6 +273,8 @@ def code_block_serializer(code_block, object_, path, linker):
     """
     Serializes the given description.
     
+    This function is a generator.
+    
     Parameters
     ----------
     code_block : ``GravedCodeBlock``
@@ -301,6 +307,8 @@ def code_block_serializer(code_block, object_, path, linker):
 def table_serializer(table, object_, path, linker):
     """
     Serializes the given table.
+    
+    This function is a generator.
     
     Parameters
     ----------
@@ -354,6 +362,8 @@ def listing_element_serializer(listing_element, object_, path, linker):
     """
     Serializes the given listing element.
     
+    This function is a generator.
+    
     Parameters
     ----------
     listing_element : ``GravedListingElement``
@@ -386,6 +396,8 @@ def listing_serializer(listing, object_, path, linker):
     """
     Serializes the given listing.
     
+    This function is a generator.
+    
     Parameters
     ----------
     listing : ``GravedListing``
@@ -413,6 +425,8 @@ def section_title_serializer(title):
     """
     Serializes the given section title.
     
+    This function is a generator.
+    
     Parameters
     ----------
     title : `str`
@@ -433,6 +447,8 @@ def section_serializer(section, object_):
     """
     Serializes the given section.
     
+    This function is a generator.
+    
     Parameters
     ----------
     section : `tuple` ((`str` or `None`), `list` of `Any`)
@@ -452,6 +468,8 @@ def section_serializer(section, object_):
 def sub_section_serializer(sub_section, object_, path, linker):
     """
     Deserializes the given sub-section to converters.
+    
+    This function is a generator.
     
     Parameters
     ----------
@@ -510,4 +528,3 @@ def html_serialize_docs(docs, object_):
         result.extend(section_serializer(section, object_))
     
     return ''.join(result)
-

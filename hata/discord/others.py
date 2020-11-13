@@ -20,7 +20,7 @@ from .bases import DiscordEntity
 
 from . import bases
 
-PartialUser = NotImplemented
+create_partial_user = NotImplemented
 RelationshipType = NotImplemented
 
 DATETIME_FORMAT_CODE = '%Y.%m.%d-%H:%M:%S'
@@ -638,7 +638,7 @@ class Relationship(object):
         user_id : `int`
             The relationship's target user's id.
         """
-        self.user = PartialUser(user_id)
+        self.user = create_partial_user(user_id)
         self.type = RelationshipType.get(data['type'])
         client.relationships[user_id] = self
     

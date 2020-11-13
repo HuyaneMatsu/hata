@@ -1011,6 +1011,8 @@ class ReadProtocolBase(object):
         
         If `n` is given as a negative integer, then will read until eof.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         n : `int`
@@ -1028,6 +1030,8 @@ class ReadProtocolBase(object):
     async def readexactly(self, n):
         """
         Read exactly `n` bytes from the protocol.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -1068,6 +1072,8 @@ class ReadProtocolBase(object):
     async def readonce(self):
         """
         Waits till exactly one chunk is of data is received.
+        
+        This method is a coroutine.
         
         Returns
         -------
@@ -2292,8 +2298,7 @@ class DatagramAddressedReadProtocol(object):
         Can be used to wait for payload to receive. Note, that this method should be used onyl initially, because the
         reader protocols implement the reading.
         
-        
-        This method is a corotuine.
+        This method is a coroutine.
         
         Parameters
         ----------

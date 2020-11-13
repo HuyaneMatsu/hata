@@ -446,6 +446,8 @@ class TextTable(object):
         """
         Iterates over the table's lines.
         
+        This method is a generator.
+        
         Yields
         ------
         line : `list` of (`str`, `None`)

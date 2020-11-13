@@ -556,6 +556,31 @@ class Command(object):
         
         return self
     
+    def copy(self):
+        """
+        Copies the command.
+        
+        Returns
+        -------
+        new : ``Command``
+        """
+        new = object.__new__(self.__class__)
+        
+        new._alters = self._alters
+        new._category_hint = self._category_hint
+        new._checks  = self._checks
+        new._parser_failure_handler = self._parser_failure_handler
+        new._wrappers = self._wrappers
+        new.aliases = self.aliases
+        new.category = None
+        new.command = self.command
+        new.description = self.description
+        new.display_name = self.display_name
+        new.name = self.name
+        new.parser = self.parser
+        
+        return new
+    
     def __repr__(self):
         """Returns the command's representation."""
         result = [
@@ -612,6 +637,39 @@ class Command(object):
     def __str__(self):
         """Returns the command's name."""
         return self.name
+    
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self is other:
+            return True
+        
+        if self.name != other.name:
+            return False
+        
+        if self.command != other.command:
+            return False
+        
+        if self._category_hint != other._category_hint:
+            return False
+        
+        if self.aliases != other.aliases:
+            return False
+        
+        if self._checks != other._checks:
+            return False
+        
+        if self._wrappers != other._wrappers:
+            return False
+        
+        if self._parser_failure_handler != other._parser_failure_handler:
+            return False
+        
+        if self.description != other.description:
+            return False
+        
+        return True
     
     def _get_checks(self):
         checks = self._checks
@@ -700,6 +758,8 @@ class Command(object):
         called if applicable.
         
         Note that not the command handles the exceptions dropped by the command, but the command processer does.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -818,6 +878,8 @@ class Command(object):
         
         Acts familiarly to ``.__call__``, but it returns `False` at the end of the checks, instead of continuing.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         client : ``Client``
@@ -876,6 +938,8 @@ class Command(object):
         """
         Runs all the checks of the command's category and of the command and returns `True` if every of passes.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         client : ``Client``
@@ -921,6 +985,8 @@ class Command(object):
         """
         Runs all the checks of the command and returns whether every of them passed.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         client : ``Client``
@@ -957,6 +1023,8 @@ class Command(object):
         Runs the command's function.
         
         Acts familiarly as ``.__call__``, but without it's checks.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -1343,6 +1411,8 @@ class checks:
             
             Subclasses should overwrite this method.
             
+            This method is a coroutine.
+            
             Parameters
             ----------
             client : ``Client``
@@ -1468,6 +1538,8 @@ class checks:
             """
             Calls the check to validate whether it passes with the given conditions.
             
+            This method is a coroutine.
+            
             Parameters
             ----------
             client : ``Client``
@@ -1499,6 +1571,8 @@ class checks:
         async def __call__(self, client, message):
             """
             Calls the check to validate whether it passes with the given conditions.
+            
+            This method is a coroutine.
             
             Parameters
             ----------
@@ -1587,6 +1661,8 @@ class checks:
             """
             Calls the check to validate whether it passes with the given conditions.
             
+            This method is a coroutine.
+            
             Parameters
             ----------
             client : ``Client``
@@ -1620,6 +1696,8 @@ class checks:
         async def __call__(self, client, message):
             """
             Calls the check to validate whether it passes with the given conditions.
+            
+            This method is a coroutine.
             
             Parameters
             ----------
@@ -1658,6 +1736,8 @@ class checks:
             """
             Calls the check to validate whether it passes with the given conditions.
             
+            This method is a coroutine.
+            
             Parameters
             ----------
             client : ``Client``
@@ -1688,6 +1768,8 @@ class checks:
         async def __call__(self, client, message):
             """
             Calls the check to validate whether it passes with the given conditions.
+            
+            This method is a coroutine.
             
             Parameters
             ----------
@@ -1720,6 +1802,8 @@ class checks:
             """
             Calls the check to validate whether it passes with the given conditions.
             
+            This method is a coroutine.
+            
             Parameters
             ----------
             client : ``Client``
@@ -1750,6 +1834,8 @@ class checks:
         async def __call__(self, client, message):
             """
             Calls the check to validate whether it passes with the given conditions.
+            
+            This method is a coroutine.
             
             Parameters
             ----------
@@ -1785,6 +1871,8 @@ class checks:
         async def __call__(self, client, message):
             """
             Calls the check to validate whether it passes with the given conditions.
+            
+            This method is a coroutine.
             
             Parameters
             ----------
@@ -1866,6 +1954,8 @@ class checks:
             """
             Calls the check to validate whether it passes with the given conditions.
             
+            This method is a coroutine.
+            
             Parameters
             ----------
             client : ``Client``
@@ -1898,6 +1988,8 @@ class checks:
         async def __call__(self, client, message):
             """
             Calls the check to validate whether it passes with the given conditions.
+            
+            This method is a coroutine.
             
             Parameters
             ----------
@@ -1975,6 +2067,8 @@ class checks:
             """
             Calls the check to validate whether it passes with the given conditions.
             
+            This method is a coroutine.
+            
             Parameters
             ----------
             client : ``Client``
@@ -2012,6 +2106,8 @@ class checks:
         async def __call__(self, client, message):
             """
             Calls the check to validate whether it passes with the given conditions.
+            
+            This method is a coroutine.
             
             Parameters
             ----------
@@ -2094,6 +2190,8 @@ class checks:
             """
             Calls the check to validate whether it passes with the given conditions.
             
+            This method is a coroutine.
+            
             Parameters
             ----------
             client : ``Client``
@@ -2165,6 +2263,8 @@ class checks:
         async def __call__(self, client, message):
             """
             Calls the check to validate whether it passes with the given conditions.
+            
+            This method is a coroutine.
             
             Parameters
             ----------
@@ -2243,6 +2343,8 @@ class checks:
         async def __call__(self, client, message):
             """
             Calls the check to validate whether it passes with the given conditions.
+            
+            This method is a coroutine.
             
             Parameters
             ----------
@@ -2331,6 +2433,8 @@ class checks:
         async def __call__(self, client, message):
             """
             Calls the check to validate whether it passes with the given conditions.
+            
+            This method is a coroutine.
             
             Parameters
             ----------
@@ -2422,6 +2526,8 @@ class checks:
             """
             Calls the check to validate whether it passes with the given conditions.
             
+            This method is a coroutine.
+            
             Parameters
             ----------
             client : ``Client``
@@ -2507,6 +2613,8 @@ class checks:
             """
             Calls the check to validate whether it passes with the given conditions.
             
+            This method is a coroutine.
+            
             Parameters
             ----------
             client : ``Client``
@@ -2591,6 +2699,8 @@ class checks:
             """
             Calls the check to validate whether it passes with the given conditions.
             
+            This method is a coroutine.
+            
             Parameters
             ----------
             client : ``Client``
@@ -2655,6 +2765,8 @@ class checks:
         async def __call__(self, client, message):
             """
             Calls the check to validate whether it passes with the given conditions.
+            
+            This method is a coroutine.
             
             Parameters
             ----------
@@ -2722,6 +2834,8 @@ class checks:
         async def __call__(self, client, message):
             """
             Calls the check to validate whether it passes with the given conditions.
+            
+            This method is a coroutine.
             
             Parameters
             ----------
@@ -2845,6 +2959,8 @@ class Category(object):
     async def run_checks(self, client, message):
         """
         Runs all the checks of the category and returns whtether every of them passed.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -3762,9 +3878,12 @@ class CommandProcesser(EventWaitforBase):
         """
         category = command.category
         if (category is not None):
-            if self.get_category(category.name) is not category:
-                raise ValueError(f'The passed `{Category.__name__}` object is not owned; `{category!r}`.')
-            category_added = True
+            own_category = self.get_category(category.name)
+            if own_category is category:
+                category_added = True
+            else:
+                command = command.copy()
+                category_added = False
         
         else:
             category_hint = command._category_hint
@@ -3841,7 +3960,7 @@ class CommandProcesser(EventWaitforBase):
         # Alters contain `command.name` as well, so skip that case.
         alters = command._alters
         for alter in alters:
-            commands[alter]=command
+            commands[alter] = command
         
         # apply name rule if paplicable
         command_name_rule = self._command_name_rule
@@ -3897,7 +4016,7 @@ class CommandProcesser(EventWaitforBase):
                 name_alters = generate_alters_for(name)
                 name = name_alters[0]
             
-            if (name is None) or (name==func.name):
+            if (name is None) or (name == func.name):
                 found_alters = []
                 
                 for alter in func._alters:
@@ -3906,7 +4025,7 @@ class CommandProcesser(EventWaitforBase):
                     except KeyError:
                         pass
                     else:
-                        if command is func:
+                        if command == func:
                             found_alters.append(name)
                 
                 if not found_alters:
@@ -4015,7 +4134,9 @@ class CommandProcesser(EventWaitforBase):
         Calls the waitfors of the command processer, processes the given `message`'s content, and calls a command if
         found, or an other specified event.
         
-        > Details under ``CommandProcesser``'s own docs.
+        Details under ``CommandProcesser``'s own docs.
+        
+        This method is a coroutine.
         
         Arguments
         ---------
@@ -4026,7 +4147,7 @@ class CommandProcesser(EventWaitforBase):
         
         Raises
         ------
-        Any
+        BaseException
         """
         await self.call_waitfors(client, message)
         
@@ -4056,7 +4177,7 @@ class CommandProcesser(EventWaitforBase):
                 if result is None:
                     break
                 
-                command_name,content = result.groups()
+                command_name, content = result.groups()
                 command_name = command_name.lower()
                 
                 try:
@@ -4065,7 +4186,7 @@ class CommandProcesser(EventWaitforBase):
                     break
                 
                 try:
-                    result = await command(client,message,content)
+                    result = await command(client, message, content)
                 except BaseException as err:
                     command_error = self._command_error
                     if (command_error is not None):
@@ -4096,7 +4217,7 @@ class CommandProcesser(EventWaitforBase):
                 break
         
         else:
-            command_name,content = result
+            command_name, content = result
             command_name = command_name.lower()
             
             try:

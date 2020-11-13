@@ -126,6 +126,8 @@ def anchor_for_serializer(section_name):
     """
     Returns the anchor for the given section name.
     
+    This function is a generator.
+    
     Parameters
     ----------
     section_name : `str`
@@ -146,6 +148,8 @@ def anchor_for_serializer(section_name):
 def section_title_serializer(title):
     """
     Serializes to html the given section name.
+    
+    This function is a generator.
     
     Parameters
     ----------
@@ -406,6 +410,8 @@ class SimpleSection(object):
         """
         Serilalizes the attribute section to html string parts.
         
+        This method is a generator.
+        
         Yields
         ------
         html : `str`
@@ -528,6 +534,8 @@ class FunctionOrPropertySerializer(object):
         """
         Serializes the represented method or property to html parts.
         
+        This method is a generator.
+        
         Yields
         ------
         html : `str`
@@ -630,6 +638,8 @@ class UnitSection(object):
     def serialize(self):
         """
         Serializes theunit section to html parts.
+        
+        This method is a generator.
         
         Yields
         ------
@@ -767,6 +777,8 @@ class AttributeSection(object):
     def serialize(self):
         """
         Serilalizes the attribute section to html string parts.
+        
+        This method is a generator.
         
         Yields
         ------
@@ -1065,6 +1077,8 @@ class TypeSerializer(object):
         """
         Serilalizes the attribute section to html string parts.
         
+        This method is a generator.
+        
         Yields
         ------
         html : `str`
@@ -1161,6 +1175,8 @@ class UnitListerSection(object):
     def serialize(self):
         """
         Serializes the unit listing.
+        
+        This method is a generator.
         
         Yields
         ------
@@ -1330,6 +1346,8 @@ class ModuleSerializer(object):
     def serialize(self):
         """
         Serilalizes the attribute section to html string parts.
+        
+        This method is a generator.
         
         Yields
         ------

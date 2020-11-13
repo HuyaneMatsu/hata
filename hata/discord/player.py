@@ -52,11 +52,11 @@ class AudioSource(object):
         """
         Reads 20ms audio data.
         
-        This method is a coroutine.
-        
         Indicates end of stream by returning `None`.
         
         Subclasses should implement it.
+        
+        This method is a coroutine.
         
         Returns
         -------
@@ -68,9 +68,9 @@ class AudioSource(object):
         """
         Cleans up the allocated resources by the audio source.
         
-        This method is a coroutine.
-        
         Subclasses should overwrite it.
+        
+        This method is a coroutine.
         """
         pass
     
@@ -317,9 +317,9 @@ class LocalAudio(AudioSource):
         """
         Reads 20ms audio data.
         
-        This method is a coroutine.
-        
         Indicates end of stream by returning zero `None`.
+        
+        This method is a coroutine.
         
         Returns
         -------
@@ -650,6 +650,8 @@ class AudioPlayer(object):
         
         Waits for it's resumed waiter to be set if paused. If the voice player's source is updated, then initializes it
         as well and closes the old one too.
+        
+        This method is a coroutine.
         
         Parameters
         ----------

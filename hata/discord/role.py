@@ -10,13 +10,13 @@ from .client_core import ROLES
 from .others import random_id, DATETIME_FORMAT_CODE
 from .color import Color
 from .permission import Permission
-from .user import PartialUser
+from .user import create_partial_user
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_color, preconvert_int, preconvert_bool, \
     preconvert_flag
 
 from . import ratelimit
 
-PartialIntegration = NotImplemented
+create_partial_integration = NotImplemented
 
 if API_VERSION in (6, 7):
     PERMISSION_KEY = 'permissions_new'
@@ -64,7 +64,7 @@ else:
         return int(data['type'])
 
 
-def PartialRole(role_id):
+def create_partial_role(role_id):
     """
     Creates a partial role from the given `role_id`. If the role already exists returns that instead.
     
@@ -780,14 +780,14 @@ class Role(DiscordEntity, immortal=True):
             manager = None
         
         elif manager_type is ROLE_MANAGER_TYPE_BOT:
-            manager = PartialUser(self.manager_id)
+            manager = create_partial_user(self.manager_id)
             
             # `Partialuser` sets newly created users' `.is_bot` attribute as `False`.
             if not manager.is_bot :
                 manager.is_bot = True
         
         elif manager_type is ROLE_MANAGER_TYPE_INTEGRATION:
-            manager = PartialIntegration(self.manager_id, role=self)
+            manager = create_partial_integration(self.manager_id, role=self)
         
         else:
             manager = None
@@ -892,7 +892,7 @@ class PermOW(object):
         """
         id_ = int(data['id'])
         if get_permow_key_value(data) == PERMOW_TYPE_ROLE:
-            target_role = PartialRole(id_)
+            target_role = create_partial_role(id_)
             target_user_id = 0
         else:
             target_role = None
@@ -914,7 +914,7 @@ class PermOW(object):
         """
         target = self.target_role
         if target is None:
-            target = PartialUser(self.target_user_id)
+            target = create_partial_user(self.target_user_id)
         
         return target
     
@@ -962,9 +962,12 @@ class PermOW(object):
         """
         Yields the permissions' names.
         
+        This method is a generator.
+        
         Yields
         ------
         name : `str`
+            Permissions' respective name.
         """
         yield from Permission.__keys__.keys()
     
@@ -975,9 +978,24 @@ class PermOW(object):
         Yields position by position each permission's state. `+1` is yielded if the permission is enabled, `-1` if
         disabled and `0` if neither.
         
+        This method is a generator.
+        
         Yields
         ------
         state : `int`
+            The permission's state.
+            
+            Can be one of the following:
+            
+            +-----------+-------+
+            | Name      | Value |
+            +===========+=======+
+            | Enabled   | +1    |
+            +-----------+-------+
+            | None      | 0     |
+            +-----------+-------+
+            | Disabled  | -1    |
+            +-----------+-------+
         """
         allow = self.allow
         deny = self.deny
@@ -996,10 +1014,26 @@ class PermOW(object):
         Yields the permission overwrite's items. What includes their name and their state. As state `+1` is yielded
         if the permission is enabled, `-1` if disabled and `0` if neither.
         
+        This method is a generator.
+        
         Yields
         -------
         name : str`
+            Permissions' respective name.
         state : `int`
+            The permission's state.
+            
+            Can be one of the following:
+            
+            +-----------+-------+
+            | Name      | Value |
+            +===========+=======+
+            | Enabled   | +1    |
+            +-----------+-------+
+            | None      | 0     |
+            +-----------+-------+
+            | Disabled  | -1    |
+            +-----------+-------+
         """
         allow = self.allow
         deny = self.deny

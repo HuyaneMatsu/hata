@@ -201,7 +201,11 @@ class _AsyncIOIterator(object):
         return self
     
     async def __anext__(self):
-        """Reads a line from the respective file."""
+        """
+        Reads a line from the respective file.
+        
+        This method is a coroutine.
+        """
         result = await self._wrapped.readline()
         if result:
             return result

@@ -292,6 +292,8 @@ class Pagination(object):
         """
         Creates a new pagination with the given parameters.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         client : ``Client``
@@ -365,6 +367,8 @@ class Pagination(object):
     async def __call__(self, client, event):
         """
         Called when a reaction is added or removed from the respective message.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -506,6 +510,8 @@ class Pagination(object):
         
         If `exception` is given as `TimeoutError`, then removes the ``Pagination``'s reactions from the respective
         message.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -656,6 +662,8 @@ class Closer(object):
         """
         Creates a new pagination with the given parameters.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         client : ``Client``
@@ -719,6 +727,8 @@ class Closer(object):
         """
         Called when a reaction is added on the respective message.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         client : ``Client``
@@ -767,6 +777,8 @@ class Closer(object):
         
         If `exception` is given as `TimeoutError`, then removes the ``Closer``'s reactions from the respective
         message.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -987,6 +999,8 @@ class ChooseMenu(object):
         """
         Creates a new choose menu with the given parameters.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         client : ``Client``
@@ -1192,6 +1206,8 @@ class ChooseMenu(object):
         """
         Called when a reeaction is added or removed from the respective message.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         client : ``Client``
@@ -1377,6 +1393,8 @@ class ChooseMenu(object):
         If `exception` is given as `TimeoutError`, then removes the ``ChooseMenu``'s reactions from the respective
         message.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         exception : `None` or ``BaseException`` instance
@@ -1532,6 +1550,8 @@ class WaitAndContinue(object):
         Calls the ``WaitAndContinue`` and if it's check returns non `False`, then set's the waiter future's result to
         the received parameters. If `check` returned non `bool`, then passes that value to the waiter as well.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         client : ``Client``
@@ -1562,6 +1582,8 @@ class WaitAndContinue(object):
         """
         Cancels the ``WaitAndContinue`` with the given exception. If the given `exception` is `BaseException` instance,
         then raises it to the waiter future.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -2062,6 +2084,8 @@ class Cooldown(object):
         """
         Calls the cooldown with the respective `client` and `message`, and then yields whether the command can be
         called, and if not, then with what extra parameters the handler should receive.
+        
+        This method is a coroutine generator.
         
         Parameters
         ----------

@@ -458,6 +458,8 @@ class Kokoro(object):
         """
         Creates a ``Kokoro`` instance bound to it's gateway.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         gateway : ``DiscordGateway`` or ``DiscordGatewayVoice``
@@ -471,7 +473,7 @@ class Kokoro(object):
         -----
         Before the coroutine returns a full loop is done to ensure `._start` is already started up.
         """
-        self=object.__new__(cls)
+        self = object.__new__(cls)
         
         self.gateway = gateway
         self.interval = 40.0 #we set it from outside
@@ -496,6 +498,8 @@ class Kokoro(object):
     async def restart(self):
         """
         Restarts kokoro.
+        
+        This method is a coroutine.
         """
         self.cancel()
         future = Future(KOKORO)
@@ -514,6 +518,8 @@ class Kokoro(object):
             - Sets `.beater` to ``._keep_beating`` and awaits it. This is the main beater of kokoro and runs meanwhile
                 it's gateway is connected. This task can be cancelled, but we ignore that case.
             - If `.running` is still `True`, repeat.
+        
+        This method is a coroutine.
         """
         self.running = True
         while True:
@@ -563,6 +569,8 @@ class Kokoro(object):
                 from the loop to terminate the beating state and we will wait for the websocket to connect again.
                 This task can also be cancelled. If cancellation occures, we repeat the loop.
             - If the beating task is done, we update `.last_send` to the current `perf_counter` time. Repeat the loop.
+        
+        This method is a coroutine.
         """
         self.last_answer = perf_counter()
         gateway = self.gateway
@@ -629,6 +637,8 @@ class Kokoro(object):
     async def _start_beating(self):
         """
         Internal method to start beating when kokoro is not running.
+        
+        This method is a coroutine.
         """
         #starts kokoro, then beating
         self.task = Task(self._start(), KOKORO)
@@ -719,6 +729,8 @@ class Kokoro(object):
         """
         Sends a heartbeat event now. If kokoro is not at beating state, or anywhere in between, resets itself as it just
         received a heartbeat answer right now.
+        
+        This method is a coroutine.
         """
         while True: #GOTO
             #case 1 : we are not running:

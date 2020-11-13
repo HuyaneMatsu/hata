@@ -356,6 +356,8 @@ class _multidict_items(object):
         """
         Iterates over the respective ``multidict``'s items.
         
+        This method is a generator.
+        
         Yields
         -------
         item : `tuple` (`Any`, `Any`)
@@ -404,6 +406,8 @@ class _multidict_values(object):
     def __iter__(self):
         """
         Iterates over the respective ``multidict``'s values.
+        
+        This method is a generator.
         
         Yields
         -------
@@ -2313,6 +2317,8 @@ class _HybridValueDictionaryKeyIterator(object):
         """
         Iterates over a hybrid value dictionary's keys.
         
+        This method is a generator.
+        
         Yields
         ------
         key : `Any`
@@ -2366,6 +2372,8 @@ class _HybridValueDictionaryValueIterator(object):
     def __iter__(self):
         """
         Iterates over a hybrid value dictionary's values.
+        
+        This method is a generator.
         
         Yields
         ------
@@ -2442,6 +2450,8 @@ class _HybridValueDictionaryItemIterator(object):
     def __iter__(self):
         """
         Iterates over a hybrid value dictionary's items.
+        
+        This method is a generator.
         
         Yields
         ------
@@ -3012,6 +3022,8 @@ class _WeakValueDictionaryKeyIterator(object):
         """
         Iterates over a weak value dictionary's keys.
         
+        This method is a generator.
+        
         Yields
         ------
         key : `Any`
@@ -3065,6 +3077,8 @@ class _WeakValueDictionaryValueIterator(object):
     def __iter__(self):
         """
         Iterates over a weak value dictionary's values.
+        
+        This method is a generator.
         
         Yields
         ------
@@ -3136,6 +3150,8 @@ class _WeakValueDictionaryItemIterator(object):
     def __iter__(self):
         """
         Iterates over a weak value dictionary's items.
+        
+        This method is a generator.
         
         Yields
         ------
@@ -3706,6 +3722,8 @@ class _WeakKeyDictionaryKeyIterator(object):
         """
         Iterates over a weak key dictionary's keys.
         
+        This method is a generator.
+        
         Yields
         ------
         key : `Any`
@@ -3760,6 +3778,8 @@ class _WeakKeyDictionaryValueIterator(object):
     def __iter__(self):
         """
         Iterates over a weak key dictionary's values.
+        
+        This method is a generator.
         
         Yields
         ------
@@ -3830,6 +3850,8 @@ class _WeakKeyDictionaryItemIterator(object):
     def __iter__(self):
         """
         Iterates over a weak key dictionary's items.
+        
+        This method is a generator.
         
         Yields
         ------
@@ -4363,6 +4385,8 @@ class _WeakMapIterator(object):
     def __iter__(self):
         """
         Iterates over a weak map.
+        
+        This method is a generator.
         
         Yields
         ------

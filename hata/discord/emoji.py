@@ -18,7 +18,7 @@ UNICODE_EMOJI_LIMIT = 1<<21
 BUILTIN_EMOJIS = {}
 UNICODE_TO_EMOJI = {}
 
-def PartialEmoji(data):
+def create_partial_emoji(data):
     """
     Creates an emoji from partial emoji data sent by Discord.
     
@@ -105,7 +105,7 @@ class Emoji(DiscordEntity, immortal=True):
         
     See Also
     --------
-    - ``PartialEmoji`` : A function to create an emoji object from partial emoji data.
+    - ``create_partial_emoji`` : A function to create an emoji object from partial emoji data.
     - ``parse_emoji`` : Parses a partial emoji object out from text.
     """
     __slots__ = ('animated', 'available', 'guild', 'managed', 'name', 'require_colons', 'roles', 'unicode', 'user', )
@@ -752,8 +752,8 @@ class reaction_mapping_line(set):
                 break
             
             users.append(list_form[index])
-            index +=1
-            limit -=1
+            index += 1
+            limit -= 1
             continue
         
         return users
@@ -797,7 +797,7 @@ class reaction_mapping(dict):
         
         self.fully_loaded = False
         for line in data:
-            self[PartialEmoji(line['emoji'])] = reaction_mapping_line(line.get('count', 1))
+            self[create_partial_emoji(line['emoji'])] = reaction_mapping_line(line.get('count', 1))
     
     emoji_count = property(dict.__len__)
     if DOCS_ENABLED:
@@ -4575,7 +4575,7 @@ def generate_builtin_emojis():
 
 generate_builtin_emojis()
 
-activity.PartialEmoji = PartialEmoji
+activity.create_partial_emoji = create_partial_emoji
 
 del generate_builtin_emojis
 del activity

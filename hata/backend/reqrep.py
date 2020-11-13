@@ -275,7 +275,7 @@ class ClientRequest(object):
         headers = imultidict(headers)
         
         # Add extra query parameters to the url and remove fragments
-        original_url = url.extend_query(params)
+        url = url.extend_query(params)
         request_url = url.with_fragment(None)
         
         if not url.host:
@@ -404,7 +404,7 @@ class ClientRequest(object):
         # Everything seems correct, create the object.
         self = object.__new__(cls)
         
-        self.original_url = original_url
+        self.original_url = url
         self.url = request_url
         self.method = method
         self.loop = loop
@@ -477,7 +477,9 @@ class ClientRequest(object):
     
     async def write_bytes(self, writer, connection):
         """
-        Request body writing coroutine.
+        Writes the request's body..
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -894,11 +896,19 @@ class ClientResponse(object):
         return loader(stripped.decode(encoding))
     
     async def __aenter__(self):
-        """Enters the client response as an asynchornous context manager."""
+        """
+        Enters the client response as an asynchornous context manager.
+        
+        This method is a coroutine.
+        """
         return self
     
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Releases the response if not yet closed."""
+        """
+        Releases the response if not yet closed.
+        
+        This method is a coroutine.
+        """
         self.release()
         return False
 

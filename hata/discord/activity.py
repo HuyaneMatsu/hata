@@ -15,7 +15,7 @@ from .preconverters import preconvert_str, preconvert_int
 
 from . import preinstanced
 
-PartialEmoji = NotImplemented
+create_partial_emoji = NotImplemented
 
 DEFAULT_CUSTM_ID = 'UNKNOWN'
 
@@ -1396,7 +1396,7 @@ class ActivityCustom(ActivityBase):
         if emoji_data is None:
             emoji = None
         else:
-            emoji = PartialEmoji(emoji_data)
+            emoji = create_partial_emoji(emoji_data)
         self.emoji = emoji
         
         self.created = activity_data.get('created_at', 0)
@@ -1438,7 +1438,7 @@ class ActivityCustom(ActivityBase):
         if emoji_data is None:
             emoji = None
         else:
-            emoji = PartialEmoji(emoji_data)
+            emoji = create_partial_emoji(emoji_data)
         
         if self.emoji != emoji:
             old_attributes['emoji'] = self.emoji
@@ -1487,7 +1487,7 @@ class ActivityCustom(ActivityBase):
         
         return activity_data
 
-def Activity(activity_data):
+def create_activity(activity_data):
     """
     A factory function to create activity from deto_datad json data sent by Discord.
     

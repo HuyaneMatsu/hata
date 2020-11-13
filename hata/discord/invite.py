@@ -11,8 +11,8 @@ from .others import parse_time, DISCORD_EPOCH_START
 from .http import URLS
 from .client_core import GUILDS, CHANNELS, INVITES
 from .user import User, ZEROUSER
-from .guild import PartialGuild, Guild
-from .channel import PartialChannel, ChannelText, ChannelGroup, ChannelVoice, ChannelStore
+from .guild import create_partial_guild, Guild
+from .channel import create_partial_channel, ChannelText, ChannelGroup, ChannelVoice, ChannelStore
 from .preinstanced import InviteTargetType
 
 Client = NotImplemented
@@ -133,7 +133,7 @@ class Invite(DiscordEntity, immortal=True):
         except KeyError:
             channel = None
         else:
-            channel = PartialChannel(channel_data, guild)
+            channel = create_partial_channel(channel_data, guild)
         invite.channel = channel
         invite.online_count = 0
         invite.user_count = 0
@@ -198,7 +198,7 @@ class Invite(DiscordEntity, immortal=True):
                 guild_id = int(guild_id)
                 guild = GUILDS.get(guild_id, None)
         else:
-            guild = PartialGuild(guild_data)
+            guild = create_partial_guild(guild_data)
         
         self.guild = guild
         
@@ -213,7 +213,7 @@ class Invite(DiscordEntity, immortal=True):
                 channel_id = int(channel_id)
                 channel = CHANNELS.get(channel_id)
         else:
-            channel = PartialChannel(channel_data, guild)
+            channel = create_partial_channel(channel_data, guild)
         self.channel = channel
         
         self.online_count = data.get('approximate_presence_count', 0)
@@ -273,7 +273,7 @@ class Invite(DiscordEntity, immortal=True):
                     guild_id = int(guild_id)
                     guild = GUILDS.get(guild_id, None)
             else:
-                guild = PartialGuild(guild_data)
+                guild = create_partial_guild(guild_data)
             
             self.guild = guild
         
@@ -289,7 +289,7 @@ class Invite(DiscordEntity, immortal=True):
                     channel_id = int(channel_id)
                     channel = CHANNELS.get(channel_id)
             else:
-                channel = PartialChannel(channel_data, guild)
+                channel = create_partial_channel(channel_data, guild)
             
             self.channel = channel
         

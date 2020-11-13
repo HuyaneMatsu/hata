@@ -554,8 +554,8 @@ def format_coroutine(coro):
     
     Returns
     -------
-    result . `str`
-        Theformatted corotuine.
+    result : `str`
+        Theformatted coroutine.
     """
     if not (hasattr(coro, 'cr_code') or hasattr(coro, 'gi_code')):
         # Cython or builtin
@@ -1046,7 +1046,11 @@ class Future(object):
         return 1
     
     def __iter__(self):
-        """Awaits the future till it is done."""
+        """
+        Awaits the future till it is done.
+        
+        This method is a generator. Should be used with `await` expression.
+        """
         if self._state is PENDING:
             self._blocking = True
             yield self
@@ -3220,6 +3224,8 @@ class AsyncQue(object):
         Waits till the next element of the queue is set. If the queue has elements set, yields the next of them, or if
         the queue has exception set, raises it.
         
+        This method is a generator. Should be used with `await` expression.
+        
         Returns
         -------
         result : `Any`
@@ -3327,6 +3333,8 @@ class AsyncQue(object):
         
         If the qeue has ``CancelledError`` set as ``._exception``, then raises ``StopAsyncIteration`` to stop the queue
         instead.
+        
+        This method is a coroutine.
         
         Returns
         -------
@@ -4704,7 +4712,11 @@ class Lock(object):
         return self
     
     async def __aenter__(self):
-        """Acquires the lock."""
+        """
+        Acquires the lock.
+        
+        This method is a coroutine.
+        """
         future = Future(self._loop)
         waiters = self._waiters
         waiters.appendleft(future)
@@ -4713,7 +4725,11 @@ class Lock(object):
             await waiters[1]
     
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Releases the lock."""
+        """
+        Releases the lock.
+        
+        This method is a coroutine.
+        """
         future = self._waiters.pop()
         future.set_result_if_pending(None)
         return False
@@ -4735,6 +4751,8 @@ class Lock(object):
         """
         Blocks until all the lock is unlocked everywhere. If lock is used meanwhile anyweher meanwhile the we acquire
         it, will await that as well.
+        
+        This method is a generator. Should be used with `await` expression.
         """
         waiters = self._waiters
         while waiters:
@@ -4819,7 +4837,11 @@ class ScarletLock(Lock):
         return self
     
     async def __aenter__(self):
-        """Acquires the lock."""
+        """
+        Acquires the lock.
+        
+        This method is a coroutine.
+        """
         future = Future(self._loop)
         waiters = self._waiters
         waiters.appendleft(future)
@@ -4930,7 +4952,11 @@ class Event(object):
         self._value = False
     
     def __iter__(self):
-        """Waits util the event is set, or if it is already, returns immediately."""
+        """
+        Waits util the event is set, or if it is already, returns immediately.
+        
+        This method is a generator. Should be used with `await` expression.
+        """
         if self._value:
             return
         
@@ -4996,6 +5022,8 @@ class enter_executor(object):
         """
         Moves the current tasks's execution to an executor thread.
         
+        This method is a coroutine.
+        
         Raises
         ------
         RuntimeError
@@ -5021,6 +5049,8 @@ class enter_executor(object):
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """
         Moves the current task's executor back from an executor thread.
+        
+        This method is a coroutine.
         """
         await self._exit_future
         self._enter_future = None
@@ -5436,6 +5466,8 @@ class ScarletExecutor(object):
         """
         Enters the scaler executor.
         
+        This method is a coroutine.
+        
         Raises
         ------
         RuntimeError
@@ -5455,6 +5487,8 @@ class ScarletExecutor(object):
         """
         Adds a task to the Scarlet executor to execute pararelly with the other added ones. Blocks execution, if the
         amount of added tasks is greater or equal than the set limit.
+        
+        This method is a coroutine.
         
         Raises
         ------
@@ -5498,6 +5532,8 @@ class ScarletExecutor(object):
         
         If any of the added tasks raised an exception, what is not ``CancalledError``, then cancels all of them and
         propagates the given exception.
+        
+        This method is a coroutine.
         """
         if exc_type is None:
             active = self._active

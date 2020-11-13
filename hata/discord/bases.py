@@ -485,6 +485,8 @@ class FlagBase(int, metaclass = FlagMeta, baseclass=True):
         """
         Yields the name of the byte vize flags, which are enabled.
         
+        This method is a generator.
+        
         Yields
         ------
         name : `str`
@@ -499,6 +501,8 @@ class FlagBase(int, metaclass = FlagMeta, baseclass=True):
         """
         Yields the shift values of the flags, under which shift value the flag is enabled.
         
+        This method is a generator.
+        
         Yields
         -------
         shift : `int`
@@ -510,6 +514,8 @@ class FlagBase(int, metaclass = FlagMeta, baseclass=True):
     def items(self):
         """
         Yields the items of the flag.
+        
+        This method is a generator.
         
         Yields
         ------
@@ -617,6 +623,8 @@ class ReverseFlagBase(FlagBase, baseclass=True):
         """
         Yields the name of the byte vize flags, which are enabled.
         
+        This method is a generator.
+        
         Yields
         ------
         name : `str`
@@ -631,6 +639,8 @@ class ReverseFlagBase(FlagBase, baseclass=True):
         """
         Yields the shift values of the flags, under which shift value the flag is enabled.
         
+        This method is a generator.
+        
         Yields
         -------
         shift : `int`
@@ -642,6 +652,8 @@ class ReverseFlagBase(FlagBase, baseclass=True):
     def items(self):
         """
         Yields the items of the flag.
+        
+        This method is a generator.
         
         Yields
         -------
@@ -1089,7 +1101,11 @@ class Icon(object):
         return f'{self.__class__.__name__}(icon_type=ICON_TYPE_{self.type.name}, icon_hash={self.hash})'
     
     def __iter__(self):
-        """Unpacks the icon."""
+        """
+        Unpacks the icon.
+        
+        This method is a generator.
+        """
         yield self.type
         yield self.hash
     
@@ -1325,7 +1341,7 @@ class IconSlot(object):
                 raise TypeError(f'`{icon_hash_name}` can be passed as `int` instance, got '
                     f'{icon_hash.__class__.__name__}.')
             
-            if icon_hash<0 or icon_hash>((1<<128)-1):
+            if icon_hash < 0 or icon_hash > ((1<<128)-1):
                 raise ValueError(f'`{icon_hash_name}` cannot be negative or longer than 128 bits, got {icon_hash}.')
             
             try:
@@ -1401,7 +1417,7 @@ def instance_or_id_to_instance(obj, type_, name):
         if obj_type is int:
             snowflake = obj
         elif issubclass(obj_type, str):
-            if 6<len(obj)<18 and obj.isdigit():
+            if 6 < len(obj) < 18 and obj.isdigit():
                 snowflake = int(obj)
             else:
                 raise ValueError(f'`{name}` was given as `str` instance, but not as a valid snowflake, got {obj!r}.')
@@ -1417,7 +1433,7 @@ def instance_or_id_to_instance(obj, type_, name):
             raise TypeError(f'`{name}` can be given either as {type_name} instance, or as `int` or `str` representing '
                 f'a snowflake, got {obj_type.__name__}.')
         
-        if snowflake < 0 or snowflake>((1<<64)-1):
+        if snowflake < 0 or snowflake > ((1<<64)-1):
             raise ValueError(f'`{name}` was given either as `int` or as `str` instance, but not as represneting a '
                 f'`uint64`, got {obj!r}.')
         
@@ -1463,7 +1479,7 @@ def instance_or_id_to_snowflake(obj, type_, name):
         if obj_type is int:
             snowflake = obj
         elif issubclass(obj_type, str):
-            if 6<len(obj)<18 and obj.isdigit():
+            if 6 < len(obj) < 18 and obj.isdigit():
                 snowflake = int(obj)
             else:
                 raise ValueError(f'`{name}` was given as `str` instance, but not as a valid snowflake, got {obj!r}.')

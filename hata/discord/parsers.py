@@ -18,17 +18,19 @@ from ..backend.eventloop import LOOP_TIME
 
 from .bases import FlagBase
 from .client_core import CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO
-from .user import User, PartialUser, USERS
+from .user import User, create_partial_user, USERS
 from .channel import CHANNEL_TYPES, ChannelGuildBase, ChannelPrivate
 from .others import Relationship, Gift
 from .guild import EMOJI_UPDATE_NEW, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, VOICE_STATE_NONE, VOICE_STATE_JOIN, \
     VOICE_STATE_LEAVE, VOICE_STATE_UPDATE, Guild
-from .emoji import PartialEmoji
+from .emoji import create_partial_emoji
 from .role import Role
 from .exceptions import DiscordException, ERROR_CODES
 from .invite import Invite
 from .message import EMBED_UPDATE_NONE, Message, MessageRepr
 from .integration import Integration
+
+Client = NotImplemented
 
 class EVENT_SYSTEM_CORE(object):
     """
@@ -349,7 +351,9 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
     def iterate_parser_names(self):
         """
         Yields every parser's name, what the intent flag allows to be received.
-
+        
+        This method is a generator.
+        
         Yields
         ------
         parser_name : `str`
@@ -369,6 +373,8 @@ def filter_clients(clients, flag_shift):
     
     If the correct client was yielded, then the generator is used at a for loop yielding all the clients from `clients`
     which allow the specified flag including the firstly yielded one.
+    
+    This function is a generator.
     
     Parameters
     ----------
@@ -429,6 +435,8 @@ def filter_clients_or_me(clients, flag_shift, me):
     yielded one. At the end yields the received `user` if it is type ``Client`` and it's specified intent flag is not
     allowed.
     
+    This function is a generator.
+    
     Parameters
     ----------
     clients : `list` of ``Client``
@@ -479,7 +487,7 @@ def filter_clients_or_me(clients, flag_shift, me):
         continue
     
     # Whether the user is type Client and we did not yield it, yield it.
-    if type(user) is User:
+    if not isinstance(user, Client):
         return
     
     if (user.intents>>flag_shift)&1:
@@ -776,6 +784,8 @@ async def sync_task(queue_id, coro, queue):
     Syncer task ensured if a guild related dispatch event fails, when any expected entity mentioned by it was not
     found.
     
+    This function is a coroutine.
+    
     Parameters
     ----------
     queue_id : `int`
@@ -880,7 +890,11 @@ class EventBase(object):
         return 0
     
     def __iter__(self):
-        """Unpacks the event."""
+        """
+        Unpacks the event.
+        
+        This method is a generator.
+        """
         return
         yield # This is intentional. Python stuff... Do not ask, just accept.
 
@@ -1522,7 +1536,11 @@ class ReactionAddEvent(EventBase):
         return 3
     
     def __iter__(self):
-        """Unpacks the event."""
+        """
+        Unpacks the event.
+        
+        This method is a generator.
+        """
         yield self.message
         yield self.emoji
         yield self.user
@@ -1596,8 +1614,8 @@ if ALLOW_DEAD_EVENTS:
                     return
                 
                 user_id = int(data['user_id'])
-                user = PartialUser(user_id)
-                emoji = PartialEmoji(data['emoji'])
+                user = create_partial_user(user_id)
+                emoji = create_partial_emoji(data['emoji'])
                 
                 channel = ChannelPrivate._create_dataless(channel_id)
                 channel._finish_dataless(client, user)
@@ -1610,8 +1628,8 @@ if ALLOW_DEAD_EVENTS:
             channel = message.channel
         
         user_id = int(data['user_id'])
-        user = PartialUser(user_id)
-        emoji = PartialEmoji(data['emoji'])
+        user = create_partial_user(user_id)
+        emoji = create_partial_emoji(data['emoji'])
         
         if message is None:
             message = MessageRepr(message_id, channel)
@@ -1633,8 +1651,8 @@ if ALLOW_DEAD_EVENTS:
                     return
                 
                 user_id = int(data['user_id'])
-                user = PartialUser(user_id)
-                emoji = PartialEmoji(data['emoji'])
+                user = create_partial_user(user_id)
+                emoji = create_partial_emoji(data['emoji'])
                 
                 channel = ChannelPrivate._create_dataless(channel_id)
                 channel._finish_dataless(client, user)
@@ -1653,8 +1671,8 @@ if ALLOW_DEAD_EVENTS:
             return
         
         user_id = int(data['user_id'])
-        user = PartialUser(user_id)
-        emoji = PartialEmoji(data['emoji'])
+        user = create_partial_user(user_id)
+        emoji = create_partial_emoji(data['emoji'])
         
         if message is None:
             message = MessageRepr(message_id, channel)
@@ -1672,8 +1690,8 @@ else:
             return
         
         user_id = int(data['user_id'])
-        user = PartialUser(user_id)
-        emoji = PartialEmoji(data['emoji'])
+        user = create_partial_user(user_id)
+        emoji = create_partial_emoji(data['emoji'])
         message.reactions.add(emoji, user)
         
         event = ReactionAddEvent(message, emoji, user)
@@ -1693,8 +1711,8 @@ else:
             return
         
         user_id = int(data['user_id'])
-        user = PartialUser(user_id)
-        emoji = PartialEmoji(data['emoji'])
+        user = create_partial_user(user_id)
+        emoji = create_partial_emoji(data['emoji'])
         message.reactions.add(emoji, user)
         
         event = ReactionAddEvent(message, emoji, user)
@@ -1708,8 +1726,8 @@ def MESSAGE_REACTION_ADD__OPT_SC(client, data):
         return
     
     user_id = int(data['user_id'])
-    user = PartialUser(user_id)
-    emoji = PartialEmoji(data['emoji'])
+    user = create_partial_user(user_id)
+    emoji = create_partial_emoji(data['emoji'])
     message.reactions.add(emoji, user)
 
 def MESSAGE_REACTION_ADD__OPT_MC(client, data):
@@ -1726,8 +1744,8 @@ def MESSAGE_REACTION_ADD__OPT_MC(client, data):
         return
     
     user_id = int(data['user_id'])
-    user = PartialUser(user_id)
-    emoji = PartialEmoji(data['emoji'])
+    user = create_partial_user(user_id)
+    emoji = create_partial_emoji(data['emoji'])
     message.reactions.add(emoji, user)
 
 PARSER_DEFAULTS(
@@ -1942,8 +1960,8 @@ if ALLOW_DEAD_EVENTS:
                     return
                 
                 user_id = int(data['user_id'])
-                user = PartialUser(user_id)
-                emoji = PartialEmoji(data['emoji'])
+                user = create_partial_user(user_id)
+                emoji = create_partial_emoji(data['emoji'])
                 
                 channel = ChannelPrivate._create_dataless(channel_id)
                 channel._finish_dataless(client, user)
@@ -1957,8 +1975,8 @@ if ALLOW_DEAD_EVENTS:
             channel = message.channel
         
         user_id = int(data['user_id'])
-        user = PartialUser(user_id)
-        emoji = PartialEmoji(data['emoji'])
+        user = create_partial_user(user_id)
+        emoji = create_partial_emoji(data['emoji'])
         if message is None:
             message = MessageRepr(message_id, channel)
         else:
@@ -1979,8 +1997,8 @@ if ALLOW_DEAD_EVENTS:
                     return
                 
                 user_id = int(data['user_id'])
-                user = PartialUser(user_id)
-                emoji = PartialEmoji(data['emoji'])
+                user = create_partial_user(user_id)
+                emoji = create_partial_emoji(data['emoji'])
                 
                 channel = ChannelPrivate._create_dataless(channel_id)
                 channel._finish_dataless(client, user)
@@ -2000,8 +2018,8 @@ if ALLOW_DEAD_EVENTS:
             return
         
         user_id = int(data['user_id'])
-        user = PartialUser(user_id)
-        emoji = PartialEmoji(data['emoji'])
+        user = create_partial_user(user_id)
+        emoji = create_partial_emoji(data['emoji'])
         if message is None:
             message = MessageRepr(message_id, channel)
         else:
@@ -2018,8 +2036,8 @@ else:
             return
         
         user_id = int(data['user_id'])
-        user = PartialUser(user_id)
-        emoji = PartialEmoji(data['emoji'])
+        user = create_partial_user(user_id)
+        emoji = create_partial_emoji(data['emoji'])
         message.reactions.remove(emoji, user)
         
         event = ReactionDeleteEvent(message, emoji, user)
@@ -2039,8 +2057,8 @@ else:
             return
         
         user_id = int(data['user_id'])
-        user = PartialUser(user_id)
-        emoji = PartialEmoji(data['emoji'])
+        user = create_partial_user(user_id)
+        emoji = create_partial_emoji(data['emoji'])
         message.reactions.remove(emoji, user)
         
         event = ReactionDeleteEvent(message, emoji, user)
@@ -2054,8 +2072,8 @@ def MESSAGE_REACTION_REMOVE__OPT_SC(client, data):
         return
     
     user_id = int(data['user_id'])
-    user = PartialUser(user_id)
-    emoji = PartialEmoji(data['emoji'])
+    user = create_partial_user(user_id)
+    emoji = create_partial_emoji(data['emoji'])
     message.reactions.remove(emoji, user)
 
 def MESSAGE_REACTION_REMOVE__OPT_MC(client, data):
@@ -2072,8 +2090,8 @@ def MESSAGE_REACTION_REMOVE__OPT_MC(client, data):
         return
     
     user_id = int(data['user_id'])
-    user = PartialUser(user_id)
-    emoji = PartialEmoji(data['emoji'])
+    user = create_partial_user(user_id)
+    emoji = create_partial_emoji(data['emoji'])
     message.reactions.remove(emoji, user)
 
 PARSER_DEFAULTS(
@@ -2101,7 +2119,7 @@ if ALLOW_DEAD_EVENTS:
         else:
             channel = message.channel
         
-        emoji = PartialEmoji(data['emoji'])
+        emoji = create_partial_emoji(data['emoji'])
         
         if message is None:
             message = MessageRepr(message_id, channel)
@@ -2132,7 +2150,7 @@ if ALLOW_DEAD_EVENTS:
             clients.close()
             return
         
-        emoji = PartialEmoji(data['emoji'])
+        emoji = create_partial_emoji(data['emoji'])
         
         if message is None:
             message = MessageRepr(message_id, channel)
@@ -2151,7 +2169,7 @@ else:
         if message is None:
             return
         
-        emoji = PartialEmoji(data['emoji'])
+        emoji = create_partial_emoji(data['emoji'])
         users = message.reactions.remove_emoji(emoji)
         if users is None:
             return
@@ -2171,7 +2189,7 @@ else:
             clients.close()
             return
         
-        emoji = PartialEmoji(data['emoji'])
+        emoji = create_partial_emoji(data['emoji'])
         users = message.reactions.remove_emoji(emoji)
         if users is None:
             return
@@ -2185,7 +2203,7 @@ def MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC(client, data):
     if message is None:
         return
     
-    emoji = PartialEmoji(data['emoji'])
+    emoji = create_partial_emoji(data['emoji'])
     message.reactions.remove_emoji(emoji)
 
 def MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC(client, data):
@@ -2201,7 +2219,7 @@ def MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC(client, data):
                 ) is not client:
         return
     
-    emoji = PartialEmoji(data['emoji'])
+    emoji = create_partial_emoji(data['emoji'])
     message.reactions.remove_emoji(emoji)
 
 PARSER_DEFAULTS(
@@ -2945,12 +2963,12 @@ if CACHE_USER:
         except KeyError:
             profile = None
         else:
-            if type(user) is User:
-                profile = user.guild_profiles.pop(guild, None)
-            else:
+            if isinstance(user, Client):
                 profile = user.guild_profiles.get(guild, None)
+            else:
+                profile = user.guild_profiles.pop(guild, None)
         
-        guild.user_count -=1
+        guild.user_count -= 1
         
         Task(client.events.guild_user_delete(client, guild, user,profile), KOKORO)
 
@@ -2974,12 +2992,12 @@ if CACHE_USER:
         except KeyError:
             profile = None
         else:
-            if type(user) is User:
-                profile = user.guild_profiles.pop(guild, None)
-            else:
+            if isinstance(user, Client):
                 profile = user.guild_profiles.get(guild, None)
+            else:
+                profile = user.guild_profiles.pop(guild, None)
         
-        guild.user_count -=1
+        guild.user_count -= 1
         
         for client_ in clients:
             Task(client_.events.guild_user_delete(client_, guild, user,profile), KOKORO)
@@ -2999,10 +3017,10 @@ if CACHE_USER:
         except KeyError:
             pass
         else:
-            if type(user) is User:
+            if not isinstance(user, Client):
                 user.guild_profiles.pop(guild, None)
         
-        guild.user_count -=1
+        guild.user_count -= 1
     
     def GUILD_MEMBER_REMOVE__OPT_MC(client, data):
         guild_id = int(data['guild_id'])
@@ -3022,10 +3040,10 @@ if CACHE_USER:
         except KeyError:
             pass
         else:
-            if type(user) is User:
+            if not isinstance(user, Client):
                 user.guild_profiles.pop(guild, None)
         
-        guild.user_count -=1
+        guild.user_count -= 1
 
 else:
     def GUILD_MEMBER_REMOVE__CAL_SC(client, data):
@@ -3375,7 +3393,11 @@ class GuildUserChunkEvent(EventBase):
         return 5
     
     def __iter__(self):
-        """Unpacks the guild user chunk event."""
+        """
+        Unpacks the guild user chunk event.
+        
+        This method is a generator.
+        """
         yield self.guild
         yield self.users
         yield self.nonce
@@ -3918,7 +3940,7 @@ def VOICE_STATE_UPDATE__CAL_MC(client, data):
     if action == VOICE_STATE_NONE:
         return
     
-    if type(user) is not User:
+    if isinstance(user, Client):
         try:
             voice_client = user.voice_clients[guild_id]
         except KeyError:
@@ -4016,7 +4038,7 @@ def VOICE_STATE_UPDATE__OPT_MC(client, data):
     if action == VOICE_STATE_NONE:
         return
     
-    if type(user) is not User:
+    if isinstance(user, Client):
         try:
             voice_client = user.voice_clients[guild_id]
         except KeyError:
@@ -4074,7 +4096,7 @@ if CACHE_PRESENCE:
             return
         
         user_id = int(data['user_id'])
-        user = PartialUser(user_id)
+        user = create_partial_user(user_id)
         
         timestamp = datetime.utcfromtimestamp(data.get('timestamp'))
         
@@ -4960,7 +4982,11 @@ class EventListElement(object):
         return 3
     
     def __iter__(self):
-        """Unpacks the eventlist element."""
+        """
+        Unpacks the eventlist element.
+        
+        This method is a generator.
+        """
         yield self.func
         yield self.name
         yield self.kwargs
@@ -5405,13 +5431,15 @@ class EventHandlerBase(object):
     """
     Base class for event handlers.
     """
-    __slots__=()
+    __slots__ = ()
     
     # subclasses should overwrite it
     async def __call__(self, *args):
         """
         The method what will be called by the respective parser. The first received argument is always a ``Client``
         meanwhile the rest depends on the dispatch event.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -6051,6 +6079,8 @@ class ReadyState(object):
     def __iter__(self):
         """
         Waits till the ready state receives all of it's shards and guilds, or till timeout occures.
+        
+        This method is a generator. Should be used with `await` expression.
         """
         wakeupper = self.wakeupper
         
@@ -6115,6 +6145,8 @@ class ChunkWaiter(EventHandlerBase):
         Ensures that the chunk waiter for the specifed nonce is called and if it returns `True` it is removed from the
         waiters.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         client : ``Client``
@@ -6139,6 +6171,8 @@ class ChunkWaiter(EventHandlerBase):
 async def default_error_event(client, name, err):
     """
     Defaults error event for client. Renders the given exception to `sys.stderr`.
+    
+    This function is a generator.
     
     Parameters
     ----------
@@ -6188,6 +6222,8 @@ class asynclist(list):
     async def __call__(self, *args):
         """
         Ensures the contained async callables on the client's loop.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -6260,6 +6296,8 @@ class asynclist(list):
 async def DEFAULT_EVENT(*args):
     """
     Default event handler what is set under events if there is no specified event handler to use.
+    
+    This function is a coroutine.
     
     Parameters
     ----------
@@ -6768,7 +6806,7 @@ class EventDescriptor(object):
         object.__setattr__(self, 'error', default_error_event)
         object.__setattr__(self, 'guild_user_chunk', ChunkWaiter())
     
-    def __call__(self, func=None, name = None, overwrite = False):
+    def __call__(self, func=None, name=None, overwrite=False):
         """
         Adds the given `func` to the event descriptor as en event handler.
         
@@ -6966,6 +7004,43 @@ class EventDescriptor(object):
             parser_default = PARSER_DEFAULTS.all[parser_name]
             parser_default.remove_mention(self.client_reference())
     
+    def get_handler(self, name, type_):
+        """
+        Gets an event handler from the client's.
+        
+        Parameters
+        ----------
+        name : `str`
+            The event's name.
+        type_ : `type`
+            The event hanlder's type.
+
+        Returns
+        -------
+        event_handler : `str`, `None`
+            The matched event handler if any.
+        """
+        if name == 'client':
+            return None
+        
+        try:
+            actual = getattr(self, name)
+        except AttributeError:
+            return None
+        
+        if actual is DEFAULT_EVENT:
+            return None
+        
+        if type(actual) is asynclist:
+            for element in list.__iter__(actual):
+                if type(element) is type_:
+                    return element
+        else:
+            if type(actual) is type_:
+                return actual
+        
+        return None
+    
     def remove(self, func, name=None, by_type=False, count=-1):
         """
         Removes the given event handler from the the event descriptor.
@@ -7040,6 +7115,8 @@ class EventDescriptor(object):
 async def _with_error(client, task):
     """
     Runs the given awaitable and if it raises, calls `client.events.error` with the exception.
+    
+    This function is a coroutine.
     
     Parameters
     ----------

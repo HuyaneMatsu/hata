@@ -373,6 +373,8 @@ class Webhook(UserBase):
         
         This method is ensured after following a channel.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items

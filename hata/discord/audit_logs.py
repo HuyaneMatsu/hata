@@ -178,6 +178,8 @@ class AuditLogIterator(object):
     async def load_all(self):
         """
         Loads all not yet loaded audit logs of the audit log iterator's guild.
+        
+        This method is a coroutine.
         """
         entries = self.entries
         client = self.client
@@ -216,16 +218,20 @@ class AuditLogIterator(object):
     
     def __aiter__(self):
         """Returns self and resets the `.index`."""
-        self._index=0
+        self._index = 0
         return self
     
     async def __anext__(self):
-        """Yields the next entry of the audit log iterator."""
+        """
+        Yields the next entry of the audit log iterator.
+        
+        This method is a coroutine.
+        """
         ln = len(self.entries)
         index = self._index
         
         if index < ln:
-            self._index +=1
+            self._index += 1
             return self.entries[index]
         
         if index%100:

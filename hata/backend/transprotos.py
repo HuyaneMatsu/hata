@@ -228,7 +228,7 @@ class _SSLProtocolTransport(object):
         return ''.join(result)
     
     def get_extra_info(self, name, default=None):
-        return self.ssl_protocol._get_extra_info(name, default)
+        return self.ssl_protocol.get_extra_info(name, default)
     
     def set_protocol(self, protocol):
         self.app_protocol = protocol
@@ -373,12 +373,17 @@ class SSLProtocol(object):
         finally:
             self.transport.close()
 
-    def _get_extra_info(self, name, default=None):
+    def get_extra_info(self, name, default=None):
         try:
-            return self._extra[name]
+            extra_info = self._extra[name]
         except KeyError:
-            pass
-        return self.transport.get_extra_info(name, default)
+            transport = self.transport
+            if transport is not None:
+                extra_info = transport.get_extra_info(name, default)
+            else:
+                extra_info = default
+        
+        return extra_info
     
     def _start_shutdown(self):
         if self._in_shutdown:

@@ -75,11 +75,9 @@ def setup_ext_commands(client, prefix, **kwargs):
     if client_type is not Client:
         raise TypeError(f'Expected type `{Client.__name__}` as client, meanwhile got `{client_type.__name__}`.')
     
-    if hasattr(client, 'command_processer'):
-        raise RuntimeError(f'The client already has an attribute named as `command_processer"`.')
-    
-    if hasattr(client, 'commands'):
-        raise RuntimeError(f'The client already has an attribute named s `commands`.')
+    for attr_name in ('command_processer', 'command_processor', 'commands'):
+        if hasattr(client, 'attr_name'):
+            raise RuntimeError(f'The client already has an attribute named as `{attr_name}`.')
     
     event_message_create = client.events.message_create
     while True:
@@ -100,6 +98,7 @@ def setup_ext_commands(client, prefix, **kwargs):
     
     command_processer = client.events(CommandProcesser(prefix, **kwargs))
     client.command_processer = command_processer
+    client.command_processor = command_processer
     client.commands = command_processer.shortcut
     
     event_reaction_add = client.events.reaction_add

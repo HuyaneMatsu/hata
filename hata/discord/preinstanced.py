@@ -1482,47 +1482,49 @@ class GuildFeature(PreinstancedBase):
     
     Every predefined guild feature can be accessed as class attribute as well:
     
-    +-------------------------------+-------------------------------+
-    | Class attribute names         | Value                         |
-    +===============================+===============================+
-    | animated_icon                 | ANIMATED_ICON                 |
-    +-------------------------------+-------------------------------+
-    | banner                        | BANNER                        |
-    +-------------------------------+-------------------------------+
-    | commerce                      | COMMERCE                      |
-    +-------------------------------+-------------------------------+
-    | community                     | COMMUNITY                     |
-    +-------------------------------+-------------------------------+
-    | discoverable                  | DISCOVERABLE                  |
-    +-------------------------------+-------------------------------+
-    | enabled_discoverable_before   | ENABLED_DISCOVERABLE_BEFORE   |
-    +-------------------------------+-------------------------------+
-    | featurable                    | FEATURABLE                    |
-    +-------------------------------+-------------------------------+
-    | member_list_disabled          | MEMBER_LIST_DISABLED          |
-    +-------------------------------+-------------------------------+
-    | more_emoji                    | MORE_EMOJI                    |
-    +-------------------------------+-------------------------------+
-    | news                          | NEWS                          |
-    +-------------------------------+-------------------------------+
-    | partnered                     | PARTNERED                     |
-    +-------------------------------+-------------------------------+
-    | public                        | PUBLIC                        |
-    +-------------------------------+-------------------------------+
-    | public_disabled               | PUBLIC_DISABLED               |
-    +-------------------------------+-------------------------------+
-    | relay_enabled                 | RELAY_ENABLED                 |
-    +-------------------------------+-------------------------------+
-    | invite_splash                 | INVITE_SPLASH                 |
-    +-------------------------------+-------------------------------+
-    | vanity                        | VANITY_URL                    |
-    +-------------------------------+-------------------------------+
-    | verified                      | VERIFIED                      |
-    +-------------------------------+-------------------------------+
-    | vip                           | VIP_REGIONS                   |
-    +-------------------------------+-------------------------------+
-    | welcome_screen                | WELCOME_SCREEN_ENABLED        |
-    +-------------------------------+-------------------------------+
+    +-------------------------------+-----------------------------------+
+    | Class attribute names         | Value                             |
+    +===============================+===================================+
+    | animated_icon                 | ANIMATED_ICON                     |
+    +-------------------------------+-----------------------------------+
+    | banner                        | BANNER                            |
+    +-------------------------------+-----------------------------------+
+    | commerce                      | COMMERCE                          |
+    +-------------------------------+-----------------------------------+
+    | community                     | COMMUNITY                         |
+    +-------------------------------+-----------------------------------+
+    | discoverable                  | DISCOVERABLE                      |
+    +-------------------------------+-----------------------------------+
+    | enabled_discoverable_before   | ENABLED_DISCOVERABLE_BEFORE       |
+    +-------------------------------+-----------------------------------+
+    | featurable                    | FEATURABLE                        |
+    +-------------------------------+-----------------------------------+
+    | member_list_disabled          | MEMBER_LIST_DISABLED              |
+    +-------------------------------+-----------------------------------+
+    | more_emoji                    | MORE_EMOJI                        |
+    +-------------------------------+-----------------------------------+
+    | news                          | NEWS                              |
+    +-------------------------------+-----------------------------------+
+    | partnered                     | PARTNERED                         |
+    +-------------------------------+-----------------------------------+
+    | public                        | PUBLIC                            |
+    +-------------------------------+-----------------------------------+
+    | public_disabled               | PUBLIC_DISABLED                   |
+    +-------------------------------+-----------------------------------+
+    | relay_enabled                 | RELAY_ENABLED                     |
+    +-------------------------------+-----------------------------------+
+    | invite_splash                 | INVITE_SPLASH                     |
+    +-------------------------------+-----------------------------------+
+    | vanity                        | VANITY_URL                        |
+    +-------------------------------+-----------------------------------+
+    | verified                      | VERIFIED                          |
+    +-------------------------------+-----------------------------------+
+    | vip                           | VIP_REGIONS                       |
+    +-------------------------------+-----------------------------------+
+    | welcome_screen                | WELCOME_SCREEN_ENABLED            |
+    +-------------------------------+-----------------------------------+
+    | verification_gate_enabled     | MEMBER_VERIFICATION_GATE_ENABLED  |
+    +-------------------------------+-----------------------------------+
     """
     INSTANCES = {}
     VALUE_TYPE = str
@@ -1588,7 +1590,7 @@ class GuildFeature(PreinstancedBase):
     verified                    = NotImplemented
     vip                         = NotImplemented
     welcome_screen              = NotImplemented
-
+    verification_gate_enabled   = NotImplemented
 
 GuildFeature.animated_icon              = GuildFeature('ANIMATED_ICON')
 GuildFeature.banner                     = GuildFeature('BANNER')
@@ -1609,7 +1611,7 @@ GuildFeature.vanity                     = GuildFeature('VANITY_URL')
 GuildFeature.verified                   = GuildFeature('VERIFIED')
 GuildFeature.vip                        = GuildFeature('VIP_REGIONS')
 GuildFeature.welcome_screen             = GuildFeature('WELCOME_SCREEN_ENABLED')
-
+GuildFeature.verification_gate_enabled  = GuildFeature('MEMBER_VERIFICATION_GATE_ENABLED')
 
 class AuditLogEvent(PreinstancedBase):
     """

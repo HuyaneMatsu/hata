@@ -1183,6 +1183,8 @@ class DiscordHTTPClient(HTTPClient):
     async def close(self):
         """
         Closes the Discord http Client's connector.
+        
+        This method is a coroutine.
         """
         self.__del__()
     
@@ -1211,6 +1213,8 @@ class DiscordHTTPClient(HTTPClient):
     async def discord_request(self, handler, method, url, data=None, params=None, headers=None, reason=None):
         """
         Does a request towards Discord.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -1555,7 +1559,7 @@ class DiscordHTTPClient(HTTPClient):
     
     async def guild_ban_add(self, guild_id, user_id, data, reason):
         if (reason is not None) and reason:
-            data['reason']=quote(reason)
+            data['reason'] = quote(reason)
         
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.guild_ban_add, guild_id),
             METH_PUT, f'{API_ENDPOINT}/guilds/{guild_id}/bans/{user_id}', params=data)

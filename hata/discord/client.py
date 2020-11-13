@@ -10,7 +10,8 @@ from math import inf
 
 from ..env import CACHE_USER, CACHE_PRESENCE, API_VERSION
 from ..backend.dereaddons_local import imultidict, _spaceholder, methodize, basemethod, change_on_switch
-from ..backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, WaitTillFirst, WaitTillExc
+from ..backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, WaitTillFirst, WaitTillExc, \
+    future_or_timeout
 from ..backend.eventloop import EventThread, LOOP_TIME
 from ..backend.formdata import Formdata
 from ..backend.hdrs import AUTHORIZATION
@@ -18,12 +19,12 @@ from ..backend.helpers import BasicAuth
 
 from .others import log_time_converter, DISCORD_EPOCH, image_to_base64, random_id, to_json, RelationshipType, \
     get_image_extension
-from .user import User, USERS, GuildProfile, UserBase, UserFlag, PartialUser, GUILD_PROFILES_TYPE
+from .user import User, USERS, GuildProfile, UserBase, UserFlag, create_partial_user, GUILD_PROFILES_TYPE
 from .emoji import Emoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, \
     message_relativeindex, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES
-from .guild import Guild, PartialGuild, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, DiscoveryCategory, \
-    COMMUNITY_FEATURES, WelcomeScreen
+from .guild import Guild, create_partial_guild, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
+    DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen
 from .http import DiscordHTTPClient, URLS
 from .http.URLS import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDPOINT
 from .role import Role, PermOW, PERMOW_TYPE_ROLE, PERMOW_TYPE_USER, PERMISSION_KEY
@@ -48,7 +49,7 @@ from .bases import ICON_TYPE_NONE
 from .preinstanced import Status, VoiceRegion, ContentFilterLevel, PremiumType, VerificationLevel, \
     MessageNotificationLevel
 
-from . import client_core, message, webhook, channel, invite
+from . import client_core, message, webhook, channel, invite, parsers
 
 _VALID_NAME_CHARS = re.compile('([0-9A-Za-z_]+)')
 
@@ -611,6 +612,7 @@ class DiscoveryTermRequestCacher(object):
     
     __call__ = execute
 
+
 class UserGuildPermission(object):
     """
     Reprents a user's permissions inside of a guild. Returned by ``Client.user_guilds``.
@@ -642,6 +644,7 @@ class UserGuildPermission(object):
         """Unpacks the user guild permission."""
         yield self.owner
         yield self.permission
+
 
 class MultiClientMessageDeleteSequenceSharder(object):
     """
@@ -695,6 +698,53 @@ class MultiClientMessageDeleteSequenceSharder(object):
         
         return self
     
+
+class WaitForHandler(object):
+    """
+    O(n) event waiter. Added as an event handler by ``Client.wait_for``.
+    
+    Attributes
+    ----------
+    waiters : `dict` of (``Future``, `callable`) items
+        A dictionary which contains the waiter futures and the respective checks.
+    """
+    __slots__ = ('waiters', )
+    def __init__(self):
+        """
+        Creates a new ``WaitForHandler`` instance.
+        """
+        self.waiters = {}
+    
+    async def __call__(self, client, *args):
+        """
+        Runs the checks of the respective event.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The client who recevied teh respective events.
+        args : `tuple` of `Any`
+            Other received arguments by the event.
+        """
+        for future, check in self.waiters.items():
+            try:
+                result = check(*args)
+            except BaseException as err:
+                future.set_exception_if_pending(err)
+            else:
+                if type(result) is bool:
+                    if result:
+                        if len(args) == 1:
+                            args = args[0]
+                    else:
+                        return
+                else:
+                    args = (*args, result)
+                
+                future.set_result_if_pending(args)
+
 
 class Client(UserBase):
     """
@@ -1693,7 +1743,7 @@ class Client(UserBase):
         headers = imultidict()
         headers[AUTHORIZATION] = f'Bearer {access.access_token}'
         data = await self.http.user_guilds(headers)
-        return [(PartialGuild(guild_data), UserGuildPermission(guild_data)) for guild_data in data]
+        return [(create_partial_guild(guild_data), UserGuildPermission(guild_data)) for guild_data in data]
     
     async def achievement_get_all(self):
         """
@@ -5638,7 +5688,7 @@ class Client(UserBase):
         
         data = await self.http.guild_create(data)
         # we can create only partial, because the guild data is not completed usually
-        return PartialGuild(data)
+        return create_partial_guild(data)
     
     async def guild_prune(self, guild, days, roles=[], count=False, reason=None):
         """
@@ -5694,6 +5744,8 @@ class Client(UserBase):
         """
         Returns the amount users, who would been pruned, if ``.guild_prune`` would be called.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         guild : ``Guild`` object
@@ -5703,8 +5755,6 @@ class Client(UserBase):
         roles : `list` of ``Role`` objects, Optional
             By default pruning would kick only the users without any roles, but it can be defined which roles to
             include.
-        
-        This method is a coroutine.
         
         Returns
         -------
@@ -6480,7 +6530,7 @@ class Client(UserBase):
         params = {'after': 0}
         while True:
             data = await self.http.guild_get_all(params)
-            result.extend(PartialGuild(guild_data) for guild_data in data)
+            result.extend(create_partial_guild(guild_data) for guild_data in data)
             if len(data) < 100:
                 break
             params['after'] = result[-1].id
@@ -6958,7 +7008,7 @@ class Client(UserBase):
         data = await self.http.guild_user_search(guild.id, data)
         return [User._create_and_update(user_data, guild) for user_data in data]
     
-    #integrations
+    # integrations
     
     #TODO: decide if we should store integrations at Guild objects
     async def integration_get_all(self, guild, include_applications=False):
@@ -6992,7 +7042,6 @@ class Client(UserBase):
         integrations_data = await self.http.integration_get_all(guild.id, data)
         return [Integration(integration_data) for integration_data in integrations_data]
     
-    #TODO: what is integration id?
     async def integration_create(self, guild, integration_id, type_):
         """
         Creates an integration at the given guild.
@@ -9507,7 +9556,59 @@ class Client(UserBase):
                 await gateway._change_voice_state(guild.id, channel.id)
         
         return voice_client
-
+    
+    async def wait_for(self, event_name, check, timeout=None):
+        """
+        O(n) event waiter with massive overhead compared to other optimized event waiters.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        event_name : `str`
+            The respective event's name.
+        check : `callable`
+            Check, what tells that the waiting is over.
+            
+            If the `check` returns `True` the received `args` are passed to the waiter future and returned by the
+            method. However if the check returns any non `bool` value, then that object is pased next to `args` and
+            returned as well.
+        
+        timeout : `None` or `float`
+            Timeout after `TimeoutError` is raised and the waiting is cancelled.
+        
+        Returns
+        -------
+        result : `Any`
+            Arguments passed to the `check` and the value returned by the `check` if it's type is not `bool`.
+        
+        Raised
+        ------
+        TimeoutError
+            Timeout occured.
+        BaseException
+            Any exception raised by `check`.
+        """
+        wait_for_handler = self.events.get_handler(event_name, WaitForHandler)
+        if wait_for_handler is None:
+            wait_for_handler = WaitForHandler()
+            self.events(wait_for_handler, name=event_name)
+        
+        future = Future(KOKORO)
+        wait_for_handler.waiters[future] = check
+        
+        if (timeout is not None):
+            future_or_timeout(future, timeout)
+        
+        try:
+            return await future
+        finally:
+            waiters = wait_for_handler.waiters
+            del waiters[future]
+            
+            if not waiters:
+                self.events.remove(wait_for_handler, name=event_name)
+    
     async def _delay_ready(self):
         """
         Delays the client's "ready" till it receives all of it guild's data. If caching is allowed (so by default),
@@ -9979,7 +10080,7 @@ class Client(UserBase):
         additional_owner_ids = self._additional_owner_ids
         if (additional_owner_ids is not None):
             for user_id in additional_owner_ids:
-                user = PartialUser(user_id)
+                user = create_partial_user(user_id)
                 owners.add(user)
         
         return owners
@@ -10307,6 +10408,7 @@ message.Client = Client
 webhook.Client = Client
 channel.Client = Client
 invite.Client = Client
+parsers.Client = Client
 
 del client_core
 del re
@@ -10316,3 +10418,4 @@ del webhook
 del RATELIMIT_GROUPS
 del DISCOVERY_CATEGORIES
 del invite
+del parsers

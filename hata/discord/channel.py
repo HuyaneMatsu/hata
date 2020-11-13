@@ -52,7 +52,7 @@ GC_CYCLER.append(turn_message_limiting_on)
 
 del turn_message_limiting_on, GC_CYCLER
 
-def PartialChannel(data, partial_guild=None):
+def create_partial_channel(data, partial_guild=None):
     """
     Creates a partial channel from partial channel data.
     
@@ -507,7 +507,11 @@ class MessageIterator(object):
         return self
     
     async def __anext__(self):
-        """Yields the next message of the iterator's channel."""
+        """
+        Yields the next message of the iterator's channel.
+        
+        This method is a coroutine.
+        """
         channel = self.channel
         index = self._index
         if len(channel.messages) > index:
@@ -533,7 +537,7 @@ class MessageIterator(object):
         return (f'<{self.__class__.__name__} of client {self.client.full_name}, at channel {self.channel.name!r} ('
             f'{self.channel.id})>')
 
-#searches the relative index of a message in a list
+# searches the relative index of a message in a list
 def message_relativeindex(messages, message_id):
     """
     Searches the relative index of the given message's id in a channel's message history. The returned index is
@@ -1753,8 +1757,8 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
     @classmethod
     def _from_partial_data(cls, data, channel_id, partial_guild):
         """
-        Creates a ``ChannelText`` from partial data. Called by ``PartialChannel`` when a new partial channel is needed
-        to be created.
+        Creates a ``ChannelText`` from partial data. Called by ``create_partial_channel`` when a new partial channel is
+        needed to be created.
         
         Parameters
         ----------
@@ -2170,7 +2174,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         users.sort()
         
         user = users[0]
-        if user is Client:
+        if user is client:
             user = users[1]
         
         client.private_channels[user.id] = self
@@ -2179,8 +2183,8 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
     @classmethod
     def _from_partial_data(cls, data, channel_id, partial_guild):
         """
-        Creates a ``ChannelPrivate`` from partial data. Called by ``PartialChannel`` when a new partial channel is
-        needed to be created.
+        Creates a ``ChannelPrivate`` from partial data. Called by ``create_partial_channel`` when a new partial channel
+        is needed to be created.
         
         Parameters
         ----------
@@ -2496,8 +2500,8 @@ class ChannelVoice(ChannelGuildBase):
     @classmethod
     def _from_partial_data(cls, data, channel_id, partial_guild):
         """
-        Creates a ``ChannelVoice`` from partial data. Called by ``PartialChannel`` when a new partial channel is needed
-        to be created.
+        Creates a ``ChannelVoice`` from partial data. Called by ``create_partial_channel`` when a new partial channel
+        is needed to be created.
         
         Parameters
         ----------
@@ -2900,8 +2904,8 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
     @classmethod
     def _from_partial_data(cls, data, channel_id, partial_guild):
         """
-        Creates a ``ChannelGroup`` from partial data. Called by ``PartialChannel`` when a new partial channel is needed
-        to be created.
+        Creates a ``ChannelGroup`` from partial data. Called by ``create_partial_channel`` when a new partial channel
+        is needed to be created.
         
         Parameters
         ----------
@@ -3247,8 +3251,8 @@ class ChannelCategory(ChannelGuildBase):
     @classmethod
     def _from_partial_data(cls, data, channel_id, partial_guild):
         """
-        Creates a ``ChannelCategory`` from partial data. Called by ``PartialChannel`` when a new partial channel is
-        needed to be created.
+        Creates a ``ChannelCategory`` from partial data. Called by ``create_partial_channel`` when a new partial
+        channel is needed to be created.
         
         Parameters
         ----------
@@ -3535,8 +3539,8 @@ class ChannelStore(ChannelGuildBase):
     @classmethod
     def _from_partial_data(cls, data, channel_id, partial_guild):
         """
-        Creates a ``ChannelStore`` from partial data. Called by ``PartialChannel`` when a new partial channel is needed
-        to be created.
+        Creates a ``ChannelStore`` from partial data. Called by ``create_partial_channel`` when a new partial channel
+        is needed to be created.
         
         Parameters
         ----------
@@ -3860,8 +3864,8 @@ class ChannelThread(ChannelGuildBase):
     @classmethod
     def _from_partial_data(cls, data, channel_id, partial_guild):
         """
-        Creates a ``ChannelThread`` from partial data. Called by ``PartialChannel`` when a new partial channel is needed
-        to be created.
+        Creates a ``ChannelThread`` from partial data. Called by ``create_partial_channel`` when a new partial channel
+        is needed to be created.
         
         Parameters
         ----------
@@ -4184,8 +4188,8 @@ class ChannelGuildUndefnied(ChannelGuildBase):
     @classmethod
     def _from_partial_data(cls, data, channel_id, partial_guild):
         """
-        Creates a ``ChannelThread`` from partial data. Called by ``PartialChannel`` when a new partial channel is needed
-        to be created.
+        Creates a ``ChannelThread`` from partial data. Called by ``create_partial_channel`` when a new partial channel
+        is needed to be created.
         
         Parameters
         ----------

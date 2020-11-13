@@ -2281,12 +2281,20 @@ class _EmbedFieldsReflection(object):
         self.data.insert(index, field_data)
     
     def __iter__(self):
-        """Iterates over the respective embed's fields."""
+        """
+        Iterates over the respective embed's fields.
+        
+        This method is a generator.
+        """
         for field_data in self.data:
             yield EmbedField.from_data(field_data)
     
     def __reversed__(self):
-        """Reverse iterates over the respective embed's fields."""
+        """
+        Reverse iterates over the respective embed's fields.
+        
+        This method is a generator.
+        """
         for field_data in reversed(self.data):
             yield EmbedField.from_data(field_data)
 

@@ -53,9 +53,11 @@ class GatewayRateLimiter(object):
         self.wakeupper = None
         self.resets_at = 0.0
     
-    def __await__(self):
+    def __iter__(self):
         """
         Awaits the ratelimit handler.
+        
+        This method is a generator. Should be used with `await` expression.
         
         Returns
         -------
@@ -79,6 +81,8 @@ class GatewayRateLimiter(object):
         future = Future(KOKORO)
         self.queue.append(future)
         return (yield from future)
+    
+    __await__ = __iter__
     
     def wakeup(self):
         """
@@ -239,7 +243,9 @@ class DiscordGateway(object):
     
     async def start(self):
         """
-        Starts the gateway's `.kokoro`.
+        Starts the gateway's ``.kokoro``.
+        
+        This method is a coroutine.
         """
         kokoro = self.kokoro
         if kokoro is None:
@@ -256,6 +262,8 @@ class DiscordGateway(object):
         
         If `True` is returned the respective client stops all other gateways as well and tries to reconnect. When
         the internet is back the client will launch back the gateway.
+        
+        This method is a coroutine.
         
         Parameters
         -----------
@@ -323,6 +331,8 @@ class DiscordGateway(object):
         """
         Connects the gateway to Discord. If the connecting was successfull will start it's `.kokoro` as well.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         resume : `bool`
@@ -367,12 +377,13 @@ class DiscordGateway(object):
                 continue
             
             return
-
-    # w8s for the next event
+    
     async def _poll_event(self):
         """
         Waits for sockets from Discord till it collected a full one. If it did, decompresses and processes it.
         Returns `True`, if the gateway should reconnect.
+        
+        This method is a coroutine.
         
         Returns
         -------
@@ -414,6 +425,8 @@ class DiscordGateway(object):
         Processes the message sent by Discord. If the message is `DISPATCH`, ensures the specific parser for it and
         returns `False`. For every other operation code it calls ``._special_operation`` and returns that's return.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         message : `bytes`
@@ -445,7 +458,17 @@ class DiscordGateway(object):
         event = message['t']
         client = self.client
         try:
-            if PARSERS[event](client, data) is None:
+            parser = PARSERS[event]
+        except KeyError:
+            Task(client.events.error(client,
+                f'{self.__clas__.__name__}._received_message',
+                f'Unknown dispatch event {event}\nData: {data!r}'),
+                    KOKORO)
+            
+            return False
+        
+        try:
+            if parser(client, data) is None:
                 return False
         except BaseException as err:
             Task(client.events.error(client, event, err), KOKORO)
@@ -461,6 +484,8 @@ class DiscordGateway(object):
     async def _special_operation(self, operation, data):
         """
         Handles special operations (so everything except `DISPATCH`). Returns `True` if the gateway should reconnect.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -479,6 +504,8 @@ class DiscordGateway(object):
             If the gateways's `.kokoro` is not beating, meanwhile it should.
         """
         kokoro = self.kokoro
+        if kokoro is None:
+            kokoro = await Kokoro(self)
         
         if operation == self.HELLO:
             interval = data['heartbeat_interval']/1000.0
@@ -521,7 +548,7 @@ class DiscordGateway(object):
                 KOKORO)
         return False
         
-    #general stuffs
+    # general stuffs
     
     @property
     def latency(self):
@@ -534,12 +561,16 @@ class DiscordGateway(object):
         """
         kokoro = self.kokoro
         if kokoro is None:
-            return Kokoro.DEFAULT_LATENCY
-        return kokoro.latency
+            latency =  Kokoro.DEFAULT_LATENCY
+        else:
+            latency = kokoro.latency
+        return latency
     
     async def terminate(self):
         """
         Terminates the gateway's ``.kokoro`` and closes it's `.websocket`` with close code of `4000`.
+        
+        This method is a coroutine.
         """
         self.kokoro.terminate()
         websocket = self.websocket
@@ -551,6 +582,8 @@ class DiscordGateway(object):
     async def close(self):
         """
         Cancels the gateway's ``.kokoro`` and closes it's ``.websocket`` with close code of `1000`.
+        
+        This method is a coroutine.
         """
         self.kokoro.cancel()
         self.ratelimit_handler.cancel()
@@ -566,6 +599,8 @@ class DiscordGateway(object):
         """
         Sends the data as json to Discord on the gateway's ``.websocket``. If there is no websocket, or the websocket
         is closed will not raise.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -592,6 +627,8 @@ class DiscordGateway(object):
     async def _identify(self):
         """
         Sends an `IDENTIFY` packet to Discord.
+        
+        This method is a coroutine.
         """
         client = self.client
         activity = client._activity
@@ -639,6 +676,8 @@ class DiscordGateway(object):
     async def _resume(self):
         """
         Sends a `RESUME` packet to Discord.
+        
+        This method is a coroutine.
         """
         data = {
             'op' : self.RESUME,
@@ -654,6 +693,8 @@ class DiscordGateway(object):
     async def _change_voice_state(self, guild_id, channel_id, self_mute=False, self_deaf=False):
         """
         Sends a `VOICE_STATE` packet to Discord.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -680,6 +721,8 @@ class DiscordGateway(object):
     async def _beat(self):
         """
         Sends a `VOICE_STATE` packet to Discord.
+        
+        This method is a coroutine.
         """
         data = {
             'op' : self.HEARTBEAT,
@@ -769,7 +812,9 @@ class DiscordGatewayVoice(object):
     
     async def start(self):
         """
-        Starts the gateway's `.kokoro`.
+        Starts the gateway's ``.kokoro``.
+        
+        This method is a coroutine.
         """
         kokoro = self.kokoro
         if kokoro is None:
@@ -782,6 +827,8 @@ class DiscordGatewayVoice(object):
     async def connect(self, resume=False):
         """
         Connects the gateway to Discord. If the connecting was successfull, will start it's `.kokoro` as well.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -825,6 +872,8 @@ class DiscordGatewayVoice(object):
         """
         Waits to receive a message from Discord, then calls ``._received_message``.
         
+        This method is a coroutine.
+        
         Raises
         ------
         TimeoutError
@@ -842,6 +891,8 @@ class DiscordGatewayVoice(object):
     async def _received_message(self, message):
         """
         Processes the message sent by Discord.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -891,6 +942,8 @@ class DiscordGatewayVoice(object):
             return
         
         kokoro = self.kokoro
+        if kokoro is None:
+            kokoro = await Kokoro(self)
         
         if operation == self.HELLO:
             #sowwy, but we need to ignore these or we will keep getting timeout
@@ -947,6 +1000,8 @@ class DiscordGatewayVoice(object):
     async def terminate(self):
         """
         Terminates the gateway's ``.kokoro`` and closes it's `.websocket`` with close code of `4000`.
+        
+        This method is a coroutine.
         """
         kokoro = self.kokoro
         if kokoro is not None:
@@ -961,6 +1016,8 @@ class DiscordGatewayVoice(object):
     async def close(self):
         """
         Cancels the gateway's ``.kokoro`` and closes it's ``.websocket`` with close code of `1000`.
+        
+        This method is a coroutine.
         """
         self.ratelimit_handler.cancel()
         
@@ -980,6 +1037,8 @@ class DiscordGatewayVoice(object):
         """
         Sends the data as json to Discord on the gateway's ``.websocket``. If there is no websocket, or the websocket
         is closed will not raise.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -1006,6 +1065,8 @@ class DiscordGatewayVoice(object):
     async def _identify(self):
         """
         Sends an `IDENTIFY` packet to Discord.
+        
+        This method is a coroutine.
         """
         voice_client = self.client
         
@@ -1023,6 +1084,8 @@ class DiscordGatewayVoice(object):
     async def _resume(self):
         """
         Sends a `RESUME` packet to Discord.
+        
+        This method is a coroutine.
         """
         voice_client = self.client
         
@@ -1039,6 +1102,8 @@ class DiscordGatewayVoice(object):
     async def _select_protocol(self, ip, port):
         """
         Sends a `SELECT_PROTOCOL` packet to Discord.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -1064,6 +1129,8 @@ class DiscordGatewayVoice(object):
     async def _beat(self):
         """
         Sends a `HEARTBEAT` packet to Discord.
+        
+        This method is a coroutine.
         """
         data = {
             'op' : self.HEARTBEAT,
@@ -1075,6 +1142,8 @@ class DiscordGatewayVoice(object):
     async def _initial_connection(self, data):
         """
         Processes the data from `READY` operation and selects protocol with ``._select_protocol``.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -1105,6 +1174,8 @@ class DiscordGatewayVoice(object):
     async def _client_connect(self):
         """
         Sends a `CLIENT_CONNECT` packet to Discord.
+        
+        This method is a coroutine.
         """
         voice_client = self.client
         data = {
@@ -1121,6 +1192,8 @@ class DiscordGatewayVoice(object):
     async def _set_speaking(self, is_speaking):
         """
         Sends a `SPEAKING` packet with given `is_speaking` state.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -1191,6 +1264,8 @@ class DiscordGatewaySharder(object):
     async def start(self):
         """
         Starts the gateways of the sharder gateway.
+        
+        This method is a coroutine.
         """
         tasks = []
         for gateway in self.gateways:
@@ -1206,6 +1281,8 @@ class DiscordGatewaySharder(object):
         """
         Runs the gateway sharder's gateways. If any of them returns, stops the rest as well. And if any of them
         returned `True`, then returns `True`, else `False`.
+        
+        This method is a coroutine.
         
         Raises
         ------
@@ -1304,6 +1381,8 @@ class DiscordGatewaySharder(object):
     async def terminate(self):
         """
         Terminates the gateway sharder's gateways.
+        
+        This method is a coroutine.
         """
         tasks = []
         for gateway in self.gateways:
@@ -1315,6 +1394,8 @@ class DiscordGatewaySharder(object):
     async def close(self):
         """
         Cancels the gateway sharder's gateways.
+        
+        This method is a coroutine.
         """
         tasks = []
         for gateway in self.gateways:
@@ -1326,6 +1407,8 @@ class DiscordGatewaySharder(object):
     async def send_as_json(self, data):
         """
         Sends the data as json to Discord on the gateway's ``.websocket``.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -1352,6 +1435,8 @@ class DiscordGatewaySharder(object):
         Internal function of the gateways sharder to send already converted data with it's gateways.
         
         If the given gateway has no websocket, or if it is closed, will not raise.
+        
+        This method is a coroutine.
         """
         websocket = gateway.websocket
         if websocket is None:

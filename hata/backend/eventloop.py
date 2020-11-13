@@ -1433,6 +1433,8 @@ class Server(object):
     async def start(self):
         """
         Starts the server by starting serving it's sockets.
+        
+        This method is a coroutine.
         """
         if self.serving:
             return
@@ -1456,6 +1458,8 @@ class Server(object):
     async def wait_closed(self):
         """
         Blocks the task, till the sever is closes.
+        
+        This method is a coroutine.
         """
         if self.sockets is None:
             return
@@ -2470,6 +2474,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
     async def shutdown_asyncgens(self):
         """
         Shuts down the asynchornous generators running on the eventloop.
+        
+        This method is a coroutine.
         """
         self._asyncgens_shutdown_called = True
         
@@ -2578,8 +2584,9 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             if self.running:
                 return
             
-            if not self._maybe_start():
-                return
+            # If we start it not needed to wakeup. If we dont, we wont wakeup anyway.
+            self._maybe_start()
+            return
         
         try:
             selfwrite_socket.send(b'\0')
@@ -2671,6 +2678,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         Because ``._accept_connection`` might have more connections to accept, multyple tasks are launched up from
         this method to run pararelly.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -2849,6 +2858,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         This method can be used by servers that accept connections outside of hata but use it to handle them.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         protocol_factory : `callable`.
@@ -2880,6 +2891,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             flags=0, sock=None, local_addr=None, server_hostname=None):
         """
         Open a streaming transport connection to a given address specified by `host` and `port`.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -3038,6 +3051,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         """
         Open a streaming transport connection to a given address specified by `host` and `port`.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         protocol_factory : `callable`.
@@ -3183,6 +3198,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         The socket must be bound to an address and listening for connections.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         sock : `scoket.socket`
@@ -3240,6 +3257,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         Connect the given socket to a remote socket at address.
         
         Asynchronous version of `socket.connect`.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -3340,6 +3359,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         """
         Receive up to `n` from the given socket. Asynchronous version of socket.recv().
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         sock : `socket.socket`
@@ -3396,6 +3417,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         Send data to the socket. Asynchronous version of `socket.sendall`.
         
         Continues sending to the socket until all data is sent or an error occures.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -3458,6 +3481,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             flags=0, reuse_port=False, allow_broadcast=False, sock=None):
         """
         Creates a datagram connection. The socket type will be `SOCK_DGRAM`.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -3719,6 +3744,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         """
         Creates a TCP server (socket type SOCK_STREAM) listening on port of the host address.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         protocol_factory : `callable`
@@ -3948,6 +3975,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         """
         Register the read end of the given pipe in the event loop.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         protocol : `Any`
@@ -3972,6 +4001,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         connect_write_pipe.__doc__ = (
         """
         Register the write end of the given pipe in the event loop.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -3999,6 +4030,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         Create a subprocess from cmd.
         
         This is similar to the standard library `subprocess.Popen` class called with `shell=True`.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -4070,6 +4103,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         Create a subprocess from one or more string arguments specified by args.
         
         This is similar to the standard library `subprocess.Popen` class called with `shell=False`.
+        
+        This method is a coroutine.
         
         Parameters
         ----------

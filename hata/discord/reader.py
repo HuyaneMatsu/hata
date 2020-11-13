@@ -527,9 +527,9 @@ class AudioStream(AudioSource):
         """
         Reads a frame from the audio stream's buffer.
         
-        This method is a coroutine.
-        
         With yielding `None` indicates end of stream.
+        
+        This method is a coroutine.
         
         Returns
         -------
@@ -599,6 +599,12 @@ class AudioReader(object):
         self.task = Task(self.run(), KOKORO)
     
     async def run(self):
+        """
+        The main runner of the ``AudioReader`` what keeps reading from the voice client's datagram stream and feeding
+        them to the receiver ``AudioStream``-s.
+        
+        This method is a coroutine.
+        """
         voice_client = self.client
         audio_streams = self.audio_streams
         

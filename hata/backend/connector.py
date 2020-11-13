@@ -496,6 +496,8 @@ class ConnectorBase(object):
         """
         Creates a new connection for the given request.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         request : ``ClientRequest``
@@ -841,7 +843,9 @@ class TCPConnector(ConnectorBase):
     
     async def resolve_host_iterator(self, request):
         """
-        A coroutine generator, which yields host infos to which the request can connect to.
+        Yields host infos to which the request can connect to.
+        
+        This method is a coroutine generator.
         
         Parameters
         ----------

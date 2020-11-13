@@ -1290,6 +1290,8 @@ class ExtensionLoader(object):
         """
         Loads the extension with the given name.
         
+        This method is a coroutine.
+        
         Raises
         ------
         ExtensionError
@@ -1335,6 +1337,8 @@ class ExtensionLoader(object):
         """
         Unloads the extension with the given name.
         
+        This method is a coroutine.
+        
         Raises
         ------
         ExtensionError
@@ -1379,6 +1383,8 @@ class ExtensionLoader(object):
     async def _reload(self, name):
         """
         Reloads the extension with the given name.
+        
+        This method is a coroutine.
         
         Raises
         ------
@@ -1429,6 +1435,8 @@ class ExtensionLoader(object):
         Loads each extension one after the other. The raised exceptions' messages are collected into one exception,
         what will be raised only at the end. If any of the extensions raises, will still try to unload the leftover
         ones.
+        
+        This method is a coroutine.
         
         Raises
         ------
@@ -1485,6 +1493,8 @@ class ExtensionLoader(object):
         what will be raised only at the end. If any of the extensions raises, will still try to unload the leftover
         ones.
         
+        This method is a coroutine.
+        
         Raises
         ------
         ExtensionError
@@ -1540,6 +1550,8 @@ class ExtensionLoader(object):
         Reloads each extension one after the other. The raised exceptions' messages are collected into one exception,
         what will be raised at the end. If any of the extensions raises, will still try to reload the leftover ones.
         
+        This method is a coroutine.
+        
         Raises
         ------
         ExtensionError
@@ -1578,6 +1590,8 @@ class ExtensionLoader(object):
         
         If any of these fails, an ``ExtensionError`` will be raised. If step 1 raises, then a traceback will be
         included as well.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -1658,6 +1672,8 @@ class ExtensionLoader(object):
         
         If any of these fails, an ``ExtensionError`` will be raised. If step 2 raises, then a traceback will be
         included as well.
+        
+        This method is a coroutine.
         
         Parameters
         ----------

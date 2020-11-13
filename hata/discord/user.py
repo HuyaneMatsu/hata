@@ -11,7 +11,7 @@ from .bases import DiscordEntity, FlagBase, IconSlot, ICON_TYPE_NONE
 from .client_core import USERS
 from .others import parse_time, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 from .color import Color
-from .activity import ActivityUnknown, Activity
+from .activity import ActivityUnknown, create_activity
 from .http import URLS
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool, preconvert_discriminator, \
     preconvert_flag
@@ -91,7 +91,7 @@ class UserFlag(FlagBase):
         'early_verified_developer'  : 17,
             }
 
-def PartialUser(user_id):
+def create_partial_user(user_id):
     try:
         return USERS[user_id]
     except KeyError:
@@ -100,7 +100,7 @@ def PartialUser(user_id):
     return User._create_empty(user_id)
 
 if DOCS_ENABLED:
-    PartialUser.__doc__ = (
+    create_partial_user.__doc__ = (
     """
     Creates a partial user from the given `user_id`. If the user already exists returns that instead.
     
@@ -1440,7 +1440,7 @@ class User(UserBase):
         else:
             processable = None
         
-        user = PartialUser(user_id)
+        user = create_partial_user(user_id)
         if not user.partial:
             return user
         
@@ -1654,7 +1654,7 @@ class User(UserBase):
         if activity_datas:
             if old_activities is None:
                 for activity_data in activity_datas:
-                    activity = Activity(activity_data)
+                    activity = create_activity(activity_data)
                     
                     if new_activities is None:
                         new_activities = []
@@ -1696,7 +1696,7 @@ class User(UserBase):
                         new_activities.append(activity)
                         break
                     else:
-                        activity = Activity(activity_data)
+                        activity = create_activity(activity_data)
                         
                         if new_activities is None:
                             new_activities = []
@@ -1748,7 +1748,7 @@ class User(UserBase):
         
         activity_datas = data['activities']
         if activity_datas:
-            new_activites = [Activity(activity_data) for activity_data in activity_datas]
+            new_activites = [create_activity(activity_data) for activity_data in activity_datas]
         else:
             new_activites = None
         
@@ -2009,11 +2009,15 @@ class ActivityChange(object):
         return 3
     
     def __iter__(self):
-        """Unpacks the activity change."""
+        """
+        Unpacks the activity change.
+        
+        This method is a generator.
+        """
         yield self.added
         yield self.updated
         yield self.removed
-    
+
 class ActivityUpdate(object):
     """
     Represents an updated activity with storing the activity and it's old updated attributes in a `dict`.
@@ -2081,7 +2085,11 @@ class ActivityUpdate(object):
         return 2
     
     def __iter__(self):
-        """Unpacks the activity update."""
+        """
+        Unpacks the activity update.
+        
+        This method is a generator.
+        """
         yield self.activity
         yield self.old_attributes
 
@@ -2124,7 +2132,7 @@ class VoiceState(object):
             The channel of the voice state.
         """
         self.channel = channel
-        self.user = PartialUser(int(data['user_id']))
+        self.user = create_partial_user(int(data['user_id']))
         self.session_id = data['session_id']
         self.mute = data['mute']
         self.deaf = data['deaf']
@@ -2244,7 +2252,7 @@ class VoiceState(object):
 
 ZEROUSER = User._create_empty(0)
 
-others.PartialUser = PartialUser
+others.create_partial_user = create_partial_user
 
 del URLS
 del CACHE_USER

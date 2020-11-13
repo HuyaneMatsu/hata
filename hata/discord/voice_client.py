@@ -722,6 +722,8 @@ class VoiceClient(object):
         """
         Connects the voice client to Discord and keeps receiveing the gateway events.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         waiter : `None` or ``Future``, Optional
@@ -813,6 +815,8 @@ class VoiceClient(object):
         """
         Disconnects the voice client.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         force : `bool`, Optional
@@ -820,11 +824,11 @@ class VoiceClient(object):
         terminate : `bool`, Optional
            Whether it is an internal disconnect. If the Disconnect comes from Discord's side, then `terminate` is
            `False`, what means, we do not need to terminate the gateway handshake.
-       
+        
         Notes
         -----
-        If you want to disconnecta voice client, then you should let the method to use it's default arguments. Passing
-        bad default arguments at cases can cause misbehaviour.
+        If you want to disconnect a voice client, then you should let the method to use it's default arguments. Passing
+        bad arguments can cause misbehaviour.
         """
         if not (force or self.connected.is_set()):
             return
@@ -860,6 +864,8 @@ class VoiceClient(object):
         When a client is restarted, it might happen that it will be in still in some voice channels. At this
         case this function is ensured to kill the ghost connection.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         client : ``Client``
@@ -879,6 +885,8 @@ class VoiceClient(object):
         Skips the currently playing audio.
         
         Familiar to `.skip`, but it return when the operation id done.
+        
+        This method is a coroutine.
         """
         async with self.lock:
             await self._play_next(self, None)
@@ -889,6 +897,8 @@ class VoiceClient(object):
         Starts to play the next audio object on ``.queue`` and cancels the actual one if applicable.
 
         Should be used inside of ``.lock`` to ensure that the voice client is not modified pararelly.
+        
+        This function is a coroutine.
         
         Parameters
         ----------
@@ -928,6 +938,8 @@ class VoiceClient(object):
         
         Should be used inside of ``.lock``to ensure that the voice client is not modified pararelly.
         
+        This function is a coroutine.
+        
         Parameters
         ----------
         self : ``VoiceClient``
@@ -961,6 +973,8 @@ class VoiceClient(object):
         
         Should be used inside of ``.lock``to ensure that the voice client is not modified pararelly.
         
+        This function is a coroutine.
+        
         Parameters
         ----------
         self : ``VoiceClient``
@@ -980,6 +994,8 @@ class VoiceClient(object):
         """
         Requests a gateway handshake from Discord. If we get answer on it, means, we can open the socket to send audio
         data.
+        
+        This method is a coroutine.
         
         Raises
         ------
@@ -1003,6 +1019,8 @@ class VoiceClient(object):
     async def _terminate_handshake(self):
         """
         Called when connecting to Discord fails. Ensures, that everything is aborted correctly.
+        
+        This method is a coroutine.
         """
         self._handshake_complete.clear()
         guild = self.guild
@@ -1025,6 +1043,8 @@ class VoiceClient(object):
         adress.
         
         If the voice client is already connected reconnects it, if not then marks it as connected.
+        
+        This method is a coroutine.
         
         Parameters
         ----------

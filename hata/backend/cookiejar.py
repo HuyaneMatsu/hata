@@ -83,6 +83,8 @@ class CookieJar(object):
         """
         Iterates over the jar's cookies' values.
         
+        This method is a generator.
+        
         Returns
         -------
         value : `str`

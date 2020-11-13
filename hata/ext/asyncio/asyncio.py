@@ -123,11 +123,11 @@ class EventThread:
             sys.stderr.write(''.join(extracted))
 
 # Required by aiohttp 3.7
-async def asyncio_run_in_executor(self, executor, func, *args):
+async def asyncio_run_in_executor(self, executor, func=..., *args):
     # We ignroe the executro parameter.
     # First handle if the call is from hata.
-    if type(func) is alchemy_incendiary:
-        func.args = (*func.args, *args)
+    if func is ...:
+        func = executor
     else:
         func = alchemy_incendiary(func, args)
     

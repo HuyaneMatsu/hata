@@ -122,16 +122,22 @@ class EventThread:
             extracted.append('*no exception provided*\n')
             sys.stderr.write(''.join(extracted))
 
+
+async def in_coro(fut):
+    return await fut
+
 # Required by aiohttp 3.7
-async def asyncio_run_in_executor(self, executor, func=..., *args):
-    # We ignroe the executro parameter.
-    # First handle if the call is from hata.
+def asyncio_run_in_executor(self, executor, func=..., *args):
+    # We ignore the executor parameter.
+    # First handle if the call is from hata. If called from hata, needs to return a `Future`.
     if func is ...:
-        func = executor
-    else:
+        return Executor.run_in_executor(self, executor)
+    
+    # if the call is from asyncio it needs to return a coroutine
+    if args:
         func = alchemy_incendiary(func, args)
     
-    return await Executor.run_in_executor(self, func)
+    return in_coro(Executor.run_in_executor(self, func))
 
 EventThread.run_in_executor = asyncio_run_in_executor
 del asyncio_run_in_executor

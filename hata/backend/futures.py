@@ -3266,6 +3266,8 @@ class AsyncQue(object):
         
         Raises
         ------
+        IndexError
+            The queue is empty.
         BaseException
             Exception set to the queue, to raise when it is empty.
         """

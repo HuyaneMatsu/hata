@@ -79,7 +79,7 @@ class Webhook(UserBase):
     channel : `None` or ``ChannelText``
         The channel, where the webhook is going to send it's messages.
     token : `str`
-        The webhooks's token. You need an `id` and a `token` to send webhook message.
+        The webhooks's token. You need an `id` and a `token` to send webhook message. Defaults to empty string.
     type : ``WebhookType``
         The webhook's type.
     user : ``Client`` or ``User``
@@ -143,6 +143,7 @@ class Webhook(UserBase):
             webhook = object.__new__(cls)
             USERS[webhook_id] = webhook
             webhook.id = webhook_id
+            webhook.token = ''
         
         webhook._update_no_return(data)
         webhook.type = WebhookType.get(data['type'])
@@ -195,7 +196,7 @@ class Webhook(UserBase):
         
         token = data.get('token')
         if (token is not None):
-            self.token=token
+            self.token = token
         
         name = data['name']
         if name is None:

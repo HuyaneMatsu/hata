@@ -284,7 +284,7 @@ class Frame(object):
             Whether this websocket frame is a final webscoket frame. When sending websocket frames, the data of frames
             it collected, till a final frame is received.
         opcode : `int`
-            The operation code of the websocket.
+            The operation code of the websocket frame.
             
             Can be 1 of the following:
             
@@ -401,7 +401,7 @@ class Frame(object):
             - If the frame opcode is not any of the expected ones.
         """
         if self.head1&0b01110000:
-            raise WebSocketProtocolError('Reserved bits must be 0.')
+            raise WebSocketProtocolError('Reserved bits must be `0`.')
         
         opcode = self.head1&0b00001111
         if opcode in WS_DATA_OPCODES:
@@ -1806,6 +1806,7 @@ class ReadProtocolBase(object):
         Returns
         -------
         frame : ``Frame``
+            The read websocket frame.
         
         Raises
         ------

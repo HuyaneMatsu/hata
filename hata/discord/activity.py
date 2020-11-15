@@ -1516,7 +1516,6 @@ def create_activity(activity_data):
 preinstanced.ActivityTypes = ActivityTypes
 
 del URLS
-del Color
 del FlagBase
 del modulize
 del preinstanced

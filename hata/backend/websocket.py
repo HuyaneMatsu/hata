@@ -2,11 +2,11 @@
 __all__ = ('WSClient', 'WSServer', )
 
 import hashlib, codecs, functools, http
-from random import getrandbits
 from base64 import b64encode, b64decode
 from collections import OrderedDict
 from binascii import Error as BinasciiError
 from email.utils import formatdate
+from os import urandom
 
 from .dereaddons_local import imultidict
 from .futures import Future, Task, AsyncQue, future_or_timeout, shield, CancelledError, WaitTillAll, iscoroutine, Lock
@@ -105,7 +105,7 @@ class WebSocketCommonProtocol(ProtocolBase):
     state : `str`
         The webscoket's state.
         
-        Can be set as 1 of the following values:
+        Can be set as one of the following values:
         
         +-------------------+-------------------+
         | Respective name   | Value             |
@@ -274,37 +274,92 @@ class WebSocketCommonProtocol(ProtocolBase):
         return self.messages.result()
     
     def recv_no_wait(self):
+        """
+        Returns a future, what can be awaited to receive the next message of the websocket.
+        
+        Returns
+        -------
+        message : `bytes` or `str`
+            The received payload.
+        
+        Raises
+        ------
+        IndexError
+            There are no messages to retrieve right now.
+        ConnectionClosed
+            Websocket closed.
+        """
         return self.messages.result_no_wait()
     
     async def send(self, data):
+        """
+        Sends the given data with teh websocket.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        data : `bytes-like` or `str`
+            The data to send
+        
+        Raises
+        ------
+        TypeError
+            `data` was not given as `bytes-like`, neither as `str`.
+        ConnectionClosed
+            Websocket connection closed.
+        Exception
+            Websocket nonnection not yet established.
+        """
         await self.ensure_open()
         
         if isinstance(data, (bytes, bytearray, memoryview)):
             opcode = WS_OP_BINARY
-        elif type(data) is str:
+        elif isinstance(data, str):
             opcode = WS_OP_TEXT
             data = data.encode('utf-8')
         else:
-            raise TypeError(f'data must be bytes or str, got: {data.__class__.__name__}')
+            raise TypeError(f'Data must be `bytes-like` or `str`, got: {data.__class__.__name__}.')
 
         await self.write_frame(opcode, data)
 
     async def close(self, code=1000, reason=''):
+        """
+        Closes the websocket.
+        
+        Writes close frame first and then if we dont receive close frame response in ``.close_timeout``, then we
+        cancel the connection.
+        
+        This method is a coroutine.
+        
+        Parameteres
+        code : `int`, Optional.
+            Websocket close code. Defaults to `1000`. Can be one of:
+            `(1000, 1001, 1002, 1003, 1007, 1008, 1009, 1010, 1011) | [3000:5000)`.
+        reason : `str`, Optional
+            Websocket close reason. Can be given as empty string. Defaults to empty string as well.
+        
+        Raises
+        ------
+        WebSocketProtocolError
+            Close code is not given as one of `(1000, 1001, 1002, 1003, 1007, 1008, 1009, 1010, 1011) | [3000:5000)`.
+        """
         # if no close frame is received within the close_timeout we cancel the connection
+        close_message = self._serialize_close(code, reason)
         try:
-            task = Task(self.write_close_frame(self._serialize_close(code, reason)), self.loop)
+            task = Task(self.write_close_frame(close_message), self.loop)
             future_or_timeout(task, self.close_timeout)
             await task
         except TimeoutError:
             self.fail_connection()
         
         try:
-            # if close() is cancelled durlng the wait, self.transfer_data_task
-            # is cancelled before the close_timeout elapses
+            # if close() is cancelled during the wait, self.transfer_data_task is cancelled before the close_timeout
+            # elapses
             task = self.transfer_data_task
             future_or_timeout(task, self.close_timeout)
             await task
-        except (TimeoutError,CancelledError):
+        except (TimeoutError, CancelledError):
             pass
         
         # quit for the close connection task to close the TCP connection.
@@ -312,19 +367,67 @@ class WebSocketCommonProtocol(ProtocolBase):
     
     @staticmethod
     def _serialize_close(code, reason):
+        """
+        Packs the given `code` and `reason` toghether into a close message.
+        
+        Parameters
+        ----------
+        code : `int`
+            Websocket close code. Can be one of:
+            `(1000, 1001, 1002, 1003, 1007, 1008, 1009, 1010, 1011) | [3000:5000)`.
+        reason : `str`
+            Websocket close reason. Can be given as empty string.
+        
+        Returns
+        -------
+        close_message : `bytes`
+        
+        Raises
+        ------
+        WebSocketProtocolError
+            Close code is not given as one of `(1000, 1001, 1002, 1003, 1007, 1008, 1009, 1010, 1011) | [3000:5000)`.
+        """
         if not (code in EXTERNAL_CLOSE_CODES or 2999<code<5000):
-            raise WebSocketProtocolError(f'Invalid status code {code}')
+            raise WebSocketProtocolError(f'Status can be in range [3000:5000), got {code!r}.')
         return code.to_bytes(2, 'big')+reason.encode('utf-8')
     
-    async def ping(self, data=b''):
+    async def ping(self, data=None):
+        """
+        Sends a ping to the other side and waits till answer is received.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        data : `None`, `bytes-like`, `str`
+            Ping payload to send. Defaults to `None`.
+            
+            If the given or generated payload is already waiting for response, then will regenerate it, till a free
+            one is hit.
+        
+        Raises
+        ------
+        TypeError
+            `data` is not given neither as `None`, `bytes-like`, or `str` instance.
+        ConnectionClosed
+            Websocket connection closed.
+        Exception
+            Websocket nonnection not yet established.
+        """
         await self.ensure_open()
         
-        if type(data) is str:
-            data.encode('utf-8')
+        if data is None:
+            data = urandom(4)
+        elif isinstance(data, (bytes, bytearray, memoryview)):
+            pass
+        elif isinstance(data, str):
+            data = data.encode('utf-8')
+        else:
+            raise TypeError(f'Data must be `bytes-like` or `str`, got: {data.__class__.__name__}.')
         
         pings = self.pings
         while data in pings:
-            data = getrandbits(32).to_bytes(4, 'big')
+            data = urandom(4)
         
         waiter = Future(self.loop)
         pings[data] = waiter
@@ -333,16 +436,54 @@ class WebSocketCommonProtocol(ProtocolBase):
         
         await waiter
     
-    async def pong(self, data=b''):
+    async def pong(self, data=None):
+        """
+        Sends a pong payload to the other side.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        data : `None`, `bytes-like`, `str`
+            Ping payload to send. Defaults to `None`.
+        
+        Raises
+        ------
+        TypeError
+            `data` is not given neither as `None`, `bytes-like`, or `str` instance.
+        ConnectionClosed
+            Websocket connection closed.
+        Exception
+            Websocket nonnection not yet established.
+        """
         await self.ensure_open()
-        if type(data) is str:
-            data.encode('utf-8')
+        
+        if data is None:
+            data = urandom(4)
+        elif isinstance(data, (bytes, bytearray, memoryview)):
+            pass
+        elif isinstance(data, str):
+            data = data.encode('utf-8')
+        else:
+            raise TypeError(f'Data must be `bytes-like` or `str`, got: {data.__class__.__name__}.')
         
         await self.write_frame(WS_OP_PONG, data)
     
     # Private methods - no guarantees.
     
     async def ensure_open(self):
+        """
+        Checks whether the websocket is still open.
+        
+        This method is a coroutine.
+        
+        Raises
+        ------
+        ConnectionClosed
+            Websocket connection closed.
+        Exception
+            Websocket nonnection not yet established.
+        """
         state = self.state
         if state is OPEN:
             # if self.transfer_data_task exited without a closing handshake.
@@ -360,7 +501,7 @@ class WebSocketCommonProtocol(ProtocolBase):
                 await shield(self.close_connection_task, self.loop)
             raise ConnectionClosed(self.close_code, None, self.close_reason) from self.transfer_data_exc
         
-        raise Exception('WebSocket connection isn\'t established yet')
+        raise Exception('WebSocket connection isn\'t established yet.')
     
     async def transfer_data(self):
         """
@@ -423,8 +564,32 @@ class WebSocketCommonProtocol(ProtocolBase):
             self.messages.set_exception(exception)
     
     async def read_message(self):
+        """
+        Reads a message from the websocket.
+        
+        This method is a coroutine.
+        
+        Returns
+        -------
+        message : `None`, `bytes` or `str`
+            A recevied message. It's type depend on the frame's type. returns `None` if close frame was received.
+        
+        Raises
+        ------
+        WebSocketProtocolError
+            - Unexpected op code.
+            - Incomplete fragmented message.
+            - If the reserved bits are not `0`.
+            - If the frame is a control frame, but is too long for one.
+            - If the webscoket frame is fragmented frame. (Might be supported if people request is.)
+            - If the frame opcode is not any of the expected ones.
+            - Close frame received with invalid status code.
+            - Close frame too short.
+        CancelledError
+            ``.transfer_data_task`` cancelled.
+        """
         frame = await self.read_data_frame(max_size=self.max_size)
-        if frame is None: #close frame
+        if frame is None: # close frame
             return
         
         if frame.opcode == WS_OP_TEXT:
@@ -464,6 +629,29 @@ class WebSocketCommonProtocol(ProtocolBase):
         return ('' if text else b'').join(chunks)
     
     async def read_data_frame(self, max_size):
+        """
+        Reads a webscoket frame from the websocket. If teh frame is a control frame processes and loops for reading an
+        another one.
+        
+        This method is a coroutine.
+        
+        Returns
+        -------
+        frame : ``Frame`` or `None`
+            The read websocket frame. Returns `None` if close frame was received.
+        
+        Raises
+        ------
+        WebSocketProtocolError
+            - If the reserved bits are not `0`.
+            - If the frame is a control frame, but is too long for one.
+            - If the webscoket frame is fragmented frame. (Might be supported if people request is.)
+            - If the frame opcode is not any of the expected ones.
+            - Close frame received with invalid status code.
+            - Close frame too short.
+        CancelledError
+            ``.transfer_data_task`` cancelled.
+        """
         while True:
             
             frame = await self.set_payload_reader(self._read_websocket_frame(self.is_client, max_size))
@@ -475,7 +663,7 @@ class WebSocketCommonProtocol(ProtocolBase):
             
             frame.check()
             
-            #most likely
+            # most likely
             if frame.opcode in WS_DATA_OPCODES:
                 return frame
 
@@ -485,6 +673,27 @@ class WebSocketCommonProtocol(ProtocolBase):
             return
     
     async def _process_CTRL_frame(self, frame):
+        """
+        Processes a control websocket frame.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        frame : ``Frame``
+            A received control websocket frame.
+        
+        Returns
+        -------
+        can_continue : `bool`
+            Returns `False` if the processed `frame` was a close frame.
+        
+        Raises
+        ------
+        WebSocketProtocolError
+            - Close frame received with invalid status code.
+            - Close frame too short.
+        """
         opcode = frame.opcode
         if opcode == WS_OP_CLOSE:
             data = frame.data
@@ -500,7 +709,7 @@ class WebSocketCommonProtocol(ProtocolBase):
                 self.close_code = 1005
             else:
                 raise WebSocketProtocolError(f'Close frame too short: {length}.')
-
+            
             await self.write_close_frame(frame.data)
             return False
         
@@ -515,14 +724,77 @@ class WebSocketCommonProtocol(ProtocolBase):
             while ping_id != frame.data:
                 ping_id, pong_waiter = self.pings.popitem(0)
                 pong_waiter.set_result_if_pending(None)
+        
         return True
     
-    async def write_frame(self, opcode, data,_expected_state=OPEN):
+    async def write_frame(self, opcode, data, _expected_state=OPEN):
+        """
+        Writes the data as webscoket.
+        
+        Parameters
+        ----------
+        opcode : `int`
+            The operation code of the websocket frame.
+            
+            Can be 1 of the following:
+            
+            +-------------------+-------+
+            | Respective name   | Value |
+            +===================+=======+
+            | WS_OP_CONT        | 0     |
+            +-------------------+-------+
+            | WS_OP_TEXT        | 1     |
+            +-------------------+-------+
+            | WS_OP_BINARY      | 2     |
+            +-------------------+-------+
+            | WS_OP_CLOSE       | 8     |
+            +-------------------+-------+
+            | WS_OP_PING        | 9     |
+            +-------------------+-------+
+            | WS_OP_PONG        | 10    |
+            +-------------------+-------+
+        
+        data : `bytes`
+            The data to send.
+        
+        _expected_state : `str`
+            Expected state of the webscoket. If the webscoekt is in other state, an `Expeciton` instannce it raised.
+            Defaults to `'OPEN'`.
+            
+            Can be set as one of the following values:
+            
+            +-------------------+-------------------+
+            | Respective name   | Value             |
+            +===================+===================+
+            | CONNECTING        | `'CONNECTING'`    |
+            +-------------------+-------------------+
+            | OPEN              | `'OPEN'`          |
+            +-------------------+-------------------+
+            | CLOSING           | `'CLOSING'`       |
+            +-------------------+-------------------+
+            | CLOSED            | `'CLOSED'`        |
+            +-------------------+-------------------+
+            
+            Note, that state is compared by memory address and not by value.
+        
+        Raises
+        ------
+        WebSocketProtocolError
+            - If an extension set a reserved bit not to `0`.
+            - If an extension modified the frame to a control frame, what is too long one.
+            - If an extension modified the frame to be a fragmented one. (Might be supported if people request is.)
+            - If an extension modified the frame's op code to not any of the expected ones.
+        ConnectionClosed
+            Websocket connection closed.
+        Exception
+            - Websocket nonnection not yet established.
+            - Cannot write to webscoket with it's current state.
+        """
         # Defensive assertion for protocol compliance.
         if self.state is not _expected_state:
             raise Exception(f'Cannot write to a WebSocket in the {self.state} state.')
 
-        #we write only 1 frame at a time, so we 'queue' it
+        # we write only 1 frame at a time, so we 'queue' it
         async with self._drain_lock:
             try:
                 frame = Frame(True, opcode, data)
@@ -542,7 +814,7 @@ class WebSocketCommonProtocol(ProtocolBase):
                 await self.ensure_open()
     
     async def write_close_frame(self, data=b''):
-        #check connection before we write
+        # check connection before we write
         if self.state is OPEN:
             self.state = CLOSING
             await self.write_frame(WS_OP_CLOSE, data, CLOSING)
@@ -684,7 +956,7 @@ class WSClient(WebSocketCommonProtocol):
             port = None
         
         # building headers
-        sec_key = b64encode(int.to_bytes(getrandbits(128), length=16, byteorder='big')).decode()
+        sec_key = b64encode(urandom(16)).decode()
         request_headers = imultidict()
         
         request_headers[UPGRADE] = 'websocket'

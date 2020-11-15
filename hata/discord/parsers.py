@@ -905,7 +905,7 @@ def READY(client, data):
     
     if ready_state is None:
         ready_state = ReadyState(client, guild_datas)
-        client.ready_state=ready_state
+        client.ready_state = ready_state
         Task(client._delay_ready(), KOKORO)
     else:
         ready_state.shard_ready(data)
@@ -5981,7 +5981,7 @@ READY_STATE_TIMEOUT = 2.0
 
 class ReadyState(object):
     """
-    Client on login in fill up their `.ready_state` with ``Guild`` objects, which will have their members requested.
+    Client on login fills up their `.ready_state` with ``Guild`` objects, which will have their members requested.
     
     Attributes
     ----------

@@ -807,8 +807,13 @@ class Client(UserBase):
     group_channels : `dict` of (`int`, ``ChannelGroup``) items
         The group channels of the client. They can be accessed by their id as the key.
     ready_state : ``ReadyState`` or `None`
-        The client on login in fills up it's ``.ready_state`` with ``Guild`` objects, which will have their members
+        The client on login fills up it's ``.ready_state`` with ``Guild`` objects, which will have their members
         requested.
+        
+        When receiving a `READY` dispatch event, the client's ``.ready_state`` is set as a ``ReadyState`` instance and
+        a ``._delay_ready`` task is started, what delays the handleable `ready` event, till every user from the recevied
+        guilds is cached up. When done, ``.ready_state`` is set back to `None`.
+    
     relationships : `dict` of (`int`, ``Relationship``) items
         Stores the relationships of the client. The relationships' users' ids are the keys and the relationships
         themselves are the values.
@@ -2971,22 +2976,22 @@ class Client(UserBase):
         if (name is not None):
             name_ln = len(name)
             if name_ln < 2 or name_ln > 100:
-                raise ValueError(f'Invalid `name` length, can be between 2-100, got {name_ln}')
+                raise ValueError(f'Invalid `name` length, can be between 2-100, got {name_ln}.')
             data['name'] = name
         
         if value in (0, 5):
             if (topic is not None):
                 topic_ln = len(topic)
                 if topic_ln > 1024:
-                    raise ValueError(f'Invalid topic length can be between 0-1024, go {topic_ln}')
+                    raise ValueError(f'Invalid topic length can be between 0-1024, go {topic_ln}.')
                 data['topic'] = topic
         
         if type_ < 128:
             INTERCHANGE = channel.INTERCHANGE
             if len(INTERCHANGE) <= 1:
-                raise TypeError(f'You can not switch channel type of this channel type')
+                raise TypeError(f'You can not switch channel type of this channel type.')
             if type_ not in INTERCHANGE:
-                raise ValueError(f'You can switch chanel type from {value} to {type_}')
+                raise ValueError(f'You can switch chanel type from {value} to {type_}.')
             if type_ != value:
                 data['type'] = type_
         
@@ -6159,7 +6164,7 @@ class Client(UserBase):
         Parameters
         ----------
         guild : ``Guild``
-            The guild what's disoovery will be requested.
+            The guild what's discovery will be requested.
         
         Returns
         -------

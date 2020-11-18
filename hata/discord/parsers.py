@@ -11,7 +11,7 @@ except ImportError:
 
 from ..env import CACHE_USER, CACHE_PRESENCE, ALLOW_DEAD_EVENTS
 from ..backend.futures import Future, Task, iscoroutinefunction as iscoro
-from ..backend.dereaddons_local import function, RemovedDescriptor, _spaceholder, MethodLike, NEEDS_DUMMY_INIT, \
+from ..backend.utils import function, RemovedDescriptor, _spaceholder, MethodLike, NEEDS_DUMMY_INIT, \
     WeakKeyDictionary, WeakReferer, DOCS_ENABLED
 from ..backend.analyzer import CallableAnalyzer
 from ..backend.eventloop import LOOP_TIME
@@ -20,7 +20,7 @@ from .bases import FlagBase
 from .client_core import CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO
 from .user import User, create_partial_user, USERS
 from .channel import CHANNEL_TYPES, ChannelGuildBase, ChannelPrivate
-from .others import Relationship, Gift
+from .utils import Relationship, Gift
 from .guild import EMOJI_UPDATE_NEW, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, VOICE_STATE_NONE, VOICE_STATE_JOIN, \
     VOICE_STATE_LEAVE, VOICE_STATE_UPDATE, Guild
 from .emoji import create_partial_emoji

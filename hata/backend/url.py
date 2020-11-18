@@ -4,7 +4,7 @@ from ipaddress import ip_address
 from urllib.parse import SplitResult, parse_qsl, urljoin, urlsplit, urlunsplit
 from math import isinf, isnan
 
-from .dereaddons_local import multidict,cached_property
+from .utils import multidict,cached_property
 from .quote import quote, unquote
 
 NoneType = type(None)

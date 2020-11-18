@@ -17,7 +17,7 @@ else:
     SSL_CONTEXT_UNVERIFIED.options |= module_ssl.OP_NO_SSLv2|module_ssl.OP_NO_SSLv3|module_ssl.OP_NO_COMPRESSION
     SSL_CONTEXT_UNVERIFIED.set_default_verify_paths()
 
-from .dereaddons_local import imultidict
+from .utils import imultidict
 from .futures import shield, Task
 from .eventloop import LOOP_TIME
 

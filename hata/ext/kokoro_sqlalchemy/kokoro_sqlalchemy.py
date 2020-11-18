@@ -7,7 +7,7 @@ from sqlalchemy import util
 from sqlalchemy.engine import Engine
 from sqlalchemy.engine.strategies import DefaultEngineStrategy
 
-from ...backend.dereaddons_local import alchemy_incendiary
+from ...backend.utils import alchemy_incendiary
 from ...backend.executor import ExecutorThread
 
 

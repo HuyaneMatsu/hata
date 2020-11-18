@@ -1,6 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 from .analyzer import *
-from .dereaddons_local import *
+from .utils import *
 from .eventloop import *
 from .executor import *
 from .formdata import *
@@ -11,7 +11,7 @@ from .websocket import *
 
 __all__ = (
     *analyzer.__all__           ,
-    *dereaddons_local.__all__   ,
+    *utils.__all__   ,
     *eventloop.__all__          ,
     *executor.__all__           ,
     *formdata.__all__           ,

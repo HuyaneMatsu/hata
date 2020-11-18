@@ -11,8 +11,7 @@ from collections import deque
 from ssl import SSLContext, create_default_context
 from stat import S_ISSOCK
 
-from .dereaddons_local import alchemy_incendiary, WeakReferer, weakmethod, method, WeakCallable, DocProperty, \
-    DOCS_ENABLED
+from .utils import alchemy_incendiary, WeakReferer, weakmethod, method, WeakCallable, DocProperty, DOCS_ENABLED
 from .futures import Future, Task, Gatherer, render_exc_to_list, iscoroutine, FutureAsyncWrapper, WaitTillFirst, \
     CancelledError
 from .transprotos import SSLProtocol, _SelectorSocketTransport, _SelectorDatagramTransport

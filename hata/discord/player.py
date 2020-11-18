@@ -6,7 +6,7 @@ from time import perf_counter
 from audioop import mul as audio_mul
 from pathlib import Path
 
-from ..backend.dereaddons_local import alchemy_incendiary
+from ..backend.utils import alchemy_incendiary
 from ..backend.futures import render_exc_to_list, Task, Event, sleep, CancelledError
 
 from .client_core import KOKORO

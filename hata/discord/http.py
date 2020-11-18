@@ -3,7 +3,7 @@ __all__ = ('DiscordHTTPClient', )
 
 import sys, re
 
-from ..backend.dereaddons_local import imultidict, modulize, WeakMap, WeakKeyDictionary
+from ..backend.utils import imultidict, modulize, WeakMap, WeakKeyDictionary
 from ..backend.futures import sleep
 from ..backend.http import HTTPClient, RequestCM
 from ..backend.connector import TCPConnector
@@ -14,7 +14,7 @@ from ..backend.quote import quote
 from .. env import API_VERSION
 
 from .exceptions import DiscordException, ERROR_CODES
-from .others import to_json, from_json, Discord_hdrs
+from .utils import to_json, from_json, Discord_hdrs
 from .ratelimit import ratelimit_global, RATELIMIT_GROUPS, RatelimitHandler, NO_SPECIFIC_RATELIMITER
 
 AUDIT_LOG_REASON    = Discord_hdrs.AUDIT_LOG_REASON
@@ -1815,11 +1815,19 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.webhook_edit, webhook_id),
             METH_PATCH, f'{API_ENDPOINT}/webhooks/{webhook_id}', data)
     
-    async def webhook_send(self, webhook, data, wait):
-        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.webhook_send, webhook.id),
+    async def webhook_message_create(self, webhook, data, wait):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.webhook_message_create, webhook.id),
             METH_POST, f'{webhook.url}?wait={wait:d}', data, headers=imultidict())
     
-    #user
+    async def webhook_message_edit(self, webhook, message_id, data):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.webhook_message_edit, webhook.id),
+            METH_PATCH, f'{webhook.url}/messages/{message_id}', data, headers=imultidict())
+    
+    async def webhook_message_delete(self, webhook, message_id):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.webhook_message_edit, webhook.id),
+            METH_DELETE, f'{webhook.url}/messages/{message_id}', headers=imultidict())
+    
+    # user
     
     async def user_get(self, user_id):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.user_get, NO_SPECIFIC_RATELIMITER),

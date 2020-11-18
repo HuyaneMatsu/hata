@@ -4,9 +4,9 @@ __all__ = ('EXTRA_EMBED_TYPES', 'Embed', 'EmbedAuthor', 'EmbedCore', 'EmbedField
 
 from re import escape as re_escape, compile as re_compile
 
-from ..backend.dereaddons_local import DOCS_ENABLED
+from ..backend.utils import DOCS_ENABLED
 
-from .others import ROLE_MENTION_RP, USER_MENTION_RP, CHANNEL_MENTION_RP, parse_time, urlcutter
+from .utils import ROLE_MENTION_RP, USER_MENTION_RP, CHANNEL_MENTION_RP, parse_time, urlcutter
 from .color import Color
 
 from . import preinstanced

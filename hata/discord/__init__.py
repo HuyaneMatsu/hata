@@ -17,7 +17,7 @@ from .invite import *
 from .message import *
 from .oauth2 import *
 from .opus import *
-from .others import *
+from .utils import *
 from .parsers import *
 from .permission import *
 from .player import *
@@ -47,7 +47,7 @@ __all__ = (
     *message.__all__            ,
     *oauth2.__all__             ,
     *opus.__all__               ,
-    *others.__all__             ,
+    *utils.__all__             ,
     *parsers.__all__            ,
     *permission.__all__         ,
     *player.__all__             ,

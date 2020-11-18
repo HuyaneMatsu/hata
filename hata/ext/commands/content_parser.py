@@ -12,11 +12,11 @@ except ImportError:
     relativedelta = None
 
 from ...env import CACHE_USER
-from ...backend.dereaddons_local import function, _spaceholder, MethodLike, method, module_property, DOCS_ENABLED
+from ...backend.utils import function, _spaceholder, MethodLike, method, module_property, DOCS_ENABLED
 from ...backend.analyzer import CallableAnalyzer
 
 from ...discord.bases import FlagBase
-from ...discord.others import USER_MENTION_RP, ROLE_MENTION_RP, CHANNEL_MENTION_RP, ID_RP, INVITE_CODE_RP
+from ...discord.utils import USER_MENTION_RP, ROLE_MENTION_RP, CHANNEL_MENTION_RP, ID_RP, INVITE_CODE_RP
 from ...discord.client import Client
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.emoji import parse_emoji, Emoji, EMOJIS

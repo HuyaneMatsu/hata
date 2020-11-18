@@ -21,7 +21,7 @@ from threading import current_thread, enumerate as list_threads, main_thread
 from subprocess import PIPE
 
 from ...env import BACKEND_ONLY
-from ...backend.dereaddons_local import WeakReferer, alchemy_incendiary, KeepType, WeakKeyDictionary
+from ...backend.utils import WeakReferer, alchemy_incendiary, KeepType, WeakKeyDictionary
 from ...backend.eventloop import EventThread
 from ...backend.futures import Future as HataFuture, Lock as HataLock, AsyncQue, Task as HataTask, WaitTillFirst, \
     WaitTillAll, WaitTillExc, future_or_timeout, sleep as hata_sleep, shield as hata_shield, WaitContinously, \

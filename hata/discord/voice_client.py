@@ -3,7 +3,7 @@ __all__ = ('VoiceClient', )
 
 import socket as module_socket
 
-from ..backend.dereaddons_local import DOCS_ENABLED
+from ..backend.utils import DOCS_ENABLED
 from ..backend.futures import Future, Task, sleep, future_or_timeout, Lock, Event
 from ..backend.exceptions import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
 from ..backend.protocol import DatagramMergerReadProtocol

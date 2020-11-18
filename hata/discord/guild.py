@@ -5,12 +5,12 @@ __all__ = ('DiscoveryCategory', 'Guild', 'GuildDiscovery', 'GuildPreview', 'Guil
 import re, reprlib
 
 from ..env import CACHE_PRESENCE
-from ..backend.dereaddons_local import cached_property, DOCS_ENABLED
+from ..backend.utils import cached_property, DOCS_ENABLED
 from ..backend.futures import Task
 
 from .bases import DiscordEntity, ReverseFlagBase, IconSlot, ICON_TYPE_NONE
 from .client_core import GUILDS, DISCOVERY_CATEGORIES, CHANNELS, KOKORO
-from .others import EMOJI_NAME_RP, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
+from .utils import EMOJI_NAME_RP, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 from .user import User, create_partial_user, VoiceState, UserBase, ZEROUSER
 from .role import Role
 from .channel import CHANNEL_TYPES, ChannelCategory, ChannelText

@@ -5,11 +5,11 @@ from datetime import datetime
 
 from ..env import CACHE_USER, CACHE_PRESENCE
 
-from ..backend.dereaddons_local import DOCS_ENABLED, WeakKeyDictionary
+from ..backend.utils import DOCS_ENABLED, WeakKeyDictionary
 
 from .bases import DiscordEntity, FlagBase, IconSlot, ICON_TYPE_NONE
 from .client_core import USERS
-from .others import parse_time, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
+from .utils import parse_time, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 from .color import Color
 from .activity import ActivityUnknown, create_activity
 from .http import URLS
@@ -17,7 +17,7 @@ from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool
     preconvert_flag
 from .preinstanced import Status, DefaultAvatar
 
-from . import others
+from . import utils
 
 if CACHE_USER:
     GUILD_PROFILES_TYPE = dict
@@ -2252,7 +2252,7 @@ class VoiceState(object):
 
 ZEROUSER = User._create_empty(0)
 
-others.create_partial_user = create_partial_user
+utils.create_partial_user = create_partial_user
 
 del URLS
 del CACHE_USER
@@ -2260,5 +2260,5 @@ del CACHE_PRESENCE
 del DiscordEntity
 del FlagBase
 del IconSlot
-del others
+del utils
 del DOCS_ENABLED

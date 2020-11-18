@@ -21,7 +21,7 @@ except ImportError:
         err.msg = message
         raise err from None
 
-from .dereaddons_local import imultidict
+from .utils import imultidict
 from .futures import Task, CancelledError
 from .hdrs import METH_POST_ALL, METH_CONNECT, SET_COOKIE, CONTENT_LENGTH, CONNECTION, ACCEPT, ACCEPT_ENCODING, \
     HOST, TRANSFER_ENCODING, COOKIE, CONTENT_ENCODING, AUTHORIZATION, CONTENT_TYPE

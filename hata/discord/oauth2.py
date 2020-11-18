@@ -8,7 +8,7 @@ from time import time as time_now
 from .bases import DiscordEntity, IconSlot
 from .http import URLS
 from .integration import Integration
-from .others import DATETIME_FORMAT_CODE
+from .utils import DATETIME_FORMAT_CODE
 from .user import UserBase, UserFlag
 from .preinstanced import PremiumType
 

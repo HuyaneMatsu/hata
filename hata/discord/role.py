@@ -1,13 +1,13 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('PermOW', 'Role', 'RoleManagerType', 'cr_p_overwrite_object', 'cr_p_role_object', )
 
-from ..backend.dereaddons_local import DOCS_ENABLED
+from ..backend.utils import DOCS_ENABLED
 
 from ..env import API_VERSION
 
 from .bases import DiscordEntity
 from .client_core import ROLES
-from .others import random_id, DATETIME_FORMAT_CODE
+from .utils import random_id, DATETIME_FORMAT_CODE
 from .color import Color
 from .permission import Permission
 from .user import create_partial_user

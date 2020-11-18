@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from collections import deque
 
-from ..backend.dereaddons_local import WeakReferer
+from ..backend.utils import WeakReferer
 from ..backend.futures import Task, CancelledError, sleep
 
 from .opus import OpusDecoder, opus

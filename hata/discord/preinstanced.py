@@ -4,13 +4,13 @@ __all__ = ('AuditLogEvent', 'ContentFilterLevel', 'DefaultAvatar', 'FriendReques
     'PremiumType', 'RelationshipType', 'Status', 'StickerType', 'TeamMembershipState', 'Theme', 'VerificationLevel',
     'VoiceRegion', 'WebhookType', )
 
-from ..backend.dereaddons_local import DOCS_ENABLED, any_to_any
+from ..backend.utils import DOCS_ENABLED, any_to_any
 
 from .bases import PreinstancedBase
 from .color import Color
 from .http import URLS
 
-from . import others
+from . import utils
 
 ActivityTypes = NotImplemented
 _convert_content = NotImplemented
@@ -2077,9 +2077,9 @@ StickerType.APNG   = StickerType(2, 'APNG')
 StickerType.LOTTIE = StickerType(3, 'LOTTIE')
 
 
-others.RelationshipType = RelationshipType
+utils.RelationshipType = RelationshipType
 
 del DOCS_ENABLED
 del PreinstancedBase
 del URLS
-del others
+del utils

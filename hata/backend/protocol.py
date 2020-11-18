@@ -4,7 +4,7 @@ from random import getrandbits
 from struct import Struct
 from collections import deque
 
-from .dereaddons_local import imultidict, DOCS_ENABLED
+from .utils import imultidict, DOCS_ENABLED
 from .futures import Future, CancelledError, Task, future_or_timeout
 
 from .hdrs import CONNECTION, CONTENT_ENCODING, CONTENT_LENGTH, TRANSFER_ENCODING, METH_CONNECT
@@ -94,7 +94,7 @@ class RawMessage(object):
         Whether the connection is upgraded.
         
         Is only set when the ``.upgraded`` property is accessed as `0` or `1`. Till is set as `2`.
-    headers : ``imultidict``
+    headers : ``imultidict`` of (`str`, `str`) items
         The headers of the http message.
     """
     __slots__ = ('_upgraded', 'headers', )
@@ -170,7 +170,7 @@ class RawResponseMessage(RawMessage):
         Whether the connection is upgraded.
         
         Is only set when the ``.upgraded`` property is accessed as `0` or `1`. Till is set as `2`.
-    headers : ``imultidict``
+    headers : ``imultidict`` of (`str`, `str`) items
         The headers of the http message.
     version : ``HttpVersion``
         The http version of the response.
@@ -193,7 +193,7 @@ class RawResponseMessage(RawMessage):
             The response's status.
         reason : `bytes`
             Reason included with the response. Might be empty.
-        headers : ``imultidict``
+        headers : ``imultidict`` of (`str`, `str`) items
             The headers of the http message.
         """
         self.version = version
@@ -212,7 +212,7 @@ class RawRequestMessage(RawMessage):
         Whether the connection is upgraded.
         
         Is only set when the ``.upgraded`` property is accessed as `0` or `1`. Till is set as `2`.
-    headers : ``imultidict``
+    headers : ``imultidict`` of (`str`, `str`) items
         The headers of the http message.
     version : ``HttpVersion``
         The http version of the response.
@@ -235,7 +235,7 @@ class RawRequestMessage(RawMessage):
             The request's method.
         path : `str`
             The requested path.
-        headers : ``imultidict``
+        headers : ``imultidict`` of (`str`, `str`) items
             The headers of the http message.
         """
         self.version = version
@@ -814,9 +814,17 @@ class ReadProtocolBase(object):
     
     def eof_received(self):
         """
-        ``.connection_lost`` without expection causes eof.
+        Calling``.connection_lost`` without expection causes eof.
         
         Marks the protocols as it is at eof and stops payload processing if applicable.
+        
+        Returns
+        -------
+        transport_closes : `bool`
+            Returns `False` if the transport will close itself. If it returns `True`, then closing the transport is up
+            to the protocol.
+            
+            Always returns `False`.
         """
         self._eof = True
         

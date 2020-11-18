@@ -9,7 +9,7 @@ from types import GeneratorType, CoroutineType, MethodType as method, FunctionTy
 from collections import deque
 from threading import current_thread, Lock as SyncLock, Event as SyncEvent
 
-from .dereaddons_local import alchemy_incendiary, DOCS_ENABLED, copy_func
+from .utils import alchemy_incendiary, DOCS_ENABLED, copy_func
 
 class CancelledError(BaseException):
     """The Future or Task was cancelled."""
@@ -210,10 +210,10 @@ _ignore_frame(__spec__.origin   , '__call__'        , 'future.result()'         
 _ignore_frame(__spec__.origin   , '__aexit__'       , 'raise exception'                 ,)
 
 
-from . import dereaddons_local
-_ignore_frame(dereaddons_local.__spec__.origin  , '__call__', 'return self.func(*self.args)'            ,)
-_ignore_frame(dereaddons_local.__spec__.origin  , '__call__', 'return self.func(*self.args, **kwargs)'  ,)
-del dereaddons_local
+from . import utils
+_ignore_frame(utils.__spec__.origin  , '__call__', 'return self.func(*self.args)'            ,)
+_ignore_frame(utils.__spec__.origin  , '__call__', 'return self.func(*self.args, **kwargs)'  ,)
+del utils
 
 def render_frames_to_list(frames, extend=None):
     """

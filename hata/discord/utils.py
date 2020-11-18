@@ -14,7 +14,7 @@ try:
 except ImportError:
     relativedelta = None
 
-from ..backend.dereaddons_local import istr, modulize
+from ..backend.utils import istr, modulize
 
 from .bases import DiscordEntity
 

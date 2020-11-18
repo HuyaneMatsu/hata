@@ -5,9 +5,9 @@ __all__ = ('ActivityAssets', 'ActivityBase', 'ActivityCustom', 'ActivityParty', 
 from datetime import datetime
 
 
-from ..backend.dereaddons_local import modulize
+from ..backend.utils import modulize
 
-from .others import DISCORD_EPOCH_START
+from .utils import DISCORD_EPOCH_START
 from .bases import FlagBase
 from .color import Color
 from .http import URLS

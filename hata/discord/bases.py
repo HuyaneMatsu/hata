@@ -4,7 +4,7 @@ __all__ = ('DiscordEntity', 'ICON_TYPE_ANIMATED', 'ICON_TYPE_NONE', 'ICON_TYPE_S
 
 import sys
 
-from ..backend.dereaddons_local import _spaceholder, DOCS_ENABLED, DocProperty
+from ..backend.utils import _spaceholder, DOCS_ENABLED, DocProperty
 
 id_to_time = NotImplemented
 

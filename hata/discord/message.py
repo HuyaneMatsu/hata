@@ -5,11 +5,11 @@ __all__ = ('Attachment', 'EMBED_UPDATE_EMBED_ADD', 'EMBED_UPDATE_EMBED_REMOVE', 
 
 from datetime import datetime
 
-from ..backend.dereaddons_local import _spaceholder, BaseMethodDescriptor
+from ..backend.utils import _spaceholder, BaseMethodDescriptor
 
 from .bases import DiscordEntity, FlagBase, IconSlot
 from .http import URLS
-from .others import parse_time, CHANNEL_MENTION_RP, time_to_id, DATETIME_FORMAT_CODE
+from .utils import parse_time, CHANNEL_MENTION_RP, time_to_id, DATETIME_FORMAT_CODE
 from .client_core import MESSAGES, CHANNELS, GUILDS
 from .user import ZEROUSER, User
 from .emoji import reaction_mapping

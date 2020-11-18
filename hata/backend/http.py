@@ -1,6 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('HTTPClient', )
-from .dereaddons_local import imultidict
+from .utils import imultidict
 
 from .helpers import Timeout, tcp_nodelay
 from .url import URL
@@ -265,7 +265,7 @@ class HTTPClient(object):
         return RequestCM(self._request(METH_DELETE, url, headers, **kwargs))
 
     def connect_ws(self, url, **kwargs):
-        return WebsocketCM(WSClient(self.loop, url, **kwargs, http_client = self))
+        return WebsocketCM(WSClient(self.loop, url, **kwargs, http_client=self))
 
 class RequestCM(object):
     __slots__ = ('coroutine', 'response', )

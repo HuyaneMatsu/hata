@@ -6,13 +6,13 @@ from datetime import datetime, timedelta, timezone
 from collections import deque
 from threading import current_thread
 
-from ..backend.dereaddons_local import modulize, WeakReferer, DOCS_ENABLED
+from ..backend.utils import modulize, WeakReferer, DOCS_ENABLED
 from ..backend.futures import Future
 from ..backend.hdrs import DATE
 from ..backend.eventloop import LOOP_TIME
 
 from .client_core import KOKORO
-from .others import Discord_hdrs
+from .utils import Discord_hdrs
 
 ChannelBase      = NotImplemented
 ChannelGuildBase = NotImplemented
@@ -1349,6 +1349,12 @@ class RATELIMIT_GROUPS:
         - Limit : `10`
         - Resets after : `10.0`
     
+    - GROUP_WEBHOOK_EXECUTE
+        - Used by : `webhook_message_create`, `webhook_message_delete`, `webhook_message_edit`
+        - Limiter : `webhook_id`
+        - Limit : `5`
+        - Resets after : `2.0`
+    
     Group Details
     -----------
     - oauth2_token
@@ -2515,9 +2521,25 @@ class RATELIMIT_GROUPS:
         - Limit : `OPT`
         - Resets after : `OPT`
     
-    - webhook_send
+    - webhook_message_create
         - Endpoint : `/webhooks/{webhook_id}/{webhook_token}`
         - Method : `POST`
+        - Required auth : `N/A`
+        - Limiter : `webhook_id`
+        - Limit : `5`
+        - Resets after : `2.0`
+    
+    - webhook_message_delete
+        - Endpoint : `/webhooks/{webhook_id}/{webhook_token}/messages/{message-id}`
+        - Method : `DELETE`
+        - Required auth : `N/A`
+        - Limiter : `webhook_id`
+        - Limit : `5`
+        - Resets after : `2.0`
+    
+    - webhook_message_edit
+        - Endpoint : `/webhooks/{webhook_id}/{webhook_token}/messages/{message-id}`
+        - Method : `PATCH`
         - Required auth : `N/A`
         - Limiter : `webhook_id`
         - Limit : `5`
@@ -2527,6 +2549,7 @@ class RATELIMIT_GROUPS:
     GROUP_PIN_MODIFY            = RatelimitGroup(LIMITER_CHANNEL)
     GROUP_USER_MODIFY           = RatelimitGroup(LIMITER_GUILD) # both has the same endpoint
     GROUP_USER_ROLE_MODIFY      = RatelimitGroup(LIMITER_GUILD)
+    GROUP_WEBHOOK_EXECUTE       = RatelimitGroup(LIMITER_WEBHOOK)
     
     oauth2_token                = RatelimitGroup(optimistic=True)
     application_get             = RatelimitGroup(optimistic=True) # untested
@@ -2668,7 +2691,10 @@ class RATELIMIT_GROUPS:
     webhook_delete_token        = RatelimitGroup.unlimited()
     webhook_get_token           = RatelimitGroup.unlimited()
     webhook_edit_token          = RatelimitGroup(LIMITER_WEBHOOK, optimistic=True)
-    webhook_send                = RatelimitGroup(LIMITER_WEBHOOK)
+    webhook_message_create      = GROUP_WEBHOOK_EXECUTE
+    webhook_message_edit        = GROUP_WEBHOOK_EXECUTE
+    webhook_message_delete      = GROUP_WEBHOOK_EXECUTE
+
 
 del modulize
 del DOCS_ENABLED

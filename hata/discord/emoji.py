@@ -2,11 +2,11 @@
 __all__ = ('BUILTIN_EMOJIS', 'Emoji', 'parse_emoji', 'parse_custom_emojis', 'reaction_mapping',
     'reaction_mapping_line',)
 
-from ..backend.dereaddons_local import DOCS_ENABLED
+from ..backend.utils import DOCS_ENABLED
 
 from .bases import DiscordEntity
 from .client_core import EMOJIS
-from .others import id_to_time, EMOJI_RP, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
+from .utils import id_to_time, EMOJI_RP, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 from .http import URLS
 from .user import User, ZEROUSER
 from .preconverters import preconvert_str, preconvert_bool, preconvert_snowflake

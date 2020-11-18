@@ -6,7 +6,7 @@ from io import BytesIO
 from threading import current_thread
 
 from .executor import ExecutorThread
-from .dereaddons_local import alchemy_incendiary
+from .utils import alchemy_incendiary
 from .eventloop import EventThread
 
 OPERATION_WRITE = 0

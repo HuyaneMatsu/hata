@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 __all__ = ('SubterraneanHelpCommand', )
 
-from ....backend.dereaddons_local import DOCS_ENABLED, DocProperty
+from ....backend.utils import DOCS_ENABLED, DocProperty
 from ....backend.futures import isawaitable
 from ....backend.analyzer import CallableAnalyzer
 from ....discord.embed import Embed
-from ....discord.others import chunkify
+from ....discord.utils import chunkify
 from ....discord.preconverters import preconvert_color, preconvert_str
 from ....discord.user import UserBase, User
 from ....discord.channel import ChannelBase, ChannelGuildBase, ChannelTextBase, ChannelText, ChannelPrivate, \

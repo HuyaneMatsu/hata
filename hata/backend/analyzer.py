@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 __all__ = ('CallableAnalyzer', )
 
-from .dereaddons_local import function, MethodLike
+from .utils import function, MethodLike
 from .futures import iscoroutinefunction as is_coro
 
 CO_OPTIMIZED   = 1

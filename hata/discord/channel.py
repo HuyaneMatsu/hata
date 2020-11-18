@@ -6,7 +6,7 @@ import re
 from collections import deque
 from weakref import WeakSet
 
-from ..backend.dereaddons_local import _spaceholder, DOCS_ENABLED
+from ..backend.utils import _spaceholder, DOCS_ENABLED
 from ..backend.eventloop import LOOP_TIME
 
 from .bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
@@ -19,7 +19,7 @@ from .role import PermOW
 from .client_core import GC_CYCLER
 from .webhook import Webhook, WebhookRepr
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_bool
-from .others import DATETIME_FORMAT_CODE
+from .utils import DATETIME_FORMAT_CODE
 
 from . import webhook, message, ratelimit
 

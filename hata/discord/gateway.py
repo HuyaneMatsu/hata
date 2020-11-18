@@ -16,7 +16,7 @@ from ..backend.futures import sleep, Task, future_or_timeout, WaitTillExc, WaitT
 from ..backend.exceptions import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
 from ..backend.eventloop import LOOP_TIME
 
-from .others import to_json, from_json
+from .utils import to_json, from_json
 from .activity import ActivityUnknown
 from .parsers import PARSERS
 from .guild import LARGE_LIMIT
@@ -102,7 +102,7 @@ class GatewayRateLimiter(object):
                     break
                 
                 queue.popleft().set_result_if_pending(False)
-                remaining -=1
+                remaining -= 1
         
         else:
             wakeupper = None
@@ -251,7 +251,7 @@ class DiscordGateway(object):
         if kokoro is None:
             self.kokoro = await Kokoro(self)
             return
-    
+        
         await kokoro.restart()
     
     async def run(self, waiter=None):

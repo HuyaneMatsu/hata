@@ -4,7 +4,7 @@ from io import StringIO, TextIOBase, BytesIO, BufferedRandom, IOBase, BufferedRe
 from collections import deque
 from urllib.parse import parse_qsl, unquote, urlencode
 
-from .dereaddons_local import imultidict, multidict
+from .utils import imultidict, multidict
 from .ios import AsyncIO
 
 from .hdrs import CONTENT_DISPOSITION, CONTENT_ENCODING, CONTENT_LENGTH, CONTENT_TRANSFER_ENCODING, CONTENT_TYPE

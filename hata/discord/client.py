@@ -1,7 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('Client', 'Typer', )
 
-import re, sys
+import re, sys, warnings
 from time import time as time_now
 from collections import deque
 from os.path import split as splitpath
@@ -9,7 +9,7 @@ from threading import current_thread
 from math import inf
 
 from ..env import CACHE_USER, CACHE_PRESENCE, API_VERSION
-from ..backend.dereaddons_local import imultidict, _spaceholder, methodize, basemethod, change_on_switch
+from ..backend.utils import imultidict, _spaceholder, methodize, basemethod, change_on_switch
 from ..backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, WaitTillFirst, WaitTillExc, \
     future_or_timeout
 from ..backend.eventloop import EventThread, LOOP_TIME
@@ -17,7 +17,7 @@ from ..backend.formdata import Formdata
 from ..backend.hdrs import AUTHORIZATION
 from ..backend.helpers import BasicAuth
 
-from .others import log_time_converter, DISCORD_EPOCH, image_to_base64, random_id, to_json, RelationshipType, \
+from .utils import log_time_converter, DISCORD_EPOCH, image_to_base64, random_id, to_json, RelationshipType, \
     get_image_extension
 from .user import User, USERS, GuildProfile, UserBase, UserFlag, create_partial_user, GUILD_PROFILES_TYPE
 from .emoji import Emoji
@@ -1220,8 +1220,7 @@ class Client(UserBase):
             return ''
         return 'web'
     
-    async def client_edit(self, password=None, new_password=None, email=None, house=_spaceholder, name=None,
-            avatar=_spaceholder):
+    async def client_edit(self, password=None, new_password=None, email=None, house=..., name=None, avatar=...):
         """
         Edits the client. Only the provided parameters will be changed. Every argument what refers to a user
         account is not tested.
@@ -1282,7 +1281,7 @@ class Client(UserBase):
         else:
             raise TypeError(f'`name` can be passed as type str, got {name.__class__.__name__}.')
         
-        if (avatar is not _spaceholder):
+        if (avatar is not ...):
             if avatar is None:
                 avatar_data = None
             else:
@@ -1317,7 +1316,7 @@ class Client(UserBase):
             except KeyError:
                 pass
         
-        if house is _spaceholder:
+        if house is ...:
             pass
         elif house is None:
             await self.hypesquad_house_leave()
@@ -1337,7 +1336,7 @@ class Client(UserBase):
             The guild where the client's nickname will be changed.
         nick : `str` or `None`
             The client's new nickname. Pass it as `None` or with length `0` to remove it.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Will show up at the respective guild's audit logs.
         
         Raises
@@ -1850,8 +1849,7 @@ class Client(UserBase):
         data = await self.http.achievement_create(self.application.id, data)
         return Achievement(data)
     
-    async def achievement_edit(self, achievement, name=None , description=None, secret=None, secure=None,
-            icon=_spaceholder):
+    async def achievement_edit(self, achievement, name=None , description=None, secret=None, secure=None, icon=...):
         """
         Edits the passed achievemnt with the specified parameters. All parameter is optional.
         
@@ -1906,7 +1904,7 @@ class Client(UserBase):
         if (secure is not None):
             data['secure'] = secure
         
-        if (icon is not _spaceholder):
+        if (icon is not ...):
             icon_type = icon.__class__
             if not issubclass(icon_type, (bytes, bytearray, memoryview)):
                 raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon_type.__name__}.')
@@ -2343,7 +2341,7 @@ class Client(UserBase):
         for user in users:
             await self.http.channel_group_user_delete(channel.id, user.id)
     
-    async def channel_group_edit(self, channel, name=_spaceholder, icon=_spaceholder):
+    async def channel_group_edit(self, channel, name=..., icon=...):
         """
         Edits the given group channel. Only the provided parameters will be edited.
         
@@ -2377,7 +2375,7 @@ class Client(UserBase):
         """
         data = {}
         
-        if (name is not _spaceholder):
+        if (name is not ...):
             if (name is None):
                 pass
             elif isinstance(name, str):
@@ -2392,7 +2390,7 @@ class Client(UserBase):
             
             data['name'] = name
         
-        if (icon is not _spaceholder):
+        if (icon is not ...):
             if icon is None:
                 icon_data = None
             else:
@@ -2506,7 +2504,7 @@ class Client(UserBase):
         
         return result
 
-    async def channel_move(self, channel, visual_position, category=_spaceholder, lock_permissions=False, reason=None):
+    async def channel_move(self, channel, visual_position, category=..., lock_permissions=False, reason=None):
         """
         Moves a guild channel to the given visual position under it's category, or guild. If the algorithm can not
         place the channel exactly on that location, it will place it as close, as it can. If there is nothing to
@@ -2526,7 +2524,7 @@ class Client(UserBase):
             then the channel will be moved under it.
         lock_permissions : `bool`, Optional
             If you want to sync the permissions with the new category set it to `True`. Defaults to `False`.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -2549,7 +2547,7 @@ class Client(UserBase):
         if guild is None:
             return
         
-        if category is _spaceholder:
+        if category is ...:
             category = channel.category
         elif category is None:
             category = guild
@@ -2692,7 +2690,7 @@ class Client(UserBase):
                 #loop block end
                 index_0 += 1
             #loop ended
-                
+            
         index_0 = (4, 2, 0).index(channel.ORDER_GROUP)
         before = (4, 2, 0)[index_0:]
         after = (4, 2, 0)[:index_0+1]
@@ -2735,7 +2733,7 @@ class Client(UserBase):
             #empty category
             possible_indexes.append((0, category_index+1,),)
         
-        #GOTO start 
+        #GOTO start
         while True:
             #GOTO block start
             
@@ -2748,7 +2746,7 @@ class Client(UserBase):
             if info_line[0] > visual_position:
                 result_position = info_line[1]
                 
-                #GOTO end 
+                #GOTO end
                 break
                 #GOTO ended
             
@@ -2787,7 +2785,7 @@ class Client(UserBase):
             #GOTO block ended
             break
         #GOTO ended
-            
+        
         ordered.insert(result_position, ordered[original_position])
         higher_flag = (result_position < original_position)
         if higher_flag:
@@ -2947,7 +2945,7 @@ class Client(UserBase):
             The new bitrate of the `channel`.
         type_ : `int`, Optional
             The `channel`'s new type value.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -3033,7 +3031,7 @@ class Client(UserBase):
             will be it's guild.
         *args : Arguments
             Additional arguments to describe the created channel.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the `guild`'s audit logs.
         **kwargs : Keyword arguments
             Additional keyword arguments to describe the created channel.
@@ -3105,7 +3103,7 @@ class Client(UserBase):
         ----------
         channel : ``ChannelGuildBase`` instance
             The channel to delete.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -3300,7 +3298,7 @@ class Client(UserBase):
         data = await self.http.message_get(channel.id, message_id)
         return channel._create_unknown_message(data)
     
-    async def message_create(self, channel, content=None, embed=None, file=None, allowed_mentions=_spaceholder,
+    async def message_create(self, channel, content=None, embed=None, file=None, allowed_mentions=...,
             message_reference=None, tts=False, nonce=None):
         """
         Creates and returns a message at the given `channel`. If there is nothing to send, then returns `None`.
@@ -3347,7 +3345,7 @@ class Client(UserBase):
         
         See Also
         --------
-        ``.webhook_send`` : Sending a message with a ``Webbhook``.
+        ``.webhook_message_create`` : Sending a message with a ``Webbhook``.
         """
         data = {}
         contains_content = False
@@ -3366,7 +3364,7 @@ class Client(UserBase):
         if (nonce is not None):
             data['nonce'] = nonce
         
-        if (allowed_mentions is not _spaceholder):
+        if (allowed_mentions is not ...):
             data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
         
         if (message_reference is not None):
@@ -3671,7 +3669,7 @@ class Client(UserBase):
         ----------
         message : ``Message``
             The message to delete.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -3710,7 +3708,7 @@ class Client(UserBase):
         ----------
         messages : `list` of ``Message`` objects
             The messages to delete.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
 
         Raises
@@ -3886,7 +3884,7 @@ class Client(UserBase):
         ----------
         messages : `list` of ``Message`` objects
             The messages to delete.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
 
         Returns
@@ -3942,7 +3940,7 @@ class Client(UserBase):
             The maximal amount of messages to delete.
         filter : `callable`, Optional
             A callable filter, what should accept a message object as argument and return either `True` or `False`.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -4275,7 +4273,7 @@ class Client(UserBase):
             The maximal amount of messages to delete.
         filter : `callable`, Optional
             A callable filter, what should accept a message object as argument and return either `True` or `False`.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -4638,8 +4636,7 @@ class Client(UserBase):
                 # Else case should happen.
                 continue
     
-    async def message_edit(self, message, content=None, embed=_spaceholder, allowed_mentions=_spaceholder,
-            suppress=None):
+    async def message_edit(self, message, content=None, embed=..., allowed_mentions=..., suppress=...):
         """
         Edits the given `message`.
         
@@ -4664,7 +4661,7 @@ class Client(UserBase):
         TypeError
             If `allowed_mentions` when correct type, but an invalid value would been sent.
         ValueError
-            If `allowed_mentions` cantains an element of invalid type.
+            If `allowed_mentions` contains an element of invalid type.
         ConnectionError
             No internet connection.
         DiscordException
@@ -4672,32 +4669,37 @@ class Client(UserBase):
         
         See Also
         --------
-        ``.message_suppress_embeds`` : For suppressing only the embeds of the message.
-        """
-        data = {}
-        if (content is not None):
-            data['content'] = content
+        - ``.message_suppress_embeds`` : For suppressing only the embeds of the message.
+        - ``.webhook_message_edit`` : Editing messages sent by webhooks.
         
-        if (embed is not _spaceholder):
+        Notes
+        -----
+        Do not updates he given message object, so dispatch event parsers can still calculate differences when recevied.
+        """
+        message_data = {}
+        if (content is not None):
+            message_data['content'] = content
+        
+        if (embed is not ...):
             if embed is None:
                 embed_data = None
             else:
                 embed_data = embed.to_data()
             
-            data['embed'] = embed_data
+            message_data['embed'] = embed_data
         
-        if (allowed_mentions is not _spaceholder):
-            data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
+        if (allowed_mentions is not ...):
+            message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
         
-        if (suppress is not None):
+        if (suppress is not ...):
             flags = message.flags
             if suppress:
                 flags |= 0b00000100
             else:
                 flags &= 0b11111011
-            data['flags'] = flags
+            message_data['flags'] = flags
         
-        await self.http.message_edit(message.channel.id, message.id, data)
+        await self.http.message_edit(message.channel.id, message.id, message_data)
     
     async def message_suppress_embeds(self, message, suppress=True):
         """
@@ -5340,7 +5342,7 @@ class Client(UserBase):
             The guild from where the user will be removed.
         user : ``User`` or ``Client`` instance
             The user to delete from the guild.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the guild's audit logs.
         
         Raises
@@ -5403,7 +5405,7 @@ class Client(UserBase):
             The user to ban from the guild.
         delete_message_days : `int`, optional
             How much days back the user's messages should be deleted. Can be between 0 and 7.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the guild's audit logs.
         
         Raises
@@ -5434,7 +5436,7 @@ class Client(UserBase):
             The guild from where the user will be unbanned.
         user : ``User`` or ``Client`` instance
             The user to unban at the guild.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the guild's audit logs.
         
         Raises
@@ -5712,7 +5714,7 @@ class Client(UserBase):
         count : `bool`, Optional
             Whether the method should return how much user were pruned, but if the guild is large it will be set to
             `False` anyways. Defaults to `False`.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Will show up at the guild's audit logs.
         
         Returns
@@ -5783,10 +5785,9 @@ class Client(UserBase):
         data = await self.http.guild_prune_estimate(guild.id, data)
         return data['pruned']
     
-    async def guild_edit(self, guild, name=None, icon=_spaceholder, invite_splash=_spaceholder,
-            discovery_splash=_spaceholder, banner=_spaceholder, afk_channel=_spaceholder, system_channel=_spaceholder,
-            rules_channel=_spaceholder, public_updates_channel=_spaceholder, owner=None, region=None, afk_timeout=None,
-            verification_level=None, content_filter=None, message_notification=None, description=_spaceholder,
+    async def guild_edit(self, guild, name=None, icon=..., invite_splash=..., discovery_splash=..., banner=...,
+            afk_channel=..., system_channel=..., rules_channel=..., public_updates_channel=..., owner=None, region=None,
+            afk_timeout=None, verification_level=None, content_filter=None, message_notification=None, description=...,
             system_channel_flags=None, add_feature=None, remove_feature=None, reason=None):
         """
         Edis the guild with the given parameters.
@@ -5842,7 +5843,7 @@ class Client(UserBase):
             Guild feature(s) to add to the guild.
         remove_feature : (`str`, ``GuildFeature``) or (`iterable` of (`str`, ``GuildFeature``)), Optional
             Guild feature(s) to remove from the guild's.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the guild's audit logs.
         
         Raises
@@ -5875,7 +5876,7 @@ class Client(UserBase):
                 raise ValueError(f'Guild\'s name\'s length can be between 2-100, got {name_ln}: {name!r}.')
             data['name'] = name
         
-        if (icon is not _spaceholder):
+        if (icon is not ...):
             if icon is None:
                 icon_data = None
             else:
@@ -5891,7 +5892,7 @@ class Client(UserBase):
             
             data['icon'] = icon_data
         
-        if (banner is not _spaceholder):
+        if (banner is not ...):
             if GuildFeature.banner not in guild.features:
                 raise ValueError('The guild has no `BANNER` feature.')
             
@@ -5910,7 +5911,7 @@ class Client(UserBase):
             
             data['banner'] = banner_data
         
-        if (invite_splash is not _spaceholder):
+        if (invite_splash is not ...):
             if GuildFeature.invite_splash not in guild.features:
                 raise ValueError('The guild has no `INVITE_SPLASH` feature.')
             
@@ -5930,7 +5931,7 @@ class Client(UserBase):
                 
             data['splash'] = invite_splash_data
         
-        if (discovery_splash is not _spaceholder):
+        if (discovery_splash is not ...):
             if GuildFeature.discoverable not in guild.features:
                 raise ValueError('The guild is not discoverable and `discovery_splash` was given.')
             
@@ -5950,18 +5951,18 @@ class Client(UserBase):
             
             data['discovery_splash'] = discovery_splash_data
         
-        if (afk_channel is not _spaceholder):
+        if (afk_channel is not ...):
             data['afk_channel_id'] = None if afk_channel is None else afk_channel.id
         
-        if (system_channel is not _spaceholder):
+        if (system_channel is not ...):
             data['system_channel_id'] = None if system_channel is None else system_channel.id
         
-        if (rules_channel is not _spaceholder):
+        if (rules_channel is not ...):
             if not COMMUNITY_FEATURES.intersection(guild.features):
                 raise ValueError('The guild is not Community guild and `rules_channel` was given.')
             data['rules_channel_id'] = None if rules_channel is None else rules_channel.id
         
-        if (public_updates_channel is not _spaceholder):
+        if (public_updates_channel is not ...):
             if not COMMUNITY_FEATURES.intersection(guild.features):
                 raise ValueError('The guild is not Community guild and `public_updates_channel` was given.')
             data['public_updates_channel_id'] = None if public_updates_channel is None else public_updates_channel.id
@@ -5988,7 +5989,7 @@ class Client(UserBase):
         if (message_notification is not None):
             data['default_message_notifications'] = message_notification.value
         
-        if (description is not _spaceholder):
+        if (description is not ...):
             if not COMMUNITY_FEATURES.intersection(guild.features):
                 raise ValueError('The guild is not Community guild and `description` was given.')
             
@@ -6180,8 +6181,7 @@ class Client(UserBase):
         guild_discovery_data = await self.http.guild_discovery_get(guild.id)
         return GuildDiscovery(guild_discovery_data, guild)
     
-    async def guild_discovery_edit(self, guild_or_discovery, primary_category=_spaceholder, keywords=_spaceholder,
-            emoji_discovery=_spaceholder):
+    async def guild_discovery_edit(self, guild_or_discovery, primary_category=..., keywords=..., emoji_discovery=...):
         """
         Edits the guild's discovery metadata.
         
@@ -6233,7 +6233,7 @@ class Client(UserBase):
         
         data = {}
         
-        if (primary_category is not _spaceholder):
+        if (primary_category is not ...):
             if (primary_category is None):
                 primary_category_id = None
             else:
@@ -6255,7 +6255,7 @@ class Client(UserBase):
             
             data['primary_category_id'] = primary_category_id
         
-        if (keywords is not _spaceholder):
+        if (keywords is not ...):
             if (keywords is None):
                 pass
             elif (not isinstance(keywords, str)) and hasattr(type(keywords), '__iter__'):
@@ -6279,7 +6279,7 @@ class Client(UserBase):
         
             data['keywords'] = keywords
         
-        if (emoji_discovery is not _spaceholder):
+        if (emoji_discovery is not ...):
             if (emoji_discovery is None) or (type(emoji_discovery) is bool):
                 pass
             elif isinstance(emoji_discovery, int):
@@ -6728,8 +6728,7 @@ class Client(UserBase):
     
     # users
     
-    async def user_edit(self, guild, user, nick=_spaceholder, deaf=None, mute=None, voice_channel=_spaceholder,
-            roles=None, reason=None):
+    async def user_edit(self, guild, user, nick=..., deaf=None, mute=None, voice_channel=..., roles=..., reason=None):
         """
         Edits the user at the given guild.
         
@@ -6750,9 +6749,9 @@ class Client(UserBase):
         voice_channel : `None` or ``ChannelVoice`` object, Optional
             Moves the user to the given voice channel. Only applicable if the user is already at a voice channel.
             Pass it as `None` to kick the user from it's voice channel.
-        roles : `list` of ``Role`` objects, Optional
-            The new roles of the user.
-        reason : `str`, Optional
+        roles : `None` or `list` of ``Role`` objects, Optional
+            The new roles of the user. Give it as `None` to remvoe all of the user's roles.
+        reason : `None` or `str`, Optional
             Will show up at the guild's audit logs.
         
         Raises
@@ -6765,7 +6764,7 @@ class Client(UserBase):
             If any exception was received from the Discord API.
         """
         data = {}
-        if (nick is not _spaceholder):
+        if (nick is not ...):
             if (nick is not None):
                 nick_ln = len(nick)
                 if nick_ln > 32:
@@ -6804,12 +6803,17 @@ class Client(UserBase):
         if (mute is not None):
             data['mute'] = mute
             
-        if (voice_channel is not _spaceholder):
+        if (voice_channel is not ...):
             data['channel_id'] = None if voice_channel is None else voice_channel.id
+        
+        if (roles is not ...):
+            if roles is None:
+                role_ids = []
+            else:
+                role_ids = [role.id for role in roles]
             
-        if (roles is not None):
-            data['roles'] = [role.id for role in roles]
-            
+            data['roles'] = role_ids
+        
         await self.http.user_edit(guild.id, user.id, data, reason)
     
     async def user_role_add(self, user, role, reason=None):
@@ -6824,7 +6828,7 @@ class Client(UserBase):
             The user who will get the role.
         role : ``Role``
             The role to add on the user.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -6853,7 +6857,7 @@ class Client(UserBase):
             The user from who the role will be removed.
         role : ``Role``
             The role to remove from the user.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -7231,7 +7235,7 @@ class Client(UserBase):
             The permission overwrite's new allowed permission's value.
         deny : ``Permission``
             The permission overwrite's new denied permission's value.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -7260,7 +7264,7 @@ class Client(UserBase):
             The channel where the permission overwrite is.
         overwrite : ``PermOW``
             The permission overwrite to delete.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -7288,7 +7292,7 @@ class Client(UserBase):
             The permission overwrite's allowed permission's value.
         deny : ``Permission``
             The permission overwrite's denied permission's value.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
         
         Returns
@@ -7648,7 +7652,7 @@ class Client(UserBase):
         await self.http.webhook_delete_token(webhook)
             
     # later there gonna be more stuff thats why 2 different
-    async def webhook_edit(self, webhook, name=None, avatar=_spaceholder, channel=None):
+    async def webhook_edit(self, webhook, name=None, avatar=..., channel=None):
         """
         Edits and updates the given webhook.
         
@@ -7691,7 +7695,7 @@ class Client(UserBase):
             
             data['name'] = name
         
-        if (avatar is not _spaceholder):
+        if (avatar is not ...):
             if avatar is None:
                 avatar_data = None
             else:
@@ -7716,7 +7720,7 @@ class Client(UserBase):
         data = await self.http.webhook_edit(webhook.id, data)
         webhook._update_no_return(data)
         
-    async def webhook_edit_token(self, webhook, name=None, avatar=_spaceholder): #channel is ignored!
+    async def webhook_edit_token(self, webhook, name=None, avatar=...): #channel is ignored!
         """
         Edits and updates the given webhook through Discord's webhook API.
         
@@ -7757,7 +7761,7 @@ class Client(UserBase):
             
             data['name'] = name
         
-        if (avatar is not _spaceholder):
+        if (avatar is not ...):
             if avatar is None:
                 avatar_data = None
             else:
@@ -7778,8 +7782,21 @@ class Client(UserBase):
         
         data = await self.http.webhook_edit_token(webhook, data)
         webhook._update_no_return(data)
-   
-    async def webhook_send(self, webhook, content=None, embed=None, file=None, allowed_mentions=_spaceholder,
+    
+    async def webhook_send(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.webhook_message_create`` instead. Will be removed in 2021 january.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            '`Client.webhook_send` is deprecated, and will be removed in 2021 january. '
+            'Please use `Client.webhook_message_create` instead.',
+            FutureWarning)
+        
+        return await self.webhook_message_create(*args, **kwargs)
+    
+    async def webhook_message_create(self, webhook, content=None, embed=None, file=None, allowed_mentions=...,
             tts=False, name=None, avatar_url=None, wait=False):
         """
         Sends a message with the given webhook. If there is nothing to send, or if `wait` was not passed as `True`
@@ -7811,7 +7828,7 @@ class Client(UserBase):
         Returns
         -------
         message : ``Message`` or `None`
-            Returns `None` if there is nothing to send.
+            Returns `None` if there is nothing to send or if `wait` was given as `False` (so by default).
         
         Raises
         ------
@@ -7854,7 +7871,7 @@ class Client(UserBase):
             data['content'] = content
             contains_content = True
         
-        if (allowed_mentions is not _spaceholder):
+        if (allowed_mentions is not ...):
             data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
         
         if tts:
@@ -7882,13 +7899,171 @@ class Client(UserBase):
         if not contains_content:
             return None
         
-        data = await self.http.webhook_send(webhook, to_send, wait)
+        data = await self.http.webhook_message_create(webhook, to_send, wait)
         
-        if wait:
-            channel = webhook.channel
-            if channel is None:
-                channel = ChannelText.precreate(int(data['channel_id']))
-            return channel._create_new_message(data)
+        if not wait:
+            return
+        
+        channel = webhook.channel
+        if channel is None:
+            channel = ChannelText.precreate(int(data['channel_id']))
+        
+        return channel._create_new_message(data)
+    
+    async def webhook_message_edit(self, webhook, message, content=..., embed=..., allowed_mentions=...):
+        """
+        Edits the message sent by the given webhook. The message's author must be the webhook itself.
+        
+        Parameters
+        ----------
+        webhook : ``Webhook``
+            The webhook who created the message.
+        message : ``Message`` or ``MessageRepr``.
+            The webhook's message to edit.
+        content : `str`, Optional
+            The new content of the message. By passing it as `''`, you can remove the old.
+        embed : `None` or ``Embed`` or ``EmbedCore`` instance or any compatible object, Optional
+            The new embedded content of the message. By passing it as `None`, you can remove the old.
+        allowed_mentions : `None` or `list` of `Any`, Optional
+            Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions``
+            for details.
+        
+        Raises
+        ------
+        TypeError
+            - If `allowed_mentions` contains an element of invalid type.
+            - If ivalid file type would be sent.
+            - If `embed` was not passed as an embed like, or a `tuple`, `list` or `deque` of them.
+        ValueError
+            - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
+            - If more than `10` files would be sent.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - `message` was detectably not sent by the `webhook`.
+            - `message` was given as `None`. Make sure to use ``Client.webhook_message_create`` with `wait=True` and by
+                giving any content to it as well.
+            - `message` was not given neither as ``Message`` or ``MessageRepr`` instance.
+            - `content` was not given neither as `None` or `str` instance.
+        
+        See Also
+        --------
+        - ``.message_edit`` : Edit your own messages.
+        - ``.webhook_message_create`` : Create a message with a webhook.
+        - ``.webhook_message_delete`` : Delete a message created by a webhook.
+        
+        Notes
+        -----
+        Embed messages ignore suppression with their endpoint, not like ``.message_edit`` endpoint.
+        
+        Editing the message with empty string is broken.
+        """
+        if __debug__:
+            if isinstance(message, Message):
+                if message.author.id != webhook.id:
+                    raise AssertionError('The message was not send by the webhook.')
+            elif isinstance(message, MessageRepr):
+                # Cannot check author id, skip
+                pass
+            elif message is None:
+                raise AssertionError('Message was given as `None`. Make sure to use `Client.webhook_message_create` '
+                    'with `wait=True` and by giving any content to it as well.')
+            else:
+                raise AssertionError(f'`message` should have be given as `Message`or as  `MessageRepr` instance, got '
+                    f'`{message.__class__.__name__}`.')
+        
+        message_data = {}
+        
+        # Discord docs say, content can be nullable, but nullable content is just ignored.
+        if (content is not ...):
+            if __debug__:
+                if not isinstance(content, str):
+                    raise AssertionError(f'`content` can be given as `str` instance, got {content.__class__.__name__}.')
+            
+            message_data['content'] = content
+        
+        if (embed is not ...):
+            if embed is None:
+                embeds = None
+            elif isinstance(embed, (tuple, list, deque)):
+                embed_amount = len(embed)
+                if embed_amount > 10:
+                    raise ValueError(f'There can be only 10 embed maximum, got {embed_amount}.')
+                
+                if embed_amount == 0:
+                    embeds = None
+                else:
+                    embeds = [embed.to_data() for embed in embed]
+            
+            else:
+                # check case, when it is not embed like
+                converter = getattr(type(embed), 'to_data')
+                if converter is None:
+                    raise TypeError(f'Expected embed like or `tuple`, `list` or `deque` of embed likes, got '
+                        f'`{embed.__class__.__name__}`.')
+                
+                embeds = [converter(embed)]
+            
+            message_data['embeds'] = embeds
+        
+        if (allowed_mentions is not ...):
+            message_data['allowed_mentions'] = None #self._parse_allowed_mentions(allowed_mentions)
+        
+        if not message_data:
+            return
+        
+        # We receive the new message data, but we do not update the message, so dispatch events can get the difference.
+        await self.http.webhook_message_edit(webhook, message.id, message_data)
+    
+    async def webhook_message_delete(self, webhook, message):
+        """
+        Deletes the message sent by the webhook.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        webhook : ``Webhook``
+            The webhook who created the message.
+        message : ``Message`` or ``MessageRepr``.
+            The webhook's message to edit.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - `message` was detectably not sent by the `webhook`.
+            - `message` was given as `None`. Make sure to use ``Client.webhook_message_create`` with `wait=True` and by
+                giving any content to it as well.
+            - `message` was not given neither as ``Message`` or ``MessageRepr`` instance.
+            - `content` was not given neither as `None` or `str` instance.
+        
+        See Also
+        --------
+        - ``.message_delete`` : Delete a message.
+        - ``.webhook_message_create`` : Create a message with a webhook.
+        - ``.webhook_message_edit`` : Edit a message created by a webhook.
+        """
+        if __debug__:
+            if isinstance(message, Message):
+                if message.author.id != webhook.id:
+                    raise AssertionError('The message was not send by the webhook.')
+            elif isinstance(message, MessageRepr):
+                # Cannot check author id, skip
+                pass
+            elif message is None:
+                raise AssertionError('Message was given as `None`. Make sure to use `Client.webhook_message_create` '
+                    'with `wait=True` and by giving any content to it as well.')
+            else:
+                raise AssertionError(f'`message` should have be given as `Message`or as  `MessageRepr` instance, got '
+                    f'`{message.__class__.__name__}`.')
+        
+        await self.http.webhook_message_delete(webhook, message.id)
     
     async def emoji_get(self, guild, emoji_id):
         """
@@ -7955,7 +8130,7 @@ class Client(UserBase):
             The emoji's icon.
         roles : `list` of `Role` objects, Optional
             Whether the created emoji should be limited only to users with any of the specified roles.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Will show up at the guild's audit logs.
         
         Returns
@@ -8004,7 +8179,7 @@ class Client(UserBase):
         ----------
         emoji : ``Emoji``
             The emoji to delete.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Will show up at the respective guild's audit logs.
         
         Raises
@@ -8020,7 +8195,7 @@ class Client(UserBase):
         
         await self.http.emoji_delete(guild.id, emoji.id, reason=reason)
     
-    async def emoji_edit(self, emoji, name=None, roles=_spaceholder, reason=None):
+    async def emoji_edit(self, emoji, name=None, roles=..., reason=None):
         """
         Edits the given emoji.
         
@@ -8035,7 +8210,7 @@ class Client(UserBase):
         roles : `None` or `list` of ``Role`` objects, Optional
             The roles to what is the role limited. By passing it as `None`, or as an empty `list` you can remove the
             current ones.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -8065,7 +8240,7 @@ class Client(UserBase):
             data['name'] = name
         
         # roles are not required
-        if (roles is not _spaceholder):
+        if (roles is not ...):
             if (roles is not None):
                 roles = [role.id for role in roles]
             
@@ -8117,7 +8292,7 @@ class Client(UserBase):
             Th guild, what's invite will be edited.
         code : `str`
             The new code of the guild's vanity invite.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the guild's audit logs.
         
         Raises
@@ -8441,7 +8616,7 @@ class Client(UserBase):
         ----------
         invite : ``Invite``
             The invite to delete.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -8463,7 +8638,7 @@ class Client(UserBase):
         ----------
         invite_code : ``str``
             The invite's code to delete.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
         
         Returns
@@ -8506,7 +8681,7 @@ class Client(UserBase):
             The new permission value of the role.
         position : `int`, Optional
             The role's new position.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -8560,7 +8735,7 @@ class Client(UserBase):
         ----------
         role : ``Role``
             The role to delete
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -8597,7 +8772,7 @@ class Client(UserBase):
             Whether the created role should be mentionable.
         permissions : ``Permission`` or `int`, Optional
             The permission value of the created role.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the guild's audit logs.
         
         Raises
@@ -8643,7 +8818,7 @@ class Client(UserBase):
             The role to move
         position : `int`
             The position to move the given role.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -8694,7 +8869,7 @@ class Client(UserBase):
         ----------
         roles : (`dict` like or `iterable`) of `tuple` (``Role``, `int`) items
             A `dict` or any `iterable`, which contains `(Role, position)` items.
-        reason : `str`, Optional
+        reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
         
         Raises

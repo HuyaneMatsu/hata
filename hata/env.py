@@ -157,4 +157,4 @@ if API_VERSION not in (7, 8):
         warnings.warn(f'`API_VERSION` given with a value greater than `8`, got {API_VERSION!r}, defaulting to {8!r}!')
         API_VERSION = 8
     elif API_VERSION == 6:
-        warnings.warn('`API_VERSION` given as 6, please version `7` or `8`.', DeprecationWarning)
+        warnings.warn('`API_VERSION` given as 6, please use version `7` or `8`.', FutureWarning)

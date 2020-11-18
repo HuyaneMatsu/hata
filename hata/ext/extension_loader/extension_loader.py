@@ -8,7 +8,7 @@ from importlib import reload as reload_module
 from threading import current_thread
 
 from ...backend.eventloop import EventThread
-from ...backend.dereaddons_local import alchemy_incendiary, HybridValueDictionary, WeakValueDictionary, DOCS_ENABLED
+from ...backend.utils import alchemy_incendiary, HybridValueDictionary, WeakValueDictionary, DOCS_ENABLED
 from ...backend.futures import iscoroutinefunction as is_coro, Task
 from ...backend.analyzer import CallableAnalyzer
 

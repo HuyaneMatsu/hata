@@ -1,9 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
-#HTTP Headers constants and some parsing
 import re
-from base64 import b64encode
 
-from .dereaddons_local import istr
+from .utils import istr
 
 METH_ANY = '*'
 METH_CONNECT = 'CONNECT'
@@ -110,6 +108,25 @@ del re
 del istr
 
 def build_extensions(available_extensions):
+    """
+    Builds websocket extesnions header from the given extension values.
+    
+    Parameters
+    ----------
+    available_extensions : `list` of `Any`
+        Each webscoket extension should have the following `4` attributes / methods:
+        - `name`, type `str`. The extension's name.
+        - `request_params` : `list` of `tuple` (`str`, `str`). Additional header parameters of the extension.
+        - `decode` : `callable`. Decoder method, what processes a received websocket frame. Should accept `2`
+            parameters: The respective webcsocket ``Frame``, and the ˙max_size` as `int`, what descibes the
+            maximal size of a recevied frame. If it is passed, ``PayloadError`` is raised.
+        - `encode` : `callable`. Encoder method, what processes the websocket frames to send. Should accept `1`
+            parameter, the respective webcsocket ``Frame``.
+    
+    Returns
+    -------
+    header_value : `str`
+    """
     main_parts = []
     sub_parts = []
     
@@ -118,7 +135,7 @@ def build_extensions(available_extensions):
         parameters = available_extension.request_params
         
         sub_parts.append(name)
-        for key,value in parameters:
+        for key, value in parameters:
             if value is None:
                 sub_parts.append(key)
             else:
@@ -129,16 +146,35 @@ def build_extensions(available_extensions):
     
     return ', '.join(main_parts)
 
-def parse_extensions(data):
+def parse_extensions(header_value):
+    """
+    Parses extension header.
+    
+    Parameters
+    ----------
+    header_value : `str`
+        Received extension header.
+
+    Returns
+    -------
+    result : `list` of `tuple` (`str`, `list` of `tuple` (`str`, `str`))
+        The parsed out extensions as `name` - `parameters` pairs. The `parameters` are in `list` storing
+        `key` - `value` pairs.
+    
+    Raises
+    ------
+    ValueError
+        Extension header value is incorrect.
+    """
     result = []
-    limit = len(data)
+    limit = len(header_value)
     index = 0
     
     check_start = True
     
     while True:
         # parse till 1st element
-        matched = _LIST_START_RP.match(data, index)
+        matched = _LIST_START_RP.match(header_value, index)
         index = matched.end()
         
         # are we at the end?
@@ -146,9 +182,9 @@ def parse_extensions(data):
             return result
         
         # now lets parse the extension's name
-        matched = _TOKEN_RP.match(data, index)
+        matched = _TOKEN_RP.match(header_value, index)
         if matched is None:
-            raise ValueError(f'expected extension name since index {index}')
+            raise ValueError(f'Expected extension name since index {index}.')
         name = matched.group(0)
         index = matched.end()
         
@@ -166,7 +202,7 @@ def parse_extensions(data):
                     return result
                 
                 # lets parse till next character
-                matched = _SPACE_RP.match(data, index)
+                matched = _SPACE_RP.match(header_value, index)
                 index = matched.end()
                 
                 # are we at the end?
@@ -174,22 +210,22 @@ def parse_extensions(data):
                     return result
                 
                 # no sublist?
-                if data[index] == ',':
-                    index +=1
+                if header_value[index] == ',':
+                    index += 1
                     break
 
                 # invalid character
-                if data[index] != ';':
-                    raise ValueError(f'exptected \';\' at index {index}')
+                if header_value[index] != ';':
+                    raise ValueError(f'Exptected \';\' at index {index}.')
                 
                 # we have a sublist
-                index +=1
+                index += 1
                 
             else:
                 check_start = True
             
             # parse space
-            matched = _SPACE_RP.match(data, index)
+            matched = _SPACE_RP.match(header_value, index)
             index = matched.end()
             
             # are we at the end?
@@ -197,9 +233,9 @@ def parse_extensions(data):
                 break
             
             # lets parse the key now
-            matched = _TOKEN_RP.match(data, index)
+            matched = _TOKEN_RP.match(header_value, index)
             if matched is None:
-                raise ValueError(f'expected parameter name since index {index}')
+                raise ValueError(f'Expected parameter name since index {index}.')
             key = matched.group(0)
             index = matched.end()
             
@@ -209,7 +245,7 @@ def parse_extensions(data):
                 break
             
             # parse space
-            matched = _SPACE_RP.match(data, index)
+            matched = _SPACE_RP.match(header_value, index)
             index = matched.end()
             
             # are we at the end?
@@ -220,70 +256,88 @@ def parse_extensions(data):
             #is it a full item or a half?
             
             #next extension
-            if data[index] == ',':
+            if header_value[index] == ',':
                 sub_parts.append((key, None,),)
-                index +=1
+                index += 1
                 break
 
             # next item
-            if data[index] == ';':
+            if header_value[index] == ';':
                 sub_parts.append((key, None,),)
-                index +=1
+                index += 1
                 check_start = False
                 continue
 
             #invalid character
-            if data[index] != '=':
-                raise ValueError(f'expetced \',\' or \';\' or \'=\' at index {index}')
+            if header_value[index] != '=':
+                raise ValueError(f'Expetced \',\' or \';\' or \'=\' at index {index}.')
             
-            index +=1
+            index += 1
             
             # parse space
-            matched = _SPACE_RP.match(data, index)
+            matched = _SPACE_RP.match(header_value, index)
             index = matched.end()
             
             # are we at the end?
             if index == limit:
-                raise ValueError('expected a parameter value, but string ended')
+                raise ValueError('Expected a parameter value, but string ended.')
             
             # is it '"stuff"' ?
-            if data[index] == '"':
-                index +=1
+            if header_value[index] == '"':
+                index += 1
                 
                 # are we at the end?
                 if index == limit:
-                    raise ValueError('expected a parameter value, but string ended')
+                    raise ValueError('Expected a parameter value, but string ended.')
                 
-                matched = _TOKEN_RP.match(data, index)
+                matched = _TOKEN_RP.match(header_value, index)
                 if matched is None:
-                    raise ValueError(f'expected parameter value since index {index}')
+                    raise ValueError(f'Expected parameter value since index {index}.')
                 value = matched.group(0)
                 index = matched.end()
                 
                 # are we at the end? or did we finish the string normally?
-                if index == limit or data[index] != '"':
-                    raise ValueError('expected a \'"\' after starting a value with \'"\'')
-                index +=1
+                if index == limit or header_value[index] != '"':
+                    raise ValueError('Expected a \'"\' after starting a value with \'"\'.')
+                index += 1
             
             # is it 'stuff' ?
             else:
-                matched = _TOKEN_RP.match(data, index)
+                matched = _TOKEN_RP.match(header_value, index)
                 if matched is None:
-                    raise ValueError(f'expected parameter value since index {index}')
+                    raise ValueError(f'Expected parameter value since index {index}.')
                 value = matched.group(0)
                 index = matched.end()
             
             # we got a full item
             sub_parts.append((key, value,),)
 
-def parse_connections(data):
+def parse_connections(header_value):
+    """
+    Parses subprotocol or connection headers.
+    
+    Parameters
+    ----------
+    header_value : `str`
+        Received subprotocol or connection header.
+    
+    Returns
+    -------
+    result : `list` of `str`
+        The parsed subprotocol or connection headers.
+    
+    Raises
+    ------
+    ValueError
+        Subprotocol or connection header value is incorrect.
+    """
     result = []
-    limit = len(data)
+    limit = len(header_value)
     index = 0
     
     while True:
         #parse till 1st element
-        matched = _LIST_START_RP.match(data, index)
+        matched = _LIST_START_RP.match(header_value, index)
         index = matched.end()
         
         #are we at the end?
@@ -291,9 +345,9 @@ def parse_connections(data):
             return result
         
         #now lets parse the upgrade's name
-        matched = _TOKEN_RP.match(data, index)
+        matched = _TOKEN_RP.match(header_value, index)
         if matched is None:
-            raise ValueError(f'expected upgrade type since index {index}')
+            raise ValueError(f'Expected upgrade type since index {index}.')
         name = matched.group(0)
         index = matched.end()
 
@@ -305,7 +359,7 @@ def parse_connections(data):
             return result
 
         #lets parse till next character
-        matched = _SPACE_RP.match(data, index)
+        matched = _SPACE_RP.match(header_value, index)
         index = matched.end()
 
         #are we at the end?
@@ -313,30 +367,55 @@ def parse_connections(data):
             return result
     
         #no sublist?
-        if data[index] == ',':
-            index +=1
+        if header_value[index] == ',':
+            index += 1
             continue
         
-        raise ValueError(f'exptected \',\' at index {index}')
-
-def build_basic_auth(name,password):
-    user_pass = f'{name}:{password}'
-    credentials = b64encode(user_pass.encode()).decode()
-    return f'Basic {credentials}'
+        raise ValueError(f'Exptected \',\' at index {index}.')
 
 def build_subprotocols(subprotocols):
+    """
+    Builds websocket subprotocol headers from the given subprotocol values.
+    
+    Parameters
+    ----------
+    subprotocols : `list` of `str`
+        A list of supported subprotocols.
+    
+    Returns
+    -------
+    header_value : `str`
+    """
     return ', '.join(subprotocols)
 
 parse_subprotocols = parse_connections # yes, these are the same
 
-def parse_upgrades(data):
+def parse_upgrades(header_value):
+    """
+    Parses upgrade headers.
+    
+    Parameters
+    ----------
+    header_value : `str`
+        Received upgrade header.
+    
+    Returns
+    -------
+    result : `list` of `str`
+        The parsed upgrade headers.
+    
+    Raises
+    ------
+    ValueError
+        Upgrade header value is incorrect.
+    """
     result = []
-    limit = len(data)
+    limit = len(header_value)
     index = 0
     
     while True:
         # parse till 1st element
-        matched = _LIST_START_RP.match(data, index)
+        matched = _LIST_START_RP.match(header_value, index)
         index = matched.end()
         
         # are we at the end?
@@ -344,9 +423,9 @@ def parse_upgrades(data):
             return result
         
         # now lets parse the upgrade's name
-        matched = _PROTOCOL_RP.match(data, index)
+        matched = _PROTOCOL_RP.match(header_value, index)
         if matched is None:
-            raise ValueError(f'expected upgrade type since index {index}')
+            raise ValueError(f'Expected upgrade type since index {index}.')
         name = matched.group(0)
         index = matched.end()
         
@@ -358,7 +437,7 @@ def parse_upgrades(data):
             return result
         
         # lets parse till next character
-        matched = _SPACE_RP.match(data, index)
+        matched = _SPACE_RP.match(header_value, index)
         index = matched.end()
         
         # are we at the end?
@@ -366,8 +445,8 @@ def parse_upgrades(data):
             return result
         
         # no sublist?
-        if data[index] == ',':
-            index +=1
+        if header_value[index] == ',':
+            index += 1
             continue
         
-        raise ValueError(f'exptected \',\' at index {index}')
+        raise ValueError(f'Exptected \',\' at index {index}.')

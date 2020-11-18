@@ -7,11 +7,11 @@ try:
 except ImportError:
     relativedelta=None
 
-from ...backend.dereaddons_local import multidict
+from ...backend.utils import multidict
 
-from ...discord.others import cchunkify, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
+from ...discord.utils import cchunkify, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 if (relativedelta is not None):
-    from ...discord.others import elapsed_time
+    from ...discord.utils import elapsed_time
 from ...discord.permission import Permission
 from ...discord.user import ZEROUSER
 from ...discord.message import MessageType

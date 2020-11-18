@@ -3,11 +3,11 @@ __all__ = ('Invite', )
 
 from datetime import datetime
 
-from ..backend.dereaddons_local import DOCS_ENABLED
+from ..backend.utils import DOCS_ENABLED
 
 from .bases import DiscordEntity, instance_or_id_to_instance
 from .preconverters import preconvert_str, preconvert_int, preconvert_bool, preconvert_preinstanced_type
-from .others import parse_time, DISCORD_EPOCH_START
+from .utils import parse_time, DISCORD_EPOCH_START
 from .http import URLS
 from .client_core import GUILDS, CHANNELS, INVITES
 from .user import User, ZEROUSER

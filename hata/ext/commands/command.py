@@ -3,11 +3,11 @@ __all__ = ('Category', 'Command', 'CommandProcesser', 'checks', 'normalize_descr
 
 import re, reprlib
 
-from ...backend.dereaddons_local import sortedlist, modulize, NEEDS_DUMMY_INIT, function, DOCS_ENABLED
+from ...backend.utils import sortedlist, modulize, NEEDS_DUMMY_INIT, function, DOCS_ENABLED
 from ...backend.futures import Task
 from ...backend.analyzer import CallableAnalyzer
 
-from ...discord.others import USER_MENTION_RP
+from ...discord.utils import USER_MENTION_RP
 from ...discord.parsers import EventWaitforBase, compare_converted, check_name, check_argcount_and_convert
 from ...discord.client_core import KOKORO
 

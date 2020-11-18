@@ -1,6 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 # https://github.com/squeaky-pl/zenchmarks/blob/master/vendor/aiohttp/cookiejar.py
-import pathlib, re
+import re
 from datetime import datetime, timezone
 from collections import defaultdict
 from http.cookies import Morsel, SimpleCookie

@@ -5,7 +5,7 @@ from io import IOBase
 from urllib.parse import urlencode
 from json import dumps as dump_to_json
 
-from .dereaddons_local import multidict
+from .utils import multidict
 
 from .hdrs import CONTENT_TYPE, CONTENT_TRANSFER_ENCODING, CONTENT_LENGTH
 from .multipart import MultipartWriter, create_payload, BytesPayload

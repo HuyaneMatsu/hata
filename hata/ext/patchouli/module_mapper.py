@@ -7,7 +7,7 @@ import sys, re
 from types import FunctionType, BuiltinFunctionType, BuiltinMethodType, MethodType, GetSetDescriptorType, \
     MemberDescriptorType
 
-from ...backend.dereaddons_local import cached_property, MethodLike, module_property, basemethod, weakmethod
+from ...backend.utils import cached_property, MethodLike, module_property, basemethod, weakmethod
 from ...discord.bases import IconSlot
 from .qualpath import QualPath
 from .parser import DocString

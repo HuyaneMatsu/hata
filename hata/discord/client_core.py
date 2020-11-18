@@ -6,7 +6,7 @@ import sys, gc
 from time import perf_counter
 from threading import current_thread
 
-from ..backend.dereaddons_local import WeakValueDictionary
+from ..backend.utils import WeakValueDictionary
 from ..backend.futures import Future, sleep, CancelledError, future_or_timeout, Task
 from ..backend.eventloop import EventThread
 

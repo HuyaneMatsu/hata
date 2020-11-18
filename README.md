@@ -82,7 +82,7 @@ $ python3 -m pip install hata
 $ python -m pip install hata
 ```
 
-Hata has native pypy support as well if you need some mroe speed!
+Hata has native pypy support as well if you need some more speed!
 
 #### Requirements
 

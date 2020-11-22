@@ -1527,7 +1527,7 @@ def modulize(klass):
         if name.startswith('__') and name.endswith('__') and name != '__doc__':
             continue
         
-        value = type.__getattribute__(klass,name)
+        value = type.__getattribute__(klass, name)
         value_type = type(value)
         if value_type in DO_NOT_MODULIZE_TYPES:
             continue

@@ -1265,7 +1265,7 @@ class AttributeDescriptionConverter(DescriptionConverter):
         
         words = [f'{attribute_description.name}{spacing}{separator}']
         
-        words.extend(builder_context.word_converter(content = attribute_description.content))
+        words.extend(builder_context.word_converter(attribute_description.content))
         lines  = sizify(words, optimal_fit)
         
         indention = builder_context.indent*indent_level

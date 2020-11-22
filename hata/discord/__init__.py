@@ -6,6 +6,7 @@ from .bases import *
 from .channel import *
 from .client import *
 from .client_core import *
+from .client_utils import *
 from .color import *
 from .embed import *
 from .emoji import *
@@ -36,6 +37,7 @@ __all__ = (
     *channel.__all__            ,
     *client.__all__             ,
     *client_core.__all__        ,
+    *client_utils.__all__       ,
     *color.__all__              ,
     *embed.__all__              ,
     *emoji.__all__              ,
@@ -47,7 +49,7 @@ __all__ = (
     *message.__all__            ,
     *oauth2.__all__             ,
     *opus.__all__               ,
-    *utils.__all__             ,
+    *utils.__all__              ,
     *parsers.__all__            ,
     *permission.__all__         ,
     *player.__all__             ,

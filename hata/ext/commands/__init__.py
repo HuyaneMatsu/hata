@@ -2,9 +2,11 @@
 from .command import *
 from .content_parser import *
 from .utils import *
+from .client_wrapper_extension import *
 
 __all__ = (
     'setup_ext_commands',
+    *client_wrapper_extension.__all__,
     *command.__all__,
     *content_parser.__all__,
     *utils.__all__,

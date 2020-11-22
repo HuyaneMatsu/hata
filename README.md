@@ -109,5 +109,5 @@ Shout-Outs for our brave testers, who are helping the most improving the library
 - [`Elizabeth Afton#3506`](https://github.com/Technisha) \[Feature requests & Bug hunting\]
 - [`๖ۣۜひめ・エスト✧ 「Hime・Esuto」#5167`](https://github.com/HimeEsuto) \[Bug hunting\]
 - [`BrainDead#6105`](https://github.com/albertopoljak) \[Documentation improvements\]
-- [`Zeref Draganeel#9897`](https://github.com/Killua-Zoldyck-007) \[Typos & Bug hunting\]
+- [`Zeref Draganeel#9897`](https://github.com/Killua-Zoldyck-007) \[Features & Typos & Bug hunting\]
 - [`vinam#6057`](https://github.com/saiTama-max) \[Bug hunting\[asyncio extension\]\]

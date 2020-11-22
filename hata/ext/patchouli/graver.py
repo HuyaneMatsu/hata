@@ -477,7 +477,7 @@ class GravedAttributeDescription(object):
     __slots__ = ('name', 'separator', 'content')
     def __new__(cls, name, separator, content):
         """
-        Creates a ``GravedAttributeDescription`` instacne with the given parameters.
+        Creates a ``GravedAttributeDescription`` instance with the given parameters.
         
         Attributes
         ----------

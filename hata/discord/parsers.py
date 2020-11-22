@@ -4565,6 +4565,145 @@ def compare_converted(converted, non_converted):
     #meow?
     raise TypeError(f'Expected function, method or a callable object, got {non_converted!r}')
 
+
+READY_STATE_TIMEOUT = 2.0
+
+class ReadyState(object):
+    """
+    Client on login fills up their `.ready_state` with ``Guild`` objects, which will have their members requested.
+    
+    Attributes
+    ----------
+    guild_left_counter : `int`
+        The amount of guild, what's data is expected to be receiveed.
+    ready_left_counter : `int`
+        The amount of ready events, for which the ready state should wait.
+    guilds : `list of ``Guild``
+        A list of guilds, which members will be requested
+    last_guild : `float`
+        The time when the last guild's data was received.
+    last_ready : `float`
+        The time when the last shard got a ready event.
+    wakeupper : ``Future``
+        A Future what wakes up the `__await__` generator of the ready state.
+    """
+    __slots__ = ('guild_left_counter', 'ready_left_counter', 'guilds', 'last_guild', 'last_ready', 'wakeupper', )
+    def __init__(self, client, guild_datas):
+        """
+        Creates a ready state.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The parent client.
+        guild_datas : `list` of `Any`
+            Received guilds' datas.
+        """
+        self.wakeupper = Future(KOKORO)
+        self.guilds = []
+        self.guild_left_counter = len(guild_datas)
+        
+        ready_left_counter = client.shard_count
+        if ready_left_counter < 2:
+            ready_left_counter = 0
+        else:
+            ready_left_counter -= 1
+        self.ready_left_counter = ready_left_counter
+        
+        now = LOOP_TIME()
+        self.last_guild = now
+        self.last_ready = now
+    
+    def shard_ready(self, guild_datas):
+        """
+        Sets the ready state's `.last_ready` to the current time and increases it's `.guild_left_counter` by the
+        length of the given data.
+        
+        Parameters
+        ----------
+        guild_datas : `list` of `Any`
+            Received guild datas.
+        """
+        self.last_ready = LOOP_TIME()
+        self.ready_left_counter -= 1
+        self.guild_left_counter += len(guild_datas)
+    
+    if CACHE_PRESENCE:
+        def feed(self, guild):
+            if guild.is_large:
+                self.guilds.append(guild)
+            
+            self.last_guild = LOOP_TIME()
+            guild_left_counter = self.guild_left_counter = self.guild_left_counter-1
+            if (not guild_left_counter) and (not self.ready_left_counter):
+                self.wakeupper.set_result_if_pending(True)
+    
+    elif CACHE_USER:
+        def feed(self, guild):
+            self.guilds.append(guild)
+            
+            self.last_guild = LOOP_TIME()
+            guild_left_counter = self.guild_left_counter = self.guild_left_counter-1
+            if (not guild_left_counter) and (not self.ready_left_counter):
+                self.wakeupper.set_result_if_pending(True)
+    
+    else:
+        def feed(self, guild):
+            self.last_guild = LOOP_TIME()
+            guild_left_counter = self.guild_left_counter = self.guild_left_counter-1
+            if (not guild_left_counter) and (not self.ready_left_counter):
+                self.wakeupper.set_result_if_pending(True)
+    
+    if DOCS_ENABLED:
+        feed.__doc__ = (
+        """
+        Feeds the given `guild` to the ready state. Sets the last received guild's time to the current time and ends
+        the ready state if there are no more guilds to receive.
+        
+        Parameters
+        ----------
+        guild : ``Guild``
+        """)
+    
+    def __iter__(self):
+        """
+        Waits till the ready state receives all of it's shards and guilds, or till timeout occures.
+        
+        This method is a generator. Should be used with `await` expression.
+        """
+        wakeupper = self.wakeupper
+        
+        last_guild = self.last_guild
+        last_shard = self.last_ready
+        if last_guild > last_shard:
+            last_wakeup = last_guild
+        else:
+            last_wakeup = last_shard
+        
+        while True:
+            KOKORO.call_at(last_wakeup+READY_STATE_TIMEOUT, wakeupper.__class__.set_result_if_pending, wakeupper, False)
+            last = yield from wakeupper
+            if last:
+                break
+            
+            wakeupper.clear()
+            
+            last_guild = self.last_guild
+            last_shard = self.last_ready
+            if last_guild > last_shard:
+                next_wakeup = last_guild
+            else:
+                next_wakeup = last_shard
+            
+            if next_wakeup == last_wakeup:
+                break
+            
+            last_wakeup = next_wakeup
+            continue
+    
+    __await__ = __iter__
+
+
 def _convert_unsafe_event_iterable(iterable, type_=None):
     """
     Converts an iterable to a list of ``EventListElement``-s. This function is called to generate a ``eventlist``
@@ -4689,6 +4828,7 @@ class _EventHandlerManager(object):
         Parameters
         ----------
         parent : `Any`
+            The respective event handler.
         """
         self.parent = parent
         self._supports_from_class = hasattr(type(parent), '__setevent_from_class__')
@@ -4697,7 +4837,7 @@ class _EventHandlerManager(object):
         """Returns the representation of the event handler manager."""
         return f'<{self.__class__.__name__} of {self.parent!r}>'
     
-    def __call__(self, func=None, name = None, **kwargs):
+    def __call__(self, func=None, name=None, **kwargs):
         """
         Adds the given `func` to the event handler manager's parent. If `func` is not passed, then returns a
         ``._wrapper` to allow using the manager as a decorator with still passing keyword arguments.
@@ -4709,15 +4849,13 @@ class _EventHandlerManager(object):
         name : `str` or `None`
             A name to be used instead of the passed `func`'s.
         **kwargs : Keyword arguments
-            Additionally passed keyword arguments to be passed with the given `func`to the event handler.
+            Additionally passed keyword arguments to be passed with the given `func` to the event handler.
         
         Returns
         -------
         func : `callable`
             - The created instance by the respective event handler.
             - If `func` was not passed, then returns a ``._wrapper`` instance.
-        
-        Adds the given `func` to the ``eventlist`` with the other given keyword arguments.
         
         Parameters
         ----------
@@ -4761,13 +4899,13 @@ class _EventHandlerManager(object):
         
         return self.parent.__setevent_from_class__(klass)
         
-    def remove(self,func, name = None, **kwargs):
+    def remove(self, func, name, **kwargs):
         """
         Removes the given `func` - `name` relation from the event handler manager's parent.
         
         Parameters
         ----------
-        func : `callable`, Optional
+        func : `callable`
             The event to be removed to the respective event handler.
         name : `str` or `None`
             A name to be used instead of the passed `func`'s.
@@ -4941,7 +5079,390 @@ class _EventHandlerManager(object):
         
         if collected:
             raise ValueError('\n'.join(collected)) from None
+
+
+class _EventHandlerManagerRouter(_EventHandlerManager):
+    """
+    Wraps multiple `Client``'s ``_EventHandlerManager`` fuctionality together.
+    
+    Attributes
+    ----------
+    _getter : `callable`
+        A callable what should return the ``_EventHandlerManager``-s of the `_EventHandlerManagerRouter`, on who the
+        extension is applied.
         
+        Should always get the following attributes:
+        
+        +-------------------------------+-----------------------------------+
+        | Name                          | Value                             |
+        +===============================+===================================+
+        | event_handler_manager_router  | ``_EventHandlerManagerRouter``    |
+        +-------------------------------+-----------------------------------+
+        
+        Should return the following value(s):
+        
+        +-------------------------------+-----------------------------------+
+        | Name                          | Value                             |
+        +===============================+===================================+
+        | event_handlers                | `Any`                             |
+        +-------------------------------+-----------------------------------+
+    
+    _from_class_constructor : `callable` or `None`
+        Whether the extenson supports `.from_class` method and how exactly it does. If set as `None`, means it not
+        supports it.
+        
+        Should always get the following attributes:
+        
+        +-------------------------------+-----------------------------------+
+        | Name                          | Value                             |
+        +===============================+===================================+
+        | klass                         | `klass`                           |
+        +-------------------------------+-----------------------------------+
+        
+        Should rerurn the followign value(s):
+        
+        +-------------------------------+-----------------------------------+
+        | Name                          | Value                             |
+        +===============================+===================================+
+        | commands                      | `list` of `Any`                   |
+        +-------------------------------+-----------------------------------+
+    
+    parent : ``ClientWrapper``
+        The parent ``ClientWrapper``.
+    """
+    __slots__ = ('_getter', '_from_class_constructor', 'parent')
+    
+    def __init__(self, parent, getter, from_class_constructor):
+        """
+        Creates an ``_EventHandlerManagerRouter`` routing to all the clients of a ``ClientWrapper``.
+        
+        Parameters
+        ----------
+        parent : ``ClientWrapper``
+            The respective routed client wrapper.
+        getter : `callable`
+            A callable what should return the ``_EventHandlerManager``-s of the `_EventHandlerManagerRouter`, on who the
+            extension is applied.
+            
+            Should always get the following attributes:
+            
+            +-------------------------------+-----------------------------------+
+            | Name                          | Value                             |
+            +===============================+===================================+
+            | event_handler_manager_router  | ``_EventHandlerManagerRouter``    |
+            +-------------------------------+-----------------------------------+
+            
+            Should return the following value(s):
+            
+            +-------------------------------+-----------------------------------+
+            | Name                          | Value                             |
+            +===============================+===================================+
+            | event_handlers                | `Any`                             |
+            +-------------------------------+-----------------------------------+
+        
+        from_class_constructor : `None` or `callable`
+            Whether the extenson supports `.from_class` method and how exactly it does. If given as `None`, then it
+            means it not supports it.
+            
+            Should always get the following attributes:
+            
+            +-------------------------------+-----------------------------------+
+            | Name                          | Value                             |
+            +===============================+===================================+
+            | klass                         | `klass`                           |
+            +-------------------------------+-----------------------------------+
+            
+            Should rerurn the followign value(s):
+            
+            +-------------------------------+-----------------------------------+
+            | Name                          | Value                             |
+            +===============================+===================================+
+            | commands                      | `list` of `Any`                   |
+            +-------------------------------+-----------------------------------+
+        """
+        self.parent = parent
+        self._getter = getter
+        self._from_class_constructor = from_class_constructor
+    
+    def __call__(self, func=None, name=None, **kwargs):
+        """
+        Adds the given `func` to all of the represented client's respective event handler managers.
+        
+        Parameters
+        ----------
+        func : `callable`, Optional
+            The event to be added to the respective event handler.
+        name : `str` or `None` or `tuple` of `str`
+            A name to be used instead of the passed `func`'s.
+        **kwargs : Keyword arguments
+            Additionally passed keyword arguments to be passed with the given `func` to the event handler.
+        
+        Returns
+        -------
+        func : ``Routed``
+           The added functions.
+        
+        Parameters
+        ----------
+        func : `callable`, Optional
+            The event to be added to the eventlist.
+        name : `str`, `tuple` of `str` or `None`
+            A name to be used instead of the passed `func`'s when adding it.
+        **kwargs : Keyword arguments
+            Additionally passed keyword arguments to be used when the passed `func` is used up.
+        """
+        if func is None:
+            return self._wrapper(self, name, kwargs)
+        
+        handlers = self._getter(self)
+        if not handlers:
+            return
+        
+        count = len(handlers)
+        
+        routed_names = route_name(func, name, count)
+        routed_kwargs = route_kwargs(kwargs, count)
+        routed_func = maybe_route_func(func, count)
+        
+        routed = []
+        for handler, func_, name, kwargs in zip(handlers, routed_func, routed_names, routed_kwargs):
+            func = handler.__setevent__(func_, name, **kwargs)
+            routed.append(func)
+        
+        return Router(routed)
+    
+    def from_class(self, klass):
+        """
+        Allows the event handler manager router to be able to capture a class and create and add it to the represented
+        event handlers from it's attributes.
+        
+        Parameters
+        ----------
+        klass : `type`
+            The class to capture.
+        
+        Returns
+        -------
+        routed : ``Router``
+            The routed created instances.
+        
+        Raises
+        ------
+        TypeError
+            If the parent of the event handler manager has no support for `.from_class`.
+        BaseException
+            Any excpetion raised by any of the event handler.
+        """
+        from_class_constructor = self._from_class_constructor
+        if from_class_constructor is None:
+            raise TypeError(f'`.from_class` is not supported by `{self.parent!r}`.')
+        
+        handlers = self._getter(self)
+        count = len(handlers)
+        if not count:
+            return
+        
+        routed_maybe = from_class_constructor(klass)
+        if isinstance(routed_maybe, Router):
+            if len(routed_maybe) != count:
+                raise ValueError(f'The given class is routed to `{len(routed_maybe)}`, meanwhile expected to be routed '
+                    f'to `{count}` times, got {klass!r}.')
+            routed = routed_maybe
+        else:
+            copy_method = getattr(type(routed_maybe), 'copy', None)
+            if copy_method is None:
+                routed = [routed_maybe for _ in range(count)]
+            else:
+                routed = [copy_method(routed_maybe) for _ in range(count)]
+            
+        for handler, event in zip(handlers, routed):
+            handler.__setevent__(event, None)
+        
+        return routed
+    
+    def remove(self, func, name=None, **kwargs):
+        """
+        Removes the given `func` - `name` relation from the represneted event handler managers.
+        
+        Parameters
+        ----------
+        func : ``Router``, `callable`
+            The event to be removed to the respective event handlers.
+        name : `str` or `None`
+            A name to be used instead of the passed `func`'s.
+        **kwargs : Keyword arguments
+            Additional keyword arguments.
+        """
+        handlers = self._getter(self)
+        
+        count = len(handlers)
+        if not count:
+            return
+        
+        if isinstance(func, Router):
+            name = None
+        else:
+            name = check_name(func, name)
+        
+        if isinstance(func, Router):
+            if len(func) != count:
+                raise ValueError(f'The given `func` is routed `{len(func)}` times, meanwhile expected to be routed '
+                    f'to `{count}` times, got {func!r}.')
+            
+            for func, handler in zip(func, handlers):
+                handler.__delevent__(func, name, **kwargs)
+        
+        else:
+            for handler in handlers:
+                handler.__delevent__(func, name, **kwargs)
+    
+    def extend(self, iterable):
+        """
+        Extends the event handler manager router's respective managers with the given iterable of events.
+        
+        Parameters
+        ----------
+        iterable : `iterable`
+        
+        Raises
+        ------
+        TypeError
+            - If `iterable` was passed as ``eventlist`` and it's `.type` attribute is not accepted by the parent
+                event handler.
+            - If `iterable` was not passed as type ``eventlist`` and any of it's element's format is incorrect.
+        """
+        handlers = self._getter(self)
+        
+        count = len(handlers)
+        if not count:
+            return
+        
+        if type(iterable) is eventlist:
+            type_ = iterable.type
+            if (type_ is not None):
+                parent = self.parent
+                supported_types = getattr(handlers[0], 'SUPPORTED_TYPES', None)
+                if (supported_types is None) or (type_ not in supported_types):
+                    raise TypeError(f'`{parent!r}` does not supports elements of type `{type_!r}`.')
+                
+                for element in iterable:
+                    if isinstance(element, Router):
+                        if len(element) != count:
+                            raise ValueError(f'The given `func` is routed `{len(element)}` times, meanwhile expected to be routed '
+                                f'to `{count}` times, got {element!r}.')
+                        
+                        for func, handler in zip(element, handlers):
+                            handler.__setevent__(func, None)
+                    
+                    else:
+                        for handler in handlers:
+                            handler.__setevent__(element, None)
+                return
+        else:
+            iterable = _convert_unsafe_event_iterable(iterable)
+        
+        for element in iterable:
+            name = element.name
+            func = element.func
+            kwargs = element.kwargs
+            
+            routed_names = route_name(func, name, count)
+            routed_func = maybe_route_func(func, count)
+            
+            if kwargs is None:
+                for handler, func_, name in zip(handlers, routed_func, routed_names):
+                    handler.__setevent__(func_, name)
+                
+            else:
+                routed_kwargs = route_kwargs(kwargs, count)
+                for handler, func_, name, kwargs in zip(handlers, routed_func, routed_names, routed_kwargs):
+                    handler.__setevent__(func_, name, **kwargs)
+
+    def unextend(self, iterable):
+        """
+        Unextends the event handler router's represneted event handlers with the given `iterable`.
+        
+        Parameters
+        ----------
+        iterable : `iterable`
+        
+        Raises
+        ------
+        ValueError
+            - If `iterable` was passed as ``eventlist`` and it's `.type` attribute not accepted by the parent
+                event handler.
+            - If `iterable` was not passed as type ``eventlist`` and any of it's element's format is incorrect.
+            - If any of the passed element is not stored by the parent event handler. At this case error is raised
+                only at the end.
+        """
+        handlers = self._getter(self)
+        
+        count = len(handlers)
+        if not count:
+            return
+        
+        if type(iterable) is eventlist:
+            type_ = iterable.type
+            if (type_ is not None):
+                parent = self.parent
+                supported_types = getattr(handlers[0], 'SUPPORTED_TYPES', None)
+                if (supported_types is None) or (type_ not in supported_types):
+                    raise TypeError(f'`{parent!r}` does not supports elements of type `{type_!r}`.')
+                
+                collected = []
+                for element in iterable:
+                    if isinstance(element, Router):
+                        if len(element) != count:
+                            collected.append(f'The given `func` is routed `{len(element)}` times, meanwhile expected '
+                                f'to be routed to `{count}` times, got {element!r}.')
+                            continue
+                        
+                        for func, handler in zip(element, handlers):
+                            try:
+                                handler.__delevent__(func, None)
+                            except ValueError as err:
+                                collected.append(err.args[0])
+                    else:
+                        for handler in handlers:
+                            try:
+                                handler.__delevent__(element, None)
+                            except ValueError as err:
+                                collected.append(err.args[0])
+                
+                if collected:
+                    raise ValueError('\n'.join(collected)) from None
+                return
+        else:
+            iterable = _convert_unsafe_event_iterable(iterable)
+        
+        collected = []
+        for element in iterable:
+            func = element.func
+            name = element.name
+            kwargs = element.kwargs
+            
+            routed_names = route_name(func, name, count)
+            routed_func = maybe_route_func(func, count)
+            
+            if kwargs is None:
+                for handler, func_, name in zip(handlers, routed_func, routed_names):
+                    try:
+                        handler.__delevent__(func_, name)
+                    except ValueError as err:
+                        collected.append(err.args[0])
+                
+            else:
+                routed_kwargs = route_kwargs(kwargs, count)
+                for handler, func_, name, kwargs in zip(handlers, routed_func, routed_names, routed_kwargs):
+                    try:
+                        handler.__delevent__(func_, name, **kwargs)
+                    except ValueError as err:
+                        collected.append(err.args[0])
+        
+        if collected:
+            raise ValueError('\n'.join(collected)) from None
+
+
 class EventListElement(object):
     """
     Represents an element of an ``eventlist``.
@@ -4990,7 +5511,233 @@ class EventListElement(object):
         yield self.func
         yield self.name
         yield self.kwargs
+
+
+class Router(tuple):
+    """
+    Object used to desribe multiple captured created command-like objects.
+    """
     
+    def __repr__(self):
+        """Returns the router's representation."""
+        result = [self.__class__.__name__, '(']
+        
+        limit = len(self)
+        if limit:
+            index = 0
+            while True:
+                element = self[index]
+                result.append(repr(element))
+                
+                index += 1
+                if index == limit:
+                    break
+                
+                result.append(', ')
+        
+        result.append(')')
+        
+        return ''.join(result)
+
+def route_value(to_route_value, count, default=None):
+    """
+    Routes only a single `name` - `value` pair.
+    
+    Parameters
+    ----------
+    to_route_value : `Any`
+        The respective value to route
+    count : `int`
+        The expected amount of copies to generate.
+    default : `Any`, Optional
+        Optional default variable to use. Defaults to `None`.
+    
+    Returns
+    -------
+    result : `list` of `Any`
+        A list of the routed values
+    """
+    result = []
+    if isinstance(to_route_value, tuple):
+        if len(to_route_value) != count:
+            raise ValueError(f'The represented router has `{count}` applicable clients, meanwhile recevied only '
+                f'`{len(to_route_value)}` routed values, got: {to_route_value!r}.')
+        
+        last = ...
+        for value in to_route_value:
+            if value is None:
+                value = default
+                last = default
+            elif value is ...:
+                if last is ...:
+                    last = default
+                value = last
+            else:
+                last = value
+            
+            result.append(value)
+            continue
+    else:
+        if (to_route_value is None) or (to_route_value is ...):
+            to_route_value = default
+        
+        for _ in range(count):
+            result.append(to_route_value)
+    
+    return result
+
+
+def route_kwargs(kwargs, count):
+    """
+    Routes the given `kwargs` to the given `count` amount of copies.
+    
+    If a value of a keyword is given as a `tuple` instance, then it will be routed by element for each applicable
+    client.
+    
+    Parameters
+    ----------
+    kwargs : `dict` of (`str`, `Any`) items
+        Keyword arguments to route.
+    count : `int`
+        The expected amount of copies to generate.
+
+    Returns
+    -------
+    result : `list` of `dict` of (`str`, `Any) items
+    
+    Raises
+    ------
+    ValueError
+        - A value of the given `kwargs` is given as `tuple` instance, but it's lenght is different from `count`.
+        - If a value of `kwargs` is given as `tuple`, meanwhile it's 0th element is `Elipsis`.
+    """
+    result = [{} for _ in range(count)]
+    
+    for name, to_route_value in kwargs.items():
+        if isinstance(to_route_value, tuple):
+            if len(to_route_value) != count:
+                raise ValueError(f'The represented router has `{count}` applicable clients, meanwhile recevied only '
+                    f'`{len(to_route_value)}` routed values, got: {to_route_value!r}.')
+            
+            last = ...
+            for routed_kwargs, value in zip(result, to_route_value):
+                if value is None:
+                    last = None
+                elif value is ...:
+                    if last is ...:
+                        last = None
+                    value = last
+                else:
+                    last = value
+                
+                routed_kwargs[name] = value
+                continue
+        else:
+            for routed_kwargs in result:
+                routed_kwargs[name] = to_route_value
+    
+    return result
+
+def route_name(func, name, count):
+    """
+    Routes the given `name` to the given `count` amount of copies.
+    
+    If `name` is given as `tuple`, then each element of it will be reuted for each applicable client.
+    
+    Parameters
+    ----------
+    func : `callable`
+        The respective callable to get name from if no name was passed.
+    name : `None`, `Elipsis`, `str`, `tuple` of (`None`, `Elipsis`, `str`)
+        The name to use instead of `func`'s real one.
+    count : `int`
+        The expected amount of names.
+    
+    Returns
+    -------
+    result : `list` of `str`
+    
+    Raises
+    ------
+    TypeError
+        `name` was not given as `None`, `Elipsis`, `str`, neither as `tuple` of (`None`, `Elipsis`, `str`).
+    ValueError
+        `name` was given as `tuple` but it's length is different from the expected one.
+    """
+    result = []
+    
+    if isinstance(name, tuple):
+        for index, name_value in enumerate(name):
+            if (name_value is not None) and (name_value is not ...) and (not isinstance(name_value, str)):
+                raise TypeError(f'`name` was given as a `tuple`, but it\'s {index}th element is not `None`, `Elipsis`, '
+                    f'neither `str` instance, got, {name_value.__class__.__name__}: {name_value}.')
+        
+        if len(name) != count:
+            raise ValueError(f'`name` was given as `tuple`, but it\'s length ({len(name)!r}) not matches the expected '
+                f'(`{count}`) one, got {name!r}.')
+        
+        last = ...
+        for name_value in name:
+            if name is None:
+                name_value = check_name(func, None)
+                last = None
+            elif name_value is ...:
+                if last is ...:
+                    name_value = check_name(func, None)
+                    last = name_value
+                elif last is None:
+                    name_value = check_name(func, None)
+                else:
+                    name_value = last
+            else:
+                last = name_value
+            
+            result.append(name_value)
+    else:
+        if name is None:
+            name_value = check_name(func, None)
+        elif isinstance(name, str):
+            name_value = str(name)
+        else:
+            raise TypeError('`name` can be given as `None` or as `tuple` of (`None, `Elipsis`, `str`), got: '
+                f'{name.__class__.__name__}: {name!r}.')
+        
+        for _ in range(count):
+            result.append(name_value)
+    
+    return result
+
+
+def maybe_route_func(func, count):
+    """
+    Routes the given `func` `count` times if paplicable.
+    
+    Parameters
+    ----------
+    Parameters
+    ----------
+    func : `callable`
+        The respective callable to ass
+    count : `int`
+        The expected amount of functions to return.
+    
+    Returns
+    -------
+    result : `list` of `func`
+    """
+    copy_function = getattr(type(func), 'copy', None)
+    result = []
+    if copy_function is None:
+        for _ in range(count):
+            result.append(func)
+    else:
+        for _ in range(count):
+            copied = copy_function(func)
+            result.append(copied)
+    
+    return result
+
+
 class eventlist(list):
     """
     Represents a container to store events before adding them to a client. Some extension classes might support this
@@ -5029,7 +5776,7 @@ class eventlist(list):
     
     __slots__ = ('_supports_from_class', 'kwargs', 'type')
     
-    def __new__(cls, iterable = None, type_=None, **kwargs):
+    def __new__(cls, iterable=None, type_=None, **kwargs):
         """
         Creates a new eventlist from the the given parameters.
         
@@ -5059,7 +5806,7 @@ class eventlist(list):
             if not hasattr(type_, 'from_kwargs'):
                 raise TypeError('The passed `type_` has no method called `from_kwargs`.')
             
-            supports_from_class = hasattr(type_,'from_class')
+            supports_from_class = hasattr(type_, 'from_class')
         
         if not kwargs:
             kwargs = None
@@ -5168,7 +5915,7 @@ class eventlist(list):
             if type_ is None:
                 message = 'On `eventlist` without type `.from_class` method cannot be used.'
             else:
-                message = f'The `eventlist`\'s type: `{type!r}` is not supporting `.from_class`.'
+                message = f'The `eventlist`\'s type: `{type_!r}` is not supporting `.from_class`.'
             raise TypeError(message)
         
         # kwargs are gonna be emptied, so copy them if needed
@@ -5446,7 +6193,7 @@ class EventHandlerBase(object):
         *args : Additional positional arguments
         """
         pass
-
+    
     # subclasses should overwrite it
     def __setevent__(self, func, name):
         """
@@ -5976,144 +6723,6 @@ def EventWaitforMeta__new__(cls, class_name, class_parents, class_attributes):
 
 EventWaitforMeta.__new__ = EventWaitforMeta__new__
 del EventWaitforMeta__new__
-
-READY_STATE_TIMEOUT = 2.0
-
-class ReadyState(object):
-    """
-    Client on login fills up their `.ready_state` with ``Guild`` objects, which will have their members requested.
-    
-    Attributes
-    ----------
-    guild_left_counter : `int`
-        The amount of guild, what's data is expected to be receiveed.
-    ready_left_counter : `int`
-        The amount of ready events, for which the ready state should wait.
-    guilds : `list of ``Guild``
-        A list of guilds, which members will be requested
-    last_guild : `float`
-        The time when the last guild's data was received.
-    last_ready : `float`
-        The time when the last shard got a ready event.
-    wakeupper : ``Future``
-        A Future what wakes up the `__await__` generator of the ready state.
-    """
-    __slots__ = ('guild_left_counter', 'ready_left_counter', 'guilds', 'last_guild', 'last_ready', 'wakeupper', )
-    def __init__(self, client, guild_datas):
-        """
-        Creates a ready state.
-        
-        Parameters
-        ----------
-        client : ``Client``
-            The parent client.
-        guild_datas : `list` of `Any`
-            Received guilds' datas.
-        """
-        self.wakeupper = Future(KOKORO)
-        self.guilds = []
-        self.guild_left_counter = len(guild_datas)
-        
-        ready_left_counter = client.shard_count
-        if ready_left_counter < 2:
-            ready_left_counter = 0
-        else:
-            ready_left_counter -=1
-        self.ready_left_counter = ready_left_counter
-        
-        now = LOOP_TIME()
-        self.last_guild = now
-        self.last_ready = now
-    
-    def shard_ready(self, guild_datas):
-        """
-        Sets the ready state's `.last_ready` to the current time and increases it's `.guild_left_counter` by the
-        length of the given data.
-        
-        Parameters
-        ----------
-        guild_datas : `list` of `Any`
-            Received guild datas.
-        """
-        self.last_ready = LOOP_TIME()
-        self.ready_left_counter -=1
-        self.guild_left_counter += len(guild_datas)
-    
-    if CACHE_PRESENCE:
-        def feed(self, guild):
-            if guild.is_large:
-                self.guilds.append(guild)
-            
-            self.last_guild = LOOP_TIME()
-            guild_left_counter = self.guild_left_counter = self.guild_left_counter-1
-            if (not guild_left_counter) and (not self.ready_left_counter):
-                self.wakeupper.set_result_if_pending(True)
-    
-    elif CACHE_USER:
-        def feed(self, guild):
-            self.guilds.append(guild)
-            
-            self.last_guild = LOOP_TIME()
-            guild_left_counter = self.guild_left_counter = self.guild_left_counter-1
-            if (not guild_left_counter) and (not self.ready_left_counter):
-                self.wakeupper.set_result_if_pending(True)
-    
-    else:
-        def feed(self, guild):
-            self.last_guild = LOOP_TIME()
-            guild_left_counter = self.guild_left_counter = self.guild_left_counter-1
-            if (not guild_left_counter) and (not self.ready_left_counter):
-                self.wakeupper.set_result_if_pending(True)
-    
-    if DOCS_ENABLED:
-        feed.__doc__ = (
-        """
-        Feeds the given `guild` to the ready state. Sets the last received guild's time to the current time and ends
-        the ready state if there are no more guilds to receive.
-        
-        Parameters
-        ----------
-        guild : ``Guild``
-        """)
-    
-    def __iter__(self):
-        """
-        Waits till the ready state receives all of it's shards and guilds, or till timeout occures.
-        
-        This method is a generator. Should be used with `await` expression.
-        """
-        wakeupper = self.wakeupper
-        
-        last_guild = self.last_guild
-        last_shard = self.last_ready
-        if last_guild > last_shard:
-            last_wakeup = last_guild
-        else:
-            last_wakeup = last_shard
-        
-        while True:
-            KOKORO.call_at(last_wakeup+READY_STATE_TIMEOUT, wakeupper.__class__.set_result_if_pending, wakeupper, False)
-            last = yield from wakeupper
-            if last:
-                break
-            
-            wakeupper.clear()
-            
-            last_guild = self.last_guild
-            last_shard = self.last_ready
-            if last_guild > last_shard:
-                next_wakeup = last_guild
-            else:
-                next_wakeup = last_shard
-            
-            if next_wakeup == last_wakeup:
-                break
-            
-            last_wakeup = next_wakeup
-            continue
-    
-    __await__ = __iter__
-
 
 class ChunkWaiter(EventHandlerBase):
     __slots__ = ('waiters',)
@@ -6822,7 +7431,7 @@ class EventDescriptor(object):
         Returns
         -------
         func : `callable`
-            The added callable or ``._wrapper` if `func` was not given.
+            The added callable or ``._wrapper` instance if `func` was not given.
         
         Raises
         ------
@@ -6872,7 +7481,7 @@ class EventDescriptor(object):
     
     class _wrapper(object):
         """
-        When the parent ``EventDescriptor`` is called without passing `func`, then a instance of this class is
+        When the parent ``EventDescriptor`` is called without passing `func`, then an instance of this class is
         returned to enable using ``EventDescriptor`` as a decorator with passing additional keyword arguments at the
         same time.
         
@@ -7112,6 +7721,7 @@ class EventDescriptor(object):
             parser_default.remove_mention(self.client_reference())
         return
 
+
 async def _with_error(client, task):
     """
     Runs the given awaitable and if it raises, calls `client.events.error` with the exception.
@@ -7129,6 +7739,7 @@ async def _with_error(client, task):
         await task
     except BaseException as err:
         await client.events.error(client, repr(task), err)
+
 
 del RemovedDescriptor
 del FlagBase

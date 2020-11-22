@@ -713,7 +713,7 @@ class EULA(DiscordEntity, immortal=True):
     """
     def __new__(cls, data):
         """
-        Creates a new eula instacne from the givne parameters.
+        Creates a new eula instance from the givne parameters.
         
         If the eula already exists, returns that instead.
         

@@ -11,7 +11,7 @@ from .websocket import *
 
 __all__ = (
     *analyzer.__all__           ,
-    *utils.__all__   ,
+    *utils.__all__              ,
     *eventloop.__all__          ,
     *executor.__all__           ,
     *formdata.__all__           ,

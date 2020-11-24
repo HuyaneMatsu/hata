@@ -14,7 +14,7 @@ if (relativedelta is not None):
     from ...discord.utils import elapsed_time
 from ...discord.permission import Permission
 from ...discord.user import ZEROUSER
-from ...discord.message import MessageType
+from ...discord.message import MessageType, Message
 from ...discord.role import Role
 from ...discord.integration import IntegrationAccount
 
@@ -211,25 +211,25 @@ def str_message(message, index=None, **kwargs):
             index = 1
             if message.everyone_mention:
                 result.append(f'- {index}.: everyone', 2)
-                index +=1
+                index += 1
             
             user_mentions = message.user_mentions
             if (user_mentions is not None):
                 for user in user_mentions:
                     result.append(f'- {index}.: {user:f} ({user.id})', 2)
-                    index+=1
+                    index += 1
             
             role_mentions = message.role_mentions
             if (role_mentions is not None):
                 for role in role_mentions:
                     result.append(f'- {index}.: {role.name} ({role.id})', 2)
-                    index +=1
+                    index += 1
             
             channel_mentions = message.channel_mentions
             if (channel_mentions is not None):
                 for channel in channel_mentions:
                     result.append(f'- {index}.: {channel.name} ({channel.id})', 2)
-                    index +=1
+                    index += 1
         
         else:
             if message.everyone_mention:
@@ -263,12 +263,27 @@ def str_message(message, index=None, **kwargs):
         for index, embed in enumerate(embeds, 1):
             result.append(str_embed_core(embed, index), 1)
     
-    cross_reference = message.cross_reference
-    if (cross_reference is not None):
-        result.append('Cross reference:', 1)
-        result.append(f'- message id : {cross_reference.message_id}', 2)
-        result.append(f'- channel id : {cross_reference.channel_id}', 2)
-        result.append(f'- guild id : {cross_reference.guild_id}', 2)
+    referenced_message = message.referenced_message
+    if (referenced_message is not None):
+        if isinstance(referenced_message, Message):
+            referenced_message_message_id = referenced_message.id
+            referenced_message_channel = referenced_message.channel
+            referenced_message_channeL_id = referenced_message_channel.id
+            referenced_message_guild = referenced_message_channel.guild
+            if referenced_message_guild is None:
+                referenced_message_guild_id = 0
+            else:
+                referenced_message_guild_id = referenced_message_guild.id
+        else:
+            referenced_message_message_id = referenced_message.message_id
+            referenced_message_channeL_id = referenced_message.channel_id
+            referenced_message_guild_id = referenced_message.guild_id
+        
+        result.append('Referenced message:', 1)
+        result.append(f'- message id : {referenced_message_message_id}', 2)
+        result.append(f'- channel id : {referenced_message_channeL_id}', 2)
+        if referenced_message_guild_id:
+            result.append(f'- guild id : {referenced_message_guild_id}', 2)
     
     stickers = message.stickers
     if (attachments is not None):

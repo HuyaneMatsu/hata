@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-__all__ = ('EXTRA_EMBED_TYPES', 'Embed', 'EmbedAuthor', 'EmbedCore', 'EmbedField', 'EmbedFooter', 'EmbedImage',
-    'EmbedProvider', 'EmbedThumbnail', 'EmbedVideo', )
+__all__ = ('EXTRA_EMBED_TYPES', 'Embed', 'EmbedAuthor', 'EmbedBase', 'EmbedCore', 'EmbedField', 'EmbedFooter',
+    'EmbedImage', 'EmbedProvider', 'EmbedThumbnail', 'EmbedVideo', )
 
 from re import escape as re_escape, compile as re_compile
+from typing import Union, List
+from datetime import datetime
 
 from ..backend.utils import DOCS_ENABLED
 
@@ -808,8 +810,154 @@ class EmbedField(object):
             return False
         
         return True
+
+
+class EmbedBase(object):
+    """
+    Base class for Discord embedded contents. Should be taken as a guide for implementing custom embed classes.
+    
+    Abstarct Attributes
+    -------------------
+    author : `None` or ``EmbedAuthor``
+        Author information.
+    color : `None`, ``Color`` or `int`
+        The color code of the embed. Passing `0` means black, not like at the case of roles.
+    description : `None` or `str`
+        The main content of the embed.
+    fields : `list` of ``EmbedField``
+        Fields' information.
+    footer : `None` or ``EmbedFooter``
+        Footer information.
+    image : `None` or ``EmbedImage``
+        Image information.
+    provider : `None` or ``EmbedProvider``
+        Provider information.
+    thumbnail : `None` or ``EmbedThumbnail``
+        Thumbnail information.
+    timestamp : `None` or `datetime`
+        Timestamp of the embed's content. Shows up next to the ``.footer`` separated with a `'|'` character.
+    title : `None` or `str`
+        The title of the embed. Shows at the top with intense white characters.
+    type : `None` or `str`
+        The type of the embed. Can be one of `EXTRA_EMBED_TYPES`'s elements. Webhook embeds' type must be `'rich'`.
+    url : `None` or `str`
+        Url of the embed. If defined, the embed's `title` will show up as a hyper link pointing to the `url`.
+    video : `None` or `EmbedVideo`
+        Video information.
+    """
+    
+    __slots__ = ()
+    
+    author      : Union[None, EmbedAuthor]
+    color       : Union[None, Color, int]
+    description : Union[None, str]
+    fields      : List[EmbedField]
+    footer      : Union[None, EmbedFooter]
+    image       : Union[None, EmbedImage]
+    provider    : Union[None, EmbedProvider]
+    thumbnail   : Union[None, EmbedThumbnail]
+    timestamp   : Union[None, datetime]
+    title       : Union[None, str]
+    type        : Union[None, str]
+    url         : Union[None, str]
+    video       : Union[None, EmbedVideo]
+    
+    def __len__(self):
+        """
+        Returns the embed's contents' length.
         
-class EmbedCore(object):
+        Notes
+        -----
+        Subclasses should overwrite it.
+        """
+        return 0
+    
+    def __repr__(self):
+        """Returns the representation of the embed."""
+        return f'<{self.__class__.__name__} length={len(self)}>'
+    
+    def __eq__(self,other):
+        """Returns whether the two embeds are equal."""
+        if not isinstance(other, EmbedBase):
+            return NotImplemented
+        
+        if self.title != other.title:
+            return False
+            
+        if self.description != other.description:
+            return False
+        
+        if self.color != other.color:
+            return False
+        
+        if self.url != other.url:
+            return False
+            
+        if self.timestamp != other.timestamp:
+            return False
+            
+        if self.type != other.type:
+            return False
+        
+        if self.footer != other.footer:
+            return False
+            
+        if self.image != other.image:
+            return False
+            
+        if self.thumbnail != other.thumbnail:
+            return False
+        
+        if self.video != other.video:
+            return False
+        
+        if self.author != other.author:
+            return False
+        
+        if self.fields != other.fields:
+            return False
+        
+        return True
+    
+    def to_data(self):
+        """
+        Converts the embed core to json serializable `dict` representing it.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`) items
+        
+        Notes
+        -----
+        Subclasses should overwrite it.
+        """
+        return {}
+    
+    @property
+    def contents(self):
+        """
+        Returns the embed's contents.
+        
+        The embeds contents are the following:
+        - `.title`
+        - `.description`
+        - `.author.name`
+        - `.footer.text`
+        - `.fields[n].name`
+        - `.fields[n].value`
+        
+        Returns
+        -------
+        contents : `list` of `str`
+        
+        Notes
+        -----
+        Subclasses should overwrite it.
+        """
+        return []
+
+
+class EmbedCore(EmbedBase):
     """
     Represents Discord embedded content. There are two defined embed classes, the other one is ``Embed``.
     
@@ -1173,59 +1321,6 @@ class EmbedCore(object):
 
         return result
     
-    def __repr__(self):
-        """Returns the representation of the embed."""
-        return f'<{self.__class__.__name__} length={len(self)}>'
-    
-    def __eq__(self,other):
-        """Returns whether the two embeds are equal."""
-        if (type(self) is not type(other)):
-            try:
-                other = other.source
-            except AttributeError:
-                return NotImplemented
-            
-            if (type(self) is not type(other)):
-                return NotImplemented
-        
-        if self.title != other.title:
-            return False
-            
-        if self.description != other.description:
-            return False
-        
-        if self.color != other.color:
-            return False
-        
-        if self.url != other.url:
-            return False
-            
-        if self.timestamp != other.timestamp:
-            return False
-            
-        if self.type != other.type:
-            return False
-        
-        if self.footer != other.footer:
-            return False
-            
-        if self.image != other.image:
-            return False
-            
-        if self.thumbnail != other.thumbnail:
-            return False
-        
-        if self.video != other.video:
-            return False
-        
-        if self.author != other.author:
-            return False
-        
-        if self.fields != other.fields:
-            return False
-        
-        return True
-    
     @property
     def contents(self):
         """
@@ -1306,7 +1401,7 @@ class EmbedCore(object):
         
         return new
 
-class Embed(object):
+class Embed(EmbedBase):
     """
     Represents Discord embedded content. There are two defined embed classes, the other one is ``EmbedCore``.
     
@@ -2088,14 +2183,6 @@ class Embed(object):
         
         return result
     
-    def __repr__(self):
-        """Returns the representation of the embed."""
-        return f'<{self.__class__.__name__} length={len(self)}>'
-    
-    def __eq__(self, other):
-        """Returns whether the two embeds are equal."""
-        return (self.source == other)
-    
     @property
     def contents(self):
         """
@@ -2159,6 +2246,7 @@ class Embed(object):
                 result.append(field_data['value'])
         
         return result
+
 
 class _EmbedFieldsReflection(object):
     """
@@ -2303,3 +2391,6 @@ preinstanced._convert_content = _convert_content
 
 del DOCS_ENABLED
 del preinstanced
+del Union
+del List
+del datetime

@@ -1481,6 +1481,7 @@ del MESSAGE_UPDATE__CAL_SC, \
     MESSAGE_UPDATE__OPT_SC, \
     MESSAGE_UPDATE__OPT_MC
 
+
 class ReactionAddEvent(EventBase):
     """
     Represents a processed `MESSAGE_REACTION_ADD` dispatch event.
@@ -5377,7 +5378,7 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
                 routed_kwargs = route_kwargs(kwargs, count)
                 for handler, func_, name, kwargs in zip(handlers, routed_func, routed_names, routed_kwargs):
                     handler.__setevent__(func_, name, **kwargs)
-
+    
     def unextend(self, iterable):
         """
         Unextends the event handler router's represneted event handlers with the given `iterable`.

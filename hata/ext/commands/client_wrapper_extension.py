@@ -53,7 +53,7 @@ class ClientWrapper:
     @property
     def commands(self):
         """
-        Returns a ``_EventHandlerManagerRouter`` instacne, whith what commands can be added to more clients at the same
+        Returns a ``_EventHandlerManagerRouter`` instance, whith what commands can be added to more clients at the same
         time.
         
         Returns

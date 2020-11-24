@@ -11,6 +11,8 @@ from ...discord.emoji import BUILTIN_EMOJIS
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.client_core import KOKORO
 from ...discord.embed import Embed
+from ...discord.channel import ChannelTextBase
+from ...discord.message import Message
 
 from .command import CommandWrapper
 
@@ -232,6 +234,26 @@ class Pagination(object):
         it was used, is set as `None`.
     channel : ``ChannelTextBase`` instance
         The channel where the ``Pagination`` is executed.
+    check : `None` or `callable`
+        A callable what desides whether the ``Pagination`` should process a received reaction event. Defaults to
+        `None`.
+        
+        Should accept the following parameters:
+        +-----------+---------------------------------------------------+
+        | Name      | Type                                              |
+        +===========+===================================================+
+        | event     | ``ReactionAddEvent`` or ``ReactionDeleteEvent``   |
+        +-----------+---------------------------------------------------+
+        
+        Note, that ``ReactionDeleteEvent`` is only given, when the client has no `manage_messages` permission.
+        
+        Should return the following values:
+        +-------------------+-----------+
+        | Name              | Type      |
+        +===================+===========+
+        | should_process    | `bool`    |
+        +-------------------+-----------+
+    
     client : ``Client`` of ``Embed`` (or any compatible)
         The client who executes the ``Pagination``.
     message : `None` or ``Message``
@@ -286,9 +308,9 @@ class Pagination(object):
     CANCEL = BUILTIN_EMOJIS['x']
     EMOJIS = (LEFT2, LEFT, RIGHT, RIGHT2, CANCEL,)
     
-    __slots__ = ('canceller', 'channel', 'client', 'message', 'page', 'pages', 'task_flag', 'timeout', 'timeouter')
+    __slots__ = ('canceller', 'channel', 'check', 'client', 'message', 'page', 'pages', 'task_flag', 'timeout', 'timeouter')
     
-    async def __new__(cls, client, channel, pages, timeout=240., message=None):
+    async def __new__(cls, client, channel, pages, timeout=240., message=None, check=None):
         """
         Creates a new pagination with the given parameters.
         
@@ -298,27 +320,59 @@ class Pagination(object):
         ----------
         client : ``Client``
             The client who will execute the ``Pagination``.
-        channel : ``ChannelTextBase`` instance
-            The channel where the ``Pagination`` will be executed.
+        channel : ``ChannelTextBase`` instance or ``Message``
+            The channel where the ``Pagination`` will be executed. Pass it as a ``Message`` instance to send a reply.
         pages : `indexable-container`
-            An indexable container, what stores the displayable ``Embed``-s.
+            An indexable container, what stores the displayablepages.
         timeout : `float`, Optional
             The timeout of the ``Pagination`` in seconds. Defaults to `240.0`.
         message : `None` or ``Message``, Optional
             The message on what the ``Pagination`` will be executed. If not given a new message will be created.
             Defaults to `None`.
+        check : `None` or `callable`, Optional
+            A callable what desides whether the ``Pagination`` should process a received reaction event. Defaults to
+            `None`.
+            
+            Should accept the following parameters:
+            +-----------+---------------------------------------------------+
+            | Name      | Type                                              |
+            +===========+===================================================+
+            | event     | ``ReactionAddEvent`` or ``ReactionDeleteEvent``   |
+            +-----------+---------------------------------------------------+
+            
+            Note, that ``ReactionDeleteEvent`` is only given, when the client has no `manage_messages` permission.
+            
+            Should return the following values:
+            +-------------------+-----------+
+            | Name              | Type      |
+            +===================+===========+
+            | should_process    | `bool`    |
+            +-------------------+-----------+
         
         Returns
         -------
         self : `None` or ``Pagination``
             If `pages` is an empty container, returns `None`.
+        
+        Raises
+        ------
+        TypeError
+            `channel`'s type is incorrect.
         """
         if not pages:
             return None
         
+        if isinstance(channel, ChannelTextBase):
+            target_channel = channel
+        elif isinstance(channel, Message):
+            target_channel = channel.channel
+        else:
+            raise TypeError('`channel` can be given only as `ChannelTextBase` or as `Message` instance.')
+        
         self = object.__new__(cls)
+        self.check = check
         self.client = client
-        self.channel = channel
+        self.channel = target_channel
         self.pages = pages
         self.page = 0
         self.canceller = cls._canceller
@@ -329,12 +383,12 @@ class Pagination(object):
         
         try:
             if message is None:
-                message = await client.message_create(channel, embed=pages[0])
+                message = await client.message_create(channel, pages[0])
                 self.message = message
             else:
-                await client.message_edit(message, embed=pages[0])
+                await client.message_edit(message, pages[0])
             
-            if not channel.cached_permissions_for(client).can_add_reactions:
+            if not target_channel.cached_permissions_for(client).can_add_reactions:
                 return self
             
             if len(self.pages)>1:
@@ -385,6 +439,17 @@ class Pagination(object):
         
         if (event.delete_reaction_with(client) == event.DELETE_REACTION_NOT_ADDED):
             return
+        
+        check = self.check
+        if (check is not None):
+            try:
+                should_continue = check(event)
+            except BaseException as err:
+                await client.events.error(client, f'{self!r}.__call__', err)
+                return
+            
+            if not should_continue:
+                return
         
         emoji = event.emoji
         task_flag = self.task_flag
@@ -453,7 +518,7 @@ class Pagination(object):
         self.task_flag = GUI_STATE_SWITCHING_PAGE
         
         try:
-            await client.message_edit(self.message, embed=self.pages[page])
+            await client.message_edit(self.message, self.pages[page])
         except BaseException as err:
             self.task_flag = GUI_STATE_CANCELLED
             self.cancel()
@@ -623,6 +688,25 @@ class Closer(object):
         it was used, is set as `None`.
     channel : ``ChannelTextBase`` instance
         The channel where the ``Closer`` is executed.
+    check : `None` or `callable`
+        A callable what desides whether the ``Closer`` should process a received reaction event. Defaults to
+        `None`.
+        
+        Should accept the following parameters:
+        +-----------+---------------------------------------------------+
+        | Name      | Type                                              |
+        +===========+===================================================+
+        | event     | ``ReactionAddEvent`` or ``ReactionDeleteEvent``   |
+        +-----------+---------------------------------------------------+
+        
+        Note, that ``ReactionDeleteEvent`` is only given, when the client has no `manage_messages` permission.
+        
+        Should return the following values:
+        +-------------------+-----------+
+        | Name              | Type      |
+        +===================+===========+
+        | should_process    | `bool`    |
+        +-------------------+-----------+
     client : ``Client`` of ``Embed`` (or any compatible)
         The client who executes the ``Closer``.
     message : `None` or ``Message``
@@ -656,9 +740,9 @@ class Closer(object):
     """
     CANCEL = BUILTIN_EMOJIS['x']
     
-    __slots__ = ('canceller', 'channel', 'client', 'message', 'task_flag', 'timeouter')
+    __slots__ = ('canceller', 'channel', 'check', 'client', 'message', 'task_flag', 'timeouter')
     
-    async def __new__(cls, client, channel, embed, timeout=240., message=None):
+    async def __new__(cls, client, channel, content, timeout=240., message=None, check=None):
         """
         Creates a new pagination with the given parameters.
         
@@ -668,23 +752,55 @@ class Closer(object):
         ----------
         client : ``Client``
             The client who will execute the ``Closer``.
-        channel : ``ChannelTextBase`` instance
-            The channel where the ``Closer`` will be executed.
-        embed : ``EmbedCore``, ``Embed`` or other `embed-like`
-            The embed what will be displayed.
+        channel : ``ChannelTextBase`` instance or ``Message``
+            The channel where the ``Closer`` will be executed.  Pass it as a ``Message`` instance to send a reply.
+        content : ``Any`
+            The displayed content.
         timeout : `float`, Optional
             The timeout of the ``Closer`` in seconds. Defaults to `240.0`.
         message : `None` or ``Message``, Optional
             The message on what the ``Closer`` will be executed. If not given a new message will be created.
             Defaults to `None`.
+        check : `None` or `callable`, Optional
+            A callable what desides whether the ``Closer`` should process a received reaction event. Defaults to
+            `None`.
+            
+            Should accept the following parameters:
+            +-----------+---------------------------------------------------+
+            | Name      | Type                                              |
+            +===========+===================================================+
+            | event     | ``ReactionAddEvent`` or ``ReactionDeleteEvent``   |
+            +-----------+---------------------------------------------------+
+            
+            Note, that ``ReactionDeleteEvent`` is only given, when the client has no `manage_messages` permission.
+            
+            Should return the following values:
+            +-------------------+-----------+
+            | Name              | Type      |
+            +===================+===========+
+            | should_process    | `bool`    |
+            +-------------------+-----------+
         
         Returns
         -------
         self : `None` or ``Closer``
+        
+        Raises
+        ------
+        TypeError
+            `channel`'s type is incorrect.
         """
+        if isinstance(channel, ChannelTextBase):
+            target_channel = channel
+        elif isinstance(channel, Message):
+            target_channel = channel.channel
+        else:
+            raise TypeError('`channel` can be given only as `ChannelTextBase` or as `Message` instance.')
+        
         self = object.__new__(cls)
+        self.check = check
         self.client = client
-        self.channel = channel
+        self.channel = target_channel
         self.canceller = cls._canceller
         self.task_flag = GUI_STATE_READY
         self.message = message
@@ -692,12 +808,12 @@ class Closer(object):
         
         try:
             if message is None:
-                message = await client.message_create(channel, embed=embed)
+                message = await client.message_create(channel, content)
                 self.message = message
             else:
-                await client.message_edit(message, embed=embed)
+                await client.message_edit(message, content)
             
-            if not channel.cached_permissions_for(client).can_add_reactions:
+            if not target_channel.cached_permissions_for(client).can_add_reactions:
                 return self
             
             await client.reaction_add(message, self.CANCEL)
@@ -721,8 +837,8 @@ class Closer(object):
         self.timeouter = Timeouter(self, timeout=timeout)
         client.events.reaction_add.append(message, self)
         return self
-
-
+    
+    
     async def __call__(self, client, event):
         """
         Called when a reaction is added on the respective message.
@@ -746,6 +862,17 @@ class Closer(object):
         if task_flag != GUI_STATE_READY:
             # ignore GUI_STATE_SWITCHING_PAGE and GUI_STATE_CANCELLED and GUI_STATE_SWITCHING_CTX
             return
+        
+        check = self.check
+        if (check is not None):
+            try:
+                should_continue = check(event)
+            except BaseException as err:
+                await client.events.error(client, f'{self!r}.__call__', err)
+                return
+            
+            if not should_continue:
+                return
         
         self.task_flag = GUI_STATE_CANCELLED
         try:
@@ -892,6 +1019,26 @@ class ChooseMenu(object):
         it was used, is set as `None`.
     channel : ``ChannelTextBase`` instance
         The channel where the ``ChooseMenu`` is executed.
+    check : `None` or `callable`
+        A callable what desides whether the ``ChooseMenu`` should process a received reaction event. Defaults to
+        `None`.
+        
+        Should accept the following parameters:
+        +-----------+---------------------------------------------------+
+        | Name      | Type                                              |
+        +===========+===================================================+
+        | event     | ``ReactionAddEvent`` or ``ReactionDeleteEvent``   |
+        +-----------+---------------------------------------------------+
+        
+        Note, that ``ReactionDeleteEvent`` is only given, when the client has no `manage_messages` permission.
+        
+        Should return the following values:
+        +-------------------+-----------+
+        | Name              | Type      |
+        +===================+===========+
+        | should_process    | `bool`    |
+        +-------------------+-----------+
+    
     client : ``Client``
         The client who executes the ``ChooseMenu``.
     embed : ``Embed`` (or any compatible)
@@ -945,9 +1092,9 @@ class ChooseMenu(object):
     selecter : `async-callable`
         An `async-callable`, what is ensured when an option is selected.
         
-        > If the ``ChooseMenu`` is created only with `1` option, then it is ensured initially instead of creating the
-        > ``ChooseMenu`` itself. At this case, if `message` was not given (or given as `None`), then the `message`
-        > passed to the `selecter` will be `None` as well.
+        If the ``ChooseMenu`` is created only with `1` option, then it is ensured initially instead of creating the
+        ``ChooseMenu`` itself. At this case, if `message` was not given (or given as `None`), then the `message`
+        passed to the `selecter` will be `None` as well.
         
         At least 3 parameters are passed to the `selecter`:
         +-------------------+-------------------------------+
@@ -992,10 +1139,11 @@ class ChooseMenu(object):
     EMOJIS_RESTRICTED = (UP, DOWN, SELECT, CANCEL)
     EMOJIS = (UP, DOWN, LEFT, RIGHT, SELECT, CANCEL)
     
-    __slots__ = ('canceller', 'channel', 'client', 'embed', 'message', 'selected', 'choices', 'task_flag', 'timeout',
-        'timeouter', 'prefix', 'selecter')
+    __slots__ = ('canceller', 'channel', 'check', 'client', 'embed', 'message', 'selected', 'choices', 'task_flag',
+        'timeout', 'timeouter', 'prefix', 'selecter')
     
-    async def __new__(cls, client, channel, choices, selecter, embed=Embed(), timeout=240., message=None, prefix=None):
+    async def __new__(cls, client, channel, choices, selecter, embed=Embed(), timeout=240., message=None, prefix=None,
+            check=None):
         """
         Creates a new choose menu with the given parameters.
         
@@ -1005,8 +1153,8 @@ class ChooseMenu(object):
         ----------
         client : ``Client``
             The client who executes the ``ChooseMenu``.
-        channel : ``ChannelTextBase`` instance
-            The channel where the ``ChooseMenu`` is executed.
+        channel : ``ChannelTextBase`` instance or ``Message``
+            The channel where the ``ChooseMenu`` is executed. Pass it as a ``Message`` instance to send a reply.
         choices : `indexable` of `Any`
             An indexable container, what stores the displayable choices.
             
@@ -1025,9 +1173,9 @@ class ChooseMenu(object):
         selecter : `async-callable`
             An `async-callable`, what is ensured when an option is selected.
             
-            > If the ``ChooseMenu`` is created only with `1` option, then it is ensured initially instead of creating
-            > the ``ChooseMenu`` itself. At this case, if `message` was not given (or given as `None`), then the
-            > `message` passed to the `selecter` will be `None` as well.
+            If the ``ChooseMenu`` is created only with `1` option, then it is ensured initially instead of creating
+            the ``ChooseMenu`` itself. At this case, if `message` was not given (or given as `None`), then the
+            `message` passed to the `selecter` will be `None` as well.
             
             At least 3 parameters are passed to the `selecter`:
             +-------------------+-------------------------------+
@@ -1053,7 +1201,26 @@ class ChooseMenu(object):
             Defaults to `None`.
         prefix : `None` or `str`, Optional
             A prefix displayed before each option. Defaults to `None`.
-        
+        check : `None` or `callable`, Optional
+            A callable what desides whether the ``ChooseMenu`` should process a received reaction event. Defaults to
+            `None`.
+            
+            Should accept the following parameters:
+            +-----------+---------------------------------------------------+
+            | Name      | Type                                              |
+            +===========+===================================================+
+            | event     | ``ReactionAddEvent`` or ``ReactionDeleteEvent``   |
+            +-----------+---------------------------------------------------+
+            
+            Note, that ``ReactionDeleteEvent`` is only given, when the client has no `manage_messages` permission.
+            
+            Should return the following values:
+            +-------------------+-----------+
+            | Name              | Type      |
+            +===================+===========+
+            | should_process    | `bool`    |
+            +-------------------+-----------+
+            
         Returns
         -------
         self : `None` or ``ChooseMenu``
@@ -1061,26 +1228,36 @@ class ChooseMenu(object):
         
         Raises
         ------
+        TypeError
+            `channel`'s type is incorrect.
         ValueError
             If `prefix` wasn ot given as `None` and it's length is over `64` characters.
         """
         if (prefix is not None) and (len(prefix) > 100):
             raise ValueError(f'Please pass a prefix, what is shorter than 100 characters, got {prefix!r}.')
         
+        if isinstance(channel, ChannelTextBase):
+            target_channel = channel
+        elif isinstance(channel, Message):
+            target_channel = channel.channel
+        else:
+            raise TypeError('`channel` can be given only as `ChannelTextBase` or as `Message` instance.')
+        
         result_ln = len(choices)
         if result_ln < 2:
             if result_ln == 1:
                 choice = choices[0]
                 if isinstance(choice, tuple):
-                    coro = selecter(client, channel, message, *choice)
+                    coro = selecter(client, target_channel, message, *choice)
                 else:
-                    coro = selecter(client, channel, message, choice)
+                    coro = selecter(client, target_channel, message, choice)
                 await coro
             return None
         
         self = object.__new__(cls)
+        self.check = check
         self.client = client
-        self.channel = channel
+        self.channel = target_channel
         self.choices = choices
         self.selecter = selecter
         self.selected = 0
@@ -1099,7 +1276,7 @@ class ChooseMenu(object):
             else:
                 await client.message_edit(message, embed=self._render_embed())
             
-            if not channel.cached_permissions_for(client).can_add_reactions:
+            if not target_channel.cached_permissions_for(client).can_add_reactions:
                 return self
             
             for emoji in (self.EMOJIS if (len(choices) > 10) else self.EMOJIS_RESTRICTED):
@@ -1222,10 +1399,19 @@ class ChooseMenu(object):
             return
         
         client = self.client
-        message = self.message
-        
         if (event.delete_reaction_with(client) == event.DELETE_REACTION_NOT_ADDED):
             return
+        
+        check = self.check
+        if (check is not None):
+            try:
+                should_continue = check(event)
+            except BaseException as err:
+                await client.events.error(client, f'{self!r}.__call__', err)
+                return
+            
+            if not should_continue:
+                return
         
         task_flag = self.task_flag
         if task_flag != GUI_STATE_READY:
@@ -1236,6 +1422,8 @@ class ChooseMenu(object):
             
             # ignore GUI_STATE_CANCELLED and GUI_STATE_SWITCHING_CTX
             return
+        
+        message = self.message
         
         while True:
             emoji = event.emoji
@@ -1768,7 +1956,7 @@ class Cooldown(object):
     
     ```
     from hata import DiscordException, CancelledError, sleep, ERROR_CODES, KOKORO
-    from hata.commands. import Cooldown
+    from hata.ext.commands import Cooldown
     
     class CooldownHandler:
         __slots__ = ('cache',)
@@ -1862,7 +2050,7 @@ class Cooldown(object):
 
     ```
     from hata import Embed
-    from hata.ext.commandsi mport Converter, ConverterFlag
+    from hata.ext.commands import Converter, ConverterFlag
     
     @Bot.commands
     @Cooldown('user', 60., limit=3, weight=2, handler=CooldownHandler())

@@ -4,6 +4,7 @@ __all__ = ('Attachment', 'EMBED_UPDATE_EMBED_ADD', 'EMBED_UPDATE_EMBED_REMOVE', 
     'MessageRepr', 'Sticker', 'UnknownCrossMention', )
 
 from datetime import datetime
+import warnings
 
 from ..backend.utils import _spaceholder, BaseMethodDescriptor
 
@@ -301,39 +302,55 @@ class MessageReference(object):
         The referenced message's id. Might be set as `0`.
     """
     __slots__ = ('_channel', '_message', '_guild', 'channel_id', 'guild_id', 'message_id',)
-    def __init__(self, data):
+    def __new__(cls, data):
         """
         Creates a ``MessagReference`` from message reference data included inside of a ``Message``'s.
+        
+        If the message is loaded already, returns that instead.
         
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
             Message reference data.
+        
+        Returns
+        -------
+        self / message : ``MessageReference`` or ``Message``
         """
+        message_id = data.get('message_id')
+        if message_id is None:
+            message_id = 0
+        else:
+            message_id = int(message_id)
+            try:
+                message = MESSAGES[message_id]
+            except KeyError:
+                pass
+            else:
+                return message
+        
         channel_id = data.get('channel_id')
         if channel_id is None:
             channel_id = None
         else:
             channel_id = int(channel_id)
-        self.channel_id = channel_id
         
         guild_id = data.get('guild_id')
         if guild_id is None:
             guild_id = 0
         else:
             guild_id = int(guild_id)
-        self.guild_id = guild_id
         
-        message_id = data.get('message_id')
-        if message_id is None:
-            message_id = 0
-        else:
-            message_id = int(message_id)
+        self = object.__new__(cls)
+        
         self.message_id = message_id
-        
+        self.channel_id = channel_id
+        self.guild_id = guild_id
         self._message = _spaceholder
         self._channel = _spaceholder
         self._guild = _spaceholder
+        
+        return self
     
     @property
     def channel(self):
@@ -748,8 +765,10 @@ class Message(DiscordEntity, immortal=True):
     cross_mentions : `None` or `list` of (``UnknownCrossMention`` or ``ChannelBase`` instances)
         Cross guild channel mentions of a crosspost message if applicable. If a channel is not loaded by the wrapper,
         then it will be represented with a ``UnknownCrossMention`` instead.
-    cross_reference : `None` or ``MessageReference``
-        Cross guild reference to the original message of crospost messages.
+    referenced_message : `None`, ``Message`` or ``MessageReference``
+        the referenced message. Set as ``Message`` instance if the message is cached, else as ``MessageReference``.
+        
+        Set when the message is a reply, a crosspost or when is a pin message.
     deleted : `bool`
         Whether the message is deleted.
     edited : `None` or `datetime`
@@ -786,8 +805,8 @@ class Message(DiscordEntity, immortal=True):
         The mentioned users by the message if any.
     """
     __slots__ = ('_channel_mentions', 'activity', 'application', 'attachments', 'author', 'channel', 'content',
-        'cross_mentions', 'cross_reference', 'deleted', 'edited', 'embeds', 'everyone_mention', 'flags', 'nonce',
-        'pinned', 'reactions', 'role_mentions', 'stickers', 'tts', 'type', 'user_mentions',)
+        'cross_mentions', 'deleted', 'edited', 'embeds', 'everyone_mention', 'flags', 'nonce', 'pinned', 'reactions',
+        'referenced_message', 'role_mentions', 'stickers', 'tts', 'type', 'user_mentions',)
     
     def __new__(cls, data, channel):
         """
@@ -848,46 +867,63 @@ class Message(DiscordEntity, immortal=True):
         guild = channel.guild
         webhook_id = data.get('webhook_id')
         author_data = data.get('author')
+        
         if webhook_id is None:
-            self.cross_reference = None
-            self.cross_mentions = None
+            cross_mentions = None
             if author_data is None:
-                self.author = ZEROUSER
+                author = ZEROUSER
             else:
                 try:
                      author_data['member'] = data['member']
                 except KeyError:
                     pass
-                self.author = User(author_data, guild)
+                author = User(author_data, guild)
         else:
             webhook_id = int(webhook_id)
-            cross_reference_data = data.get('message_reference')
-            is_cross = (cross_reference_data is not None)
-            if is_cross:
-                self.cross_reference = MessageReference(cross_reference_data)
-                
+            if (data.get('message_reference') is not None):
                 cross_mention_datas = data.get('mention_channels')
-                if cross_mention_datas is None:
+                if (cross_mention_datas is None) or (not cross_mention_datas):
                     cross_mentions = None
                 else:
                     cross_mentions = [
                         UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas
                             ]
                     cross_mentions.sort()
-                self.cross_mentions = cross_mentions
+                    
+                cross_mentions = cross_mentions
                 webhook_type = WebhookType.server
             else:
-                self.cross_reference = None
-                self.cross_mentions = None
+                cross_mentions = None
                 webhook_type = WebhookType.bot
             
             if author_data is None:
                 author = PartialWebhook(webhook_id, '', type_=webhook_type)
             else:
                 author = WebhookRepr(author_data, webhook_id, type_=webhook_type, channel=channel)
-            self.author = author
+        
+        self.author = author
+        self.cross_mentions = cross_mentions
         
         self.reactions = reaction_mapping(data.get('reactions'))
+        
+        # Most common case is reply
+        # First always check the `referenced_message` payload, and then second the `message_reference` one.
+        #
+        # Note, that `referenced_message` wont contain an another `referenced_message`, but only `message_reference`
+        # one.
+        
+        referenced_message_data = data.get('referenced_message')
+        if referenced_message_data is None:
+            referenced_message_data = data.get('message_reference')
+            if referenced_message_data is None:
+                referenced_message = None
+            else:
+                referenced_message = MessageReference(referenced_message_data)
+        else:
+            referenced_message = channel._create_unknown_message(referenced_message_data)
+        
+        self.referenced_message = referenced_message
+        
         
         try:
             application_data = data['application']
@@ -951,8 +987,6 @@ class Message(DiscordEntity, immortal=True):
         if guild is None:
             self._channel_mentions = None
             self.role_mentions = None
-            self.cross_mentions = None
-            self.cross_reference = None
         else:
             self._channel_mentions = _spaceholder
     
@@ -976,7 +1010,7 @@ class Message(DiscordEntity, immortal=True):
             self.role_mentions = role_mentions
         
         MESSAGES[self.id] = self
-        
+    
     @BaseMethodDescriptor
     def custom(cls, base, validate=True, **kwargs):
         """
@@ -1022,8 +1056,8 @@ class Message(DiscordEntity, immortal=True):
             The `.cross_mentions` attribute of the message. If passed as an empty list, then will be set `None` instead.
             
             If called as a classmethod defaults to `None`.
-        cross_reference : `None` or ``MessageReference``, Optional
-            The ``.cross_reference`` attribute of the message.
+        referenced_message : `None`, ``Message`` ``MessageReference``, Optional
+            The ``.referenced_message`` attribute of the message.
             
             If called as a classmethod defaults to `None`.
         deleted : `bool`, Optional
@@ -1193,7 +1227,7 @@ class Message(DiscordEntity, immortal=True):
             if author is None:
                 # Author cannot be None, but accept it as `ZEROUSER`
                 author = ZEROUSER
-            elif (type(author) in (User, Client, Webhook, WebhookRepr)):
+            elif isinstance(author, (User, Client, Webhook, WebhookRepr)):
                 # This should be the case
                 pass
             else:
@@ -1212,21 +1246,16 @@ class Message(DiscordEntity, immortal=True):
             content = preconvert_str(content, 'content', 0, 2000)
         
         try:
-            cross_reference = kwargs.pop('cross_reference')
+            referenced_message = kwargs.pop('referenced_message')
         except KeyError:
             if base is None:
-                cross_reference = None
+                referenced_message = None
             else:
-                cross_reference = base.cross_reference
+                referenced_message = base.referenced_message
         else:
-            if (cross_reference is not None) and (type(cross_reference) is not MessageReference):
-                    raise TypeError(f'`cross_reference` should be `None` or type `{MessageReference.__call__}`, got '
-                        f'`{cross_reference!r}`')
-        
-        if validate:
-            if (cross_reference is not None) and (type(channel) is not ChannelText):
-                raise ValueError(f'Only `{ChannelText.__name__}` can have `cross_reference` set as not `None`, but '
-                    f'`channel` is set as `{channel!r}`')
+            if (referenced_message is not None) and (type(referenced_message) not in (Message, MessageReference)):
+                    raise TypeError(f'`referenced_message` should be `None` or type `{Message.__name__}`, '
+                        f'`{MessageReference.__call__}`, got `{referenced_message!r}`')
         
         try:
             cross_mentions = kwargs.pop('cross_mentions')
@@ -1257,8 +1286,8 @@ class Message(DiscordEntity, immortal=True):
                         f'instance or `{UnknownCrossMention.__name__}` instance; `{channel_!r}`')
         
         if validate:
-            if (cross_reference is None) and (cross_mentions is not None):
-                raise ValueError('`cross_mentions` are supported, only if `cross_reference` is provided')
+            if (referenced_message is None) and (cross_mentions is not None):
+                raise ValueError('`cross_mentions` are supported, only if `referenced_message` is provided')
         
         try:
             deleted = kwargs.pop('deleted')
@@ -1373,10 +1402,6 @@ class Message(DiscordEntity, immortal=True):
                     raise ValueError(
                         '`flags.source_message_deleted` is set, but `flags.is_crosspost` is not -> Only crossposted '
                         'message\'s source can be deleted')
-                
-                if (cross_reference is not None) and (not flags.is_crosspost):
-                    raise ValueError('`cross_reference` is set, but `flags.is_crosspost` is not -> Only crossposted '
-                        'messages can have `cross_reference`')
                 
                 # Other cases?
             else:
@@ -1557,7 +1582,7 @@ class Message(DiscordEntity, immortal=True):
         self.channel = channel
         self.content = content
         self.cross_mentions = cross_mentions
-        self.cross_reference = cross_reference
+        self.referenced_message = referenced_message
         self.deleted = deleted
         self.edited = edited
         self.embeds = embeds
@@ -1957,7 +1982,7 @@ class Message(DiscordEntity, immortal=True):
             attachments = [Attachment(attachment) for attachment in attachment_datas]
         else:
             attachments = None
-        self.attachments=attachments
+        self.attachments = attachments
 
         embed_datas = data['embeds']
         if embed_datas:
@@ -2228,13 +2253,26 @@ class Message(DiscordEntity, immortal=True):
         role_mentions = self.role_mentions
         if (role_mentions is not None):
             mentions.extend(role_mentions)
-            
+        
         channel_mentions = self.channel_mentions
         if channel_mentions is not None:
             mentions.extend(channel_mentions)
-
-        return mentions
         
+        return mentions
+    
+    @property
+    def cross_reference(self):
+        """
+        Deprecated, please use ``.referenced_message`` instead. Will be removed in 2021 february.
+        """
+        warnings.warn(
+            '`Client.cross_reference` is deprecated, and will be removed in 2021 february. '
+            'Please use `Message.referenced_message` instead.',
+            FutureWarning)
+        
+        if self.flags.is_crosspost:
+            return self.referenced_message
+    
     def __len__(self):
         """
         Returns the length of the message, including of the non link typed embeds's.

@@ -2171,6 +2171,9 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
             user = User(user_data)
             users.append(user)
         
+        if client not in users:
+            users.append(client)
+        
         users.sort()
         
         user = users[0]
@@ -4528,7 +4531,7 @@ def cr_pg_channel_object(name, type_, overwrites=None, topic=None, nsfw=False, s
         type_value = type_
     
     elif isinstance(type_, type) and issubclass(type_, ChannelBase):
-        if not isinstance(type_, ChannelGuildBase):
+        if not issubclass(type_, ChannelGuildBase):
             raise TypeError(f'The function accepts only {ChannelGuildBase.__name__} instances, got {type_.__name__}.')
         type_value = type_.INTERCHANGE[0]
     

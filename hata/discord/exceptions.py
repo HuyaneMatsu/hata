@@ -498,6 +498,8 @@ class ERROR_CODES:
     +---------------------------------------------------+-----------+-------+
     | invalid_gift_self_redemption                      | 50054     | -     |
     +---------------------------------------------------+-----------+-------+
+    | invalid_message_type                              | 50068     | -     |
+    +---------------------------------------------------+-----------+-------+
     | cannot_delete_community_channel                   | 50074     | -     |
     +---------------------------------------------------+-----------+-------+
     | invalid_gift_redemption_subscription_managed      | 100021    | -     |
@@ -647,6 +649,7 @@ class ERROR_CODES:
     invalid_gift_redemption_exhausted = 50050
     invalid_gift_redemption_owned = 50051
     invalid_gift_self_redemption = 50054
+    invalid_message_type    = 50068
     cannot_delete_community_channel = 50074
     invalid_sticker_sent    = 50081
     invalid_gift_redemption_subscription_managed = 100021

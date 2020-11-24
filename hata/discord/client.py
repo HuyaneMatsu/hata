@@ -9,7 +9,7 @@ from threading import current_thread
 from math import inf
 
 from ..env import CACHE_USER, CACHE_PRESENCE, API_VERSION
-from ..backend.utils import imultidict, _spaceholder, methodize, basemethod, change_on_switch
+from ..backend.utils import imultidict, methodize, change_on_switch
 from ..backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, WaitTillFirst, WaitTillExc, \
     future_or_timeout
 from ..backend.eventloop import EventThread, LOOP_TIME
@@ -36,7 +36,7 @@ from .invite import Invite
 from .message import Message, MessageRepr, MessageReference
 from .oauth2 import Connection, parse_locale, DEFAULT_LOCALE, AO2Access, UserOA2, Achievement
 from .exceptions import DiscordException, DiscordGatewayException, ERROR_CODES, InvalidToken
-from .client_core import CLIENTS, KOKORO, GUILDS, DISCOVERY_CATEGORIES, EULAS
+from .client_core import CLIENTS, KOKORO, GUILDS, DISCOVERY_CATEGORIES, EULAS, CHANNELS
 from .voice_client import VoiceClient
 from .activity import ActivityUnknown, ActivityBase, ActivityCustom
 from .integration import Integration
@@ -50,6 +50,7 @@ from .preinstanced import Status, VoiceRegion, ContentFilterLevel, PremiumType, 
     MessageNotificationLevel
 from .client_utils import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, UserGuildPermission, \
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, Typer
+from .embed import EmbedBase
 
 from . import client_core, message, webhook, channel, invite, parsers, client_utils
 
@@ -1787,9 +1788,10 @@ class Client(UserBase):
             channel = self.private_channels[user.id]
         except KeyError:
             data = await self.http.channel_private_create({'recipient_id': user.id})
+            print(data)
             channel = ChannelPrivate(data, self)
         return channel
-
+    
     async def channel_private_get_all(self):
         """
         Request the client's private + group channels and returns them in a list. At the case of bot accounts the
@@ -2611,8 +2613,8 @@ class Client(UserBase):
         data = await self.http.message_get(channel.id, message_id)
         return channel._create_unknown_message(data)
     
-    async def message_create(self, channel, content=None, embed=None, file=None, allowed_mentions=...,
-            message_reference=None, tts=False, nonce=None):
+    async def message_create(self, channel, content=None, *, embed=None, file=None, allowed_mentions=..., tts=False,
+            nonce=None):
         """
         Creates and returns a message at the given `channel`. If there is nothing to send, then returns `None`.
         
@@ -2620,18 +2622,24 @@ class Client(UserBase):
         
         Parameters
         ----------
-        channel : ``ChannelTextBase`` instance
-            The text channel where the message will be sent.
-        content : `str`, Optional
-            The content of the message.
-        embed : ``Embed`` or ``EmbedCore`` instance or any compatible object
+        channel : ``ChannelTextBase`` instance, `int` instance, ``Message``, ``MessageRepr`` or ``MessageReference``
+            The text channel where the message will be sent, or the message on what you want to reply.
+        content : `str`, ``EmbedBase``, `Any`, Optional
+            The message's content if given. If given as `str` or empty string, then no contnet will be sent, meanwhile
+            if any other non `str` or ``EmbedBase`` instance is given, then will be casted to string.
+            
+            If given as ``EmbedBase`` instance, then is sent as the message's embed.
+            
+        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional
             The embedded content of the message.
+            
+            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
+            
+            If embeds are given as a list, then the first embed is picked up.
         file : `Any`, Optional
             A file to send. Check ``._create_file_form`` for details.
         allowed_mentions : `None` or `list` of `Any`, Optional
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
-        message_reference : ``Message``, ``MessageRepr`` or ``MessageReference``
-            Referenced message to send reply to.
         tts : `bool`, Optional
             Whether the message is text-to-speech.
         nonce : `str`, Optional
@@ -2645,9 +2653,11 @@ class Client(UserBase):
         Raises
         ------
         TypeError
+            - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
             - If `allowed_mentions` contains an element of invalid type.
+            - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
             - If ivalid file type would be sent.
-            - If `message_reference`'s type is incorrect.
+            - If `channel`'s type is incorrect.
         ValueError
             - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
             - If more than `10` files would be sent.
@@ -2660,45 +2670,153 @@ class Client(UserBase):
         --------
         ``.webhook_message_create`` : Sending a message with a ``Webbhook``.
         """
-        data = {}
+        
+        # Channel check order:
+        # 1.: ChannelText -> channel
+        # 2.: Message -> channel + reply
+        # 3.: int -> channel
+        # 4.: MessageRepr -> channel + reply
+        # 5.: MessageReference -> channel + reply
+        # 6.: raise
+        
+        if isinstance(channel, ChannelText):
+            message_id = None
+            channel_id = channel.id
+        elif isinstance(channel, Message):
+            message_id = channel.id
+            channel = channel.channel
+            channel_id = channel.id
+        elif isinstance(channel, int):
+            message_id = None
+            channel_id = channel
+            channel = CHANNELS.get(channel_id)
+        elif isinstance(channel, MessageRepr):
+            message_id = channel.id
+            channel = channel.channel
+            channel_id = channel.id
+        elif isinstance(channel, MessageReference):
+            channel_id = channel.channel_id
+            message_id = channel.message_id
+            channel = CHANNELS.get(channel_id)
+        else:
+            raise TypeError(f'`channel` can be given as `{ChannelText.__name__}`, `{Message.__name__}`, '
+                f'`{MessageRepr.__name__}` or as `{MessageReference.__name__}` instance, got {channel!r}.')
+        
+        # Embed check order:
+        # 1.: None
+        # 2.: Embed
+        # 3.: list of Embed -> embed[0] or None
+        # 4.: raise
+        
+        if embed is None:
+            pass
+        elif isinstance(embed, EmbedBase):
+            pass
+        elif isinstance(embed, list):
+            if embed:
+                if __debug__:
+                    for index, element in enumerate(embed):
+                        if isinstance(embed, element):
+                            continue
+                        
+                        raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
+                            f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
+                            f'{embed!r}.')
+                
+                embed = embed[0]
+            else:
+                embed = None
+        else:
+            raise TypeError(f'`embed` was not given as `{EmbedBase.__name__}` instance, neither as a list of '
+                f'{EmbedBase.__name__} instances, got {embed!r}.')
+        
+        # Content check order:
+        # 1.: None
+        # 2.: str
+        # 3.: Embed - > embed = content
+        # 4.: list of Embed -> Embed = content[0]
+        # 5.: object -> str(content)
+        
+        if content is None:
+            pass
+        elif isinstance(content, str):
+            if not content:
+                content = None
+        elif isinstance(content, EmbedBase):
+            if __debug__:
+                if (embed is not None):
+                    raise TypeError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
+            
+            embed = content
+            content = None
+        else:
+            # Check for list of embeds as well.
+            if isinstance(content, list):
+                if content:
+                    for element in content:
+                        if isinstance(element, EmbedBase):
+                            continue
+                        
+                        is_list_of_embeds = False
+                        break
+                    else:
+                        is_list_of_embeds = True
+                else:
+                    is_list_of_embeds = False
+            else:
+                is_list_of_embeds = False
+            
+            if is_list_of_embeds:
+                if __debug__:
+                    if (embed is not None):
+                        raise TypeError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
+                
+                embed = content[0]
+                content = None
+            else:
+                content = str(content)
+                if not content:
+                    content = None
+        
+        # Build payload
+        message_data = {}
         contains_content = False
         
-        if (content is not None) and content:
-            data['content'] = content
+        if (content is not None):
+            message_data['content'] = content
             contains_content = True
         
         if (embed is not None):
-            data['embed'] = embed.to_data()
+            message_data['embed'] = embed.to_data()
             contains_content = True
         
         if tts:
-            data['tts'] = True
+            message_data['tts'] = True
         
         if (nonce is not None):
-            data['nonce'] = nonce
+            message_data['nonce'] = nonce
         
         if (allowed_mentions is not ...):
-            data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
+            message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
         
-        if (message_reference is not None):
-            message_reference = self._create_message_reference(message_reference)
-            if (message_reference is not None):
-                data['message_reference'] = message_reference
+        if (message_id is not None):
+            message_data['message_reference'] = {'message_id': message_id}
         
         if file is None:
-            to_send = data
+            to_send = message_data
         else:
-            to_send = self._create_file_form(data, file)
+            to_send = self._create_file_form(message_data, file)
             if to_send is None:
-                to_send = data
+                to_send = message_data
             else:
                 contains_content = True
         
         if not contains_content:
             return None
         
-        data = await self.http.message_create(channel.id, to_send)
-        return channel._create_new_message(data)
+        data = await self.http.message_create(channel_id, to_send)
+        if (channel is not None):
+            return channel._create_new_message(data)
     
     @staticmethod
     def _create_file_form(data, file):
@@ -2828,6 +2946,8 @@ class Client(UserBase):
         
         `'roles'` and ``Role`` instances follow the same rules as `'users'` and the ``UserBase`` instances.
         
+        By passing `'replied_user'` you can re-enable mentioning the replied user.
+        
         Parameters
         ----------
         allowed_mentions : `None` or `list` of (`str` , ``UserBase`` instances, ``Role`` objects)
@@ -2844,10 +2964,10 @@ class Client(UserBase):
         ValueError
             If `allowed_mentions` contains en element of correct type, but an invalid value.
         """
-        
         if (allowed_mentions is None) or (not allowed_mentions):
             return {'parse': []}
         
+        allow_replied_user = False
         allow_everyone = False
         allow_users = False
         allow_roles = False
@@ -2856,7 +2976,11 @@ class Client(UserBase):
         allowed_roles = None
         
         for element in allowed_mentions:
-            if type(element) is str:
+            if isinstance(element, str):
+                if element == 'replied_user':
+                    allow_replied_user = True
+                    continue
+                
                 if element == 'everyone':
                     allow_everyone = True
                     continue
@@ -2893,6 +3017,9 @@ class Client(UserBase):
         result = {}
         parse_all_of = None
         
+        if allow_replied_user:
+            result['replied_user'] = True
+        
         if allow_everyone:
             if parse_all_of is None:
                 parse_all_of = []
@@ -2921,56 +3048,6 @@ class Client(UserBase):
                 result['roles'] = allowed_roles
         
         return result
-    
-    @staticmethod
-    def _create_message_reference(message_reference):
-        """
-        Creates a message reference json serializable object from the given ``Message`` or ``MessageRepr`` object.
-        
-        Parameters
-        ----------
-        message : ``Message``, ``MessageRepr`` or ``MessageReference``
-            The referred messages.
-        
-        Returns
-        -------
-        message_reference : `None` or `dict` of (`str`, ``int`) items
-            Returns `None` if the given `message`'s channel is partial.
-        
-        Raises
-        ------
-        TypeError
-            If `message_reference`'s type is incorrect.
-        """
-        message_type = message_reference.__class__
-        if (message_type is Message) or (message_type is MessageRepr):
-            channel = message_reference.channel
-            if isinstance(channel, ChannelGuildBase):
-                guild = channel.guild
-                if guild is None:
-                    return None
-                
-                guild_id = guild.id
-            else:
-                guild_id = None
-            
-            channel_id = channel.id
-            message_id = message_reference.id
-            
-        elif message_type is MessageReference:
-            guild_id = message_reference.guild_id
-            channel_id = message_reference.channel_id
-            message_id = message_reference.message_id
-        
-        else:
-            raise TypeError(f'`message_reference` can be given only as `{Message.__name__}`, `{MessageRepr.__name__}` '
-                f'or as `{MessageReference.__name__}`, got `{message_type.__name__}`.')
-        
-        return {
-            'message_id' : message_id,
-            'channel_id' : channel_id,
-            'guild_id' : guild_id,
-                }
     
     async def message_delete(self, message, reason=None):
         """
@@ -3949,7 +4026,7 @@ class Client(UserBase):
                 # Else case should happen.
                 continue
     
-    async def message_edit(self, message, content=None, embed=..., allowed_mentions=..., suppress=...):
+    async def message_edit(self, message, content=..., embed=..., allowed_mentions=..., suppress=...):
         """
         Edits the given `message`.
         
@@ -3957,12 +4034,23 @@ class Client(UserBase):
         
         Parameters
         ----------
-        message : ``Message``
+        message : ``Message``, ``MessageRepr``
             The message to edit.
-        content : `str`, Optional
-            The new content of the message. By passing it as `''`, you can remove the old.
-        embed : `None` or ``Embed`` or ``EmbedCore`` instance or any compatible object, Optional
+        content : `str`, ``EmbedBase`` or `Any`, Optional
+            The new content of the message.
+            
+            If given as `str` then the message's content will be edited with it. If given as any non ``EmbedBase``
+            instance, then it will be cased to string first.
+            
+            By passing it as empty string, you can remove the message's content.
+            
+            If given as ``EmbedBase`` instance, then the message's embds will be edited with it.
+        embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional
             The new embedded content of the message. By passing it as `None`, you can remove the old.
+            
+            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
+            
+            If embeds are given as a list, then the first embed is picked up.
         allowed_mentions : `None` or `list` of `Any`, Optional
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions``
             for details.
@@ -3972,14 +4060,18 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            If `allowed_mentions` when correct type, but an invalid value would been sent.
+            - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
+            - If `allowed_mentions` contains an element of invalid type.
+            - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
+            - If `message`'s type is incorrect.
         ValueError
             If `allowed_mentions` contains an element of invalid type.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        
+        AssertionError
+            If the message was not send by the client.
         See Also
         --------
         - ``.message_suppress_embeds`` : For suppressing only the embeds of the message.
@@ -3989,17 +4081,115 @@ class Client(UserBase):
         -----
         Do not updates he given message object, so dispatch event parsers can still calculate differences when recevied.
         """
+        
+        # Message check order
+        # 1.: Message
+        # 2.: MessageRepr
+        #
+        # Message cannot be detected by id, only cached ones, so ignore that case.
+        
+        if isinstance(message, Message):
+            if __debug__:
+                if message.author.id != self.id:
+                    raise AssertionError('The message was not send by the client.')
+            message_id = message.id
+        elif isinstance(message, MessageRepr):
+            message_id = message.id
+        elif message is None:
+            raise TypeError('`message` was given as `None`. Make sure to use `Client.message_create` with giving '
+                'content and using a cached channel.')
+        else:
+            raise TypeError(f'`message` should have be given as `Message` or as `MessageRepr`, got '
+                f'`{message.__class__.__name__}`.')
+        
+        # Embed check order:
+        # 1.: Elipsis
+        # 2.: None
+        # 3.: Embed
+        # 4.: list of Embed -> embed[0] or None
+        # 5.: raise
+        
+        if embed is ...:
+            pass
+        elif embed is None:
+            pass
+        elif isinstance(embed, list):
+            if embed:
+                if __debug__:
+                    for index, element in enumerate(embed):
+                        if isinstance(embed, element):
+                            continue
+                        
+                        raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
+                            f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
+                            f'{embed!r}.')
+                
+                embed = embed[0]
+            else:
+                embed = None
+        else:
+            raise TypeError(f'`embed` was not given as `{EmbedBase.__name__}` instance, neither as a list of '
+                f'{EmbedBase.__name__} instances, got {embed!r}.')
+        
+        # Content check order:
+        # 1.: Elipsis
+        # 2.: None
+        # 3.: str
+        # 4.: Embed -> embed = content
+        # 5.: list of Embed -> embed = content[0]
+        # 6.: object -> str(content)
+        
+        if content is ...:
+            pass
+        if content is None:
+            content = ''
+        elif isinstance(content, str):
+            pass
+        elif isinstance(content, EmbedBase):
+            if __debug__:
+                if (embed is not ...):
+                    raise TypeError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
+            
+            embed = content
+            content = ...
+        else:
+            # Check for list of embeds as well.
+            if isinstance(content, list):
+                if content:
+                    for element in content:
+                        if isinstance(element, EmbedBase):
+                            continue
+                        
+                        is_list_of_embeds = False
+                        break
+                    else:
+                        is_list_of_embeds = True
+                else:
+                    is_list_of_embeds = False
+            else:
+                is_list_of_embeds = False
+            
+            if is_list_of_embeds:
+                if __debug__:
+                    if (embed is not ...):
+                        raise TypeError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
+                
+                embed = content[0]
+                content = ...
+            else:
+                content = str(content)
+        
+        # Build payload
         message_data = {}
-        if (content is not None):
+        
+        if (content is not ...):
             message_data['content'] = content
         
         if (embed is not ...):
-            if embed is None:
-                embed_data = None
-            else:
-                embed_data = embed.to_data()
+            if (embed is not None):
+                embed = embed.to_data()
             
-            message_data['embed'] = embed_data
+            message_data['embed'] = embed
         
         if (allowed_mentions is not ...):
             message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
@@ -4012,7 +4202,7 @@ class Client(UserBase):
                 flags &= 0b11111011
             message_data['flags'] = flags
         
-        await self.http.message_edit(message.channel.id, message.id, message_data)
+        await self.http.message_edit(message.channel.id, message_id, message_data)
     
     async def message_suppress_embeds(self, message, suppress=True):
         """
@@ -7109,7 +7299,7 @@ class Client(UserBase):
         
         return await self.webhook_message_create(*args, **kwargs)
     
-    async def webhook_message_create(self, webhook, content=None, embed=None, file=None, allowed_mentions=...,
+    async def webhook_message_create(self, webhook, content=None, *, embed=None, file=None, allowed_mentions=...,
             tts=False, name=None, avatar_url=None, wait=False):
         """
         Sends a message with the given webhook. If there is nothing to send, or if `wait` was not passed as `True`
@@ -7121,10 +7311,18 @@ class Client(UserBase):
         ----------
         webhook : ``Webhook``
             The webhook through what will the message be sent.
-        content : `str`, Optional
-            The content of the message.
-        embed : ``Embed`` or ``EmbedCore`` instances of any compatible object, or a `tuple`, `list` or `deque` of them
+        content : `str`, ``EmbedBase``, `Any`, Optional
+            The message's content if given. If given as `str` or empty string, then no contnet will be sent, meanwhile
+            if any other non `str` or ``EmbedBase`` instance is given, then will be casted to string.
+            
+            If given as ``EmbedBase`` instance, then is sent as the message's embed.
+            
+        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional
             The embedded content of the message.
+            
+            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
+            
+            If embeds are given as a list, then the first embed is picked up.
         file : `Any`, Optional
             A file to send. Check ``._create_file_form`` for details.
         allowed_mentions : `None` or `list` of `Any`, Optional
@@ -7147,65 +7345,131 @@ class Client(UserBase):
         ------
         TypeError
             - If `allowed_mentions` contains an element of invalid type.
+            - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
+            - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
             - If ivalid file type would be sent.
-            - If `embed` was not passed as an embed like, or a `tuple`, `list` or `deque` of them.
         ValueError
             - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
             - If more than `10` files would be sent.
             - If `name` was passed, but with length under `1` or over `32`.
+            
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        data = {}
+        
+        # Embed check order:
+        # 1.: None
+        # 2.: Embed -> [embed]
+        # 3.: list of Embed -> embed[:10] or None
+        # 4.: raise
+        
+        if embed is None:
+            pass
+        elif isinstance(embed, EmbedBase):
+            embed = [embed]
+        elif isinstance(embed, list):
+            if embed:
+                if __debug__:
+                    for index, element in enumerate(embed):
+                        if isinstance(embed, element):
+                            continue
+                        
+                        raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
+                            f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
+                            f'{embed!r}.')
+                
+                embed = embed[:10]
+            else:
+                embed = None
+            
+        else:
+            raise TypeError(f'`embed` was not given as `{EmbedBase.__name__}` instance, neither as a list of '
+                f'{EmbedBase.__name__} instances, got {embed!r}.')
+        
+        # Content check order:
+        # 1.: None
+        # 2.: str
+        # 3.: Embed -> embed = [content]
+        # 4.: list of Embed -> embed = content[:10]
+        # 5.: object -> str(content)
+        
+        if content is None:
+            pass
+        elif isinstance(content, str):
+            if not content:
+                content = None
+        elif isinstance(content, EmbedBase):
+            if __debug__:
+                if (embed is not None):
+                    raise TypeError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
+            
+            embed = [content]
+            content = None
+        else:
+            # Check for list of embeds as well.
+            if isinstance(content, list):
+                if content:
+                    for element in content:
+                        if isinstance(element, EmbedBase):
+                            continue
+                        
+                        is_list_of_embeds = False
+                        break
+                    else:
+                        is_list_of_embeds = True
+                else:
+                    is_list_of_embeds = False
+            else:
+                is_list_of_embeds = False
+            
+            if is_list_of_embeds:
+                if __debug__:
+                    if (embed is not None):
+                        raise TypeError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
+                
+                embed = content[:10]
+                content = None
+            else:
+                content = str(content)
+                if not content:
+                    content = None
+        
+        message_data = {}
         contains_content = False
         
-        if (embed is not None):
-            if isinstance(embed, (tuple, list, deque)):
-                embed_amount = len(embed)
-                if embed_amount > 10:
-                    raise ValueError(f'There can be only 10 embed maximum, got {embed_amount}.')
-                
-                if embed_amount != 0:
-                    data['embeds'] = [embed.to_data() for embed in embed]
-                    contains_content = True
-            else:
-                #check case, when it is not embed like
-                converter = getattr(type(embed), 'to_data')
-                if converter is None:
-                    raise TypeError(f'Expected embed like or `tuple`, `list` or `deque` of embed likes, got '
-                        f'`{embed.__class__.__name__}`.')
-                
-                data['embeds'] = [converter(embed)]
-                contains_content = True
+        if (content is not None):
+            message_data['content'] = content
+            contains_content = True
         
-        if (content is not None) and content:
-            data['content'] = content
+        if (embed is not None):
+            message_data['embeds'] = [embed.to_data() for embed in embed]
             contains_content = True
         
         if (allowed_mentions is not ...):
-            data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
+            message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
         
         if tts:
-            data['tts'] = True
+            message_data['tts'] = True
         
         if (avatar_url is not None):
-            data['avatar_url'] = avatar_url
+            message_data['avatar_url'] = avatar_url
         
         if (name is not None):
             name_ln = len(name)
             if name_ln > 32:
-                raise ValueError(f'The length of the name can be between 1-32, got {name!r}.')
+                raise ValueError(f'`name` length can be in range [1:32], got {name!r}.')
+            
             if name_ln != 0:
-                data['username'] = name
+                message_data['username'] = name
         
         if file is None:
-            to_send = data
+            to_send = message_data
         else:
-            to_send = self._create_file_form(data, file)
+            to_send = self._create_file_form(message_data, file)
             if to_send is None:
-                to_send = data
+                to_send = message_data
             else:
                 contains_content = True
         
@@ -7231,12 +7495,23 @@ class Client(UserBase):
         ----------
         webhook : ``Webhook``
             The webhook who created the message.
-        message : ``Message`` or ``MessageRepr``.
+        message : ``Message`` or ``MessageRepr``, `int` instance
             The webhook's message to edit.
-        content : `str`, Optional
-            The new content of the message. By passing it as `''`, you can remove the old.
-        embed : `None` or ``Embed`` or ``EmbedCore`` instance or any compatible object, Optional
+        content : `str`, ``EmbedBase`` or `Any`, Optional
+            The new content of the message.
+            
+            If given as `str` then the message's content will be edited with it. If given as any non ``EmbedBase``
+            instance, then it will be cased to string first.
+            
+            By passing it as empty string, you can remove the message's content.
+            
+            If given as ``EmbedBase`` instance, then the message's embds will be edited with it.
+        embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional
             The new embedded content of the message. By passing it as `None`, you can remove the old.
+            
+            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
+            
+            If embeds are given as a list, then the first embed is picked up.
         allowed_mentions : `None` or `list` of `Any`, Optional
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions``
             for details.
@@ -7245,8 +7520,11 @@ class Client(UserBase):
         ------
         TypeError
             - If `allowed_mentions` contains an element of invalid type.
-            - If ivalid file type would be sent.
-            - If `embed` was not passed as an embed like, or a `tuple`, `list` or `deque` of them.
+            - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
+            - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
+            - `message` was given as `None`. Make sure to use ``Client.webhook_message_create`` with `wait=True` and by
+                giving any content to it as well.
+            - `message` was not given neither as ``Message``, ``MessageRepr``  or `int` instance.
         ValueError
             - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
             - If more than `10` files would be sent.
@@ -7256,10 +7534,6 @@ class Client(UserBase):
             If any exception was received from the Discord API.
         AssertionError
             - `message` was detectably not sent by the `webhook`.
-            - `message` was given as `None`. Make sure to use ``Client.webhook_message_create`` with `wait=True` and by
-                giving any content to it as well.
-            - `message` was not given neither as ``Message`` or ``MessageRepr`` instance.
-            - `content` was not given neither as `None` or `str` instance.
         
         See Also
         --------
@@ -7273,51 +7547,120 @@ class Client(UserBase):
         
         Editing the message with empty string is broken.
         """
-        if __debug__:
-            if isinstance(message, Message):
+        
+        # Detect message id
+        # 1.: Message
+        # 2.: int
+        # 3.: MessageRepr
+        # 4.: None -> raise
+        # 5.: raise
+        
+        if isinstance(message, Message):
+            if __debug__:
                 if message.author.id != webhook.id:
                     raise AssertionError('The message was not send by the webhook.')
-            elif isinstance(message, MessageRepr):
-                # Cannot check author id, skip
-                pass
-            elif message is None:
-                raise AssertionError('Message was given as `None`. Make sure to use `Client.webhook_message_create` '
-                    'with `wait=True` and by giving any content to it as well.')
-            else:
-                raise AssertionError(f'`message` should have be given as `Message`or as  `MessageRepr` instance, got '
-                    f'`{message.__class__.__name__}`.')
+            message_id = message.id
+        elif isinstance(message, int):
+            message_id = message
+        elif isinstance(message, MessageRepr):
+            # Cannot check author id, skip
+            message_id = message.id
+        elif message is None:
+            raise TypeError('`message` was given as `None`. Make sure to use `Client.webhook_message_create` '
+                'with giving content and by passing `wait` parameter as `True` as well.')
+        else:
+            raise TypeError(f'`message` should have be given as `Message`, `MessageRepr` or as `int` instance, got '
+                f'`{message.__class__.__name__}`.')
         
+        # Embed check order:
+        # 1.: Elipsis
+        # 2.: None
+        # 3.: Embed : -> [embed]
+        # 4.: list of Embed -> embed[:10] or None
+        # 5.: raise
+        
+        if embed is ...:
+            pass
+        elif embed is None:
+            pass
+        elif isinstance(embed, EmbedBase):
+            embed = [embed]
+        elif isinstance(embed, list):
+            if embed:
+                if __debug__:
+                    for index, element in enumerate(embed):
+                        if isinstance(embed, element):
+                            continue
+                        
+                        raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
+                            f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
+                            f'{embed!r}.')
+                
+                embed = embed[:10]
+            else:
+                embed = None
+        else:
+            raise TypeError(f'`embed` was not given as `{EmbedBase.__name__}` instance, neither as a list of '
+                f'{EmbedBase.__name__} instances, got {embed!r}.')
+        
+        # Content check order:
+        # 1.: Elipsis
+        # 2.: None
+        # 3.: str
+        # 4.: Embed -> embed = [content]
+        # 5.: list of Embed -> embed = content[:10]
+        # 6.: object -> str(content)
+        
+        if content is ...:
+            pass
+        if content is None:
+            content = ''
+        elif isinstance(content, str):
+            pass
+        elif isinstance(content, EmbedBase):
+            if __debug__:
+                if (embed is not ...):
+                    raise ValueError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
+            
+            embed = [content]
+            content = ...
+        else:
+            # Check for list of embeds as well.
+            if isinstance(content, list):
+                if content:
+                    for element in content:
+                        if isinstance(element, EmbedBase):
+                            continue
+                        
+                        is_list_of_embeds = False
+                        break
+                    else:
+                        is_list_of_embeds = True
+                else:
+                    is_list_of_embeds = False
+            else:
+                is_list_of_embeds = False
+            
+            if is_list_of_embeds:
+                if __debug__:
+                    if (embed is not ...):
+                        raise ValueError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
+                
+                embed = content[:10]
+                content = ...
+            else:
+                content = str(content)
+        
+        # Build payload
         message_data = {}
         
         # Discord docs say, content can be nullable, but nullable content is just ignored.
         if (content is not ...):
-            if __debug__:
-                if not isinstance(content, str):
-                    raise AssertionError(f'`content` can be given as `str` instance, got {content.__class__.__name__}.')
-            
             message_data['content'] = content
         
         if (embed is not ...):
-            if embed is None:
-                embeds = None
-            elif isinstance(embed, (tuple, list, deque)):
-                embed_amount = len(embed)
-                if embed_amount > 10:
-                    raise ValueError(f'There can be only 10 embed maximum, got {embed_amount}.')
-                
-                if embed_amount == 0:
-                    embeds = None
-                else:
-                    embeds = [embed.to_data() for embed in embed]
-            
-            else:
-                # check case, when it is not embed like
-                converter = getattr(type(embed), 'to_data')
-                if converter is None:
-                    raise TypeError(f'Expected embed like or `tuple`, `list` or `deque` of embed likes, got '
-                        f'`{embed.__class__.__name__}`.')
-                
-                embeds = [converter(embed)]
+            if (embed is not None):
+                embed = [embed.to_data() for embed in embed]
             
             message_data['embeds'] = embeds
         
@@ -7328,7 +7671,7 @@ class Client(UserBase):
             return
         
         # We receive the new message data, but we do not update the message, so dispatch events can get the difference.
-        await self.http.webhook_message_edit(webhook, message.id, message_data)
+        await self.http.webhook_message_edit(webhook, message_id, message_data)
     
     async def webhook_message_delete(self, webhook, message):
         """
@@ -7345,16 +7688,14 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            - `message`'s type is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
             - `message` was detectably not sent by the `webhook`.
-            - `message` was given as `None`. Make sure to use ``Client.webhook_message_create`` with `wait=True` and by
-                giving any content to it as well.
-            - `message` was not given neither as ``Message`` or ``MessageRepr`` instance.
-            - `content` was not given neither as `None` or `str` instance.
         
         See Also
         --------
@@ -7362,21 +7703,32 @@ class Client(UserBase):
         - ``.webhook_message_create`` : Create a message with a webhook.
         - ``.webhook_message_edit`` : Edit a message created by a webhook.
         """
-        if __debug__:
-            if isinstance(message, Message):
-                if message.author.id != webhook.id:
-                    raise AssertionError('The message was not send by the webhook.')
-            elif isinstance(message, MessageRepr):
-                # Cannot check author id, skip
-                pass
-            elif message is None:
-                raise AssertionError('Message was given as `None`. Make sure to use `Client.webhook_message_create` '
-                    'with `wait=True` and by giving any content to it as well.')
-            else:
-                raise AssertionError(f'`message` should have be given as `Message`or as  `MessageRepr` instance, got '
-                    f'`{message.__class__.__name__}`.')
         
-        await self.http.webhook_message_delete(webhook, message.id)
+        # Detect message id
+        # 1.: Message
+        # 2.: int
+        # 3.: MessageRepr
+        # 4.: None -> raise
+        # 5.: raise
+        
+        if isinstance(message, Message):
+            if __debug__:
+                if message.author.id != webhook.id:
+                    raise TypeError('The message was not send by the webhook.')
+            message_id = message.id
+        elif isinstance(message, int):
+            message_id = message
+        elif isinstance(message, MessageRepr):
+            # Cannot check author id, skip
+            message_id = message.id
+        elif message is None:
+            raise AssertionError('`message` parameter was given as `None`. Make sure to use '
+                f'`Client.webhook_message_create`  with giving content and with giving the `wait` parameter as `True`.')
+        else:
+            raise TypeError(f'`message` should have be given as `Message`or as  `MessageRepr` instance, got '
+                f'`{message.__class__.__name__}`.')
+        
+        await self.http.webhook_message_delete(webhook, message_id)
     
     async def emoji_get(self, guild, emoji_id):
         """

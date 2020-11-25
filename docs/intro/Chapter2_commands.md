@@ -44,6 +44,7 @@ start_clients()
 | default_category_name | `None` or `str`                               | `None`    | The `CommandProcesser` default `Category` name.                                                       |
 | category_name_rule    | `None` or `function`                          | `None`    | Function to generate display names for categories.                                                    |
 | command_name_rule     | `None` or `function`                          | `None`    | Function to generate display names for commands.                                                      |
+| precheck              | `None` or `function`                          | `None`    | Desides whether a message should be processed.                                                        |
 
 ## Command Arguments
 
@@ -418,12 +419,16 @@ async def owner(client, message):
     await client.message_create(message.channel, f'My masuta is {client.owner:f} !')
 ```
 
-Currently implemented checks are as follows:
+Currently implemented checks are the following:
 
 | Name                           | Extra parameter | Description                                                                                        |
 |--------------------------------|-----------------|----------------------------------------------------------------------------------------------------|
+| announcement_channel_only      | N/A             | Whether the message was sent to an announcement channel.                                           |
+| booster                        | N/A             | Whether the user boosts the respective guild.                                                      |
+| bot_account_only               | N/A             | Whether the message's author is a bot account.                                                     |
 | client_has_guild_permissions   | permissions     | Whether the client has the given permissions in the guild (fails in private channels).             |
 | client_has_permissions         | permissions     | Whether the client has the given permissions in the context channel.                               |
+| client_only                    | N/A             | Whether the message was sent by a `Client` instance.                                               |
 | custom                         | function        | Custom checks to wrap a given `function` (can be both sync and async).                             |
 | guild_only                     | N/A             | Whether the message was sent to a guild channel.                                                   |
 | guild_owner                    | N/A             | Whether the message author is the guild owner (fails in private channels).                         |
@@ -435,6 +440,8 @@ Currently implemented checks are as follows:
 | is_any_guild                   | guilds          | Whether the message was sent to any of the given guilds.                                           |
 | is_channel                     | channel         | Whether the message was sent in specific channel.                                                  |
 | is_guild                       | guild           | Whether the message was sent in specific guild.                                                    |
+| is_in_any_category             | categories      | Whether the message was sent into a channel, what's category is any of the specified ones.         |
+| is_in_category                 | category        | Whether the message was sent into a channel, what's category is the specified one.                 |
 | is_in_voice                    | N/A             | Whether the user is in a voice channel in the respective guild.                                    |
 | nsfw_channel_only              | N/A             | Whether the message was sent in NSFW channel.                                                      |
 | owner_only                     | N/A             | Whether the message author is the owner of the client.                                             |
@@ -444,6 +451,9 @@ Currently implemented checks are as follows:
 | owner_or_has_permissions       | permissions     | `owner_only` or `has_permissions`                                                                  |
 | owner_or_has_role              | role            | `owner_only` or `has_any_role`                                                                     |
 | private_only                   | N/A             | Whether the message was sent in a private channel.                                                 |
+| user_account_only              | N/A             | Whether the message was sent by a user account.                                                    |
+| user_account_or_client         | N/A             | Whether the message was sent by a user account or by a `Client` instance.                          |
+
 
 Every check also accepts an additional keyword parameter called `handler` which is called when the respective check
 fails (aka returns `False`).

@@ -750,8 +750,22 @@ class Role(DiscordEntity, immortal=True):
         elif self.position == 0:
             users = list(guild.users.values())
         else:
-            role_id = self.id
-            users= [user for user in guild.users.values() if self in user.guild_profiles[guild].roles]
+            users = []
+            for user in guild.users.values():
+                try:
+                    profile = user.guild_profiles[guild]
+                except KeyError:
+                    # should not happen
+                    continue
+                
+                roles = profile.roles
+                if roles is None:
+                    continue
+                
+                if self not in user.roles:
+                    continue
+                
+                users.append(user)
         
         return users
     

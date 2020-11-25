@@ -383,7 +383,7 @@ def filter_clients(clients, flag_shift):
     flag_shift : `int`
         The intent flag's shift based on what the clients will be filtered.
     
-    yields
+    Yields
     -------
     client : ``Client`` or `None`
     """
@@ -446,7 +446,7 @@ def filter_clients_or_me(clients, flag_shift, me):
     me : ``Client``
         The source client, what received the respective event.
     
-    yields
+    Yields
     -------
     client : ``Client`` or `None`
     """

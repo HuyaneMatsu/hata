@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
+from . import checks
 from .command import *
 from .content_parser import *
 from .utils import *
 from .client_wrapper_extension import *
 
 __all__ = (
+    'checks',
     'setup_ext_commands',
     *client_wrapper_extension.__all__,
     *command.__all__,
@@ -59,7 +61,28 @@ def setup_ext_commands(client, prefix, **kwargs):
     command_name_rule : `None` or `function`
         Function to generate display names for commands.
         Should accept only 1 argument, what is `str` instance and should return a `str` instance as well.
-    
+    precheck : `None` or `callable`, Optional
+        Function, which desides whether a recevied message should be processed
+        
+        The default one filters out every message what's author is a bot account and the channels where the client
+        cannot send messages.
+        
+        The following parameters are passed to it:
+        +-----------+---------------+
+        | Name      | Type          |
+        +===========+===============+
+        | client    | ``Client``    |
+        +-----------+---------------+
+        | message   | ``Message``   |
+        +-----------+---------------+
+        
+        Should return the following parameters:
+        +-------------------+-----------+
+        | Name              | Type      |
+        +===================+===========+
+        | should_process    | `bool`    |
+        +-------------------+-----------+
+        
     Returns
     -------
     command_processer : ``CommandProcesser``

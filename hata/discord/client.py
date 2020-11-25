@@ -22,7 +22,7 @@ from .utils import log_time_converter, DISCORD_EPOCH, image_to_base64, random_id
 from .user import User, USERS, GuildProfile, UserBase, UserFlag, create_partial_user, GUILD_PROFILES_TYPE
 from .emoji import Emoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, \
-    message_relativeindex, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES
+    message_relativeindex, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES, ChannelTextBase
 from .guild import Guild, create_partial_guild, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
     DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen
 from .http import DiscordHTTPClient, URLS
@@ -2672,14 +2672,14 @@ class Client(UserBase):
         """
         
         # Channel check order:
-        # 1.: ChannelText -> channel
+        # 1.: ChannChannelTextBaseelText -> channel
         # 2.: Message -> channel + reply
         # 3.: int -> channel
         # 4.: MessageRepr -> channel + reply
         # 5.: MessageReference -> channel + reply
         # 6.: raise
         
-        if isinstance(channel, ChannelText):
+        if isinstance(channel, ChannelTextBase):
             message_id = None
             channel_id = channel.id
         elif isinstance(channel, Message):
@@ -2699,7 +2699,7 @@ class Client(UserBase):
             message_id = channel.message_id
             channel = CHANNELS.get(channel_id)
         else:
-            raise TypeError(f'`channel` can be given as `{ChannelText.__name__}`, `{Message.__name__}`, '
+            raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}`, `{Message.__name__}`, '
                 f'`{MessageRepr.__name__}` or as `{MessageReference.__name__}` instance, got {channel!r}.')
         
         # Embed check order:
@@ -4112,6 +4112,8 @@ class Client(UserBase):
         if embed is ...:
             pass
         elif embed is None:
+            pass
+        elif isinstance(embed, EmbedBase):
             pass
         elif isinstance(embed, list):
             if embed:

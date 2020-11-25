@@ -359,7 +359,7 @@ class OpusDecoder(object):
         """
         Creates a new opus decoder.
         
-        returns
+        Returns
         -------
         self : ``OpusDecoder``
         

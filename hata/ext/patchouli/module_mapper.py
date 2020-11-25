@@ -517,7 +517,7 @@ class UnitBase(object):
         """
         Returns the closest unit to the given unit.
         
-        returns
+        Returns
         -------
         referred : `None` or ``UnitBase`` instance.
             The referenced unit.
@@ -575,7 +575,7 @@ def direct_lookup_in(object_, reference_parts):
         
         The given `reference_parts` should be reversed from their original state.
     
-    returns
+    Returns
     -------
     object_ : `None` or ``UnitBase``
         The found object if applicable.

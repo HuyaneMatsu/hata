@@ -4143,7 +4143,7 @@ class Client(UserBase):
         
         if content is ...:
             pass
-        if content is None:
+        elif content is None:
             content = ''
         elif isinstance(content, str):
             pass

@@ -267,8 +267,8 @@ class KeepType(object):
     _ignored_attr_names : `set` of `str`
         Attribute names to ignore when extending.
     """
-    __slots__ = ('old_class')
-    _ignored_attr_names = {'__name__', '__qualname__', '__weakref__', '__dict__', '__slots__'}
+    __slots__ = ('old_class',)
+    _ignored_attr_names = {'__name__', '__qualname__', '__weakref__', '__dict__', '__slots__', '__module__'}
     
     def __new__(cls, old_class, *, new_class=None):
         """

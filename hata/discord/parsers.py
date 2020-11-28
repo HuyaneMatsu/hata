@@ -454,7 +454,7 @@ def filter_clients_or_me(clients, flag_shift, me):
     limit = len(clients)
     
     while True:
-        if index==limit:
+        if index == limit:
             # If non of the clients have the intent, then yield `me`
             user = yield me
             yield
@@ -467,7 +467,7 @@ def filter_clients_or_me(clients, flag_shift, me):
             user = yield client
             break
         
-        index +=1
+        index += 1
         continue
     
     yield
@@ -483,7 +483,7 @@ def filter_clients_or_me(clients, flag_shift, me):
         if (client.intents>>flag_shift)&1:
             yield client
         
-        index +=1
+        index += 1
         continue
     
     # Whether the user is type Client and we did not yield it, yield it.
@@ -2346,6 +2346,9 @@ if CACHE_USER:
         if not old_attributes:
             return
         
+        if isinstance(user, Client):
+            guild._invalidate_perm_cache()
+        
         Task(client.events.user_profile_edit(client, user, guild, old_attributes), KOKORO)
     
     def GUILD_MEMBER_UPDATE__CAL_MC(client, data):
@@ -2366,6 +2369,9 @@ if CACHE_USER:
         if not old_attributes:
             return
         
+        if isinstance(user, Client):
+            guild._invalidate_perm_cache()
+        
         clients.send(user)
         for client_ in clients:
             Task(client_.events.user_profile_edit(client_, user, guild, old_attributes), KOKORO)
@@ -2378,8 +2384,11 @@ if CACHE_USER:
             guild_sync(client, data, 'GUILD_MEMBER_UPDATE')
             return
         
-        User._update_profile_no_return(data, guild)
+        user = User._update_profile_no_return(data, guild)
 
+        if isinstance(user, Client):
+            guild._invalidate_perm_cache()
+    
     def GUILD_MEMBER_UPDATE__OPT_MC(client, data):
         guild_id = int(data['guild_id'])
         try:
@@ -2391,7 +2400,10 @@ if CACHE_USER:
         if first_client_or_me(guild.clients, INTENT_GUILD_USERS, client) is not client:
             return
         
-        User._update_profile_no_return(data, guild)
+        user = User._update_profile_no_return(data, guild)
+        
+        if isinstance(user, Client):
+            guild._invalidate_perm_cache()
 
 else:
     def GUILD_MEMBER_UPDATE__CAL_SC(client, data):
@@ -2411,6 +2423,8 @@ else:
         if not old_attributes:
             return
         
+        guild._invalidate_perm_cache()
+        
         Task(client.events.user_profile_edit(client, client, guild, old_attributes), KOKORO)
     
     GUILD_MEMBER_UPDATE__CAL_MC = GUILD_MEMBER_UPDATE__CAL_SC
@@ -2428,6 +2442,8 @@ else:
             return
         
         client._update_profile_only_no_return(data, guild)
+        
+        guild._invalidate_perm_cache()
     
     GUILD_MEMBER_UPDATE__OPT_MC = GUILD_MEMBER_UPDATE__OPT_SC
 

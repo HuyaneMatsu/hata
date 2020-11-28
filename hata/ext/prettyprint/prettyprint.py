@@ -578,7 +578,7 @@ def str_embed_core(embed, index=None, **kwargs):
     return result
 
 
-def str_role(role, index=None,write_parents=True,detailed=True, **kwargs):
+def str_role(role, index=None, write_parents=True, detailed=True, **kwargs):
     result = PrettyBlock()
     if index is None:
         start = ''
@@ -603,8 +603,14 @@ def str_role(role, index=None,write_parents=True,detailed=True, **kwargs):
         result.append('- separated', 1)
     if role.mentionable:
         result.append('- mentionable', 1)
+    
     if role.managed:
-        result.append('- managed', 1)
+        result.append('- managed:', 1)
+        result.append(f'- manager type: {role.manager_type}', 2)
+        manager_id = role.manager_id
+        if manager_id:
+            result.append(f'- manager id: {manager_id}', 2)
+    
     if detailed:
         result.append('Permissions:', 1)
         for key, value in role.permissions.items():

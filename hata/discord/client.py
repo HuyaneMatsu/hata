@@ -24,7 +24,7 @@ from .emoji import Emoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, \
     message_relativeindex, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES, ChannelTextBase
 from .guild import Guild, create_partial_guild, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
-    DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen
+    DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen, SystemChannelFlag
 from .http import DiscordHTTPClient, URLS
 from .http.URLS import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDPOINT
 from .role import Role, PermOW, PERMOW_TYPE_ROLE, PERMOW_TYPE_USER
@@ -49,10 +49,10 @@ from .bases import ICON_TYPE_NONE
 from .preinstanced import Status, VoiceRegion, ContentFilterLevel, PremiumType, VerificationLevel, \
     MessageNotificationLevel
 from .client_utils import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, UserGuildPermission, \
-    DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, Typer
+    DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, Typer, maybe_snowflake
 from .embed import EmbedBase
 
-from . import client_core, message, webhook, channel, invite, parsers, client_utils
+from . import client_core, message, webhook, channel, invite, parsers, client_utils, guild
 
 _VALID_NAME_CHARS = re.compile('([0-9A-Za-z_]+)')
 
@@ -1578,7 +1578,7 @@ class Client(UserBase):
                     raise InvalidToken() from err
                 
                 if status >= 500:
-                    sleep(2.5, KOKORO)
+                    await sleep(2.5, KOKORO)
                     continue
                 
                 raise
@@ -2028,7 +2028,7 @@ class Client(UserBase):
                 info_line = ordered[restricted_positions[index_0]]
                 #next step mixin
                 index_0 += 1
-                info_line_2=ordered[restricted_positions[index_0]]
+                info_line_2 = ordered[restricted_positions[index_0]]
                 #loop block start
                 
                 if info_line[3].ORDER_GROUP in before and info_line_2[3].ORDER_GROUP in after:
@@ -2674,7 +2674,7 @@ class Client(UserBase):
         # Channel check order:
         # 1.: ChannChannelTextBaseelText -> channel
         # 2.: Message -> channel + reply
-        # 3.: int -> channel
+        # 3.: int (str) -> channel
         # 4.: MessageRepr -> channel + reply
         # 5.: MessageReference -> channel + reply
         # 6.: raise
@@ -2686,21 +2686,22 @@ class Client(UserBase):
             message_id = channel.id
             channel = channel.channel
             channel_id = channel.id
-        elif isinstance(channel, int):
-            message_id = None
-            channel_id = channel
-            channel = CHANNELS.get(channel_id)
-        elif isinstance(channel, MessageRepr):
-            message_id = channel.id
-            channel = channel.channel
-            channel_id = channel.id
-        elif isinstance(channel, MessageReference):
-            channel_id = channel.channel_id
-            message_id = channel.message_id
-            channel = CHANNELS.get(channel_id)
         else:
-            raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}`, `{Message.__name__}`, '
-                f'`{MessageRepr.__name__}` or as `{MessageReference.__name__}` instance, got {channel!r}.')
+            channel_id = maybe_snowflake(channel)
+            if (channel_id is not None):
+                message_id = None
+                channel = CHANNELS.get(channel_id)
+            elif isinstance(channel, MessageRepr):
+                message_id = channel.id
+                channel = channel.channel
+                channel_id = channel.id
+            elif isinstance(channel, MessageReference):
+                channel_id = channel.channel_id
+                message_id = channel.message_id
+                channel = CHANNELS.get(channel_id)
+            else:
+                raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}`, `{Message.__name__}`, '
+                    f'`{MessageRepr.__name__}` or as `{MessageReference.__name__}` instance, got {channel!r}.')
         
         # Embed check order:
         # 1.: None
@@ -5293,7 +5294,7 @@ class Client(UserBase):
     async def guild_edit(self, guild, name=None, icon=..., invite_splash=..., discovery_splash=..., banner=...,
             afk_channel=..., system_channel=..., rules_channel=..., public_updates_channel=..., owner=None, region=None,
             afk_timeout=None, verification_level=None, content_filter=None, message_notification=None, description=...,
-            system_channel_flags=None, add_feature=None, remove_feature=None, reason=None):
+            preferred_locale=None, system_channel_flags=None, add_feature=None, remove_feature=None, reason=None):
         """
         Edis the guild with the given parameters.
         
@@ -5301,7 +5302,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild``
+        guild : ``Guild`` or `int`
             The guild to edit.
         name : `str`, Optional
             The guild's new name.
@@ -5317,35 +5318,41 @@ class Client(UserBase):
         banner : `None` or `bytes-like`, Optional
             The new splash of the guild. Can be `'jpg'`, `'png'`, `'webp'` image's raw data. The guild must have
             `BANNER` feature. By passing it as `None` you can remove the current one.
-        afk_channel : `None` or ``ChannelVoice`` object, Optional
+        afk_channel : `None`, ``ChannelVoice`` or `int`, Optional
             The new afk channel of the guild. You can remove the current one by passing is as `None`.
-        system_channel : `None` or ``ChannelText`` object, Optional
+        system_channel : `None`, ``ChannelText`` or `int`, Optional
             The new system channel of the guild. You can remove the current one by passing is as `None`.
-        rules_channel : `None` or ``ChannelText`` object, Optional
+        rules_channel : `None`, ``ChannelText`` or `int`, Optional
             The new rules channel of the guild. The guild must be a Community guild. You can remove the current
             one by passing is as `None`.
-        public_updates_channel : `None` or ``ChannelText`` object, Optional
+        public_updates_channel : `None`, ``ChannelText`` or `int`, Optional
             The new public updates channel of the guild. The guild must be a Community guild. You can remove the
             current one by passing is as `None`.
-        owner : ``User`` or ``Client`` object, Optional
+        owner : ``User``, ``Client`` or `int`, Optional
             The new owner of the guild. You must be the owner of the guild to transfer ownership.
         region : ``VoiceRegion``, Optional
             The new voice region of the guild.
         afk_timeout : `int`, Optional
             The new afk timeout for the users at the guild's afk channel.
-        verification_level : ``VerificationLevel``, Optional
+            
+            Can be one of: `60, 300, 900, 1800, 3600`.
+        verification_level : ``VerificationLevel`` or `int`, Optional
             The new verification level of the guild.
-        content_filter : ``ContentFilterLevel``, Optional
+        content_filter : ``ContentFilterLevel`` or `int`, Optional
             The new content filter level of the guild.
         message_notification : ``MessageNotificationLevel``, Optional
             The new message notification level of the guild.
         description : `None` or `str` instance, Optional
             The new description of the guild. By passing `None`, or an empty string you can remove the current one. The
             guild must be a Community guild.
+        preferred_locale : `str`, Optional
+            The guild's preferred locale. The guild must be a Community guild.
         system_channel_flags : ``SystemChannelFlag``, Optional
             The guild's system channel's new flags.
         add_feature : (`str`, ``GuildFeature``) or (`iterable` of (`str`, ``GuildFeature``)), Optional
             Guild feature(s) to add to the guild.
+            
+            If `guild` is given as an id, then `add_feature` should contain all the features of the guild to set.
         remove_feature : (`str`, ``GuildFeature``) or (`iterable` of (`str`, ``GuildFeature``)), Optional
             Guild feature(s) to remove from the guild's.
         reason : `None` or `str`, Optional
@@ -5354,20 +5361,33 @@ class Client(UserBase):
         Raises
         ------
         TypeError
+            - If `guild` was not given neither as ``Guild`` or `str` instance.
             - If `icon`, `invite_splash`, `discovery_splash`, `banner` is neither `None` or `bytes-like`.
             - If `add_feature` or `remove_feature` was not given neither as `str`, as ``GuildFeature`` or as as
                 `iterable` of `str` or ``GuildFeature`` instances.
-        ValueError
-            - If name is shorter than 2 or longer than 100 characters.
+            - If `afk_channel` was given, but not as `None`, ``ChannelVoice``, neither as `int` instance.
+            - If `system_channel`, `rules_channel` or `public_updates_channel` was given, but not as `None`,
+                ``ChannelText``, neither as `int` instance.
+            - If `owner` was not given neither as ``User``, ``Client`` or `int` instance.
+            - If `region` wasg iven neither as ``VoiceRegion`` or `str` instance.
+            - If `verification_level` was not given neither as ``VerificationLevel`` or `int` instance.
+            - If `content_filter` was not given neither as ``ContentFilterLevel`` or `int` instance.
+            - If `description` was not given either as `None` or `str` instance.
+        AssertionError
             - If `icon`, `invite_splash`, `discovery_splash` or `banner` was passed as `bytes-like`, but it's format
                 is not any of the expected formats.
-            - If `discovery_splash` was gvien meanwhile the guild is not discoverable.
-            - If `rules_channel`, `description` or `public_updates_channel` was passed meanwhile the guild is not
-                Community guild.
-            - If `invite_splash` was passed meanwhile the guild has no `INVITE_SPLASH` feature.
-            - If `banner` was passed meanwhile the guild has no `BANNER` feature.
+            - If `banner` was given meanwhile the guild has no `BANNER` feature.
+            - If `rules_channel`, `description`, `preferred_locale` or `public_updates_channel` was passed meanwhile
+                the guild is not Community guild.
             - If `owner` was passed meanwhile the client is not the owner of the guild.
             - If `afk_timeout` was passed and not as one of: `60, 300, 900, 1800, 3600`.
+            - If `name` is shorter than `2` or longer than `100` characters.
+            - If `discovery_splash` was gvien meanwhile the guild is not discoverable.
+            - If `invite_splash` was passed meanwhile the guild has no `INVITE_SPLASH` feature.
+            - `name` was not given as `str` instance.
+            - `afk_timeout` was not given as `int` instance.
+            - `system_channel_flags` was not given as `SystemChannelFlag` or as other `int` instance.
+            - if `preferred_locale` was not given as `str` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -5375,194 +5395,389 @@ class Client(UserBase):
         """
         data = {}
         
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+            
+            guild = None
+        
+        
         if (name is not None):
-            name_ln = len(name)
-            if name_ln < 2 or name_ln > 100:
-                raise ValueError(f'Guild\'s name\'s length can be between 2-100, got {name_ln}: {name!r}.')
+            if __debug__:
+                if not isinstance(name, str):
+                    raise AssertionErrror(f'`name` can be given as `str` insatcne, got {name.__class__.__name__}.')
+                
+                name_ln = len(name)
+                if name_ln < 2 or name_ln > 100:
+                    raise ValueError(f'Guild\'s name\'s length can be between 2-100, got {name_ln}: {name!r}.')
+            
             data['name'] = name
+        
         
         if (icon is not ...):
             if icon is None:
                 icon_data = None
             else:
-                icon_type = icon.__class__
-                if not issubclass(icon_type, (bytes, bytearray, memoryview)):
-                    raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon_type.__name__}.')
+                if not isinstance(icon, (bytes, bytearray, memoryview)):
+                    raise TypeError(f'`icon` can be passed as `None` or `bytes-like`, got {icon.__class__.__name__}.')
                 
-                extension = get_image_extension(icon)
-                if extension not in (VALID_ICON_FORMATS_EXTENDED if (GuildFeature.animated_icon in guild.features) else VALID_ICON_FORMATS):
-                    raise ValueError(f'Invalid icon type: `{extension}`.')
+                if __debug__:
+                    extension = get_image_extension(icon)
+                    
+                    if guild is None:
+                        valid_icon_types = VALID_ICON_FORMATS_EXTENDED
+                    else:
+                        if GuildFeature.animated_icon in guild.features:
+                            valid_icon_types = VALID_ICON_FORMATS_EXTENDED
+                        else:
+                            valid_icon_types = VALID_ICON_FORMATS
+                    
+                    if extension not in valid_icon_types:
+                        raise AssertionError(f'Invalid icon type for the guild: `{extension}`.')
                 
                 icon_data = image_to_base64(icon)
             
             data['icon'] = icon_data
         
+        
         if (banner is not ...):
-            if GuildFeature.banner not in guild.features:
-                raise ValueError('The guild has no `BANNER` feature.')
+            if __debug__:
+                if (guild is not None) and (GuildFeature.banner not in guild.features):
+                    raise AssertionError('The guild has no `BANNER` feature, meanwhile `banner` is given.')
             
             if banner is None:
                 banner_data = None
             else:
-                banner_type = banner.__class__
-                if not issubclass(banner_type, (bytes, bytearray, memoryview)):
-                    raise TypeError(f'`banner` can be passed as `bytes-like`, got {banner_type.__name__}.')
+                if not isinstance(banner, (bytes, bytearray, memoryview)):
+                    raise TypeError(f'`banner` can be passed as `None` or `bytes-like`, got '
+                        f'{banner.__class__.__name__}.')
                 
-                extension = get_image_extension(banner)
-                if extension not in VALID_ICON_FORMATS:
-                    raise ValueError(f'Invalid banner type: `{extension}`.')
+                if __debug__:
+                    extension = get_image_extension(banner)
+                    if extension not in VALID_ICON_FORMATS:
+                        raise AssertionError(f'Invalid banner type: `{extension}`.')
                 
                 banner_data = image_to_base64(banner)
             
             data['banner'] = banner_data
         
+        
         if (invite_splash is not ...):
-            if GuildFeature.invite_splash not in guild.features:
-                raise ValueError('The guild has no `INVITE_SPLASH` feature.')
+            if __debug__:
+                if (guild is not None) and (GuildFeature.invite_splash not in guild.features):
+                    raise AssertionError('The guild has no `INVITE_SPLASH` feature, meanwhile `invite_splash` is '
+                        f'given.')
             
             if invite_splash is None:
                 invite_splash_data = None
             else:
-                invite_splash_type = invite_splash.__class__
-                if not issubclass(invite_splash_type, (bytes, bytearray, memoryview)):
+                if not isinstance(invite_splash, (bytes, bytearray, memoryview)):
                     raise TypeError(f'`invite_splash` can be passed as `bytes-like`, got '
-                        f'{invite_splash_type.__name__}.')
+                        f'{invite_splash.__class__.__name__}.')
                 
-                extension = get_image_extension(invite_splash)
-                if extension not in VALID_ICON_FORMATS:
-                    raise ValueError(f'Invalid invite splash type: `{extension}`.')
+                if __debug__:
+                    extension = get_image_extension(invite_splash)
+                    if extension not in VALID_ICON_FORMATS:
+                        raise AssertionError(f'Invalid invite splash type: `{extension}`.')
                 
                 invite_splash_data = image_to_base64(invite_splash)
-                
+            
             data['splash'] = invite_splash_data
         
+        
         if (discovery_splash is not ...):
-            if GuildFeature.discoverable not in guild.features:
-                raise ValueError('The guild is not discoverable and `discovery_splash` was given.')
+            if __debug__:
+                if (guild is not None) and (GuildFeature.discoverable not in guild.features):
+                    raise AssertionError('The guild is not discoverable, but `discovery_splash` was given.')
             
             if discovery_splash is None:
                 discovery_splash_data = None
             else:
-                discovery_splash_type = discovery_splash.__class__
-                if not issubclass(discovery_splash_type, (bytes, bytearray, memoryview)):
+                if not isinstance(discovery_splash_type, (bytes, bytearray, memoryview)):
                     raise TypeError(f'`discovery_splash` can be passed as `bytes-like`, got '
-                        f'{discovery_splash_type.__name__}.')
+                        f'{discovery_splash.__class__.__name__}.')
                 
-                extension = get_image_extension(discovery_splash)
-                if extension not in VALID_ICON_FORMATS:
-                    raise ValueError(f'Invalid discovery_splash type: `{extension}`.')
+                if __debug__:
+                    extension = get_image_extension(discovery_splash)
+                    if extension not in VALID_ICON_FORMATS:
+                        raise AssertionError(f'Invalid discovery_splash type: `{extension}`.')
                 
                 discovery_splash_data = image_to_base64(discovery_splash)
             
             data['discovery_splash'] = discovery_splash_data
         
+        
         if (afk_channel is not ...):
-            data['afk_channel_id'] = None if afk_channel is None else afk_channel.id
+            if afk_channel is None:
+                afk_channel_id = None
+            elif isinstance(afk_channel, ChannelVoice):
+                afk_channel_id = afk_channel.id
+            else:
+                afk_channel_id = maybe_snowflake(afk_channel)
+                if afk_channel_id is None:
+                    raise TypeError(f'`afk_channel` can be given as `None`, `{ChannelVoice.__name__}` or `int` '
+                        f'instance, got {afk_channel.__class__.__name__}.')
+            
+            data['afk_channel_id'] = afk_channel_id
+        
         
         if (system_channel is not ...):
-            data['system_channel_id'] = None if system_channel is None else system_channel.id
+            if system_channel is None:
+                system_channel_id = None
+            elif isinstance(system_channel, ChannelText):
+                system_channel_id = system_channel.id
+            else:
+                system_channel_id = maybe_snowflake(system_channel)
+                if system_channel_id is None:
+                    raise TypeError(f'`system_channel` can be given as `None`, `{ChannelText.__name__}` or `int` '
+                        f'instance, got {system_channel.__class__.__name__}.')
+            
+            data['system_channel_id'] = system_channel_id
+        
         
         if (rules_channel is not ...):
-            if not COMMUNITY_FEATURES.intersection(guild.features):
-                raise ValueError('The guild is not Community guild and `rules_channel` was given.')
-            data['rules_channel_id'] = None if rules_channel is None else rules_channel.id
+            if __debug__:
+                if (guild is not None) and (not COMMUNITY_FEATURES.intersection(guild.features)):
+                    raise AssertionError('The guild is not Community guild and `rules_channel` was given.')
+            
+            if rules_channel is None:
+                rules_channel_id = None
+            elif isinstance(rules_channel, ChannelText):
+                rules_channel_id = rules_channel.id
+            else:
+                rules_channel_id = maybe_snowflake(rules_channel)
+                if rules_channel_id is None:
+                    raise TypeError(f'`rules_channel` can be given as `None`, `{ChannelText.__name__}` or `int` '
+                        f'instance, got {rules_channel.__class__.__name__}.')
+            
+            data['rules_channel_id'] = rules_channel_id
+        
         
         if (public_updates_channel is not ...):
-            if not COMMUNITY_FEATURES.intersection(guild.features):
-                raise ValueError('The guild is not Community guild and `public_updates_channel` was given.')
-            data['public_updates_channel_id'] = None if public_updates_channel is None else public_updates_channel.id
+            if __debug__:
+                if (guild is not None) and (not COMMUNITY_FEATURES.intersection(guild.features)):
+                    raise AssertionError('The guild is not Community guild and `public_updates_channel` was given.')
+            
+            if public_updates_channel is None:
+                public_updates_channel_id = None
+            elif isinstance(public_updates_channel, ChannelText):
+                public_updates_channel_id = public_updates_channel.id
+            else:
+                public_updates_channel_id = maybe_snowflake(public_updates_channel)
+                if public_updates_channel_id is None:
+                    raise TypeError(f'`public_updates_channel` can be given as `None`, `{ChannelText.__name__}` or '
+                        f'`int` instance, got {public_updates_channel.__class__.__name__}.')
+            
+            data['public_updates_channel_id'] = public_updates_channel_id
+        
         
         if (owner is not None):
-            if (guild.owner_id != self.id):
-                raise ValueError('You must be owner to transfer ownership')
-            data['owner_id'] = owner.id
+            if __debug__:
+                if (guild is not None) and (guild.owner_id != self.id):
+                    raise AssertionError('You must be owner to transfer ownership.')
+            
+            if isinstance(owner, (User, Client)):
+                owner_id = owner.id
+            else:
+                owner_id = maybe_snowflake(owner)
+                if owner_id is None:
+                    raise TypeError(f'`owner` can be given as `{UseBase.__name__}` instance or as `int`, got '
+                        f'{owner.__class__.__name__}.')
+            
+            
+            data['owner_id'] = owner_id
+        
         
         if (region is not None):
-            data['region'] = region.value
+            if isinstance(region, VoiceRegion):
+                region_value = region.value
+            elif isinstance(region, str):
+                region_value = region
+            else:
+                raise TypeError(f'`region` can be given either as `{VoiceRegion.__name__}` or `str` instance, got '
+                    f'{region.__class__.__name__}.')
+            
+            data['region'] = region_value
+        
         
         if (afk_timeout is not None):
-            if afk_timeout not in (60, 300, 900, 1800, 3600):
-                raise ValueError(f'Afk timeout should be 60, 300, 900, 1800, 3600  seconds, got `{afk_timeout!r}`')
+            if __debug__:
+                if not isinstance(afk_timeout, int):
+                    raise AssertionError('`afk_timeout` can be given as `int` instance, got '
+                        f'{afk_timeout.__class__.__name__}.')
+                
+                if afk_timeout not in (60, 300, 900, 1800, 3600):
+                    raise AssertionError(f'Afk timeout should be one of (60, 300, 900, 1800, 3600) seconds, got '
+                        f'`{afk_timeout!r}`.')
+            
             data['afk_timeout'] = afk_timeout
         
+        
         if (verification_level is not None):
-            data['verification_level'] = verification_level.value
+            if isinstance(verification_level, VerificationLevel):
+                verification_level_value = verification_level.value
+            elif isinstance(verification_level, int):
+                verification_level_value = verification_level
+            else:
+                raise TypeError(f'`verification_level` can be given either as {VerificationLevel.__name__} or `int` '
+                    f'instance, got {verification_level.__class__.__name__}.')
+            
+            data['verification_level'] = verification_level_value
+        
         
         if (content_filter is not None):
-            data['explicit_content_filter'] = content_filter.value
+            if isinstance(content_filter, ContentFilterLevel):
+                content_filter_value = content_filter.value
+            elif isinstance(content_filter, int):
+                content_filter_value = content_filter
+            else:
+                raise TypeError(f'`content_filter` can be given either as {ContentFilterLevel.__name__} or `int` '
+                    f'instance, got {content_filter.__class__.__name__}.')
+            
+            data['explicit_content_filter'] = content_filter_value
+        
         
         if (message_notification is not None):
-            data['default_message_notifications'] = message_notification.value
+            if isinstance(message_notification, MessageNotificationLevel):
+                message_notification_value = message_notification.value
+            elif isinstance(message_notification, int):
+                message_notification_value = message_notification
+            else:
+                raise TypeError(f'`message_notification` can be given either as `{MessageNotificationLevel.__name__}`'
+                    f' or `int` instance, got {message_notification.__class__.__name__}.')
+            
+            data['default_message_notifications'] = message_notification_value
+        
         
         if (description is not ...):
-            if not COMMUNITY_FEATURES.intersection(guild.features):
-                raise ValueError('The guild is not Community guild and `description` was given.')
+            if __debug__:
+                if (guild is not None) and (not COMMUNITY_FEATURES.intersection(guild.features)):
+                    raise AssertionError('The guild is not Community guild and `description` was given.')
             
-            if (description is not None) and (not description):
-                description = None
-            data['description']=description
+            if description is None:
+                pass
+            elif isinstance(description, str):
+                if not description:
+                    description = None
+            else:
+                raise TypeError('`description` can be either given as `None` or `str` instance, got '
+                    f'{description.__class__.__name__}.')
+            
+            data['description'] = description
+        
+        
+        if (preferred_locale is not None):
+            if __debug__:
+                if (guild is not None) and (not COMMUNITY_FEATURES.intersection(guild.features)):
+                    raise AssertionError('The guild is not Community guild and `preferred_locale` was given.')
+                
+                if not isinstance(preferred_locale, str):
+                    raise AssertionError('`preferred_locale` can be given as `str` instacne, got '
+                        f'{preferred_locale.__class__.__name__}.')
+            
+            data['preferred_locale'] = preferred_locale
+        
         
         if (system_channel_flags is not None):
-            data['system_channel_flags']=system_channel_flags
+            if __debug__:
+                if not isinstance(system_channel_flags, int):
+                    raise AssertionError(f'`system_channel_flags` can be given as `{SystemChannelFlag.__name__}` '
+                        f'or `int` instance, got {system_channel_flags.__class__.__name__}')
+            
+            data['system_channel_flags'] = system_channel_flags
+        
         
         if (add_feature is not None) or (remove_feature is not None):
-            features = set(feature.value for feature in guild.features)
+            # Collect actual
+            features = set()
+            if (guild is not None):
+                for feature in guild.features:
+                    actual_features.add(feature.value)
             
-            for container, operation, variable_name in (
-                        (add_feature, set.add, 'add_feature', ),
-                        (remove_feature, set.remove, 'remove_feature', ),
-                    ):
-                
-                if container is None:
-                    continue
-                
-                # GOTO
-                while True:
-                    type_ = type(container)
-                    if type_ is GuildFeature:
-                        feature = add_feature.value
-                    elif type_ is str:
-                        feature = add_feature
-                    elif issubclass(type_, str):
-                        feature = str(add_feature)
-                    elif hasattr(type_, '__iter__'):
-                        index = 0
-                        for feature in container:
-                            type_ = type(feature)
-                            if type_ is GuildFeature:
-                                feature = feature.value
-                            elif type_ is str:
-                                feature = feature
-                            elif issubclass(type_, str):
-                                feature = str(feature)
-                            else:
-                                raise TypeError(f'`{variable_name}` was given as `iterable` so it expected to have '
-                                    f'`str` or `{GuildFeature.__name__}` elements, but as element {index!r} got '
-                                    f'{type_.__name__}.')
-                            
-                            try:
-                                operation(features, feature)
-                            except KeyError:
-                                pass
-                            
-                            index += 1
-                            continue
-                        
-                        break
-                    else:
-                        raise TypeError(f'`{variable_name}` can be given as `str`, as `{GuildFeature.__name__}` or as '
-                            f'`iterable` of `str` or `{GuildFeature.__name__}`, got {type_.__name__}.')
-                    
-                    try:
-                        operation(features, feature)
-                    except KeyError:
-                        pass
-                    
+            # Collect added
+            # Use GOTO
+            while True:
+                if add_feature is None:
                     break
+                
+                if isinstance(add_feature, GuildFeature):
+                    feature = add_feature.value
+                elif isinstance(add_feature, str):
+                    feature = add_feature
+                else:
+                    iter_func = getattr(type(add_feature), '__iter__', None)
+                    if iter_func is None:
+                        raise TypeError(f'`add_feature` can be given as `str`, as `{GuildFeature.__name__}` or as '
+                            f'`iterable` of (`str` or `{GuildFeature.__name__}`), got '
+                            f'{add_feature.__class__.__name__}.')
+                    
+                    for index, feature in enumerate(iter_func(add_feature)):
+                        if isinstance(feature, GuildFeature):
+                            feature = feature.value
+                        elif isinstance(feature, str):
+                            pass
+                        else:
+                            raise TypeError(f'`add_feature` was given as `iterable` so it expected to have '
+                                f'`{GuildFeature.__name__}` or `str` elements, but element `{index!r}` is '
+                                f'{feature.__class__.__name__}; {feature!r}.')
+                        
+                        features.add(feature)
+                        continue
+                    
+                    break # End GOTO
+                
+                features.add(feature)
+                break # End GOTO
+            
+            # Collect removed
+            
+            while True:
+                if remove_feature is None:
+                    break
+                
+                if isinstance(remove_feature, GuildFeature):
+                    feature = remove_feature.value
+                elif isinstance(remove_feature, str):
+                    feature = remove_feature
+                else:
+                    iter_func = getattr(type(remove_feature), '__iter__', None)
+                    if iter_func is None:
+                        raise TypeError(f'`remove_feature` can be given as `str`, as `{GuildFeature.__name__}` or as '
+                            f'`iterable` of (`str` or `{GuildFeature.__name__}`), got '
+                            f'{remove_feature.__class__.__name__}.')
+                    
+                    for index, feature in enumerate(iter_func(remove_feature)):
+                        if isinstance(feature, GuildFeature):
+                            feature = feature.value
+                        elif isinstance(feature, str):
+                            pass
+                        else:
+                            raise TypeError(f'`remove_feature` was given as `iterable` so it expected to have '
+                                f'`{GuildFeature.__name__}` or `str` elements, but element `{index!r}` is '
+                                f'{feature.__class__.__name__}; {feature!r}.')
+                        
+                        try:
+                            features.remove(feature)
+                        except KeyError:
+                            pass
+                        continue
+                    
+                    break # End GOTO
+                
+                try:
+                    features.remove(feature)
+                except KeyError:
+                    pass
+                break # End GOTO
             
             data['features'] = features
         
-        await self.http.guild_edit(guild.id, data, reason)
+        
+        await self.http.guild_edit(guild_id, data, reason)
     
     async def guild_bans(self, guild):
         """
@@ -6130,7 +6345,7 @@ class Client(UserBase):
         """
         data = await self.http.guild_channels(guild.id)
         guild._sync_channels(data)
-
+    
     async def guild_sync_roles(self, guild):
         """
         Requests the given guild's roles and if there any desync between the wrapper and Discord, applies the
@@ -6525,36 +6740,56 @@ class Client(UserBase):
     # integrations
     
     #TODO: decide if we should store integrations at Guild objects
-    async def integration_get_all(self, guild, include_applications=False):
-        """
-        Requests the integrations of the given guild.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        guild : ``Guild``
-            The guild, what's intgrations will be requested.
-        include_applications : `bool`
-            Whether the integrations should include application data as well.
-        
-        Returns
-        -------
-        integrations : `list` of ``Integration`` objects
-        
-        Raises
-        ------
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        """
-        if include_applications:
-            data = {'include_applications': True}
-        else:
-            data = None
-        integrations_data = await self.http.integration_get_all(guild.id, data)
-        return [Integration(integration_data) for integration_data in integrations_data]
+    if API_VERSION == 8:
+        async def integration_get_all(self, guild):
+            """
+            Requests the integrations of the given guild.
+            
+            This method is a coroutine.
+            
+            Parameters
+            ----------
+            guild : ``Guild``
+                The guild, what's intgrations will be requested.
+            
+            Returns
+            -------
+            integrations : `list` of ``Integration``
+            
+            Raises
+            ------
+            ConnectionError
+                No internet connection.
+            DiscordException
+                If any exception was received from the Discord API.
+            """
+            integrations_data = await self.http.integration_get_all(guild.id, None)
+            return [Integration(integration_data) for integration_data in integrations_data]
+    else:
+        async def integration_get_all(self, guild):
+            """
+            Requests the integrations of the given guild.
+            
+            This method is a coroutine.
+            
+            Parameters
+            ----------
+            guild : ``Guild``
+                The guild, what's intgrations will be requested.
+            
+            Returns
+            -------
+            integrations : `list` of ``Integration``
+            
+            Raises
+            ------
+            ConnectionError
+                No internet connection.
+            DiscordException
+                If any exception was received from the Discord API.
+            """
+            integrations_data = await self.http.integration_get_all(guild.id, {'include_applications': True})
+            return [Integration(integration_data) for integration_data in integrations_data]
     
     async def integration_create(self, guild, integration_id, type_):
         """
@@ -7552,7 +7787,7 @@ class Client(UserBase):
         
         # Detect message id
         # 1.: Message
-        # 2.: int
+        # 2.: int (str)
         # 3.: MessageRepr
         # 4.: None -> raise
         # 5.: raise
@@ -7562,17 +7797,19 @@ class Client(UserBase):
                 if message.author.id != webhook.id:
                     raise AssertionError('The message was not send by the webhook.')
             message_id = message.id
-        elif isinstance(message, int):
-            message_id = message
-        elif isinstance(message, MessageRepr):
-            # Cannot check author id, skip
-            message_id = message.id
-        elif message is None:
-            raise TypeError('`message` was given as `None`. Make sure to use `Client.webhook_message_create` '
-                'with giving content and by passing `wait` parameter as `True` as well.')
         else:
-            raise TypeError(f'`message` should have be given as `Message`, `MessageRepr` or as `int` instance, got '
-                f'`{message.__class__.__name__}`.')
+            message_id = maybe_snowflake(message)
+            if (message_id is not None):
+                pass
+            elif isinstance(message, MessageRepr):
+                # Cannot check author id, skip
+                message_id = message.id
+            elif message is None:
+                raise TypeError('`message` was given as `None`. Make sure to use `Client.webhook_message_create` '
+                    'with giving content and by passing `wait` parameter as `True` as well.')
+            else:
+                raise TypeError(f'`message` should have be given as `Message`, `MessageRepr` or as `int` instance, got '
+                    f'`{message.__class__.__name__}`.')
         
         # Embed check order:
         # 1.: Elipsis
@@ -7615,7 +7852,7 @@ class Client(UserBase):
         
         if content is ...:
             pass
-        if content is None:
+        elif content is None:
             content = ''
         elif isinstance(content, str):
             pass
@@ -7664,10 +7901,10 @@ class Client(UserBase):
             if (embed is not None):
                 embed = [embed.to_data() for embed in embed]
             
-            message_data['embeds'] = embeds
+            message_data['embeds'] = embed
         
         if (allowed_mentions is not ...):
-            message_data['allowed_mentions'] = None #self._parse_allowed_mentions(allowed_mentions)
+            message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
         
         if not message_data:
             return
@@ -7718,17 +7955,19 @@ class Client(UserBase):
                 if message.author.id != webhook.id:
                     raise TypeError('The message was not send by the webhook.')
             message_id = message.id
-        elif isinstance(message, int):
-            message_id = message
-        elif isinstance(message, MessageRepr):
-            # Cannot check author id, skip
-            message_id = message.id
-        elif message is None:
-            raise AssertionError('`message` parameter was given as `None`. Make sure to use '
-                f'`Client.webhook_message_create`  with giving content and with giving the `wait` parameter as `True`.')
         else:
-            raise TypeError(f'`message` should have be given as `Message`or as  `MessageRepr` instance, got '
-                f'`{message.__class__.__name__}`.')
+            message_id = maybe_snowflake(message)
+            if (message_id is not None):
+                pass
+            elif isinstance(message, MessageRepr):
+                # Cannot check author id, skip
+                message_id = message.id
+            elif message is None:
+                raise AssertionError('`message` parameter was given as `None`. Make sure to use '
+                    f'`Client.webhook_message_create`  with giving content and with giving the `wait` parameter as `True`.')
+            else:
+                raise TypeError(f'`message` should have be given as `Message`or as  `MessageRepr` instance, got '
+                    f'`{message.__class__.__name__}`.')
         
         await self.http.webhook_message_delete(webhook, message_id)
     
@@ -10187,6 +10426,7 @@ channel.Client = Client
 invite.Client = Client
 parsers.Client = Client
 client_utils.Client = Client
+guild.Client = Client
 
 del client_core
 del re

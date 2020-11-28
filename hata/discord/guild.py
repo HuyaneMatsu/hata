@@ -27,6 +27,7 @@ from .preinstanced import GuildFeature, VoiceRegion, Status, VerificationLevel, 
 from . import ratelimit
 
 VoiceClient = NotImplemented
+Client = NotImplemented
 
 LARGE_LIMIT = 250 # can be between 50 and 250
 
@@ -1888,8 +1889,12 @@ class Guild(DiscordEntity, immortal=True):
         
         Notes
         -----
-        Mainly designed for getting clients' permissions.
+        Mainly designed for getting clients' permissions and stores only their as well. Do not caches other user's
+        permissions.
         """
+        if not isinstance(user, Client):
+            return self.permissions_for(user)
+        
         cache_perm = self._cache_perm
         if cache_perm is None:
             self._cache_perm = cache_perm = {}
@@ -2296,7 +2301,7 @@ class Guild(DiscordEntity, immortal=True):
         self._boosters = None
         
         self.preferred_locale = parse_preferred_locale(data)
-
+    
     def _update_emojis(self, data):
         """
         Updates the emojis with the emojis' data received from Discord and returns all the changes broke down if any
@@ -2401,6 +2406,14 @@ class Guild(DiscordEntity, immortal=True):
         for emoji_id in old_ids:
             emoji = emojis[emoji_id]
             emoji._delete()
+    
+    def _invalidate_perm_cache(self):
+        """
+        Invalidates the cached permissions of the guild.
+        """
+        self._cache_perm = None
+        for channel in self.channels.values():
+            channel._cache_perm = None
     
     @property
     def owner(self):

@@ -971,5 +971,41 @@ class ClientWrapper(object):
             client.events.__delattr__(attribute_name)
 
 
-
-
+def maybe_snowflake(value):
+    """
+    Converts the given `value` to `snowflake` if applicable. If not returns `None`.
+    
+    Parameters
+    ----------
+    value : `str`, `int` or `Any`
+        A value what might be snowflake.
+    
+    Returns
+    -------
+    value : `int` or `None`
+    
+    Raises
+    ------
+    AssertionError
+        - If `value` was passed as `str` and cannot be converted to `int`.
+        - If the `value` is negative or it's bit length is over 64.
+    """
+    if isinstance(value, int):
+        pass
+    elif isinstance(value, str):
+        if value.isdigit():
+            if __debug__:
+                if 6 < len(value) < 21:
+                    raise AssertionError('An `id` was given as `str` instance, but it\'s value is out of 64uint '
+                        f'range, got {value!r}.')
+            
+            value = int(value)
+    else:
+        return None
+    
+    if __debug__:
+        if value < 0 or value > ((1<<64)-1):
+            raise AssertionError('An `id` was given as `str` instance, but it\'s value is out of 64uint range, got '
+                f'{value!r}.')
+    
+    return value

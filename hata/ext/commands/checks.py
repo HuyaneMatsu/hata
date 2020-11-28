@@ -152,7 +152,26 @@ def validate_checks(checks_):
         raise TypeError(f'`checks_` should have been given as `None`, `{_check_base.__name__}` instance or as '
             f'`list` of `{_check_base.__name__}` instances, got: {checks_.__class__.__name__}; {checks_!r}.')
     
+    # Unwrap `and` checks
+    if (checks_processed is not None):
+        index = 0
+        limit = len(checks_processed)
+        while True:
+            check = checks_processed[index]
+            if isinstance(check, _and_op_check):
+                del checks_processed[index]
+                for check in check.checks:
+                    checks_processed.append(check)
+                
+                limit = len(checks_processed)
+            else:
+                index += 1
+            
+            if index >= limit:
+                break
+    
     return checks_processed
+
 
 def _convert_handler(handler):
     """
@@ -220,8 +239,45 @@ def _convert_permissions(permissions):
     
     return permissions
 
+class _check_meta(type):
+    """
+    Check metaclass for collecting their slots in a `SLOTS` class attribute.
+    """
+    def __new__(cls, class_name, class_parents, class_attributes):
+        """
+        Parameters
+        ----------
+        class_name : `str`
+            The created classe's name.
+        class_parents : `tuple` of `type` instances
+            The superclasses of the creates type.
+        class_attributes : `dict` of (`str`, `Any`) items
+            The class attributes of the created type.
+        
+        Returns
+        -------
+        type : ``_check_meta`` instance
+        """
+        if class_parents:
+            parent = class_parents[0]
+            inherited_slots = getattr(parent, 'SLOTS', None)
+        else:
+            inherited_slots = None
+        
+        new_slots = class_attributes.get('__slots__')
+        
+        final_slots = []
+        if (inherited_slots is not None):
+            final_slots.extend(inherited_slots)
+        
+        if (new_slots is not None):
+            final_slots.extend(new_slots)
+        
+        class_attributes['SLOTS'] = tuple(final_slots)
+        
+        return type.__new__(cls, class_name, class_parents, class_attributes)
 
-class _check_base(object):
+class _check_base(metaclass=_check_meta):
     """
     Base class for checks.
     
@@ -231,6 +287,7 @@ class _check_base(object):
         An async callable what will be called when the check fails.
     """
     __slots__ = ('handler',)
+    
     def __new__(cls, handler=None):
         """
         Creates a check with the given parameters.
@@ -284,7 +341,7 @@ class _check_base(object):
         passed : `bool`
             Whether the check passed.
         """
-        return True
+        return False
     
     def __repr__(self):
         """Returns the check's representation."""
@@ -293,16 +350,18 @@ class _check_base(object):
             '(',
                 ]
         
-        slots = self.__slots__
+        slots = self.SLOTS
         limit = len(slots)
         if limit:
             index = 0
             while True:
                 name = slots[index]
-                index +=1
-                # case of `_is_async`
-                if name.startswith('_'):
-                    continue
+                index += 1
+                if (name == 'handler') or name.startswith('_'):
+                    if index == limit:
+                        break
+                    else:
+                        continue
                 
                 # case of `channel_id`, `guild_id`
                 if name.endswith('id'):
@@ -338,6 +397,399 @@ class _check_base(object):
     if NEEDS_DUMMY_INIT:
         def __init__(self, *args, **kwargs):
             pass
+    
+    def __invert__(self):
+        """Inverts the check's condition returning a new check."""
+        return _invert_op_check(self)
+    
+    def __or__(self, other):
+        """Connects the two check with `or` relation."""
+        if not isinstance(other, _check_base):
+            return NotImplemented
+        
+        return _or_op_check(self, other)
+
+    def __and__(self, other):
+        """Connects the two check with `and` relation."""
+        if not isinstance(other, _check_base):
+            return NotImplemented
+        
+        return _and_op_check(self, other)
+
+class _invert_op_check(_check_base):
+    """
+    Inverts an internal check.
+    
+    Attributes
+    ----------
+    check : ``_check_base`` instance
+        The inverted check.
+    handler : `None` or `async-callable`
+        An async callable what will be called when the check fails.
+    """
+    __slots__ = ('check',)
+    
+    def __new__(cls, check):
+        """
+        Creates a new reverted check.
+        
+        Parameters
+        ----------
+        check : ``_check_base`` instance
+            The check to invert.
+        
+        Returns
+        -------
+        self : ``_check_base`` instance
+            The reverted check.
+            
+            If the check is already inverted, reverts it and returns the original one.
+            
+            If the check has an inverted check pair, returns an instead of that instead.
+        """
+        if isinstance(check, cls):
+            self = check.check
+        else:
+            target_type = CHECK_INVERT_TABLE.get(check.__class__)
+            if target_type is None:
+                self = object.__new__(cls)
+                self.check = check
+                self.handler = check.handler
+            else:
+                # None of these classes have other attributes yet, so we need just to asign their `.handler`.
+                self = object.__new__(target_type)
+                self.handler = check.handler
+        
+        return self
+    
+    async def __call__(self, client, message):
+        """
+        Calls the check to validate whether it passes with the given conditions.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The client who's received the message.
+        message : ``Message``
+            The received message.
+        
+        Returns
+        -------
+        passed : `bool`
+            Whether the check passed.
+        """
+        return not await self.check(client, message)
+
+
+class _or_op_check(_check_base):
+    """
+    Creates an `or` relations between 2 checks.
+    
+    Attributes
+    ----------
+    checks : `tuple` or ``_check_base`` instances
+        The or-ed checks.
+    handler : `None` or `async-callable`
+        An async callable what will be called when the check fails.
+    """
+    __slots__ = ('checks', )
+    def __new__(cls, check_1, check_2):
+        """
+        Creates a new or-ed check.
+        
+        Parameters
+        ----------
+        check_1 : ``_check_base`` instance
+            The first check to connect.
+        check_2 : ``_check_base`` instance
+            The second check to connect.
+        
+        Returns
+        -------
+        self : ``_check_base`` instance
+            The or-ed check.
+            
+            If the check has natural or relation with an other check, will return that one instead.
+        """
+        check_1_handler = check_1.handler
+        check_2_handler = check_2.handler
+        if check_2_handler is None:
+            handler = check_1_handler
+        else:
+            handler = check_2_handler
+        
+        check_1_type = check_1.__class__
+        check_2_type = check_2.__class__
+        
+        
+        if (check_1_type is _check_base) or (check_2_type is _check_base):
+            if check_1_type is _check_base:
+                if check_2_type is _check_base:
+                    return _check_base(handler=handler)
+                
+                other_check = check_2
+            
+            else:
+                other_check = check_1
+            
+            self = object.__new__(other_check.__class__)
+            self.handler = handler
+            
+            for slot_name in other_check.SLOTS:
+                if slot_name == 'handler':
+                    continue
+                
+                slot_value = getattr(other_check, slot_name)
+                setattr(self, slot_name, slot_value)
+            
+            return self
+        
+        # Permission case?
+        if (check_1_type is check_2_type) and (check_1_type in CHECK_PERMISSION_TABLE):
+            self = object.__new__(check_1_type)
+            self.handler = handler
+            self.permissions = check_1.permissions | check_2.permissions
+            return self
+        
+        check_type = CHECK_OR_TABLE.get(frozenset((check_1_type, check_2_type)))
+        if (check_type is not None):
+            # Guild only cases? -> facepalm?
+            if issubclass(check_1_type, guild_only) or issubclass(check_2_type, guild_only):
+                self = object.__new__(check_type)
+                self.handler = handler
+                return self
+            
+            # Connectable cases?
+            if issubclass(check_1_type, CHECKS_OR_ONLY_TYPES) or issubclass(check_2_type, CHECKS_OR_ONLY_TYPES):
+                if issubclass(check_1_type, CHECKS_OR_ONLY_TYPES):
+                    other_check = check_2
+                else:
+                    other_check = check_1
+                
+                self = object.__new__(check_type)
+                self.handler = handler
+                for slot_name in other_check.SLOTS:
+                    if slot_name == 'handler':
+                        continue
+                    
+                    slot_value = getattr(other_check, slot_name)
+                    setattr(self, slot_name, slot_value)
+                
+                return self
+            
+            # Entity or?
+            if issubclass(check_1_type, CHECKS_ENTITY_TYPES) and issubclass(check_2_type, CHECKS_ENTITY_TYPES):
+                entities = []
+                
+                for check in (check_1, check_2):
+                    slot_name = CHECKS_ENTITIY_SLOTS[check.__class__]
+                    slot_value = getattr(check, slot_name)
+                    if isinstance(slot_value, set):
+                        entities.extend(slot_value)
+                    else:
+                        entities.append(slot_value)
+                
+                self = check_type(entities, handler=handler)
+                return self
+            
+            # Other case Should not happen
+        
+        checks_unwrapped = []
+        if issubclass(check_1_type, cls):
+            checks_unwrapped.extend(check_1.checks)
+        else:
+            checks_unwrapped.append(check_1)
+        
+        if issubclass(check_2_type, cls):
+            checks_unwrapped.extend(check_2.checks)
+        else:
+            checks_unwrapped.append(check_2)
+        
+        checks = tuple(checks_unwrapped)
+        
+        self = object.__new__(cls)
+        self.checks = checks
+        self.handler = handler
+        
+        return self
+    
+    async def __call__(self, client, message):
+        """
+        Calls the check to validate whether it passes with the given conditions.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The client who's received the message.
+        message : ``Message``
+            The received message.
+        
+        Returns
+        -------
+        passed : `bool`
+            Whether the check passed.
+        """
+        for check in self.checks:
+            if await check(client, message):
+                return True
+        
+        return False
+
+class _and_op_check(_check_base):
+    """
+    Creates an `or` relations between 2 checks.
+    
+    Attributes
+    ----------
+    checks : `tuple` or ``_check_base`` instances
+        The or-ed checks.
+    handler : `None` or `async-callable`
+        An async callable what will be called when the check fails.
+    """
+    __slots__ = ('checks', )
+    def __new__(cls, check_1, check_2):
+        """
+        Creates a new and-ed check.
+        
+        Parameters
+        ----------
+        check_1 : ``_check_base`` instance
+            The first check to connect.
+        check_2 : ``_check_base`` instance
+            The second check to connect.
+        
+        Returns
+        -------
+        self : ``_check_base`` instance
+            The and-ed check.
+            
+            If the check has natural and relation with an other check, will return that one instead.
+        
+        Raises
+        ------
+        ValueError
+            The two check's have different `handler`.
+        """
+        check_1_handler = check_1.handler
+        check_2_handler = check_2.handler
+        if check_1_handler != check_2_handler:
+            raise ValueError(f'The two checks have different handlers: check_1={check_1!r}, check_2={check_2!r}. '
+                'Please make sure they have the same when creating `and` connection between them.')
+        
+        handler = check_1_handler
+        
+        check_1_type = check_1.__class__
+        check_2_type = check_2.__class__
+        
+        # Empty check?
+        if (check_1_type is _check_base) or (check_2_type is _check_base):
+            return _check_base(handler=handler)
+        
+        # Permission case?
+        if (check_1_type is check_2_type) and (check_1_type in CHECK_PERMISSION_TABLE):
+            self = object.__new__(check_1_type)
+            self.handler = handler
+            self.permissions = check_1.permissions & check_2.permissions
+            return self
+        
+        check_type = CHECK_AND_TABLE.get(frozenset((check_1_type, check_2_type)))
+        if (check_type is not None):
+            # Connectable cases?
+            if issubclass(check_1_type, CHECKS_AND_ONLY_TYPES) or issubclass(check_2_type, CHECKS_AND_ONLY_TYPES):
+                if issubclass(check_1_type, CHECKS_AND_ONLY_TYPES):
+                    other_check = check_2
+                else:
+                    other_check = check_1
+                
+                self = object.__new__(check_type)
+                self.handler = handler
+                for slot_name in other_check.SLOTS:
+                    if slot_name == 'handler':
+                        continue
+                    
+                    slot_value = getattr(other_check, slot_name)
+                    setattr(self, slot_name, slot_value)
+                
+                return self
+            
+            # Entity or?
+            if issubclass(check_1_type, CHECKS_ENTITY_TYPES) and issubclass(check_2_type, CHECKS_ENTITY_TYPES):
+                entities = []
+                
+                slot_name = CHECKS_ENTITIY_SLOTS[check_1_type]
+                slot_value = getattr(check_1, slot_name)
+                
+                if isinstance(slot_value, set):
+                    entities.extend(slot_value)
+                else:
+                    entities.append(slot_value)
+                
+                slot_name = CHECKS_ENTITIY_SLOTS[check_2_type]
+                slot_value = getattr(check_2, slot_name)
+                
+                if isinstance(slot_value, set):
+                    for entity in slot_value:
+                        try:
+                            entities.remove(entity)
+                        except ValueError:
+                            pass
+                else:
+                    try:
+                        entities.remove(slot_value)
+                    except ValueError:
+                        pass
+                
+                self = check_type(entities, handler=handler)
+                return self
+            
+            # Other case Should not happen
+        
+        checks_unwrapped = []
+        if isinstance(check_1, cls):
+            checks_unwrapped.extend(check_1.checks)
+        else:
+            checks_unwrapped.append(check_1)
+        
+        if isinstance(check_2, cls):
+            checks_unwrapped.extend(check_2.checks)
+        else:
+            checks_unwrapped.append(check_2)
+        
+        checks = tuple(checks_unwrapped)
+        
+        self = object.__new__(cls)
+        self.checks = checks
+        self.handler = handler
+        
+        return self
+    
+    async def __call__(self, client, message):
+        """
+        Calls the check to validate whether it passes with the given conditions.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The client who's received the message.
+        message : ``Message``
+            The received message.
+        
+        Returns
+        -------
+        passed : `bool`
+            Whether the check passed.
+        """
+        for check in self.checks:
+            if not await check(client, message):
+                return False
+        
+        return True
 
 
 class has_role(_check_base):
@@ -514,9 +966,17 @@ class has_any_role(_check_base):
             role = instance_or_id_to_instance(role, Role, 'role')
             roles_processed.add(role)
         
+        roles_processed_length = len(roles_processed)
+        if roles_processed_length == 0:
+            return _check_base(handler)
+        elif roles_processed_length == 1:
+            return has_role(roles_processed.pop(), handler)
+        
+        handler = _convert_handler(handler)
+        
         self = object.__new__(cls)
         self.roles = roles_processed
-        self.handler = _convert_handler(handler)
+        self.handler = handler
         return self
     
     async def __call__(self, client, message):
@@ -556,6 +1016,61 @@ class owner_or_has_any_role(has_any_role):
     roles : `set` of ``Role``
         The roles from what the user should have at least 1.
     """
+    def __new__(cls, roles, handler=None):
+        """
+        Creates a check, what will validate whether the a received message of a client passes the given condition.
+        
+        Parameters
+        ----------
+        roles : `iterable` of (`str`, `int` or ``Role``)
+            Role from what the message's author should have at least 1.
+        handler : `None` or `async-callable` or instanceable to `async-callable`
+            The handler to convert.
+            
+            If the handler is `async-callable` or if it would be instanced to it, then it should accept the
+            following arguments:
+            +-------------------+---------------------------+
+            | Respective name   | Type                      |
+            +===================+===========================+
+            | client            | ``Client``                |
+            +-------------------+---------------------------+
+            | message           | ``Message``               |
+            +-------------------+---------------------------+
+            | command           | ``Command`` or `str`      |
+            +-------------------+---------------------------+
+            | check             | ``_check_base`` instance  |
+            +-------------------+---------------------------+
+        
+        Raises
+        ------
+        TypeError
+            - If `roles` was not given as an `iterable`.
+            - If an element of `roles` was not given neither as ``Role``, `str` or `int` instance.
+            - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
+        ValueError
+            If an element of `roles` was given as `str` or as `int` instance, but not as a valid snowflake, so
+                ``Role`` instance cannot be precreated with it.
+        """
+        roles_type = roles.__class__
+        if not hasattr(roles_type,'__iter__'):
+            raise TypeError(f'`roles` can be given as `iterable` of (`str`, `int` or `{Role.__name__}`), got '
+                f'{roles_type.__name__}.')
+        
+        roles_processed = set()
+        for role in roles:
+            role = instance_or_id_to_instance(role, Role, 'role')
+            roles_processed.add(role)
+        
+        if len(roles_processed) == 1:
+            return owner_or_has_role(roles_processed.pop(), handler)
+        
+        handler = _convert_handler(handler)
+        
+        self = object.__new__(cls)
+        self.roles = roles_processed
+        self.handler = handler
+        return self
+    
     async def __call__(self, client, message):
         """
         Calls the check to validate whether it passes with the given conditions.
@@ -1331,6 +1846,12 @@ class is_any_guild(_check_base):
             guild_id = instance_or_id_to_snowflake(guild, Guild, 'guild')
             guild_ids_processed.add(guild_id)
         
+        guild_ids_processed_length = len(guild_ids_processed)
+        if guild_ids_processed_length == 0:
+            return _check_base(handler)
+        elif guild_ids_processed_length == 1:
+            return is_guild(guild_ids_processed.pop(), handler)
+        
         handler = _convert_handler(handler)
         
         self = object.__new__(cls)
@@ -1598,6 +2119,12 @@ class is_any_channel(_check_base):
         for channel in channels:
             channel_id = instance_or_id_to_snowflake(channel, ChannelBase, 'channel')
             channel_ids_processed.add(channel_id)
+        
+        channel_ids_processed_length = len(channel_ids_processed)
+        if channel_ids_processed_length == 0:
+            return _check_base(handler)
+        elif channel_ids_processed_length == 1:
+            return is_channel(channel_ids_processed.pop(), handler)
         
         handler = _convert_handler(handler)
         
@@ -2076,6 +2603,14 @@ class is_in_any_category(_check_base):
             category_id = instance_or_id_to_snowflake(category, (ChannelCategory, Guild), 'category')
             category_ids_processed.add(category_id)
         
+        category_ids_processed_length = len(category_ids_processed)
+        if category_ids_processed_length == 0:
+            return _check_base(handler)
+        elif category_ids_processed_length == 1:
+            return is_in_category(category_ids_processed.pop(), handler)
+        
+        handler = _convert_handler(handler)
+        
         self = object.__new__(cls)
         self.category_ids = category_ids_processed
         self.handler = handler
@@ -2112,5 +2647,129 @@ class is_in_any_category(_check_base):
         
         return False
 
+
+CHECK_INVERT_TABLE = {
+    bot_account_only    : user_account_only     ,
+    guild_only          : private_only          ,
+    private_only        : guild_only            ,
+    user_account_only   : bot_account_only      ,
+        }
+
+CHECKS_ENTITIY_SLOTS = {
+    is_channel              : 'channel_id'   ,
+    is_guild                : 'guild_id'     ,
+    is_in_category          : 'category_id'  ,
+    has_role                : 'role'         ,
+    owner_or_has_role       : 'role'         ,
+    is_any_channel          : 'channel_ids'  ,
+    is_any_guild            : 'guild_ids'    ,
+    is_in_any_category      : 'category_ids' ,
+    has_any_role            : 'roles'        ,
+    owner_or_has_any_role   : 'roles'        ,
+        }
+
+CHECKS_ENTITY_TYPES = (
+    is_channel,
+    is_guild,
+    is_in_category,
+    has_role,
+    owner_or_has_role,
+    is_any_channel,
+    is_any_guild,
+    is_in_any_category,
+    has_any_role,
+    owner_or_has_any_role,
+        )
+
+CHECKS_OR_ONLY_TYPES = (
+    owner_only,
+    client_only,
+        )
+
+CHECK_OR_TABLE = {
+    frozenset((guild_only             , client_has_guild_permissions    )): guild_only                      ,
+    frozenset((guild_only             , booster_only                    )): guild_only                      ,
+    frozenset((guild_only             , has_guild_permissions           )): guild_only                      ,
+    frozenset((guild_only             , guild_only                      )): guild_only                      ,
+    frozenset((guild_only             , guild_owner                     )): guild_only                      ,
+    frozenset((guild_only             , has_guild_permissions           )): guild_only                      ,
+    frozenset((guild_only             , is_guild                        )): guild_only                      ,
+    frozenset((guild_only             , is_any_guild                    )): guild_only                      ,
+    frozenset((guild_only             , is_in_category                  )): guild_only                      ,
+    frozenset((guild_only             , is_in_any_category              )): guild_only                      ,
+    frozenset((guild_only             , owner_or_guild_owner            )): guild_only                      ,
+    frozenset((guild_only             , owner_or_has_guild_permissions  )): guild_only                      ,
+    
+#   Note, that `guild_owner` and `has_guild_permissions` require to be inside of a `guild`, so we cannot take them.
+#   frozenset((owner_only             , guild_owner                     )): owner_or_guild_owner            ,
+#   frozenset((owner_only             , has_guild_permissions           )): owner_or_has_guild_permissions  ,
+    
+    frozenset((owner_only             , has_any_role                    )): owner_or_has_any_role           ,
+    frozenset((owner_only             , has_permissions                 )): owner_or_has_permissions        ,
+    frozenset((owner_only             , has_role                        )): owner_or_has_role               ,
+    
+    frozenset((client_only            , user_account_only               )): user_account_or_client          ,
+    
+    frozenset((is_channel             , is_channel                      )): is_any_channel                  ,
+    frozenset((is_channel             , is_any_channel                  )): is_any_channel                  ,
+    frozenset((is_any_channel         , is_any_channel                  )): is_any_channel                  ,
+    frozenset((is_guild               , is_guild                        )): is_any_guild                    ,
+    frozenset((is_guild               , is_any_guild                    )): is_any_guild                    ,
+    frozenset((is_any_guild           , is_any_guild                    )): is_any_guild                    ,
+    frozenset((is_in_category         , is_in_any_category              )): is_in_any_category              ,
+    frozenset((is_in_category         , is_in_any_category              )): is_in_any_category              ,
+    frozenset((is_in_any_category     , is_in_any_category              )): is_in_any_category              ,
+    frozenset((has_role               , has_role                        )): has_any_role                    ,
+    frozenset((has_role               , has_any_role                    )): has_any_role                    ,
+    frozenset((has_any_role           , has_any_role                    )): has_any_role                    ,
+    frozenset((owner_or_has_role      , owner_or_has_role               )): owner_or_has_any_role           ,
+    frozenset((owner_or_has_role      , owner_or_has_any_role           )): owner_or_has_any_role           ,
+    frozenset((owner_or_has_any_role  , owner_or_has_any_role           )): owner_or_has_any_role           ,
+        }
+
+
+CHECK_PERMISSION_TABLE = {
+    client_has_guild_permissions,
+    client_has_permissions,
+    has_guild_permissions,
+    has_permissions,
+    owner_or_has_guild_permissions,
+    owner_or_has_permissions,
+        }
+
+CHECKS_AND_ONLY_TYPES = (
+    guild_only,
+        )
+
+CHECK_AND_TABLE = {
+    frozenset((guild_only             , client_has_guild_permissions    )): client_has_guild_permissions    ,
+    frozenset((guild_only             , booster_only                    )): booster_only                    ,
+    frozenset((guild_only             , has_guild_permissions           )): has_guild_permissions           ,
+    frozenset((guild_only             , guild_only                      )): guild_only                      ,
+    frozenset((guild_only             , guild_owner                     )): guild_owner                     ,
+    frozenset((guild_only             , has_guild_permissions           )): has_guild_permissions           ,
+    frozenset((guild_only             , is_guild                        )): is_guild                        ,
+    frozenset((guild_only             , is_any_guild                    )): is_any_guild                    ,
+    frozenset((guild_only             , is_in_category                  )): is_in_category                  ,
+    frozenset((guild_only             , is_in_any_category              )): is_in_any_category              ,
+    frozenset((guild_only             , owner_or_guild_owner            )): owner_or_guild_owner            ,
+    frozenset((guild_only             , owner_or_has_guild_permissions  )): owner_or_has_guild_permissions  ,
+    
+    frozenset((is_channel             , is_channel                      )): is_any_channel                  ,
+    frozenset((is_channel             , is_any_channel                  )): is_any_channel                  ,
+    frozenset((is_any_channel         , is_any_channel                  )): is_any_channel                  ,
+    frozenset((is_guild               , is_guild                        )): is_any_guild                    ,
+    frozenset((is_guild               , is_any_guild                    )): is_any_guild                    ,
+    frozenset((is_any_guild           , is_any_guild                    )): is_any_guild                    ,
+    frozenset((is_in_category         , is_in_any_category              )): is_in_any_category              ,
+    frozenset((is_in_category         , is_in_any_category              )): is_in_any_category              ,
+    frozenset((is_in_any_category     , is_in_any_category              )): is_in_any_category              ,
+    frozenset((has_role               , has_role                        )): has_any_role                    ,
+    frozenset((has_role               , has_any_role                    )): has_any_role                    ,
+    frozenset((has_any_role           , has_any_role                    )): has_any_role                    ,
+    frozenset((owner_or_has_role      , owner_or_has_role               )): owner_or_has_any_role           ,
+    frozenset((owner_or_has_role      , owner_or_has_any_role           )): owner_or_has_any_role           ,
+    frozenset((owner_or_has_any_role  , owner_or_has_any_role           )): owner_or_has_any_role           ,
+        }
 
 del NEEDS_DUMMY_INIT

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 __all__ = ('AuditLogEvent', 'ContentFilterLevel', 'DefaultAvatar', 'FriendRequestFlag', 'GuildFeature',
     'HypesquadHouse', 'InviteTargetType', 'MFA', 'MessageActivityType', 'MessageNotificationLevel', 'MessageType',
-    'PremiumType', 'RelationshipType', 'Status', 'StickerType', 'TeamMembershipState', 'Theme', 'VerificationLevel',
-    'VoiceRegion', 'WebhookType', )
+    'PremiumType', 'RelationshipType', 'RoleManagerType', 'Status', 'StickerType', 'TeamMembershipState', 'Theme',
+    'VerificationLevel', 'VoiceRegion', 'WebhookType', )
 
 from ..backend.utils import DOCS_ENABLED, any_to_any
 
@@ -63,11 +63,11 @@ class VerificationLevel(PreinstancedBase):
     high    = NotImplemented
     extreme = NotImplemented
 
-VerificationLevel.none     = VerificationLevel(0,'none')
-VerificationLevel.low      = VerificationLevel(1,'low')
-VerificationLevel.medium   = VerificationLevel(2,'medium')
-VerificationLevel.high     = VerificationLevel(3,'high')
-VerificationLevel.extreme  = VerificationLevel(4,'extreme')
+VerificationLevel.none     = VerificationLevel(0, 'none')
+VerificationLevel.low      = VerificationLevel(1, 'low')
+VerificationLevel.medium   = VerificationLevel(2, 'medium')
+VerificationLevel.high     = VerificationLevel(3, 'high')
+VerificationLevel.extreme  = VerificationLevel(4, 'extreme')
 
 
 class VoiceRegion(PreinstancedBase):
@@ -2038,12 +2038,12 @@ class StickerType(PreinstancedBase):
     
     Class Attributes
     ----------------
-    INSTANCES : `list` of ``InviteTargetType``
+    INSTANCES : `list` of ``StickerType``
         Stores the predefined ``StickerType`` instances. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
-        The message stickerformat types' values' type.
+        The message sticker format types' values' type.
     DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the messgae sticket types.
+        The default name of the message sticket types.
     
     Every predefind sticket format type can be accessed as class attribute as well:
     
@@ -2075,6 +2075,74 @@ StickerType.NONE   = StickerType(0, 'NONE')
 StickerType.PNG    = StickerType(1, 'PNG')
 StickerType.APNG   = StickerType(2, 'APNG')
 StickerType.LOTTIE = StickerType(3, 'LOTTIE')
+
+
+class RoleManagerType(PreinstancedBase):
+    """
+    Represents a managed role's manager type.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the role manager type.
+    value : `int`
+        The identificator value the role manager type.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `list` of ``RoleManagerType``
+        Stores the predefined ``RoleManagerType`` instances. These can be accessed with their `value` as key.
+    VALUE_TYPE : `type` = `int`
+        The role manager types' values' type.
+    DEFAULT_NAME : `str` = `'UNDEFINED'`
+        The default name of the role manager types.
+    
+    Every predefind role manager type can be accessed as class attribute as well:
+    
+    +-----------------------+---------------+-------+
+    | Class attribute name  | name          | value |
+    +=======================+===============+=======+
+    | NONE                  | NONE          | 0     |
+    +-----------------------+---------------+-------+
+    | UNSET                 | UNSET         | 1     |
+    +-----------------------+---------------+-------+
+    | UNKNOWN               | UNKNOWN       | 2     |
+    +-----------------------+---------------+-------+
+    | BOT                   | BOT           | 3     |
+    +-----------------------+---------------+-------+
+    | BOOSTER               | BOOSTER       | 4     |
+    +-----------------------+---------------+-------+
+    | INTEGRATION           | INTEGRATION   | 5     |
+    +-----------------------+---------------+-------+
+    """
+    INSTANCES = {}
+    VALUE_TYPE = int
+    DEFAULT_NAME = 'UNDEFINED'
+    
+    __slots__ = ()
+    
+    def __bool__(self):
+        """Returns whether the role manager's type is set."""
+        if self.value:
+            boolean = True
+        else:
+            boolean = False
+        
+        return boolean
+    
+    NONE        = NotImplemented
+    UNSET       = NotImplemented
+    UNKNOWN     = NotImplemented
+    BOT         = NotImplemented
+    BOOSTER     = NotImplemented
+    INTEGRATION = NotImplemented
+
+RoleManagerType.NONE        = RoleManagerType(0 , 'NONE'        ,)
+RoleManagerType.UNSET       = RoleManagerType(1 , 'UNSET'       ,)
+RoleManagerType.UNKNOWN     = RoleManagerType(2 , 'UNKNOWN'     ,)
+RoleManagerType.BOT         = RoleManagerType(3 , 'BOT'         ,)
+RoleManagerType.BOOSTER     = RoleManagerType(4 , 'BOOSTER'     ,)
+RoleManagerType.INTEGRATION = RoleManagerType(5 , 'INTEGRATION' ,)
 
 
 utils.RelationshipType = RelationshipType

@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('PermOW', 'Role', 'RoleManagerType', 'cr_p_overwrite_object', 'cr_p_role_object', )
+__all__ = ('PermOW', 'Role', 'cr_p_overwrite_object', 'cr_p_role_object', )
 
 from ..backend.utils import DOCS_ENABLED
 
@@ -13,10 +13,18 @@ from .permission import Permission
 from .user import create_partial_user
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_color, preconvert_int, preconvert_bool, \
     preconvert_flag
+from .preinstanced import RoleManagerType
 
 from . import ratelimit
 
 create_partial_integration = NotImplemented
+
+ROLE_MANAGER_TYPE_NONE        = RoleManagerType.NONE
+ROLE_MANAGER_TYPE_UNSET       = RoleManagerType.UNSET
+ROLE_MANAGER_TYPE_UNKNOWN     = RoleManagerType.UNKNOWN
+ROLE_MANAGER_TYPE_BOT         = RoleManagerType.BOT
+ROLE_MANAGER_TYPE_BOOSTER     = RoleManagerType.BOOSTER
+ROLE_MANAGER_TYPE_INTEGRATION = RoleManagerType.INTEGRATION
 
 if API_VERSION in (6, 7):
     PERMISSION_KEY = 'permissions_new'
@@ -100,133 +108,6 @@ def create_partial_role(role_id):
     
     return role
 
-class RoleManagerType(object):
-    """
-    Represents a managed role's manager type.
-    
-    Attributes
-    ----------
-    name : `str`
-        The name of the role manager type.
-    value : `int`
-        The identificator value the role manager type.
-    
-    Class Attributes
-    ----------------
-    Every predefind role manager type can be accessed as class attribute as well:
-    
-    +-----------------------+---------------+-------+
-    | Class attribute name  | name          | value |
-    +=======================+===============+=======+
-    | NONE                  | NONE          | 0     |
-    +-----------------------+---------------+-------+
-    | UNSET                 | UNSET         | 1     |
-    +-----------------------+---------------+-------+
-    | UNKNOWN               | UNKNOWN       | 2     |
-    +-----------------------+---------------+-------+
-    | BOT                   | BOT           | 3     |
-    +-----------------------+---------------+-------+
-    | BOOSTER               | BOOSTER       | 4     |
-    +-----------------------+---------------+-------+
-    | INTEGRATION           | INTEGRATION   | 5     |
-    +-----------------------+---------------+-------+
-    """
-    __slots__ = ('name', 'value', )
-    
-    def __init__(self, name, value):
-        """
-        Creates a new role manager type with the given name and value.
-        
-        Parameters
-        ----------
-        name : `str`
-            The icon role manager's name.
-        value : `int`
-            The role manager type's identificator value.
-        """
-        self.name = name
-        self.value = value
-    
-    def __str__(self):
-        """Returns the name of the role manager type."""
-        return self.name
-    
-    def __int__(self):
-        """Returns the identificator value of the role manager type."""
-        return self.value
-    
-    def __bool__(self):
-        """Returns whether the role manager's type is set."""
-        if self.value:
-            boolean = True
-        else:
-            boolean = False
-        
-        return boolean
-    
-    def __repr__(self):
-        """Returns the role manager type's representation."""
-        return f'{self.__class__.__name__}(name={self.name!r}, value={self.value!r})'
-    
-    def __hash__(self):
-        """Returns the role manager type's hash, what equals to it's value."""
-        return self.value
-    
-    def __gt__(self, other):
-        """Returns whether this role manager type's value is greater than the other's."""
-        if type(self) is type(other):
-            return self.value > other.value
-        
-        return NotImplemented
-    
-    def __ge__(self, other):
-        """Returns whether this role manager type's value is greater or equal to the other's."""
-        if type(self) is type(other):
-            return self.value >= other.value
-        
-        return NotImplemented
-    
-    def __eq__(self, other):
-        """Returns whether this role manager type's value is equal to the other's."""
-        if type(self) is type(other):
-            return self.value == other.value
-        
-        return NotImplemented
-    
-    def __ne__(self, other):
-        """Returns whether this role manager type's value is not equal to the other's."""
-        if type(self) is type(other):
-            return self.value != other.value
-        
-        return NotImplemented
-    
-    def __le__(self, other):
-        """Returns whether this role manager type's value is less or equal to the other's."""
-        if type(self) is type(other):
-            return self.value <= other.value
-        
-        return NotImplemented
-    
-    def __lt__(self, other):
-        """Returns whether this role manager type's value is less than the other's."""
-        if type(self) is type(other):
-            return self.value < other.value
-        
-        return NotImplemented
-    
-    NONE = NotImplemented
-    UNSET = NotImplemented
-    UNKNOWN = NotImplemented
-    BOT = NotImplemented
-    BOOSTER = NotImplemented
-    INTEGRATION = NotImplemented
-
-RoleManagerType.NONE        = ROLE_MANAGER_TYPE_NONE        = RoleManagerType('NONE'        , 0 ,)
-RoleManagerType.UNSET       = ROLE_MANAGER_TYPE_UNSET       = RoleManagerType('UNSET'       , 1 ,)
-RoleManagerType.UNKNOWN     = ROLE_MANAGER_TYPE_UNKNOWN     = RoleManagerType('UNKNOWN'     , 2 ,)
-RoleManagerType.BOT         = ROLE_MANAGER_TYPE_BOT         = RoleManagerType('BOT'         , 3 ,)
-RoleManagerType.BOOSTER     = ROLE_MANAGER_TYPE_BOOSTER     = RoleManagerType('BOOSTER'     , 4 ,)
-RoleManagerType.INTEGRATION = ROLE_MANAGER_TYPE_INTEGRATION = RoleManagerType('INTEGRATION' , 5 ,)
 
 class Role(DiscordEntity, immortal=True):
     """
@@ -530,9 +411,7 @@ class Role(DiscordEntity, immortal=True):
         self.mentionable = data['mentionable']
         
         if clear_permission_cache:
-            guild._cache_perm = None
-            for channel in guild.channels.values():
-                channel._cache_perm = None
+            guild._invalidate_perm_cache()
         
     def __str__(self):
         """Returns the role"s name or `'Partial'` if it has non."""
@@ -628,9 +507,7 @@ class Role(DiscordEntity, immortal=True):
             self.mentionable = mentionable
         
         if clear_permission_cache:
-            guild._cache_perm = None
-            for channel in guild.channels.values():
-                channel._cache_perm = None
+            guild._invalidate_perm_cache()
         
         return old_attributes
     

@@ -1391,8 +1391,12 @@ class ChannelGuildBase(ChannelBase):
         
         Notes
         -----
-        Mainly designed for getting clients' permissions.
+        Mainly designed for getting clients' permissions and stores only their as well. Do not caches other user's
+        permissions.
         """
+        if not isinstance(user, Client):
+            return self.permissions_for(user)
+        
         cache_perm = self._cache_perm
         if cache_perm is None:
             self._cache_perm = cache_perm = {}

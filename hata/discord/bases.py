@@ -61,7 +61,7 @@ class DiscordEntityMeta(type):
             while index < parent_count:
                 parent = class_parents[index]
                 final_slots.update(getattr(parent, f'_{parent.__name__}__slots', ()))
-                index +=1
+                index += 1
         
         slots = class_attributes.get('__slots__',)
         if (slots is not None) and slots:

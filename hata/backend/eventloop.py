@@ -2304,9 +2304,15 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             If `awaitable` is not `awaitable`.
         TimeoutError
              If `awaitable` did not finish before the given `timeout` is over.
+        AssertionError
+            If called from itself.
         BaseException
             Any exception raised by `awaitable`.
         """
+        if __debug__:
+            if current_thread() is self:
+                raise AssertionError(f'`{self.__class__.__name__}.run` should not be called from itself.')
+        
         return self.ensure_future_threadsafe(awaitable).syncwrap().wait(timeout)
     
     if __debug__:

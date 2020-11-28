@@ -1870,22 +1870,27 @@ class User(UserBase):
             Received guild member data.
         guild : ``Guild``
             The respective guild of the profile to update.
+        
+        Returns
+        -------
+        user : ``UserBase``
+            The updated user.
         """
         user_id = int(data['user']['id'])
         
         try:
             user = USERS[user_id]
         except KeyError:
-            cls(data, guild)
-            return
+            user = cls(data, guild)
+        else:
+            try:
+                profile = user.guild_profiles[guild]
+            except KeyError:
+                user.guild_profiles[guild] = GuildProfile(data, guild)
+            else:
+                profile._update_no_return(data, guild)
         
-        try:
-            profile = user.guild_profiles[guild]
-        except KeyError:
-            user.guild_profiles[guild] = GuildProfile(data, guild)
-            return
-
-        profile._update_no_return(data, guild)
+        return user
     
     if CACHE_PRESENCE:
         @classmethod

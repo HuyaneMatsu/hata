@@ -46,9 +46,9 @@ def endswith_xFFxD9(data):
         if actual:
             return False
         
-        index -=1
+        index -= 1
         continue
-        
+
 def get_image_extension(data):
     """
     Gets the given raw image data's extension and returns it.

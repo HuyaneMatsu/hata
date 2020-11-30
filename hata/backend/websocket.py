@@ -80,7 +80,7 @@ class WebSocketCommonProtocol(ProtocolBase):
         The maximal duration in seconds what is waited for response after close frame is sent. Defaults to `10.0`.
     close_reason : `None` or `str`
         The reason, why the websocket was closed. Set only after the websocket is closed. Close reason might not be
-        recevied tho.
+        received tho.
     connection_lost_waiter : ``Future``
         A future, what's result is set as `None`, when the connection is closed. Used to wait for close frames.
         
@@ -572,7 +572,7 @@ class WebSocketCommonProtocol(ProtocolBase):
         Returns
         -------
         message : `None`, `bytes` or `str`
-            A recevied message. It's type depend on the frame's type. returns `None` if close frame was received.
+            A received message. It's type depend on the frame's type. returns `None` if close frame was received.
         
         Raises
         ------
@@ -1058,7 +1058,7 @@ class WSClient(WebSocketCommonProtocol):
         The maximal duration in seconds what is waited for response after close frame is sent. Defaults to `10.0`.
     close_reason : `None` or `str`
         The reason, why the websocket was closed. Set only after the websocket is closed. Close reason might not be
-        recevied tho.
+        received tho.
     connection_lost_waiter : ``Future``
         A future, what's result is set as `None`, when the connection is closed. Used to wait for close frames.
         
@@ -1137,7 +1137,7 @@ class WSClient(WebSocketCommonProtocol):
             - `request_params` : `list` of `tuple` (`str`, `str`). Additional header parameters of the extension.
             - `decode` : `callable`. Decoder method, what processes a received websocket frame. Should accept `2`
                 parameters: The respective websocket ``Frame``, and the ˙max_size` as `int`, what descibes the
-                maximal size of a recevied frame. If it is passed, ``PayloadError`` is raised.
+                maximal size of a received frame. If it is passed, ``PayloadError`` is raised.
             - `encode` : `callable`. Encoder method, what processes the websocket frames to send. Should accept `1`
                 parameter, the respective websocket ``Frame``.
         available_subprotocols : `None` or (`list` of `str`), Optional
@@ -1180,10 +1180,10 @@ class WSClient(WebSocketCommonProtocol):
             - The response's headers contain sec websocket accept 0 or more than 1 times.
             - The response's secret key not matches the send one.
             - No extensions are suported, but still received.
-            - Unsupported extension recevied.
+            - Unsupported extension received.
             - No subprotocols are supported, but still received.
             - Multiple subprotocols received.
-            - Unsupported subprotocol recevied.
+            - Unsupported subprotocol received.
         """
         if http_client is None:
             http_client = HTTPClient(loop)
@@ -1361,7 +1361,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
         The maximal duration in seconds what is waited for response after close frame is sent. Defaults to `10.0`.
     close_reason : `None` or `str`
         The reason, why the websocket was closed. Set only after the websocket is closed. Close reason might not be
-        recevied tho.
+        received tho.
     connection_lost_waiter : ``Future``
         A future, what's result is set as `None`, when the connection is closed. Used to wait for close frames.
         
@@ -1416,7 +1416,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
         - `request_params` : `list` of `tuple` (`str`, `str`). Additional header parameters of the extension.
         - `decode` : `callable`. Decoder method, what processes a received websocket frame. Should accept `2`
             parameters: The respective websocket ``Frame``, and the ˙max_size` as `int`, what descibes the
-            maximal size of a recevied frame. If it is passed, ``PayloadError`` is raised.
+            maximal size of a received frame. If it is passed, ``PayloadError`` is raised.
         - `encode` : `callable`. Encoder method, what processes the websocket frames to send. Should accept `1`
             parameter, the respective websocket ``Frame``.
     available_subprotocols : `None` or (`list` of `str`), Optional
@@ -1542,7 +1542,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
     
     async def handshake(self):
         """
-        Handles a recevied websocket connect request.
+        Handles a received websocket connect request.
         
         This method is a coroutine.
         
@@ -1839,7 +1839,7 @@ class WSServer(object):
                 - `request_params` : `list` of `tuple` (`str`, `str`). Additional header parameters of the extension.
                 - `decode` : `callable`. Decoder method, what processes a received websocket frame. Should accept `2`
                     parameters: The respective websocket ``Frame``, and the ˙max_size` as `int`, what descibes the
-                    maximal size of a recevied frame. If it is passed, ``PayloadError`` is raised.
+                    maximal size of a received frame. If it is passed, ``PayloadError`` is raised.
                 - `encode` : `callable`. Encoder method, what processes the websocket frames to send. Should accept `1`
                     parameter, the respective websocket ``Frame``.
             - `available_subprotocols` : `None` or (`list` of `str`). A list of supported subprotocols in order of
@@ -1900,7 +1900,7 @@ class WSServer(object):
             - `request_params` : `list` of `tuple` (`str`, `str`). Additional header parameters of the extension.
             - `decode` : `callable`. Decoder method, what processes a received websocket frame. Should accept `2`
                 parameters: The respective websocket ``Frame``, and the ˙max_size` as `int`, what descibes the
-                maximal size of a recevied frame. If it is passed, ``PayloadError`` is raised.
+                maximal size of a received frame. If it is passed, ``PayloadError`` is raised.
             - `encode` : `callable`. Encoder method, what processes the websocket frames to send. Should accept `1`
                 parameter, the respective websocket ``Frame``.
         extra_response_headers : `None` or (``imultidict``, `dict-like`) of (`str`, `str`) items, Optional

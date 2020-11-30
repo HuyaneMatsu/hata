@@ -6,6 +6,7 @@ __all__ = ('AttributeUnitBase', 'ClassAttributeUnit', 'FolderedUnit', 'FunctionU
 import sys, re
 from types import FunctionType, BuiltinFunctionType, BuiltinMethodType, MethodType, GetSetDescriptorType, \
     MemberDescriptorType
+from difflib import get_close_matches
 
 from ...backend.utils import cached_property, MethodLike, module_property, basemethod, weakmethod
 from ...discord.bases import IconSlot
@@ -1061,6 +1062,9 @@ def map_module(module_name):
     except KeyError:
         raise LookupError(f'No loaded module is named as {module_name!r}') from None
     
+    # Invalidate search cache
+    CachedSearcher._cache_valid = False
+    
     module_name_pattern = re.compile(f'{re.escape(module_name)}(?:\..*)?')
     modules = []
     
@@ -1071,42 +1075,107 @@ def map_module(module_name):
     root = ModuleUnit(module_name, QualPath(module_name), main_module_object, modules)
     return root
 
-def search_paths(value):
+
+class CachedSearcher(object):
     """
-    Returns all the found units with the given value in their path. Case insensitive.
+    Cached unit path searcher.
     
-    Parameters
-    ----------
-    value : `str`
-        The query string.
-    
-    Returns
-    -------
-    paths : `set` of ``QualPath``
+    Class Attributes
+    ----------------
+    _cached_relations : `dict` of (``QualPath``, (``QualPath`` or `list` of ``QualPath``)) items
+        Path shortening, path relations used when tarnslating found patches back.
+    _cached_possibilities : `list` of `str`
+        The cached possiblities.
+    _cache_valid : `bool`
+        Whether the searcher cache is valid.
     """
-    pattern = re.compile(re.escape(value), re.I)
-    paths = set()
-    for path in MAPPED_OBJECTS:
-        if pattern.search(str(path)) is None:
-            continue
-        
-        while True:
-            parent = path.parent
-            if not parent:
-                break
-            
-            if pattern.search(str(parent)) is None:
-                break
-            
-            if pattern.search(path.parts[-1]) is not None:
-                break
-            
-            path = parent
-            continue
-        
-        paths.add(path)
+    _cache_valid = True
+    _cached_relations = {}
+    _cached_possibilities = []
     
-    return paths
+    @classmethod
+    def _prepare(cls):
+        """
+        Prepares the cache of the searcher.
+        
+        Returns
+        -------
+        possibilities : `list` of `str`
+            The cached possiblities.
+        relations : `dict` of (``QualPath``, (``QualPath`` or `list` of ``QualPath``)) items
+            Path shortening, path relations used when tarnslating found patches back.
+        """
+        cached_relations = cls._cached_relations
+        cached_possibilities = cls._cached_possibilities
+        if not cls._cache_valid:
+            cached_relations.clear()
+            cached_possibilities.clear()
+            for path in MAPPED_OBJECTS:
+                path_parts = path.parts
+                for starter in range(len(path_parts)):
+                    local_path = '.'.join(path_parts[starter:])
+                    
+                    try:
+                        collected_paths = cached_relations[local_path]
+                    except KeyError:
+                        cached_relations[local_path] = path
+                        cached_possibilities.append(local_path)
+                    else:
+                        if isinstance(collected_paths, QualPath):
+                            cached_relations[local_path] = [collected_paths, path]
+                        else:
+                            collected_paths.append(path)
+            
+            for value in cached_relations.values():
+                if isinstance(value, QualPath):
+                    continue
+                
+                value.sort(key=lambda path: str(path))
+        
+        return cached_possibilities, cached_relations
+    
+    def __call__(self, value, limit=100):
+        """
+        Returns all the found units with the given value in their path. Case insensitive.
+        
+        Parameters
+        ----------
+        value : `str`
+            The query string.
+        
+        Returns
+        -------
+        paths : `list` of ``QualPath``
+        """
+        possibilities, relations = self._prepare()
+        
+        matcheds = get_close_matches(value, possibilities, n=limit, cutoff=0.60)
+        
+        paths = []
+        collected = set()
+        
+        for matched in matcheds:
+            path = relations[matched]
+            if isinstance(path, QualPath):
+                if path in collected:
+                    continue
+                
+                collected.add(path)
+                paths.append(path)
+            else:
+                for path in path:
+                    if path in collected:
+                        continue
+                    
+                    collected.add(path)
+                    paths.append(path)
+        
+        del paths[limit:]
+        
+        return paths
+
+
+search_paths = CachedSearcher()
 
 
 del IconSlot

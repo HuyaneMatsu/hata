@@ -5577,7 +5577,7 @@ def route_value(to_route_value, count, default=None):
     result = []
     if isinstance(to_route_value, tuple):
         if len(to_route_value) != count:
-            raise ValueError(f'The represented router has `{count}` applicable clients, meanwhile recevied only '
+            raise ValueError(f'The represented router has `{count}` applicable clients, meanwhile received only '
                 f'`{len(to_route_value)}` routed values, got: {to_route_value!r}.')
         
         last = ...
@@ -5633,7 +5633,7 @@ def route_kwargs(kwargs, count):
     for name, to_route_value in kwargs.items():
         if isinstance(to_route_value, tuple):
             if len(to_route_value) != count:
-                raise ValueError(f'The represented router has `{count}` applicable clients, meanwhile recevied only '
+                raise ValueError(f'The represented router has `{count}` applicable clients, meanwhile received only '
                     f'`{len(to_route_value)}` routed values, got: {to_route_value!r}.')
             
             last = ...

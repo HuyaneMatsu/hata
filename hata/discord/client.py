@@ -125,7 +125,7 @@ class Client(UserBase):
         requested.
         
         When receiving a `READY` dispatch event, the client's ``.ready_state`` is set as a ``ReadyState`` instance and
-        a ``._delay_ready`` task is started, what delays the handleable `ready` event, till every user from the recevied
+        a ``._delay_ready`` task is started, what delays the handleable `ready` event, till every user from the received
         guilds is cached up. When done, ``.ready_state`` is set back to `None`.
     
     relationships : `dict` of (`int`, ``Relationship``) items
@@ -2319,10 +2319,17 @@ class Client(UserBase):
                 data['rate_limit_per_user']=slowmode
         
         elif value == 2:
-            if bitrate < 8000 or bitrate > channel.guild.bitrate_limit:
-                raise ValueError('`bitrate` should be 8000-96000. 128000 max for vip, or 128000, 256000, 384000 '
-                    f'max depending on premium tier, got {bitrate!r}.')
-            data['bitrate'] = bitrate
+            if (bitrate is not None):
+                guild = channel.guild
+                if guild is None:
+                    limit = 384000
+                else:
+                    limit = guild.bitrate_limit
+                
+                if bitrate < 8000 or bitrate > limit:
+                    raise ValueError('`bitrate` should be 8000-96000. 128000 max for vip, or 128000, 256000, 384000 '
+                        f'max depending on premium tier, got {bitrate!r}.')
+                data['bitrate'] = bitrate
             
             if (user_limit is not None):
                 if user_limit < 0 or user_limit > 99:
@@ -2668,7 +2675,7 @@ class Client(UserBase):
         
         See Also
         --------
-        ``.webhook_message_create`` : Sending a message with a ``Webbhook``.
+        ``.webhook_message_create`` : Sending a message with a ``Webhook``.
         """
         
         # Channel check order:
@@ -4080,7 +4087,7 @@ class Client(UserBase):
         
         Notes
         -----
-        Do not updates he given message object, so dispatch event parsers can still calculate differences when recevied.
+        Do not updates he given message object, so dispatch event parsers can still calculate differences when received.
         """
         
         # Message check order
@@ -5696,7 +5703,7 @@ class Client(UserBase):
             features = set()
             if (guild is not None):
                 for feature in guild.features:
-                    actual_features.add(feature.value)
+                    features.add(feature.value)
             
             # Collect added
             # Use GOTO

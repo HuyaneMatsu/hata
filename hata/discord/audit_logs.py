@@ -45,7 +45,7 @@ class AuditLog(object):
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
-            Data recevied from Discord.
+            Data received from Discord.
         guild : ``Guild``
             The respective guild of the audit logs.
         """
@@ -63,7 +63,7 @@ class AuditLog(object):
         
         self.webhooks = webhooks = {}
         try:
-            webhook_datas=data['webhook']
+            webhook_datas = data['webhook']
         except KeyError:
             pass
         else:
@@ -537,7 +537,7 @@ class AuditLogEntry(object):
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
-            Data recevied from Discord.
+            Data received from Discord.
         parent : ``AuditLog`` or ``AuditLogIterator``
             The parent of the entry, what contains the respective guild, the inclued users, webhooks and the
             integrations to work with.

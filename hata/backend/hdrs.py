@@ -119,7 +119,7 @@ def build_extensions(available_extensions):
         - `request_params` : `list` of `tuple` (`str`, `str`). Additional header parameters of the extension.
         - `decode` : `callable`. Decoder method, what processes a received websocket frame. Should accept `2`
             parameters: The respective webcsocket ``Frame``, and the ˙max_size` as `int`, what descibes the
-            maximal size of a recevied frame. If it is passed, ``PayloadError`` is raised.
+            maximal size of a received frame. If it is passed, ``PayloadError`` is raised.
         - `encode` : `callable`. Encoder method, what processes the websocket frames to send. Should accept `1`
             parameter, the respective webcsocket ``Frame``.
     

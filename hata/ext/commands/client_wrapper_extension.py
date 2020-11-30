@@ -37,7 +37,7 @@ def commands_getter(manager_router):
 
 def from_class_constructor(klass):
     """
-    Creates a command from teh given class.
+    Creates a command from the given class.
     
     Raises
     ------

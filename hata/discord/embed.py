@@ -961,7 +961,7 @@ class EmbedCore(EmbedBase):
     """
     Represents Discord embedded content. There are two defined embed classes, the other one is ``Embed``.
     
-    Each embed what is recevied from Discord is stored as ``EmbedCore`` object for better operation support. This
+    Each embed what is received from Discord is stored as ``EmbedCore`` object for better operation support. This
     embed type is a valid embed type to send, but it is more cumbersome to build up, because it requires extra
     imports and it is slower to serialize.
     

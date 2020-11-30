@@ -4724,7 +4724,16 @@ class Lock(object):
         waiters.appendleft(future)
         
         if len(waiters) > 1:
-            await waiters[1]
+            waiter = waiters[1]
+            try:
+                await waiter
+            except:
+                try:
+                    waiters.remove(waiter)
+                except ValueError:
+                    pass
+                
+                raise
     
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """
@@ -4850,9 +4859,60 @@ class ScarletLock(Lock):
         
         size = self._size
         if len(waiters) > size:
-            await waiters[size]
+            waiter = waiters[size]
+            try:
+                await waiter
+            except:
+                try:
+                    waiters.remove(waiter)
+                except ValueError:
+                    pass
+                
+                raise
     
     acquire = __aenter__
+    
+    def get_size(self):
+        """
+        Returns the size of the ``ScarletLock``
+        
+        Returns
+        -------
+        size : `int`
+        """
+        return self._size
+    
+    def get_acquired(self):
+        """
+        Returns how much times the lock is acquired currently. Caps at the size of the lock.
+        
+        Returns
+        --------
+        acquired : `int`
+        """
+        waiter_count = len(self._waiters)
+        size = self._size
+        if waiter_count > size:
+            waiter_count = size
+        
+        return waiter_count
+    
+    def get_waiting(self):
+        """
+        Returns how tasks are waiting to acquire the lock.
+        
+        Returns
+        --------
+        waiting : `int`
+        """
+        waiter_count = len(self._waiters)
+        size = self._size
+        if waiter_count > size:
+            waiting = waiter_count - size
+        else:
+            waiting = 0
+        
+        return waiting
     
     # returns True if the Lock is entered anywhere
     def locked(self):
@@ -5277,7 +5337,8 @@ class ScarletExecutor(object):
     If an exception (except ``CancelledError``) occures in any of the added tasks, then that exception is propagated
     and every other task is cancelled.
     
-    SHould be used, like:
+    Should be used, like:
+    
     ```
     from time import perf_counter
     from hata import ScarletExecutor, sleep

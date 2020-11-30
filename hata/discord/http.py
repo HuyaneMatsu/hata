@@ -15,7 +15,8 @@ from .. env import API_VERSION
 
 from .exceptions import DiscordException, ERROR_CODES
 from .utils import to_json, from_json, Discord_hdrs
-from .ratelimit import ratelimit_global, RATELIMIT_GROUPS, RatelimitHandler, NO_SPECIFIC_RATELIMITER
+from .ratelimit import ratelimit_global, RATELIMIT_GROUPS, RatelimitHandler, NO_SPECIFIC_RATELIMITER, \
+    StackedStaticRatelimitHandler
 
 AUDIT_LOG_REASON    = Discord_hdrs.AUDIT_LOG_REASON
 RATELIMIT_PRECISION = Discord_hdrs.RATELIMIT_PRECISION
@@ -26,7 +27,7 @@ class URLS:
     
     VALID_ICON_FORMATS = ('jpg', 'jpeg','png','webp')
     VALID_ICON_SIZES = {1<<x for x in range(4,13)}
-    VALID_ICON_FORMATS_EXTENDED = (*VALID_ICON_FORMATS,'gif',)
+    VALID_ICON_FORMATS_EXTENDED = (*VALID_ICON_FORMATS, 'gif',)
     
     from ..env import CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DIS_ENDPOINT, API_VERSION
     
@@ -1218,7 +1219,7 @@ class DiscordHTTPClient(HTTPClient):
         
         Parameters
         ----------
-        handler : ``RatelimitHandler``
+        handler : ``RatelimitHandler`` or ``StackedStaticRatelimitHandler``
             Ratlimit handler for the request.
         method : `str`
             The method of the request.
@@ -1261,7 +1262,7 @@ class DiscordHTTPClient(HTTPClient):
                 headers[CONTENT_TYPE] = 'application/json'
                 data = to_json(data)
         
-        if handler.parent.group_id:
+        if not handler.is_unlimited():
             handler = self.handlers.set(handler)
         
         try_again = 4
@@ -1470,12 +1471,14 @@ class DiscordHTTPClient(HTTPClient):
             METH_POST, f'{API_ENDPOINT}/channels/{channel_id}/messages', data)
     
     async def message_delete(self, channel_id, message_id, reason):
-        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.message_delete, channel_id),
+        return await self.discord_request(
+            StackedStaticRatelimitHandler(RATELIMIT_GROUPS.static_message_delete, channel_id),
             METH_DELETE, f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}', reason=reason)
     
     # after 2 week else & not own
     async def message_delete_b2wo(self, channel_id, message_id, reason):
-        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.message_delete_b2wo, channel_id),
+        return await self.discord_request(
+            StackedStaticRatelimitHandler(RATELIMIT_GROUPS.static_message_delete_b2wo, channel_id),
             METH_DELETE, f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}', reason=reason)
     
     async def message_delete_multiple(self, channel_id, data, reason):

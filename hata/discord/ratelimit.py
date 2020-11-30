@@ -7,7 +7,7 @@ from collections import deque
 from threading import current_thread
 
 from ..backend.utils import modulize, WeakReferer, DOCS_ENABLED
-from ..backend.futures import Future
+from ..backend.futures import Future, ScarletLock
 from ..backend.hdrs import DATE
 from ..backend.eventloop import LOOP_TIME
 
@@ -167,7 +167,20 @@ class RatelimitGroup(object):
     __auto_next_id = 105<<8
     __unlimited = None
     
-    def __new__(cls, limiter = LIMITER_GLOBAL, optimistic=False):
+    @classmethod
+    def generate_next_id(cls):
+        """
+        Generates the next auto id of a ratelimit group and returns it.
+        
+        Returns
+        -------
+        group_id : `int`
+        """
+        group_id = cls.__auto_next_id
+        cls.__auto_next_id = group_id+(7<<8)
+        return group_id
+    
+    def __new__(cls, limiter=LIMITER_GLOBAL, optimistic=False):
         """
         Creates a new ratelimit group.
         
@@ -197,9 +210,7 @@ class RatelimitGroup(object):
         self = object.__new__(cls)
         self.limiter = limiter
         self.size = (-1 if optimistic else 0)
-        group_id = cls.__auto_next_id
-        cls.__auto_next_id = group_id+(7<<8)
-        self.group_id = group_id
+        self.group_id = cls.generate_next_id()
         return self
     
     @classmethod
@@ -407,7 +418,7 @@ class RatelimitHandler(object):
     ``RatelimitHandler`` supports weakreferencing for garbage collecting purposing.
     """
     __slots__ = ('__weakref__', 'active', 'drops', 'limiter_id', 'parent', 'queue', 'wakeupper', )
-    def __init__(self, parent, limiter_id):
+    def __new__(cls, parent, limiter_id):
         """
         Creates a new ratelimit handler.
         
@@ -423,6 +434,7 @@ class RatelimitHandler(object):
         limiter_id : `int`
             The `id` of the Discord Entity based on what the handler is limiter.
         """
+        self = object.__new__(cls)
         self.parent = parent
         
         limiter = parent.limiter
@@ -436,6 +448,8 @@ class RatelimitHandler(object):
         self.active = 0
         self.queue = None
         self.wakeupper = None
+        
+        return self
     
     def copy(self):
         """
@@ -468,7 +482,7 @@ class RatelimitHandler(object):
         else:
             result.append(' size: ')
             size = self.parent.size
-            if size==-1:
+            if size == -1:
                 result.append('unset')
             else:
                 result.append(repr(size))
@@ -502,7 +516,7 @@ class RatelimitHandler(object):
         return ''.join(result)
     
     def __bool__(self):
-        """Retunrs whether the ratelimit handler is active."""
+        """Returns whether the ratelimit handler is active."""
         if self.active:
             return True
         
@@ -539,9 +553,21 @@ class RatelimitHandler(object):
         """Hashes the ratelimit handler."""
         return self.parent.group_id+self.limiter_id
     
+    def is_unlimited(self):
+        """
+        Returns whether the ratelimit handler is unlimited.
+        
+        is_unlimited : `bool` = `False`
+            Stacked ratelimit handlers are always limited.
+        """
+        if self.parent.group_id:
+            return False
+        
+        return True
+    
     async def enter(self):
         """
-        Waits till a respective can be started.
+        Waits till a respective request can be started.
         
         Should be called before the ratelimit handler is used inside of it's context manager.
         
@@ -569,7 +595,7 @@ class RatelimitHandler(object):
             queue.append(future)
             await future
             
-            self.active +=1
+            self.active += 1
             return
         
         left -= self.count_drops()
@@ -581,7 +607,7 @@ class RatelimitHandler(object):
         queue.append(future)
         await future
         
-        self.active +=1
+        self.active += 1
     
     def exit(self, headers):
         """
@@ -592,14 +618,14 @@ class RatelimitHandler(object):
         
         Parameters
         ----------
-        headers : `None` or `imultidict`
+        headers : `None` or `imultidict` of (`str`, `str) items
             Response headers
         """
         current_size = self.parent.size
         if current_size == UNLIMITED_SIZE_VALUE:
             return
         
-        self.active -=1
+        self.active -= 1
         
         optimistic = False
         while True:
@@ -612,7 +638,7 @@ class RatelimitHandler(object):
                         # If this happens, we increase the maximal size.
                         size = current_size
                         if size > MAXIMAL_UNLIMITED_PARARELLITY:
-                            size -=1
+                            size -= 1
                         
                         break
                 else:
@@ -768,7 +794,7 @@ class RatelimitHandlerCTX(object):
     
     Attributes
     ----------
-    parent : ``RatelimitHandler``
+    parent : ``RatelimitHandler`` or ``StaticRatelimitHandler``
         The owner ratelimit handler.
     exited : `bool`
         Whether the context manager was exited already.
@@ -788,19 +814,20 @@ class RatelimitHandlerCTX(object):
     
     def exit(self, headers):
         """
-        ackks the context manager as it was already exited and exists's its parent with the given `headers` as well.
+        Checks the context manager whether it was already exited and exists's its parent with the given `headers`
+        as well.
         
         Parameters
         ----------
         headers : `None` or `imultidict`
             Response headers.
         """
-        assert not self.exited, '`RatelimitHandlerCTX.exit` was already called.'
+        assert not self.exited, '`RatelimitHandlerCTX.exit` or `StaticRatelimitHandler.exit` was already called.'
         self.exited = True
         self.parent.exit(headers)
     
     def __enter__(self):
-        """Enters the conext manager returning itself."""
+        """Enters the context manager returning itself."""
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -1273,6 +1300,385 @@ class RatelimitProxy(object):
             return 0.0
         
         return drops[0].drop-LOOP_TIME()
+
+class StaticRatelimitGroup(object):
+    """
+    Represents a static ratelimit group of one endpoint or of more endpoints sharing the same one.
+    
+    Attributes
+    ----------
+    group_id : `int`
+        The ratelimit group's group id is like it's identificator number, what makes each ratelimit group unique.
+    limiter : `str`
+        Identificator name by what is the ratelimit group limited.
+        
+        Possible values:
+        +-------------------+-------------------+
+        | Respective name   | Value             |
+        +===================+===================+
+        | LIMITER_CHANNEL   | `'channel_id'`    |
+        +-------------------+-------------------+
+        | LIMITER_GUILD     | `'guild_id'`      |
+        +-------------------+-------------------+
+        | LIMITER_WEBHOOK   | `'webhook_id'`    |
+        +-------------------+-------------------+
+        | LIMITER_GLOBAL    | `'global'`        |
+        +-------------------+-------------------+
+        | LIMITER_UNLIMITED | `'unlimited'`     |
+        +-------------------+-------------------+
+    
+    size : `int`
+        The maximal amount of requests, which can be executed pararelly.
+    timeout : `float`
+        The timeout till the ratelimits reset.
+    """
+    __slots__ = ('group_id', 'limiter', 'size', 'timeout')
+    def __new__(cls, size, timeout, limiter=LIMITER_GLOBAL):
+        """
+        Creates a new ratelimit group.
+        
+        Parameters
+        ----------
+        size : `int`
+            The maximal amount of requests, which can be executed pararelly.
+        timeout : `float`
+            The timeout till the ratelimits reset.
+        limiter : `str`, Optional
+            Identificator name by what is the ratelimit group limited. Defaults to `LIMITER_GLOBAL`.
+            
+            Possible values:
+            +-------------------+-------------------+
+            | Respective name   | Value             |
+            +===================+===================+
+            | LIMITER_CHANNEL   | `'channel_id'`    |
+            +-------------------+-------------------+
+            | LIMITER_GUILD     | `'guild_id'`      |
+            +-------------------+-------------------+
+            | LIMITER_WEBHOOK   | `'webhook_id'`    |
+            +-------------------+-------------------+
+            | LIMITER_GLOBAL    | `'global'`        |
+            +-------------------+-------------------+
+            | LIMITER_UNLIMITED | `'unlimited'`     |
+            +-------------------+-------------------+
+        """
+        self = object.__new__(cls)
+        self.limiter = limiter
+        self.size = size
+        self.timeout = timeout
+        self.group_id = RatelimitGroup.generate_next_id()
+        
+        return self
+    
+    def __hash__(self):
+        """Hash of a ratelimit group equals to it's group_id."""
+        return self.group_id
+    
+    def __repr__(self):
+        """Returns the representation of the ratelimit group."""
+        result = [
+            '<',
+            self.__class__.__name__,
+            ' size=',
+            repr(self.size),
+            ', timeout=',
+            repr(self.timeout),
+            ', ',
+                ]
+        
+        limiter = self.limiter
+        if limiter is LIMITER_GLOBAL:
+            result.append('limited globally')
+        elif limiter is LIMITER_UNLIMITED:
+            result.append('unlimited')
+        else:
+            result.append('limited by ')
+            result.append(limiter)
+        
+        result.append('>')
+        
+        return ''.join(result)
+
+
+class StaticRatelimitHandler(object):
+    """
+    Static ratelimit handler to defend the wrapper from stupidity.
+    
+    Attributes
+    ----------
+    limiter_id : `int`
+        The `id` of the Discord Entity based on what the handler is limiter.
+    parent : ``RatelimitGroup``
+        The ratelimit group of the ratelimit handler.
+    lock : `None` or ``ScarletLock``
+        Lock used to await entries and then lock them till they expire.
+    
+    Notes
+    -----
+    Static ratelimit handlers are weakreferencable.
+    """
+    __slots__ = ('__weakref__', 'limiter_id', 'parent', 'lock')
+    def __new__(cls, parent, limiter_id):
+        """
+        Creates a new static ratelimiter instance.
+        
+        Parameters
+        ----------
+        parent : ``StaticRatelimitGroup``
+            The static ratelimit group.
+        limiter_id : `int`
+            The `id` of the Discord Entity based on what the handler is limiter.
+        """
+        self = object.__new__(cls)
+        self.parent = parent
+
+        limiter = parent.limiter
+        if limiter is LIMITER_UNLIMITED:
+            limiter_id = 0
+        elif limiter is LIMITER_GLOBAL:
+            limiter_id = GLOBALLY_LIMITED
+        
+        self.limiter_id = limiter_id
+        self.lock = None
+        
+        return self
+    
+    def __repr__(self):
+        """Returns the ratelimit handler's representation."""
+        result = [
+            '<',
+            self.__class__.__name__,
+                ]
+        
+        limiter = self.parent.limiter
+        if limiter is LIMITER_UNLIMITED:
+            result.append(' unlimited')
+        else:
+            parent = self.parent
+            result.append(' size: ')
+            result.append(repr(parent.size))
+            result.append(' timout: ')
+            result.append(repr(parent.timeout))
+            
+            result.append(', queue length: ')
+            lock = self.lock
+            if lock is None:
+                length = '0'
+            else:
+                length = repr(lock.get_waiting())
+            result.append(length)
+            
+            if limiter is LIMITER_GLOBAL:
+                result.append(', limited globally')
+            else:
+                result.append(', limited by ')
+                result.append(limiter)
+                result.append(': ')
+                result.append(repr(self.limiter_id))
+            
+            result.append(', group id: ')
+            result.append(repr(self.parent.group_id))
+            
+        result.append('>')
+        return ''.join(result)
+    
+    def __bool__(self):
+        """Returns whether the ratelimit handler is active."""
+        lock = self.lock
+        if lock is None:
+            return False
+        
+        if lock.get_acquired():
+            return True
+        
+        return False
+    
+    def __eq__(self, other):
+        """Returns whether the two ratelimit handler has the same `.limiter_id` and `.parent`."""
+        if self.limiter_id != other.limiter_id:
+            return False
+        
+        if self.parent.group_id != other.parent.group_id:
+            return False
+        
+        return True
+    
+    def __ne__(self, other):
+        """Returns whether the two ratelimit handler has different `.limiter_id` or `.parent`."""
+        if self.limiter_id != other.limiter_id:
+            return True
+        
+        if self.parent.group_id != other.parent.group_id:
+            return True
+        
+        return False
+    
+    def __hash__(self):
+        """Hashes the ratelimit handler."""
+        return self.parent.group_id+self.limiter_id
+    
+    def is_unlimited(self):
+        """
+        Returns whether the ratelimit handler is unlimited.
+        
+        is_unlimited : `bool` = `False`
+            Static ratelimit handlers are always limited.
+        """
+        return False
+    
+    async def enter(self):
+        """
+        Waits till a respective request can be started.
+        
+        Should be called before the ratelimit handler is used inside of it's context manager.
+        
+        This method is a coroutine.
+        """
+        lock = self.lock
+        if lock is None:
+            self.lock = lock = ScarletLock(KOKORO, self.parent.size)
+        
+        await lock.acquire()
+    
+    def exit(self, headers):
+        """
+        Called by the ratelimit handler's context manager (``RatelimitHandlerCTX``) when a respective request is done.
+        
+        Static ratelimit handler always ensures it's timeout.
+        
+        Parameters
+        ----------
+        headers : `None` or `imultidict` of (`str`, `str`) items
+            Response headers
+        """
+        handle = KOKORO.call_later(self.parent.timeout, self.lock.release)
+        if handle is None: # If the loop is stopped, force release it.
+            self.lock.release()
+    
+    def ctx(self):
+        """
+        Context manager for ratelimit handler.
+        
+        Returns
+        -------
+        ctx : ``RatelimitHandlerCTX``
+        """
+        return RatelimitHandlerCTX(self)
+
+class StackedStaticRatelimitHandler(object):
+    """
+    Stacked static ratelimit handler to defend the wrapper from stacked stupidity.
+    
+    Attributes
+    ----------
+    stack : `tuple` of ``StaticRatelimitHandler``
+        A stack of static ratelimit handlers.
+    
+    Notes
+    -----
+    Stacked static ratelimit handlers are weakreferencable.
+    """
+    __slots__ = ('stack',)
+    def __new__(cls, parents, limiter_id):
+        """
+        Creates a new satcked static ratelimiter instance.
+        
+        Parameters
+        ----------
+        parents : `tuple` of ``StaticRatelimitGroup``
+            A stack of static ratelimit groups.
+        limiter_id : `int`
+            The `id` of the Discord Entity based on what the handler is limiter.
+        """
+        self = object.__new__(cls)
+        self.stack = tuple(StaticRatelimitHandler(parent, limiter_id) for parent in parents)
+        return self
+    
+    def __repr__(self):
+        """Returns the ratelimit handler's representation."""
+        return f'<{self.__class__.__name__} stack={self.stack!r}>'
+    
+    def __bool__(self):
+        """Returns whether the ratelimit handler is active."""
+        for handler in self.stack:
+            if handler:
+                return True
+        
+        return False
+    
+    def __eq__(self, other):
+        """Returns whether the two ratelimit handler has the same `.limiter_id` and `.parent`."""
+        if isinstance(other, StackedStaticRatelimitHandler):
+            other = other.stack[0]
+        
+        if self.stack[0] == other:
+            return True
+        
+        return False
+    
+    def __ne__(self, other):
+        """Returns whether the two ratelimit handler has different `.limiter_id` or `.parent`."""
+        if isinstance(other, StackedStaticRatelimitHandler):
+            other = other.stack[0]
+        
+        if self.stack[0] != other:
+            return True
+        
+        return False
+    
+    def __hash__(self):
+        """Hashes the ratelimit handler."""
+        return hash(self.stack[0])
+    
+    def is_unlimited(self):
+        """
+        Returns whether the ratelimit handler is unlimited.
+        
+        is_unlimited : `bool` = `False`
+            Static ratelimit handlers are always limited.
+        """
+        return False
+    
+    async def enter(self):
+        """
+        Waits till a respective request can be started.
+        
+        Should be called before the ratelimit handler is used inside of it's context manager.
+        
+        This method is a coroutine.
+        """
+        stack = self.stack
+        for handler in stack:
+            try:
+                await handler.enter()
+            except:
+                for entered in stack[:stack.index(handler)]:
+                    entered.exit(None)
+                
+                raise
+    
+    def exit(self, headers):
+        """
+        Called by the ratelimit handler's context manager (``RatelimitHandlerCTX``) when a respective request is done.
+        
+        Static ratelimit handler always ensures it's timeout.
+        
+        Parameters
+        ----------
+        headers : `None` or `imultidict` of (`str`, `str`) items
+            Response headers
+        """
+        for handler in self.stack:
+            handler.exit(headers)
+    
+    def ctx(self):
+        """
+        Context manager for ratelimit handler.
+        
+        Returns
+        -------
+        ctx : ``RatelimitHandlerCTX``
+        """
+        return RatelimitHandlerCTX(self)
 
 @modulize
 class RATELIMIT_GROUPS:
@@ -2695,6 +3101,10 @@ class RATELIMIT_GROUPS:
     webhook_message_edit        = GROUP_WEBHOOK_EXECUTE
     webhook_message_delete      = GROUP_WEBHOOK_EXECUTE
 
+    # Alternative static versions
+    STATIC_MESSAGE_DELETE_SUB   = StaticRatelimitGroup(5, 5.0, LIMITER_CHANNEL)
+    static_message_delete       = (STATIC_MESSAGE_DELETE_SUB, StaticRatelimitGroup(3, 1.0, LIMITER_CHANNEL))
+    static_message_delete_b2wo  = (STATIC_MESSAGE_DELETE_SUB, StaticRatelimitGroup(30, 120.0, LIMITER_CHANNEL))
 
 del modulize
 del DOCS_ENABLED

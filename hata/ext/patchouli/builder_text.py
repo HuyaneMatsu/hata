@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 from math import ceil
+import re
 
 from .graver import GRAMMAR_CHARS, GravedDescription, GravedCodeBlock, GravedTable, GravedListing, \
     GRAVE_TYPE_GLOBAL_REFERENCE, DO_NOT_ADD_SPACE_AFTER, GravedAttributeDescription
 
 INDENT_SIZE_DEFAULT = 4
+
+DO_NOT_PREVIEW_RP = re.compile('this [a-z]+ is a [a-z]+\.?', re.I)
 
 SPACE_CHAR_DEFAULT = ' '
 SPACE_CHAR_UNICODE = (b'\xe2\xa0\x80').decode()
@@ -102,8 +105,8 @@ def preview_string(graved):
                 add_space_before = False
             
             if words and words[-1] == ' ':
-                if (not add_space_before) or(len(words)>1 and words[-2][-1] in DO_NOT_ADD_SPACE_AFTER) :
-                    del words[1]
+                if (not add_space_before) and (len(words)>1 and words[-2][-1] in DO_NOT_ADD_SPACE_AFTER) :
+                    del words[-1]
         
         else:
             element = element.content
@@ -1874,6 +1877,9 @@ def generate_preview_for(docs, length=200, min_cut_off=20, end='...'):
         if preview_part is None:
             break
         
+        if DO_NOT_PREVIEW_RP.fullmatch(preview_part) is not None:
+            break
+        
         length -= len(preview_part)
         if length < 0:
             preview_part = preview_part[:length-len(end)]
@@ -1897,3 +1903,5 @@ def generate_preview_for(docs, length=200, min_cut_off=20, end='...'):
         preview = None
     
     return preview
+
+del re

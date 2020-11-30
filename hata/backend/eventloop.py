@@ -584,7 +584,7 @@ class Cycler(object):
                 if func.is_async:
                     Task(result, self.loop)
             except BaseException as err:
-                self.loop.render_exc_async(err,[
+                self.loop.render_exc_async(err, [
                     self.__class__.__name__,
                     ' exception occured\nat calling ',
                     repr(func),

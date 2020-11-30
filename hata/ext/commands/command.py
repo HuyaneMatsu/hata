@@ -1901,7 +1901,7 @@ class CommandProcesser(EventWaitforBase):
         Checks to deside whether ``._invalid_command`` should be called. Internal slot used by the
         ``.invalid_command_checks`` property.
     _precheck : `callable`
-        Function, which desides whether a recevied message should be processed. Defaults to ``._default_precheck``.
+        Function, which desides whether a received message should be processed. Defaults to ``._default_precheck``.
         
         The following parameters are passed to it:
         +-----------+---------------+
@@ -1993,7 +1993,7 @@ class CommandProcesser(EventWaitforBase):
             Function to generate display names for commands.
             Should accept only 1 argument, what is `str` instance and should return a `str` instance as well.
         precheck : `None` or `callable`, Optional
-            Function, which desides whether a recevied message should be processed. Defaults to ``._default_precheck``.
+            Function, which desides whether a reveived message should be processed. Defaults to ``._default_precheck``.
             
             The following parameters are passed to it:
             +-----------+---------------+
@@ -2004,7 +2004,7 @@ class CommandProcesser(EventWaitforBase):
             | message   | ``Message``   |
             +-----------+---------------+
             
-            Should return the following parameters:
+            Should return the following values:
             +-------------------+-----------+
             | Name              | Type      |
             +===================+===========+
@@ -2444,9 +2444,9 @@ class CommandProcesser(EventWaitforBase):
         Parameters
         ----------
         client : ``Client``
-            The client who recevied the respective message.
+            The client who received the respective message.
         message : ``Message``
-            The recevied message.
+            The received message.
         
         Returns
         -------

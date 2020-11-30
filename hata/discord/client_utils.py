@@ -684,7 +684,7 @@ class WaitForHandler(object):
         Parameters
         ----------
         client : ``Client``
-            The client who recevied teh respective events.
+            The client who received the respective events.
         args : `tuple` of `Any`
             Other received arguments by the event.
         """
@@ -790,7 +790,7 @@ class ClientWrapper(object):
     
     def __new__(cls, *clients):
         """
-        Creates a new ``ClientWrapper`` insatcne with teh given clients. If no clients are given, then will wrap
+        Creates a new ``ClientWrapper`` insatcne with the given clients. If no clients are given, then will wrap
         all the clients.
         
         Parameters
@@ -955,7 +955,7 @@ class ClientWrapper(object):
     
     def __delattr__(self, attribute_name):
         """
-        Removes the event handler with teh given name from the respective client's events.
+        Removes the event handler with the given name from the respective client's events.
         
         Parameters
         ----------

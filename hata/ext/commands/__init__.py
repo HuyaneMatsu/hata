@@ -62,7 +62,7 @@ def setup_ext_commands(client, prefix, **kwargs):
         Function to generate display names for commands.
         Should accept only 1 argument, what is `str` instance and should return a `str` instance as well.
     precheck : `None` or `callable`, Optional
-        Function, which desides whether a recevied message should be processed
+        Function, which desides whether a received message should be processed
         
         The default one filters out every message what's author is a bot account and the channels where the client
         cannot send messages.
@@ -76,7 +76,7 @@ def setup_ext_commands(client, prefix, **kwargs):
         | message   | ``Message``   |
         +-----------+---------------+
         
-        Should return the following parameters:
+        Should return the following values:
         +-------------------+-----------+
         | Name              | Type      |
         +===================+===========+

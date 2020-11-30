@@ -543,7 +543,7 @@ def cchunkify(lines, lang='', limit=2000):
     return result
 
 if (relativedelta is not None):
-    __all__=(*__all__,'elapsed_time')
+    __all__ = (*__all__, 'elapsed_time')
     def elapsed_time(delta, limit=3, names=(
             ('year', 'years',),
             ('month', 'months'),
@@ -568,16 +568,16 @@ if (relativedelta is not None):
         
         Returns
         -------
-        result : `None` or `str`
+        result : `str`
         
         Raises
         ------
         TypeError
             If delta was neither passed as `datetime` or as `relativedelta` instance.
         """
-        if type(delta) is datetime:
+        if isinstance(delta, datetime):
             delta = relativedelta(datetime.utcnow(), delta)
-        elif type(delta) is relativedelta:
+        elif isinstance(delta, relativedelta):
             pass
         else:
             raise TypeError(f'Expected, `relativedelta` or `datetime`, got {delta.__class__.__name__}.')
@@ -609,7 +609,7 @@ if (relativedelta is not None):
             del parts[-1]
             result = ''.join(parts)
         else:
-            result = None
+            result = f'0 {names[5][0]}'
         
         return result
 

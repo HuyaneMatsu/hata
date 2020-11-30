@@ -1078,7 +1078,7 @@ class Guild(DiscordEntity, immortal=True):
                 channel = self.channels[channel_id]
             except KeyError:
                 # The channel is not present? Probably the channel was deleted. Handle it as a leave if there is a
-                # Voice state for teh user.
+                # Voice state for the user.
                 try:
                     voice_state = self.voice_states[user.id]
                 except KeyError:
@@ -1160,7 +1160,7 @@ class Guild(DiscordEntity, immortal=True):
                 channel = self.channels[channel_id]
             except KeyError:
                 # The channel is not present? Probably the channel was deleted. Handle it as a leave if there is a
-                # Voice state for teh user.
+                # Voice state for the user.
                 try:
                     voice_state = self.voice_states[user.id]
                 except KeyError:

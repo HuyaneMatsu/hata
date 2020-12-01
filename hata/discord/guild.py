@@ -24,7 +24,7 @@ from .preconverters import preconvert_snowflake, preconvert_str
 from .preinstanced import GuildFeature, VoiceRegion, Status, VerificationLevel, MessageNotificationLevel, MFA, \
     ContentFilterLevel
 
-from . import ratelimit
+from . import ratelimit, channel
 
 VoiceClient = NotImplemented
 Client = NotImplemented
@@ -3274,6 +3274,7 @@ class WelcomeChannel(object):
         return True
 
 ratelimit.Guild = Guild
+channel.Guild = Guild
 
 del URLS
 del cached_property
@@ -3284,3 +3285,4 @@ del DiscordEntity
 del ReverseFlagBase
 del IconSlot
 del DOCS_ENABLED
+del channel

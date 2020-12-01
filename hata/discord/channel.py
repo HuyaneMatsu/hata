@@ -20,10 +20,12 @@ from .client_core import GC_CYCLER
 from .webhook import Webhook, WebhookRepr
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_bool
 from .utils import DATETIME_FORMAT_CODE
+from .client_utils import maybe_snowflake
 
 from . import webhook, message, ratelimit
 
 Client = NotImplemented
+Guild = NotImplemented
 
 TURN_MESSAGE_LIMITING_ON = WeakSet()
 
@@ -3464,6 +3466,7 @@ class ChannelCategory(ChannelGuildBase):
         
         return sorted(channel for channel in guild.channels.values() if channel.category is self)
 
+
 class ChannelStore(ChannelGuildBase):
     """
     Represents a ``Guild`` store channel.
@@ -4468,11 +4471,10 @@ CHANNEL_TYPES = (
     ChannelThread,
         )
 
-def cr_pg_channel_object(name, type_, overwrites=None, topic=None, nsfw=False, slowmode=0, bitrate=64000, user_limit=0,
-        bitrate_limit=96000, category_id=None):
+def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None, slowmode=None, bitrate=None,
+        category=None, user_limit=None, guild=None):
     """
-    Creates a json serializable object representing a ``GuildChannelBase`` instance. The unused parameters of the
-    created channel's type are ignored.
+    Creates a json serializable object representing a ``GuildChannelBase`` instance.
     
     Parameters
     ----------
@@ -4493,11 +4495,10 @@ def cr_pg_channel_object(name, type_, overwrites=None, topic=None, nsfw=False, s
         The channel's bitrate.
     user_limit : `int`, Optional
         The channel's user limit.
-    bitrate_limit : `int`, Optional
-        What is the maximal allowed bitrate for the channel. If the passed `bitrate` is over the passed `bitrate_limit`
-        raises `ValueError`.
-    category_id : `int`, Optional
-        The channel's category's id. If the category is under a guild, leave it empty.
+    category : `None`, ``ChannelCategory``, ``Guild`` or `int`, Optional
+        The channel's categoryd. If the category is under a guild, leave it empty.
+    guild : `None` or ``Guild``, Optional
+        Reference guild used for validation purposes. Defaults to `None`.
     
     Returns
     -------
@@ -4506,96 +4507,194 @@ def cr_pg_channel_object(name, type_, overwrites=None, topic=None, nsfw=False, s
     Raises
     ------
     TypeError
-        If `type_` was not passed as `int` or as ``ChannelGuildBase`` instance.
-    ValueError
-        - If `type_` was passed as `int`, but as negative or if there is no channel type for the given value.
+        - If `type_` was not passed as `int` or as ``ChannelGuildBase`` instance.
+        - If `category` was not given as `None`, ``ChannelCategory``, ``Guild`` or `int` instance.
+    AssertionError
+        - if `guild` is given, but not as `None` nor ``Guild`` instance.
+        - If `type_` was given as `int`, and is less than `0`.
+        - If `type_` was given as `int` and exceeds the defined channel type limit.
+        - If `name` was not given as `str` instance.
         - If `name`'s length is under `2` or over `100`.
+        - If `overwrites` was not given as `None`, neither as `list` of `dict`-s.
+        - If `topic` was not given as `str` instance.
         - If `topic`'s length is over `1024`.
-        - If channel type is changed, but not to an expected one.
-        - If `slowmode` is not between `0` and `21600`.
-        - If `bitrate` is lower than `8000` or higher than `bitrate_limit`.
-        - If `user_limit` is negative or over `99`.
-    
-    Notes
-    -----
-    `bitrate_limit` should be `96000`. `128000` max for vip, or `128000`, `256000`, `384000` max depending on the
-    premium tier of the respective guild.
+        - If `topic` was given, but the respective channel type is not ``ChannelText``.
+        - If `snfw` was given meanwhile the respective channel type is not ``ChannelText`` or ``ChannelStore``.
+        - If `nsfw` was not given as `bool`.
+        - If `slowmode` was given, but the respective channel type is not ``ChannelText``.
+        - If `slowmode` was not given as `int` instance.
+        - If `slowmode` was given, but it's value is less than `0` or greater than `21600`.
+        - If `bitrate` was given, but the respective channel type is not ``ChannelVoice``.
+        - If `bitrate` was not given as `int` instance.
+        - If `bitrate`'s value is out of the expected range.
+        - If `user_limit` was given, but the respective channel type is not ``ChannelVoice``.
+        - If `user_limit` was not given as `int` instance.
+        - If `user_limit`' was given, but is out of the expected [0:99] range.
+        - If `category` was given, but the respective channel type cannto be put under other categories.
     """
-    if type(type_) is int:
-        if type_ < 0:
-            raise ValueError(f'`type_` cannot be negative value, got `{type_!r}`.')
-        if type_ >= len(CHANNEL_TYPES):
-            raise ValueError(f'`type_` exceeded the defined channel type limit. Limit: `{len(CHANNEL_TYPES)-1!r}`, '
-                f'got `{type_}`.')
-        
-        if not issubclass(CHANNEL_TYPES[type_], ChannelGuildBase):
-            raise TypeError(f'The function accepts type values refering to a {ChannelGuildBase.__name__}, meanwhile '
-                f'it refers to {CHANNEL_TYPES[type_].__name__}.')
-        
-        type_value = type_
+    if __debug__:
+        if (guild is not None) and (not isinstance(guild, Guild)):
+            raise AssertionError('`guild` is given, but not as `None` nor `Guild` instance, got '
+                f'{guild.__class__.__name__}.')
     
-    elif isinstance(type_, type) and issubclass(type_, ChannelBase):
-        if not issubclass(type_, ChannelGuildBase):
-            raise TypeError(f'The function accepts only {ChannelGuildBase.__name__} instances, got {type_.__name__}.')
-        type_value = type_.INTERCHANGE[0]
+    if isinstance(type_, int):
+        if __debug__:
+            if type_ < 0:
+                raise AssertionError(f'`type_` cannot be negative value, got `{type_!r}`.')
+            if type_ >= len(CHANNEL_TYPES):
+                raise AssertionError(f'`type_` exceeded the defined channel type limit: `{len(CHANNEL_TYPES)-1!r}`, '
+                    f'got `{type_}`.')
+        
+        channel_type = CHANNEL_TYPES[type_]
+        channel_type_value = type_
     
+    elif issubclass(type_, ChannelBase):
+        channel_type = type_
+        channel_type_value = type_.INTERCHANGE[0]
     else:
-        if not issubclass(type_, type):
-            type_ = type_.__class__
-        raise ValueError(f'`type_` argument should be `int` or `{ChannelGuildBase.__name__}` subclass, '
-            f'got {type.__name__}.')
+        raise TypeError(f'The given `type_` is not, neither refers to a channel a type, got {type_!r}.')
     
-    name_ln = len(name)
-    if name_ln < 2 or name_ln > 100:
-        raise ValueError(f'`name` length should be between 2-100, got `{name!r}`.')
+    if not issubclass(channel_type, ChannelGuildBase):
+        raise TypeError(f'`type_` not refers to a `{ChannelGuildBase.__name__}` instance, but to '
+            f'{channel_type.__name__}. Got {type_!r}.')
+    
+    
+    if __debug__:
+        if not isinstance(name, str):
+            raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
+        
+        name_ln = len(name)
+        
+        if name_ln < 2 or name_ln > 100:
+            raise AssertionError(f'`name` length can be in range [2:100], got {name_ln}; {name!r}.')
+    
     
     if overwrites is None:
         overwrites = []
+    else:
+        if __debug__:
+            if not isinstance(overwrites, list):
+                raise AssertionError(f'`overwrites` can be given as `None` or `list` of `cr_p_overwrite_object` '
+                     f'returns, got {overwrites.__class__.__name__}')
+        
+            for index, elemenet in enumerate(overwrites):
+                if not isinstance(elemenet, dict):
+                    raise AssertionError(f'`overwrites`\'s element {index} should be `dict` instance, but got '
+                        f'{element.__class__.__name__}')
+    
     
     channel_data = {
         'name'                  : name,
-        'type'                  : type_value,
+        'type'                  : channel_type_value,
         'permission_overwrites' : overwrites,
             }
     
-    # any Guild Text channel type
-    if type_value in ChannelText.INTERCHANGE:
-        if (topic is not None):
+    
+    if (topic is not None):
+        if __debug__:
+            if not issubclass(channel_type, ChannelText):
+                raise AssertionError(f'`topic` is a valid parameter only for {ChannelText.__name__} '
+                    f'instances, got {channel_type.__name__}.')
+            
+            if not isinstance(topic, str):
+                raise AssertionError(f'`topic` can be given as `str` instance, got {topic.__class__.__name__}.')
+            
             topic_ln = len(topic)
+            
             if topic_ln > 1024:
-                raise ValueError(f'`topic` length can be betwen 0-1024, got `{topic!r}`.')
-            if topic_ln != 0:
-                channel_data['topic'] = topic
+                raise AssertionError(f'`topic` length can be in range [0:1024], got {topic_ln}; {topic!r}.')
+            
+        channel_data['topic'] = topic
     
-    # any Guild Text or any Guild Store channel type
-    if (type_value in ChannelText.INTERCHANGE) or (type_value in ChannelStore.INTERCHANGE):
-        if nsfw:
-            channel_data['nsfw']=nsfw
     
-    # Guild Text channel type only
-    if type_value == ChannelText.INTERCHANGE[0]:
-        if slowmode < 0 or slowmode > 21600:
-            raise ValueError(f'Invalid `slowmode`, should be 0-21600, got `{slowmode!r}`.')
+    if (nsfw is not None):
+        if __debug__:
+            if not issubclass(channel_type, (ChannelText, ChannelStore)):
+                raise AssertionError(f'`nsfw` is a valid parameter only for `{ChannelText.__name__}` and '
+                    f'`{ChannelStore.__name__}` instances, but got {channel_type.__name__}.')
+            
+            if not isinstance(nsfw, bool):
+                raise AssertionError(f'`nsfw` can be given as `bool` instance, got {nsfw.__class__.__name__}.')
+        
+        channel_data['nsfw'] = nsfw
+    
+    
+    if (slowmode is not None):
+        if __debug__:
+            if not issubclass(channel_type, ChannelText):
+                raise AssertionError(f'`slowmode` is a valid parameter only for `{ChannelText.__name__}` instances, '
+                    f'but got {channel_type.__name__}.')
+            
+            if not isinstance(slowmode, int):
+                raise AssertionError('`slowmode` can be given as `int` instance, got '
+                    f'{slowmode.__class__.__name__}.')
+            
+            if slowmode < 0 or slowmode > 21600:
+                raise AssertionError(f'`slowmode` can be in range [0:21600], got: {slowmode!r}.')
+        
         channel_data['rate_limit_per_user'] = slowmode
     
-    # any Guild Voice channel type
-    if type_value in ChannelVoice.INTERCHANGE:
-        if bitrate < 8000 or bitrate > bitrate_limit:
-            raise ValueError(f'`bitrate` should be 8000-96000. 128000 max for vip, or 128000, 256000, 384000 max '
-                f'depending on premium tier. Got `{bitrate!r}`.')
-        channel_data['bitrate'] = bitrate
+    
+
+    if (bitrate is not None):
+        if __debug__:
+            if not issubclass(channel_type, ChannelVoice):
+                raise AssertionError(f'`bitrate` is a valid parameter only for `{ChannelVoice.__name__}` instances, '
+                    f'but got {channel_type.__name__}.')
+                
+            if not isinstance(bitrate, int):
+                raise AssertionError('`bitrate` can be given as `int` instance, got '
+                    f'{bitrate.__class__.__name__}.')
+            
+            # Get max bitrate
+            if guild is None:
+                bitrate_limit = 384000
+            else:
+                bitrate_limit = guild.bitrate_limit
+            
+            if bitrate < 8000 or bitrate > bitrate_limit:
+                raise AssertionError(f'`bitrate` is out of the expected [8000:{bitrate_limit}] range, got {bitrate!r}.')
         
-        if user_limit < 0 or user_limit > 99:
-            raise ValueError(f'`user_limit` should be 0 for unlimited or 1-99, got `{user_limit!r}`.')
+        channel_data['bitrate'] = bitrate
+    
+    
+    if (user_limit is not None):
+        if __debug__:
+            if not issubclass(channel_type, ChannelVoice):
+                raise AssertionError(f'`user_limit` is a valid parameter only for `{ChannelVoice.__name__}` '
+                    f'instances, but got {channel_type.__name__}.')
+            
+            if user_limit < 0 or user_limit > 99:
+                raise AssertionError('`user_limit`\'s value is out of the expected [0:99] range, got '
+                    f'{user_limit!r}.')
+        
         channel_data['user_limit'] = user_limit
     
-    if type_value not in ChannelCategory.INTERCHANGE:
-        if (category_id is not None):
-            channel_data['parent_id'] = category_id
+    
+    if category is None:
+        category_id = 0
+    elif isinstance(category, ChannelCategory):
+        category_id = category.id
+    elif isinstance(category, Guild):
+        category_id = 0
+    else:
+        category_id = maybe_snowflake(category)
+        if category_id is None:
+            raise TypeError(f'`category` can be given as `{ChannelCategory.__name__}`, `{Guild.__name__}` or `int` '
+                f'instance, got {category.__class__.__name__}.')
+    
+    if category_id:
+        if __debug__:
+            if issubclass(channel_type, ChannelCategory):
+                raise AssertionError(f'`category` was given, but the respective channel type is '
+                    f'{channel_type.__name__}, which cannot be put under other categories.')
+        
+        channel_data['parent_id'] = category_id
     
     return channel_data
 
-#scopes
+
+# Scopes
 
 webhook.ChannelText = ChannelText
 message.ChannelBase = ChannelBase

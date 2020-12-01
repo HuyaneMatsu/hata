@@ -1577,7 +1577,7 @@ class StackedStaticRatelimitHandler(object):
     -----
     Stacked static ratelimit handlers are weakreferencable.
     """
-    __slots__ = ('stack',)
+    __slots__ = ('__weakref__', 'stack',)
     def __new__(cls, parents, limiter_id):
         """
         Creates a new satcked static ratelimiter instance.

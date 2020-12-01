@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__all__ = ('ClientWrapper', )
+__all__ = ('ClientWrapper', 'Typer', )
 
 from math import inf
 
@@ -1000,6 +1000,8 @@ def maybe_snowflake(value):
                         f'range, got {value!r}.')
             
             value = int(value)
+        else:
+            return None
     else:
         return None
     

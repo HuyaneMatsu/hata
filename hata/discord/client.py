@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('Client', 'Typer', )
+__all__ = ('Client', )
 
 import re, sys, warnings
 from time import time as time_now
@@ -21,8 +21,8 @@ from .utils import log_time_converter, DISCORD_EPOCH, image_to_base64, random_id
     get_image_extension
 from .user import User, USERS, GuildProfile, UserBase, UserFlag, create_partial_user, GUILD_PROFILES_TYPE
 from .emoji import Emoji
-from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, \
-    message_relativeindex, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES, ChannelTextBase
+from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, ChannelStore, \
+    message_relativeindex, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES, ChannelTextBase, ChannelVoice
 from .guild import Guild, create_partial_guild, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
     DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen, SystemChannelFlag
 from .http import DiscordHTTPClient, URLS
@@ -2234,17 +2234,17 @@ class Client(UserBase):
         
         await self.http.channel_move(guild.id, data, reason)
     
-    async def channel_edit(self, channel, name=None, topic=None, nsfw=None, slowmode=None, user_limit=None,
-            bitrate=None, type_=128, reason=None):
+    async def channel_edit(self, channel, *, name=None, topic=None, nsfw=None, slowmode=None, user_limit=None,
+            bitrate=None, type_=None, reason=None):
         """
-        Edits the given guild channel. Different channel types accept different parameters and they ignore the rest.
-        Only the passed parameters will be edited of the channel.
+        Edits the given guild channel. Different channel types accept different parameters, so make sure to not pass
+        out of place parameters. Only the passed parameters will be edited of the channel.
         
         This method is a coroutine.
         
         Parameters
         ----------
-        channel : ``ChannelGuildBase`` instance
+        channel : ``ChannelGuildBase`` or `int` instance
             The channel to edit.
         name : `str`, Optional
             The `channel`'s new name.
@@ -2266,93 +2266,180 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            - If the given `channel` is not ``ChannelGuildBase`` instance.
-            - If the given `channel`'s type cannot be changed, but the parameter is passed.
-        ValueError
+            - If the given `channel` is not ``ChannelGuildBase`` or `int` instance.
+        AssertionError
+            - If `name` was not given as `str` instance.
             - If `name`'s length is under `2` or over `100`.
+            - If `topic` was not given as `str` instance.
             - If `topic`'s length is over `1024`.
-            - If channel type is changed, but not to an expected one.
-            - If `slowmode` is not between `0` and `21600`.
-            - If `bitrate` is not `8000`-`96000`. `128000` max for vip, or `128000`, `256000`, `384000` max depending
-                on the premium tier of the respective guild.
-            - If `user_limit` is negative or over `99`.
+            - If `topic` was given, but the given channel is not ``ChannelText`` instance.
+            - If `type_` was given, but the given channel is not ``ChannelText`` instance.
+            - If `type_` was not given as `int` instance.
+            - If `type_` cannot be interchanged to the given value.
+            - If `snfw` was given meanwhile the channel is not ``ChannelText`` or ``ChannelStore`` instance.
+            - If `nsfw` was not given as `bool`.
+            - If `slowmode` was given, but the channel is not ``ChannelText`` instance.
+            - If `slowmode` was not given as `int` instance.
+            - If `slowmode` was given, but it's value is less than `0` or greater than `21600`.
+            - If `bitrate` was given, but the channel is not ``ChannelVoice`` instance.
+            - If `bitrate` was not given as `int` instance.
+            - If `bitrate`'s value is out of the expected range.
+            - If `user_limit` was given, but the channel is not ``ChannelVoice`` instance.
+            - If `user_limit` was not given as `int` instance.
+            - If `user_limit`' was given, but is out of the expected [0:99] range.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        if not isinstance(channel, ChannelGuildBase):
-            raise TypeError(f'Only Guild channels can be edited with this method, got {channel.__class__.__name__}.')
+        if isinstance(channel, ChannelGuildBase):
+            channel_id = channel.id
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` parameter can be given as {ChannelGuildBase.__name__} or `int` instance, '
+                    f'got {channel.__class__.__name__}.')
+            
+            channel = None
         
         data = {}
-        value = channel.type
+        
         if (name is not None):
-            name_ln = len(name)
-            if name_ln < 2 or name_ln > 100:
-                raise ValueError(f'Invalid `name` length, can be between 2-100, got {name_ln}.')
+            if __debug__:
+                if not isinstance(name, str):
+                    raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
+                
+                name_ln = len(name)
+                
+                if name_ln < 2 or name_ln > 100:
+                    raise AssertionError(f'`name` length can be in range [2:100], got {name_ln}; {name!r}.')
+            
             data['name'] = name
         
-        if value in (0, 5):
-            if (topic is not None):
-                topic_ln = len(topic)
-                if topic_ln > 1024:
-                    raise ValueError(f'Invalid topic length can be between 0-1024, go {topic_ln}.')
-                data['topic'] = topic
         
-        if type_ < 128:
-            INTERCHANGE = channel.INTERCHANGE
-            if len(INTERCHANGE) <= 1:
-                raise TypeError(f'You can not switch channel type of this channel type.')
-            if type_ not in INTERCHANGE:
-                raise ValueError(f'You can switch chanel type from {value} to {type_}.')
-            if type_ != value:
-                data['type'] = type_
-        
-        if value in (0, 5, 6):
-            if (nsfw is not None):
-                data['nsfw'] = nsfw
-        
-        if value == 0:
-            if (slowmode is not None):
-                if slowmode < 0 or slowmode > 21600:
-                    raise ValueError(f'`slowmode` should be between 0 and 21600, got: {slowmode}.')
-                data['rate_limit_per_user']=slowmode
-        
-        elif value == 2:
-            if (bitrate is not None):
-                guild = channel.guild
-                if guild is None:
-                    limit = 384000
-                else:
-                    limit = guild.bitrate_limit
+        if (topic is not None):
+            if __debug__:
+                if (channel is not None):
+                    if not isinstance(channel, ChannelText):
+                        raise AssertionError(f'`topic` is a valid parameter only for {ChannelText.__name__} '
+                            f'instances, got {channel.__class__.__name__}.')
                 
-                if bitrate < 8000 or bitrate > limit:
-                    raise ValueError('`bitrate` should be 8000-96000. 128000 max for vip, or 128000, 256000, 384000 '
-                        f'max depending on premium tier, got {bitrate!r}.')
-                data['bitrate'] = bitrate
-            
-            if (user_limit is not None):
-                if user_limit < 0 or user_limit > 99:
-                    raise ValueError(f'`user_limit` should be betwwen 0 and 99, got {user_limit!r}.')
-                data['user_limit'] = user_limit
+                if not isinstance(topic, str):
+                    raise AssertionError(f'`topic` can be given as `str` instance, got {topic.__class__.__name__}.')
+                
+                topic_ln = len(topic)
+                
+                if topic_ln > 1024:
+                    raise AssertionError(f'`topic` length can be in range [0:1024], got {topic_ln}; {topic!r}.')
+                
+            data['topic'] = topic
         
-        await self.http.channel_edit(channel.id, data, reason)
+        
+        if (type_ is not None):
+            if __debug__:
+                if (channel is not None):
+                    if not isinstance(channel, ChannelText):
+                        raise AssertionError(f'`type_` is a valid parameter only for `{ChannelText.__name__}` '
+                            f'instances, but got {channel.__class__.__name__}.')
+                
+                if not isinstance(type_, int):
+                    raise AssertionError(f'`type_` can be given as `int` instance, got {type_.__class__.__name__}.')
+                
+                if type_ not in ChannelText.INTERCHANGE:
+                    raise AssertionError(f'`type_` can be interchanged to `{ChannelText.INTERCHANGE}`, got {type_!r}.')
+            
+            data['type'] = type_
+        
+        
+        if (nsfw is not None):
+            if __debug__:
+                if (channel is not None):
+                    if not isinstance(channel, (ChannelText, ChannelStore)):
+                        raise AssertionError(f'`nsfw` is a valid parameter only for `{ChannelText.__name__}` and '
+                            f'`{ChannelStore.__name__}` instances, but got {channel.__class__.__name__}.')
+                
+                if not isinstance(nsfw, bool):
+                    raise AssertionError(f'`nsfw` can be given as `bool` instance, got {nsfw.__class__.__name__}.')
+            
+            data['nsfw'] = nsfw
+        
+        
+        if (slowmode is not None):
+            if __debug__:
+                if (channel is not None):
+                    if not isinstance(channel, ChannelText):
+                        raise AssertionError(f'`slowmode` is a valid parameter only for `{ChannelText.__name__}` '
+                            f'instances, but got {channel.__class__.__name__}.')
+                    
+                if not isinstance(slowmode, int):
+                    raise AssertionError('`slowmode` can be given as `int` instance, got '
+                        f'{slowmode.__class__.__name__}.')
+                
+                if slowmode < 0 or slowmode > 21600:
+                    raise AssertionError(f'`slowmode` can be in range [0:21600], got: {slowmode!r}.')
+            
+            data['rate_limit_per_user'] = slowmode
+        
+        
+        if (bitrate is not None):
+            if __debug__:
+                if (channel is not None):
+                    if not isinstance(channel, ChannelVoice):
+                        raise AssertionError(f'`bitrate` is a valid parameter only for `{ChannelVoice.__name__}` '
+                            f'instances, but got {channel.__class__.__name__}.')
+                    
+                if not isinstance(bitrate, int):
+                    raise AssertionError('`bitrate` can be given as `int` instance, got '
+                        f'{bitrate.__class__.__name__}.')
+                
+                # Get max bitrate
+                if channel is None:
+                    bitrate_limit = 384000
+                else:
+                    guild = channel.guild
+                    if guild is None:
+                        bitrate_limit = 384000
+                    else:
+                        bitrate_limit = guild.bitrate_limit
+                
+                if bitrate < 8000 or bitrate > bitrate_limit:
+                    raise AssertionError(f'`bitrate` is out of the expected [8000:{bitrate_limit}] range, got '
+                        f'{bitrate!r}.')
+            
+            data['bitrate'] = bitrate
+        
+        
+        if (user_limit is not None):
+            if __debug__:
+                if (channel is not None):
+                    if not isinstance(channel, ChannelVoice):
+                        raise AssertionError(f'`user_limit` is a valid parameter only for `{ChannelVoice.__name__}` '
+                            f'instances, but got {channel.__class__.__name__}.')
+                
+                if user_limit < 0 or user_limit > 99:
+                    raise AssertionError('`user_limit`\'s value is out of the expected [0:99] range, got '
+                        f'{user_limit!r}.')
+            
+            data['user_limit'] = user_limit
+        
+        
+        await self.http.channel_edit(channel_id, data, reason)
     
-    async def channel_create(self, guild, category=None, *args, reason=None, **kwargs):
+    
+    async def channel_create(self, guild, name, type_=ChannelText, *, reason=None, **kwargs):
         """
-        Creates a new channel at the given `given`. If the channel is successfully created returns it. The unused
-        parameters of the created channel's type are ignored.
+        Creates a new channel at the given `guild`. If the channel is successfully created returns it.
         
         This method is a coroutine.
         
         Parameters
         ----------
         guild : ``Guild``
-        category : ``ChannelCategory`` or ``Guild`` or `None`, Optional
-            The category of the created channel. If passed as `None`, so by default, the created channel's catetory
-            will be it's guild.
-        *args : Arguments
-            Additional arguments to describe the created channel.
+            The guild where the channel will be created.
+        name : `str`
+            The created channel's name.
+        type_ : `int` or ``ChannelGuildBase`` subclass, Optional
+            The type of the created channel. Defaults to ``ChannelText``.
         reason : `None` or `str`, Optional
             Shows up at the `guild`'s audit logs.
         **kwargs : Keyword arguments
@@ -2360,60 +2447,76 @@ class Client(UserBase):
         
         Other Parameters
         ----------------
-        name : `str`
-            The new channel's name.
-        type _ : `int` or ``ChannelGuildBase`` subclass
-            The new channel's type.
         overwrites : `list` of ``cr_p_overwrite_object`` returns, Optional
-            A list of permission overwrites of the new channel. The list should contain json serializable permission
+            A list of permission overwrites of the channel. The list should contain json serializable permission
             overwrites made by the ``cr_p_overwrite_object`` function.
         topic : `str`, Optional
-            The created channel's topic.
-        nsfw : `bool`, Optional.
-            Whether the new channel should be masrked as nsfw.
-        slowmode : `int`, Optional
-            The new channel's slowmode value.
+            The channel's topic.
+        nsfw : `bool`, Optional
+            Whether the channel is marked as nsfw.
+        slowmode : int`, Optional
+            The channel's slowmode value.
         bitrate : `int`, Optional
-            The new channel's bitrate.
+            The channel's bitrate.
         user_limit : `int`, Optional
-            The new channel's user limit.
+            The channel's user limit.
+        category : `None`, ``ChannelCategory``, ``Guild`` or `int`, Optional
+            The channel's category. If the category is under a guild, leave it empty.
         
         Returns
         -------
-        channel : ``ChannelGuildBase`` instance
-            The created channel.
+        channel : `None` or ``ChannelGuildBase`` instance
+            The created channel. Returns `None` if the respective `guild` is not cached.
         
         Raises
         ------
         TypeError
-            - If `category` was not passed as `None`, or ``Guild`` neither as ``ChannelCategory`` instance.
+            - If `guild` was not given as ``Guild`` or `int` instance.
             - If `type_` was not passed as `int` or as ``ChannelGuildBase`` instance.
-        ValueError
-            - If `type_` was passed as `int`, but as negative or if there is no channel type for the given value.
+            - If `category` was not given as `None`, ``ChannelCategory``, ``Guild`` or `int` instance.
+        AssertionError
+            - If `type_` was given as `int`, and is less than `0`.
+            - If `type_` was given as `int` and exceeds the defined channel type limit.
+            - If `name` was not given as `str` instance.
             - If `name`'s length is under `2` or over `100`.
+            - If `overwrites` was not given as `None`, neither as `list` of `dict`-s.
+            - If `topic` was not given as `str` instance.
             - If `topic`'s length is over `1024`.
-            - If channel type is changed, but not to an expected one.
-            - If `slowmode` is not between `0` and `21600`.
-            - If `bitrate` is not `8000`-`96000`. `128000` max for vip, or `128000`, `256000`, `384000` max depending
-                on the premium tier of the guild.
-            - If `user_limit` is negative or over `99`.
+            - If `topic` was given, but the respective channel type is not ``ChannelText``.
+            - If `snfw` was given meanwhile the respective channel type is not ``ChannelText`` or ``ChannelStore``.
+            - If `nsfw` was not given as `bool`.
+            - If `slowmode` was given, but the respective channel type is not ``ChannelText``.
+            - If `slowmode` was not given as `int` instance.
+            - If `slowmode` was given, but it's value is less than `0` or greater than `21600`.
+            - If `bitrate` was given, but the respective channel type is not ``ChannelVoice``.
+            - If `bitrate` was not given as `int` instance.
+            - If `bitrate`'s value is out of the expected range.
+            - If `user_limit` was given, but the respective channel type is not ``ChannelVoice``.
+            - If `user_limit` was not given as `int` instance.
+            - If `user_limit`' was given, but is out of the expected [0:99] range.
+            - If `category` was given, but the respective channel type cannto be put under other categories.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        if category is None:
-            category_id = None
-        elif type(category) is ChannelCategory:
-            category_id = category.id
-        elif type(category) is Guild:
-            category_id = None
+        if isinstance(guild, Guild):
+            guild_id = guild.id
         else:
-            raise TypeError(f'For `category` type {category.__class__.__name__} is not acceptable.')
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+            
+            guild = GUILDS.get(guild_id)
         
-        data = cr_pg_channel_object(*args, **kwargs, bitrate_limit=guild.bitrate_limit, category_id=category_id)
-        data = await self.http.channel_create(guild.id, data, reason)
-        return CHANNEL_TYPES[data['type']](data, self, guild)
+        
+        data = cr_pg_channel_object(name, type_, **kwargs, guild=guild)
+        data = await self.http.channel_create(guild_id, data, reason)
+        
+        if (guild is not None):
+            return CHANNEL_TYPES[data['type']](data, self, guild)
+    
     
     async def channel_delete(self, channel, reason=None):
         """
@@ -5298,7 +5401,7 @@ class Client(UserBase):
         data = await self.http.guild_prune_estimate(guild.id, data)
         return data['pruned']
     
-    async def guild_edit(self, guild, name=None, icon=..., invite_splash=..., discovery_splash=..., banner=...,
+    async def guild_edit(self, guild, *, name=None, icon=..., invite_splash=..., discovery_splash=..., banner=...,
             afk_channel=..., system_channel=..., rules_channel=..., public_updates_channel=..., owner=None, region=None,
             afk_timeout=None, verification_level=None, content_filter=None, message_notification=None, description=...,
             preferred_locale=None, system_channel_flags=None, add_feature=None, remove_feature=None, reason=None):
@@ -10007,7 +10110,16 @@ class Client(UserBase):
         Returns
         -------
         guild : ``Guild`` or `default`
+        
+        Raises
+        ------
+        AssertionError
+            `name` was not given as `str` instance.
         """
+        if __debug__:
+            if not isinstance(name, str):
+                raise AssertionError(f'`name` should have be given as `str` instance, got {name.__class__:__name__}.')
+        
         if 1 < len(name) < 101:
             for guild in self.guild_profiles.keys():
                 if guild.name == name:

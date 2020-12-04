@@ -11,7 +11,7 @@ from ..backend.utils import DOCS_ENABLED
 from .utils import ROLE_MENTION_RP, USER_MENTION_RP, CHANNEL_MENTION_RP, parse_time, urlcutter
 from .color import Color
 
-from . import preinstanced
+from . import preinstanced as module_preinstanced
 
 EXTRA_EMBED_TYPES = ('application_news', 'article', 'gifv', 'image', 'link', 'video')
 
@@ -2387,10 +2387,10 @@ class _EmbedFieldsReflection(object):
             yield EmbedField.from_data(field_data)
 
 
-preinstanced._convert_content = _convert_content
+module_preinstanced._convert_content = _convert_content
 
 del DOCS_ENABLED
-del preinstanced
+del module_preinstanced
 del Union
 del List
 del datetime

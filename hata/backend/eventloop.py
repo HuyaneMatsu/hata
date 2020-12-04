@@ -12,7 +12,7 @@ from ssl import SSLContext, create_default_context
 from stat import S_ISSOCK
 
 from .utils import alchemy_incendiary, WeakReferer, weakmethod, method, WeakCallable, DocProperty, DOCS_ENABLED
-from .futures import Future, Task, Gatherer, render_exc_to_list, iscoroutine, FutureAsyncWrapper, WaitTillFirst, \
+from .futures import Future, Task, Gatherer, render_exc_to_list, is_coroutine, FutureAsyncWrapper, WaitTillFirst, \
     CancelledError
 from .transprotos import SSLProtocol, _SelectorSocketTransport, _SelectorDatagramTransport
 from .executor import Executor
@@ -31,7 +31,7 @@ _ignore_frame(threading.__spec__.origin , '_bootstrap'      , 'self._bootstrap_i
 _ignore_frame(threading.__spec__.origin , '_bootstrap_inner', 'self.run()'                      ,)
 del threading, _ignore_frame
 
-from . import executor, futures
+from . import executor as module_executor, futures as module_futures
 
 LOOP_TIME = module_time.monotonic
 LOOP_TIME_RESOLUTION = module_time.get_clock_info('monotonic').resolution
@@ -2153,7 +2153,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         TypeError
             If `coro_or_future` is not `awaitable`.
         """
-        if iscoroutine(coro_or_future):
+        if is_coroutine(coro_or_future):
             return Task(coro_or_future, self)
         
         if isinstance(coro_or_future, Future):
@@ -2193,7 +2193,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         TypeError
             If `coro_or_future` is not `awaitable`.
         """
-        if iscoroutine(coro_or_future):
+        if is_coroutine(coro_or_future):
             task = Task(coro_or_future, self)
             self.wakeup()
             return task
@@ -2419,9 +2419,9 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         if before is None:
             pass
-        elif type(before) is str:
-            extracted = before.append(before)
-        elif type(before) is list:
+        elif isinstance(before, str):
+            extracted.append(before)
+        elif isinstance(before, list):
             for element in before:
                 if type(element) is str:
                     extracted.append(element)
@@ -2437,9 +2437,9 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         if after is None:
             pass
-        elif type(after) is str:
+        elif isinstance(after, str):
             extracted.append(after)
-        elif type(after) is list:
+        elif isinstance(after, list):
             for element in after:
                 if type(element) is str:
                     extracted.append(element)
@@ -4177,13 +4177,13 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             Not supported on windows by the library.
         """)
 
-executor.EventThread = EventThread
-futures.EventThread = EventThread
+module_executor.EventThread = EventThread
+module_futures.EventThread = EventThread
 
 del module_time
 del subprocess
 del IS_UNIX
-del futures
-del executor
+del module_futures
+del module_executor
 del DocProperty
 del DOCS_ENABLED

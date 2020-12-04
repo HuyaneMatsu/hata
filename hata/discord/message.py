@@ -21,7 +21,7 @@ from .preconverters import preconvert_flag, preconvert_bool, preconvert_snowflak
     preconvert_preinstanced_type
 from .preinstanced import MessageType, MessageActivityType, StickerType
 
-from . import ratelimit
+from . import ratelimit as module_ratelimit
 
 Client           = NotImplemented
 ChannelBase      = NotImplemented
@@ -2341,10 +2341,10 @@ class Message(DiscordEntity, immortal=True):
             return False
         return (user in reacters)
 
-ratelimit.Message = Message
+module_ratelimit.Message = Message
 
 del URLS
-del ratelimit
+del module_ratelimit
 del DiscordEntity
 del FlagBase
 del IconSlot

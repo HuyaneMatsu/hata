@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 __all__ = ('AsyncQue', 'CancelledError', 'Event', 'Future', 'FutureAsyncWrapper', 'FutureSyncWrapper', 'FutureWM',
     'Gatherer', 'InvalidStateError', 'Lock', 'ScarletExecutor', 'ScarletLock', 'Task', 'WaitContinously', 'WaitTillAll',
-    'WaitTillExc', 'WaitTillFirst', 'enter_executor', 'future_or_timeout', 'isawaitable', 'iscoroutine',
-    'iscoroutinefunction', 'shield', 'sleep', )
+    'WaitTillExc', 'WaitTillFirst', 'enter_executor', 'future_or_timeout', 'is_awaitable', 'is_coroutine',
+    'is_coroutine_function', 'shield', 'sleep', )
 
 import sys, reprlib, linecache
 from types import GeneratorType, CoroutineType, MethodType as method, FunctionType as function, coroutine
@@ -73,7 +73,7 @@ class InvalidStateError(Exception):
         
         return message
 
-def iscoroutinefunction(func):
+def is_coroutine_function(func):
     """
     Returns whether the given `obj` is a coroutine function, so is created with `async def`.
     
@@ -83,13 +83,13 @@ def iscoroutinefunction(func):
     
     Returns
     -------
-    iscoroutinefunction : `bool`
+    is_coroutine_function : `bool`
     """
     if isinstance(func, (function, method)) and func.__code__.co_flags&0x180:
         return True # the result MUST be converted to `1`
     return (getattr(func, '__async_call__', False) == True)
 
-def iscoroutine(obj):
+def is_coroutine(obj):
     """
     Returns whether the givne `obj` is a coroutine created by an `async def` function.
     
@@ -99,11 +99,11 @@ def iscoroutine(obj):
     
     Returns
     -------
-    iscoroutine : `bool`
+    is_coroutine : `bool`
     """
     return isinstance(obj, (CoroutineType, GeneratorType))
 
-def isawaitable(obj):
+def is_awaitable(obj):
     """
     Returns whether the given `obj` can be used in `await` expression.
     
@@ -113,13 +113,13 @@ def isawaitable(obj):
     
     Returns
     -------
-    isawaitable : `bool`
+    is_awaitable : `bool`
     """
     if isinstance(obj, (CoroutineType, GeneratorType)):
         return True
         
-    if isinstance(isawaitable, Future):
-        return
+    if isinstance(obj, Future):
+        return True
     
     if hasattr(obj.__class__, '__await__'):
         return True
@@ -3578,7 +3578,7 @@ class Gatherer(FutureWM):
         """
         awaitables = set()
         for awaitable in coros_or_futures:
-            if not isawaitable(awaitable):
+            if not is_awaitable(awaitable):
                 raise TypeError(f'Cannot await on {awaitable.__class__.__name__}: {awaitable!r}')
             awaitables.add(awaitable)
         

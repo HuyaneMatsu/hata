@@ -32,7 +32,7 @@ for sub_module_name, feature_names, extra_features in (
         ('constants', None, None),
         ('coroutines', (
             'coroutine',
-            'iscoroutinefunction',
+            'is_coroutine_function',
             'iscoroutine',
                 ), (
             ('_DEBUG', False), # Required by aiohttp 3.8

@@ -9,7 +9,7 @@ from email.utils import formatdate
 from os import urandom
 
 from .utils import imultidict
-from .futures import Future, Task, AsyncQue, future_or_timeout, shield, CancelledError, WaitTillAll, iscoroutine, Lock
+from .futures import Future, Task, AsyncQue, future_or_timeout, shield, CancelledError, WaitTillAll, is_coroutine, Lock
 
 from .url import URL
 from .hdrs import CONNECTION, SEC_WEBSOCKET_KEY, AUTHORIZATION, SEC_WEBSOCKET_VERSION, build_subprotocols, \
@@ -1166,12 +1166,19 @@ class WSClient(WebSocketCommonProtocol):
         
         Raises
         ------
+        ConnectionError
+            - Too many redirects.
+            - Would be redirected to not `http or `https`.
+            - Connector closed.
         TypeError
             `extra_response_headers` is not given as `None`, neither as `dict-like`.
         ValueError
+            - Host could not be detected from `url`.
             - The response's http version is unsupported (not `HTTP1.1`).
             - Received extension header is incorrect.
             - Received connection header is incorrect.
+        TimeoutError
+            - Did not receive answer in time.
         InvalidHandshake
             - The response's status code is invalid (not `101`).
             - The response's connection headers do not contain `'upgrade'`.
@@ -1563,7 +1570,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
                     early_response = None
                 else:
                     early_response = request_processor(path, request_headers)
-                    if iscoroutine(early_response):
+                    if is_coroutine(early_response):
                         early_response = await early_response
                 
                 if (early_response is not None):

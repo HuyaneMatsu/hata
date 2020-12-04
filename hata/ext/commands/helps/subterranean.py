@@ -2,7 +2,7 @@
 __all__ = ('SubterraneanHelpCommand', )
 
 from ....backend.utils import DOCS_ENABLED, DocProperty
-from ....backend.futures import isawaitable
+from ....backend.futures import is_awaitable
 from ....backend.analyzer import CallableAnalyzer
 from ....discord.embed import Embed
 from ....discord.utils import chunkify
@@ -156,7 +156,7 @@ class ColorGetter(object):
             color = getter
         elif type_ == COLOR_GETTER_TYPE_CALLABLE:
             color = getter(client, message, name)
-            if isawaitable(color):
+            if is_awaitable(color):
                 color = await color
         else:
             # should not happen
@@ -203,7 +203,7 @@ class SubterraneanHelpHelp(object):
         embed : ``Embed``
         """
         prefix = client.command_processer.get_prefix_for(message)
-        if isawaitable(prefix):
+        if is_awaitable(prefix):
             prefix = await prefix
         
         color = await self.color_getter(client, message, DEFAULT_HELP_NAME)
@@ -547,7 +547,7 @@ class SubterraneanHelpCommand(object):
             The search word.
         """
         prefix = client.command_processer.get_prefix_for(message)
-        if isawaitable(prefix):
+        if is_awaitable(prefix):
             prefix = await prefix
         
         color = await self.color_getter(client, message, DEFAULT_HELP_NAME)
@@ -618,7 +618,7 @@ class SubterraneanHelpCommand(object):
         page_count = len(pages)
         
         prefix = client.command_processer.get_prefix_for(message)
-        if isawaitable(prefix):
+        if is_awaitable(prefix):
             prefix = await prefix
         
         field_name = f'Use `{prefix}help <category/command>` for more information.'
@@ -703,7 +703,7 @@ class SubterraneanHelpCommand(object):
         page_count = len(pages)
         
         prefix = client.command_processer.get_prefix_for(message)
-        if isawaitable(prefix):
+        if is_awaitable(prefix):
             prefix = await prefix
         
         field_name = f'Use `{prefix}help <command>` for more information.'
@@ -843,7 +843,7 @@ class SubterraneanHelpCommand(object):
             The respective command.
         """
         prefix = client.command_processer.get_prefix_for(message)
-        if isawaitable(prefix):
+        if is_awaitable(prefix):
             prefix = await prefix
         
         description_parts = ['Usage : `', str(prefix), command.display_name]

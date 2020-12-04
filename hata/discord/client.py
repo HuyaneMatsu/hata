@@ -16,6 +16,7 @@ from ..backend.eventloop import EventThread, LOOP_TIME
 from ..backend.formdata import Formdata
 from ..backend.hdrs import AUTHORIZATION
 from ..backend.helpers import BasicAuth
+from ..backend.url import URL
 
 from .utils import log_time_converter, DISCORD_EPOCH, image_to_base64, random_id, to_json, RelationshipType, \
     get_image_extension
@@ -33,8 +34,8 @@ from .gateway import DiscordGateway, DiscordGatewaySharder
 from .parsers import EventDescriptor, _with_error, IntentFlag, PARSER_DEFAULTS
 from .audit_logs import AuditLog, AuditLogIterator
 from .invite import Invite
-from .message import Message, MessageRepr, MessageReference
-from .oauth2 import Connection, parse_locale, DEFAULT_LOCALE, AO2Access, UserOA2, Achievement
+from .message import Message, MessageRepr, MessageReference, Attachment
+from .oauth2 import Connection, parse_locale, DEFAULT_LOCALE, OA2Access, UserOA2, Achievement
 from .exceptions import DiscordException, DiscordGatewayException, ERROR_CODES, InvalidToken
 from .client_core import CLIENTS, KOKORO, GUILDS, DISCOVERY_CATEGORIES, EULAS, CHANNELS
 from .voice_client import VoiceClient
@@ -47,12 +48,15 @@ from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool
 from .permission import Permission
 from .bases import ICON_TYPE_NONE
 from .preinstanced import Status, VoiceRegion, ContentFilterLevel, PremiumType, VerificationLevel, \
-    MessageNotificationLevel
+    MessageNotificationLevel, HypesquadHouse
 from .client_utils import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, UserGuildPermission, \
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, Typer, maybe_snowflake
-from .embed import EmbedBase
+from .embed import EmbedBase, EmbedImage
 
-from . import client_core, message, webhook, channel, invite, parsers, client_utils, guild
+from . import client_core as module_client_core, message as module_message, webhook as module_webhook, \
+    channel as module_channel, invite as module_invite, parsers as module_parsers, client_utils as module_client_utils,\
+    guild as module_guild
+
 
 _VALID_NAME_CHARS = re.compile('([0-9A-Za-z_]+)')
 
@@ -322,7 +326,7 @@ class Client(UserBase):
             index = 1
             for additional_owner in iter_(additional_owners):
                 index += 1
-                if not isinstance(additional_owner,(int, UserBase)):
+                if not isinstance(additional_owner, (int, UserBase)):
                     raise TypeError(f'User {index} at `additional_owners`  was not passed neither as `int` or as '
                         f'`{UserBase.__name__}` instance, got {additional_owner.__class__.__name__}')
                 
@@ -516,6 +520,7 @@ class Client(UserBase):
     _update_presence = User._update_presence
     _update_presence_no_return = User._update_presence_no_return
     
+    
     @property
     def _platform(self):
         """
@@ -533,883 +538,6 @@ class Client(UserBase):
         if self.status in (Status.offline, Status.invisible):
             return ''
         return 'web'
-    
-    async def client_edit(self, password=None, new_password=None, email=None, house=..., name=None, avatar=...):
-        """
-        Edits the client. Only the provided parameters will be changed. Every argument what refers to a user
-        account is not tested.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        password : `str`, Optional
-            The actual password of the client. A must for user accounts.
-        new_password : `str`, Optional
-            User account only argument.
-        email : `str`, Optional
-            User account only argument.
-        house : ``HypesquadHouse`` or `None`, Optional
-            User account only argument.
-        name : `str`, Optional
-            The client's new name.
-        avatar : `bytes-like` or `None`, Optional
-            An `'jpg'`, `'png'`, `'webp'` image's raw data. If the client is premium account, then it can be
-            `'gif'` as well. By passing `None` you can remove the client's current avatar.
-        
-        Raises
-        ------
-        ValueError
-            - If `password` is not passed when the client is a user account.
-            - If the length of the `name` is not between 2 and 32.
-            - If `avatar` is passed as `bytes-like` and it's format is `'gif'`, meanwhile the user is not premium.
-            - If `avatar` is passed and it's format is not any of the expected ones.
-        TypeError
-            - If `name` was not passed as str instance.
-            - If `avatar` was not passed as `bytes-like` or as `None`.
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        
-        Notes
-        -----
-        The method's endpoint has long ratelimit reset, so consider using timeout and checking ratelimits with
-        ``RatelimitProxy``.
-        """
-        data = {}
-        
-        if (password is None):
-            if not self.is_bot:
-                raise ValueError('Password is must for non bots!')
-        else:
-            data['password'] = password
-
-        if (name is None):
-            pass
-        elif isinstance(name , str):
-            name_ln = len(name)
-            if name_ln < 2 or name_ln > 32:
-                raise ValueError(f'The length of the name can be between 2-32, got {name_ln}')
-            data['username'] = name
-        else:
-            raise TypeError(f'`name` can be passed as type str, got {name.__class__.__name__}.')
-        
-        if (avatar is not ...):
-            if avatar is None:
-                avatar_data = None
-            else:
-                avatar_type = avatar.__class__
-                if not issubclass(avatar_type, (bytes, bytearray, memoryview)):
-                    raise TypeError(f'`avatar` can be passed as `bytes-like` or None, got {avatar_type.__name__}.')
-            
-                extension = get_image_extension(avatar)
-                if extension not in VALID_ICON_FORMATS_EXTENDED:
-                    raise ValueError(f'Invalid image extension: `{extension}`.')
-                
-                if (not self.premium_type.value) and (extension == 'gif'):
-                    raise ValueError('Only premium users can have `gif` avatar!')
-                
-                avatar_data = image_to_base64(avatar)
-            
-            data['avatar'] = avatar_data
-        
-        if not self.is_bot:
-            if (email is not None):
-                data['email'] = email
-            if (new_password is not None):
-                data['new_password'] = new_password
-        
-        data = await self.http.client_edit(data)
-        self._update_no_return(data)
-        
-        if not self.is_bot:
-            self.email = data['email']
-            try:
-                self.token = data['token']
-            except KeyError:
-                pass
-        
-        if house is ...:
-            pass
-        elif house is None:
-            await self.hypesquad_house_leave()
-        else:
-            await self.hypesquad_house_change(house)
-    
-    async def client_edit_nick(self, guild, nick, reason=None):
-        """
-        Changes the client's nick at the specified Guild. A nick name's length can be between 1-32. An extra argument
-        reason is accepted as well, what will show zp at the respective guild's audit logs.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        guild : ``Guild``
-            The guild where the client's nickname will be changed.
-        nick : `str` or `None`
-            The client's new nickname. Pass it as `None` or with length `0` to remove it.
-        reason : `None` or `str`, Optional
-            Will show up at the respective guild's audit logs.
-        
-        Raises
-        ------
-        ValueError
-            If the nick's length is over `32`.
-        TypeError
-            If the nick is not `None` or `str` instance.
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        
-        Notes
-        -----
-        No request is done if the client's actual nickname at the guild is same as the method would change it too.
-        """
-        if (nick is None):
-            pass
-        elif isinstance(nick, str):
-            nick_ln = len(nick)
-            if nick_ln > 32:
-                raise ValueError(f'The length of the `nick` can be between 1-32, got {nick_ln}')
-            if nick_ln == 0:
-                nick = None
-        else:
-            raise TypeError(f'`nick` can be str instance, got {nick.__class__.__name__}')
-        
-        try:
-            actual_nick = self.guild_profiles[guild].nick
-        except KeyError:
-            # we arent at the guild ->  will raise propably
-            should_edit_nick = True
-        else:
-            if nick is None:
-                if actual_nick is None:
-                    should_edit_nick = False
-                else:
-                    should_edit_nick = True
-            else:
-                if actual_nick is None:
-                    should_edit_nick = True
-                elif nick == actual_nick:
-                    should_edit_nick = False
-                else:
-                    should_edit_nick = True
-        
-        if should_edit_nick:
-            await self.http.client_edit_nick(guild.id, {'nick': nick}, reason)
-    
-    async def client_connections(self):
-        """
-        Requests the client's connections. For a bot account this request will always return an empty list.
-        
-        This method is a coroutine.
-        
-        Returns
-        -------
-        connections : `list` of ``Connection`` objects
-        
-        Raises
-        ------
-        ConnectionError
-            No internet connection.
-        """
-        data = await self.http.client_connections()
-        return [Connection(connection_data) for connection_data in data]
-
-    async def client_edit_presence(self, activity=None, status=None, afk=False):
-        """
-        Changes the client's presence (status and activity). If a parameter is not defined, it will not be changed.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        activity : ``ActivityBase`` instance, Optional
-            The new activity of the Client.
-        status : `str` or ``Status``, Optional
-            The new status of the client.
-        afk : `bool`, Optional
-            Whether the client is afk or not (?).
-        
-        Raises
-        ------
-        TypeError:
-            - If the status is not `str` or ``Status`` instance.
-            - If activity is not ``ActivityBase`` instance, except ``ActivityCustom``.
-        ValueError:
-            - If the status `str` instance, but not any of the predefined ones.
-        """
-        if status is None:
-            status = self._status
-        else:
-            status = preconvert_preinstanced_type(status, 'status', Status)
-            self._status = status
-        
-        status = status.value
-        
-        if activity is None:
-            activity = self._activity
-        elif isinstance(activity, ActivityBase) and (type(activity) is not ActivityCustom):
-            self._activity = activity
-        else:
-            raise TypeError(f'`activity` should have been passed as `{ActivityBase.__name__} instance (except '
-                f'{ActivityCustom.__name__}), got: {activity.__class__.__name__}.')
-        
-        if activity is ActivityUnknown:
-            activity = None
-        elif (activity is not None):
-            if self.is_bot:
-                activity = activity.botdict()
-            else:
-                activity = activity.hoomandict()
-        
-        if status == 'idle':
-            since = int(time_now()*1000.)
-        else:
-            since = 0.0
-        
-        data = {
-            'op': DiscordGateway.PRESENCE,
-            'd' : {
-                'game'  : activity,
-                'since' : since,
-                'status': status,
-                'afk'   : afk,
-                    },
-                }
-        
-        await self.gateway.send_as_json(data)
-    
-    async def activate_authorization_code(self, redirect_url, code, scopes):
-        """
-        Activates a user's oauth2 code.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        redirect_url : `str`
-            The url, where the activation page redirected to.
-        code : `str`
-            The code, what is included with the redirect url after a successfull activation.
-        scopes : `list` of `str`
-            A list of oauth2 scopes to request.
-        
-        Returns
-        -------
-        access : ``OA2Access`` or `None`
-            If the code, the redirect url or the scopes are invalid, the methods returns `None`.
-        
-        Raises
-        ------
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        
-        See Also
-        --------
-        ``parse_oauth2_redirect_url`` : Parses `redirect_url` and the `code` from a full url.
-        """
-        data = {
-            'client_id'     : self.id,
-            'client_secret' : self.secret,
-            'grant_type'    : 'authorization_code',
-            'code'          : code,
-            'redirect_uri'  : redirect_url,
-            'scope'         : ' '.join(scopes),
-                }
-        
-        data = await self.http.oauth2_token(data, imultidict())
-        if len(data) == 1:
-            return
-        
-        return AO2Access(data, redirect_url)
-    
-    async def owners_access(self, scopes):
-        """
-        Similar to ``.activate_authorization_code``, but it requests the application's owner's access. It does not
-        requires the redirect_url and the code argument either.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        scopes : `list` of `str`
-            A list of oauth2 scopes to request.
-        
-        Returns
-        -------
-        access : ``OA2Access``
-            The oauth2 access of the client's application's owner.
-        
-        Raises
-        ------
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        
-        Notes
-        -----
-        Does not work if the client's application is owned by a team.
-        """
-        data = {
-            'grant_type' : 'client_credentials',
-            'scope'      : ' '.join(scopes),
-                }
-        
-        headers = imultidict()
-        headers[AUTHORIZATION] = BasicAuth(str(self.id), self.secret).encode()
-        data = await self.http.oauth2_token(data, headers)
-        return AO2Access(data, '')
-    
-    #needs `email` or/and `identify` scopes granted for more data
-    async def user_info(self, access):
-        """
-        Request the a user's information with oauth2 access token. By default a bot account should be able to request
-        every public infomation about a user (but you do not need oauth2 for that). If the access token has email
-        or/and identify scopes, then more information should show up like this.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        access : ``AO2Access`` or ``UserOA2``
-        
-        Returns
-        -------
-        oauth2_user : ``UserOA2``
-            The requested user object.
-        
-        Raises
-        ------
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        """
-        headers = imultidict()
-        headers[AUTHORIZATION] = f'Bearer {access.access_token}'
-        data = await self.http.user_info(headers)
-        return UserOA2(data, access)
-    
-    async def user_connections(self, access):
-        """
-        Requests a user's connections. This method will work only if the access token has the `'connections'` scope. At
-        the returned list includes the user's hidden connections as well.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        access : ``AO2Access`` or ``UserOA2``
-        
-        Returns
-        -------
-        connections : `list` of ``Connection`` objects
-        
-        Raises
-        ------
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        """
-        headers = imultidict()
-        headers[AUTHORIZATION] = f'Bearer {access.access_token}'
-        data = await self.http.user_connections(headers)
-        return [Connection(connection_data) for connection_data in data]
-    
-    async def renew_access_token(self, access):
-        """
-        Renews the access token of an ``OA2Access``.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        access : ``AO2Access`` or ``UserOA2``
-        
-        Raises
-        ------
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        
-        Notes
-        -----
-        By default access tokens expire after one week.
-        """
-        redirect_url = access.redirect_url
-        if redirect_url:
-            data = {
-                'client_id'     : self.id,
-                'client_secret' : self.secret,
-                'grant_type'    : 'refresh_token',
-                'refresh_token' : access.refresh_token,
-                'redirect_uri'  : redirect_url,
-                'scope'         : ' '.join(access.scopes)
-                    }
-        else:
-            data = {
-                'client_id'     : self.id,
-                'client_secret' : self.secret,
-                'grant_type'    : 'client_credentials',
-                'scope'         : ' '.join(access.scopes),
-                    }
-        
-        data = await self.http.oauth2_token(data, imultidict())
-        
-        access._renew(data)
-    
-    async def guild_user_add(self, guild, access_or_compuser, user=None, nick=None, roles=[], mute=False, deaf=False):
-        """
-        Adds the passed to the guild. The user must have granted you the `'guilds.join'` oauth2 scope.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        guild : ``Guild``
-            The guild, where the user is going to be added.
-        access_or_compuser: ``OA2Access`` or ``UserOA2``
-            The access of the user, who will be addded.
-        user : ``User``, Optional
-            Defines which user will be added to the guild. The `access_or_compuser` must refer to this specified user.
-            This field is optional, if access is passed as an ``UserOA2`` object.
-        nick : `str`, Optional
-            The nickname, which with the user will be added.
-        roles : `list` of ``Role`` objects, Optional
-            The user will be added with the specified roles.
-        mute : `bool`, Optional
-            Whether the user should be added as muted.
-        deaf : `bool`, Optional
-            Whether the user should be added as deafen.
-        
-        Raises
-        ------
-        ValueError
-            - Nick was passed as `str` and it's length is over 32.
-        TypeError:
-            - If user was passed as None and `access_or_compuser` was passed as ``AO2Access``.
-            - If access_or_compuser was not passed as ``AO2Access``, neither ``UserOA2``.
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        """
-        if type(access_or_compuser) is AO2Access:
-            access = access_or_compuser
-            if user is None:
-                raise TypeError('`user` can not be None if `access_or_compuser` is passed as `AO2Access`.')
-        elif type(access_or_compuser) is UserOA2:
-            access = access_or_compuser.access
-            if user is None:
-                user = access_or_compuser
-        else:
-            raise TypeError(f'Invalid `access_or_compuser` type, expected {AO2Access.__name__} or {UserOA2.__name__}, '
-                f'got {access_or_compuser.__class__.__name__}.')
-        
-        data = {'access_token': access.access_token}
-        if (nick is not None):
-            nick_ln = len(nick)
-            if nick_ln != 0:
-                if nick_ln > 32:
-                    raise ValueError(f'The length of the nick can be between 1-32, got {nick!r}.')
-                data['nick'] = nick
-        
-        if roles:
-            data['roles'] = [role.id for role in roles]
-        
-        if mute:
-            data['mute'] = mute
-        
-        if deaf:
-            data['deaf'] = deaf
-        
-        await self.http.guild_user_add(guild.id, user.id, data)
-    
-    async def user_guilds(self, access):
-        """
-        Requests a user's guilds with it's ``OA2Access``. The user must provide the `'guilds'` oauth2  scope for this
-        request to succeed.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        access: ``OA2Access`` or ``UserOA2``
-            The access of the user, who's guilds will be requested.
-        
-        Returns
-        -------
-        guilds_and_permissions : `list` of `tuple` (``Guild``, ``UserGuildPermission``)
-            The guilds and the user's permissions in each of them. Not loaded guilds will show up as partial ones.
-        
-        Raises
-        ------
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        """
-        headers = imultidict()
-        headers[AUTHORIZATION] = f'Bearer {access.access_token}'
-        data = await self.http.user_guilds(headers)
-        return [(create_partial_guild(guild_data), UserGuildPermission(guild_data)) for guild_data in data]
-    
-    async def achievement_get_all(self):
-        """
-        Requests all the achievements of the client's application and returns them.
-        
-        This method is a coroutine.
-        
-        Returns
-        -------
-        achievements : `list` of ``Achievement`` objects
-        
-        Raises
-        ------
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        """
-        data = await self.http.achievement_get_all(self.application.id)
-        return [Achievement(achievement_data) for achievement_data in data]
-    
-    async def achievement_get(self, achievement_id):
-        """
-        Requests one of the client's achievements by it's id.
-        
-        This method is a coroutine.
-        
-        Returns
-        -------
-        achievement : ``Achievement``
-        
-        Raises
-        ------
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        """
-        data = await self.http.achievement_get(self.application.id, achievement_id)
-        return Achievement(data)
-    
-    async def achievement_create(self, name, description, icon, secret=False, secure=False):
-        """
-        Creates an achievment for the client's application and returns it.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        name : `str`
-            The achievement's name.
-        description : `str`
-            The achievement's description.
-        icon : `bytes-like`
-            The achievement's icon. Can have `'jpg'`, `'png'`, `'webp'` or `'gif'` format.
-        secret : `bool`, Optional
-            Secret achievements will *not* be shown to the user until they've unlocked them.
-        secure : `bool`, Optional
-            Secure achievements can only be set via HTTP calls from your server, not by a game client using the SDK.
-        
-        Returns
-        -------
-        achievement : ``Achievement``
-            The created achievement entity.
-        
-        Raises
-        ------
-        ValueError
-            If the `icon`'s format is not any of the expected ones.
-        TypeError
-            If `icon` was not passed as `bytes-like`.
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        """
-        icon_type = icon.__class__
-        if not issubclass(icon_type, (bytes, bytearray, memoryview)):
-            raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon_type.__name__}.')
-        
-        extension = get_image_extension(icon)
-        if extension not in VALID_ICON_FORMATS_EXTENDED:
-            raise ValueError(f'Invalid icon type: `{extension}`.')
-        
-        icon_data = image_to_base64(icon)
-        
-        data = {
-            'name' : {
-                'default' : name,
-                    },
-            'description' : {
-                'default' : description,
-                    },
-            'secret' : secret,
-            'secure' : secure,
-            'icon'   : icon_data,
-                }
-        
-        data = await self.http.achievement_create(self.application.id, data)
-        return Achievement(data)
-    
-    async def achievement_edit(self, achievement, name=None , description=None, secret=None, secure=None, icon=...):
-        """
-        Edits the passed achievemnt with the specified parameters. All parameter is optional.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        achievement : ``Achievement``
-            The achievement, what will be edited.
-        name : `str`, Optional
-            The new name of the achievement.
-        description : `str`, Optional
-            The achievemnt's new description.
-        secret : `bool`, Optional
-            The achievement's new secret value.
-        secure : `bool`, Optional
-            The achievement's new secure value.
-        icon : `bytes-like`, Optional
-            The achievement's new icon.
-        
-        Returns
-        -------
-        achievement : ``Achievement``
-            After a successful edit, the passed achievement is updated and returned.
-        
-        Raises
-        ------
-        ValueError
-            If the ``icon``'s format is not any of the expected ones.
-        TypeError
-            If ``icon`` was not passed as `bytes-like`.
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        """
-        data = {}
-        
-        if (name is not None):
-            data['name'] = {
-                'default' : name,
-                    }
-        
-        if (description is not None):
-            data['description'] = {
-                'default' : description,
-                    }
-        
-        if (secret is not None):
-            data['secret'] = secret
-        
-        if (secure is not None):
-            data['secure'] = secure
-        
-        if (icon is not ...):
-            icon_type = icon.__class__
-            if not issubclass(icon_type, (bytes, bytearray, memoryview)):
-                raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon_type.__name__}.')
-            
-            extension = get_image_extension(icon)
-            if extension not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Invalid icon type: `{extension}`.')
-            
-            data['icon'] = image_to_base64(icon)
-        
-        data = await self.http.achievement_edit(self.application.id, achievement.id, data)
-        achievement._update_no_return(data)
-        return achievement
-    
-    async def achievement_delete(self, achievement):
-        """
-        Deletes the passed achievement.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        achievement : ``Achievement``
-            The achievement to delete.
-        
-        Raises
-        ------
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        """
-        await self.http.achievement_delete(self.application.id, achievement.id)
-    #
-    # This endpoint is unintentionally documented and will never work
-    # https://github.com/discordapp/discord-api-docs/issues/1230
-    
-    # DiscordException UNAUTHORIZED (401): 401: Unauthorized
-    async def user_achievements(self, access):
-        """
-        Requests the achievements of a user with it's oauth2 access.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        access : ``OA2Access`` or ``UserOA2``
-            The access of the user, who's achievements will be requested.
-        
-        Returns
-        -------
-        achievements : `list` of ``Achievement`` objects
-        
-        Raises
-        ------
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        
-        Notes
-        -----
-        This endpoint is unintentionally documented and will never work. For reference:
-        ``https://github.com/discordapp/discord-api-docs/issues/1230``.
-        """
-        headers = imultidict()
-        headers[AUTHORIZATION] = f'Bearer {access.access_token}'
-        
-        data = await self.http.user_achievements(self.application.id, headers)
-        return [Achievement(achievement_data) for achievement_data in data]
-    
-    # https://github.com/discordapp/discord-api-docs/issues/1230
-    # Seems like first update must come from game SDK.
-    # Only secure updates are supported, if they are even.
-    
-    # when updating secure achievement:
-    #     DiscordException NOT FOUND (404), code=10029: Unknown Entitlement
-    # when updating non secure:
-    #     DiscordException FORBIDDEN (403), code=40001: Unauthorized
-    async def user_achievement_update(self, user, achievement, percent_complete):
-        """
-        Updates the `user`'s achievement with the given percentage. The  achevement should be `secure`. This
-        method only updates the achievement's percentage.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        user : ``User`` or ``Client``
-            The user, who's achievement will be updated.
-        achievement : ``Achievement``
-            The achievement, which's state will be updated
-        percent_complete : `int`
-            The completion percentage of the achievement.
-        
-        Raises
-        ------
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        
-        Notes
-        -----
-        This endpoint cannot grant achievement, but can it even update them?. For reference:
-        ``https://github.com/discordapp/discord-api-docs/issues/1230``.
-        """
-        data = {'percent_complete': percent_complete}
-        await self.http.user_achievement_update(user.id, self.application.id, achievement.id, data)
-    
-    # hooman only
-    async def application_get(self, application_id):
-        """
-        Requst a specific application by it's id.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        application_id : `int`
-            The `id` of the application to request.
-
-        Returns
-        -------
-        application : ``Application``
-        
-        Raises
-        ------
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        
-        Notes
-        -----
-        This endpoint does not support bot accounts.
-        """
-        data = await self.http.application_get(application_id)
-        return Application(data)
-    
-    async def eula_get(self, eula_id):
-        """
-        Requests the eula with the given id.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        eula_id : `int`
-            The `id` of the eula to request.
-
-        Returns
-        -------
-        eula : ``EULA``
-        
-        Raises
-        ------
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        """
-        try:
-            eula = EULAS[eula_id]
-        except KeyError:
-            pass
-        else:
-            return eula
-        
-        eula_data = await self.http.eula_get(eula_id)
-        return EULA(eula_data)
-    
-    async def applications_detectable(self):
-        """
-        Requst the detectable applications
-        
-        This method is a coroutine.
-        
-        Returns
-        -------
-        applications : `list` of ``Application``
-        
-        Raises
-        ------
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        """
-        applications_data = await self.http.applications_detectable()
-        return [Application(application_data) for application_data in applications_data]
     
     def _delete(self):
         """
@@ -1504,7 +632,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        url : `str`
+        url : `str` or ``URL`` instance
             The url to request.
 
         Returns
@@ -1513,12 +641,19 @@ class Client(UserBase):
         
         Raises
         ------
+        AssertionError
+            If `url` was not given as `str`, nor ``URL`` instance.
         ConnectionError
             No internet connection.
         """
+        if __debug__:
+            if not isinstance(url, (str, URL)):
+                raise AssertionError(f'`url` can be given as `str` or `{URL.__name__}` instance, got '
+                    f'{url.__class__.__name__}.')
+        
         async with self.http.get(url) as response:
             return (await response.read())
-
+    
     async def download_attachment(self, attachment):
         """
         Downloads an attachment object's file. This method always prefers the proxy url of the attachment if applicable.
@@ -1527,7 +662,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        attachment : ``Attachment``
+        attachment : ``Attachment`` or ``EmbedImage``
             The attachment object, which's file will be requested.
         
         Returns
@@ -1540,14 +675,1292 @@ class Client(UserBase):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            If `attachment` was not given as ``Attachment`` nor ``EmbedImage`` instance.
         """
+        if __debug__:
+            if not isinstance(attachment, (Attachment, EmbedImage)):
+                raise AssertionError(f'`attachment` can be given as `{Attachment.__name__}` or `{EmbedImage.__name__}` '
+                    f'instance, got {attachment.__class__.__name__}.')
+        
         url = attachment.proxy_url
         if (url is None) or (not url.startswith(CDN_ENDPOINT)):
             url = attachment.url
+        
         async with self.http.get(url) as response:
             return (await response.read())
     
-    #loggin
+    
+    async def client_edit(self, *, name=None, avatar=..., password=None, new_password=None, email=None, house=...):
+        """
+        Edits the client. Only the provided parameters will be changed. Every argument what refers to a user
+        account is not tested.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        name : `str`, Optional
+            The client's new name.
+        avatar : `bytes-like` or `None`, Optional
+            An `'jpg'`, `'png'`, `'webp'` image's raw data. If the client is premium account, then it can be
+            `'gif'` as well. By passing `None` you can remove the client's current avatar.
+        password : `str`, Optional
+            The actual password of the client.
+        new_password : `str`, Optional
+            The client's new password.
+        email : `str`, Optional
+            The client's new email.
+        house : `int`, ``HypesquadHouse`` or `None`, Optional
+            Remove or change the client's hypesquad house.
+        
+        Raises
+        ------
+        TypeError
+            - If `avatar` was not given as `None`, neither as `bytes-like`.
+            - If `house` was not given as `int`  neither as ``HypesquadHouse`` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `name` was given but not as `str` instance.
+            - If `name`'s length is out of range [2:32].
+            - If `avatar`'s type in unsettable for the client.
+            - If password was not given meanwhile the client is not bot.
+            - If password was not given as `str` instance.
+            - If `email` was given, but nto as `str` instance.
+            - If `new_password` was given, but nto as `str` instance.
+        
+        Notes
+        -----
+        The method's endpoint has long ratelimit reset, so consider using timeout and checking ratelimits with
+        ``RatelimitProxy``.
+        
+        The `password`, `new_password`, `email` and the `house` parameters are only for user accounts.
+        """
+        data = {}
+        
+        if (name is not None):
+            if __debug__:
+                if not isinstance(name, str):
+                    raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
+                
+                name_ln = len(name)
+                if name_ln < 2 or name_ln > 32:
+                    raise AssertionError(f'The length of the name can be in range [2:32], got {name_ln}; {name!r}.')
+            
+            data['username'] = name
+        
+        
+        if (avatar is not ...):
+            if avatar is None:
+                avatar_data = None
+            else:
+                if not isinstance(avatar, (bytes, bytearray, memoryview)):
+                    raise TypeError(f'`avatar` can be passed as `bytes-like` or None, got {avatar.__class__.__name__}.')
+                
+                if __debug__:
+                    extension = get_image_extension(avatar)
+                    
+                    if self.premium_type.value:
+                        valid_icon_types = VALID_ICON_FORMATS_EXTENDED
+                    else:
+                        valid_icon_types = VALID_ICON_FORMATS
+                    
+                    if extension not in valid_icon_types:
+                        raise AssertionError(f'Invalid avatar type for the client: `{extension}`.')
+                
+                avatar_data = image_to_base64(avatar)
+            
+            data['avatar'] = avatar_data
+        
+        
+        if not self.is_bot:
+            if __debug__:
+                if password is None:
+                    raise AssertionError(f'`password` is must for non bots!')
+                
+                if not isinstance(password, str):
+                    raise AssertionError('`password` can be passed as `str` instance, got '
+                        f'{password.__class__.__name__}.')
+            
+            data['password'] = password
+            
+            
+            if (email is not None):
+                if __debug__:
+                    if not isinstance(email, str):
+                        raise AssertionError(f'`email` can be given as `str` instance, got {email.__class__.__name__}.')
+                
+                data['email'] = email
+            
+            
+            if (new_password is not None):
+                if __debug__:
+                    if not isinstance(new_password, str):
+                        raise AssertionError('`new_password` can be passed as `str` instance, got '
+                            f'{new_password.__class__.__name__}.')
+                
+                data['new_password'] = new_password
+            
+            
+            if house is not ...:
+                if house is None:
+                    await self.hypesquad_house_leave()
+                else:
+                    await self.hypesquad_house_change(house)
+        
+        
+        data = await self.http.client_edit(data)
+        self._update_no_return(data)
+        
+        
+        if not self.is_bot:
+            self.email = data['email']
+            try:
+                token = data['token']
+            except KeyError:
+                pass
+            else:
+                self.token = token
+    
+    async def client_edit_nick(self, guild, nick, *, reason=None):
+        """
+        Changes the client's nick at the specified Guild. A nick name's length can be between 1-32. An extra argument
+        reason is accepted as well, what will show zp at the respective guild's audit logs.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : `None`, `int` or ``Guild``instance
+            The guild where the client's nickname will be changed. If `guild` is given as `None`, then the function
+            returns instantly.
+        nick : `str` or `None`
+            The client's new nickname. Pass it as `None` to remove it. Empty strings are interpretered as `None`.
+        reason : `None` or `str`, Optional
+            Will show up at the respective guild's audit logs.
+        
+        Raises
+        ------
+        TypeError
+            - `guild` was not given neither as ``GUild`` or `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If the nick's length is over `32`.
+            - If the nick was not given neither as `None` or `str` instance.
+        Notes
+        -----
+        No request is done if the client's actual nickname at the guild is same as the method would change it too.
+        """
+        if guild is None:
+            # Canned edit nick in private, ignore it
+            return
+        
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+            
+            guild = GUILDS.get(guild_id)
+        
+        # Security debug checks.
+        if __debug__:
+            if (nick is not None):
+                if not isinstance(nick, str):
+                    raise AssertionError(f'`nick` can be given as `None` or `str` instance, got '
+                        f'{nick.__class__.__name__}.')
+                
+                nick_ln = len(nick)
+                if nick_ln > 32:
+                    raise AssertionError(f'`nick` length can be in range [1:32], got {nick_ln}; {nick!r}.')
+                
+                # Translate empty nick to `None`
+                if nick_ln == 0:
+                    nick = None
+        else:
+            # Non debug mode: Translate empty nick to `None`
+            if (nick is not None) and (not nick):
+                nick = None
+        
+        
+        # Check whether we should edit the nick.
+        if guild is None:
+            # `guild` can be `None` if `guild` parameter was given as `int`.
+            should_edit_nick = True
+        else:
+            try:
+                guild_profile = self.guild_profiles[guild]
+            except KeyError:
+                # we arent at the guild probably ->  will raise the request for us, if really
+                should_edit_nick = True
+            else:
+                should_edit_nick = (guild_profile.nick != nick)
+        
+        if should_edit_nick:
+            await self.http.client_edit_nick(guild_id, {'nick': nick}, reason)
+    
+    async def client_connections(self):
+        """
+        Requests the client's connections.
+        
+        This method is a coroutine.
+        
+        Returns
+        -------
+        connections : `list` of ``Connection`` objects
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        
+        Notes
+        -----
+        For a bot account this request will always return an empty list.
+        """
+        data = await self.http.client_connections()
+        return [Connection(connection_data) for connection_data in data]
+    
+    async def client_edit_presence(self, *, activity=..., status=None, afk=False):
+        """
+        Changes the client's presence (status and activity). If a parameter is not defined, it will not be changed.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        activity : ``ActivityBase`` instance, Optional
+            The new activity of the Client.
+        status : `str` or ``Status``, Optional
+            The new status of the client.
+        afk : `bool`, Optional
+            Whether the client is afk or not (?). Defaults to `False`.
+        
+        Raises
+        ------
+        TypeError:
+            - If the status is not `str` or ``Status`` instance.
+            - If activity is not ``ActivityBase`` instance, except ``ActivityCustom``.
+        ValueError:
+            - If the status `str` instance, but not any of the predefined ones.
+        AssertionError
+            - `afk` was not given as `int` instance.
+        """
+        if status is None:
+            status = self._status
+        else:
+            status = preconvert_preinstanced_type(status, 'status', Status)
+            self._status = status
+        
+        status = status.value
+        
+        if activity is ...:
+            activity = self._activity
+        elif activity is None:
+            self._activity = ActivityUnknown
+        elif isinstance(activity, ActivityBase) and (not isinstance(activity, ActivityCustom)):
+            self._activity = activity
+        else:
+            raise TypeError(f'`activity` should have been passed as `{ActivityBase.__name__} instance (except '
+                f'{ActivityCustom.__name__}), got: {activity.__class__.__name__}.')
+        
+        if activity is None:
+            pass
+        elif activity is ActivityUnknown:
+            activity = None
+        else:
+            if self.is_bot:
+                activity = activity.botdict()
+            else:
+                activity = activity.hoomandict()
+        
+        if status == 'idle':
+            since = int(time_now()*1000.)
+        else:
+            since = 0.0
+        
+        if __debug__:
+            if not isinstance(afk, bool):
+                raise AssertionError(f'`afk` can be given as `bool` instance, got {afk.__class__.__name__}.')
+        
+        data = {
+            'op': DiscordGateway.PRESENCE,
+            'd' : {
+                'game'  : activity,
+                'since' : since,
+                'status': status,
+                'afk'   : afk,
+                    },
+                }
+        
+        await self.gateway.send_as_json(data)
+    
+    async def activate_authorization_code(self, redirect_url, code, scopes):
+        """
+        Activates a user's oauth2 code.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        redirect_url : `str`
+            The url, where the activation page redirected to.
+        code : `str`
+            The code, what is included with the redirect url after a successfull activation.
+        scopes : `list` of `str`
+            A list of oauth2 scopes to request.
+        
+        Returns
+        -------
+        access : ``OA2Access`` or `None`
+            If the code, the redirect url or the scopes are invalid, the methods returns `None`.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `redirect_url` was nto given as `str` instance.
+            - If `code` was not given as `str` instance.
+            - If `scopes` was not given `list` of `str` instances.
+            - If `scopes` is empty.
+            - If `scopes` contains empty string.
+        
+        See Also
+        --------
+        ``parse_oauth2_redirect_url`` : Parses `redirect_url` and the `code` from a full url.
+        """
+        if __debug__:
+            if not isinstance(redirect_url, str):
+                raise AssertionError(f'`redirect_url` can be given as `str` instance, got '
+                    f'{redirect_url.__class__.__name__}.')
+            
+            if not isinstance(code, str):
+                raise AssertionError(f'`code` can be given as `str` instance, got {code.__class__.__name__}.')
+            
+            if not isinstance(scopes, list):
+                raise AssertionError(f'`scopes` can be given as `list` of `str` instances, got '
+                    f'{scopes.__class__.__name__}; {scopes!r}.')
+            
+            if not scopes:
+                raise AssertionError(f'`scopes` cannot be empty.')
+            
+            for index, scope in enumerate(scopes):
+                if not isinstance(scope, str):
+                    raise AssertionError(f'`scopes` element `{index}` is not `str` instance, but '
+                        f'{scope.__class__.__name__}; got {scopes!r}.')
+                
+                if not scope:
+                    raise AssertionError(f'`scopes` element `{index}` is an empty string; got {scopes!r}.')
+        
+        data = {
+            'client_id'     : self.id,
+            'client_secret' : self.secret,
+            'grant_type'    : 'authorization_code',
+            'code'          : code,
+            'redirect_uri'  : redirect_url,
+            'scope'         : ' '.join(scopes),
+                }
+        
+        data = await self.http.oauth2_token(data, imultidict())
+        if len(data) == 1:
+            return
+        
+        return OA2Access(data, redirect_url)
+    
+    async def owners_access(self, scopes):
+        """
+        Similar to ``.activate_authorization_code``, but it requests the application's owner's access. It does not
+        requires the redirect_url and the code argument either.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        scopes : `list` of `str`
+            A list of oauth2 scopes to request.
+        
+        Returns
+        -------
+        access : ``OA2Access``
+            The oauth2 access of the client's application's owner.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `scopes` was not given `list` of `str` instances.
+            - If `scopes` is empty.
+            - If `scopes` contains empty string.
+        
+        Notes
+        -----
+        Does not work if the client's application is owned by a team.
+        """
+        if __debug__:
+            if not isinstance(scopes, list):
+                raise AssertionError(f'`scopes` can be given as `list` of `str` instances, got '
+                    f'{scopes.__class__.__name__}; {scopes!r}.')
+            
+            if not scopes:
+                raise AssertionError(f'`scopes` cannot be empty.')
+            
+            for index, scope in enumerate(scopes):
+                if not isinstance(scope, str):
+                    raise AssertionError(f'`scopes` element `{index}` is not `str` instance, but '
+                        f'{scope.__class__.__name__}; got {scopes!r}.')
+                
+                if not scope:
+                    raise AssertionError(f'`scopes` element `{index}` is not an empty string; got {scopes!r}.')
+        
+        data = {
+            'grant_type' : 'client_credentials',
+            'scope'      : ' '.join(scopes),
+                }
+        
+        headers = imultidict()
+        headers[AUTHORIZATION] = BasicAuth(str(self.id), self.secret).encode()
+        data = await self.http.oauth2_token(data, headers)
+        return OA2Access(data, '')
+    
+    
+    async def user_info(self, access):
+        """
+        Request the a user's information with oauth2 access token. By default a bot account should be able to request
+        every public infomation about a user (but you do not need oauth2 for that). If the access token has email
+        or/and identify scopes, then more information should show up like this.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        access : ``OA2Access``, ``UserOA2`` or `str` instance
+            Oauth2 acess to the respective user or it's access token.
+        
+        Returns
+        -------
+        oauth2_user : ``UserOA2``
+            The requested user object.
+        
+        Raises
+        ------
+        TypeError
+            If `access` was not given neither as ``OA2Access``, ``UserOA2``  or `str` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        
+        Notes
+        -----
+        Needs `'email'` or / and `'identify'` scopes granted for more data
+        """
+        if isinstance(access, (OA2Access, UserOA2)):
+            access_token = access.access_token
+        elif isinstance(access, str):
+            access_token = access
+        else:
+            raise TypeError(f'`access` can be given as `{OA2Access.__name__}`, `{UserOA2.__name__}` or `str`'
+                f'instance, but got {access.__class__.__name__}.')
+        
+        headers = imultidict()
+        headers[AUTHORIZATION] = f'Bearer {access_token}'
+        data = await self.http.user_info(headers)
+        return UserOA2(data, access)
+    
+    
+    async def user_connections(self, access):
+        """
+        Requests a user's connections. This method will work only if the access token has the `'connections'` scope. At
+        the returned list includes the user's hidden connections as well.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        access : ``OA2Access``, ``UserOA2`` or `str` instance
+            Oauth2 acess to the respective user or it's access token.
+        
+        Returns
+        -------
+        connections : `list` of ``Connection``
+            The user's connections.
+        
+        Raises
+        ------
+        TypeError
+            If `access` was not given neither as ``OA2Access``, ``UserOA2``  or `str` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            If the given `access` not grants `'connections'` scope.
+        """
+        if isinstance(access, (OA2Access, UserOA2)):
+            if __debug__:
+                if 'connections' not in access.scopes:
+                    raise AssertionError(f'The given `access` not grants `\'connections\'` scope, what is required, '
+                        f'got {access!r}.')
+            
+            access_token = access.access_token
+        elif isinstance(access, str):
+            access_token = access
+        else:
+            raise TypeError(f'`access` can be given as `{OA2Access.__name__}`, `{UserOA2.__name__}` or `str`'
+                f'instance, but got {access.__class__.__name__}.')
+        
+        headers = imultidict()
+        headers[AUTHORIZATION] = f'Bearer {access_token}'
+        data = await self.http.user_connections(headers)
+        return [Connection(connection_data) for connection_data in data]
+    
+    
+    async def renew_access_token(self, access):
+        """
+        Renews the access token of an ``OA2Access``.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        access : ``OA2Access`` or ``UserOA2``
+            Oauth2 acess to the respective user.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            If `access` was not given neither as ``OA2Access`` or ``UserOA2`` instance.
+        
+        Notes
+        -----
+        By default access tokens expire after one week.
+        """
+        if __debug__:
+            if not isinstance(access, (OA2Access, UserOA2)):
+                raise AssertionError(f'`access` can be given as `{OA2Access.__name__}` or `{UserOA2.__name__}` '
+                    f'instance, but got {access.__class__.__name__}.')
+        
+        redirect_url = access.redirect_url
+        if redirect_url:
+            data = {
+                'client_id'     : self.id,
+                'client_secret' : self.secret,
+                'grant_type'    : 'refresh_token',
+                'refresh_token' : access.refresh_token,
+                'redirect_uri'  : redirect_url,
+                'scope'         : ' '.join(access.scopes)
+                    }
+        else:
+            data = {
+                'client_id'     : self.id,
+                'client_secret' : self.secret,
+                'grant_type'    : 'client_credentials',
+                'scope'         : ' '.join(access.scopes),
+                    }
+        
+        data = await self.http.oauth2_token(data, imultidict())
+        
+        access._renew(data)
+    
+    async def guild_user_add(self, guild, access, user=None, *, nick=None, roles=None, mute=False, deaf=False):
+        """
+        Adds the passed to the guild. The user must have granted you the `'guilds.join'` oauth2 scope.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild`` or `int`
+            The guild, where the user is going to be added.
+        access: ``OA2Access``, ``UserOA2`` or `str` instance
+            The access of the user, who will be addded.
+        user : ``Client``, ``User`` or `int` Optional
+            Defines which user will be added to the guild. The `access` must refer to this specified user.
+            
+            This field is optional if access is passed as an ``UserOA2`` object.
+        nick : `str`, Optional
+            The nickname, which with the user will be added.
+        roles : `None` or `list` of (``Role`` or `int`, Optional
+            The roles to add the user with.
+        mute : `bool`, Optional
+            Whether the user should be added as muted.
+        deaf : `bool`, Optional
+            Whether the user should be added as deafen.
+        
+        Raises
+        ------
+        TypeError:
+            - If `user` was not given neither as `None`, ``User``, ``Client`` or `int` instance.
+            - If `user` was passed as `None` and `access` was passed as ``OA2Access`` or as `str` instance.
+            - If `access` was not given as ``OA2Access``, ``UserOA2``, nether as `str` instance.
+            - If the given `acess` not grants `'guilds.join'` scope.
+            - If `guild` was not given neither as ``Guild``, not `int` instance.
+            - If `roles` contain not ``Role``, nor `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `user` and `access` refers to a different user.
+            - If the nick's length is over `32`.
+            - If the nick was not given neither as `None` or `str` instance.
+            - If `mute` was not given as `bool` instance.
+            - If `deaf` was not given as `bool` instance.
+            - If `roles` was not given neither as `None` or `list`.
+        """
+        if user is None:
+            user_id = 0
+        elif isinstance(user, (User, Client)):
+            user_id = user.id
+        else:
+            user_id = maybe_snowflake(user)
+            if user_id is None:
+                raise TypeError(f'`user` can be given as `None`, `{User.__name__}`, `{Client.__name__}` or `int` '
+                    f'instance, got {user.__class__.__name__}.')
+        
+        
+        if isinstance(access, OA2Access):
+            access_token = access.access_token
+            
+            if __debug__:
+                if 'guilds.join' not in access.scopes:
+                    raise AssertionError(f'The given `access` not grants `\'guilds.join\'` scope, what is required, '
+                        f'got {access!r}.')
+        
+        elif isinstance(access, UserOA2):
+            access_token = access.access_token
+            if __debug__:
+                if 'guilds.join' not in access.scopes:
+                    raise AssertionError(f'The given `access` not grants `\'guilds.join\'` scope, what is required, '
+                        f'got {scope!r}.')
+                
+                if user_id and (user_id != access.id):
+                    raise AssertionError(f'The given `user` and `access` refers to different users, got user={user!r}, '
+                        f'access={access!r}.')
+            
+            user_id = access.id
+        elif isinstance(access, str):
+            access_token = access
+        else:
+            raise TypeError(f'`access` can be given as `{OA2Access.__name__}`, `{UserOA2.__name__}` or `str`'
+                f'instance, but got {access.__class__.__name__}.')
+        
+        
+        if not user_id:
+            raise TypeError(f'`user` was not detectable neither from `user` nor from `access` parameters, got '
+                f'user={user!r}, access={access!r}.')
+        
+        
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        
+        data = {'access_token': access_token}
+        
+        
+        # Security debug checks.
+        if __debug__:
+            if (nick is not None):
+                if not isinstance(nick, str):
+                    raise AssertionError(f'`nick` can be given as `None` or `str` instance, got '
+                        f'{nick.__class__.__name__}.')
+                
+                nick_ln = len(nick)
+                if nick_ln > 32:
+                    raise AssertionError(f'`nick` length can be in range [0:32], got {nick_ln}; {nick!r}.')
+        
+        if (nick is not None) and nick:
+            data['nick'] = nick
+        
+        
+        if (roles is not None):
+            if __debug__:
+                if not isinstance(roles, list):
+                    raise AssertionError(f'`roles` can be given as `list` or `{Role.__name__}` instances, got '
+                        f'{roles.__class__.__name__}.')
+            
+            if roles:
+                role_ids = []
+                
+                for index, role in enumerate(roles):
+                    if isinstance(role, Role):
+                        role_id = role.id
+                    else:
+                        role_id = maybe_snowflake(role)
+                        if role_id is None:
+                            raise TypeError(f'`roles` element `{index}` is not `{Role.__name__}`, neither `int` '
+                                f'instance,  but{role.__class__.__name__}; got {roles!r}.')
+                    
+                    role_ids.append(role_id)
+                
+                data['roles'] = role_ids
+        
+        
+        if __debug__:
+            if not isinstance(mute, bool):
+                raise AssertionError(f'`mute` can be given as `bool` instance, got {mute.__class__.__name__}.')
+        
+        if mute:
+            data['mute'] = mute
+        
+        
+        if __debug__:
+            if not isinstance(deaf, bool):
+                raise AssertionError(f'`deaf` can be given as `bool` instance, got {deaf.__class__.__name__}.')
+        
+        if deaf:
+            data['deaf'] = deaf
+        
+        
+        await self.http.guild_user_add(guild_id, user_id, data)
+    
+    async def user_guilds(self, access):
+        """
+        Requests a user's guilds with it's ``OA2Access``. The user must provide the `'guilds'` oauth2  scope for this
+        request to succeed.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        access: ``OA2Access``, ``UserOA2`` or `str` instance
+            The access of the user, who's guilds will be requested.
+        
+        Returns
+        -------
+        guilds_and_permissions : `list` of `tuple` (``Guild``, ``UserGuildPermission``)
+            The guilds and the user's permissions in each of them. Not loaded guilds will show up as partial ones.
+        
+        Raises
+        ------
+        TypeError
+            If `access` was not given neither as ``OA2Access``, ``UserOA2``  or `str` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            If the given `access` not grants `'guilds'` scope.
+        """
+        if isinstance(access, (OA2Access, UserOA2)):
+            if __debug__:
+                if 'connections' not in access.scopes:
+                    raise AssertionError(f'The given `access` not grants `\'guilds\'` scope, what is required, '
+                        f'got {access!r}.')
+            
+            access_token = access.access_token
+        elif isinstance(access, str):
+            access_token = access
+        else:
+            raise TypeError(f'`access` can be given as `{OA2Access.__name__}`, `{UserOA2.__name__}` or `str`'
+                f'instance, but got {access.__class__.__name__}.')
+        
+        headers = imultidict()
+        headers[AUTHORIZATION] = f'Bearer {access_token}'
+        data = await self.http.user_guilds(headers)
+        return [(create_partial_guild(guild_data), UserGuildPermission(guild_data)) for guild_data in data]
+    
+    async def achievement_get_all(self):
+        """
+        Requests all the achievements of the client's application and returns them.
+        
+        This method is a coroutine.
+        
+        Returns
+        -------
+        achievements : `list` of ``Achievement`` objects
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        data = await self.http.achievement_get_all(self.application.id)
+        return [Achievement(achievement_data) for achievement_data in data]
+    
+    async def achievement_get(self, achievement_id):
+        """
+        Requests one of the client's achievements by it's id.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        achievement_id : `int`
+            The achievement's id.
+        
+        Returns
+        -------
+        achievement : ``Achievement``
+        
+        Raises
+        ------
+        TypeError
+            If `achievement_id` was not given as `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        achievement_id_c = maybe_snowflake(achievement_id)
+        if achievement_id_c is None:
+            raise TypeError(f'`achievement_id` can be given as `int` instance, got '
+                f'{achievement_id.__class__.__name__}.')
+        
+        data = await self.http.achievement_get(self.application.id, achievement_id_c)
+        return Achievement(data)
+    
+    async def achievement_create(self, name, description, icon, secret=False, secure=False):
+        """
+        Creates an achievment for the client's application and returns it.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        name : `str`
+            The achievement's name.
+        description : `str`
+            The achievement's description.
+        icon : `bytes-like`
+            The achievement's icon. Can have `'jpg'`, `'png'`, `'webp'` or `'gif'` format.
+        secret : `bool`, Optional
+            Secret achievements will *not* be shown to the user until they've unlocked them.
+        secure : `bool`, Optional
+            Secure achievements can only be set via HTTP calls from your server, not by a game client using the SDK.
+        
+        Returns
+        -------
+        achievement : ``Achievement``
+            The created achievement entity.
+        
+        Raises
+        ------
+        TypeError
+            If `icon` was not passed as `bytes-like`.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If the `icon`'s format is not any of the expected ones.
+            - If `name` was not given as `str` instance.
+            - If `description` was not gvein as `str` instance.
+            - If `secret` was not given as `bool` instance.
+            - If `secure` was not given as `bool` instance.
+        """
+        if __debug__:
+            if not isinstance(name, str):
+                raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
+            
+            if not isinstance(description, str):
+                raise AssertionError(f'`description` can be given as `str` instance, got '
+                    f'{description.__class__.__name__}.')
+        
+        if not isinstance(icon, (bytes, bytearray, memoryview)):
+            raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon.__class__.__name__}.')
+        
+        if __debug__:
+            extension = get_image_extension(icon)
+            if extension not in VALID_ICON_FORMATS_EXTENDED:
+                raise AssertionError(f'Invalid icon type for achievement: `{extension}`.')
+        
+        icon_data = image_to_base64(icon)
+        
+        if __debug__:
+            if not isinstance(secret, bool):
+                raise AssertionError(f'`secret` can be given as `bool` instance, got {secret.__class__.__name__}.')
+            
+            if not isinstance(secure, bool):
+                raise AssertionError(f'`secure` can be given as `bool` instance, got {secure.__class__.__name__}.')
+        
+        data = {
+            'name' : {
+                'default' : name,
+                    },
+            'description' : {
+                'default' : description,
+                    },
+            'secret' : secret,
+            'secure' : secure,
+            'icon'   : icon_data,
+                }
+        
+        data = await self.http.achievement_create(self.application.id, data)
+        return Achievement(data)
+    
+    async def achievement_edit(self, achievement, name=None, description=None, secret=None, secure=None, icon=None):
+        """
+        Edits the passed achievemnt with the specified parameters. All parameter is optional.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        achievement : ``Achievement`` or `int` instance
+            The achievement, what will be edited.
+        name : `str`, Optional
+            The new name of the achievement.
+        description : `str`, Optional
+            The achievemnt's new description.
+        secret : `bool`, Optional
+            The achievement's new secret value.
+        secure : `bool`, Optional
+            The achievement's new secure value.
+        icon : `bytes-like`, Optional
+            The achievement's new icon.
+        
+        Returns
+        -------
+        achievement : ``Achievement``
+            After a successful edit, the passed achievement is updated and returned.
+        
+        Raises
+        ------
+        TypeError
+            - If ``icon`` was not passed as `bytes-like`.
+            - If `achievement` was not given neither as ``Achievement``, neither as `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `name` was not given as `str` instance.
+            - If `description` was not given as `str` instance.
+            - If `secret` was not given as `bool` instance.
+            - If `secure` was not given as `str` instance.
+            - If `icon`'s format is not any of the expected ones.
+        """
+        if isinstance(achievement, Achievement):
+            achievement_id = achievement.id
+        else:
+            achievement_id = maybe_snowflake(achievement)
+            if achievement_id is None:
+                raise TypeError(f'`achievement` can be given as `int` instance, got {achievement.__class__.__name__}.')
+            
+            achievement = None
+        
+        data = {}
+        
+        if (name is not None):
+            if __debug__:
+                if not isinstance(name, str):
+                    raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
+            
+            data['name'] = {
+                'default' : name,
+                    }
+        
+        if (description is not None):
+            if __debug__:
+                if not isinstance(description, str):
+                    raise AssertionError(f'`description` can be given as `str` instance, got '
+                        f'{description.__class__.__name__}.')
+            
+            data['description'] = {
+                'default' : description,
+                    }
+        
+        if (secret is not None):
+            if __debug__:
+                if not isinstance(secret, bool):
+                    raise AssertionError(f'`secret` can be given as `bool` instance, got {secret.__class__.__name__}.')
+            
+            data['secret'] = secret
+        
+        if (secure is not None):
+            if __debug__:
+                if not isinstance(secret, bool):
+                    raise AssertionError(f'`secret` can be given as `bool` instance, got {secret.__class__.__name__}.')
+            
+            data['secure'] = secure
+        
+        if (icon is not None):
+            icon_type = icon.__class__
+            if not isinstance(icon, (bytes, bytearray, memoryview)):
+                raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon_type.__name__}.')
+            
+            if __debug__:
+                extension = get_image_extension(icon)
+                if extension not in VALID_ICON_FORMATS_EXTENDED:
+                    raise ValueError(f'Invalid icon type for achievemen: `{extension}`.')
+            
+            data['icon'] = image_to_base64(icon)
+        
+        data = await self.http.achievement_edit(self.application.id, achievement_id, data)
+        if achievement is None:
+            achievement = Achievement(data)
+        else:
+            achievement._update_no_return(data)
+        return achievement
+    
+    async def achievement_delete(self, achievement):
+        """
+        Deletes the passed achievement.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        achievement : ``Achievement`` or `int`
+            The achievement to delete.
+        
+        Raises
+        ------
+        TypeError
+            If `achievement` was not given neither as ``Achievement``, neither as `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        if isinstance(achievement, Achievement):
+            achievement_id = achievement.id
+        else:
+            achievement_id = maybe_snowflake(achievement)
+            if achievement_id is None:
+                raise TypeError(f'`achievement` can be given as `{Achievement.__name__}` or `int` instance, got '
+                    f'{achievement.__class__.__name__}.')
+        
+        await self.http.achievement_delete(self.application.id, achievement_id)
+    
+    
+    async def user_achievements(self, access):
+        """
+        Requests the achievements of a user with it's oauth2 access.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        access : ``OA2Access``, ``UserOA2`` or `str`.
+            The access of the user, who's achievements will be requested.
+        
+        Returns
+        -------
+        achievements : `list` of ``Achievement`` objects
+        
+        Raises
+        ------
+        TypeError
+            If `access` was not given neither as ``OA2Access``, ``UserOA2``  or `str` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        
+        Notes
+        -----
+        This endpoint is unintentionally documented and will never work. For reference:
+        ``https://github.com/discordapp/discord-api-docs/issues/1230``.
+        
+        Always drops `DiscordException UNAUTHORIZED (401): 401: Unauthorized`.
+        """
+        if isinstance(access, (OA2Access, UserOA2)):
+            access_token = access.access_token
+        elif isinstance(access, str):
+            access_token = access
+        else:
+            raise TypeError(f'`access` can be given as `{OA2Access.__name__}`, `{UserOA2.__name__}` or `str`'
+                f'instance, but got {access.__class__.__name__}.')
+        
+        
+        headers = imultidict()
+        headers[AUTHORIZATION] = f'Bearer {access_token}'
+        
+        data = await self.http.user_achievements(self.application.id, headers)
+        return [Achievement(achievement_data) for achievement_data in data]
+    
+    
+    async def user_achievement_update(self, user, achievement, percent_complete):
+        """
+        Updates the `user`'s achievement with the given percentage. The  achevement should be `secure`. This
+        method only updates the achievement's percentage.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        user : ``User``, ``Client`` or `int` instance
+            The user, who's achievement will be updated.
+        achievement : ``Achievement`` or `int` instance
+            The achievement, which's state will be updated
+        percent_complete : `int`
+            The completion percentage of the achievement.
+        
+        Raises
+        ------
+        TypeError
+            - If `user` was not given neither as ``User``, ``Client`` nor `int` instance.
+            - If `achievement` was not given neither as ``Achievement``, neither as `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `percent_complete` was not given as `int` instance.
+            - If `percent_complete` is out of range [0:100].
+        
+        Notes
+        -----
+        This endpoint cannot grant achievement, but can it even update them?. For reference:
+        ``https://github.com/discordapp/discord-api-docs/issues/1230``.
+        
+        Only secure updates are supported, if they are even.
+        - When updating secure achievement: `DiscordException NOT FOUND (404), code=10029: Unknown Entitlement`
+        - When updating non secure: `DiscordException FORBIDDEN (403), code=40001: Unauthorized`
+        """
+        if isinstance(user, (User, Client)):
+            user_id = user.id
+        else:
+            user_id = maybe_snowflake(user)
+            if user_id is None:
+                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                    f'got {user.__class__.__name__}.')
+        
+        
+        if isinstance(achievement, Achievement):
+            achievement_id = achievement.id
+        else:
+            achievement_id = maybe_snowflake(achievement)
+            if achievement_id is None:
+                raise TypeError(f'`achievement` can be given as `{Achievement.__name__}` or `int` instance, got '
+                    f'{achievement.__class__.__name__}.')
+        
+        if __debug__:
+            if not isinstance(percent_complete, int):
+                raise AssertionError(f'`percent_complete` can be given as `int` instance, got '
+                    f'{percent_complete.__class__.__name__}.')
+            
+            if percent_complete < 0 or percent_complete > 100:
+                raise AssertionError(f'`percent_complete` is out of range [0:100], got {percent_complete!r}.')
+        
+        data = {'percent_complete': percent_complete}
+        await self.http.user_achievement_update(user_id, self.application.id, achievement_id, data)
+    
+    
+    async def application_get(self, application_id):
+        """
+        Requst a specific application by it's id.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        application_id : `int`
+            The `id` of the application to request.
+
+        Returns
+        -------
+        application : ``Application``
+        
+        Raises
+        ------
+        TypeError
+            If `application_id` was not given as `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        
+        Notes
+        -----
+        This endpoint does not support bot accounts.
+        """
+        application_id_c = maybe_snowflake(application_id)
+        if application_id_c is None:
+            raise TypeError(f'`application_id` can be given as `int` instance, got '
+                f'{application_id.__class__.__name__}.')
+        
+        data = await self.http.application_get(application_id_c)
+        return Application(data)
+    
+    
+    async def eula_get(self, eula_id):
+        """
+        Requests the eula with the given id.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        eula_id : `int`
+            The `id` of the eula to request.
+
+        Returns
+        -------
+        eula : ``EULA``
+        
+        Raises
+        ------
+        TypeError
+            If `eula_id` was not given as `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        eula_id_c = maybe_snowflake(eula_id)
+        if eula_id_c is None:
+            raise TypeError(f'`eula_id` can be given as `int` instance, got {eula_id.__class__.__name__}.')
+        
+        try:
+            eula = EULAS[eula_id_c]
+        except KeyError:
+            pass
+        else:
+            return eula
+        
+        eula_data = await self.http.eula_get(eula_id_c)
+        return EULA(eula_data)
+    
+    async def applications_detectable(self):
+        """
+        Requst the detectable applications
+        
+        This method is a coroutine.
+        
+        Returns
+        -------
+        applications : `list` of ``Application``
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        applications_data = await self.http.applications_detectable()
+        return [Application(application_data) for application_data in applications_data]
+    
+    
+    # loggin
     async def client_login_static(self):
         """
         The first step at loggin in is requesting the client's user data. This method is also used to check whether
@@ -1587,7 +2000,7 @@ class Client(UserBase):
         
         return data
     
-    #channels
+    # channels
     
     async def channel_group_leave(self, channel):
         """
@@ -1597,17 +2010,27 @@ class Client(UserBase):
         
         Parameters
         ----------
-        channel : ``ChannelGroup``
+        channel : ``ChannelGroup`` or `int`
             The channel to leave from.
         
         Raises
         ------
+        TypeError
+            If `channel` was not given neither as ``ChannelGroup`` nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        await self.http.channel_group_leave(channel.id)
+        if isinstance(channel, ChannelGroup):
+            channel_id = channel.id
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as `{ChannelGroup.__name__}`, neither as `int` instance, got '
+                    f'{channel.__class__.__name__}.')
+        
+        await self.http.channel_group_leave(channel_id)
     
     async def channel_group_user_add(self, channel, *users):
         """
@@ -1617,20 +2040,44 @@ class Client(UserBase):
         
         Parameters
         ----------
-        channel : ``ChannelGroup``
+        channel : ``ChannelGroup`` or `int` instance
             The channel to add the `users` to.
-        *users : ``User`` or ``Client`` objects
+        *users : ``User``, ``Client`` or `int` instances
             The users to add to the `channel`.
         
         Raises
         ------
+        TypeError
+            - If `channel` was not given neither as ``ChannelGroup`` nor `int` instance.
+            - If `users` contains non ``User``, ``Client``, neither `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
+        if isinstance(channel, ChannelGroup):
+            channel_id = channel.id
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as `{ChannelGroup.__name__}`, neither as `int` instance, got '
+                    f'{channel.__class__.__name__}.')
+        
+        user_ids = []
+        
         for user in users:
-            await self.http.channel_group_user_add(channel.id, user.id)
+            if isinstance(user, (User, Client)):
+                user_id = user.id
+            else:
+                user_id = maybe_snowflake(user)
+                if user_id is None:
+                    raise TypeError(f'`users` can be given as `{User.__name__}`, `{Client.__name__}` or `int` '
+                        f'instances, but got {user.__class__.__name__}.')
+                
+            user_ids.append(user_id)
+        
+        for user_id in user_ids:
+            await self.http.channel_group_user_add(channel_id, user_id)
 
     async def channel_group_user_delete(self, channel, *users):
         """
@@ -1640,20 +2087,44 @@ class Client(UserBase):
         
         Parameters
         ----------
-        channel : ``ChannelGroup``
+        channel : `ChannelGroup`` or `int` instance
             The channel from where the `users` will be removed.
-        *users : ``User`` or ``Client`` objects
+        *users : ``User``, ``Client`` or `int` instances
             The users to remove from the `channel`.
         
         Raises
         ------
+        TypeError
+            - If `channel` was not given neither as ``ChannelGroup`` nor `int` instance.
+            - If `users` contains non ``User``, ``Client``, neither `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
+        if isinstance(channel, ChannelGroup):
+            channel_id = channel.id
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as `{ChannelGroup.__name__}`, neither as `int` instance, got '
+                    f'{channel.__class__.__name__}.')
+        
+        user_ids = []
+        
         for user in users:
-            await self.http.channel_group_user_delete(channel.id, user.id)
+            if isinstance(user, (User, Client)):
+                user_id = user.id
+            else:
+                user_id = maybe_snowflake(user)
+                if user_id is None:
+                    raise TypeError(f'`users` can be given as `{User.__name__}`, `{Client.__name__}` or `int` '
+                        f'instances, but got {user.__class__.__name__}.')
+            
+            user_ids.append(user_id)
+        
+        for user_id in user_ids:
+            await self.http.channel_group_user_delete(channel_id, user_id)
     
     async def channel_group_edit(self, channel, name=..., icon=...):
         """
@@ -1663,7 +2134,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        channel : ``ChannelGroup``
+        channel : ``ChannelGroup`` or `int` instance
             The channel to edit.
         name : `None` or `str`, Optional
             The new name of the channel. By passing `None` or an empty string you can remove the actual one.
@@ -1673,6 +2144,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError
+            - If `channel` was not given neither as ``ChannelGroup`` nor `int` instance.
             - If `name` is neither `None` or `str` instance.
             - If `icon` is neither `None` or `bytes-like`.
         ValueError
@@ -1682,25 +2154,41 @@ class Client(UserBase):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        
+        AssertionError
+            - If `name` was not given neither as `None` or `str` instance.
+            - If `name`'s length is out of range [2:100].
         Notes
         -----
         No request is done if no optional paremeter is provided.
         """
+        if isinstance(channel, ChannelGroup):
+            channel_id = channel.id
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as `{ChannelGroup.__name__}`, neither as `int` instance, got '
+                    f'{channel.__class__.__name__}.')
+        
         data = {}
         
         if (name is not ...):
-            if (name is None):
-                pass
-            elif isinstance(name, str):
-                name_ln = len(name)
-                if name_ln == 1 or name_ln > 100:
-                    raise ValueError(f'`channel`\'s `.name`\'s length can be between 2-100, got {name!r}.')
-                
-                if name_ln == 0:
-                    name = None
+            if __debug__:
+                if (name is not None):
+                    if not isinstance(name, str):
+                        raise AssertionError(f'`name` can be given as `None` or `str` instance, got '
+                            f'{name.__class__.__name__}.')
+                    
+                    name_ln = len(name)
+                    if name_ln > 100 or name_ln == 1:
+                        raise AssertionError(f'`name` length can be in range [2:100], got {name_ln}; {name!r}.')
+                    
+                    # Translate empty nick to `None`
+                    if name_ln == 0:
+                        name = None
             else:
-                raise TypeError(f'`name` can be `None` or `str` instance, got {name.__class__.__name__}.')
+                # Non debug mode: Translate empty nick to `None`
+                if (name is not None) and (not name):
+                    name = None
             
             data['name'] = name
         
@@ -1721,10 +2209,9 @@ class Client(UserBase):
             data['icon'] = icon_data
         
         if data:
-            await self.http.channel_group_edit(channel.id, data)
+            await self.http.channel_group_edit(channel_id, data)
     
-    # user account only
-    async def channel_group_create(self, users):
+    async def channel_group_create(self, *users):
         """
         Creates a group channel with the given users.
         
@@ -1732,7 +2219,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        users : `list` of (``Usser`` or ``Client``) objects
+        *users : ``User``, ``Client`` or `int` instances
             The users to create the channel with.
         
         Returns
@@ -1742,21 +2229,41 @@ class Client(UserBase):
         
         Raises
         ------
-        ValueError
-            If `users` contains less than 2 users.
+        TypeError
+            If `users` contain not only ``User`, ``Client`` or `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            If the total amount of users is less than `2`.
         
         Notes
         -----
         This endpoint does not support bot accounts.
         """
-        if len(users) < 2:
-            raise ValueError('ChannelGroup must be created with 2 or more users')
+        user_ids = set()
         
-        data = {'recipients': [user.id for user in users]}
+        for user in users:
+            if isinstance(user, (User, Client)):
+                user_id = user.id
+            else:
+                user_id = maybe_snowflake(user)
+                if user_id is None:
+                    raise TypeError(f'`users` can be given as `{User.__name__}`, `{Client.__name__}` or `int` '
+                        f'instances, but got {user.__class__.__name__}.')
+                
+            user_ids.add(user_id)
+        
+        user_ids.add(self.id)
+        
+        if __debug__:
+            user_ids_ln = len(user_ids)
+            if user_ids_ln < 2:
+                raise AssertionError(f'`{ChannelGroup.__name__}` can be created at least with at least `2` users, but '
+                    f'got only {user_ids_ln}; {users!r}.')
+        
+        data = {'recipients': user_ids}
         data = await self.http.channel_group_create(self.id, data)
         return ChannelGroup(data, self)
     
@@ -1769,7 +2276,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        user : ``User`` or ``Client`` object
+        user : ``User``, ``Client`` or `int` instance
             The user to create the private with.
         
         Returns
@@ -1779,17 +2286,27 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `user` was not given neither as ``User``, ``Client`` nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
+        if isinstance(user, (User, Client)):
+            user_id = user.id
+        else:
+            user_id = maybe_snowflake(user)
+            if user_id is None:
+                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                    f'got {user.__class__.__name__}.')
+        
         try:
-            channel = self.private_channels[user.id]
+            channel = self.private_channels[user_id]
         except KeyError:
-            data = await self.http.channel_private_create({'recipient_id': user.id})
-            print(data)
+            data = await self.http.channel_private_create({'recipient_id': user_id})
             channel = ChannelPrivate(data, self)
+        
         return channel
     
     async def channel_private_get_all(self):
@@ -1819,7 +2336,7 @@ class Client(UserBase):
         
         return result
 
-    async def channel_move(self, channel, visual_position, category=..., lock_permissions=False, reason=None):
+    async def channel_move(self, channel, visual_position, *, category=..., lock_permissions=False, reason=None):
         """
         Moves a guild channel to the given visual position under it's category, or guild. If the algorithm can not
         place the channel exactly on that location, it will place it as close, as it can. If there is nothing to
@@ -5519,7 +6036,7 @@ class Client(UserBase):
         if (name is not None):
             if __debug__:
                 if not isinstance(name, str):
-                    raise AssertionErrror(f'`name` can be given as `str` insatcne, got {name.__class__.__name__}.')
+                    raise AssertionErrror(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
                 
                 name_ln = len(name)
                 if name_ln < 2 or name_ln > 100:
@@ -5786,7 +6303,7 @@ class Client(UserBase):
                     raise AssertionError('The guild is not Community guild and `preferred_locale` was given.')
                 
                 if not isinstance(preferred_locale, str):
-                    raise AssertionError('`preferred_locale` can be given as `str` instacne, got '
+                    raise AssertionError('`preferred_locale` can be given as `str` instance, got '
                         f'{preferred_locale.__class__.__name__}.')
             
             data['preferred_locale'] = preferred_locale
@@ -8865,7 +9382,7 @@ class Client(UserBase):
             if position == 0:
                 raise ValueError(f'Role cannot be moved to position `0`.')
         
-        data = change_on_switch(guild.role_list, role, position, key=lambda role, pos:{'id': role.id,'position': pos})
+        data = change_on_switch(guild.role_list, role, position, key=lambda role_, pos:{'id': role_.id,'position': pos})
         if not data:
             return
         
@@ -9320,7 +9837,7 @@ class Client(UserBase):
                         raise InvalidToken() from err
                     
                     if status >= 500:
-                        sleep(2.5, KOKORO)
+                        await sleep(2.5, KOKORO)
                         continue
                     
                     raise
@@ -9433,7 +9950,6 @@ class Client(UserBase):
             else:
                 self.gateway = DiscordGateway(self)
     
-    # user account only
     async def hypesquad_house_change(self, house):
         """
         Changes the client's hypesquad house.
@@ -9442,18 +9958,35 @@ class Client(UserBase):
         
         Parameters
         ----------
-        house : ``HypesquadHouse``
-
+        house : `int` or ``HypesquadHouse`` instance
+            The hypesquad house to join.
+        
         Raises
         ------
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        
+        Raises
+        ------
+        TypeError
+            `house` was not given as `int`  neither as ``HypesquadHouse`` instance.
+        
+        Notes
+        -----
+        User account only.
         """
-        await self.http.hypesquad_house_change({'house_id':house.value})
+        if isinstance(house, HypesquadHouse):
+            house_id = house.value
+        elif isinstance(house, int):
+            house_id = house
+        else:
+            raise TypeError(f'`house` can be given as `int` or `{HypesquadHouse.__name__}` instance, got '
+                f'{house.__class__.__name__}.')
+        
+        await self.http.hypesquad_house_change({'house_id':house_id})
     
-    # user account only
     async def hypesquad_house_leave(self):
         """
         Leaves the client from it's current hypesquad house.
@@ -9466,6 +9999,10 @@ class Client(UserBase):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        
+        Notes
+        -----
+        User account only.
         """
         await self.http.hypesquad_house_leave()
     
@@ -10538,23 +11075,25 @@ class Client(UserBase):
         return self.gateway
 
 
-client_core.Client = Client
-message.Client = Client
-webhook.Client = Client
-channel.Client = Client
-invite.Client = Client
-parsers.Client = Client
-client_utils.Client = Client
-guild.Client = Client
+module_client_core.Client = Client
+module_message.Client = Client
+module_webhook.Client = Client
+module_channel.Client = Client
+module_invite.Client = Client
+module_parsers.Client = Client
+module_client_utils.Client = Client
+module_guild.Client = Client
 
-del client_core
+del module_client_core
 del re
 del URLS
-del message
-del webhook
+del module_message
+del module_webhook
 del RATELIMIT_GROUPS
 del DISCOVERY_CATEGORIES
-del invite
-del parsers
+del module_invite
+del module_parsers
 del methodize
-del client_utils
+del module_client_utils
+del module_channel
+del module_guild

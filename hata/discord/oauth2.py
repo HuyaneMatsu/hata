@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('Achievement', 'AO2Access', 'UserOA2', 'parse_oauth2_redirect_url')
+__all__ = ('Achievement', 'OA2Access', 'UserOA2', 'parse_oauth2_redirect_url')
 
 import re
 from datetime import datetime
@@ -178,7 +178,7 @@ SCOPES = {v: v for v in ('activities.read', 'activities.write', 'applications.bu
     'webhook.incoming')}
 # rest of scopes are ignorable
 
-class AO2Access(object):
+class OA2Access(object):
     """
     Represents a Discord oauth2 access object, what is returned by ``Client.activate_authorization_code`` if
     activating the authorization code went successfully.
@@ -193,11 +193,13 @@ class AO2Access(object):
         The time in seconds after this access expires.
     redirect_url : `str`
         The redirect url with what the user granted the authorization code for the oauth2 scopes for the application.
-        > Can be empty string if application's onwer's access was requested.
+        
+        Can be empty string if application's onwer's access was requested.
     refresh_token : `str`
         The token used to renew the access token.
-        > Can be empty string if application's onwer's access was requested.
-    scopes : `list` of `str`
+        
+        Can be empty string if application's onwer's access was requested.
+    scopes : `set` of `str`
         A list of the scopes, what the user granted with the access token.
     
     Class Attributes
@@ -223,7 +225,7 @@ class AO2Access(object):
         self.redirect_url = redirect_url
         self.access_token = data['access_token']
         self.refresh_token = data.get('refresh_token', '')
-        self.expires_in = data['expires_in'] #default is 604800 (s) (1 week)
+        self.expires_in = data['expires_in'] # default is 604800 (s) (1 week)
         self.scopes = scopes = set()
         for scope in data['scope'].split():
             try:
@@ -231,7 +233,7 @@ class AO2Access(object):
             except KeyError:
                 pass
         self.created_at = datetime.utcnow() #important for renewing
-        
+    
     def _renew(self, data):
         """
         Renews the access with the given data.
@@ -342,7 +344,7 @@ class UserOA2(UserBase):
         """
         return False
     
-    # Reflect AO2Access
+    # Reflect OA2Access
     @property
     def access_token(self):
         """
@@ -383,7 +385,7 @@ class UserOA2(UserBase):
         
         Returns
         -------
-        scopes : `list` of `str`
+        scopes : `set` of `str`
         """
         return self.access.scopes
 

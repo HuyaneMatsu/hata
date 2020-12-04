@@ -18,7 +18,7 @@ from ..backend.utils import istr, modulize
 
 from .bases import DiscordEntity
 
-from . import bases
+from . import bases as module_bases
 
 create_partial_user = NotImplemented
 RelationshipType = NotImplemented
@@ -69,7 +69,7 @@ def get_image_extension(data):
     elif data.startswith(b'\x47\x49\x46\x38\x37\x61') or data.startswith(b'\x47\x49\x46\x38\x39\x61'):
         extension_name = 'gif'
     else:
-        raise ValueError('Unsupported image type given.')
+        extension_name = ''
     
     return extension_name
 
@@ -901,9 +901,9 @@ def urlcutter(url):
         
     return f'{url[:from_start]}...{url[top_limit-from_end-1:]}'
 
-bases.id_to_time = id_to_time
+module_bases.id_to_time = id_to_time
 
 del re
 del istr
 del modulize
-del bases
+del module_bases

@@ -8,7 +8,7 @@ from .utils import imultidict, multidict
 from .ios import AsyncIO
 
 from .hdrs import CONTENT_DISPOSITION, CONTENT_ENCODING, CONTENT_LENGTH, CONTENT_TRANSFER_ENCODING, CONTENT_TYPE
-from .helpers import content_disposition_header,CHAR,TOKEN,sentinel
+from .helpers import content_disposition_header, CHAR, TOKEN
 from .protocol import ZLIB_COMPRESSOR, BROTLI_COMPRESSOR
 from .exceptions import ContentEncodingError
 
@@ -33,6 +33,11 @@ def create_payload(data, kwargs):
     Returns
     -------
     payload : ``PayloadBase``
+    
+    Raises
+    ------
+    LookupError
+        `payload` is not serializable.
     """
     data_type = data.__class__
     if issubclass(data_type, BodyPartReader):
@@ -1247,8 +1252,6 @@ class MultipartWriter(PayloadBase):
         ------
         TypeError
             Cannot create payload from the givne `body_part`.
-        Raises
-        ------
         RuntimeError
             - The `payload`'s content has unknown content-encoding.
             - The `payload`'s content has unknown content-transfer-encoding.

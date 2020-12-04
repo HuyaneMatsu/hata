@@ -8,7 +8,7 @@ from .utils import parse_time, DISCORD_EPOCH_START
 from .role import create_partial_role
 from .http import URLS
 
-from . import role
+from . import role as module_role
 
 INTEGRATION_TYPE_DISCORD = 'discord'
 
@@ -362,9 +362,9 @@ class IntegrationApplication(DiscordEntity):
 
 
 # Scopes
-role.create_partial_integration = create_partial_integration
+module_role.create_partial_integration = create_partial_integration
 
 del DiscordEntity
-del role
+del module_role
 del URLS
 del IconSlot

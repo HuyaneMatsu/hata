@@ -17,7 +17,7 @@ from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool
     preconvert_flag
 from .preinstanced import Status, DefaultAvatar
 
-from . import utils
+from . import utils as module_utils
 
 if CACHE_USER:
     GUILD_PROFILES_TYPE = dict
@@ -2257,7 +2257,7 @@ class VoiceState(object):
 
 ZEROUSER = User._create_empty(0)
 
-utils.create_partial_user = create_partial_user
+module_utils.create_partial_user = create_partial_user
 
 del URLS
 del CACHE_USER
@@ -2265,5 +2265,5 @@ del CACHE_PRESENCE
 del DiscordEntity
 del FlagBase
 del IconSlot
-del utils
+del module_utils
 del DOCS_ENABLED

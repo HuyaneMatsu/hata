@@ -9,7 +9,7 @@ from threading import current_thread
 
 from ...backend.eventloop import EventThread
 from ...backend.utils import alchemy_incendiary, HybridValueDictionary, WeakValueDictionary, DOCS_ENABLED
-from ...backend.futures import iscoroutinefunction as is_coro, Task
+from ...backend.futures import is_coroutine_function as is_coro, Task
 from ...backend.analyzer import CallableAnalyzer
 
 from ...discord.client_core import KOKORO

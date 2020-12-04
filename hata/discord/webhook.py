@@ -9,7 +9,7 @@ from .bases import ICON_TYPE_NONE, Icon
 from .http.URLS import WEBHOOK_URL_PATTERN
 from .preinstanced import WebhookType
 
-from . import ratelimit
+from . import ratelimit as module_webhook
 
 ChannelText = NotImplemented
 Client = NotImplemented
@@ -531,9 +531,9 @@ class WebhookRepr(UserBase):
         """
         return self.channel.guild
 
-ratelimit.Webhook = Webhook
-ratelimit.WebhookRepr = WebhookRepr
+module_webhook.Webhook = Webhook
+module_webhook.WebhookRepr = WebhookRepr
 
 del URLS
 del UserBase
-del ratelimit
+del module_webhook

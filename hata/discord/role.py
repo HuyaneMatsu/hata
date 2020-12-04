@@ -15,7 +15,7 @@ from .preconverters import preconvert_snowflake, preconvert_str, preconvert_colo
     preconvert_flag
 from .preinstanced import RoleManagerType
 
-from . import ratelimit
+from . import ratelimit as module_ratelimit
 
 create_partial_integration = NotImplemented
 
@@ -1154,9 +1154,9 @@ def cr_p_overwrite_object(target, allow, deny):
         'type'  : PERMOW_TYPE_ROLE if type(target) is Role else PERMOW_TYPE_USER,
             }
 
-ratelimit.Role = Role
+module_ratelimit.Role = Role
 
-del ratelimit
+del module_ratelimit
 del DiscordEntity
 del API_VERSION
 del DOCS_ENABLED

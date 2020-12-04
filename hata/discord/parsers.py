@@ -10,7 +10,7 @@ except ImportError:
     from weakref import WeakSet
 
 from ..env import CACHE_USER, CACHE_PRESENCE, ALLOW_DEAD_EVENTS
-from ..backend.futures import Future, Task, iscoroutinefunction as iscoro
+from ..backend.futures import Future, Task, is_coroutine_function as is_coro
 from ..backend.utils import function, RemovedDescriptor, _spaceholder, MethodLike, NEEDS_DUMMY_INIT, \
     WeakKeyDictionary, WeakReferer, DOCS_ENABLED
 from ..backend.analyzer import CallableAnalyzer
@@ -4572,7 +4572,7 @@ def compare_converted(converted, non_converted):
     if not issubclass(non_converted, type) and isinstance(non_converted, type):
         
         # async initializer, both is type
-        if iscoro(non_converted.__new__):
+        if is_coro(non_converted.__new__):
             return (converted is non_converted)
         
         # async call -> should be initalized already, compare the converted's type
@@ -6347,6 +6347,17 @@ class EventWaitforMeta(type):
     
     _call_waitfors['message_delete'] = _call_message_delete
     del _call_message_delete
+    
+    async def _call_typing(self, client, channel, user, timestamp):
+        args = (client, channel, user, timestamp)
+        self._run_waitfors_for(channel, args)
+        guild = channel.guild
+        if guild is None:
+            return
+        self._run_waitfors_for(guild, args)
+    
+    _call_waitfors['typing'] = _call_typing
+    del _call_typing
     
     async def _call_channel_create(self, client, channel):
         guild = channel.guild

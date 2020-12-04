@@ -13,7 +13,7 @@ from .color import Color
 from .http import URLS
 from .preconverters import preconvert_str, preconvert_int
 
-from . import preinstanced
+from . import preinstanced as module_preinstanced
 
 create_partial_emoji = NotImplemented
 
@@ -1275,7 +1275,7 @@ class ActivityUnknown(ActivityBase):
     """
     Represents if a user has no activity set. This activity type is not a valid Discord activity.
     
-    ``activity_unknown`` is a singleton with type value of ``.
+    ``activity_unknown`` is a singleton with type value of `127`.
     
     Class Attributes
     ----------------
@@ -1513,9 +1513,9 @@ def create_activity(activity_data):
     return activity_type.from_data(activity_data)
 
 
-preinstanced.ActivityTypes = ActivityTypes
+module_preinstanced.ActivityTypes = ActivityTypes
 
 del URLS
 del FlagBase
 del modulize
-del preinstanced
+del module_preinstanced

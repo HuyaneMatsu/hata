@@ -11,7 +11,7 @@ from .http import URLS
 from .user import User, ZEROUSER
 from .preconverters import preconvert_str, preconvert_bool, preconvert_snowflake
 
-from . import activity
+from . import activity as module_activity
 
 UNICODE_EMOJI_LIMIT = 1<<21
 
@@ -4575,9 +4575,9 @@ def generate_builtin_emojis():
 
 generate_builtin_emojis()
 
-activity.create_partial_emoji = create_partial_emoji
+module_activity.create_partial_emoji = create_partial_emoji
 
 del generate_builtin_emojis
-del activity
+del module_activity
 del URLS
 del DOCS_ENABLED

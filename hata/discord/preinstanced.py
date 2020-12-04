@@ -10,7 +10,7 @@ from .bases import PreinstancedBase
 from .color import Color
 from .http import URLS
 
-from . import utils
+from . import utils as module_utils
 
 ActivityTypes = NotImplemented
 _convert_content = NotImplemented
@@ -2145,9 +2145,9 @@ RoleManagerType.BOOSTER     = RoleManagerType(4 , 'BOOSTER'     ,)
 RoleManagerType.INTEGRATION = RoleManagerType(5 , 'INTEGRATION' ,)
 
 
-utils.RelationshipType = RelationshipType
+module_utils.RelationshipType = RelationshipType
 
 del DOCS_ENABLED
 del PreinstancedBase
 del URLS
-del utils
+del module_utils

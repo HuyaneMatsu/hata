@@ -163,8 +163,8 @@ BaseEventLoop = EventThread
 # asyncio.coroutines
 # include: coroutine, iscoroutinefunction, iscoroutine
 from types import coroutine
-from ...backend.futures import iscoroutinefunction
-from ...backend.futures import iscoroutine
+from ...backend.futures import is_coroutine_function as iscoroutinefunction
+from ...backend.futures import is_coroutine as iscoroutine
 
 # asyncio.events
 # include: AbstractEventLoopPolicy, AbstractEventLoop, AbstractServer, Handle, TimerHandle, get_event_loop_policy,

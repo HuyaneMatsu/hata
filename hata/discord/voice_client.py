@@ -10,14 +10,14 @@ from ..backend.protocol import DatagramMergerReadProtocol
 
 from .client_core import KOKORO
 from .opus import OpusEncoder
-from .player import AudioPlayer, AudioSource, PLAYER_DELAY
+from .player import AudioPlayer, AudioSource
 from .reader import AudioReader, AudioStream
 from .gateway import DiscordGatewayVoice, SecretBox
 from .channel import ChannelVoice
 from .exceptions import VOICE_CLIENT_DISCONNECT_CLOSE_CODE
 from .user import User
 
-from . import guild
+from . import guild as module_guild
 
 class VoiceClient(object):
     """
@@ -1156,7 +1156,7 @@ class VoiceClient(object):
         return ''.join(result)
 
 
-guild.VoiceClient = VoiceClient
+module_guild.VoiceClient = VoiceClient
 
-del guild
+del module_guild
 del DOCS_ENABLED

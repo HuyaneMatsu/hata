@@ -22,7 +22,7 @@ from .preconverters import preconvert_snowflake, preconvert_str, preconvert_int,
 from .utils import DATETIME_FORMAT_CODE
 from .client_utils import maybe_snowflake
 
-from . import webhook, message, ratelimit
+from . import webhook as module_webhook, message as module_message, ratelimit as module_ratelimit
 
 Client = NotImplemented
 Guild = NotImplemented
@@ -4696,21 +4696,21 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
 
 # Scopes
 
-webhook.ChannelText = ChannelText
-message.ChannelBase = ChannelBase
-message.ChannelTextBase = ChannelTextBase
-message.ChannelGuildBase = ChannelGuildBase
-message.ChannelText = ChannelText
-message.ChannelPrivate = ChannelPrivate
-message.ChannelGroup = ChannelGroup
-ratelimit.ChannelBase = ChannelBase
-ratelimit.ChannelGuildBase = ChannelGuildBase
+module_webhook.ChannelText = ChannelText
+module_message.ChannelBase = ChannelBase
+module_message.ChannelTextBase = ChannelTextBase
+module_message.ChannelGuildBase = ChannelGuildBase
+module_message.ChannelText = ChannelText
+module_message.ChannelPrivate = ChannelPrivate
+module_message.ChannelGroup = ChannelGroup
+module_ratelimit.ChannelBase = ChannelBase
+module_ratelimit.ChannelGuildBase = ChannelGuildBase
 URLS.ChannelGuildBase = ChannelGuildBase
 
-del message
-del webhook
+del module_message
+del module_webhook
 del URLS
-del ratelimit
+del module_ratelimit
 del DiscordEntity
 del WeakSet
 del DOCS_ENABLED

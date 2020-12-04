@@ -2,7 +2,7 @@
 __all__ = ('CallableAnalyzer', )
 
 from .utils import function, MethodLike
-from .futures import iscoroutinefunction as is_coro
+from .futures import is_coroutine_function as is_coro
 
 CO_OPTIMIZED   = 1
 CO_NEWLOCALS   = 2

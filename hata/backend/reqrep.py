@@ -26,7 +26,7 @@ from .futures import Task, CancelledError
 from .hdrs import METH_POST_ALL, METH_CONNECT, SET_COOKIE, CONTENT_LENGTH, CONNECTION, ACCEPT, ACCEPT_ENCODING, \
     HOST, TRANSFER_ENCODING, COOKIE, CONTENT_ENCODING, AUTHORIZATION, CONTENT_TYPE
 from .helpers import BasicAuth
-from .multipart import MimeType, create_payload, PayloadBase
+from .multipart import MimeType, create_payload
 from .formdata import Formdata
 from .protocol import HTTPStreamWriter
 
@@ -238,7 +238,6 @@ class ClientRequest(object):
     writer : `None` or ``Task`` of ``.write_bytes``
         Payload writer task, what is present meanwhile the request's payload is sending.
     """
-    
     __slots__ = ('auth', 'body', 'chunked', 'compression', 'headers', 'loop', 'method', 'original_url', 'proxy_auth',
         'proxy_url', 'response', 'ssl', 'url', 'writer',)
     
@@ -270,6 +269,21 @@ class ClientRequest(object):
             Proxy authorization sent with the request.
         ssl : `None` `None`, ``SSLContext``, `bool`, ``Fingerprint``
             The connection's ssl type.
+        
+        Raises
+        ------
+        TypeError
+            - `proxy_auth`'s type is incorrect.
+            - ˙Cannot serialize a field of the given `data`.
+        ValueError
+            - Host could nto be detected from `url`.
+            - The `proxy_url`'s scheme is not `http`.
+            - `compression` and `Content-Encoding` would be set at the same time.
+            - `chunked` cannot be set, because `Transfer-Encoding: chunked` is already set.
+            - `chunked` cannot be set, because `Content-Length` header is already present.
+        RuntimeError
+            - If one of `data`'s field's content has unknown content-encoding.
+            - If one of `data`'s field's content has unknown content-transfer-encoding.
         """
         # Convert headers
         headers = imultidict(headers)
@@ -338,7 +352,7 @@ class ClientRequest(object):
             if (proxy_auth is not None):
                 proxy_auth_type = proxy_auth.__class__
                 if proxy_auth_type is not BasicAuth:
-                    raise ValueError(f'`proxy_auth` must be `None` or `{BasicAuth.__name__}`, got '
+                    raise TypeError(f'`proxy_auth` must be `None` or `{BasicAuth.__name__}`, got '
                         f'{proxy_auth_type.__name__}.')
         
         # Needed for transfer data checks
@@ -350,7 +364,7 @@ class ClientRequest(object):
             if data:
                 if (compression is not None):
                     if headers.get(CONTENT_ENCODING, ''):
-                        raise ValueError('compression can not be set if Content-Encoding header is set.')
+                        raise ValueError('Compression can not be set if `Content-Encoding` header is set.')
                     
                     chunked = True
                 
@@ -361,7 +375,7 @@ class ClientRequest(object):
                     try:
                         data = create_payload(data, {'disposition': None})
                     except LookupError:
-                        data = Formdata.fromfields(data)()
+                        data = Formdata.from_fields(data)()
                 
                 if not chunked:
                     if CONTENT_LENGTH not in headers:
@@ -386,11 +400,11 @@ class ClientRequest(object):
         
         if 'chunked' in transfer_encoding:
             if chunked:
-                raise ValueError('Chunked can not be set if "Transfer-Encoding: chunked" header is set.')
+                raise ValueError('Chunked can not be set if `Transfer-Encoding: chunked` header is already set.')
         
         elif chunked:
             if CONTENT_LENGTH in headers:
-                raise ValueError('Chunked can not be set if Content-Length header is set.')
+                raise ValueError('Chunked can not be set if `Content-Length` header is set.')
             headers[TRANSFER_ENCODING] = 'chunked'
         
         else:

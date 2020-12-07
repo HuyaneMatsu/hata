@@ -2536,7 +2536,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         sock : `socket.socket`
             The socket, what the ransport will use.
         protocol : `Any`
-            The protocol of the transport. The given protocol is wrapped into an ``SSLProtocol``
+            Asynchronous protocol implementation for the transport. The given protocol is wrapped into an ``SSLProtocol``
         ssl : ``ssl.SSLContext``
             Ssl context of the respective connection.
         waiter : `None` or ``Future``, Opional

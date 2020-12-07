@@ -2,7 +2,7 @@
 import base64, binascii, json, os, re, mimetypes, uuid, zlib
 from io import StringIO, TextIOBase, BytesIO, BufferedRandom, IOBase, BufferedReader
 from collections import deque
-from urllib.parse import parse_qsl, unquote, urlencode
+from urllib.parse import parse_qsl as parse_query_string_list, urlencode, urlencode as url_encode
 
 from .utils import imultidict, multidict
 from .ios import AsyncIO
@@ -1065,14 +1065,14 @@ class BodyPartReader(object):
         return json.loads(data.decode(encoding))
     
     async def form(self, *, encoding=None):
-        # Like `.read`, but assumes that body parts contains form urlencoded data.
+        # Like `.read`, but assumes that body parts contains form url_encoded data.
         # encoding : `str`, Optional : Custom form encoding. Overrides specified in charset param of `Content-Type`
         #     header
         data = await self.read(decode=True)
         if not data:
             return None
         encoding = encoding or self.get_charset(default='utf-8')
-        return parse_qsl(data.rstrip().decode(encoding), keep_blank_values=True, encoding=encoding)
+        return parse_query_string_list(data.rstrip().decode(encoding), keep_blank_values=True, encoding=encoding)
 
     def at_eof(self):
         #Returns True if the boundary was reached or False otherwise.
@@ -1394,14 +1394,14 @@ class MultipartWriter(PayloadBase):
     
     def append_form(self, obj, headers=None):
         """
-        Helper method to add urlencoded field.
+        Helper method to add url_encoded field.
         
         Parameters
         ----------
         obj : `mapping` of (`str`, `Any`) items, `sequence` of `tuple` (`str`, `Any`) items
             The object, what should be percent encoded for a post request.
         headers : `None` or ``imultidict`` of (`str`, `str`) items, Optional
-            Optional headers for the urlencoded field.
+            Optional headers for the url_encoded field.
         
         Returns
         -------
@@ -1417,9 +1417,9 @@ class MultipartWriter(PayloadBase):
         if hasattr(obj.__class__, 'items'): # mapping type
             obj = list(obj.items())
         
-        data = urlencode(obj, doseq=True)
+        data = url_encode(obj, doseq=True)
         
-        kwargs = {'content_type': 'application/x-www-form-urlencoded'}
+        kwargs = {'content_type': 'application/x-www-form-url_encoded'}
         
         if (headers is not None):
             kwargs['headers'] = headers

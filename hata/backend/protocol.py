@@ -743,7 +743,7 @@ class ReadProtocolBase(object):
         ----------
         name : `str`
             The extra information's name to get.
-        default : `Any`
+        default : `Any`, Optional
             Default value to return if `name` could not be macthed. Defaults to `None`.
         
         Returns

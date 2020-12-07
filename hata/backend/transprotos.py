@@ -13,8 +13,9 @@ def _create_transport_context(server_side, server_hostname):
     # context; in that case the ssl_context passed is None.
     # The default is secure for client connections.
     ssl_context = ssl.create_default_context()
-    if not server_hostname:
+    if (server_hostname is None) or (not server_hostname):
         ssl_context.check_hostname = False
+    
     return ssl_context
 
 if hasattr(module_socket, 'TCP_NODELAY'):
@@ -57,7 +58,7 @@ class _SSLPipe(object):
     def do_handshake(self, callback=None):
         if self.state is not UNWRAPPED:
             raise RuntimeError('handshake in progress or completed')
-        self.ssl_object = self.context.wrap_bio(self._incoming, self._outgoing, server_side = self.server_side,
+        self.ssl_object = self.context.wrap_bio(self._incoming, self._outgoing, server_side=self.server_side,
             server_hostname=self.server_hostname)
         
         self.state = DO_HANDSHAKE
@@ -73,9 +74,9 @@ class _SSLPipe(object):
         if state is SHUTDOWN:
             raise RuntimeError('shutdown in progress')
         
-        self.state=SHUTDOWN
-        self._shutdown_cb=callback
-        ssldata, _ = self.feed_ssldata(b'')
+        self.state = SHUTDOWN
+        self._shutdown_cb = callback
+        ssldata, offset = self.feed_ssldata(b'')
         return ssldata
     
     def feed_eof(self):
@@ -151,48 +152,77 @@ class _SSLPipe(object):
             ssldata.append(self._outgoing.read())
         return ssldata, appdata
 
-    def feed_appdata(self, data, offset=0):
+    def feed_appdata(self, data, offset):
+        ssldata = []
         if self.state is UNWRAPPED:
             # pass through data in unwrapped mode
             if offset < len(data):
-                ssldata = [data[offset:]]
-            else:
-                ssldata = []
-            return ssldata, len(data)
+                ssldata.append(memoryview(data)[offset:])
+            oofset = len(data)
+        else:
+            view = memoryview(data)
+            while True:
+                self.need_ssldata = False
+                try:
+                    if offset < len(view):
+                        offset += self.ssl_object.write(view[offset:])
+                except ssl.SSLError as err:
+                    # It is not allowed to call write() after unwrap() until the close_notify is acknowledged. We return
+                    # the condition to the caller as a short write.
+                    if err.reason == 'PROTOCOL_IS_SHUTDOWN':
+                        err.errno = ssl.SSL_ERROR_WANT_READ
+                        need_ssldata = True
+                    else:
+                        errno = err.errno
+                        if errno == ssl.SSL_ERROR_WANT_READ:
+                            need_ssldata = True
+                        elif errno == ssl.SSL_ERROR_WANT_WRITE or errno == ssl.SSL_ERROR_SYSCALL:
+                            need_ssldata = False
+                        else:
+                            raise
+                    
+                    self.need_ssldata = need_ssldata
+    
+                # See if there's any record level data back for us.
+                if self._outgoing.pending:
+                    ssldata.append(self._outgoing.read())
+                
+                if offset == len(view) or self.need_ssldata:
+                    break
         
-        ssldata = []
-        view = memoryview(data)
-        while True:
-            self.need_ssldata = False
-            try:
-                if offset < len(view):
-                    offset = self.ssl_object.write(view[offset:])
-            except ssl.SSLError as err:
-                # It is not allowed to call write() after unwrap() until the
-                # close_notify is acknowledged. We return the condition to the
-                # caller as a short write.
-                if err.reason == 'PROTOCOL_ISSHUTDOWN':
-                    err.errno = ssl.SSL_ERROR_WANT_READ
-                if err.errno not in (ssl.SSL_ERROR_WANT_READ, ssl.SSL_ERROR_WANT_WRITE, ssl.SSL_ERROR_SYSCALL):
-                    raise
-                self.need_ssldata = (err.errno == ssl.SSL_ERROR_WANT_READ)
-
-            # See if there's any record level data back for us.
-            if self._outgoing.pending:
-                ssldata.append(self._outgoing.read())
-            if offset == len(view) or self.need_ssldata:
-                break
         return ssldata, offset
 
 class _SSLProtocolTransport(object):
-    __slots__ = ('app_protocol', 'closed', 'loop', 'ssl_protocol',)
-    def __init__(self, loop, ssl_protocol, app_protocol):
-        self.loop = loop
+    """
+    Asynchronous ssl protocol's read-write  transport implementation.
+    
+    Attributes
+    ----------
+    app_protocol : `Any`
+        Asynchronous protocol implementation.
+    closed : `bool`
+        Whether the ssl protocol transport is closed.
+    ssl_protocol : ``SSLProtocol``
+        The respective ssl protocol, what's `.app_protocol` is the ``_SSLProtocolTransport`` instance.
+    """
+    __slots__ = ('app_protocol', 'closed', 'ssl_protocol',)
+    def __init__(self, ssl_protocol, app_protocol):
+        """
+        Creates a  new ``_SSLProtocolTransport`` instance.
+        
+        Parameters
+        ----------
+        ssl_protocol : ``SSLProtocol``
+            The respective ssl protocol, what's `.app_protocol` is the ``_SSLProtocolTransport`` instance.
+        app_protocol : `Any`
+            Asynchronous protocol implementation.
+        """
         self.ssl_protocol = ssl_protocol
         self.app_protocol = app_protocol
         self.closed = False
     
     def __repr__(self):
+        """Returns the ssl protocol transport's representation."""
         result = [
             '<',
             self.__class__.__name__,
@@ -228,64 +258,247 @@ class _SSLProtocolTransport(object):
         return ''.join(result)
     
     def get_extra_info(self, name, default=None):
+        """
+        Gets optional transport information.
+        
+        Parameters
+        ----------
+        name : `str`
+            The extra information's name to get.
+        default : `Any`, Optional
+            Default value to return if `name` could not be macthed. Defaults to `None`.
+        
+        Returns
+        -------
+        info : `default`, `Any`
+        """
         return self.ssl_protocol.get_extra_info(name, default)
     
     def set_protocol(self, protocol):
+        """
+        Sets a new protocol to the transport.
+        
+        Parameters
+        ----------
+        protocol : `Any`
+            Asynchronous protocol implementation.
+        """
         self.app_protocol = protocol
         self.ssl_protocol.app_protocol = protocol
      
     def get_protocol(self):
+        """
+        Gets the ssl protocol transport actual protocol.
+        
+        Returns
+        -------
+        protocol : `Any`
+            Asynchronous protocol implementation.
+        """
         return self.app_protocol
     
     def is_closing(self):
+        """
+        Returns whether the ssl protoco ltransport is closing.
+        
+        Returns
+        -------
+        is_closing : `bool`
+        """
         return self.closed
     
     def close(self):
+        """
+        Starts the shutdown process of the ssl protocol transport.
+        """
         self.closed = True
         self.ssl_protocol._start_shutdown()
 
     def __del__(self):
+        """
+        Closes the ssl protocol transport ifn ot yet clsoed.
+        """
         if not self.closed:
             self.close()
 
     def pause_reading(self):
-        self.ssl_protocol.transport.pause_reading()
+        """
+        Pause the receiving end.
+        
+        No data will be passed to the respective protocol's ``.data_received`` method until ``.resume_reading`` is
+        called.
+        """
+        transport = self.ssl_protocol.transport
+        if (transport is not None):
+            transport.pause_reading()
 
     def resume_reading(self):
-        self.ssl_protocol.transport.resume_reading()
+        """
+        Resume the receiving end.
+        
+        Data received will once again be passed to the respective protocol's ``.data_received`` method.
+        """
+        transport = self.ssl_protocol.transport
+        if (transport is not None):
+            transport.resume_reading()
     
-    def set_write_buffer_limits(self, high=None, low=None):
-        self.ssl_protocol.transport.set_write_buffer_limits(high, low)
-    
+    def set_write_buffer_limits(self, low=None, high=None):
+        """
+        Set the high- and low-water limits for write flow control.
+        
+        These two values control when to call the protocol's ``.pause_writing`` and ``.resume_writing`` methods. If
+        specified, the low-water limit must be less than or equal to the high-water limit. Neither value can be
+        negative. The defaults are implementation-specific. If only the high-water limit is given, the low-water limit
+        defaults to an implementation-specific value less than or equal to the high-water limit. Setting high to zero
+        forces low to zero as well, and causes ``.pause_writing`` to be called whenever the buffer becomes non-empty.
+        Setting low to zero causes ``.resume_writing`` to be called only once the buffer is empty. Use of zero for
+        either limit is generally sub-optimal as it reduces opportunities for doing I/O and computation concurrently.
+        
+        Parameters
+        ----------
+        high : `None` or `int`, Optional
+            High limit to stop reading if reached.
+        low : `None` or `int`, Optional
+            Low limit to start reading if reached.
+        
+        Raises
+        ------
+        ValueError
+            If `low` is lower than `0` or if `low` is higher than `high`.
+        """
+        transport = self.ssl_protocol.transport
+        if (transport is not None):
+            transport.set_write_buffer_limits(high, low)
+        
     def get_write_buffer_size(self):
-        return self.ssl_protocol.transport.get_write_buffer_size()
+        """
+        Return the current size of the write buffer.
+        
+        Returns
+        -------
+        get_write_buffer_size : `int`
+        """
+        transport = self.ssl_protocol.transport
+        if transport is None:
+            write_buffer_size = 0
+        else:
+            write_buffer_size = transport.get_write_buffer_size()
+        
+        return write_buffer_size
     
     def write(self, data):
-        if not isinstance(data, (bytes, bytearray,memoryview)):
-            raise TypeError(f'data: expecting a bytes-like instance, got {data.__class__.__name__}')
+        """
+        Write the given `data` to the transport.
+        
+        Do not blocks, but queues up the data instead to be sent as can.
+        
+        Parameters
+        ----------
+        data : `bytes-like`
+            The data to send.
+        
+        Raises
+        ------
+        TypeError
+            If `data` was not given as `bytes-like`.
+        """
+        if not isinstance(data, (bytes, bytearray, memoryview)):
+            raise TypeError(f'`data` expecting a `bytes-like`, got {data.__class__.__name__}.')
+        
         if data:
             self.ssl_protocol._write_appdata(data)
     
     def writelines(self, list_of_data):
+        """
+        Writes an `iterable` of `bytes-like` to the transport.
+        
+        Parameters
+        ----------
+        list_of_data : `iterable` of `bytes-like`
+            An iterable of data to send.
+        
+        Raises
+        ------
+        TypeError
+            If `list_of_data` was not given as `iterable` of `bytes-like`.
+        """
         self.write(b''.join(list_of_data))
     
     def can_write_eof(self):
+        """
+        Return whether the transport supports ``.write_eof``.
+        
+        Returns
+        -------
+        can_write_eof : `bool`
+            ``_SSLProtocolTransport`` instances always return `False`.
+        """
         return False
     
     def abort(self):
+        """
+        Close the transport immediately.
+        
+        Buffered data will be lost and no more data will be received.
+        
+        The respective protocol's `.connection_lost` will be eventually called with `None`.
+        """
         self.ssl_protocol._abort()
 
 
 class SSLProtocol(object):
-    __slots__ = ('_call_connection_made', '_extra', '_handshake_start_time', '_in_handshake', '_in_shutdown',
-        '_session_established', '_ssl_context', '_waiter', '_write_backlog', '_write_buffer_size', 'app_protocol',
-        'app_transport', 'loop', 'server_hostname', 'server_side', 'sslpipe', 'transport',)
+    """
+    Asynchornous SSL protocol implementation on top of a `socket`. Uses `ssl.MemoryBIO` instances for incoming and
+    outgoing data.
     
-    def __init__(self, loop, app_protocol, ssl_context, waiter, server_side=False, server_hostname=None,
+    Attributes
+    ----------
+    _call_connection_made : `bool`
+        Whether the the ``.app_protocol``'s `.connection_made` should be called when handshake is completed.
+    _connection_made_waiter : `None` or ``Future``
+        A waiter future, what's result is set when connection is made, aka handshae is completed, or if when the
+        connection is lost, depending which happens first.
+        
+        After the future's result or exception is set, the attribute is set as `None`.
+    _extra : `dict` of (`str`, `Any`) items, Optional
+        Optional transport informations.
+    _in_handshake : `bool`
+        Whether the ssl transport is in handshaking.
+    _in_shutdown : `bool`
+        Whether the ssl protocol is shut or shutting shutting down.
+    _session_established : `bool`
+        Whether the session is established. Is set after handshake and is set back to `False` when the connection is
+        lost.
+    _ssl_context : `ssl.SSLContext`
+        The connection's ssl type.
+    _write_backlog : `deque` of `tuple` (`bytes-like`, `int`)
+        Ensured data queued up to be written. Each element contains a the data to write and an offset till write from.
+    app_protocol : `Any`
+        Asynchronous protcol implemnetation.
+    app_transport : ``_SSLProtocolTransport``
+        Asynchronous ssl protocol's read-write  transport implementation.
+    loop : ``eventThread``
+        The respective eventloop of the ssl protocol.
+    server_hostname : `None` or `str`
+        The ssl protocol's server hostname if applicable.
+    server_side : `bool`
+        Whether the ssl protocol is server side.
+    sslpipe : `None` or ``_SSLPipe``
+        Ssl pipe set meanwhile the protocol is connected to feed the ssl data to.
+    transport : `None` or `Any`
+        Asynchronous transport implementation.
+    """
+    __slots__ = ('_call_connection_made', '_connection_made_waiter', '_extra', '_handshake_start_time', '_in_handshake',
+        '_in_shutdown', '_session_established', '_ssl_context', '_write_backlog', 'app_protocol', 'app_transport',
+        'loop', 'server_hostname', 'server_side', 'sslpipe', 'transport',)
+    
+    def __new__(cls, loop, app_protocol, ssl_context, connection_made_waiter, server_side=False, server_hostname=None,
             call_connection_made=True):
         
         if ssl_context is None:
             ssl_context = _create_transport_context(server_side, server_hostname)
+        
+        self = object.__new__(cls)
         
         self.server_side = server_side
         if (server_hostname is not None) and server_side:
@@ -300,12 +513,11 @@ class SSLProtocol(object):
 
         # App data write buffering
         self._write_backlog = deque()
-        self._write_buffer_size = 0
         
-        self._waiter = waiter
+        self._connection_made_waiter = connection_made_waiter
         self.loop = loop
         self.app_protocol = app_protocol
-        self.app_transport = _SSLProtocolTransport(loop, self, app_protocol)
+        self.app_transport = _SSLProtocolTransport(self, app_protocol)
         # _SSLPipe instance (None until the connection is made)
         self.sslpipe = None
         self._session_established = False
@@ -314,18 +526,18 @@ class SSLProtocol(object):
         # transport, ex: SelectorSocketTransport
         self.transport = None
         self._call_connection_made = call_connection_made
-    
-    def _wakeup_waiter(self, exception=None):
-        waiter = self._waiter
-        if waiter is None:
-            return
         
-        self._waiter = None
-        if waiter.pending():
-            if exception is None:
-                waiter.set_result(None)
-            else:
-                waiter.set_exception(exception)
+        return self
+    
+    def _wakeup_connection_made_waiter(self, exception=None):
+        connection_made_waiter = self._connection_made_waiter
+        if (connection_made_waiter is not None):
+            self._connection_made_waiter = None
+            if connection_made_waiter.pending():
+                if exception is None:
+                    connection_made_waiter.set_result(None)
+                else:
+                    connection_made_waiter.set_exception(exception)
     
     def connection_made(self, transport):
         self.transport = transport
@@ -339,7 +551,7 @@ class SSLProtocol(object):
             self.loop.call_soon(app_protocol.__class__.connection_lost, app_protocol, exception)
         self.transport = None
         self.app_transport = None
-        self._wakeup_waiter(exception)
+        self._wakeup_connection_made_waiter(exception)
     
     def pause_writing(self):
         self.app_protocol.pause_writing()
@@ -366,7 +578,7 @@ class SSLProtocol(object):
     
     def eof_received(self):
         try:
-            self._wakeup_waiter(ConnectionResetError)
+            self._wakeup_connection_made_waiter(ConnectionResetError)
             if not self._in_handshake:
                 #has no effect whatever it returns when we use ssl
                 self.app_protocol.eof_received()
@@ -393,7 +605,6 @@ class SSLProtocol(object):
     
     def _write_appdata(self, data):
         self._write_backlog.append((data, 0))
-        self._write_buffer_size += len(data)
         self._process_write_backlog()
     
     def _start_handshake(self):
@@ -415,7 +626,7 @@ class SSLProtocol(object):
         except BaseException as err:
             self.transport.close()
             if isinstance(err, Exception):
-                self._wakeup_waiter(err)
+                self._wakeup_connection_made_waiter(err)
                 return
             raise
         
@@ -430,7 +641,7 @@ class SSLProtocol(object):
         if self._call_connection_made:
             self.app_protocol.connection_made(self.app_transport)
             
-        self._wakeup_waiter()
+        self._wakeup_connection_made_waiter()
         self._session_established = True
         # In case transport.write() was already called. Don't call
         # immediately _process_write_backlog(), but schedule it:
@@ -472,7 +683,6 @@ class SSLProtocol(object):
                 # An entire chunk from the backlog was processed. We can
                 # delete it and reduce the outstanding buffer size.
                 del self._write_backlog[0]
-                self._write_buffer_size -= len(data)
         except BaseException as err:
             if self._in_handshake:
                 self._on_handshake_complete(err)
@@ -1120,7 +1330,7 @@ class _SelectorDatagramTransport(object):
     
     def get_write_buffer_size(self):
         size = 0
-        for data, addr in self.buffer:
+        for data, address in self.buffer:
             size += len(data)
         
         return size

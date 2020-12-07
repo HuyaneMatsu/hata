@@ -229,10 +229,6 @@ def map_types_and_functions(obj, references, path, from_type):
             if attr_name in IGNORED_CLASS_ATTRIBUTE_NAMES:
                 continue
             
-            
-            if attr_name == 'timestamp':
-                print(attr_value, attr_value_type)
-            
             references[attr_name] = ClassAttributeUnit(attr_name, QualPath(path, attr_name))
             continue
         

@@ -153,7 +153,7 @@ class Connection(DiscordEntity):
         """
         self.name = data['name']
         self.type = data['type']
-        self.id = data['id']
+        self.id = int(data['id'])
         self.revoked = data.get('revoked', False)
         self.verified = data.get('verified', False)
         self.show_activity = data.get('show_activity', False)

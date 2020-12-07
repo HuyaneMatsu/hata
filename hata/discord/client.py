@@ -1015,8 +1015,8 @@ class Client(UserBase):
             The url, where the activation page redirected to.
         code : `str`
             The code, what is included with the redirect url after a successfull activation.
-        scopes : `list` of `str`
-            A list of oauth2 scopes to request.
+        scopes : `str` or `list` of `str`
+            Scope or a  list of oauth2 scopes to request.
         
         Returns
         -------
@@ -1025,6 +1025,8 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `Scopes` wasnt neitehr as `str` not `list` of `str` instances.
         ConnectionError
             No internet connection.
         DiscordException
@@ -1032,7 +1034,6 @@ class Client(UserBase):
         AssertionError
             - If `redirect_url` was nto given as `str` instance.
             - If `code` was not given as `str` instance.
-            - If `scopes` was not given `list` of `str` instances.
             - If `scopes` is empty.
             - If `scopes` contains empty string.
         
@@ -1047,21 +1048,30 @@ class Client(UserBase):
             
             if not isinstance(code, str):
                 raise AssertionError(f'`code` can be given as `str` instance, got {code.__class__.__name__}.')
-            
-            if not isinstance(scopes, list):
-                raise AssertionError(f'`scopes` can be given as `list` of `str` instances, got '
-                    f'{scopes.__class__.__name__}; {scopes!r}.')
-            
-            if not scopes:
-                raise AssertionError(f'`scopes` cannot be empty.')
-            
-            for index, scope in enumerate(scopes):
-                if not isinstance(scope, str):
-                    raise AssertionError(f'`scopes` element `{index}` is not `str` instance, but '
-                        f'{scope.__class__.__name__}; got {scopes!r}.')
+        
+        if isinstance(scopes, str):
+            if __debug__:
+                if not scopes:
+                    raise AssertionError(f'`scopes` was given as an empty string.')
+        
+        elif isinstance(scopes, list):
+            if __debug__:
+                if not scopes:
+                    raise AssertionError(f'`scopes` cannot be empty.')
                 
-                if not scope:
-                    raise AssertionError(f'`scopes` element `{index}` is an empty string; got {scopes!r}.')
+                for index, scope in enumerate(scopes):
+                    if not isinstance(scope, str):
+                        raise AssertionError(f'`scopes` element `{index}` is not `str` instance, but '
+                            f'{scope.__class__.__name__}; got {scopes!r}.')
+                    
+                    if not scope:
+                        raise AssertionError(f'`scopes` element `{index}` is an empty string; got {scopes!r}.')
+            
+            scopes = ' '.join(scopes)
+        
+        else:
+            raise TypeError(f'`scopes` can be given as `str` or `list` of `str` instances, got '
+                f'{scopes.__class__.__name__}; {scopes!r}.')
         
         data = {
             'client_id'     : self.id,
@@ -1069,7 +1079,7 @@ class Client(UserBase):
             'grant_type'    : 'authorization_code',
             'code'          : code,
             'redirect_uri'  : redirect_url,
-            'scope'         : ' '.join(scopes),
+            'scope'         : scopes,
                 }
         
         data = await self.http.oauth2_token(data, imultidict())
@@ -1097,12 +1107,15 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `Scopes` wasnt neitehr as `str` not `list` of `str` instances.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `scopes` was not given `list` of `str` instances.
+            - If `redirect_url` was nto given as `str` instance.
+            - If `code` was not given as `str` instance.
             - If `scopes` is empty.
             - If `scopes` contains empty string.
         
@@ -1110,25 +1123,33 @@ class Client(UserBase):
         -----
         Does not work if the client's application is owned by a team.
         """
-        if __debug__:
-            if not isinstance(scopes, list):
-                raise AssertionError(f'`scopes` can be given as `list` of `str` instances, got '
-                    f'{scopes.__class__.__name__}; {scopes!r}.')
-            
-            if not scopes:
-                raise AssertionError(f'`scopes` cannot be empty.')
-            
-            for index, scope in enumerate(scopes):
-                if not isinstance(scope, str):
-                    raise AssertionError(f'`scopes` element `{index}` is not `str` instance, but '
-                        f'{scope.__class__.__name__}; got {scopes!r}.')
+        if isinstance(scopes, str):
+            if __debug__:
+                if not scopes:
+                    raise AssertionError(f'`scopes` was given as an empty string.')
+        
+        elif isinstance(scopes, list):
+            if __debug__:
+                if not scopes:
+                    raise AssertionError(f'`scopes` cannot be empty.')
                 
-                if not scope:
-                    raise AssertionError(f'`scopes` element `{index}` is not an empty string; got {scopes!r}.')
+                for index, scope in enumerate(scopes):
+                    if not isinstance(scope, str):
+                        raise AssertionError(f'`scopes` element `{index}` is not `str` instance, but '
+                            f'{scope.__class__.__name__}; got {scopes!r}.')
+                    
+                    if not scope:
+                        raise AssertionError(f'`scopes` element `{index}` is an empty string; got {scopes!r}.')
+            
+            scopes = ' '.join(scopes)
+        
+        else:
+            raise TypeError(f'`scopes` can be given as `str` or `list` of `str` instances, got '
+                f'{scopes.__class__.__name__}; {scopes!r}.')
         
         data = {
             'grant_type' : 'client_credentials',
-            'scope'      : ' '.join(scopes),
+            'scope'      : scopes,
                 }
         
         headers = imultidict()
@@ -1137,7 +1158,20 @@ class Client(UserBase):
         return OA2Access(data, '')
     
     
-    async def user_info(self, access):
+    async def user_info(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.get_user_info`` instead. Will be removed in 2021 february.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            '`Client.user_info` is deprecated, and will be removed in 2021 february. '
+            'Please use `Client.get_user_info` instead.',
+            FutureWarning)
+        
+        return await self.get_user_info(*args, **kwargs)
+    
+    async def get_user_info(self, access):
         """
         Request the a user's information with oauth2 access token. By default a bot account should be able to request
         every public infomation about a user (but you do not need oauth2 for that). If the access token has email
@@ -2327,14 +2361,14 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        result = []
+        channels = []
         if (not self.is_bot):
             data = await self.http.channel_private_get_all()
             for channel_data in data:
                 channel = CHANNEL_TYPES[channel_data['type']](data, self)
-                result.append(channel)
+                channels.append(channel)
         
-        return result
+        return channels
 
     async def channel_move(self, channel, visual_position, *, category=..., lock_permissions=False, reason=None):
         """
@@ -2363,9 +2397,11 @@ class Client(UserBase):
         ------
         ValueError
             - If the `channel` would be between guilds.
-            - If catgory channel would be moved under an other category.
+            - If category channel would be moved under an other category.
         TypeError
-            If `category` was not passed as `None`, or as ``Guild`` or ``ChannelCategory`` instance.
+            - if `ChannelGuildBase` was not passed as ``ChannelGuildBase`` instance.
+            - If `category` was not passed as `None`, or as ``Guild`` or ``ChannelCategory`` instance.
+            
         ConnectionError
             No internet connection.
         DiscordException
@@ -2375,365 +2411,155 @@ class Client(UserBase):
         -----
         This method also fixes the messy channel positions of Discord to an intuitive one.
         """
+        # Check channel type
+        if not isinstance(channel, ChannelGuildBase):
+            raise TypeError(f'`channel` can be given as `{ChannelGuildBase.__name__}` instance, got '
+                f'{channel.__class__.__name__}.')
+        
+        # Check whether the channel is partial.
         guild = channel.guild
         if guild is None:
+            # Cannot move partial channels, leave
             return
         
+        # Check category
         if category is ...:
             category = channel.category
         elif category is None:
             category = guild
-        elif type(category) is Guild:
+        elif isinstance(category, Guild):
             if guild is not category:
-                raise ValueError('Can not move channel between guilds!')
-        elif type(category) is ChannelCategory:
+                raise ValueError(f'Can not move channel between guilds! Channel\'s guild: {guild!r}; Category: '
+                    f'{category!r}')
+        elif isinstance(category, ChannelCategory):
             if category.guild is not guild:
-                raise ValueError('Can not move channel between guilds!')
+                raise ValueError(f'Can not move channel between guilds! Channel\'s guild: {guild!r}; Category\'s '
+                    f'guild: {category.guild!r}')
         else:
             raise TypeError(f'Invalid type {channel.__class__.__name__}')
         
-        if type(channel) is type(category):
-            raise ValueError('Cant move category under category!')
+        # Cannot put category under category
+        if isinstance(channel, ChannelCategory) and isinstance(category, ChannelCategory):
+            raise ValueError(f'Can not move categroy chanen lunedr category channel. Channel: {channel!r}; Category: '
+                    f'{category!r}')
         
-        if channel.category is category and category.channels.index(channel) == visual_position:
-            return #saved 1 request
+        if not isinstance(visual_position, int):
+            raise TypeError(f'`visual_position` can be given as `int` instance, got '
+                f'{visual_position.__class__.__name__}.')
         
-        #making sure
-        visual_position = int(visual_position)
+        if not isinstance(lock_permissions, bool):
+            raise TypeError(f'`lock_permissions` can be given as `bool` instance, got '
+                f'{lock_permissions.__class__.__name__}.')
         
-        #quality python code incoming :ok_hand:
+        # Cap at 0
+        if visual_position < 0:
+            visual_position = 0
+        
+        # If the channel is where it should be, we can leave.
+        if channel.category is category and category.channel_list.index(channel) == visual_position:
+            return
+        
+        # Create a display state, where each channel is listed.
+        # Categories are inside of a tuple, where they are the first element of it and their channels are the second.
+        display_state = guild.channel_list
+        
+        for index in range(len(display_state)):
+            iter_channel = display_state[index]
+            if isinstance(iter_channel, ChannelCategory):
+                display_state[index] = iter_channel, iter_channel.channel_list
+        
+        # Generate a state where the channels are theoretically ordered with tuples
+        display_new = []
+        for iter_channel in display_state:
+            if isinstance(iter_channel, tuple):
+                iter_channel, sub_channels = iter_channel
+                display_sub_channels = []
+                for sub_channel in sub_channels:
+                    channel_key = (sub_channel.ORDER_GROUP, sub_channel.position, sub_channel.id, None)
+                    display_sub_channels.append(channel_key)
+            else:
+                display_sub_channels = None
+            
+            channel_key = (iter_channel.ORDER_GROUP, iter_channel.position, iter_channel.id, display_sub_channels)
+            
+            display_new.append(channel_key)
+        
+        # We have 2 display states, we will compare the old to the new one when calculating differences, but we didnt
+        # move our channel yet!
+        
+        # We get from where we will move from.
+        old_category = channel.category
+        if isinstance(old_category, Guild):
+            move_from = display_new
+        else:
+            old_category_id = old_category.id
+            for channel_key in display_new:
+                if channel_key[2] == old_category_id:
+                    move_from = channel_key[3]
+                    break
+            
+            else:
+                # If no breaking was not done, our channel not exists, lol
+                return
+        
+        # We got from which thing we will move from, so we remove first
+        
+        channel_id = channel.id
+        
+        for index in range(len(move_from)):
+            channel_key = move_from[index]
+            
+            if channel_key[2] == channel_id:
+                channel_key_to_move = channel_key
+                del move_from[index]
+                break
+        
+        else:
+            # If breaking was not done, our channel not exists, lol
+            return
+        
+        # We get to where we will move to.
+        if isinstance(category, Guild):
+            move_to = display_new
+        else:
+            new_category_id = category.id
+            for channel_key in display_new:
+                if channel_key[2] == new_category_id:
+                    move_to = channel_key[3]
+                    break
+            
+            else:
+                # If no breaking was not done, our channel not exists, lol
+                return
+        
+        # Move, yayyy
+        move_to.insert(visual_position, channel_key_to_move)
+        # Reorder
+        move_to.sort(key=lambda channel_key_: channel_key_[0])
+        
+        # Now we resort every channel in the guild and categories, mostly for security issues
+        to_sort_all = [display_new]
+        for channel_key in display_new:
+            display_sub_channels = channel_key[3]
+            if display_sub_channels is not None:
+                to_sort_all.append(display_sub_channels)
+        
         ordered = []
-        indexes = [0 for _ in range(len(CHANNEL_TYPES))]  # (type 1 and 3 wont be used)
-
-        #loop preparations
-        outer_channels = guild.channels
-        index_0 = 0
-        limit_0 = len(outer_channels)
-        #inner loop preparations
-        index_1 = 0
-        #loop start
-        while True:
-            if index_0 == limit_0:
-                break
-            channel_ = outer_channels[index_0]
-            #loop block start
-            
-            type_ = channel_.type
-            type_index = indexes[type_]
-            indexes[type_] = type_index+1
-            
-            ordered.append((index_0, index_1, type_index, channel_),)
-            
-            if type_ == 4:
-                #reset type_indexes
-                for to_reset_index in CHANNEL_MOVE_RESET_INDEXES:
-                    indexes[to_reset_index] = 0
-                #loop preparations
-                inner_channels = channel_.channels
-                limit_1 = len(inner_channels)
-                #loop start
-                while True:
-                    if index_1 == limit_1:
-                        break
-                    channel_ = inner_channels[index_1]
-                    #loop block start
-                    
-                    type_ = channel_.type
-                    type_index = indexes[type_]
-                    indexes[type_] = type_index+1
-                    
-                    ordered.append((index_0, index_1, type_index, channel_),)
-                    
-                    #loop block end
-                    index_1 += 1
-                #reseting inner
-                index_1 = 0
-                #loop ended
-            
-            #loop block end
-            index_0 += 1
-        #loop ended
         
-        #prepare loop
-        index_0 = 0
-        limit_0 = len(ordered)
-        #loop start
-        while True:
-            if index_0 == limit_0:
-                break
-            info_line = ordered[index_0]
-            #loop block start
-            
-            if info_line[3] is channel:
-                original_position = index_0
-                break
-
-            #loop block end
-            index_0 += 1
-        #loop ended
-
-        restricted_positions = []
-        
-        index_0 = 0
-        limit_0 = len(ordered)
-        last_index = -1
-        if type(category) is Guild:
-            #loop start
-            while True:
-                if index_0 == limit_0:
-                    break
-                info_line=ordered[index_0]
-                #loop block start
+        for to_sort in to_sort_all:
+            expected_channel_order_group = 0
+            channel_position = 0
+            for sort_key in to_sort:
+                channel_order_group = sort_key[0]
+                channel_id = sort_key[2]
                 
-                if info_line[0] > last_index:
-                    last_index += 1
-                    restricted_positions.append(index_0)
+                if channel_order_group != expected_channel_order_group:
+                    expected_channel_order_group = channel_order_group
+                    channel_position = 0
                 
-                #loop block end
-                index_0 += 1
-            #loop ended
-        else:
-            #loop start
-            while True:
-                if index_0 == limit_0:
-                    break
-                info_line = ordered[index_0]
-                category_index = index_0 #we might need it
-                #loop block start
-                if info_line[3] is category:
-                    index_0 += 1
-                    #loop preapre
-                    #loop start
-                    while True:
-                        if index_0 == limit_0:
-                            break
-                        info_line = ordered[index_0]
-                        #loop block start
-
-                        if info_line[3].type == 4:
-                            break
-                        restricted_positions.append(index_0)
-                        
-                        #loop block end
-                        index_0 += 1
-                    #loop ended
-                    break
-                
-                #loop block end
-                index_0 += 1
-            #loop ended
-            
-        index_0 = (4, 2, 0).index(channel.ORDER_GROUP)
-        before = (4, 2, 0)[index_0:]
-        after = (4, 2, 0)[:index_0+1]
-
-        possible_indexes = []
-        if restricted_positions:
-            #loop prepare
-            index_0 = 0
-            limit_0 = len(restricted_positions)-1
-            info_line = ordered[restricted_positions[index_0]]
-            #loop at 0 block start
-            
-            if info_line[3].ORDER_GROUP in after:
-                possible_indexes.append((0, restricted_positions[index_0],),)
-            
-            #loop at 0 block ended
-            while True:
-                if index_0 == limit_0:
-                    break
-                info_line = ordered[restricted_positions[index_0]]
-                #next step mixin
-                index_0 += 1
-                info_line_2 = ordered[restricted_positions[index_0]]
-                #loop block start
-                
-                if info_line[3].ORDER_GROUP in before and info_line_2[3].ORDER_GROUP in after:
-                    possible_indexes.append((index_0, restricted_positions[index_0],),)
-                
-                #loop block end
-            if limit_0:
-                info_line = info_line_2
-            #loop at -1 block start
-            
-            if info_line[3].ORDER_GROUP in before:
-                possible_indexes.append((index_0+1, restricted_positions[index_0]+1,),)
-            
-            #loop at -1 block ended
-            #loop ended
-        else:
-            #empty category
-            possible_indexes.append((0, category_index+1,),)
-        
-        #GOTO start
-        while True:
-            #GOTO block start
-            
-            #loop prepare
-            index_0 = 0
-            limit_0 = len(possible_indexes)
-            info_line = possible_indexes[index_0]
-            
-            #loop at 0 block start
-            if info_line[0] > visual_position:
-                result_position = info_line[1]
-                
-                #GOTO end
-                break
-                #GOTO ended
-            
-            #loop at 0 block ended
-            
-            #setup GOTO from loop start
-            end_goto = False
-            #setup GOTO from loop ended
-            
-            index_0 += 1
-            while True:
-                if index_0 == limit_0:
-                    break
-                info_line = possible_indexes[index_0]
-                #loop block start
-
-                if info_line[0] == visual_position:
-                    result_position = info_line[1]
-                    
-                    #GOTO end inner 1
-                    end_goto = True
-                    break
-                    #GOTO ended inner 1
-
-                #loop block end
-                index_0 += 1
-            #loop ended
-
-            #GOTO end
-            if end_goto:
-                break
-            #GOTO ended
-
-            result_position = info_line[1]
-
-            #GOTO block ended
-            break
-        #GOTO ended
-        
-        ordered.insert(result_position, ordered[original_position])
-        higher_flag = (result_position < original_position)
-        if higher_flag:
-            original_position += 1
-        else:
-            result_position -= 1
-        del ordered[original_position]
-        
-        if channel.type == 4:
-            channels_to_move = []
-
-            #loop prepare
-            index_0 = original_position
-            limit_0 = len(ordered)
-            #loop start
-            while True:
-                if index_0 == limit_0:
-                    break
-                info_line = ordered[index_0]
-                #loop block start
-                
-                if info_line[3].type == 4:
-                    break
-                channels_to_move.append(info_line)
-                
-                #loop block end
-                index_0 += 1
-            #loop ended
-            
-            insert_to = result_position+1
-            
-            #loop prepare
-            index_0 = len(channels_to_move)
-            limit_0 = 0
-            #loop start
-            while True:
-                index_0 -= 1
-                info_line = channels_to_move[index_0]
-                #loop block start
-                
-                ordered.insert(insert_to, info_line)
-                
-                #loop block end
-                if index_0 == limit_0:
-                    break
-            #loop ended
-
-            delete_from = original_position
-            if higher_flag:
-                delete_from = delete_from+len(channels_to_move) #len(channels_to_move)
-
-            #loop prepare
-            index_0 = 0
-            limit_0 = len(channels_to_move)
-            #loop start
-            while True:
-                if index_0 == limit_0:
-                    break
-                info_line = ordered[index_0]
-                #loop block start
-                
-                del ordered[delete_from]
-                
-                #loop block end
-                index_0 += 1
-            #loop ended
-        
-        # reset
-        for to_reset_index in CHANNEL_MOVE_RESET_INDEXES:
-            indexes[to_reset_index] = 0
-        
-        #loop preparations
-        index_0 = 0
-        limit_0 = len(ordered)
-        #loop start
-        while True:
-            if index_0 == limit_0:
-                break
-            channel_ = ordered[index_0][3]
-            #loop block start
-            
-            type_ = channel_.type
-            type_index = indexes[type_]
-            indexes[type_] = type_index+1
-            
-            ordered[index_0] = (type_index, channel_)
-            
-            #loop block step
-            index_0 += 1
-            #loop block continue
-            
-            if type_ == 4:
-                #reset type_indexes
-                for to_reset_index in CHANNEL_MOVE_RESET_INDEXES:
-                    indexes[to_reset_index] = 0
-                #loop preparations
-                #loop start
-                while True:
-                    if index_0 == limit_0:
-                        break
-                    channel_ = ordered[index_0][3]
-                    #loop block start
-                    
-                    type_ = channel_.type
-                    if type_ == 4:
-                        break
-                    type_index = indexes[type_]
-                    indexes[type_] = type_index+1
-
-                    ordered[index_0] = (type_index, channel_)
-                    
-                    #loop block end
-                    index_0 += 1
-                
-            #loop block end
-        #loop ended
+                ordered.append((channel_position, channel_id))
+                channel_position += 1
+                continue
         
         bonus_data = {'lock_permissions': lock_permissions}
         if category is guild:
@@ -2742,12 +2568,16 @@ class Client(UserBase):
             bonus_data['parent_id'] = category.id
         
         data = []
-        for position, channel_ in ordered:
+        channels = guild.channels
+        for position, channel_id in ordered:
+            channel_ = channels[channel_id]
+            
             if channel is channel_:
-                data.append({'id': channel_.id, 'position': position, **bonus_data})
+                data.append({'id': channel_id, 'position': position, **bonus_data})
                 continue
+            
             if channel_.position != position:
-                data.append({'id': channel_.id, 'position': position})
+                data.append({'id': channel_id, 'position': position})
         
         await self.http.channel_move(guild.id, data, reason)
     
@@ -2783,7 +2613,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            - If the given `channel` is not ``ChannelGuildBase`` or `int` instance.
+            If the given `channel` is not ``ChannelGuildBase`` or `int` instance.
         AssertionError
             - If `name` was not given as `str` instance.
             - If `name`'s length is under `2` or over `100`.
@@ -3043,13 +2873,15 @@ class Client(UserBase):
         
         Parameters
         ----------
-        channel : ``ChannelGuildBase`` instance
+        channel : ``ChannelGuildBase`` or `int` instance
             The channel to delete.
         reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
         
         Raises
         ------
+        TypeError
+            If the given `channel` is not ``ChannelGuildBase`` or `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -3059,7 +2891,15 @@ class Client(UserBase):
         -----
         If a category channel is deleted, it's subchannels will not be removed, instead they will move under the guild.
         """
-        await self.http.channel_delete(channel.id, reason)
+        if isinstance(channel, ChannelGuildBase):
+            channel_id = channel.id
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` parameter can be given as {ChannelGuildBase.__name__} or `int` instance, '
+                    f'got {channel.__class__.__name__}.')
+        
+        await self.http.channel_delete(channel_id, reason)
     
     async def channel_follow(self, source_channel, target_channel):
         """
@@ -3070,9 +2910,9 @@ class Client(UserBase):
         
         Parameters
         ----------
-        source_channel : ``ChannelText`` instance
+        source_channel : ``ChannelText`` or `int` instance
             The channel what will be followed. Must be an announcements (type 5) channel.
-        target_channel : ``ChannelText`` instance
+        target_channel : ``ChannelText`` or `int`instance
             The target channel where the webhook messages will be sent. Can be any guild text channel type.
         
         Returns
@@ -3083,29 +2923,94 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            - If the `source_channel` is not an announcements channel.
-            - If the `target_channel` is not a guild text channel.
+            - If the `source_channel` was not given neither as ``ChannelText`` nor `int` instance.
+            - If the `target_channel` was not given neither as ``ChannelText`` nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `source_channel` is not announcement channel.
         """
-        if source_channel.type != 5:
-            raise TypeError(f'`source_channel` must be type 5 (announcements) channel, got `{source_channel}`.')
-        if target_channel.type not in ChannelText.INTERCHANGE:
-            raise TypeError(f'`target_channel` must be type 0 or 5 (any guild text channel), got  `{target_channel}`.')
+        if isinstance(source_channel, ChannelText):
+            if __debug__:
+                if source_channel.type != 5:
+                    raise AssertionError(f'`source_channel` must be type 5 (announcements) channel, got '
+                        f'`{source_channel}`.')
+            
+            source_channel_id = source_channel.id
+        
+        else:
+            source_channel_id = maybe_snowflake(source_channel)
+            if source_channel_id is None:
+                raise TypeError(f'`source_channel` can be given as {ChannelText.__name__} or `int` instance, got '
+                    f'{source_channel.__class__.__name__}.')
+            
+            source_channel = ChannelText.precreate(source_channel_id)
+        
+        if isinstance(target_channel, ChannelText):
+            target_channel_id = target_channel.id
+        else:
+            target_channel_id = maybe_snowflake(target_channel)
+            if target_channel_id is None:
+                raise TypeError(f'`channel` can be given as {ChannelText.__name__} or `int` instance, got '
+                    f'{target_channel.__class__.__name__}.')
+            
+            target_channel = ChannelText.precreate(target_channel_id)
         
         data = {
-            'webhook_channel_id': target_channel.id,
+            'webhook_channel_id': target_channel_id,
                 }
         
-        data = await self.http.channel_follow(source_channel.id, data)
+        data = await self.http.channel_follow(source_channel_id, data)
         webhook = await Webhook._from_follow_data(data, source_channel, target_channel, self)
         return webhook
     
     # messages
     
-    async def message_logs(self, channel, limit=100, after=None, around=None, before=None):
+    async def _maybe_get_channel(self, channel_id):
+        """
+        Method for creating a channel from `channel_id`. Used by ``.message_logs`` and familiar methods to detect
+        and create channel type from id.
+        
+        The method should be called only after successfull data request.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel_id : `int`
+            The channel's id.
+        
+        Returns
+        -------
+        channel : ``ChannelTextBase`` instance
+        """
+        # First try to get from cache.
+        try:
+            channel = CHANNELS[channel_id]
+        except KeyError:
+            pass
+        else:
+            return channel
+        
+        if not self.is_bot:
+            # Private channel maybe?
+            await self.channel_private_get_all()
+            
+            try:
+                channel = CHANNELS[channel_id]
+            except KeyError:
+                pass
+            else:
+                return channel
+        
+        # If we do not find the channel, not it is private (probably), we create a guild text channel.
+        # The exception case of real users is pretty small, so we can ignore it.
+        channel = ChannelText.precreate(channel_id)
+        return channel
+    
+    async def message_logs(self, channel, limit=100, *, after=None, around=None, before=None):
         """
         Requests messages from the given text channel. The `after`, `around` and the `before` arguments are mutually
         exclusive and they can be passed as `int`, or as a ``DiscordEntitiy`` instance or as a `datetime` object.
@@ -3117,7 +3022,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        channel : ``ChannelTextBase`` instance
+        channel : ``ChannelTextBase`` or `int` instance
             The channel from where we want to request the messages.
         limit : `int`, Optiomal
             The amount of messages to request. Can be between 1 and 100.
@@ -3135,13 +3040,15 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            If `after`, `around` or `before` was passed with an unexpected type.
-        ValueError
-            If `limit` is under `1` or over `100`.
+            - If `channel` was not given neither as ``ChannelTextBase`` nor `int` instance.
+            - If `after`, `around` or `before` was passed with an unexpected type.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `limit` was not given as `int` instance.
+            - if `limit` is out of range [1:100].
         
         See Also
         --------
@@ -3153,8 +3060,23 @@ class Client(UserBase):
             channel.
         - ``.message_iterator`` : An iterator over a channel's message history.
         """
-        if limit < 1 or limit > 100:
-            raise ValueError(f'limit must be in between 1 and 100, got {limit!r}.')
+        if isinstance(channel, ChannelText):
+            channel_id = channel.id
+        
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as {ChannelTextBase.__name__} or `int` instance, got '
+                    f'{channel.__class__.__name__}.')
+            
+            channel = None
+        
+        if __debug__:
+            if not isinstance(limit, int):
+                raise AssertionError(f'`limit` can be gvien as `int` instance, got {limit.__class__.__name__}.')
+            
+            if limit < 1 or limit > 100:
+                raise AssertionError(f'`limit` is out from the expected [1:100] range, got {limit!r}.')
         
         data = {'limit': limit}
         
@@ -3167,7 +3089,11 @@ class Client(UserBase):
         if (before is not None):
             data['before'] = log_time_converter(before)
         
-        data = await self.http.message_logs(channel.id, data)
+        data = await self.http.message_logs(channel_id, data)
+        
+        if channel is None:
+            channel = await self._maybe_get_channel(channel_id)
+        
         return channel._process_message_chunk(data)
     
     # If you have 0-1-2 messages at a channel, and you wanna store the messages. The other wont store it, because it
@@ -3193,19 +3119,40 @@ class Client(UserBase):
         
         Raises
         ------
-        ValueError
-            If `limit` is under `1` or over `100`.
+        TypeError
+            If `channel` was not given neither as ``ChannelTextBase`` nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `limit` was not given as `int` instance.
+            - if `limit` is out of range [1:100].
         """
-        if limit < 1 or limit > 100:
-            raise ValueError(f'limit must be in <1, 100>, got {limit}')
+        if isinstance(channel, ChannelText):
+            channel_id = channel.id
+        
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as {ChannelTextBase.__name__} or `int` instance, got '
+                    f'{channel.__class__.__name__}.')
+            
+            channel = None
+        
+        if __debug__:
+            if not isinstance(limit, int):
+                raise AssertionError(f'`limit` can be gvien as `int` instance, got {limit.__class__.__name__}.')
+            
+            if limit < 1 or limit > 100:
+                raise AssertionError(f'`limit` is out from the expected [1:100] range, got {limit!r}.')
         
         data = {'limit': limit, 'before': 9223372036854775807}
-        data = await self.http.message_logs(channel.id, data)
+        data = await self.http.message_logs(channel_id, data)
         if data:
+            if channel is None:
+                channel = await self._maybe_get_channel(channel_id)
+            
             channel._create_new_message(data[0])
             messages = channel._process_message_chunk(data)
         else:
@@ -3221,7 +3168,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        channel : ``ChannelTextBase`` instance
+        channel : ``ChannelTextBase`` or `int` instance
             The channel from where we want to request the message.
         message_id : `int`
             The message's id.
@@ -3232,12 +3179,29 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `channel` was not given neither as ``ChannelTextBase`` nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        data = await self.http.message_get(channel.id, message_id)
+        if isinstance(channel, ChannelText):
+            channel_id = channel.id
+        
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as {ChannelTextBase.__name__} or `int` instance, got '
+                    f'{channel.__class__.__name__}.')
+            
+            channel = None
+        
+        data = await self.http.message_get(channel_id, message_id)
+        
+        if channel is None:
+            channel = await self._maybe_get_channel(channel_id)
+        
         return channel._create_unknown_message(data)
     
     async def message_create(self, channel, content=None, *, embed=None, file=None, allowed_mentions=..., tts=False,
@@ -3265,7 +3229,7 @@ class Client(UserBase):
             If embeds are given as a list, then the first embed is picked up.
         file : `Any`, Optional
             A file to send. Check ``._create_file_form`` for details.
-        allowed_mentions : `None` or `list` of `Any`, Optional
+        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
         tts : `bool`, Optional
             Whether the message is text-to-speech.
@@ -3574,11 +3538,12 @@ class Client(UserBase):
         
         `'roles'` and ``Role`` instances follow the same rules as `'users'` and the ``UserBase`` instances.
         
-        By passing `'replied_user'` you can re-enable mentioning the replied user.
+        By passing `'!replied_user'` you can disable mentioning the replied user, or by passing`'replied_user'` you can
+        re-enable mentioning the replied user.
         
         Parameters
         ----------
-        allowed_mentions : `None` or `list` of (`str` , ``UserBase`` instances, ``Role`` objects)
+        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
             Which user or role can the message ping (or everyone).
         
         Returns
@@ -3592,33 +3557,43 @@ class Client(UserBase):
         ValueError
             If `allowed_mentions` contains en element of correct type, but an invalid value.
         """
-        if (allowed_mentions is None) or (not allowed_mentions):
+        if (allowed_mentions is None):
             return {'parse': []}
         
-        allow_replied_user = False
-        allow_everyone = False
-        allow_users = False
-        allow_roles = False
+        if isinstance(allowed_mentions, list):
+            if (not allowed_mentions):
+                return {'parse': []}
+        else:
+            allowed_mentions = [allowed_mentions]
+        
+        allow_replied_user = 0
+        allow_everyone = 0
+        allow_users = 0
+        allow_roles = 0
         
         allowed_users = None
         allowed_roles = None
         
         for element in allowed_mentions:
             if isinstance(element, str):
+                if element == '!replied_user':
+                    allow_replied_user = -1
+                    continue
+                
                 if element == 'replied_user':
-                    allow_replied_user = True
+                    allow_replied_user = 1
                     continue
                 
                 if element == 'everyone':
-                    allow_everyone = True
+                    allow_everyone = 1
                     continue
                 
                 if element == 'users':
-                    allow_users = True
+                    allow_users = 1
                     continue
                 
                 if element == 'roles':
-                    allow_roles = True
+                    allow_roles = 1
                     continue
                 
                 raise ValueError(f'`allowed_mentions` contains a not valid `str` element: `{element!r}`. Type`str` '
@@ -3631,7 +3606,7 @@ class Client(UserBase):
                 allowed_users.append(element.id)
                 continue
             
-            if type(element) is Role:
+            if isinstance(element, Role):
                 if allowed_roles is None:
                     allowed_roles = []
                 
@@ -3639,14 +3614,14 @@ class Client(UserBase):
                 continue
             
             raise TypeError(f'`allowed_mentions` contains an element of an invalid type: `{element!r}`. The allowed '
-                f'types are: `str`, `Role` and any`UserBase` instance.')
+                f'types are: `str`, `Role` and any `UserBase` instances.')
         
         
         result = {}
         parse_all_of = None
         
         if allow_replied_user:
-            result['replied_user'] = True
+            result['replied_user'] = (allow_replied_user > 0)
         
         if allow_everyone:
             if parse_all_of is None:
@@ -4654,7 +4629,7 @@ class Client(UserBase):
                 # Else case should happen.
                 continue
     
-    async def message_edit(self, message, content=..., embed=..., allowed_mentions=..., suppress=...):
+    async def message_edit(self, message, content=..., *, embed=..., allowed_mentions=..., suppress=...):
         """
         Edits the given `message`.
         
@@ -4679,7 +4654,7 @@ class Client(UserBase):
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
             
             If embeds are given as a list, then the first embed is picked up.
-        allowed_mentions : `None` or `list` of `Any`, Optional
+        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions``
             for details.
         suppress : `bool`, Optional
@@ -4924,7 +4899,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        channel : ``ChannelTextBase`` instance
+        channel : ``ChannelTextBase`` or `int` instance
             The channel from were the pinned messages will be requested.
         
         Returns
@@ -4934,12 +4909,29 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `channel` was not given neither as ``ChannelTextBase`` nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        data = await self.http.channel_pins(channel.id)
+        if isinstance(channel, ChannelText):
+            channel_id = channel.id
+        
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as {ChannelTextBase.__name__} or `int` instance, got '
+                    f'{channel.__class__.__name__}.')
+            
+            channel = None
+        
+        data = await self.http.channel_pins(channel_id)
+        
+        if channel is None:
+            channel = await self._maybe_get_channel(channel_id)
+        
         return [channel._create_unknown_message(message_data) for message_data in data]
 
 
@@ -8189,7 +8181,7 @@ class Client(UserBase):
             If embeds are given as a list, then the first embed is picked up.
         file : `Any`, Optional
             A file to send. Check ``._create_file_form`` for details.
-        allowed_mentions : `None` or `list` of `Any`, Optional
+        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
         tts : `bool`, Optional
             Whether the message is text-to-speech.
@@ -8376,7 +8368,7 @@ class Client(UserBase):
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
             
             If embeds are given as a list, then the first embed is picked up.
-        allowed_mentions : `None` or `list` of `Any`, Optional
+        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions``
             for details.
         

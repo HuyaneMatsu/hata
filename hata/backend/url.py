@@ -1,10 +1,11 @@
 ﻿# -*- coding: utf-8 -*-
 # https://github.com/squeaky-pl/zenchmarks/blob/master/vendor/yarl/__init__.py
 from ipaddress import ip_address
-from urllib.parse import SplitResult, parse_qsl, urljoin, urlsplit, urlunsplit
+from urllib.parse import SplitResult, parse_qsl as parse_query_string_list, urljoin as url_join, \
+    urlsplit as url_split, urlunsplit as url_unsplit
 from math import isinf, isnan
 
-from .utils import multidict,cached_property
+from .utils import multidict, cached_property
 from .quote import quote, unquote
 
 NoneType = type(None)
@@ -95,7 +96,7 @@ class URL:
         self = object.__new__(cls)
         
         if isinstance(val, str):
-            val = urlsplit(val)
+            val = url_split(val)
         elif isinstance(val, SplitResult):
             if not encoded:
                 raise ValueError('Cannot apply decoding to SplitResult')
@@ -133,7 +134,8 @@ class URL:
                     netloc = f'{user}@{netloc}'
             
             val = SplitResult(val[0], netloc, quote(val[2], safe='@:', protected='/'),
-                query=quote(val[3], safe='=+&?/:@', protected='=+&', qs=True), fragment=quote(val[4], safe='?/:@'))
+                query=quote(val[3], safe='=+&?/:@', protected='=+&', query_string=True),
+                fragment=quote(val[4], safe='?/:@'))
         
         self._val = val
         self._cache = {}
@@ -143,7 +145,7 @@ class URL:
         val = self._val
         if not val.path and self.is_absolute() and (val.query or val.fragment):
             val = val._replace(path='/')
-        return urlunsplit(val)
+        return url_unsplit(val)
     
     def __repr__(self):
         return f'{self.__class__.__name__}({str(self)!r})'
@@ -327,7 +329,7 @@ class URL:
         -------
         query : `multidict of (`str`, `Any`) items
         """
-        return multidict(parse_qsl(self.query_string, keep_blank_values=True))
+        return multidict(parse_query_string_list(self.query_string, keep_blank_values=True))
     
     # Encoded query part of URL.
     # Empty string if query is missing.
@@ -339,7 +341,7 @@ class URL:
     # Empty string if query is missing.
     @cached_property
     def query_string(self):
-        return unquote(self.raw_query_string, qs=True)
+        return unquote(self.raw_query_string, query_string=True)
     
     # Encoded fragment part of URL.
     # Empty string if fragment is missing.
@@ -549,14 +551,14 @@ class URL:
                     raise TypeError(f'`{v_type}` instances are not supported as query string parameter values, got '
                         f'{v!r}.')
                 
-                lst.append(f'{quote(k, safe="/?:@", qs=True)}={quote(v, safe="/?:@", qs=True)}')
+                lst.append(f'{quote(k, safe="/?:@", query_string=True)}={quote(v, safe="/?:@", query_string=True)}')
             query = '&'.join(lst)
         elif isinstance(query, str):
-            query = quote(query, safe='/?:@', protected='=&+', qs=True)
+            query = quote(query, safe='/?:@', protected='=&+', query_string=True)
         elif isinstance(query, (bytes, bytearray, memoryview)):
             raise TypeError("Invalid query type: bytes, bytearray andmemoryview are forbidden")
         elif hasattr(query,'__getitem__'):
-            query = '&'.join(f'{quote(k, safe="/?:@", qs=True)}={quote(v, safe="/?:@", qs=True)}' for k, v in query)
+            query = '&'.join(f'{quote(k, safe="/?:@", query_string=True)}={quote(v, safe="/?:@", query_string=True)}' for k, v in query)
         else:
             raise TypeError('Invalid query type: only str, mapping or sequence of (str, str) pairs is allowed')
         path = self._val.path
@@ -603,14 +605,14 @@ class URL:
     # Informally, this uses components of the base URL, in particular the addressing scheme, the network location and
     # (part of) the path, to provide missing components in the relative URL.
     def join(self, url):
-        # See docs for urllib.parse.urljoin
+        # See docs for urllib.parse.url_join
         if not isinstance(url, URL):
             raise TypeError('url should be URL')
-        return URL(urljoin(str(self), str(url)), encoded=True)
+        return URL(url_join(str(self), str(url)), encoded=True)
     
     # Return decoded human readable string for URL representation.
     def human_repr(self):
-        return urlunsplit(SplitResult(self.scheme, self._make_netloc(self.user, self.password, self.host,
+        return url_unsplit(SplitResult(self.scheme, self._make_netloc(self.user, self.password, self.host,
             self._val.port), self.path, self.query_string, self.fragment))
     
     def extend_query(self, params):

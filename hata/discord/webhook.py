@@ -409,7 +409,7 @@ class Webhook(UserBase):
             else:
                 name = extra_data['name']
                 if name is None:
-                    name=''
+                    name = ''
                 
                 avatar_type, avatar_hash = Icon.from_base16_hash(data.get('avatar'))
         else:

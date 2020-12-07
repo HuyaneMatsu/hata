@@ -2703,7 +2703,7 @@ class RATELIMIT_GROUPS:
         - Limit : `OPT`
         - Resets after : `OPT`
     
-    - user_info
+    - get_user_info
         - Endpoint : `/users/@me`
         - Method : `GET`
         - Required auth : `bearer`
@@ -3070,7 +3070,7 @@ class RATELIMIT_GROUPS:
     client_application_info     = RatelimitGroup(optimistic=True)
     bulk_ack                    = RatelimitGroup(optimistic=True) # untested
     eula_get                    = RatelimitGroup(optimistic=True)
-    user_info                   = RatelimitGroup(optimistic=True)
+    get_user_info               = RatelimitGroup(optimistic=True)
     client_user                 = RatelimitGroup(optimistic=True)
     client_edit                 = RatelimitGroup()
     user_achievements           = RatelimitGroup() # untested; has expected global ratelimit

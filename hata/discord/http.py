@@ -1378,8 +1378,8 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.oauth2_token, NO_SPECIFIC_RATELIMITER),
             METH_POST, f'{DIS_ENDPOINT}/api/oauth2/token', data, headers=headers)
     
-    async def user_info(self, headers):
-        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.user_info, NO_SPECIFIC_RATELIMITER),
+    async def get_user_info(self, headers):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.get_user_info, NO_SPECIFIC_RATELIMITER),
             METH_GET, f'{API_ENDPOINT}/users/@me', headers=headers)
     
     async def user_connections(self, headers):

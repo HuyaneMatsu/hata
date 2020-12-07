@@ -366,7 +366,7 @@ class UnixWritePipeTransport(object):
     def get_write_buffer_limits(self):
         return self._low_water, self._high_water
     
-    def _set_write_buffer_limits(self, high=None, low=None):
+    def _set_write_buffer_limits(self, low=None, high=None):
         if high is None:
             if low is None:
                 high = 65536
@@ -383,8 +383,8 @@ class UnixWritePipeTransport(object):
         self._high_water = high
         self._low_water = low
     
-    def set_write_buffer_limits(self, high=None, low=None):
-        self._set_write_buffer_limits(high=high, low=low)
+    def set_write_buffer_limits(self, low=None, high=None):
+        self._set_write_buffer_limits(low=low, high=high)
         self._maybe_pause_protocol()
 
 class SubprocessStreamWriter(object):

@@ -476,7 +476,7 @@ class Kokoro(object):
         self = object.__new__(cls)
         
         self.gateway = gateway
-        self.interval = 40.0 #we set it from outside
+        self.interval = 40.0 # we set it from outside
         self.running = False
         now_ = perf_counter()
         self.last_answer = now_

@@ -1212,7 +1212,7 @@ class Client(UserBase):
         
         headers = imultidict()
         headers[AUTHORIZATION] = f'Bearer {access_token}'
-        data = await self.http.user_info(headers)
+        data = await self.http.get_user_info(headers)
         return UserOA2(data, access)
     
     
@@ -2399,7 +2399,7 @@ class Client(UserBase):
             - If the `channel` would be between guilds.
             - If category channel would be moved under an other category.
         TypeError
-            - if `ChannelGuildBase` was not passed as ``ChannelGuildBase`` instance.
+            - If `ChannelGuildBase` was not passed as ``ChannelGuildBase`` instance.
             - If `category` was not passed as `None`, or as ``Guild`` or ``ChannelCategory`` instance.
             
         ConnectionError
@@ -2987,13 +2987,6 @@ class Client(UserBase):
         channel : ``ChannelTextBase`` instance
         """
         # First try to get from cache.
-        try:
-            channel = CHANNELS[channel_id]
-        except KeyError:
-            pass
-        else:
-            return channel
-        
         if not self.is_bot:
             # Private channel maybe?
             await self.channel_private_get_all()
@@ -3048,7 +3041,7 @@ class Client(UserBase):
             If any exception was received from the Discord API.
         AssertionError
             - If `limit` was not given as `int` instance.
-            - if `limit` is out of range [1:100].
+            - If `limit` is out of range [1:100].
         
         See Also
         --------
@@ -3060,7 +3053,7 @@ class Client(UserBase):
             channel.
         - ``.message_iterator`` : An iterator over a channel's message history.
         """
-        if isinstance(channel, ChannelText):
+        if isinstance(channel, ChannelTextBase):
             channel_id = channel.id
         
         else:
@@ -3069,7 +3062,7 @@ class Client(UserBase):
                 raise TypeError(f'`channel` can be given as {ChannelTextBase.__name__} or `int` instance, got '
                     f'{channel.__class__.__name__}.')
             
-            channel = None
+            channel = CHANNELS.get(channel_id)
         
         if __debug__:
             if not isinstance(limit, int):
@@ -3127,9 +3120,9 @@ class Client(UserBase):
             If any exception was received from the Discord API.
         AssertionError
             - If `limit` was not given as `int` instance.
-            - if `limit` is out of range [1:100].
+            - If `limit` is out of range [1:100].
         """
-        if isinstance(channel, ChannelText):
+        if isinstance(channel, ChannelTextBase):
             channel_id = channel.id
         
         else:
@@ -3138,7 +3131,7 @@ class Client(UserBase):
                 raise TypeError(f'`channel` can be given as {ChannelTextBase.__name__} or `int` instance, got '
                     f'{channel.__class__.__name__}.')
             
-            channel = None
+            channel = CHANNELS.get(channel_id)
         
         if __debug__:
             if not isinstance(limit, int):
@@ -3186,7 +3179,7 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(channel, ChannelText):
+        if isinstance(channel, ChannelTextBase):
             channel_id = channel.id
         
         else:
@@ -3195,7 +3188,7 @@ class Client(UserBase):
                 raise TypeError(f'`channel` can be given as {ChannelTextBase.__name__} or `int` instance, got '
                     f'{channel.__class__.__name__}.')
             
-            channel = None
+            channel = CHANNELS.get(channel_id)
         
         data = await self.http.message_get(channel_id, message_id)
         
@@ -4916,7 +4909,7 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(channel, ChannelText):
+        if isinstance(channel, ChannelTextBase):
             channel_id = channel.id
         
         else:
@@ -4925,7 +4918,7 @@ class Client(UserBase):
                 raise TypeError(f'`channel` can be given as {ChannelTextBase.__name__} or `int` instance, got '
                     f'{channel.__class__.__name__}.')
             
-            channel = None
+            channel = CHANNELS.get(channel_id)
         
         data = await self.http.channel_pins(channel_id)
         
@@ -4949,10 +4942,21 @@ class Client(UserBase):
         index : `int`
             Till which index the messages should be requested at the given channel.
         
+        Returns
+        -------
+        result_state : `int`
+            can return the following variables describing a state:
+            
+            +-----------+---------------------------------------------------------------------------+
+            | Value     | Description                                                               |
+            +-----------+---------------------------------------------------------------------------+
+            | 0         | Success.                                                                  |
+            +-----------+---------------------------------------------------------------------------+
+            | 1         | `index` could not be reached, there is no more messages at the channel.   |
+            +-----------+---------------------------------------------------------------------------+
+        
         Raises
         ------
-        IndexError
-            If `index` could not be reached, because there is no more message at the given channel.
         ConnectionError
             No internet connection.
         DiscordException
@@ -4964,6 +4968,7 @@ class Client(UserBase):
             
             # we want to load it till the exact index, so if `loadto` is `0`, thats not enough!
             if loadto < 0:
+                result_state = 0
                 break
             
             if loadto < 98:
@@ -4977,10 +4982,12 @@ class Client(UserBase):
                 result = await self.message_logs_fromzero(channel, planned)
             
             if len(result) < planned:
-                channel.message_history_reached_end=True
-                raise IndexError(index)
+                channel.message_history_reached_end = True
+                result_state = 1
+                break
         
         channel._turn_message_keep_limit_on_at += index
+        return result_state
     
     async def message_at_index(self, channel, index):
         """
@@ -4991,7 +4998,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``
+        channel : ``ChannelTextBase`` or `int` instance.
             The channel from were the messages will be requested.
         index : `int`
             The index of the target message.
@@ -5002,15 +5009,41 @@ class Client(UserBase):
         
         Raises
         ------
-        IndexError
-            If `index` could not be reached, because there is no more message at the given channel.
-        PermissionError
-            If the client cannot read the channel's message history.
+        TypeError
+            If `channel` was not given neither as ``ChannelTextBase`` nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `index` was not given as `int` instance.
+            - If `index` is out of range [0:].
         """
+        if __debug__:
+            if not isinstance(index, int):
+                raise AssertionError(f'`index` can be gvien as `int` instance, got {index.__class__.__name__}.')
+            
+            if index < 0:
+                raise AssertionError(f'`index` is out from the expected [0:] range, got {index!r}.')
+    
+        if isinstance(channel, ChannelTextBase):
+            pass
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as {ChannelTextBase.__name__} or `int` instance, got '
+                    f'{channel.__class__.__name__}.')
+            
+            channel = CHANNELS.get(channel_id)
+            
+            if channel is None:
+                messages = await self.message_logs_fromzero(channel_id, min(index+1, 100))
+                
+                if messages:
+                    channel = messages[0].channel
+                else:
+                    raise IndexError(index)
+        
         messages = channel.messages
         if index < len(messages):
             return messages[index]
@@ -5018,10 +5051,9 @@ class Client(UserBase):
         if channel.message_history_reached_end:
             raise IndexError(index)
         
-        if not channel.cached_permissions_for(self).can_read_message_history:
-            raise PermissionError('Client can\'t read message history')
+        if await self._load_messages_till(channel, index):
+            raise IndexError(index)
         
-        await self._load_messages_till(channel, index)
         # access it again, because it might be modified
         return channel.messages[index]
     
@@ -5034,7 +5066,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        channel : ``ChannelTextBase`` instance
+        channel : ``ChannelTextBase`` or `int` instance
             The channel from were the messages will be requested.
         start : `int`, Optional
             The first message's index at the channel to be requested. Defaults to `0`.
@@ -5047,17 +5079,68 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `channel` was not given neither as ``ChannelTextBase`` nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `start` was not given as `int` instance.
+            - If `start` is out of range [0:].
+            - If `end` was not given as `int` instance.
+            - If `end` is out of range [0:].
         """
+        if __debug__:
+            if not isinstance(start, int):
+                raise AssertionError(f'`start` can be gvien as `int` instance, got {start.__class__.__name__}.')
+            
+            if start < 0:
+                raise AssertionError(f'`start` is out from the expected [0:] range, got {start!r}.')
+        
+            if not isinstance(end, int):
+                raise AssertionError(f'`end` can be gvien as `int` instance, got {end.__class__.__name__}.')
+            
+            if end < 0:
+                raise AssertionError(f'`end` is out from the expected [0:] range, got {end!r}.')
+        
+        if isinstance(channel, ChannelTextBase):
+            pass
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as {ChannelTextBase.__name__} or `int` instance, got '
+                    f'{channel.__class__.__name__}.')
+            
+            channel = CHANNELS.get(channel_id)
+            
+            if channel is None:
+                messages = await self.message_logs_fromzero(channel_id, min(end+1, 100))
+                
+                if messages:
+                    channel = messages[0].channel
+                else:
+                    return []
+        
+        if end <= start:
+            return []
+        
         if end >= len(channel.messages) and (not channel.message_history_reached_end) and \
                channel.cached_permissions_for(self).can_read_message_history:
+            
             try:
                 await self._load_messages_till(channel, end)
-            except IndexError:
-                pass
+            except BaseException as err:
+                if isinstance(err, DiscordException) and err.code in (
+                    ERROR_CODES.unknown_message, # message deleted
+                    ERROR_CODES.unknown_channel, # message's channel deleted
+                    ERROR_CODES.invalid_access, # client removed
+                    ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                    ERROR_CODES.invalid_message_send_user, # user has dm-s disallowed
+                        ):
+                    pass
+                else:
+                    raise
         
         result = []
         messages = channel.messages
@@ -5066,13 +5149,15 @@ class Client(UserBase):
         
         return result
     
-    def message_iterator(self, channel, chunksize=99):
+    async def message_iterator(self, channel, chunksize=99):
         """
         Returns an asynchronous message iterator over the given text channel.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
-        channel : ``ChannelTextBase`` instance
+        channel : ``ChannelTextBase``  or `int` instance
             The channel from were the messages will be requested.
         chunksize : `int`, Optional
             The amount of messages to request when the currently loaded history is exhausted. For message chaining
@@ -5081,9 +5166,21 @@ class Client(UserBase):
         Returns
         -------
         message_iterator : ``MessageIterator``
+        
+        Raises
+        ------
+        TypeError
+            If `channel` was not given neither as ``ChannelTextBase`` nor `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `chunksize` was not given as `int` instance.
+            - If `chunksize` is out of range [1:].
         """
-        return MessageIterator(self, channel, chunksize)
-
+        return await MessageIterator(self, channel, chunksize)
+    
     async def typing(self, channel):
         """
         Sends a typing event to the given channel.
@@ -5092,11 +5189,13 @@ class Client(UserBase):
         
         Parameters
         ----------
-        channel : ``ChannelTextBase`` instance
-            The channel where the typing event will be sent.
+        channel : ``ChannelTextBase`` or `int` instance
+            The channel where typing will be triggered.
         
         Raises
         ------
+        TypeError
+            If `channel` was not given neither as ``ChannelTextBase`` nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -5106,7 +5205,15 @@ class Client(UserBase):
         -----
         The client will be shown up as typing for 8 seconds, or till it sends a message at the respective channel.
         """
-        await self.http.typing(channel.id)
+        if isinstance(channel, ChannelTextBase):
+            channel_id = channel.id
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` instance, got'
+                    f'{channel.__class__.__name__}.')
+        
+        await self.http.typing(channel_id)
 
     # With context
     def keep_typing(self, channel, timeout=300.):
@@ -5116,16 +5223,29 @@ class Client(UserBase):
         
         Parameters
         ----------
-        channel ``ChannelTextBase`` instance
-            The channel where the typing events will be sent.
+        channel ``ChannelTextBase`` or `int` instance
+            The channel where typing will be triggered.
         timeout : `float`, Optional
             The maximal duration for the ``Typer`` to keep typing.
         
         Returns
         -------
         typer : ``Typer``
+        
+        Raises
+        ------
+        TypeError
+            If `channel` was not given neither as ``ChannelTextBase`` nor `int` instance.
         """
-        return Typer(self, channel, timeout)
+        if isinstance(channel, ChannelTextBase):
+            channel_id = channel.id
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` instance, got'
+                    f'{channel.__class__.__name__}.')
+        
+        return Typer(self, channel_id, timeout)
     
     # Reactions:
     
@@ -5137,19 +5257,34 @@ class Client(UserBase):
         
         Parameters
         ----------
-        message : ``Message`` object
+        message : ``Message``, ``MessageRepr`` or ``MessageReference``
             The message on which the reaction will be put on.
-        emoji : ``Emoji`` object
+        emoji : ``Emoji``
             The emoji to react with
         
         Raises
         ------
+        TypeError
+            If `message` was not givne neither as ``Message``, ``MessageRepr`` nor ``MessageReference`` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        await self.http.reaction_add(message.channel.id, message.id, emoji.as_reaction)
+        if isinstance(message, Message):
+            message_id = message.id
+            channel_id = message.channel.id
+        elif isinstance(message, MessageRepr):
+            message_id = message.id
+            channel_id = message.channel.id
+        elif isinstance(message, MessageReference):
+            channel_id = message.channel_id
+            message_id = message.message_id
+        else:
+            raise TypeError(f'`message` can be given as  `{Message.__name__}`, `{MessageRepr.__name__}` or as '
+                f'`{MessageReference.__name__}` instance, got {message!r}.')
+        
+        await self.http.reaction_add(channel_id, message_id, emoji.as_reaction)
     
     async def reaction_delete(self, message, emoji, user):
         """
@@ -5159,24 +5294,48 @@ class Client(UserBase):
         
         Parameters
         ----------
-        message : ``Message`` object
+        message : ``Message``, ``MessageRepr`` or ``MessageReference``
             The message from which the reaction will be removed.
-        emoji : ``Emoji`` object
+        emoji : ``Emoji``
             The emoji to remove.
-        user : ``UserBase`` instance
+        user : ``Client``, ``User`` or `int` instance
             The user, who's reaction will be removed.
         
         Raises
         ------
+        TypeError
+            - If `message` was not givne neither as ``Message``, ``MessageRepr`` nor ``MessageReference`` instance.
+            - If `user` was not given neither as ``User``, ``Client`` nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        if self == user:
-            await self.http.reaction_delete_own(message.channel.id, message.id, emoji.as_reaction)
+        if isinstance(message, Message):
+            message_id = message.id
+            channel_id = message.channel.id
+        elif isinstance(message, MessageRepr):
+            message_id = message.id
+            channel_id = message.channel.id
+        elif isinstance(message, MessageReference):
+            channel_id = message.channel_id
+            message_id = message.message_id
         else:
-            await self.http.reaction_delete(message.channel.id, message.id, emoji.as_reaction, user.id)
+            raise TypeError(f'`message` can be given as  `{Message.__name__}`, `{MessageRepr.__name__}` or as '
+                f'`{MessageReference.__name__}` instance, got {message!r}.')
+        
+        if isinstance(user, (User, Client)):
+            user_id = user.id
+        else:
+            user_id = maybe_snowflake(user)
+            if user_id is None:
+                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                    f'got {user.__class__.__name__}.')
+        
+        if user_id == self.id:
+            await self.http.reaction_delete_own(channel_id, message_id, emoji.as_reaction)
+        else:
+            await self.http.reaction_delete(channel_id, message_id, emoji.as_reaction, user_id)
     
     async def reaction_delete_emoji(self, message, emoji):
         """
@@ -6006,7 +6165,7 @@ class Client(UserBase):
             - `name` was not given as `str` instance.
             - `afk_timeout` was not given as `int` instance.
             - `system_channel_flags` was not given as `SystemChannelFlag` or as other `int` instance.
-            - if `preferred_locale` was not given as `str` instance.
+            - If `preferred_locale` was not given as `str` instance.
         ConnectionError
             No internet connection.
         DiscordException

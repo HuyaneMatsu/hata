@@ -716,28 +716,28 @@ class Typer(object):
     ----------
     client : ``Client``
         The client what will send the typing events.
-    channel : ``ChannelTextBase`` instance
-        The channel where the typing events will be sent.
+    channel_id : `int` instance
+        The channel's id where typing will be triggered.
     timeout : `float`
         The leftover timeout till the typer will send typings. Is reduced every time, when the typer sent a typing
         event. If goes under `0.0` the typer stops sending more events.
     waiter : ``Future`` or `None`
         The sleeping future what will wakeup ``.run``.
     """
-    __slots__ = ('channel', 'client', 'timeout', 'waiter',)
-    def __init__(self, client, channel, timeout=300.):
+    __slots__ = ('channel_id', 'client', 'timeout', 'waiter',)
+    def __init__(self, client, channel_id, timeout=300.):
         """
         Parameters
         ----------
         client : ``Client``
             The client what will send the typing events.
-        channel : ``ChannelTextBase`` instance
-            The channel where the typing events will be sent.
+        channel_id : `int` instance
+            The channel's id where typing will be triggered.
         timeout : `float`, Optional
             The maximal amount of time till the client will keep sending typing events. Defaults to `300.0`.
         """
         self.client = client
-        self.channel = channel
+        self.channel_id = channel_id
         self.waiter = None
         self.timeout = timeout
     
@@ -756,7 +756,7 @@ class Typer(object):
         while self.timeout > 0.:
             self.timeout -= 8.0
             self.waiter = waiter = sleep(8., KOKORO)
-            await self.client.http.typing(self.channel.id)
+            await self.client.http.typing(self.channel_id)
             await waiter
         
         self.waiter = None

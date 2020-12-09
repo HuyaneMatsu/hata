@@ -21,6 +21,7 @@ from .webhook import Webhook, WebhookRepr
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_bool
 from .utils import DATETIME_FORMAT_CODE
 from .client_utils import maybe_snowflake
+from .exceptions import DiscordException, ERROR_CODES
 
 from . import webhook as module_webhook, message as module_message, ratelimit as module_ratelimit
 
@@ -480,28 +481,82 @@ class MessageIterator(object):
         The client, who will do the api requests for requesting more messages.
     """
     __slots__ = ('_can_read_history', '_index', 'channel', 'chunksize', 'client',)
-    def __init__(self, client, channel, chunksize=99):
+    async def __new__(cls, client, channel, chunksize=99):
         """
         Creates a message iterator.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
         client : ``Client``
             The client, who will do the api requests for requesting more messages.
-        channel : ``ChannelTextBase`` instance
+        channel : ``ChannelTextBase`` or `int` instance
             The channel, what's messages the message iterator will iterates over.
         chunksize : `int`, Optional
             The amount of messages, what the message iterator will extend it's channel's message history, each time, the
             loaded messages are exhausted. Limited to `97` as a maximal value.
+        
+        Raises
+        ------
+        TypeError
+            If `channel` was not given neither as ``ChannelTextBase`` nor `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `chunksize` was not given as `int` instance.
+            - If `chunksize` is out of range [1:].
         """
+        if __debug__:
+            if not isinstance(chunksize, int):
+                raise AssertionError(f'`chunksize` can be given as `int` instance, got {chunksize.__class__.__name__}.')
+            
+            if chunksize < 1:
+                raise AssertionError(f'`chunksize` is out from the expected [0:] range, got {chunksize!r}.')
+        
         if chunksize > 99:
             chunksize = 99
         
+        if isinstance(channel, ChannelTextBase):
+            pass
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` instance, got'
+                    f'{channel.__class__.__name__}.')
+            
+            channel = CHANNELS.get(channel_id)
+            
+            if channel is None:
+                try:
+                    messages = await client.message_logs_fromzero(channel_id, 100)
+                except BaseException as err:
+                    if isinstance(err, DiscordException) and err.code in (
+                            ERROR_CODES.unknown_message, # message deleted
+                            ERROR_CODES.unknown_channel, # message's channel deleted
+                            ERROR_CODES.invalid_access, # client removed
+                            ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                            ERROR_CODES.invalid_message_send_user, # user has dm-s disallowed
+                                ):
+                        pass
+                    
+                    else:
+                        raise
+                else:
+                    if messages:
+                        channel = messages[0].channel
+                    else:
+                        channel = await client._maybe_get_channel(channel_id)
+        
+        self = object.__new__(cls)
         self.client = client
         self.channel = channel
         self.chunksize = chunksize
         self._index = 0
         self._can_read_history = not channel.cached_permissions_for(client).can_read_message_history
+        return self
     
     def __aiter__(self):
         """Returns self and resets the `.index`."""
@@ -515,6 +570,7 @@ class MessageIterator(object):
         This method is a coroutine.
         """
         channel = self.channel
+        
         index = self._index
         if len(channel.messages) > index:
             self._index = index+1
@@ -525,8 +581,20 @@ class MessageIterator(object):
         
         try:
             await self.client._load_messages_till(channel, index+self.chunksize)
-        except IndexError:
-            pass
+        except BaseException as err:
+            if isinstance(err, ConnectionError):
+                pass
+            
+            elif isinstance(err, DiscordException) and err.code in (
+                ERROR_CODES.unknown_message, # message deleted
+                ERROR_CODES.unknown_channel, # message's channel deleted
+                ERROR_CODES.invalid_access, # client removed
+                ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                ERROR_CODES.invalid_message_send_user, # user has dm-s disallowed
+                    ):
+                pass
+            else:
+                raise
         
         if len(channel.messages) > index:
             self._index = index+1

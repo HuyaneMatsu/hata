@@ -2581,10 +2581,8 @@ class Task(Future):
         The future on what's result the future is waiting right now.
     _must_cancel : `bool`
         Whether the task is cancelled, and at it's next step a ``CancelledError`` would be raised into it's coroutine.
-    nonce : `Any`
-        Free variable usable by other party code. Defaults to `None`.
     """
-    __slots__ = ('_coro', '_fut_waiter', '_must_cancel', 'nonce')
+    __slots__ = ('_coro', '_fut_waiter', '_must_cancel')
     
     def __new__(cls, coro, loop):
         """
@@ -2610,8 +2608,6 @@ class Task(Future):
         self._must_cancel = False
         self._fut_waiter = None
         self._coro = coro
-        
-        self.nonce = None
         
         loop.call_soon(self.__step)
 
@@ -2744,11 +2740,6 @@ class Task(Future):
                 continue
             
             result.append(']')
-        
-        nonce = self.nonce
-        if (nonce is not None):
-            result.append(', nonce=')
-            result.append(repr(nonce))
         
         result.append('>')
         

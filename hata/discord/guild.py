@@ -676,10 +676,10 @@ class Guild(DiscordEntity, immortal=True):
             
             update = True
         
-        guild.available = (not data.get('unavailable',False))
+        guild.available = (not data.get('unavailable', False))
         
         if update:
-            guild.user_count = data.get('member_count',1)
+            guild.user_count = data.get('member_count', 1)
             guild.booster_count = -1
             
             try:

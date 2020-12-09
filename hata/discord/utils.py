@@ -23,7 +23,7 @@ from . import bases as module_bases
 create_partial_user = NotImplemented
 RelationshipType = NotImplemented
 
-DATETIME_FORMAT_CODE = '%Y.%m.%d-%H:%M:%S'
+DATETIME_FORMAT_CODE = '%Y.%m.%d %H:%M:%S'
 
 def endswith_xFFxD9(data):
     """

@@ -438,10 +438,7 @@ class ConnectorBase(object):
         if self.closed:
             return
         
-        try:
-            self.acquired_protocols.remove(protocol)
-        except KeyError:
-            pass
+        self.acquired_protocols.discard(protocol)
         
         acquired_protocols_per_host = self.acquired_protocols_per_host
         try:

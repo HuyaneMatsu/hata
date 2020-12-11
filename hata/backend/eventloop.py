@@ -1207,10 +1207,8 @@ if sys.platform == 'win32':
                         
                         if remove:
                             for reader in remove:
-                                try:
-                                    r.remove(reader)
-                                except KeyError:
-                                    pass
+                                r.discard(reader)
+                                
                                 try:
                                     self.unregister(reader)
                                 except KeyError:
@@ -1231,10 +1229,8 @@ if sys.platform == 'win32':
                         
                         if remove:
                             for writer in remove:
-                                try:
-                                    w.remove(writer)
-                                except KeyError:
-                                    pass
+                                w.discard(writer)
+                                
                                 try:
                                     self.unregister(writer)
                                 except KeyError:
@@ -1278,10 +1274,8 @@ if sys.platform == 'win32':
                 
                 if remove:
                     for reader in remove:
-                        try:
-                            r.remove(reader)
-                        except KeyError:
-                            pass
+                        r.discard(reader)
+                        
                         try:
                             self.unregister(reader)
                         except KeyError:
@@ -1304,16 +1298,14 @@ if sys.platform == 'win32':
                     
                 if remove:
                     for writer in remove:
-                        try:
-                            w.remove(writer)
-                        except KeyError:
-                            pass
+                        w.discard(writer)
+                        
                         try:
                             self.unregister(writer)
                         except KeyError:
                             pass
                     remove.clear()
-                    
+                
                 if collected_r or collected_w:
                     return collected_r, collected_w, EMPTY
                 

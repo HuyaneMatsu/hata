@@ -5304,10 +5304,7 @@ class ScarletExecutorCB(object):
         
         active = parent._active
         
-        try:
-            active.remove(future)
-        except KeyError:
-            pass
+        active.discard(future)
         
         try:
             future.result()

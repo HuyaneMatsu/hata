@@ -32,7 +32,7 @@ for sub_module_name, feature_names, extra_features in (
         ('constants', None, None),
         ('coroutines', (
             'coroutine',
-            'is_coroutine_function',
+            'iscoroutinefunction',
             'iscoroutine',
                 ), (
             ('_DEBUG', False), # Required by aiohttp 3.8
@@ -197,3 +197,7 @@ del feature_names
 del module_name
 del module
 del asyncio
+
+from .. import register_library_extension
+register_library_extension('HuyaneMatsu.asyncio')
+del register_library_extension

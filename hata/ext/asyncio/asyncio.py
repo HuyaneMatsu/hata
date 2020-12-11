@@ -355,6 +355,13 @@ class Future:
     def __subclasscheck__(cls, klass):
         return issubclass(klass, HataFuture) or (klass is cls)
 
+# get_loop is new in python 3.7 and required by aiosqlalchemy
+def asyncio_get_loop(self):
+    return self._loop
+
+HataFuture.get_loop = asyncio_get_loop
+del asyncio_get_loop
+
 
 def wrap_future(future, *, loop=None):
     raise NotImplementedError

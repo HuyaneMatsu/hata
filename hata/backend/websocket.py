@@ -2045,10 +2045,7 @@ class WSServer(object):
         protocol : ``WSServerProtocol`` or `Any`
             The disconnected server side websocket.
         """
-        try:
-            self.websockets.remove(protocol)
-        except KeyError:
-            pass
+        self.websockets.discard(protocol)
     
     def is_serving(self):
         """

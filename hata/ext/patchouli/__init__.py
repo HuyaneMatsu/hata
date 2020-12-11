@@ -12,3 +12,7 @@ __all__ = (
     *qualpath.__all__,
     *builder_html_extended.__all__
         )
+
+from .. import register_library_extension
+register_library_extension('HuyaneMatsu.patchouli')
+del register_library_extension

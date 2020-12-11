@@ -684,10 +684,7 @@ class Command(object):
                 aliases_processed.add(alters_sub[0])
                 alters.update(alters_sub)
             
-            try:
-                aliases_processed.remove(name)
-            except KeyError:
-                pass
+            aliases_processed.discard(name)
             
             if aliases_processed:
                 aliases_processed = sorted(aliases_processed)
@@ -1002,7 +999,71 @@ class Command(object):
         """Returns the command's name."""
         return self.name
     
+    def __hash__(self):
+        """Returns the command's hash."""
+        hash_value = hash(self.name)
+        
+        command = self.command
+        try:
+            command_hash_value = hash(command)
+        except TypeError:
+            command_hash_value = object.__hash__(command)
+        hash_value ^= command_hash_value
+        
+        category_hint = self._category_hint
+        if (category_hint is not None):
+            hash_value ^= hash(category_hint)
+        
+        aliases = self.aliases
+        if (aliases is not None):
+            for alias in aliases:
+                hash_value ^= hash(alias)
+        
+        checks = self.checks
+        if (checks is not None):
+            for check in checks:
+                try:
+                    check_hash = hash(check)
+                except TypeError:
+                    check_hash = object.__hash__(check)
+                hash_value ^= check_hash
+        
+        wrappers = self._wrappers
+        if (wrappers is not None):
+            if isinstance(wrappers, list):
+                for wrapper in wrappers:
+                    try:
+                        wrapper_hash = hash(wrapper)
+                    except TypeError:
+                        wrapper_hash = object.__hash__(wrapper)
+                    hash_value ^= wrapper_hash
+            else:
+                try:
+                    wrapper_hash = hash(wrappers)
+                except TypeError:
+                    wrapper_hash = object.__hash__(wrappers)
+                hash_value ^= wrapper_hash
+        
+        parser_failure_handler = self._parser_failure_handler
+        if (parser_failure_handler is not None):
+            try:
+                parser_failure_handler_hash = hash(parser_failure_handler)
+            except TypeError:
+                parser_failure_handler_hash = object.__hash__(parser_failure_handler)
+            hash_value ^= parser_failure_handler_hash
+        
+        description = self.description
+        if (description is not None):
+            try:
+                description_hash = hash(description)
+            except TypeError:
+                description_hash = hash(description)
+            hash_value ^= description_hash
+        
+        return hash_value
+    
     def __eq__(self, other):
+        """Returns whether two commands are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -1796,6 +1857,49 @@ def test_name_rule(rule, rule_name, nullable):
             f'{result.__class__.__name__}')
 
 
+def test_precheck(precheck):
+    """
+    precheck : `callable`
+        Function, which desides whether a received message should be processed.
+        
+        The following parameters are passed to it:
+        +-----------+---------------+
+        | Name      | Type          |
+        +===========+===============+
+        | client    | ``Client``    |
+        +-----------+---------------+
+        | message   | ``Message``   |
+        +-----------+---------------+
+        
+        Should return the following parameters:
+        +-------------------+-----------+
+        | Name              | Type      |
+        +===================+===========+
+        | should_process    | `bool`    |
+        +-------------------+-----------+
+    
+    Raises
+    ------
+    TypeError
+        - If `precheck` accepts bad amount of arguments.
+        - If `precheck` is async.
+    """
+    analyzer = CallableAnalyzer(precheck)
+    if analyzer.is_async():
+        raise TypeError('`precheck` should not be given as `async` function.')
+    
+    min_, max_ = analyzer.get_non_reserved_positional_argument_range()
+    if min_ > 2:
+        raise TypeError(f'`precheck` should accept `2` arguments, meanwhile the given callable expects at '
+            f'least `{min_!r}`, got `{precheck!r}`.')
+    
+    if min_ != 2:
+        if max_ < 2:
+            if not analyzer.accepts_args():
+                raise TypeError(f'`precheck` should accept `2` arguments, meanwhile the given callable expects '
+                    f'up to `{max_!r}`, got `{precheck!r}`.')
+
+
 class CommandProcesser(EventWaitforBase):
     """
     A predefined class to help out the bot devs with an already defined `message_create` event.
@@ -2065,20 +2169,7 @@ class CommandProcesser(EventWaitforBase):
         if precheck is None:
             precheck = cls._default_precheck
         else:
-            analyzer = CallableAnalyzer(precheck)
-            if analyzer.is_async():
-                raise TypeError('`precheck` should not be given as `async` function.')
-            
-            min_, max_ = analyzer.get_non_reserved_positional_argument_range()
-            if min_ > 2:
-                raise TypeError(f'`precheck` should accept `2` arguments, meanwhile the given callable expects at '
-                    f'least `{min_!r}`, got `{precheck!r}`.')
-            
-            if min_ != 2:
-                if max_ < 2:
-                    if not analyzer.accepts_args():
-                        raise TypeError(f'`precheck` should accept `2` arguments, meanwhile the given callable expects '
-                            f'up to `{max_!r}`, got `{precheck!r}`.')
+            test_precheck(precheck)
         
         self = object.__new__(cls)
         self._category_name_rule = category_name_rule
@@ -2739,7 +2830,7 @@ class CommandProcesser(EventWaitforBase):
         if (command_name_rule is not None):
             command.display_name = command_name_rule(command.name)
     
-    def _remove_command(self, func, name):
+    def _remove_command(self, func, name=None):
         """
         Tries to remove the given command from the command porcesser.
         
@@ -2747,13 +2838,13 @@ class CommandProcesser(EventWaitforBase):
         ----------
         func : ``Command``
             The command to remove.
-        name : `None` or  `str`
-            The command's respective name.
+        name : `None` or  `str`, Optional
+            The command's respective name. Defaults to `None`.
         
         Raises
         ------
             - If `name` was not given as `None`, neither as 1 of it's aliases.
-            _ If there is no command added with the given `name`.
+            - If there is no command added with the given `name`.
             - If the added command with the given `name` is different.
         """
         commands = self.commands
@@ -3395,6 +3486,47 @@ class CommandProcesser(EventWaitforBase):
     if DOCS_ENABLED:
         command_name_rule.__doc__ = ("""
         A get-set-del property for changing the command processer's command name rule.
+        """)
+    
+    def _get_precheck(self):
+        return self._precheck
+    
+    def _set_precheck(self, precheck):
+        if precheck is None:
+            precheck = self.__class__._default_precheck
+        else:
+            test_precheck(precheck)
+        
+        self._precheck = precheck
+    
+    def _del_precheck(self):
+        self._precheck = self.__class__._default_precheck
+    
+    precheck = property(_get_precheck, _set_precheck, _del_precheck)
+    del _get_precheck, _set_precheck, _del_precheck
+    
+    if DOCS_ENABLED:
+        precheck.__doc__ = ("""
+        A get-set-del property for changing the command processer's precheck.
+        
+        Precheck is a function, which desides whether a reveived message should be processed. Defaults to
+        ``._default_precheck``.
+        
+        The following parameters are passed to it:
+        +-----------+---------------+
+        | Name      | Type          |
+        +===========+===============+
+        | client    | ``Client``    |
+        +-----------+---------------+
+        | message   | ``Message``   |
+        +-----------+---------------+
+        
+        Should return the following values:
+        +-------------------+-----------+
+        | Name              | Type      |
+        +===================+===========+
+        | should_process    | `bool`    |
+        +-------------------+-----------+
         """)
 
 

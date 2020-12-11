@@ -108,7 +108,7 @@ class Client(UserBase):
     verified : `bool`
         Whether the email of the client is verified.
     application : ``Application``
-        The bot account's application. The application data of the client is requested menwhile it logs in.
+        The bot account's application. The application data of the client is requested meanwhile it logs in.
     events : ``EventDescriptor``
         Contains the event handlers of the client. New event handlers can be added through it as well.
     gateway : ``DiscordGateway`` or ``DiscordGatewaySharder``
@@ -2623,7 +2623,7 @@ class Client(UserBase):
             - If `type_` was given, but the given channel is not ``ChannelText`` instance.
             - If `type_` was not given as `int` instance.
             - If `type_` cannot be interchanged to the given value.
-            - If `snfw` was given meanwhile the channel is not ``ChannelText`` or ``ChannelStore`` instance.
+            - If `nsfw` was given meanwhile the channel is not ``ChannelText`` or ``ChannelStore`` instance.
             - If `nsfw` was not given as `bool`.
             - If `slowmode` was given, but the channel is not ``ChannelText`` instance.
             - If `slowmode` was not given as `int` instance.
@@ -2830,7 +2830,7 @@ class Client(UserBase):
             - If `topic` was not given as `str` instance.
             - If `topic`'s length is over `1024`.
             - If `topic` was given, but the respective channel type is not ``ChannelText``.
-            - If `snfw` was given meanwhile the respective channel type is not ``ChannelText`` or ``ChannelStore``.
+            - If `nsfw` was given meanwhile the respective channel type is not ``ChannelText`` or ``ChannelStore``.
             - If `nsfw` was not given as `bool`.
             - If `slowmode` was given, but the respective channel type is not ``ChannelText``.
             - If `slowmode` was not given as `int` instance.
@@ -6538,18 +6538,12 @@ class Client(UserBase):
                                 f'`{GuildFeature.__name__}` or `str` elements, but element `{index!r}` is '
                                 f'{feature.__class__.__name__}; {feature!r}.')
                         
-                        try:
-                            features.remove(feature)
-                        except KeyError:
-                            pass
+                        features.discard(feature)
                         continue
                     
                     break # End GOTO
                 
-                try:
-                    features.remove(feature)
-                except KeyError:
-                    pass
+                features.discard(feature)
                 break # End GOTO
             
             data['features'] = features
@@ -10948,10 +10942,7 @@ class Client(UserBase):
             else:
                 user = user.id
             
-            try:
-                additional_owner_ids.remove(user)
-            except KeyError:
-                pass
+            additional_owner_ids.discard(user)
     
     @property
     def owners(self):

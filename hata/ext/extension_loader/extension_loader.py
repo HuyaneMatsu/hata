@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__all__ = ('EXTENSION_LOADER', 'ExtensionError', 'ExtensionLoader', )
+__all__ = ('EXTENSION_LOADER', 'EXTENSIONS', 'ExtensionError', 'ExtensionLoader', )
 
 import sys
 from io import StringIO
@@ -13,6 +13,8 @@ from ...backend.futures import is_coroutine_function as is_coro, Task
 from ...backend.analyzer import CallableAnalyzer
 
 from ...discord.client_core import KOKORO
+
+from .snapshot import take_snapshot, calculate_snapshot_difference, revert_snapshot
 
 EXTENSIONS = WeakValueDictionary()
 
@@ -111,15 +113,15 @@ def _validate_entry_or_exit(point):
     if callable(point):
         analyzer = CallableAnalyzer(point)
         min_, max_ = analyzer.get_non_reserved_positional_argument_range()
-        if min_>1:
+        if min_ > 1:
             raise TypeError(f'`{point!r}` excepts at least `{min_!r}` non reserved arguments, meanwhile the event '
                 'expects to pass `1`.')
         
-        if min_==1:
+        if min_ == 1:
             return True
         
         #min<expected
-        if max_>=1:
+        if max_ >= 1:
             return True
         
         if analyzer.accepts_args():
@@ -151,6 +153,8 @@ class Extension(object):
         The extension's module. Set as `module` object if it the extension was already loaded.
     _locked : `bool`
         The internal slot used for the ``.locked`` property.
+    _snapshot_difference : `None` or `list` of `tuple` (``Client``, `list` of `tuple` (`str`, `Any`))
+        Snapshot difference if applicable. Defaults to `None`.
     _spec : `ModuleSpec`
         The module specification for the extension's module's import system related state.
     _state : `int`
@@ -164,11 +168,15 @@ class Extension(object):
         +---------------------------+-------+
         | EXTENSION_STATE_UNLOADED  | 2     |
         +---------------------------+-------+
+    _take_snapshot : `bool`
+        Whether snapshot difference should be taken.
     """
     __slots__ = ('__weakref__', '_added_variable_names', '_default_variables', '_entry_point', '_exit_point',
-        '_extend_default_variables', '_lib', '_locked', '_spec', '_state', )
+        '_extend_default_variables', '_lib', '_locked', '_snapshot_difference', '_spec', '_state',
+        '_take_snapshot', )
     
-    def __new__(cls, name, entry_point, exit_point, extend_default_variables, locked, default_variables, ):
+    def __new__(cls, name, entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference,
+            default_variables, ):
         """
         Creates an extension with the given parameters. If an extension already exists with the given name, returns
         that.
@@ -185,6 +193,9 @@ class Extension(object):
             Wether the extension should use the loader's default variables or just it's own's.
         locked : `bool`
             Whether the extension should be picked up by the `{}_all` methods of the extension loader.
+        take_snapshot_difference: `bool`
+            Whether snapshots should be taken before and after loading an extension, and when teh extension is unloaded,
+            the snapshot difference should be reverted.
         default_variables : `None` or `HybridValueDictionary` of (`str`, `Any`) items
             An optionally weak value dictionary to store objects for asigning them to modules before loading them.
             If would be empty, is set as `None` instead.
@@ -217,7 +228,9 @@ class Extension(object):
         self._locked = locked
         self._default_variables = default_variables
         self._added_variable_names = []
-        EXTENSIONS[name]= self
+        self._take_snapshot = take_snapshot_difference
+        self._snapshot_difference = None
+        EXTENSIONS[name] = self
         
         return self
     
@@ -443,8 +456,16 @@ class Extension(object):
                         setattr(lib, name, value)
                         added_variable_names.append(name)
                 
+                if self._take_snapshot:
+                    snapshot_old = take_snapshot()
+                
                 spec.loader.exec_module(lib)
                 sys.modules[spec.name] = lib
+            
+                if self._take_snapshot:
+                    snapshot_new = take_snapshot()
+                    
+                    self._snapshot_difference = calculate_snapshot_difference(snapshot_old, snapshot_new)
             
             self._lib = lib
             
@@ -471,7 +492,15 @@ class Extension(object):
                     setattr(lib, name, value)
                     added_variable_names.append(name)
             
+            if self._take_snapshot:
+                snapshot_old = take_snapshot()
+            
             reload_module(lib)
+            
+            if self._take_snapshot:
+                snapshot_new = take_snapshot()
+                
+                self._snapshot_difference = calculate_snapshot_difference(snapshot_old, snapshot_new)
             
             self._state = EXTENSION_STATE_LOADED
             return lib
@@ -491,6 +520,12 @@ class Extension(object):
             return None
         
         if state == EXTENSION_STATE_LOADED:
+            
+            snapshot_difference = self._snapshot_difference
+            if (snapshot_difference is not None):
+                self._snapshot_difference = None
+                revert_snapshot(snapshot_difference)
+            
             self._state = EXTENSION_STATE_UNLOADED
             return self._lib
         
@@ -1008,7 +1043,8 @@ class ExtensionLoader(object):
         """
         self._default_variables.clear()
     
-    def add(self, name, entry_point=None, exit_point=None, extend_default_variables=True, locked=False, **variables):
+    def add(self, name, entry_point=None, exit_point=None, extend_default_variables=True, locked=False,
+            take_snapshot_difference=True, **variables):
         """
         Adds an extension to the extension laoder
         
@@ -1022,6 +1058,8 @@ class ExtensionLoader(object):
             Extension specific exit point, to use over the extension loader's default.
         locked : `bool`
             Whether the given extension(s) should not be affected by `.{}_all` methods.
+        take_snapshot_difference : `bool`
+            Whether snapshot feature should be used.
         **variables : Keyword arguments
             Variables to asign to an extension(s)'s module before they are loaded.
         
@@ -1100,7 +1138,7 @@ class ExtensionLoader(object):
             
             for name in names:
                 extension = Extension(name, entry_point, exit_point, extend_default_variables, locked,
-                    default_variables)
+                    take_snapshot_difference, default_variables)
                 
                 self.extensions[name] = extension
                 
@@ -1115,7 +1153,8 @@ class ExtensionLoader(object):
             raise TypeError(f'`{self.__class__.__name__}.add` expected `str` or `iterable of str` as `name`, got '
                 f'`{name_type.__name__}`.')
         
-        extension = Extension(name, entry_point, exit_point, extend_default_variables, locked, default_variables)
+        extension = Extension(name, entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference,
+            default_variables)
         
         self.extensions[name] = extension
         
@@ -1221,6 +1260,8 @@ class ExtensionLoader(object):
             Extension specific exit point, to use over the extension loader's default.
         locked : `bool`
             Whether the given extension(s) should not be affected by `.{}_all` methods.
+        take_snapshot_difference : `bool`
+            Whether snapshot feature should be used.
         **variables : Keyword arguments
             Variables to asign to an extension(s)'s module before they are loaded.
         

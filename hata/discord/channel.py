@@ -696,7 +696,7 @@ class ChannelTextBase:
             channel.messages = deque((old_messages[i] for i in range(limit)), maxlen=limit)
         channel._message_keep_limit = limit
     
-    message_keep_limit = property(_get_message_keep_limit,_set_message_keep_limit)
+    message_keep_limit = property(_get_message_keep_limit, _set_message_keep_limit)
     del _get_message_keep_limit, _set_message_keep_limit
     # If opt level is under2, set docstring
     if DOCS_ENABLED:
@@ -940,10 +940,7 @@ class ChannelTextBase:
                     del messages[index]
                     if self._turn_message_keep_limit_on_at:
                         if len(messages) < self._message_keep_limit:
-                            try:
-                                TURN_MESSAGE_LIMITING_ON.remove(self)
-                            except KeyError:
-                                pass
+                            TURN_MESSAGE_LIMITING_ON.discard(self)
                             self._turn_message_keep_limit_on_at = 0.0
                             self._switch_to_limited()
                     
@@ -1051,10 +1048,7 @@ class ChannelTextBase:
         
         if self._turn_message_keep_limit_on_at:
             if len(messages) < self._message_keep_limit:
-                try:
-                    TURN_MESSAGE_LIMITING_ON.remove(self)
-                except KeyError:
-                    pass
+                TURN_MESSAGE_LIMITING_ON.discard(self)
                 self._turn_message_keep_limit_on_at = 0.0
                 self._switch_to_limited()
         

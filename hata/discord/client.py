@@ -5345,19 +5345,34 @@ class Client(UserBase):
         
         Parameters
         ----------
-        message : ``Message`` object
+        message : ``Message``, ``MessageRepr`` or ``MessageReference``
             The message from which the reactions will be removed.
         emoji : ``Emoji`` object
             The reaction to remove.
         
         Raises
         ------
+        TypeError
+            If `message` was not givne neither as ``Message``, ``MessageRepr`` nor ``MessageReference`` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        await self.http.reaction_delete_emoji(message.channel.id, message.id, emoji.as_reaction)
+        if isinstance(message, Message):
+            message_id = message.id
+            channel_id = message.channel.id
+        elif isinstance(message, MessageRepr):
+            message_id = message.id
+            channel_id = message.channel.id
+        elif isinstance(message, MessageReference):
+            channel_id = message.channel_id
+            message_id = message.message_id
+        else:
+            raise TypeError(f'`message` can be given as  `{Message.__name__}`, `{MessageRepr.__name__}` or as '
+                f'`{MessageReference.__name__}` instance, got {message!r}.')
+        
+        await self.http.reaction_delete_emoji(channel_id, message_id, emoji.as_reaction)
     
     async def reaction_delete_own(self, message, emoji):
         """
@@ -5367,19 +5382,34 @@ class Client(UserBase):
         
         Parameters
         ----------
-        message : ``Message`` object
+        message : ``Message``, ``MessageRepr`` or ``MessageReference``
             The message from which the reaction will be removed.
         emoji : ``Emoji`` object
             The emoji to remove.
         
         Raises
         ------
+        TypeError
+            If `message` was not givne neither as ``Message``, ``MessageRepr`` nor ``MessageReference`` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        await self.http.reaction_delete_own(message.channel.id, message.id, emoji.as_reaction)
+        if isinstance(message, Message):
+            message_id = message.id
+            channel_id = message.channel.id
+        elif isinstance(message, MessageRepr):
+            message_id = message.id
+            channel_id = message.channel.id
+        elif isinstance(message, MessageReference):
+            channel_id = message.channel_id
+            message_id = message.message_id
+        else:
+            raise TypeError(f'`message` can be given as  `{Message.__name__}`, `{MessageRepr.__name__}` or as '
+                f'`{MessageReference.__name__}` instance, got {message!r}.')
+        
+        await self.http.reaction_delete_own(channel_id, message_id, emoji.as_reaction)
     
     async def reaction_clear(self, message):
         """
@@ -5389,17 +5419,32 @@ class Client(UserBase):
         
         Parameters
         ----------
-        message : ``Message`` object
+        message : ``Message``, ``MessageRepr`` or ``MessageReference``
             The message from which the reactions will be cleared.
         
         Raises
         ------
+        TypeError
+            If `message` was not givne neither as ``Message``, ``MessageRepr`` nor ``MessageReference`` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        await self.http.reaction_clear(message.channel.id, message.id)
+        if isinstance(message, Message):
+            message_id = message.id
+            channel_id = message.channel.id
+        elif isinstance(message, MessageRepr):
+            message_id = message.id
+            channel_id = message.channel.id
+        elif isinstance(message, MessageReference):
+            channel_id = message.channel_id
+            message_id = message.message_id
+        else:
+            raise TypeError(f'`message` can be given as  `{Message.__name__}`, `{MessageRepr.__name__}` or as '
+                f'`{MessageReference.__name__}` instance, got {message!r}.')
+        
+        await self.http.reaction_clear(channel_id, message_id)
     
     # before is not supported
     
@@ -5414,77 +5459,96 @@ class Client(UserBase):
         
         Parameters
         ----------
-        message : ``Message`` object
+        message : ``Message``, ``MessageRepr`` or ``MessageReference``
             The message, what's reactions will be requested.
         emoji : ``Emoji`` object
             The emoji, what's reacters will be requested.
-        limit : `int`
-            The amount of users to request. Can be between `1` and `100`. Defaults to 25 by Discord.
+        limit : `None` `int`
+            The amount of users to request. Can be in range [1:100]. Defaults to 25 by Discord.
         after : `int`, ``DiscordEntity`` or `datetime`, Optional
             The timestamp after the message's reacters were created.
         
         Returns
         -------
-        users : `list` of (``Client`` or ``User``) objects
+        users : `list` of (``Client``, ``User``)
         
         Raises
         ------
         TypeError
+            - If `message` was not givne neither as ``Message``, ``MessageRepr`` nor ``MessageReference`` instance.
             - If `after` was passed with an unexpected type.
-            - If `limit` was not passed as `int`.
         ValueError
             If `limit` was passed as `int`, but is under `1` or over `100`.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `limit` was not given neitehr as `None` or `int` instance.
+            - If `limit` is out of range [1:100]
         
         Notes
         -----
         `before` argument is not supported by Discord.
         """
-        reactions = message.reactions
-        try:
-            line = reactions[emoji]
-        except KeyError:
-            return []
-        
-        if line.unknown:
-            data = {}
-            if (limit is not None):
-                if type(limit) is not int:
-                    raise TypeError(f'`limit` can be `None` or type `int`, got `{limit!r}`.')
+        if limit is None:
+            limit = 25
+        else:
+            if __debug__:
+                if not isinstance(limit, int):
+                    raise AssertionError(f'`limit` can be given as `None` or `int` instance, got '
+                        f'{limit.__class__.__name__}.')
                 
                 if limit < 1 or limit > 100:
-                    raise ValueError(f'`limit` can be between 1-100, got `{limit!r}`.')
-                
-                data['limit'] = limit
-            
-            if (after is not None):
-                data['after'] = log_time_converter(after)
-            
-            # if (before is not None):
-            #     data['before'] = log_time_converter(before)
-            
-            data = await self.http.reaction_users(message.channel.id, message.id, emoji.as_reaction, data)
-            
-            users = [User(user_data) for user_data in data]
-            reactions._update_some_users(emoji, users)
-            
+                    raise AssertionError(f'`limit` can be between in range [1:100], got `{limit!r}`.')
+        
+        if isinstance(message, Message):
+            message_id = message.id
+            channel_id = message.channel.id
+            reactions = message.reactions
+        elif isinstance(message, MessageRepr):
+            message_id = message.id
+            channel_id = message.channel.id
+            reactions = None
+        elif isinstance(message, MessageReference):
+            channel_id = message.channel_id
+            message_id = message.message_id
+            reactions = None
         else:
-            # if we know every reacters:
-            if limit is None:
-                limit = 25
-            elif type(limit) is not int:
-                raise TypeError(f'`limit` can be `None` or type `int`, got `{limit!r}`')
-            elif limit < 1 or limit > 100:
-                raise ValueError(f'`limit` can be between 1-100, got `{limit!r}`')
+            raise TypeError(f'`message` can be given as  `{Message.__name__}`, `{MessageRepr.__name__}` or as '
+                f'`{MessageReference.__name__}` instance, got {message!r}.')
+        
+        if (reactions is not None):
+            try:
+                line = reactions[emoji]
+            except KeyError:
+                return []
             
-            # before = 9223372036854775807 if before is None else log_time_converter(before)
-            after = 0 if after is None else log_time_converter(after)
-            users = line.filter_after(limit, after)
+            if not line.unknown:
+                after = 0 if after is None else log_time_converter(after)
+                # before = 9223372036854775807 if before is None else log_time_converter(before)
+                users = line.filter_after(limit, after)
+                return users
+        
+        data = {}
+        if limit != 25:
+            data['limit'] = limit
+        
+        if (after is not None):
+            data['after'] = log_time_converter(after)
+        
+        # if (before is not None):
+        #     data['before'] = log_time_converter(before)
+        
+        data = await self.http.reaction_users(channel_id, message_id, emoji.as_reaction, data)
+        
+        users = [User(user_data) for user_data in data]
+        
+        if (reactions is not None):
+            reactions._update_some_users(emoji, users)
         
         return users
+
     
     async def reaction_users_all(self, message, emoji):
         """
@@ -5497,7 +5561,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        message : ``Message`` object
+        message : ``Message``, ``MessageRepr`` or ``MessageReference``
             The message, what's reactions will be requested.
         emoji : ``Emoji`` object
             The emoji, what's reacters will be requested.
@@ -5508,37 +5572,58 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `message` was not givne neither as ``Message``, ``MessageRepr`` nor ``MessageReference`` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        reactions = message.reactions
-        if not reactions:
-            return []
-        
-        try:
-            line = reactions[emoji]
-        except KeyError:
-            return []
-        
-        if line.unknown:
-            limit = len(line)
-            data = {'limit': 100, 'after': 0}
-            users = []
-            reaction = emoji.as_reaction
-            
-            while limit > 0:
-                user_datas = await self.http.reaction_users(message.channel.id, message.id, reaction, data)
-                users.extend(User(user_data) for user_data in user_datas)
-                
-                data['after'] = users[-1].id
-                limit -= 100
-            
-            reactions._update_all_users(emoji, users)
+        if isinstance(message, Message):
+            message_id = message.id
+            channel_id = message.channel.id
+            reactions = message.reactions
+        elif isinstance(message, MessageRepr):
+            message_id = message.id
+            channel_id = message.channel.id
+            reactions = None
+        elif isinstance(message, MessageReference):
+            channel_id = message.channel_id
+            message_id = message.message_id
+            reactions = None
         else:
-            # we copy
-            users = list(line)
+            raise TypeError(f'`message` can be given as  `{Message.__name__}`, `{MessageRepr.__name__}` or as '
+                f'`{MessageReference.__name__}` instance, got {message!r}.')
+        
+        if (reactions is not None):
+            reactions = message.reactions
+            if not reactions:
+                return []
+            
+            try:
+                line = reactions[emoji]
+            except KeyError:
+                return []
+            
+            if not line.unknown:
+                users = list(line)
+                return users
+        
+        data = {'limit': 100, 'after': 0}
+        users = []
+        reaction = emoji.as_reaction
+            
+        while True:
+            user_datas = await self.http.reaction_users(channel_id, message_id, reaction, data)
+            users.extend(User(user_data) for user_data in user_datas)
+            
+            if len(user_datas) < 100:
+                break
+            
+            data['after'] = users[-1].id
+        
+        if (reactions is not None):
+            reactions._update_all_users(emoji, users)
         
         return users
     

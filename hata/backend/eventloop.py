@@ -11,7 +11,7 @@ from collections import deque
 from ssl import SSLContext, create_default_context
 from stat import S_ISSOCK
 
-from .utils import alchemy_incendiary, WeakReferer, weakmethod, method, WeakCallable, DocProperty, DOCS_ENABLED
+from .utils import alchemy_incendiary, WeakReferer, weakmethod, method, WeakCallable, doc_property, DOCS_ENABLED
 from .futures import Future, Task, Gatherer, render_exc_to_list, is_coroutine, FutureAsyncWrapper, WaitTillFirst, \
     CancelledError
 from .transprotos import SSLProtocol, _SelectorSocketTransport, _SelectorDatagramTransport
@@ -1582,7 +1582,7 @@ class EventThreadRunDescriptor(object):
         If the event loop is already closed, raises ``RuntimeError``.
         """)
         
-        __doc__ = DocProperty()
+        __doc__ = doc_property()
     
     def __get__(self, obj, type_):
         if obj is None:
@@ -4177,5 +4177,5 @@ del subprocess
 del IS_UNIX
 del module_futures
 del module_executor
-del DocProperty
+del doc_property
 del DOCS_ENABLED

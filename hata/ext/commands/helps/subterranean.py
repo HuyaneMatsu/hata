@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 __all__ = ('SubterraneanHelpCommand', )
 
-from ....backend.utils import DOCS_ENABLED, DocProperty
+from ....backend.utils import DOCS_ENABLED, doc_property
 from ....backend.futures import is_awaitable
 from ....backend.analyzer import CallableAnalyzer
 from ....discord.embed import Embed
@@ -330,7 +330,7 @@ class SubterraneanHelpCommand(object):
         """
         return SubterraneanHelpHelp(self)
     
-    __doc__ = DocProperty()
+    __doc__ = doc_property()
     
     __slots__ = ('color_getter', 'embed_postprocessor', 'prefix')
     
@@ -1041,4 +1041,4 @@ del Guild
 del Message
 del Invite
 del DOCS_ENABLED
-del DocProperty
+del doc_property

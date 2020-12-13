@@ -132,6 +132,7 @@ def _validate_entry_or_exit(point):
     
     return False
 
+
 class Extension(object):
     """
     Represents an extension.
@@ -1662,28 +1663,10 @@ class ExtensionLoader(object):
             if entry_point is None:
                 return
         
-        if not isinstance(entry_point,str):
-            try:
-                
-                if is_coro(entry_point):
-                    await entry_point(lib)
-                else:
-                    entry_point(lib)
-            
-            except BaseException as err:
-                message = await KOKORO.run_in_executor(alchemy_incendiary(
-                    self._render_exc, (err, [
-                    'Exception occured meanwhile entering an extension: `', extension.name,
-                    '`.\nAt entry_point:', repr(entry_point), '\n\n',],
-                        )))
-                
-                raise ExtensionError(message) from None
-            
-            return
-        
-        entry_point = getattr(lib, entry_point, None)
-        if entry_point is None:
-            return # None is OK
+        if isinstance(entry_point, str):
+            entry_point = getattr(lib, entry_point, None)
+            if entry_point is None:
+                return
         
         try:
             
@@ -1694,7 +1677,7 @@ class ExtensionLoader(object):
         
         except BaseException as err:
             message = await KOKORO.run_in_executor(alchemy_incendiary(
-                self._render_exc, (err,[
+                self._render_exc, (err, [
                 'Exception occured meanwhile entering an extension: `', extension.name,
                 '`.\nAt entry_point:', repr(entry_point), '\n\n',],
                     )))
@@ -1731,14 +1714,19 @@ class ExtensionLoader(object):
         
         if lib is None:
             return # not loaded
-
-        exit_point = extension._exit_point
-        if exit_point is None:
-            exit_point = self._default_exit_point
-            if exit_point is None:
-                return
         
-        if not isinstance(exit_point, str):
+        try:
+            exit_point = extension._exit_point
+            if exit_point is None:
+                exit_point = self._default_exit_point
+                if exit_point is None:
+                    return
+            
+            if isinstance(exit_point, str):
+                exit_point = getattr(lib, exit_point, None)
+                if exit_point is None:
+                    return
+            
             try:
                 
                 if is_coro(exit_point):
@@ -1754,28 +1742,19 @@ class ExtensionLoader(object):
                         )))
                 
                 raise ExtensionError(message) from None
+        
+        finally:
+            extension._unasign_variables()
             
-        else:
-            exit_point = getattr(lib, exit_point, None)
-            if (exit_point is not None):
-                try:
-                    
-                    if is_coro(exit_point):
-                        await exit_point(lib)
-                    else:
-                        exit_point(lib)
-                    
-                except BaseException as err:
-                    message = await KOKORO.run_in_executor(alchemy_incendiary(
-                        self._render_exc, (err, [
-                        'Exception occured meanwhile exiting an extension: `', extension.name,
-                        '`.\nAt exit_point:', repr(exit_point), '\n\n',],
-                            )))
-                    
-                    raise ExtensionError(message) from None
-        
-        extension._unasign_variables()
-        
+            keys = []
+            lib_globals = lib.__dict__
+            for key in lib_globals:
+                if (not key.startswith('__')) and (not key.endswith('__')):
+                    keys.append(key)
+            
+            for key in keys:
+                del lib_globals[key]
+    
     @staticmethod
     def _render_exc(exception, header):
         """

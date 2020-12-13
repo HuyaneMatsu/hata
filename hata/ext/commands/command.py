@@ -3,7 +3,7 @@ __all__ = ('Category', 'Command', 'CommandProcesser', 'normalize_description', )
 
 import re, reprlib
 
-from ...backend.utils import sortedlist, function, DOCS_ENABLED
+from ...backend.utils import sortedlist, function, DOCS_ENABLED, name_property
 from ...backend.analyzer import CallableAnalyzer
 
 from ...discord.utils import USER_MENTION_RP
@@ -39,6 +39,7 @@ class CommandWrapper(object):
         The rich handler, what is called when the `wrapper` yield `False`. Note that every other value what
         `wrapper` yields will be also passed to the `handler`.
     """
+    __name__ = name_property('CommandWrapper', lambda self: self.wrapped.__name__)
     __slots__ = ('wrapped', 'wrapper', 'handler', )
     def __new__(cls, wrapped, wrapper, handler):
         """
@@ -3531,3 +3532,4 @@ class CommandProcesser(EventWaitforBase):
 
 
 del DOCS_ENABLED
+del name_property

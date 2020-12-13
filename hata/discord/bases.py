@@ -4,7 +4,7 @@ __all__ = ('DiscordEntity', 'ICON_TYPE_ANIMATED', 'ICON_TYPE_NONE', 'ICON_TYPE_S
 
 import sys
 
-from ..backend.utils import _spaceholder, DOCS_ENABLED, DocProperty
+from ..backend.utils import _spaceholder, DOCS_ENABLED, doc_property
 
 id_to_time = NotImplemented
 
@@ -1178,7 +1178,7 @@ class IconSlot(object):
     icon : ``Icon``
     """)
         
-        __doc__ = DocProperty()
+        __doc__ = doc_property()
     
     __slots__ = ('internal_name', 'discord_side_name', 'added_instance_atttributes', 'added_class_attributes')
     
@@ -1503,4 +1503,4 @@ def instance_or_id_to_snowflake(obj, type_, name):
 
 del sys
 del DOCS_ENABLED
-del DocProperty
+del doc_property

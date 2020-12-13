@@ -86,6 +86,7 @@ class VoiceClient(object):
          +------------------+---------------------------+
          
          The ``VoiceClient`` also includes some other predefined function for setting as `call_after`:
+         - ``._play_next``
          - ``._loop_actual``
          - ``._loop_queue``
      
@@ -623,8 +624,9 @@ class VoiceClient(object):
                 source = None
             else:
                 source = player.source
-                if source is not None:
-                    Task(self.play_next(), KOKORO)
+            
+            # Try playing next even if player is `None`.
+            Task(self.play_next(), KOKORO)
         
         elif index < 0:
             source = None
@@ -955,10 +957,6 @@ class VoiceClient(object):
         if player is None:
             # Should not happen, lol
             self.player = AudioPlayer(self, last_source)
-        elif player.done:
-            # If we skipped the audio, `player.done` is set as `True`, so we do not want to repeat.
-            await self._play_next(self, None)
-            return
         else:
             # The audio was over.
             player.set_source(last_source)
@@ -982,13 +980,11 @@ class VoiceClient(object):
         last_source : `None` or ``AudioSource`` instance
             The audio what was played.
         """
-        player = self.player
-        if ((player is None) or (not player.done)) and ((last_source is not None) and last_source.REPEATABLE):
+        if (last_source is not None) and last_source.REPEATABLE:
             # The last source was not skipped an we can repeat it.
             self.queue.append(last_source)
         
         await self._play_next(self, None)
-        return
     
     async def _start_handshake(self):
         """

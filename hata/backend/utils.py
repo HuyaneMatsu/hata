@@ -2,7 +2,7 @@
 __all__ = ('BaseMethodDescriptor', 'KeepType', 'KeyedReferer', 'RemovedDescriptor', 'WeakCallable', 'WeakKeyDictionary',
     'WeakMap', 'WeakReferer', 'WeakValueDictionary', 'alchemy_incendiary', 'any_to_any', 'cached_property',
     'imultidict', 'istr', 'isweakreferable', 'listdifference', 'methodize', 'module_property', 'modulize', 'multidict',
-    'weakmethod', )
+    'name_property', 'weakmethod', )
 
 from types import \
     MethodType              as method, \
@@ -64,7 +64,8 @@ class RemovedDescriptor(object):
 
 DOCS_ENABLED = (RemovedDescriptor.__doc__ is not None)
 
-class DocProperty(object):
+
+class doc_property(object):
     """
     Property to return the classe's docs if called from class, else the given object.
     """
@@ -85,6 +86,39 @@ class DocProperty(object):
     
     def __delete__(self, obj):
         raise AttributeError('can\'t delete attribute')
+
+
+class name_property(object):
+    """
+    Property to return the classe's name if called from the respective class.
+    
+    Attributes
+    ----------
+    class_name : `str`
+        The classe's name.
+    fget : `callable`
+        Callable what's return will be returned, when called from an instance.
+    """
+    __slots__ = ('class_name', 'fget')
+    def __init__(self, name, fget):
+        """
+        Creates a new docs property.
+        """
+        self.class_name = name
+        self.fget = fget
+    
+    def __get__(self, obj, type_):
+        if obj is None:
+            return type_.class_name
+        else:
+            return self.fget(obj)
+    
+    def __set__(self, obj, value):
+        raise AttributeError('can\'t set attribute')
+    
+    def __delete__(self, obj):
+        raise AttributeError('can\'t delete attribute')
+
 
 def any_to_any(container1, container2):
     """
@@ -1350,7 +1384,7 @@ class basemethod(MethodLike):
         """
         return self.__func__.__doc__
     
-    __doc__ = DocProperty()
+    __doc__ = doc_property()
 
 class BaseMethodDescriptor(object):
     """

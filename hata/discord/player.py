@@ -580,6 +580,7 @@ class AudioPlayer(object):
                         await voice_client.call_after(voice_client, source)
                     
                     source = None
+                    self.should_update = True # safety first
                     continue
                 
                 sequence = voice_client._sequence
@@ -643,6 +644,12 @@ class AudioPlayer(object):
         
         finally:
             self.task = None
+            
+            # Force resume if applicable.
+            if voice_client.player is None:
+                queue = voice_client.queue
+                if queue:
+                    voice_client.player = type(self)(voice_client, queue.pop(0))
     
     async def update(self, actual_source):
         """
@@ -656,7 +663,7 @@ class AudioPlayer(object):
         Parameters
         ----------
         actual_source : `None` or ``AudioSource`` instance
-            The actual audiio source of the player.
+            The actual audio source of the player.
         
         Returns
         -------

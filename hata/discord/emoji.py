@@ -706,7 +706,7 @@ class reaction_mapping_line(set):
         new.unknown = self.unknown
         return new
     
-    #executes an api request if we know we know all reacters
+    # executes an api request if we know we know all reacters
     def filter_after(self, limit, after):
         """
         If we know all the reacters, then insctead of executing a Discord API request we filter the reacters locally

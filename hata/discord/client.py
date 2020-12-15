@@ -3298,11 +3298,11 @@ class Client(UserBase):
             pass
         elif isinstance(embed, EmbedBase):
             pass
-        elif isinstance(embed, list):
+        elif isinstance(embed, (list, tuple)):
             if embed:
                 if __debug__:
                     for index, element in enumerate(embed):
-                        if isinstance(embed, element):
+                        if isinstance(element, EmbedBase):
                             continue
                         
                         raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
@@ -3337,7 +3337,7 @@ class Client(UserBase):
             content = None
         else:
             # Check for list of embeds as well.
-            if isinstance(content, list):
+            if isinstance(content, (list, tuple)):
                 if content:
                     for element in content:
                         if isinstance(element, EmbedBase):
@@ -4712,11 +4712,11 @@ class Client(UserBase):
             pass
         elif isinstance(embed, EmbedBase):
             pass
-        elif isinstance(embed, list):
+        elif isinstance(embed, (list, tuple)):
             if embed:
                 if __debug__:
                     for index, element in enumerate(embed):
-                        if isinstance(embed, element):
+                        if isinstance(element, EmbedBase):
                             continue
                         
                         raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
@@ -4753,7 +4753,7 @@ class Client(UserBase):
             content = ...
         else:
             # Check for list of embeds as well.
-            if isinstance(content, list):
+            if isinstance(content, (list, tuple)):
                 if content:
                     for element in content:
                         if isinstance(element, EmbedBase):
@@ -8804,11 +8804,11 @@ class Client(UserBase):
             pass
         elif isinstance(embed, EmbedBase):
             embed = [embed]
-        elif isinstance(embed, list):
+        elif isinstance(embed, (list, tuple)):
             if embed:
                 if __debug__:
                     for index, element in enumerate(embed):
-                        if isinstance(embed, element):
+                        if isinstance(element, EmbedBase):
                             continue
                         
                         raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
@@ -8844,7 +8844,7 @@ class Client(UserBase):
             content = None
         else:
             # Check for list of embeds as well.
-            if isinstance(content, list):
+            if isinstance(content, (list, tuple)):
                 if content:
                     for element in content:
                         if isinstance(element, EmbedBase):
@@ -9022,11 +9022,11 @@ class Client(UserBase):
             pass
         elif isinstance(embed, EmbedBase):
             embed = [embed]
-        elif isinstance(embed, list):
+        elif isinstance(embed, (list, tuple)):
             if embed:
                 if __debug__:
                     for index, element in enumerate(embed):
-                        if isinstance(embed, element):
+                        if isinstance(element, EmbedBase):
                             continue
                         
                         raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
@@ -9063,7 +9063,7 @@ class Client(UserBase):
             content = ...
         else:
             # Check for list of embeds as well.
-            if isinstance(content, list):
+            if isinstance(content, (list, tuple)):
                 if content:
                     for element in content:
                         if isinstance(element, EmbedBase):

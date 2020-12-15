@@ -23,6 +23,7 @@ setup(
         'hata.backend',
         'hata.discord',
         'hata.discord.bin',
+        'hata.ext',
         'hata.ext.asyncio',
         'hata.ext.commands',
         'hata.ext.commands.helps',

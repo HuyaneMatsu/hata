@@ -1614,7 +1614,7 @@ class DiscordHTTPClient(HTTPClient):
     
     async def guild_prune_estimate(self, guild_id, data):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.guild_prune_estimate, guild_id),
-            METH_GET, f'{API_ENDPOINT}/guilds/{guild_id}/prune',params=data)
+            METH_GET, f'{API_ENDPOINT}/guilds/{guild_id}/prune', params=data)
     
     async def guild_edit(self, guild_id, data, reason):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.guild_edit, guild_id),

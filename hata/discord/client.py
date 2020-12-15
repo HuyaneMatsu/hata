@@ -29,7 +29,7 @@ from .guild import Guild, create_partial_guild, GuildWidget, GuildFeature, Guild
 from .http import DiscordHTTPClient, URLS
 from .http.URLS import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDPOINT
 from .role import Role, PermOW, PERMOW_TYPE_ROLE, PERMOW_TYPE_USER
-from .webhook import Webhook, PartialWebhook
+from .webhook import Webhook, create_partial_webhook
 from .gateway import DiscordGateway, DiscordGatewaySharder
 from .parsers import EventDescriptor, _with_error, IntentFlag, PARSER_DEFAULTS
 from .audit_logs import AuditLog, AuditLogIterator
@@ -3059,7 +3059,7 @@ class Client(UserBase):
         else:
             channel_id = maybe_snowflake(channel)
             if channel_id is None:
-                raise TypeError(f'`channel` can be given as {ChannelTextBase.__name__} or `int` instance, got '
+                raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` or `int` instance, got '
                     f'{channel.__class__.__name__}.')
             
             channel = CHANNELS.get(channel_id)
@@ -3128,7 +3128,7 @@ class Client(UserBase):
         else:
             channel_id = maybe_snowflake(channel)
             if channel_id is None:
-                raise TypeError(f'`channel` can be given as {ChannelTextBase.__name__} or `int` instance, got '
+                raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` or `int` instance, got '
                     f'{channel.__class__.__name__}.')
             
             channel = CHANNELS.get(channel_id)
@@ -3185,7 +3185,7 @@ class Client(UserBase):
         else:
             channel_id = maybe_snowflake(channel)
             if channel_id is None:
-                raise TypeError(f'`channel` can be given as {ChannelTextBase.__name__} or `int` instance, got '
+                raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` or `int` instance, got '
                     f'{channel.__class__.__name__}.')
             
             channel = CHANNELS.get(channel_id)
@@ -3285,7 +3285,8 @@ class Client(UserBase):
                 channel = CHANNELS.get(channel_id)
             else:
                 raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}`, `{Message.__name__}`, '
-                    f'`{MessageRepr.__name__}` or as `{MessageReference.__name__}` instance, got {channel!r}.')
+                    f'`{MessageRepr.__name__}` or as `{MessageReference.__name__}` instance, got '
+                    f'{channel.__class__.__name__}.')
         
         # Embed check order:
         # 1.: None
@@ -3306,14 +3307,14 @@ class Client(UserBase):
                         
                         raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
                             f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
-                            f'{embed!r}.')
+                            f'{embed.__class__.__name__}.')
                 
                 embed = embed[0]
             else:
                 embed = None
         else:
             raise TypeError(f'`embed` was not given as `{EmbedBase.__name__}` instance, neither as a list of '
-                f'{EmbedBase.__name__} instances, got {embed!r}.')
+                f'{EmbedBase.__name__} instances, got {embed.__class__.__name__}.')
         
         # Content check order:
         # 1.: None
@@ -4720,14 +4721,14 @@ class Client(UserBase):
                         
                         raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
                             f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
-                            f'{embed!r}.')
+                            f'{embed.__class__.__name__}.')
                 
                 embed = embed[0]
             else:
                 embed = None
         else:
             raise TypeError(f'`embed` was not given as `{EmbedBase.__name__}` instance, neither as a list of '
-                f'{EmbedBase.__name__} instances, got {embed!r}.')
+                f'{EmbedBase.__name__} instances, got {embed.__class__.__name__}.')
         
         # Content check order:
         # 1.: Elipsis
@@ -4915,7 +4916,7 @@ class Client(UserBase):
         else:
             channel_id = maybe_snowflake(channel)
             if channel_id is None:
-                raise TypeError(f'`channel` can be given as {ChannelTextBase.__name__} or `int` instance, got '
+                raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` or `int` instance, got '
                     f'{channel.__class__.__name__}.')
             
             channel = CHANNELS.get(channel_id)
@@ -5031,7 +5032,7 @@ class Client(UserBase):
         else:
             channel_id = maybe_snowflake(channel)
             if channel_id is None:
-                raise TypeError(f'`channel` can be given as {ChannelTextBase.__name__} or `int` instance, got '
+                raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` or `int` instance, got '
                     f'{channel.__class__.__name__}.')
             
             channel = CHANNELS.get(channel_id)
@@ -5109,7 +5110,7 @@ class Client(UserBase):
         else:
             channel_id = maybe_snowflake(channel)
             if channel_id is None:
-                raise TypeError(f'`channel` can be given as {ChannelTextBase.__name__} or `int` instance, got '
+                raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` or `int` instance, got '
                     f'{channel.__class__.__name__}.')
             
             channel = CHANNELS.get(channel_id)
@@ -5548,7 +5549,7 @@ class Client(UserBase):
             reactions._update_some_users(emoji, users)
         
         return users
-
+    
     
     async def reaction_users_all(self, message, emoji):
         """
@@ -5627,6 +5628,7 @@ class Client(UserBase):
         
         return users
     
+    
     async def reaction_load_all(self, message):
         """
         Requests all the reacters for every emoji on the given message.
@@ -5638,43 +5640,67 @@ class Client(UserBase):
         
         Parameters
         ----------
-        message : ``Message`` object
+        message : ``Message``, ``MessageRepr`` or ``MessageReference``
             The message, what's reactions will be requested.
+        
+        Returns
+        -------
+        message : ``Message``
         
         Raises
         ------
+        TypeError
+            If `message` was not givne neither as ``Message``, ``MessageRepr`` nor ``MessageReference`` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        reactions = message.reactions
-        if not reactions:
-            return
+        if isinstance(message, Message):
+            message_id = message.id
+            channel_id = message.channel.id
+        else:
+            if isinstance(message, MessageRepr):
+                message_id = message.id
+                channel_id = message.channel.id
+            elif isinstance(message, MessageReference):
+                channel_id = message.channel_id
+                message_id = message.message_id
+            else:
+                raise TypeError(f'`message` can be given as  `{Message.__name__}`, `{MessageRepr.__name__}` or as '
+                    f'`{MessageReference.__name__}` instance, got {message!r}.')
+            
+            message = await self.message_get(channel_id, message_id)
         
-        users = []
-        data = {'limit': 100, 'after': 0}
-        for emoji, line in reactions.items():
-            if not line.unknown:
-                continue
+        reactions = message.reactions
+        if reactions:
+            users = []
+            data = {'limit': 100}
             
-            reaction = emoji.as_reaction
-            data['after'] = 0
-            limit = len(line)
-            while limit > 0:
+            for emoji, line in reactions.items():
+                if not line.unknown:
+                    continue
                 
-                user_datas = await self.http.reaction_users(message.channel.id, message.id, reaction, data)
-                users.extend(User(user_data) for user_data in user_datas)
+                reaction = emoji.as_reaction
+                data['after'] = 0
                 
-                data['after'] = users[-1].id
-                limit -= 100
-            
-            message.reactions._update_all_users(emoji, users)
-            users.clear()
+                while True:
+                    user_datas = await self.http.reaction_users(channel_id, message_id, reaction, data)
+                    users.extend(User(user_data) for user_data in user_datas)
+                    
+                    if len(user_datas) < 100:
+                        break
+                    
+                    data['after'] = users[-1].id
+                
+                message.reactions._update_all_users(emoji, users)
+                users.clear()
+        
+        return message
     
     # Guild
     
-    async def guild_preview(self, guild_id):
+    async def guild_preview(self, guild):
         """
         Requests the preview of a public guild.
         
@@ -5682,7 +5708,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild_id : `int`
+        guild : ``Guild`` or `int`
             The id of the guild, what's preview will be requested
         
         Returns
@@ -5691,13 +5717,25 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `guild` was not given neither as ``Guild`` nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
         data = await self.http.guild_preview(guild_id)
         return GuildPreview(data)
+    
     
     async def guild_user_delete(self, guild, user, reason=None):
         """
@@ -5707,21 +5745,45 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild`` object
+        guild : ``Guild`` or `int`
             The guild from where the user will be removed.
-        user : ``User`` or ``Client`` instance
+        user : ``User``, ``Client`` or `int` instance
             The user to delete from the guild.
         reason : `None` or `str`, Optional
             Shows up at the guild's audit logs.
         
         Raises
         ------
+        TypeError
+            - If `guild` was not given neither as ``Guild`` nor `int` instance.
+            - If `user` was not given neither as ``User``, ``Client``, nnor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        await self.http.guild_user_delete(guild.id, user.id, reason)
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        
+        if isinstance(user, (User, Client)):
+            user_id = user.id
+        
+        else:
+            user_id = maybe_snowflake(user)
+            if user_id is None:
+                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, got '
+                    f'{user.__class__.__name__}.')
+        
+        
+        await self.http.guild_user_delete(guild_id, user_id, reason)
+    
     
     async def welcome_screen_get(self, guild):
         """
@@ -5731,7 +5793,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild``
+        guild : ``Guild`` or `int`
             The guild, what's welcome screen will be requested.
         
         Returns
@@ -5740,6 +5802,8 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `guild` was not given neither as ``Guild`` nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -5749,8 +5813,20 @@ class Client(UserBase):
         -----
         If the guild has no welcome screen enabled, will not do any request.
         """
-        if GuildFeature.welcome_screen in guild.features:
-            welcome_screen_data = await self.http.welcome_screen_get(guild.id)
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+            
+            guild = None
+        
+        
+        if (guild is None) or (GuildFeature.welcome_screen in guild.features):
+            welcome_screen_data = await self.http.welcome_screen_get(guild_id)
             if welcome_screen_data is None:
                 welcome_screen = None
             else:
@@ -5768,30 +5844,64 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild`` object
+        guild : ``Guild`` or `int`
             The guild from where the user will be banned.
-        user : ``User`` or ``Client`` instance
+        user : ``User``, ``Client`` or `int` instance
             The user to ban from the guild.
         delete_message_days : `int`, optional
-            How much days back the user's messages should be deleted. Can be between 0 and 7.
+            How much days back the user's messages should be deleted. Can be in range [0:7].
         reason : `None` or `str`, Optional
             Shows up at the guild's audit logs.
         
         Raises
         ------
-        ValueError
-            If `delete_message_days` is negative or over `7`.
+        TypeError
+            - If `guild` was not given neither as ``Guild`` nor `int` instance.
+            - If `user` was not given neither as ``User``, ``Client``, nnor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - `delete_message_days` was not given as `int` instance.
+            - `delete_message_days` is out of range [0:delete_message_days].
         """
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        
+        if isinstance(user, (User, Client)):
+            user_id = user.id
+        
+        else:
+            user_id = maybe_snowflake(user)
+            if user_id is None:
+                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, got '
+                    f'{user.__class__.__name__}.')
+        
+        
+        if __debug__:
+            if not isinstance(delete_message_days, int):
+                raise AssertionError('`delete_message_days` can be given as `int` instance, got '
+                    f'{delete_message_days.__class__.__name__}')
+        
         data = {}
+        
         if delete_message_days:
-            if delete_message_days < 1 or delete_message_days > 7:
-                raise ValueError(f'`delete_message_days` can be between 0-7, got {delete_message_days}')
+            if __debug__:
+                if delete_message_days < 1 or delete_message_days > 7:
+                    raise AssertionError(f'`delete_message_days` can be in range [0:7], got {delete_message_days!r}.')
+            
             data['delete_message_days'] = delete_message_days
-        await self.http.guild_ban_add(guild.id, user.id, data, reason)
+        
+        await self.http.guild_ban_add(guild_id, user_id, data, reason)
+    
     
     async def guild_ban_delete(self, guild, user, reason=None):
         """
@@ -5801,23 +5911,46 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild`` object
+        guild : ``Guild`` or `int`
             The guild from where the user will be unbanned.
-        user : ``User`` or ``Client`` instance
+        user : ``User``, ``Client`` or `int` instance
             The user to unban at the guild.
         reason : `None` or `str`, Optional
             Shows up at the guild's audit logs.
         
         Raises
         ------
+        TypeError
+            - If `guild` was not given neither as ``Guild`` nor `int` instance.
+            - If `user` was not given neither as ``User``, ``Client``, nnor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        await self.http.guild_ban_delete(guild.id, user.id, reason)
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        
+        if isinstance(user, (User, Client)):
+            user_id = user.id
+        
+        else:
+            user_id = maybe_snowflake(user)
+            if user_id is None:
+                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, got '
+                    f'{user.__class__.__name__}.')
+        
+        await self.http.guild_ban_delete(guild_id, user_id, reason)
     
-    async def guild_sync(self, guild_id):
+    
+    async def guild_sync(self, guild):
         """
         Syncs a guild by it's id with the wrapper. Used internally if desync is detected when parsing dispatch events.
         
@@ -5825,8 +5958,8 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild_id : `int`
-            The id of the guild to sync.
+        guild : ``Guild`` or `int`
+            The guild to sync.
 
         Returns
         -------
@@ -5834,16 +5967,26 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `guild` was not given neither as ``Guild`` nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        # sadly guild_get does not returns channel and voice state data
-        # at least we can request the channels
-        try:
-            guild = GUILDS[guild_id]
-        except KeyError:
+        # sadly guild_get does not returns channel and voice state data at least we can request the channels
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+            
+            guild = GUILDS.get(guild_id)
+        
+        if guild is None:
             data = await self.http.guild_get(guild_id)
             channel_datas = await self.http.guild_channels(guild_id)
             data['channels'] = channel_datas
@@ -5920,17 +6063,29 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild``
+        guild : ``Guild`` or `int`
             The guild from where the client will leave.
         
         Raises
         ------
+        TypeError
+            If `guild` was not given neither as ``Guild`` nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        await self.http.guild_leave(guild.id)
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        await self.http.guild_leave(guild_id)
+    
     
     async def guild_delete(self, guild):
         """
@@ -5940,30 +6095,34 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild`` object
+        guild : ``Guild`` or `int`
             The guild to delete.
         
         Raises
         ------
+        TypeError
+            If `guild` was not given neither as ``Guild`` nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        await self.http.guild_delete(guild.id)
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        await self.http.guild_delete(guild_id)
     
-    async def guild_create(self         , name                                  ,
-            icon                        = None                                  ,
-            roles                       = []                                    ,
-            channels                    = []                                    ,
-            afk_channel_id              = None                                  ,
-            system_channel_id           = None                                  ,
-            afk_timeout                 = None                                  ,
-            region                      = VoiceRegion.eu_central                ,
-            verification_level          = VerificationLevel.medium              ,
-            message_notification_level  = MessageNotificationLevel.only_mentions,
-            content_filter_level        = ContentFilterLevel.disabled           ,
-                ):
+    
+    async def guild_create(self, name, icon=None, roles=None, channels=None, afk_channel_id=None,
+            system_channel_id=None, afk_timeout=None, region=VoiceRegion.eu_central,
+            verification_level=VerificationLevel.medium, message_notification=MessageNotificationLevel.only_mentions,
+            content_filter=ContentFilterLevel.disabled):
         """
         Creates a guild with the given parameter. A user account cant be member of 100 guilds maximum and a bot
         account can create a guild only if it is member of less than 10 guilds.
@@ -5976,10 +6135,10 @@ class Client(UserBase):
             The name of the new guild.
         icon : `None` or `bytes-like`, Optional
             The icon of the new guild.
-        roles : `list` of ``cr_p_role_object`` returns, Optional
+        roles : `None` or `list` of ``cr_p_role_object`` returns, Optional
             A list of roles of the new guild. It should contain json serializable roles made by the
             ``cr_p_role_object`` function.
-        channels : `list` of ``cr_pg_channel_object`` returns, Optional
+        channels : `None` or `list` of ``cr_pg_channel_object`` returns, Optional
             A list of channels of the new guild.  It should contain json serializable channels made by the
             ``cr_p_role_object`` function.
         afk_channel_id : `int`, Optional
@@ -5988,13 +6147,13 @@ class Client(UserBase):
             The id of the guild's system channel. The id should be one of the channel's id from `channels`.
         afk_timeout : `int`, Optional
             The afk timeout for the users at the guild's afk channel.
-        region : ``VoiceRegion``, Optional
+        region : ``VoiceRegion`` or `str`, Optional
             The voice region of the new guild.
-        verification_level : ``VerificationLevel``, Optional
+        verification_level : ``VerificationLevel`` or `int` instance, Optional
             The verification level of the new guild.
-        message_notification_level : ``MessageNotificationLevel``, Optional
+        message_notification : ``MessageNotificationLevel`` or `int`, Optional
             The message notification level of the new guild.
-        content_filter_level : ``ContentFilterLevel``, Optional
+        content_filter : ``ContentFilterLevel`` or `int`, Optional
             The content filter level of the guild.
         
         Returns
@@ -6006,26 +6165,39 @@ class Client(UserBase):
         ------
         TypeError
             - If `icon` is neither `None` or `bytes-like`.
-        ValueError
-            - If the client cannot create more guilds.
-            - If the `name`'s length is less than 2 or longer than 100 characters.
-            - If `icon` is passed as `bytes-like`, but it's format is not a valid image format.
-            - If `afk_timeout` was passed and not as one of: `60, 300, 900, 1800, 3600`.
+            - If `region` was not given neither as ``VoiceRegion`` nor `str` instance.
+            - If `verification_level` was not given neither as ``VerificationLevel`` not `int` instance.
+            - If `content_filter` was not given neither as ``ContentFilterLevel`` not `int` instance.
+            - If `message_notification` was not given neither as ``MessageNotificationLevel`` nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If the client cannot create more guilds.
+            - If `name` was not given as `str` instance.
+            - If the `name`'s length is out of range [2:100].
+            - If `icon` is passed as `bytes-like`, but it's format is not a valid image format.
+            - if `afk-timeout` was not given as `int` instance.
+            - If `afk_timeout` was passed and not as one of: `60, 300, 900, 1800, 3600`.
         """
-        if len(self.guild_profiles) > (9 if self.is_bot else 99):
-            if self.is_bot:
-                message = 'Bots cannot create a new server if they have 10 or more.'
-            else:
-                message = 'Hooman cannot have more than 100 guilds.'
-            raise ValueError(message)
+        if __debug__:
+            if len(self.guild_profiles) > (9 if self.is_bot else 99):
+                if self.is_bot:
+                    message = 'Bots cannot create a new server if they have 10 or more.'
+                else:
+                    message = 'Hooman cannot have more than 100 guilds.'
+                raise AssertionError(message)
         
-        name_ln = len(name)
-        if name_ln < 2 or name_ln > 100:
-            raise ValueError(f'Guild\'s name\'s length can be between 2-100, got {name_ln}')
+        
+        if __debug__:
+            if not isinstance(name, str):
+                raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
+            
+            name_ln = len(name)
+            if name_ln < 2 or name_ln > 100:
+                raise AssertionError(f'`name` length can be in range [2:100], got {name_ln}')
+        
         
         if icon is None:
             icon_data = None
@@ -6034,39 +6206,99 @@ class Client(UserBase):
             if not issubclass(icon_type, (bytes, bytearray, memoryview)):
                 raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon_type.__name__}.')
             
-            extension = get_image_extension(icon)
-            if extension not in VALID_ICON_FORMATS:
-                raise ValueError(f'Invalid icon type: `{extension}`.')
+            if __debug__:
+                extension = get_image_extension(icon)
+                if extension not in VALID_ICON_FORMATS:
+                    raise AssertionError(f'Invalid icon type: `{extension}`.')
             
             icon_data = image_to_base64(icon)
+        
+        
+        if isinstance(region, VoiceRegion):
+            region_value = region.value
+        elif isinstance(region, str):
+            region_value = region
+        else:
+            raise TypeError(f'`region` can be given either as `{VoiceRegion.__name__}` or `str` instance, got '
+                f'{region.__class__.__name__}.')
+        
+        
+        if isinstance(verification_level, VerificationLevel):
+            verification_level_value = verification_level.value
+        elif isinstance(verification_level, int):
+            verification_level_value = verification_level
+        else:
+            raise TypeError(f'`verification_level` can be given either as {VerificationLevel.__name__} or `int` '
+                f'instance, got {verification_level.__class__.__name__}.')
+        
+        
+        if isinstance(message_notification, MessageNotificationLevel):
+            message_notification_value = message_notification.value
+        elif isinstance(message_notification, int):
+            message_notification_value = message_notification
+        else:
+            raise TypeError(f'`message_notification` can be given either as `{MessageNotificationLevel.__name__}`'
+                f' or `int` instance, got {message_notification.__class__.__name__}.')
+        
+        
+        if isinstance(content_filter, ContentFilterLevel):
+            content_filter_value = content_filter.value
+        elif isinstance(content_filter, int):
+            content_filter_value = content_filter
+        else:
+            raise TypeError(f'`content_filter` can be given either as {ContentFilterLevel.__name__} or `int` '
+                f'instance, got {content_filter.__class__.__name__}.')
+        
+        if roles is None:
+            roles = []
+        
+        if channels is None:
+            channels = []
         
         data = {
             'name'                          : name,
             'icon'                          : icon_data,
-            'region'                        : region.value,
-            'verification_level'            : verification_level.value,
-            'default_message_notifications' : message_notification_level.value,
-            'explicit_content_filter'       : content_filter_level.value,
+            'region'                        : region_value,
+            'verification_level'            : verification_level_value,
+            'default_message_notifications' : message_notification_value,
+            'explicit_content_filter'       : content_filter_value,
             'roles'                         : roles,
             'channels'                      : channels,
                 }
         
         if (afk_channel_id is not None):
+            if __debug__:
+                if not isinstance(afk_channel_id, int):
+                    raise AssertionError(f'`afk_channel_id` can be given as `int` instance, got '
+                        f'{afk_channel_id.__class__.__name__}.')
+            
             data['afk_channel_id'] = afk_channel_id
         
         if (system_channel_id is not None):
+            if __debug__:
+                if not isinstance(system_channel_id, int):
+                    raise AssertionError(f'`system_channel_id` can be given as `int` instance, got '
+                        f'{system_channel_id.__class__.__name__}.')
+            
             data['system_channel_id'] = system_channel_id
         
         if (afk_timeout is not None):
-            if afk_timeout not in (60, 300, 900, 1800, 3600):
-                raise ValueError(f'Afk timeout should be 60, 300, 900, 1800, 3600 seconds!, got `{afk_timeout!r}`')
+            if __debug__:
+                if not isinstance(afk_timeout, int):
+                    raise AssertionError('`afk_timeout` can be given as `int` instance, got '
+                        f'{afk_timeout.__class__.__name__}.')
+                
+                if afk_timeout not in (60, 300, 900, 1800, 3600):
+                    raise AssertionError(f'`afk_timeout` should be 60, 300, 900, 1800, 3600 seconds!, got '
+                        f'`{afk_timeout!r}`')
+            
             data['afk_timeout'] = afk_timeout
         
         data = await self.http.guild_create(data)
         # we can create only partial, because the guild data is not completed usually
         return create_partial_guild(data)
     
-    async def guild_prune(self, guild, days, roles=[], count=False, reason=None):
+    async def guild_prune(self, guild, days, roles=None, count=False, reason=None):
         """
         Kicks the members of the guild which were inactive since x days.
         
@@ -6074,11 +6306,11 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild`` object
+        guild : ``Guild`` or `int` instance
             Where the pruning will be executed.
         days : `int`
-            The amount of days since atleast the users need to inactive. Needs to be at least `1`.
-        roles : `list` of `Role` objects, Optional
+            The amount of days since atleast the users need to inactive. Can be in range [1:30].
+        roles : `None` or `list` of (`Role` or `int` instances), Optional
             By default pruning will kick only the users without any roles, but it can defined which roles to include.
         count : `bool`, Optional
             Whether the method should return how much user were pruned, but if the guild is large it will be set to
@@ -6093,30 +6325,79 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            - If `guild` was not given neither as ``Guild`` nor `int` instance.
+            - If `roles` contain not ``Role``, neither `int` element.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `roles` was given neither as `None` or as `list`.
+            - If `count` was not given as `bool` instance.
+            - If `days` was not given as `int` instance.
+            - If `days` is out of range [1:30].
         
         See Also
         --------
         ``.guild_prune_estimate`` : Returns how much user would be pruned if ``.guild_prune`` would be called.
         """
-        if count and guild.is_large:
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+            
+            guild = GUILDS.get(guild_id)
+        
+        if __debug__:
+            if not isinstance(count, bool):
+                raise AssertionError(f'`count` can be given as `bool` instance, got {count.__class__.__name__}.')
+        
+        if count and (guild is not None) and guild.is_large:
             count = False
+        
+        if __debug__:
+            if not isinstance(days, int):
+                raise AssertionError(f'`days can be given as `int` instance, got {days.__class__.__name__}.')
+            
+            if days < 1 or days > 30:
+                raise AssertionError(f'`days can be in range [1:30], got {days!r}.')
         
         data = {
             'days': days,
             'compute_prune_count': count,
                 }
         
-        if roles:
-            data['include_roles'] = [role.id for role in roles]
+        if (roles is not None):
+            if __debug__:
+                if not isinstance(roles, list):
+                    raise AssertionError(f'`roles` can be given as `None` or `list` of `{Role.__name__}` and `int`'
+                          f'instances, got {roles.__class__.__name__}; {roles!r}.')
+            
+            role_ids = set()
+            for index, role in enumerate(roles):
+                if isinstance(role, Role):
+                    role_id = role.id
+                else:
+                    role_id = maybe_snowflake(role)
+                    if role_id is None:
+                        raise TypeError(f'`roles` index {index} was expected to be {Role.__name__} or `in` instance,'
+                            f'but got {role.__class__.__name__}.')
+                
+                role_ids.add(role_id)
+            
+            if role_ids:
+                data['include_roles'] = role_ids
         
-        data = await self.http.guild_prune(guild.id, data, reason)
-        return data['pruned']
+        data = await self.http.guild_prune(guild_id, data, reason)
+        return data.get('pruned')
     
-    async def guild_prune_estimate(self, guild, days, roles=[]):
+    
+    async def guild_prune_estimate(self, guild, days, roles=None):
         """
         Returns the amount users, who would been pruned, if ``.guild_prune`` would be called.
         
@@ -6124,11 +6405,11 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild`` object
+        guild : ``Guild`` or `int` instance.
             Where the counting of prunable users will be done.
         days : `int`
-            The amount of days since atleast the users need to inactive. Needs to be at least `1`.
-        roles : `list` of ``Role`` objects, Optional
+            The amount of days since atleast the users need to inactive. Can be in range [1:30].
+        roles : `None` or `list` of ``Role`` objects, Optional
             By default pruning would kick only the users without any roles, but it can be defined which roles to
             include.
         
@@ -6139,20 +6420,61 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            - If `guild` was not given neither as ``Guild`` nor `int` instance.
+            - If `roles` contain not ``Role``, neither `int` element.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `roles` was given neither as `None` or as `list`.
+            - If `days` was not given as `int` instance.
+            - If `days` is out of range [1:30].
         """
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        if __debug__:
+            if not isinstance(days, int):
+                raise AssertionError(f'`days can be given as `int` instance, got {days.__class__.__name__}.')
+            
+            if days < 1 or days > 30:
+                raise AssertionError(f'`days can be in range [1:30], got {days!r}.')
+        
         data = {
             'days': days,
                 }
         
-        if roles:
-            data['include_roles'] = [role.id for role in roles]
+        if (roles is not None):
+            if __debug__:
+                if not isinstance(roles, list):
+                    raise AssertionError(f'`roles` can be given as `None` or `list` of `{Role.__name__}` and `int`'
+                          f'instances, got {roles.__class__.__name__}; {roles!r}.')
+            
+            role_ids = set()
+            for index, role in enumerate(roles):
+                if isinstance(role, Role):
+                    role_id = role.id
+                else:
+                    role_id = maybe_snowflake(role)
+                    if role_id is None:
+                        raise TypeError(f'`roles` index {index} was expected to be {Role.__name__} or `in` instance,'
+                            f'but got {role.__class__.__name__}.')
+                
+                role_ids.add(role_id)
+            
+            if role_ids:
+                data['include_roles'] = role_ids
         
-        data = await self.http.guild_prune_estimate(guild.id, data)
-        return data['pruned']
+        data = await self.http.guild_prune_estimate(guild_id, data)
+        return data.get('pruned')
     
     async def guild_edit(self, guild, *, name=None, icon=..., invite_splash=..., discovery_splash=..., banner=...,
             afk_channel=..., system_channel=..., rules_channel=..., public_updates_channel=..., owner=None, region=None,
@@ -6247,9 +6569,9 @@ class Client(UserBase):
             - If `name` is shorter than `2` or longer than `100` characters.
             - If `discovery_splash` was gvien meanwhile the guild is not discoverable.
             - If `invite_splash` was passed meanwhile the guild has no `INVITE_SPLASH` feature.
-            - `name` was not given as `str` instance.
-            - `afk_timeout` was not given as `int` instance.
-            - `system_channel_flags` was not given as `SystemChannelFlag` or as other `int` instance.
+            - If `name` was not given as `str` instance.
+            - If `afk_timeout` was not given as `int` instance.
+            - If `system_channel_flags` was not given as `SystemChannelFlag` or as other `int` instance.
             - If `preferred_locale` was not given as `str` instance.
         ConnectionError
             No internet connection.
@@ -7996,6 +8318,8 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `webhook_id` was not given as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -8009,10 +8333,14 @@ class Client(UserBase):
         -----
         If the webhook already loaded and if it's guild's webhooks are up to date, no request is done.
         """
+        webhook_id_value = maybe_snowflake(webhook_id)
+        if webhook_id_value is None:
+            raise TypeError(f'`webhook_id` can be given as `int` instance, got {webhook_id.__class__.__name__}.')
+        
         try:
-            webhook = USERS[webhook_id]
+            webhook = USERS[webhook_id_value]
         except KeyError:
-            data = await self.http.webhook_get(webhook_id)
+            data = await self.http.webhook_get(webhook_id_value)
             return Webhook(data)
         else:
             channel = webhook.channel
@@ -8021,13 +8349,13 @@ class Client(UserBase):
                 if (guild is not None) and guild.webhooks_uptodate:
                     return webhook
             
-            data = await self.http.webhook_get(webhook_id)
+            data = await self.http.webhook_get(webhook_id_value)
             webhook._update_no_return(data)
             return webhook
     
     async def webhook_get_token(self, webhook_id, webhook_token):
         """
-        Requests the webhook through Discord's webhook API.
+        Requests the webhook through Discord's webhook API. The client do not needs to be in the guild of the webhook.
         
         This method is a coroutine.
         
@@ -8044,29 +8372,42 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `webhook_id` was not given as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            If `webhook_token` was not given as `str` instance.
         
         Notes
         -----
         If the webhook already loaded and if it's guild's webhooks are up to date, no request is done.
         """
+        webhook_id_value = maybe_snowflake(webhook_id)
+        if webhook_id_value is None:
+            raise TypeError(f'`webhook_id` can be given as `int` instance, got {webhook_id.__class__.__name__}.')
+        
+        if __debug__:
+            if not isinstance(webhook_token, str):
+                raise AssertionError(f'`webhook_token` can be given as `str` instance, got '
+                    f'{webhook_token.__class__.__name__}')
+        
         try:
-            webhook = USERS[webhook_id]
+            webhook = USERS[webhook_id_value]
         except KeyError:
-            webhook = PartialWebhook(webhook_id, webhook_token)
+            webhook = create_partial_webhook(webhook_id_value, webhook_token)
         else:
             channel = webhook.channel
             if (channel is not None):
                 guild = channel.guild
                 if (guild is not None) and guild.webhooks_uptodate:
                     return webhook
-            
-            data = await self.http.webhook_get_token(webhook)
-            webhook._update_no_return(data)
-            return webhook
+        
+        data = await self.http.webhook_get_token(webhook)
+        webhook._update_no_return(data)
+        return webhook
     
     async def webhook_update(self, webhook):
         """
@@ -8472,7 +8813,7 @@ class Client(UserBase):
                         
                         raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
                             f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
-                            f'{embed!r}.')
+                            f'{embed.__class__.__name__}.')
                 
                 embed = embed[:10]
             else:
@@ -8480,7 +8821,7 @@ class Client(UserBase):
             
         else:
             raise TypeError(f'`embed` was not given as `{EmbedBase.__name__}` instance, neither as a list of '
-                f'{EmbedBase.__name__} instances, got {embed!r}.')
+                f'{EmbedBase.__name__} instances, got {embed.__class__.__name__}.')
         
         # Content check order:
         # 1.: None
@@ -8690,14 +9031,14 @@ class Client(UserBase):
                         
                         raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
                             f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
-                            f'{embed!r}.')
+                            f'{embed.__class__.__name__}.')
                 
                 embed = embed[:10]
             else:
                 embed = None
         else:
             raise TypeError(f'`embed` was not given as `{EmbedBase.__name__}` instance, neither as a list of '
-                f'{EmbedBase.__name__} instances, got {embed!r}.')
+                f'{EmbedBase.__name__} instances, got {embed.__class__.__name__}.')
         
         # Content check order:
         # 1.: Elipsis
@@ -8821,7 +9162,8 @@ class Client(UserBase):
                 message_id = message.id
             elif message is None:
                 raise AssertionError('`message` parameter was given as `None`. Make sure to use '
-                    f'`Client.webhook_message_create`  with giving content and with giving the `wait` parameter as `True`.')
+                    f'`Client.webhook_message_create`  with giving content and with giving the `wait` parameter as '
+                    f'`True`.')
             else:
                 raise TypeError(f'`message` should have be given as `Message`or as  `MessageRepr` instance, got '
                     f'`{message.__class__.__name__}`.')
@@ -10965,7 +11307,7 @@ class Client(UserBase):
         while True:
             user = users[index]
             index += 1
-            if not isinstance(user,(int,UserBase)):
+            if not isinstance(user,(int, UserBase)):
                 raise TypeError(f'User {index} was not passed neither as `int` or as `{UserBase.__name__}` instance, '
                     f'got {user.__class__.__name__}.')
             

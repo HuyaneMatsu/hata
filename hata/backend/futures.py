@@ -2432,16 +2432,15 @@ class FutureWM(Future):
         if state is FINISHED or state is RETRIEVED:
             exception = self._exception
             if exception is None:
-                
-                result = self._result
-                for index, result_ in enumerate(result):
+                results = self._result
+                for index, result_ in enumerate(results):
                     result.append(f', result[')
                     result.append(repr(index))
                     result.append(']=')
                     result.append(reprlib.repr(result_))
                 
                 result.append(', needed=')
-                result.append(str(self._count-len(result)))
+                result.append(str(self._count-len(results)))
             else:
                 result.append(', exception=')
                 result.append(repr(exception))
@@ -2484,9 +2483,9 @@ class FutureWM(Future):
         if self._state is not PENDING:
             raise InvalidStateError(self, 'set_result')
         
-        result = self._result
-        result.append(result)
-        if self._count < len(result):
+        results = self._result
+        results.append(result)
+        if self._count != len(results):
             return
         
         self._state = FINISHED
@@ -2496,7 +2495,7 @@ class FutureWM(Future):
         """
         Sets the future result, and if it waits for no more results, marks it as done as well. Not like
         ``.set_result``, this method will not raise ``InvalidStateError`` if the future is already done.
-        
+        d
         Parameters
         ----------
         result : `Any`
@@ -2511,14 +2510,14 @@ class FutureWM(Future):
         if self._state is not PENDING:
             return 0
         
-        result = self._result
-        result.append(result)
-        if self._count < len(result):
-            return 2
+        results = self._result
+        results.append(result)
+        if self._count != len(results):
+            return 1
             
         self._state = FINISHED
         self._loop._schedule_callbacks(self)
-        return 1
+        return 2
         
     def clear(self):
         """
@@ -3614,9 +3613,9 @@ class Gatherer(FutureWM):
         if self._state is not PENDING:
             raise InvalidStateError(self, 'set_result')
         
-        result = self._result
-        result.append(FGElement(result, None))
-        if self._count != len(result):
+        results = self._result
+        results.append(FGElement(result, None))
+        if self._count != len(results):
             return
         
         self._state = FINISHED
@@ -3642,9 +3641,9 @@ class Gatherer(FutureWM):
         if self._state is not PENDING:
             return 0
         
-        result = self._result
-        result.append(FGElement(result, None))
-        if self._count != len(result):
+        results = self._result
+        results.append(FGElement(result, None))
+        if self._count != len(results):
             return 2
         
         self._state = FINISHED
@@ -3677,9 +3676,9 @@ class Gatherer(FutureWM):
         if type(exception) is StopIteration:
              raise TypeError(f'{exception} cannot be raised to a {self.__class__.__name__}: {self!r}')
         
-        result = self._result
-        result.append(FGElement(None, exception))
-        if self._count < len(result):
+        results = self._result
+        results.append(FGElement(None, exception))
+        if self._count != len(results):
             return
         
         self._state = FINISHED
@@ -3710,14 +3709,14 @@ class Gatherer(FutureWM):
         if self._state is not PENDING:
             return 0
         
-        result = self._result
-        result.append(FGElement(None, exception))
-        if self._count < len(result):
-            return 2
+        results = self._result
+        results.append(FGElement(None, exception))
+        if self._count != len(results):
+            return 1
         
         self._state = FINISHED
         self._loop._schedule_callbacks(self)
-        return 1
+        return 2
 
 class _HandleCancellerBase(object):
     """

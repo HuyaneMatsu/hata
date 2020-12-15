@@ -15,7 +15,7 @@ from .client_core import MESSAGES, CHANNELS, GUILDS
 from .user import ZEROUSER, User
 from .emoji import reaction_mapping
 from .embed import EmbedCore, EXTRA_EMBED_TYPES
-from .webhook import WebhookRepr, PartialWebhook, WebhookType, Webhook
+from .webhook import WebhookRepr, create_partial_webhook, WebhookType, Webhook
 from .role import Role
 from .preconverters import preconvert_flag, preconvert_bool, preconvert_snowflake, preconvert_str, \
     preconvert_preinstanced_type
@@ -897,7 +897,7 @@ class Message(DiscordEntity, immortal=True):
                 webhook_type = WebhookType.bot
             
             if author_data is None:
-                author = PartialWebhook(webhook_id, '', type_=webhook_type)
+                author = create_partial_webhook(webhook_id, '', type_=webhook_type)
             else:
                 author = WebhookRepr(author_data, webhook_id, type_=webhook_type, channel=channel)
         

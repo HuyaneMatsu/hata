@@ -499,71 +499,50 @@ class URL:
         return URL(self._val._replace(netloc=self._make_netloc(val.username, val.password, val.hostname, port)),
             encoded=True)
     
-    # Return a new URL with query part replaced.
-    # Accepts any Mapping (e.g. dict, multidict instances) or str, autoencode the argument if needed.
-    # It also can take an arbitrary number of keyword arguments.
-    # Clear query if None is passed.
-    def with_query(self, *args, **kwargs):
-        # N.B. doesn't cleanup query/fragment
-        if kwargs:
-            if len(args) > 0:
-                raise ValueError('Either kwargs or single query parameter must be present')
-            query = kwargs
-        elif len(args) == 1:
-            query = args[0]
-        else:
-            raise ValueError('Either kwargs or single query parameter must be present')
+    def with_query(self, query):
+        """
+        Returns a new url with query part replaced. If `None` is given as `param` you can clear teh actual query.
         
+        Parameters
+        ----------
+        query : `None`, `str`, (`dict`, `list`, `set`) of \
+                (`str`, (`str`, `int`, `bool`, `NoneType`, `float`, (`list` or `set`) of repeat value)) items / elements
+            The query to use.
+        
+        Returns
+        -------
+        url : ``URL``
+            The new url instance.
+        
+        Raises
+        ------
+        TypeError
+            - If `query` was given as an invalid type.
+            - If `query` was given as `set` or `list`, but `1` of it's elements cannot be unpacked correctly.
+            - If a query key was not given as `str` instance.
+            - If a query value was not given as any of the expected types.
+        ValueError
+            - If a query value was given as `float`, but as `inf`.
+            - If a query value was given as `float`, but as `nan`.
+        """
         if query is None:
             query = ''
-        elif hasattr(query,'__getitem__') and hasattr(query, 'keys'):
-            lst = []
-            for k, v in query.items():
-                v_type = v.__class__
-                if v_type is str:
-                    pass
-                elif v_type is int:
-                    v = str(v)
-                elif v_type is bool:
-                    v = 'true' if v else 'false'
-                elif v_type is NoneType:
-                    v = 'null'
-                elif v_type is float:
-                    if isinf(v):
-                         raise ValueError('`inf` is not a supported query string parameter value.')
-                    if isnan(v):
-                        raise ValueError('`nan` is not a supported query string parameter value.')
-                    v = str(v)
-                elif issubclass(v_type, str):
-                    v = str(v)
-                elif issubclass(v_type, int):
-                    v = str(int(v))
-                elif issubclass(v_type, bool):
-                    v = 'true' if bool(v) else 'false'
-                elif issubclass(v_type, float):
-                    v = float(v)
-                    if isinf(v):
-                         raise ValueError('`inf` is not a supported query string parameter value.')
-                    if isnan(v):
-                        raise ValueError('`nan` is not a supported query string parameter value.')
-                    v = str(v)
-                else:
-                    raise TypeError(f'`{v_type}` instances are not supported as query string parameter values, got '
-                        f'{v!r}.')
-                
-                lst.append(f'{quote(k, safe="/?:@", query_string=True)}={quote(v, safe="/?:@", query_string=True)}')
-            query = '&'.join(lst)
+        elif isinstance(query, dict):
+            query = build_query_from_dict(query)
+        elif isinstance(query, (list, set)):
+            query = build_query_from_list(query)
         elif isinstance(query, str):
             query = quote(query, safe='/?:@', protected='=&+', query_string=True)
         elif isinstance(query, (bytes, bytearray, memoryview)):
-            raise TypeError("Invalid query type: bytes, bytearray andmemoryview are forbidden")
-        elif hasattr(query,'__getitem__'):
-            query = '&'.join(f'{quote(k, safe="/?:@", query_string=True)}={quote(v, safe="/?:@", query_string=True)}' for k, v in query)
+            raise TypeError(f'Query type cannot be `bytes`, `bytearray` and `memoryview`, got '
+                f'{query.__class__.__name__}')
         else:
-            raise TypeError('Invalid query type: only str, mapping or sequence of (str, str) pairs is allowed')
+            raise TypeError(f'Invalid query type: {query.__class__.__name__}.')
+        
         path = self._val.path
         if path == '':
             path = '/'
+        
         return URL(self._val._replace(path=path, query=query), encoded=True)
     
     # Return a new URL with fragment replaced.
@@ -623,3 +602,149 @@ class URL:
             self = self.with_query(query)
         
         return self
+
+
+def build_query_from_dict(query):
+    """
+    Builds a query string and adds the parts of it to the given `build_to` list.
+    
+    Parameters
+    ----------
+    query : `dict` of (`str`, (`str`, `int`, `bool`, `NoneType`, `float`, (`list` or `set`) of repeat value)) items
+        The query to serialize.
+    
+    Returns
+    -------
+    query_string : `str`
+        The built query string.
+    
+    Raises
+    ------
+    TypeError
+        - If `1` of `query`'s keys is not `str` instance.
+        - If a query value is not any of the expected types.
+    ValueError
+        - If a query value was given as `float` and it is `inf`.
+        - If a query value was given as `float` and it is `nan`.
+    """
+    build_to = []
+    
+    for key, value in query.items():
+        query_key = quote(key, safe="/?:@", query_string=True)
+        build_query_element_to(build_to, query_key, value)
+    
+    return ''.join(build_to)
+
+
+def build_query_from_list(query):
+    """
+    Builds a query string and adds the parts of it to the given `build_to` list.
+    
+    Parameters
+    ----------
+    query : (`list` or `set`) of `tuple` \
+            (`str`, (`str`, `int`, `bool`, `NoneType`, `float`, (`list` or `set`) of repeat value))
+        The query to serialize.
+    
+    Returns
+    -------
+    query_string : `str`
+        The built query string.
+    
+    Raises
+    ------
+    TypeError
+        - If `1` of `query`'s elements cannot be unpacked to a `key` - `value` pair.
+        - If `1` of `query`'s keys is not `str` instance.
+        - If a query value is not any of the expected types.
+    ValueError
+        - If a query value was given as `float` and it is `inf`.
+        - If a query value was given as `float` and it is `nan`.
+    """
+    build_to = []
+    
+    for key, value in query:
+        query_key = quote(key, safe="/?:@", query_string=True)
+        build_query_element_to(build_to, query_key, value)
+    
+    return ''.join(build_to)
+
+
+def build_query_element_to(build_to, query_key, value):
+    """
+    Builds a query string element to the given `build_to` list.
+    
+    Parameters
+    ----------
+    build_to : `list`
+        A list to build the query element to.
+    query_key : `str`
+        An already escaped query key.
+    value : `str`, `int`, `bool`, `NoneType`, `float`, (`list` or `set`) of repeat
+        The query string value.
+    
+    Raises
+    ------
+    TypeError
+        - If `value` was not given as any of the expected types.
+    ValueError
+        - If `value` is a `float`, but it is `inf`.
+        - If `value` is a `float`, but it is `nan`.
+    """
+    if isinstance(value, str):
+        query_value = value
+    elif isinstance(value, int):
+        query_value = str(value)
+    elif isinstance(value, bool):
+        query_value = 'true' if value else 'false'
+    elif isinstance(value, NoneType):
+        query_value = 'null'
+    elif isinstance(value, float):
+        if isinf(value):
+             raise ValueError('`inf` is not a supported query string parameter value.')
+        
+        if isnan(value):
+            raise ValueError('`nan` is not a supported query string parameter value.')
+        
+        query_value = str(value)
+    
+    elif isinstance(value, (list, set)):
+        build_query_list_to(build_to, query_key, value)
+        return
+    
+    else:
+        raise TypeError(f'Unexpected value type received when serializing query string, got '
+            f'{value.__class__.__name__}; {value!r}.')
+    
+    query_value = quote(query_value, safe="/?:@", query_string=True)
+    
+    if build_to:
+        build_to.append('&')
+    build_to.append(query_key)
+    build_to.append('=')
+    build_to.append(query_value)
+
+
+def build_query_list_to(build_to, query_key, query_list):
+    """
+    Builds a query element from a `list` or `set`.
+    
+    Parameters
+    ----------
+    build_to : `list`
+        A list to build the query element to.
+    query_key : `str`
+        An already escaped query key.
+    query_list : (`list` or `set`) of (`str`, `int`, `bool`, `NoneType`, `float`, repeat)
+        The query string value.
+    
+    Raises
+    -----
+    TypeError
+        - If `query_list` contains a value with an unexpected type.
+    ValueError
+        - If `query_list` contains a value as a `float` what it is `inf`.
+        - If `query_list` contains a value as a `float` what it is `nan`.
+    """
+    for value in query_list:
+        build_query_element_to(build_to, query_key, value)

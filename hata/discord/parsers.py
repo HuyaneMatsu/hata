@@ -6498,7 +6498,9 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         Parameters
         ----------
         target : ``DiscordEntity`` instance
+            The target entity, to what relative waiters will be called.
         waiter : `async callable`
+            Waiter to call every time a respective event to `target` is received.
         """
         try:
             actual = self.waitfors[target]

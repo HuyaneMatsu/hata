@@ -14,7 +14,7 @@ from . import ratelimit as module_webhook
 ChannelText = NotImplemented
 Client = NotImplemented
 
-def PartialWebhook(webhook_id, token, type_=WebhookType.bot, channel=None):
+def create_partial_webhook(webhook_id, token, type_=WebhookType.bot, channel=None):
     """
     Creates a partial webhook from the given parameters. If the webhook with the given `webhook_id` already exists,
     then returns that instead.
@@ -179,7 +179,7 @@ class Webhook(UserBase):
         webhook_id = int(result.group(1))
         webhook_token = result.group(2)
         
-        return PartialWebhook(webhook_id, webhook_token)
+        return create_partial_webhook(webhook_id, webhook_token)
     
     def _update_no_return(self, data):
         """
@@ -496,7 +496,7 @@ class WebhookRepr(UserBase):
         -------
         webhook : ``Webhook``
         """
-        return PartialWebhook(self.id, '', self.type, self.channel)
+        return create_partial_webhook(self.id, '', self.type, self.channel)
     
     @property
     def partial(self):

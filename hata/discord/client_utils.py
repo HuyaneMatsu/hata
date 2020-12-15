@@ -995,7 +995,7 @@ def maybe_snowflake(value):
     elif isinstance(value, str):
         if value.isdigit():
             if __debug__:
-                if 6 < len(value) < 21:
+                if not 6 < len(value) < 21:
                     raise AssertionError('An `id` was given as `str` instance, but it\'s value is out of 64uint '
                         f'range, got {value!r}.')
             

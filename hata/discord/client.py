@@ -31,7 +31,7 @@ from .http.URLS import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDP
 from .role import Role, PermOW, PERMOW_TYPE_ROLE, PERMOW_TYPE_USER
 from .webhook import Webhook, create_partial_webhook
 from .gateway import DiscordGateway, DiscordGatewaySharder
-from .parsers import EventDescriptor, _with_error, IntentFlag, PARSER_DEFAULTS
+from .parsers import EventDescriptor, _with_error, IntentFlag, PARSER_DEFAULTS, InteractionEvent
 from .audit_logs import AuditLog, AuditLogIterator
 from .invite import Invite
 from .message import Message, MessageRepr, MessageReference, Attachment
@@ -52,6 +52,7 @@ from .preinstanced import Status, VoiceRegion, ContentFilterLevel, PremiumType, 
 from .client_utils import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, UserGuildPermission, \
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, Typer, maybe_snowflake
 from .embed import EmbedBase, EmbedImage
+from .interaction import ApplicationCommand, InteractionResponseTypes
 
 from . import client_core as module_client_core, message as module_message, webhook as module_webhook, \
     channel as module_channel, invite as module_invite, parsers as module_parsers, client_utils as module_client_utils,\
@@ -200,8 +201,8 @@ class Client(UserBase):
     
     loop = KOKORO
     
-    def __new__(cls, token, secret=None, client_id=None, activity=ActivityUnknown, status=None, is_bot=True,
-            shard_count=0, intents=-1, additional_owners=None, **kwargs):
+    def __new__(cls, token, *, secret=None, client_id=None, application_id=None, activity=ActivityUnknown, status=None,
+            is_bot=True, shard_count=0, intents=-1, additional_owners=None, **kwargs):
         """
         Creates a new ``Client`` instance with the given pramateres.
         
@@ -211,12 +212,14 @@ class Client(UserBase):
             A valid Discord token, what the client can use to interact with the Discord API.
         secret: `str`, optional
             Client secret used when interacting with oauth2 endpoints.
-        client_id : `None`, `int` or `str`, optional
+        client_id : `None`, `int` or `str`, Optional
             The client's `.id`. If passed as `str` will be converted to `int`. Defaults to `None`.
             
             When more `Client` is started up, it is recommended to define their id initially. The wrapper can detect the
             clients' id-s only when they are logging in, so the wrapper  needs to check if a ``User`` alterego of the
             client exists anywhere, and if does will replace it.
+        application_id : `None`, `int` or `str`, Optional
+            The client's application id. If passed as `str`, will be converterd to `int`. Defaults to `None`.
         activity : ``ActivityBase``, optional
             The client's preferred activity.
         status : `str` or ``Status``, optional
@@ -278,6 +281,11 @@ class Client(UserBase):
             client_id = 0
         else:
             client_id = preconvert_snowflake(client_id, 'client_id')
+        
+        application = Application._create_empty()
+        if (application_id is not None):
+            application_id = preconvert_snowflake(application_id, 'application_id')
+            application.id = application_id
         
         # activity
         if (not isinstance(activity, ActivityBase)) or (type(activity) is ActivityCustom):
@@ -425,7 +433,7 @@ class Client(UserBase):
         self.id = client_id
         self.partial = True
         self.ready_state = None
-        self.application = Application._create_empty()
+        self.application = application
         self.gateway = (DiscordGatewaySharder if shard_count else DiscordGateway)(self)
         self.http = DiscordHTTPClient(self)
         self.events = EventDescriptor(self)
@@ -1026,13 +1034,13 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            If `Scopes` wasnt neitehr as `str` not `list` of `str` instances.
+            If `Scopes` wasnt neither as `str` not `list` of `str` instances.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `redirect_url` was nto given as `str` instance.
+            - If `redirect_url` was not given as `str` instance.
             - If `code` was not given as `str` instance.
             - If `scopes` is empty.
             - If `scopes` contains empty string.
@@ -1108,13 +1116,13 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            If `Scopes` wasnt neitehr as `str` not `list` of `str` instances.
+            If `Scopes` wasnt neither as `str` not `list` of `str` instances.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `redirect_url` was nto given as `str` instance.
+            - If `redirect_url` was not given as `str` instance.
             - If `code` was not given as `str` instance.
             - If `scopes` is empty.
             - If `scopes` contains empty string.
@@ -3209,7 +3217,7 @@ class Client(UserBase):
         channel : ``ChannelTextBase`` instance, `int` instance, ``Message``, ``MessageRepr`` or ``MessageReference``
             The text channel where the message will be sent, or the message on what you want to reply.
         content : `str`, ``EmbedBase``, `Any`, Optional
-            The message's content if given. If given as `str` or empty string, then no contnet will be sent, meanwhile
+            The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
             if any other non `str` or ``EmbedBase`` instance is given, then will be casted to string.
             
             If given as ``EmbedBase`` instance, then is sent as the message's embed.
@@ -4641,7 +4649,7 @@ class Client(UserBase):
             
             By passing it as empty string, you can remove the message's content.
             
-            If given as ``EmbedBase`` instance, then the message's embds will be edited with it.
+            If given as ``EmbedBase`` instance, then the message's embeds will be edited with it.
         embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
@@ -5266,7 +5274,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            If `message` was not givne neither as ``Message``, ``MessageRepr`` nor ``MessageReference`` instance.
+            If `message` was not given neither as ``Message``, ``MessageRepr`` nor ``MessageReference`` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -5305,7 +5313,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            - If `message` was not givne neither as ``Message``, ``MessageRepr`` nor ``MessageReference`` instance.
+            - If `message` was not given neither as ``Message``, ``MessageRepr`` nor ``MessageReference`` instance.
             - If `user` was not given neither as ``User``, ``Client`` nor `int` instance.
         ConnectionError
             No internet connection.
@@ -5354,7 +5362,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            If `message` was not givne neither as ``Message``, ``MessageRepr`` nor ``MessageReference`` instance.
+            If `message` was not given neither as ``Message``, ``MessageRepr`` nor ``MessageReference`` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -5391,7 +5399,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            If `message` was not givne neither as ``Message``, ``MessageRepr`` nor ``MessageReference`` instance.
+            If `message` was not given neither as ``Message``, ``MessageRepr`` nor ``MessageReference`` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -5426,7 +5434,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            If `message` was not givne neither as ``Message``, ``MessageRepr`` nor ``MessageReference`` instance.
+            If `message` was not given neither as ``Message``, ``MessageRepr`` nor ``MessageReference`` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -5476,7 +5484,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            - If `message` was not givne neither as ``Message``, ``MessageRepr`` nor ``MessageReference`` instance.
+            - If `message` was not given neither as ``Message``, ``MessageRepr`` nor ``MessageReference`` instance.
             - If `after` was passed with an unexpected type.
         ValueError
             If `limit` was passed as `int`, but is under `1` or over `100`.
@@ -5485,7 +5493,7 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `limit` was not given neitehr as `None` or `int` instance.
+            - If `limit` was not given neither as `None` or `int` instance.
             - If `limit` is out of range [1:100]
         
         Notes
@@ -5574,7 +5582,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            If `message` was not givne neither as ``Message``, ``MessageRepr`` nor ``MessageReference`` instance.
+            If `message` was not given neither as ``Message``, ``MessageRepr`` nor ``MessageReference`` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -5650,7 +5658,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            If `message` was not givne neither as ``Message``, ``MessageRepr`` nor ``MessageReference`` instance.
+            If `message` was not given neither as ``Message``, ``MessageRepr`` nor ``MessageReference`` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -8747,7 +8755,7 @@ class Client(UserBase):
         webhook : ``Webhook``
             The webhook through what will the message be sent.
         content : `str`, ``EmbedBase``, `Any`, Optional
-            The message's content if given. If given as `str` or empty string, then no contnet will be sent, meanwhile
+            The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
             if any other non `str` or ``EmbedBase`` instance is given, then will be casted to string.
             
             If given as ``EmbedBase`` instance, then is sent as the message's embed.
@@ -8756,8 +8764,6 @@ class Client(UserBase):
             The embedded content of the message.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
-            
-            If embeds are given as a list, then the first embed is picked up.
         file : `Any`, Optional
             A file to send. Check ``._create_file_form`` for details.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
@@ -8786,12 +8792,14 @@ class Client(UserBase):
         ValueError
             - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
             - If more than `10` files would be sent.
-            - If `name` was passed, but with length under `1` or over `32`.
-            
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `name` was not passed neither as `None` or `str` instance.
+            - If `name` was passed as `str` instance, but it's length is out of range [1:32].
+            - If `avatar_url` was not given as `str` instance.
         """
         
         # Embed check order:
@@ -8889,14 +8897,24 @@ class Client(UserBase):
             message_data['tts'] = True
         
         if (avatar_url is not None):
+            if __debug__:
+                if not isinstance(avatar_url, str):
+                    raise AssetionError(f'`avatar_url` can be given as `None` or `str` instance, got '
+                        f'{avatar_url.__class__.__name__}.')
+            
             message_data['avatar_url'] = avatar_url
         
         if (name is not None):
-            name_ln = len(name)
-            if name_ln > 32:
-                raise ValueError(f'`name` length can be in range [1:32], got {name!r}.')
+            if __debug__:
+                if not isinstance(name, str):
+                    raise AssertionError(f'`name` cane be given either as `None` or `str instance, got '
+                        f'{name.__class__.__name__}')
+                
+                name_ln = len(name)
+                if name_ln > 32:
+                    raise AssertionError(f'`name` length can be in range [1:32], got {name_ln}; {name!r}.')
             
-            if name_ln != 0:
+            if name:
                 message_data['username'] = name
         
         if file is None:
@@ -8922,7 +8940,7 @@ class Client(UserBase):
         
         return channel._create_new_message(data)
     
-    async def webhook_message_edit(self, webhook, message, content=..., embed=..., allowed_mentions=...):
+    async def webhook_message_edit(self, webhook, message, content=..., *, embed=..., allowed_mentions=...):
         """
         Edits the message sent by the given webhook. The message's author must be the webhook itself.
         
@@ -8940,13 +8958,11 @@ class Client(UserBase):
             
             By passing it as empty string, you can remove the message's content.
             
-            If given as ``EmbedBase`` instance, then the message's embds will be edited with it.
+            If given as ``EmbedBase`` instance, then the message's embeds will be edited with it.
         embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
-            
-            If embeds are given as a list, then the first embed is picked up.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions``
             for details.
@@ -8962,13 +8978,12 @@ class Client(UserBase):
             - `message` was not given neither as ``Message``, ``MessageRepr``  or `int` instance.
         ValueError
             - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
-            - If more than `10` files would be sent.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - `message` was detectably not sent by the `webhook`.
+            If `message` was detectably not sent by the `webhook`.
         
         See Also
         --------
@@ -9003,11 +9018,12 @@ class Client(UserBase):
                 # Cannot check author id, skip
                 message_id = message.id
             elif message is None:
-                raise TypeError('`message` was given as `None`. Make sure to use `Client.webhook_message_create` '
-                    'with giving content and by passing `wait` parameter as `True` as well.')
+                raise TypeError(f'`message` was given as `None`. Make sure to use '
+                    f'`{self.__class__.__name__}.webhook_message_create` with giving content and by passing `wait` '
+                    f'parameter as `True` as well.')
             else:
-                raise TypeError(f'`message` should have be given as `Message`, `MessageRepr` or as `int` instance, got '
-                    f'`{message.__class__.__name__}`.')
+                raise TypeError(f'`message` can be given as `{Message.__name__}`, `{MessageRepr.__name__}` or as '
+                    f'`int` instance, got {message.__class__.__name__}`.')
         
         # Embed check order:
         # 1.: Elipsis
@@ -9120,19 +9136,19 @@ class Client(UserBase):
         ----------
         webhook : ``Webhook``
             The webhook who created the message.
-        message : ``Message`` or ``MessageRepr``.
+        message : ``Message`` or ``MessageRepr`` or `int`
             The webhook's message to edit.
         
         Raises
         ------
         TypeError
-            - `message`'s type is incorrect.
+            If `message` was not given neither as ``Message``, ``MessageRepr`` neither as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - `message` was detectably not sent by the `webhook`.
+            If `message` was detectably not sent by the `webhook`.
         
         See Also
         --------
@@ -9162,11 +9178,11 @@ class Client(UserBase):
                 message_id = message.id
             elif message is None:
                 raise AssertionError('`message` parameter was given as `None`. Make sure to use '
-                    f'`Client.webhook_message_create`  with giving content and with giving the `wait` parameter as '
-                    f'`True`.')
+                    f'`{self.__class__.__name__}.webhook_message_create`  with giving content and with giving the '
+                    '`wait` parameter as `True`.')
             else:
-                raise TypeError(f'`message` should have be given as `Message`or as  `MessageRepr` instance, got '
-                    f'`{message.__class__.__name__}`.')
+                raise TypeError(f'`message` can be given as `{Message.__name__}`, `{MessageRepr.__name__}` or as '
+                    f'`int` instance, got {message.__class__.__name__}`.')
         
         await self.http.webhook_message_delete(webhook, message_id)
     
@@ -10269,8 +10285,1149 @@ class Client(UserBase):
         
         await self.http.role_move(guild.id, data, reason)
     
+    # Application Command & Interaction related
+    
+    async def application_command_global_get_all(self):
+        """
+        Requests the client's global application commands.
+        
+        This method is a coroutine.
+        
+        Returns
+        -------
+        application_commands : `list` of ``ApplicationCommand``
+            The received application commands.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            If the client's application is not yet synced.
+        """
+        application_id = self.application.id
+        if __debug__:
+            if application_id == 0:
+                raise AssertionError('The client\'s application is not yet synced.')
+        
+        data = self.http.application_command_global_get_all(application_id)
+        return [ApplicationCommand.from_data(application_command_data) for application_command_data in data]
+    
+    
+    async def application_command_global_create(self, application_command):
+        """
+        Creates a new global application command.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        application_command : ``ApplicationCommand``
+            The application command to create.
+        
+        Returns
+        -------
+        application_command : ``ApplicationCommand``
+            The created application command.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If the client's application is not yet synced.
+            - If `application_command` was not given as ``ApplicationCommand`` instance.
+        
+        Notes
+        -----
+        Creating a global command with the same name as an already exisitng one, will overwrite the old command.
+        
+        The command will be available in all guilds after 1 hour.
+        """
+        application_id = self.application.id
+        if __debug__:
+            if application_id == 0:
+                raise AssertionError('The client\'s application is not yet synced.')
+        
+        if __debug__:
+            if not isinstance(application_command, ApplicationCommand):
+                raise AssertionError(f'`application_command` can be given as `{ApplicationCommand.__name__}`, got '
+                    f'{application_command.__class__.__name__}.')
+        
+        data = application_command.to_data()
+        data = await self.http.application_command_global_create(application_id, data)
+        return ApplicationCommand.from_data(data)
+    
+    
+    async def application_command_global_edit(self, old_application_command, new_application_command):
+        """
+        Edits a global application command.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        old_application_command : ``ApplicationCommand`` or `int`
+            The application command to edit. Can be given as the application command's id as well.
+        new_application_command : ``ApplicationCommand``
+            The application command to edit to.
+        
+        Returns
+        -------
+        application_command : ``ApplicationCommand``
+            The edited application command.
+        
+        Raises
+        ------
+        TypeError
+            If `old_application_command` was not given neither as ``ApplicationCommand`` nor `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If the client's application is not yet synced.
+            - If `new_application_command` was not given as ``ApplicationCommand`` instance.
+        
+        Notes
+        -----
+        The updates will be available in all guilds after 1 hour.
+        """
+        if isinstance(old_application_command, ApplicationCommand):
+            application_command_id = old_application_command.id
+        else:
+            application_command_id = maybe_snowflake(old_application_command)
+            if application_command_id is None:
+                raise TypeError(f'`old_application_command` can be given as `{ApplicationCommand.__name__}` or `int` '
+                    f'instance, got {old_application_command.__class__.__name__}.')
+        
+        application_id = self.application.id
+        if __debug__:
+            if application_id == 0:
+                raise AssertionError('The client\'s application is not yet synced.')
+        
+        if __debug__:
+            if not isinstance(new_application_command, ApplicationCommand):
+                raise AssertionError(f'`new_application_command` can be given as `{ApplicationCommand.__name__}`, got '
+                    f'{new_application_command.__class__.__name__}.')
+        
+        data = new_application_command.to_data()
+        await self.http.application_command_global_edit(application_id, application_command_id, data)
+        return Application_command._from_edit_data(data, application_command_id, application_id)
+    
+    async def application_command_global_delete(self, application_command):
+        """
+        Delets the given application command.
+        
+        Parameters
+        ----------
+        application_command : ``ApplicationCommand`` or `int`
+            The application command delete edit. Can be given as the application command's id as well.
+        
+        Raises
+        ------
+        TypeError
+            If `application_command` was not given neither as ``ApplicationCommand`` nor `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            If the client's application is not yet synced.
+        """
+        application_id = self.application.id
+        if __debug__:
+            if application_id == 0:
+                raise AssertionError('The client\'s application is not yet synced.')
+        
+        if isinstance(application_command, ApplicationCommand):
+            application_command_id = application_command.id
+        else:
+            application_command_id = maybe_snowflake(application_command)
+            if application_command_id is None:
+                raise TypeError(f'`application_command` can be given as `{ApplicationCommand.__name__}` or `int` '
+                    f'instance, got {application_command.__class__.__name__}.')
+        
+        await self.http.application_command_global_delete(application_id, application_command_id)
+    
+    
+    async def application_command_guild_get_all(self, guild):
+        """
+        Requests the client's global application commands.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild`` or `int`
+            The guild, which application commands will be requested.
+        
+        Returns
+        -------
+        application_commands : `list` of ``ApplicationCommand``
+            The received application commands.
+        
+        Raises
+        ------
+        TypeError
+            If `guild` was not given neither as``Guild`` nor `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            If the client's application is not yet synced.
+        """
+        application_id = self.application.id
+        if __debug__:
+            if application_id == 0:
+                raise AssertionError('The client\'s application is not yet synced.')
+        
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as ``{Guild.__name__}`` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        data = self.http.application_command_guild_get_all(application_id, guild_id)
+        return [ApplicationCommand.from_data(application_command_data) for application_command_data in data]
+    
+    
+    async def application_command_guild_create(self, guild, application_command):
+        """
+        Creates a new guild application command.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild`` or `int`
+            The guild, where application commands will be created.
+        application_command : ``ApplicationCommand``
+            The application command to create.
+        
+        Returns
+        -------
+        application_command : ``ApplicationCommand``
+            The created application command.
+        
+        Raises
+        ------
+        TypeError
+            If `guild` was not given neither as``Guild`` nor `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If the client's application is not yet synced.
+            - If `application_command` was not given as ``ApplicationCommand`` instance.
+        
+        Notes
+        -----
+        Creating a global command with the same name as an already exisitng one, will overwrite the old command.
+        """
+        application_id = self.application.id
+        if __debug__:
+            if application_id == 0:
+                raise AssertionError('The client\'s application is not yet synced.')
+        
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as ``{Guild.__name__}`` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        if __debug__:
+            if not isinstance(application_command, ApplicationCommand):
+                raise AssertionError(f'`application_command` can be given as `{ApplicationCommand.__name__}`, got '
+                    f'{application_command.__class__.__name__}.')
+        
+        data = application_command.to_data()
+        data = await self.http.application_command_guild_create(application_id, guild_id, data)
+        return ApplicationCommand.from_data(data)
+    
+    
+    async def application_command_guild_edit(self, guild, old_application_command, new_application_command):
+        """
+        Edits a guild application command.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild`` or `int`
+            The guild, to what the application command is bound to.
+        old_application_command : ``ApplicationCommand`` or `int`
+            The application command to edit. Can be given as the application command's id as well.
+        new_application_command : ``ApplicationCommand``
+            The application command to edit to.
+        
+        Raises
+        ------
+        TypeError
+            - If `guild` was not given neither as``Guild`` nor `int` instance.
+            - If `old_application_command` was not given neither as ``ApplicationCommand`` nor `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If the client's application is not yet synced.
+            - If `new_application_command` was not given as ``ApplicationCommand`` instance.
+        """
+        if isinstance(old_application_command, ApplicationCommand):
+            application_command_id = old_application_command.id
+        else:
+            application_command_id = maybe_snowflake(old_application_command)
+            if application_command_id is None:
+                raise TypeError(f'`old_application_command` can be given as `{ApplicationCommand.__name__}` or `int` '
+                    f'instance, got {old_application_command.__class__.__name__}.')
+        
+        application_id = self.application.id
+        if __debug__:
+            if application_id == 0:
+                raise AssertionError('The client\'s application is not yet synced.')
+        
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as ``{Guild.__name__}`` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        if __debug__:
+            if not isinstance(new_application_command, ApplicationCommand):
+                raise AssertionError(f'`new_application_command` can be given as `{ApplicationCommand.__name__}`, got '
+                    f'{new_application_command.__class__.__name__}.')
+        
+        data = new_application_command.to_data()
+        await self.http.application_command_guild_edit(application_id, guild_id, application_command_id, data)
+    
+    async def application_command_guild_delete(self, guild, application_command):
+        """
+        Delets the given application command.
+        
+        Parameters
+        ----------
+        guild : ``Guild`` or `int`
+            The guild, to what the application command is bound to.
+        application_command : ``ApplicationCommand`` or `int`
+            The application command delete edit. Can be given as the application command's id as well.
+        
+        Raises
+        ------
+        TypeError
+            - If `guild` was not given neither as``Guild`` nor `int` instance.
+            - If `application_command` was not given neither as ``ApplicationCommand`` nor `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            If the client's application is not yet synced.
+        """
+        application_id = self.application.id
+        if __debug__:
+            if application_id == 0:
+                raise AssertionError('The client\'s application is not yet synced.')
+        
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as ``{Guild.__name__}`` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        if isinstance(application_command, ApplicationCommand):
+            application_command_id = application_command.id
+        else:
+            application_command_id = maybe_snowflake(application_command)
+            if application_command_id is None:
+                raise TypeError(f'`application_command` can be given as `{ApplicationCommand.__name__}` or `int` '
+                    f'instance, got {application_command.__class__.__name__}.')
+        
+        await self.http.application_command_guild_delete(application_id, guild_id, application_command_id)
+    
+    
+    async def interaction_response_message_create(self, interaction, content=None, *, embed=None, allowed_mentions=...,
+            tts=False, show_source=True):
+        """
+        Sends an interaction response.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        interaction : ``InteractionEvent`` instance
+            Interaction to respond to.
+        content : `str`, ``EmbedBase``, `Any`, Optional
+            The interaction response's content if given. If given as `str` or empty string, then no content will be
+            sent, meanwhile if any other non `str` or ``EmbedBase`` instance is given, then will be casted to string.
+            
+            If given as ``EmbedBase`` instance, then is sent as the message's embed.
+        
+        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional
+            The embedded content of the interaction response.
+            
+            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
+        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
+            Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
+        tts : `bool`, Optional
+            Whether the message is text-to-speech.
+        show_source : `bool`, Optional
+            Whether the source message should be shown as well. Defaults to `True`.
+        
+        Raises
+        ------
+        TypeError
+            - If `allowed_mentions` contains an element of invalid type.
+            - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
+            - If `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
+        ValueError
+            If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            If `interaction` was not given an ``InteractionEvent`` instance.
+        
+        Notes
+        -----
+        Discord do not returns message data, so the method cannto return a ``Message`` either.
+        
+        By calling the method on the same interaction twice, you will get:
+        
+        ```
+        DiscordException Not Found (404), code=10062: Unknown interaction
+        ```
+        """
+        if __debug__:
+            if not isinstance(interaction, InteractionEvent):
+                raise AssertionError(f'`interaction` can be given as `{InteractionEvent.__name__}` instance, got '
+                    f'{interaction.__class__.__name__}.')
+        
+        # Embed check order:
+        # 1.: None
+        # 2.: Embed -> [embed]
+        # 3.: list of Embed -> embed[:10] or None
+        # 4.: raise
+        
+        if embed is None:
+            pass
+        elif isinstance(embed, EmbedBase):
+            embed = [embed]
+        elif isinstance(embed, (list, tuple)):
+            if embed:
+                if __debug__:
+                    for index, element in enumerate(embed):
+                        if isinstance(element, EmbedBase):
+                            continue
+                        
+                        raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
+                            f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
+                            f'{embed.__class__.__name__}.')
+                
+                embed = embed[:10]
+            else:
+                embed = None
+            
+        else:
+            raise TypeError(f'`embed` was not given as `{EmbedBase.__name__}` instance, neither as a list of '
+                f'{EmbedBase.__name__} instances, got {embed.__class__.__name__}.')
+        
+        # Content check order:
+        # 1.: None
+        # 2.: str
+        # 3.: Embed -> embed = [content]
+        # 4.: list of Embed -> embed = content[:10]
+        # 5.: object -> str(content)
+        
+        if content is None:
+            pass
+        elif isinstance(content, str):
+            if not content:
+                content = None
+        elif isinstance(content, EmbedBase):
+            if __debug__:
+                if (embed is not None):
+                    raise TypeError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
+            
+            embed = [content]
+            content = None
+        else:
+            # Check for list of embeds as well.
+            if isinstance(content, (list, tuple)):
+                if content:
+                    for element in content:
+                        if isinstance(element, EmbedBase):
+                            continue
+                        
+                        is_list_of_embeds = False
+                        break
+                    else:
+                        is_list_of_embeds = True
+                else:
+                    is_list_of_embeds = False
+            else:
+                is_list_of_embeds = False
+            
+            if is_list_of_embeds:
+                if __debug__:
+                    if (embed is not None):
+                        raise TypeError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
+                
+                embed = content[:10]
+                content = None
+            else:
+                content = str(content)
+                if not content:
+                    content = None
+        
+        message_data = {}
+        contains_content = False
+        
+        if (content is not None):
+            message_data['content'] = content
+            contains_content = True
+        
+        if (embed is not None):
+            message_data['embeds'] = [embed.to_data() for embed in embed]
+            contains_content = True
+        
+        if (allowed_mentions is not ...):
+            message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
+        
+        if tts:
+            message_data['tts'] = True
+        
+        data = {}
+        if contains_content:
+            data['data'] = message_data
+            
+            if show_source:
+                response_type = InteractionResponseTypes.message_and_source
+            else:
+                response_type = InteractionResponseTypes.message
+        else:
+            if show_source:
+                response_type = InteractionResponseTypes.source
+            else:
+                response_type = InteractionResponseTypes.acknowledge
+        
+        data['type'] = response_type
+        
+        await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
+        # No message data is provided, return `None`.
+        return None
+    
+    
+    async def interaction_response_message_edit(self, interaction, content=..., embed=..., allowed_mentions=...):
+        """
+        Edits the given `interaction`'s source response.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        interaction : ``InteractionEvent`` instance
+            Interaction, what's source response message will be edited.
+        content : `str`, ``EmbedBase`` or `Any`, Optional
+            The new content of the message.
+            
+            If given as `str` then the message's content will be edited with it. If given as any non ``EmbedBase``
+            instance, then it will be cased to string first.
+            
+            By passing it as empty string, you can remove the message's content.
+            
+            If given as ``EmbedBase`` instance, then the message's embeds will be edited with it.
+        embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional
+            The new embedded content of the message. By passing it as `None`, you can remove the old.
+            
+            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
+        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
+            Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions``
+            for details.
+        
+        Raises
+        ------
+        TypeError
+            - If `allowed_mentions` contains an element of invalid type.
+            - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
+            - If `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
+        ValueError
+            If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `interaction` was not given as ``InteractionEvent`` instance.
+            - If the client's application is not yet synced.
+        """
+        application_id = self.application.id
+        if __debug__:
+            if application_id == 0:
+                raise AssertionError('The client\'s application is not yet synced.')
+        
+        if __debug__:
+            if not isinstance(interaction, InteractionEvent):
+                raise AssertionError(f'`interaction` can be given as `{InteractionEvent.__name__}` instance, got '
+                    f'{interaction.__class__.__name__}.')
+        
+        # Embed check order:
+        # 1.: Elipsis
+        # 2.: None
+        # 3.: Embed : -> [embed]
+        # 4.: list of Embed -> embed[:10] or None
+        # 5.: raise
+        
+        if embed is ...:
+            pass
+        elif embed is None:
+            pass
+        elif isinstance(embed, EmbedBase):
+            embed = [embed]
+        elif isinstance(embed, (list, tuple)):
+            if embed:
+                if __debug__:
+                    for index, element in enumerate(embed):
+                        if isinstance(element, EmbedBase):
+                            continue
+                        
+                        raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
+                            f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
+                            f'{embed.__class__.__name__}.')
+                
+                embed = embed[:10]
+            else:
+                embed = None
+        else:
+            raise TypeError(f'`embed` was not given as `{EmbedBase.__name__}` instance, neither as a list of '
+                f'{EmbedBase.__name__} instances, got {embed.__class__.__name__}.')
+        
+        # Content check order:
+        # 1.: Elipsis
+        # 2.: None
+        # 3.: str
+        # 4.: Embed -> embed = [content]
+        # 5.: list of Embed -> embed = content[:10]
+        # 6.: object -> str(content)
+        
+        if content is ...:
+            pass
+        elif content is None:
+            content = ''
+        elif isinstance(content, str):
+            pass
+        elif isinstance(content, EmbedBase):
+            if __debug__:
+                if (embed is not ...):
+                    raise ValueError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
+            
+            embed = [content]
+            content = ...
+        else:
+            # Check for list of embeds as well.
+            if isinstance(content, (list, tuple)):
+                if content:
+                    for element in content:
+                        if isinstance(element, EmbedBase):
+                            continue
+                        
+                        is_list_of_embeds = False
+                        break
+                    else:
+                        is_list_of_embeds = True
+                else:
+                    is_list_of_embeds = False
+            else:
+                is_list_of_embeds = False
+            
+            if is_list_of_embeds:
+                if __debug__:
+                    if (embed is not ...):
+                        raise ValueError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
+                
+                embed = content[:10]
+                content = ...
+            else:
+                content = str(content)
+        
+        
+        # Build payload
+        message_data = {}
+        
+        # Discord docs say, content can be nullable, but nullable content is just ignored.
+        if (content is not ...):
+            message_data['content'] = content
+        
+        if (embed is not ...):
+            if (embed is not None):
+                embed = [embed.to_data() for embed in embed]
+            
+            message_data['embeds'] = embed
+        
+        if (allowed_mentions is not ...):
+            message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
+        
+        if not message_data:
+            return
+        
+        # We receive the new message data, but we do not update the message, so dispatch events can get the difference.
+        await self.http.interaction_response_message_edit(application_id, interaction.id, interaction.token,
+            message_data)
+    
+    
+    async def interaction_response_message_delete(self, interaction):
+        """
+        Deletes the given `interaction`'s source response message.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        interaction : ``InteractionEvent`` instance
+            Interaction, what's source response message will be deleted.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `interaction` was not given as ``InteractionEvent`` instance.
+            - If the client's application is not yet synced.
+        """
+        application_id = self.application.id
+        if __debug__:
+            if application_id == 0:
+                raise AssertionError('The client\'s application is not yet synced.')
+        
+        if __debug__:
+            if not isinstance(interaction, InteractionEvent):
+                raise AssertionError(f'`interaction` can be given as `{InteractionEvent.__name__}` instance, got '
+                    f'{interaction.__class__.__name__}.')
+        
+        await self.http.interaction_response_message_delete(application_id, interaction.id, interaction.token)
+    
+    
+    async def interaction_followup_message_create(self, interaction, content=None, *, embed=None, allowed_mentions=...,
+            tts=False):
+        """
+        Sends a followup message with the given interaction.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        interaction : ``InteractionEvent`` instance
+            Interaction to create followup message with.
+        content : `str`, ``EmbedBase``, `Any`, Optional
+            The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
+            if any other non `str` or ``EmbedBase`` instance is given, then will be casted to string.
+            
+            If given as ``EmbedBase`` instance, then is sent as the message's embed.
+            
+        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional
+            The embedded content of the message.
+            
+            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
+        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
+            Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
+        tts : `bool`, Optional
+            Whether the message is text-to-speech.
+        
+        Returns
+        -------
+        message : `None` or ``Message``
+            Returns `None` if there is nothing to send.
+        
+        Raises
+        ------
+        TypeError
+            - If `allowed_mentions` contains an element of invalid type.
+            - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
+            - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
+            - If ivalid file type would be sent.
+        ValueError
+            - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
+            - If more than `10` files would be sent.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `interaction` was not given as ``InteractionEvent`` instance.
+            - If the client's application is not yet synced.
+        
+        Notes
+        -----
+        Can be used before calling ``.interaction_response_message_create``.
+        """
+        application_id = self.application.id
+        if __debug__:
+            if application_id == 0:
+                raise AssertionError('The client\'s application is not yet synced.')
+        
+        if __debug__:
+            if not isinstance(interaction, InteractionEvent):
+                raise AssertionError(f'`interaction` can be given as `{InteractionEvent.__name__}` instance, got '
+                    f'{interaction.__class__.__name__}.')
+        
+        # Embed check order:
+        # 1.: None
+        # 2.: Embed -> [embed]
+        # 3.: list of Embed -> embed[:10] or None
+        # 4.: raise
+        
+        if embed is None:
+            pass
+        elif isinstance(embed, EmbedBase):
+            embed = [embed]
+        elif isinstance(embed, (list, tuple)):
+            if embed:
+                if __debug__:
+                    for index, element in enumerate(embed):
+                        if isinstance(element, EmbedBase):
+                            continue
+                        
+                        raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
+                            f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
+                            f'{embed.__class__.__name__}.')
+                
+                embed = embed[:10]
+            else:
+                embed = None
+            
+        else:
+            raise TypeError(f'`embed` was not given as `{EmbedBase.__name__}` instance, neither as a list of '
+                f'{EmbedBase.__name__} instances, got {embed.__class__.__name__}.')
+        
+        # Content check order:
+        # 1.: None
+        # 2.: str
+        # 3.: Embed -> embed = [content]
+        # 4.: list of Embed -> embed = content[:10]
+        # 5.: object -> str(content)
+        
+        if content is None:
+            pass
+        elif isinstance(content, str):
+            if not content:
+                content = None
+        elif isinstance(content, EmbedBase):
+            if __debug__:
+                if (embed is not None):
+                    raise TypeError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
+            
+            embed = [content]
+            content = None
+        else:
+            # Check for list of embeds as well.
+            if isinstance(content, (list, tuple)):
+                if content:
+                    for element in content:
+                        if isinstance(element, EmbedBase):
+                            continue
+                        
+                        is_list_of_embeds = False
+                        break
+                    else:
+                        is_list_of_embeds = True
+                else:
+                    is_list_of_embeds = False
+            else:
+                is_list_of_embeds = False
+            
+            if is_list_of_embeds:
+                if __debug__:
+                    if (embed is not None):
+                        raise TypeError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
+                
+                embed = content[:10]
+                content = None
+            else:
+                content = str(content)
+                if not content:
+                    content = None
+        
+        message_data = {}
+        contains_content = False
+        
+        if (content is not None):
+            message_data['content'] = content
+            contains_content = True
+        
+        if (embed is not None):
+            message_data['embeds'] = [embed.to_data() for embed in embed]
+            contains_content = True
+        
+        if (allowed_mentions is not ...):
+            message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
+        
+        if tts:
+            message_data['tts'] = True
+        
+        if not contains_content:
+            return None
+        
+        data = await self.http.interaction_followup_message_create(application_id, interaction.id, interaction.token,
+            message_data)
+        
+        return interaction.channel._create_new_message(data)
+    
+    
+    async def interaction_followup_message_edit(self, interaction, message, content=..., *, embed=...,
+            allowed_mentions=...):
+        """
+        Edits the given interaction followup message.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        interaction : ``InteractionEvent`` instance
+            Interaction with what the followup message was sent with.
+        message : ``Message`` or ``MessageRepr``, `int` instance
+            The interaction followup's message to edit.
+        content : `str`, ``EmbedBase`` or `Any`, Optional
+            The new content of the message.
+            
+            If given as `str` then the message's content will be edited with it. If given as any non ``EmbedBase``
+            instance, then it will be cased to string first.
+            
+            By passing it as empty string, you can remove the message's content.
+            
+            If given as ``EmbedBase`` instance, then the message's embeds will be edited with it.
+        embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional
+            The new embedded content of the message. By passing it as `None`, you can remove the old.
+            
+            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
+        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
+            Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions``
+            for details.
+        
+        Raises
+        ------
+        TypeError
+            - If `allowed_mentions` contains an element of invalid type.
+            - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
+            - If `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
+            - If `message` was not given neither as ``Message``, ``MessageRepr``  or `int` instance.
+        ValueError
+            If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `interaction` was not given as ``InteractionEvent`` instance.
+            - If the client's application is not yet synced.
+        """
+        application_id = self.application.id
+        if __debug__:
+            if application_id == 0:
+                raise AssertionError('The client\'s application is not yet synced.')
+        
+        if __debug__:
+            if not isinstance(interaction, InteractionEvent):
+                raise AssertionError(f'`interaction` can be given as `{InteractionEvent.__name__}` instance, got '
+                    f'{interaction.__class__.__name__}.')
+        
+        # Detect message id
+        # 1.: Message
+        # 2.: int (str)
+        # 3.: MessageRepr
+        # 5.: raise
+        
+        if isinstance(message, Message):
+            message_id = message.id
+        else:
+            message_id = maybe_snowflake(message)
+            if (message_id is not None):
+                pass
+            elif isinstance(message, MessageRepr):
+                # Cannot check author id, skip
+                message_id = message.id
+            else:
+                raise TypeError(f'`message` can be given as `{Message.__name__}`, `{MessageRepr.__name__}` or as '
+                    f'`int` instance, got {message.__class__.__name__}`.')
+        
+        # Embed check order:
+        # 1.: Elipsis
+        # 2.: None
+        # 3.: Embed : -> [embed]
+        # 4.: list of Embed -> embed[:10] or None
+        # 5.: raise
+        
+        if embed is ...:
+            pass
+        elif embed is None:
+            pass
+        elif isinstance(embed, EmbedBase):
+            embed = [embed]
+        elif isinstance(embed, (list, tuple)):
+            if embed:
+                if __debug__:
+                    for index, element in enumerate(embed):
+                        if isinstance(element, EmbedBase):
+                            continue
+                        
+                        raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
+                            f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
+                            f'{embed.__class__.__name__}.')
+                
+                embed = embed[:10]
+            else:
+                embed = None
+        else:
+            raise TypeError(f'`embed` was not given as `{EmbedBase.__name__}` instance, neither as a list of '
+                f'{EmbedBase.__name__} instances, got {embed.__class__.__name__}.')
+        
+        # Content check order:
+        # 1.: Elipsis
+        # 2.: None
+        # 3.: str
+        # 4.: Embed -> embed = [content]
+        # 5.: list of Embed -> embed = content[:10]
+        # 6.: object -> str(content)
+        
+        if content is ...:
+            pass
+        elif content is None:
+            content = ''
+        elif isinstance(content, str):
+            pass
+        elif isinstance(content, EmbedBase):
+            if __debug__:
+                if (embed is not ...):
+                    raise ValueError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
+            
+            embed = [content]
+            content = ...
+        else:
+            # Check for list of embeds as well.
+            if isinstance(content, (list, tuple)):
+                if content:
+                    for element in content:
+                        if isinstance(element, EmbedBase):
+                            continue
+                        
+                        is_list_of_embeds = False
+                        break
+                    else:
+                        is_list_of_embeds = True
+                else:
+                    is_list_of_embeds = False
+            else:
+                is_list_of_embeds = False
+            
+            if is_list_of_embeds:
+                if __debug__:
+                    if (embed is not ...):
+                        raise ValueError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
+                
+                embed = content[:10]
+                content = ...
+            else:
+                content = str(content)
+        
+        # Build payload
+        message_data = {}
+        
+        # Discord docs say, content can be nullable, but nullable content is just ignored.
+        if (content is not ...):
+            message_data['content'] = content
+        
+        if (embed is not ...):
+            if (embed is not None):
+                embed = [embed.to_data() for embed in embed]
+            
+            message_data['embeds'] = embed
+        
+        if (allowed_mentions is not ...):
+            message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
+        
+        if not message_data:
+            return
+        
+        # We receive the new message data, but we do not update the message, so dispatch events can get the difference.
+        await self.http.interaction_followup_message_edit(application_id, interaction.id, interaction.token, message_id,
+            message_data)
+    
+    
+    async def interaction_followup_message_delete(self, interaction, message):
+        """
+        Deletes an interaction's followup message.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        interaction : ``InteractionEvent`` instance
+            Interaction with what the followup message was sent with.
+        message : ``Message`` or ``MessageRepr``, `int` instance
+            The interaction followup's message to edit.
+        
+        Raises
+        ------
+        TypeError
+            If `message` was not given neither as ``Message``, ``MessageRepr``  or `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `interaction` was not given as ``InteractionEvent`` instance.
+            - If the client's application is not yet synced.
+        """
+        application_id = self.application.id
+        if __debug__:
+            if application_id == 0:
+                raise AssertionError('The client\'s application is not yet synced.')
+        
+        if __debug__:
+            if not isinstance(interaction, InteractionEvent):
+                raise AssertionError(f'`interaction` can be given as `{InteractionEvent.__name__}` instance, got '
+                    f'{interaction.__class__.__name__}.')
+        
+        # Detect message id
+        # 1.: Message
+        # 2.: int (str)
+        # 3.: MessageRepr
+        # 5.: raise
+        
+        if isinstance(message, Message):
+            message_id = message.id
+        else:
+            message_id = maybe_snowflake(message)
+            if (message_id is not None):
+                pass
+            elif isinstance(message, MessageRepr):
+                # Cannot check author id, skip
+                message_id = message.id
+            else:
+                raise TypeError(f'`message` can be given as `{Message.__name__}`, `{MessageRepr.__name__}` or as '
+                    f'`int` instance, got {message.__class__.__name__}`.')
+        
+        await self.http.interaction_followup_message_delete(application_id, interaction.id, interaction.token, message_id)
+    
+    
     # Relationship related
-    # hooman only
+    
     async def relationship_delete(self, relationship):
         """
         Deletes the given relationship.
@@ -10288,10 +11445,13 @@ class Client(UserBase):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        
+        Notes
+        -----
+        This endpoint is available only for user accounts.
         """
         await self.http.relationship_delete(relationship.user.id)
     
-    #hooman only
     async def relationship_create(self, user, relationship_type=None):
         """
         Creates a relationship with the given user.
@@ -10311,13 +11471,16 @@ class Client(UserBase):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        
+        Notes
+        -----
+        This endpoint is available only for user accounts.
         """
         data = {}
         if (relationship_type is not None):
             data['type'] = relationship_type.value
         await self.http.relationship_create(user.id, data)
     
-    # hooman only
     async def relationship_friend_request(self, user):
         """
         Sends a friend request to the given user.
@@ -10335,6 +11498,10 @@ class Client(UserBase):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        
+        Notes
+        -----
+        This endpoint is available only for user accounts.
         """
         data = {
             'username'      : user.name,
@@ -10342,7 +11509,6 @@ class Client(UserBase):
                 }
         await self.http.relationship_friend_request(data)
     
-    # bot only!
     async def update_application_info(self):
         """
         Updates the client's application's info.
@@ -10358,11 +11524,13 @@ class Client(UserBase):
         
         Notes
         -----
-        Meanwhile the clients logs in this method is called.
+        Meanwhile the clients logs in this method is called to ensrue that the client's application info is loaded.
+        
+        This endpoint is available only for bot accounts.
         """
         if self.is_bot:
             data = await self.http.client_application_info()
-            self.application = self.application._create_update(data)
+            self.application = self.application._create_update(data, False)
     
     async def client_gateway(self):
         """

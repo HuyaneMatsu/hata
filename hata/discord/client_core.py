@@ -1,6 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('APPLICATIONS', 'CHANNELS', 'CLIENTS', 'DISCOVERY_CATEGORIES', 'EMOJIS', 'EULAS', 'GUILDS', 'INTEGRATIONS',
-    'INVITES', 'KOKORO', 'MESSAGES', 'ROLES', 'TEAMS', 'USERS', 'start_clients', 'stop_clients', )
+__all__ = ('APPLICATION_COMMANDS', 'APPLICATIONS', 'CHANNELS', 'CLIENTS', 'DISCOVERY_CATEGORIES', 'EMOJIS', 'EULAS',
+    'GUILDS', 'INTEGRATIONS', 'INVITES', 'KOKORO', 'MESSAGES', 'ROLES', 'TEAMS', 'USERS', 'start_clients',
+    'stop_clients', )
 
 import sys, gc
 from time import perf_counter
@@ -369,6 +370,7 @@ DISCOVERY_CATEGORIES = WeakValueDictionary()
 EULAS = WeakValueDictionary()
 APPLICATIONS = WeakValueDictionary()
 INVITES = WeakValueDictionary()
+APPLICATION_COMMANDS = WeakValueDictionary()
 
 def start_clients():
     """

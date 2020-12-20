@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-__all__ = ('AuditLogEvent', 'ContentFilterLevel', 'DefaultAvatar', 'FriendRequestFlag', 'GuildFeature',
-    'HypesquadHouse', 'InviteTargetType', 'MFA', 'MessageActivityType', 'MessageNotificationLevel', 'MessageType',
-    'PremiumType', 'RelationshipType', 'RoleManagerType', 'Status', 'StickerType', 'TeamMembershipState', 'Theme',
-    'VerificationLevel', 'VoiceRegion', 'WebhookType', )
+__all__ = ('ApplicationCommandOptionType', 'AuditLogEvent', 'ContentFilterLevel', 'DefaultAvatar', 'FriendRequestFlag',
+    'GuildFeature', 'HypesquadHouse', 'InviteTargetType', 'MFA', 'MessageActivityType', 'MessageNotificationLevel',
+    'MessageType', 'PremiumType', 'RelationshipType', 'RoleManagerType', 'Status', 'StickerType', 'TeamMembershipState',
+    'Theme', 'VerificationLevel', 'VoiceRegion', 'WebhookType', )
 
 from ..backend.utils import DOCS_ENABLED, any_to_any
 
@@ -1070,6 +1070,8 @@ class MessageType(PreinstancedBase):
     +-------------------------------------------+---------------------------------------------------+-------+
     | inline_reply                              | DEFAULT_CONVERT                                   | 19    |
     +-------------------------------------------+---------------------------------------------------+-------+
+    | application_command                       | DEFAULT_CONVERT                                   | 20    |
+    +-------------------------------------------+---------------------------------------------------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -1161,6 +1163,7 @@ class MessageType(PreinstancedBase):
     discovery_grace_period_initial_warning = NotImplemented
     discovery_grace_period_final_warning = NotImplemented
     inline_reply = NotImplemented
+    application_command = NotImplemented
 
 def convert_add_user(self):
     return f'{self.author.name} added {self.user_mentions[0].name} to the group.'
@@ -1333,6 +1336,8 @@ MessageType.discovery_grace_period_final_warning = MessageType(17, 'discovery_gr
     convert_discovery_grace_period_final_warning)
 MessageType.thread_created = MessageType(18, 'thread_created', convert_thread_created)
 MessageType.inline_reply = MessageType(19, 'inline_reply', MessageType.DEFAULT_CONVERT)
+MessageType.application_command = MessageType(20, 'application_command', MessageType.DEFAULT_CONVERT)
+
 
 del convert_add_user
 del convert_remove_user
@@ -2143,6 +2148,78 @@ RoleManagerType.UNKNOWN     = RoleManagerType(2 , 'UNKNOWN'     ,)
 RoleManagerType.BOT         = RoleManagerType(3 , 'BOT'         ,)
 RoleManagerType.BOOSTER     = RoleManagerType(4 , 'BOOSTER'     ,)
 RoleManagerType.INTEGRATION = RoleManagerType(5 , 'INTEGRATION' ,)
+
+
+class ApplicationCommandOptionType(PreinstancedBase):
+    """
+    Represents an application command options' type.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the role manager type.
+    value : `int`
+        The identificator value the role manager type.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `list` of ``ApplicationCommandOptionType``
+        Stores the predefined ``ApplicationCommandOptionType`` instances. These can be accessed with their `value` as
+        key.
+    VALUE_TYPE : `type` = `int`
+        The application command option typea' values' type.
+    DEFAULT_NAME : `str` = `'UNDEFINED'`
+        The default name of the application command option types.
+    
+    Every predefind application command option type. can be accessed as class attribute as well:
+    
+    +-----------------------+-------------------+-------+
+    | Class attribute name  | Name              | Value |
+    +=======================+===================+=======+
+    | NONE                  | NONE              | 0     |
+    +-----------------------+-------------------+-------+
+    | SUB_COMMAND           | SUB_COMMAND       | 1     |
+    +-----------------------+-------------------+-------+
+    | SUB_COMMAND_GROUP     | SUB_COMMAND_GROUP | 2     |
+    +-----------------------+-------------------+-------+
+    | STRING                | STRING            | 3     |
+    +-----------------------+-------------------+-------+
+    | INTEGER               | INTEGER           | 4     |
+    +-----------------------+-------------------+-------+
+    | BOOLEAN               | BOOLEAN           | 5     |
+    +-----------------------+-------------------+-------+
+    | USER                  | USER              | 6     |
+    +-----------------------+-------------------+-------+
+    | CHANNEL               | CHANNEL           | 7     |
+    +-----------------------+-------------------+-------+
+    | ROLE                  | ROLE              | 8     |
+    +-----------------------+-------------------+-------+
+    """
+    INSTANCES = {}
+    VALUE_TYPE = int
+    DEFAULT_NAME = 'UNDEFINED'
+    
+    __slots__ = ()
+    
+    NONE              = NotImplemented
+    SUB_COMMAND       = NotImplemented
+    SUB_COMMAND_GROUP = NotImplemented
+    STRING            = NotImplemented
+    INTEGER           = NotImplemented
+    BOOLEAN           = NotImplemented
+    USER              = NotImplemented
+    CHANNEL           = NotImplemented
+    ROLE              = NotImplemented
+
+ApplicationCommandOptionType.NONE              = ApplicationCommandOptionType(0 , 'NONE'              ,)
+ApplicationCommandOptionType.SUB_COMMAND       = ApplicationCommandOptionType(1 , 'SUB_COMMAND'       ,)
+ApplicationCommandOptionType.SUB_COMMAND_GROUP = ApplicationCommandOptionType(2 , 'SUB_COMMAND_GROUP' ,)
+ApplicationCommandOptionType.STRING            = ApplicationCommandOptionType(3 , 'STRING'            ,)
+ApplicationCommandOptionType.INTEGER           = ApplicationCommandOptionType(4 , 'INTEGER'           ,)
+ApplicationCommandOptionType.BOOLEAN           = ApplicationCommandOptionType(5 , 'BOOLEAN'           ,)
+ApplicationCommandOptionType.USER              = ApplicationCommandOptionType(6 , 'USER'              ,)
+ApplicationCommandOptionType.CHANNEL           = ApplicationCommandOptionType(7 , 'CHANNEL'           ,)
+ApplicationCommandOptionType.ROLE              = ApplicationCommandOptionType(8 , 'ROLE'              ,)
 
 
 module_utils.RelationshipType = RelationshipType

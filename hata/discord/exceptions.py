@@ -330,6 +330,8 @@ class ERROR_CODES:
     +---------------------------------------------------+-----------+-------+
     | unknown_webhook                                   | 10015     | -     |
     +---------------------------------------------------+-----------+-------+
+    | unknown_webhook_service                           | 10016     | -     |
+    +---------------------------------------------------+-----------+-------+
     | unknown_ban                                       | 10026     | -     |
     +---------------------------------------------------+-----------+-------+
     | unknown_SKU                                       | 10027     | -     |
@@ -351,6 +353,8 @@ class ERROR_CODES:
     | unknown_guild_template                            | 10057     | -     |
     +---------------------------------------------------+-----------+-------+
     | unknown_discovery_category                        | 10059     | -     |
+    +---------------------------------------------------+-----------+-------+
+    | unknown_interaction                               | 10062     | -     |
     +---------------------------------------------------+-----------+-------+
     | bots_not_allowed                                  | 20001     | -     |
     +---------------------------------------------------+-----------+-------+
@@ -562,6 +566,7 @@ class ERROR_CODES:
     unknown_user            = 10013
     unknown_emoji           = 10014
     unknown_webhook         = 10015
+    unknown_webhook_service = 10016
     unknown_ban             = 10026
     unknown_SKU             = 10027
     unknown_store_listing   = 10028
@@ -573,6 +578,7 @@ class ERROR_CODES:
     unknown_gift_code       = 10038
     unknown_guild_template  = 10057
     unknown_discovery_category = 10059
+    unknown_interaction     = 10062
     
     bots_not_allowed        = 20001
     only_bots_allowed       = 20002

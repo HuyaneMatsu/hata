@@ -2,14 +2,18 @@
 __all__ = ('AsyncQue', 'CancelledError', 'Event', 'Future', 'FutureAsyncWrapper', 'FutureSyncWrapper', 'FutureWM',
     'Gatherer', 'InvalidStateError', 'Lock', 'ScarletExecutor', 'ScarletLock', 'Task', 'WaitContinously', 'WaitTillAll',
     'WaitTillExc', 'WaitTillFirst', 'enter_executor', 'future_or_timeout', 'is_awaitable', 'is_coroutine',
-    'is_coroutine_function', 'shield', 'sleep', )
+    'is_coroutine_function', 'is_coroutine_generator', 'is_coroutine_generator_function', 'shield', 'sleep', )
 
 import sys, reprlib, linecache
-from types import GeneratorType, CoroutineType, MethodType as method, FunctionType as function, coroutine
+from types import GeneratorType, CoroutineType, AsyncGeneratorType, MethodType as method, FunctionType as function, \
+    coroutine
 from collections import deque
 from threading import current_thread, Lock as SyncLock, Event as SyncEvent
 
 from .utils import alchemy_incendiary, DOCS_ENABLED, copy_func
+from .analyzer import CO_ASYNC_GENERATOR, CO_COROUTINE_ALL
+
+from . import analyzer as module_analyzer
 
 class CancelledError(BaseException):
     """The Future or Task was cancelled."""
@@ -85,13 +89,26 @@ def is_coroutine_function(func):
     -------
     is_coroutine_function : `bool`
     """
-    if isinstance(func, (function, method)) and func.__code__.co_flags&0x180:
-        return True # the result MUST be converted to `1`
-    return (getattr(func, '__async_call__', False) == True)
+    return isinstance(func, (function, method)) and func.__code__.co_flags&CO_COROUTINE_ALL
+
+def is_coroutine_generator_function(func):
+    """
+    Returns whether the given `obj` is a coroutine generator function, so is created with `async def` and uses `yield`
+    statement.
+    
+    Parameters
+    ----------
+    func : `Any`
+    
+    Returns
+    -------
+    is_coroutine_function_generator : `bool`
+    """
+    return isinstance(func, (function, method)) and func.__code__.co_flags&CO_ASYNC_GENERATOR
 
 def is_coroutine(obj):
     """
-    Returns whether the givne `obj` is a coroutine created by an `async def` function.
+    Returns whether the given `obj` is a coroutine created by an `async def` function.
     
     Parameters
     ----------
@@ -126,6 +143,28 @@ def is_awaitable(obj):
     
     return False
 
+def is_coroutine_generator(obj):
+    """
+    Returns whether the given `obj` is a coroutine generatorcreated by an `async def` function, and can be used inside
+    of an `async for` loop.
+    
+    Returns
+    -------
+    is_coroutine_generator : `bool`
+    """
+    if isinstance(obj, AsyncGeneratorType):
+        code = obj.ag_code
+    elif isinstance(obj, CoroutineType):
+        code = obj.cr_code
+    elif isinstance(obj, GeneratorType):
+        code = obj.gi_code
+    else:
+        return False
+    
+    if code.co_flags&CO_ASYNC_GENERATOR:
+        return True
+    
+    return False
 
 EventThread = NotImplemented
 
@@ -6177,5 +6216,9 @@ class WaitContinously(WaitTillFirst):
     # `syncwrap` is same as ``Future.syncwrap``
     # `asyncwrap` is same as ``Future.asyncwrap``
 
+module_analyzer.is_coroutine_function = is_coroutine_function
+module_analyzer.is_coroutine_generator_function = is_coroutine_generator_function
+
 del DOCS_ENABLED
 del copy_func
+del module_analyzer

@@ -16,10 +16,10 @@ from ..backend.utils import function, RemovedDescriptor, _spaceholder, MethodLik
 from ..backend.analyzer import CallableAnalyzer
 from ..backend.eventloop import LOOP_TIME
 
-from .bases import FlagBase
-from .client_core import CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO
+from .bases import FlagBase, DiscordEntity
+from .client_core import CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO, APPLICATION_COMMANDS
 from .user import User, create_partial_user, USERS
-from .channel import CHANNEL_TYPES, ChannelGuildBase, ChannelPrivate
+from .channel import CHANNEL_TYPES, ChannelGuildBase, ChannelPrivate, ChannelText
 from .utils import Relationship, Gift
 from .guild import EMOJI_UPDATE_NEW, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, VOICE_STATE_NONE, VOICE_STATE_JOIN, \
     VOICE_STATE_LEAVE, VOICE_STATE_UPDATE, Guild
@@ -28,7 +28,9 @@ from .role import Role
 from .exceptions import DiscordException, ERROR_CODES
 from .invite import Invite
 from .message import EMBED_UPDATE_NONE, Message, MessageRepr
-from .integration import Integration
+from .interaction import ApplicationCommandInteraction, ApplicationCommand
+
+from . import ratelimit as module_ratelimit
 
 Client = NotImplemented
 
@@ -935,9 +937,11 @@ def READY(client, data):
         for channel_private_data in channel_private_datas:
             CHANNEL_TYPES[channel_private_data['type']](channel_private_data, client)
     
+    client.application._create_update(data['application'], True)
+    
     # ignore `'user_settings'`
     
-    #"client.events.ready" gonna be called by _delay_ready at the end
+    # 'client.events.ready' gonna be called by _delay_ready at the end
     
     return _spaceholder
 
@@ -1514,6 +1518,8 @@ class ReactionAddEvent(EventBase):
         """
         Creates a new ``ReactionAddEvent`` instance (or it's subclasse's instance).
         
+        Parameters
+        ----------
         message : ``Message`` or ``MessageRepr``
             The respective message.
         emoji : ``Emoji``
@@ -4321,6 +4327,206 @@ PARSER_DEFAULTS(
 del USER_GUILD_SETTINGS_UPDATE
 
 
+class InteractionEvent(EventBase, DiscordEntity):
+    """
+    Represents a processed `INTERACTION_CREATE` dispatch event.
+    
+    Attributes
+    ----------
+    id : `int`
+        The interaction's id.
+    channel_id : `int`
+        The channel's id where the interaction was used.
+    guild_id : `int` instance
+        The guild, where the interaction was used.
+    interaction : ``ApplicationCommandInteraction``
+        The called interaction by it's route by the user.
+    token : `str`
+        Interaction's token used when responding on it.
+    user : ``Client`` or ``User``
+        The user who called the interaction.
+    
+    Notes
+    -----
+    The interaction token can be used for 15 minutes, tho if it is not used within the first 3 seconds, it is
+    invalidated immediately.
+    """
+    __slots__ = ('channel_id', 'guild_id', 'interaction', 'token', 'user',)
+    def __new__(cls, data):
+        """
+        Creates a new ``InteractionEvent`` instance with the given parameters.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            `INTERACTION_CREATE` dispatch event data.
+        """
+        self = object.__new__(cls)
+        self.id = int(data['id'])
+        self.channel_id = int(data['channel_id'])
+        self.guild_id = guild_id = int(data['guild_id'])
+        self.interaction = ApplicationCommandInteraction(data['data'])
+        self.token = data['token']
+        # We ignore `type` field, since we always get only `InteractionType.application_command`.
+        self.user = User(data['member'], GUILDS.get(guild_id))
+        return self
+    
+    def __repr__(self):
+        """Returns the representation of the event."""
+        return (f'<{self.__class__.__name__} channel_id={self.channel_id!r}, user={self.user!r}, '
+            f'interaction={self.interaction!r}>')
+    
+    def __len__(self):
+        """Helper for unpacking if needed."""
+        return 3
+    
+    def __iter__(self):
+        """
+        Unpacks the event.
+        
+        This method is a generator.
+        """
+        yield self.channel
+        yield self.user
+        yield self.interaction
+    
+    @property
+    def channel(self):
+        """
+        Returns the hcannel from where the interaction was called from. Might returns a partial channel if the channel
+        is not cached.
+
+        Returns
+        -------
+        channel : ``ChannelText`` instance
+        """
+        return ChannelText.precreate(self.channel_id)
+    
+    @property
+    def guild(self):
+        """
+        Returns the guild from where the interaction was called. Might return `None` if teh guild is not cached.
+        
+        Returns
+        -------
+        guild : ``Guild`` or `None`
+        """
+        return GUILDS.get(self.guild_id)
+
+
+def INTERACTION_CREATE_CAL(client, data):
+    # Since interaction can be called from guilds, where the bot is not in, we will call it even if the respective
+    # channel & guild are not cached.
+    event = InteractionEvent(data)
+    Task(client.events.interaction_create(client, event), KOKORO)
+
+def INTERACTION_CREATE_OPT(client, data):
+    pass
+
+PARSER_DEFAULTS(
+    'INTERACTION_CREATE',
+    INTERACTION_CREATE_CAL,
+    INTERACTION_CREATE_CAL,
+    INTERACTION_CREATE_OPT,
+    INTERACTION_CREATE_OPT)
+del INTERACTION_CREATE_CAL, \
+    INTERACTION_CREATE_OPT
+
+
+def APPLICATION_COMMAND_CREATE_CAL(client, data):
+    guild_id = data[int('guild_id')]
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        return
+    
+    application_command = ApplicationCommand.from_data(data)
+    
+    Task(client.events.application_command_create(client, guild, application_command), KOKORO)
+
+def APPLICATION_COMMAND_CREATE_OPT(client, data):
+    pass
+
+PARSER_DEFAULTS(
+    'APPLICATION_COMMAND_CREATE',
+    APPLICATION_COMMAND_CREATE_CAL,
+    APPLICATION_COMMAND_CREATE_CAL,
+    APPLICATION_COMMAND_CREATE_OPT,
+    APPLICATION_COMMAND_CREATE_OPT)
+del APPLICATION_COMMAND_CREATE_CAL, \
+    APPLICATION_COMMAND_CREATE_OPT
+
+
+def APPLICATION_COMMAND_UPDATE_CAL(client, data):
+    guild_id = data[int('guild_id')]
+    application_command_id = data['id']
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        try:
+            application_command = APPLICATION_COMMANDS[application_command_id]
+        except KeyError:
+            pass
+        else:
+            application_command._update_no_return(data)
+        return
+    
+    try:
+        application_command = APPLICATION_COMMANDS[application_command_id]
+    except KeyError:
+        application_command = ApplicationCommand.from_data(data)
+        old_attributes = None
+    else:
+        old_attributes = application_command._update(data)
+        if not old_attributes:
+            return
+    
+    Task(client.events.application_command_update(client, guild, application_command, old_attributes), KOKORO)
+
+def APPLICATION_COMMAND_UPDATE_OPT(client, data):
+    application_command_id = data['id']
+    try:
+        application_command = APPLICATION_COMMANDS[application_command_id]
+    except KeyError:
+        pass
+    else:
+        application_command._update_no_return(data)
+
+PARSER_DEFAULTS(
+    'APPLICATION_COMMAND_UPDATE',
+    APPLICATION_COMMAND_UPDATE_CAL,
+    APPLICATION_COMMAND_UPDATE_CAL,
+    APPLICATION_COMMAND_UPDATE_OPT,
+    APPLICATION_COMMAND_UPDATE_OPT)
+del APPLICATION_COMMAND_UPDATE_CAL, \
+    APPLICATION_COMMAND_UPDATE_OPT
+
+
+def APPLICATION_COMMAND_DELETE_CAL(client, data):
+    guild_id = data[int('guild_id')]
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        return
+    
+    application_command = ApplicationCommand.from_data(data)
+    
+    Task(client.events.application_command_delete(client, guild, application_command), KOKORO)
+
+def APPLICATION_COMMAND_DELETE_OPT(client, data):
+    pass
+
+PARSER_DEFAULTS(
+    'APPLICATION_COMMAND_DELETE',
+    APPLICATION_COMMAND_DELETE_CAL,
+    APPLICATION_COMMAND_DELETE_CAL,
+    APPLICATION_COMMAND_DELETE_OPT,
+    APPLICATION_COMMAND_DELETE_OPT)
+del APPLICATION_COMMAND_DELETE_CAL, \
+    APPLICATION_COMMAND_DELETE_OPT
+
+
+
 EVENTS = EVENT_SYSTEM_CORE()
 
 EVENTS.add_default('error'                      , 3 , ()                                        , )
@@ -4373,6 +4579,10 @@ EVENTS.add_default('relationship_add'           , 2 , 'RELATIONSHIP_ADD'        
 EVENTS.add_default('relationship_change'        , 3 , 'RELATIONSHIP_ADD'                        , )
 EVENTS.add_default('relationship_delete'        , 2 , 'RELATIONSHIP_REMOVE'                     , )
 EVENTS.add_default('gift_update'                , 3 , 'GIFT_CODE_UPDATE'                        , )
+EVENTS.add_default('interaction_create'         , 2 , 'INTERACTION_CREATE'                      , )
+EVENTS.add_default('application_command_create' , 3 , 'APPLICATION_COMMAND_CREATE'              , )
+EVENTS.add_default('application_command_update' , 4 , 'APPLICATION_COMMAND_UPDATE'              , )
+EVENTS.add_default('application_command_delete' , 3 , 'APPLICATION_COMMAND_DELETE'              , )
 
 def _check_name_should_break(name):
     """
@@ -4461,7 +4671,7 @@ def check_name(func, name):
         name = name.lower()
     return name
 
-def check_argcount_and_convert(func, expected, *, name='event', error_message=None):
+def check_argcount_and_convert(func, expected, *, name='event', can_be_async_generator=False, error_message=None):
     """
     If needed converts the given `func` to an async callable and then checks whether it expects the specified
     amount of non reserved positional arguments.
@@ -4487,6 +4697,8 @@ def check_argcount_and_convert(func, expected, *, name='event', error_message=No
         The amount of arguments, what would be passed to the given `func` when called at the future.
     name : `str`, Optiona
         The event's name, what is checked and converted. Defaults to `'event'`.
+    can_be_async_generator : `bool`
+        Whether async generators are accepted as well.
     error_message : `str`, Optional
         A specified error message with what a `TypeError` will be raised at the end, if the given `func` is not async
         and neither cannot be converted to an async callable.
@@ -4503,7 +4715,7 @@ def check_argcount_and_convert(func, expected, *, name='event', error_message=No
         - If `func` expects less or more non reserved positional arguments as `expected` is.
     """
     analyzer = CallableAnalyzer(func)
-    if analyzer.is_async():
+    if analyzer.is_async() or (analyzer.is_async_generator() if can_be_async_generator else False):
         min_, max_ = analyzer.get_non_reserved_positional_argument_range()
         if min_ > expected:
             raise TypeError(f'A `{name}` should accept `{expected!r}` arguments, meanwhile the given callable expects '
@@ -4522,7 +4734,9 @@ def check_argcount_and_convert(func, expected, *, name='event', error_message=No
         raise TypeError(f'A `{name}` should accept `{expected}` arguments, meanwhile the given callable expects up to '
             f'`{max_!r}`, got `{func!r}`.')
     
-    if analyzer.can_instance_to_async_callable():
+    if analyzer.can_instance_to_async_callable() or \
+            (analyzer.can_instance_to_async_generator() if can_be_async_generator else False):
+        
         sub_analyzer = CallableAnalyzer(func.__call__, as_method=True)
         if sub_analyzer.is_async():
             min_, max_ = sub_analyzer.get_non_reserved_positional_argument_range()
@@ -4532,22 +4746,22 @@ def check_argcount_and_convert(func, expected, *, name='event', error_message=No
                     f'after instancing expects at least `{min_!r}`, got `{func!r}`.')
             
             if min_ == expected:
-                func = analyzer.instance_to_async_callable()
+                func = analyzer.instance()
                 return func
             
             # min < expected
             if max_ >= expected:
-                func = analyzer.instance_to_async_callable()
+                func = analyzer.instance()
                 return func
             
             if sub_analyzer.accepts_args():
-                func = analyzer.instance_to_async_callable()
+                func = analyzer.instance()
                 return func
             
             raise TypeError(f'A `{name}` should accept `{expected}` arguments, meanwhile the given callable after '
                 f'instancing expects up to `{max_!r}`, got `{func!r}`.')
             
-            func = analyzer.instance_to_async_callable()
+            func = analyzer.instance()
             return func
     
     if error_message is None:
@@ -4768,7 +4982,7 @@ def _convert_unsafe_event_iterable(iterable, type_=None):
                 func = element[0]
                 if element_len == 1:
                     name = None
-                    kwargs=None
+                    kwargs = None
                 else:
                     name = element[1]
                     if (name is not None) and (type(name) is not str):
@@ -4803,7 +5017,7 @@ def _convert_unsafe_event_iterable(iterable, type_=None):
             else:
                 func = element
                 name = None
-                kwargs =None
+                kwargs = None
             
             if type_ is None:
                 element = EventListElement(func, name, kwargs)
@@ -6958,6 +7172,38 @@ class EventDescriptor(object):
     
     Additonal Event Attributes
     --------------------------
+    application_command_create(client : ``Client``, guild: ``Guild``, application_command: ``ApplicationCommand``)
+        Called when you create an application guild bound to a guild.
+        
+        The respective guild must be cached.
+    
+    application_command_delete(client: ``Client``, guild : ``Guild``, application_command: ``ApplicationCommand``)
+        Called when you delete one of your guild bound application commands.
+        
+        The respective guild must be cached.
+    
+    application_command_update(client : ``Client``, guild: ``guild``, application:command: ``ApplicationCommand``, \
+            old_attributes : Union[`dict`, `None`])
+        Called when you update one of your guild bound application command.
+        
+        The respective guild must be cached.
+        
+        `old_attrbites` might be given as `None` if the `application_command` is not cached. If it is cached, is given
+        as a `dict` which contains the updated attributes of the application command as keys and their old values as
+        the values.
+        
+        Every item in `old_attributes` is optional and it's items can be any of the following:
+        
+        +---------------+---------------------------------------------------+
+        | Keys          | Values                                            |
+        +===============+===================================================+
+        | description   | str                                               |
+        +---------------+---------------------------------------------------+
+        | name          | str                                               |
+        +---------------+---------------------------------------------------+
+        | options       | `None` or `list` of ``ApplicationCommandOption``  |
+        +---------------+---------------------------------------------------+
+        
     channel_create(client: ``Client``, channel: ``ChannelBase``)
         Called when a channel is created.
         
@@ -7211,6 +7457,9 @@ class EventDescriptor(object):
         
         No integration data is included with the received dispatch event, so it cannot be passed to the event
         handler either.
+    
+    interaction_create(client: ``Client``, event: ``InteractionEvent``)
+        Called when a user interacts with an application command.
     
     invite_create(client: ``Client``, invite: Invite):
         Called when an invite is created  at a guild.
@@ -7771,7 +8020,11 @@ async def _with_error(client, task):
         await client.events.error(client, repr(task), err)
 
 
+module_ratelimit.InteractionEvent = InteractionEvent
+
 del RemovedDescriptor
 del FlagBase
 del NEEDS_DUMMY_INIT
 del DOCS_ENABLED
+del DiscordEntity
+del module_ratelimit

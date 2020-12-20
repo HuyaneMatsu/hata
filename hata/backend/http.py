@@ -399,7 +399,7 @@ class HTTPClient(object):
             Request headers.
         **kwargs : Keyword Parameters
             Additional keyword parameters.
-.
+        
         Other Parameters
         ----------------
         data : `None` or `Any`, Optional
@@ -443,7 +443,7 @@ class HTTPClient(object):
             Request headers.
         **kwargs : Keyword Parameters
             Additional keyword parameters.
-.
+        
         Other Parameters
         ----------------
         data : `None` or `Any`, Optional
@@ -495,7 +495,7 @@ class HTTPClient(object):
             Request headers.
         **kwargs : Keyword Parameters
             Additional keyword parameters.
-.
+        
         Other Parameters
         ----------------
         data : `None` or `Any`, Optional
@@ -537,7 +537,7 @@ class HTTPClient(object):
             Request headers.
         **kwargs : Keyword Parameters
             Additional keyword parameters.
-.
+        
         Other Parameters
         ----------------
         data : `None` or `Any`, Optional
@@ -579,7 +579,7 @@ class HTTPClient(object):
             Request headers.
         **kwargs : Keyword Parameters
             Additional keyword parameters.
-.
+        
         Other Parameters
         ----------------
         data : `None` or `Any`, Optional
@@ -621,7 +621,7 @@ class HTTPClient(object):
             Request headers.
         **kwargs : Keyword Parameters
             Additional keyword parameters.
-.
+        
         Other Parameters
         ----------------
         data : `None` or `Any`, Optional
@@ -663,7 +663,7 @@ class HTTPClient(object):
             Request headers.
         **kwargs : Keyword Parameters
             Additional keyword parameters.
-.
+        
         Other Parameters
         ----------------
         data : `None` or `Any`, Optional
@@ -705,7 +705,7 @@ class HTTPClient(object):
             Request headers.
         **kwargs : Keyword Parameters
             Additional keyword parameters.
-.
+        
         Other Parameters
         ----------------
         data : `None` or `Any`, Optional
@@ -747,7 +747,7 @@ class HTTPClient(object):
             Request headers.
         **kwargs : Keyword Parameters
             Additional keyword parameters.
-.
+        
         Other Parameters
         ----------------
         data : `None` or `Any`, Optional

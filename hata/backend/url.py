@@ -501,12 +501,12 @@ class URL:
     
     def with_query(self, query):
         """
-        Returns a new url with query part replaced. If `None` is given as `param` you can clear teh actual query.
+        Returns a new url with query part replaced. If `None` is given as `param` you can clear the actual query.
         
         Parameters
         ----------
         query : `None`, `str`, (`dict`, `list`, `set`) of \
-                (`str`, (`str`, `int`, `bool`, `NoneType`, `float`, (`list` or `set`) of repeat value)) items / elements
+                (`str`, (`str`, `int`, `bool`, `NoneType`, `float`, (`list`, `set`, `tuple`) of repeat value)) items
             The query to use.
         
         Returns
@@ -610,7 +610,7 @@ def build_query_from_dict(query):
     
     Parameters
     ----------
-    query : `dict` of (`str`, (`str`, `int`, `bool`, `NoneType`, `float`, (`list` or `set`) of repeat value)) items
+    query : `dict` of (`str`, (`str`, `int`, `bool`, `NoneType`, `float`, (`list`, `tuple`, `set`) of repeat value)) items
         The query to serialize.
     
     Returns
@@ -643,7 +643,7 @@ def build_query_from_list(query):
     Parameters
     ----------
     query : (`list` or `set`) of `tuple` \
-            (`str`, (`str`, `int`, `bool`, `NoneType`, `float`, (`list` or `set`) of repeat value))
+            (`str`, (`str`, `int`, `bool`, `NoneType`, `float`, (`list`, `tuple`, `set`) of repeat value))
         The query to serialize.
     
     Returns
@@ -680,7 +680,7 @@ def build_query_element_to(build_to, query_key, value):
         A list to build the query element to.
     query_key : `str`
         An already escaped query key.
-    value : `str`, `int`, `bool`, `NoneType`, `float`, (`list` or `set`) of repeat
+    value : `str`, `int`, `bool`, `NoneType`, `float`, (`list`, `tuple`,  `set`) of repeat
         The query string value.
     
     Raises
@@ -708,7 +708,7 @@ def build_query_element_to(build_to, query_key, value):
         
         query_value = str(value)
     
-    elif isinstance(value, (list, set)):
+    elif isinstance(value, (list, tuple, set)):
         build_query_list_to(build_to, query_key, value)
         return
     
@@ -735,7 +735,7 @@ def build_query_list_to(build_to, query_key, query_list):
         A list to build the query element to.
     query_key : `str`
         An already escaped query key.
-    query_list : (`list` or `set`) of (`str`, `int`, `bool`, `NoneType`, `float`, repeat)
+    query_list : (`list`, `tuple`, `set`) of (`str`, `int`, `bool`, `NoneType`, `float`, repeat)
         The query string value.
     
     Raises

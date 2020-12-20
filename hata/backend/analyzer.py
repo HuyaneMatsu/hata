@@ -2,7 +2,9 @@
 __all__ = ('CallableAnalyzer', )
 
 from .utils import function, MethodLike
-from .futures import is_coroutine_function as is_coro
+
+is_coroutine_function = NotImplemented
+is_coroutine_generator_function = NotImplemented
 
 CO_OPTIMIZED   = 1
 CO_NEWLOCALS   = 2
@@ -15,10 +17,14 @@ CO_NOFREE      = 64
 CO_COROUTINE           = 128
 CO_ITERABLE_COROUTINE  = 256
 CO_ASYNC_GENERATOR     = 512
+# macthes `async def` functions and `@coroutine` functions.
+CO_COROUTINE_ALL       = CO_COROUTINE|CO_ITERABLE_COROUTINE
 
-INSTANCE_TO_ASYNC_FALSE  = 0
-INSTANCE_TO_ASYNC_TRUE   = 1
-INSTANCE_TO_ASYNC_CANNOT = 2
+INSTANCE_TO_ASYNC_FALSE           = 0
+INSTANCE_TO_ASYNC_TRUE            = 1
+INSTANCE_TO_ASYNC_CANNOT          = 2
+INSTANCE_TO_ASYNC_GENERATOR_FALSE = 3
+INSTANCE_TO_ASYNC_GENERATOR_TRUE  = 4
 
 ARGUMNET_POSITIONAL_ONLY        = 0
 ARGUMNET_POSITIONAL_AND_KEYWORD = 1
@@ -226,8 +232,12 @@ class CallableAnalyzer(object):
         
         if self.is_async():
             result.append(' async')
+        elif self.is_async_generator():
+            result.append(' async generator')
         elif self.can_instance_to_async_callable():
             result.append(' instance async')
+        elif self.can_instance_to_async_generator():
+            result.append(' instance async generator')
         
         method_allocation = self.method_allocation
         if method_allocation:
@@ -283,8 +293,10 @@ class CallableAnalyzer(object):
             if isinstance(callable_, function):
                 
                 real_function = callable_
-                if is_coro(real_function):
+                if is_coroutine_function(real_function):
                     instance_to_async = INSTANCE_TO_ASYNC_FALSE
+                elif is_coroutine_generator_function(real_function):
+                    instance_to_async = INSTANCE_TO_ASYNC_GENERATOR_FALSE
                 else:
                     instance_to_async = INSTANCE_TO_ASYNC_CANNOT
                 
@@ -292,10 +304,12 @@ class CallableAnalyzer(object):
                 break
             
             if isinstance(callable_, MethodLike):
-                real_function=callable_
+                real_function = callable_
                 
-                if is_coro(real_function):
+                if is_coroutine_function(real_function):
                     instance_to_async = INSTANCE_TO_ASYNC_FALSE
+                elif is_coroutine_generator_function(real_function):
+                    instance_to_async = INSTANCE_TO_ASYNC_GENERATOR_FALSE
                 else:
                     instance_to_async = INSTANCE_TO_ASYNC_CANNOT
                 
@@ -305,8 +319,10 @@ class CallableAnalyzer(object):
             if not isinstance(callable_, type) and hasattr(type(callable_), '__call__'):
                 real_function = type(callable_).__call__
                 
-                if is_coro(real_function) or getattr(type(callable_), '__async_call__', 0) == 1:
+                if is_coroutine_function(real_function):
                     instance_to_async = INSTANCE_TO_ASYNC_FALSE
+                elif is_coroutine_generator_function(real_function):
+                    instance_to_async = INSTANCE_TO_ASYNC_GENERATOR_FALSE
                 else:
                     instance_to_async = INSTANCE_TO_ASYNC_CANNOT
                     
@@ -325,18 +341,22 @@ class CallableAnalyzer(object):
                         raise TypeError(f'`{callable_!r}.__new__` should be callable, got `{real_function!r}`')
                     
                     if real_function is not object.__new__:
-                        if is_coro(real_function):
+                        if is_coroutine_function(real_function):
                             instance_to_async = INSTANCE_TO_ASYNC_FALSE
+                        elif is_coroutine_generator_function(real_function):
+                            instance_to_async = INSTANCE_TO_ASYNC_GENERATOR_FALSE
                         else:
                             if hasattr(callable_, '__call__'):
                                 call = callable_.__call__
-                                if is_coro(call) or getattr(callable_, '__async_call__', 0) == 1:
+                                if is_coroutine_function(call):
                                     instance_to_async = INSTANCE_TO_ASYNC_TRUE
+                                elif is_coroutine_generator_function(call):
+                                    instance_to_async = INSTANCE_TO_ASYNC_GENERATOR_TRUE
                                 else:
                                     instance_to_async = INSTANCE_TO_ASYNC_CANNOT
                             else:
                                 instance_to_async = INSTANCE_TO_ASYNC_CANNOT
-
+                        
                         if type(real_function) is function:
                             method_allocation = 1
                         else:
@@ -350,9 +370,11 @@ class CallableAnalyzer(object):
                     
                     if real_function is not object.__init__:
                         if hasattr(callable_, '__call__'):
-                            call=callable_.__call__
-                            if is_coro(call) or getattr(callable_, '__async_call__', 0) == 1:
+                            call = callable_.__call__
+                            if is_coroutine_function(call):
                                 instance_to_async = INSTANCE_TO_ASYNC_TRUE
+                            elif is_coroutine_generator_function(call):
+                                instance_to_async = INSTANCE_TO_ASYNC_GENERATOR_TRUE
                             else:
                                 instance_to_async = INSTANCE_TO_ASYNC_CANNOT
                         else:
@@ -369,9 +391,11 @@ class CallableAnalyzer(object):
                     method_allocation = 0
                     
                     if hasattr(callable_,'__call__'):
-                        call=callable_.__call__
-                        if is_coro(call) or getattr(callable_, '__async_call__', 0) == 1:
+                        call = callable_.__call__
+                        if is_coroutine_function(call):
                             instance_to_async = INSTANCE_TO_ASYNC_TRUE
+                        elif is_coroutine_generator_function(call):
+                            instance_to_async = INSTANCE_TO_ASYNC_GENERATOR_TRUE
                         else:
                             instance_to_async = INSTANCE_TO_ASYNC_CANNOT
                     else:
@@ -528,7 +552,7 @@ class CallableAnalyzer(object):
                 args_argument.default = None
                 args_argument.positionality = ARGUMENT_ARGS
                 
-                if method_allocation>argument_count:
+                if method_allocation > argument_count:
                     args_argument.reserved = True
                 else:
                     args_argument.reserved = False
@@ -580,6 +604,18 @@ class CallableAnalyzer(object):
         
         return False
     
+    def is_async_generator(self):
+        """
+        Returns whether the analyzed callable is an async generator.
+        
+        Returns
+        is_async_generator : `bool`
+        """
+        if self.instance_to_async == INSTANCE_TO_ASYNC_GENERATOR_FALSE:
+            return True
+        
+        return False
+    
     def can_instance_to_async_callable(self):
         """
         Returns whether the analyzed callable can be instanced to async.
@@ -602,8 +638,30 @@ class CallableAnalyzer(object):
         
         return True
     
-    # call `.can_instance_async_callable` before
-    def instance_to_async_callable(self):
+    def can_instance_to_async_generator(self):
+        """
+        Returns whether the analyzed callable can be instanced to async.
+        
+        Returns
+        -------
+        can_instance_to_async_callable : `bool`
+        """
+        if self.instance_to_async != INSTANCE_TO_ASYNC_GENERATOR_TRUE:
+            return False
+        
+        for argument in self.arguments:
+            if argument.reserved:
+                continue
+            
+            if argument.has_default:
+                continue
+            
+            return False
+        
+        return True
+    
+    # call `.can_instance_async_callable` or `.can_instacne_to_async_generator` before
+    def instance(self):
         """
         Instances the analyzed callable.
         

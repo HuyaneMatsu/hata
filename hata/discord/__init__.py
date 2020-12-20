@@ -14,6 +14,7 @@ from .exceptions import *
 from .guild import *
 from .http import *
 from .integration import *
+from .interaction import *
 from .invite import *
 from .message import *
 from .oauth2 import *
@@ -45,6 +46,7 @@ __all__ = (
     *guild.__all__              ,
     *http.__all__               ,
     *integration.__all__        ,
+    *interaction.__all__        ,
     *invite.__all__             ,
     *message.__all__            ,
     *oauth2.__all__             ,

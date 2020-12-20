@@ -15,7 +15,7 @@ IGNORED_EVENT_HANDLER_TYPES = {
 
 def should_ignore_event_handler(event_handler):
     """
-    Returns whteher the given `event_handler` should be ingored from snapshoting.
+    Returns whether the given `event_handler` should be ingored from snapshoting.
     
     Parameters
     ----------

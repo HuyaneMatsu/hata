@@ -1942,7 +1942,65 @@ class DiscordHTTPClient(HTTPClient):
     async def thread_user_add(self, channel_id, user_id):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.thread_user_add, channel_id),
             METH_POST, f'{API_ENDPOINT}/channels/{channel_id}/threads/participants/{user_id}')
-
+    
+    
+    # application command & interaction
+    
+    async def application_command_global_get_all(self, application_id):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.application_command_global_get_all, NO_SPECIFIC_RATELIMITER),
+            METH_GET, f'{API_ENDPOINT}/applications/{application_id}/commands')
+    
+    async def application_command_global_create(self, application_id, data):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.application_command_global_create, NO_SPECIFIC_RATELIMITER),
+            METH_POST, f'{API_ENDPOINT}/applications/{application_id}/commands', data)
+    
+    async def application_command_global_edit(self, application_id, application_command_id, data):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.application_command_global_edit, NO_SPECIFIC_RATELIMITER),
+            METH_PATCH, f'{API_ENDPOINT}/applications/{application_id}/commands/{application_command_id}', data)
+    
+    async def application_command_global_delete(self, application_id, application_command_id):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.application_command_global_delete, NO_SPECIFIC_RATELIMITER),
+            METH_DELETE, f'{API_ENDPOINT}/applications/{application_id}/commands/{application_command_id}')
+    
+    async def application_command_guild_get_all(self, application_id, guild_id):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.application_command_guild_get_all, NO_SPECIFIC_RATELIMITER),
+            METH_GET, f'{API_ENDPOINT}/applications/{application_id}/guilds/{guild_id}/commands')
+    
+    async def application_command_guild_create(self, application_id,guild_id,  data):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.application_command_guild_create, NO_SPECIFIC_RATELIMITER),
+            METH_POST, f'{API_ENDPOINT}/applications/{application_id}/guilds/{guild_id}/commands', data)
+    
+    async def application_command_guild_edit(self, application_id, guild_id, application_command_id, data):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.application_command_guild_edit, NO_SPECIFIC_RATELIMITER),
+            METH_PATCH, f'{API_ENDPOINT}/applications/{application_id}/guilds/{guild_id}/commands/{application_command_id}', data)
+    
+    async def application_command_guild_delete(self, application_id, guild_id, application_command_id):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.application_command_guild_delete, NO_SPECIFIC_RATELIMITER),
+            METH_DELETE, f'{API_ENDPOINT}/applications/{application_id}/guilds/{guild_id}/commands/{application_command_id}')
+    
+    async def interaction_response_message_create(self, interaction_id, interaction_token, data):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.interaction_response_message_create, NO_SPECIFIC_RATELIMITER),
+            METH_POST, f'{API_ENDPOINT}/interactions/{interaction_id}/{interaction_token}/callback', data)
+    
+    async def interaction_response_message_edit(self, application_id, interaction_id, interaction_token, data):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.interaction_response_message_edit, interaction_id),
+            METH_PATCH, f'{API_ENDPOINT}/webhooks/{application_id}/{interaction_token}/messages/@original', data)
+    
+    async def interaction_response_message_delete(self, application_id, interaction_id, interaction_token):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.interaction_response_message_delete, interaction_id),
+            METH_DELETE, f'{API_ENDPOINT}/webhooks/{application_id}/{interaction_token}/messages/@original')
+    
+    async def interaction_followup_message_create(self, application_id, interaction_id, interaction_token, data):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.interaction_followup_message_create, interaction_id),
+            METH_POST, f'{API_ENDPOINT}/webhooks/{application_id}/{interaction_token}', data)
+    
+    async def interaction_followup_message_edit(self, application_id, interaction_id, interaction_token, message_id, data):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.interaction_followup_message_edit, interaction_id),
+            METH_PATCH, f'{API_ENDPOINT}/webhooks/{application_id}/{interaction_token}/messages/{message_id}', data)
+    
+    async def interaction_followup_message_delete(self, application_id, interaction_id, interaction_token, message_id):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.interaction_followup_message_delete, interaction_id),
+            METH_DELETE, f'{API_ENDPOINT}/webhooks/{application_id}/{interaction_token}/messages/{message_id}')
 
 del re
 del modulize

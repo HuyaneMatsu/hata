@@ -461,7 +461,7 @@ class DiscordGateway(object):
             parser = PARSERS[event]
         except KeyError:
             Task(client.events.error(client,
-                f'{self.__clas__.__name__}._received_message',
+                f'{self.__class__.__name__}._received_message',
                 f'Unknown dispatch event {event}\nData: {data!r}'),
                     KOKORO)
             

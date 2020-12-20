@@ -5,11 +5,13 @@ import re, reprlib
 
 from ...backend.utils import sortedlist, function, DOCS_ENABLED, name_property
 from ...backend.analyzer import CallableAnalyzer
+from ...backend.futures import is_coroutine_generator
 
 from ...discord.utils import USER_MENTION_RP
 from ...discord.parsers import EventWaitforBase, compare_converted, check_name, check_argcount_and_convert, Router, \
     route_name, route_value
-
+from ...discord.exceptions import DiscordException, ERROR_CODES
+from ...discord.embed import EmbedBase
 
 from .content_parser import CommandContentParser
 from .checks import validate_checks
@@ -132,6 +134,105 @@ def generate_alters_for(name):
         alters.extend(connected)
     
     return alters
+
+async def process_command_coro(client, channel, coro):
+    """
+    Processes a command coroutine.
+    
+    If the coroutine returns or yields a string or an embed like then sends it to the respective channel.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The client who will send the responses if applicable.
+    channel : ``ChannelTextBase`` instance
+        The channel from where the respecive command was called.
+    coro : `coroutine`
+        A coroutine with will send command response.
+    
+    Raises
+    ------
+    BaseException
+        Any exception raised by `coro`.
+    """
+    if is_coroutine_generator(coro):
+        response_message = None
+        response_exception = None
+        while True:
+            if response_exception is None:
+                step = coro.asend(response_message)
+            else:
+                step = coro.athrow(response_exception)
+            
+            try:
+                response = await step
+            except StopAsyncIteration as err:
+                # catch `StopAsyncIteration` only if it is a new one.
+                if (response_exception is not None) and (response_exception is not err):
+                    raise
+                
+                args = err.args
+                if args:
+                    response = args[0]
+                else:
+                    response = None
+                break
+            except BaseException as err:
+                if (response_exception is None) or (response_exception is not err):
+                    raise
+                
+                if isinstance(err, ConnectionError):
+                    return
+                
+                if isinstance(err, DiscordException):
+                    if err.code in (
+                            ERROR_CODES.unknown_channel, # message's channel deleted
+                            ERROR_CODES.invalid_access, # client removed
+                            ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                            ERROR_CODES.invalid_message_send_user, # user has dm-s disallowed
+                                ):
+                        return
+                
+                raise
+            
+            else:
+                if response is None:
+                    response_message = None
+                    response_exception = None
+                elif isinstance(response, (str, EmbedBase)):
+                    try:
+                        response_message = await client.message_create(channel, response)
+                    except BaseException as err:
+                        response_exception = err
+                    else:
+                        response_exception = None
+                else:
+                    response_message = None
+                    response_exception = None
+    
+    else:
+        response = await coro
+    
+    if (response is not None) and isinstance(response, (str, EmbedBase)) and \
+            channel.cached_permissions_for(client).can_send_messages:
+        
+        try:
+            await client.message_create(channel, response)
+        except BaseException as err:
+            if isinstance(err, ConnectionError):
+                return
+            
+            if isinstance(err, DiscordException):
+                if err.code in (
+                        ERROR_CODES.unknown_channel, # message's channel deleted
+                        ERROR_CODES.invalid_access, # client removed
+                        ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                        ERROR_CODES.invalid_message_send_user, # user has dm-s disallowed
+                            ):
+                    return
+            
+            raise
+
 
 COMMAND_CHECKS_FAILED = 0
 COMMAND_CHECKS_SUCCEEDED = 1
@@ -559,7 +660,7 @@ class Command(object):
         """
         if (parser_failure_handler is not None):
             parser_failure_handler = check_argcount_and_convert(parser_failure_handler, 5,
-                name='parser_failure_handler', error_message= \
+                name='parser_failure_handler', can_be_async_generator=True, error_message= \
                 '`parser_failure_handler` expected 5 arguments (client, message, command, content, args).')
         
         return parser_failure_handler
@@ -1134,11 +1235,12 @@ class Command(object):
             return
         
         parser_failure_handler = check_argcount_and_convert(parser_failure_handler, 5, name='parser_failure_handler',
-            error_message='`parser_failure_handler` expected 5 arguments (client, message, command, content, args).')
-        self._parser_failure_handler=parser_failure_handler
+            can_be_async_generator=True, error_message= \
+            '`parser_failure_handler` expected 5 arguments (client, message, command, content, args).')
+        self._parser_failure_handler = parser_failure_handler
     
     def _del_parser_failure_handler(self):
-        self._parser_failure_handler=None
+        self._parser_failure_handler = None
     
     parser_failure_handler = property(_get_parser_failure_handler, _set_parser_failure_handler,
         _del_parser_failure_handler)
@@ -1182,6 +1284,9 @@ class Command(object):
         At the next step the call options of the command are checked, and if needed the command's parser is ensured.
         If the parser could not parse out all the required arguments, then the command's `parser_failure_handler` is
         called if applicable.
+        
+        If the command returns not `None` it will be interpretered as a reponse as will be tried to send to the
+        respective channel.
         
         Note that not the command handles the exceptions dropped by the command, but the command processer does.
         
@@ -1227,7 +1332,9 @@ class Command(object):
                     if (handler is None):
                         return COMMAND_CHECKS_FAILED
                     
-                    await handler(client, message, self, check)
+                    coro = handler(client, message, self, check)
+                    await process_command_coro(client, message.channel, coro)
+                    
                     return COMMAND_CHECKS_HANDLED
         
         checks = self._checks
@@ -1240,12 +1347,14 @@ class Command(object):
                 if (handler is None):
                     return COMMAND_CHECKS_FAILED
                 
-                await handler(client, message, self, check)
+                coro = handler(client, message, self, check)
+                await process_command_coro(client, message.channel, coro)
+                
                 return COMMAND_CHECKS_HANDLED
         
         command_wrapper = self._wrappers
         if (command_wrapper is not None):
-            if type(command_wrapper) is list:
+            if isinstance(command_wrapper, list):
                 for command_wrapper in command_wrapper:
                     gen = command_wrapper.wrapper(client, message)
                     result = await gen.asend(None)
@@ -1259,8 +1368,11 @@ class Command(object):
                             args = []
                             async for arg in gen:
                                 args.append(arg)
-                            await handler(client, message, self, *args)
-                        return
+                            
+                            coro = handler(client, message, self, *args)
+                            await process_command_coro(client, message.channel, coro)
+                        
+                        return COMMAND_PARSER_FAILED
             else:
                 gen = command_wrapper.wrapper(client, message)
                 result = await gen.asend(None)
@@ -1274,7 +1386,10 @@ class Command(object):
                         args = []
                         async for arg in gen:
                             args.append(arg)
-                        await handler(client, message, self, *args)
+                        
+                        coro = handler(client, message, self, *args)
+                        await process_command_coro(client, message.channel, coro)
+                    
                     return COMMAND_PARSER_FAILED
         
         parser = self.parser
@@ -1285,7 +1400,8 @@ class Command(object):
             if not passed:
                 parser_failure_handler = self._parser_failure_handler
                 if (parser_failure_handler is not None):
-                    await parser_failure_handler(client, message, self, content, args)
+                    coro = parser_failure_handler(client, message, self, content, args)
+                    await process_command_coro(client, message.channel, coro)
                 
                 return COMMAND_PARSER_FAILED
         
@@ -1294,8 +1410,8 @@ class Command(object):
             coro = command(client, message)
         else:
             coro = command(client, message, *args)
+        await process_command_coro(client, message.channel, coro)
         
-        await coro
         return COMMAND_SUCCEEDED
     
     async def call_checks(self, client, message):
@@ -1341,7 +1457,8 @@ class Command(object):
                     if (handler is None):
                         return COMMAND_CHECKS_FAILED
                     
-                    await handler(client, message, self, check)
+                    coro = handler(client, message, self, check)
+                    await process_command_coro(client, message.channel, coro)
                     return COMMAND_CHECKS_HANDLED
         
         
@@ -1355,7 +1472,8 @@ class Command(object):
                 if (handler is None):
                     return COMMAND_CHECKS_FAILED
                 
-                await handler(client, message, self, check)
+                coro = handler(client, message, self, check)
+                await process_command_coro(client, message.channel, coro)
                 return COMMAND_CHECKS_HANDLED
         
         return COMMAND_CHECKS_SUCCEEDED
@@ -1475,7 +1593,8 @@ class Command(object):
             if not passed:
                 parser_failure_handler = self._parser_failure_handler
                 if (parser_failure_handler is not None):
-                    await parser_failure_handler(client, message, self, content, args)
+                    coro = parser_failure_handler(client, message, self, content, args)
+                    await process_command_coro(client, message.channel, coro)
                 
                 return COMMAND_PARSER_FAILED
         
@@ -1485,7 +1604,8 @@ class Command(object):
         else:
             coro = command(client, message, *args)
         
-        await coro
+        await process_command_coro(client, message.channel, coro)
+        
         return COMMAND_SUCCEEDED
     
     def __getattr__(self, name):
@@ -1557,10 +1677,10 @@ def normalize_description(text):
         if next_char not in ('\t', ' '):
             break
         
-        index=1
+        index = 1
         while index < limit:
             line = lines[index]
-            index = index+1
+            index += 1
             if not line:
                 continue
             
@@ -1573,7 +1693,7 @@ def normalize_description(text):
         if char != next_char:
             break
         
-        ignore_index +=1
+        ignore_index += 1
         continue
     
     if ignore_index:
@@ -1630,7 +1750,7 @@ class Category(object):
         Raises
         ------
         TypeError
-            If `checks_` was not given neither as `None`, ``_check_base`` insatcne or as a `list` of ``_check_base``
+            If `checks_` was not given neither as `None`, ``_check_base`` instance or as a `list` of ``_check_base``
              instances.
         """
         checks_processed = validate_checks(checks_)
@@ -2416,7 +2536,7 @@ class CommandProcesser(EventWaitforBase):
         
         Parameters
         ----------
-        prefix :  `str`, ((tuple`, `list`) of `str`), `callable`
+        prefix :  `str`, ((tuple`, `list`, `set`) of `str`), `callable`
             Prefix for the command processer.
             
             Can be given as normal or as `async` `callable` as well, what should accept `1` argument:
@@ -2459,46 +2579,101 @@ class CommandProcesser(EventWaitforBase):
                 if analyzed.is_async():
                     async def prefixfilter(message):
                         practical_prefix = await prefix(message)
-                        if re.match(re.escape(practical_prefix), message.content, flag) is None:
-                            return
-                        result = COMMAND_RP.match(message.content, len(practical_prefix))
+                        if isinstance(practical_prefix, str):
+                            escaped_prefix = re.escape(practical_prefix)
+                        else:
+                            escaped_prefix = '|'.join(re.escape(prefix_) for prefix_ in practical_prefix)
+                        
+                        content = message.content
+                        result = re.match(escaped_prefix, content, flag)
                         if result is None:
                             return
+                        
+                        result = COMMAND_RP.match(content, result.end())
+                        if result is None:
+                            return
+                        
                         return result.groups()
+                    
+                    async def get_prefix_for(message):
+                        practical_prefix = await prefix(message)
+                        if isinstance(practical_prefix, str):
+                            escaped_prefix = re.escape(practical_prefix)
+                        else:
+                            escaped_prefix = '|'.join(re.escape(prefix_) for prefix_ in practical_prefix)
+                        
+                        result = re.match(escaped_prefix, message.content, flag)
+                        if result is None:
+                            if isinstance(practical_prefix, str):
+                                prefix_for = practical_prefix
+                            else:
+                                prefix_for = next(iter(practical_prefix), '')
+                        else:
+                            prefix_for =  result.group(0)
+
+                        return prefix_for
+                
                 else:
                     async def prefixfilter(message):
                         practical_prefix = prefix(message)
-                        if re.match(re.escape(practical_prefix), message.content, flag) is None:
-                            return
-                        result = COMMAND_RP.match(message.content, len(practical_prefix))
+                        if isinstance(practical_prefix, str):
+                            escaped_prefix = re.escape(practical_prefix)
+                        else:
+                            escaped_prefix = '|'.join(re.escape(prefix_) for prefix_ in practical_prefix)
+                        
+                        content = message.content
+                        result = re.match(escaped_prefix, content, flag)
                         if result is None:
                             return
+                        
+                        result = COMMAND_RP.match(content, result.end())
+                        if result is None:
+                            return
+                        
                         return result.groups()
                 
-                get_prefix_for = prefix
+                    def get_prefix_for(message):
+                        practical_prefix = prefix(message)
+                        if isinstance(practical_prefix, str):
+                            escaped_prefix = re.escape(practical_prefix)
+                        else:
+                            escaped_prefix = '|'.join(re.escape(prefix_) for prefix_ in practical_prefix)
+                        
+                        result = re.match(escaped_prefix, message.content, flag)
+                        if result is None:
+                            if isinstance(practical_prefix, str):
+                                prefix_for = practical_prefix
+                            else:
+                                prefix_for = next(iter(practical_prefix), '')
+                        else:
+                            prefix_for =  result.group(0)
+
+                        return prefix_for
+                
                 break
             
-            if type(prefix) is str:
+            if isinstance(prefix, str):
                 if not prefix:
-                    raise ValueError('Prefix cannot be passed as empty string.')
+                    raise ValueError('`prefix` cannot be passed as empty string.')
                 
                 PREFIX_RP = re.compile(re.escape(prefix), flag)
                 def get_prefix_for(message):
                     return prefix
             
-            elif isinstance(prefix, (list, tuple)):
+            elif isinstance(prefix, (list, tuple, set)):
                 if not prefix:
-                    raise ValueError(f'Prefix fed as empty {prefix.__class__.__name__}: {prefix!r}')
+                    raise ValueError(f'`prefix` given as empty {prefix.__class__.__name__}: {prefix!r}')
                 
                 for prefix_ in prefix:
-                    if type(prefix_) is not str:
-                        raise TypeError(f'Prefix can be only callable, str or tuple/list type of str, got {prefix_!r}')
+                    if not isinstance(prefix_, str):
+                        raise TypeError(f'`prefix` can be given as `str`, `callable` or as `list`, `tuple` or `set` '
+                            f'of `str` instances, got {prefix_!r}.')
                     
                     if not prefix_:
-                        raise ValueError('Prefix cannot be passed as empty string.')
+                        raise ValueError(f'`prefix` cannot be or contain empty string, got {prefix!r}.')
                 
                 PREFIX_RP = re.compile('|'.join(re.escape(prefix_) for prefix_ in prefix), flag)
-                practical_prefix = prefix[0]
+                practical_prefix = next(iter(prefix), '')
                 
                 def get_prefix_for(message):
                     result = PREFIX_RP.match(message.content)
@@ -2515,9 +2690,11 @@ class CommandProcesser(EventWaitforBase):
                 result = PREFIX_RP.match(content)
                 if result is None:
                     return
+                
                 result = COMMAND_RP.match(content, result.end())
                 if result is None:
                     return
+                
                 return result.groups()
             
             break
@@ -2637,16 +2814,19 @@ class CommandProcesser(EventWaitforBase):
         if (name is not None) and isinstance(name, str):
             # called every time, but only if every other fails
             if name == 'default_event':
-                func = check_argcount_and_convert(func, 2, name='default_event', error_message= \
-                    '`default_event` expects 2 arguments (client, message).')
+                func = check_argcount_and_convert(func, 2, name='default_event', can_be_async_generator=True,
+                    error_message='`default_event` expects 2 arguments (client, message).')
+                
                 checks_processed = validate_checks(checks)
                 self._default_event = func
                 self._default_event_checks = checks_processed
                 return func
             
             if name == 'command_error':
-                func = check_argcount_and_convert(func, 5, name='command_error', error_message= \
-                    '`command_error` expected 5 arguments (client, message, command, content, exception).')
+                func = check_argcount_and_convert(func, 5, name='command_error', can_be_async_generator=True,
+                    error_message= \
+                        '`command_error` expected 5 arguments (client, message, command, content, exception).')
+                
                 checks_processed = validate_checks(checks)
                 self._command_error = func
                 self._command_error_checks = checks_processed
@@ -2654,8 +2834,9 @@ class CommandProcesser(EventWaitforBase):
             
             # called when user used bad command after the preset prefix, called if a command fails
             if name == 'invalid_command':
-                func = check_argcount_and_convert(func, 4, name='invalid_command', error_message= \
-                    '`invalid_command` expected 4 arguments (client, message, command, content).')
+                func = check_argcount_and_convert(func, 4, name='invalid_command', can_be_async_generator=True,
+                    error_message='`invalid_command` expected 4 arguments (client, message, command, content).')
+                
                 checks_processed = validate_checks(checks)
                 self._invalid_command = func
                 self._invalid_command_checks = checks_processed
@@ -3090,7 +3271,8 @@ class CommandProcesser(EventWaitforBase):
                     if (command_error is not None):
                         checks = self._command_error_checks
                         if (checks is None):
-                            await command_error(client, message, command, content, err)
+                            coro = command_error(client, message, command, content, err)
+                            await process_command_coro(client, message.channel, coro)
                             return
                         else:
                             for check in checks:
@@ -3099,10 +3281,13 @@ class CommandProcesser(EventWaitforBase):
                                 
                                 handler = check.handler
                                 if (handler is not None):
-                                    await handler(client, message, command, check)
+                                    coro = handler(client, message, command, check)
+                                    await process_command_coro(client, message.channel, coro)
+                                
                                 break
                             else:
-                                await command_error(client, message, command, content, err)
+                                coro = command_error(client, message, command, content, err)
+                                await process_command_coro(client, message.channel, coro)
                                 return
                     
                     await client.events.error(client, repr(self), err)
@@ -3131,10 +3316,12 @@ class CommandProcesser(EventWaitforBase):
                             
                             handler = check.handler
                             if (handler is not None):
-                                await handler(client, message, command_name, check)
+                                coro = handler(client, message, command_name, check)
+                                await process_command_coro(client, message.channel, coro)
                             return
                     
-                    await invalid_command(client, message, command_name, content)
+                    coro = invalid_command(client, message, command_name, content)
+                    await process_command_coro(client, message.channel, coro)
                 
                 return
             
@@ -3145,7 +3332,8 @@ class CommandProcesser(EventWaitforBase):
                 if (command_error is not None):
                     checks = self._command_error_checks
                     if (checks is None):
-                        await command_error(client, message, command_name, content, err)
+                        coro = command_error(client, message, command_name, content, err)
+                        await process_command_coro(client, message.channel, coro)
                         return
                     else:
                         for check in checks:
@@ -3154,10 +3342,12 @@ class CommandProcesser(EventWaitforBase):
                             
                             handler = check.handler
                             if (handler is not None):
-                                await handler(client, message, command_name, check)
+                                coro = handler(client, message, command_name, check)
+                                await process_command_coro(client, message.channel, coro)
                             break
                         else:
-                            await command_error(client, message, command_name, content, err)
+                            coro = command_error(client, message, command_name, content, err)
+                            await process_command_coro(client, message.channel, coro)
                             return
                 
                 await client.events.error(client, repr(self), err)
@@ -3177,16 +3367,18 @@ class CommandProcesser(EventWaitforBase):
                             
                             handler = check.handler
                             if (handler is not None):
-                                await handler(client, message, command_name, check)
+                                coro = handler(client, message, command_name, check)
+                                await process_command_coro(client, message.channel, coro)
                             return
                     
-                    await invalid_command(client, message, command_name, content)
-                
+                    coro = invalid_command(client, message, command_name, content)
+                    await process_command_coro(client, message.channel, coro)
                 return
         
         default_event = self._default_event
         if (default_event is not None):
-            await default_event(client, message)
+            coro = default_event(client, message)
+            await process_command_coro(client, message.channel, coro)
         
         return
     
@@ -3255,8 +3447,8 @@ class CommandProcesser(EventWaitforBase):
         return self._default_event
     
     def _set_default_event(self, default_event):
-        default_event = check_argcount_and_convert(default_event, 2, name=default_event, error_message=\
-            '`default_event` expects 2 arguments (client, message).')
+        default_event = check_argcount_and_convert(default_event, 2, name=default_event, can_be_async_generator=True,
+            error_message='`default_event` expects 2 arguments (client, message).')
         self._default_event = default_event
     
     def _del_default_event(self):
@@ -3306,8 +3498,9 @@ class CommandProcesser(EventWaitforBase):
         return self._command_error
     
     def _set_command_error(self, command_error):
-        command_error = check_argcount_and_convert(command_error, 4, name='invalid_command', error_message= \
-            '`invalid_command` expected 4 arguments (client, message, command, content).')
+        command_error = check_argcount_and_convert(command_error, 5, name='command_error',
+            can_be_async_generator=True, error_message= \
+            '`command_error` expected 5 arguments (client, message, command, content, err).')
         
         self._command_error = command_error
     
@@ -3365,8 +3558,10 @@ class CommandProcesser(EventWaitforBase):
         return self._invalid_command
     
     def _set_invalid_command(self, invalid_command):
-        invalid_command = check_argcount_and_convert(invalid_command, 4, name='invalid_command', error_message= \
+        invalid_command = check_argcount_and_convert(invalid_command, 4, name='invalid_command',
+            can_be_async_generator=True, error_message= \
             '`invalid_command` expected 4 arguments (client, message, command, content).')
+        
         self._invalid_command = invalid_command
     
     def _del_invalid_command(self):

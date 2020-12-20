@@ -572,7 +572,8 @@ class MessageIterator(object):
         channel = self.channel
         
         index = self._index
-        if len(channel.messages) > index:
+        messages = channel.messages
+        if (messages is not None) and (len(messages) > index):
             self._index = index+1
             return channel.messages[index]
         
@@ -596,7 +597,8 @@ class MessageIterator(object):
             else:
                 raise
         
-        if len(channel.messages) > index:
+        messages = channel.messages
+        if (messages is not None) and (len(channel.messages) > index):
             self._index = index+1
             return channel.messages[index]
         
@@ -668,33 +670,38 @@ class ChannelTextBase:
     __slots__ = ()
     __slots = ('_message_keep_limit', '_turn_message_keep_limit_on_at', 'message_history_reached_end', 'messages', )
     
-    def _messageable_init(channel):
+    def _messageable_init(self):
         """
         Sets the default values specific to text channels.
         """
         #discord side bug: we cant check last message
-        channel.message_history_reached_end = False
-        channel._turn_message_keep_limit_on_at = 0
-        limit = channel.MESSAGE_KEEP_LIMIT
-        channel._message_keep_limit = limit
-        channel.messages = deque(maxlen=limit)
+        self.message_history_reached_end = False
+        self._turn_message_keep_limit_on_at = 0.0
+        limit = self.MESSAGE_KEEP_LIMIT
+        self._message_keep_limit = limit
+        self.messages = None
     
-    def _get_message_keep_limit(channel):
-        return channel._message_keep_limit
+    def _get_message_keep_limit(self):
+        return self._message_keep_limit
     
-    def _set_message_keep_limit(channel, limit):
-        if channel._message_keep_limit == limit:
+    def _set_message_keep_limit(self, limit):
+        if limit < 0:
+            limit = 0
+        
+        if self._message_keep_limit == limit:
             return
         
-        if limit <= 0:
-            channel._message_keep_limit = 0
-            channel.messages = deque(maxlen=0)
-            return
-        
-        old_messages = channel.messages
-        if len(old_messages) > limit:
-            channel.messages = deque((old_messages[i] for i in range(limit)), maxlen=limit)
-        channel._message_keep_limit = limit
+        if limit == 0:
+            new_messages = None
+        else:
+            old_messages = self.messages
+            if old_messages is None:
+                new_messages = None
+            else:
+                new_messages = deque((old_messages[i] for i in range(min(limit, len(old_messages)))), maxlen=limit)
+                
+        self.messages = new_messages
+        self._message_keep_limit = limit
     
     message_keep_limit = property(_get_message_keep_limit, _set_message_keep_limit)
     del _get_message_keep_limit, _set_message_keep_limit
@@ -724,22 +731,27 @@ class ChannelTextBase:
         message_id = int(data['id'])
         
         messages = self.messages
-        if messages:
-            message = messages[0]
-            last_message_id = message.id
-            if last_message_id < message_id:
-                pass
-            elif last_message_id == message_id:
-                return message
-            else:
-                return self._create_asynced_message(data, message_id, False)
+        if messages is None:
+            self.messages = messages = deque(maxlen=self._message_keep_limit)
+        else:
+            if messages:
+                message = messages[0]
+                last_message_id = message.id
+                if last_message_id < message_id:
+                    pass
+                elif last_message_id == message_id:
+                    return message
+                else:
+                    return self._create_asynced_message(data, message_id, False)
+                
+                # If limiting is enabled and we are at max length.
+                maxlen = messages.maxlen
+                if (maxlen is not None) and (len(messages) == maxlen):
+                    self.message_history_reached_end = False
         
         message = object.__new__(Message)
         message.id = message_id
         message._finish_init(data, self)
-        
-        if (self.messages.maxlen is not None) and len(messages)==self._message_keep_limit:
-            self.message_history_reached_end = False
         
         messages.appendleft(message)
         return message
@@ -765,9 +777,8 @@ class ChannelTextBase:
         message_id = int(data['id'])
         
         messages = self.messages
-        if messages:
-            if message_id > messages[-1].id:
-                return self._create_asynced_message(data, message_id, True)
+        if (messages is not None) and messages and (message_id > messages[-1].id):
+            return self._create_asynced_message(data, message_id, True)
         
         try:
             message = MESSAGES[message_id]
@@ -800,17 +811,24 @@ class ChannelTextBase:
         message : ``Message``
         """
         messages = self.messages
-        index = message_relativeindex(messages, message_id)
-        if index != len(messages):
-            actual = messages[index]
-            if actual.id == message_id:
-                return actual
+        if messages is None:
+            index = 0
+        else:
+            index = message_relativeindex(messages, message_id)
+            if index != len(messages):
+                actual = messages[index]
+                if actual.id == message_id:
+                    return actual
         
         if increase_queue_size:
             messages = self._increased_queue_size()
         else:
-            if (messages.maxlen is not None) and (messages.maxlen == len(messages)):
-                messages.pop()
+            if messages is None:
+                self.messages = messages = deque(maxlen=self._message_keep_limit)
+            else:
+                maxlen = messages.maxlen
+                if (maxlen is not None) and (maxlen == len(messages)):
+                    messages.pop()
         
         message = object.__new__(Message)
         message.id = message_id
@@ -838,8 +856,8 @@ class ChannelTextBase:
         """
         message_id = int(data['id'])
         
-        if self._message_keep_limit != 0:
-            messages = self.messages
+        messages = self.messages
+        if (messages is not None):
             index = message_relativeindex(messages, message_id)
             if index != len(messages):
                 message = messages[index]
@@ -889,12 +907,22 @@ class ChannelTextBase:
         messages : `deque`
         """
         messages = self.messages
-        if (messages.maxlen is None):
-            self._turn_message_keep_limit_on_at += 10.0
+        if messages is None:
+            # Create unlimited size.
+            self.messages = messages = deque()
+            self._turn_message_keep_limit_on_at = LOOP_TIME() + 110.0
+            TURN_MESSAGE_LIMITING_ON.add(self)
         else:
-            if len(messages) == self._message_keep_limit:
-                self.messages = messages = deque(messages)
-                self._turn_message_keep_limit_on_at = LOOP_TIME() + 110.0
+            maxlen = messages.maxlen
+            if (maxlen is None):
+                # The size is already unlimited
+                self._turn_message_keep_limit_on_at += 10.0
+            else:
+                # Switch to unlimited if we hit our current limit.
+                if len(messages) == maxlen:
+                    self.messages = messages = deque(messages)
+                    self._turn_message_keep_limit_on_at = LOOP_TIME() + 110.0
+                    TURN_MESSAGE_LIMITING_ON.add(self)
         
         return messages
     
@@ -908,13 +936,16 @@ class ChannelTextBase:
             The channel, what's `.messages` will be limited.
         """
         old_messages = channel.messages
-        limit = channel._message_keep_limit
-        if len(old_messages) > limit:
-            messages = deque((old_messages[i] for i in range(limit)), maxlen=limit)
+        if old_messages is None:
+            new_messages = None
         else:
-            messages = deque(old_messages, maxlen=limit)
+            limit = channel._message_keep_limit
+            if limit == 0:
+                new_messages = None
+            else:
+                new_messages = deque((old_messages[i] for i in range(min(limit, len(old_messages)))), maxlen=limit)
         
-        channel.messages = messages
+        channel.messages = new_messages
         channel._turn_message_keep_limit_on_at = 0.0
         channel.message_history_reached_end = False
     
@@ -931,8 +962,8 @@ class ChannelTextBase:
         -------
         message : `None` or ``Message``
         """
-        if self._message_keep_limit:
-            messages = self.messages
+        messages = self.messages
+        if (messages is not None):
             index = message_relativeindex(messages, delete_id)
             if index != len(messages):
                 message = messages[index]
@@ -985,7 +1016,10 @@ class ChannelTextBase:
         
         messages = self.messages
         delete_ids.sort(reverse=True)
-        messages_ln = len(messages)
+        if messages is None:
+            messages_ln = 0
+        else:
+            messages_ln = len(messages)
         
         messages_index = message_relativeindex(messages, delete_ids[0])
         delete_index = 0
@@ -1046,7 +1080,7 @@ class ChannelTextBase:
             
             continue
         
-        if self._turn_message_keep_limit_on_at:
+        if (messages is not None) and self._turn_message_keep_limit_on_at:
             if len(messages) < self._message_keep_limit:
                 TURN_MESSAGE_LIMITING_ON.discard(self)
                 self._turn_message_keep_limit_on_at = 0.0
@@ -1144,7 +1178,7 @@ class ChannelGuildBase(ChannelBase):
     INTERCHANGE : `tuple` of `int` = `(0,)`
         Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
         them.
-    ORDER_GROUP : ˛int` = `0`
+    ORDER_GROUP : `int` = `0`
         An order group what defined which guild channel type comes after the other one.
     """
     __slots__ = ('_cache_perm', 'category', 'guild', 'name', 'overwrites', 'position', )

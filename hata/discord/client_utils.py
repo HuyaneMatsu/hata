@@ -790,7 +790,7 @@ class ClientWrapper(object):
     
     def __new__(cls, *clients):
         """
-        Creates a new ``ClientWrapper`` insatcne with the given clients. If no clients are given, then will wrap
+        Creates a new ``ClientWrapper`` instance with the given clients. If no clients are given, then will wrap
         all the clients.
         
         Parameters

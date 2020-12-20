@@ -21,6 +21,7 @@ Role             = NotImplemented
 Webhook          = NotImplemented
 WebhookRepr      = NotImplemented
 Guild            = NotImplemented
+InteractionEvent = NotImplemented
 
 RATELIMIT_RESET       = Discord_hdrs.RATELIMIT_RESET
 RATELIMIT_RESET_AFTER = Discord_hdrs.RATELIMIT_RESET_AFTER
@@ -116,11 +117,12 @@ MAXIMAL_UNLIMITED_PARARELLITY = -50
 UNLIMITED_SIZE_VALUE = -10000
 NO_SPECIFIC_RATELIMITER = 0
 
-LIMITER_CHANNEL   = 'channel_id'
-LIMITER_GUILD     = 'guild_id'
-LIMITER_WEBHOOK   = 'webhook_id'
-LIMITER_GLOBAL    = 'global'
-LIMITER_UNLIMITED = 'unlimited'
+LIMITER_CHANNEL     = 'channel_id'
+LIMITER_GUILD       = 'guild_id'
+LIMITER_WEBHOOK     = 'webhook_id'
+LIMITER_INTERACTION = 'interaction_id'
+LIMITER_GLOBAL      = 'global'
+LIMITER_UNLIMITED   = 'unlimited'
 
 class RatelimitGroup(object):
     """
@@ -134,19 +136,21 @@ class RatelimitGroup(object):
         Identificator name by what is the ratelimit group limited.
         
         Possible values:
-        +-------------------+-------------------+
-        | Respective name   | Value             |
-        +===================+===================+
-        | LIMITER_CHANNEL   | `'channel_id'`    |
-        +-------------------+-------------------+
-        | LIMITER_GUILD     | `'guild_id'`      |
-        +-------------------+-------------------+
-        | LIMITER_WEBHOOK   | `'webhook_id'`    |
-        +-------------------+-------------------+
-        | LIMITER_GLOBAL    | `'global'`        |
-        +-------------------+-------------------+
-        | LIMITER_UNLIMITED | `'unlimited'`     |
-        +-------------------+-------------------+
+        +-----------------------+-----------------------+
+        | Respective name       | Value                 |
+        +=======================+=======================+
+        | LIMITER_CHANNEL       | `'channel_id'`        |
+        +-----------------------+-----------------------+
+        | LIMITER_GUILD         | `'guild_id'`          |
+        +-----------------------+-----------------------+
+        | LIMITER_WEBHOOK       | `'webhook_id'`        |
+        +-----------------------+-----------------------+
+        | LIMITER_INTERACTION   | `'interaction_id'`    |
+        +-----------------------+-----------------------+
+        | LIMITER_GLOBAL        | `'global'`            |
+        +-----------------------+-----------------------+
+        | LIMITER_UNLIMITED     | `'unlimited'`         |
+        +-----------------------+-----------------------+
     
     size : `int`
         The maximal amount of requests, which can be executed per limiter till the respective ratelimit reset.
@@ -190,19 +194,21 @@ class RatelimitGroup(object):
             Identificator name by what is the ratelimit group limited. Defaults to `LIMITER_GLOBAL`.
             
             Possible values:
-            +-------------------+-------------------+
-            | Respective name   | Value             |
-            +===================+===================+
-            | LIMITER_CHANNEL   | `'channel_id'`    |
-            +-------------------+-------------------+
-            | LIMITER_GUILD     | `'guild_id'`      |
-            +-------------------+-------------------+
-            | LIMITER_WEBHOOK   | `'webhook_id'`    |
-            +-------------------+-------------------+
-            | LIMITER_GLOBAL    | `'global'`        |
-            +-------------------+-------------------+
-            | LIMITER_UNLIMITED | `'unlimited'`     |
-            +-------------------+-------------------+
+            +-----------------------+-----------------------+
+            | Respective name       | Value                 |
+            +=======================+=======================+
+            | LIMITER_CHANNEL       | `'channel_id'`        |
+            +-----------------------+-----------------------+
+            | LIMITER_GUILD         | `'guild_id'`          |
+            +-----------------------+-----------------------+
+            | LIMITER_WEBHOOK       | `'webhook_id'`        |
+            +-----------------------+-----------------------+
+            | LIMITER_INTERACTION   | `'interaction_id'`    |
+            +-----------------------+-----------------------+
+            | LIMITER_GLOBAL        | `'global'`            |
+            +-----------------------+-----------------------+
+            | LIMITER_UNLIMITED     | `'unlimited'`         |
+            +-----------------------+-----------------------+
         
         optimistic : `bool`, Optional
             Whether the ratelimit group is optimistic.
@@ -878,6 +884,8 @@ class RatelimitProxy(object):
             +-----------------------+-----------------------------------------------------------------------+
             | LIMITER_WEBHOOK       | ``Webhook``, ``WebhookRepr``                                          |
             +-----------------------+-----------------------------------------------------------------------+
+            | LIMITER_INTERACTION   | ``InteractionEvent``                                                  |
+            +-----------------------+-----------------------------------------------------------------------+
             | LIMITER_GLOBAL        | `Any`                                                                 |
             +-----------------------+-----------------------------------------------------------------------+
             | LIMITER_UNLIMITED     | `Any`                                                                 |
@@ -917,7 +925,7 @@ class RatelimitProxy(object):
                         limiter_id = limiter.id
                         break
                     
-                    if type(limiter) is Message:
+                    if isinstance(limiter, Message):
                         limiter_id = limiter.channel.id
                         break
             
@@ -927,8 +935,7 @@ class RatelimitProxy(object):
                         limiter_id = limiter.id
                         break
                     
-                    if isinstance(limiter, ChannelGuildBase) or \
-                            type(limiter) in (Message, Role, Webhook, WebhookRepr):
+                    if isinstance(limiter, (ChannelGuildBase, Message, Role, Webhook, WebhookRepr)):
                         
                         guild = limiter.guild
                         if (guild is not None):
@@ -937,10 +944,15 @@ class RatelimitProxy(object):
             
             elif group_limiter is LIMITER_WEBHOOK:
                 if (limiter is not None):
-                    if type(limiter) in (Webhook, WebhookRepr):
+                    if isinstance(limiter, (Webhook, WebhookRepr)):
                         limiter_id = limiter.id
                         break
             
+            elif group_limiter is LIMITER_INTERACTION:
+                if (limiter is not None):
+                    if isinstance(limiter, InteractionEvent):
+                        limiter_id = limiter.id
+                        break
             else:
                 raise RuntimeError(f'`{group!r}.limiter` is not any of the defined limit groups.')
             
@@ -990,6 +1002,16 @@ class RatelimitProxy(object):
         is_limited_by_webhook : `bool`
         """
         return (self.group.limiter is LIMITER_WEBHOOK)
+    
+    def is_limited_by_interaction(self):
+        """
+        Returns whether the represented ratelimit group is limited by interaction id.
+        
+        Returns
+        -------
+        is_limited_by_interaction : `bool`
+        """
+        return (self.group.limiter is LIMITER_INTERACTION)
     
     def is_limited_globally(self):
         """
@@ -1761,6 +1783,14 @@ class RATELIMIT_GROUPS:
         - Limit : `5`
         - Resets after : `2.0`
     
+    - GROUP_INTERACTION_EXECUTE
+        - Used by: `interaction_followup_message_create`, `interaction_response_message_delete`,
+            `interaction_response_message_edit`, `interaction_followup_message_delete`,
+            `interaction_followup_message_edit`
+        - Limiter : `interaction_id`
+        - Limit : `5`
+        - Resets after : `2.0`
+    
     Group Details
     -----------
     - oauth2_token
@@ -1819,6 +1849,70 @@ class RATELIMIT_GROUPS:
         - Limiter : `GLOBAL`
         - Limit : `5`
         - Resets after : `5.0`
+    
+    - application_command_global_get_all
+        - Endpoint : `/applications/{application_id}/commands`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+    
+    - application_command_global_delete
+        - Endpoint : `/applications/{application_id}/commands/{application_command_id}`
+        - Method : `DELETE`
+        - Required auth : `bot`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+    
+    - application_command_global_create
+        - Endpoint : `/applications/{application_id}/commands`
+        - Method : `POST`
+        - Required auth : `bot`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+    
+    - application_command_global_edit
+        - Endpoint : `/applications/{application_id}/commands/{application_command_id}`
+        - Method : `PATCH`
+        - Required auth : `bot`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+    
+    - application_command_guild_get_all
+        - Endpoint : `/applications/{application_id}/guilds/{guild_id}/commands`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+    
+    - application_command_guild_delete
+        - Endpoint : `/applications/{application_id}/guilds/{guild_id}/commands/{application_command_id}`
+        - Method : `DELETE`
+        - Required auth : `bot`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+    
+    - application_command_guild_create
+        - Endpoint : `/applications/{application_id}/guilds/{guild_id}/commands`
+        - Method : `POST`
+        - Required auth : `bot`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+    
+    - application_command_guild_edit
+        - Endpoint : `/applications/{application_id}/guilds/{guild_id}/commands/{application_command_id}`
+        - Method : `PATCH`
+        - Required auth : `bot`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
     
     - applications_detectable
         - Endpoint : `/applications/detectable`
@@ -2662,6 +2756,14 @@ class RATELIMIT_GROUPS:
         - Resets after : `UN`
         - Notes : Untested.
     
+    - interaction_response_message_create
+        - Endpoint : `/interactions/{interaction_id}/{interaction_token}/callback`
+        - Method : `POST`
+        - Required auth : `N/A`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+    
     - invite_delete
         - Endpoint : `/invites/{invite_code}`
         - Method : `DELETE`
@@ -2879,6 +2981,46 @@ class RATELIMIT_GROUPS:
         - Limit : `OPT`
         - Resets after : `OPT`
     
+    - interaction_followup_message_create
+        - Endpoint : `webhooks/{application_id}/{interaction_token}`
+        - Method : `POST`
+        - Required auth : `N/A`
+        - Limiter : `interaction_id`
+        - Limit : `5`
+        - Resets after : `2.0`
+    
+    - interaction_response_message_delete
+        - Endpoint : `webhooks/{application_id}/{interaction_token}/messages/@original`
+        - Method : `DELETE`
+        - Required auth : `N/A`
+        - Limiter : `interaction_id`
+        - Limit : `5`
+        - Resets after : `2.0`
+    
+    - interaction_response_message_edit
+        - Endpoint : `webhooks/{application_id}/{interaction_token}/messages/@original`
+        - Method : `PATCH`
+        - Required auth : `N/A`
+        - Limiter : `interaction_id`
+        - Limit : `5`
+        - Resets after : `2.0`
+    
+    - interaction_followup_message_delete
+        - Endpoint : `webhooks/{application_id}/{interaction_token}/messages/{message_id}`
+        - Method : `DELETE`
+        - Required auth : `N/A`
+        - Limiter : `interaction_id`
+        - Limit : `5`
+        - Resets after : `2.0`
+    
+    - interaction_followup_message_edit
+        - Endpoint : `webhooks/{application_id}/{interaction_token}/messages/{message_id}`
+        - Method : `PATCH`
+        - Required auth : `N/A`
+        - Limiter : `interaction_id`
+        - Limit : `5`
+        - Resets after : `2.0`
+    
     - webhook_delete
         - Endpoint : `/webhooks/{webhook_id}`
         - Method : `DELETE`
@@ -2956,6 +3098,7 @@ class RATELIMIT_GROUPS:
     GROUP_USER_MODIFY           = RatelimitGroup(LIMITER_GUILD) # both has the same endpoint
     GROUP_USER_ROLE_MODIFY      = RatelimitGroup(LIMITER_GUILD)
     GROUP_WEBHOOK_EXECUTE       = RatelimitGroup(LIMITER_WEBHOOK)
+    GROUP_INTERACTION_EXECUTE   = RatelimitGroup(LIMITER_INTERACTION)
     
     oauth2_token                = RatelimitGroup(optimistic=True)
     application_get             = RatelimitGroup(optimistic=True) # untested
@@ -2964,6 +3107,14 @@ class RATELIMIT_GROUPS:
     achievement_delete          = RatelimitGroup()
     achievement_get             = RatelimitGroup()
     achievement_edit            = RatelimitGroup()
+    application_command_global_get_all = RatelimitGroup.unlimited() # untested
+    application_command_global_delete = RatelimitGroup.unlimited() # untested
+    application_command_global_create = RatelimitGroup.unlimited() # untested
+    application_command_global_edit = RatelimitGroup.unlimited() # untested
+    application_command_guild_get_all = RatelimitGroup.unlimited() # untested
+    application_command_guild_delete = RatelimitGroup.unlimited() # untested
+    application_command_guild_create = RatelimitGroup.unlimited() # untested
+    application_command_guild_edit = RatelimitGroup.unlimited() # untested
     applications_detectable     = RatelimitGroup(optimistic=True)
     client_logout               = RatelimitGroup() # untested
     channel_delete              = RatelimitGroup.unlimited()
@@ -3065,6 +3216,7 @@ class RATELIMIT_GROUPS:
     guild_widget_get            = RatelimitGroup.unlimited()
     hypesquad_house_leave       = RatelimitGroup() # untested
     hypesquad_house_change      = RatelimitGroup() # untested
+    interaction_response_message_create = RatelimitGroup.unlimited() # untested
     invite_delete               = RatelimitGroup.unlimited()
     invite_get                  = RatelimitGroup()
     client_application_info     = RatelimitGroup(optimistic=True)
@@ -3091,6 +3243,11 @@ class RATELIMIT_GROUPS:
     channel_group_create        = RatelimitGroup(optimistic=True) # untested
     user_get_profile            = RatelimitGroup(optimistic=True) # untested
     voice_regions               = RatelimitGroup(optimistic=True)
+    interaction_followup_message_create = GROUP_INTERACTION_EXECUTE
+    interaction_response_message_delete = GROUP_INTERACTION_EXECUTE
+    interaction_response_message_edit = GROUP_INTERACTION_EXECUTE
+    interaction_followup_message_delete = GROUP_INTERACTION_EXECUTE
+    interaction_followup_message_edit = GROUP_INTERACTION_EXECUTE
     webhook_delete              = RatelimitGroup.unlimited()
     webhook_get                 = RatelimitGroup.unlimited()
     webhook_edit                = RatelimitGroup(LIMITER_WEBHOOK, optimistic=True)

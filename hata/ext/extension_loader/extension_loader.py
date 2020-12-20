@@ -195,7 +195,7 @@ class Extension(object):
         locked : `bool`
             Whether the extension should be picked up by the `{}_all` methods of the extension loader.
         take_snapshot_difference: `bool`
-            Whether snapshots should be taken before and after loading an extension, and when teh extension is unloaded,
+            Whether snapshots should be taken before and after loading an extension, and when the extension is unloaded,
             the snapshot difference should be reverted.
         default_variables : `None` or `HybridValueDictionary` of (`str`, `Any`) items
             An optionally weak value dictionary to store objects for asigning them to modules before loading them.

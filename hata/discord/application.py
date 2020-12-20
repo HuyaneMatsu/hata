@@ -2,11 +2,24 @@
 __all__ = ('Application', 'ApplicationExecutable', 'ApplicationSubEntity', 'EULA', 'Team', 'TeamMember',
     'ThirdPartySKU', )
 
-from .bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
+from .bases import DiscordEntity, IconSlot, ICON_TYPE_NONE, FlagBase
 from .http import URLS
 from .user import ZEROUSER, User
 from .client_core import TEAMS, EULAS, APPLICATIONS, USERS
 from .preinstanced import TeamMembershipState
+
+class ApplicationFlag(FlagBase):
+    """
+    Represents an application's flags.
+    
+    The implememted user flags are the following:
+    
+    +-------------------------------+-------------------+
+    | Respective name               | Bitwise position  |
+    +===============================+===================+
+    """
+    __keys__ = {
+            }
 
 class Application(DiscordEntity, immortal=True):
     """
@@ -17,6 +30,8 @@ class Application(DiscordEntity, immortal=True):
     
     Attributes
     ----------
+    aliases : `None` or `list` of `str`
+        Aliases of the application's name. Defaults to `None`.
     bot_public : `bool`.
         Whether not only the application's owner can join the application's bot to guilds. Defaults to `False`
     bot_require_code_grant : `bool`
@@ -29,9 +44,19 @@ class Application(DiscordEntity, immortal=True):
         The application's store cover image's type.
     description : `str`
         The description of the application. Defaults to empty string.
+    developers : `None` or `list` of ``ApplicationSubEntity``
+        A list of the application's games' developers. Defaults to `None`.
+    eula_id : `int`
+        The end-user license agreement's id of the application. Defaults to `0` if not applicable.
+    executables : `None` or `list` of ``ApplicationExecutable``
+        A list of the appplication's executables. Defaults to `None`.
+    flags : ``ApplicationFlag``
+        The application's public flags.
     guild_id : `int`
         If the application is a game sold on Discord, this field tells in which guild it is.
         Defaults to `0` if not applicable.
+    hook : `bool`
+        Defaults to `False`.
     icon_hash : `int`
         The application's icon's hash as `uint128`.
     icon_type : ``IconType``
@@ -40,51 +65,41 @@ class Application(DiscordEntity, immortal=True):
         The application's id. Defaults to `0`. Meanwhile set as `0`, hashing the application will raise `RuntimeError`.
     name : `str`
         The name of the application. Defaults to empty string.
+    overlay : `bool`
+        Defaults to `False`.
+    overlay_compatibility_hook : `bool`
+        Defaults to `False`.
     owner : ``User``, ``Client`` or ``Team``
         The application's owner. Defaults to `ZEROUSER`.
     primary_sku_id : `int`
         If the application is a game sold on Discord, this field will be the id of the created `Game SKU`.
         Defaults to `0`.
+    publishers : `None` or `list` of ``ApplicationSubEntity``
+        A list of the application's games' publishers. Defaults to `None`.
     rpc_origins : `None` or `list` of `str`
         A list of `rpc` origin urls, if `rpc` is enabled. Set as `None` if would be an empty list.
     slug : `str` or `None`
         If this application is a game sold on Discord, this field will be the url slug that links to the store page.
         Defaults to `None`.
-    summary : `str`
-        if this application is a game sold on Discord, this field will be the summary field for the store page of its
-        primary sku. Defautls to empty string.
-    verify_key : `str`
-        A base64 encoded key for the GameSDK's `GetTicket`. Defaults to empty string.
-    developers : `None` or `list` of ``ApplicationSubEntity``
-        A list of the application's games' developers. Defaults to `None`.
-    hook : `bool`
-        Defaults to `False`.
-    publishers : `None` or `list` of ``ApplicationSubEntity``
-        A list of the application's games' publishers. Defaults to `None`.
-    executables : `None` or `list` of ``ApplicationExecutable``
-        A list of the appplication's executables. Defaults to `None`.
-    third_party_skus : `None` or `list` of ``ThirdPartySKU``
-         A list of the appplication's third party stock keeping units. Defaults to `None`.
     splash_hash : `int`
         The application's splash image's hash as `uint128`.
     splash_type : ``IconType``
         The application's splash image's type.
-    overlay : `bool`
-        Defaults to `False`.
-    overlay_compatibility_hook : `bool`
-        Defaults to `False`.
-    aliases : `None` or `list` of `str`
-        Aliases of the application's name. Defaults to `None`.
-    eula_id : `int`
-        The end-user license agreement's id of the application. Defaults to `0` if not applicable.
+    summary : `str`
+        if this application is a game sold on Discord, this field will be the summary field for the store page of its
+        primary sku. Defautls to empty string.
+    third_party_skus : `None` or `list` of ``ThirdPartySKU``
+         A list of the appplication's third party stock keeping units. Defaults to `None`.
+    verify_key : `str`
+        A base64 encoded key for the GameSDK's `GetTicket`. Defaults to empty string.
     
     Notes
     -----
     The instances of the class support weakreferencing.
     """
     __slots__ = ('aliases', 'bot_public', 'bot_require_code_grant', 'description', 'developers', 'eula_id',
-        'executables', 'guild_id', 'hook', 'name', 'overlay', 'overlay_compatibility_hook', 'owner', 'primary_sku_id',
-        'publishers', 'rpc_origins', 'slug', 'summary', 'third_party_skus', 'verify_key', )
+        'executables', 'flags', 'guild_id', 'hook', 'name', 'overlay', 'overlay_compatibility_hook', 'owner',
+        'primary_sku_id', 'publishers', 'rpc_origins', 'slug', 'summary', 'third_party_skus', 'verify_key', )
     
     cover = IconSlot('cover', 'cover_image', URLS.application_cover_url, URLS.application_cover_url_as, add_updater=False)
     icon = IconSlot('icon', 'icon', URLS.application_icon_url, URLS.application_icon_url_as, add_updater=False)
@@ -123,6 +138,7 @@ class Application(DiscordEntity, immortal=True):
         self.overlay_compatibility_hook = False
         self.aliases = None
         self.eula_id = 0
+        self.flags = ApplicationFlag()
         
         self.cover_hash = 0
         self.cover_type = ICON_TYPE_NONE
@@ -133,7 +149,7 @@ class Application(DiscordEntity, immortal=True):
         
         return self
     
-    def _create_update(self, data):
+    def _create_update(self, data, ready_data):
         """
         Cretaes a new application if the given data refers to an other one. Updates the application and returns it.
         
@@ -141,6 +157,8 @@ class Application(DiscordEntity, immortal=True):
         ----------
         data : or `dict` of (`str`, `Any`) items, Optional
             Application data received from Discord.
+        ready_data : `bool`
+            Whether the application data was received from a ready event.
         
         Returns
         -------
@@ -156,7 +174,16 @@ class Application(DiscordEntity, immortal=True):
                 self.id = application_id
                 APPLICATIONS[application_id] = self
         
-        self._update_no_return(data, set_owner=True)
+        if ready_data:
+            try:
+                flags = data['flags']
+            except KeyError:
+                flags = ApplicationFlag()
+            else:
+                flags = ApplicationFlag(flags)
+            self.flags = flags
+        else:
+            self._update_no_return(data, set_owner=True)
         
         return self
     
@@ -342,7 +369,14 @@ class Application(DiscordEntity, immortal=True):
             eula_id = int(eula_id)
         
         self.eula_id = eula_id
-
+        
+        try:
+            flags = data['flags']
+        except KeyError:
+            flags = ApplicationFlag()
+        else:
+            flags = ApplicationFlag(flags)
+        self.flags = flags
 
 class Team(DiscordEntity, immortal=True):
     """
@@ -743,3 +777,4 @@ class EULA(DiscordEntity, immortal=True):
 del URLS
 del DiscordEntity
 del IconSlot
+del FlagBase

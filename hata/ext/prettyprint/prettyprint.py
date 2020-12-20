@@ -1156,16 +1156,17 @@ def str_AuditLogEntry(entry, index=None, **kwargs):
                         text = ', '.join(f'PermOW of {element.target.name} ({element.target.id})' for element in value)
                     else:
                         raise ValueError(attr, value)
+                
                 elif type(value) is str:
                     text = value
                 elif type(value) is tuple:
                     text = f'animated {value[0]} value {value[1]}'
                 elif isinstance(value, int):
                     text = str(value)
-                elif hasattr(value,'id'):
+                elif hasattr(value, 'id'):
                     text = f'{value.name} {value.id}'
                 else:
-                    text = f'{value.name} {value.value}'
+                    text = repr(value)
                 
                 texts.append(text)
             

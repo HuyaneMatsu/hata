@@ -3084,13 +3084,13 @@ class CommandContentParser(object):
         separator = ContentArgumentSeparator(separator)
         
         analyzer = CallableAnalyzer(func)
-        if analyzer.is_async():
+        if analyzer.is_async() or analyzer.is_async_generator():
             real_analyzer = analyzer
             should_instance = False
         
-        elif analyzer.can_instance_to_async_callable():
+        elif analyzer.can_instance_to_async_callable() or analyzer.can_instance_to_async_generator():
             real_analyzer = CallableAnalyzer(func.__call__, as_method=True)
-            if not real_analyzer.is_async():
+            if (not real_analyzer.is_async()) and (not real_analyzer.is_async_generator()):
                 raise TypeError(f'`func` is not `async-callable` and cannot be instanced to `async` either, got '
                     f'{func!r}.')
             
@@ -3249,7 +3249,7 @@ class CommandContentParser(object):
             parsers = None
         
         if should_instance:
-            func = analyzer.instance_to_async_callable()
+            func = analyzer.insatnce()
         
         self = object.__new__(cls)
         self._parsers = parsers
@@ -3383,7 +3383,7 @@ class ContentParser(CommandContentParser):
         ------
         TypeError
             - If `is_method` is not given as `bool` instance.
-            - If `handler` is not async, neither cannot be insatcned to async.
+            - If `handler` is not async, neither cannot be instanced to async.
             - If `handler` (or it's converted form) would accept bad amount of arguents.
             - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
             - If `separator was given as `tuple`, but it's element are not `str` instances.

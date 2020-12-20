@@ -1196,11 +1196,12 @@ class User(UserBase):
         def __new__(cls, data, guild=None):
             try:
                 user_data = data['user']
-                member_data = data
             except KeyError:
                 user_data = data
                 member_data = data.get('member')
-                
+            else:
+                member_data = data
+            
             user_id = int(user_data['id'])
             
             try:

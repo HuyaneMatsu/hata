@@ -876,7 +876,7 @@ class EmbedBase(object):
         """Returns the representation of the embed."""
         return f'<{self.__class__.__name__} length={len(self)}>'
     
-    def __eq__(self,other):
+    def __eq__(self, other):
         """Returns whether the two embeds are equal."""
         if not isinstance(other, EmbedBase):
             return NotImplemented

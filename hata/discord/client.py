@@ -3981,7 +3981,7 @@ class Client(UserBase):
         last_message_id = before
         
         messages_ = channel.messages
-        if messages_:
+        if (messages_ is not None) and messages_:
             before_index = message_relativeindex(messages_, before)
             after_index = message_relativeindex(messages_, after)
             if before_index != after_index:
@@ -4338,7 +4338,7 @@ class Client(UserBase):
             is_own_getter[sharders[index].client.id] = index
         
         messages_ = channel.messages
-        if messages_:
+        if (messages_ is not None) and messages_:
             before_index = message_relativeindex(messages_, before)
             after_index = message_relativeindex(messages_, after)
             if before_index != after_index:
@@ -4972,7 +4972,12 @@ class Client(UserBase):
             If any exception was received from the Discord API.
         """
         while True:
-            ln = len(channel.messages)
+            messages = channel.messages
+            if messages is None:
+                ln = 0
+            else:
+                ln = len(channel.messages)
+            
             loadto = index-ln
             
             # we want to load it till the exact index, so if `loadto` is `0`, thats not enough!
@@ -4986,7 +4991,7 @@ class Client(UserBase):
                 planned = 100
             
             if ln:
-                result = await self.message_logs(channel, planned, before=channel.messages[ln-2].id)
+                result = await self.message_logs(channel, planned, before=messages[ln-2].id)
             else:
                 result = await self.message_logs_fromzero(channel, planned)
             
@@ -5054,8 +5059,8 @@ class Client(UserBase):
                     raise IndexError(index)
         
         messages = channel.messages
-        if index < len(messages):
-            return messages[index]
+        if (messages is not None) and (index < len(messages)):
+            raise IndexError(index)
         
         if channel.message_history_reached_end:
             raise IndexError(index)
@@ -5064,7 +5069,11 @@ class Client(UserBase):
             raise IndexError(index)
         
         # access it again, because it might be modified
-        return channel.messages[index]
+        messages = channel.messages
+        if messages is None:
+            raise IndexError(index)
+        
+        return messages[index]
     
     async def messages_in_range(self, channel, start=0, end=100):
         """
@@ -5134,7 +5143,13 @@ class Client(UserBase):
         if end <= start:
             return []
         
-        if end >= len(channel.messages) and (not channel.message_history_reached_end) and \
+        messages = channel.messages
+        if messages is None:
+            ln = 0
+        else:
+            ln = len(messages)
+        
+        if (end >= ln) and (not channel.message_history_reached_end) and \
                channel.cached_permissions_for(self).can_read_message_history:
             
             try:
@@ -5153,8 +5168,9 @@ class Client(UserBase):
         
         result = []
         messages = channel.messages
-        for index in range(start, min(end, len(messages))):
-            result.append(messages[index])
+        if (messages is not None):
+            for index in range(start, min(end, len(messages))):
+                result.append(messages[index])
         
         return result
     

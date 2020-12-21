@@ -5,19 +5,6 @@ import socket as module_socket
 
 from .futures import Future
 
-def _create_transport_context(server_side, server_hostname):
-    if server_side:
-        raise ValueError('Server side SSL needs a valid SSLContext')
-    
-    # Client side may pass ssl=True to use a default
-    # context; in that case the ssl_context passed is None.
-    # The default is secure for client connections.
-    ssl_context = ssl.create_default_context()
-    if (server_hostname is None) or (not server_hostname):
-        ssl_context.check_hostname = False
-    
-    return ssl_context
-
 if hasattr(module_socket, 'TCP_NODELAY'):
     def _set_nodelay(sock):
         if (sock.family in (module_socket.AF_INET, module_socket.AF_INET6) and
@@ -35,10 +22,87 @@ WRAPPED = 'WRAPPED'
 SHUTDOWN = 'SHUTDOWN'
 
 class _SSLPipe(object):
-    __slots__=('_handshake_cb', '_incoming', '_outgoing', '_shutdown_cb', 'context', 'need_ssldata', 'server_hostname',
-        'server_side', 'ssl_object', 'state',)
+    """
+    An SSL pipe.
     
-    def __init__(self, context, server_side, server_hostname=None):
+    Allows you to communicate with an SSL/TLS protocol instance through memory buffers. It can be used to implement a
+    security layer for an existing connection where you don't have access to the connection's file descriptor, or for
+    some reason you don't want to use it.
+    
+    An ``_SSLPipe`` can be in `wrapped` and `unwrapped` mode. In unwrapped mode, data is passed through untransformed.
+    In wrapped mode, application level data is encrypted to SSL record level data and vice versa. The SSL record level
+    is the lowest level in the SSL protocol suite and is what travels as-is over the wire.
+    
+    An ``_SSLPipe`` initially is in `unwrapped` mode. To start SSL, call ``.do_handshake``, to shutdown SSL, call
+    ``.unwrap``.
+    
+    Attributes
+    ----------
+    _handshake_cb : `None` or `callable`
+        A Callback which will be called when handshake is completed. Set by ``.do_handshake``.
+        
+        Should accept the following parameters:
+        +-------------------+---------------------------+
+        | Respective name   | Value                     |
+        +===================+===========================+
+        | handshake_exc     | `None` or `BaseException` |
+        +-------------------+---------------------------+
+        
+        If the hahdshake is successfull, then the `handshake_exc` is given as `None`, else as an exception instance.
+    _incoming : `ssl.MemoryBIO`
+        Does the incodming data encryption/decryption.
+    _outgoing : `ssl.MemoryBIO`
+        Does the outgoing data encryption/decryption.
+    _shutdown_cb : `None` or `callable`
+        A callback which will be called when the shutdown is completed. Set by ``.shutdown``.
+        
+        Should accept no parameters.
+    context : `ssl.SSLContext`
+        The SSL pipe's SSL type.
+    need_ssldata : `bool`
+        Whether more record level data is needed to complete a handshake that is currently in progress.
+    server_hostname : `None` or `str`
+        The ssl protocol's server hostname if applicable.
+    server_side : `bool`
+        Whether the ssl protocol is server side.
+    ssl_object : `None` or `ssl.SSLObject`
+        SSL object connecting ``._incoming`` and ``._outgoing`` memory bios set at ``.do_handshake``.
+    state : `str`
+        The state of the ``_SSLPipe``.
+        
+        Can be set as one of:
+        
+        +-------------------+-------------------+
+        | Respective name   | Value             |
+        +===================+===================+
+        | UNWRAPPED         | `'UNWRAPPED'`     |
+        +-------------------+-------------------+
+        | DO_HANDSHAKE      | `'DO_HANDSHAKE'`  |
+        +-------------------+-------------------+
+        | WRAPPED           | `'WRAPPED'`       |
+        +-------------------+-------------------+
+        | SHUTDOWN          | `'SHUTDOWN'`      |
+        +-------------------+-------------------+
+        
+        Note, that ``.state`` is checked by memory address and not by value.
+    """
+    __slots__ = ('_handshake_cb', '_incoming', '_outgoing', '_shutdown_cb', 'context', 'need_ssldata',
+        'server_hostname', 'server_side', 'ssl_object', 'state',)
+    
+    def __init__(self, context, server_side, server_hostname):
+        """
+        Creates a new ``_SSLPipe`` instacne with teh given parameters.
+        
+        Parameters
+        ----------
+        context : `ssl.SSLContext`
+            The SSL pipe's SSL type.
+        server_side : `bool`
+            Whether the ssl protocol is server side.
+        server_hostname : `None` or `str`
+            The ssl protocol's server hostname if applicable.
+
+        """
         self.context = context
         self.server_side = server_side
         self.server_hostname = server_hostname
@@ -51,55 +115,139 @@ class _SSLPipe(object):
         self._shutdown_cb = None
     
     
-    @property
-    def wrapped(self):
-        return self.state is WRAPPED
+    def is_wrapped(self):
+        """
+        Returns whether a security layer is currently is effect.
+        
+        In handshake or on in shutdown is always `False`.
+        
+        Returns
+        -------
+        is_wrapped : `bool`
+        """
+        return (self.state is WRAPPED)
     
     def do_handshake(self, callback=None):
+        """
+        Starts the SSL handshake.
+        
+        Parameters
+        ----------
+        callback : `None` or `callable`, Optional
+            A Callback which will be called when handshake is completed.
+            
+            Should accept the following parameters:
+            +-------------------+---------------------------+
+            | Respective name   | Value                     |
+            +===================+===========================+
+            | handshake_exc     | `None` or `BaseException` |
+            +-------------------+---------------------------+
+            
+            If the hahdshake is successfull, then the `handshake_exc` is given as `None`, else as an exception
+            instance.
+            
+        Returns
+        -------
+        ssldata : `list` of `bytes`
+            A list of SSL data. Always an empty list is returned.
+        
+        Raises
+        ------
+        RuntimeError
+            If the handshake is in progress or is already completed.
+        """
         if self.state is not UNWRAPPED:
-            raise RuntimeError('handshake in progress or completed')
+            raise RuntimeError('Handshake in progress or completed.')
+        
         self.ssl_object = self.context.wrap_bio(self._incoming, self._outgoing, server_side=self.server_side,
             server_hostname=self.server_hostname)
         
         self.state = DO_HANDSHAKE
-        self._handshake_cb=callback
-        ssldata, _ = self.feed_ssldata(b'', only_handshake=True)
+        self._handshake_cb = callback
+        ssldata, appdata = self.feed_ssldata(b'', only_handshake=True)
         
         return ssldata
     
     def shutdown(self, callback=None):
+        """
+        Starts the SSL shutdown process.
+        
+        Parameters
+        ----------
+        callback : `None` or `callable`, Optional
+            A callback which will be called when the shutdown is completed.
+            
+            Should accept no parameters.
+        
+        Returns
+        -------
+        ssldata : `list` of `bytes`
+            A list of SSL data.
+        
+        Raises
+        ------
+        RuntimeError
+            - If the security layer is not yet present.
+            - If shutdown is already in progress.
+        """
         state = self.state
         if state is UNWRAPPED:
-            raise RuntimeError('no security layer present')
+            raise RuntimeError('No security layer present.')
         if state is SHUTDOWN:
-            raise RuntimeError('shutdown in progress')
+            raise RuntimeError('Shutdown in progress.')
         
         self.state = SHUTDOWN
         self._shutdown_cb = callback
-        ssldata, offset = self.feed_ssldata(b'')
+        ssldata, appdata = self.feed_ssldata(b'')
         return ssldata
     
     def feed_eof(self):
+        """
+        Sends an eof.
+        
+        Raises
+        ------
+        ssl.SSLError
+            If the eof was unexpected. The raised ssl error has `errno` set as `ssl.SSL_ERROR_EOF`.
+        """
         self._incoming.write_eof()
-        self.feed_ssldata(b'') #return is ignored
+        # Ignore return.
+        self.feed_ssldata(b'')
     
     def feed_ssldata(self, data, only_handshake=False):
-        if self.state is UNWRAPPED:
+        """
+        Feed SSL record level data into the pipe.
+        
+        Parameters
+        ----------
+        data : `bytes`
+            If empty `bytes` is given, then it will get ssldata for the handshake initialization.
+        
+        Returns
+        -------
+        ssldata : `list` of `bytes`
+            Conatins the SSL data that needs to be sent to the remote SSL.
+        appdata : `list` of `bytes`
+            Plaintext data that needs to be forwarded to the application.
+            
+            Might contain an empty `bytes`, what indicates that ``.shutdown`` should be called.
+        """
+        state = self.state
+        ssldata = []
+        appdata = []
+        
+        if state is UNWRAPPED:
             # If unwrapped, pass plaintext data straight through.
             if data:
-                appdata = [data]
-            else:
-                appdata = []
-            return [], appdata
-    
+                appdata.append(data)
+            
+            return ssldata, appdata
+        
         self.need_ssldata = False
         if data:
             self._incoming.write(data)
         
-        ssldata = []
-        appdata = []
         try:
-            state = self.state
             if state is DO_HANDSHAKE:
                 # Call do_handshake() until it doesn't raise anymore.
                 self.ssl_object.do_handshake()
@@ -114,7 +262,7 @@ class _SSLPipe(object):
                 # Handshake done: execute the wrapped block
             
             if state is WRAPPED:
-                # Main state: read data from SSL until close_notify
+                # Main state: read data from SSL until close_notify.
                 while True:
                     chunk = self.ssl_object.read(MAX_SIZE)
                     appdata.append(chunk)
@@ -146,13 +294,35 @@ class _SSLPipe(object):
             
             self.need_ssldata = (err_number == ssl.SSL_ERROR_WANT_READ)
 
-        # Check for record level data that needs to be sent back.
-        # Happens for the initial handshake and renegotiations.
+        # Check for record level data that needs to be sent back. Happens for the initial handshake and renegotiations.
         if self._outgoing.pending:
             ssldata.append(self._outgoing.read())
+        
         return ssldata, appdata
 
     def feed_appdata(self, data, offset):
+        """
+        Feed plaintext data into the pipe.
+        
+        If the returned `offset` is less than the returned data's total length in bytes, that case is called
+        `short write`. If `short-write` happens, than the same `data` should be passed to ``.feed_appdata`` next time.
+        (This is an OpenSSL requirement.) A further particularity is that a short write will always have `offset = 0`,
+        because the `_ssl` module does not enable partial writes. And even though the offset is `0`, there will still
+        be encrypted data in ssldata.
+        
+        Returns
+        -------
+        ssldata : `list` of `bytes-like`
+            Containing record level data that needs to be sent to the remote SSL instance.
+        offset : `int`
+            The number of the porcessed plaintext data in bytes. Might be less than the total length of the returned
+            data.
+        
+        Raises
+        ------
+        ssl.SSLError
+            Any unexpected SSL error.
+        """
         ssldata = []
         if self.state is UNWRAPPED:
             # pass through data in unwrapped mode
@@ -167,13 +337,16 @@ class _SSLPipe(object):
                     if offset < len(view):
                         offset += self.ssl_object.write(view[offset:])
                 except ssl.SSLError as err:
-                    # It is not allowed to call write() after unwrap() until the close_notify is acknowledged. We return
-                    # the condition to the caller as a short write.
+                    # It is not allowed to call `.write` after ``.unwrap`` until the close_notify is acknowledged. We
+                    # return the condition to the caller as a short write.
                     if err.reason == 'PROTOCOL_IS_SHUTDOWN':
                         err.errno = ssl.SSL_ERROR_WANT_READ
                         need_ssldata = True
                     else:
-                        errno = err.errno
+                        errno = getattr(err, 'errno', None)
+                        if errno is None:
+                            raise
+                        
                         if errno == ssl.SSL_ERROR_WANT_READ:
                             need_ssldata = True
                         elif errno == ssl.SSL_ERROR_WANT_WRITE or errno == ssl.SSL_ERROR_SYSCALL:
@@ -191,6 +364,7 @@ class _SSLPipe(object):
                     break
         
         return ssldata, offset
+
 
 class _SSLProtocolTransport(object):
     """
@@ -472,7 +646,8 @@ class SSLProtocol(object):
     _ssl_context : `ssl.SSLContext`
         The connection's ssl type.
     _write_backlog : `deque` of `tuple` (`bytes-like`, `int`)
-        Ensured data queued up to be written. Each element contains a the data to write and an offset till write from.
+        Ensured data queued up to be written. Each element contains a tuple of the data to write and an offset till
+        write from.
     app_protocol : `Any`
         Asynchronous protcol implemnetation.
     app_transport : ``_SSLProtocolTransport``
@@ -494,42 +669,83 @@ class SSLProtocol(object):
     
     def __new__(cls, loop, app_protocol, ssl_context, connection_made_waiter, server_side=False, server_hostname=None,
             call_connection_made=True):
+        """
+        Creates a new ``SSLProtocol`` instance.
         
+        Parameters
+        ----------
+        loop : ``EventThread``
+            The respective eventloop of the protocol.
+        app_protocol : `Any`
+            Asynchronous protcol implemnetation.
+        ssl_context : `None` or `ssl.SSLContext`
+            The connection ssl type. If SSl was given as `True` when creating a connection at this point we get it as
+            `None`, so we create a default ssl context.
+            
+            Note, that if the connection is server side, a valid `ssl_context` should be given.
+        connection_made_waiter : `None` or ``Future``
+            A waiter future, what's result is set when connection is made, aka handshae is completed, or if when the
+            connection is lost, depending which happens first.
+            
+            After the future's result or exception is set, the attribute is set as `None`.
+        server_side
+            Whether the ssl protocol is server side.
+        server_hostname
+            The ssl protocol's server hostname if applicable.
+            
+            If we are the `server_side`, then this parameter is forced to `None` (wont raise).
+        call_connection_made
+            Whether the the ``.app_protocol``'s `.connection_made` should be called when handshake is completed.
+        
+        Raises
+        ------
+        ValueError
+            If the protocol is server side, but `ssl_context` is not given.
+        """
         if ssl_context is None:
-            ssl_context = _create_transport_context(server_side, server_hostname)
+            if server_side:
+                raise ValueError('Server side SSL needs a valid `ssl.SSLContext`.')
+            
+            ssl_context = ssl.create_default_context()
+            if (server_hostname is None) or (not server_hostname):
+                ssl_context.check_hostname = False
+        
+        if server_side:
+            server_hostname = None
         
         self = object.__new__(cls)
         
         self.server_side = server_side
-        if (server_hostname is not None) and server_side:
-            server_hostname = None
-        
         self.server_hostname = server_hostname
-        
         self._ssl_context = ssl_context
-        # SSL-specific extra info. More info are set when the handshake
-        # completes.
         self._extra = {'sslcontext': ssl_context}
-
-        # App data write buffering
         self._write_backlog = deque()
-        
         self._connection_made_waiter = connection_made_waiter
         self.loop = loop
         self.app_protocol = app_protocol
         self.app_transport = _SSLProtocolTransport(self, app_protocol)
-        # _SSLPipe instance (None until the connection is made)
         self.sslpipe = None
         self._session_established = False
         self._in_handshake = False
         self._in_shutdown = False
-        # transport, ex: SelectorSocketTransport
         self.transport = None
         self._call_connection_made = call_connection_made
         
         return self
     
     def _wakeup_connection_made_waiter(self, exception=None):
+        """
+        Wakes up the ssl protocol's ``._connection_made_waiter`` if applicable.
+        
+        Called when connection is made closed or lost, depending, which happens first. If connection is made or closed,
+        then the connection made waiter's result is set as `None`, if the connection is lost, then the respective
+        exception is throwed into it if any.
+        
+        Parameters
+        ----------
+        exception : `None` or ``BaseException``, Optional
+            Exception to throw into ``._connection_made_waiter`` if any.
+        """
         connection_made_waiter = self._connection_made_waiter
         if (connection_made_waiter is not None):
             self._connection_made_waiter = None
@@ -540,26 +756,68 @@ class SSLProtocol(object):
                     connection_made_waiter.set_exception(exception)
     
     def connection_made(self, transport):
+        """
+        Called when the connection is made.
+        
+        Sets the ``SSLProtocol``'s ``._SSLPipe`` and starts the ssl handshake.
+        
+        Parameters
+        ----------
+        transport : `Any`
+            Asynchronous transport implementation, what calls the protocol's ``.data_received`` when data is
+            received.
+        """
         self.transport = transport
         self.sslpipe = _SSLPipe(self._ssl_context, self.server_side, self.server_hostname)
         self._start_handshake()
     
     def connection_lost(self, exception):
+        """
+        Called when the connection is lost or closed.
+        
+        Parameters
+        ----------
+        exception : `None` or `BaseException` instance
+            Defines whether the connection is closed, or an exception was received.
+            
+            If the connection was closed, then `err` is given as `None`. This can happen at the case, when eof is
+            received as well.
+        """
         if self._session_established:
             self._session_established = False
             app_protocol = self.app_protocol
             self.loop.call_soon(app_protocol.__class__.connection_lost, app_protocol, exception)
+        
         self.transport = None
         self.app_transport = None
         self._wakeup_connection_made_waiter(exception)
     
     def pause_writing(self):
+        """
+        Called when the transport's buffer goes over the high-water mark.
+        
+        ``.pause_writing`` is called when the buffer goes over the high-water mark, and eventually
+        ``.resume_writing`` is called when the buffer size reaches the low-water mark.
+        """
         self.app_protocol.pause_writing()
     
     def resume_writing(self):
+        """
+        Called when the transport's buffer drains below the low-water mark.
+        
+        See ``.pause_writing`` for details.
+        """
         self.app_protocol.resume_writing()
     
     def data_received(self, data):
+        """
+        Called when some data is received.
+        
+        Parameters
+        ----------
+        data : `bytes`
+            The received data.
+        """
         try:
             ssldata, appdata = self.sslpipe.feed_ssldata(data)
         except ssl.SSLError:
@@ -573,19 +831,51 @@ class SSLProtocol(object):
             if chunk:
                 self.app_protocol.data_received(chunk)
                 continue
+            
             self._start_shutdown()
             break
     
     def eof_received(self):
+        """
+        Calling``.connection_lost`` without expection causes eof.
+        
+        Marks the protocol as it is at eof.
+        
+        If the protocol's ``._connection_made_waiter`` is not yet waken up, then raises `ConnectionResetError` imto it.
+        
+        Returns
+        -------
+        transport_closes : `bool`
+            Returns `False` if the transport will close itself. If it returns `True`, then closing the transport is up
+            to the protocol.
+            
+            Always returns `False`.
+        """
         try:
             self._wakeup_connection_made_waiter(ConnectionResetError)
             if not self._in_handshake:
-                #has no effect whatever it returns when we use ssl
+                # has no effect whatever it returns when we use ssl
                 self.app_protocol.eof_received()
         finally:
             self.transport.close()
-
+        
+        return False
+    
     def get_extra_info(self, name, default=None):
+        """
+        Gets optional transport information.
+        
+        Parameters
+        ----------
+        name : `str`
+            The extra information's name to get.
+        default : `Any`, Optional
+            Default value to return if `name` could not be macthed. Defaults to `None`.
+        
+        Returns
+        -------
+        info : `default`, `Any`
+        """
         try:
             extra_info = self._extra[name]
         except KeyError:
@@ -598,31 +888,43 @@ class SSLProtocol(object):
         return extra_info
     
     def _start_shutdown(self):
-        if self._in_shutdown:
-            return
-        self._in_shutdown = True
-        self._write_appdata(b'')
+        """
+        Starts the shutdown process of the ``SSLProtocol`` by writing empty bytes into itself.
+        
+        If the protocol is already in shutdown, does nothing.
+        """
+        if not self._in_shutdown:
+            self._in_shutdown = True
+            self._write_appdata(b'')
     
     def _write_appdata(self, data):
+        """
+        Writes data to the ``SSLProtocol`` to be sent.
+        
+        Parameters
+        ----------
+        data : `bytes-like`
+            The data to write.
+        """
         self._write_backlog.append((data, 0))
         self._process_write_backlog()
     
     def _start_handshake(self):
         self._handshake_start_time = None
         self._in_handshake = True
-        #(b'',1) is a special value in _process_write_backlog() to do the SSL handshake
+        # (b'',1) is a special value in _process_write_backlog() to do the SSL handshake
         self._write_backlog.append((b'', 1))
         self.loop.call_soon(self._process_write_backlog)
     
     def _on_handshake_complete(self, handshake_exc):
         self._in_handshake = False
-        sslobj = self.sslpipe.ssl_object
+        ssl_object = self.sslpipe.ssl_object
         
         try:
             if (handshake_exc is not None):
                 raise handshake_exc
             
-            peercert = sslobj.getpeercert()
+            peercert = ssl_object.getpeercert()
         except BaseException as err:
             self.transport.close()
             if isinstance(err, Exception):
@@ -634,13 +936,13 @@ class SSLProtocol(object):
         # Add extra info that becomes available after handshake.
         extra = self._extra
         extra['peercert'] = peercert
-        extra['cipher'] = sslobj.cipher()
-        extra['compression']= sslobj.compression()
-        extra['ssl_object'] = sslobj
-
+        extra['cipher'] = ssl_object.cipher()
+        extra['compression']= ssl_object.compression()
+        extra['ssl_object'] = ssl_object
+        
         if self._call_connection_made:
             self.app_protocol.connection_made(self.app_transport)
-            
+        
         self._wakeup_connection_made_waiter()
         self._session_established = True
         # In case transport.write() was already called. Don't call
@@ -651,48 +953,66 @@ class SSLProtocol(object):
         self.loop.call_soon(self._process_write_backlog)
 
     def _process_write_backlog(self):
-        # Try to make progress on the write backlog.
+        """
+        Try to make progress on the write backlog.
+        
+        Feeds data to ``.sslpipe`` till it is full.
+        """
         transport = self.transport
         if transport is None:
             return
         
+        write_backlog = self._write_backlog
         try:
-            for i in range(len(self._write_backlog)):
-                data, offset = self._write_backlog[0]
+            for _ in range(len(write_backlog)):
+                data, offset = write_backlog[0]
                 if data:
                     ssldata, offset = self.sslpipe.feed_appdata(data, offset)
-                elif offset:
-                    ssldata=self.sslpipe.do_handshake(self._on_handshake_complete)
-                    offset = 1
                 else:
-                    ssldata = self.sslpipe.shutdown(self._finalize)
+                    # If data is given as empty bytes means we either have handshake complete or there is no more data
+                    # to write
+                    if offset:
+                        ssldata = self.sslpipe.do_handshake(self._on_handshake_complete)
+                    else:
+                        ssldata = self.sslpipe.shutdown(self._finalize)
+                    
                     offset = 1
-
+                
                 for chunk in ssldata:
                     transport.write(chunk)
-
+                
                 if offset < len(data):
-                    self._write_backlog[0] = (data, offset)
-                    # A short write means that a write is blocked on a read
-                    # We need to enable reading if it is paused!
+                    write_backlog[0] = (data, offset)
+                    # A short write means that a write is blocked on a read, we need to enable reading if it is paused!
                     assert self.sslpipe.need_ssldata
                     if transport._paused:
                         transport.resume_reading()
+                    
                     break
                 
-                # An entire chunk from the backlog was processed. We can
-                # delete it and reduce the outstanding buffer size.
+                # An entire chunk from the backlog was processed. We can delete it and reduce the outstanding buffer
+                # size.
                 del self._write_backlog[0]
         except BaseException as err:
             if self._in_handshake:
                 self._on_handshake_complete(err)
             else:
-                self._fatal_error(err, 'Fatal error on SSL transport')
+                self._fatal_error(err, 'Fatal error on SSL transport.')
             if not isinstance(err, Exception):
                 # BaseException
                 raise
     
-    def _fatal_error(self, exception,message='Fatal error on transport'):
+    def _fatal_error(self, exception, message='Fatal error on transport.'):
+        """
+        If a fatal error occures on the protocol renders it's traceback and closes it's transport.
+        
+        Parameters
+        ----------
+        exception : `BaseExcetpion`
+            The occured exception-
+        message : `st`, Optional
+            Additional error message to render.
+        """
         # Should be called from exception handler only.
         if not isinstance(exception, (BrokenPipeError, ConnectionResetError, ConnectionAbortedError)):
             self.loop.render_exc_async(exception, [
@@ -707,11 +1027,19 @@ class SSLProtocol(object):
             transport._force_close(exception)
 
     def _finalize(self):
+        """
+        CLoses the ``SSLProtocol``'s transport.
+        
+        Called after shutdown or abortion.
+        """
         transport = self.transport
         if (transport is not None):
             transport.close()
 
     def _abort(self):
+        """
+        Closes the protocol by trying to abort it's transport immediately.
+        """
         transport = self.transport
         if (transport is not None):
             try:

@@ -10328,7 +10328,7 @@ class Client(UserBase):
             if application_id == 0:
                 raise AssertionError('The client\'s application is not yet synced.')
         
-        data = self.http.application_command_global_get_all(application_id)
+        data = await self.http.application_command_global_get_all(application_id)
         return [ApplicationCommand.from_data(application_command_data) for application_command_data in data]
     
     
@@ -10511,7 +10511,7 @@ class Client(UserBase):
                 raise TypeError(f'`guild` can be given as ``{Guild.__name__}`` or `int` instance, got '
                     f'{guild.__class__.__name__}.')
         
-        data = self.http.application_command_guild_get_all(application_id, guild_id)
+        data = await self.http.application_command_guild_get_all(application_id, guild_id)
         return [ApplicationCommand.from_data(application_command_data) for application_command_data in data]
     
     

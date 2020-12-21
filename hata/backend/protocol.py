@@ -816,7 +816,7 @@ class ReadProtocolBase(object):
         """
         Calling``.connection_lost`` without expection causes eof.
         
-        Marks the protocols as it is at eof and stops payload processing if applicable.
+        Marks the protocol as it is at eof and stops payload processing if applicable.
         
         Returns
         -------

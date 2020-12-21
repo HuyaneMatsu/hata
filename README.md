@@ -59,7 +59,7 @@ async def ready(client):
 
 @Saki.commands
 async def ping(client, message):
-    await client.message_create(message.channel, 'pong')
+    return 'pong'
 
 Saki.start()
 ```

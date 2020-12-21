@@ -770,7 +770,7 @@ class ApplicationCommandOption(object):
         result = [
             '<', self.__class__.__name__,
             ', name=', repr(self.name),
-            ', description=', repr(self),
+            ', description=', repr(self.description),
             ', type=',
                 ]
         

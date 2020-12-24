@@ -543,7 +543,7 @@ class DiscordGateway(object):
         
         client = self.client
         Task(client.events.error(client,
-            f'{self.__clas__.__name__}._special_operation',
+            f'{self.__class__.__name__}._special_operation',
             f'Unknown operation {operation}\nData: {data!r}'),
                 KOKORO)
         return False

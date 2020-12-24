@@ -19,6 +19,8 @@ from .preinstanced import Status, DefaultAvatar
 
 from . import utils as module_utils
 
+create_partial_role = NotImplemented
+
 if CACHE_USER:
     GUILD_PROFILES_TYPE = dict
 else:
@@ -128,12 +130,14 @@ class GuildProfile(object):
         it is set to `None`.
     nick : `None` or `str`
         The user's nick at the guild if it has.
+    pending : `bool`
+        Whether the user has not yet passed the guild's membership screening requirements. Defaults to `False`.
     roles : `None` or `list` of ``Role``
         The user's roles at the guild.
         
         Feel free to use `.sort()` on it.
     """
-    __slots__ = ('boosts_since', 'joined_at', 'nick', 'roles',)
+    __slots__ = ('boosts_since', 'joined_at', 'nick', 'pending', 'roles',)
     
     @property
     def created_at(self):
@@ -147,6 +151,7 @@ class GuildProfile(object):
         created_at = self.joined_at
         if created_at is None:
             created_at = DISCORD_EPOCH_START
+        
         return created_at
     
     def __init__(self, data, guild):
@@ -231,6 +236,8 @@ class GuildProfile(object):
         if (boosts_since is not None):
             boosts_since = parse_time(boosts_since)
         self.boosts_since = boosts_since
+        
+        self.pending = data.get('pending')
     
     def _update(self, data, guild):
         """
@@ -258,6 +265,8 @@ class GuildProfile(object):
         +-------------------+-------------------------------+
         | nick              | `None` or `str`               |
         +-------------------+-------------------------------+
+        | pending           | `bool`                        |
+        +-------------------+-------------------------------+
         | roles             | `None` or `list` of ``Role``  |
         +-------------------+-------------------------------+
         """
@@ -273,11 +282,7 @@ class GuildProfile(object):
             roles = []
             for role_id in role_ids:
                 role_id = int(role_id)
-                try:
-                    role = guild_roles[role_id]
-                except KeyError:
-                    continue
-                
+                role = create_partial_role(role_id)
                 roles.append(role)
             
             if (not roles):
@@ -305,18 +310,14 @@ class GuildProfile(object):
         boosts_since = data.get('premium_since')
         if (boosts_since is not None):
             boosts_since = parse_time(boosts_since)
+        if self.boosts_since != boosts_since:
+            old_attributes['boosts_since'] = self.boosts_since
+            self.boosts_since = boosts_since
         
-        if (self.boosts_since is None):
-            if (boosts_since is not None):
-                old_attributes['boosts_since'] = None
-                self.boosts_since = boosts_since
-        else:
-            if (boosts_since is None):
-                old_attributes['boosts_since'] = self.boosts_since
-                self.boosts_since = None
-            elif (self.boosts_since != boosts_since):
-                old_attributes['boosts_since'] = self.boosts_since
-                self.boosts_since = boosts_since
+        pending = data.get('pending', False)
+        if pending != self.pending:
+            old_attributes['pending'] = self.pending
+            self.pending = pending
         
         return old_attributes
     

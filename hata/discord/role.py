@@ -15,7 +15,7 @@ from .preconverters import preconvert_snowflake, preconvert_str, preconvert_colo
     preconvert_flag
 from .preinstanced import RoleManagerType
 
-from . import ratelimit as module_ratelimit
+from . import ratelimit as module_ratelimit, user as module_user
 
 create_partial_integration = NotImplemented
 
@@ -1155,8 +1155,10 @@ def cr_p_overwrite_object(target, allow, deny):
             }
 
 module_ratelimit.Role = Role
+module_user.create_partial_role = create_partial_role
 
 del module_ratelimit
 del DiscordEntity
 del API_VERSION
 del DOCS_ENABLED
+del module_user

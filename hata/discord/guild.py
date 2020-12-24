@@ -1,28 +1,29 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('DiscoveryCategory', 'Guild', 'GuildDiscovery', 'GuildPreview', 'GuildWidget', 'GuildWidgetChannel',
-    'GuildWidgetUser', 'SystemChannelFlag', 'WelcomeChannel', 'WelcomeScreen', )
+    'GuildWidgetUser', 'VerificationScreenStep', 'SystemChannelFlag', 'VerificationScreen', 'WelcomeChannel',
+    'WelcomeScreen')
 
 import re, reprlib
 
 from ..env import CACHE_PRESENCE
-from ..backend.utils import cached_property, DOCS_ENABLED
+from ..backend.utils import cached_property, DOCS_ENABLED, BaseMethodDescriptor
 from ..backend.futures import Task
 
 from .bases import DiscordEntity, ReverseFlagBase, IconSlot, ICON_TYPE_NONE
 from .client_core import GUILDS, DISCOVERY_CATEGORIES, CHANNELS, KOKORO
-from .utils import EMOJI_NAME_RP, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
+from .utils import EMOJI_NAME_RP, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE, parse_time
 from .user import User, create_partial_user, VoiceState, UserBase, ZEROUSER
 from .role import Role
-from .channel import CHANNEL_TYPES, ChannelCategory, ChannelText
+from .channel import CHANNEL_TYPES, ChannelCategory, ChannelText, ChannelBase
 from .http import URLS
 from .permission import Permission
 from .activity import ActivityUnknown
 from .emoji import Emoji, create_partial_emoji
 from .webhook import Webhook, WebhookRepr
 from .oauth2 import parse_preferred_locale, DEFAULT_LOCALE
-from .preconverters import preconvert_snowflake, preconvert_str
+from .preconverters import preconvert_snowflake, preconvert_str, preconvert_preinstanced_type
 from .preinstanced import GuildFeature, VoiceRegion, Status, VerificationLevel, MessageNotificationLevel, MFA, \
-    ContentFilterLevel
+    ContentFilterLevel, VerificationScreenStepType
 
 from . import ratelimit as module_ratelimit, channel as module_channel
 
@@ -3159,20 +3160,22 @@ DiscoveryCategory.mobile = DiscoveryCategory(45, 'Mobile', False)
 DiscoveryCategory.console = DiscoveryCategory(46, 'Console', False)
 DiscoveryCategory.charity_and_nonprofit = DiscoveryCategory(47, 'Charity & Nonprofit', False)
 
+
 class WelcomeScreen(object):
     """
     Represents a guild's welcome screen.
     
     Attributes
     ----------
-    description : `str`
+    description : `None` or `str`
         Description, of what is the server about.
-    welcome_channels : `list` of ``WelcomeChannel``
+    welcome_channels : `None` or `tuple` of ``WelcomeChannel``
         The featured channels by the welcome screen.
     """
     __slots__ = ('description', 'welcome_channels', )
     
-    def __init__(self, data):
+    @classmethod
+    def from_data(cls, data):
         """
         Creates a new welcome screen instance from the given data.
         
@@ -3181,10 +3184,35 @@ class WelcomeScreen(object):
         data : `dict` of (`str`, `Any`) items
             Welcome screen data.
         """
-        self.description = data['description']
-        self.welcome_channels = [
-            WelcomeChannel(welcome_channel_data) for welcome_channel_data in data['welcome_channels']
-                ]
+        description = data.get('description')
+        if (description is not None) and (not description):
+            description = None
+        
+        welcome_channel_datas = data.get('welcome_channels')
+        if (welcome_channel_datas is None) or (not welcome_channel_datas):
+            welcome_channels = None
+        else:
+            welcome_channels = tuple(
+                WelcomeChannel.from_data(welcome_channel_data) for welcome_channel_data in welcome_channel_datas
+                    )
+        
+        self = object.__new__(cls)
+        self.description = description
+        self.welcome_channels = welcome_channels
+        return self
+    
+    def to_data(self):
+        """
+        Converts the welcome screen to a json serializible object.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`) items
+        """
+        return {
+            'description' : self.description,
+            'welcome_channels' : [welcome_channel.to_data() for welcome_channel in self.welcome_channels],
+                }
     
     def __repr__(self):
         """Returns the welcome screen's representation."""
@@ -3208,6 +3236,7 @@ class WelcomeScreen(object):
         
         return True
 
+
 class WelcomeChannel(object):
     """
     Represents a featured channel by a welcome screen.
@@ -3222,7 +3251,9 @@ class WelcomeChannel(object):
         The emoji displayed before the `description`.
     """
     __slots__ = ('description', 'channel_id', 'emoji', )
-    def __init__(self, data):
+    
+    @classmethod
+    def from_data(cls, data):
         """
         Creates a new welcome channel instance from the given data.
         
@@ -3231,14 +3262,158 @@ class WelcomeChannel(object):
         data : `dict` of (`str`, `Any`) items
             Welcome channel data.
         """
+        self = object.__new__(cls)
         self.channel_id = int(data['channel_id'])
         self.description = data['description']
         self.emoji = create_partial_emoji(data)
+        return self
+    
+    def to_data(self):
+        """
+        Converts the welcome channel to a json serializible object.
+        
+        Returns
+        -------
+        data : `str`
+        """
+        data = {
+            'channel_id': self.channel.id,
+            'description': self.description,
+                }
+        
+        emoji = self.emoji
+        if emoji.is_unicode_emoji():
+            emoji_id = None
+            emoji_name = emoji.unicode
+        else:
+            emoji_id = emoji.id
+            emoji_name = emoji.name
+        
+        data['emoji_id'] = emoji_id
+        data['emoji_name'] = emoji_name
+        
+        return data
+    
+    @BaseMethodDescriptor
+    def custom(cls, base, **kwargs):
+        """
+        Creates a custom welcome channel. If called as a classmethod, then all parameters are required tho if called
+        from an instance, then only those should be given, which you intent to modify.
+        
+        Parameters
+        ----------
+        **kwargs : keyword arguments
+            Additional attributes of the created welcome channel.
+        
+        Other Parameters
+        ----------------
+        channel : ``ChannelTextBase`` or `int` instance, Optional
+            The channel of the welcome screen.
+        channel_id : `int`, optional
+            Alias of `channel`, tho it accepts only snowflake.
+            
+            Mutually exclusive with the `channel` parameter.
+        description : `str`, Optional
+            Description of the welcome screen.
+        emoji : ``Emoji``, Optional
+            The emoji of the welcome screen.
+        
+        Returns
+        -------
+        self : ``WelcomeChannel``
+        
+        Raises
+        ------
+        TypeError
+            - If `channel` parameter was given as a channel, but not as ``ChannelText`` instance.
+            - If `channel` parameter was not given neither as ``ChannelText`` or `int` instance.
+            - If `channel_id` was given but neither as `int` or `str` instance.
+            - If `description` was not given as `str` instance.
+            - If `emoji` was not given as ``Emoji`` instance.
+        ValueError
+            - If `channel` was given as `str` instance, but not convertable to `int`.
+            - If `channel` was given as `int` instance, but out of the expected range.
+            - If `channel_id` was given as `str` instance, but not convertable to `int`.
+            - If `channel_id` was given as `int` instance, but out of the expected range.
+            - If `description` was given as empty string.
+        """
+        while True:
+            try:
+                channel = kwargs.pop('channel')
+            except KeyError:
+                pass
+            else:
+                if isinstance(channel, ChannelText):
+                    channel_id = channel.id
+                elif isinstance(channel, ChannelBase):
+                    raise TypeError(f'`channel` paramatere can be given as {ChannelText.__name__} or `int` instance, got '
+                        f'an other channel type, {channel.__class__.__name__}.')
+                else:
+                    channel_id = preconvert_snowflake(channel, 'channel')
+                
+                break
+            
+            try:
+                channel_id = kwargs.pop('channel_id')
+            except KeyError:
+                pass
+            else:
+                channel_id = preconvert_snowflake(channel_id, 'channel_id')
+                break
+            
+            if base is None:
+                raise TypeError(f'`channel` or `channel_id` are required parameters if `{cls.__name__}.custom` is '
+                    f'called as a classmethod.')
+            
+            channel_id = base.channel_id
+            break
+        
+        try:
+            description = kwargs.pop('description')
+        except KeyError:
+            if base is None:
+                raise TypeError(f'`description` is a required parameter if `{cls.__name__}.custom` is called as a '
+                    f'classmethod.') from None
+            
+            description = base.description
+        else:
+            if not isinstance(description, str):
+                raise TypeError(f'`description` can be given as `str` instance, got {description.__class__.__name__}.')
+            
+            if not description:
+                raise ValueError(f'`description` cannot be given as empty string.')
+            
+        try:
+            emoji = kwargs.pop('emoji')
+        except KeyError:
+            if base is None:
+                raise TypeError(f'`emoji` is a required parameter if `{cls.__name__}.custom` is called as a '
+                    f'classmethod.') from None
+            
+            emoji = base.emoji
+        else:
+            if not isinstance(emoji, Emoji):
+                raise TypeError(f'`emoji` can be given as `{Emoji.__name__}` instance, got {emoji.__class__.__name__}.')
+        
+        
+        if kwargs:
+            raise TypeError(f'Unused parameters: {", ".join(list(kwargs))}')
+        
+        self = object.__new__(cls)
+        self.channel_id = channel_id
+        self.description = description
+        self.emoji = emoji
+        
+        return self
     
     @property
     def channel(self):
         """
         Returns the welcome channel's respective channel.
+        
+        Returns
+        -------
+        channel : ``ChannelText``
         """
         channel_id = self.channel_id
         try:
@@ -3273,6 +3448,278 @@ class WelcomeChannel(object):
         
         return True
 
+
+class VerificationScreen(object):
+    """
+    Represents a guild's verification screen.
+    
+    Attibutes
+    ---------
+    created_at : `datetime`
+        When the last version of the screen was created.
+    description  : `None` or `str`
+        The guild's description shown in the verification screen.
+    steps : `tuple` of ``VerificationScreenStep``
+        The step in the verification screen.
+    """
+    __slots__ = ('created_at', 'description', 'steps')
+    
+    @classmethod
+    def from_data(cls, data):
+        """
+        Creates a new verification screen from the given data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Verification screen data.
+        """
+        self = object.__new__(cls)
+        self.created_at = parse_time(data['version'])
+        self.description = data.get('description')
+        self.steps = tuple(VerificationScreenStep.from_data(field_data) for field_data in data['form_fields'])
+        return self
+    
+    def to_data(self):
+        """
+        Converts the verification screen to a json serializable object.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`)
+        """
+        return {
+            'version' : self.created_at.isoformat(),
+            'description' : self.description,
+            'form_fields' : [step.to_data() for step in self.steps],
+                }
+    
+    def __repr__(self):
+        """Returns the verification screen's representation."""
+        return (f'<{self.__class__.__name__} created_at={self.created_at:{DATETIME_FORMAT_CODE}}, '
+            f'description={reprlib.repr(self.description)}, steps length={len(self.steps)!r}>')
+    
+    def __hash__(self):
+        """Returns the verification screen's hash value."""
+        return hash(self.description) ^ hash(self.steps)
+    
+    def __eq__(self, other):
+        """Returns whether the two verification screens are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.description != other.description:
+            return False
+        
+        if self.steps != other.steps:
+            return False
+        
+        return True
+
+
+class VerificationScreenStep(object):
+    """
+    Represents a step of a ``VerificationScreen``.
+    
+    Attributes
+    ----------
+    required : `bool`
+        Whether the user must accept this step to continue.
+    title : `str`
+        The step's title.
+    type : ``VerificationScreenStepType``
+        The type of the step.
+    values : `None` or `list` of `str`
+        The values of the step. Sets as `None` if would be set as an empty list.
+    """
+    __slots__ = ('required', 'title', 'type', 'values')
+    
+    @classmethod
+    def from_data(cls, data):
+        """
+        Creates a new verification screen step from the given data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Verification screen step data.
+        """
+        values = data.get('values')
+        if (values is not None) and (not values):
+            values = None
+        
+        self = object.__new__(cls)
+        self.required = data['required']
+        self.title = data['label']
+        self.type = VerificationScreenStepType.get(data['field_type'])
+        self.values = values
+        return self
+    
+    def to_data(self):
+        """
+        Convererts the verification screen step to a json serializible object.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`)
+        """
+        values = self.values
+        if values is None:
+            values = []
+        
+        return {
+            'required' : self.required,
+            'label' : self.title,
+            'field_type': self.type.value,
+            'values' : values
+                }
+    
+    @BaseMethodDescriptor
+    def custom(cls, base, **kwargs):
+        """
+        Creates a custom ``VerificationScreenStep`` with the given parameters.
+        
+        Parameters
+        ----------
+        **kwargs : keyword arguments
+            Additional attributes of the verification screen step.
+        
+        Other Parameters
+        ----------------
+        title : `str`, Optional
+            The title of the step.
+        values : `None` or (`tuple` or `list`) of `str`
+            The values of the step.
+            
+            Defaults to `None` if called as a classmethod.
+        required : `bool`, Optional
+            Whether the user must accept this step to continue.
+            
+            Defaults to `True` if called as classmethod.
+        type_ : ``VerificationScreenStepType`` or `str`, Optional
+            The type of the step.
+            
+            Defaults to ``VerificationScreenStepType`` `.rules` if called as classmethod.
+        
+        Returns
+        -------
+        self : ``VerificationScreenStep``
+        
+        Raises
+        ------
+        TypeError
+            - If `type_` was not given neither as ``VerificationScreenStepType`` nor as `str` instance.
+            - If `title` was not given as `str` instance.
+            - If `values` is not givne neither as `None`, or `tuple` or `list` instance.
+            - If `values` contains not only `str` instances.
+            - If `required` was not given as `bool` instance.
+        ValueError
+            - If `type_` was given as `str` instance, ubt notany of the precreated ones.
+            - If `title` was given as an empty string.
+            - If `values` contains an empty string.
+        """
+        try:
+            title = kwargs.pop('title')
+        except KeyError:
+            if base is None:
+                raise TypeError(f'`title` is a required parameter if `{cls.__name__}.custom` is called as a '
+                    f'classmethod.') from None
+            
+            title = base.title
+        else:
+            if not isinstance(title, str):
+                raise TypeError(f'`title` can be given as `str` instance, got {title.__class__.__name__}.')
+            
+            if not title:
+                raise ValueError(f'`title` cannot be given as empty string.')
+        
+        try:
+            values = kwargs.pop('values')
+        except KeyError:
+            if base is None:
+                values = None
+            else:
+                values = base.values
+        
+        else:
+            if (values is not None):
+                if not isinstance(values, (list, tuple)):
+                    raise TypeError(f'`values` can be given as `tuple` or `list` instance, got '
+                        f'{values.__class__.__name__}.')
+                
+                for index, value in enumerate(values):
+                    if not isinstance(value, str):
+                        raise TypeError(f'`values` index `{index}` is not `str` instance expected, but got '
+                            f'{value.__class__.__name__}; {value!r}.')
+                    
+                    if not value:
+                        raise ValueError(f'`values` index `{index}` is an empty string.')
+                    
+                if values:
+                    values = tuple(values)
+                else:
+                    values = None
+        
+        try:
+            required = kwargs.pop('required')
+        except KeyError:
+            if base is None:
+                required = True
+            else:
+                required = base.required
+        else:
+            if not isinstance(required, bool):
+                raise TypeError(f'`required` can be given as `bool` instance, got {required.__class__.__name__}.')
+        
+        try:
+            type_ = kwargs.pop('type')
+        except KeyError:
+            if base is None:
+                type_ = VerificationScreenStepType.rules
+            else:
+                type_ = base.type
+        else:
+            type_ = preconvert_preinstanced_type(type_, 'type_', VerificationScreenStepType)
+        
+        if kwargs:
+            raise TypeError(f'Unused parameters: {", ".join(list(kwargs))}')
+        
+        self = object.__new__(cls)
+        self.title = title
+        self.values = values
+        self.required = required
+        self.type = type_
+        return self
+    
+    def __repr__(self):
+        """Returns the verification screen step's representation."""
+        return (f'<{self.__class__.__name__} title={self.title!r}, type={self.type.value}, required={self.required!r}, '
+            f'values length={len(self.values)!r}>')
+    
+    def __hash__(self):
+        """Returns the verification screen step's hash value."""
+        return hash(self.title) ^ hash(self.values) ^ ((self.required)<<16) ^ hash(self.type)
+
+    def __eq__(self, other):
+        """Returns whether the two verification screen steps are equal"""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.type is not other.type:
+            return False
+        
+        if self.required != other.required:
+            return False
+        
+        if self.title != other.title:
+            return False
+        
+        if self.values != other.values:
+            return False
+        
+        return True
+
+
 module_ratelimit.Guild = Guild
 module_channel.Guild = Guild
 
@@ -3286,3 +3733,4 @@ del ReverseFlagBase
 del IconSlot
 del DOCS_ENABLED
 del module_channel
+del BaseMethodDescriptor

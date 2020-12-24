@@ -2545,6 +2545,22 @@ class RATELIMIT_GROUPS:
         - Limit : `OPT`
         - Resets after : `OPT`
     
+    - verification_screen_get
+        - Endpoint : `/guilds/{guild_id}/member-verification`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
+    - verification_screen_edit
+        - Endpoint : `/guilds/{guild_id}/member-verification`
+        - Method : `PATCH`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+    
     - guild_users
         - Endpoint : `/guilds/{guild_id}/members`
         - Method : `GET`
@@ -2713,6 +2729,14 @@ class RATELIMIT_GROUPS:
         - Limiter : `guild_id`
         - Limit : `OPT`
         - Resets after : `OPT`
+    
+    - welcome_screen_edit
+        - Endpoint : `/guilds/{guild_id}/welcome-screen`
+        - Method : `PATCH`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `100`
+        - Resets after : `86400`
     
     - webhook_get_guild
         - Endpoint : `/guilds/{guild_id}/webhooks`
@@ -3190,6 +3214,8 @@ class RATELIMIT_GROUPS:
     integration_edit            = RatelimitGroup(optimistic=True) # untested
     integration_sync            = RatelimitGroup(optimistic=True) # untested
     invite_get_guild            = RatelimitGroup(LIMITER_GUILD, optimistic=True)
+    verification_screen_get     = RatelimitGroup(LIMITER_GUILD, optimistic=True)
+    verification_screen_edit    = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     guild_users                 = RatelimitGroup(LIMITER_GUILD)
     client_edit_nick            = RatelimitGroup()
     guild_user_delete           = RatelimitGroup(LIMITER_GUILD)
@@ -3212,6 +3238,7 @@ class RATELIMIT_GROUPS:
     vanity_get                  = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     vanity_edit                 = RatelimitGroup(LIMITER_GUILD, optimistic=True) # untested
     welcome_screen_get          = RatelimitGroup(LIMITER_GUILD, optimistic=True)
+    welcome_screen_edit         = RatelimitGroup(LIMITER_GUILD)
     webhook_get_guild           = RatelimitGroup(LIMITER_GUILD, optimistic=True)
     guild_widget_get            = RatelimitGroup.unlimited()
     hypesquad_house_leave       = RatelimitGroup() # untested

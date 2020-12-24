@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 __all__ = ('ApplicationCommandOptionType', 'AuditLogEvent', 'ContentFilterLevel', 'DefaultAvatar', 'FriendRequestFlag',
-    'GuildFeature', 'HypesquadHouse', 'InviteTargetType', 'MFA', 'MessageActivityType', 'MessageNotificationLevel',
-    'MessageType', 'PremiumType', 'RelationshipType', 'RoleManagerType', 'Status', 'StickerType', 'TeamMembershipState',
-    'Theme', 'VerificationLevel', 'VoiceRegion', 'WebhookType', )
+    'GuildFeature', 'HypesquadHouse', 'InviteTargetType', 'MFA', 'VerificationScreenStepType',
+    'MessageActivityType', 'MessageNotificationLevel', 'MessageType', 'PremiumType', 'RelationshipType',
+    'RoleManagerType', 'Status', 'StickerType', 'TeamMembershipState', 'Theme', 'VerificationLevel', 'VoiceRegion',
+    'WebhookType', )
 
 from ..backend.utils import DOCS_ENABLED, any_to_any
 
@@ -1468,18 +1469,18 @@ TeamMembershipState.ACCEPTED = TeamMembershipState(2, 'ACCEPTED')
 
 class GuildFeature(PreinstancedBase):
     """
-    Represents the event type of an ``AuditLogEntry``.
+    Represents a ``Guild``'s feature.
 
     Attributes
     ----------
-    value : `int`
+    value : `str`
         The Discord side identificator value of the guild feature.
     
     Class Attributes
     ----------------
-    INSTANCES : `dict` of (`int`, ``GuildFeature``) items
+    INSTANCES : `dict` of (`str`, ``GuildFeature``) items
         Stores the predefined ``GuildFeature`` instances.
-    VALUE_TYPE : `type` = `int`
+    VALUE_TYPE : `type` = `str`
         The guild features' values' type.
     DEFAULT_NAME : `str` = `''`
         The default name of the guild features. Guild features have the same value as name, so at their case it is not
@@ -1528,7 +1529,9 @@ class GuildFeature(PreinstancedBase):
     +-------------------------------+-----------------------------------+
     | welcome_screen                | WELCOME_SCREEN_ENABLED            |
     +-------------------------------+-----------------------------------+
-    | verification_gate_enabled     | MEMBER_VERIFICATION_GATE_ENABLED  |
+    | verification_screen           | MEMBER_VERIFICATION_GATE_ENABLED  |
+    +-------------------------------+-----------------------------------+
+    | peview_enabled                | PREVIEW_ENABLED                   |
     +-------------------------------+-----------------------------------+
     """
     INSTANCES = {}
@@ -1595,7 +1598,8 @@ class GuildFeature(PreinstancedBase):
     verified                    = NotImplemented
     vip                         = NotImplemented
     welcome_screen              = NotImplemented
-    verification_gate_enabled   = NotImplemented
+    verification_screen         = NotImplemented
+    peview_enabled              = NotImplemented
 
 GuildFeature.animated_icon              = GuildFeature('ANIMATED_ICON')
 GuildFeature.banner                     = GuildFeature('BANNER')
@@ -1616,7 +1620,8 @@ GuildFeature.vanity                     = GuildFeature('VANITY_URL')
 GuildFeature.verified                   = GuildFeature('VERIFIED')
 GuildFeature.vip                        = GuildFeature('VIP_REGIONS')
 GuildFeature.welcome_screen             = GuildFeature('WELCOME_SCREEN_ENABLED')
-GuildFeature.verification_gate_enabled  = GuildFeature('MEMBER_VERIFICATION_GATE_ENABLED')
+GuildFeature.verification_screen        = GuildFeature('MEMBER_VERIFICATION_GATE_ENABLED')
+GuildFeature.peview_enabled             = GuildFeature('PREVIEW_ENABLED')
 
 class AuditLogEvent(PreinstancedBase):
     """
@@ -2220,6 +2225,82 @@ ApplicationCommandOptionType.BOOLEAN           = ApplicationCommandOptionType(5 
 ApplicationCommandOptionType.USER              = ApplicationCommandOptionType(6 , 'USER'              ,)
 ApplicationCommandOptionType.CHANNEL           = ApplicationCommandOptionType(7 , 'CHANNEL'           ,)
 ApplicationCommandOptionType.ROLE              = ApplicationCommandOptionType(8 , 'ROLE'              ,)
+
+
+class VerificationScreenStepType(PreinstancedBase):
+    """
+    Represents a type of a ``VerificationScreenStep``.
+
+    Attributes
+    ----------
+    value : `str`
+        The Discord side identificator value of the verification step types.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`int`, ``VerificationScreenStepType``) items
+        Stores the predefined ``VerificationScreenStepType`` instances.
+    VALUE_TYPE : `type` = `str`
+        The verification screen steps' values' type.
+    DEFAULT_NAME : `str` = `''`
+        The default name of the verification screen step types.Verification screen step types have the
+        same value as name, so at their case it is not applicable.
+    
+    Every predefined verification screen step type can be accessed as class attribute as well:
+    
+    +-----------------------+-------+
+    | Class attribute names | Value |
+    +=======================+=======+
+    | rules                 | TERMS |
+    +-----------------------+-------+
+    """
+    INSTANCES = {}
+    VALUE_TYPE = str
+    DEFAULT_NAME = ''
+    
+    __slots__ = ()
+    
+    @classmethod
+    def _from_value(cls, value):
+        """
+        Creates a new verification screen type with the given value.
+        
+        Parameters
+        ----------
+        value : `str`
+            The verification screen type's identificator value.
+        
+        Returns
+        -------
+        self : ``VerificationScreenStepType``
+            The verification screen type.
+        """
+        self = object.__new__(cls)
+        self.value = value
+        self.name = value
+        self.INSTANCES[value] = self
+        return self
+    
+    def __init__(self, value):
+        """
+        Creates a new verification screen type and stores it at ``.INSTANCES``.
+        
+        Parameters
+        ----------
+        value : `str`
+            The identificator value of the verification screen types.
+        """
+        self.value = value
+        self.name = value
+        self.INSTANCES[value] = self
+    
+    def __repr__(self):
+        """Returns the representation of the verification screen type."""
+        return f'{self.__class__.__name__}(value={self.value!r})'
+    
+    rules = NotImplemented
+
+VerificationScreenStepType.rules = VerificationScreenStepType('TERMS')
 
 
 module_utils.RelationshipType = RelationshipType

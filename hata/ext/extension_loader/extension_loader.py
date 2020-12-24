@@ -1085,7 +1085,7 @@ class ExtensionLoader(object):
         
         if not _validate_entry_or_exit(exit_point):
             raise TypeError(f'`{self.__class__.__name__}.add` expected `None`, `str` or a `callable` as `exit_point`, '
-                f'got {exit_point.__clas__.__name__}.')
+                f'got {exit_point.__class__.__name__}.')
         
         if variables:
             default_variables = HybridValueDictionary(variables)
@@ -1183,7 +1183,7 @@ class ExtensionLoader(object):
         RuntimeError
             If a loaded extension would be removed.
         """
-        name_type = name.__clas__
+        name_type = name.__class__
         if name_type is str:
             pass
         

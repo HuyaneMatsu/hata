@@ -224,7 +224,7 @@ class Formdata(object):
                 part = create_payload(value, payload_kwargs)
             
             except BaseException as err:
-                raise TypeError(f'Can not serialize value type: {value.__class__.__name__}, headers: {headers!r}'
+                raise TypeError(f'Can not serialize value type: {value.__class__.__name__}, headers: {headers!r}, '
                     f'value: {value!r}.') from err
             
             if type_options:

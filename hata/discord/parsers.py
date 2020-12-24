@@ -4335,10 +4335,11 @@ class InteractionEvent(EventBase, DiscordEntity):
     ----------
     id : `int`
         The interaction's id.
-    channel_id : `int`
-        The channel's id where the interaction was used.
-    guild_id : `int` instance
-        The guild, where the interaction was used.
+    channel : ``ChannelText`` or ``ChannelPrivate``
+        The channel from where the interaction was called from. Might be a partial channel if not cached.
+    guild : `None` or ``Guild`
+        The from where the interaction was called from. Might be `None` if the interaction was called from a private
+        channel.
     interaction : ``ApplicationCommandInteraction``
         The called interaction by it's route by the user.
     token : `str`
@@ -4346,12 +4347,25 @@ class InteractionEvent(EventBase, DiscordEntity):
     user : ``Client`` or ``User``
         The user who called the interaction.
     
+    Class Attributes
+    ----------------
+    _USER_GUILD_CACHE : `dict` of (`tuple` ((``User``, ``Client``), ``Guild``), `int`)
+        A cache which stores `usser-guild` pairs as keys and their reference count as values to remember
+        ``InteractionEvent``'s ``.user``-s' guild profiles of the respective ``.guild`` even if the ``Guild`` is
+        uncached.
+    
+        Note, that private channel interaction, neither interactions of cached guilds are not added, what means if
+        all the clients are kicked from a guild the guild profile can be lost in unexpected time.
+    
     Notes
     -----
     The interaction token can be used for 15 minutes, tho if it is not used within the first 3 seconds, it is
     invalidated immediately.
     """
-    __slots__ = ('channel_id', 'guild_id', 'interaction', 'token', 'user',)
+    __slots__ = ('channel', 'guild', 'interaction', 'token', 'user',)
+    
+    _USER_GUILD_CACHE = {}
+    
     def __new__(cls, data):
         """
         Creates a new ``InteractionEvent`` instance with the given parameters.
@@ -4361,15 +4375,91 @@ class InteractionEvent(EventBase, DiscordEntity):
         data : `dict` of (`str`, `Any`) items
             `INTERACTION_CREATE` dispatch event data.
         """
+        guild_id = data.get('guild_id')
+        if guild_id is None:
+            guild_id = 0
+        else:
+            guild_id = int(guild_id)
+        
+        if guild_id:
+            guild = Guild.precreate(guild_id)
+        else:
+            guild = None
+            
+        channel_id = int(data['channel_id'])
+        if guild_id:
+            channel = ChannelText.precreate(channel_id)
+        else:
+            channel = ChannelPrivate._create_dataless(channel_id)
+        
+        try:
+            user_data = data['member']
+        except KeyError:
+            user_data = data['user']
+        
+        user = User(user_data, guild)
+        
         self = object.__new__(cls)
         self.id = int(data['id'])
-        self.channel_id = int(data['channel_id'])
-        self.guild_id = guild_id = int(data['guild_id'])
+        self.channel = channel
+        self.guild = guild
         self.interaction = ApplicationCommandInteraction(data['data'])
         self.token = data['token']
         # We ignore `type` field, since we always get only `InteractionType.application_command`.
-        self.user = User(data['member'], GUILDS.get(guild_id))
+        self.user = user
+
+        if (guild is not None) and (not guild.partial):
+            
+            key = (user, guild)
+            USER_GUILD_CACHE = cls._USER_GUILD_CACHE
+            try:
+                reference_count = USER_GUILD_CACHE[key]
+            except KeyError:
+                reference_count = 1
+            else:
+                reference_count += 1
+            
+            USER_GUILD_CACHE[key] = reference_count
+        
         return self
+    
+    def __del__(self):
+        """
+        Unregisters the user-guild pair from the interaction cache.
+        """
+        guild = self.guild
+        if (guild is None):
+            return
+        
+        user = self.user
+        key = (user, guild)
+        USER_GUILD_CACHE = self._USER_GUILD_CACHE
+        
+        # A client meanwhile joined the guild?
+        if not guild.partial:
+            try:
+                del USER_GUILD_CACHE[key]
+            except KeyError:
+                pass
+            return
+        
+        try:
+            reference_count = USER_GUILD_CACHE[key]
+        except KeyError:
+            reference_count = 0
+        else:
+            if reference_count == 1:
+                del USER_GUILD_CACHE[key]
+                reference_count = 0
+            else:
+                reference_count -= 1
+            
+        
+        if reference_count == 0:
+            try:
+                del user.guild_profiles[guild]
+            except KeyError:
+                pass
     
     def __repr__(self):
         """Returns the representation of the event."""
@@ -4389,29 +4479,6 @@ class InteractionEvent(EventBase, DiscordEntity):
         yield self.channel
         yield self.user
         yield self.interaction
-    
-    @property
-    def channel(self):
-        """
-        Returns the hcannel from where the interaction was called from. Might returns a partial channel if the channel
-        is not cached.
-
-        Returns
-        -------
-        channel : ``ChannelText`` instance
-        """
-        return ChannelText.precreate(self.channel_id)
-    
-    @property
-    def guild(self):
-        """
-        Returns the guild from where the interaction was called. Might return `None` if teh guild is not cached.
-        
-        Returns
-        -------
-        guild : ``Guild`` or `None`
-        """
-        return GUILDS.get(self.guild_id)
 
 
 def INTERACTION_CREATE_CAL(client, data):
@@ -7641,6 +7708,8 @@ class EventDescriptor(object):
         | boosts_since      | `None` or `datetime`          |
         +-------------------+-------------------------------+
         | nick              | `None` or `str`               |
+        +-------------------+-------------------------------+
+        | pending           | `bool`                        |
         +-------------------+-------------------------------+
         | roles             | `None` or `list` of ``Role``  |
         +-------------------+-------------------------------+

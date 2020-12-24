@@ -549,7 +549,7 @@ class ActivityBase(object):
     
     def __eq__(self, other):
         """
-        Returns whether the two activties are equal.
+        Returns whether the two activities are equal.
         
         Subclasses should overwrite it.
         """

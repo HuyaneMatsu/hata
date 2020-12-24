@@ -1704,7 +1704,19 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.welcome_screen_get, guild_id),
             METH_GET, f'{API_ENDPOINT}/guilds/{guild_id}/welcome-screen')
     
-    #invite
+    async def welcome_screen_edit(self, guild_id, data):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.welcome_screen_edit, guild_id),
+            METH_PATCH, f'{API_ENDPOINT}/guilds/{guild_id}/welcome-screen', data)
+    
+    async def verification_screen_get(self, guild_id):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.verification_screen_get, guild_id),
+            METH_GET, f'{API_ENDPOINT}/guilds/{guild_id}/member-verification')
+    
+    async def verification_screen_edit(self, guild_id, data):
+        return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.verification_screen_edit, guild_id),
+            METH_PATCH, f'{API_ENDPOINT}/guilds/{guild_id}/member-verification', data)
+    
+    # Invite
     
     async def invite_create(self, channel_id, data):
         return await self.discord_request(RatelimitHandler(RATELIMIT_GROUPS.invite_create, channel_id),

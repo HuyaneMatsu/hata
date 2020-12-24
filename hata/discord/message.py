@@ -1020,9 +1020,9 @@ class Message(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        validate : `bool`
+        validate : `bool`, Optional
             Whether contradictory between the message's attributes should be checked. If there is any, `ValueError`
-           is raised.
+            is raised. Defaults to `True`.
         **kwargs : keyword arguments
             Additional attributes of the created message.
         
@@ -1083,8 +1083,8 @@ class Message(DiscordEntity, immortal=True):
             
             If called as a classmethod defaults to `MesageFlag(0)`.
         id : `int` or `str`, Optional
-            The ``.id`` attribute of the message. If passed as `str`, will be converted to `int`
-            .
+            The ``.id`` attribute of the message. If passed as `str`, will be converted to `int`.
+            
             If called as a classmethod defaults to `0`.
         id_ : `int` or `str`, Optional.
             Alias of `id`.
@@ -1570,7 +1570,7 @@ class Message(DiscordEntity, immortal=True):
         
         # Check kwargs and raise TypeError if not every in used up
         if kwargs:
-            raise TypeError(f'Unused aruments: {", ".join(list(kwargs))}')
+            raise TypeError(f'Unused parameters: {", ".join(list(kwargs))}')
         
         self = object.__new__(cls)
         

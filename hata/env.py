@@ -17,7 +17,7 @@ HATA_ALLOW_DEAD_EVENTS : `bool` = `False`
 
 HATA_CACHE_PRESENCE : `bool` = `True`
     Whether hata should enable and dispatch users presence related events. By disabling it, ``User.status``,
-    ``User.statuses``, ``User.platform``, ``User.activties``, ``User.activity`` will be disabled. And each will be
+    ``User.statuses``, ``User.platform``, ``User.activities``, ``User.activity`` will be disabled. And each will be
     replaced by a dummy property.
     
     If `HATA_CACHE_USERS` is defined as `False`, `HATA_CACHE_PRESENCE` will be set as `False` as well.
@@ -34,7 +34,7 @@ HATA_CDN_ENDPOINT : `None`, `str` = `None`
 HATA_DIS_ENDPOINT : `None`, `str` = `None`
     The endpoint of Discord, to use instead of it's own.
 
-HATA_API_VERSION : `int` = `7`
+HATA_API_VERSION : `int` = `8`
     The Discord api version used by hata. The accepted values are `6`, `7` and `8`.
     
     If given as any other value, a warning message will show up. Tho, if given `6` a deprecation warning will be still

@@ -7,6 +7,7 @@ from collections import deque
 from os.path import split as splitpath
 from threading import current_thread
 from math import inf
+from datetime import datetime
 
 from ..env import CACHE_USER, CACHE_PRESENCE, API_VERSION
 from ..backend.utils import imultidict, methodize, change_on_switch
@@ -25,7 +26,8 @@ from .emoji import Emoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, ChannelStore, \
     message_relativeindex, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES, ChannelTextBase, ChannelVoice
 from .guild import Guild, create_partial_guild, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
-    DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen, SystemChannelFlag
+    DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen, SystemChannelFlag, VerificationScreen, WelcomeChannel, \
+    VerificationScreenStep
 from .http import DiscordHTTPClient, URLS
 from .http.URLS import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDPOINT
 from .role import Role, PermOW, PERMOW_TYPE_ROLE, PERMOW_TYPE_USER
@@ -3074,7 +3076,7 @@ class Client(UserBase):
         
         if __debug__:
             if not isinstance(limit, int):
-                raise AssertionError(f'`limit` can be gvien as `int` instance, got {limit.__class__.__name__}.')
+                raise AssertionError(f'`limit` can be given as `int` instance, got {limit.__class__.__name__}.')
             
             if limit < 1 or limit > 100:
                 raise AssertionError(f'`limit` is out from the expected [1:100] range, got {limit!r}.')
@@ -3143,7 +3145,7 @@ class Client(UserBase):
         
         if __debug__:
             if not isinstance(limit, int):
-                raise AssertionError(f'`limit` can be gvien as `int` instance, got {limit.__class__.__name__}.')
+                raise AssertionError(f'`limit` can be given as `int` instance, got {limit.__class__.__name__}.')
             
             if limit < 1 or limit > 100:
                 raise AssertionError(f'`limit` is out from the expected [1:100] range, got {limit!r}.')
@@ -5035,7 +5037,7 @@ class Client(UserBase):
         """
         if __debug__:
             if not isinstance(index, int):
-                raise AssertionError(f'`index` can be gvien as `int` instance, got {index.__class__.__name__}.')
+                raise AssertionError(f'`index` can be given as `int` instance, got {index.__class__.__name__}.')
             
             if index < 0:
                 raise AssertionError(f'`index` is out from the expected [0:] range, got {index!r}.')
@@ -5111,13 +5113,13 @@ class Client(UserBase):
         """
         if __debug__:
             if not isinstance(start, int):
-                raise AssertionError(f'`start` can be gvien as `int` instance, got {start.__class__.__name__}.')
+                raise AssertionError(f'`start` can be given as `int` instance, got {start.__class__.__name__}.')
             
             if start < 0:
                 raise AssertionError(f'`start` is out from the expected [0:] range, got {start!r}.')
         
             if not isinstance(end, int):
-                raise AssertionError(f'`end` can be gvien as `int` instance, got {end.__class__.__name__}.')
+                raise AssertionError(f'`end` can be given as `int` instance, got {end.__class__.__name__}.')
             
             if end < 0:
                 raise AssertionError(f'`end` is out from the expected [0:] range, got {end!r}.')
@@ -5854,11 +5856,285 @@ class Client(UserBase):
             if welcome_screen_data is None:
                 welcome_screen = None
             else:
-                welcome_screen = WelcomeScreen(welcome_screen_data)
+                welcome_screen = WelcomeScreen.from_data(welcome_screen_data)
         else:
             welcome_screen = None
         
         return welcome_screen
+    
+    async def welcome_screen_edit(self, guild, *, enabled=..., description=..., welcome_channels=...):
+        """
+        Edits the givne guild's welcome screen.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild`` or `int`
+            The guild, what's welcome screen will be edited.
+        enabled : `bool`, Optional
+            Whether the guild's welcome screen should be enabled.
+        description : `None` or `str`, Optional
+            The welcome screen's new description. It's length can be in range [0:140].
+        welcome_channels : `None`, ``WelcomeChannel`` or  (`tuple` or `list`) of ``WelcomeChannel``
+            The channels mentioned on the welcome screen.
+        
+        Returns
+        -------
+        welcome_screen : `None or ``WelcomeScreen``
+            The updated welcome screen. Always returns `None` if no change was propagated.
+        
+        Raises
+        ------
+        TypeError
+            - If `guild` was not given neither as ``Guild`` nor `int` instance.
+            - If `welcome_channels` was not given neither as `None`, ``WelcomeChannel`` nor as (`tuple` or `list`) of
+                ``WelcomeChannel`` instances.
+            - If `welcome_channels` contains a non ``WelcomeChannel`` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `enabled` was nto given as `bool` instance.
+            - If `description` was not given neither as `None` or `str` instance.
+            - If `description`'s length is out of range [0:140].
+            - If `welcome_channels`'s length is out of range [0:5].
+        """
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        data = {}
+        
+        if (enabled is not ...):
+            if __debug__:
+                if not isinstance(enabled, bool):
+                    raise AssertionError(f'`enabled` can be given as `bool` instance, got '
+                        f'{enabled.__class__.__name__}.')
+            
+            data['enabled'] = enabled
+        
+        if (description is not ...):
+            if __debug__:
+                if (description is not None):
+                    if not isinstance(description, str):
+                        raise AssertionError(f'`description` can be given as `None` or `str` instance, got '
+                            f'{description.__class__.__name__}.')
+                
+                    description_ln = len(description)
+                    if description_ln > 300:
+                        raise AssertionError(f'`description` length can be in range [0:140], got {description_ln!r}; '
+                            f'{description!r}.')
+                
+            if (description is not None) and (not description):
+                description = None
+            
+            data['description'] = description
+        
+        if (welcome_channels is not ...):
+            welcome_channel_datas = []
+            if welcome_channel_datas is None:
+                pass
+            elif isinstance(welcome_channels, WelcomeChannel):
+                welcome_channel_datas.append(welcome_channels.to_data())
+            elif isinstance(welcome_channels, (list, tuple)):
+                if __debug__:
+                    welcome_channels_ln = len(welcome_channels)
+                    if welcome_channels > 5:
+                        raise AssertionError(f'`welcome_channels` length can be in range [0:5], got '
+                            f'{welcome_channels_ln!r}; {welcome_channels!r}.')
+                
+                for index, welcome_channel in enumerate(welcome_channels):
+                    if not isinstance(welcome_channel, WelcomeChannel):
+                        raise TypeError(f'Welcome channel `{index}` was not given as `{WelcomeChannel.__name__}` '
+                            f'instance, got {welcome_channel.__class__.__name__}; {welcome_channel!r}.')
+                    
+                    welcome_channel_datas.append(welcome_channel.to_data())
+            else:
+                raise TypeError(f'`welcome_channels` can be given as `None`, `{WelcomeChannel.__name__}` or as '
+                    f'(`list` or `tuple`) of `{WelcomeChannel.__name__} instances, got '
+                    f'{welcome_channels.__class__.__name__}.')
+            
+            data['welcome_channels'] = welcome_channel_datas
+        
+        if data:
+            data = await self.http.welcome_screen_edit(guild_id, data)
+            if data:
+                welcome_screen = WelcomeScreen.from_data(data)
+            else:
+                welcome_screen = None
+        else:
+            welcome_screen = None
+        
+        return welcome_screen
+    
+    
+    async def verification_screen_get(self, guild):
+        """
+        Requests the given guild's verification screen.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild`` or `int`
+            The guild, what's verification screen will be requested.
+
+        Returns
+        -------
+        verification_screen : `None` or ``VerificationScreen``
+        
+        Raises
+        ------
+        TypeError
+            If `guild` was not given neither as ``Guild`` nor `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        
+        Notes
+        -----
+        If the guild has no verification screen enabled, will not do any request.
+        """
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+            
+            guild = None
+        
+        if (guild is None) or (GuildFeature.verification_screen in guild.features):
+            verification_screen_data = await self.http.verification_screen_get(guild_id)
+            if verification_screen_data is None:
+                verification_screen = None
+            else:
+                verification_screen = VerificationScreen.from_data(verification_screen_data)
+        else:
+            verification_screen = None
+        
+        return verification_screen
+    
+    
+    async def verification_screen_edit(self, guild, *, enabled=..., description=..., steps=...):
+        """
+        Requests the given guild's verification screen.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild`` or `int`
+            The guild, what's verification screen will be requested.
+        enabled : `bool`, Optional
+            Whether the guild should have verification screen enabled.
+        description : `None` or `str`, Optional
+            The guild's new description showed on the verification screen. It's length can be in range [0:300].
+        steps : `None`, ``VerificationScreenStep`` or  (`tuple` or `list`) of ``VerificationScreenStep``, Optional
+            The new steps of the verification screen.
+        
+        Returns
+        -------
+        verification_screen : `None` or ``VerificationScreen``
+            The updated verification screen. Always returns `None` if no change was propagated.
+        
+        Raises
+        ------
+        TypeError
+            - If `guild` was not given neither as ``Guild`` nor `int` instance.
+            - If `steps` was not given neither as `None`, ``VerificationScreenStep`` nor as (`tuple` or `list`) of
+                ``VerificationScreenStep`` instances.
+            - If `steps` contains a non ``VerificationScreenStep`` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `enabled` was not given as `bool` instance.
+            - If `description` was not given neither as `None` or `str` instance.
+            - If `description`'s length is out of range [0:300].
+        
+        Notes
+        -----
+        When editing steps, `DiscordException Internal Server Error (500): 500: Internal Server Error` will be dropped.
+        """
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        data = {}
+        
+        if (enabled is not ...):
+            if __debug__:
+                if not isinstance(enabled, bool):
+                    raise AssertionError(f'`enabled` can be given as `bool` instance, got '
+                        f'{enabled.__class__.__name__}.')
+            
+            data['enabled'] = enabled
+        
+        if (description is not ...):
+            if __debug__:
+                if (description is not None):
+                    if not isinstance(description, str):
+                        raise AssertionError(f'`description` can be given as `None` or `str` instance, got '
+                            f'{description.__class__.__name__}.')
+                    
+                    description_ln = len(description)
+                    if description_ln > 300:
+                        raise AssertionError(f'`description` length can be in range [0:300], got {description_ln!r}; '
+                            f'{description!r}.')
+            
+            if (description is not None) and (not description):
+                description = None
+            
+            data['description'] = description
+        
+        if (steps is not ...):
+            step_datas = []
+            if steps is None:
+                pass
+            elif isinstance(steps, VerificationScreenStep):
+                step_datas.append(steps.to_data())
+            elif isinstance(steps, (list, tuple)):
+                for index, step in enumerate(steps):
+                    if not isinstance(step, VerificationScreenStep):
+                        raise TypeError(f'`step` element `{index}` was not given as '
+                            f'`{VerificationScreenStep.__name__}` instance, got {step.__class__.__name__}; {step!r}.')
+                    
+                    step_datas.append(step.to_data())
+            else:
+                raise TypeError(f'`steps` can be given as `None`, `{VerificationScreenStep.__name__}` or as '
+                    f'(`list` or `tuple`) of `{VerificationScreenStep.__name__} instances, got '
+                    f'{steps.__class__.__name__}.')
+            
+            data['form_fields'] = step_datas
+        
+        if data:
+            data['version'] = datetime.now().isoformat()
+            data = await self.http.verification_screen_edit(guild_id, data)
+            if data is None:
+                verification_screen = None
+            else:
+                verification_screen = VerificationScreen.from_data(data)
+        else:
+            verification_screen = None
+        
+        return verification_screen
     
     async def guild_ban_add(self, guild, user, delete_message_days=0, reason=None):
         """
@@ -6591,7 +6867,7 @@ class Client(UserBase):
             - If `owner` was passed meanwhile the client is not the owner of the guild.
             - If `afk_timeout` was passed and not as one of: `60, 300, 900, 1800, 3600`.
             - If `name` is shorter than `2` or longer than `100` characters.
-            - If `discovery_splash` was gvien meanwhile the guild is not discoverable.
+            - If `discovery_splash` was given meanwhile the guild is not discoverable.
             - If `invite_splash` was passed meanwhile the guild has no `INVITE_SPLASH` feature.
             - If `name` was not given as `str` instance.
             - If `afk_timeout` was not given as `int` instance.
@@ -7844,9 +8120,9 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        await self.http.user_move(guild.id, user.id,{'channel_id':None})
+        await self.http.user_move(guild.id, user.id, {'channel_id': None})
     
-    async def user_get(self, user_id):
+    async def user_get(self, user_id, force_update=False):
         """
         Gets an user by it's id. If the user is already loaded updates it.
         
@@ -7856,6 +8132,8 @@ class Client(UserBase):
         ----------
         user_id : `int`
             The user's id, who will be requested.
+        force_update : `bool`
+            Whether the user should be requested even if it supposed to be up to date.
         
         Returns
         -------
@@ -7867,8 +8145,27 @@ class Client(UserBase):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        
+        Raises
+        ------
+        TypeError
+            If `user_id` was not given as `int` instance.
         """
-        data = await self.http.user_get(user_id)
+        user_id_value = maybe_snowflake(user_id)
+        if user_id_value is None:
+            raise TypeError(f'`user_id` can be given as `int` instance, got {user_id.__class__.__name__}.')
+        
+        if not force_update:
+            try:
+                user = USERS[user_id_value]
+            except KeyError:
+                pass
+            else:
+                for guild in user.guild_profiles:
+                    if not guild.partial:
+                        return user
+        
+        data = await self.http.user_get(user_id_value)
         return User._create_and_update(data)
     
     async def guild_user_get(self, guild, user_id):

@@ -2315,7 +2315,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
     @classmethod
     def _create_dataless(cls, channel_id):
         """
-        Creates a private channel from a channel id. Might be called by parsers, when a message's chanenl si not found
+        Creates a private channel from a channel id. Might be called by parsers, when a message's chanenl is not found
         and it is a private channel.
         
         Parameters

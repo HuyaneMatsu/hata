@@ -2,7 +2,7 @@
 
 Hata is an async Discord API wrapper written in Python named after Hata no Kokoro.
 
-If naming a Discord API wrapper after a Touhou character is not enough to convince you to try it, it got some
+If naming a Discord API wrapper after a Touhou character is not enough to convince you to try it, it has got some
 real stuff:
 
 - Fast and simple asynchronous framework to write concurrent code using async/await syntax, but also great for

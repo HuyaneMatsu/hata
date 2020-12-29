@@ -90,7 +90,7 @@ already a `User` object that we can use right away inside that function instead 
 additionally convert to user object inside our command.
 
 
-For example we'll annotate it as User and have it's default value of None:
+For example we'll annotate it as User and have its default value of None:
 ```
 from hata import User
 

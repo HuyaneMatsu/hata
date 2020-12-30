@@ -53,7 +53,7 @@ When creating it we need to pass at least a token but it accepts [other, optiona
 In this case our decorator will capture `ready` event and handle it in `async def ready(client):` function.
 
 The `ready` event will be activated after the client finished logging in to Discord.
-When it happens, in the example above, we print out the client's full name and it's ID.
+When it happens, in the example above, we print out the client's full name and its ID.
 
 Event function can take multiple arguments depending on the event, but all of them take `client` as the first one.
 The example we used is the most straightforward way but there are multiple ways of adding event handlers and there

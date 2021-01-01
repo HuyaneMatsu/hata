@@ -7,8 +7,8 @@ from .url import URL
 from .reqrep import ClientRequest, SSL_ALLOWED_TYPES
 from .connector import TCPConnector
 from .cookiejar import CookieJar
-from .hdrs import CONTENT_LENGTH, AUTHORIZATION, METH_HEAD, LOCATION, URI, METH_GET, METH_POST, METH_OPTIONS, \
-    METH_PUT, METH_PATCH, METH_DELETE
+from .headers import CONTENT_LENGTH, AUTHORIZATION, METHOD_HEAD, LOCATION, URI, METHOD_GET, METHOD_POST, \
+    METHOD_OPTIONS, METHOD_PUT, METHOD_PATCH, METHOD_DELETE
 from .websocket import WSClient
 from . import websocket as module_websocket
 
@@ -21,7 +21,7 @@ class HTTPClient(object):
     Attributes
     ----------
     loop : ``EventThread``
-        The eventloop used by the http client.
+        The event loop used by the http client.
     connector : ``ConnectorBase`` instance
         Connector of the http client. Defaults to ``TCPConnector`` instance.
     proxy_url : `None`, `str` or ``URL``
@@ -39,13 +39,13 @@ class HTTPClient(object):
         Parameters
         ----------
         loop : ``EventThread``
-            The eventloop used by the http client.
+            The event loop used by the http client.
         proxy_url : `None`, `str` or ``URL`` Optional
             Proxy url to use with all of the requests of the http client. Defaults to `None`.
         proxy_auth : `None` or ``BasicAuth``, Optional
             Proxy authorization to send with all the requests of the http client. Defaults to `None`.
         connector : `None` or ``ConnectorBase`` instance
-            Coonector to be used by the ``HTTPClient``. If not given or given as `None`, a new ``TCPConnector`` is
+            Connector to be used by the ``HTTPClient``. If not given or given as `None`, a new ``TCPConnector`` is
             created and used.
         """
         self.loop = loop
@@ -94,7 +94,7 @@ class HTTPClient(object):
             - `proxy_auth`'s type is incorrect.
             - ˙Cannot serialize a field of the given `data`.
         ValueError
-            - Host could nto be detected from `url`.
+            - Host could not be detected from `url`.
             - The `proxy_url`'s scheme is not `http`.
             - `compression` and `Content-Encoding` would be set at the same time.
             - `chunked` cannot be set, because `Transfer-Encoding: chunked` is already set.
@@ -143,9 +143,9 @@ class HTTPClient(object):
                         response.close()
                         raise ConnectionError('Too many redirects', history[0].request_info, tuple(history))
                     
-                    if (response.status == 303 and response.method != METH_HEAD) \
-                            or (response.status in (301, 302) and response.method == METH_POST):
-                        method = METH_GET
+                    if (response.status == 303 and response.method != METHOD_HEAD) \
+                            or (response.status in (301, 302) and response.method == METHOD_POST):
+                        method = METHOD_GET
                         data = None
                         try:
                             del headers[CONTENT_LENGTH]
@@ -213,7 +213,7 @@ class HTTPClient(object):
         proxy_auth : `None` or ``BasicAuth``, Optional
             Proxy authorization to use instead of the client's.
         timeout : `float`, Optional
-            The maximal duration to wait for server response. Defautls to `60.0` seconds.
+            The maximal duration to wait for server response. Defaults to `60.0` seconds.
         ssl : `ssl.SSLContext`, `bool`, ``Fingerprint``, `NoneType`
             Whether and what type of ssl should the connector use.
         
@@ -248,7 +248,7 @@ class HTTPClient(object):
         --------
         - ``.request`` : Executes an http request returning a request context manager.
         - ``.request2`` : Executes an http request with extra parameters returning a request context manager.
-        - ``._request`` : Internal method for executing an http request without eextra parameters.
+        - ``._request`` : Internal method for executing an http request without extra parameters.
         """
         # Transform headers to imultidict
         headers = imultidict(headers)
@@ -298,10 +298,10 @@ class HTTPClient(object):
                     
                     # For 301 and 302, mimic IE behaviour, now changed in RFC.
                     # Details: https://github.com/kennethreitz/requests/pull/269
-                    if (response.status == 303 and response.method != METH_HEAD) \
-                            or (response.status in (301, 302) and response.method == METH_POST):
+                    if (response.status == 303 and response.method != METHOD_HEAD) \
+                            or (response.status in (301, 302) and response.method == METHOD_POST):
                         
-                        method = METH_GET
+                        method = METHOD_GET
                         data = None
                         content_ln = headers.get(CONTENT_LENGTH)
                         if (content_ln is not None) and content_ln:
@@ -459,7 +459,7 @@ class HTTPClient(object):
         proxy_auth : `None` or ``BasicAuth``, Optional
             Proxy authorization to use instead of the client's.
         timeout : `float`, Optional
-            The maximal duration to wait for server response. Defautls to `60.0` seconds.
+            The maximal duration to wait for server response. Defaults to `60.0` seconds.
         ssl : `ssl.SSLContext`, `bool`, ``Fingerprint``, `NoneType`
             Whether and what type of ssl should the connector use.
         
@@ -523,7 +523,7 @@ class HTTPClient(object):
         if headers is None:
             headers = imultidict()
         
-        return RequestCM(self._request(METH_GET, url, headers, **kwargs))
+        return RequestCM(self._request(METHOD_GET, url, headers, **kwargs))
     
     def options(self, url, headers=None, **kwargs):
         """
@@ -565,7 +565,7 @@ class HTTPClient(object):
         if headers is None:
             headers = imultidict()
         
-        return RequestCM(self._request(METH_OPTIONS, url, headers, **kwargs))
+        return RequestCM(self._request(METHOD_OPTIONS, url, headers, **kwargs))
     
     def head(self, url, headers=None, **kwargs):
         """
@@ -607,7 +607,7 @@ class HTTPClient(object):
         if headers is None:
             headers = imultidict()
         
-        return RequestCM(self._request(METH_HEAD, url, headers, **kwargs))
+        return RequestCM(self._request(METHOD_HEAD, url, headers, **kwargs))
     
     def post(self, url, headers=None, **kwargs):
         """
@@ -649,7 +649,7 @@ class HTTPClient(object):
         if headers is None:
             headers = imultidict()
         
-        return RequestCM(self._request(METH_POST, url, headers, **kwargs))
+        return RequestCM(self._request(METHOD_POST, url, headers, **kwargs))
     
     def put(self, url, headers=None, **kwargs):
         """
@@ -691,7 +691,7 @@ class HTTPClient(object):
         if headers is None:
             headers = imultidict()
         
-        return RequestCM(self._request(METH_PUT, url, headers, **kwargs))
+        return RequestCM(self._request(METHOD_PUT, url, headers, **kwargs))
     
     def patch(self, url, headers=None, **kwargs):
         """
@@ -733,7 +733,7 @@ class HTTPClient(object):
         if headers is None:
             headers = imultidict()
         
-        return RequestCM(self._request(METH_PATCH, url, headers, **kwargs))
+        return RequestCM(self._request(METHOD_PATCH, url, headers, **kwargs))
     
     def delete(self, url, headers=None, **kwargs):
         """
@@ -775,7 +775,7 @@ class HTTPClient(object):
         if headers is None:
             headers = imultidict()
         
-        return RequestCM(self._request(METH_DELETE, url, headers, **kwargs))
+        return RequestCM(self._request(METHOD_DELETE, url, headers, **kwargs))
 
     def connect_ws(self, url, **kwargs):
         """
@@ -799,7 +799,7 @@ class HTTPClient(object):
             - `name`, type `str`. The extension's name.
             - `request_params` : `list` of `tuple` (`str`, `str`). Additional header parameters of the extension.
             - `decode` : `callable`. Decoder method, what processes a received websocket frame. Should accept `2`
-                parameters: The respective websocket ``Frame``, and the ˙max_size` as `int`, what descibes the
+                parameters: The respective websocket ``Frame``, and the ˙max_size` as `int`, what describes the
                 maximal size of a received frame. If it is passed, ``PayloadError`` is raised.
             - `encode` : `callable`. Encoder method, what processes the websocket frames to send. Should accept `1`
                 parameter, the respective websocket ``Frame``.
@@ -887,7 +887,7 @@ class RequestCM(object):
     
     async def __aenter__(self):
         """
-        Enters the ``RequestCM`` as an asynchronous context manager. Releses the response when the context manager is
+        Enters the ``RequestCM`` as an asynchronous context manager. Releases the response when the context manager is
         exited.
         
         This method is a coroutine.
@@ -923,7 +923,7 @@ class WebsocketCM(object):
     
     Examples
     --------
-    ``WebsocketCM`` instances are returned by the ``HTTPClient.connect_ws`` method. Webscoket context managers can be
+    ``WebsocketCM`` instances are returned by the ``HTTPClient.connect_ws`` method. Websocket context managers can be
     used as an asynchronous context manager or as a simple awaitable.
     
     ```
@@ -941,7 +941,7 @@ class WebsocketCM(object):
     coroutine : `coroutine` of ``WSClient.__new__``
         The wrapped requester coroutine.
     websocket : `None` or ``WSClient``
-        The connected webscoket client if applicable
+        The connected websocket client if applicable
     """
     __slots__ = ('coroutine', 'websocket', )
     
@@ -984,7 +984,7 @@ class WebsocketCM(object):
     
     async def __aenter__(self):
         """
-        Enters the ``WebsocketCM`` as an asynchronous context manager. Closes the webscoket when the context manager is
+        Enters the ``WebsocketCM`` as an asynchronous context manager. Closes the websocket when the context manager is
         exited.
         
         This method is a coroutine.

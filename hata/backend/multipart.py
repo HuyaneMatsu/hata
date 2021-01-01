@@ -1,13 +1,14 @@
 ﻿# -*- coding: utf-8 -*-
-import base64, binascii, json, os, re, mimetypes, uuid, zlib
+import base64, binascii, json, os, re, mimetypes as mime_types, uuid, zlib
 from io import StringIO, TextIOBase, BytesIO, BufferedRandom, IOBase, BufferedReader
 from collections import deque
 from urllib.parse import parse_qsl as parse_query_string_list, urlencode, urlencode as url_encode
+from .quote import unquote
 
 from .utils import imultidict, multidict
 from .ios import AsyncIO
 
-from .hdrs import CONTENT_DISPOSITION, CONTENT_ENCODING, CONTENT_LENGTH, CONTENT_TRANSFER_ENCODING, CONTENT_TYPE
+from .headers import CONTENT_DISPOSITION, CONTENT_ENCODING, CONTENT_LENGTH, CONTENT_TRANSFER_ENCODING, CONTENT_TYPE
 from .helpers import content_disposition_header, CHAR, TOKEN
 from .protocol import ZLIB_COMPRESSOR, BROTLI_COMPRESSOR
 from .exceptions import ContentEncodingError
@@ -106,27 +107,26 @@ class PayloadBase(object):
         self.filename = filename = kwargs.get('filename')
         self.size = None
         
-        headers = kwargs.get('headers')
-        if (headers is None) or (not headers):
-            headers = imultidict()
-        else:
-            headers = imultidict(headers)
-            if ('content_type' not in kwargs) and (CONTENT_TYPE in headers):
-                content_type = headers[CONTENT_TYPE]
-        
-        self.headers = headers
+        headers = imultidict()
         
         content_type = kwargs.get('content_type')
         if content_type is None:
             if filename is None:
                 content_type = DEFAULT_CONTENT_TYPE
             else:
-                mime = mimetypes.guess_type(self.filename)[0]
+                mime = mime_types.guess_type(self.filename)[0]
                 if mime is None:
                     content_type = DEFAULT_CONTENT_TYPE
                 else:
                     content_type = mime
         
+        headers[CONTENT_TYPE] = content_type
+        
+        headers_parameter = kwargs.get('headers')
+        if (headers_parameter is not None) or  headers_parameter:
+            headers.update(headers_parameter)
+        
+        self.headers = headers
         self.content_type = content_type
     
     def set_content_disposition(self, disposition_type, params, quote_fields=True):
@@ -143,7 +143,7 @@ class PayloadBase(object):
             Whether field values should be quoted.
         """
         headers = self.headers
-        headers.popall(CONTENT_DISPOSITION, None)
+        headers.pop_all(CONTENT_DISPOSITION, None)
         headers[CONTENT_DISPOSITION] = content_disposition_header(disposition_type, params, quote_fields=quote_fields)
     
     async def write(self, writer):
@@ -251,8 +251,8 @@ class StringPayload(BytesPayload):
                 
                 kwargs['content_type'] = content_type
             else:
-                mimetype = MimeType(content_type)
-                encoding = mimetype.params.get('charset', 'utf-8')
+                mime_type = MimeType(content_type)
+                encoding = mime_type.params.get('charset', 'utf-8')
             
             kwargs['encoding'] = encoding
         
@@ -413,8 +413,8 @@ class TextIOPayload(IOBasePayload):
                 
                 kwargs['content_type'] = content_type
             else:
-                mimetype = MimeType(content_type)
-                encoding = mimetype.params.get('charset', 'utf-8')
+                mime_type = MimeType(content_type)
+                encoding = mime_type.params.get('charset', 'utf-8')
             
             kwargs['encoding'] = encoding
         else:
@@ -740,17 +740,17 @@ class BodyPartReaderPayload(PayloadBase):
 class MimeType(object):
     # Parses a MIME type into its components
     
-    __slots__ = ('mtype', 'params', 'stype', 'suffix',)
-    def __init__(self, mimetype):
+    __slots__ = ('params', 'sub_type', 'suffix', 'type', )
+    def __init__(self, mime_type):
         
-        if not mimetype:
-            self.mtype = ''
-            self.stype = ''
+        if (mime_type is None) or (not mime_type):
+            self.type = ''
+            self.sub_type = ''
             self.suffix = ''
             self.params = {}
             return
         
-        parts = mimetype.split(';')
+        parts = mime_type.split(';')
         params = multidict()
         for item in parts[1:]:
             if not item:
@@ -764,29 +764,29 @@ class MimeType(object):
             params[key.strip().lower()] = value.strip(' "')
         
         
-        fulltype = parts[0].strip().lower()
-        if fulltype == '*':
-            fulltype = '*/*'
+        full_type = parts[0].strip().lower()
+        if full_type == '*':
+            full_type = '*/*'
         
-        if '/' in fulltype:
-            mtype, stype = fulltype.split('/', 1)
+        if '/' in full_type:
+            type_, sub_type = full_type.split('/', 1)
         else:
-            mtype = fulltype
-            stype = ''
+            type_ = full_type
+            sub_type = ''
 
-        if '+' in stype:
-            stype, suffix = stype.split('+', 1)
+        if '+' in sub_type:
+            sub_type, suffix = sub_type.split('+', 1)
         else:
             suffix = ''
             
-        self.mtype = mtype
-        self.stype = stype
+        self.type = type_
+        self.sub_type = sub_type
         self.suffix = suffix
         self.params = params
     
     def __repr__(self):
-        return (f'<{self.__class__.__name__} mtype={self.mtype!r} stype={self.stype!r} suffix={self.suffix!r} params='
-            f'{self.params!r}>')
+        return (f'<{self.__class__.__name__} type={self.type!r} sub_type={self.sub_type!r} suffix={self.suffix!r} '
+            f'params={self.params!r}>')
 
     __str__ = __repr__
 
@@ -888,12 +888,12 @@ def content_disposition_filename(params,name='filename'):
         return params[name]
     else:
         parts = []
-        fnparams = sorted((key, value) for key, value in params.items() if key.startswith('filename*'))
-        for num, (key, value) in enumerate(fnparams):
+        file_name_params = sorted((key, value) for key, value in params.items() if key.startswith('filename*'))
+        for index, (key, value) in enumerate(file_name_params):
             _, tail = key.split('*', 1)
             if tail.endswith('*'):
                 tail = tail[:-1]
-            if tail == str(num):
+            if tail == str(index):
                 parts.append(value)
             else:
                 break
@@ -968,7 +968,7 @@ class BodyPartReader(object):
         if self._read_bytes == self._length:
             self._at_eof = True
         if self._at_eof:
-            await self._content.readline()
+            await self._content.read_line()
         
         return chunk
 
@@ -1006,28 +1006,28 @@ class BodyPartReader(object):
         self._prev_chunk = chunk
         return result
     
-    async def readline(self):
+    async def read_line(self):
         if self._at_eof:
             return b''
         
         if self._unread:
             line = self._unread.popleft()
         else:
-            line = await self._content.readline()
+            line = await self._content.read_line()
         
         if line.startswith(self._boundary):
             # the very last boundary may not come with \r\n,
             # so set single rules for everyone
-            sline = line.rstrip(b'\r\n')
+            separator_line = line.rstrip(b'\r\n')
             boundary = self._boundary
             last_boundary = self._boundary + b'--'
             #make sure that we read exactly the boundary, not something alike
-            if sline == boundary or sline == last_boundary:
+            if separator_line == boundary or separator_line == last_boundary:
                 self._at_eof = True
                 self._unread.append(line)
                 return b''
         else:
-            next_line = await self._content.readline()
+            next_line = await self._content.read_line()
             if next_line.startswith(self._boundary):
                 line = line[:-2]  # strip CRLF but only once
             self._unread.append(next_line)
@@ -1120,9 +1120,9 @@ class BodyPartReader(object):
     def get_charset(self, default=None):
         #Returns charset parameter from Content-Type header or default.
 
-        ctype = self.headers.get(CONTENT_TYPE, '')
-        mimetype = MimeType(ctype)
-        return mimetype.params.get('charset', default)
+        content_type = self.headers.get(CONTENT_TYPE, '')
+        mime_type = MimeType(content_type)
+        return mime_type.params.get('charset', default)
 
     @property
     def name(self):
@@ -1158,7 +1158,7 @@ class MultipartWriter(PayloadBase):
     size : `None` or `int`
         The payload's size if applicable.
     _boundary : `bytes`
-        Boundary to matk the payload's start and end.
+        Boundary to mark the payload's start and end.
     """
     __slots__ = ('_boundary', )
     
@@ -1169,9 +1169,9 @@ class MultipartWriter(PayloadBase):
         Parameters
         ----------
         subtype : `str`, Optional
-            The subtype of the mutlipart writer. Defaults to `'mixed'`, but also can `'form-data'` for example.
+            The subtype of the multipart writer. Defaults to `'mixed'`, but also can `'form-data'` for example.
         boundary : `Nome` or `str`, Optional
-            Boundary to matk the payload's start and end. If not given or gvien as `None`, then is autogenerated.
+            Boundary to mark the payload's start and end. If not given or given as `None`, then is autogenerated.
         
         Raises
         ------
@@ -1251,7 +1251,7 @@ class MultipartWriter(PayloadBase):
         Raises
         ------
         TypeError
-            Cannot create payload from the givne `body_part`.
+            Cannot create payload from the given `body_part`.
         RuntimeError
             - The `payload`'s content has unknown content-encoding.
             - The `payload`'s content has unknown content-transfer-encoding.
@@ -1440,7 +1440,7 @@ class MultipartWriter(PayloadBase):
         writer : ``HTTPStreamWriter``
             Http writer to write the payload's data to.
         close_boundary : `bool`, Optional
-            Whether the multypart's payload should be closed with it's boundary.
+            Whether the multipart's payload should be closed with it's boundary.
         """
         data = self.data
         if not data:
@@ -1477,7 +1477,7 @@ class MultipartPayloadWriter(object):
                 raise ContentEncodingError('Can not decode content-encoding: brotli (br). Please install `brotlipy`.')
             compressor = BROTLI_COMPRESSOR()
         elif content_encoding == 'identity':
-            # I asume this is no encoding
+            # I assume this is no encoding
             compressor = None
         else:
             raise ContentEncodingError(f'Can not decode content-encoding: {content_encoding!r}.')

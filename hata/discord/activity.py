@@ -17,7 +17,7 @@ from . import preinstanced as module_preinstanced
 
 create_partial_emoji = NotImplemented
 
-DEFAULT_CUSTM_ID = 'UNKNOWN'
+DEFAULT_CUSTOM_ID = 'UNKNOWN'
 
 CUSTOM_IDS = {
     2 : 'spotify:1',
@@ -139,7 +139,7 @@ class ActivityTimestamps(object):
         return ''.join(result)
     
     def __eq__(self, other):
-        """Retuns whether the two activity timestamps are equal."""
+        """Returns whether the two activity timestamps are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -153,7 +153,7 @@ class ActivityTimestamps(object):
     
     def to_data(self):
         """
-        Serialiases the activity timestamp.
+        Serialises the activity timestamp.
         
         Returns
         -------
@@ -247,7 +247,7 @@ class ActivityAssets(object):
         return ''.join(result)
     
     def __eq__(self, other):
-        """Retuns whether the two activity assets are equal."""
+        """Returns whether the two activity assets are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -267,7 +267,7 @@ class ActivityAssets(object):
     
     def to_data(self):
         """
-        Serialiases the activity asset.
+        Serialises the activity asset.
         
         Returns
         -------
@@ -358,7 +358,7 @@ class ActivityParty(object):
         return ''.join(result)
     
     def __eq__(self, other):
-        """Retuns whether the two activity parties are equal."""
+        """Returns whether the two activity parties are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -375,7 +375,7 @@ class ActivityParty(object):
     
     def to_data(self):
         """
-        Serialiases the activity party.
+        Serialises the activity party.
         
         Returns
         -------
@@ -458,7 +458,7 @@ class ActivitySecrets(object):
         return ''.join(result)
     
     def __eq__(self, other):
-        """Retuns whether the two activity secrets are equal."""
+        """Returns whether the two activity secrets are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -475,7 +475,7 @@ class ActivitySecrets(object):
     
     def to_data(self):
         """
-        Serialiases the activity secret.
+        Serialises the activity secret.
         
         Returns
         -------
@@ -536,7 +536,7 @@ class ActivityBase(object):
         raise RuntimeError(f'{cls.__name__} cannot be instanced.')
     
     def __str__(self):
-        """Returns the acitvity's name."""
+        """Returns the activity's name."""
         return self.name
     
     def __repr__(self):
@@ -582,7 +582,7 @@ class ActivityBase(object):
         if id_:
             activity_id = self.id.__format__('x')
         else:
-            activity_id = CUSTOM_IDS.get(self.type, DEFAULT_CUSTM_ID)
+            activity_id = CUSTOM_IDS.get(self.type, DEFAULT_CUSTOM_ID)
         
         return activity_id
     
@@ -650,11 +650,11 @@ class ActivityBase(object):
         """
         pass
     
-    def botdict(self):
+    def bot_dict(self):
         """
-        Converts the activity to json serializible dictionary, which can be sent with bot account to change activity.
+        Converts the activity to json serializable dictionary, which can be sent with bot account to change activity.
         
-        Subclases, which implement it, should overwrite.
+        Subclasses, which implement it, should overwrite.
         
         Returns
         -------
@@ -662,12 +662,12 @@ class ActivityBase(object):
         """
         return {}
     
-    def hoomandict(self):
+    def user_dict(self):
         """
-        Converts the activity to json serializible dictionary, which can (?) be sent with user account to change
+        Converts the activity to json serializable dictionary, which can (?) be sent with user account to change
         activity.
         
-        Subclases, which implement it, should overwrite.
+        Subclasses, which implement it, should overwrite.
         
         Returns
         -------
@@ -675,11 +675,11 @@ class ActivityBase(object):
         """
         return {}
     
-    def fulldict(self):
+    def full_dict(self):
         """
         Converts the whole activity to a dictionary.
         
-        Subclases, which implement it, should overwrite.
+        Subclasses, which implement it, should overwrite.
         
         Returns
         -------
@@ -718,7 +718,7 @@ class ActivityRich(ActivityBase):
         The player's current party status. Defaults to `None`.
     sync_id : `None` or `str`
         The ID of the currently playing track. Defaults to `None`.
-    timestamps : `None` or ``ActivityTimestampsp``
+    timestamps : `None` or ``ActivityTimestamp``
         The activity's timestamps.
     type : `int`
         An integer, what represent the activity's type for Discord. Can be one of: `0`, `1`, `2`, `3`, `4`.
@@ -783,7 +783,7 @@ class ActivityRich(ActivityBase):
         return self
     
     def __repr__(self):
-        """Returs the rich activity's representation."""
+        """Returns the rich activity's representation."""
         return f'<{self.__class__.__name__} name={self.name!r}, type={self.type}>'
     
     @property
@@ -1093,9 +1093,9 @@ class ActivityRich(ActivityBase):
         
         return old_attributes
     
-    def botdict(self):
+    def bot_dict(self):
         """
-        Converts the activity to json serializible dictionary, which can be sent with bot account to change activity.
+        Converts the activity to json serializable dictionary, which can be sent with bot account to change activity.
         
         Returns
         -------
@@ -1112,16 +1112,16 @@ class ActivityRich(ActivityBase):
         
         return activity_data
     
-    def hoomandict(self):
+    def user_dict(self):
         """
-        Converts the activity to json serializible dictionary, which can (?) be sent with user account to change
+        Converts the activity to json serializable dictionary, which can (?) be sent with user account to change
         activity.
         
         Returns
         -------
         activity_data : `dict` of (`str`, `Any`) items
         """
-        activity_data = self.botdict()
+        activity_data = self.bot_dict()
         
         application_id = self.application_id
         if application_id:
@@ -1172,7 +1172,7 @@ class ActivityRich(ActivityBase):
         
         return activity_data
     
-    def fulldict(self):
+    def full_dict(self):
         """
         Converts the whole activity to a dictionary.
         
@@ -1180,7 +1180,7 @@ class ActivityRich(ActivityBase):
         -------
         activity_data : `dict` of (`str`, `Any`) items
         """
-        activity_data = self.hoomandict()
+        activity_data = self.user_dict()
 
         #receive only?
         activity_data['id'] = self.discord_side_id
@@ -1451,7 +1451,7 @@ class ActivityCustom(ActivityBase):
         
         return old_attributes
     
-    def fulldict(self):
+    def full_dict(self):
         """
         Converts the whole activity to a dictionary.
         
@@ -1489,7 +1489,7 @@ class ActivityCustom(ActivityBase):
 
 def create_activity(activity_data):
     """
-    A factory function to create activity from deto_datad json data sent by Discord.
+    A factory function to create activity from the json data sent by Discord.
     
     If the data is `None` returns ``ActivityUnknown``.
     

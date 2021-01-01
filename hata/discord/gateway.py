@@ -12,9 +12,9 @@ else:
     del nacl
 
 from ..env import CACHE_PRESENCE
-from ..backend.futures import sleep, Task, future_or_timeout, WaitTillExc, WaitTillAll, Future, WaitContinously
+from ..backend.futures import sleep, Task, future_or_timeout, WaitTillExc, WaitTillAll, Future, WaitContinuously
 from ..backend.exceptions import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
-from ..backend.eventloop import LOOP_TIME
+from ..backend.event_loop import LOOP_TIME
 
 from .utils import to_json, from_json
 from .activity import ActivityUnknown
@@ -23,39 +23,39 @@ from .guild import LARGE_LIMIT
 from .client_core import Kokoro, KOKORO
 from .exceptions import DiscordGatewayException, VOICE_CLIENT_DISCONNECT_CLOSE_CODE
 
-GATEWAY_RATELIMIT_LIMIT = 120
-GATEWAY_RATELIMIT_RESET = 60.0
+GATEWAY_RATE_LIMIT_LIMIT = 120
+GATEWAY_RATE_LIMIT_RESET = 60.0
 
 class GatewayRateLimiter(object):
     """
-    Burst ratelimit handler for gateways, what operates on the clients' loop only.
+    Burst rate limit handler for gateways, what operates on the clients' loop only.
     
     Attributes
     ----------
     queue : `deque` of ``Future``
-        The queue of the ratelimit handler. It is filled up with futures, if the handler's limit is exhausted.
+        The queue of the rate limit handler. It is filled up with futures, if the handler's limit is exhausted.
         These futures are removed and their result is set, when the limit is reset.
     remaining : `int`
         The amount of requests which can be done, before the limit is exhausted.
     resets_at : `float`
-        When the ratelimit of the respective gateway will be reset.
-    wakeupper : `None`  or `TimerHandle`
-        A handler what will reset the limiter's limit and ensure it's queue if nedded.
+        When the rate limit of the respective gateway will be reset.
+    wake_upper : `None`  or `TimerHandle`
+        A handler what will reset the limiter's limit and ensure it's queue if needed.
     """
-    __slots__ = ('queue', 'remaining', 'resets_at', 'wakeupper', )
+    __slots__ = ('queue', 'remaining', 'resets_at', 'wake_upper', )
     
     def __init__(self):
         """
         Creates a gateway rate limiter.
         """
-        self.remaining = GATEWAY_RATELIMIT_LIMIT
+        self.remaining = GATEWAY_RATE_LIMIT_LIMIT
         self.queue = deque()
-        self.wakeupper = None
+        self.wake_upper = None
         self.resets_at = 0.0
     
     def __iter__(self):
         """
-        Awaits the ratelimit handler.
+        Awaits the rate limit handler.
         
         This method is a generator. Should be used with `await` expression.
         
@@ -66,8 +66,8 @@ class GatewayRateLimiter(object):
         """
         now = LOOP_TIME()
         if now >= self.resets_at:
-            self.resets_at = now+GATEWAY_RATELIMIT_RESET
-            remaining = GATEWAY_RATELIMIT_LIMIT
+            self.resets_at = now+GATEWAY_RATE_LIMIT_RESET
+            remaining = GATEWAY_RATE_LIMIT_LIMIT
         else:
             remaining = self.remaining
         
@@ -75,8 +75,8 @@ class GatewayRateLimiter(object):
             self.remaining = remaining-1
             return False
         
-        if self.wakeupper is None:
-            self.wakeupper = KOKORO.call_at(self.resets_at, type(self).wakeup, self)
+        if self.wake_upper is None:
+            self.wake_upper = KOKORO.call_at(self.resets_at, type(self).wake_up, self)
         
         future = Future(KOKORO)
         self.queue.append(future)
@@ -84,47 +84,47 @@ class GatewayRateLimiter(object):
     
     __await__ = __iter__
     
-    def wakeup(self):
+    def wake_up(self):
         """
-        Wakeups the waiting futures of the ``GatewayRateLimiter``.
+        Wake ups the waiting futures of the ``GatewayRateLimiter``.
         """
         queue = self.queue
-        remaining = GATEWAY_RATELIMIT_LIMIT
+        remaining = GATEWAY_RATE_LIMIT_LIMIT
         if queue:
             while True:
                 if not queue:
-                    wakeupper = None
+                    wake_upper = None
                     break
                 
                 if not remaining:
-                    self.resets_at = resets_at = LOOP_TIME() + GATEWAY_RATELIMIT_RESET
-                    wakeupper = KOKORO.call_at(resets_at + GATEWAY_RATELIMIT_RESET, type(self).wakeup, self)
+                    self.resets_at = resets_at = LOOP_TIME() + GATEWAY_RATE_LIMIT_RESET
+                    wake_upper = KOKORO.call_at(resets_at + GATEWAY_RATE_LIMIT_RESET, type(self).wake_up, self)
                     break
                 
                 queue.popleft().set_result_if_pending(False)
                 remaining -= 1
         
         else:
-            wakeupper = None
+            wake_upper = None
         
-        self.wakeupper = wakeupper
+        self.wake_upper = wake_upper
         self.remaining = remaining
     
     def cancel(self):
         """
-        Cancels the ``GatewayRateLimiter``'s queue and it's `.wakeupper` if set.
+        Cancels the ``GatewayRateLimiter``'s queue and it's `.wake_upper` if set.
         """
         queue = self.queue
         while queue:
             queue.popleft().set_result_if_pending(True)
         
-        wakeupper = self.wakeupper
-        if (wakeupper is not None):
-            self.wakeupper = None
-            wakeupper.cancel()
+        wake_upper = self.wake_upper
+        if (wake_upper is not None):
+            self.wake_upper = None
+            wake_upper.cancel()
     
     def __repr__(self):
-        """Returns the gateway ratelimiter's representation."""
+        """Returns the gateway rate limiter's representation."""
         result = [
             '<',
             self.__class__.__name__,
@@ -132,11 +132,11 @@ class GatewayRateLimiter(object):
         
         resets_at = self.resets_at
         if resets_at <= LOOP_TIME():
-            remaining = GATEWAY_RATELIMIT_LIMIT
+            remaining = GATEWAY_RATE_LIMIT_LIMIT
         else:
             result.append(' resets_at=')
             result.append(repr(LOOP_TIME()))
-            result.append(' (monotnonic),')
+            result.append(' (monotonic),')
             
             remaining = self.remaining
         
@@ -154,15 +154,15 @@ class DiscordGateway(object):
     ----------
     _buffer : `bytearray`
         A buffer used to store not finished received payloads.
-    _decompresser : `zlib.Decompress`
+    _decompressor : `zlib.Decompress`
         Zlib decompressor used to decompress the received data.
     client : ``Client``
         The owner client of the gateway.
     kokoro : `None` or `Kokoro`
         The heart of the gateway, sends beat-data at set intervals. If does not receives answer in time, restarts
         the gateway.
-    ratelimit_handler : ``GatewayRateLimiter``
-        The ratelimit handler of the gateway.
+    rate_limit_handler : ``GatewayRateLimiter``
+        The rate limit handler of the gateway.
     sequence : `None` or `int`
         Last sequence number received.
     session_id : `None` or `str`
@@ -202,7 +202,7 @@ class DiscordGateway(object):
     GUILD_SYNC : `int` = `12`
         Send only, not used.
     """
-    __slots__ = ('_buffer', '_decompresser', 'client', 'kokoro', 'ratelimit_handler', 'sequence', 'session_id',
+    __slots__ = ('_buffer', '_decompressor', 'client', 'kokoro', 'rate_limit_handler', 'sequence', 'session_id',
         'shard_id', 'websocket')
     
     DISPATCH           = 0
@@ -234,12 +234,12 @@ class DiscordGateway(object):
         self.shard_id = shard_id
         self.websocket = None
         self._buffer = bytearray()
-        self._decompresser = None
+        self._decompressor = None
         self.sequence = None
         self.session_id = None
         
         self.kokoro = None
-        self.ratelimit_handler = GatewayRateLimiter()
+        self.rate_limit_handler = GatewayRateLimiter()
     
     async def start(self):
         """
@@ -329,7 +329,7 @@ class DiscordGateway(object):
     
     async def _connect(self, resume=False):
         """
-        Connects the gateway to Discord. If the connecting was successfull will start it's `.kokoro` as well.
+        Connects the gateway to Discord. If the connecting was successful will start it's `.kokoro` as well.
         
         This method is a coroutine.
         
@@ -347,7 +347,7 @@ class DiscordGateway(object):
         InvalidHandshake
         WebSocketProtocolError
         InvalidToken
-            When the client's token is ivnalid
+            When the client's token is invalid
         DiscordException
         """
         while True:
@@ -357,7 +357,7 @@ class DiscordGateway(object):
                 await websocket.close(4000)
                 self.websocket = None
             
-            self._decompresser = zlib.decompressobj()
+            self._decompressor = zlib.decompressobj()
             gateway_url = await self.client.client_gateway_url()
             self.websocket = await self.client.http.connect_ws(gateway_url)
             self.kokoro.start_beating()
@@ -401,14 +401,14 @@ class DiscordGateway(object):
         buffer = self._buffer
         try:
             while True:
-                message = await websocket.recv()
+                message = await websocket.receive()
                 if len(message) >= 4 and message[-4:] == b'\x00\x00\xff\xff':
                     if buffer:
                         buffer.extend(message)
-                        message = self._decompresser.decompress(buffer).decode('utf-8')
+                        message = self._decompressor.decompress(buffer).decode('utf-8')
                         buffer.clear()
                     else:
-                        message = self._decompresser.decompress(message).decode('utf-8')
+                        message = self._decompressor.decompress(message).decode('utf-8')
                     return (await self._received_message(message))
                 else:
                     buffer.extend(message)
@@ -586,7 +586,7 @@ class DiscordGateway(object):
         This method is a coroutine.
         """
         self.kokoro.cancel()
-        self.ratelimit_handler.cancel()
+        self.rate_limit_handler.cancel()
         
         websocket = self.websocket
         if websocket is None:
@@ -610,7 +610,7 @@ class DiscordGateway(object):
         if websocket is None:
             return
         
-        if await self.ratelimit_handler:
+        if await self.rate_limit_handler:
             return
         
         try:
@@ -636,9 +636,9 @@ class DiscordGateway(object):
             activity = None
         else:
             if client.is_bot:
-                activity = activity.botdict()
+                activity = activity.bot_dict()
             else:
-                activity = activity.hoomandict()
+                activity = activity.user_dict()
         
         status = client._status.value
         
@@ -742,8 +742,8 @@ class DiscordGatewayVoice(object):
     kokoro : `None` or `Kokoro`
         The heart of the gateway, sends beat-data at set intervals. If does not receives answer in time, restarts
         the gateway.
-    ratelimit_handler : ``GatewayRateLimiter``
-        The ratelimit handler of the gateway.
+    rate_limit_handler : ``GatewayRateLimiter``
+        The rate limit handler of the gateway.
     websocket : `None` or `WSClient`
         The websocket client of the gateway.
     
@@ -778,7 +778,7 @@ class DiscordGatewayVoice(object):
     VIDEO_SINK : `int` = `15`
         Receive and send, not used.
     """
-    __slots__ = ('client', 'kokoro', 'ratelimit_handler', 'websocket')
+    __slots__ = ('client', 'kokoro', 'rate_limit_handler', 'websocket')
         
     IDENTIFY            = 0
     SELECT_PROTOCOL     = 1
@@ -808,7 +808,7 @@ class DiscordGatewayVoice(object):
         self.client = voice_client
         
         self.kokoro = None
-        self.ratelimit_handler = GatewayRateLimiter()
+        self.rate_limit_handler = GatewayRateLimiter()
     
     async def start(self):
         """
@@ -826,7 +826,7 @@ class DiscordGatewayVoice(object):
     
     async def connect(self, resume=False):
         """
-        Connects the gateway to Discord. If the connecting was successfull, will start it's `.kokoro` as well.
+        Connects the gateway to Discord. If the connecting was successful, will start it's `.kokoro` as well.
         
         This method is a coroutine.
         
@@ -885,7 +885,7 @@ class DiscordGatewayVoice(object):
         if websocket is None:
             raise ConnectionClosed(VOICE_CLIENT_DISCONNECT_CLOSE_CODE, None)
         
-        message = await websocket.recv()
+        message = await websocket.receive()
         await self._received_message(message)
     
     async def _received_message(self, message):
@@ -1019,7 +1019,7 @@ class DiscordGatewayVoice(object):
         
         This method is a coroutine.
         """
-        self.ratelimit_handler.cancel()
+        self.rate_limit_handler.cancel()
         
         kokoro = self.kokoro
         if (kokoro is not None):
@@ -1048,7 +1048,7 @@ class DiscordGatewayVoice(object):
         if websocket is None:
             return
         
-        if await self.ratelimit_handler:
+        if await self.rate_limit_handler:
             return
         
         try:
@@ -1244,7 +1244,7 @@ class DiscordGatewaySharder(object):
     
     def reshard(self):
         """
-        Modifes the shard amount of the gateway sharder.
+        Modifies the shard amount of the gateway sharder.
         
         Should be called only if every shard is down.
         """
@@ -1302,7 +1302,7 @@ class DiscordGatewaySharder(object):
         # yields a ``Future`` and if the same amount of ``Future`` is yielded as gateway started up, then we do the next
         # loop. An exception is, when the waiter yielded a ``Task``, because t–en 1 of our gateway stopped with no
         # internet stop, or it was stopped by the client, so we abort all the launching and return.
-        waiter = WaitContinously(None, KOKORO)
+        waiter = WaitContinuously(None, KOKORO)
         while True:
             if index == limit:
                 break
@@ -1442,7 +1442,7 @@ class DiscordGatewaySharder(object):
         if websocket is None:
             return
         
-        if await gateway.ratelimit_handler:
+        if await gateway.rate_limit_handler:
             return
         
         try:

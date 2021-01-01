@@ -9,7 +9,7 @@ from .bases import ICON_TYPE_NONE, Icon
 from .http.URLS import WEBHOOK_URL_PATTERN
 from .preinstanced import WebhookType
 
-from . import ratelimit as module_webhook
+from . import rate_limit as module_webhook
 
 ChannelText = NotImplemented
 Client = NotImplemented
@@ -22,7 +22,7 @@ def create_partial_webhook(webhook_id, token, type_=WebhookType.bot, channel=Non
     Parameters
     ----------
     webhook_id : `int`
-        The identificator number of the webhook.
+        The identifier number of the webhook.
     token : `str`
         The token of the webhook.
     type_ : ``WebhookType``, Optional
@@ -60,12 +60,12 @@ def create_partial_webhook(webhook_id, token, type_=WebhookType.bot, channel=Non
 
 class Webhook(UserBase):
     """
-    Represents a Discord webhook. At some cases it might be used as webhook's user represetation.
+    Represents a Discord webhook. At some cases it might be used as webhook's user representation.
     
     Attributes
     ----------
     id : `int`
-        The webhook's unique identificator number.
+        The webhook's unique identifier number.
     name : str
         The webhook's username.
     discriminator : `int`
@@ -220,7 +220,7 @@ class Webhook(UserBase):
     def precreate(cls, webhook_id, **kwargs):
         """
         Precreates the webhook by creating a partial one with the given parameters. When the webhook will be loaded,
-        the prerceated one will be picked up and will be updated. If an already existing webhook would be precreated,
+        the precreated one will be picked up and will be updated. If an already existing webhook would be precreated,
         it will be updated with the given parameters only if it is a partial one.
         
         Parameters
@@ -238,7 +238,7 @@ class Webhook(UserBase):
             The webhook's ``.token``.
         avatar : `None`, ``Icon`` or `str`, Optional
             The webhooks's avatar. Mutually exclusive with `avatar_type` and `avatar_hash`.
-        avatar_type : ``Icontype``, Optional
+        avatar_type : ``IconType``, Optional
             The webhooks's avatar's type. Mutually exclusive with `avatar_type`.
         avatar_hash : `int`, Optional
             The webhooks's avatar hash. Mutually exclusive with `avatar`.
@@ -445,7 +445,7 @@ class WebhookRepr(UserBase):
     Attributes
     ----------
     id : `int`
-        The webhook representation's unique identificator number.
+        The webhook representation's unique identifier number.
     name : str
         The webhook representation's username.
     discriminator : `int`
@@ -474,7 +474,7 @@ class WebhookRepr(UserBase):
         data : `dict` of (`str`, `Any`) items
             Included user data.
         webhook_id : `int`
-            The respective webhook's identificator number.
+            The respective webhook's identifier number.
         type_ : ``WebhookType``
             The respective webhook's type.
         channel : ``ChannelText``

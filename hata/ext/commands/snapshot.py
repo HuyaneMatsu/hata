@@ -25,7 +25,7 @@ def take_command_processer_snapshot(client):
         element_invalid_command = (command_processer.invalid_command, command_processer.invalid_command_checks)
         element_precheck = command_processer.precheck
         element_mention_prefix = command_processer.mention_prefix
-        element_prefix = (command_processer._ignorecase, command_processer.prefix, command_processer.prefixfilter)
+        element_prefix = (command_processer._ignorecase, command_processer.prefix, command_processer.prefix_filter)
         element_default_category_name =  command_processer.default_category_name
         
         element_categories = list(command_processer.categories)
@@ -63,9 +63,9 @@ def calculate_command_processer_snapshot_difference(snapshot_old, snapshot_new):
     
     categories_old = set(element_categories_old)
     categories_new = set(element_categories_new)
-    category_interseption = categories_old&categories_new
-    categories_old -= category_interseption
-    categories_new -= category_interseption
+    category_interception = categories_old&categories_new
+    categories_old -= category_interception
+    categories_new -= category_interception
     
     if not categories_old:
         categories_old = None
@@ -80,9 +80,9 @@ def calculate_command_processer_snapshot_difference(snapshot_old, snapshot_new):
     
     commands_old = set(element_commands_old)
     command_new = set(element_commands_new)
-    command_interseption = commands_old&command_new
-    commands_old -= command_interseption
-    command_new -= command_interseption
+    command_interception = commands_old&command_new
+    commands_old -= command_interception
+    command_new -= command_interception
     
     if not commands_old:
         commands_old = None
@@ -139,7 +139,7 @@ def revert_command_processer_snapshot(client, snapshot_difference):
         command_processer.mention_prefix = element_mention_prefix_difference
     
     if (element_prefix_difference is not None):
-        command_processer._ignorecase, command_processer.prefix, command_processer.prefixfilter = \
+        command_processer._ignorecase, command_processer.prefix, command_processer.prefix_filter = \
             element_prefix_difference
     
     if (element_default_category_name_difference is not None):

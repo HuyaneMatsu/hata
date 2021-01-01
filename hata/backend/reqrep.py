@@ -23,7 +23,7 @@ except ImportError:
 
 from .utils import imultidict
 from .futures import Task, CancelledError
-from .hdrs import METH_POST_ALL, METH_CONNECT, SET_COOKIE, CONTENT_LENGTH, CONNECTION, ACCEPT, ACCEPT_ENCODING, \
+from .headers import METHOD_POST_ALL, METHOD_CONNECT, SET_COOKIE, CONTENT_LENGTH, CONNECTION, ACCEPT, ACCEPT_ENCODING, \
     HOST, TRANSFER_ENCODING, COOKIE, CONTENT_ENCODING, AUTHORIZATION, CONTENT_TYPE
 from .helpers import BasicAuth
 from .multipart import MimeType, create_payload
@@ -33,38 +33,88 @@ from .protocol import HTTPStreamWriter
 json_re = re.compile(r'^application/(?:[\w.+-]+?\+)?json')
 
 class Fingerprint(object):
-    __slots__ = ('fingerprint', 'hashfunc',)
+    """
+    HTTP fingerprinting can be used to automate information systems and security audits. Automated security testing
+    tools can use HTTP fingerprinting to narrow down the set of tests required, based on the specific platform or the
+    specific web server being audited.
     
-    HASHFUNC_BY_DIGESTLEN = {
+    Attributes
+    ----------
+    fingerprint : `bytes`
+        The fingerprint's value.
+    hash_function : `function`
+        Hash function used by the fingerprint.
+    
+    Class Attributes
+    ----------------
+    HASH_FUNCTION_BY_DIGEST_LENGTH : `dict` of (`int`, `function`) items
+        `fingerprint`'s length - `hash-function` relation mapping.
+    """
+    __slots__ = ('fingerprint', 'hash_function',)
+    
+    HASH_FUNCTION_BY_DIGEST_LENGTH = {
         16: md5,
         20: sha1,
         32: sha256,
             }
     
-    def __init__(self, fingerprint):
-        digestlen = len(fingerprint)
+    def __new__(cls, fingerprint):
+        """
+        Creates a new ``Fingerprint`` instance with the given parameters.
+        
+        Parameters
+        ----------
+        fingerprint : `bytes`
+            Fingerprint value.
+        
+        Raises
+        ------
+        ValueError
+            - If `fingerprint`'s length is not any of the expected ones.
+            - If the detected `hash_function` is `md5` or `sha1`.
+        """
+        fingerprint_length = len(fingerprint)
+        
         try:
-            hashfunc = self.HASHFUNC_BY_DIGESTLEN[digestlen]
-        except KeyError as err:
-            err.args = ('fingerprint has invalid length',)
-            raise
+            hash_function = cls.HASH_FUNCTION_BY_DIGEST_LENGTH[fingerprint_length]
+        except KeyError:
+            raise ValueError(f'`fingerprint` has invalid length, got {fingerprint_length!r}, {fingerprint!r}') from None
         
-        if hashfunc is md5 or hashfunc is sha1:
-            raise ValueError('md5 and sha1 are insecure and not supported. Use sha256.')
+        if hash_function is md5 or hash_function is sha1:
+            raise ValueError('`md5` and `sha1` are insecure and not supported, use `sha256`.')
         
-        self.hashfunc = hashfunc
+        self = object.__new__(cls)
+        self.hash_function = hash_function
         self.fingerprint = fingerprint
-
+        return self
 
     def check(self, transport):
-        if not transport.get_extra_info('sslcontext'):
+        """
+        Checks whether the given transport's ssl data matches the fingerprint.
+        
+        Parameters
+        ----------
+        transport : `Any`
+            Asynchronous transport implementation.
+        
+        Raises
+        ------
+        ValueError
+            If the fingerprint don't match.
+        """
+        if transport.get_extra_info('sslcontext') is None:
             return
-        sslobj = transport.get_extra_info('ssl_object')
-        cert = sslobj.getpeercert(binary_form=True)
-        got = self.hashfunc(cert).digest()
-        if got != self.fingerprint:
-            host, port, *_ = transport.get_extra_info('peername')
-            raise ValueError(self.fingerprint, got, host, port)
+        
+        ssl_object = transport.get_extra_info('ssl_object')
+        cert = ssl_object.getpeercert(binary_form=True)
+        received = self.hash_function(cert).digest()
+        fingerprint = self.fingerprint
+        if received == fingerprint:
+            return
+            
+        host, port, *_ = transport.get_extra_info('peername')
+        raise ValueError(f'The expected fingerprint: {fingerprint!r} not matches the received; received={received!r}, '
+            f'host={host!r}, port={port!r}.')
 
 if module_ssl is None:
     SSL_ALLOWED_TYPES = (type(None), )
@@ -172,7 +222,7 @@ class RequestInfo(object):
     headers : ``imultidict``
         The respective request's headers.
     method : `str`
-        The repesctive request's method.
+        The respective request's method.
     real_url : ``URL``
         The url given to request.
     url : ``URL``
@@ -224,7 +274,7 @@ class ClientRequest(object):
     method : `str`
         The request's method.
     original_url : ``URL``
-        The original url, what was asked to requet.
+        The original url, what was asked to request.
     proxy_auth : `None` or ``BasicAuth``
         Proxy authorization sent with the request.
     proxy_url : `None` or ``URL``
@@ -276,7 +326,7 @@ class ClientRequest(object):
             - `proxy_auth`'s type is incorrect.
             - ˙Cannot serialize a field of the given `data`.
         ValueError
-            - Host could nto be detected from `url`.
+            - Host could not be detected from `url`.
             - The `proxy_url`'s scheme is not `http`.
             - `compression` and `Content-Encoding` would be set at the same time.
             - `chunked` cannot be set, because `Transfer-Encoding: chunked` is already set.
@@ -412,7 +462,7 @@ class ClientRequest(object):
                 headers[CONTENT_LENGTH] = '0' if data is None else str(len(data))
         
         # Set default content-type.
-        if (method in METH_POST_ALL) and (CONTENT_TYPE not in headers):
+        if (method in METHOD_POST_ALL) and (CONTENT_TYPE not in headers):
             headers[CONTENT_TYPE] = 'application/octet-stream'
         
         # Everything seems correct, create the object.
@@ -533,11 +583,11 @@ class ClientRequest(object):
         
         Returns
         -------
-        response : `coroutine` of ``ClientRespons.start`` ->
+        response : `coroutine` of ``ClientResponse.start`` ->
         """
         try:
             url = self.url
-            if self.method == METH_CONNECT:
+            if self.method == METHOD_CONNECT:
                 path = f'{url.raw_host}:{url.port}'
             elif (self.proxy_url is not None) and (not self.is_ssl()):
                 path = str(url)
@@ -592,7 +642,7 @@ class ClientResponse(object):
     cookies : `http.cookies.SimpleCookie`
         Received cookies with the response.
     headers : `None` or ``imultidict``
-        Headers of the response. Set when the http response is succesfully received.
+        Headers of the response. Set when the http response is successfully received.
     history : `None` or `tuple` of ``ClientResponse``
         Response history. Set as `tuple` of responses from outside.
     loop : ``EventThread``
@@ -701,7 +751,7 @@ class ClientResponse(object):
             self.payload_waiter = payload_waiter
             
             # cookies
-            for header in self.headers.getall(SET_COOKIE, ()):
+            for header in self.headers.get_all(SET_COOKIE, ()):
                 try:
                     self.cookies.load(header)
                 except CookieError: # so sad
@@ -741,7 +791,7 @@ class ClientResponse(object):
         """
         Releases the response's connection.
         
-        If the conenction type is "close", closes the protocol as well.
+        If the connection type is "close", closes the protocol as well.
         """
         connection = self.connection
         if connection is None:
@@ -778,7 +828,7 @@ class ClientResponse(object):
     def _cleanup_writer(self):
         """
         Cancels the writer task of the respective request. Called when the response is cancelled or released, or if
-        reading the whole reponse is done.
+        reading the whole response is done.
         """
         writer = self.writer
         if (writer is not None):
@@ -815,10 +865,10 @@ class ClientResponse(object):
         encoding : `str`
             Defaults to `'utf-8'`.
         """
-        ctype = self.headers.get(CONTENT_TYPE, '').lower()
-        mimetype = MimeType(ctype)
+        content_type = self.headers.get(CONTENT_TYPE, '').lower()
+        mime_type = MimeType(content_type)
         
-        encoding = mimetype.params.get('charset')
+        encoding = mime_type.params.get('charset')
         if encoding is not None:
             try:
                 codecs.lookup(encoding)
@@ -826,7 +876,7 @@ class ClientResponse(object):
                 encoding = None
         
         if encoding is None:
-            if mimetype.mtype == 'application' and mimetype.stype == 'json':
+            if mime_type.type == 'application' and mime_type.sub_type == 'json':
                 encoding = 'utf-8' # RFC 7159 states that the default encoding is UTF-8.
             else:
                 encoding = chardet.detect(self.body)['encoding']
@@ -872,13 +922,13 @@ class ClientResponse(object):
         
         Parameters
         ----------
-        encoding : None` or `str`, Optionaé
+        encoding : None` or `str`, Optional
             Encoding to use instead of the response's. If given as `None` (so by default), then will use the response's
             own encoding.
         loader : `callable`, Optional
             Json loader. Defaults to json.loads`.
-        content_type : `str`, Optiona
-            Content type to use intsead of the default one. Defaults to `'application/json'`.
+        content_type : `str`, Optional
+            Content type to use instead of the default one. Defaults to `'application/json'`.
         
         Returns
         -------
@@ -887,7 +937,7 @@ class ClientResponse(object):
         Raises
         ------
         TypeError
-            If the response's mimetype do not match.
+            If the response's mime_type do not match.
         """
         body = await self.read()
         if body is None:
@@ -898,7 +948,7 @@ class ClientResponse(object):
             
             if (json_re.match(received_content_type) is None) if (content_type == 'application/json') else \
                     (content_type not in received_content_type):
-                raise TypeError(f'Attempt to decode JSON with unexpected mimetype: {received_content_type!r}.')
+                raise TypeError(f'Attempt to decode JSON with unexpected mime_type: {received_content_type!r}.')
         
         stripped = body.strip()
         if not stripped:
@@ -911,7 +961,7 @@ class ClientResponse(object):
     
     async def __aenter__(self):
         """
-        Enters the client response as an asynchornous context manager.
+        Enters the client response as an asynchronous context manager.
         
         This method is a coroutine.
         """

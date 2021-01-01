@@ -50,9 +50,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         ------
         AssertionError
             - If `name` was not given as `str` instance.
-            - If `name` length is out of range [2:32].
+            - If `name` length is out of range [3:32].
             - If `description` was not given as `str` instance.
-            - If `descrption` length is out of range [1:100].
+            - If `description` length is out of range [1:100].
             - If `options` was not given neither as `None` nor as (`list` or `tuple`) of ``ApplicationCommandOption``
                 instances.
             - If `options`'s length is out of range [0:10].
@@ -62,9 +62,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                 raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
             
             name_ln = len(name)
-            if name_ln < 1 or name_ln > 32:
+            if name_ln < 3 or name_ln > 32:
                 raise AssertionError(f'`name` length can be in range [1:32], got {name_ln!r}; {name!r}.')
-        
+            
             if not isinstance(description, str):
                 raise AssertionError(f'`description` can be given as `str` instance, got '
                     f'{description.__class__.__name__}.')
@@ -83,20 +83,20 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                         f'`{ApplicationCommandOption.__name__}`, got {options.__class__.__name__}.')
             
             # Copy it
-            options_processed = list(options_processed)
+            options_processed = list(options)
+            if options_processed:
+                if __debug__:
+                    if len(options_processed) > 10:
+                        raise AssertionError(f'`options` length can be in range [0:10], got '
+                            f'{len(options_processed)!r}; {options!r}')
+                    
+                    for index, option in enumerate(options_processed):
+                        if not isinstance(option, ApplicationCommandOption):
+                            raise AssertionError(f'`options` was given either as `list` or `tuple`, but it\'s element '
+                                f'At index {index!r} is not {ApplicationCommandOption.__name__} instance, but '
+                                f'{option.__class__.__name__}.')
             
-            if __debug__:
-                if len(options_processed) > 10:
-                    raise AssertionError(f'`options` length can be in range [0:10], got {len(options_processed)!r}; '
-                        f'{options!r}')
-                
-                for index, option in enumerate(options_processed):
-                    if not isinstance(option, ApplicationCommandOption):
-                        raise AssertionError(f'`options` was given either as `list` or `tuple`, but it\'s element '
-                            f'At index {index!r} is not {ApplicationCommandOption.__name__} instance, but '
-                            f'{option.__class__.__name__}.')
-            
-            if not options_processed:
+            else:
                 options_processed = None
         
         self = object.__new__(cls)
@@ -210,14 +210,14 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         old_attributes : `dict` of (`str`, `Any`) items
             The updated attributes.
             
-            Every item in the returned dict is optiomal and can contain the following ones:
+            Every item in the returned dict is optional and can contain the following ones:
             
             +---------------+---------------------------------------------------+
             | Keys          | Values                                            |
             +===============+===================================================+
-            | description   | str                                               |
+            | description   | `str`                                             |
             +---------------+---------------------------------------------------+
-            | name          | str                                               |
+            | name          | `str`                                             |
             +---------------+---------------------------------------------------+
             | options       | `None` or `list` of ``ApplicationCommandOption``  |
             +---------------+---------------------------------------------------+
@@ -339,11 +339,11 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
-            Application commnad data returned by it's ``.to_data`` method.
+            Application command data returned by it's ``.to_data`` method.
         id_ : `int`
-            The unique identificator number of the newly created application command.
+            The unique identifier number of the newly created application command.
         application_id : `int`
-            The new application identificator number of the newly created application commmand.
+            The new application identifier number of the newly created application command.
         
         Returns
         -------
@@ -425,8 +425,8 @@ class ApplicationCommandOption(object):
     name : `str`
         The name of the application command option. It's length can be in range [1:32].
     options : `None` or `list` of ``ApplicationCommandOption``
-        If the command's type is subcommand group type, then this nested option will be the parameters of the
-        subcommand. It's length can be in range [0:10]. If would be set as empty list, instead is set as `None`.
+        If the command's type is sub-command group type, then this nested option will be the parameters of the
+        sub-command. It's length can be in range [0:10]. If would be set as empty list, instead is set as `None`.
     required : `bool`
         Whether the parameter is required. Defaults to `False`.
     type : ``ApplicationCommandOptionType``
@@ -451,7 +451,7 @@ class ApplicationCommandOption(object):
         required : `bool`, Optional
             Whether the parameter is required. Defaults to `False`.
         choices : `None` or (`list` or `tuple`) of ``ApplicationCommandOptionChoice``, Optional
-            The chocies of the command for string or integer types. It's length can be in range [0:10].
+            The choices of the command for string or integer types. It's length can be in range [0:10].
         options : `None` or (`list` or `tuple`) of ``ApplicationCommandOption``, Optional
             The parameters of the command. It's length can be in range [0:10]. Only applicable for sub command groups.
         
@@ -460,22 +460,22 @@ class ApplicationCommandOption(object):
         TypeError
             - If `type_` was not given neither as `int` nor ``ApplicationCommandOptionType`` instance.
             - If `choices` was given meanwhile `type_` is neither string nor integer option type.
-            - If `options` was given meanwhile `type_` is not a subcommand group option type.
+            - If `options` was given meanwhile `type_` is not a sub-command group option type.
             - If a choice's value's type not matched the expected type described `type_`.
         ValueError
-            - If `type_` was given as `int` instance, but it do not macthes any of the precreated
+            - If `type_` was given as `int` instance, but it do not matches any of the precreated
                 ``ApplicationCommandOptionType``-s.
         AssertionError
             - If `name` was not given as `str` instance.
-            - If `name` length is out of range [2:32].
+            - If `name` length is out of range [1:32].
             - If `description` was not given as `str` instance.
-            - If `descrption` length is out of range [1:100].
+            - If `description` length is out of range [1:100].
             - If `options` was not given neither as `None` nor as (`list` or `tuple`) of ``ApplicationCommandOption``
                 instances.
             - If `options`'s length is out of range [0:10].
             - If `default` was not given as `bool` instance.
-            - If `required` was not givne as `bool` instance.
-            - If `choices` was nto given neither as `None` nor as (`list` or `tuple`) of
+            - If `required` was not given as `bool` instance.
+            - If `choices` was not given neither as `None` nor as (`list` or `tuple`) of
                 ``ApplicationCommandOptionChoice`` instances.
             - If an option is a sub command group option.
         """
@@ -500,7 +500,7 @@ class ApplicationCommandOption(object):
         
         if __debug__:
             if not isinstance(default, bool):
-                raise AssertionError(f'`default` can be gvien as `bool` instance, got {default.__class__.__name__}.')
+                raise AssertionError(f'`default` can be given as `bool` instance, got {default.__class__.__name__}.')
             
             if not isinstance(required, bool):
                 raise AssertionError(f'`required` can be given as `bool` instance, got {required.__class__.__name__}.')
@@ -552,8 +552,8 @@ class ApplicationCommandOption(object):
                             f'{option.__class__.__name__}; got {options!r}.')
                     
                     if option.type is ApplicationCommandOptionType.SUB_COMMAND_GROUP:
-                        raise AssertionError(f'`options` element {index}\'s type is cubcommand group option, but'
-                             f'subcommand groups cannot be added under subcommand groups; got {options!r}.')
+                        raise AssertionError(f'`options` element {index}\'s type is cub-command group option, but'
+                             f'sub-command groups cannot be added under sub-command groups; got {options!r}.')
             
             if not options_processed:
                 options_processed = None
@@ -569,8 +569,8 @@ class ApplicationCommandOption(object):
             
             for index, choice in enumerate(choices):
                 if not isinstance(choice.value, expected_choice_type):
-                    raise TypeError(f'`chocies` element\'s {index!r} value\'s type is not '
-                        f'`{expected_choice_type.__name__}` as expected from the receved command option type: '
+                    raise TypeError(f'`choices` element\'s {index!r} value\'s type is not '
+                        f'`{expected_choice_type.__name__}` as expected from the received command option type: '
                         f'{type_!r}')
         
         if (options_processed is not None) and (type_ is not ApplicationCommandOptionType.SUB_COMMAND_GROUP):
@@ -603,14 +603,14 @@ class ApplicationCommandOption(object):
         Raises
         ------
         TypeError
-            If the source application command's type is not a subcommand group type.
+            If the source application command's type is not a sub-command group type.
         AssertionError
             - If `option` is not ``ApplicationCommandOption`` instance.
             - If the ``ApplicationCommandOption`` has already `10` options.
             - If `option` is a sub command group option.
         """
         if self.type is not ApplicationCommandOptionType.SUB_COMMAND_GROUP:
-            raise TypeError(f'`option` ican be added only if the command option\s type is sub command option, '
+            raise TypeError(f'`option` can be added only if the command option\s type is sub command option, '
                 f'got option={option!r}, self={self!r}.')
         
         if __debug__:
@@ -619,8 +619,8 @@ class ApplicationCommandOption(object):
                     f'{option.__class__.__name__}.')
         
             if option.type is ApplicationCommandOptionType.SUB_COMMAND_GROUP:
-                raise AssertionError(f'`option`\'s type is cubcommand group option, but subcommand groups cannot be '
-                    f'added under subcommand groups; got {options!r}.')
+                raise AssertionError(f'`option`\'s type is sub-command group option, but sub-command groups cannot be '
+                    f'added under sub-command groups; got {options!r}.')
         
         options = self.options
         if options is None:
@@ -636,7 +636,7 @@ class ApplicationCommandOption(object):
     
     def add_choice(self, choice):
         """
-        Adds a ``ApplicationCommandOptionChoice`` to the applciation command option.
+        Adds a ``ApplicationCommandOptionChoice`` to the application command option.
         
         Parameters
         ----------
@@ -655,13 +655,13 @@ class ApplicationCommandOption(object):
             - If `choice`'s type is neither ``ApplicationCommandOptionChoice`` nor a `tuple` representing it's `.name`
                 nad `.value`.
         AssertionError
-            If the application command option has alread 10 choices.
+            If the application command option has already 10 choices.
         """
         if isinstance(choice, ApplicationCommandOptionChoice):
             pass
         elif isinstance(choice, tuple):
             if len(choice) != 2:
-                raise TypeError(f'If `choice` is given as `tuple` it\'s length should be `2` represneting a '
+                raise TypeError(f'If `choice` is given as `tuple` it\'s length should be `2` representing a '
                     f'{ApplicationCommandOptionChoice.__name__}\s `.name` and `.value`.')
             
             choice = ApplicationCommandOptionChoice(*choice)
@@ -680,8 +680,8 @@ class ApplicationCommandOption(object):
                 f'self={self!r}.')
         
         if not isinstance(choice.value, expected_choice_type):
-            raise TypeError(f'`chocie` value\'s type is not `{expected_choice_type.__name__}` as expected from the '
-                f'receved command choice type: {type_!r}')
+            raise TypeError(f'`choice` value\'s type is not `{expected_choice_type.__name__}` as expected from the '
+                f'received command choice type: {type_!r}')
         
         choices = self.choices
         if choices is None:
@@ -698,7 +698,7 @@ class ApplicationCommandOption(object):
     @classmethod
     def from_data(cls, data):
         """
-        Creates a new ``ApplicationCommandOption`` insatnce from the received data from Discord.
+        Creates a new ``ApplicationCommandOption`` instance from the received data from Discord.
         
         Parameters
         ----------
@@ -899,7 +899,7 @@ class ApplicationCommandOptionChoice(object):
     
     def __new__(cls, name, value):
         """
-        Creates a new ``ApplicationCommandOptionChoice`` insatcne with the given parameters.
+        Creates a new ``ApplicationCommandOptionChoice`` instance with the given parameters.
         
         Parameters
         ----------
@@ -932,7 +932,7 @@ class ApplicationCommandOptionChoice(object):
         return self
     
     @classmethod
-    def from_data(self, data):
+    def from_data(cls, data):
         """
         Creates a new ``ApplicationCommandOptionChoice`` instance from the received data.
         
@@ -946,8 +946,10 @@ class ApplicationCommandOptionChoice(object):
         self : ``ApplicationCommandOptionChoice``
             The created choice.
         """
+        self = object.__new__(cls)
         self.name = data['name']
         self.value = data['value']
+        return self
     
     def to_data(self):
         """
@@ -967,7 +969,7 @@ class ApplicationCommandOptionChoice(object):
         return f'<{self.__class__.__name__} name={self.name!r}, value={self.value!r}>'
     
     def __eq__(self, other):
-        """Returns whetehr the two choices are equal."""
+        """Returns whether the two choices are equal."""
         if not isinstance(other, ApplicationCommandOptionChoice):
             return NotImplemented
         
@@ -982,7 +984,8 @@ class ApplicationCommandOptionChoice(object):
 @modulize
 class InteractionResponseTypes:
     """
-    Contains the interaction response tpye's, which are the following:
+    Contains the interaction response type's, which are the following:
+    
     +-----------------------+-------+
     | Respective name       | Value |
     +=======================+=======+
@@ -1014,7 +1017,7 @@ class ApplicationCommandInteraction(DiscordEntity):
     Attributes
     ----------
     id : int`
-        The represneted application command's identificator number.
+        The represented application command's identifier number.
     name : `str`
         The name of the command. It's length can be in range [1:32].
     options : `None` or `list` of ApplicationCommandInteractionOption
@@ -1079,9 +1082,9 @@ class ApplicationCommandInteractionOption(object):
     Attributes
     ----------
     name : `str`
-        The otpion's name.
+        The option's name.
     options : `None` or `list` of ApplicationCommandInteractionOption
-        The parameters and values from the user. Present if a subcommand was used. Defaults to `None` if non is
+        The parameters and values from the user. Present if a sub-command was used. Defaults to `None` if non is
         received.
         
         Mutually exclusive with the `value` attribute.

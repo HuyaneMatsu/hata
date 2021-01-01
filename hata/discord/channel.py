@@ -7,7 +7,7 @@ from collections import deque
 from weakref import WeakSet
 
 from ..backend.utils import _spaceholder, DOCS_ENABLED
-from ..backend.eventloop import LOOP_TIME
+from ..backend.event_loop import LOOP_TIME
 
 from .bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
 from .client_core import CHANNELS, USERS
@@ -23,7 +23,7 @@ from .utils import DATETIME_FORMAT_CODE
 from .client_utils import maybe_snowflake
 from .exceptions import DiscordException, ERROR_CODES
 
-from . import webhook as module_webhook, message as module_message, ratelimit as module_ratelimit
+from . import webhook as module_webhook, message as module_message, rate_limit as module_rate_limit
 
 Client = NotImplemented
 Guild = NotImplemented
@@ -96,7 +96,7 @@ class ChannelBase(DiscordEntity, immortal=True):
     Attributes
     ----------
     id : `int`
-        Unique identificator of the channel.
+        Unique identifier of the channel.
     
     Class Attributes
     ----------------
@@ -118,7 +118,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
-            Channel data reeceive from Discord.
+            Channel data receive from Discord.
         client : `None` or ``Client``, Optional
             The client, who received the channel's data, if any.
         guild : `None` or ``Guild``, Optional
@@ -132,7 +132,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         raise RuntimeError(f'`{cls.__name__}` cannot be instanced.')
     
     def __repr__(self):
-        """Returns the reprsentation of the channel."""
+        """Returns the representation of the channel."""
         return f'<{self.__class__.__name__} id={self.id}, name={self.__str__()!r}>'
     
     def __str__(self):
@@ -461,7 +461,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         return True
 
 # sounds funny, but this is a class
-# the chunksize is 97, because it means 1 request for _load_messages_till
+# the chunk_size is 97, because it means 1 request for _load_messages_till
 class MessageIterator(object):
     """
     An asynchronous message iterator over the given text channel.
@@ -474,14 +474,14 @@ class MessageIterator(object):
         Tells the message iterator, whether it's client can not read the history if it's channel.
     channel : ``ChannelTextBase`` instance
         The channel, what's messages the message iterator will iterates over.
-    chunksize : `int`
+    chunk_size : `int`
         The amount of messages, what the message iterator will extend it's channel's message history, each time, the
         loaded messages are exhausted.
     client : ``Client``
         The client, who will do the api requests for requesting more messages.
     """
-    __slots__ = ('_can_read_history', '_index', 'channel', 'chunksize', 'client',)
-    async def __new__(cls, client, channel, chunksize=99):
+    __slots__ = ('_can_read_history', '_index', 'channel', 'chunk_size', 'client',)
+    async def __new__(cls, client, channel, chunk_size=99):
         """
         Creates a message iterator.
         
@@ -493,7 +493,7 @@ class MessageIterator(object):
             The client, who will do the api requests for requesting more messages.
         channel : ``ChannelTextBase`` or `int` instance
             The channel, what's messages the message iterator will iterates over.
-        chunksize : `int`, Optional
+        chunk_size : `int`, Optional
             The amount of messages, what the message iterator will extend it's channel's message history, each time, the
             loaded messages are exhausted. Limited to `97` as a maximal value.
         
@@ -506,18 +506,18 @@ class MessageIterator(object):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `chunksize` was not given as `int` instance.
-            - If `chunksize` is out of range [1:].
+            - If `chunk_size` was not given as `int` instance.
+            - If `chunk_size` is out of range [1:].
         """
         if __debug__:
-            if not isinstance(chunksize, int):
-                raise AssertionError(f'`chunksize` can be given as `int` instance, got {chunksize.__class__.__name__}.')
+            if not isinstance(chunk_size, int):
+                raise AssertionError(f'`chunk_size` can be given as `int` instance, got {chunk_size.__class__.__name__}.')
             
-            if chunksize < 1:
-                raise AssertionError(f'`chunksize` is out from the expected [0:] range, got {chunksize!r}.')
+            if chunk_size < 1:
+                raise AssertionError(f'`chunk_size` is out from the expected [0:] range, got {chunk_size!r}.')
         
-        if chunksize > 99:
-            chunksize = 99
+        if chunk_size > 99:
+            chunk_size = 99
         
         if isinstance(channel, ChannelTextBase):
             pass
@@ -553,7 +553,7 @@ class MessageIterator(object):
         self = object.__new__(cls)
         self.client = client
         self.channel = channel
-        self.chunksize = chunksize
+        self.chunk_size = chunk_size
         self._index = 0
         self._can_read_history = not channel.cached_permissions_for(client).can_read_message_history
         return self
@@ -581,7 +581,7 @@ class MessageIterator(object):
             raise StopAsyncIteration
         
         try:
-            await self.client._load_messages_till(channel, index+self.chunksize)
+            await self.client._load_messages_till(channel, index+self.chunk_size)
         except BaseException as err:
             if isinstance(err, ConnectionError):
                 pass
@@ -610,11 +610,11 @@ class MessageIterator(object):
             f'{self.channel.id})>')
 
 # searches the relative index of a message in a list
-def message_relativeindex(messages, message_id):
+def message_relative_index(messages, message_id):
     """
     Searches the relative index of the given message's id in a channel's message history. The returned index is
     relative, because if the message with the given is not found, it should be at that specific index, if it would be
-    inside of the respeive channel's message history.
+    inside of the respective channel's message history.
     
     Parameters
     ----------
@@ -642,21 +642,21 @@ def message_relativeindex(messages, message_id):
 
 # Do not call any functions from this if you dunno anything about them!
 # The message history is basically sorted by message_id, what can be translated to real time.
-# The newer messages are at the start, meanwhile the olders at the end.
-# Do not try to delete not existing message's id, or it will cause desync.
+# The newer messages are at the start, meanwhile the older ones at the end.
+# Do not try to delete not existing message's id, or it will cause de-sync.
 # Use pypy?
 class ChannelTextBase:
     """
-    Baseclass of the messageable channel types.
+    Base class of the message-able channel types.
     
-    Atrributes
+    Attributes
     ----------
     _message_keep_limit : `int`
         The channel's own limit of how much messages it should keep before removing their reference.
     _turn_message_keep_limit_on_at : `float`
         The LOOP_TIME time, when the channel's message history should be turned back to limited. Defaults `0.0`.
     message_history_reached_end : `bool`
-        Whether the channel's message's are loaded till their end. If the channel's messag history reache it's end
+        Whether the channel's message's are loaded till their end. If the channel's message history reach it's end
         no requests will be requested to get older messages.
     messages : `deque` of ``Message`` objects
         The channel's message history.
@@ -745,8 +745,8 @@ class ChannelTextBase:
                     return self._create_asynced_message(data, message_id, False)
                 
                 # If limiting is enabled and we are at max length.
-                maxlen = messages.maxlen
-                if (maxlen is not None) and (len(messages) == maxlen):
+                max_length = messages.maxlen
+                if (max_length is not None) and (len(messages) == max_length):
                     self.message_history_reached_end = False
         
         message = object.__new__(Message)
@@ -814,7 +814,7 @@ class ChannelTextBase:
         if messages is None:
             index = 0
         else:
-            index = message_relativeindex(messages, message_id)
+            index = message_relative_index(messages, message_id)
             if index != len(messages):
                 actual = messages[index]
                 if actual.id == message_id:
@@ -826,8 +826,8 @@ class ChannelTextBase:
             if messages is None:
                 self.messages = messages = deque(maxlen=self._message_keep_limit)
             else:
-                maxlen = messages.maxlen
-                if (maxlen is not None) and (maxlen == len(messages)):
+                max_length = messages.maxlen
+                if (max_length is not None) and (max_length == len(messages)):
                     messages.pop()
         
         message = object.__new__(Message)
@@ -858,7 +858,7 @@ class ChannelTextBase:
         
         messages = self.messages
         if (messages is not None):
-            index = message_relativeindex(messages, message_id)
+            index = message_relative_index(messages, message_id)
             if index != len(messages):
                 message = messages[index]
                 if message.id == message_id:
@@ -878,7 +878,7 @@ class ChannelTextBase:
     
     def _create_unknown_message(self, data):
         """
-        Creates a message at the channel, what should not be linked to it's history. If the mesage exists at
+        Creates a message at the channel, what should not be linked to it's history. If the message exists at
         `MESSAGES`, returns that instead.
         
         Parameters
@@ -913,13 +913,13 @@ class ChannelTextBase:
             self._turn_message_keep_limit_on_at = LOOP_TIME() + 110.0
             TURN_MESSAGE_LIMITING_ON.add(self)
         else:
-            maxlen = messages.maxlen
-            if (maxlen is None):
+            max_length = messages.maxlen
+            if (max_length is None):
                 # The size is already unlimited
                 self._turn_message_keep_limit_on_at += 10.0
             else:
                 # Switch to unlimited if we hit our current limit.
-                if len(messages) == maxlen:
+                if len(messages) == max_length:
                     self.messages = messages = deque(messages)
                     self._turn_message_keep_limit_on_at = LOOP_TIME() + 110.0
                     TURN_MESSAGE_LIMITING_ON.add(self)
@@ -964,7 +964,7 @@ class ChannelTextBase:
         """
         messages = self.messages
         if (messages is not None):
-            index = message_relativeindex(messages, delete_id)
+            index = message_relative_index(messages, delete_id)
             if index != len(messages):
                 message = messages[index]
                 if message.id == delete_id:
@@ -1006,7 +1006,7 @@ class ChannelTextBase:
         found : `list` of ``Message``
             The found and removed messages.
         missed : `list` of `int`
-            The identificators of the not found messages.
+            The identifier of the not found messages.
         """
         found = []
         missed = []
@@ -1021,7 +1021,7 @@ class ChannelTextBase:
         else:
             messages_ln = len(messages)
         
-        messages_index = message_relativeindex(messages, delete_ids[0])
+        messages_index = message_relative_index(messages, delete_ids[0])
         delete_index = 0
         
         while True:
@@ -1159,7 +1159,7 @@ class ChannelGuildBase(ChannelBase):
     Attributes
     ----------
     id : `int`
-        Unique identificator of the channel.
+        Unique identifier of the channel.
     _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     category : `None`, ``ChannelCategory`` or ``Guild``
@@ -1281,11 +1281,11 @@ class ChannelGuildBase(ChannelBase):
         
         return NotImplemented
 
-    def _init_catpos(self, data, guild):
+    def _init_category_and_position(self, data, guild):
         """
-        Inicializes the `.category` and the `.position` of the channel. If a channel is under the ``Guild.md``,
+        Initializes the `.category` and the `.position` of the channel. If a channel is under the ``Guild.md``,
         and not in a category (category channels are all like these), then their `.category` is the ``Guild`` itself.
-        This method is used when we inicialize a guild channel.
+        This method is used when we initialize a guild channel.
         
         Parameters
         ----------
@@ -1307,10 +1307,10 @@ class ChannelGuildBase(ChannelBase):
         
         self.category = category
     
-    def _set_catpos(self, data):
+    def _set_category_and_position(self, data):
         """
-        Similar to the ``._init_catpos`` method, but this method applies the changes too, so moves the channel
-        between categories and moves the channel inside of the catgeory too, to keep the order.
+        Similar to the ``._init_category_and_position`` method, but this method applies the changes too, so moves the channel
+        between categories and moves the channel inside of the category too, to keep the order.
         
         Called from `._update_no_return` when updating a guild channel.
         
@@ -1340,9 +1340,10 @@ class ChannelGuildBase(ChannelBase):
             self.position = position
             self.category = new_category
     
-    def _update_catpos(self, data, old_attributes):
+    def _update_category_and_position(self, data, old_attributes):
         """
-        Acts same as ``._set_catpos``, but it sets the modified attrbiutes' previous value to `old_attributes`.
+        Acts same as ``._set_category_and_position``, but it sets the modified attributes' previous value to
+        `old_attributes`.
         
         Called from `._update` when updating a guild channel.
         
@@ -1761,7 +1762,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
     Attributes
     ----------
     id : `int`
-        Unique identificator of the channel.
+        Unique identifier of the channel.
     _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     category : `None`, ``ChannelCategory`` or ``Guild``
@@ -1779,19 +1780,19 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
     _turn_message_keep_limit_on_at : `float`
         The LOOP_TIME time, when the channel's message history should be turned back to limited. Defaults `0.0`.
     message_history_reached_end : `bool`
-        Whether the channel's message's are loaded till their end. If the channel's messag history reache it's end
+        Whether the channel's message's are loaded till their end. If the channel's message history reached it's end
         no requests will be requested to get older messages.
     messages : `deque` of ``Message`` objects
         The channel's message history.
     nsfw : `bool`
         Whether the channel is marked as non safe for work.
     slowmode : `int`
-        The amount of time in seconds what a user needs to wait between it's each message. Bots and user acounts with
+        The amount of time in seconds what a user needs to wait between it's each message. Bots and user accounts with
         `manage_messages` or `manage_channel` permissions are unaffected
     topic : `None` or `str`
         The channel's topic.
     type : `int`
-        The channel's Disord side type. Can be any of `.INTERCHANGE`.
+        The channel's Discord side type. Can be any of `.INTERCHANGE`.
     
     Class Attributes
     ----------------
@@ -1819,7 +1820,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
-            Channel data reeceive from Discord.
+            Channel data receive from Discord.
         client : `None` or ``Client``, Optional
             The client, who received the channel's data, if any.
         guild : `None` or ``Guild``, Optional
@@ -1847,7 +1848,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         self.name = data['name']
         self.type = data['type']
         
-        self._init_catpos(data, guild)
+        self._init_category_and_position(data, guild)
         self.overwrites = self._parse_overwrites(data)
         
         self.topic = data.get('topic')
@@ -1904,7 +1905,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
     @property
     def display_name(self):
         """
-        A text channel's display name is it's name with lovercase characters.
+        A text channel's display name is it's name with lowercase characters.
         
         Returns
         -------
@@ -1922,7 +1923,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
             Channel data received from Discord.
         """
         self._cache_perm = None
-        self._set_catpos(data)
+        self._set_category_and_position(data)
         self.overwrites = self._parse_overwrites(data)
         
         self.name = data['name']
@@ -2001,7 +2002,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
             old_attributes['overwrites'] = self.overwrites
             self.overwrites = overwrites
         
-        self._update_catpos(data, old_attributes)
+        self._update_category_and_position(data, old_attributes)
         
         return old_attributes
     
@@ -2059,7 +2060,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         if not result.can_view_channel:
             return Permission.permission_none
         
-        #text channels dont have voice permissions
+        #text channels don't have voice permissions
         result &= Permission.permission_deny_voice
         
         if self.type and (not Permission.can_manage_messages(result)):
@@ -2205,13 +2206,13 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
     Attributes
     ----------
     id : `int`
-        Unique identificator of the channel.
+        Unique identifier of the channel.
     _message_keep_limit : `int`
         The channel's own limit of how much messages it should keep before removing their reference.
     _turn_message_keep_limit_on_at : `float`
         The LOOP_TIME time, when the channel's message history should be turned back to limited. Defaults `0.0`.
     message_history_reached_end : `bool`
-        Whether the channel's message's are loaded till their end. If the channel's messag history reache it's end
+        Whether the channel's message's are loaded till their end. If the channel's message history reached it's end
         no requests will be requested to get older messages.
     messages : `deque` of ``Message`` objects
         The channel's message history.
@@ -2241,7 +2242,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
-            Channel data reeceive from Discord.
+            Channel data receive from Discord.
         client : `None` or ``Client``, Optional
             The client, who received the channel's data, if any.
         guild : `None` or ``Guild``, Optional
@@ -2315,13 +2316,13 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
     @classmethod
     def _create_dataless(cls, channel_id):
         """
-        Creates a private channel from a channel id. Might be called by parsers, when a message's chanenl is not found
+        Creates a private channel from a channel id. Might be called by parsers, when a message's channel is not found
         and it is a private channel.
         
         Parameters
         ----------
         channel_id : `int`
-            The channel's repesctive id.
+            The channel's respective id.
         
         Returns
         -------
@@ -2343,9 +2344,9 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         Parameters
         ----------
         client : ``Client``
-            The client recipement of the channel.
+            The client recipient of the channel.
         user : ``User`` or ``Client``
-            The other recipement of the channel.
+            The other recipient of the channel.
         """
         users = self.users
         users.append(client)
@@ -2386,7 +2387,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         """
         Updates the channel with overwriting it's old attributes.
         
-        This method is just for compability with the other channel types.
+        This method is just for compatibility with the other channel types.
         
         Parameters
         ----------
@@ -2400,7 +2401,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         Updates the channel and returns it's overwritten old attributes as a `dict` with a `attribute-name` -
         `old-value` relation.
         
-        This method is just for compability with the other channel types, what means it always returns an empty
+        This method is just for compatibility with the other channel types, what means it always returns an empty
         `dict`.
         
         Parameters
@@ -2465,7 +2466,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         """
         Returns the private channel's guild what is `None` every time.
         
-        This property is just for compability with the other channel types.
+        This property is just for compatibility with the other channel types.
         
         Returns
         -------
@@ -2526,7 +2527,7 @@ class ChannelVoice(ChannelGuildBase):
     Attributes
     ----------
     id : `int`
-        Unique identificator of the channel.
+        Unique identifier of the channel.
     _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     category : `None`, ``ChannelCategory`` or ``Guild``
@@ -2568,7 +2569,7 @@ class ChannelVoice(ChannelGuildBase):
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
-            Channel data reeceive from Discord.
+            Channel data receive from Discord.
         client : `None` or ``Client``, Optional
             The client, who received the channel's data, if any.
         guild : `None` or ``Guild``, Optional
@@ -2594,7 +2595,7 @@ class ChannelVoice(ChannelGuildBase):
         self._cache_perm = None
         self.name = data['name']
         
-        self._init_catpos(data, guild)
+        self._init_category_and_position(data, guild)
         self.overwrites = self._parse_overwrites(data)
         
         self.bitrate = data['bitrate']
@@ -2678,7 +2679,7 @@ class ChannelVoice(ChannelGuildBase):
             Channel data received from Discord.
         """
         self._cache_perm = None
-        self._set_catpos(data)
+        self._set_category_and_position(data)
         self.overwrites = self._parse_overwrites(data)
         
         self.name = data['name']
@@ -2728,7 +2729,7 @@ class ChannelVoice(ChannelGuildBase):
         
         bitrate = data['bitrate']
         if self.bitrate != bitrate:
-            old_attributes['bitarate'] = self.bitrate
+            old_attributes['bitrate'] = self.bitrate
             self.bitrate = bitrate
         
         user_limit = data['user_limit']
@@ -2741,7 +2742,7 @@ class ChannelVoice(ChannelGuildBase):
             old_attributes['overwrites'] = self.overwrites
             self.overwrites = overwrites
         
-        self._update_catpos(data, old_attributes)
+        self._update_category_and_position(data, old_attributes)
         
         return old_attributes
     
@@ -2772,7 +2773,7 @@ class ChannelVoice(ChannelGuildBase):
         if not result.can_view_channel:
             return Permission.permission_none
         
-        #voice channels dont have text permissions
+        #voice channels don't have text permissions
         result &= Permission.permission_deny_text
         
         if not Permission.can_connect(result):
@@ -2901,13 +2902,13 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
     Attributes
     ----------
     id : `int`
-        Unique identificator of the channel.
+        Unique identifier of the channel.
     _message_keep_limit : `int`
         The channel's own limit of how much messages it should keep before removing their reference.
     _turn_message_keep_limit_on_at : `float`
         The LOOP_TIME time, when the channel's message history should be turned back to limited. Defaults `0.0`.
     message_history_reached_end : `bool`
-        Whether the channel's message's are loaded till their end. If the channel's messag history reache it's end
+        Whether the channel's message's are loaded till their end. If the channel's message history reached it's end
         no requests will be requested to get older messages.
     messages : `deque` of ``Message`` objects
         The channel's message history.
@@ -2948,7 +2949,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
-            Channel data reeceive from Discord.
+            Channel data receive from Discord.
         client : `None` or ``Client``, Optional
             The client, who received the channel's data, if any.
         guild : `None` or ``Guild``, Optional
@@ -3114,7 +3115,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         
         self._update_icon(data, old_attributes)
         
-        users = [User(user) for user in data['recipeents']]
+        users = [User(user) for user in data['recipients']]
         users.sort()
         
         if self.users != users:
@@ -3177,7 +3178,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         """
         Returns the group channel's guild what is `None` every time.
         
-        This property is just for compability with the other channel types.
+        This property is just for compatibility with the other channel types.
         
         Returns
         -------
@@ -3283,7 +3284,7 @@ class ChannelCategory(ChannelGuildBase):
     Attributes
     ----------
     id : `int`
-        Unique identificator of the channel.
+        Unique identifier of the channel.
     _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     category : `None` or ``Guild``
@@ -3322,7 +3323,7 @@ class ChannelCategory(ChannelGuildBase):
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
-            Channel data reeceive from Discord.
+            Channel data receive from Discord.
         client : `None` or ``Client``, Optional
             The client, who received the channel's data, if any.
         guild : `None` or ``Guild``, Optional
@@ -3348,7 +3349,7 @@ class ChannelCategory(ChannelGuildBase):
         self._cache_perm = None
         self.name = data['name']
         
-        self._init_catpos(data, guild)
+        self._init_category_and_position(data, guild)
         self.overwrites = self._parse_overwrites(data)
         
         return self
@@ -3387,7 +3388,7 @@ class ChannelCategory(ChannelGuildBase):
     @property
     def display_name(self):
         """
-        A catgory channel's display name is it's name with uppercase characters.
+        A category channel's display name is it's name with uppercase characters.
         
         Returns
         -------
@@ -3405,7 +3406,7 @@ class ChannelCategory(ChannelGuildBase):
             Channel data received from Discord.
         """
         self._cache_perm = None
-        self._set_catpos(data)
+        self._set_category_and_position(data)
         self.overwrites = self._parse_overwrites(data)
         
         self.name = data['name']
@@ -3450,7 +3451,7 @@ class ChannelCategory(ChannelGuildBase):
             old_attributes['overwrites'] = self.overwrites
             self.overwrites = overwrites
         
-        self._update_catpos(data, old_attributes)
+        self._update_category_and_position(data, old_attributes)
         
         return old_attributes
     
@@ -3570,7 +3571,7 @@ class ChannelStore(ChannelGuildBase):
     Attributes
     ----------
     id : `int`
-        Unique identificator of the channel.
+        Unique identifier of the channel.
     _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     category : `None`, ``ChannelCategory`` or ``Guild``
@@ -3604,13 +3605,13 @@ class ChannelStore(ChannelGuildBase):
     
     def __new__(cls, data, client=None, guild=None):
         """
-        Creates a sotre channel from the channel data received from Discord. If the channel already exists and if
+        Creates a store channel from the channel data received from Discord. If the channel already exists and if
         it is partial, then updates it.
         
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
-            Channel data reeceive from Discord.
+            Channel data received from Discord.
         client : `None` or ``Client``, Optional
             The client, who received the channel's data, if any.
         guild : `None` or ``Guild``, Optional
@@ -3637,7 +3638,7 @@ class ChannelStore(ChannelGuildBase):
         self.name = data['name']
         self.nsfw = data.get('nsfw', False)
         
-        self._init_catpos(data, guild)
+        self._init_category_and_position(data, guild)
         self.overwrites = self._parse_overwrites(data)
         
         return self
@@ -3677,7 +3678,7 @@ class ChannelStore(ChannelGuildBase):
     @property
     def display_name(self):
         """
-        A store channel's display name is it's name with lovercase characters.
+        A store channel's display name is it's name with lowercase characters.
         
         Returns
         -------
@@ -3695,7 +3696,7 @@ class ChannelStore(ChannelGuildBase):
             Channel data received from Discord.
         """
         self._cache_perm = None
-        self._set_catpos(data)
+        self._set_category_and_position(data)
         self.overwrites = self._parse_overwrites(data)
         
         self.name = data['name']
@@ -3750,7 +3751,7 @@ class ChannelStore(ChannelGuildBase):
             old_attributes['overwrites'] = self.overwrites
             self.overwrites = overwrites
         
-        self._update_catpos(data, old_attributes)
+        self._update_category_and_position(data, old_attributes)
         
         return old_attributes
     
@@ -3899,7 +3900,7 @@ class ChannelThread(ChannelGuildBase):
     Attributes
     ----------
     id : `int`
-        Unique identificator of the channel.
+        Unique identifier of the channel.
     _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     category : `None`, ``ChannelCategory`` or ``Guild``
@@ -3937,7 +3938,7 @@ class ChannelThread(ChannelGuildBase):
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
-            Channel data reeceive from Discord.
+            Channel data receive from Discord.
         client : `None` or ``Client``, Optional
             The client, who received the channel's data, if any.
         guild : `None` or ``Guild``, Optional
@@ -3962,7 +3963,7 @@ class ChannelThread(ChannelGuildBase):
         
         self._cache_perm = None
         self.name = data['name']
-        self._init_catpos(data, guild)
+        self._init_category_and_position(data, guild)
         self.overwrites = self._parse_overwrites(data)
         
         return self
@@ -4001,7 +4002,7 @@ class ChannelThread(ChannelGuildBase):
     @property
     def display_name(self):
         """
-        A thread channel's display name is it's name with lovercase characters.
+        A thread channel's display name is it's name with lowercase characters.
         
         Returns
         -------
@@ -4019,7 +4020,7 @@ class ChannelThread(ChannelGuildBase):
             Channel data received from Discord.
         """
         self._cache_perm = None
-        self._set_catpos(data)
+        self._set_category_and_position(data)
         self.overwrites=self._parse_overwrites(data)
         
         self.name = data['name']
@@ -4066,7 +4067,7 @@ class ChannelThread(ChannelGuildBase):
             old_attributes['overwrites'] = self.overwrites
             self.overwrites = overwrites
         
-        self._update_catpos(data, old_attributes)
+        self._update_category_and_position(data, old_attributes)
         
         return old_attributes
     
@@ -4195,15 +4196,15 @@ class ChannelThread(ChannelGuildBase):
         
         return channel
 
-class ChannelGuildUndefnied(ChannelGuildBase):
+class ChannelGuildUndefined(ChannelGuildBase):
     """
-    Represents an undefined  ``Guild`` channel. This class is a spaceholder for future classes. Expectadly for channel
+    Represents an undefined  ``Guild`` channel. This class is a place-holder for future classes. Expectedly for channel
     type 7 and 8.
     
     Attributes
     ----------
     id : `int`
-        Unique identificator of the channel.
+        Unique identifier of the channel.
     _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     category : `None`, ``ChannelCategory`` or ``Guild``
@@ -4229,13 +4230,13 @@ class ChannelGuildUndefnied(ChannelGuildBase):
     IGNORED_NAMES : `tuple` or `str`
         Attribute names, which will not be set automatically, because they are set by other modules.
     DEFAULT_TYPE : `int` = `7`
-        The default type, what ``ChannelGuildUndefnied`` represnets.
+        The default type, what ``ChannelGuildUndefined`` represents.
     REPRESENTED_TYPES : `tuple` = (`7`, `8`,)
-        The types value what ``ChannelGuildUndefnied`` might represent.
+        The types value what ``ChannelGuildUndefined`` might represent.
     
     Notes
     -----
-    This tpye supports dynamic attributes.
+    This type supports dynamic attributes.
     """
     __slots__ = ('type', '__dict__', )
     INTERCHANGE = ()
@@ -4253,7 +4254,7 @@ class ChannelGuildUndefnied(ChannelGuildBase):
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
-            Channel data reeceive from Discord.
+            Channel data received from Discord.
         client : `None` or ``Client``, Optional
             The client, who received the channel's data, if any.
         guild : `None` or ``Guild``, Optional
@@ -4261,7 +4262,7 @@ class ChannelGuildUndefnied(ChannelGuildBase):
         
         Returns
         -------
-        channel : ``ChannelGuildUndefnied``
+        channel : ``ChannelGuildUndefined``
         """
         assert (guild is not None), f'`guild` argument cannot be `None` when calling `{cls.__name__}.__new__`.'
         
@@ -4280,7 +4281,7 @@ class ChannelGuildUndefnied(ChannelGuildBase):
         self.name = data['name']
         self.type = data['type']
         
-        self._init_catpos(data, guild)
+        self._init_category_and_position(data, guild)
         self.overwrites = self._parse_overwrites(data)
         
         for key in data.keys():
@@ -4350,7 +4351,7 @@ class ChannelGuildUndefnied(ChannelGuildBase):
             Channel data received from Discord.
         """
         self._cache_perm = None
-        self._set_catpos(data)
+        self._set_category_and_position(data)
         self.overwrites = self._parse_overwrites(data)
         
         self.name = data['name']
@@ -4403,7 +4404,7 @@ class ChannelGuildUndefnied(ChannelGuildBase):
             old_attributes['overwrites'] = self.overwrites
             self.overwrites = overwrites
         
-        self._update_catpos(data, old_attributes)
+        self._update_category_and_position(data, old_attributes)
 
         for key in data.keys():
             if key in self.IGNORED_NAMES:
@@ -4562,8 +4563,8 @@ CHANNEL_TYPES = (
     ChannelCategory,
     ChannelText,
     ChannelStore,
-    ChannelGuildUndefnied,
-    ChannelGuildUndefnied,
+    ChannelGuildUndefined,
+    ChannelGuildUndefined,
     ChannelThread,
         )
 
@@ -4592,7 +4593,7 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
     user_limit : `int`, Optional
         The channel's user limit.
     category : `None`, ``ChannelCategory``, ``Guild`` or `int`, Optional
-        The channel's categoryd. If the category is under a guild, leave it empty.
+        The channel's category. If the category is under a guild, leave it empty.
     guild : `None` or ``Guild``, Optional
         Reference guild used for validation purposes. Defaults to `None`.
     
@@ -4615,7 +4616,7 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         - If `topic` was not given as `str` instance.
         - If `topic`'s length is over `1024`.
         - If `topic` was given, but the respective channel type is not ``ChannelText``.
-        - If `snfw` was given meanwhile the respective channel type is not ``ChannelText`` or ``ChannelStore``.
+        - If `nsfw` was given meanwhile the respective channel type is not ``ChannelText`` or ``ChannelStore``.
         - If `nsfw` was not given as `bool`.
         - If `slowmode` was given, but the respective channel type is not ``ChannelText``.
         - If `slowmode` was not given as `int` instance.
@@ -4626,7 +4627,7 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         - If `user_limit` was given, but the respective channel type is not ``ChannelVoice``.
         - If `user_limit` was not given as `int` instance.
         - If `user_limit`' was given, but is out of the expected [0:99] range.
-        - If `category` was given, but the respective channel type cannto be put under other categories.
+        - If `category` was given, but the respective channel type cannot be put under other categories.
     """
     if __debug__:
         if (guild is not None) and (not isinstance(guild, Guild)):
@@ -4673,8 +4674,8 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
                 raise AssertionError(f'`overwrites` can be given as `None` or `list` of `cr_p_overwrite_object` '
                      f'returns, got {overwrites.__class__.__name__}')
         
-            for index, elemenet in enumerate(overwrites):
-                if not isinstance(elemenet, dict):
+            for index, element in enumerate(overwrites):
+                if not isinstance(element, dict):
                     raise AssertionError(f'`overwrites`\'s element {index} should be `dict` instance, but got '
                         f'{element.__class__.__name__}')
     
@@ -4799,14 +4800,14 @@ module_message.ChannelGuildBase = ChannelGuildBase
 module_message.ChannelText = ChannelText
 module_message.ChannelPrivate = ChannelPrivate
 module_message.ChannelGroup = ChannelGroup
-module_ratelimit.ChannelBase = ChannelBase
-module_ratelimit.ChannelGuildBase = ChannelGuildBase
+module_rate_limit.ChannelBase = ChannelBase
+module_rate_limit.ChannelGuildBase = ChannelGuildBase
 URLS.ChannelGuildBase = ChannelGuildBase
 
 del module_message
 del module_webhook
 del URLS
-del module_ratelimit
+del module_rate_limit
 del DiscordEntity
 del WeakSet
 del DOCS_ENABLED

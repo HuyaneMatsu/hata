@@ -15,19 +15,19 @@ class DiscordEntityMeta(type):
     """
     def __new__(cls, class_name, class_parents, class_attributes, immortal=False):
         """
-        Creates a Discord entity type. Subclass ``DiscordEntity`` instead of using this class diractly as a mtaclass.
+        Creates a Discord entity type. Subclass ``DiscordEntity`` instead of using this class directly as a metaclass.
         
         Parameters
         ----------
         class_name : `str`
-            The created classe's name.
+            The created class's name.
         class_parents : `tuple` of `type` instances
             The superclasses of the creates type.
         class_attributes : `dict` of (`str`, `Any`) items
             The class attributes of the created type.
         immortal : `bool`, Optional
             Whether the created type's instances should support weakreferencing. If the inherited type supports
-            weakreferening, then the subclass will as well of cource. Defaults to `False`.
+            weakreferencing, then the subclass will as well of course. Defaults to `False`.
         
         Returns
         -------
@@ -81,7 +81,7 @@ class DiscordEntityMeta(type):
         for attribute_item in class_attributes.items():
             attribute_value = attribute_item[1]
             
-            # Ignroe types.
+            # Ignore types.
             if isinstance(attribute_value, type):
                 continue
             
@@ -114,7 +114,7 @@ class DiscordEntity(object, metaclass = DiscordEntityMeta):
     @property
     def id(self):
         """
-        Returns the discord entity's unique identificator number
+        Returns the discord entity's unique identifier number
         
         Returns
         -------
@@ -136,7 +136,7 @@ class DiscordEntity(object, metaclass = DiscordEntityMeta):
         return id_to_time(self.id)
     
     def __hash__(self):
-        """Returns the has value of the entity, what quals to it's id."""
+        """Returns the has value of the entity, what equals to it's id."""
         return self.id
     
     def __gt__(self, other):
@@ -183,12 +183,12 @@ class DiscordEntity(object, metaclass = DiscordEntityMeta):
 
 class FlagGetDescriptor(object):
     """
-    Returns the flag descriptor's owner's value at a specific byte vize position.
+    Returns the flag descriptor's owner's value at a specific bitwise position.
     
     Attributes
     ----------
     shift : `int`
-        The byte vize position of the atrribute what this flag represents.
+        The bitwise position of the attribute what this flag represents.
     """
     __slots__ = ('shift', )
     def __init__(self, shift):
@@ -211,15 +211,15 @@ class FlagGetDescriptor(object):
 
 class ReverseFlagGetDescriptor(FlagGetDescriptor):
     """
-    Returns the flag descriptor's owner's reversed value at a specific byte vize position.
+    Returns the flag descriptor's owner's reversed value at a specific bitwise position.
     
     This type is a reversed version of ``FlagGetDescriptor``, so it returns `0` when the value has `1` at the specific
-    byte vize position.
+    bitwise position.
     
     Attributes
     ----------
     shift : `int`
-        The byte vize position of the atrribute, what this flag represents.
+        The bitwise position of the attribute, what this flag represents.
     """
     def __get__(self, instance, type_=None):
         if instance is None:
@@ -232,7 +232,7 @@ class ReverseFlagGetDescriptor(FlagGetDescriptor):
 
 class FlagEnabler(object):
     """
-    Enables a specific byte vize flag of a given value by returning a new one with the given byte vize flag enabled.
+    Enables a specific bitwise flag of a given value by returning a new one with the given bitwise flag enabled.
     
     This type is instanced by ``FlagEnableDescriptor`` objects, when they are accessed as instance attribute.
     
@@ -241,11 +241,11 @@ class FlagEnabler(object):
     instance : ``FlagMeta`` instance's instance
         The source value, what will be modified.
     shift : `int`
-        The byte vize position, what will be modified.
+        The bitwise position, what will be modified.
     
     Notes
     -----
-    This type is used for disabling specific byte vize values when the source flag is a reversed flag.
+    This type is used for disabling specific bitwise values when the source flag is a reversed flag.
     """
     __slots__ = ('instance', 'shift')
     
@@ -256,18 +256,18 @@ class FlagEnabler(object):
 
 class FlagEnableDescriptor(FlagGetDescriptor):
     """
-    Descriptor for enabling a specific bytevize value of a flag. After this descriptor is accessed as an instance
-    attribute, a ``FlagEnabler`` is returned, and calling that will return a new instance with it's byte vize flag
+    Descriptor for enabling a specific bitwise value of a flag. After this descriptor is accessed as an instance
+    attribute, a ``FlagEnabler`` is returned, and calling that will return a new instance with it's bitwise flag
     value enabled.
     
     Attributes
     ----------
     shift : `int`
-        The byte vize position of the atrribute what this flag represents.
+        The bitwise position of the attribute what this flag represents.
     
     Notes
     -----
-    This type is used for disabling specific byte vize values when the source flag is a reversed flag.
+    This type is used for disabling specific bitwise values when the source flag is a reversed flag.
     """
     def __get__(self, instance, type_=None):
         if instance is None:
@@ -280,7 +280,7 @@ class FlagEnableDescriptor(FlagGetDescriptor):
 
 class FlagDisabler(object):
     """
-    Disables a specific byte vize flag of a given value by returning a new one with the given byte vize flag disabled.
+    Disables a specific bitwise flag of a given value by returning a new one with the given bitwise flag disabled.
     
     This type is instanced by ``FlagDisableDescriptor`` objects, when they are accessed as instance attribute.
     
@@ -289,11 +289,11 @@ class FlagDisabler(object):
     instance : ``FlagMeta`` instance's instance
         The source value, what will be modified.
     shift : `int`
-        The byte vize position, what will be modified.
+        The bitwise position, what will be modified.
     
     Notes
     -----
-    This type is used for enable specific byte vize values when the source flag is a reversed flag.
+    This type is used for enable specific bitwise values when the source flag is a reversed flag.
     """
     __slots__ = ('instance', 'shift')
     
@@ -307,18 +307,18 @@ class FlagDisabler(object):
 
 class FlagDisableDescriptor(FlagGetDescriptor):
     """
-    Descriptor for disabling a specific bytevize value of a flag. After this descriptor is accessed as an instance
-    attribute, a ``FlagDisabler`` is returned, and calling that will return a new instance with it's byte vize flag
+    Descriptor for disabling a specific bitwise value of a flag. After this descriptor is accessed as an instance
+    attribute, a ``FlagDisabler`` is returned, and calling that will return a new instance with it's bitwise flag
     value disabled.
     
     Attributes
     ----------
     shift : `int`
-        The byte vize position of the atrribute what this flag represents.
+        The bitwise position of the attribute what this flag represents.
     
     Notes
     -----
-    This type is used for enabling specific byte vize values when the source flag is a reversed flag.
+    This type is used for enabling specific bitwise values when the source flag is a reversed flag.
     """
     def __get__(self, instance, type_=None):
         if instance is None:
@@ -331,17 +331,17 @@ class FlagDisableDescriptor(FlagGetDescriptor):
 
 class FlagMeta(type):
     """
-    Metaclass for byte vize flags.
+    Metaclass for bitwise flags.
     """
     def __new__(cls, class_name, class_parents, class_attributes, access_keyword=None, enable_keyword=None,
-            disable_keyword=None, baseclass=False):
+            disable_keyword=None, base_class=False):
         """
-        Creates a byte vize flag type.
+        Creates a bitwise flag type.
         
         Parameters
         ----------
         class_name : `str`
-            The created classe's name.
+            The created class's name.
         class_parents : `tuple` of `type` instances
             The superclasses of the creates type.
         class_attributes : `dict` of (`str`, `Any`) items
@@ -355,15 +355,15 @@ class FlagMeta(type):
         disable_keyword : `str`, Optional
             Whether disabling descriptors should be added to the created type. The passed string will be before the
             disabling descriptor's name. If not defined, then the created type will not have flag disablers.
-        baseclass : `bool`, Optional
+        base_class : `bool`, Optional
             Whether the created type is a base class for flags. If it is:
                 - Should directly derived from `int`.
-                - Should not implement `__keys__` (exceept `NotImplemented`).
+                - Should not implement `__keys__` (except `NotImplemented`).
                 - Should implement `__getter_class__` class attribute.
                 - Should implement `__enabler_class__` class attribute.
                 - Should implement `__disabler_class__` class attribute.
             If not, then:
-                - Should deriver directly from a ``FlagMeta`` baseclass.
+                - Should derive directly from a ``FlagMeta`` base_class.
                 - Should implement `__keys__` as `dict` of (`str`, `int`) items, where the values are not less than
                     `0`, and not greater than `63` either.
         
@@ -376,7 +376,7 @@ class FlagMeta(type):
         TypeError
             When any requirements are not satisfied.
         """
-        if baseclass:
+        if base_class:
             if (not class_parents) or (not issubclass(class_parents[0], int)):
                 raise TypeError(f'`{class_name}` is not derived directly from `int`.')
             
@@ -390,7 +390,7 @@ class FlagMeta(type):
             
             for attribute_name in ('__getter_class__', '__enabler_class__', '__disabler_class__'):
                 if attribute_name not in class_attributes:
-                    raise TypeError(f'`{class_name}` should implemnt a `{attribute_name}`.')
+                    raise TypeError(f'`{class_name}` should implement a `{attribute_name}`.')
             
             # do not care about the leftover
             
@@ -449,9 +449,9 @@ class FlagMeta(type):
         
         return type.__new__(cls, class_name, class_parents, class_attributes)
 
-class FlagBase(int, metaclass = FlagMeta, baseclass=True):
+class FlagBase(int, metaclass = FlagMeta, base_class=True):
     """
-    Base class for byte vize flags.
+    Base class for bitwise flags.
     
     Class Attributes
     ----------------
@@ -474,16 +474,16 @@ class FlagBase(int, metaclass = FlagMeta, baseclass=True):
         raise NotImplementedError
     
     def __repr__(self):
-        """Returns the reprsentation of the flag."""
+        """Returns the representation of the flag."""
         return f'{self.__class__.__name__}({int.__repr__(self)})'
     
     def __getitem__(self, key):
-        """Returns whether a specific flag of the given name is enableds."""
+        """Returns whether a specific flag of the given name is enabled."""
         return (self>>self.__keys__[key])&1
     
     def keys(self):
         """
-        Yields the name of the byte vize flags, which are enabled.
+        Yields the name of the bitwise flags, which are enabled.
         
         This method is a generator.
         
@@ -522,7 +522,7 @@ class FlagBase(int, metaclass = FlagMeta, baseclass=True):
         name : `str`
             The name of the specific flag
         enabled : `int` (`0` or `1`)
-            Whether the specific byte vize value is enabled.
+            Whether the specific bitwise value is enabled.
         """
         for name, shift in self.__keys__.items():
             yield name, (self>>shift)&1
@@ -598,9 +598,9 @@ class FlagBase(int, metaclass = FlagMeta, baseclass=True):
         
         return int.__new__(type(self), new)
 
-class ReverseFlagBase(FlagBase, baseclass=True):
+class ReverseFlagBase(FlagBase, base_class=True):
     """
-    Base class for reversed byte vize flags.
+    Base class for reversed bitwise flags.
     
     Class Attributes
     ----------------
@@ -616,12 +616,12 @@ class ReverseFlagBase(FlagBase, baseclass=True):
     __disabler_class__ = FlagEnableDescriptor
     
     def __getitem__(self, key):
-        """Returns whether a specific flag of the given name is enableds."""
+        """Returns whether a specific flag of the given name is enabled."""
         return ((self>>self.__keys__[key])&1)^1
     
     def keys(self):
         """
-        Yields the name of the byte vize flags, which are enabled.
+        Yields the name of the bitwise flags, which are enabled.
         
         This method is a generator.
         
@@ -660,7 +660,7 @@ class ReverseFlagBase(FlagBase, baseclass=True):
         name : `str`
             The name of the specific flag
         enabled : `int` (`0` or `1`)
-            Whether the specific byte vize value is enabled.
+            Whether the specific bitwise value is enabled.
         """
         for name, shift in self.__keys__.items():
             yield name, ((self>>shift)&1)^1
@@ -766,7 +766,7 @@ class PreinstancedBase(object):
         Parameters
         ----------
         value : ``.VALUE_TYPE``
-            The value to get it's represnetation.
+            The value to get it's representation.
         
         Returns
         -------
@@ -944,7 +944,7 @@ class IconType(PreinstancedBase):
     name : `str`
         The name of the icon type.
     value : `int`
-        The identificator value the icon type.
+        The identifier value the icon type.
         
     Class Attributes
     ----------------
@@ -1020,7 +1020,7 @@ class Icon(object):
     @property
     def as_base16_hash(self):
         """
-        Returns the discord side representtaion of the icon.
+        Returns the discord side representation of the icon.
         
         Returns
         -------
@@ -1097,7 +1097,7 @@ class Icon(object):
         return False
     
     def __repr__(self):
-        """Returns the represnetation of the icon."""
+        """Returns the representation of the icon."""
         return f'{self.__class__.__name__}(icon_type=ICON_TYPE_{self.type.name}, icon_hash={self.hash})'
     
     def __iter__(self):
@@ -1110,7 +1110,7 @@ class Icon(object):
         yield self.hash
     
     def __len__(self):
-        """Lenght hinter (for unpacking if needed)."""
+        """Length hinter (for unpacking if needed)."""
         return 2
     
     def __bool__(self):
@@ -1150,7 +1150,7 @@ class IconSlot(object):
     if DOCS_ENABLED:
         __class_doc__ = (
     """
-    Interal icon slotter to represent an icon of a discord entitiy.
+    Internal icon slotter to represent an icon of a discord entity.
     
     Attributes
     ----------
@@ -1158,7 +1158,7 @@ class IconSlot(object):
         The internal name of the icon.
     discord_side_name : `str`
         The discord side name of the icon.
-    added_instance_atttributes : `tuple` of `str`
+    added_instance_attributes : `tuple` of `str`
         The added instance attribute's name by the icon slot.
     added_class_attributes : `list` of `tuple` (`str`, `Any`)
         The added class attributes by the icon slot.
@@ -1180,7 +1180,7 @@ class IconSlot(object):
         
         __doc__ = doc_property()
     
-    __slots__ = ('internal_name', 'discord_side_name', 'added_instance_atttributes', 'added_class_attributes')
+    __slots__ = ('internal_name', 'discord_side_name', 'added_instance_attributes', 'added_class_attributes')
     
     _compile_globals = {
         'ICON_TYPE_NONE'     : ICON_TYPE_NONE     ,
@@ -1210,7 +1210,7 @@ class IconSlot(object):
         -------
         self : ``IconSlot``
         """
-        added_instance_atttribute_name_hash = internal_name+'_hash'
+        added_instance_attribute_name_hash = internal_name+'_hash'
         added_internal_attribute_name_type  = internal_name+'_type'
         
         added_class_attributes = []
@@ -1238,7 +1238,7 @@ class IconSlot(object):
             f'        icon_hash = int(icon, 16)\n'
             f''
             f'    self.{added_internal_attribute_name_type} = icon_type\n'
-            f'    self.{added_instance_atttribute_name_hash} = icon_hash\n'
+            f'    self.{added_instance_attribute_name_hash} = icon_hash\n'
                 ), f'<{cls.__name__}>', 'exec', optimize=2), cls._compile_globals, locals_)
         
         added_class_attributes.append((func_name, locals_[func_name]),)
@@ -1262,11 +1262,11 @@ class IconSlot(object):
                 f'        icon_hash = int(icon, 16)\n'
                 f''
                 f'    self_icon_type = self.{added_internal_attribute_name_type}\n'
-                f'    self_icon_hash = self.{added_instance_atttribute_name_hash}\n'
+                f'    self_icon_hash = self.{added_instance_attribute_name_hash}\n'
                 f'    if (self_icon_type is not icon_type) or (self_icon_hash != icon_hash):\n'
                 f'        old_attributes[{internal_name!r}] = Icon(self_icon_type, self_icon_hash)\n'
                 f'        self.{added_internal_attribute_name_type} = icon_type\n'
-                f'        self.{added_instance_atttribute_name_hash} = icon_hash\n'
+                f'        self.{added_instance_attribute_name_hash} = icon_hash\n'
                     ), f'<{cls.__name__}>', 'exec', optimize=2), cls._compile_globals, locals_)
             
             added_class_attributes.append((func_name, locals_[func_name]),)
@@ -1274,26 +1274,26 @@ class IconSlot(object):
         self = object.__new__(cls)
         self.internal_name = internal_name
         self.discord_side_name = discord_side_name
-        self.added_instance_atttributes = (added_internal_attribute_name_type, added_instance_atttribute_name_hash)
+        self.added_instance_attributes = (added_internal_attribute_name_type, added_instance_attribute_name_hash)
         self.added_class_attributes = added_class_attributes
         return self
     
     def __set_slot__(self, attribute_name, class_attributes, class_slots):
-        """Applies the changes of the icon slot on the classe's attributes."""
+        """Applies the changes of the icon slot on the class's attributes."""
         
         # Extend the slots of the class
-        class_slots.update(self.added_instance_atttributes)
+        class_slots.update(self.added_instance_attributes)
         
         # Add the extra class attributes to the class
         for name, value in self.added_class_attributes:
             class_attributes[name] = value
     
-    def __get__(self, obj, objtype=None):
+    def __get__(self, obj, type_):
         """Returns self if called from class, meanwhile an ``Icon`` if called from an object."""
         if obj is None:
             return self
         
-        icon_type_name, icon_hash_name = self.added_instance_atttributes
+        icon_type_name, icon_hash_name = self.added_instance_attributes
         icon_type = getattr(obj, icon_type_name)
         icon_hash = getattr(obj, icon_hash_name)
         return Icon(icon_type, icon_hash)
@@ -1308,7 +1308,7 @@ class IconSlot(object):
     
     def preconvert(self, kwargs, processable):
         """
-        Used at proconverters to parse out from the passed kwargs the icon of the entitiy.
+        Used at preconverters to parse out from the passed kwargs the icon of the entity.
         
         Parameters
         ----------
@@ -1324,7 +1324,7 @@ class IconSlot(object):
         ValueError
             If any of the expected value's type is valid, but it's value is not.
         """
-        icon_type_name, icon_hash_name = self.added_instance_atttributes
+        icon_type_name, icon_hash_name = self.added_instance_attributes
         try:
             icon = kwargs.pop(self.internal_name)
         except KeyError:
@@ -1434,7 +1434,7 @@ def instance_or_id_to_instance(obj, type_, name):
                 f'a snowflake, got {obj_type.__name__}.')
         
         if snowflake < 0 or snowflake > ((1<<64)-1):
-            raise ValueError(f'`{name}` was given either as `int` or as `str` instance, but not as represneting a '
+            raise ValueError(f'`{name}` was given either as `int` or as `str` instance, but not as representing a '
                 f'`uint64`, got {obj!r}.')
         
         if type(type_) is tuple:
@@ -1496,7 +1496,7 @@ def instance_or_id_to_snowflake(obj, type_, name):
                 f'a snowflake, got {obj_type.__name__}.')
         
         if snowflake < 0 or snowflake>((1<<64)-1):
-            raise ValueError(f'`{name}` was given either as `int` or as `str` instance, but not as represneting a '
+            raise ValueError(f'`{name}` was given either as `int` or as `str` instance, but not as representing a '
                 f'`uint64`, got {obj!r}.')
     
     return snowflake

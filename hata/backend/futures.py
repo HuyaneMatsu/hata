@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 __all__ = ('AsyncQue', 'CancelledError', 'Event', 'Future', 'FutureAsyncWrapper', 'FutureSyncWrapper', 'FutureWM',
-    'Gatherer', 'InvalidStateError', 'Lock', 'ScarletExecutor', 'ScarletLock', 'Task', 'WaitContinously', 'WaitTillAll',
+    'Gatherer', 'InvalidStateError', 'Lock', 'ScarletExecutor', 'ScarletLock', 'Task', 'WaitContinuously', 'WaitTillAll',
     'WaitTillExc', 'WaitTillFirst', 'enter_executor', 'future_or_timeout', 'is_awaitable', 'is_coroutine',
     'is_coroutine_function', 'is_coroutine_generator', 'is_coroutine_generator_function', 'shield', 'sleep', )
 
@@ -29,7 +29,7 @@ class InvalidStateError(Exception):
     func_name : `str`
         The future's function's name, from where the exception was raised.
     _message : `None` or `str`
-        Inetrnal cache for the ``.message`` property.
+        Internal cache for the ``.message`` property.
     """
     def __init__(self, future, func_name, message=None):
         """
@@ -145,7 +145,7 @@ def is_awaitable(obj):
 
 def is_coroutine_generator(obj):
     """
-    Returns whether the given `obj` is a coroutine generatorcreated by an `async def` function, and can be used inside
+    Returns whether the given `obj` is a coroutine generator created by an `async def` function, and can be used inside
     of an `async for` loop.
     
     Returns
@@ -178,7 +178,7 @@ RETRIEVED = 'RETRIEVED'
 # If we run without `-o` or -oo` flag, we have 4 future states instead of the regular 3. Well, we have 4 anyways, we
 # just wont use it. The only exceptions are the `__repr__` methods, where we still check it's existence. These flags 
 # also remove the `__del__` notifications and the `__silence__` methods too. Also bad Task awaiting cases are removed
-# too. Thats why more methods, which interact with these variables have 2 versions. 1 optimalized and 1 debug :^)
+# too. That's why more methods, which interact with these variables have 2 versions. 1 optimized and 1 debug :^)
 
 _IGNORED_FRAME_INFOS = {}
 def _ignore_frame(file, name, line):
@@ -243,7 +243,7 @@ _ignore_frame(__spec__.origin   , '__call__'        , 'raise exception'         
 _ignore_frame(__spec__.origin   , '__step'          , 'result = coro.throw(exception)'  ,)
 _ignore_frame(__spec__.origin   , '__iter__'        , 'yield self'                      ,)
 _ignore_frame(__spec__.origin   , '__step'          , 'result = coro.send(None)'        ,)
-_ignore_frame(__spec__.origin   , '__wakeup'        , 'future.result()'                 ,)
+_ignore_frame(__spec__.origin   , '__wake_up'        , 'future.result()'                 ,)
 _ignore_frame(__spec__.origin   , 'wait'            , 'return self.result()'            ,)
 _ignore_frame(__spec__.origin   , '__call__'        , 'future.result()'                 ,)
 _ignore_frame(__spec__.origin   , '__aexit__'       , 'raise exception'                 ,)
@@ -332,7 +332,7 @@ def render_frames_to_list(frames, extend=None):
 
 class _EXCFrameType(object):
     """
-    Wraps a `traceback` object to be `frame` compatbile.
+    Wraps a `traceback` object to be `frame` compatible.
     
     Attributes
     ----------
@@ -399,7 +399,7 @@ class _EXCFrameType(object):
         """
         Returns the traceback's frame's current line number in Python source code.
         
-        Reutrns
+        Returns
         -------
         f_lineno : `int`
         """
@@ -408,7 +408,7 @@ class _EXCFrameType(object):
     @property
     def f_locals(self):
         """
-        Reurns the local variables, what the traceback's frame can see.
+        Returns the local variables, what the traceback's frame can see.
         
         Returns
         -------
@@ -432,7 +432,7 @@ def _get_exc_frames(exception):
     """
     Gets the frames of the given exception.
     
-    Paramteres
+    Parameters
     ----------
     exception : `BaseException` instance
         The exception to trace back.
@@ -461,7 +461,7 @@ def render_exc_to_list(exception, extend=None):
     Parameters
     ----------
     exception : `BaseException` instance
-        The excetpion to render.
+        The exception to render.
     extend : `None` or `list` of `str`
         Whether the frames should be rendered into an already existing list.
     
@@ -517,7 +517,7 @@ def render_exc_to_list(exception, extend=None):
 
 def format_callback(func, args=None, kwargs=None):
     """
-    Formats the given callback to a more user friendly represnetation.
+    Formats the given callback to a more user friendly representation.
     
     Parameters
     ----------
@@ -531,10 +531,10 @@ def format_callback(func, args=None, kwargs=None):
     Returns
     -------
     result : `str`
-        The formatted callabck.
+        The formatted callback.
     """
     result = []
-    # unwarp the wrappers
+    # un-warp the wrappers
     while True:
         if not (None is args is kwargs):
             sub_result = ['(']
@@ -589,12 +589,12 @@ def format_coroutine(coro):
     
     Parameters
     ----------
-    coro : `coroutine` or `generator` (or any compatyble cyi or builtin)
+    coro : `coroutine` or `generator` (or any compatible cyi or builtin)
     
     Returns
     -------
     result : `str`
-        Theformatted coroutine.
+        The formatted coroutine.
     """
     if not (hasattr(coro, 'cr_code') or hasattr(coro, 'gi_code')):
         # Cython or builtin
@@ -650,11 +650,11 @@ class Future(object):
     _blocking : `bool`
         Whether the future is already being awaited, so it blocks the respective coroutine.
     _callbacks : `list` of `callable`
-        The callbacks of the future, which are queued up on the respective eventloop to be called, when the future is
+        The callbacks of the future, which are queued up on the respective event loop to be called, when the future is
         finished. These callback should accept `1` parameter, the future itself.
         
         Note, if the future is already done, then the newly added callbacks are queued up instantly on the respective
-        eventloop to be called.
+        event loop to be called.
     
     _exception : `None` or `BaseException` instance
         The exception set to the future as it's result. Defaults to `None`.
@@ -679,7 +679,7 @@ class Future(object):
         | RETRIEVED       | `'RETRIEVED'` |
         +-----------------+---------------+
         
-        Note, that states are checked by memory adress and not by equality. Also ``RETRIEVED`` is used only if
+        Note, that states are checked by memory address and not by equality. Also ``RETRIEVED`` is used only if
         `__debug__` is set as `True`.
     """
     __slots__ = ('_blocking', '_callbacks', '_exception', '_loop', '_result', '_state')
@@ -689,7 +689,7 @@ class Future(object):
         """
         Creates a new ``Future`` object bound to the given `loop`.
         
-        Paraneters
+        Parameters
         ----------
         loop : ``EventThread``
             The loop to what the created future will be bound to.
@@ -939,13 +939,13 @@ class Future(object):
         Parameters
         ----------
         `func` : `callable`
-            A callback, what is queued up on the respecitve eventloop, when the future is done. These callback should
+            A callback, what is queued up on the respective event loop, when the future is done. These callback should
             accept `1` parameter, the future itself.
             
         Notes
         -----
         If the future is already done, then the newly added callbacks are queued up instantly on the respective
-        eventloop to be called.
+        event loop to be called.
         """
         if self._state is PENDING:
             self._callbacks.append(func)
@@ -954,7 +954,7 @@ class Future(object):
     
     def remove_done_callback(self, func):
         """
-        Removes the given `func` from the future's ``._callabcks``.
+        Removes the given `func` from the future's ``._callbacks``.
         
         Parameters
         ----------
@@ -964,7 +964,7 @@ class Future(object):
         Returns
         -------
         count : `int`
-            The total count of the remvoed callbacks.
+            The total count of the removed callbacks.
         """
         callbacks = self._callbacks
         count = 0
@@ -1103,7 +1103,7 @@ class Future(object):
             """
             If the future is pending, but it's result was not set, meanwhile anything awaits at it, notifies it.
             
-            Also notifies if the future's result was set with ``.set_excepion``, or with
+            Also notifies if the future's result was set with ``.set_exception``, or with
             ``.set_exception_if_pending``, and it was not retrieved.
             
             Notes
@@ -1186,30 +1186,30 @@ class Future(object):
         self.cancel_handles()
         self._blocking = False
     
-    def syncwrap(self):
+    def sync_wrap(self):
         """
         Wraps the future, so it's result can be retrieved from a sync thread.
         
         Returns
         -------
         future_wrapper : ``FutureSyncWrapper``
-            A future waitable from sync threads.
+            A future awaitable from sync threads.
         """
         return FutureSyncWrapper(self)
     
-    def asyncwrap(self, loop):
+    def async_wrap(self, loop):
         """
         Wraps the future, so it's result can be retrieved from an other async thread.
         
         Parameters
         ----------
         loop : ``EventThread``
-            The eventloop, from where the future would be awaited.
+            The event loop, from where the future would be awaited.
         
         Returns
         -------
         future_wrapper : ``FutureAsyncWrapper``
-            An awaitable future from the given eventloop.
+            An awaitable future from the given event loop.
         """
         return FutureAsyncWrapper(self, loop)
 
@@ -1222,7 +1222,7 @@ class FutureSyncWrapper(object):
     _exception : `None` or `BaseException` instance
         The exception set to the future as it's result. Defaults to `None`.
     _future : `None` or ``Future`` instance
-        The waited future. If the future's state is modified by tthe sync wrapper, then ``._future`` is set as `None`,
+        The waited future. If the future's state is modified by the sync wrapper, then ``._future`` is set as `None`,
         to not retrieve the result again.
     _lock : `threading.Lock`
         Threading lock to disable concurrent access to the future.
@@ -1245,7 +1245,7 @@ class FutureSyncWrapper(object):
         | RETRIEVED       | `'RETRIEVED'` |
         +-----------------+---------------+
         
-        Note, that states are checked by memory adress and not by equality. Also ``RETRIEVED`` is used only if
+        Note, that states are checked by memory address and not by equality. Also ``RETRIEVED`` is used only if
         `__debug__` is set as `True`.
     _waiter : `threading.Event`
         An event, what is set, when the waited future is done.
@@ -1271,7 +1271,7 @@ class FutureSyncWrapper(object):
         
         loop = future._loop
         loop.call_soon(future.add_done_callback, self._done_callback)
-        loop.wakeup()
+        loop.wake_up()
         
         return self
     
@@ -1294,7 +1294,7 @@ class FutureSyncWrapper(object):
             if old_future is not None:
                 loop = old_future._loop
                 loop.call_soon(self._remove_callback, old_future)
-                loop.wakeup()
+                loop.wake_up()
 
             self._future = future
             self._state = PENDING
@@ -1304,12 +1304,12 @@ class FutureSyncWrapper(object):
 
             loop = future._loop
             loop.call_soon(future.add_done_callback, self._done_callback)
-            loop.wakeup()
+            loop.wake_up()
 
         return self
     
     def __repr__(self):
-        """Returns the future sync wrapper's rerpesentation."""
+        """Returns the future sync wrapper's representation."""
         result = ['<', self.__class__.__name__, ' ', ]
         
         state = self._state
@@ -1327,7 +1327,7 @@ class FutureSyncWrapper(object):
         
         future = self._future
         if future is not None:
-            # we do not want to repr it, keep it threadsafe
+            # we do not want to repr it, keep it thread safe
             result.append(' future=')
             result.append(future.__class__.__name__)
             result.append('(...)')
@@ -1352,7 +1352,7 @@ class FutureSyncWrapper(object):
             
             loop = future._loop
             loop.call_soon(future.cancel)
-            loop.wakeup()
+            loop.wake_up()
             return 1
         
     else:
@@ -1368,7 +1368,7 @@ class FutureSyncWrapper(object):
             
             loop = future._loop
             loop.call_soon(future.cancel)
-            loop.wakeup()
+            loop.wake_up()
             return 1
     
     if DOCS_ENABLED:
@@ -1604,7 +1604,7 @@ class FutureSyncWrapper(object):
     
     def wait(self, timeout=None):
         """
-        Waites till the waited future's result or exception is set.
+        Waits till the waited future's result or exception is set.
         
         If the future is cancelled, raises ``CancelledError``.
         
@@ -1619,11 +1619,11 @@ class FutureSyncWrapper(object):
         Parameters
         ----------
         timeout : `None` or `float`, Optional
-            Timeout in seconds till the waited future's reuslt should be set. Giving it as `None`, means no time limit.
+            Timeout in seconds till the waited future's result should be set. Giving it as `None`, means no time limit.
         
         Raises
         ------
-        TimoutError
+        TimeoutError
             If `timeout` is over and the waited future is still pending.
         CancelledError
             The future is cancelled.
@@ -1643,7 +1643,7 @@ class FutureSyncWrapper(object):
         """
         Sets the given `result` as the `future`'s result if applicable.
         
-        This method is put on the respective eventloop to be called, by ``.set_result`` or by
+        This method is put on the respective event loop to be called, by ``.set_result`` or by
         ``.set_result_if_pending``, if the future's result can be set.
         
         Parameters
@@ -1691,7 +1691,7 @@ class FutureSyncWrapper(object):
         
         loop = future._loop
         loop.call_soon(self.__class__._set_future_result, self, future, result)
-        loop.wakeup()
+        loop.wake_up()
     
     def set_result_if_pending(self, result):
         """
@@ -1723,14 +1723,14 @@ class FutureSyncWrapper(object):
 
         loop = future._loop
         loop.call_soon(self.__class__._set_future_result, self, future, result)
-        loop.wakeup()
+        loop.wake_up()
         return 1
     
     def _set_future_exception(self, future, exception):
         """
         Sets the given `exception` as the `future`'s exception if applicable.
         
-        This method is put on the respective eventloop to be called, by ``.set_exception`` or by
+        This method is put on the respective event loop to be called, by ``.set_exception`` or by
         ``.set_exception_if_pending``, if the future's result can be set.
         
         Parameters
@@ -1785,7 +1785,7 @@ class FutureSyncWrapper(object):
         
         loop = future._loop
         loop.call_soon(self._set_future_exception, future, exception)
-        loop.wakeup()
+        loop.wake_up()
     
     def set_exception_if_pending(self, exception):
         """
@@ -1827,7 +1827,7 @@ class FutureSyncWrapper(object):
         
         loop = future._loop
         loop.call_soon(self._set_future_exception, future, exception)
-        loop.wakeup()
+        loop.wake_up()
         return 1
     
     if __debug__:
@@ -1835,7 +1835,7 @@ class FutureSyncWrapper(object):
             """
             If the future is pending, but it's result was not set, meanwhile anything waits at it, notifies it.
             
-            Also notifies if the future's result was set with ``.set_excepion``, or with
+            Also notifies if the future's result was set with ``.set_exception``, or with
             ``.set_exception_if_pending``, and it was not retrieved.
             
             Notes
@@ -1877,7 +1877,7 @@ class FutureSyncWrapper(object):
             if future is not None:
                 loop = future._loop
                 loop.call_soon(self._remove_callback, future)
-                loop.wakeup()
+                loop.wake_up()
                 self._future = None
             
             self._waiter.clear()
@@ -1888,23 +1888,23 @@ class FutureSyncWrapper(object):
 
 class FutureAsyncWrapper(Future):
     """
-    Async wrapper for ``Future`` instances enabling them to be awaited from an another eventloop.
+    Async wrapper for ``Future`` instances enabling them to be awaited from an another event loop.
     
     Attributes
     ----------
     _blocking : `bool`
         Whether the future is already being awaited, so it blocks the respective coroutine.
     _callbacks : `list` of `callable`
-        The callbacks of the future, which are queued up on the respective eventloop to be called, when the future is
+        The callbacks of the future, which are queued up on the respective event loop to be called, when the future is
         finished. These callback should accept `1` parameter, the future itself.
         
         Note, if the future is already done, then the newly added callbacks are queued up instantly on the respective
-        eventloop to be called.
+        event loop to be called.
     
     _exception : `None` or `BaseException` instance
         The exception set to the future as it's result. Defaults to `None`.
     _future : `None` or ``Future`` instance
-        The waited future. If the future's state is modified by tthe sync wrapper, then ``._future`` is set as `None`,
+        The waited future. If the future's state is modified by the sync wrapper, then ``._future`` is set as `None`,
         to not retrieve the result again.
     _loop : ``EventThread``
         The loop to what the async future wrapper is bound to.
@@ -1927,7 +1927,7 @@ class FutureAsyncWrapper(Future):
         | RETRIEVED       | `'RETRIEVED'` |
         +-----------------+---------------+
         
-        Note, that states are checked by memory adress and not by equality. Also ``RETRIEVED`` is used only if
+        Note, that states are checked by memory address and not by equality. Also ``RETRIEVED`` is used only if
         `__debug__` is set as `True`.
     """
     __slots__ = ('_blocking', '_callbacks', '_exception', '_future', '_loop', '_result', '_state',)
@@ -1938,7 +1938,7 @@ class FutureAsyncWrapper(Future):
         
         If the given `future` is an ``FutureAsyncWrapper`` instance, then will wrap it's future instead.
         
-        Paraneters
+        Parameters
         ----------
         loop : ``EventThread``
             The loop from where the created wrapper futures can be awaited.
@@ -1948,7 +1948,7 @@ class FutureAsyncWrapper(Future):
         Returns
         -------
         self : ``Future`` or ``FutureAsyncWrapper`` instance
-            If the given `future` is bound to the ginen loop, returns the `future` itself insted of async wrapping it.
+            If the given `future` is bound to the given loop, returns the `future` itself instead of async wrapping it.
         """
         if future._loop is loop:
             return future
@@ -1970,7 +1970,7 @@ class FutureAsyncWrapper(Future):
         
         loop = future._loop
         loop.call_soon(future.add_done_callback, self._done_callback)
-        loop.wakeup()
+        loop.wake_up()
         
         return self
     
@@ -1981,7 +1981,7 @@ class FutureAsyncWrapper(Future):
         Parameters
         ----------
         future : ``Future`` instance
-            The future on what you would want to wait from the other eventloop.
+            The future on what you would want to wait from the other event loop.
         
         Returns
         -------
@@ -1991,7 +1991,7 @@ class FutureAsyncWrapper(Future):
         if old_future is not None:
             loop = old_future._loop
             loop.call_soon(self._remove_callback, old_future)
-            loop.wakeup()
+            loop.wake_up()
         
         self._future = future
         self._state = PENDING
@@ -2001,10 +2001,10 @@ class FutureAsyncWrapper(Future):
         
         loop = future._loop
         loop.call_soon(future.add_done_callback, self._done_callback)
-        loop.wakeup()
+        loop.wake_up()
     
     def __repr__(self):
-        """Returns the future async wrapper's rerpesentation."""
+        """Returns the future async wrapper's representation."""
         result = ['<', self.__class__.__name__, ' ']
         
         state = self._state
@@ -2038,7 +2038,7 @@ class FutureAsyncWrapper(Future):
         
         future = self._future
         if future is not None:
-            # we do not want to repr it, keep it threadsafe
+            # we do not want to repr it, keep it thread safe
             result.append(', future=')
             result.append(future.__class__.__name__)
             result.append('(...)')
@@ -2063,7 +2063,7 @@ class FutureAsyncWrapper(Future):
             
             loop = future._loop
             loop.call_soon(future.cancel)
-            loop.wakeup()
+            loop.wake_up()
             return 1
         
     else:
@@ -2079,7 +2079,7 @@ class FutureAsyncWrapper(Future):
             
             loop = future._loop
             loop.call_soon(future.cancel)
-            loop.wakeup()
+            loop.wake_up()
             return 1
     
     if DOCS_ENABLED:
@@ -2111,7 +2111,7 @@ class FutureAsyncWrapper(Future):
             
             loop = self._loop
             loop.call_soon(self.__class__._done_callback_re, self, state, future._result, future._exception)
-            loop.wakeup()
+            loop.wake_up()
     else:
         def _done_callback(self, future):
             if (self._future is not future):
@@ -2119,7 +2119,7 @@ class FutureAsyncWrapper(Future):
             
             loop = self._loop
             loop.call_soon(self.__class__._done_callback_re, self, future._state, future._result, future._exception)
-            loop.wakeup()
+            loop.wake_up()
     
     if DOCS_ENABLED:
         _done_callback.__doc__ = (
@@ -2178,7 +2178,7 @@ class FutureAsyncWrapper(Future):
         """
         Sets the given `result` as the `future`'s result if applicable.
         
-        This method is put on the respective eventloop to be called, by ``.set_result`` or by
+        This method is put on the respective event loop to be called, by ``.set_result`` or by
         ``.set_result_if_pending``, if the future's result can be set.
         
         Parameters
@@ -2195,11 +2195,11 @@ class FutureAsyncWrapper(Future):
         
         loop = self._loop
         loop.call_soon(self.__class__._set_future_any_re, self, future)
-        loop.wakeup()
+        loop.wake_up()
     
     def _set_future_any_re(self, future):
         """
-        If self is still waiting on the given future, marks self as retrieved and removes `._future`, so futher results
+        If self is still waiting on the given future, marks self as retrieved and removes `._future`, so further results
         wont be retrieved.
         
         Parameters
@@ -2237,7 +2237,7 @@ class FutureAsyncWrapper(Future):
         
         loop = future._loop
         loop.call_soon(self._set_future_result, future, result)
-        loop.wakeup()
+        loop.wake_up()
     
     def set_result_if_pending(self, result):
         """
@@ -2268,14 +2268,14 @@ class FutureAsyncWrapper(Future):
         
         loop = future._loop
         loop.call_soon(self._set_future_result, future, result)
-        loop.wakeup()
+        loop.wake_up()
         return 1
     
     def _set_future_exception(self, future, exception):
         """
         Sets the given `exception` as the `future`'s exception if applicable.
         
-        This method is put on the respective eventloop to be called, by ``.set_exception`` or by
+        This method is put on the respective event loop to be called, by ``.set_exception`` or by
         ``.set_exception_if_pending``, if the future's result can be set.
         
         Parameters
@@ -2292,7 +2292,7 @@ class FutureAsyncWrapper(Future):
         
         loop = self._loop
         loop.call_soon(self._set_future_any_re, future)
-        loop.wakeup()
+        loop.wake_up()
     
     def set_exception(self, exception):
         """
@@ -2328,7 +2328,7 @@ class FutureAsyncWrapper(Future):
         
         loop = future._loop
         loop.call_soon(self._set_future_exception, future, exception)
-        loop.wakeup()
+        loop.wake_up()
     
     def set_exception_if_pending(self, exception):
         """
@@ -2369,7 +2369,7 @@ class FutureAsyncWrapper(Future):
         
         loop = future._loop
         loop.call_soon(self._set_future_exception, future, exception)
-        loop.wakeup()
+        loop.wake_up()
         return 1
     
     def clear(self):
@@ -2380,7 +2380,7 @@ class FutureAsyncWrapper(Future):
         if future is not None:
             loop = future._loop
             loop.call_soon(self._remove_callback, future)
-            loop.wakeup()
+            loop.wake_up()
             self._future = None
 
         self._state = PENDING
@@ -2400,11 +2400,11 @@ class FutureWM(Future):
     _blocking : `bool`
         Whether the future is already being awaited, so it blocks the respective coroutine.
     _callbacks : `list` of `callable`
-        The callbacks of the future, which are queued up on the respective eventloop to be called, when the future is
+        The callbacks of the future, which are queued up on the respective event loop to be called, when the future is
         finished. These callback should accept `1` parameter, the future itself.
         
         Note, if the future is already done, then the newly added callbacks are queued up instantly on the respective
-        eventloop to be called.
+        event loop to be called.
     
     _exception : `None` or `BaseException` instance
         The exception set to the future as it's result. Defaults to `None`.
@@ -2429,7 +2429,7 @@ class FutureWM(Future):
         | RETRIEVED       | `'RETRIEVED'` |
         +-----------------+---------------+
         
-        Note, that states are checked by memory adress and not by equality. Also ``RETRIEVED`` is used only if
+        Note, that states are checked by memory address and not by equality. Also ``RETRIEVED`` is used only if
         `__debug__` is set as `True`.
     _count : `int`
         The amount, how much times the future's result need to be set, because it will yield.
@@ -2441,7 +2441,7 @@ class FutureWM(Future):
         Creates a new ``FutureWM`` object bound to the given `loop`, which will be marked as done, only if `count`
         results are set to it with ``.set_result``, or with ``.set_result_if_pending``.
         
-        Paraneters
+        Parameters
         ----------
         loop : ``EventThread``
             The loop to what the created future will be bound to.
@@ -2581,11 +2581,11 @@ class Task(Future):
     _blocking : `bool`
         Whether the task is already being awaited, so it blocks the respective coroutine.
     _callbacks : `list` of `callable`
-        The callbacks of the task, which are queued up on the respective eventloop to be called, when the task is
+        The callbacks of the task, which are queued up on the respective event loop to be called, when the task is
         finished. These callback should accept `1` parameter, the task itself.
         
         Note, if the task is already done, then the newly added callbacks are queued up instantly on the respective
-        eventloop to be called.
+        event loop to be called.
     
     _exception : `None` or `BaseException` instance
         The exception raised by task's internal coroutine. Defaults to `None`.
@@ -2610,7 +2610,7 @@ class Task(Future):
         | RETRIEVED       | `'RETRIEVED'` |
         +-----------------+---------------+
         
-        Note, that states are checked by memory adress and not by equality. Also ``RETRIEVED`` is used only if
+        Note, that states are checked by memory address and not by equality. Also ``RETRIEVED`` is used only if
         `__debug__` is set as `True`.
     
     _coro : `coroutine` or `generator`
@@ -2624,14 +2624,14 @@ class Task(Future):
     
     def __new__(cls, coro, loop):
         """
-        Creates a new ``Task`` object running the given coroutine on the given eventloop.
+        Creates a new ``Task`` object running the given coroutine on the given event loop.
         
         Parameters
         ----------
         coro : `coroutine` or `generator`
-            The coroutine, what the task will on the respective eventloop.
+            The coroutine, what the task will on the respective event loop.
         loop : ``EventThread``
-            The eventloop on what the coroutine will run.
+            The event loop on what the coroutine will run.
         """
         self = object.__new__(cls)
         self._loop = loop
@@ -2654,9 +2654,6 @@ class Task(Future):
     def get_stack(self, limit=-1):
         """
         Return the list of stack frames for the task. If the task is already done, returns an empty list.
-        
-        Not like `asyncio.Task.get_stack`, this method will not return exception frames. But if the task is suspended,
-        it will try fetch back the suspender's frames as well, for yielding a realistic frame stack.
         
         Parameters
         ----------
@@ -2787,9 +2784,6 @@ class Task(Future):
         """
         Prints the stack or traceback of the task.
         
-        Not like `asyncio.Task.print_stack`, this opration blocks till done only in sync threads. Inside of an
-        ``EventThread`` it returns an `awaitable`, what can be awaited to wait for it to be done.
-        
         Parameters
         ----------
         limit : `int`, Optional
@@ -2823,7 +2817,7 @@ class Task(Future):
         
         Notes
         -----
-        This function calls blocking operations and should not run inside of an eventloop.
+        This function calls blocking operations and should not run inside of an event loop.
         
         If the task is finished with an exception, then `limit` is ignored when printing traceback.
         """
@@ -3070,7 +3064,7 @@ class Task(Future):
         else:
             if isinstance(result, Future) and result._blocking:
                 result._blocking = False
-                result.add_done_callback(self.__wakeup)
+                result.add_done_callback(self.__wake_up)
                 self._fut_waiter = result
                 if self._must_cancel:
                     if result.cancel():
@@ -3087,7 +3081,7 @@ class Task(Future):
         Does a step, by giving control to the wrapped coroutine by the task.
         
         If `exception` is given, then that exception will be raised to the internal coroutine, exception if the task
-        is already cancelled, because, then the exception to raise will be desided by ``._must_exception``.
+        is already cancelled, because, then the exception to raise will be decided by ``._must_exception``.
         
         Parameters
         ----------
@@ -3097,10 +3091,10 @@ class Task(Future):
         Raises
         ------
         InvalidStateError
-            If the trask is already done.
+            If the task is already done.
         """)
     
-    def __wakeup(self, future):
+    def __wake_up(self, future):
         """
         Callback used by ``.__step``, when the wrapped coroutine waits on a future to be marked as done.
         
@@ -3116,7 +3110,7 @@ class Task(Future):
         else:
             self.__step()
         
-        self = None # set self as `None`, so when exception occures, self can be garbage collected.
+        self = None # set self as `None`, so when exception occurs, self can be garbage collected.
     
     def _must_exception(self, exception):
         """
@@ -3145,7 +3139,7 @@ class Task(Future):
 
 class AsyncQue(object):
     """
-    An asynchoronous FIFO queue.
+    An asynchronous FIFO queue.
     
     `AsyncQue` is async iterable, so if you iterate over it inside of an `async for` loop do
     `.set_exception(CancelledError())` to stop it without any specific exception.
@@ -3157,21 +3151,21 @@ class AsyncQue(object):
     _loop : ``EventThread``
         The loop to what the queue is bound to.
     _results : `deque`
-        The results of the queue, which can be retireved by ``.result``, ``.result_no_wait``, or by awaiting it.
+        The results of the queue, which can be retrieved by ``.result``, ``.result_no_wait``, or by awaiting it.
     _waiter : `None` or ``Future``
         If the queue is empty and it's result is already waited, then this future is set. It's result is set, by the
         first ``.set_result``, or ``.set_exception`` call.
     """
     __slots__ = ('_exception', '_loop', '_results', '_waiter',)
-    def __new__(cls, loop, iterable=None, maxlen=None, exception=None):
+    def __new__(cls, loop, iterable=None, max_length=None, exception=None):
         """
         Creates a new ``AsyncQue`` instance with the given parameter.
         
-        Paraneters
+        Parameters
         ----------
         loop : ``EventThread``
             The loop to what the created queue will be bound to.
-        maxlen : `None` or `int`, Optional
+        max_length : `None` or `int`, Optional
             The maximal length of the queue.
         exception : `None` or `BaseException` instance
             Exception to raise when the queue is empty.
@@ -3189,9 +3183,9 @@ class AsyncQue(object):
                  raise TypeError(f'{exception} cannot be raised to a {cls.__name__}')
         
         if iterable is None:
-            results = deque(maxlen=maxlen)
+            results = deque(maxlen=max_length)
         else:
-            results = deque(iterable, maxlen=maxlen)
+            results = deque(iterable, maxlen=max_length)
         
         self = object.__new__(cls)
         self._loop = loop
@@ -3332,10 +3326,10 @@ class AsyncQue(object):
             
         result.append(']')
         
-        maxlen = results.maxlen
-        if (maxlen is not None):
-            result.append(', maxlen=')
-            result.append(repr(maxlen))
+        max_length = results.maxlen
+        if (max_length is not None):
+            result.append(', max_length=')
+            result.append(repr(max_length))
         
         exception = self._exception
         if (exception is not None):
@@ -3362,7 +3356,7 @@ class AsyncQue(object):
         Waits till the next element of the queue is set. If the queue has elements set, yields the next of them, or if
         the queue has exception set, raises it.
         
-        If the qeue has ``CancelledError`` set as ``._exception``, then raises ``StopAsyncIteration`` to stop the queue
+        If the queue has ``CancelledError`` set as ``._exception``, then raises ``StopAsyncIteration`` to stop the queue
         instead.
         
         This method is a coroutine.
@@ -3403,19 +3397,19 @@ class AsyncQue(object):
     # deque operations
     
     @property
-    def maxlen(self):
+    def max_length(self):
         """
         Returns the queue's max length.
         
         Returns
         -------
-        maxlen: `int`
+        max_length: `int`
         """
         return self._results.maxlen
     
     def clear(self):
         """
-        Cleares the queue's results.
+        Clears the queue's results.
         """
         self._results.clear()
     
@@ -3517,7 +3511,7 @@ class FGCallback(object):
     __slots__ = ('parent',)
     def __init__(self, parent):
         """
-        Creates a new gatherign future callback.
+        Creates a new gathering future callback.
         
         Parameters
         ----------
@@ -3553,11 +3547,11 @@ class Gatherer(FutureWM):
     _blocking : `bool`
         Whether the future is already being awaited, so it blocks the respective coroutine.
     _callbacks : `list` of `callable`
-        The callbacks of the future, which are queued up on the respective eventloop to be called, when the future is
+        The callbacks of the future, which are queued up on the respective event loop to be called, when the future is
         finished. These callback should accept `1` parameter, the future itself.
         
         Note, if the future is already done, then the newly added callbacks are queued up instantly on the respective
-        eventloop to be called.
+        event loop to be called.
     
     _exception : `None` or `BaseException` instance
         The exception set to the future as it's result. Defaults to `None`.
@@ -3582,7 +3576,7 @@ class Gatherer(FutureWM):
         | RETRIEVED       | `'RETRIEVED'` |
         +-----------------+---------------+
         
-        Note, that states are checked by memory adress and not by equality. Also ``RETRIEVED`` is used only if
+        Note, that states are checked by memory address and not by equality. Also ``RETRIEVED`` is used only if
         `__debug__` is set as `True`.
     _count : `int`
         The amount, for how much future's result the gatherer waits.
@@ -3844,9 +3838,9 @@ def sleep(delay, loop=None):
     ----------
     delay : `float`
         The time to block sleep in seconds.
-    loop : `None` or ``EventThread``, Optinoal
-        The eventloop to which the returned `future` will be bound to. If not given, or given as `None`, then the
-        current eventloop will be used.
+    loop : `None` or ``EventThread``, Optional
+        The event loop to which the returned `future` will be bound to. If not given, or given as `None`, then the
+        current event loop will be used.
     
     Returns
     -------
@@ -3856,12 +3850,7 @@ def sleep(delay, loop=None):
     Raises
     ------
     RuntimeError
-        The given or the local eventloop is already stopped.
-    
-    Notes
-    -----
-    Not like at the case of asyncio, `sleep` returns a ``Future`` and not a `coroutine`, so you do not need to
-    wrap it into a task.
+        The given or the local event loop is already stopped.
     """
     if loop is None:
         loop = current_thread()
@@ -3917,7 +3906,7 @@ class _TimeoutHandleCanceller(_HandleCancellerBase):
 
 def future_or_timeout(future, timeout):
     """
-    If the given ``Future`` is not done till the given `timoeut` occures, set `TimeoutError` as it's exception.
+    If the given ``Future`` is not done till the given `timeout` occurs, set `TimeoutError` as it's exception.
     
     Parameters
     ----------
@@ -3929,20 +3918,18 @@ def future_or_timeout(future, timeout):
     Raises
     ------
     RuntimeError
-        The future's eventloop is already stopped.
+        The future's event loop is already stopped.
     
     Notes
     -----
-    Not like in asyncio, ``Task`` exception can be set as well.
-    
     For futures, which wait for more results and exceptions like ``Gatherer``, `TimeoutError` gives only 1 result,
     rigging it's results. This is not the case of ``FutureWM``, because that stops when the first exception is received.
     
     If `future_or_timeout` is used on ``WaitTillFirst``, ``WaitTillAll`` or on ``WaitTillAll``, then they stop
-    collecting their result at the point, when the timeout occures and they yield their actual result at that point
+    collecting their result at the point, when the timeout occurs and they yield their actual result at that point
     without any specific exception.
     
-    At the case of ``WaitContinously``, when the timeout occures the next yielded result will be `None` instead of a
+    At the case of ``WaitContinuously``, when the timeout occurs the next yielded result will be `None` instead of a
     ``Future`` instance.
     """
     loop = future._loop
@@ -4067,14 +4054,14 @@ class _ChainRemover(object):
 
 def shield(awaitable, loop):
     """
-    Protects the givne `awaitable` from being cancelled.
+    Protects the given `awaitable` from being cancelled.
     
     Parameters
     ----------
     awaitable : `awaitable`
         The awaitable object to shield.
     loop : ``EventThread``
-        The eventloop to run the `awaitable` on.
+        The event loop to run the `awaitable` on.
     
     Returns
     -------
@@ -4106,11 +4093,11 @@ class WaitTillFirst(Future):
     _blocking : `bool`
         Whether the future is already being awaited, so it blocks the respective coroutine.
     _callbacks : `list` of `callable`
-        The callbacks of the future, which are queued up on the respective eventloop to be called, when the future is
+        The callbacks of the future, which are queued up on the respective event loop to be called, when the future is
         finished. These callback should accept `1` parameter, the future itself.
         
         Note, if the future is already done, then the newly added callbacks are queued up instantly on the respective
-        eventloop to be called.
+        event loop to be called.
     
     _exception : `None` or `BaseException` instance
         The exception set to the future as it's result. Defaults to `None`.
@@ -4135,7 +4122,7 @@ class WaitTillFirst(Future):
         | RETRIEVED       | `'RETRIEVED'` |
         +-----------------+---------------+
         
-        Note, that states are checked by memory adress and not by equality. Also ``RETRIEVED`` is used only if
+        Note, that states are checked by memory address and not by equality. Also ``RETRIEVED`` is used only if
         `__debug__` is set as `True`.
     
     _callback : ``._wait_callback``
@@ -4149,7 +4136,7 @@ class WaitTillFirst(Future):
         
         Parameters
         ----------
-        futures : `iterale` of ``Future`` instances
+        futures : `iterable` of ``Future`` instances
             The futures from which we will wait on the first to complete.
         loop : ``EventThread``
             The loop to what the created future will be bound to.
@@ -4354,7 +4341,7 @@ class WaitTillFirst(Future):
     
     def set_exception(self, exception):
         """
-        Sets an exceptin as a result of the waiter future.
+        Sets an exception as a result of the waiter future.
         
         If `exception` is given as `TimeoutError`, then the waiter will not raise, instead will yield it's `done`
         and `pending` future's current status.
@@ -4387,7 +4374,7 @@ class WaitTillFirst(Future):
     
     def set_exception_if_pending(self, exception):
         """
-        Sets an exceptin as a result of the waiter future. Not like ``.set_exception``, this method will not raise
+        Sets an exception as a result of the waiter future. Not like ``.set_exception``, this method will not raise
         ``InvalidStateError`` if the future is already done.
         
         If `exception` is given as `TimeoutError`, then the waiter will not raise, instead will yield it's `done`
@@ -4445,8 +4432,8 @@ class WaitTillFirst(Future):
         """
         raise RuntimeError(f'{self.__class__.__name__} does not support `.clear` operation')
     
-    # `syncwrap` is same as ``Future.syncwrap``
-    # `asyncwrap` is same as ``Future.asyncwrap``
+    # `sync_wrap` is same as ``Future.sync_wrap``
+    # `async_wrap` is same as ``Future.async_wrap``
     
 class WaitTillExc(WaitTillFirst):
     """
@@ -4458,11 +4445,11 @@ class WaitTillExc(WaitTillFirst):
     _blocking : `bool`
         Whether the future is already being awaited, so it blocks the respective coroutine.
     _callbacks : `list` of `callable`
-        The callbacks of the future, which are queued up on the respective eventloop to be called, when the future is
+        The callbacks of the future, which are queued up on the respective event loop to be called, when the future is
         finished. These callback should accept `1` parameter, the future itself.
         
         Note, if the future is already done, then the newly added callbacks are queued up instantly on the respective
-        eventloop to be called.
+        event loop to be called.
     
     _exception : `None` or `BaseException` instance
         The exception set to the future as it's result. Defaults to `None`.
@@ -4487,7 +4474,7 @@ class WaitTillExc(WaitTillFirst):
         | RETRIEVED       | `'RETRIEVED'` |
         +-----------------+---------------+
         
-        Note, that states are checked by memory adress and not by equality. Also ``RETRIEVED`` is used only if
+        Note, that states are checked by memory address and not by equality. Also ``RETRIEVED`` is used only if
         `__debug__` is set as `True`.
     
     _callback : ``._wait_callback``
@@ -4569,8 +4556,8 @@ class WaitTillExc(WaitTillFirst):
     # `cancel_handles` is same as ``Future.cancel_handles``
     # `clear` is same as ``WaitTillFirst.clear``
     # `sleep` is same as ``WaitTillFirst.clear``
-    # `syncwrap` is same as ``Future.cancel_handles``
-    # `asyncwrap` is same as ``Future.cancel_handles``
+    # `sync_wrap` is same as ``Future.cancel_handles``
+    # `async_wrap` is same as ``Future.cancel_handles``
 
 class WaitTillAll(WaitTillFirst):
     """
@@ -4582,11 +4569,11 @@ class WaitTillAll(WaitTillFirst):
     _blocking : `bool`
         Whether the future is already being awaited, so it blocks the respective coroutine.
     _callbacks : `list` of `callable`
-        The callbacks of the future, which are queued up on the respective eventloop to be called, when the future is
+        The callbacks of the future, which are queued up on the respective event loop to be called, when the future is
         finished. These callback should accept `1` parameter, the future itself.
         
         Note, if the future is already done, then the newly added callbacks are queued up instantly on the respective
-        eventloop to be called.
+        event loop to be called.
     
     _exception : `None` or `BaseException` instance
         The exception set to the future as it's result. Defaults to `None`.
@@ -4611,7 +4598,7 @@ class WaitTillAll(WaitTillFirst):
         | RETRIEVED       | `'RETRIEVED'` |
         +-----------------+---------------+
         
-        Note, that states are checked by memory adress and not by equality. Also ``RETRIEVED`` is used only if
+        Note, that states are checked by memory address and not by equality. Also ``RETRIEVED`` is used only if
         `__debug__` is set as `True`.
     
     _callback : ``._wait_callback``
@@ -4692,8 +4679,8 @@ class WaitTillAll(WaitTillFirst):
     # `cancel_handles` is same as ``Future.cancel_handles``
     # `clear` is same as ``WaitTillFirst.clear``
     # `sleep` is same as ``WaitTillFirst.clear``
-    # `syncwrap` is same as ``Future.cancel_handles``
-    # `asyncwrap` is same as ``Future.cancel_handles``
+    # `sync_wrap` is same as ``Future.cancel_handles``
+    # `async_wrap` is same as ``Future.cancel_handles``
 
 class Lock(object):
     """
@@ -4701,7 +4688,7 @@ class Lock(object):
 
     A hata lock can be used to guarantee exclusive access to a shared resource.
     
-    The prefferd way of using a hata lock is with `async with` statemenet:
+    The preferred way of using a hata lock is with `async with` statement:
     
     ```
     lock = Lock(loop)
@@ -4725,9 +4712,9 @@ class Lock(object):
     Attributes
     ----------
     _loop : ``EventThread``
-        The eventloop to what the lock is bound to.
+        The event loop to what the lock is bound to.
     _waiters : `deque` of ``Future``
-        Futures on which the suspended taasks wait.
+        Futures on which the suspended tasks wait.
     """
     __slots__ = ('_loop', '_waiters', )
     def __new__(cls, loop):
@@ -4735,7 +4722,7 @@ class Lock(object):
         Creates a new lock instance.
         
         loop : ``EventThread``
-            The eventloop to what the lock will be bound to.
+            The event loop to what the lock will be bound to.
         """
         self = object.__new__(cls)
         self._loop = loop
@@ -4776,7 +4763,7 @@ class Lock(object):
     
     def locked(self):
         """
-        Returns whether the lock is entered anywehere.
+        Returns whether the lock is entered anywhere.
         
         Returns
         -------
@@ -4789,7 +4776,7 @@ class Lock(object):
 
     def __iter__(self):
         """
-        Blocks until all the lock is unlocked everywhere. If lock is used meanwhile anyweher meanwhile the we acquire
+        Blocks until all the lock is unlocked everywhere. If lock is used meanwhile anywhere meanwhile the we acquire
         it, will await that as well.
         
         This method is a generator. Should be used with `await` expression.
@@ -4808,7 +4795,7 @@ class Lock(object):
         future.set_result_if_pending(None)
     
     def __repr__(self):
-        """Returns the lock's represnetation."""
+        """Returns the lock's representation."""
         result = [
             '<',
             self.__class__.__name__,
@@ -4828,18 +4815,18 @@ class Lock(object):
 
 class ScarletLock(Lock):
     """
-    A hata scalrlet lock can be used to guarantee access to a shared resource `n` amount of times.
+    A hata scarlet lock can be used to guarantee access to a shared resource `n` amount of times.
     
     Should be used with `async with` statement
     
     Attributes
     ----------
     _loop : ``EventThread``
-        The eventloop to what the lock is bound to.
+        The event loop to what the lock is bound to.
     _waiters : `deque` of ``Future``
-        Futures on which the suspended taasks wait.
+        Futures on which the suspended tasks wait.
     _size : `int`
-        The maximal amount of pararell entries to this lock.
+        The maximal amount of parallel entries to this lock.
     """
     __slots__ = ('_size',)
     def __new__(cls, loop, size=1):
@@ -4847,9 +4834,9 @@ class ScarletLock(Lock):
         Creates a new lock instance.
         
         loop : ``EventThread``
-            The eventloop to what the lock will be bound to.
+            The event loop to what the lock will be bound to.
         size : `int`
-            The maximal amount of pararell entries to this lock.
+            The maximal amount of parallel entries to this lock.
         
         Raises
         ------
@@ -4957,7 +4944,7 @@ class ScarletLock(Lock):
         return False
     
     def __repr__(self):
-        """Returns the scarlet lock's represnetation."""
+        """Returns the scarlet lock's representation."""
         result = [
             '<',
             self.__class__.__name__,
@@ -4990,7 +4977,7 @@ class Event(object):
     Attributes
     ----------
     _loop : ``EventThread``
-        The eventloop to what the event is bound.
+        The event loop to what the event is bound.
     _value : `bool`
         The internal flag of the event, which defines, whether it is set.
     _waiters : `list` of ``Future``
@@ -4999,12 +4986,12 @@ class Event(object):
     __slots__ = ('_loop', '_value', '_waiters',)
     def __new__(cls, loop):
         """
-        Creates a new event object bound to the given eventloop.
+        Creates a new event object bound to the given event loop.
         
         Parameters
         ----------
         loop : ``EventThread``
-            The eventloop to what the event is bound.
+            The event loop to what the event is bound.
         """
         self = object.__new__(cls)
         self._loop = loop
@@ -5087,7 +5074,7 @@ class enter_executor(object):
     # Do async code
     async with enter_executor():
         # Do blocking stuff
-        # Also async operation are still possbile, but not recommended, because they cause my thread switch.
+        # Also async operation are still possible, but not recommended, because they cause my thread switch.
     
     # Do async code
     
@@ -5193,7 +5180,7 @@ class enter_executor(object):
         exception = None
         coro = task._coro
         
-        # If some1 await at the block, we will syncwrap it. If the exit future
+        # If some1 await at the block, we will sync_wrap it. If the exit future
         # is awaited, then we quit.
         local_fut_waiter = None
         
@@ -5205,14 +5192,14 @@ class enter_executor(object):
                 if (local_fut_waiter is not None):
                     if local_fut_waiter is end_future:
                         end_future.set_result(None)
-                        loop.call_soon_threadsafe(task._Task__step, exception)
+                        loop.call_soon_thread_safe(task._Task__step, exception)
                         break
                     
                     try:
                         self._fut_waiter = local_fut_waiter
                         if type(exception) is CancelledError:
                             local_fut_waiter.cancel()
-                        local_fut_waiter.syncwrap().wait()
+                        local_fut_waiter.sync_wrap().wait()
                     
                     except CancelledError:
                         break
@@ -5241,17 +5228,17 @@ class enter_executor(object):
                     else:
                         Future.set_result(task, exception.value)
                     
-                    loop.wakeup()
+                    loop.wake_up()
                     break
                     
                 except CancelledError:
                     Future.cancel(task)
-                    loop.wakeup()
+                    loop.wake_up()
                     break
                 
                 except BaseException as exception:
                     Future.set_exception(task, exception)
-                    loop.wakeup()
+                    loop.wake_up()
                     break
                 
                 else:
@@ -5304,7 +5291,7 @@ class ScarletExecutorCB(object):
     """
     ``ScarletExecutor`` callback's added to futures or tasks waited by it.
     
-    Attribites
+    Attributes
     ----------
     _parent : ``ScarletExecutor``
         The parent Scarlet executor.
@@ -5326,10 +5313,10 @@ class ScarletExecutorCB(object):
         """
         Called as a callback when a waited future or task is finished.
         
-        Removes the given `future`'s from the parent's active ones. If the parent Scarltet executor is overloaded with
+        Removes the given `future`'s from the parent's active ones. If the parent Scarlet executor is overloaded with
         tasks, wakes it up.
         
-        If the `future` is finished with an exception then propages it to it's parent to reraise.
+        If the `future` is finished with an exception then propagates it to it's parent to re-raise.
         
         Parameters
         ----------
@@ -5357,10 +5344,10 @@ class ScarletExecutorCB(object):
     
 class ScarletExecutor(object):
     """
-    Scarlet executor allows the user to limit pararelly running task amount to a set one. Not that, onyl those tasks
+    Scarlet executor allows the user to limit parallelly running task amount to a set one. Not that, only those tasks
     count, which are added to the executor with it's ``.add`` method.
     
-    If an exception (except ``CancelledError``) occures in any of the added tasks, then that exception is propagated
+    If an exception (except ``CancelledError``) occurs in any of the added tasks, then that exception is propagated
     and every other task is cancelled.
     
     Should be used, like:
@@ -5440,7 +5427,7 @@ class ScarletExecutor(object):
     | 25 (s)        | N/A                           | sleep(9) -> N/A       |
     +---------------+-------------------------------+-----------------------+
     
-    By increasing pararellism to `3`, the showcase will take only `18` seconds to finish:
+    By increasing parallelism to `3`, the showcase will take only `18` seconds to finish:
     
     ```
     async def showcase():
@@ -5475,7 +5462,7 @@ class ScarletExecutor(object):
     +---------------+-------------------------------+-----------------------+-----------------------+
     | 8 (s)         | sleep(6)                      | sleep(7)              | sleep(8)              |
     +---------------+-------------------------------+-----------------------+-----------------------+
-    | 9 (s)         | sleep(6) -> seelp(9)          | sleep(7)              | sleep(8)              |
+    | 9 (s)         | sleep(6) -> sleep(9)          | sleep(7)              | sleep(8)              |
     +---------------+-------------------------------+-----------------------+-----------------------+
     | 10 (s)        | sleep(9)                      | sleep(7)              | sleep(8)              |
     +---------------+-------------------------------+-----------------------+-----------------------+
@@ -5501,15 +5488,15 @@ class ScarletExecutor(object):
     _active : `set` of ``Future`` instances
         The already running tasks.
     _callback : `None` or ``ScarletExecutorCB``
-        Callback set to the pararelly limited tasks.
+        Callback set to the parallelly limited tasks.
     _exception : `None` or `BaseException`
         Any exception raised by an added task. ``CancelledError``-s are ignored.
     _limit : `int`
-        The maximal amount of pararellism allowed by the Scarlet executor.
+        The maximal amount of parallelism allowed by the Scarlet executor.
     _loop : `None` or ``EventThread``
-        The eventloop to what the ScarletExecutor is bound to.
+        The event loop to what the ScarletExecutor is bound to.
     _waiter : `None` or ``Future``
-        A future which is used to block the main task's execution if the pararelly running tasks's amount is greater or
+        A future which is used to block the main task's execution if the parallelly running tasks's amount is greater or
         equal to the ``._limit``.
     """
     __slots__ = ('_active', '_callback', '_exception', '_limit', '_loop', '_waiter', )
@@ -5520,7 +5507,7 @@ class ScarletExecutor(object):
         Parameters
         ----------
         limit : `int`, Optional
-            The maximal amount of pararellism allowed by the Scarlet executor. Defaults to `10`.
+            The maximal amount of parallelism allowed by the Scarlet executor. Defaults to `10`.
         
         Raises
         ------
@@ -5553,7 +5540,7 @@ class ScarletExecutor(object):
     
     async def __aenter__(self):
         """
-        Enters the scaler executor.
+        Enters the scarlet executor.
         
         This method is a coroutine.
         
@@ -5574,7 +5561,7 @@ class ScarletExecutor(object):
     
     async def add(self, future):
         """
-        Adds a task to the Scarlet executor to execute pararelly with the other added ones. Blocks execution, if the
+        Adds a task to the Scarlet executor to execute parallelly with the other added ones. Blocks execution, if the
         amount of added tasks is greater or equal than the set limit.
         
         This method is a coroutine.
@@ -5582,7 +5569,7 @@ class ScarletExecutor(object):
         Raises
         ------
         RuntimeError
-            ``.add`` called when the Scaler executor is not entered with `async with.`
+            ``.add`` called when the Scarlet executor is not entered with `async with.`
         CancelledError
             If any of the tasks raised an error, ``CancelledError`` is propagated to quit from the Scarlet executor.
             This exception is catched by ``.__exit__`` and the original exception is reraised.
@@ -5617,9 +5604,9 @@ class ScarletExecutor(object):
     
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """
-        Leaves from the scaler execution, blocking till all the added tasks are finished.
+        Leaves from the scarlet execution, blocking till all the added tasks are finished.
         
-        If any of the added tasks raised an exception, what is not ``CancalledError``, then cancels all of them and
+        If any of the added tasks raised an exception, what is not ``CancelledError``, then cancels all of them and
         propagates the given exception.
         
         This method is a coroutine.
@@ -5698,20 +5685,20 @@ class ScarletExecutor(object):
         
         return ''.join(result)
 
-class WaitContinously(WaitTillFirst):
+class WaitContinuously(WaitTillFirst):
     """
-    A future subclass, which allows waiting for future or task results continously, yielding `1` result, when awaited.
+    A future subclass, which allows waiting for future or task results continuously, yielding `1` result, when awaited.
     
     Attributes
     ----------
     _blocking : `bool`
         Whether the future is already being awaited, so it blocks the respective coroutine.
     _callbacks : `list` of `callable`
-        The callbacks of the future, which are queued up on the respective eventloop to be called, when the future is
+        The callbacks of the future, which are queued up on the respective event loop to be called, when the future is
         finished. These callback should accept `1` parameter, the future itself.
         
         Note, if the future is already done, then the newly added callbacks are queued up instantly on the respective
-        eventloop to be called.
+        event loop to be called.
     
     _exception : `None` or `BaseException` instance
         The exception set to the future as it's result. Defaults to `None`.
@@ -5736,24 +5723,24 @@ class WaitContinously(WaitTillFirst):
         | RETRIEVED       | `'RETRIEVED'` |
         +-----------------+---------------+
         
-        Note, that states are checked by memory adress and not by equality. Also ``RETRIEVED`` is used only if
+        Note, that states are checked by memory address and not by equality. Also ``RETRIEVED`` is used only if
         `__debug__` is set as `True`.
     
     _callback : ``._wait_callback``
         Callback added to the waited futures.
     _last_done : `None` or ``Future`` instance
-        The last done future or task of the ``WaitContinously`` instance.
+        The last done future or task of the ``WaitContinuously`` instance.
     """
     __slots__ = ('_last_done')
     
     def __new__(cls, futures, loop):
         """
-        Creates a new ``WaitContinously`` from the given `futures` bound to the given `loop`.
+        Creates a new ``WaitContinuously`` from the given `futures` bound to the given `loop`.
         
         Parameters
         ----------
-        futures : `None` or `iterale` of ``Future`` instances
-            The futures from which the ``WaitContinously`` instance will yield the done ones. Can be given as `None`.
+        futures : `None` or `iterable` of ``Future`` instances
+            The futures from which the ``WaitContinuously`` instance will yield the done ones. Can be given as `None`.
         loop : ``EventThread``
             The loop to what the created future will be bound to.
         """
@@ -5793,22 +5780,22 @@ class WaitContinously(WaitTillFirst):
     
     class _wait_callback(object):
         """
-        ``WaitContinously``'s callback put on the future's waited by it.
+        ``WaitContinuously``'s callback put on the future's waited by it.
         
         Attributes
         ----------
-        _parent : ``WaitContinously``
+        _parent : ``WaitContinuously``
             The parent future.
         """
         __slots__ = ('_parent',)
         
         def __init__(self, parent):
             """
-            Creates a new ``WaitContinously`` callback object with the given parent ``WaitContinously`` instance.
+            Creates a new ``WaitContinuously`` callback object with the given parent ``WaitContinuously`` instance.
             
             Parameters
             ----------
-            parent : ``WaitContinously``
+            parent : ``WaitContinuously``
                 The parent future.
             """
             self._parent = parent
@@ -5818,7 +5805,7 @@ class WaitContinously(WaitTillFirst):
             The callback, which runs when a waited future is done.
             
             Removes the done future from the parent's `pending` futures and puts it on the `done` ones. Also marks the
-            parent ``WaitContinously`` instance as finished if it is pending.
+            parent ``WaitContinuously`` instance as finished if it is pending.
             
             Parameters
             ----------
@@ -5841,17 +5828,17 @@ class WaitContinously(WaitTillFirst):
     
     def add(self, future):
         """
-        Adds a new future to the ``WaitContinously`` to wait for.
+        Adds a new future to the ``WaitContinuously`` to wait for.
         
         Parameters
         ----------
         future : ``Future`` instance
-            A task or future to the ``WaitContinously`` to wait for.
+            A task or future to the ``WaitContinuously`` to wait for.
         
         Raises
         ------
         RuntimeError
-            If the ``WaitContinously`` instance has exception set, or if it is cancelled already. At this case the
+            If the ``WaitContinuously`` instance has exception set, or if it is cancelled already. At this case the
             added `future` is cancelled instantly.
         """
         state = self._state
@@ -5946,7 +5933,7 @@ class WaitContinously(WaitTillFirst):
     
     def cancel(self):
         """
-        Cancels the ``WaitContinously`` instance.
+        Cancels the ``WaitContinuously`` instance.
         
         By calling it, also cancels all the waited futures as well.
         
@@ -6213,8 +6200,8 @@ class WaitContinously(WaitTillFirst):
     #    `__silence_cb__` is same as ``Future.__silence_cb__``
     # `cancel_handles` is same as ``Future.cancel_handles``
     # `clear` same as ``WaitTilLFirst.clear``
-    # `syncwrap` is same as ``Future.syncwrap``
-    # `asyncwrap` is same as ``Future.asyncwrap``
+    # `sync_wrap` is same as ``Future.sync_wrap``
+    # `async_wrap` is same as ``Future.async_wrap``
 
 module_analyzer.is_coroutine_function = is_coroutine_function
 module_analyzer.is_coroutine_generator_function = is_coroutine_generator_function

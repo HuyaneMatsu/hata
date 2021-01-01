@@ -24,10 +24,10 @@ class Invite(DiscordEntity, immortal=True):
     Attributes
     ---------
     channel : `None`, ``ChannelText``, ``ChannelVoice``, ``ChannelStore`` or ``ChannelGroup``
-        The channel where the invite redirects. If it is announcements or store channe, then the invite is a lurk
+        The channel where the invite redirects. If it is announcements or store channel, then the invite is a lurk
         invite. If channel data was not sent with the invite's, then this attribute is set as `None`.
     code : `str`
-        The invite's unique identificator.
+        The invite's unique identifier.
     created_at : `datetime`
         When the invite was created. Defaults to Discord epoch.
     guild : `None` or ``Guild``
@@ -54,7 +54,7 @@ class Invite(DiscordEntity, immortal=True):
     temporary : `bool`
         Whether this invite only grants temporary membership.
         
-        When the user goes offline, they get kicked, execept if they got a role meanwhile.
+        When the user goes offline, they get kicked, except if they got a role meanwhile.
     user_count : `int`
         The amount of users at the respective guild (or group channel). If not included, then set as `0`.
     uses : `None` or `int`
@@ -112,7 +112,7 @@ class Invite(DiscordEntity, immortal=True):
         
         Returns
         -------
-        ivnite : ``Invite``
+        invite : ``Invite``
         """
         code = guild.vanity_code
         try:
@@ -148,7 +148,7 @@ class Invite(DiscordEntity, immortal=True):
         return self.url
     
     def __repr__(self):
-        """Returns the represnetation of the invite."""
+        """Returns the representation of the invite."""
         return f'<{self.__class__.__name__} code={self.code!r}>'
     
     def __hash__(self):
@@ -169,7 +169,7 @@ class Invite(DiscordEntity, immortal=True):
     @property
     def id(self):
         """
-        Compability property with other Discord entities.
+        Compatibility property with other Discord entities.
         
         Returns
         -------
@@ -385,7 +385,7 @@ class Invite(DiscordEntity, immortal=True):
         Other Parameters
         ----------------
         channel : `None`, ``ChannelText``, ``ChannelVoice``, ``ChannelStore`` or ``ChannelGroup``
-            The channe lwhere the invite redirects.
+            The channel where the invite redirects.
         created_at : `datetime`
             When the invite was created.
         guild : `None` or ``Guild``

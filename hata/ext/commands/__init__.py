@@ -44,14 +44,14 @@ def setup_ext_commands(client, prefix, **kwargs):
         Can be given as `str`, as `tuple`, `list` or `deque` of `str`, or as a `callable`, what accepts `1` argument,
         the respective ``Message`` instance and returns `str`.
     **kwargs : Keyword arguments
-        Additional keyword arguments to be passed to the creater ``CommandProcesser``.
+        Additional keyword arguments to be passed to the created ``CommandProcesser``.
     
     Other Parameters
     ----------------
     ignorecase : `bool`
         Whether the prefix should be case insensitive. Defaults to `True`.
     mention_prefix : `bool`
-        Whether user mentioning the client as first word in a message's content should be interpretered as a prefix.
+        Whether user mentioning the client as first word in a message's content should be interpreted as a prefix.
         Defaults to `true`
     default_category_name : `None` or `str`
         The command processer's default category's name. Defaults to `None`.
@@ -62,7 +62,7 @@ def setup_ext_commands(client, prefix, **kwargs):
         Function to generate display names for commands.
         Should accept only 1 argument, what is `str` instance and should return a `str` instance as well.
     precheck : `None` or `callable`, Optional
-        Function, which desides whether a received message should be processed
+        Function, which decides whether a received message should be processed
         
         The default one filters out every message what's author is a bot account and the channels where the client
         cannot send messages.
@@ -101,7 +101,7 @@ def setup_ext_commands(client, prefix, **kwargs):
         raise TypeError(f'Expected type `{Client.__name__}` as client, meanwhile got `{client_type.__name__}`.')
     
     for attr_name in ('command_processer', 'command_processor', 'commands'):
-        if hasattr(client, 'attr_name'):
+        if hasattr(client, attr_name):
             raise RuntimeError(f'The client already has an attribute named as `{attr_name}`.')
     
     event_message_create = client.events.message_create
@@ -121,7 +121,8 @@ def setup_ext_commands(client, prefix, **kwargs):
         
         break
     
-    command_processer = client.events(CommandProcesser(prefix, **kwargs))
+    command_processer = CommandProcesser(prefix, **kwargs)
+    client.events(command_processer)
     client.command_processer = command_processer
     client.command_processor = command_processer
     client.commands = command_processer.shortcut

@@ -7,7 +7,7 @@ from audioop import mul as audio_mul
 from pathlib import Path
 
 from ..backend.utils import alchemy_incendiary
-from ..backend.futures import render_exc_to_list, Task, Event, sleep, CancelledError
+from ..backend.futures import Task, Event, sleep, CancelledError
 
 from .client_core import KOKORO
 from .opus import FRAME_LENGTH, FRAME_SIZE, SAMPLES_PER_FRAME
@@ -81,7 +81,7 @@ class AudioSource(object):
     @property
     def title(self):
         """
-        Spaceholder method for title attribute.
+        Placeholder method for title attribute.
         
         Always returns an empty string.
         
@@ -94,7 +94,7 @@ class AudioSource(object):
     @property
     def path(self):
         """
-        Spaceholder method for path attribute.
+        Placeholder method for path attribute.
         
         Always returns `None`.
         
@@ -144,7 +144,7 @@ class LocalAudio(AudioSource):
     @staticmethod
     def _create_process_preprocess(source, executable, pipe, before_options, options):
         """
-        Creates a subprocesse's args to open.
+        Creates a subprocess's args to open.
         
         Parameters
         ----------
@@ -425,7 +425,7 @@ else:
             Returns
             -------
             path : `str`
-                The title of the dowloaded audio.
+                The title of the downloaded audio.
             data : `dict` of (`str`, `Any`)
                 All extracted data by YTDL.
             args : `list` of `str`
@@ -633,7 +633,7 @@ class AudioPlayer(object):
                 return
             
             await KOKORO.render_exc_async(err, before=[
-                'Exception occured at \n',
+                'Exception occurred at \n',
                 repr(self),
                 '\n',
                     ])

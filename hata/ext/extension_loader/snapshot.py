@@ -15,7 +15,7 @@ IGNORED_EVENT_HANDLER_TYPES = {
 
 def should_ignore_event_handler(event_handler):
     """
-    Returns whether the given `event_handler` should be ingored from snapshoting.
+    Returns whether the given `event_handler` should be ignored from snapshotting.
     
     Parameters
     ----------
@@ -99,8 +99,8 @@ def calculate_event_handler_snapshot_difference(snapshot_old, snapshot_new):
     event_names.update(snapshot_new)
     
     for event_name in event_names:
-        old_handlers = snapshot_old.getall(event_name)
-        new_handlers = snapshot_new.getall(event_name)
+        old_handlers = snapshot_old.get_all(event_name)
+        new_handlers = snapshot_new.get_all(event_name)
         
         if (old_handlers is not None) and (new_handlers is not None):
             for index in reversed(range(len(old_handlers))):
@@ -153,7 +153,7 @@ def revert_event_handler_snapshot(client, snapshot_difference):
                 event_descriptor(handler, name=event_handler_name)
 
 
-# Resgister snapshot taker
+# Register snapshot taker
 SNAPSHOT_TAKERS['client.events'] = (
     take_event_handler_snapshot,
     calculate_event_handler_snapshot_difference,
@@ -171,7 +171,7 @@ def take_snapshot():
     -------
     snapshot : `list` of `tuple` (``Client``, `list` of `tuple` (`str`, `Any`))
         A taken snapshot. Each element of the generated list contains a `client`, `client-snapshot` pair, where
-        the `client-snapshot` is a list contianing `snapshot-type-name`, `type-specific-snapshot` pairs.
+        the `client-snapshot` is a list containing `snapshot-type-name`, `type-specific-snapshot` pairs.
     """
     snapshot = []
     for client in CLIENTS:
@@ -200,15 +200,15 @@ def calculate_snapshot_difference(snapshot_old, snapshot_new):
     -------
     snapshot_difference : `list` of `tuple` (``Client``, `list` of `tuple` (`str`, `Any`))
         The difference between two snapshots. Each element of the generated list contains a `client`,
-        `client-snapshot-difference` pair, where the `client-snapshot-difference` is a dictionary contianing
+        `client-snapshot-difference` pair, where the `client-snapshot-difference` is a dictionary containing
         `snapshot-type-name`, `type-specific-snapshot-difference` pairs.
     """
-    # First check client difference. We will ignore clients which werent present before or after.
-    snapshot_clients_interseption = set(e[0] for e in snapshot_old)&set(e[0] for e in snapshot_new)
+    # First check client difference. We will ignore clients which weren't present before or after.
+    snapshot_clients_interception = set(e[0] for e in snapshot_old)&set(e[0] for e in snapshot_new)
     
-    # Place snapshots next to eachother depending on clients.
-    pararell_snapshots = []
-    for present_client in snapshot_clients_interseption:
+    # Place snapshots next to each other depending on clients.
+    parallel_snapshots = []
+    for present_client in snapshot_clients_interception:
         for client, client_snapshot in snapshot_old:
             if present_client is client:
                 client_snapshot_old = client_snapshot
@@ -219,21 +219,21 @@ def calculate_snapshot_difference(snapshot_old, snapshot_new):
                 client_snapshot_new = client_snapshot
                 break
         
-        pararell_snapshots.append((present_client, client_snapshot_old, client_snapshot_new))
+        parallel_snapshots.append((present_client, client_snapshot_old, client_snapshot_new))
     
     snapshot_difference = []
     
-    for client, client_snapshot_old, client_snapshot_new in pararell_snapshots:
+    for client, client_snapshot_old, client_snapshot_new in parallel_snapshots:
         client_snapshot_difference = []
         snapshot_difference.append((client, client_snapshot_difference))
         
         # Collect snapshot type names, which are present.
-        snapshot_types_name_interseption = set(e[0] for e in client_snapshot_old)&set(e[0] for e in client_snapshot_new)
+        snapshot_types_name_interception = set(e[0] for e in client_snapshot_old)&set(e[0] for e in client_snapshot_new)
         
         client_snapshot_old = dict(client_snapshot_old)
         client_snapshot_new = dict(client_snapshot_new)
         
-        for snapshot_type_name in snapshot_types_name_interseption:
+        for snapshot_type_name in snapshot_types_name_interception:
             type_specific_snapshot_old = client_snapshot_old[snapshot_type_name]
             type_specific_snapshot_new = client_snapshot_new[snapshot_type_name]
             snapshot_taker, difference_calculator, reverter = SNAPSHOT_TAKERS[snapshot_type_name]

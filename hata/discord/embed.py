@@ -8,7 +8,7 @@ from datetime import datetime
 
 from ..backend.utils import DOCS_ENABLED
 
-from .utils import ROLE_MENTION_RP, USER_MENTION_RP, CHANNEL_MENTION_RP, parse_time, urlcutter
+from .utils import ROLE_MENTION_RP, USER_MENTION_RP, CHANNEL_MENTION_RP, parse_time, url_cutter
 from .color import Color
 
 from . import preinstanced as module_preinstanced
@@ -166,7 +166,7 @@ class EmbedThumbnail(object):
             text.append('None')
         else:
             text.append('\'')
-            url = urlcutter(url)
+            url = url_cutter(url)
             text.append(url)
             text.append('\'')
         
@@ -262,7 +262,7 @@ class EmbedVideo(object):
             text.append('None')
         else:
             text.append('\'')
-            url = urlcutter(url)
+            url = url_cutter(url)
             text.append(url)
             text.append('\'')
         
@@ -364,7 +364,7 @@ class EmbedImage(object):
             text.append('None')
         else:
             text.append('\'')
-            url = urlcutter(url)
+            url = url_cutter(url)
             text.append(url)
             text.append('\'')
             
@@ -386,7 +386,7 @@ class EmbedImage(object):
     
 class EmbedProvider(object):
     """
-    Represents an embed's povider.
+    Represents an embed's provider.
     
     Embed providers cannot be sent, they are receive only.
     
@@ -449,7 +449,7 @@ class EmbedProvider(object):
             text.append('None')
         else:
             text.append('\'')
-            url = urlcutter(url)
+            url = url_cutter(url)
             text.append(url)
             text.append('\'')
         
@@ -572,7 +572,7 @@ class EmbedAuthor(object):
             text.append('None')
         else:
             text.append('\'')
-            url = urlcutter(url)
+            url = url_cutter(url)
             text.append(url)
             text.append('\'')
         
@@ -582,7 +582,7 @@ class EmbedAuthor(object):
             text.append('None')
         else:
             text.append('\'')
-            icon_url = urlcutter(icon_url)
+            icon_url = url_cutter(icon_url)
             text.append(icon_url)
             text.append('\'')
             
@@ -694,7 +694,7 @@ class EmbedFooter(object):
             text.append('None')
         else:
             text.append('\'')
-            icon_url = urlcutter(icon_url)
+            icon_url = url_cutter(icon_url)
             text.append(icon_url)
             text.append('\'')
         
@@ -816,7 +816,7 @@ class EmbedBase(object):
     """
     Base class for Discord embedded contents. Should be taken as a guide for implementing custom embed classes.
     
-    Abstarct Attributes
+    Abstract Attributes
     -------------------
     author : `None` or ``EmbedAuthor``
         Author information.
@@ -1183,9 +1183,9 @@ class EmbedCore(EmbedBase):
 
     def _update_sizes(self, data):
         """
-        Updates the size informations of the embed.
+        Updates the size information of the embed.
         
-        Called when a ``Message`` is edited, but no `edited` timestamp is incuded with the data. Returns `0` if
+        Called when a ``Message`` is edited, but no `edited` timestamp is included with the data. Returns `0` if
         received data does not contain images, if does, then `1`.
         
         This method tries to update the embed's `image`, `thumbnail` amd `video` with their sizes. If any of those is
@@ -1244,9 +1244,9 @@ class EmbedCore(EmbedBase):
 
     def _update_sizes_no_return(self, data):
         """
-        Updates the size informations of the embed.
+        Updates the size information of the embed.
 
-        Familair to ``._update_sizes`` but it not checks whether the embed's images change, just updates them.
+        Familiar to ``._update_sizes`` but it not checks whether the embed's images change, just updates them.
         
         Parameters
         ----------
@@ -2250,7 +2250,7 @@ class Embed(EmbedBase):
 
 class _EmbedFieldsReflection(object):
     """
-    A reflection of an `Embed` object's fields. The instances of this type allow direct modfications of their
+    A reflection of an `Embed` object's fields. The instances of this type allow direct modifications of their
     respective embed's fields.
     
     Attributes

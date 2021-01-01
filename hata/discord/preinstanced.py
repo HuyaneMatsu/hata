@@ -25,7 +25,7 @@ class VerificationLevel(PreinstancedBase):
     name : `str`
         The default name of the verification level.
     value : `int`
-        The discord side identificator value of the verification level.
+        The discord side identifier value of the verification level.
     
     Class Attributes
     ----------------
@@ -36,7 +36,7 @@ class VerificationLevel(PreinstancedBase):
     DEFAULT_NAME : `str` = `'Undefined'`
         The default name of the verification levels.
     
-    Every predefind verification level can be accessed as class attribute as well:
+    Every predefined verification level can be accessed as class attribute as well:
     
     +-----------------------+-----------+-------+
     | Class attribute name  | name      | value |
@@ -82,7 +82,7 @@ class VoiceRegion(PreinstancedBase):
     deprecated : `bool`
         Whether the voice region is deprecated.
     value : `str`
-        The unique identificator of the voice region.
+        The unique identifier of the voice region.
     name : `str`
         The default name of the voice region.
     vip : `bool`
@@ -122,7 +122,7 @@ class VoiceRegion(PreinstancedBase):
     +-----------------------+---------------+-------------------+---------------+-----------+-----------+
     | singapore             | singapore     | Singapore         | False         | False     | False     |
     +-----------------------+---------------+-------------------+---------------+-----------+-----------+
-    | southafrica           | southafrica   | South Africa      | False         | False     | False     |
+    | africa_south          | southafrica   | South Africa      | False         | False     | False     |
     +-----------------------+---------------+-------------------+---------------+-----------+-----------+
     | sydney                | sydney        | Sydney            | False         | False     | False     |
     +-----------------------+---------------+-------------------+---------------+-----------+-----------+
@@ -155,14 +155,14 @@ class VoiceRegion(PreinstancedBase):
     @classmethod
     def _from_value(cls, value):
         """
-        Creates a voice region from the given id and stores it at classe's `.INSTANCES`.
+        Creates a voice region from the given id and stores it at class's `.INSTANCES`.
         
         Called by `.get` when no voice region was found with the given id.
         
         Parameters
         ----------
         id_ : `str`
-            The identificator of the voice region.
+            The identifier of the voice region.
         
         Returns
         -------
@@ -191,9 +191,9 @@ class VoiceRegion(PreinstancedBase):
     @classmethod
     def from_data(cls, data):
         """
-        Creates a voice region from the given data and stores it at the classe's `.INSTANCES`.
+        Creates a voice region from the given data and stores it at the class's `.INSTANCES`.
         
-        If the voice region already exsists returns that instead.
+        If the voice region already exists returns that instead.
         
         Parameters
         ----------
@@ -222,14 +222,14 @@ class VoiceRegion(PreinstancedBase):
     
     def __init__(self, name, value, deprecated, vip):
         """
-        Creates a new voice region with the given parameters and stores it at the classe's `.INSTANCES`.
+        Creates a new voice region with the given parameters and stores it at the class's `.INSTANCES`.
         
         Parameters
         ----------
         deprecated : `bool`
             Whether the voice region is deprecated.
         value : `str`
-            The unique identificator of the voice region.
+            The unique identifier of the voice region.
         name : `str`
             The default name of the voice region.
         vip : `bool`
@@ -255,7 +255,7 @@ class VoiceRegion(PreinstancedBase):
     japan           = NotImplemented
     russia          = NotImplemented
     singapore       = NotImplemented
-    southafrica     = NotImplemented
+    africa_south    = NotImplemented
     sydney          = NotImplemented
     us_central      = NotImplemented
     us_east         = NotImplemented
@@ -281,7 +281,7 @@ VoiceRegion.india           = VoiceRegion('India',          'india',        Fals
 VoiceRegion.japan           = VoiceRegion('Japan',          'japan',        False,  False)
 VoiceRegion.russia          = VoiceRegion('Russia',         'russia',       False,  False)
 VoiceRegion.singapore       = VoiceRegion('Singapore',      'singapore',    False,  False)
-VoiceRegion.southafrica     = VoiceRegion('South Africa',   'southafrica',  False,  False)
+VoiceRegion.africa_south    = VoiceRegion('South Africa',   'southafrica',  False,  False)
 VoiceRegion.sydney          = VoiceRegion('Sydney',         'sydney',       False,  False)
 VoiceRegion.us_central      = VoiceRegion('US Central',     'us-central',   False,  False)
 VoiceRegion.us_east         = VoiceRegion('US East',        'us-east',      False,  False)
@@ -305,7 +305,7 @@ class ContentFilterLevel(PreinstancedBase):
     Attributes
     ----------
     value : `int`
-        The Discord side identificator value of the content filter level.
+        The Discord side identifier value of the content filter level.
     name : `str`
         The default name of the content filter level.
     
@@ -313,10 +313,10 @@ class ContentFilterLevel(PreinstancedBase):
     ----------------
     INSTANCES : `dict` of (`int`, ``ContentFilterLevel``) items
         Stores the predefined content filter levels. This container is accessed when translating a Discord side
-        identificator of a content filter level. The identificator value is used as a key to get it's wrapper side
+        identifier of a content filter level. The identifier value is used as a key to get it's wrapper side
         representation.
     VALUE_TYPE : `type` = `int`
-        The verificacontent filer levels' values' type.
+        The verification filer levels' values' type.
     DEFAULT_NAME : `str` = `'Undefined'`
         The default name of the content filter levels.
     
@@ -354,7 +354,7 @@ class HypesquadHouse(PreinstancedBase):
     Attributes
     ----------
     value : `int`
-        The Discord side identificator value of the hypesquad house.
+        The Discord side identifier value of the hypesquad house.
     name : `str`
         The default name of the hypesquad house.
     
@@ -408,12 +408,12 @@ class Status(PreinstancedBase):
     position : `int`
         Internal position of the status for sorting purposes.
     value : `str`
-        The identificator value of the status.
+        The identifier value of the status.
     
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`str`, ``Status``) items
-        A container what stores the predefined statuses in `value` - `status` relation. This container is acccessed
+        A container what stores the predefined statuses in `value` - `status` relation. This container is accessed
         when translating status value to ``Status`` object.
     VALUE_TYPE : `type` = `str`
         The statuses' values' type.
@@ -447,12 +447,12 @@ class Status(PreinstancedBase):
     
     def __init__(self, value, position):
         """
-        Creates a new status and stores it at the classe's `.INSTANCES` class attribute.
+        Creates a new status and stores it at the class's `.INSTANCES` class attribute.
         
         Parameters
         ----------
         value : `str`
-            The identificator value of the status.
+            The identifier value of the status.
         position : `int`
             Internal position of the status for sorting purposes.
         """
@@ -488,7 +488,7 @@ class Status(PreinstancedBase):
         return f'<{self.__class__.__name__} value={self.value!r}>'
     
     def __gt__(self, other):
-        """Returns whether this statuse's position is greater than the other's."""
+        """Returns whether this status's position is greater than the other's."""
         other_type = other.__class__
         self_type = self.__class__
         if other_type is other_type:
@@ -507,7 +507,7 @@ class Status(PreinstancedBase):
             return False
     
     def __ge__(self,other):
-        """Returns whether this statuse's position is greater than the other's or whether the two status is equal."""
+        """Returns whether this status's position is greater than the other's or whether the two status is equal."""
         other_type = other.__class__
         self_type = self.__class__
         if other_type is other_type:
@@ -578,7 +578,7 @@ class Status(PreinstancedBase):
         return True
     
     def __le__(self, other):
-        """Returns whether this statuse's position is less than the other's or whether the two status is equal."""
+        """Returns whether this status's position is less than the other's or whether the two status is equal."""
         other_type = other.__class__
         self_type = self.__class__
         if other_type is other_type:
@@ -605,7 +605,7 @@ class Status(PreinstancedBase):
         return False
     
     def __lt__(self ,other):
-        """Returns whether this statuse's position is less than the other's."""
+        """Returns whether this status's position is less than the other's."""
         other_type = other.__class__
         self_type = self.__class__
         if other_type is other_type:
@@ -638,14 +638,14 @@ Status.invisible = Status('invisible', 3)
 
 class MessageNotificationLevel(PreinstancedBase):
     """
-    Represents the default message notificaiton level of a ``Guild``.
+    Represents the default message notification level of a ``Guild``.
     
     Attributes
     ----------
     value : `int`
-        The Discord side identificator value of the message notificaiton level.
+        The Discord side identifier value of the message notification level.
     name : `str`
-        The default name of the message notificaiton level.
+        The default name of the message notification level.
     
     Class Attributes
     ----------------
@@ -657,7 +657,7 @@ class MessageNotificationLevel(PreinstancedBase):
     DEFAULT_NAME : `str` = `'Undefined'`
         The default name of the notification levels.
     
-    Each predefined message notificaiton level can also be accessed as a class attribute:
+    Each predefined message notification level can also be accessed as a class attribute:
     
     +-----------------------+---------------+-------+
     | Class attribute name  | name          | value |
@@ -697,7 +697,7 @@ class MFA(PreinstancedBase):
     name : `str`
         The default name of the MFA level.
     value : `int`
-        The Discord side identificator value of the MFA level.
+        The Discord side identifier value of the MFA level.
     
     Class Attributes
     ----------------
@@ -741,12 +741,12 @@ class PremiumType(PreinstancedBase):
     name : `str`
         The default name of the premium type.
     value : `int`
-        The Discord side identificator value of the premium type.
+        The Discord side identifier value of the premium type.
     
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``PremiumType``) items
-        A container what stores the predefined premium types and also is accessed when translating their identificator
+        A container what stores the predefined premium types and also is accessed when translating their identifier
         value to their representation.
     VALUE_TYPE : `type` = `int`
         The premium types' values' type.
@@ -789,13 +789,13 @@ class RelationshipType(PreinstancedBase):
     name : `str`
         The relationship type's name.
     value : `int`
-        The Discord side identificator value of the relationship type.
+        The Discord side identifier value of the relationship type.
     
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``RelationshipType``) items
         The predefined relation types stored in a list, so they can be accessed with their respective value as key.
-        This behaviour is used to translate their Disord side value to their representation.
+        This behaviour is used to translate their Discord side value to their representation.
     VALUE_TYPE : `type` = `int`
         The relationship types' values' type.
     DEFAULT_NAME : `str` = `'Undefined'`
@@ -812,7 +812,7 @@ class RelationshipType(PreinstancedBase):
     +-----------------------+-------------------+-------+
     | blocked               | blocked           | 2     |
     +-----------------------+-------------------+-------+
-    | pending_incoiming     | pending_incoiming | 3     |
+    | pending_incoming      | pending_incoming | 3     |
     +-----------------------+-------------------+-------+
     | pending_outgoing      | pending_outgoing  | 4     |
     +-----------------------+-------------------+-------+
@@ -828,14 +828,14 @@ class RelationshipType(PreinstancedBase):
     stranger          = NotImplemented
     friend            = NotImplemented
     blocked           = NotImplemented
-    pending_incoiming = NotImplemented
+    pending_incoming  = NotImplemented
     pending_outgoing  = NotImplemented
     implicit          = NotImplemented
 
 RelationshipType.stranger          = RelationshipType(0, 'stranger')
 RelationshipType.friend            = RelationshipType(1, 'friend')
 RelationshipType.blocked           = RelationshipType(2, 'blocked')
-RelationshipType.pending_incoiming = RelationshipType(3, 'pending_incoiming')
+RelationshipType.pending_incoming = RelationshipType(3, 'pending_incoming')
 RelationshipType.pending_outgoing  = RelationshipType(4, 'pending_outgoing')
 RelationshipType.implicit          = RelationshipType(5, 'implicit')
 
@@ -848,7 +848,7 @@ class FriendRequestFlag(PreinstancedBase):
     name : `str`
         The default name of the friend request flag.
     value : `int`
-        Internal identificator value of the friend request flag used for lookup.
+        Internal identifier value of the friend request flag used for lookup.
     
     Class Attributes
     ----------------
@@ -954,7 +954,7 @@ class Theme(PreinstancedBase):
     Attributes
     ----------
     value : `str`
-        The discord side identificator value of the theme.
+        The discord side identifier value of the theme.
     
     Class Attributes
     ----------------
@@ -988,7 +988,7 @@ class Theme(PreinstancedBase):
         Parameters
         ----------
         value : `str`
-            The identificator value of the theme.
+            The identifier value of the theme.
         """
         self.value = value
         self.name = value
@@ -1003,7 +1003,7 @@ Theme.light = Theme('light')
 
 class MessageType(PreinstancedBase):
     """
-    Represnets a ``Message``'s type.
+    Represents a ``Message``'s type.
     
     Attributes
     ----------
@@ -1013,7 +1013,7 @@ class MessageType(PreinstancedBase):
     name : `str`
         The default name of the message type.
     value : `int`
-        The Discord side identificator value of the message type.
+        The Discord side identifier value of the message type.
     VALUE_TYPE : `type` = `int`
         The message types' values' type.
     DEFAULT_NAME : `str` = `'Undefined'`
@@ -1026,7 +1026,7 @@ class MessageType(PreinstancedBase):
     INSTANCES : `dict` of (`int`, ``MessageType``) items
         Stores the predefined ``MessageType`` instances. These can be accessed with their `value` as key.
     
-    Every predefind message type can be accessed as class attribute as well:
+    Every predefined message type can be accessed as class attribute as well:
     
     +-------------------------------------------+---------------------------------------------------+-------+
     | Class attribute name & name               | convert                                           | value |
@@ -1107,7 +1107,7 @@ class MessageType(PreinstancedBase):
         Parameters
         ----------
         value : `int`
-            The message type's identificator value.
+            The message type's identifier value.
         
         Returns
         -------
@@ -1123,12 +1123,12 @@ class MessageType(PreinstancedBase):
     
     def __init__(self, value, name, convert):
         """
-        Creates an ``InviteTargetType`` and stores it at the classe's `.INSTANCES` class attribute as well.
+        Creates an ``InviteTargetType`` and stores it at the class's `.INSTANCES` class attribute as well.
         
         Parameters
         ----------
         value : `int`
-            The Discord side identificator value of the message type.
+            The Discord side identifier value of the message type.
         name : `str`
             The default name of the message type.
         convert : `function`
@@ -1369,7 +1369,7 @@ class MessageActivityType(PreinstancedBase):
     name : `str`
         The default name of the message activity type.
     value : `int`
-        The Discord side identificator value of the message activity type.
+        The Discord side identifier value of the message activity type.
     
     Class Attributes
     ----------------
@@ -1380,7 +1380,7 @@ class MessageActivityType(PreinstancedBase):
     DEFAULT_NAME : `str` = `'Undefined'`
         The default name of the verification levels.
     
-    Every predefind message activity type can be accessed as class attribute as well:
+    Every predefined message activity type can be accessed as class attribute as well:
     
     +-----------------------+---------------+-------+
     | Class attribute name  | name          | value |
@@ -1421,14 +1421,14 @@ MessageActivityType.join_request = MessageActivityType(5, 'join_request')
 
 class TeamMembershipState(PreinstancedBase):
     """
-    Represents a ``TeamMemember``'s state at a ``Team``.
+    Represents a ``TeamMember``'s state at a ``Team``.
     
     Attributes
     ----------
     name : `str`
         The name of state.
     value : `int`
-        The Discord side identificator value of the team membership state.
+        The Discord side identifier value of the team membership state.
         
     Class Attributes
     ----------------
@@ -1474,7 +1474,7 @@ class GuildFeature(PreinstancedBase):
     Attributes
     ----------
     value : `str`
-        The Discord side identificator value of the guild feature.
+        The Discord side identifier value of the guild feature.
     
     Class Attributes
     ----------------
@@ -1531,7 +1531,7 @@ class GuildFeature(PreinstancedBase):
     +-------------------------------+-----------------------------------+
     | verification_screen           | MEMBER_VERIFICATION_GATE_ENABLED  |
     +-------------------------------+-----------------------------------+
-    | peview_enabled                | PREVIEW_ENABLED                   |
+    | preview_enabled               | PREVIEW_ENABLED                   |
     +-------------------------------+-----------------------------------+
     """
     INSTANCES = {}
@@ -1548,7 +1548,7 @@ class GuildFeature(PreinstancedBase):
         Parameters
         ----------
         value : `str`
-            The guild feature's identificator value.
+            The guild feature's identifier value.
         
         Returns
         -------
@@ -1568,7 +1568,7 @@ class GuildFeature(PreinstancedBase):
         Parameters
         ----------
         value : `str`
-            The identificator value of the guild feature.
+            The identifier value of the guild feature.
         """
         self.value = value
         self.name = value
@@ -1599,7 +1599,7 @@ class GuildFeature(PreinstancedBase):
     vip                         = NotImplemented
     welcome_screen              = NotImplemented
     verification_screen         = NotImplemented
-    peview_enabled              = NotImplemented
+    preview_enabled              = NotImplemented
 
 GuildFeature.animated_icon              = GuildFeature('ANIMATED_ICON')
 GuildFeature.banner                     = GuildFeature('BANNER')
@@ -1621,7 +1621,7 @@ GuildFeature.verified                   = GuildFeature('VERIFIED')
 GuildFeature.vip                        = GuildFeature('VIP_REGIONS')
 GuildFeature.welcome_screen             = GuildFeature('WELCOME_SCREEN_ENABLED')
 GuildFeature.verification_screen        = GuildFeature('MEMBER_VERIFICATION_GATE_ENABLED')
-GuildFeature.peview_enabled             = GuildFeature('PREVIEW_ENABLED')
+GuildFeature.preview_enabled             = GuildFeature('PREVIEW_ENABLED')
 
 class AuditLogEvent(PreinstancedBase):
     """
@@ -1632,7 +1632,7 @@ class AuditLogEvent(PreinstancedBase):
     name : `str`
         The name of audit log event.
     value : `int`
-        The Discord side identificator value of the audit log event.
+        The Discord side identifier value of the audit log event.
     
     Class Attributes
     ----------------
@@ -1842,7 +1842,7 @@ class DefaultAvatar(PreinstancedBase):
     name : `str`
         The name of the default avatar's color.
     value : ``int`
-        The identificator value of the default avatar.
+        The identifier value of the default avatar.
         
     Class Attributes
     ----------------
@@ -1886,7 +1886,7 @@ class DefaultAvatar(PreinstancedBase):
         Parameters
         ----------
         value : `int`
-            The identificator value of the default avatar.
+            The identifier value of the default avatar.
         
         Returns
         -------
@@ -1901,7 +1901,7 @@ class DefaultAvatar(PreinstancedBase):
     
     def __init__(self, value, name, color):
         """
-        Creates a default avatar and puts it into the classe's `.INSTANCES`.
+        Creates a default avatar and puts it into the class's `.INSTANCES`.
         
         Parameters
         ----------
@@ -1910,7 +1910,7 @@ class DefaultAvatar(PreinstancedBase):
         name : `str`
             The name of the default avatar's color.
         value : ``int`
-            The identificator value of the default avatar.
+            The identifier value of the default avatar.
         """
         self.value = value
         self.name = name
@@ -1946,7 +1946,7 @@ class WebhookType(PreinstancedBase):
     name : `str`
         The name of the webhook type.
     value : `int`
-        The discord side identificator value of the webhook type.
+        The discord side identifier value of the webhook type.
     
     Class Attributes
     ----------------
@@ -1957,7 +1957,7 @@ class WebhookType(PreinstancedBase):
     DEFAULT_NAME : `str` = `'Undefined'`
         The default name of the webhook types.
     
-    Every predefind webhook type can be accessed as class attribute as well:
+    Every predefined webhook type can be accessed as class attribute as well:
     
     +-----------------------+-----------+-------+
     | Class attribute name  | name      | value |
@@ -1978,7 +1978,7 @@ class WebhookType(PreinstancedBase):
     
     __slots__ = ()
     
-    # prefened
+    # predefined
     none      = NotImplemented
     bot       = NotImplemented
     server    = NotImplemented
@@ -2001,7 +2001,7 @@ class InviteTargetType(PreinstancedBase):
     name : `str`
         The name of the target type.
     value : `int`
-        The Discord side identificator value of the target type.
+        The Discord side identifier value of the target type.
     
     Class Attributes
     ----------------
@@ -2012,7 +2012,7 @@ class InviteTargetType(PreinstancedBase):
     DEFAULT_NAME : `str` = `'Undefined'`
         The default name of the invite target types.
     
-    Every predefind invite target type can be accessed as class attribute as well:
+    Every predefined invite target type can be accessed as class attribute as well:
     
     +-----------------------+-----------+-------+
     | Class attribute name  | name      | value |
@@ -2042,9 +2042,9 @@ class StickerType(PreinstancedBase):
     Attributes
     ----------
     name : `str`
-        The name of the message sticket format type.
+        The name of the message sticker format type.
     value : `int`
-        The Discord side identificator value of the message sticker format type.
+        The Discord side identifier value of the message sticker format type.
     
     Class Attributes
     ----------------
@@ -2053,9 +2053,9 @@ class StickerType(PreinstancedBase):
     VALUE_TYPE : `type` = `int`
         The message sticker format types' values' type.
     DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the message sticket types.
+        The default name of the message sticker types.
     
-    Every predefind sticket format type can be accessed as class attribute as well:
+    Every predefined sticker format type can be accessed as class attribute as well:
     
     +-----------------------+-----------+-------+
     | Class attribute name  | name      | value |
@@ -2096,7 +2096,7 @@ class RoleManagerType(PreinstancedBase):
     name : `str`
         The name of the role manager type.
     value : `int`
-        The identificator value the role manager type.
+        The identifier value the role manager type.
     
     Class Attributes
     ----------------
@@ -2107,7 +2107,7 @@ class RoleManagerType(PreinstancedBase):
     DEFAULT_NAME : `str` = `'UNDEFINED'`
         The default name of the role manager types.
     
-    Every predefind role manager type can be accessed as class attribute as well:
+    Every predefined role manager type can be accessed as class attribute as well:
     
     +-----------------------+---------------+-------+
     | Class attribute name  | name          | value |
@@ -2164,7 +2164,7 @@ class ApplicationCommandOptionType(PreinstancedBase):
     name : `str`
         The name of the role manager type.
     value : `int`
-        The identificator value the role manager type.
+        The identifier value the role manager type.
     
     Class Attributes
     ----------------
@@ -2172,11 +2172,11 @@ class ApplicationCommandOptionType(PreinstancedBase):
         Stores the predefined ``ApplicationCommandOptionType`` instances. These can be accessed with their `value` as
         key.
     VALUE_TYPE : `type` = `int`
-        The application command option typea' values' type.
+        The application command option types' values' type.
     DEFAULT_NAME : `str` = `'UNDEFINED'`
         The default name of the application command option types.
     
-    Every predefind application command option type. can be accessed as class attribute as well:
+    Every predefined application command option type. can be accessed as class attribute as well:
     
     +-----------------------+-------------------+-------+
     | Class attribute name  | Name              | Value |
@@ -2234,7 +2234,7 @@ class VerificationScreenStepType(PreinstancedBase):
     Attributes
     ----------
     value : `str`
-        The Discord side identificator value of the verification step types.
+        The Discord side identifier value of the verification step types.
     
     Class Attributes
     ----------------
@@ -2268,7 +2268,7 @@ class VerificationScreenStepType(PreinstancedBase):
         Parameters
         ----------
         value : `str`
-            The verification screen type's identificator value.
+            The verification screen type's identifier value.
         
         Returns
         -------
@@ -2288,7 +2288,7 @@ class VerificationScreenStepType(PreinstancedBase):
         Parameters
         ----------
         value : `str`
-            The identificator value of the verification screen types.
+            The identifier value of the verification screen types.
         """
         self.value = value
         self.name = value

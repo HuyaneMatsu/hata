@@ -31,6 +31,7 @@ setup(
         'hata.ext.kokoro_sqlalchemy',
         'hata.ext.patchouli',
         'hata.ext.prettyprint',
+        'hata.ext.slash',
             ],
     url = 'https://github.com/HuyaneMatsu/hata',
     license = 'Apache 2.0',

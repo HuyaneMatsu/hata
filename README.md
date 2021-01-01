@@ -9,8 +9,8 @@ real stuff:
     embedding into a threaded system.
 - Running more clients from the same instance.
 - Shared entity cache between shards and clients.
-- Feature rich API for common usacases.
-- Fast ratelimit handling.
+- Feature rich API for common use cases.
+- Fast rate limit handling.
 - No member objects associated with guilds. Hata uses guild -> user -> guild relation enabling implementing
     cross-guild features more easily.
 - Optimized dispatch event parsers depending on intents, client count and on handled events as well.
@@ -44,7 +44,7 @@ async def message_create(client, message):
 Nue.start()
 ```
 
-An improved example using the `commands` extension to handle common usecases.
+An improved example using the `commands` extension to handle common use cases.
 
 ```py
 from hata import Client

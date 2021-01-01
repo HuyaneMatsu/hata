@@ -6,12 +6,12 @@ from ...backend.utils import KeepType
 from ...discord.client_utils import ClientWrapper
 from ...discord.parsers import _EventHandlerManagerRouter
 
-from .command import CommandProcesser, Command
+from .command import Slasher, SlashCommand
 
 
 def commands_getter(manager_router):
     """
-    Gets the command processors using `Client.commands` of an ``_EventHandlerManagerRouter``.
+    Gets the slash command processer using `Client.slasher` of an ``_EventHandlerManagerRouter``.
     
     Parameters
     ----------
@@ -20,7 +20,7 @@ def commands_getter(manager_router):
     
     Returns
     -------
-    handlers : `list` of ``CommandProcesser`` instances
+    handlers : `list` of ``Slasher`` instances
     """
     handlers = []
     for client in manager_router.parent.clients:
@@ -29,7 +29,7 @@ def commands_getter(manager_router):
             continue
         
         handler = manager.parent
-        if isinstance(handler, CommandProcesser):
+        if isinstance(handler, Slasher):
             handlers.append(handler)
     
     return handlers
@@ -37,24 +37,24 @@ def commands_getter(manager_router):
 
 def from_class_constructor(klass):
     """
-    Creates a command from the given class.
+    Creates a slash command from the given class.
     
     Raises
     ------
     BaseException
-        Any exception raised by the respective ``Command`` constructor.
+        Any exception raised by the respective ``SlashCommand`` constructor.
     """
-    return Command.from_class(klass)
+    return SlashCommand.from_class(klass)
 
 
 @KeepType(ClientWrapper)
 class ClientWrapper:
     
     @property
-    def commands(self):
+    def interactions(self):
         """
-        Returns a ``_EventHandlerManagerRouter`` instance, with what commands can be added to more clients at the same
-        time.
+        Returns a ``_EventHandlerManagerRouter`` instance, with what slash commands can be added to more clients at the
+        same time.
         
         Returns
         -------

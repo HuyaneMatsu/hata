@@ -25,7 +25,7 @@ class DocWarning(object):
     __slots__ = ('path', 'reason')
     def __new__(cls, path, reason):
         """
-        Creates a new ``DocWarning`` instance with the gvien parameters.
+        Creates a new ``DocWarning`` instance with the given parameters.
         
         Parameters
         ----------
@@ -46,7 +46,7 @@ class DocWarning(object):
         return self
     
     def __repr__(self):
-        """Returns the representation of the docwarning."""
+        """Returns the representation of the doc-warning."""
         return f'{self.__class__.__name__}(path={self.path!r}, reason={self.reason!r})'
     
     @property
@@ -68,7 +68,7 @@ def show_warnings(file=None):
     Parameters
     ----------
     file : `file-like`, Optional
-        File liek to write the warnings to. Defaults to `sys.stderr`.
+        File like to write the warnings to. Defaults to `sys.stderr`.
     """
     if file is None:
         file = sys.stderr
@@ -130,7 +130,7 @@ class Grave(object):
     content : `str`
         The string inside of the '`' characters.
     type : `int`
-        Type identificator for the grave. Possible values:
+        Type identifier for the grave. Possible values:
         
         +-------------------------------+-------+
         | Respective name               | Value |
@@ -149,14 +149,14 @@ class Grave(object):
     __slots__ = ('content', 'type', )
     def __init__(self, content, type_):
         """
-        Creates a new ``Grave`` from the gvien parameters.
+        Creates a new ``Grave`` from the given parameters.
         
         Parameters
         ----------
         content : `str`
             The string inside of the '`' characters.
         type_ : `int`
-            Type identificator for the grave.
+            Type identifier for the grave.
         """
         self.content = content
         self.type = type_
@@ -178,16 +178,16 @@ class Grave(object):
         
         return True
 
-def get_part_arround(content, index):
+def get_part_around(content, index):
     """
-    Gets the part of the given `content` arround the given `index`.
+    Gets the part of the given `content` around the given `index`.
     
     Parameters
     ----------
     content : `str`
-        The content, arround what the part will be cut out.
+        The content, around what the part will be cut out.
     index : `str`
-        The index of aaround where the part will be cut out.
+        The index of around where the part will be cut out.
     """
     result = []
     
@@ -243,12 +243,12 @@ def build_graves(text):
             break
         
         if grave_start == len(text):
-            warnings.append(f'Not ended grave character: {get_part_arround(text, grave_start)!r}')
+            warnings.append(f'Not ended grave character: {get_part_around(text, grave_start)!r}')
             break
         
         if grave_start == grave_end:
             if grave_end != 0:
-                warnings.append(f'Empty ungraved section: {get_part_arround(text, grave_end)!r}')
+                warnings.append(f'Empty ungraved section: {get_part_around(text, grave_end)!r}')
         else:
             section = text[grave_end:grave_start]
             if content:
@@ -275,7 +275,7 @@ def build_graves(text):
                     section = last+section
                     
             content.append(section)
-            warnings.append(f'Not ended grave section: {get_part_arround(text, len(section))!r}')
+            warnings.append(f'Not ended grave section: {get_part_around(text, len(section))!r}')
             break
         
         if double_grave:
@@ -288,10 +288,10 @@ def build_graves(text):
                         section = last+section
                 
                 content.append(section)
-                warnings.append(f'Not ended double grave section: {get_part_arround(text, len(section))!r}')
+                warnings.append(f'Not ended double grave section: {get_part_around(text, len(section))!r}')
             else:
                 if grave_start == grave_end:
-                    warnings.append(f'Empty double grave: {get_part_arround(text, grave_end)!r}')
+                    warnings.append(f'Empty double grave: {get_part_around(text, grave_end)!r}')
                 else:
                     reference = text[grave_start:grave_end]
                     content.append(Grave(reference, GRAVE_TYPE_GLOBAL_REFERENCE))
@@ -423,7 +423,7 @@ def graved_to_source_text(graved):
 
 class GravedDescription(object):
     """
-    Represnets a garved description part of a docstring.
+    Represents a graved description part of a docstring.
     
     Attributes
     ----------
@@ -463,7 +463,7 @@ class GravedDescription(object):
 
 class GravedAttributeDescription(object):
     """
-    Represnts an attribute's graved header part.
+    Represents an attribute's graved header part.
     
     Attributes
     ----------
@@ -500,17 +500,17 @@ class GravedAttributeDescription(object):
     
     def __repr__(self):
         """Returns the graved description's representation."""
-        return (f'<{self.__class__.__name__} name={self.name!r}, seprator={self.separator!r}, content='
+        return (f'<{self.__class__.__name__} name={self.name!r}, separator={self.separator!r}, content='
             f'{graved_to_source_text(self.content)!r}>')
 
 class GravedCodeBlock(object):
     """
-    Represnets a garved code block part of a docstring.
+    Represents a graved code block part of a docstring.
     
     Attributes
     ----------
     lines : `list` of `str`
-        The lines of the codeblock
+        The lines of the code-block
     """
     __slots__ = ('lines', )
     def __new__(cls, parent, path):
@@ -714,7 +714,7 @@ class GravedListingElement(object):
                 head = None
         
         if None is head is content:
-            DocWarning(path, 'Empty isting element would have be created.')
+            DocWarning(path, 'Empty listing element would have be created.')
             return None
         
         self = object.__new__(cls)

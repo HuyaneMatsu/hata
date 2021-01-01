@@ -1,6 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
 import socket as module_socket
-from functools import lru_cache
 from http.cookies import SimpleCookie
 
 try:
@@ -19,9 +18,9 @@ else:
 
 from .utils import imultidict
 from .futures import shield, Task
-from .eventloop import LOOP_TIME
+from .event_loop import LOOP_TIME
 
-from .hdrs import HOST, METH_GET, AUTHORIZATION, PROXY_AUTHORIZATION, METH_CONNECT
+from .headers import HOST, METHOD_GET, AUTHORIZATION, PROXY_AUTHORIZATION, METHOD_CONNECT
 from .reqrep import ClientRequest, Fingerprint, SSL_ALLOWED_TYPES
 from .exceptions import ProxyError
 from .helpers import is_ip_address
@@ -36,7 +35,7 @@ class Connection(object):
     Attributes
     ----------
     callbacks : `list` of `callable`
-        Callables to run when the connection is ``.close``-d, ``.release``-d or ``.detach``-ed. They should accept no
+        Callable-s to run when the connection is ``.close``-d, ``.release``-d or ``.detach``-ed. They should accept no
         parameters.
     connector : ``ConnectorBase`` instance
         The respective connector of the connection.
@@ -80,7 +79,7 @@ class Connection(object):
         return ''.join(result)
     
     def __del__(self):
-        """Relreases the connector if not yet released."""
+        """Releases the connector if not yet released."""
         connector = self.connector
         if connector.loop.running:
             protocol = self.protocol
@@ -140,7 +139,7 @@ class Connection(object):
             callback()
         except BaseException as err:
             self.connector.loop.render_exc_async(err, [
-                'Exception occured at ',
+                'Exception occurred at ',
                 repr(self),
                 '.add_callback\nAt running ',
                 repr(callback),
@@ -159,7 +158,7 @@ class Connection(object):
                 callback()
             except BaseException as err:
                 self.connector.loop.render_exc_async(err, [
-                    'Exception occured at ',
+                    'Exception occurred at ',
                     repr(self),
                     '._run_callbacks\nAt running ',
                     repr(callback),
@@ -179,7 +178,7 @@ class Connection(object):
     
     def release(self):
         """
-        Closes the connection by running it's callbacks and relesing it.
+        Closes the connection by running it's callbacks and releasing it.
         """
         self._run_callbacks()
         
@@ -192,7 +191,7 @@ class Connection(object):
         """
         Detaches the connection from it ``.connector``.
         
-        Note, that with detaching, the connection set it's ``.protocol`` as `None`, so you should save an insatnce of
+        Note, that with detaching, the connection set it's ``.protocol`` as `None`, so you should save an instance of
         it down before.
         """
         self._run_callbacks()
@@ -228,7 +227,7 @@ class ConnectorBase(object):
     Attributes
     ----------
     acquired_protocols : `set` of ``ReadProtocolBase``
-        Acqured protocols of the connector.
+        Acquired protocols of the connector.
     acquired_protocols_per_host : `dict` of (``ConnectionKey``, `set` of ``ReadProtocolBase``) items
         Acquired protocols for each host.
     alive_protocols_per_host : `dict` of (``ConnectionKey``, `list` of `tuple` (``ReadProtocolBase``, `float`)) items
@@ -237,13 +236,13 @@ class ConnectorBase(object):
     cleanup_handle : `None` or ``TimerWeakHandle``
         Weak handle, which cleans up the timed out connections of the connector.
     closed : `bool`
-        Whether the connectorr is closed.
+        Whether the connector is closed.
     cookies : `http.cookies.SimpleCookie`
         Cookies of the connection.
     force_close : `bool`
         Whether after each request (and between redirects) the connections should be closed.
     loop : ``EventThread``
-        The event loop to what the connectior is bound to.
+        The event loop to what the connector is bound to.
     
     Notes
     -----
@@ -426,7 +425,7 @@ class ConnectorBase(object):
     
     def release_acquired_protocols(self, key, protocol):
         """
-        Removes the given acqured protocol from the connector.
+        Removes the given acquired protocol from the connector.
         
         Parameters
         ----------
@@ -516,29 +515,29 @@ DNS_CACHE_TIMEOUT = 10.0
 
 class HostInfo(object):
     """
-    Resolved informations about a host.
+    Resolved information about a host.
     
     Attributes
     ----------
     hostname : `str`
         The hosts's name.
     host : `str`
-        The host's ip adress.
+        The host's ip address.
     port : `int`
         Port to connect to the host.
     family : `AddressFamily` or `int`
         Address family.
-    proto : `int`
+    protocol : `int`
         Protocol type.
     flags : `int`
-        Bitmask for `getaddrinfo`.
+        Bit-mask for `get_address_info`.
     """
-    __slots__ = ('hostname', 'host', 'port', 'family', 'proto', 'flags', )
+    __slots__ = ('hostname', 'host', 'port', 'family', 'protocol', 'flags', )
     
     def __repr__(self):
         """Returns the host info's representation."""
         return f'<{self.__class__.__name__}, hostname={self.hostname!r}, host={self.host!r}, port={self.port!r}, ' \
-               f'family={self.family!r}, proto={self.proto!r}, flags={self.flags!r}>'
+               f'family={self.family!r}, protocol={self.protocol!r}, flags={self.flags!r}>'
     
     @classmethod
     def from_ip(cls, host, port, family):
@@ -548,7 +547,7 @@ class HostInfo(object):
         Parameters
         ----------
         host : `str`
-            The host's ip adress.
+            The host's ip address.
         port : `int`
             Port to connect to the host.
         family : `AddressFamily` or `int`
@@ -559,30 +558,30 @@ class HostInfo(object):
         self.host = host
         self.port = port
         self.family = family
-        self.proto = 0
+        self.protocol = 0
         self.flags = 0
         
         return self
     
     @classmethod
-    def from_addressinfo(cls, host, addressinfo):
+    def from_address_info(cls, host, address_info):
         """
         Creates a host info instance from the given parameters.
         
         Parameters
         ----------
         host : `str`
-            The host's ip adress.
-        addressinfo : `tuple` (`AddressFamily` or `int`, `SocketKind` or `int`, `int`, `str`, `tuple` (`str, `int`))
-            An address info returned by `getaddrinfo`.
+            The host's ip address.
+        address_info : `tuple` (`AddressFamily` or `int`, `SocketKind` or `int`, `int`, `str`, `tuple` (`str, `int`))
+            An address info returned by `get_address_info`.
         """
         self = object.__new__(cls)
         self.hostname = host
-        adress = addressinfo[4]
-        self.host = adress[0]
-        self.port = adress[1]
-        self.family = addressinfo[0]
-        self.proto = addressinfo[2]
+        address = address_info[4]
+        self.host = address[0]
+        self.port = address[1]
+        self.family = address_info[0]
+        self.protocol = address_info[2]
         self.flags = module_socket.AI_NUMERICHOST
         
         return self
@@ -604,7 +603,7 @@ class HostInfo(object):
         if self.family != other.family:
             return False
         
-        if self.proto != other.proto:
+        if self.protocol != other.protocol:
             return False
         
         if self.flags != other.flags:
@@ -614,13 +613,13 @@ class HostInfo(object):
     
     def __hash__(self):
         """Returns the host infos hash value."""
-        return hash(self.hostname) ^ hash(self.host) ^ (self.port << 17 ) ^ hash(self.family) ^ hash(self.proto) ^ \
+        return hash(self.hostname) ^ hash(self.host) ^ (self.port << 17 ) ^ hash(self.family) ^ hash(self.protocol) ^ \
                hash(self.flags)
 
 
 class HostInfoCont(object):
     """
-    ``HostInfo`` oontainer, which rotates it's hosts.
+    ``HostInfo`` container, which rotates it's hosts.
     
     Attributes
     ----------
@@ -629,7 +628,7 @@ class HostInfoCont(object):
     timestamp : `int`
         Monotonic time determining when the container was created.
     host_infos : `list` of ``HostInfo``
-        A list of the contained host informations.
+        A list of the contained host information.
     """
     __slots__ = ('host_infos', 'index', 'timestamp')
     
@@ -643,19 +642,19 @@ class HostInfoCont(object):
             The host's name.
         address_infos : `list` of tuple` \
                 (`AddressFamily` or `int`, `SocketKind` or `int`, `int`, `str`, `tuple` (`str, `int`))
-            Address infos returned by `getaddrinfo`.
+            Address infos returned by `get_address_info`.
         """
         self = object.__new__(cls)
         self.index = 0
         self.timestamp = LOOP_TIME()
-        self.host_infos = [HostInfo.from_addressinfo(host, address_info) for address_info in address_infos]
+        self.host_infos = [HostInfo.from_address_info(host, address_info) for address_info in address_infos]
         
         return self
     
     @property
     def expired(self):
         """
-        Returns whether the host info container exprired.
+        Returns whether the host info container expired.
         
         Returns
         -------
@@ -709,7 +708,7 @@ class TCPConnector(ConnectorBase):
     Attributes
     ----------
     acquired_protocols : `set` of ``ReadProtocolBase``
-        Acqured protocols of the connector.
+        Acquired protocols of the connector.
     acquired_protocols_per_host : `dict` of (``ConnectionKey``, `set` of ``ReadProtocolBase``) items
         Acquired protocols for each host.
     alive_protocols_per_host : `dict` of (``ConnectionKey``, `list` of `tuple` (``ReadProtocolBase``, `float`)) items
@@ -718,20 +717,20 @@ class TCPConnector(ConnectorBase):
     cleanup_handle : `None` or ``TimerWeakHandle``
         Weak handle, which cleans up the timed out connections of the connector.
     closed : `bool`
-        Whether the connectorr is closed.
+        Whether the connector is closed.
     cookies : `http.cookies.SimpleCookie`
         Cookies of the connection.
     force_close : `bool`
         Whether after each request (and between redirects) the connections should be closed.
     loop : ``EventThread``
-        The event loop to what the connectior is bound to.
+        The event loop to what the connector is bound to.
     cached_hosts : `dict` of (`tuple` (`str`, `int`), ``HostInfoCont``) items
-        Cached resolved host informations.
+        Cached resolved host information.
     dns_events : `dict` of (`tuple` (`str`, `int`), ``Task`` of ``.resolve``) items
         Active host info resolving events of the connector.
     family : `AddressFamily` or `int`
         Address family of the created socket if any.
-    local_addr : `None` or `tuple` of (`None` or  `str`, `None` or `int`)
+    local_address : `None` or `tuple` of (`None` or  `str`, `None` or `int`)
         Can be given as a `tuple` (`local_host`, `local_port`) to bind created sockets locally.
     ssl : `ssl.SSLContext`, `bool`, ``Fingerprint``, `NoneType`
         Whether and what type of ssl should the connector use.
@@ -740,11 +739,11 @@ class TCPConnector(ConnectorBase):
     -----
     Connectors support weakreferencing.
     """
-    __slots__ = ('cached_hosts', 'dns_events', 'family', 'local_addr',  'ssl', )
-    
-    def __new__(cls, loop, family=0, ssl=None, local_addr=None, force_close=False, ):
+    __slots__ = ('cached_hosts', 'dns_events', 'family', 'local_address',  'ssl', )
+
+    def __new__(cls, loop, family=0, ssl=None, local_address=None, force_close=False, ):
         """
-        Creates a new ``TCPCOnnector`` instance with the given parameters.
+        Creates a new ``TCPConnector`` instance with the given parameters.
         
         Parameters
         ----------
@@ -754,7 +753,7 @@ class TCPConnector(ConnectorBase):
             Address family of the created socket if any. Defaults to `0`.
         ssl : `ssl.SSLContext`, `bool`, ``Fingerprint``, `NoneType`, Optional
             Whether and what type of ssl should the connector use. Defaults to `None`.
-        local_addr : `None` or `tuple` of (`None` or  `str`, `None` or `int`), Optional
+        local_address : `None` or `tuple` of (`None` or  `str`, `None` or `int`), Optional
             Can be given as a `tuple` (`local_host`, `local_port`) to bind created sockets locally. Defaults to `None`.
         force_close : `bool`, Optional
             Whether after each request (and between redirects) the connections should be closed. Defaults to `False`.
@@ -768,7 +767,7 @@ class TCPConnector(ConnectorBase):
         self.cached_hosts = {}
         self.dns_events = {}
         self.family = family
-        self.local_addr = local_addr
+        self.local_address = local_address
         
         return self
     
@@ -797,10 +796,10 @@ class TCPConnector(ConnectorBase):
         Returns
         -------
         result : ``HostInfoCont`` or ``BaseException``
-            A host info container containing the resolved addresses or the cacthed exception.
+            A host info container containing the resolved addresses or the cached exception.
         """
         try:
-            infos = await self.loop.getaddrinfo(host, port, type=module_socket.SOCK_STREAM, family=self.family)
+            infos = await self.loop.get_address_info(host, port, type=module_socket.SOCK_STREAM, family=self.family)
         except BaseException as err:
             return err
         
@@ -822,21 +821,21 @@ class TCPConnector(ConnectorBase):
         Returns
         -------
         result : ``HostInfoCont`` or ``BaseException``
-            A host info container containing the resolved addresses or the cacthed exception.
+            A host info container containing the resolved addresses or the cached exception.
         """
         try:
             event = self.dns_events[key]
         except KeyError:
             event = Task(self.resolve(*key), self.loop)
             self.dns_events[key] = event
-            hostinfo = await event
-            if type(hostinfo) is HostInfoCont:
-                self.cached_hosts[key] = hostinfo
+            host_info = await event
+            if type(host_info) is HostInfoCont:
+                self.cached_hosts[key] = host_info
             del self.dns_events[key]
         else:
-            hostinfo = await event
+            host_info = await event
         
-        return hostinfo
+        return host_info
     
     async def resolve_host_iterator(self, request):
         """
@@ -859,7 +858,7 @@ class TCPConnector(ConnectorBase):
         ConnectionError
             No hosts were resolved.
         BaseException
-            Any other catched exception.
+            Any other cached exception.
         """
         host = request.url.raw_host
         port = request.port
@@ -878,9 +877,9 @@ class TCPConnector(ConnectorBase):
             if expired:
                 task = shield(self.resolver_task(key), self.loop)
             
-            addrs = host_infos.next_addresses()
-            for hostinfo in addrs:
-                yield hostinfo
+            address = host_infos.next_addresses()
+            for host_info in address:
+                yield host_info
             
             if expired:
                 host_infos = await task
@@ -890,11 +889,11 @@ class TCPConnector(ConnectorBase):
                     else:
                         raise host_infos
                 
-                for hostinfo in host_infos.next_addresses():
-                    if hostinfo in addrs:
+                for host_info in host_infos.next_addresses():
+                    if host_info in address:
                         continue
                     
-                    yield hostinfo
+                    yield host_info
             
             return
         
@@ -907,8 +906,8 @@ class TCPConnector(ConnectorBase):
             else:
                 raise host_infos
         
-        for hostinfo in host_infos.next_addresses():
-            yield hostinfo
+        for host_info in host_infos.next_addresses():
+            yield host_info
     
     async def create_connection(self, request):
         """
@@ -941,31 +940,6 @@ class TCPConnector(ConnectorBase):
         _, protocol = await coro
         return protocol
     
-    @staticmethod
-    @lru_cache(None)
-    def make_ssl_context(verified):
-        """
-        Creates an ssl context.
-        
-        Parameters
-        ----------
-        verified : `bool`
-            Whether the created ssl context should veify..
-        
-        Returns
-        -------
-        ssl_context : `ssl.SSLContext`
-        """
-        if verified:
-            ssl_context = module_ssl.create_default_context()
-        else:
-            ssl_context = module_ssl.SSLContext(module_ssl.PROTOCOL_SSLv23)
-            ssl_context.options |= module_ssl.OP_NO_SSLv2
-            ssl_context.options |= module_ssl.OP_NO_SSLv3
-            ssl_context.options |= module_ssl.OP_NO_COMPRESSION
-            ssl_context.set_default_verify_paths()
-        return ssl_context
-    
     def get_ssl_context(self, request):
         """
         Gets ssl context for the respective request.
@@ -987,19 +961,18 @@ class TCPConnector(ConnectorBase):
             raise RuntimeError('SSL is not supported.')
         
         ssl_context = request.ssl
-        if isinstance(ssl_context, module_ssl.SSLContext):
-            return ssl_context
-        
         if (ssl_context is not None):
+            if isinstance(ssl_context, module_ssl.SSLContext):
+                return ssl_context
+            
             return SSL_CONTEXT_UNVERIFIED # not verified or fingerprinted
         
         ssl_context = self.ssl
+        if ssl_context is None:
+            return SSL_CONTEXT_VERIFIED
         
         if isinstance(ssl_context, module_ssl.SSLContext):
             return ssl_context
-        
-        if ssl_context is None:
-            return SSL_CONTEXT_VERIFIED
         
         return SSL_CONTEXT_UNVERIFIED
     
@@ -1017,16 +990,16 @@ class TCPConnector(ConnectorBase):
         fingerprint : `None` or ``Fingerprint``
         """
         maybe_fingerprint = request.ssl
-        if type(maybe_fingerprint) is Fingerprint:
+        if isinstance(maybe_fingerprint, Fingerprint):
             return maybe_fingerprint
         
         maybe_fingerprint = self.ssl
-        if type(maybe_fingerprint) is Fingerprint:
+        if isinstance(maybe_fingerprint, Fingerprint):
             return maybe_fingerprint
     
     async def create_direct_connection(self, request):
         """
-        Creates adirect connection for the given request and returns the created protocol.
+        Creates a direct connection for the given request and returns the created protocol.
         
         This method is a coroutine.
         
@@ -1056,9 +1029,9 @@ class TCPConnector(ConnectorBase):
                     host_info.host, host_info.port,
                     ssl = ssl_context,
                     family = host_info.family,
-                    proto = host_info.proto,
+                    protocol = host_info.protocol,
                     flags = host_info.flags,
-                    local_addr = self.local_addr,
+                    local_address = self.local_address,
                     server_hostname = (host_info.hostname if ssl_context else None),
                         )
             except ssl_errors as err:
@@ -1110,13 +1083,13 @@ class TCPConnector(ConnectorBase):
         
         headers[HOST] = request.headers[HOST]
         
-        proxy_request = ClientRequest(self.loop, METH_GET, request.proxy_url, headers, None, None, None,
+        proxy_request = ClientRequest(self.loop, METHOD_GET, request.proxy_url, headers, None, None, None,
             request.proxy_auth, None, None, request.ssl)
         
         # create connection to proxy server
         transport, protocol = await self.create_direct_connection(proxy_request)
         
-        # Many HTTP proxies has buggy keepalive support. Let's not reuse connection but close it after processing
+        # Many HTTP proxies has buggy keep-alive support. Let's not reuse connection but close it after processing
         # every response.
         protocol.close()
         
@@ -1129,7 +1102,7 @@ class TCPConnector(ConnectorBase):
         
         if request.is_ssl():
             ssl_context = self.get_ssl_context(request)
-            proxy_request.method = METH_CONNECT
+            proxy_request.method = METHOD_CONNECT
             proxy_request.url = request.url
             connection = Connection(self, request.connection_key, protocol)
             
@@ -1139,17 +1112,17 @@ class TCPConnector(ConnectorBase):
                 try:
                     if response.status != 200:
                         raise ProxyError(response.status, response.reason, response.headers)
-                    rawsock = transport.get_extra_info('socket', None)
-                    if rawsock is None:
+                    raw_socket = transport.get_extra_info('socket', None)
+                    if raw_socket is None:
                         raise RuntimeError('Transport does not expose socket instance.')
                     # Duplicate the socket, so now we can close proxy transport
-                    rawsock = rawsock.dup()
+                    raw_socket = raw_socket.dup()
                 finally:
                     transport.close()
                 
                 try:
                     transport, protocol = await self.loop.create_connection(ProtocolBase(self.loop), ssl=ssl_context,
-                        sock=rawsock, server_hostname=request.host,)
+                        socket=raw_socket, server_hostname=request.host,)
                 except ssl_errors as err:
                     err.key = request.connection_key
                     raise
@@ -1160,5 +1133,3 @@ class TCPConnector(ConnectorBase):
                 response.close()
         
         return transport, protocol
-
-del lru_cache

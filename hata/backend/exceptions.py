@@ -67,7 +67,7 @@ class ProxyError(HttpProcessingError):
 
 class InvalidOrigin(InvalidHandshake):
     """
-    Raised when a webcoket handshake received invalid origin header.
+    Raised when a websocket handshake received invalid origin header.
     """
     pass
 
@@ -98,12 +98,12 @@ class ContentEncodingError(HttpProcessingError, PayloadError):
 
 class ConnectionClosed(Exception):
     """
-    Connection closed exeception raised when a websocket is closed.
+    Connection closed exception raised when a websocket is closed.
     
     Attributes
     ----------
     code : `int`
-        Websocket closecode.
+        Websocket close code.
     exception : `None` or `BaseException`
         Source exception if applicable.
     reason : `None or `str`
@@ -140,7 +140,7 @@ class ConnectionClosed(Exception):
         Parameters
         ----------
         code : `int`
-            Websocket close oode.
+            Websocket close code.
         
         Returns
         -------
@@ -206,6 +206,6 @@ class ConnectionClosed(Exception):
 
 class WebSocketProtocolError(Exception):
     """
-    Exception raised by webscoekts when receiveing invalid payload.
+    Exception raised by websocket when receiving invalid payload.
     """
     pass

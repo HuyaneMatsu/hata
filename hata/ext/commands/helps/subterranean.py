@@ -23,8 +23,8 @@ from ..content_parser import DEFAULT_TYPE_NONE, RestParserContext, SingleArgsPar
 MAX_LINE_PER_PAGE = 24
 DEFAULT_PREFIX = '**>>**'
 
-ARGUMENT_REQUIRD_START = '<'
-ARGUMENT_REQUIRD_END = '>'
+ARGUMENT_REQUIRED_START = '<'
+ARGUMENT_REQUIRED_END = '>'
 ARGUMENT_OPTIONAL_START = '*'
 ARGUMENT_OPTIONAL_END = '*'
 
@@ -77,7 +77,7 @@ class ColorGetter(object):
     getter : `None`, `color ` or `callable`
         The color itself or a callable, what supposed to return it. If given as a `callable`
     type : `int`
-        A typehint, tellimg, whether ``.color`` is a color, or a callable returning it.
+        A type-hint telling, whether ``.color`` is a color, or a callable returning it.
         
         Can be set as one of the following:
         
@@ -326,7 +326,7 @@ class SubterraneanHelpCommand(object):
         
         Returns
         -------
-        helphelp : ``SubterraneanHelpHelp``
+        help_help : ``SubterraneanHelpHelp``
         """
         return SubterraneanHelpHelp(self)
     
@@ -437,7 +437,7 @@ class SubterraneanHelpCommand(object):
             The client who received the respective message.
         message : ``Message``
             The received message.
-        name : `str`, Optoonmal
+        name : `str`, Optional
             Search term to lookup a category or a command.
         """
         if name is None:
@@ -565,7 +565,7 @@ class SubterraneanHelpCommand(object):
     
     async def list_categories(self, client, message):
         """
-        Lists the categories of the respective client's command preocesser..
+        Lists the categories of the respective client's command preprocessor.
         
         Parameters
         ----------
@@ -579,7 +579,7 @@ class SubterraneanHelpCommand(object):
         if len(categories) == 1:
             category = categories[0]
             if await category.run_checks(client, message):
-                await self.list_category(client, message, category, display_categoiry_name=False)
+                await self.list_category(client, message, category, display_category_name=False)
                 return
             
             pages = [Embed('Categories', '*[No available category]*', color=color)]
@@ -634,7 +634,7 @@ class SubterraneanHelpCommand(object):
         
         await Pagination(client, message.channel, embeds)
     
-    async def list_category(self, client, message, category, display_categoiry_name=True):
+    async def list_category(self, client, message, category, display_category_name=True):
         """
         Lists the given commands.
         
@@ -648,15 +648,15 @@ class SubterraneanHelpCommand(object):
             The received message.
         category : ``Category``
             The category, which' commands will be listed.
-        display_categoiry_name : `bool`, Optional
-            Whether the dispplay name of the given category should be displayed. Defaults to `True`.
+        display_category_name : `bool`, Optional
+            Whether the display name of the given category should be displayed. Defaults to `True`.
         """
         command_names = []
         for command in category.commands:
             if await command.run_checks(client, message):
                 command_names.append(command.display_name)
         
-        if display_categoiry_name:
+        if display_category_name:
             category_name = category.display_name
         else:
             category_name = None
@@ -674,7 +674,7 @@ class SubterraneanHelpCommand(object):
         message : ``Message``
             The received message.
         command_names : `list` of `str`
-            The commnd's names to display.
+            The command's names to display.
         category_name : `None or `str`
             The respective category's name.
         """
@@ -940,9 +940,9 @@ class SubterraneanHelpCommand(object):
                         required = (arg_parser.default_type == DEFAULT_TYPE_NONE)
                         arg_name = ARGUMENT_TYPE_TO_NAME.get(arg_parser.type, ARGUMENT_UNDEFINED)
                         
-                        description_parts.append(ARGUMENT_REQUIRD_START if required else ARGUMENT_OPTIONAL_START)
+                        description_parts.append(ARGUMENT_REQUIRED_START if required else ARGUMENT_OPTIONAL_START)
                         description_parts.append(arg_name)
-                        description_parts.append(ARGUMENT_REQUIRD_END if required else ARGUMENT_OPTIONAL_END)
+                        description_parts.append(ARGUMENT_REQUIRED_END if required else ARGUMENT_OPTIONAL_END)
                     
                     elif arg_parser_type is ChainedParserContext:
                         required = (arg_parser.default_type == DEFAULT_TYPE_NONE)
@@ -950,7 +950,7 @@ class SubterraneanHelpCommand(object):
                             ARGUMENT_TYPE_TO_NAME.get(parser_context.type, ARGUMENT_UNDEFINED)
                                 for parser_context in arg_parser.parser_contexts]
                         
-                        description_parts.append(ARGUMENT_REQUIRD_START if required else ARGUMENT_OPTIONAL_START)
+                        description_parts.append(ARGUMENT_REQUIRED_START if required else ARGUMENT_OPTIONAL_START)
                         
                         arg_name_limit = len(arg_names)
                         arg_name_index = 0
@@ -966,7 +966,7 @@ class SubterraneanHelpCommand(object):
                             description_parts.append('/')
                             continue
                         
-                        description_parts.append(ARGUMENT_REQUIRD_END if required else ARGUMENT_OPTIONAL_END)
+                        description_parts.append(ARGUMENT_REQUIRED_END if required else ARGUMENT_OPTIONAL_END)
                     
                     # No more case
                     

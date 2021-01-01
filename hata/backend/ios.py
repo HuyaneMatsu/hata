@@ -7,7 +7,7 @@ from threading import current_thread
 
 from .executor import ExecutorThread
 from .utils import alchemy_incendiary
-from .eventloop import EventThread
+from .event_loop import EventThread
 
 OPERATION_WRITE = 0
 OPERATION_READ = 1
@@ -16,7 +16,7 @@ IO_CLOSED_OR_DETACHED = 'I/O operation on closed or on a detached file.'
 
 class ReuBytesIO(BytesIO):
     """
-    Reusable bytes io, what seeks the cursor at `0`, when callig ``.close``. Use ``.real_close`` to close it for real,
+    Reusable bytes io, what seeks the cursor at `0`, when calling ``.close``. Use ``.real_close`` to close it for real,
     or use it with the `with` syntax.
     
     Should be used instead of `BytesIO` when sending it with http requests. Since the buffer is closed when a request
@@ -122,7 +122,7 @@ class ReuBytesIO(BytesIO):
         offset : `int`
             Position to move the cursor to.
         whence : `int`, Optional
-            How the given `offset` should be interpretered. Default value for whence is `os.SEEK_SET`.
+            How the given `offset` should be interpreted. Default value for whence is `os.SEEK_SET`.
             
             Can be given as:
             
@@ -159,7 +159,7 @@ class ReuBytesIO(BytesIO):
 
 def get_executor():
     """
-    Gets executor from the current event threadif applicable. If not, starts a new one.
+    Gets executor from the current event thread if applicable. If not, starts a new one.
     
     Returns
     -------
@@ -176,7 +176,7 @@ def get_executor():
 
 class _AsyncIOIterator(object):
     """
-    Asychronous iterator for ``AsyncIO`` objects.
+    Asynchronous iterator for ``AsyncIO`` objects.
     
     Attributes
     ----------
@@ -197,7 +197,7 @@ class _AsyncIOIterator(object):
         self._wrapped = wrapped
     
     def __aiter__(self):
-        """Asynchornous iterating an ``_AsyncIOIterator`` returns itself."""
+        """Asynchronous iterating an ``_AsyncIOIterator`` returns itself."""
         return self
     
     async def __anext__(self):
@@ -215,7 +215,7 @@ class _AsyncIOIterator(object):
 
 class AsyncIO(object):
     """
-    Asynchoronous file-io, what uses an executor for it.
+    Asynchronous file-io, what uses an executor for it.
     
     Attributes
     ----------
@@ -332,7 +332,7 @@ class AsyncIO(object):
     
     async def detach_to_self(self):
         """
-        Separates the wrapped `file-io`'s underlying raw stream from the buffer and attaches it to the ``Asyncio``
+        Separates the wrapped `file-io`'s underlying raw stream from the buffer and attaches it to the ``AsyncIO``
         
         This method is a coroutine.
         
@@ -648,7 +648,7 @@ class AsyncIO(object):
         offset : `int`
             Position to move the cursor to.
         whence : `int`, Optional
-            How the given `offset` should be interpretered. Default value for whence is `os.SEEK_SET`.
+            How the given `offset` should be interpreted. Default value for whence is `os.SEEK_SET`.
             
             Can be given as:
             
@@ -682,7 +682,7 @@ class AsyncIO(object):
     def seekable(self):
         """
         Returns whether the stream supports random access. If not, then ``.seek``, ``.tell`` and ``.truncate`` will
-        raise `OSErrror`.
+        raise `OSError`.
         
         Returns
         -------
@@ -704,7 +704,7 @@ class AsyncIO(object):
         ------
         ValueError
             I/O operation on closed or on a detached file.
-        OSErrror
+        OSError
             If the underlying stream is not seekable.
         """
         executor = self._executor
@@ -735,7 +735,7 @@ class AsyncIO(object):
         ------
         ValueError
             I/O operation on closed or on a detached file.
-        OSErrror
+        OSError
             If the underlying stream is not seekable or writeable.
         """
         executor = self._executor
@@ -747,7 +747,7 @@ class AsyncIO(object):
     
     def writable(self):
         """
-        Retrurns whether the stream supports writing. If not, then, then ``.write``, ``.writelines``  and ``.truncate``
+        Returns whether the stream supports writing. If not, then, then ``.write``, ``.writelines``  and ``.truncate``
         will raise `OSError`.
         
         Returns
@@ -778,7 +778,7 @@ class AsyncIO(object):
         ------
         ValueError
             I/O operation on closed or on a detached file.
-        OSErrror
+        OSError
             If the underlying stream is not writeable.
         """
         executor = self._executor
@@ -804,7 +804,7 @@ class AsyncIO(object):
         ------
         ValueError
             I/O operation on closed or on a detached file.
-        OSErrror
+        OSError
             If the underlying stream is not writeable.
         """
         executor = self._executor
@@ -852,7 +852,7 @@ class AsyncIO(object):
     
     def __aiter__(self):
         """
-        Asynchornous iterates the asynchronous file-io.
+        Asynchronous iterates the asynchronous file-io.
         
         Returns
         -------
@@ -863,7 +863,7 @@ class AsyncIO(object):
 
 class _ReuAsyncIOIterator(object):
     """
-    Asychronous iterator for ``ReuAsyncIO`` objects.
+    Asynchronous iterator for ``ReuAsyncIO`` objects.
     
     Attributes
     ----------
@@ -884,7 +884,7 @@ class _ReuAsyncIOIterator(object):
         self._wrapped = wrapped
     
     def __aiter__(self):
-        """Asynchornous iterating an ``_ReuAsyncIOIterator`` returns itself."""
+        """Asynchronous iterating an ``_ReuAsyncIOIterator`` returns itself."""
         return self
     
     async def __anext__(self):
@@ -902,8 +902,8 @@ class _ReuAsyncIOIterator(object):
 
 class ReuAsyncIO(AsyncIO):
     """
-    Reusable asynchornous file-io, supporting only opening in `read-bytes` mode, what seeks the cursor at `0`, when
-    callig ``.close``. Use ``.real_close`` to close it for real, or use it with the `with` syntax.
+    Reusable asynchronous file-io, supporting only opening in `read-bytes` mode, what seeks the cursor at `0`, when
+    calling ``.close``. Use ``.real_close`` to close it for real, or use it with the `with` syntax.
     
     Should be used instead of `BytesIO` when sending it with http requests. Since the buffer is closed when a request
     is sent, at the case of received errors repeat could not be executed.
@@ -1021,10 +1021,10 @@ class ReuAsyncIO(AsyncIO):
         Parameters
         ----------
         self : ``ReuAsyncIO``
-            The respective asynchoronous io instance.
+            The respective asynchronous io instance.
         func : `callable`
             The callable to call after seeking.
-        *args : aarguments
+        *args : Arguments
             Additional arguments to call the given `func` with.
         
         Returns
@@ -1257,7 +1257,7 @@ class ReuAsyncIO(AsyncIO):
         offset : `int`
             Position to move the cursor to.
         whence : `int`, Optional
-            How the given `offset` should be interpretered. Default value for whence is `os.SEEK_SET`.
+            How the given `offset` should be interpreted. Default value for whence is `os.SEEK_SET`.
             
             Can be given as:
             
@@ -1307,7 +1307,7 @@ class ReuAsyncIO(AsyncIO):
         ------
         ValueError
             I/O operation on closed or on a detached file.
-        OSErrror
+        OSError
             If the underlying stream is not seekable.
         """
         executor = self._executor
@@ -1324,7 +1324,7 @@ class ReuAsyncIO(AsyncIO):
     
     def __aiter__(self):
         """
-        Asynchornous iterates the asynchronous file-io.
+        Asynchronous iterates the asynchronous file-io.
         
         Returns
         -------

@@ -22,44 +22,56 @@ from subprocess import PIPE
 
 from ...env import BACKEND_ONLY
 from ...backend.utils import WeakReferer, alchemy_incendiary, KeepType, WeakKeyDictionary
-from ...backend.eventloop import EventThread
+from ...backend.event_loop import EventThread
 from ...backend.futures import Future as HataFuture, Lock as HataLock, AsyncQue, Task as HataTask, WaitTillFirst, \
-    WaitTillAll, WaitTillExc, future_or_timeout, sleep as hata_sleep, shield as hata_shield, WaitContinously, \
+    WaitTillAll, WaitTillExc, future_or_timeout, sleep as hata_sleep, shield as hata_shield, WaitContinuously, \
     Event as HataEvent
 from ...backend.executor import Executor
 
 IS_UNIX = (sys.platform != 'win32')
 
-EVENTLOOP_RELATION = WeakKeyDictionary()
+EVENT_LOOP_RELATION = WeakKeyDictionary()
 del WeakKeyDictionary
 
 for thread in list_threads():
     if isinstance(thread, EventThread) and thread.should_run:
-        EVENTLOOP_RELATION[main_thread()] = thread
+        EVENT_LOOP_RELATION[main_thread()] = thread
         break
 else:
     if (not BACKEND_ONLY):
         from ...discord.client_core import KOKORO
-        EVENTLOOP_RELATION[main_thread()] = KOKORO
+        EVENT_LOOP_RELATION[main_thread()] = KOKORO
         del KOKORO
 
 
 # Additions to EventThread
 @KeepType(EventThread)
 class EventThread:
-    # Required by aiohttp 3.6
+    
+    call_soon_threadsafe = EventThread.call_soon_thread_safe
+    
+    def getaddrinfo(self, host, port, *, family=0, type=0, proto=0, flags=0):
+        return self.get_address_info(host, port, family=family, type=type, protocol=proto, flags=flags)
+    
+    getnameinfo = EventThread.get_name_info
+    sock_recv = EventThread.socket_receive
+    sock_sendall = EventThread.socket_sendall
+    sock_connect = EventThread.socket_connect
+    sock_accept =EventThread.socket_accept
+    
+    # Required by aio-http 3.6
     def is_running(self):
         return self.running
     
     
-    # Required by aiohttp 3.6
+    # Required by aio-http 3.6
     def get_debug(self):
         return False
     
     EventThread.get_debug = get_debug
     del get_debug
     
-    # Required by aiohttp 3.6
+    # Required by aio-http 3.6
     def is_closed(self):
         return (not self.running)
     
@@ -67,13 +79,13 @@ class EventThread:
     def add_signal_handler(self, sig, callback, *args):
         pass
     
-    # Requried by dpy 3.8
+    # Required by dpy 3.8
     def run_forever(self):
         local_thread = current_thread()
         if isinstance(local_thread, EventThread):
             raise RuntimeError('Cannot call `loop.run_until_complete` inside of a loop')
         
-        self.wakeup()
+        self.wake_up()
         self.join()
     
     # Required by dpy 3.8
@@ -126,14 +138,14 @@ class EventThread:
 async def in_coro(fut):
     return await fut
 
-# Required by aiohttp 3.7
+# Required by aio-http 3.7
 def asyncio_run_in_executor(self, executor, func=..., *args):
     # We ignore the executor parameter.
     # First handle if the call is from hata. If called from hata, needs to return a `Future`.
     if func is ...:
         return Executor.run_in_executor(self, executor)
     
-    # if the call is from asyncio it needs to return a coroutine
+    # if the call is from async-io it needs to return a coroutine
     if args:
         func = alchemy_incendiary(func, args)
     
@@ -142,25 +154,137 @@ def asyncio_run_in_executor(self, executor, func=..., *args):
 EventThread.run_in_executor = asyncio_run_in_executor
 del asyncio_run_in_executor
 
-# Reimplement asyncio features
+
+
+# We accept different names, so we need to define a dodge system, so here we go
+hata_EventThread_subprocess_shell = EventThread.subprocess_shell
+
+async def asyncio_subprocess_shell(self, *args, preexecution_function=None, creation_flags=0, preexec_fn=None,
+        creationflags=0, startupinfo=None, startup_info=None, **kwargs):
+    
+    if preexec_fn is not None:
+        preexecution_function = preexec_fn
+    
+    if creationflags != 0:
+        creation_flags = creationflags
+    
+    if startupinfo is not None:
+        startup_info = startupinfo
+    
+    return await hata_EventThread_subprocess_shell(self, *args, preexecution_function=preexecution_function,
+        creation_flags=creation_flags, startupinfo=startup_info, **kwargs)
+
+EventThread.subprocess_shell = asyncio_subprocess_shell
+del asyncio_subprocess_shell
+
+
+hata_EventThread_subprocess_exec = EventThread.subprocess_exec
+
+async def asyncio_subprocess_exec(self, *args, preexecution_function=None, creation_flags=0, preexec_fn=None,
+        creationflags=0, startupinfo=None, startup_info=None, **kwargs):
+    
+    if preexec_fn is not None:
+        preexecution_function = preexec_fn
+    
+    if creationflags != 0:
+        creation_flags = creationflags
+    
+    if startupinfo is not None:
+        startup_info = startupinfo
+    
+    return await hata_EventThread_subprocess_exec(self, *args, preexecution_function=preexecution_function,
+        creation_flags=creation_flags, startup_info=startup_info, **kwargs)
+
+EventThread.subprocess_exec = asyncio_subprocess_exec
+del asyncio_subprocess_exec
+
+
+hata_EventThread_create_connection = EventThread.create_connection
+
+async def asyncio_create_connection(self, *args, protocol=0, proto=0, socket=None, sock=None, local_address=None,
+        local_addr = None, **kwargs):
+    
+    if proto != 0:
+        protocol = proto
+    
+    if sock is not None:
+        socket = sock
+    
+    if local_addr is not None:
+        local_address = local_addr
+    
+    return await hata_EventThread_create_connection(self, *args, protocol=protocol, socket=socket,
+        local_address=local_address, **kwargs)
+
+EventThread.create_connection = asyncio_create_connection
+del asyncio_create_connection
+
+
+hata_EventThread_create_datagram_endpoint = EventThread.create_datagram_endpoint
+
+async def asyncio_create_datagram_endpoint(self, protocol_factory, local_addr=None, remote_addr=None,
+        local_address=None, remote_address=None, proto=0, protocol=0, reuseport=False, reuse_port=False,
+        sock=None, socket=None, **kwargs):
+    
+    if local_addr is not None:
+        local_address = local_addr
+    
+    if remote_addr is not None:
+        remote_address = remote_addr
+    
+    if proto != 0:
+        protocol = proto
+    
+    if reuseport:
+        reuse_port = reuseport
+    
+    if sock is not None:
+        socket = sock
+    
+    return await hata_EventThread_create_datagram_endpoint(self, protocol_factory, local_address=local_address,
+        remote_address=remote_address, protocol=protocol, reuse_port=reuse_port, socket=socket, **kwargs)
+
+EventThread.create_datagram_endpoint = asyncio_create_datagram_endpoint
+del asyncio_create_datagram_endpoint
+
+
+hata_EventThread_create_server = EventThread.create_server
+
+async def asyncio_create_server(self, *args, sock=None, socket=None, reuseport=None, reuse_port=None, **kwargs):
+
+    if reuseport:
+        reuse_port = reuseport
+    
+    if sock is not None:
+        socket = sock
+    
+    return await hata_EventThread_create_server(self, *args, reuse_port=reuse_port, socket=socket, **kwargs)
+
+EventThread.create_server = asyncio_create_server
+del asyncio_create_server
+
+
+
+
+# Reimplement async-io features
 
 # asyncio.base_events
 # include: BaseEventLoop
 BaseEventLoop = EventThread
 
-# asyncio.base_futures
+# async-io.base_futures
 # *none*
 
-# asyncio.base_subprocess
+# async-io.base_subprocess
 # *none*
 
-# asyncio.base_tasks
+# async-io.base_tasks
 # *none*
 
-# asyncio.constants
+# async-io.constants
 # *none*
 
-# asyncio.coroutines
+# async-io.coroutines
 # include: coroutine, iscoroutinefunction, iscoroutine
 from types import coroutine
 from ...backend.futures import is_coroutine_function as iscoroutinefunction
@@ -176,9 +300,9 @@ class AbstractEventLoopPolicy:
         raise NotImplemented
 
 AbstractEventLoop = EventThread
-from ...backend.eventloop import Server as AbstractServer
-from ...backend.eventloop import Handle
-from ...backend.eventloop import TimerHandle
+from ...backend.event_loop import Server as AbstractServer
+from ...backend.event_loop import Handle
+from ...backend.event_loop import TimerHandle
 
 def get_event_loop_policy():
     raise NotImplementedError
@@ -196,45 +320,45 @@ def get_event_loop():
     If there is no running event loop set, the function will return the result of
     `get_event_loop_policy().get_event_loop()` call.
     """
-    # If local thread is eventloop, return that.
+    # If local thread is event loop, return that.
     local_thread = current_thread()
     if isinstance(local_thread, EventThread):
         return local_thread
     
-    # If we asked for eventlloop, return that
+    # If we asked for event_loop, return that
     try:
-        eventloop = EVENTLOOP_RELATION[local_thread]
+        event_loop = EVENT_LOOP_RELATION[local_thread]
     except KeyError:
         pass
     else:
-        return eventloop
+        return event_loop
     
     # Maybe there is a running loop?
-    if EVENTLOOP_RELATION:
-        for eventloop in EVENTLOOP_RELATION.values():
-            if eventloop.should_run:
-                EVENTLOOP_RELATION[local_thread] = eventloop
-                return eventloop
+    if EVENT_LOOP_RELATION:
+        for event_loop in EVENT_LOOP_RELATION.values():
+            if event_loop.should_run:
+                EVENT_LOOP_RELATION[local_thread] = event_loop
+                return event_loop
      
-    # No eventoops yet, create and return
-    eventloop = EventThread()
-    EVENTLOOP_RELATION[local_thread] = eventloop
-    return eventloop
+    # No event loops yet, create and return
+    event_loop = EventThread()
+    EVENT_LOOP_RELATION[local_thread] = event_loop
+    return event_loop
 
 def set_event_loop(self, loop):
     """Set the event loop."""
     local_thread = current_thread()
     assert (local_thread is loop) or (not isinstance(local_thread, EventThread))
-    EVENTLOOP_RELATION[local_thread] = loop
+    EVENT_LOOP_RELATION[local_thread] = loop
     
 def new_event_loop():
     """Equivalent to calling get_event_loop_policy().new_event_loop()."""
-    eventloop =  EventThread()
+    event_loop =  EventThread()
     local_thread = current_thread()
     if not isinstance(local_thread, EventThread):
-        EVENTLOOP_RELATION.setdefault(local_thread, eventloop)
+        EVENT_LOOP_RELATION.setdefault(local_thread, event_loop)
     
-    return eventloop
+    return event_loop
 
 def get_child_watcher():
     """Equivalent to calling get_event_loop_policy().get_child_watcher()."""
@@ -355,7 +479,7 @@ class Future:
     def __subclasscheck__(cls, klass):
         return issubclass(klass, HataFuture) or (klass is cls)
 
-# get_loop is new in python 3.7 and required by aiosqlalchemy
+# get_loop is new in python 3.7 and required by aiosqlite
 def asyncio_get_loop(self):
     return self._loop
 
@@ -383,17 +507,17 @@ class Lock(HataLock):
     """
     Primitive lock objects.
     
-    A primitive lock is a synchronization primitive that is not ownedby a particular coroutine when locked.
-    A primitive lock is in oneof two states, 'locked' or 'unlocked'.
+    A primitive lock is a synchronization primitive that is not owned by a particular coroutine when locked.
+    A primitive lock is in one of two states, 'locked' or 'unlocked'.
     
     It is created in the unlocked state. It has two basic methods,acquire() and release(). When the state is unlocked,
-    acquire()changes the state to locked and returns immediately. When thestate is locked, acquire() blocks until a
-    call to release() inanother coroutine changes it to unlocked, then the acquire() callresets it to locked and
-    returns. The release() method should onlybe called in the locked state; it changes the state to unlockedand returns
-    immediately. If an attempt is made to release anunlocked lock, a RuntimeError will be raised.
+    acquire()changes the state to locked and returns immediately. When the state is locked, acquire() blocks until a
+    call to release() in an other coroutine changes it to unlocked, then the acquire() call resets it to locked and
+    returns. The release() method should only be called in the locked state; it changes the state to unlocked and
+    returns immediately. If an attempt is made to release an unlocked lock, a RuntimeError will be raised.
     
-    When more than one coroutine is blocked in acquire() waiting forthe state to turn to unlocked, only one coroutine
-    proceeds when arelease() call resets the state to unlocked; first coroutine whichis blocked in acquire() is being
+    When more than one coroutine is blocked in acquire() waiting for the state to turn to unlocked, only one coroutine
+    proceeds when a release() call resets the state to unlocked; first coroutine which is blocked in acquire() is being
     processed.
     
     acquire() is a coroutine and should be called with 'await'.
@@ -506,7 +630,7 @@ class BoundedSemaphore:
 # asyncio.proactor_events
 # Include: BaseProactorEventLoop
 
-BaseProactorEventLoop = EventThread # Note, that hata has no proactor eventloop implemneted.
+BaseProactorEventLoop = EventThread # Note, that hata has no proactor event_loop implemneted.
 
 # asyncio.protocols
 # Include: BaseProtocol, Protocol, DatagramProtocol, SubprocessProtocol, BufferedProtocol
@@ -537,7 +661,7 @@ class Protocol(BaseProtocol):
     """
     Interface for stream protocol.
     
-    The user should implement this interface. They can inherit fromthis class but don't need to. The implementations
+    The user should implement this interface. They can inherit from this class but don't need to. The implementations
     here do Nothing (they don't raise exceptions).
     
     When the user wants to requests a transport, they pass a protocol factory to a utility function
@@ -652,11 +776,11 @@ def Queue(maxsize=0, *, loop=None):
         loop = get_event_loop()
     
     if maxsize:
-        maxlen = maxsize
+        max_length = maxsize
     else:
-        maxlen = None
+        max_length = None
     
-    return AsyncQue(loop,maxlen=maxlen)
+    return AsyncQue(loop, max_length=max_length)
 
 def PriorityQueue(maxsize=0, *, loop=None):
     """
@@ -677,15 +801,15 @@ def run(main, *, debug=None):
     """
     Execute the coroutine and return the result.
     
-    This function runs the passed coroutine, taking care ofmanaging the asyncio event loop and finalizing asynchronous
+    This function runs the passed coroutine, taking care of managing the asyncio event loop and finalizing asynchronous
     generators.
     
-    This function cannot be called when another asyncio event loop isrunning in the same thread.
+    This function cannot be called when another asyncio event loop is running in the same thread.
     
     If debug is True, the event loop will be run in debug mode.
     
     This function always creates a new event loop and closes it at the end. It should be used as a main entry point for
-    asyncio programs, and shouldideally only be called once.
+    asyncio programs, and should ideally only be called once.
     
     Example:
     
@@ -869,7 +993,7 @@ class FlowControlMixin(Protocol):
             self._drain_waiter = None
             waiter.set_result_if_pending(None)
     
-    def connection_lost(self, exeception):
+    def connection_lost(self, exception):
         self._connection_lost = True
         if not self._paused:
             return
@@ -878,10 +1002,10 @@ class FlowControlMixin(Protocol):
             return
         self._drain_waiter = None
         
-        if exeception is None:
+        if exception is None:
             waiter.set_result_if_pending(None)
         else:
-            waiter.set_exception_if_pending(exeception)
+            waiter.set_exception_if_pending(exception)
     
     async def _drain_helper(self):
         if self._connection_lost:
@@ -1126,7 +1250,7 @@ class StreamReader:
             self._waiter = None
             waiter.set_exception_if_pending(exception)
     
-    def _wakeup_waiter(self):
+    def _wake_up_waiter(self):
         waiter = self._waiter
         if waiter is not None:
             self._waiter = None
@@ -1143,7 +1267,7 @@ class StreamReader:
     
     def feed_eof(self):
         self._eof = True
-        self._wakeup_waiter()
+        self._wake_up_waiter()
     
     def at_eof(self):
         return self._eof and not self._buffer
@@ -1155,7 +1279,7 @@ class StreamReader:
             return
         
         self._buffer.extend(data)
-        self._wakeup_waiter()
+        self._wake_up_waiter()
         
         if (self._transport is not None) and (not self._paused) and (len(self._buffer) > (self._limit<<1)):
             try:
@@ -1577,7 +1701,7 @@ def as_completed(fs, *, loop=None, timeout=None):
         return []
     
     futures = [HataFuture(loop) for _ in range(len(tasks))]
-    waiter = WaitContinously(tasks, loop)
+    waiter = WaitContinuously(tasks, loop)
     if timeout is not None:
         future_or_timeout(waiter, timeout)
     
@@ -1792,7 +1916,7 @@ def run_coroutine_threadsafe(coro, loop):
     
     Return a concurrent.futures.Future to access the result.
     """
-    return loop.create_task_threadsafe(coro)
+    return loop.create_task_thread_safe(coro)
 
 def _register_task(task):
     """Register a new task in asyncio as executed by loop."""

@@ -15,7 +15,7 @@ from .preconverters import preconvert_snowflake, preconvert_str, preconvert_colo
     preconvert_flag
 from .preinstanced import RoleManagerType
 
-from . import ratelimit as module_ratelimit, user as module_user
+from . import rate_limit as module_rate_limit, user as module_user
 
 create_partial_integration = NotImplemented
 
@@ -31,10 +31,10 @@ if API_VERSION in (6, 7):
     PERMISSION_ALLOW_KEY = 'allow_new'
     PERMISSION_DENY_KEY = 'deny_new'
     
-    PERMOW_TYPE_ROLE = 'role'
-    PERMOW_TYPE_USER = 'member'
+    PERM_OW_TYPE_ROLE = 'role'
+    PERM_OW_TYPE_USER = 'member'
     
-    def get_permow_key_value(data):
+    def get_perm_ow_key_value(data):
         """
         Returns the permission overwrite's type's value.
         
@@ -53,10 +53,10 @@ else:
     PERMISSION_ALLOW_KEY = 'allow'
     PERMISSION_DENY_KEY = 'deny'
     
-    PERMOW_TYPE_ROLE = 0
-    PERMOW_TYPE_USER = 1
+    PERM_OW_TYPE_ROLE = 0
+    PERM_OW_TYPE_USER = 1
     
-    def get_permow_key_value(data):
+    def get_perm_ow_key_value(data):
         """
         Returns the permission overwrite's type's value.
         
@@ -79,7 +79,7 @@ def create_partial_role(role_id):
     Parameters
     ----------
     role_id : `int`
-        The unique identificator number of the role.
+        The unique identifier number of the role.
     
     Returns
     -------
@@ -116,7 +116,7 @@ class Role(DiscordEntity, immortal=True):
     Attributes
     ----------
     id : `int`
-        The unique identificator numebr of the role.
+        The unique identifier number of the role.
     color : ``Color``
         The role's color. If the color equals to ``Color(0)``, then it is ignored meanwhile calculating towards a
         user's display color.
@@ -128,7 +128,7 @@ class Role(DiscordEntity, immortal=True):
     manager_id : `int`
         If the role is managed, then it's manager's id if applicable. Defaults to `0`.
     manager_type : `RoleManagerType`
-        But what type of entitiy is the role managed.
+        But what type of entity is the role managed.
     mentionable : `bool`
         Whether the role can be mentioned.
     name : `str`
@@ -195,16 +195,16 @@ class Role(DiscordEntity, immortal=True):
     @classmethod
     def precreate(cls, role_id, **kwargs):
         """
-        Precreates a role by creating a partial one with the given paremeters. When the role is loaaded, then the
+        Precreates a role by creating a partial one with the given parameters. When the role is loaded, then the
         precreated one will be picked up. However if the role is precreated when it already exists, then the existing
-        one is picked up and is updated by the given paremeters only if it is partial.
+        one is picked up and is updated by the given parameters only if it is partial.
         
         Parameters
         ----------
         role_id : `int` or `str`
             The role's id.
         **kwargs : keyword arguments
-            Additonal predefined attributes for the role.
+            Additional predefined attributes for the role.
         
         Other parameters
         ----------------
@@ -295,7 +295,7 @@ class Role(DiscordEntity, immortal=True):
             else:
                 manager_type_type = manager_type.__class__
                 if manager_type_type is not RoleManagerType:
-                    raise TypeError(f'`manager_type` can be given as `{RoleManagerType.__class__}` insatnce, got '
+                    raise TypeError(f'`manager_type` can be given as `{RoleManagerType.__class__}` instance, got '
                         f'{manager_type_type.__name__}')
                 
             if kwargs:
@@ -572,7 +572,7 @@ class Role(DiscordEntity, immortal=True):
     
     def __format__(self, code):
         """
-        Formats the roel in a format string.
+        Formats the role in a format string.
         
         Parameters
         ----------
@@ -587,12 +587,12 @@ class Role(DiscordEntity, immortal=True):
         --------
         ```
         >>>> from hata import Role, now_as_id
-        >>>> role = Role.precreate(now_as_id(), name='admiralgeneral')
+        >>>> role = Role.precreate(now_as_id(), name='admiral-general')
         >>>> role
-        <Role name='admiralgeneral', id=725333995067277312>
+        <Role name='admiral-general', id=725333995067277312>
         >>>> # no code stands for str(role).
         >>>> f'{role}'
-        'admiralgeneral'
+        'admiral-general'
         >>>> # 'm' stands for mention.
         >>>> f'{role:m}'
         '<@&725333995067277312>'
@@ -673,7 +673,7 @@ class Role(DiscordEntity, immortal=True):
         elif manager_type is ROLE_MANAGER_TYPE_BOT:
             manager = create_partial_user(self.manager_id)
             
-            # `Partialuser` sets newly created users' `.is_bot` attribute as `False`.
+            # `create_partial_user` sets newly created users' `.is_bot` attribute as `False`.
             if not manager.is_bot :
                 manager.is_bot = True
         
@@ -782,7 +782,7 @@ class PermOW(object):
             Received permission overwrite data.
         """
         id_ = int(data['id'])
-        if get_permow_key_value(data) == PERMOW_TYPE_ROLE:
+        if get_perm_ow_key_value(data) == PERM_OW_TYPE_ROLE:
             target_role = create_partial_role(id_)
             target_user_id = 0
         else:
@@ -819,7 +819,7 @@ class PermOW(object):
         target : ``Role`` or ``UserBase`` instance
             The target entity of the overwrite.
         allow : `int`
-            The allowed permissions by the overtwrite.
+            The allowed permissions by the overwrite.
         deny : `int`
             The denied permission by the overwrite.
         
@@ -846,7 +846,7 @@ class PermOW(object):
         return self.target.id^self.allow^self.deny
     
     def __repr__(self):
-        """Returns the permisison overwrite's represnetation."""
+        """Returns the permission overwrite's representation."""
         return f'<{self.__class__.__name__} target={self.target!r}>'
     
     def keys(self):
@@ -953,16 +953,16 @@ class PermOW(object):
     @property
     def type(self):
         if type(self.target) is Role:
-            type_ = PERMOW_TYPE_ROLE
+            type_ = PERM_OW_TYPE_ROLE
         else:
-            type_ = PERMOW_TYPE_USER
+            type_ = PERM_OW_TYPE_USER
         return type_
     
     if DOCS_ENABLED:
         if API_VERSION in (6, 7):
             type.__doc__ = (
         """
-        Returns the Discord side identificator value permission overwrite.
+        Returns the Discord side identifier value permission overwrite.
         
         Returns
         -------
@@ -972,7 +972,7 @@ class PermOW(object):
         else:
             type.__doc__ = (
         """
-        Returns the Discord side identificator value permission overwrite.
+        Returns the Discord side identifier value permission overwrite.
         
         Returns
         -------
@@ -1099,7 +1099,7 @@ def cr_p_role_object(name, id_=None, color=Color(), separated=False, position=0,
     name : `str`
         The name of the role.
     id_ : `None` or `int`,`optional
-        The role's unique identificator number. If given as `None`, then a random `id` will be generated.
+        The role's unique identifier number. If given as `None`, then a random `id` will be generated.
     color : ``Color``, Optional
         The role's color. Defaults to `Color(0)`
     separated : `bool`
@@ -1145,19 +1145,19 @@ def cr_p_overwrite_object(target, allow, deny):
     
     Returns
     -------
-    permission_overwrite_data : `dict` of (`str`, `Any) utems.
+    permission_overwrite_data : `dict` of (`str`, `Any) items
     """
     return {
         'allow' : allow,
         'deny'  : deny,
         'id'    : target.id,
-        'type'  : PERMOW_TYPE_ROLE if type(target) is Role else PERMOW_TYPE_USER,
+        'type'  : PERM_OW_TYPE_ROLE if type(target) is Role else PERM_OW_TYPE_USER,
             }
 
-module_ratelimit.Role = Role
+module_rate_limit.Role = Role
 module_user.create_partial_role = create_partial_role
 
-del module_ratelimit
+del module_rate_limit
 del DiscordEntity
 del API_VERSION
 del DOCS_ENABLED

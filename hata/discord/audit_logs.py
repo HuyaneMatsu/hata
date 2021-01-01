@@ -95,7 +95,7 @@ class AuditLog(object):
         return iter(self.entries)
     
     def __reversed__(self):
-        """Reversed iterater over the audit log's antries."""
+        """Reversed iterator over the audit log's entries."""
         return reversed(self.entries)
     
     def __len__(self):
@@ -124,7 +124,7 @@ class AuditLogIterator(object):
         A dictionary, what contains the mentioned users by the audit log's entries. The keys are the `id`-s of the
         users, meanwhile the values are the users themselves.
     webhooks : `dict` of (`int`, ``Webhook``) items
-        A dictionaryy what contains the mentioned webhook by the audit log's entries. They keys are the `id`-s of the
+        A dictionary what contains the mentioned webhook by the audit log's entries. They keys are the `id`-s of the
         webhooks, meanwhile the values are the values themselves.
     integrations : `dict` of (`int`, ``Integration``) items
         A dictionary what contains the mentioned integrations by the audit log's entries. The keys are the `id`-s of
@@ -206,7 +206,7 @@ class AuditLogIterator(object):
         
         Returns
         -------
-        audit_log : ``AuiditLog``
+        audit_log : ``AuditLog``
         """
         result = object.__new__(AuditLog)
         result.guild = self.guild
@@ -252,7 +252,7 @@ class AuditLogIterator(object):
     
     def _process_data(self, data):
         """
-        Processes a batch of audit log data received from Disocrd.
+        Processes a batch of audit log data received from Discord.
         
         Parameters
         ----------
@@ -328,7 +328,7 @@ def convert_detail_message(key, value, all_):
 def convert_detail_amount(key, value, all_):
     return 'amount', int(value)
 
-def convert_detail_permow_target(key, value, all_):
+def convert_detail_perm_ow_target(key, value, all_):
     id_=int(value)
     try:
         type_name = all_['type']
@@ -348,11 +348,11 @@ def convert_detail_permow_target(key, value, all_):
         except KeyError:
             target = Unknown('Role', id_, all_.get('name', ''))
     else:
-        # permow type can be only member and role, so if it is else,
+        # perm_ow type can be only member and role, so if it is else,
         # the data is broken again
         return None
 
-def convert_detail_permow_processed(key, value, all_):
+def convert_detail_perm_ow_processed(key, value, all_):
     return None
 
 DETAIL_CONVERSIONS = {
@@ -361,9 +361,9 @@ DETAIL_CONVERSIONS = {
     'channel_id'        : convert_detail_channel,
     'message_id'        : convert_detail_message,
     'count'             : convert_detail_amount,
-    'id'                : convert_detail_permow_target,
-    'type'              : convert_detail_permow_processed,
-    'role_name'         : convert_detail_permow_processed,
+    'id'                : convert_detail_perm_ow_target,
+    'type'              : convert_detail_perm_ow_processed,
+    'role_name'         : convert_detail_perm_ow_processed,
         }
 
 del convert_detail_days
@@ -371,8 +371,8 @@ del convert_detail_users_removed
 del convert_detail_channel
 del convert_detail_message
 del convert_detail_amount
-del convert_detail_permow_target
-del convert_detail_permow_processed
+del convert_detail_perm_ow_target
+del convert_detail_perm_ow_processed
 
 def DETAIL_CONVERTER_DEFAULT(key, value, all_):
     return key, value
@@ -510,14 +510,14 @@ class AuditLogEntry(object):
     """
     Represents an entry of an ``AuditLog``.
     
-    Attrbiutes
+    Attributes
     ----------
     changes : `list` of ``AuditLogChange``
         The changes of the entry.
     details : `None` or `dict` of (`str`, `Any`) items
         Additional information for a specific action types.
     id : `int`
-        The unique identificator number of the entry.
+        The unique identifier number of the entry.
     reason : `None` or `str`
         The reason provided with the logged action.
     target : `None`, ``Guild``,  ``ChannelGuildBase`` instance, ``User``, ``Client``, ``Role``, ``Webhook``,
@@ -532,14 +532,14 @@ class AuditLogEntry(object):
     __slots__ = ('changes', 'details', 'id', 'reason', 'target', 'type', 'user',)
     def __init__(self, data, parent):
         """
-        Creates an audit log entry, from entry data sent isnide of an ``AuditLog``'s data and from the audit itself.
+        Creates an audit log entry, from entry data sent inside of an ``AuditLog``'s data and from the audit itself.
         
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
             Data received from Discord.
         parent : ``AuditLog`` or ``AuditLogIterator``
-            The parent of the entry, what contains the respective guild, the inclued users, webhooks and the
+            The parent of the entry, what contains the respective guild, the included users, webhooks and the
             integrations to work with.
         """
         self.id = int(data['id'])
@@ -658,7 +658,7 @@ def transform_nothing(name, data):
 def transform_deprecated(name, data):
     return None
 
-def tranfrom_icon(name, data):
+def transform_icon(name, data):
     change = AuditLogChange()
     if name == 'splash_hash':
         name = 'invite_splash'
@@ -812,7 +812,7 @@ def transform_role(name, data):
 
     return change
 
-def transform_snowfalke(name, data):
+def transform_snowflake(name, data):
     change = AuditLogChange()
     change.attr = name
     value = data.get('old_value')
@@ -892,13 +892,13 @@ def transform_verification_level(name, data):
 TRANSFORMERS = {
     '$add'                  : transform_role,
     '$remove'               : transform_role,
-    'account_id'            : transform_snowfalke,
+    'account_id'            : transform_snowflake,
     'afk_channel_id'        : transform_channel,
     'allow'                 : transform_deprecated if API_VERSION in (6, 7) else transform_permission,
     'allow_new'             : transform_permission if API_VERSION in (6, 7) else transform_deprecated,
-    'application_id'        : transform_snowfalke,
-    'avatar_hash'           : tranfrom_icon,
-    'banner_hash'           : tranfrom_icon,
+    'application_id'        : transform_snowflake,
+    'avatar_hash'           : transform_icon,
+    'banner_hash'           : transform_icon,
     # bitrate (int)
     'channel_id'            : transform_channel,
     # code (str)
@@ -908,14 +908,14 @@ TRANSFORMERS = {
     'default_message_notifications':transform_message_notification,
     'deny'                  : transform_deprecated if API_VERSION in (6, 7) else transform_permission,
     'deny_new'              : transform_permission if API_VERSION in (6, 7) else transform_deprecated,
-    'discovery_splash_hash' : tranfrom_icon,
+    'discovery_splash_hash' : transform_icon,
     # enable_emoticons (bool)
     # expire_behavior (int)
     # expire_grace_period (int)
     'explicit_content_filter':transform_content_filter,
     'hoist'                 : transform_bool__separated,
-    'icon_hash'             : tranfrom_icon,
-    'id'                    : transform_snowfalke,
+    'icon_hash'             : transform_icon,
+    'id'                    : transform_snowflake,
     'inviter_id'            : transform_user,
     # mentionable (bool)
     # max_age (int)
@@ -935,7 +935,7 @@ TRANSFORMERS = {
     'rate_limit_per_user'   : transform_int__slowmode,
     'region'                : transform_region,
     'rules_channel_id'      : transform_channel,
-    'splash_hash'           : tranfrom_icon,
+    'splash_hash'           : transform_icon,
     'system_channel_id'     : transform_channel,
     'system_channel_flags'  : transform_system_channel_flags,
     # temporary (bool)
@@ -949,7 +949,7 @@ TRANSFORMERS = {
         }
 
 del transform_deprecated
-del tranfrom_icon
+del transform_icon
 del transform_bool__separated
 del transform_channel
 del transform_color
@@ -962,7 +962,7 @@ del transform_overwrites
 del transform_permission
 del transform_region
 del transform_role
-del transform_snowfalke
+del transform_snowflake
 del transform_str__vanity_code
 del transform_system_channel_flags
 del transform_type
@@ -985,7 +985,7 @@ class AuditLogChange(object):
     
     Notes
     -----
-    The value of `before` and `after` depenind on the value of `attr`. These are:
+    The value of `before` and `after` depending on the value of `attr`. These are:
     
     +---------------------------+-------------------------------------------+
     | attr                      | before / after                            |
@@ -1000,7 +1000,7 @@ class AuditLogChange(object):
     +---------------------------+-------------------------------------------+
     | avatar                    | `None` or ``Icon``                        |
     +---------------------------+-------------------------------------------+
-    | bannner                   | `None` or ``Icon``                        |
+    | banner                    | `None` or ``Icon``                        |
     +---------------------------+-------------------------------------------+
     | bitrate                   | `None` or `int`                           |
     +---------------------------+-------------------------------------------+

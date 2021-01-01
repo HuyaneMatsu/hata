@@ -73,7 +73,7 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
     | manage_emojis         | 30                |
     +-----------------------+-------------------+
     
-    Each permission can be assesed as property with `can_` + it's respective name, meanwhile a new edited permission
+    Each permission can be accessed as property with `can_` + it's respective name, meanwhile a new edited permission
     can be created with the `allow_...` and with the `deny_...` methods.
     
     There are some predefined permissions as well set as class attributes, mainly for internal usage:

@@ -25,7 +25,7 @@ from .preconverters import preconvert_snowflake, preconvert_str, preconvert_prei
 from .preinstanced import GuildFeature, VoiceRegion, Status, VerificationLevel, MessageNotificationLevel, MFA, \
     ContentFilterLevel, VerificationScreenStepType
 
-from . import ratelimit as module_ratelimit, channel as module_channel
+from . import rate_limit as module_rate_limit, channel as module_channel
 
 VoiceClient = NotImplemented
 Client = NotImplemented
@@ -100,7 +100,7 @@ class GuildWidgetUser(DiscordEntity):
     Attributes
     ----------
     id : `int`
-        The unique identificator number of the guild widget user. Can be between `0` and `99`.
+        The unique identifier number of the guild widget user. Can be between `0` and `99`.
     activity_name : `None` or `str`
         The guild widget user's activity's name if applicable.
     avatar_url : `str` or `None`
@@ -189,7 +189,7 @@ class GuildWidgetChannel(DiscordEntity):
     Attributes
     ----------
     id : `int`
-        The unique identificator number of the guild widget channel.
+        The unique identifier number of the guild widget channel.
     name : `str`
         The channel's name.
     position : `int`
@@ -328,7 +328,7 @@ class GuildWidget(DiscordEntity):
     @property
     def id(self):
         """
-        The unique identificator number of the guild widget's guild.
+        The unique identifier number of the guild widget's guild.
         
         Returns
         -------
@@ -476,7 +476,7 @@ def create_partial_guild(data):
     guild.verification_level = VerificationLevel.none
     guild.voice_states = {}
     guild.webhooks = {}
-    guild.webhooks_uptodate = False
+    guild.webhooks_up_to_date = False
     guild.widget_channel = None
     guild.widget_enabled = False
     
@@ -514,7 +514,7 @@ def create_partial_guild(data):
     
     return guild
 
-#discord does not send `widget_channel`, `widget_enabled`, `max_presences`, `max_users` correctly and thats sad.
+#discord does not send `widget_channel`, `widget_enabled`, `max_presences`, `max_users` correctly and that is sad.
 class Guild(DiscordEntity, immortal=True):
     """
     Represents a Discord guild (or server).
@@ -546,9 +546,9 @@ class Guild(DiscordEntity, immortal=True):
     description : `str` or `None`
         Description of the guild. The guild must be a Community guild.
     discovery_splash_hash : `int`
-        The guild's discovery splashe's hash in `uint128`. The guild must be a discoverable.
+        The guild's discovery splash's hash in `uint128`. The guild must be a discoverable.
     discovery_splash_type : ``IconType``
-        The guild's discovery splashe's type.
+        The guild's discovery splash's type.
     emojis : `dict` of (`int`, ``Emoji``) items
         The emojis of the guild stored in `emoji_id` - `emoji` relation.
     features : `list` of ``GuildFeature``
@@ -558,9 +558,9 @@ class Guild(DiscordEntity, immortal=True):
     icon_type : ``IconType``
         The guild's icon's type.
     invite_splash_hash : `int`
-        The guild's invite splashe's hash in `uint128`. The guild must have `INVITE_SPLASH` feature.
+        The guild's invite splash's hash in `uint128`. The guild must have `INVITE_SPLASH` feature.
     invite_splash_type : ``IconType``
-        The guild's invite splashe's type.
+        The guild's invite splash's type.
     is_large : `bool`
         Whether the guild is considered as a large one.
     max_presences : `int`
@@ -568,7 +568,7 @@ class Guild(DiscordEntity, immortal=True):
     max_users : `int`
         The maximal amount of users for the guild.
     max_video_channel_users : `int`
-        The maximal amaunt of users in a video channel(?).
+        The maximal amount of users in a video channel(?).
     message_notification : ``MessageNotificationLevel``
         The message notification level of the guild.
     mfa : ``MFA``
@@ -582,7 +582,7 @@ class Guild(DiscordEntity, immortal=True):
     premium_tier : `int`
         The premium tier of the guild. More subs = higher tier.
     public_updates_channel : `None` or ``ChannelText``
-        The channel where the guild's public upddates should go. The guild must be a Community guild.
+        The channel where the guild's public updates should go. The guild must be a Community guild.
     region : ``VoiceRegion``
         The voice region of the guild.
     roles : `dict` of (`int`, ``Role``) items
@@ -607,8 +607,8 @@ class Guild(DiscordEntity, immortal=True):
     webhooks : `dict` of (`int`, ``Webhook``) items
         The guild's webhooks if requested in `webhook_id` - `webhook` relation. This container is updated when a new
         request is done.
-    webhooks_uptodate : `bool`
-        Whether the guild's `.webhooks` containr is up-to-date. If it is, then instead of requesting new webhooks, that
+    webhooks_up_to_date : `bool`
+        Whether the guild's `.webhooks` contains is up-to-date. If it is, then instead of requesting new webhooks, that
         container is accessed.
     widget_channel : `None` or ``ChannelText``
         The channel for the guild's widget.
@@ -617,7 +617,7 @@ class Guild(DiscordEntity, immortal=True):
     
     Notes
     -----
-    When a guild is loaded first time, some of it's attrbiutes might not reflect their real value. These are the
+    When a guild is loaded first time, some of it's attributes might not reflect their real value. These are the
     following:
     - ``.max_presences``
     - ``.max_users``
@@ -629,7 +629,7 @@ class Guild(DiscordEntity, immortal=True):
         'max_presences', 'max_users', 'max_video_channel_users', 'message_notification', 'mfa', 'name', 'owner_id',
         'preferred_locale', 'premium_tier', 'public_updates_channel', 'region', 'roles', 'roles', 'rules_channel',
         'system_channel', 'system_channel_flags', 'user_count', 'users', 'vanity_code', 'verification_level',
-        'voice_states', 'webhooks', 'webhooks_uptodate', 'widget_channel', 'widget_enabled')
+        'voice_states', 'webhooks', 'webhooks_up_to_date', 'widget_channel', 'widget_enabled')
     
     banner = IconSlot('banner', 'banner', URLS.guild_banner_url, URLS.guild_banner_url_as)
     icon = IconSlot('icon', 'icon', URLS.guild_icon_url, URLS.guild_icon_url_as)
@@ -671,7 +671,7 @@ class Guild(DiscordEntity, immortal=True):
             guild.channels = {}
             guild.features = []
             guild.webhooks = {}
-            guild.webhooks_uptodate = False
+            guild.webhooks_up_to_date = False
             guild._cache_perm = None
             guild._boosters = None
             
@@ -782,7 +782,7 @@ class Guild(DiscordEntity, immortal=True):
     @classmethod
     def precreate(cls, guild_id, **kwargs):
         """
-        Precreates the guild with the given parameters. Precreated guilds ar picked up when a guild's data is rceived
+        Precreates the guild with the given parameters. Precreated guilds ar picked up when a guild's data is received
         with the same id.
         
         First tries to find whether a guild exists with the given id. If it does and it is partial, updates it with the
@@ -893,7 +893,7 @@ class Guild(DiscordEntity, immortal=True):
             guild.verification_level = VerificationLevel.none
             guild.voice_states = {}
             guild.webhooks = {}
-            guild.webhooks_uptodate = False
+            guild.webhooks_up_to_date = False
             guild.widget_channel = None
             guild.widget_enabled = False
             GUILDS[guild_id] = guild
@@ -1000,7 +1000,7 @@ class Guild(DiscordEntity, immortal=True):
             role._delete()
         
         self.webhooks.clear()
-        self.webhooks_uptodate = False
+        self.webhooks_up_to_date = False
         self._boosters = None
     
     def _update_voice_state(self, data, user):
@@ -1017,7 +1017,7 @@ class Guild(DiscordEntity, immortal=True):
         Returns
         -------
         action : `int`
-            The respctive action.
+            The respective action.
             
             Can be one of the following:
             
@@ -1039,7 +1039,7 @@ class Guild(DiscordEntity, immortal=True):
             Will be returned as `None` if action is `VOICE_STATE_NONE`.
         
         old_attributes : `dict` of (`str`, `Any`) items
-            If `action` is `VOICE_STATE_UPDATE`, then `old_attributes` is returned as a `dict` conatining the changed
+            If `action` is `VOICE_STATE_UPDATE`, then `old_attributes` is returned as a `dict` containing the changed
             attributes in `attribute-name` - `old-value` relation. All item at the returned dictionary is optional.
             
             +---------------+-------------------+
@@ -1123,7 +1123,7 @@ class Guild(DiscordEntity, immortal=True):
         Returns
         -------
         action : `int`
-            The respctive action.
+            The respective action.
             
             Can be one of the following:
             
@@ -1219,7 +1219,7 @@ class Guild(DiscordEntity, immortal=True):
     @property
     def announcement_channels(self):
         """
-        Returns the announcemet channels of the guild.
+        Returns the announcement channels of the guild.
         
         Returns
         -------
@@ -1317,7 +1317,7 @@ class Guild(DiscordEntity, immortal=True):
         else:
             self._sync_emojis(emoji_datas)
 
-##        #sadly we dont get voice states with guild_get
+##        #sadly we don't get voice states with guild_get
 ##        try:
 ##            voice_state_datas=data['voice_states']
 ##        except KeyError:
@@ -2316,7 +2316,7 @@ class Guild(DiscordEntity, immortal=True):
         Returns
         -------
         changes : `list` of `tuple` (`int`, ``Emoji``, (`None` or `dict` of (`str`, `Any`) items)))
-            The changes breaken down for each changed emoji. Each element of the list is a tuple of 3 elements:
+            The changes broken down for each changed emoji. Each element of the list is a tuple of 3 elements:
             +-------+-------------------+-----------------------------------------------+
             | Index | Respective name   | Type                                          |
             +=======+===================+===============================================+
@@ -2590,10 +2590,10 @@ class GuildPreview(DiscordEntity):
     description : `str` or `None`
         Description of the guild. The guild must have `PUBLIC` feature.
     discovery_splash_hash : `int`
-        The guild's discovery splashe's hash in `uint128`. The guild must have `DISCOVERABLE` feature to have
+        The guild's discovery splash's hash in `uint128`. The guild must have `DISCOVERABLE` feature to have
         discovery splash.
-    discovery_splash_type : ``Icontype``
-        The guild discovery splashe's type.
+    discovery_splash_type : ``IconType``
+        The guild discovery splash's type.
     emojis : `dict` of (`int`, ``Emoji``) items
         The emojis of the guild stored in `emoji_id` - `emoji` relation.
     features : `list` of ``GuildFeature``
@@ -2603,9 +2603,9 @@ class GuildPreview(DiscordEntity):
     icon_type : ``IconType``
         The guild's icon's type.
     invite_splash_hash : `int`
-        The guild's invite splashe's hash in `uint128`. The guild must have `INVITE_SPLASH` feature.
+        The guild's invite splash's hash in `uint128`. The guild must have `INVITE_SPLASH` feature.
     invite_splash_type : ``IconType``
-        the guild's invite splashe's type.
+        the guild's invite splash's type.
     name : `str`
         The name of the guild.
     online_count : `int`
@@ -2776,7 +2776,7 @@ class GuildDiscovery(object):
         self.primary_category = DiscoveryCategory.from_id(data['primary_category_id'], primary=True)
     
     def __eq__(self, other):
-        """Returns whether the two guild dicoveries are the same."""
+        """Returns whether the two guild discoveries are the same."""
         if (type(self) is not type(other)):
             return NotImplemented
         
@@ -2826,9 +2826,9 @@ class DiscoveryCategory(DiscordEntity, immortal=True):
     Attributes
     ----------
     id : `int`
-        The unique identificator number of the discovery category.
+        The unique identifier number of the discovery category.
     local_names : `None` or `dict` of (`str`, `str`) items
-        The category's name in other langauges.
+        The category's name in other languages.
     name : `str`
         The category's name.
     primary : `bool`
@@ -2853,7 +2853,7 @@ class DiscoveryCategory(DiscordEntity, immortal=True):
     +-------------------------------+-------+-------------------------------+-----------+
     | science_and_tech              | `5`   | `'Science & Tech'`            | `True`    |
     +-------------------------------+-------+-------------------------------+-----------+
-    | ducation                      | `6`   | `'Education'`                 | `True`    |
+    | education                     | `6`   | `'Education'`                 | `True`    |
     +-------------------------------+-------+-------------------------------+-----------+
     | sports                        | `7`   | `'Sports'`                    | `True`    |
     +-------------------------------+-------+-------------------------------+-----------+
@@ -2950,9 +2950,9 @@ class DiscoveryCategory(DiscordEntity, immortal=True):
         Parameters
         ----------
         category_id : `int`
-            The unique identificator number of the discovery category
+            The unique identifier number of the discovery category
         primary : `bool`, Optional
-            Whether the catgeory is a primary category.
+            Whether the category is a primary category.
         
         Returns
         -------
@@ -3012,12 +3012,12 @@ class DiscoveryCategory(DiscordEntity, immortal=True):
     
     def __init__(self, category_id, name, primary):
         """
-        Creates a new discovery catgeory from the given parameters.
+        Creates a new discovery category from the given parameters.
         
         Parameters
         ----------
         category_id : `int`
-            The unique identificator number of the discovery category.
+            The unique identifier number of the discovery category.
         name : `str`
             The category's name.
         primary : `bool`
@@ -3203,7 +3203,7 @@ class WelcomeScreen(object):
     
     def to_data(self):
         """
-        Converts the welcome screen to a json serializible object.
+        Converts the welcome screen to a json serializable object.
         
         Returns
         -------
@@ -3270,7 +3270,7 @@ class WelcomeChannel(object):
     
     def to_data(self):
         """
-        Converts the welcome channel to a json serializible object.
+        Converts the welcome channel to a json serializable object.
         
         Returns
         -------
@@ -3346,8 +3346,8 @@ class WelcomeChannel(object):
                 if isinstance(channel, ChannelText):
                     channel_id = channel.id
                 elif isinstance(channel, ChannelBase):
-                    raise TypeError(f'`channel` paramatere can be given as {ChannelText.__name__} or `int` instance, got '
-                        f'an other channel type, {channel.__class__.__name__}.')
+                    raise TypeError(f'`channel` parameters can be given as {ChannelText.__name__} or `int` instance,'
+                        f'got an other channel type, {channel.__class__.__name__}.')
                 else:
                     channel_id = preconvert_snowflake(channel, 'channel')
                 
@@ -3453,8 +3453,8 @@ class VerificationScreen(object):
     """
     Represents a guild's verification screen.
     
-    Attibutes
-    ---------
+    Attributes
+    ----------
     created_at : `datetime`
         When the last version of the screen was created.
     description  : `None` or `str`
@@ -3557,7 +3557,7 @@ class VerificationScreenStep(object):
     
     def to_data(self):
         """
-        Convererts the verification screen step to a json serializible object.
+        Converts the verification screen step to a json serializable object.
         
         Returns
         -------
@@ -3610,11 +3610,11 @@ class VerificationScreenStep(object):
         TypeError
             - If `type_` was not given neither as ``VerificationScreenStepType`` nor as `str` instance.
             - If `title` was not given as `str` instance.
-            - If `values` is not givne neither as `None`, or `tuple` or `list` instance.
+            - If `values` is not given neither as `None`, or `tuple` or `list` instance.
             - If `values` contains not only `str` instances.
             - If `required` was not given as `bool` instance.
         ValueError
-            - If `type_` was given as `str` instance, ubt notany of the precreated ones.
+            - If `type_` was given as `str` instance, ubt not any of the precreated ones.
             - If `title` was given as an empty string.
             - If `values` contains an empty string.
         """
@@ -3720,14 +3720,14 @@ class VerificationScreenStep(object):
         return True
 
 
-module_ratelimit.Guild = Guild
+module_rate_limit.Guild = Guild
 module_channel.Guild = Guild
 
 del URLS
 del cached_property
 del ActivityUnknown
 del UserBase
-del module_ratelimit
+del module_rate_limit
 del DiscordEntity
 del ReverseFlagBase
 del IconSlot

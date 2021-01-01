@@ -30,7 +30,7 @@ class UserFlag(FlagBase):
     """
     Represents a user's flags.
     
-    The implememted user flags are the following:
+    The implemented user flags are the following:
     
     +-------------------------------+-------------------+
     | Respective name               | Bitwise position  |
@@ -109,7 +109,7 @@ if DOCS_ENABLED:
     Parameters
     ----------
     user_id : `int`
-        The unique identificator number of the user.
+        The unique identifier number of the user.
     
     Returns
     -------
@@ -177,7 +177,7 @@ class GuildProfile(object):
         self._update_no_return(data, guild)
     
     def __repr__(self):
-        """Returns the represnetation of the guild profile."""
+        """Returns the representation of the guild profile."""
         return f'<{self.__class__.__name__}>'
     
     def _set_joined(self, data):
@@ -365,7 +365,7 @@ class UserBase(DiscordEntity, immortal=True):
     Base class for user instances.
     
     id : `int`
-        The client's unique identificator number.
+        The client's unique identifier number.
     name : str
         The client's username.
     discriminator : `int`
@@ -618,7 +618,7 @@ class UserBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        guild_profiles : `dict` or ``WeakKeyDictionary`` of (``Guild``, ``GuildPorfile``) items
+        guild_profiles : `dict` or ``WeakKeyDictionary`` of (``Guild``, ``GuildProfile``) items
         """
         return GUILD_PROFILES_TYPE()
     
@@ -663,14 +663,14 @@ class UserBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        activtiy : ``ActivityBase`` instance
+        activity : ``ActivityBase`` instance
         """
         return ActivityUnknown
     
     @property
     def platform(self):
         """
-        Returns the user's top statuse's platform. If the user is offline it will return an empty string.
+        Returns the user's top status's platform. If the user is offline it will return an empty string.
         
         Returns
         -------
@@ -775,7 +775,7 @@ class UserBase(DiscordEntity, immortal=True):
             
             Can be given as `None`.
         default : `Any`
-            If the user is not a member of the guild, or if has no roles there, zhen the given default value is returned.
+            If the user is not a member of the guild, or if has no roles there, then the given default value is returned.
             Defaults to `None`.
         
         Returns
@@ -898,7 +898,7 @@ class UserBase(DiscordEntity, immortal=True):
             
             Returns
             -------
-            activtiy : ``ActivityBase`` instance
+            activity : ``ActivityBase`` instance
             """
             activities = self.activities
             if activities is None:
@@ -910,7 +910,7 @@ class UserBase(DiscordEntity, immortal=True):
         @property
         def platform(self):
             """
-            Returns the user's top statuse's platform. If the user is offline it will return `an empty string.
+            Returns the user's top status's platform. If the user is offline it will return `an empty string.
             
             Returns
             -------
@@ -1156,7 +1156,7 @@ class User(UserBase):
     Attributes
     ----------
     id : `int`
-        The user's unique identificator number.
+        The user's unique identifier number.
     name : str
         The user's name.
     discriminator : `int`
@@ -1174,7 +1174,7 @@ class User(UserBase):
         The user's user flags.
     partial : `bool`
         Partial users have only their `.id` set and every other field might not reflect the reality.""", """
-    activities : `None` or `list` of ``AcitvityBase`` instances
+    activities : `None` or `list` of ``ActivityBase`` instances
         A list of the client's activities. Defaults to `None`
     status : `Status`
         The user's display status.
@@ -1379,7 +1379,7 @@ class User(UserBase):
             The user's ``.discriminator``. Is accepted as `str` instance as well and will be converted to `int`.
         avatar : `None`, ``Icon`` or `str`, Optional
             The user's avatar. Mutually exclusive with `avatar_type` and `avatar_hash`.
-        avatar_type : ``Icontype``, Optional
+        avatar_type : ``IconType``, Optional
             The user's avatar's type. Mutually exclusive with `avatar_type`.
         avatar_hash : `int`, Optional
             The user's avatar hash. Mutually exclusive with `avatar`.
@@ -1611,7 +1611,7 @@ class User(UserBase):
     def _update_presence(self, data):
         """
         Updates the user's presence and returns it's overwritten attributes as a `dict` with a `attribute-name` -
-        `old-value` relation. An exception from this is `activities`, because thats a ``ActivityChange`` instance
+        `old-value` relation. An exception from this is `activities`, because that's a ``ActivityChange`` instance
         containing all the changes of the user's activities.
         
         Parameters
@@ -1666,14 +1666,14 @@ class User(UserBase):
                 activity_change = ActivityChange(new_activities, None, None)
                 
             else:
-                added_activites = None
+                added_activities = None
                 updated_activities = None
-                removed_activites = old_activities.copy()
+                removed_activities = old_activities.copy()
                 
                 for activity_data in activity_datas:
                     activity_type = activity_data['type']
-                    for index in range(len(removed_activites)):
-                        activity = removed_activites[index]
+                    for index in range(len(removed_activities)):
+                        activity = removed_activities[index]
                         
                         if activity_type != activity.type:
                             continue
@@ -1681,7 +1681,7 @@ class User(UserBase):
                         if activity_data['id'] != activity.discord_side_id:
                             continue
                         
-                        del removed_activites[index]
+                        del removed_activities[index]
                         
                         activity_old_attributes = activity._update(activity_data)
                         if activity_old_attributes:
@@ -1705,18 +1705,18 @@ class User(UserBase):
                         
                         new_activities.append(activity)
                         
-                        if added_activites is None:
-                            added_activites = []
+                        if added_activities is None:
+                            added_activities = []
                         
-                        added_activites.append(activity)
+                        added_activities.append(activity)
                 
-                if not removed_activites:
-                    removed_activites = None
+                if not removed_activities:
+                    removed_activities = None
                 
-                if None is added_activites is updated_activities is removed_activites:
+                if None is added_activities is updated_activities is removed_activities:
                     activity_change = None
                 else:
-                    activity_change = ActivityChange(added_activites, updated_activities, removed_activites)
+                    activity_change = ActivityChange(added_activities, updated_activities, removed_activities)
         
         else:
             if old_activities is None:
@@ -1750,11 +1750,11 @@ class User(UserBase):
         
         activity_datas = data['activities']
         if activity_datas:
-            new_activites = [create_activity(activity_data) for activity_data in activity_datas]
+            new_activities = [create_activity(activity_data) for activity_data in activity_datas]
         else:
-            new_activites = None
+            new_activities = None
         
-        self.activities = new_activites
+        self.activities = new_activities
     
     def _update(self, data):
         """
@@ -1828,7 +1828,7 @@ class User(UserBase):
             The changed attributes of the respective guild profile as a `dict` with `attribute-name` - `old-attribute`
             relation.
             
-            The possible keys and valus within `old_attributes` are all optional and they can be any of the following:
+            The possible keys and values within `old_attributes` are all optional and they can be any of the following:
             +-------------------+-----------------------+
             | Keys              | Values                |
             +===================+=======================+
@@ -1947,16 +1947,16 @@ class User(UserBase):
 
 class ActivityChange(object):
     """
-    Represnets a user's changed activites.
+    Represents a user's changed activities.
     
     Attributes
     ----------
     added : `None` or `list` of ``ActivityBase``
-        The added activites to the respective user. Defaults to `None`.
+        The added activities to the respective user. Defaults to `None`.
     updated : `None` or `list` of ``ActivityUpdate``
-        The updated activites of the respective user. Defaults to `None`.
+        The updated activities of the respective user. Defaults to `None`.
     removed: `None` or `list` of ``ActivityBase``
-        The removed activites from the respective user. Defaults to `None`.
+        The removed activities from the respective user. Defaults to `None`.
     """
     __slots__ = ('added', 'updated', 'removed',)
     
@@ -1965,11 +1965,11 @@ class ActivityChange(object):
         Creates a new activity change with the given parameters.
         
         added : `None` or `list` of ``ActivityBase``
-            The added activites to the user.
+            The added activities to the user.
         updated : `None` or `list` of ``ActivityUpdate``
-            The updated activites of the user.
+            The updated activities of the user.
         removed: `None` or `list` of ``ActivityBase``
-            The removed activites from the user.
+            The removed activities from the user.
         """
         self.added = added
         self.updated = updated
@@ -2034,7 +2034,7 @@ class ActivityUpdate(object):
     activity : ``ActivityBase`` instance
         The updated activity.
     old_attributes : `dict` of (`str`, `Any`) items
-        The changed attributes of the activity in `attribute-name` - `old-value` relation. Can conatin any of the
+        The changed attributes of the activity in `attribute-name` - `old-value` relation. Can contain any of the
         following items:
         
         +-------------------+-----------------------------------+

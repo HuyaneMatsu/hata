@@ -1,13 +1,13 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('BaseMethodDescriptor', 'KeepType', 'KeyedReferer', 'RemovedDescriptor', 'WeakCallable', 'WeakKeyDictionary',
     'WeakMap', 'WeakReferer', 'WeakValueDictionary', 'alchemy_incendiary', 'any_to_any', 'cached_property',
-    'imultidict', 'istr', 'isweakreferable', 'listdifference', 'methodize', 'module_property', 'modulize', 'multidict',
+    'imultidict', 'istr', 'is_weakreferable', 'list_difference', 'methodize', 'module_property', 'modulize', 'multidict',
     'name_property', 'weakmethod', )
 
 from types import \
     MethodType              as method, \
     FunctionType            as function, \
-    MappingProxyType        as mappingproxy, \
+    MappingProxyType        as mapping_proxy, \
     GetSetDescriptorType    as getset_descriptor, \
     ModuleType              as module
 
@@ -22,7 +22,7 @@ except ImportError:
 
 class RemovedDescriptor(object):
     """
-    A descriptor, what can be used to overwrite a classe's attribute, what sould be inherited anyways.
+    A descriptor, what can be used to overwrite a class's attribute, what should be inherited anyways.
     
     Attributes
     ----------
@@ -36,13 +36,13 @@ class RemovedDescriptor(object):
     def __set_name__(self, owner, name):
         self.name = name
     
-    def __get__(self, obj, objtype):
+    def __get__(self, obj, type_):
         name = self.name
         if name is None:
             raise RuntimeError(f'{self.__class__.__name__} is not initialized correctly yet.')
         
         if obj is None:
-            error_message = f'type object {objtype.__name__!r} has no attribute {name!r}'
+            error_message = f'type object {type_.__name__!r} has no attribute {name!r}'
         else:
             error_message = f'{obj.__class__.__name__!r} object has no attribute {name!r}'
         
@@ -67,7 +67,7 @@ DOCS_ENABLED = (RemovedDescriptor.__doc__ is not None)
 
 class doc_property(object):
     """
-    Property to return the classe's docs if called from class, else the given object.
+    Property to return the class's docs if called from class, else the given object.
     """
     __slots__ = ()
     def __init__(self):
@@ -90,12 +90,12 @@ class doc_property(object):
 
 class name_property(object):
     """
-    Property to return the classe's name if called from the respective class.
+    Property to return the class's name if called from the respective class.
     
     Attributes
     ----------
     class_name : `str`
-        The classe's name.
+        The class's name.
     fget : `callable`
         Callable what's return will be returned, when called from an instance.
     """
@@ -143,7 +143,7 @@ def any_to_any(container1, container2):
 
 def where(container, key):
     """
-    Returns the first element from the givne container on what `key` returns `True`.
+    Returns the first element from the given container on what `key` returns `True`.
     
     Parameters
     ----------
@@ -179,7 +179,7 @@ def relative_index(list_, value):
     list_ : `list` of `Any`
         The list o which value would be inserted.
     value : `Any`
-        The vlaue what would be inserted.
+        The value what would be inserted.
     
     Returns
     -------
@@ -216,7 +216,7 @@ def change_on_switch(list_, value, new_position, key=None):
     Returns
     -------
     result : `list` of (`tuple` (`int`, `Any`)) or `callable` returns
-        The changed positons.
+        The changed positions.
     
     Raises
     ------
@@ -312,9 +312,9 @@ class KeepType(object):
         Parameters
         ----------
         old_class : `type` instance
-            The old clas to extend.
+            The old class to extend.
         new_class : `None` or `type` instance, Optional
-            The new class to extend the old classe's functionality with.
+            The new class to extend the old class's functionality with.
         
         Returns
         -------
@@ -337,7 +337,7 @@ class KeepType(object):
         Parameters
         ----------
         new_class : `type` instance
-            The new class to extend the old classe's functionality with.
+            The new class to extend the old class's functionality with.
         
         Returns
         -------
@@ -550,7 +550,7 @@ class multidict(dict):
                 if value not in values:
                     values.append(value)
     
-    def getall(self, key, default=None):
+    def get_all(self, key, default=None):
         """
         Returns all the values matching the given `key`.
         
@@ -571,7 +571,7 @@ class multidict(dict):
         except KeyError:
             return default
     
-    def getone(self, key, default=None):
+    def get_one(self, key, default=None):
         """
         Returns the 0th value matching the given `key`.
         
@@ -594,7 +594,7 @@ class multidict(dict):
         else:
             return values[0]
     
-    get = getone
+    get = get_one
     
     def setdefault(self, key, default=None):
         """
@@ -624,7 +624,7 @@ class multidict(dict):
         dict.__setitem__(self, key, [default])
         return default
     
-    def popall(self, key, default=_spaceholder):
+    def pop_all(self, key, default=_spaceholder):
         """
         Removes all the values from the multidict which the given `key` matched.
         
@@ -652,7 +652,7 @@ class multidict(dict):
                 return default
             raise
     
-    def popone(self, key, default=_spaceholder):
+    def pop_one(self, key, default=_spaceholder):
         """
         Removes the first value from the multidict, which matches the given `key`.
         
@@ -686,7 +686,7 @@ class multidict(dict):
             
             return value
     
-    pop = popone   
+    pop = pop_one   
     
     # inheritable:
     def copy(self):
@@ -856,7 +856,7 @@ class imultidict(multidict):
                 if value not in values:
                     values.append(value)
     
-    def getall(self, key, default=None):
+    def get_all(self, key, default=None):
         """
         Returns all the values matching the given `key`.
         
@@ -873,9 +873,9 @@ class imultidict(multidict):
             The values for the given `key` if present.
         """
         key = istr(key)
-        return multidict.getall(self, key, default)
+        return multidict.get_all(self, key, default)
     
-    def getone(self, key, default=None):
+    def get_one(self, key, default=None):
         """
         Returns the 0th value matching the given `key`.
         
@@ -892,9 +892,9 @@ class imultidict(multidict):
             The value for the given key if present.
         """
         key = istr(key)
-        return multidict.getone(self, key, default)
+        return multidict.get_one(self, key, default)
     
-    get = getone
+    get = get_one
     
     def setdefault(self, key, default=None):
         """
@@ -917,7 +917,7 @@ class imultidict(multidict):
         key = istr(key)
         return multidict.setdefault(self, key, default)
     
-    def popall(self, key, default=_spaceholder):
+    def pop_all(self, key, default=_spaceholder):
         """
         Removes all the values from the multidict which the given `key` matched.
         
@@ -939,9 +939,9 @@ class imultidict(multidict):
             if `key` is not present in the multidict and `default` value is not given either.
         """
         key = istr(key)
-        return multidict.popall(self, key, default)
+        return multidict.pop_all(self, key, default)
 
-    def popone(self, key, default=_spaceholder):
+    def pop_one(self, key, default=_spaceholder):
         """
         Removes the first value from the multidict, which matches the given `key`.
         
@@ -963,9 +963,9 @@ class imultidict(multidict):
             if `key` is not present in the multidict and `default` value is not given either.
         """
         key = istr(key)
-        return multidict.popone(self, key, default)
+        return multidict.pop_one(self, key, default)
     
-    pop = popone
+    pop = pop_one
 
 
 class istr(str):
@@ -999,7 +999,7 @@ class istr(str):
         value : `Any`, Optional
             The value, what is representation or encoded version is returned.
         encoding : `str`, Optional
-            Encoding to use when decoing a `bytes-like`.
+            Encoding to use when decoding a `bytes-like`.
         errors : `str`, Optional
             May be given to set a different error handling scheme when decoding from `bytes-like`. The default `errors`
             value is `'strict'`, meaning that encoding errors raise a `UnicodeError`. Other possible values are
@@ -1043,7 +1043,7 @@ class istr(str):
         return (self._casefold == other_value)
 
 
-def listdifference(list1, list2):
+def list_difference(list1, list2):
     """
     Returns the difference of the two given lists.
     
@@ -1057,11 +1057,11 @@ def listdifference(list1, list2):
     Returns
     -------
     difference : `tuple` (`list` of `Any`, `list` of `Any`)
-        A tuple contianing the inclusive element of the given parameters.
+        A tuple containing the inclusive element of the given parameters.
     
     Notes
     -----
-    `list1` and `list2` should be given as soroted lists, but `None` and `set` instances are also accepted.
+    `list1` and `list2` should be given as sorted lists, but `None` and `set` instances are also accepted.
     """
     difference = ([], [])
     
@@ -1175,7 +1175,7 @@ class cached_property(object):
         self.name = name
         return self
     
-    def __get__(self, obj, objtype):
+    def __get__(self, obj, type_):
         if obj is None:
             return self
         
@@ -1205,7 +1205,7 @@ class alchemy_incendiary(object):
     func : `callable`
         The function to call.
     kwargs : `None` of `dict` of (`str`, `Any`) items
-        Keyword arguemnts to call func with if applicable.
+        Keyword arguments to call func with if applicable.
     """
     __slots__ = ('args', 'func', 'kwargs',)
     def __init__(self, func, args, kwargs=None):
@@ -1219,7 +1219,7 @@ class alchemy_incendiary(object):
         args : `tuple` of `Any`
             Arguments to call `func` with.
         kwargs : `None` of `dict` of (`str`, `Any`) items, Optional
-            Keyword arguemnts to call func with if applicable.
+            Keyword arguments to call func with if applicable.
         """
         self.func = func
         self.args = args
@@ -1247,15 +1247,15 @@ class alchemy_incendiary(object):
 
 class SubCheckType(type):
     """
-    Metaclass, which can be used for subclass checks. It's type instances shoud implement a `.__subclasses__`
-    class attrbiute, which contain's all of it's "subclasses".
+    Metaclass, which can be used for subclass checks. It's type instances should implement a `.__subclasses__`
+    class attribute, which contain's all of it's "subclasses".
     """
     def __instancecheck__(cls, instance):
-        """Retuns whether the given instance's type is a subclass of the respective type."""
+        """Returns whether the given instance's type is a subclass of the respective type."""
         return (type(instance) in cls.__subclasses__)
 
     def __subclasscheck__(cls, klass):
-        """Retuns whether the given type is a subclass of the respective type."""
+        """Returns whether the given type is a subclass of the respective type."""
         return (klass in cls.__subclasses__)
 
 class MethodLike(metaclass=SubCheckType):
@@ -1279,7 +1279,7 @@ class MethodLike(metaclass=SubCheckType):
     @classmethod
     def get_reserved_argcount(cls, instance):
         """
-        Returns the givne `instance`'s reserved argcount.
+        Returns the given `instance`'s reserved argcount.
         
         Parameters
         ----------
@@ -1339,7 +1339,7 @@ class basemethod(MethodLike):
         cls : `type`
             The class from where the method was called from.
         base : `Any`
-            The instance from where the method was called from. Can be givne as `None` as well.
+            The instance from where the method was called from. Can be given as `None` as well.
         """
         self.__base__ = base
         self.__func__ = func
@@ -1347,12 +1347,12 @@ class basemethod(MethodLike):
     
     def __call__(self, *args, **kwargs):
         """
-        Calls the basemethod with the given prameters.
+        Calls the basemethod with the given parameters.
         
         Parameters
         ----------
         *args : Arguments
-            Argumnets to call the internal function with.
+            Arguments to call the internal function with.
         **kwargs : Keyword arguments
             Keyword arguments to call the internal function with.
         
@@ -1388,7 +1388,7 @@ class basemethod(MethodLike):
 
 class BaseMethodDescriptor(object):
     """
-    Descriptor, which can be used as a decorato to wrap a function to a basemethod.
+    Descriptor, which can be used as a decorator to wrap a function to a basemethod.
     
     Attributes
     ----------
@@ -1420,7 +1420,7 @@ class BaseMethodDescriptor(object):
 wrapper_descriptor = type(object.__ne__)
 method_descriptor = type(object.__format__)
 
-DO_NOT_MODULIZE_TYPES = [mappingproxy, getset_descriptor, ]
+DO_NOT_MODULIZE_TYPES = [mapping_proxy, getset_descriptor, ]
 
 if wrapper_descriptor is not function:
     DO_NOT_MODULIZE_TYPES.append(wrapper_descriptor)
@@ -1430,7 +1430,7 @@ if method_descriptor is not function:
 
 DO_NOT_MODULIZE_TYPES = tuple(DO_NOT_MODULIZE_TYPES)
 
-del mappingproxy
+del mapping_proxy
 del getset_descriptor
 del wrapper_descriptor
 del method_descriptor
@@ -1444,9 +1444,9 @@ def _modulize_function(old, globals_, source_module, module_name, module_path):
     old : `function`
         A function present inside of a modulized class.
     globals_ : `dict` of (`str`, `Any`)
-        Global variabls of the respective module.
+        Global variables of the respective module.
     source_module : `module`
-        The module, where the modulzed class was defined.
+        The module, where the modulized class was defined.
     module_name : `str`
         The newly created module's name.
     module_path : `str`
@@ -1471,16 +1471,16 @@ def _modulize_function(old, globals_, source_module, module_name, module_path):
 
 def _modulize_type(klass, globals_, source_module, module_name, module_path):
     """
-    Changes the given classe's scopes and qualname if they were defined inside of a modulized class.
+    Changes the given class's scopes and qualname if they were defined inside of a modulized class.
     
     Parameters
     ----------
     klass : `type`
         A class present inside of a modulized class.
     globals_ : `dict` of (`str`, `Any`)
-        Global variabls of the respective module.
+        Global variables of the respective module.
     source_module : `module`
-        The module, where the modulzed class was defined.
+        The module, where the modulized class was defined.
     module_name : `str`
         The newly created module's name.
     module_path : `str`
@@ -1512,7 +1512,7 @@ def modulize(klass):
     """
     Transforms the given class to a module.
     
-    Every functions and classes defined inside of given class, which are also present at trandfomration as well, will
+    Every functions and classes defined inside of given class, which are also present at transformation as well, will
     have their global scope modified.
     
     Parameters
@@ -1528,7 +1528,7 @@ def modulize(klass):
     Raises
     ------
     TypeError
-        If `klaass` is not given as `type`.
+        If `klass` is not given as `type` instance.
     """
     if not isinstance(klass, type):
         raise TypeError('Only types can be modulized.')
@@ -1723,7 +1723,7 @@ class sortedlist(list):
         value : `Any`
             The value to insert to the sortedlist.
         """
-        index = self.relativeindex(value)
+        index = self.relative_index(value)
         if index == len(self):
             # If the the index is at the end, then we just list append it.
             list.append(self, value)
@@ -1750,7 +1750,7 @@ class sortedlist(list):
         value : `Any`
             The value to remove.
         """
-        index = self.relativeindex(value)
+        index = self.relative_index(value)
         if index == len(self):
             # The element is not at self, leave
             return
@@ -1760,7 +1760,7 @@ class sortedlist(list):
             # The element is different as the already added one att the correct position, leave.
             return
         
-        # No more speccial case, remove it.
+        # No more special case, remove it.
         list.__delitem__(self, index)
     
     def extend(self, iterable):
@@ -1814,7 +1814,7 @@ class sortedlist(list):
     
     def __contains__(self, value):
         """Returns whether the sortedlist contains the given value."""
-        index = self.relativeindex(value)
+        index = self.relative_index(value)
         if index == len(self):
             return False
         
@@ -1825,12 +1825,12 @@ class sortedlist(list):
     
     def index(self, value):
         """Returns the index of the given value inside of the sortedlist."""
-        index = self.relativeindex(value)
+        index = self.relative_index(value)
         if index == len(self) or self[index] != value:
             raise ValueError(f'{value!r} is not in the {self.__class__.__name__}.')
         return index
     
-    def relativeindex(self, value):
+    def relative_index(self, value):
         """
         Returns the relative index of the given value if it would be inside of the sortedlist.
         
@@ -1841,8 +1841,8 @@ class sortedlist(list):
         
         Returns
         -------
-        relativeindex : `bool`
-            The index where the given value would be inserted or should be inside of the srotedlist.
+        .relative_index : `bool`
+            The index where the given value would be inserted or should be inside of the sortedlist.
         """
         bot = 0
         top = len(self)
@@ -1868,7 +1868,7 @@ class sortedlist(list):
                 break
         return bot
     
-    def keyedrelativeindex(self, value, key):
+    def keyed_relative_index(self, value, key):
         """
         Returns the relative index of the given value if it would be inside of the sortedlist.
         
@@ -1881,8 +1881,8 @@ class sortedlist(list):
         
         Returns
         -------
-        relativeindex : `bool`
-            The index where the given value would be inserted or should be inside of the srotedlist.
+        .relative_index : `bool`
+            The index where the given value would be inserted or should be inside of the sortedlist.
         """
         bot = 0
         top = len(self)
@@ -1945,7 +1945,7 @@ class sortedlist(list):
         element : `Any` or `default`
             The matched element or the `default` value if not found.
         """
-        index = self.keyedrelativeindex(value, key)
+        index = self.keyed_relative_index(value, key)
         if index == len(self):
             return default
         
@@ -1957,7 +1957,7 @@ class sortedlist(list):
     
     def pop(self, value, key, default=None):
         """
-        Gets and remvoves element from the sortedlist, what's is passed trough `key` equals to the given value.
+        Gets and removes element from the sortedlist, what's is passed trough `key` equals to the given value.
         
         Parameters
         ----------
@@ -1973,7 +1973,7 @@ class sortedlist(list):
         element : `Any` or `default`
             The matched element or the `default` value if not found.
         """
-        index = self.keyedrelativeindex(value, key)
+        index = self.keyed_relative_index(value, key)
         if index == len(self):
             return default
         
@@ -1984,7 +1984,7 @@ class sortedlist(list):
         
         return default
 
-def isweakreferable(object_):
+def is_weakreferable(object_):
     """
     Returns whether the given object is weakreferable.
     
@@ -1995,7 +1995,7 @@ def isweakreferable(object_):
     
     Returns
     -------
-    isweakreferable : `bool`
+    is_weakreferable : `bool`
     """
     slots = getattr(type(object_), '__slots__', None)
     if (slots is not None) and ('__weakref__' in slots):
@@ -2045,11 +2045,11 @@ class WeakHasher(object):
         self.reference = reference
     
     def __hash__(self):
-        """Returns the weakhasher's hash value."""
+        """Returns the ``WeakHasher``'s hash value."""
         return self._hash
     
     def __eq__(self, other):
-        """Returns whether the two weakhashers are the same."""
+        """Returns whether the two ``WeakHasher``-s are the same."""
         self_reference = self.reference
         if self_reference is other:
             return True
@@ -2060,17 +2060,17 @@ class WeakHasher(object):
         return (self.reference is other.reference)
     
     def __repr__(self):
-        """Returns the weakhasher's representation."""
+        """Returns the ``WeakHasher``'s representation."""
         return f'{self.__class__.__name__}({self.reference!r})'
     
     def __getattr__(self, name):
-        """Returns the attribute of the weakhasher's reference."""
+        """Returns the attribute of the ``WeakHasher``'s reference."""
         return getattr(self.reference, name)
 
 
 def add_to_pending_removals(container, reference):
     """
-    Adds the given weakrefrence to the given set.
+    Adds the given weakreference to the given set.
     
     Parameters
     ----------
@@ -2117,7 +2117,7 @@ class KeyedReferer(WeakReferer):
     __slots__ = ('key', )
     def __new__(cls, obj, callback, key, ):
         """
-        Creates a new ``KeyedReferer`` insatnce with the given parameters.
+        Creates a new ``KeyedReferer`` instance with the given parameters.
         
         Parameters
         ----------
@@ -2141,14 +2141,14 @@ class WeakCallable(WeakReferer):
     __slots__ = ()
     def __call__(self, *args, **kwargs):
         """
-        Calls the wakreferenced object if not yet collected.
+        Calls the weakreferenced object if not yet collected.
         
         Parameters
         ----------
         *args : Arguments
-            Argumnets to call the weakreferenced callable with.
+            Arguments to call the weakreferenced callable with.
         **kwargs : Keyword arguments
-            Keyowrd arguments to call the weakreferenced callable with..
+            Keyword arguments to call the weakreferenced callable with..
         
         Returns
         -------
@@ -2229,9 +2229,9 @@ class weakmethod(WeakReferer, MethodLike):
         Parameters
         ----------
         *args : Arguments
-            Argumnets to call the function with.
+            Arguments to call the function with.
         **kwargs : Keyword arguments
-            Keyowrd arguments to call the function with.
+            Keyword arguments to call the function with.
         
         Returns
         -------
@@ -2548,7 +2548,7 @@ class _HybridValueDictionaryItemIterator(object):
 
 class HybridValueDictionary(dict):
     """
-    Hybrid value dictionaryies store their's values weakly referenced if applicable.
+    Hybrid value dictionaries store their's values weakly referenced if applicable.
     
     Attributes
     ----------
@@ -2690,7 +2690,7 @@ class HybridValueDictionary(dict):
     # __ne__ -> same
     # __new__ -> same
     # __reduce__ -> we do not care
-    # __redue_ex__ -> we do not care
+    # __reduce_ex__ -> we do not care
     
     def __repr__(self):
         """Returns the representation of the hybrid value dictionary."""
@@ -2737,7 +2737,7 @@ class HybridValueDictionary(dict):
     
     def __setitem__(self, key, value):
         """Adds the given `key` - `value` pair to the hybrid value dictionary."""
-        if isweakreferable(value):
+        if is_weakreferable(value):
             value_weakreferable = True
             value_or_reference = KeyedReferer(value, self._callback, key)
         else:
@@ -2845,7 +2845,7 @@ class HybridValueDictionary(dict):
         """
         return _HybridValueDictionaryKeyIterator(self)
     
-    # need goto for better codestyle
+    # Need goto for better code-style
     def pop(self, key, default=_spaceholder):
         """
         Pops the value of the hybrid value dictionary which matches the given key.
@@ -2950,7 +2950,7 @@ class HybridValueDictionary(dict):
         iterable : `iterable`
             Iterable to extend the hybrid value dictionary with.
             
-            Can be given as an object, wich:
+            Can be given as an object, which:
             - supports `.items` iterator.
             - supports `.keys` and `.__getitem__`.
             - is `iterable` and each iteration returns a sequence with 2 elements.
@@ -3375,7 +3375,7 @@ class WeakValueDictionary(dict):
     # __ne__ -> same
     # __new__ -> same
     # __reduce__ -> we do not care
-    # __redue_ex__ -> we do not care
+    # __reduce_ex__ -> we do not care
     
     def __repr__(self):
         """Returns the representation of the weak value dictionary."""
@@ -3603,7 +3603,7 @@ class WeakValueDictionary(dict):
         iterable : `iterable`
             Iterable to extend the weak value dictionary with.
             
-            Can be given as an object, wich:
+            Can be given as an object, which:
             - supports `.items` iterator.
             - supports `.keys` and `.__getitem__`.
             - is `iterable` and each iteration returns a sequence with 2 elements.
@@ -4045,7 +4045,7 @@ class WeakKeyDictionary(dict):
     # __ne__ -> same
     # __new__ -> same
     # __reduce__ -> we do not care
-    # __redue_ex__ -> we do not care
+    # __reduce_ex__ -> we do not care
     
     def __repr__(self):
         """Returns the representation of the weak key dictionary."""
@@ -4268,7 +4268,7 @@ class WeakKeyDictionary(dict):
         iterable : `iterable`
             Iterable to extend the weak key dictionary with.
             
-            Can be given as an object, wich:
+            Can be given as an object, which:
             - supports `.items` iterator.
             - supports `.keys` and `.__getitem__`.
             - is `iterable` and each iteration returns a sequence with 2 elements.
@@ -4579,7 +4579,7 @@ class WeakMap(dict):
     # __ne__ -> same
     # __new__ -> same
     # __reduce__ -> we do not care
-    # __redue_ex__ -> we do not care
+    # __reduce_ex__ -> we do not care
     
     def __repr__(self):
         """Returns the weak map's representation."""
@@ -4748,8 +4748,8 @@ class WeakMap(dict):
     
     def set(self, key):
         """
-        Sets a key to the weakmap and then returns it. If they given key is already present in the weakmap, returns
-        that instead.
+        Sets a key to the ``WeakMap`` and then returns it. If they given key is already present in the ``WeakMap``,
+        returns that instead.
         
         Parameters
         ----------

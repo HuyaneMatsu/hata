@@ -1,5 +1,4 @@
 ﻿# -*- coding: utf-8 -*-
-# https://github.com/squeaky-pl/zenchmarks/blob/master/vendor/yarl/quoting.py
 from string import ascii_letters, ascii_lowercase, digits
 
 BIN_ASCII_LOWERCASE = ascii_lowercase.encode('ascii')
@@ -26,7 +25,7 @@ def quote(value, safe='', protected='', query_string=False):
     protected : `str`, Optional
         Additional character to have percentage encoding preference. Defaults to empty string.
     query_string : `bool`, Optional
-        Whether the generated value is a query string key or value. Defauts to `False`
+        Whether the generated value is a query string key or value. Defaults to `False`
     
     Returns
     -------
@@ -105,7 +104,7 @@ def unquote(value, unsafe='', query_string=False):
     value : `None` or `str`
         The value to quote.
     unsafe : `str`, Optional
-        Additional not percentage encoding safe characters, which sould not be contained by potentionally percent
+        Additional not percentage encoding safe characters, which should not be contained by potentially percent
         encoded characters. Defaults to empty string.
     
     Returns

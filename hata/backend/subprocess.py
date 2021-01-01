@@ -2,7 +2,7 @@
 import os, sys, errno
 from stat import S_ISCHR, S_ISFIFO, S_ISSOCK
 from subprocess import TimeoutExpired, PIPE, Popen
-from socket import socketpair as create_socketpair
+from socket import socketpair as create_socket_pair
 
 from .futures import Task, Future, WaitTillAll, future_or_timeout
 from .protocol import ReadProtocolBase
@@ -14,13 +14,58 @@ MAX_READ_SIZE = 262144
 PROCESS_EXIT_DELAY_LIMIT = 10
 
 class UnixReadPipeTransport(object):
+    """
+    Asynchronous read only transport implementation for pipes.
     
-    __slots__ = ('_extra', 'closing', 'fileno', 'loop', '_paused', 'pipe', 'protocol')
+    Attributes
+    ----------
+    _extra : `dict` of (`str`, `Any`) items
+        Optional transport information.
+    closing : `bool`
+        Whether the transport ic closing.
+    fileno : `int`
+        The used socket's file descriptor number.
+    loop : ``EventThread``
+        The respective event loop of the transport.
+    pipe : `None` or `file-like` object
+        The pipe to connect to on read end.
+        
+        Is set to non-blocking mode.
+        
+        After closing the transport is set to `None`.
+    protocol : `None` or `Any`
+        Asynchronous protocol implementation used by the transport.
+        
+        After closing the transport is set to `None`.
+    """
+    __slots__ = ('_extra', '_paused', 'closing', 'fileno', 'loop', 'pipe', 'protocol')
     async def __new__(cls, loop, pipe, protocol, extra=None):
+        """
+        Creates a new ``UnixReadPipeTransport`` instance with the given parameters.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        loop : ``EventThread``
+            The respective event loop of the transport.
+        pipe : `file-like` object
+            The pipe to connect to on read end.
+        protocol : `Any`
+            Asynchronous protocol implementation used by the transport.
+        extra : `None` or `dict` of (`str`, `Any`) items, Optional
+            Optional transport information.
+        
+        Raises
+        ------
+        ValueError
+            If `pipe` was not given neither as pipe, socket or character device.
+        """
         fileno = pipe.fileno()
         mode = os.fstat(fileno).st_mode
         if not (S_ISFIFO(mode) or S_ISSOCK(mode) or S_ISCHR(mode)):
-            raise ValueError('Pipe transport is only for pipes, sockets and character devices.')
+            raise ValueError(f'{cls.__name__} is only for pipes, sockets and character devices, got '
+                f'{pipe.__class__.__name__}.')
         
         self = object.__new__(cls)
         if extra is None:
@@ -53,12 +98,30 @@ class UnixReadPipeTransport(object):
         return self
     
     def get_extra_info(self, name, default=None):
+        """
+        Gets optional transport information.
+        
+        Parameters
+        ----------
+        name : `str`
+            The extra information's name to get.
+        default : `Any`, Optional
+            Default value to return if `name` could not be matched. Defaults to `None`.
+        
+        Returns
+        -------
+        info : `default`, `Any`
+        """
         return self._extra.get(name, default)
     
     def __repr__(self):
+        """Returns the ``UnixReadPipeTransport``'s representation."""
         return f'<{self.__class__.__name__} fd={self.fileno}>'
     
     def _read_ready(self):
+        """
+        Added as a a read callback for the respective event loop to be called when the data is received on the pipe,
+        """
         try:
             data = os.read(self.fileno, MAX_READ_SIZE)
         except (BlockingIOError, InterruptedError):
@@ -77,6 +140,12 @@ class UnixReadPipeTransport(object):
                 loop.call_soon(self.__class__._call_connection_lost, self, None)
     
     def pause_reading(self):
+        """
+        Pauses the receiving end.
+        
+        No data will be passed to the respective protocol's ``.data_received`` method until ``.resume_reading`` is
+        called.
+        """
         if self.closing or self._paused:
             return
         
@@ -84,6 +153,11 @@ class UnixReadPipeTransport(object):
         self.loop.remove_reader(self.fileno)
     
     def resume_reading(self):
+        """
+        Resumes the receiving end.
+        
+        Data received will once again be passed to the respective protocol's ``.data_received`` method.
+        """
         if self.closing or not self._paused:
             return
         
@@ -91,36 +165,100 @@ class UnixReadPipeTransport(object):
         self.loop.add_reader(self.fileno, self._read_ready)
     
     def set_protocol(self, protocol):
+        """
+        Sets a new protocol to the transport.
+        
+        Parameters
+        ----------
+        protocol : `Any`
+            Asynchronous protocol implementation.
+        """
         self.protocol = protocol
     
     def get_protocol(self):
+        """
+        Gets the read pipe transport's actual protocol.
+        
+        Returns
+        -------
+        protocol : `Any`
+            Asynchronous protocol implementation.
+        """
         return self.protocol
     
     def is_closing(self):
+        """
+        Returns whether the read pipe transport is closing.
+        
+        Returns
+        -------
+        is_closing : `bool`
+        """
         return self.closing
     
     def close(self):
+        """
+        Starts the shutdown process of the read pipe transport.
+        """
         if not self.closing:
             self._close(None)
     
     def __del__(self):
+        """
+        Closes the read pipe transport if not yet closed.
+        """
         pipe = self.pipe
         if (pipe is not None):
             pipe.close()
     
     def _fatal_error(self, exception, message='Fatal error on pipe transport'):
+        """
+        If a fatal error occurs on the protocol renders it's traceback and closes it's transport.
+        
+        Parameters
+        ----------
+        exception : `BaseException`
+            The occurred exception.
+        message : `str`, Optional
+            Additional error message to render.
+        """
         if not (isinstance(exception, OSError) and (exception.errno == errno.EIO)):
             self.loop.render_exc_async(exception, [message, '\non: ', repr(self), '\n'])
         
         self._close(exception)
     
     def _close(self, exception):
+        """
+        Starts the transport's closing process.
+        
+        Parameters
+        ----------
+        exception : `None` or ``BaseException``
+            Defines whether the connection is closed, or an exception was received.
+            
+            If the connection was closed, then `exception` is given as `None`. This can happen at the case, when eof is
+            received as well.
+        """
         self.closing = True
         loop = self.loop
         loop.remove_reader(self.fileno)
         loop.call_soon(self.__class__._call_connection_lost, self, exception)
     
     def _call_connection_lost(self, exception):
+        """
+        Calls the read pipe transport's protocol's `.connection_lost` with the given exception and closes the
+        transport's pipe.
+        
+        Parameters
+        ----------
+        exception : `None` or ``BaseException``
+            Exception to call the protocol's ``.connection_lost`` with.
+            
+            Defines whether the connection is closed, or an exception was received.
+            
+            If the connection was closed, then `exception` is given as `None`. This can happen at the case, when eof is
+            received as well.
+        """
         protocol = self.protocol
         if protocol is None:
             return
@@ -470,14 +608,14 @@ class SubprocessReadPipeProtocol(SubprocessWritePipeProtocol):
 class AsyncProcess(object):
     __slots__ = ('_alive_fds', '_connection_lost', '_drain_waiter', '_exit_waiters', '_extra', '_finished', '_paused',
     '_pending_calls', '_stdin_closed', '_subprocess_stderr_protocol', '_subprocess_stdin_protocol',
-    '_subprocess_stdout_protocol', 'closed', 'loop', 'pid', 'process', 'returncode', 'stderr', 'stdin', 'stdout', )
+    '_subprocess_stdout_protocol', 'closed', 'loop', 'pid', 'process', 'return_code', 'stderr', 'stdin', 'stdout', )
     
-    async def __new__(cls, loop, args, shell, stdin, stdout, stderr, bufsize, extra, popen_kwargs):
+    async def __new__(cls, loop, args, shell, stdin, stdout, stderr, buffer_size, extra, popen_kwargs):
         if stdin == PIPE:
             # Use a socket pair for stdin, since not all platforms support selecting read events on the write end of a
             # socket (which we use in order to detect closing of the other end).  Notably this is needed on AIX, and
             # works just fine on other platforms.
-            stdin_r, stdin_w = create_socketpair()
+            stdin_r, stdin_w = create_socket_pair()
         else:
             stdin_r = stdin
             stdin_w = None
@@ -486,11 +624,11 @@ class AsyncProcess(object):
         
         try:
             process = Popen(args, shell=shell, stdin=stdin_r, stdout=stdout, stderr=stderr, universal_newlines=False,
-                bufsize=bufsize, **popen_kwargs)
+                bufsize=buffer_size, **popen_kwargs)
             
             if (stdin_w is not None):
                 stdin_r.close()
-                process.stdin = open(stdin_w.detach(), 'wb', buffering=bufsize)
+                process.stdin = open(stdin_w.detach(), 'wb', buffering=buffer_size)
                 stdin_w = None
         except:
             if (process is not None) and (process.poll() is None):
@@ -516,7 +654,7 @@ class AsyncProcess(object):
         self.loop = loop
         self.process = process
         self.pid = process.pid
-        self.returncode = None
+        self.return_code = None
         self._exit_waiters = None
         self._pending_calls = []
         self._subprocess_stdin_protocol = None
@@ -645,7 +783,7 @@ class AsyncProcess(object):
         
         process = self.process
         if (process is not None):
-            if (self.returncode is None) and (process.poll() is None):
+            if (self.return_code is None) and (process.poll() is None):
                 try:
                     process.kill()
                 except ProcessLookupError:
@@ -741,11 +879,11 @@ class AsyncProcess(object):
             reader.data_received(data)
     
     def _process_exited(self, delayed):
-        returncode = self.process.poll()
-        if returncode is None:
+        return_code = self.process.poll()
+        if return_code is None:
             if delayed == PROCESS_EXIT_DELAY_LIMIT:
                 # do not wait more
-                returncode = 255
+                return_code = 255
             else:
                 # not yet exited, delay a little bit.
                 delayed += 1
@@ -753,7 +891,7 @@ class AsyncProcess(object):
                 self.loop.call_later(0.01*delayed, self.__class__._process_exited, self, delayed)
                 return
         
-        self.returncode = returncode
+        self.return_code = return_code
         
         pending_calls = self._pending_calls
         if (pending_calls is None):
@@ -768,7 +906,7 @@ class AsyncProcess(object):
         if (exit_waiters is not None):
             for waiter in self._exit_waiters:
                 if not waiter.cancelled():
-                    waiter.set_result(returncode)
+                    waiter.set_result(return_code)
         
         self._exit_waiters = None
     
@@ -779,9 +917,9 @@ class AsyncProcess(object):
         self.close()
     
     async def wait(self, timeout=None):
-        returncode = self.returncode
-        if (returncode is not None):
-            return returncode
+        return_code = self.return_code
+        if (return_code is not None):
+            return return_code
         
         waiter = Future(self.loop)
         
@@ -810,7 +948,7 @@ class AsyncProcess(object):
             raise TimeoutExpired(args, timeout) from None
     
     def _try_finish(self):
-        if self.returncode is None:
+        if self.return_code is None:
             return
         
         stdin_protocol = self._subprocess_stdin_protocol
@@ -904,10 +1042,10 @@ class AsyncProcess(object):
             if (timeout is not None):
                 future_or_timeout(future, timeout)
             
-            _, pending = await future
+            done, pending = await future
             
             if pending:
-                # timeout occured, cancel the read tasks and raise TimeoutExpired.
+                # timeout occurred, cancel the read tasks and raise TimeoutExpired.
                 for task in pending:
                     task.cancel()
                 
@@ -940,9 +1078,9 @@ class AsyncProcess(object):
         return stdout, stderr
     
     def poll(self):
-        returncode = self.returncode
-        if (returncode is not None):
-            return returncode
+        return_code = self.return_code
+        if (return_code is not None):
+            return return_code
     
     def pause_writing(self):
         self._paused = True

@@ -4,7 +4,7 @@ __all__ = ('ChooseMenu', 'Closer', 'Cooldown', 'GUI_STATE_CANCELLED', 'GUI_STATE
     'ReactionAddWaitfor', 'ReactionDeleteWaitfor', 'multievent', 'wait_for_message', 'wait_for_reaction', )
 
 from ...backend.futures import Task, Future
-from ...backend.eventloop import LOOP_TIME
+from ...backend.event_loop import LOOP_TIME
 
 from ...discord.parsers import EventWaitforBase
 from ...discord.emoji import BUILTIN_EMOJIS
@@ -20,10 +20,10 @@ class ReactionAddWaitfor(EventWaitforBase):
     """
     Implements waiting for `reaction_add` events.
     
-    Attrbiutes
+    Attributes
     ----------
-    waitfors : `WeakValueDictionary` of (``DiscordEntity``, `asnyc-callable`) items
-        An autoadded container to store `entity` - `async-callable` pairs.
+    waitfors : `WeakValueDictionary` of (``DiscordEntity``, `async-callable`) items
+        An auto-added container to store `entity` - `async-callable` pairs.
     
     Class Attributes
     ----------------
@@ -37,10 +37,10 @@ class ReactionDeleteWaitfor(EventWaitforBase):
     """
     Implements waiting for `reaction_delete` events.
     
-    Attrbiutes
+    Attributes
     ----------
-    waitfors : `WeakValueDictionary` of (``DiscordEntity``, `asnyc-callable`) items
-        An autoadded container to store `entity` - `async-callable` pairs.
+    waitfors : `WeakValueDictionary` of (``DiscordEntity``, `async-callable`) items
+        An auto-added container to store `entity` - `async-callable` pairs.
     
     Class Attributes
     ----------------
@@ -64,7 +64,7 @@ class multievent(object):
     
     def __init__(self, *events):
         """
-        Createss a `multievent` instance with the gvien event handlers
+        Creates a `multievent` instance with the given event handlers
         
         Parameters
         ----------
@@ -104,13 +104,13 @@ class Timeouter(object):
     Attributes
     ----------
     handle : `None` or ``TimerHandle``
-        Handle to wakeup the timeouter with it's `.__step` function.
+        Handle to wake_up the timeouter with it's `.__step` function.
         Set to `None`, when the respective timeout is over or if the timeout is cancelled.
     owner : `Any`
         The object what uses the timeouter.
         Set to `None`, when the respective timeout is over or if the timeout is cancelled.
     timeout : `float`
-        The time whith what the timeout will be expired when it's current waiting cycle is over.
+        The time with what the timeout will be expired when it's current waiting cycle is over.
     """
     __slots__ = ('handle', 'owner', 'timeout')
     def __init__(self, owner, timeout):
@@ -122,7 +122,7 @@ class Timeouter(object):
         owner : `Any`
             The object what uses the timeouter.
         timeout : `float`
-            The time whith what the timeout will be expired when it's current waiting cycle is over.
+            The time with what the timeout will be expired when it's current waiting cycle is over.
         """
         self.owner = owner
         self.timeout = 0.0
@@ -137,7 +137,7 @@ class Timeouter(object):
         `.canceller` with `TimeoutError` and unlinks ``.owner`` and `owner.canceller`,
         """
         timeout = self.timeout
-        if timeout>0.0:
+        if timeout > 0.0:
             self.handle = KOKORO.call_later(timeout, self.__step, self)
             self.timeout = 0.0
             return
@@ -220,7 +220,7 @@ GUI_STATE_SWITCHING_CTX  = 4
 
 class Pagination(object):
     """
-    A builtin option to display paginated messages, allowsing the users moving between the pages with arrow emojis.
+    A builtin option to display paginated messages, allowing the users moving between the pages with arrow emojis.
     
     The class allows modifications and closing it's representations for every user. Also works at private channels.
     
@@ -235,7 +235,7 @@ class Pagination(object):
     channel : ``ChannelTextBase`` instance
         The channel where the ``Pagination`` is executed.
     check : `None` or `callable`
-        A callable what desides whether the ``Pagination`` should process a received reaction event. Defaults to
+        A callable what decides whether the ``Pagination`` should process a received reaction event. Defaults to
         `None`.
         
         Should accept the following parameters:
@@ -323,14 +323,14 @@ class Pagination(object):
         channel : ``ChannelTextBase`` instance or ``Message``
             The channel where the ``Pagination`` will be executed. Pass it as a ``Message`` instance to send a reply.
         pages : `indexable-container`
-            An indexable container, what stores the displayablepages.
+            An indexable container, what stores the displayable pages.
         timeout : `float`, Optional
             The timeout of the ``Pagination`` in seconds. Defaults to `240.0`.
         message : `None` or ``Message``, Optional
             The message on what the ``Pagination`` will be executed. If not given a new message will be created.
             Defaults to `None`.
         check : `None` or `callable`, Optional
-            A callable what desides whether the ``Pagination`` should process a received reaction event. Defaults to
+            A callable what decides whether the ``Pagination`` should process a received reaction event. Defaults to
             `None`.
             
             Should accept the following parameters:
@@ -535,7 +535,7 @@ class Pagination(object):
                             ):
                     return
             
-            # We definitedly do not want to silence `ERROR_CODES.invalid_form_body`
+            # We definitely do not want to silence `ERROR_CODES.invalid_form_body`
             await client.events.error(client, f'{self!r}.__call__', err)
             return
         
@@ -677,7 +677,7 @@ class Pagination(object):
 
 class Closer(object):
     """
-    Familair to ``Pagination``, but can be used if the given contnet has only 1 page, so only an `x` would show up.
+    Familiar to ``Pagination``, but can be used if the given content has only 1 page, so only an `x` would show up.
     
     Picks up on reaction additions by any users.
     
@@ -689,7 +689,7 @@ class Closer(object):
     channel : ``ChannelTextBase`` instance
         The channel where the ``Closer`` is executed.
     check : `None` or `callable`
-        A callable what desides whether the ``Closer`` should process a received reaction event. Defaults to
+        A callable what decides whether the ``Closer`` should process a received reaction event. Defaults to
         `None`.
         
         Should accept the following parameters:
@@ -762,7 +762,7 @@ class Closer(object):
             The message on what the ``Closer`` will be executed. If not given a new message will be created.
             Defaults to `None`.
         check : `None` or `callable`, Optional
-            A callable what desides whether the ``Closer`` should process a received reaction event. Defaults to
+            A callable what decides whether the ``Closer`` should process a received reaction event. Defaults to
             `None`.
             
             Should accept the following parameters:
@@ -1020,7 +1020,7 @@ class ChooseMenu(object):
     channel : ``ChannelTextBase`` instance
         The channel where the ``ChooseMenu`` is executed.
     check : `None` or `callable`
-        A callable what desides whether the ``ChooseMenu`` should process a received reaction event. Defaults to
+        A callable what decides whether the ``ChooseMenu`` should process a received reaction event. Defaults to
         `None`.
         
         Should accept the following parameters:
@@ -1042,7 +1042,7 @@ class ChooseMenu(object):
     client : ``Client``
         The client who executes the ``ChooseMenu``.
     embed : ``Embed`` (or any compatible)
-            An embed base, what's description and footer will be rendered with the given choises and with information
+            An embed base, what's description and footer will be rendered with the given choices and with information
             about the respective page.
     message : `None` or ``Message``
         The message on what the ``ChooseMenu`` is executed.
@@ -1051,14 +1051,14 @@ class ChooseMenu(object):
     choices : `indexable` of `Any`
         An indexable container, what stores the displayable choices.
         
-        It's elements's type can be different from eachother, and different structures act differently as well.
+        It's elements's type can be different from each other, and different structures act differently as well.
         There are the following cases:
         
         - If an element is `str` instance, then it will be used as an option's title and when selecting it, only that
-            variable will be ppased to the respective function when selected.
+            variable will be passed to the respective function when selected.
         
         - If an element is neither `str` or `tuple`, then it's `repr` will be used as an option's title, and only that
-            variable will be passed to the respective fucntion when selected.
+            variable will be passed to the respective function when selected.
         
         - If an element is `tuple` instance, then it's first element will be displayed as title. If it is `str`, then
             will be just simply added, however if not, then it's `repr` will be used. If selecting a `tuple` option,
@@ -1089,14 +1089,14 @@ class ChooseMenu(object):
         Executes the timing out feature on the ``ChooseMenu``.
     prefix : `None` or `str`
         A prefix displayed before each option.
-    selecter : `async-callable`
+    selector : `async-callable`
         An `async-callable`, what is ensured when an option is selected.
         
         If the ``ChooseMenu`` is created only with `1` option, then it is ensured initially instead of creating the
         ``ChooseMenu`` itself. At this case, if `message` was not given (or given as `None`), then the `message`
-        passed to the `selecter` will be `None` as well.
+        passed to the `selector` will be `None` as well.
         
-        At least 3 parameters are passed to the `selecter`:
+        At least 3 parameters are passed to the `selector`:
         +-------------------+-------------------------------+
         | Respective name   | Type                          |
         +===================+===============================+
@@ -1107,7 +1107,7 @@ class ChooseMenu(object):
         | message           | ``Message`` or `None`         |
         +-------------------+-------------------------------+
         
-        The rest of the parameters depend on the resective choice (an elements of ``choices``). If the element is a
+        The rest of the parameters depend on the respective choice (an elements of ``choices``). If the element is a
         `tuple` instance, then it's element will be passed, however if the choice is any other type, then only that
         object will be passed.
     
@@ -1140,9 +1140,9 @@ class ChooseMenu(object):
     EMOJIS = (UP, DOWN, LEFT, RIGHT, SELECT, CANCEL)
     
     __slots__ = ('canceller', 'channel', 'check', 'client', 'embed', 'message', 'selected', 'choices', 'task_flag',
-        'timeout', 'timeouter', 'prefix', 'selecter')
+        'timeout', 'timeouter', 'prefix', 'selector')
     
-    async def __new__(cls, client, channel, choices, selecter, embed=Embed(), timeout=240., message=None, prefix=None,
+    async def __new__(cls, client, channel, choices, selector, embed=Embed(), timeout=240., message=None, prefix=None,
             check=None):
         """
         Creates a new choose menu with the given parameters.
@@ -1158,26 +1158,26 @@ class ChooseMenu(object):
         choices : `indexable` of `Any`
             An indexable container, what stores the displayable choices.
             
-            It's elements's type can be different from eachother, and different structures act differently as well.
+            It's elements's type can be different from each other, and different structures act differently as well.
             There are the following cases:
             
             - If an element is `str` instance, then it will be used as an option's title and when selecting it, only
-                that variable will be ppased to the respective function when selected.
+                that variable will be passed to the respective function when selected.
             
             - If an element is neither `str` or `tuple`, then it's `repr` will be used as an option's title, and only
-                that variable will be passed to the respective fucntion when selected.
+                that variable will be passed to the respective function when selected.
             
             - If an element is `tuple` instance, then it's first element will be displayed as title. If it is `str`,
                 then will be just simply added, however if not, then it's `repr` will be used. If selecting a `tuple`
                 option, then it's element will be passed to the respective function.
-        selecter : `async-callable`
+        selector : `async-callable`
             An `async-callable`, what is ensured when an option is selected.
             
             If the ``ChooseMenu`` is created only with `1` option, then it is ensured initially instead of creating
             the ``ChooseMenu`` itself. At this case, if `message` was not given (or given as `None`), then the
-            `message` passed to the `selecter` will be `None` as well.
+            `message` passed to the `selector` will be `None` as well.
             
-            At least 3 parameters are passed to the `selecter`:
+            At least 3 parameters are passed to the `selector`:
             +-------------------+-------------------------------+
             | Respective name   | Type                          |
             +===================+===============================+
@@ -1188,11 +1188,11 @@ class ChooseMenu(object):
             | message           | ``Message`` or `None`         |
             +-------------------+-------------------------------+
             
-            The rest of the parameters depend on the resective choice (an elements of ``choices``). If the element is a
+            The rest of the parameters depend on the respective choice (an elements of ``choices``). If the element is a
             `tuple` instance, then it's element will be passed, however if the choice is any other type, then only that
             object will be passed.
         embed : ``Embed`` (or any compatible)
-            An embed base, what's description and footer will be rendered with the given choises and with information
+            An embed base, what's description and footer will be rendered with the given choices and with information
             about the respective page. Defaults to an empty ``Embed`` instance.
         timeout : `float`, Optional
             The timeout of the ``ChooseMenu`` in seconds. Defaults to `240.0`.
@@ -1202,7 +1202,7 @@ class ChooseMenu(object):
         prefix : `None` or `str`, Optional
             A prefix displayed before each option. Defaults to `None`.
         check : `None` or `callable`, Optional
-            A callable what desides whether the ``ChooseMenu`` should process a received reaction event. Defaults to
+            A callable what decides whether the ``ChooseMenu`` should process a received reaction event. Defaults to
             `None`.
             
             Should accept the following parameters:
@@ -1231,7 +1231,7 @@ class ChooseMenu(object):
         TypeError
             `channel`'s type is incorrect.
         ValueError
-            If `prefix` wasn ot given as `None` and it's length is over `64` characters.
+            If `prefix` was not given as `None` and it's length is over `64` characters.
         """
         if (prefix is not None) and (len(prefix) > 100):
             raise ValueError(f'Please pass a prefix, what is shorter than 100 characters, got {prefix!r}.')
@@ -1248,9 +1248,9 @@ class ChooseMenu(object):
             if result_ln == 1:
                 choice = choices[0]
                 if isinstance(choice, tuple):
-                    coro = selecter(client, target_channel, message, *choice)
+                    coro = selector(client, target_channel, message, *choice)
                 else:
-                    coro = selecter(client, target_channel, message, choice)
+                    coro = selector(client, target_channel, message, choice)
                 await coro
             return None
         
@@ -1259,7 +1259,7 @@ class ChooseMenu(object):
         self.client = client
         self.channel = target_channel
         self.choices = choices
-        self.selecter = selecter
+        self.selector = selector
         self.selected = 0
         self.canceller = cls._canceller
         self.task_flag = GUI_STATE_READY
@@ -1381,7 +1381,7 @@ class ChooseMenu(object):
     
     async def __call__(self, client, event):
         """
-        Called when a reeaction is added or removed from the respective message.
+        Called when a reaction is added or removed from the respective message.
         
         This method is a coroutine.
         
@@ -1497,17 +1497,17 @@ class ChooseMenu(object):
                     await client.events.error(client, f'{self!r}.__call__', err)
                     return
                 
-                selecter = self.selecter
+                selector = self.selector
                 try:
                     choice = self.choices[self.selected]
                     channel = self.channel
                     if isinstance(choice, tuple):
-                        coro = selecter(client, channel, message, *choice)
+                        coro = selector(client, channel, message, *choice)
                     else:
-                        coro = selecter(client, channel, message, choice)
+                        coro = selector(client, channel, message, choice)
                     await coro
                 except BaseException as err:
-                    await client.events.error(client, f'{self!r}.__call__ when calling {selecter!r}', err)
+                    await client.events.error(client, f'{self!r}.__call__ when calling {selector!r}', err)
                 return
             
             return
@@ -1540,7 +1540,7 @@ class ChooseMenu(object):
                             ):
                     return
             
-            # We definitedly do not want to silence `ERROR_CODES.invalid_form_body`
+            # We definitely do not want to silence `ERROR_CODES.invalid_form_body`
             await client.events.error(client, f'{self!r}.__call__', err)
             return
 
@@ -1660,7 +1660,7 @@ class ChooseMenu(object):
             ', choices=', repr(len(self.choices)),
             ', selected=', repr(self.selected),
             ', channel=', repr(self.channel),
-            ', selecter=', repr(self.selecter),
+            ', selector=', repr(self.selector),
                 ]
         
         prefix = self.prefix
@@ -1697,7 +1697,7 @@ class WaitAndContinue(object):
         The canceller function of the ``WaitAndContinue``, what is set to ``._canceller`` by default.
         When ``.cancel`` is called, then this instance attribute is set to `None`.
     check : `callable`
-        The check what is called whith the received parameters whenever an event is received.
+        The check what is called with the received parameters whenever an event is received.
     event : `async-callable`
         The respective event handler on what the waiting is executed.
     future : ``Future``
@@ -1717,7 +1717,7 @@ class WaitAndContinue(object):
         future : ``Future`
             The waiter future `what's result will be set when the check returns non `False` value.
         check : `callable`
-            The check what is called whith the received parameters whenever an event is received.
+            The check what is called with the received parameters whenever an event is received.
         target : ``DiscordEntity``
             The target entity on what the waiting is executed.
         event : `async-callable`
@@ -1743,7 +1743,7 @@ class WaitAndContinue(object):
         Parameters
         ----------
         client : ``Client``
-            The client who received the respecive event.
+            The client who received the respective event.
         *args : `Any`
             Received parameters given by the respective event handler.
         """
@@ -1817,9 +1817,9 @@ def wait_for_reaction(client, message, check, timeout):
     client : ``Client``
         The client who's `reaction_add` event will be used.
     message : ``Message``
-        The target message on what new reactons will be checked.
+        The target message on what new reactions will be checked.
     check : `callable`
-        The check what is called whith the received parameters whenever an event is received.
+        The check what is called with the received parameters whenever an event is received.
     timeout : `float`
         The timeout after `TimeoutError` will be raised to the waiter future.
     
@@ -1844,7 +1844,7 @@ def wait_for_message(client, channel, check, timeout):
     channel : ``ChannelBase``
         The target channel where the new messages will be checked.
     check : `callable`
-        The check what is called whith the received parameters whenever an event is received.
+        The check what is called with the received parameters whenever an event is received.
     timeout : `float`
         The timeout after `TimeoutError` will be raised to the waiter future.
     
@@ -2343,7 +2343,7 @@ class Cooldown(object):
         Parameters
         ----------
         message : ``Message``
-            The reeived message.
+            The received message.
         
         Returns
         -------
@@ -2378,7 +2378,7 @@ class Cooldown(object):
         Parameters
         ----------
         message : ``Message``
-            The reeived message.
+            The received message.
         
         Returns
         -------

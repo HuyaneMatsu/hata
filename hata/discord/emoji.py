@@ -78,7 +78,7 @@ class Emoji(DiscordEntity, immortal=True):
     Attributes
     ----------
     id : `int`
-        Unique identificator of the emoji.
+        Unique identifier of the emoji.
     animated : `bool`
         Whether the emoji is animated.
     available : `bool`
@@ -295,7 +295,7 @@ class Emoji(DiscordEntity, immortal=True):
         >>> # no code stands for str(emoji)
         >>> f'{emoji}'
         'nice'
-        >>> # 'e' stads for emoji format.
+        >>> # 'e' stands for emoji format.
         >>> f'{emoji:e}'
         '<:nice:712359434843586560>'
         >>> # 'r' stands for reaction format.
@@ -615,7 +615,7 @@ class reaction_mapping_line(set):
     Attributes
     ----------
     unknown : `int`
-        The amount of not known reacters.
+        The amount of not known reactors.
     """
     __slots__ = ('unknown',)
     
@@ -626,7 +626,7 @@ class reaction_mapping_line(set):
         Parameters
         ----------
         unknown : `int`
-            The amount of not known reacters.
+            The amount of not known reactors.
         """
         self.unknown = unknown
     
@@ -706,10 +706,10 @@ class reaction_mapping_line(set):
         new.unknown = self.unknown
         return new
     
-    # executes an api request if we know we know all reacters
+    # executes an api request if we know we know all reactors
     def filter_after(self, limit, after):
         """
-        If we know all the reacters, then insctead of executing a Discord API request we filter the reacters locally
+        If we know all the reactors, then instead of executing a Discord API request we filter the reactors locally
         using this method.
         
         Parameters
@@ -827,7 +827,7 @@ class reaction_mapping(dict):
     
     def clear(self):
         """
-        Cleares the reaction mapping with clearing it's lines.
+        Clears the reaction mapping with clearing it's lines.
         """
         for value in self.values():
             value.clear()
@@ -836,14 +836,14 @@ class reaction_mapping(dict):
     
     def add(self, emoji, user):
         """
-        Adds a user to the reacters.
+        Adds a user to the reactors.
         
         Parameters
         ----------
         emoji : ``Emoji``
             The reacted emoji.
         user : ``User`` or ``Client``
-            The reacter user.
+            The reactor user.
         """
         try:
             line = self[emoji]
@@ -854,14 +854,14 @@ class reaction_mapping(dict):
     
     def remove(self, emoji, user):
         """
-        Removes a user to the reacters.
+        Removes a user to the reactors.
         
         Parameters
         ----------
         emoji : ``Emoji``
             The removed reacted emoji.
         user : ``User`` or ``Client``
-            The removed reacter user.
+            The removed reactor user.
         """
         try:
             line = self[emoji]
@@ -912,7 +912,7 @@ class reaction_mapping(dict):
         
         return line
     
-    #this function is called if an emoji loses all it's unknown reacters
+    #this function is called if an emoji loses all it's unknown reactors
     def _full_check(self):
         """
         Checks whether the reaction mapping is fully loaded, by checking it's values' `.unknown` and sets the current
@@ -925,31 +925,31 @@ class reaction_mapping(dict):
         
         self.fully_loaded = True
         
-    #we call this when we get SOME reacters of an emoji
+    #we call this when we get SOME reactors of an emoji
     def _update_some_users(self, emoji, users):
         """
-        Called when some reacters of an emoji are updated.
+        Called when some reactors of an emoji are updated.
         
         Parameters
         ----------
         emoji : ``Emoji``
             The emoji, which's users' are updated.
         users : `list` of (``User`` or ``Client``) objects
-            The added reacters.
+            The added reactors.
         """
         self[emoji].update(users)
         self._full_check()
         
     def _update_all_users(self, emoji, users):
         """
-        Called when all the reacters of an emoji are updated of the reaction mapping.
+        Called when all the reactors of an emoji are updated of the reaction mapping.
         
         Parameters
         ----------
         emoji : ``Emoji``
             The emoji, which's users' are updated.
         users : `list` of (``User`` or ``Client``) objects
-            The added reacters.
+            The added reactors.
         """
         self[emoji] = reaction_mapping_line._full(users)
         self._full_check()

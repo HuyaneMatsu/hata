@@ -40,7 +40,7 @@ class Handle(object):
     """
     Object returned by a callback registration method:
     - ``EventThread.call_soon``
-    - ``EventThread.call_soon_threadsafe``.
+    - ``EventThread.call_soon_thread_safe``.
     
     Attributes
     ----------
@@ -122,7 +122,7 @@ class Handle(object):
             self.func(*self.args)
         except BaseException as err:
             current_thread().render_exc_async(err, [
-                'Exception occured at ',
+                'Exception occurred at ',
                 self.__class__.__name__,
                 '._run\nAt running ',
                 repr(self.func),
@@ -315,7 +315,7 @@ class TimerWeakHandle(TimerHandle):
     class _callback(object):
         """
         Weakreference callback used by ``TimerWeakHandle`` to cancel the respective handle, when it's `func` gets
-        gargabe collected.
+        garbage collected.
         
         Attributes
         ----------
@@ -488,8 +488,8 @@ class Cycler(object):
     funcs : `list` of ``CyclerCallable``
         Callables of a cycler containing whether they are sync, async, and what is their priority order.
     handle : ``TimerHandle``
-        Hanlder, what will call the cycler when cycle time is over.
-    loop : ``EventTHread``
+        Handler, what will call the cycler when cycle time is over.
+    loop : ``EventThread``
         The async event loop of the cycler, what it uses to ensure itself.
     """
     __slots__ = ('cycle_time', 'funcs', 'handle', 'loop',)
@@ -568,7 +568,7 @@ class Cycler(object):
         if current_thread() is loop:
             handle = loop.call_later(cycle_time, cls._run, self)
         else:
-            handle = loop.call_soon_threadsafe_lazy(loop.__class__.call_later, loop, cycle_time, cls._run, self)
+            handle = loop.call_soon_thread_safe_lazy(loop.__class__.call_later, loop, cycle_time, cls._run, self)
         
         self.handle = handle
         
@@ -586,7 +586,7 @@ class Cycler(object):
             except BaseException as err:
                 self.loop.render_exc_async(err, [
                     self.__class__.__name__,
-                    ' exception occured\nat calling ',
+                    ' exception occurred\nat calling ',
                     repr(func),
                     '\n',
                         ])
@@ -642,7 +642,7 @@ class Cycler(object):
             self._cancel()
             return
         
-        loop.call_soon_threadsafe_lazy(self.__class__._cancel, self)
+        loop.call_soon_thread_safe_lazy(self.__class__._cancel, self)
     
     def _cancel(self):
         """
@@ -667,7 +667,7 @@ class Cycler(object):
             self._call_now()
             return
         
-        loop.call_soon_threadsafe_lazy(self.__class__._call_now, self)
+        loop.call_soon_thread_safe_lazy(self.__class__._call_now, self)
     
     def _call_now(self):
         """
@@ -693,7 +693,7 @@ class Cycler(object):
             self._reschedule()
             return
         
-        loop.call_soon_threadsafe_lazy(self.__class__._reschedule, self)
+        loop.call_soon_thread_safe_lazy(self.__class__._reschedule, self)
     
     def _reschedule(self):
         """
@@ -720,7 +720,7 @@ class Cycler(object):
     
     def set_cycle_time(self, cycle_time):
         """
-        Sets the cycle time of the cycler to the gvien value.
+        Sets the cycle time of the cycler to the given value.
         
         Parameters
         ----------
@@ -776,7 +776,7 @@ class Cycler(object):
             self._append(validated_func)
             return
         
-        loop.call_soon_threadsafe_lazy(self.__class__._append, self, validated_func)
+        loop.call_soon_thread_safe_lazy(self.__class__._append, self, validated_func)
     
     def _append(self, validated_func):
         """
@@ -810,7 +810,7 @@ class Cycler(object):
             self._remove(func)
             return
         
-        loop.call_soon_threadsafe_lazy(self.__class__._remove, self, func)
+        loop.call_soon_thread_safe_lazy(self.__class__._remove, self, func)
     
     def _remove(self, func):
         """
@@ -830,11 +830,11 @@ class Cycler(object):
         is_cycler_callable = (type(func) is CyclerCallable)
         
         while index < limit:
-            to_comapre = funcs[index]
+            to_compare = funcs[index]
             if (not is_cycler_callable):
-                to_comapre = to_comapre.func
+                to_compare = to_compare.func
             
-            if to_comapre == func:
+            if to_compare == func:
                 del funcs[index]
                 break
             
@@ -880,8 +880,8 @@ class Cycler(object):
 
 class ThreadSyncerCTX(object):
     """
-    Thread syncer for ``EventThead``-s, to stop their execution, meanwhile they are used inside of a a `with` block.
-    The local thread's exection is stopped, meanwhile it waits for the ``EventThead`` top pause.
+    Thread syncer for ``EventThread``-s, to stop their execution, meanwhile they are used inside of a a `with` block.
+    The local thread's exception is stopped, meanwhile it waits for the ``EventThread`` top pause.
     
     Can be used as a context manager, like:
     
@@ -890,7 +890,7 @@ class ThreadSyncerCTX(object):
         # The event loop is paused inside here.
     ```
     
-    Or, can be used with ``EventThead.enter()`` as well, like:
+    Or, can be used with ``EventThread.enter()`` as well, like:
     
     ```
     with LOOP.enter():
@@ -904,7 +904,7 @@ class ThreadSyncerCTX(object):
     enter_event : `threading.Event`
         Threading event, which blocks the local thread, till the respective event loop pauses.
     exit_event : `threading.Event`
-        Blocks the respective event loop, till the local thread gives the control back to it with exisint the `with`
+        Blocks the respective event loop, till the local thread gives the control back to it with exiting the `with`
         block.
     """
     __slots__ = ('loop', 'enter_event', 'exit_event')
@@ -924,20 +924,20 @@ class ThreadSyncerCTX(object):
 
     def __enter__(self):
         """
-        Blocks the local thread, till the respective ``EventThead`` pauses. If the ``EventThead`` is stopped already,
+        Blocks the local thread, till the respective ``EventThread`` pauses. If the ``EventThread`` is stopped already,
         does nothing.
         """
         loop = self.loop
         if loop.running:
             handle = Handle(self._give_control_cb, ())
             loop._ready.append(handle)
-            loop.wakeup()
+            loop.wake_up()
             self.enter_event.wait()
         
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """Unpauses the respective ``EventThead``."""
+        """Un-pauses the respective ``EventThread``."""
         self.exit_event.set()
         return False
     
@@ -950,21 +950,21 @@ class ThreadSyncerCTX(object):
 
 _HAS_IPv6 = hasattr(module_socket, 'AF_INET6')
 
-def _ipaddr_info(host, port, family, type_, proto):
+def _ip_address_info(host, port, family, type_, protocol):
     """
-    Gets the addres info for the given parmeters.
+    Gets the address info for the given parameters.
     
     Parameters
     ----------
     host : `str` or `bytes`
-        The host ip adress
+        The host ip address.
     port : `int`
         The host port.
     family : `AddressFamily` or `int`
         Address family.
     type_ : `SocketKind` or `int`
         Socket type.
-    proto : `int`
+    protocol : `int`
         Protocol type.
     
     Returns
@@ -973,22 +973,22 @@ def _ipaddr_info(host, port, family, type_, proto):
         If everything is correct, returns a `tuple` of 5 elements:
         - `family` : Address family.
         - `type_` : Socket type.
-        - `proto` : Protocol type.
-        - `cname` : Represents the canonical name of the host. (Always empty string.)
-        - `sockaddr` : Socket address contianing the `host` and the `port`.
+        - `protocol` : Protocol type.
+        - `canonical_name` : Represents the canonical name of the host. (Always empty string.)
+        - `socket_address` : Socket address containing the `host` and the `port`.
     """
-    # Try to skip getaddrinfo if `host`koish is already an IP. Users might have handled name resolution in their own code
-    # and pass in resolved IPs.
+    # Try to skip get_address_info if `host` is already an IP. Users might have handled name resolution in their own
+    # code and pass in resolved IP-s.
     if not hasattr(module_socket, 'inet_pton'):
         return
     
-    if proto not in (0, module_socket.IPPROTO_TCP, module_socket.IPPROTO_UDP) or (host is None):
+    if protocol not in (0, module_socket.IPPROTO_TCP, module_socket.IPPROTO_UDP) or (host is None):
         return
     
     if type_ == module_socket.SOCK_STREAM:
-        proto = module_socket.IPPROTO_TCP
+        protocol = module_socket.IPPROTO_TCP
     elif type_ == module_socket.SOCK_DGRAM:
-        proto = module_socket.IPPROTO_UDP
+        protocol = module_socket.IPPROTO_UDP
     else:
         return
     
@@ -1002,7 +1002,7 @@ def _ipaddr_info(host, port, family, type_, proto):
     elif isinstance(port, str) and port == '':
         port = 0
     else:
-        # If port's a service name like "http", don't skip getaddrinfo.
+        # If port's a service name like "http", don't skip get_address_info.
         try:
             port = int(port)
         except (TypeError, ValueError):
@@ -1028,14 +1028,14 @@ def _ipaddr_info(host, port, family, type_, proto):
         except OSError:
             pass
         else:
-            return family, type_, proto,'', (host, port)
+            return family, type_, protocol,'', (host, port)
     
     # `host` is not an IP address.
     return None
 
-def _is_dgram_socket(socket):
+def _is_datagram_socket(socket):
     """
-    Returns whether the given socket is dgram scoket.
+    Returns whether the given socket is datagram socket.
     
     Parameters
     ----------
@@ -1044,7 +1044,7 @@ def _is_dgram_socket(socket):
     
     Returns
     -------
-    is_dgram_socket : `bool`
+    is_datagram_socket : `bool`
     """
     return (socket.type&module_socket.SOCK_DGRAM) == module_socket.SOCK_DGRAM
 
@@ -1063,14 +1063,14 @@ def _is_stream_socket(socket):
     """
     return (socket.type&module_socket.SOCK_STREAM) == module_socket.SOCK_STREAM
 
-def _set_reuseport(sock):
+def _set_reuse_port(socket):
     """
     Tells to the kernel to allow this endpoint to be bound to the same port as an other existing endpoint already
     might be bound to.
     
     Parameters
     ----------
-    sock : `socket.socket`.
+    socket : `socket.socket`.
         The socket to set reuse to.
     
     Raises
@@ -1082,59 +1082,60 @@ def _set_reuseport(sock):
         raise ValueError('`reuse_port` not supported by socket module.')
     else:
         try:
-            sock.setsockopt(module_socket.SOL_SOCKET, module_socket.SO_REUSEPORT, 1)
+            socket.setsockopt(module_socket.SOL_SOCKET, module_socket.SO_REUSEPORT, 1)
         except OSError:
             raise ValueError('`reuse_port` not supported by socket module, `SO_REUSEPORT` defined but not implemented.')
 
-_OLD_AGEN_HOOKS = sys.get_asyncgen_hooks()
+_OLD_ASYNC_GENERATOR_HOOKS = sys.get_asyncgen_hooks()
 
-def _asyncgen_firstiter_hook(agen):
+def _async_generator_first_iteration_hook(async_generator):
     """
-    Adds asyncgens to their respective event loop. These async gens are stut down, when the loop is stopped.
+    Adds asynchronous generators to their respective event loop. These async gens are shut down, when the loop is
+    stopped.
     
     Parameters
     ----------
-    agen : `async_generator`
+    async_generator : `async_generator`
     """
     loop = current_thread()
     if isinstance(loop, EventThread):
-        if loop._asyncgens_shutdown_called:
+        if loop._async_generators_shutdown_called:
             return
         
-        loop._asyncgens.add(agen)
+        loop._async_generators.add(async_generator)
         return
     
-    firstiter = _OLD_AGEN_HOOKS.firstiter
-    if firstiter is not None:
-        firstiter(agen)
+    first_iteration = _OLD_ASYNC_GENERATOR_HOOKS.firstiter
+    if first_iteration is not None:
+        first_iteration(async_generator)
 
-def _asyncgen_finalizer_hook(agen):
+def _async_generator_finalizer_hook(async_generator):
     """
-    Removes asyncgens from their respective event loop.
+    Removes asynchronous generator from their respective event loop.
     
     Parameters
     ----------
-    agen : `async_generator`
+    async_generator : `async_generator`
     """
     loop = current_thread()
     if isinstance(loop, EventThread):
-        loop._asyncgens.discard(agen)
+        loop._async_generators.discard(async_generator)
         if not loop.running:
             return
             
-        Task(agen.aclose(), loop)
-        loop.wakeup()
+        Task(async_generator.aclose(), loop)
+        loop.wake_up()
         return
     
-    finalizer = _OLD_AGEN_HOOKS.finalizer
+    finalizer = _OLD_ASYNC_GENERATOR_HOOKS.finalizer
     if finalizer is not None:
-        finalizer(agen)
+        finalizer(async_generator)
 
-sys.set_asyncgen_hooks(firstiter=_asyncgen_firstiter_hook, finalizer=_asyncgen_finalizer_hook)
+sys.set_asyncgen_hooks(firstiter=_async_generator_first_iteration_hook, finalizer=_async_generator_finalizer_hook)
 
 
 if sys.platform == 'win32':
-    #If windows select raises OSError, we cacnnot do anything, but
+    #If windows select raises OSError, we cannot do anything, but
     #if it it raises ValueError, we can increases windows select()
     #from 500~ till the hard limit, with sharding up it's polls
     
@@ -1150,13 +1151,13 @@ if sys.platform == 'win32':
         Note, that this selector might become CPU heavy if the limit is passed and the sockets might become closed
         if too much is open.
         
-        I do not take credit for any missbehaviour.
+        I do not take credit for any misbehaviour.
         """
         def _select(self, r, w, _, timeout=None):
             try:
                 result_r, result_w, result_x = select(r, w, w, timeout)
             except ValueError:
-                default_reader = current_thread()._selfread_socket
+                default_reader = current_thread()._self_read_socket
                 r.remove(default_reader.fileno())
                 
                 sharded_r = []
@@ -1323,7 +1324,7 @@ class Server(object):
     Attributes
     ----------
     active_count : `int`
-        The amount of active connections bount to the server.
+        The amount of active connections bound to the server.
     backlog : `int`
         The maximum number of queued connections passed to `listen()` (defaults to 100).
     close_waiters : `None` or `list` of ``Future``
@@ -1344,7 +1345,7 @@ class Server(object):
     
     def __init__(self, loop, sockets, protocol_factory, ssl_context, backlog):
         """
-        Creates a new serevr with the given parameters.
+        Creates a new server with the given parameters.
         
         Parameters
         ----------
@@ -1388,11 +1389,11 @@ class Server(object):
             return
         
         if (self.sockets is None):
-            self._wakeup_close_waiters()
+            self._wake_up_close_waiters()
 
-    def _wakeup_close_waiters(self):
+    def _wake_up_close_waiters(self):
         """
-        Wakes up the server's clsoe waiters.
+        Wakes up the server's close waiters.
         """
         close_waiters = self.close_waiters
         if close_waiters is None:
@@ -1413,13 +1414,13 @@ class Server(object):
         self.sockets = None
         
         loop = self.loop
-        for sock in sockets:
-            loop._stop_serving(sock)
+        for socket in sockets:
+            loop._stop_serving(socket)
         
         self.serving = False
         
         if self.active_count == 0:
-            self._wakeup_close_waiters()
+            self._wake_up_close_waiters()
     
     async def start(self):
         """
@@ -1437,11 +1438,11 @@ class Server(object):
         backlog = self.backlog
         loop = self.loop
         
-        for sock in self.sockets:
-            sock.listen(backlog)
-            loop._start_serving(protocol_factory, sock, ssl_context, self, backlog)
+        for socket in self.sockets:
+            socket.listen(backlog)
+            loop._start_serving(protocol_factory, socket, ssl_context, self, backlog)
         
-        # Skip one event loop cycle, so all the callbacks added up ^ will run nefore returning.
+        # Skip one event loop cycle, so all the callbacks added up ^ will run before returning.
         future = Future(loop)
         future.set_result(None)
         await future
@@ -1465,8 +1466,8 @@ class Server(object):
 
 class EventThreadCTXManager(object):
     """
-    Context manager of an ``EventThread``, which wraps it's runner. Whne the runner is started up, set it's ``waiter.``
-    allowing the strarter thread to continue.
+    Context manager of an ``EventThread``, which wraps it's runner. when the runner is started up, set it's ``waiter.``
+    allowing the starter thread to continue.
     
     Attributes
     ----------
@@ -1528,12 +1529,12 @@ class EventThreadCTXManager(object):
             
             thread.running = True
             
-            selfread_socket, selfwrite_socket = module_socket.socketpair()
-            selfread_socket.setblocking(False)
-            selfwrite_socket.setblocking(False)
-            thread._selfread_socket = selfread_socket
-            thread._selfwrite_socket = selfwrite_socket
-            thread.add_reader(selfread_socket.fileno(), thread.emptyselfsocket)
+            self_read_socket, self_write_socket = module_socket.socketpair()
+            self_read_socket.setblocking(False)
+            self_write_socket.setblocking(False)
+            thread._self_read_socket = self_read_socket
+            thread._self_write_socket = self_write_socket
+            thread.add_reader(self_read_socket.fileno(), thread.empty_self_socket)
         finally:
             thread_waiter.set()
     
@@ -1545,11 +1546,11 @@ class EventThreadCTXManager(object):
         self.thread = None
         
         thread.running = False
-        thread.remove_reader(thread._selfread_socket.fileno())
-        thread._selfread_socket.close()
-        thread._selfread_socket = None
-        thread._selfwrite_socket.close()
-        thread._selfwrite_socket = None
+        thread.remove_reader(thread._self_read_socket.fileno())
+        thread._self_read_socket.close()
+        thread._self_read_socket = None
+        thread._self_write_socket.close()
+        thread._self_write_socket = None
         
         thread._ready.clear()
         thread._scheduled.clear()
@@ -1567,7 +1568,7 @@ class EventThreadCTXManager(object):
 class EventThreadRunDescriptor(object):
     if DOCS_ENABLED:
         __class_doc__ = ("""
-        Descriptor which desides, exactly which function of the ``EventThread`` is called, when using it's `.run`
+        Descriptor which decides, exactly which function of the ``EventThread`` is called, when using it's `.run`
         method.
         
         If called from class, returns `self`. If called from a non yet running event loop, returns that's `.runner`. If
@@ -1624,7 +1625,7 @@ class EventThreadType(type):
         daemon : ``bool``
             Whether the created thread should be daemon.
         name : `str`
-            The created threa's name.
+            The created thread's name.
         start_later : `bool`
             Whether the event loop should be started only later
         kwargs : keyword arguments
@@ -1642,7 +1643,7 @@ class EventThreadType(type):
         
         Notes
         -----
-        ``EventThread`` supports only an additional, `keep_executor_count` parameter, but it's subclasse's might
+        ``EventThread`` supports only an additional, `keep_executor_count` parameter, but it's subclass's might
         support other ones as well.
         """
         obj = Thread.__new__(cls)
@@ -1659,7 +1660,7 @@ class EventThreadType(type):
 
 class EventThread(Executor, Thread, metaclass=EventThreadType):
     """
-    Event loops run asynchronous tasks and callbacks, perform network IO operations, and run subprocesses.
+    Event loops run asynchronous tasks and callbacks, perform network IO operations, and runs subprocesses.
     
     At hata event loops are represented by ``EventThread``-s, which do not block the source thread , as they say, they
     use their own thread for it.
@@ -1674,31 +1675,31 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         The minimal amount of executors to keep alive (or not close).
     running_executors : `set` of ``ExecutorThread``
         The executors under use.
-    _asyncgens: `WeakSet` of `async_generator`
-        The asynchornous generators bound to the event loop.
-    _asyncgens_shutdown_called : `bool`
-        Whether the event loop's asynchoronous generators where shut down.
-    _selfwrite_socket : `socket.socket`
+    _async_generators: `WeakSet` of `async_generator`
+        The asynchronous generators bound to the event loop.
+    _async_generators_shutdown_called : `bool`
+        Whether the event loop's asynchronous generators where shut down.
+    _self_write_socket : `socket.socket`
         Socket, which can be used to wake up the thread by writing into it.
     _ready : `deque` of ``Handle`` instances
-        Ready to run handles of the eventloop.
+        Ready to run handles of the event loop.
     _scheduled : `list` of ``TimerHandle`` instances.
         Scheduled timer handles, which will be moved to `_ready` when their `when` becomes lower or equal to the
-        respective looptime.
-    _selfread_socket : `socket.socket`
-        Socket, which reads from ``._selfwrite_socket``.
+        respective loop time.
+    _self_read_socket : `socket.socket`
+        Socket, which reads from ``._self_write_socket``.
     ctx : ``EventThreadCTXManager``
-        Context of the eventloop to ensure it's safe startup and closing.
+        Context of the event loop to ensure it's safe startup and closing.
     current_task : `None` or ``Task``
         The actually running task of the event thread. Set only meanwhile a task is executed.
     running : `bool`
-        Whether the eventloop is running.
+        Whether the event loop is running.
     selector : `selectors.Default_selector`
-        Selector to poll from scckets.
+        Selector to poll from socket.
     should_run : `bool`
         Whether the event loop should do more loops.
     started : `bool`
-        Whether the eventloop was already started.
+        Whether the event loop was already started.
     
     Notes
     -----
@@ -1706,8 +1707,9 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
     """
     time = LOOP_TIME
     time_resolution = LOOP_TIME_RESOLUTION
-    __slots__ = ('__dict__', '__weakref__', '_asyncgens', '_asyncgens_shutdown_called', '_selfwrite_socket', '_ready',
-        '_scheduled', '_selfread_socket', 'ctx', 'current_task', 'running', 'selector', 'should_run', 'started',)
+    __slots__ = ('__dict__', '__weakref__', '_async_generators', '_async_generators_shutdown_called',
+        '_self_write_socket', '_ready', '_scheduled', '_self_read_socket', 'ctx', 'current_task', 'running',
+        'selector', 'should_run', 'started',)
     
     def __init__(self, keep_executor_count=1):
         """
@@ -1720,7 +1722,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         Notes
         -----
-        This magic method is called by ``EventThreadType.__call__``, what does the other steps of the inilitation.
+        This magic method is called by ``EventThreadType.__call__``, what does the other steps of the initialization.
         """
         Executor.__init__(self, keep_executor_count)
         self.should_run = True
@@ -1732,11 +1734,11 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         self._scheduled = []
         self.current_task = None
         
-        self._asyncgens = weakref.WeakSet()
-        self._asyncgens_shutdown_called = False
+        self._async_generators = weakref.WeakSet()
+        self._async_generators_shutdown_called = False
         
-        self._selfread_socket = None
-        self._selfwrite_socket = None
+        self._self_read_socket = None
+        self._self_write_socket = None
     
     def is_started(self):
         """
@@ -1762,7 +1764,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         Returns
         -------
         started : `bool`
-            Whether the thread was strated up.
+            Whether the thread was started up.
         """
         if self.is_started():
             return False
@@ -1774,7 +1776,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         """
         Starts the event loop's thread.
         
-        If the eventloop is already started will ot start it again.
+        If the event loop is already started will ot start it again.
         """
         thread_waiter = self.ctx.thread_waiter
         # set as `None` if already started.
@@ -1828,7 +1830,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         Parameters
         ----------
         delay : `float`
-            The delay after the `callback` whould be called.
+            The delay after the `callback` would be called.
         callback : `callable`
             The function to call later.
         *args : arguments
@@ -1880,7 +1882,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         Parameters
         ----------
         delay : `float`
-            The delay after the `callback` whould be called.
+            The delay after the `callback` would be called.
         callback : `callable`
             The function to call later.
         *args : arguments
@@ -1959,7 +1961,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         self._ready.append(handle)
         return handle
     
-    def call_soon_threadsafe(self, callback, *args):
+    def call_soon_thread_safe(self, callback, *args):
         """
         Schedules the callback to be called at the next iteration of the event loop. Wakes up the event loop if sleeping,
         so can be used from other threads as well.
@@ -1982,12 +1984,12 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         handle = Handle(callback, args)
         self._ready.append(handle)
-        self.wakeup()
+        self.wake_up()
         return handle
     
-    def call_soon_threadsafe_lazy(self, callback, *args):
+    def call_soon_thread_safe_lazy(self, callback, *args):
         """
-        Schedules the callback to be called at the next iteration of the event loop. If the evnetloop is already
+        Schedules the callback to be called at the next iteration of the event loop. If the event loop is already
         running, wakes it up.
         
         Parameters
@@ -2003,20 +2005,20 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             The created handle is returned, what can be used to cancel it. If the event loop is stopped, returns `None`.
         """
         if self.running:
-            should_wakeup = True
+            should_wake_up = True
         else:
             if self.is_started():
-                should_wakeup = True
+                should_wake_up = True
             elif self.should_run:
-                should_wakeup = False
+                should_wake_up = False
             else:
                 return None
         
         handle = Handle(callback, args)
         self._ready.append(handle)
         
-        if should_wakeup:
-            self.wakeup()
+        if should_wake_up:
+            self.wake_up()
         
         return handle
         
@@ -2091,7 +2093,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         """
         return Task(coro, self)
     
-    def create_task_threadsafe(self, coro):
+    def create_task_thread_safe(self, coro):
         """
         Creates a task wrapping the given coroutine and wakes up the event loop. Wakes up the event loop if sleeping,
         what means it is safe to use from other threads as well.
@@ -2107,7 +2109,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             The created task instance.
         """
         task = Task(coro, self)
-        self.wakeup()
+        self.wake_up()
         return task
     
     def enter(self):
@@ -2127,7 +2129,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         Parameters
         ----------
         coro_or_future : `awaitable`
-            The coroutinr or future to ensure.
+            The coroutine or future to ensure.
         
         Returns
         -------
@@ -2138,7 +2140,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             - If `coro_or_future` is given as ``Future`` instance, bound to the current event loop, returns it.
             - If `coro_or_future`is given as ``Future`` instance, bound to an other event loop, returns a
                 ``FutureAsyncWrapper``.
-            - If `coro_or_future` defines an `__await__` megiv metho,d then returns a ``Task`` instance.
+            - If `coro_or_future` defines an `__await__` method, then returns a ``Task`` instance.
         
         Raises
         ------
@@ -2159,7 +2161,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         raise TypeError('A Future, a coroutine or an awaitable is required.')
     
-    def ensure_future_threadsafe(self, coro_or_future):
+    def ensure_future_thread_safe(self, coro_or_future):
         """
         Ensures the given coroutine or future on the event loop. Returns an awaitable ``Future`` instance. Wakes up
         the event loop if sleeping, what means it is safe to use from other threads as well.
@@ -2167,7 +2169,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         Parameters
         ----------
         coro_or_future : `awaitable`
-            The coroutinr or future to ensure.
+            The coroutine or future to ensure.
         
         Returns
         -------
@@ -2178,7 +2180,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             - If `coro_or_future` is given as ``Future`` instance, bound to the current event loop, returns it.
             - If `coro_or_future`is given as ``Future`` instance, bound to an other event loop, returns a
                 ``FutureAsyncWrapper``.
-            - If `coro_or_future` defines an `__await__` megiv metho,d then returns a ``Task`` instance.
+            - If `coro_or_future` defines an `__await__` method, then returns a ``Task`` instance.
         
         Raises
         ------
@@ -2187,7 +2189,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         """
         if is_coroutine(coro_or_future):
             task = Task(coro_or_future, self)
-            self.wakeup()
+            self.wake_up()
             return task
         
         if isinstance(coro_or_future, Future):
@@ -2198,7 +2200,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         type_ = type(coro_or_future)
         if hasattr(type_, '__await__'):
             task = Task(type_.__await__(coro_or_future), self)
-            self.wakeup()
+            self.wake_up()
             return task
 
         raise TypeError('A Future, a coroutine or an awaitable is required.')
@@ -2213,7 +2215,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         """
         with self.ctx:
             key = None
-            fileobj = None
+            file_object = None
             reader = None
             writer = None
             
@@ -2245,23 +2247,23 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                 event_list = self.selector.select(timeout)
                 if event_list:
                     for key, mask in event_list:
-                        fileobj = key.fileobj
+                        file_object = key.fileobj
                         reader, writer = key.data
                         if (reader is not None) and (mask&EVENT_READ):
                             if reader.cancelled:
-                                self.remove_reader(fileobj)
+                                self.remove_reader(file_object)
                             else:
                                 if not reader.cancelled:
                                     ready.append(reader)
                         if (writer is not None) and (mask&EVENT_WRITE):
                             if writer.cancelled:
-                                self.remove_writer(fileobj)
+                                self.remove_writer(file_object)
                             else:
                                 if not writer.cancelled:
                                     ready.append(writer)
                     
                     key = None
-                    fileobj = None
+                    file_object = None
                     reader = None
                     writer = None
                     
@@ -2305,7 +2307,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             if current_thread() is self:
                 raise AssertionError(f'`{self.__class__.__name__}.run` should not be called from itself.')
         
-        return self.ensure_future_threadsafe(awaitable).syncwrap().wait(timeout)
+        return self.ensure_future_thread_safe(awaitable).sync_wrap().wait(timeout)
     
     if __debug__:
         def render_exc_async(self, exception, before=None, after=None, file=None):
@@ -2368,7 +2370,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         """
         Renders the given exception's traceback. If called from an ``EventThread`` instance, then will not block it.
         
-        This method is called from functons or methods, where being on an ``EventThread`` is not guaranteed.
+        This method is called from function or methods, where being on an ``EventThread`` is not guaranteed.
         
         Parameters
         ----------
@@ -2450,65 +2452,65 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
     
     def stop(self):
         """
-        Stops the event loop. Threadsafe.
+        Stops the event loop. Thread safe.
         """
         if self.should_run:
             if current_thread() is self:
                 self._stop()
             else:
                 self.call_soon(self._stop)
-                self.wakeup()
+                self.wake_up()
 
     def _stop(self):
         """
-        Stops the event loop. Intrenal function of ``.stop``, called or queued up by it.
+        Stops the event loop. Internal function of ``.stop``, called or queued up by it.
         
         Should be called only from the thread of the event loop.
         """
         self.release_executors()
         self.should_run = False
 
-    async def shutdown_asyncgens(self):
+    async def shutdown_async_generators(self):
         """
-        Shuts down the asynchornous generators running on the eventloop.
+        Shuts down the asynchronous generators running on the event loop.
         
         This method is a coroutine.
         """
-        self._asyncgens_shutdown_called = True
+        self._async_generators_shutdown_called = True
         
-        asyncgens = self._asyncgens
-        if asyncgens:
+        async_generators = self._async_generators
+        if async_generators:
             return
         
-        closing_agens = list(asyncgens)
-        asyncgens.clear()
+        closing_async_generators = list(async_generators)
+        async_generators.clear()
         
-        results = await Gatherer(self, (ag.aclose() for ag in closing_agens))
+        results = await Gatherer(self, (ag.aclose() for ag in closing_async_generators))
         
-        for result, agen in zip(results, closing_agens):
+        for result, async_generator in zip(results, closing_async_generators):
             exception = result.exception
             if (exception is not None) and (type(exception) is not CancelledError):
                 extracted = [
-                    'Exception occured during shutting down asyncgen:\n',
-                    repr(agen),
+                    'Exception occurred during shutting down async generator:\n',
+                    repr(async_generator),
                         ]
                 render_exc_to_list(exception, extend=extracted)
                 sys.stderr.write(''.join(extracted))
-
-    def _make_socket_transport(self, sock, protocol, waiter=None, *, extra=None, server=None):
+    
+    def _make_socket_transport(self, socket, protocol, waiter=None, *, extra=None, server=None):
         """
         Creates a socket transport with the given parameters.
         
         Parameters
         ----------
-        sock : `socket.socket`
-            The socket, what the ransport will use.
+        socket : `socket.socket`
+            The socket, what the transport will use.
         protocol : `Any`
             The protocol of the transport.
-        waiter : `None` or ``Future``, Opional
-            Waiter, what's result should be set, whne the transport is ready to use.
+        waiter : `None` or ``Future``, Optional
+            Waiter, what's result should be set, when the transport is ready to use.
         extra : `None` or `dict` of (`str`, `Any`) item, Optional
-            Optional transport informations.
+            Optional transport information.
         server : `None` or ``Server``, Optional
             The server to what the created socket will be attached to.
         
@@ -2516,23 +2518,23 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         -------
         transport : ``_SelectorSocketTransport``
         """
-        return _SelectorSocketTransport(self, sock, protocol, waiter, extra, server)
+        return _SelectorSocketTransport(self, socket, protocol, waiter, extra, server)
     
-    def _make_ssl_transport(self, sock, protocol, ssl, waiter=None, *, server_side=False,
-            server_hostname=None, extra=None, server=None):
+    def _make_ssl_transport(self, socket, protocol, ssl, waiter=None, *, server_side=False, server_hostname=None,
+            extra=None, server=None):
         """
         Creates an ssl transport with the given parameters.
         
         Parameters
         ----------
-        sock : `socket.socket`
-            The socket, what the ransport will use.
+        socket : `socket.socket`
+            The socket, what the transport will use.
         protocol : `Any`
             Asynchronous protocol implementation for the transport. The given protocol is wrapped into an ``SSLProtocol``
         ssl : ``ssl.SSLContext``
             Ssl context of the respective connection.
-        waiter : `None` or ``Future``, Opional
-            Waiter, what's result should be set, whne the transport is ready to use.
+        waiter : `None` or ``Future``, Optional
+            Waiter, what's result should be set, when the transport is ready to use.
         server_side : `bool`, Optional
             Whether the created ssl transport is a server side. Defaults to `False`.
         server_hostname : `None` or `str`, Optional
@@ -2541,7 +2543,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             a value for `server_hostname`. If `server_hostname` is an empty string, hostname matching is disabled
             (which is a serious security risk, allowing for potential man-in-the-middle attacks).
         extra : `None` or `dict` of (`str`, `Any`) item, Optional
-            Optional transport informations.
+            Optional transport information.
         server : `None` or ``Server``, Optional
             The server to what the created socket will be attached to.
         
@@ -2551,18 +2553,18 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             The created ssl transport.
         """
         ssl_protocol = SSLProtocol(self, protocol, ssl, waiter, server_side, server_hostname)
-        _SelectorSocketTransport(self, sock, ssl_protocol, extra=extra, server=server)
+        _SelectorSocketTransport(self, socket, ssl_protocol, extra=extra, server=server)
         return ssl_protocol.app_transport
     
-    def emptyselfsocket(self):
+    def empty_self_socket(self):
         """
-        Reads all the data out from selfsocket.
+        Reads all the data out from self socket.
         
-        Familiar to asyncio event loop's `._read_from_self`.
+        Familiar to async-io event loop's `._read_from_self`.
         """
         while True:
             try:
-                data = self._selfread_socket.recv(4096)
+                data = self._self_read_socket.recv(4096)
                 if not data:
                     break
             except InterruptedError:
@@ -2570,37 +2572,37 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             except BlockingIOError:
                 break
     
-    def wakeup(self):
+    def wake_up(self):
         """
-        Wakes up the event loop. Threadsafe.
+        Wakes up the event loop. Thread safe.
         
-        Familiar as asyncio event loop's `._write_to_self`.
+        Familiar as async-io event loop's `._write_to_self`.
         """
-        selfwrite_socket = self._selfwrite_socket
-        if selfwrite_socket is None:
+        self_write_socket = self._self_write_socket
+        if self_write_socket is None:
             if self.running:
                 return
             
-            # If we start it not needed to wakeup. If we dont, we wont wakeup anyway.
+            # If we start it not needed to wake_up. If we don't, we wont wake_up anyway.
             self._maybe_start()
             return
         
         try:
-            selfwrite_socket.send(b'\0')
+            self_write_socket.send(b'\0')
         except OSError:
             pass
 
-    def _start_serving(self, protocol_factory, sock, ssl=None, server=None, backlog=100):
+    def _start_serving(self, protocol_factory, socket, ssl=None, server=None, backlog=100):
         """
-        Starts serving the given socket on the eventloop. Called by ``Server.start``. Adds a reader callback for the
+        Starts serving the given socket on the event loop. Called by ``Server.start``. Adds a reader callback for the
         socket, what will call ``._accept_connection``. (At edge cases ``._accept_connection`` might call this
         method as well for repeating itself after a a delay.)
         
         Parameters
         ----------
         protocol_factory : `callable`
-            Factory function for creating an asynchornous compatible protocol.
-        sock : `socket.socket`
+            Factory function for creating an asynchronous compatible protocol.
+        socket : `socket.socket`
             The sockets to serve by the respective server if applicable.
         ssl : `None` or `ssl.SSLContext`, Optional
             To enable ssl for the connections, give it as  `ssl.SSLContext`.
@@ -2609,21 +2611,21 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         backlog : `int`, Optional
             The maximum number of queued connections passed to `listen()` (defaults to 100).
         """
-        self.add_reader(sock.fileno(), self._accept_connection, protocol_factory, sock, ssl, server, backlog)
+        self.add_reader(socket.fileno(), self._accept_connection, protocol_factory, socket, ssl, server, backlog)
     
-    def _stop_serving(self, sock):
+    def _stop_serving(self, socket):
         """
         Stops serving the given socket. by removing it's reader callback and closing it.
         
         Parameters
         ----------
-        sock : `scoket.socket`
+        socket : `socket.socket`
             The socket, what's respective reader callback will be removed if applicable.
         """
-        self.remove_reader(sock.fileno())
-        sock.close()
+        self.remove_reader(socket.fileno())
+        socket.close()
     
-    def _accept_connection(self, protocol_factory, sock, ssl, server, backlog):
+    def _accept_connection(self, protocol_factory, socket, ssl, server, backlog):
         """
         Callback added by ``._start_serving``, what is triggered by a read event. This method is only called once for
         each event loop tick. There may be multiple connections waiting for an `.accept()` so it is called in a loop.
@@ -2632,8 +2634,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         Parameters
         ----------
         protocol_factory : `callable`
-            Factory function for creating an asynchornous compatible protocol.
-        sock : `socket.socket`
+            Factory function for creating an asynchronous compatible protocol.
+        socket : `socket.socket`
             The sockets to serve by the respective server if applicable.
         ssl : `None` or `ssl.SSLContext`
             The ssl type of the connection if any.
@@ -2644,8 +2646,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         """
         for _ in range(backlog):
             try:
-                conn, addr = sock.accept()
-                conn.setblocking(False)
+                connection_socket, address = socket.accept()
+                connection_socket.setblocking(False)
             except (BlockingIOError, InterruptedError, ConnectionAbortedError):
                 # Early exit because the socket accept buffer is empty.
                 return None
@@ -2655,37 +2657,37 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                     # Some platforms (e.g. Linux keep reporting the FD as ready, so we remove the read handler
                     # temporarily. We'll try again in a while.
                     self.render_exc_async(err, before=[
-                        'Exception occured at',
+                        'Exception occurred at',
                         repr(self),
                         '._accept_connection\n',
                             ])
                     
-                    self.remove_reader(sock.fileno())
-                    self.call_later(1., self._start_serving, protocol_factory, sock, ssl, server, backlog)
+                    self.remove_reader(socket.fileno())
+                    self.call_later(1., self._start_serving, protocol_factory, socket, ssl, server, backlog)
                 else:
-                    raise # The eventloop will catch and log it.
+                    raise # The event loop will catch and log it.
             else:
-                extra = {'peername': addr}
-                coro = self._accept_connection_task(protocol_factory, conn, extra, ssl, server)
+                extra = {'peername': address}
+                coro = self._accept_connection_task(protocol_factory, connection_socket, extra, ssl, server)
                 Task(coro, self)
     
-    async def _accept_connection_task(self, protocol_factory, conn, extra, ssl, server):
+    async def _accept_connection_task(self, protocol_factory, connection_socket, extra, ssl, server):
         """
         Called by ``._accept_connection``, when a connection is accepted.
         
-        Because ``._accept_connection`` might have more connections to accept, multyple tasks are launched up from
-        this method to run pararelly.
+        Because ``._accept_connection`` might have more connections to accept, multiple tasks are launched up from
+        this method to run parallelly.
         
         This method is a coroutine.
         
         Parameters
         ----------
         protocol_factory : `callable`
-            Factory function for creating an asynchornous compatible protocol.
-        conn : `socket.socket`
+            Factory function for creating an asynchronous compatible protocol.
+        connection_socket : `socket.socket`
             The accepted connection.
         extra : `None` or `dict` of (`str`, `Any`) item, Optional
-            Optional transport informations.
+            Optional transport information.
         ssl : `None` or `ssl.SSLContext`
             The ssl type of the connection if any.
         server : `None` or ``Server``
@@ -2695,9 +2697,10 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             protocol = protocol_factory()
             waiter = Future(self)
             if (ssl is None):
-                transport = self._make_socket_transport(conn, protocol, waiter=waiter, extra=extra, server=server)
+                transport = self._make_socket_transport(connection_socket, protocol, waiter=waiter, extra=extra,
+                    server=server)
             else:
-                transport = self._make_ssl_transport(conn, protocol, ssl, waiter=waiter, server_side=True,
+                transport = self._make_ssl_transport(connection_socket, protocol, ssl, waiter=waiter, server_side=True,
                     extra=extra, server=server)
             
             try:
@@ -2708,7 +2711,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         except BaseException as err:
             self.render_exc_async(err, [
-                'Exception occured at ',
+                'Exception occurred at ',
                 self.__class__.__name__,
                 '._accept_connection2\n',
                     ])
@@ -2789,7 +2792,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         fd : `int`
             The respective file descriptor.
         callback : `callable`
-            The function, what is called, when data the respective file descriptor becames writable.
+            The function, what is called, when data the respective file descriptor becomes writable.
         *args : Arguments
             Arguments to call `callback` with.
         """
@@ -2849,7 +2852,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         return False
     
-    async def connect_accepted_socket(self, protocol_factory, sock, *, ssl=None):
+    async def connect_accepted_socket(self, protocol_factory, socket, *, ssl=None):
         """
         Wrap an already accepted connection into a transport/protocol pair.
         
@@ -2861,7 +2864,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         ----------
         protocol_factory : `callable`.
             Callable returning an asynchronous protocol implementation.
-        sock : `socket.socket`
+        socket : `socket.socket`
             A preexisting socket object returned from `socket.accept`.
         ssl : `None` or `ssl.SSLContext`, Optional
             Whether ssl should be enabled.
@@ -2877,15 +2880,15 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         Raises
         ------
         ValueError
-            If sock is not a stream socket.
+            If `socket` is not a stream socket.
         """
-        if not _is_stream_socket(sock):
-            raise ValueError(f'A stream socket was expected, got {sock!r}.')
+        if not _is_stream_socket(socket):
+            raise ValueError(f'A stream socket was expected, got {socket!r}.')
         
-        return await self._create_connection_transport(sock, protocol_factory, ssl, '', True)
+        return await self._create_connection_transport(socket, protocol_factory, ssl, '', True)
     
-    async def create_connection(self, protocol_factory, host=None, port=None, *, ssl=None, family=0, proto=0,
-            flags=0, sock=None, local_addr=None, server_hostname=None):
+    async def create_connection(self, protocol_factory, host=None, port=None, *, ssl=None, family=0, protocol=0,
+            flags=0, socket=None, local_address=None, server_hostname=None):
         """
         Open a streaming transport connection to a given address specified by `host` and `port`.
         
@@ -2898,26 +2901,26 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         host : `None` or `str`, Optional
             To what network interfaces should the connection be bound.
             
-            Mutually exclusive with the `sock` parameter.
+            Mutually exclusive with the `socket` parameter.
         port : `None` or `int`, Optional
             The port of the `host`.
             
-            Mutually exclusive with the `sock` parameter.
+            Mutually exclusive with the `socket` parameter.
         ssl : `None`, `bool` or `ssl.SSLContext`, Optional
             Whether ssl should be enabled.
         family : `AddressFamily` or `int`, Optional
             Can be either `AF_INET`, `AF_INET6` or `AF_UNIX`.
-        proto : `int`, Optional
-            Can be used to narrow host resolution. Is passed to ``.getaddrinfo``.
+        protocol : `int`, Optional
+            Can be used to narrow host resolution. Is passed to ``.get_address_info``.
         flags : `int`, Optional
-            Can be used to narrow host resolution. Is passed to ``.getaddrinfo``.
-        sock : `None` or `socket.socket`, Optional
-            Wherther should use an existing, already connected socket.
+            Can be used to narrow host resolution. Is passed to ``.get_address_info``.
+        socket : `None` or `socket.socket`, Optional
+            Whether should use an existing, already connected socket.
             
             Mutually exclusive with the `host` and the `port` parameters.
-        local_addr : `tuple` of (`None` or  `str`, `None` or `int`), Optional
+        local_address : `tuple` of (`None` or  `str`, `None` or `int`), Optional
             Can be given as a `tuple` (`local_host`, `local_port`) to bind the socket locally. The `local_host` and
-            `local_port` are looked up by ``.getaddrinfo``.
+            `local_port` are looked up by ``.get_address_info``.
         server_hostname : `None` or `str`, Optional
             Overwrites the hostname that the target server’s certificate will be matched against.
             Should only be passed if `ssl` is not `None`. By default the value of the host argument is used. If host is
@@ -2936,17 +2939,17 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         Raises
         ------
         ValueError
-            - If `host` or `port` is given meanwile `sock` is also specified.
+            - If `host` or `port` is given meanwhile `socket` is also specified.
             - If `server_hostname` is not set, meanwhile using `ssl` without `host`.
             - If `server_hostname` is set, but `ssl` is.
-            - If neither `host`, `port` or `sock` are specified.
-            - `sock` is given, but not as a stream socket.
+            - If neither `host`, `port` or `socket` are specified.
+            - `socket` is given, but not as a stream socket.
         OSError
-            - `getaddrinfo()` returned empty list.
-            - Error while attempting to bind to adress.
+            - `get_address_info()` returned empty list.
+            - Error while attempting to bind to address.
             - Cannot open connection to any address.
         """
-        if type(ssl) is bool:
+        if isinstance(ssl, bool):
             if ssl:
                 ssl = create_default_context()
             else:
@@ -2964,18 +2967,18 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                 server_hostname = host
         else:
             if ssl is None:
-                raise ValueError('`server_hostname` is only meaningfull with `ssl`.')
+                raise ValueError('`server_hostname` is only meaningful with `ssl`.')
         
         if (host is not None) or (port is not None):
-            if (sock is not None):
-                raise ValueError('`host`, `port` and `sock` can not be specified at the same time.')
+            if (socket is not None):
+                raise ValueError('`host`, `port` and `socket` can not be specified at the same time.')
             
-            f1 = self._ensure_resolved((host, port), family=family, type=module_socket.SOCK_STREAM, proto=proto,
+            f1 = self._ensure_resolved((host, port), family=family, type=module_socket.SOCK_STREAM, protocol=protocol,
                 flags=flags)
             fs = [f1]
-            if local_addr is not None:
-                f2 = self._ensure_resolved(local_addr, family=family, type=module_socket.SOCK_STREAM, proto=proto,
-                    flags = flags)
+            if local_address is not None:
+                f2 = self._ensure_resolved(local_address, family=family, type=module_socket.SOCK_STREAM,
+                    protocol=protocol, flags=flags)
                 fs.append(f2)
             else:
                 f2 = None
@@ -2984,40 +2987,40 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             
             infos = f1.result()
             if not infos:
-                raise OSError('getaddrinfo() returned empty list')
+                raise OSError('`get_address_info` returned empty list')
             if (f2 is not None):
-                laddr_infos = f2.result()
-                if not laddr_infos:
-                    raise OSError('getaddrinfo() returned empty list')
+                local_address_infos = f2.result()
+                if not local_address_infos:
+                    raise OSError('`get_address_info` returned empty list')
             
             exceptions = []
-            for family, type_, proto, cname, address in infos:
+            for family, type_, protocol, canonical_name, address in infos:
                 try:
-                    sock = module_socket.socket(family=family, type=type_, proto=proto)
-                    sock.setblocking(False)
+                    socket = module_socket.socket(family=family, type=type_, proto=protocol)
+                    socket.setblocking(False)
                     if (f2 is not None):
-                        for element in laddr_infos:
-                            laddr = element[4]
+                        for element in local_address_infos:
+                            local_address = element[4]
                             try:
-                                sock.bind(laddr)
+                                socket.bind(local_address)
                                 break
                             except OSError as err:
-                                err = OSError(err.errno,
-                                    f'Error while attempting to bind on address {laddr!r}: {err.strerror.lower()}.')
+                                err = OSError(err.errno, f'Error while attempting to bind on address '
+                                    f'{local_address!r}: {err.strerror.lower()}.')
                                 exceptions.append(err)
                         else:
-                            sock.close()
-                            sock = None
+                            socket.close()
+                            socket = None
                             continue
                     
-                    await self.sock_connect(sock, address)
+                    await self.socket_connect(socket, address)
                 except OSError as err:
-                    if (sock is not None):
-                        sock.close()
+                    if (socket is not None):
+                        socket.close()
                     exceptions.append(err)
                 except:
-                    if (sock is not None):
-                        sock.close()
+                    if (socket is not None):
+                        socket.close()
                     raise
                 else:
                     break
@@ -3035,16 +3038,16 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                     raise OSError(f'Multiple exceptions: {", ".join(all_exception)}')
         
         else:
-            if sock is None:
-                raise ValueError('`host` and `port`, neither `sock` was given.')
+            if socket is None:
+                raise ValueError('`host` and `port`, neither `socket` was given.')
             
-            if not _is_stream_socket(sock):
-                raise ValueError(f'A stream socket was expected, got {sock!r}.')
+            if not _is_stream_socket(socket):
+                raise ValueError(f'A stream socket was expected, got {socket!r}.')
         
-        return await self._create_connection_transport(sock, protocol_factory, ssl, server_hostname, False)
+        return await self._create_connection_transport(socket, protocol_factory, ssl, server_hostname, False)
 
 
-    async def _create_connection_transport(self, sock, protocol_factory, ssl, server_hostname, server_side):
+    async def _create_connection_transport(self, socket, protocol_factory, ssl, server_hostname, server_side):
         """
         Open a streaming transport connection to a given address specified by `host` and `port`.
         
@@ -3056,7 +3059,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             Callable returning an asynchronous protocol implementation.
         ssl : `None`, `ssl.SSLContext`
             Whether ssl should be enabled.
-        sock : `socket.socket`
+        socket : `socket.socket`
             The socket to what the created transport should be connected to.
         server_hostname : `None` or `str`
             Overwrites the hostname that the target server’s certificate will be matched against.
@@ -3075,15 +3078,15 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         protocol : `Any`
             The protocol returned by `protocol_factory`.
         """
-        sock.setblocking(False)
+        socket.setblocking(False)
         
         protocol = protocol_factory()
         waiter = Future(self)
         
         if ssl is None:
-            transport = self._make_socket_transport(sock, protocol, waiter)
+            transport = self._make_socket_transport(socket, protocol, waiter)
         else:
-            transport  = self._make_ssl_transport(sock, protocol, ssl, waiter, server_side=server_side,
+            transport = self._make_ssl_transport(socket, protocol, ssl, waiter, server_side=server_side,
                 server_hostname=server_hostname)
         
         try:
@@ -3095,21 +3098,21 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         return transport, protocol
 
     # await it
-    def getaddrinfo(self, host, port, *, family=0, type=0, proto=0, flags=0):
+    def get_address_info(self, host, port, *, family=0, type=0, protocol=0, flags=0):
         """
         Asynchronous version of `socket.getaddrinfo()`.
         
         Parameters
         ----------
         host : `None` or `str`
-            To respctive network interface.
+            To respective network interface.
         port : `None` or `int`
             The port of the `host`.
         family :  `AddressFamily` or `int`, Optional
-            The address faily.
+            The address family.
         type : `SocketKind` or `int`, Optional
             Socket type.
-        proto : `int`, Optional
+        protocol : `int`, Optional
             Protocol type. Can be used to narrow host resolution.
         flags : `int`, Optional
             Can be used to narrow host resolution.
@@ -3122,21 +3125,21 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             Might raise `OSError` or return a `list` of `tuple`-s with the following elements:
             - `family` : `AddressFamily` or `int`. Address family.
             - `type` : `SocketKind` or `int`. Socket type.
-            - `proto` : `int`. Protocol type.
-            - `cname` : `str`. epresents the canonical name of the host.
-            - `sockaddr` : `tuple` (`str, `int`). Socket address contianing the `host` and the `port`.
+            - `protocol` : `int`. Protocol type.
+            - `canonical_name` : `str`. Represents the canonical name of the host.
+            - `socket_address` : `tuple` (`str, `int`). Socket address containing the `host` and the `port`.
         """
         return self.run_in_executor(alchemy_incendiary(
-            module_socket.getaddrinfo, (host, port, family, type, proto, flags,),))
+            module_socket.getaddrinfo, (host, port, family, type, protocol, flags,),))
     
     # await it
-    def getnameinfo(self, sockaddr, flags=0):
+    def get_name_info(self, socket_address, flags=0):
         """
         Asynchronous version of `socket.getnameinfo()`.
         
         Parameters
         ----------
-        sockaddr : `tuple` (`str`, `int`)
+        socket_address : `tuple` (`str`, `int`)
              Socket address as a tuple of `host` and `port`.
         flags : `int`, Optional
             Can be used to narrow host resolution.
@@ -3146,9 +3149,9 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         future : ``Future``
             An awaitable future, what will yield the lookup's result.
         """
-        return self.run_in_executor(alchemy_incendiary(module_socket.getnameinfo, (sockaddr, flags,),))
+        return self.run_in_executor(alchemy_incendiary(module_socket.getnameinfo, (socket_address, flags,),))
     
-    def _ensure_resolved(self, address, *, family=0, type=module_socket.SOCK_STREAM, proto=0, flags=0):
+    def _ensure_resolved(self, address, *, family=0, type=module_socket.SOCK_STREAM, protocol=0, flags=0):
         """
         Ensures, that the given address is already a resolved IP. If not, gets it's address.
         
@@ -3158,7 +3161,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             Address as a tuple of `host` and `port`.
         type : `SocketKind` or `int`, Optional
             Socket type.
-        proto : `int`, Optional
+        protocol : `int`, Optional
             Protocol type. Can be used to narrow host resolution.
         flags : `int`, Optional
             Can be used to narrow host resolution.
@@ -3166,13 +3169,13 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         Returns
         -------
         future : ``Future``
-            An awaitable future, what returns a `list` of `tuples` with the folowing elements:
+            An awaitable future, what returns a `list` of `tuples` with the following elements:
             
             - `family` : `AddressFamily` or `int`. Address family.
             - `type` : `SocketKind` or `int`. Socket type.
-            - `proto` : `int`. Protocol type.
-            - `cname` : `str`. epresents the canonical name of the host.
-            - `sockaddr` : `tuple` (`str, `int`). Socket address contianing the `host` and the `port`.
+            - `protocol` : `int`. Protocol type.
+            - `canonical_name` : `str`. Represents the canonical name of the host.
+            - `socket_address` : `tuple` (`str, `int`). Socket address containing the `host` and the `port`.
             
             Might raise `OSError` as well.
         """
@@ -3180,16 +3183,16 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         host = address[0]
         port = address[1]
         
-        info = _ipaddr_info(host, port, family, type, proto)
+        info = _ip_address_info(host, port, family, type, protocol)
         if info is None:
-            return self.getaddrinfo(host, port, family=family, type=type, proto=proto, flags=flags)
+            return self.get_address_info(host, port, family=family, type=type, protocol=protocol, flags=flags)
         
         # "host" is already a resolved IP.
         future = Future(self)
         future.set_result([info])
         return future
     
-    async def sock_accept(self, sock):
+    async def socket_accept(self, socket):
         """
         Accept a connection. Modeled after the blocking `socket.accept()` method.
         
@@ -3199,7 +3202,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         Parameters
         ----------
-        sock : `scoket.socket`
+        socket : `socket.socket`
             Must be a non-blocking socket.
         
         Returns
@@ -3210,12 +3213,12 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             The address to what the connection is connected to.
         """
         future = Future(self)
-        self._sock_accept(future, False, sock)
+        self._socket_accept(future, False, socket)
         return await future
 
-    def _sock_accept(self, future, registered, sock):
+    def _socket_accept(self, future, registered, socket):
         """
-        Method used by ``.sock_accept`` to check whether the respective socket can be accepted already.
+        Method used by ``.socket_accept`` to check whether the respective socket can be accepted already.
         
         If the respective socket is already connected, then sets the waiter future's result instantly, else adds itself
         as a reader callback.
@@ -3224,13 +3227,13 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         ----------
         future : ``Future``
             Waiter future, what's result or exception is set, when the socket can be accepted or when an exception
-            occures.
+            occurs.
         registered : `bool`
-            Whether the given `sock` is registered as a reader and should be removed.
-        sock : `socket.socket`
+            Whether the given `socket is registered as a reader and should be removed.
+        socket : `socket.socket`
             The respective socket, what's is listening for a connection.
         """
-        fd = sock.fileno()
+        fd = socket.fileno()
         if registered:
             self.remove_reader(fd)
             
@@ -3240,16 +3243,16 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                 return
         
         try:
-            conn, address = sock.accept()
+            conn, address = socket.accept()
             conn.setblocking(False)
         except (BlockingIOError, InterruptedError):
-            self.add_reader(fd, self._sock_accept, future, True, sock)
+            self.add_reader(fd, self._socket_accept, future, True, socket)
         except BaseException as err:
             future.set_exception(err)
         else:
             future.set_result((conn, address))
             
-    async def sock_connect(self, sock, address):
+    async def socket_connect(self, socket, address):
         """
         Connect the given socket to a remote socket at address.
         
@@ -3259,27 +3262,27 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         Parameters
         ----------
-        sock : `socket.socket`
+        socket : `socket.socket`
             Must be a non-blocking socket.
         address : `tuple` (`str`, `int`)
             The address to connect to.
         """
-        if not hasattr(module_socket, 'AF_UNIX') or (sock.family != module_socket.AF_UNIX):
-            resolved = self._ensure_resolved(address, family=sock.family, proto=sock.proto)
+        if not hasattr(module_socket, 'AF_UNIX') or (socket.family != module_socket.AF_UNIX):
+            resolved = self._ensure_resolved(address, family=socket.family, protocol=socket.proto)
             if not resolved.done():
                 await resolved
             address = resolved.result()[0][4]
         
         future = Future(self)
         
-        fd = sock.fileno()
+        fd = socket.fileno()
         try:
-            sock.connect(address)
+            socket.connect(address)
         except (BlockingIOError, InterruptedError):
             # Cpython issue #23618: When the C function connect() fails with EINTR, the connection runs in background.
             # We have to wait until the socket becomes writable to be notified when the connection succeed or fails.
-            self.add_writer(fd, self._sock_connect_cb, future, sock, address)
-            future.add_done_callback(self._sock_connect_done(fd),)
+            self.add_writer(fd, self._socket_connect_cb, future, socket, address)
+            future.add_done_callback(self._socket_connect_done(fd),)
         except BaseException as err:
             future.set_exception(err)
         else:
@@ -3287,32 +3290,32 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         await future
     
-    class _sock_connect_done(object):
+    class _socket_connect_done(object):
         """
-        Callback added to the waited future by ``EventThread.sock_connect`` to remove the respective socket from the
+        Callback added to the waited future by ``EventThread.socket_connect`` to remove the respective socket from the
         writers by it's file descriptor.
         
         Attributes
         ----------
         fd : `int`
-            The respective socket's file descriptor's identificator.
+            The respective socket's file descriptor's identifier.
         """
         __slots__ = ('fd',)
         
         def __init__(self, fd):
             """
-            Creates a new ``_sock_connect_done`` instance with the given fd.
+            Creates a new ``_socket_connect_done`` instance with the given fd.
             
             Parameters
             ----------
             fd : `int`
-                The respective socket's file descriptor's identificator.
+                The respective socket's file descriptor's identifier.
             """
             self.fd = fd
         
         def __call__(self, future):
             """
-            Callback what runs when the respcetive waiter future is marked as done.
+            Callback what runs when the respective waiter future is marked as done.
             
             Removes the respective socket from writers.
             
@@ -3323,16 +3326,16 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             """
             future._loop.remove_writer(self.fd)
     
-    def _sock_connect_cb(self, future, sock, address):
+    def _socket_connect_cb(self, future, socket, address):
         """
-        Reader callback, what is called, when the respective socket is connected. Added by ``.sock_connect``, when the
+        Reader callback, what is called, when the respective socket is connected. Added by ``.socket_connect``, when the
         socket is not yet connected.
         
         Parameters
         ----------
         future : ``Future``
             Waiter future, what's result is set, when the socket is connected.
-        sock : `socket.socket`
+        socket : `socket.socket`
             The respective socket, on what's connection we are waiting for.
         address : `tuple` (`str`, `int`)
             The address to connect to.
@@ -3341,7 +3344,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             return
         
         try:
-            err_number = sock.getsockopt(module_socket.SOL_SOCKET, module_socket.SO_ERROR)
+            err_number = socket.getsockopt(module_socket.SOL_SOCKET, module_socket.SO_ERROR)
             if err_number != 0:
                 raise OSError(err_number, f'Connect call failed {address!r}.')
         except (BlockingIOError, InterruptedError):
@@ -3352,15 +3355,15 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         else:
             future.set_result(None)
     
-    async def sock_recv(self, sock, n):
+    async def socket_receive(self, socket, n):
         """
-        Receive up to `n` from the given socket. Asynchronous version of socket.recv().
+        Receive up to `n` from the given socket. Asynchronous version of `socket.recv()`.
         
         This method is a coroutine.
         
         Parameters
         ----------
-        sock : `socket.socket`
+        socket : `socket.socket`
             The socket to receive the data from. Must be a non-blocking socket.
         n : `int`
             The amount of data to receive in bytes.
@@ -3372,28 +3375,28 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         Notes
         -----
-        There is no way to dtermine how much data, if any was successfully received on the other end of the connection.
+        There is no way to determine how much data, if any was successfully received on the other end of the connection.
         """
         future = Future(self)
-        self._sock_recv(future, False, sock, n)
+        self._socket_receive(future, False, socket, n)
         return await future
 
-    def _sock_recv(self, future, registered, sock, n):
+    def _socket_receive(self, future, registered, socket, n):
         """
-        Added reader callback by ``.sock_recv``. This method is repeated till the data is successfully polled.
+        Added reader callback by ``.socket_receive``. This method is repeated till the data is successfully polled.
         
         Parameters
         ----------
         future : ``Future``
             Waiter future, what's result or exception will be set.
         registered : `bool`
-            Whether `sock` is registered as a reader and should be removed.
-        sock : `sokcet.socket`
+            Whether `socket` is registered as a reader and should be removed.
+        socket : `socket.socket`
             The socket from what we read.
         n : `int`
             The amount of data to receive in bytes.
         """
-        fd = sock.fileno()
+        fd = socket.fileno()
         if registered:
             self.remove_reader(fd)
         
@@ -3401,57 +3404,57 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             return
         
         try:
-            data = sock.recv(n)
+            data = socket.recv(n)
         except (BlockingIOError,InterruptedError):
-            self.add_reader(fd, self._sock_recv, future, True, sock, n)
+            self.add_reader(fd, self._socket_receive, future, True, socket, n)
         except BaseException as err:
             future.set_exception(err)
         else:
             future.set_result(data)
     
-    async def sock_sendall(self, sock, data):
+    async def socket_sendall(self, socket, data):
         """
         Send data to the socket. Asynchronous version of `socket.sendall`.
         
-        Continues sending to the socket until all data is sent or an error occures.
+        Continues sending to the socket until all data is sent or an error occurs.
         
         This method is a coroutine.
         
         Parameters
         ----------
-        sock : `socket.socket`
+        socket : `socket.socket`
             The socket to send the data to. Must be a non-blocking socket.
         data : `bytes-like`
             The data to send.
         
         Notes
         -----
-        There is no way to dtermine how much data, if any was successfully received on the other end of the connection.
+        There is no way to determine how much data, if any was successfully received on the other end of the connection.
         """
         if type(data) is not memoryview:
             data = memoryview(data)
         
         if data:
             future = Future(self)
-            self._sock_sendall(future, False, sock, data)
+            self._socket_sendall(future, False, socket, data)
             await future
     
-    def _sock_sendall(self, future, registered, sock, data):
+    def _socket_sendall(self, future, registered, socket, data):
         """
-        Added writer callback by ``.sock_sendall``. This method is repeated till the whole data is exhausted.
+        Added writer callback by ``.socket_sendall``. This method is repeated till the whole data is exhausted.
         
         Parameters
         ----------
         future : ``Future``
             Waiter future, what's result or exception will be set.
         registered : `bool`
-            Whether `sock` is registered as a writer and should be removed.
-        sock : `sokcet.socket`
+            Whether `socket` is registered as a writer and should be removed.
+        socket : `socket.socket`
             The socket to what the data is sent to.
         data : `memoryview`
             Memoryview on the data to send.
         """
-        fd = sock.fileno()
+        fd = socket.fileno()
         
         if registered:
             self.remove_writer(fd)
@@ -3460,7 +3463,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             return
         
         try:
-            n = sock.send(data)
+            n = socket.send(data)
         except (BlockingIOError, InterruptedError):
             n = 0
         except BaseException as err:
@@ -3472,10 +3475,11 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         else:
             if n:
                 data = data[n:]
-            self.add_writer(fd, self._sock_sendall, future, True, sock, data)
+            
+            self.add_writer(fd, self._socket_sendall, future, True, socket, data)
     
-    async def create_datagram_endpoint(self, protocol_factory, local_addr=None, remote_addr=None, *, family=0, proto=0,
-            flags=0, reuse_port=False, allow_broadcast=False, sock=None):
+    async def create_datagram_endpoint(self, protocol_factory, local_address=None, remote_address=None, *, family=0,
+            protocol=0, flags=0, reuse_port=False, allow_broadcast=False, socket=None):
         """
         Creates a datagram connection. The socket type will be `SOCK_DGRAM`.
         
@@ -3485,32 +3489,32 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         ----------
         protocol_factory : `callable`
             Factory function for creating a protocols.
-        local_addr : `None`, `tuple` of (`None` or  `str`, `None` or `int`), `str`, `bytes`, Optional
+        local_address : `None`, `tuple` of (`None` or  `str`, `None` or `int`), `str`, `bytes`, Optional
             Can be given as a `tuple` (`local_host`, `local_port`) to bind the socket locally. The `local_host` and
-            `local_port` are looked up by ``.getaddrinfo``.
+            `local_port` are looked up by ``.get_address_info``.
             
             If `family` is given as `AF_UNIX`, then also can be given as path of a file or a file descriptor.
             
-            Mutually exclusive with the `sock` parameter.
-        remote_addr : `None`, `tuple` of (`None` or  `str`, `None` or `int`), `str`, `bytes`, Optional
+            Mutually exclusive with the `socket` parameter.
+        remote_address : `None`, `tuple` of (`None` or  `str`, `None` or `int`), `str`, `bytes`, Optional
             Can be given as a `tuple` (`remote_host`, `remote_port`) to connect the socket to remove address. The
-            `remote_host` and `remote_port` are looked up by ``.getaddrinfo``.
+            `remote_host` and `remote_port` are looked up by ``.get_address_info``.
             
             If `family` is given as `AF_UNIX`, then also can be given as path of a file or a file descriptor.
             
-            Mutually exclusive with the `sock` parameter.
+            Mutually exclusive with the `socket` parameter.
         family : `AddressFamily` or `int`, Optional
             Can be either `AF_INET`, `AF_INET6` or `AF_UNIX`.
             
-            Mutually exclusive with the `sock` parameter.
-        proto : `int`, Optional
-            Can be used to narrow host resolution. Is passed to ``.getaddrinfo``.
+            Mutually exclusive with the `socket` parameter.
+        protocol : `int`, Optional
+            Can be used to narrow host resolution. Is passed to ``.get_address_info``.
             
-            Mutually exclusive with the `sock` parameter.
+            Mutually exclusive with the `socket` parameter.
         flags : `int`, Optional
-            Can be used to narrow host resolution. Is passed to ``.getaddrinfo``.
+            Can be used to narrow host resolution. Is passed to ``.get_address_info``.
             
-            Mutually exclusive with the `sock` parameter.
+            Mutually exclusive with the `socket` parameter.
         reuse_port : `bool`, Optional
             Tells to the kernel to allow this endpoint to be bound to the same port as an other existing endpoint
             already might be bound to.
@@ -3518,7 +3522,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             Not supported on Windows.
         allow_broadcast : `bool`, Optional
             Tells the kernel to allow this endpoint to send messages to the broadcast address.
-        sock : `None` or `socket.socket`, Optional
+        socket : `None` or `socket.socket`, Optional
             Can be specified in order to use a preexisting socket object.
             
             Mutually exclusive with `host` and `port` parameters.
@@ -3530,25 +3534,25 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         protocol : `Any`
             The protocol returned by `protocol_factory`.
         """
-        if sock is not None:
-            if sock.type != module_socket.SOCK_DGRAM:
-                raise ValueError(f'A UDP socket was expected, got {sock!r}.')
+        if socket is not None:
+            if socket.type != module_socket.SOCK_DGRAM:
+                raise ValueError(f'A UDP socket was expected, got {socket!r}.')
             
-            if (local_addr is not None) or (remote_addr is not None) or family  or proto or flags or reuse_port or \
-                    allow_broadcast:
+            if (local_address is not None) or (remote_address is not None) or family  or protocol or flags or \
+                    reuse_port or allow_broadcast:
                 
                 collected = []
-                if (local_addr is not None):
-                    collected.append(('local_addr', local_addr))
+                if (local_address is not None):
+                    collected.append(('local_address', local_address))
                 
-                if (remote_addr is not None):
-                    collected.append(('remote_addr', remote_addr))
+                if (remote_address is not None):
+                    collected.append(('remote_address', remote_address))
                     
                 if family:
                     collected.append(('family', family))
                 
-                if proto:
-                    collected.append(('proto', proto))
+                if protocol:
+                    collected.append(('protocol', protocol))
                 
                 if flags:
                     collected.append(('flags', flags))
@@ -3559,7 +3563,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                 if allow_broadcast:
                     collected.append(('allow_broadcast', allow_broadcast))
                 
-                error_message_parts = ['Socket modifier keyword arguments can not be used when `sock` is given: ']
+                error_message_parts = ['Socket modifier keyword arguments can not be used when `socket` is given: ']
                 
                 index = 0
                 limit = len(error_message_parts)
@@ -3580,82 +3584,82 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                 
                 raise ValueError(''.join(error_message_parts))
             
-            sock.setblocking(False)
+            socket.setblocking(False)
             remote_address = None
         else:
             address_info = []
             
-            if (local_addr is None) and (remote_addr is None):
+            if (local_address is None) and (remote_address is None):
                 if family == 0:
                     raise ValueError(f'Unexpected address family: {family!r}.')
                 
-                address_info.append((family, proto, None, None))
+                address_info.append((family, protocol, None, None))
             
             elif hasattr(module_socket, 'AF_UNIX') and family == module_socket.AF_UNIX:
                 if __debug__:
-                    if (local_addr is not None):
-                        local_addr_type = local_addr.__class__
-                        if not issubclass(local_addr_type, (str, bytes)):
-                            raise TypeError('`local_addr` should be given as `None` or as `str` or `bytes` instance, '
-                                f'if `family` is given as ``AF_UNIX`, got {local_addr_type.__name__}')
+                    if (local_address is not None):
+                        local_address_type = address.__class__
+                        if not issubclass(local_address_type, (str, bytes)):
+                            raise TypeError('`local_address` should be given as `None` or as `str` or `bytes` '
+                                f'instance, if `family` is given as ``AF_UNIX`, got {local_address_type.__name__}')
                     
-                    if (remote_addr is not None):
-                        remote_addr_type = remote_addr.__class__
-                        if not issucbalss(remote_addr_type, (str, bytes)):
-                            raise TypeError('`remote_addr` should be given as `None` or as `str` or `bytes` instance, '
-                                f'if `family` is given as ``AF_UNIX`, got {remote_addr_type.__name__}')
+                    if (remote_address is not None):
+                        remote_address_type = remote_address.__class__
+                        if not issucbalss(remote_address_type, (str, bytes)):
+                            raise TypeError('`remote_address` should be given as `None` or as `str` or `bytes` '
+                                f'instance, if `family` is given as ``AF_UNIX`, got {remote_address_type.__name__}')
                 
-                if (local_addr is not None) and local_addr and \
-                        (local_addr[0] != (0 if isinstance(local_addr, bytes) else '\x00')):
+                if (local_address is not None) and local_address and \
+                        (local_address[0] != (0 if isinstance(local_address, bytes) else '\x00')):
                     try:
-                        if S_ISSOCK(os.stat(local_addr).st_mode):
-                            os.remove(local_addr)
+                        if S_ISSOCK(os.stat(local_address).st_mode):
+                            os.remove(local_address)
                     except FileNotFoundError:
                         pass
                     except OSError as err:
                         # Directory may have permissions only to create socket.
-                        sys.stderr.write(f'Unable to check or remove stale UNIX socket {local_addr!r}: {err!s}.\n')
+                        sys.stderr.write(f'Unable to check or remove stale UNIX socket {local_address!r}: {err!s}.\n')
                 
-                address_info.append((family, proto, local_addr, remote_addr))
+                address_info.append((family, protocol, local_address, remote_address))
             
             else:
                 # join address by (family, protocol)
-                addr_infos = {}
-                if (local_addr is not None):
-                    infos = await self._ensure_resolved(local_addr, family=family, type=module_socket.SOCK_DGRAM,
-                        proto=proto, flags=flags)
+                address_infos = {}
+                if (local_address is not None):
+                    infos = await self._ensure_resolved(local_address, family=family, type=module_socket.SOCK_DGRAM,
+                        protocol=protocol, flags=flags)
                     
                     if not infos:
-                        raise OSError('getaddrinfo() returned empty list')
+                        raise OSError('`get_address_info` returned empty list')
                     
-                    for it_family, _, it_proto, _, address_value_local in infos:
-                        addr_infos[(it_family, it_proto)] = (address_value_local, None)
+                    for it_family, it_type, it_protocol, it_canonical_name, it_socket_address in infos:
+                        address_infos[(it_family, it_protocol)] = (it_socket_address, None)
                 
-                if (remote_addr is not None):
-                    infos = await self._ensure_resolved(remote_addr, family=family, type=module_socket.SOCK_DGRAM,
-                        proto=proto, flags=flags)
+                if (remote_address is not None):
+                    infos = await self._ensure_resolved(remote_address, family=family, type=module_socket.SOCK_DGRAM,
+                        protocol=protocol, flags=flags)
                     
                     if not infos:
-                        raise OSError('getaddrinfo() returned empty list')
+                        raise OSError('`get_address_info` returned empty list')
                     
                     
-                    for it_family, _, it_proto, _, address_value_remote in infos:
-                        key = (it_family, it_proto)
+                    for it_family, it_type, it_protocol, it_canonical_name, it_socket_address in infos:
+                        key = (it_family, it_protocol)
                         
                         try:
-                            value = addr_infos[key]
+                            value = address_infos[key]
                         except KeyError:
                             address_value_local = None
                         else:
                             address_value_local = value[0]
                         
-                        addr_infos[key] = (address_value_local, address_value_remote)
+                        address_infos[key] = (address_value_local, it_socket_address)
                 
-                for key, (address_value_local, address_value_remote) in addr_infos.items():
-                    if (local_addr is not None) and (address_value_local is None):
+                for key, (address_value_local, address_value_remote) in address_infos.items():
+                    if (local_address is not None) and (address_value_local is None):
                         continue
                     
-                    if (remote_addr is not None) and (address_value_remote is None):
+                    if (remote_address is not None) and (address_value_remote is None):
                         continue
                     
                     address_info.append((*key, address_value_local, address_value_remote))
@@ -3665,29 +3669,29 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             
             exception = None
             
-            for family, proto, local_address, remote_address in address_info:
+            for family, protocol, local_address, remote_address in address_info:
                 try:
-                    sock = module_socket.socket(family=family, type=module_socket.SOCK_DGRAM, proto=proto)
+                    socket = module_socket.socket(family=family, type=module_socket.SOCK_DGRAM, proto=protocol)
                     
                     if reuse_port:
-                        _set_reuseport(sock)
+                        _set_reuse_port(socket)
                     
                     if allow_broadcast:
-                        sock.setsockopt(module_socket.SOL_SOCKET, module_socket.SO_BROADCAST, 1)
+                        socket.setsockopt(module_socket.SOL_SOCKET, module_socket.SO_BROADCAST, 1)
                     
-                    sock.setblocking(False)
+                    socket.setblocking(False)
                     
-                    if (local_addr is not None):
-                        sock.bind(local_address)
+                    if (local_address is not None):
+                        socket.bind(local_address)
                     
-                    if (remote_addr is not None):
+                    if (remote_address is not None):
                         if not allow_broadcast:
-                            await self.sock_connect(sock, remote_address)
+                            await self.socket_connect(socket, remote_address)
                 
                 except BaseException as err:
-                    if (sock is not None):
-                        sock.close()
-                        sock = None
+                    if (socket is not None):
+                        socket.close()
+                        socket = None
                     
                     if not isinstance(err, OSError):
                         raise
@@ -3703,7 +3707,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         protocol = protocol_factory()
         waiter = Future(self)
-        transport = _SelectorDatagramTransport(self, sock, protocol, remote_address, waiter, None)
+        transport = _SelectorDatagramTransport(self, socket, protocol, remote_address, waiter, None)
         
         try:
             await waiter
@@ -3713,7 +3717,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         return transport, protocol
     
-    def _create_server_getaddrinfo(self, host, port, family, flags):
+    def _create_server_get_address_info(self, host, port, family, flags):
         """
         Gets address info for the given parameters. This method is used by ``.create_server``, when resolving hosts.
         
@@ -3726,7 +3730,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         family : `AddressFamily` or `int`
             The family of the address.
         flags : `int`
-            Bitmask for `getaddrinfo`.
+            Bit-mask for `get_address_info`.
         
         Returns
         -------
@@ -3736,7 +3740,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         return self._ensure_resolved((host, port), family=family, type=module_socket.SOCK_STREAM, flags=flags)
     
     async def create_server(self, protocol_factory, host=None, port=None, *, family=module_socket.AF_UNSPEC,
-            flags=module_socket.AI_PASSIVE, sock=None, backlog=100, ssl=None,
+            flags=module_socket.AI_PASSIVE, socket=None, backlog=100, ssl=None,
             reuse_address=(os.name == 'posix' and sys.platform != 'cygwin'), reuse_port=False):
         """
         Creates a TCP server (socket type SOCK_STREAM) listening on port of the host address.
@@ -3750,17 +3754,17 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         host : `None` or `str`, `iterable` of (`None` or `str`), Optional
             To what network interfaces should the server be bound.
             
-            Mutually exclusive with the `sock` parameter.
+            Mutually exclusive with the `socket` parameter.
         port : `None` or `int`, Optional
             The port to use by the `host`(s).
             
-            Mutually exclusive with the `sock` parameter.
+            Mutually exclusive with the `socket` parameter.
         family : `AddressFamily` or `int`
             Can be given either as `socket.AF_INET` or `socket.AF_INET6` to force the socket to use `IPv4` or `IPv6`.
             If not given, then  will be determined from host name.
         flags : `int`
-            Bitmask for `getaddrinfo`.
-        sock : `None` or `socket.socket`, Optional
+            Bit-mask for `get_address_info`.
+        socket : `None` or `socket.socket`, Optional
             Can be specified in order to use a preexisting socket object.
             
             Mutually exclusive with `host` and `port` parameters.
@@ -3791,10 +3795,10 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             - If `reuse_port` is given as non `bool`.
             - If `host` is not given as `None`, `str` and neither as `iterable` of `str` or `None`.
         ValueError
-            - If `host` or `port` parameter is given, when `sock` is defined as well.
+            - If `host` or `port` parameter is given, when `socket` is defined as well.
             - If `reuse_port` is given as `True`, but not supported.
-            - If neither `host`, `port nor `sock` were given.
-            - If `sock` is given, but it's type is not `module_socket.SOCK_STREAM`.
+            - If neither `host`, `port nor `socket` were given.
+            - If `socket` is given, but it's type is not `module_socket.SOCK_STREAM`.
         OsError
             Error while attempting to binding to address.
         """
@@ -3802,8 +3806,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             raise TypeError(f'`ssl` can be given as `None` or as ``SSLContext``, got {ssl.__class__.__name__}.')
         
         if (host is not None) or (port is not None):
-            if (sock is not None):
-                raise ValueError('`host` and `port` parameters are mutually exclusive with `sock`.')
+            if (socket is not None):
+                raise ValueError('`host` and `port` parameters are mutually exclusive with `socket`.')
             
             if (type(reuse_address) is not bool):
                 raise TypeError('`reuse_address` can be `None` or type `bool`, got '
@@ -3839,7 +3843,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             
             sockets = []
             
-            futures = {self._create_server_getaddrinfo(host, port, family, flags) for host in hosts}
+            futures = {self._create_server_get_address_info(host, port, family, flags) for host in hosts}
             
             try:
                 while True:
@@ -3849,41 +3853,41 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                         infos = future.result()
                         
                         for info in infos:
-                            af, socktype, proto, canonname, sa = info
+                            socket_family, socket_type, socket_protocol, canonical_name, socket_address = info
                             
                             try:
-                                sock = module_socket.socket(af, socktype, proto)
+                                socket = module_socket.socket(socket_family, socket_type, socket_protocol)
                             except module_socket.error:
                                 continue
                             
-                            sockets.append(sock)
+                            sockets.append(socket)
                             
                             if reuse_address:
-                                sock.setsockopt(module_socket.SOL_SOCKET, module_socket.SO_REUSEADDR, True)
+                                socket.setsockopt(module_socket.SOL_SOCKET, module_socket.SO_REUSEADDR, True)
                             
                             if reuse_port:
                                 try:
-                                    sock.setsockopt(module_socket.SOL_SOCKET, module_socket.SO_REUSEPORT, 1)
+                                    socket.setsockopt(module_socket.SOL_SOCKET, module_socket.SO_REUSEPORT, 1)
                                 except OSError as err:
                                     raise ValueError('reuse_port not supported by socket module, SO_REUSEPORT defined '
                                         'but not implemented.') from err
                             
-                            if (_HAS_IPv6 and (af == module_socket.AF_INET6) and \
+                            if (_HAS_IPv6 and (socket_family == module_socket.AF_INET6) and \
                                     hasattr(module_socket, 'IPPROTO_IPV6')):
-                                sock.setsockopt(module_socket.IPPROTO_IPV6, module_socket.IPV6_V6ONLY, True)
+                                socket.setsockopt(module_socket.IPPROTO_IPV6, module_socket.IPV6_V6ONLY, True)
                             try:
-                                sock.bind(sa)
+                                socket.bind(socket_address)
                             except OSError as err:
-                                raise OSError(err.errno, f'Error while attempting to bind on address {sa!r}: '
-                                    f'{err.strerror.lower()!s}.') from None
+                                raise OSError(err.errno, f'Error while attempting to bind on address '
+                                    f'{socket_address!r}: {err.strerror.lower()!s}.') from None
                     
                     if futures:
                         continue
                     
                     break
             except:
-                for sock in sockets:
-                    sock.close()
+                for socket in sockets:
+                    socket.close()
                     
                 for future in futures:
                     future.cancel()
@@ -3891,16 +3895,16 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                 raise
             
         else:
-            if sock is None:
-                raise ValueError('Neither `host`, `port` nor `sock` were given.')
+            if socket is None:
+                raise ValueError('Neither `host`, `port` nor `socket` were given.')
             
-            if sock.type != module_socket.SOCK_STREAM:
-                raise ValueError(f'A stream socket was expected, got {sock!r}.')
+            if socket.type != module_socket.SOCK_STREAM:
+                raise ValueError(f'A stream socket was expected, got {socket!r}.')
             
-            sockets = [sock]
+            sockets = [socket]
         
-        for sock in sockets:
-            sock.setblocking(False)
+        for socket in sockets:
+            socket.setblocking(False)
         
         return Server(self, sockets, protocol_factory, ssl, backlog)
     
@@ -3911,37 +3915,36 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         async def connect_write_pipe(self, protocol, pipe):
             return await UnixWritePipeTransport(self, pipe, protocol)
         
-        async def subprocess_shell(self, cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, *,
-                extra=None, preexec_fn=None, close_fds=True, cwd=None, startupinfo=None, creationflags=0,
-                restore_signals=True, start_new_session=False, pass_fds=()):
+        async def subprocess_shell(self, command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                *, extra=None, preexecution_function=None, close_fds=True, cwd=None, startup_info=None,
+                creation_flags=0, restore_signals=True, start_new_session=False, pass_fds=()):
             
-            cmd_type = cmd.__class__
-            if not issubclass(cmd_type, (bytes, str)):
-                raise TypeError(f'`cmd` must be `bytes` or `str` instance, got {cmd_type.__name__}.')
+            if not isinstance(command, (bytes, str)):
+                raise TypeError(f'`cmd` must be `bytes` or `str` instance, got {command.__class__.__name__}.')
             
             popen_kwargs = {
-                'preexec_fn' : preexec_fn,
+                'preexec_fn' : preexecution_function,
                 'close_fds' : close_fds,
                 'cwd' : cwd,
-                'startupinfo' : startupinfo,
-                'creationflags' : creationflags,
+                'startupinfo' : startup_info,
+                'creationflags' : creation_flags,
                 'restore_signals' : restore_signals,
                 'start_new_session' : start_new_session,
                 'pass_fds' : pass_fds,
                     }
             
-            return await AsyncProcess(self, cmd, True, stdin, stdout, stderr, 0, extra, popen_kwargs)
+            return await AsyncProcess(self, command, True, stdin, stdout, stderr, 0, extra, popen_kwargs)
         
         async def subprocess_exec(self, program, popen_args=(), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE, *, extra=None, preexec_fn=None, close_fds=True, cwd=None, startupinfo=None,
-                creationflags=0, restore_signals=True, start_new_session=False, pass_fds=()):
+                stderr=subprocess.PIPE, *, extra=None, preexecution_function=None, close_fds=True, cwd=None,
+                startup_info=None, creation_flags=0, restore_signals=True, start_new_session=False, pass_fds=()):
             
             popen_kwargs = {
-                'preexec_fn' : preexec_fn,
+                'preexec_fn' : preexecution_function,
                 'close_fds' : close_fds,
                 'cwd' : cwd,
-                'startupinfo' : startupinfo,
-                'creationflags' : creationflags,
+                'startupinfo' : startup_info,
+                'creationflags' : creation_flags,
                 'restore_signals' : restore_signals,
                 'start_new_session' : start_new_session,
                 'pass_fds' : pass_fds,
@@ -3958,13 +3961,13 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             raise NotImplementedError
         
         async def subprocess_shell(self, cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, *,
-                extra=None, preexec_fn=None, close_fds=True, cwd=None, startupinfo=None, creationflags=0,
+                extra=None, preexecution_function=None, close_fds=True, cwd=None, startup_info=None, creation_flags=0,
                 restore_signals=True, start_new_session=False, pass_fds=()):
             raise NotImplementedError
         
         async def subprocess_exec(self, program, popen_args=(), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE, *, extra=None, preexec_fn=None, close_fds=True, cwd=None, startupinfo=None,
-                creationflags=0, restore_signals=True, start_new_session=False, pass_fds=()):
+                stderr=subprocess.PIPE, *, extra=None, preexecution_function=None, close_fds=True, cwd=None, startup_info=None,
+                creation_flags=0, restore_signals=True, start_new_session=False, pass_fds=()):
             raise NotImplementedError
     
     if DOCS_ENABLED:
@@ -3977,7 +3980,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         Parameters
         ----------
         protocol : `Any`
-            An asyncio protocol implementation to use as the transport's protocol.
+            An async-io protocol implementation to use as the transport's protocol.
         pipe : `file-like` object
             The pipe to connect to on read end.
             
@@ -4004,7 +4007,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         Parameters
         ----------
         protocol : `Any`
-            An asyncio protocol implementation to use as the transport's protocol.
+            An async-io protocol implementation to use as the transport's protocol.
         pipe : `file-like` object
             The pipe to connect to on write end.
             
@@ -4037,12 +4040,12 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         stdin : `file-like`, `subprocess.PIPE`, `subprocess.DEVNULL`, Optional
             Standard input for the created shell. Defaults to `subprocess.PIPE`.
         stdout : `file-like`, `subprocess.PIPE`, `subprocess.DEVNULL`, Optional
-            Standard ouput for the created shell. Defaults to `subprocess.PIPE`.
+            Standard output for the created shell. Defaults to `subprocess.PIPE`.
         stderr : `file-like`, `subprocess.PIPE`, `subprocess.DEVNULL`, `subprocess.STDOUT`, Optional
             Standard error for the created shell. Defaults to `subprocess.PIPE`.
         extra : `None` or `dict` of (`str`, `Any`) items, Optional
-            Optional transport informations.
-        preexec_fn : `None` or `callable`, Optional
+            Optional transport information.
+        preexecution_function : `None` or `callable`, Optional
             This object is called in the child process just before the child is executed. POSIX only, defaults to
             `None`.
         close_fds : `bool`, Optional
@@ -4053,10 +4056,10 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             described in Inheritance of File Descriptors.
         cwd : `str`, `bytes`, `path-like` or `None`, Optional
             If `cwd` is not `None`, the function changes the working directory to cwd before executing the child.
-            Defauls to `None`
-        startupinfo : `subprocess.STARTUPINFO` or `None`, Optioal
+            Defaults to `None`
+        startup_info : `subprocess.STARTUPINFO` or `None`, Optional
             Is passed to the underlying `CreateProcess` function.
-        creationflags : `int`, Optional
+        creation_flags : `int`, Optional
             Can be given as 1 of the following flags:
             
             - `CREATE_NEW_CONSOLE`
@@ -4112,12 +4115,12 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         stdin : `file-like`, `subprocess.PIPE`, `subprocess.DEVNULL`, Optional
             Standard input for the created shell. Defaults to `subprocess.PIPE`.
         stdout : `file-like`, `subprocess.PIPE`, `subprocess.DEVNULL`, Optional
-            Standard ouput for the created shell. Defaults to `subprocess.PIPE`.
+            Standard output for the created shell. Defaults to `subprocess.PIPE`.
         stderr : `file-like`, `subprocess.PIPE`, `subprocess.DEVNULL`, `subprocess.STDOUT`, Optional
             Standard error for the created shell. Defaults to `subprocess.PIPE`.
         extra : `None` or `dict` of (`str`, `Any`) items, Optional
-            Optional transport informations.
-        preexec_fn : `None` or `callable`, Optional
+            Optional transport information.
+        preexecution_function : `None` or `callable`, Optional
             This object is called in the child process just before the child is executed. POSIX only, defaults to
             `None`.
         close_fds : `bool`, Optional
@@ -4128,10 +4131,10 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             described in Inheritance of File Descriptors.
         cwd : `str`, `bytes`, `path-like` or `None`, Optional
             If `cwd` is not `None`, the function changes the working directory to cwd before executing the child.
-            Defauls to `None`
-        startupinfo : `subprocess.STARTUPINFO` or `None`, Optioal
+            Defaults to `None`
+        startup_info : `subprocess.STARTUPINFO` or `None`, Optional
             Is passed to the underlying `CreateProcess` function.
-        creationflags : `int`, Optional
+        creation_flags : `int`, Optional
             Can be given as 1 of the following flags:
             
             - `CREATE_NEW_CONSOLE`

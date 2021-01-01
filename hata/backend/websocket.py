@@ -12,8 +12,8 @@ from .utils import imultidict
 from .futures import Future, Task, AsyncQue, future_or_timeout, shield, CancelledError, WaitTillAll, is_coroutine, Lock
 
 from .url import URL
-from .hdrs import CONNECTION, SEC_WEBSOCKET_KEY, AUTHORIZATION, SEC_WEBSOCKET_VERSION, build_subprotocols, \
-    SEC_WEBSOCKET_EXTENSIONS, SEC_WEBSOCKET_PROTOCOL, HOST, ORIGIN, SEC_WEBSOCKET_ACCEPT, UPGRADE, DATE, METH_GET, \
+from .headers import CONNECTION, SEC_WEBSOCKET_KEY, AUTHORIZATION, SEC_WEBSOCKET_VERSION, build_subprotocols, \
+    SEC_WEBSOCKET_EXTENSIONS, SEC_WEBSOCKET_PROTOCOL, HOST, ORIGIN, SEC_WEBSOCKET_ACCEPT, UPGRADE, DATE, METHOD_GET, \
     CONTENT_TYPE, SERVER, CONTENT_LENGTH, build_extensions, parse_subprotocols, parse_upgrades, \
     parse_connections, parse_extensions
 from .exceptions import PayloadError, InvalidUpgrade, AbortHandshake, ConnectionClosed, InvalidHandshake, \
@@ -57,21 +57,21 @@ class WebSocketCommonProtocol(ProtocolBase):
         
         Also note, that not every transport supports pausing.
     exception : `None` or `BaseException`
-        Exception set by ``.set_exception``, when an unexpected exception occures meanwhile reading from socket.
+        Exception set by ``.set_exception``, when an unexpected exception occurs meanwhile reading from socket.
     loop : ``EventThread``
-        The eventloop to what the protocol is bound to.
+        The event loop to what the protocol is bound to.
     payload_reader : `None` or `generator`
-        Payloader reader generator, what gets the control back, when data, eof or any exception is received.
+        Payload reader generator, what gets the control back, when data, eof or any exception is received.
     payload_waiter : `None` of ``Future``
         Payload waiter of the protocol, what's result is set, when the ``.payload_reader`` generator returns.
         
         If cancelled or marked by done or any other methods, the payload reader will not be cancelled.
     transport : `None` or `Any`
-        Asynchornous tarnsport implementation. Is set meanwhile the protocol is alive.
+        Asynchronous transport implementation. Is set meanwhile the protocol is alive.
     _drain_waiter : `None` or ``Future``
         A future, what is used to block the writing task, till it's writen data is drained.
     _drain_lock : ``Lock``
-        Asynchornous lock to ensure, that only `1` frame is written in `1` time.
+        Asynchronous lock to ensure, that only `1` frame is written in `1` time.
     close_code : `int`
         The websocket's close code if applicable. Defaults to `0`.
     close_connection_task : `None` or ``Task`` of ``.close_connection``
@@ -121,7 +121,7 @@ class WebSocketCommonProtocol(ProtocolBase):
         
         Note, that state is compared by memory address and not by value.
     subprotocol : `None`, `str`
-        Choosed subprotocol at handshake. Defaults to `None` and might be set as `str`. Choosed from the availablee
+        Chosen subprotocol at handshake. Defaults to `None` and might be set as `str`. Chosen from the available
         subprotocols by their priority order.
     transfer_data_exc : `None` or `BaseException``
         Exception catched meanwhile processing received data.
@@ -182,7 +182,7 @@ class WebSocketCommonProtocol(ProtocolBase):
         self.close_reason = None
         
         self.connection_lost_waiter = Future(loop)
-        self.messages = AsyncQue(loop=loop, maxlen=max_queue)
+        self.messages = AsyncQue(loop=loop, max_length=max_queue)
         
         self.pings = OrderedDict()
         
@@ -194,7 +194,7 @@ class WebSocketCommonProtocol(ProtocolBase):
         """
         Method called when the connection is established at the end of the handshake.
         
-        Marks the webcoket as open and start it's ``.transfer_data_task`` and ``.close_connection_task``.
+        Marks the websocket as open and start it's ``.transfer_data_task`` and ``.close_connection_task``.
         """
         self.state = OPEN
         loop = self.loop
@@ -230,7 +230,7 @@ class WebSocketCommonProtocol(ProtocolBase):
         """
         Returns whether the websocket is open.
         
-        If the webcoket is closed, ``ConnectionClosed`` is raised when using it.
+        If the websocket is closed, ``ConnectionClosed`` is raised when using it.
         
         Returns
         -------
@@ -261,19 +261,19 @@ class WebSocketCommonProtocol(ProtocolBase):
         """
         return self.state is CLOSED
     
-    def recv(self):
+    def receive(self):
         """
         Returns a future, what can be awaited to receive the next message of the websocket.
         
         Returns
         -------
         future : ``Future``
-            The future returns `bytes` or `str` instance respectivel to the received payload's type. If the websocket
+            The future returns `bytes` or `str` instance respective to the received payload's type. If the websocket
             is closed, ``ConnectionClosed`` is raised.
         """
         return self.messages.result()
     
-    def recv_no_wait(self):
+    def receive_no_wait(self):
         """
         Returns a future, what can be awaited to receive the next message of the websocket.
         
@@ -309,30 +309,31 @@ class WebSocketCommonProtocol(ProtocolBase):
         ConnectionClosed
             Websocket connection closed.
         Exception
-            Websocket nonnection not yet established.
+            Websocket connection not yet established.
         """
         await self.ensure_open()
         
         if isinstance(data, (bytes, bytearray, memoryview)):
-            opcode = WS_OP_BINARY
+            op_code = WS_OP_BINARY
         elif isinstance(data, str):
-            opcode = WS_OP_TEXT
+            op_code = WS_OP_TEXT
             data = data.encode('utf-8')
         else:
             raise TypeError(f'Data must be `bytes-like` or `str`, got: {data.__class__.__name__}.')
 
-        await self.write_frame(opcode, data)
+        await self.write_frame(op_code, data)
 
     async def close(self, code=1000, reason=''):
         """
         Closes the websocket.
         
-        Writes close frame first and then if we dont receive close frame response in ``.close_timeout``, then we
+        Writes close frame first and then if we don't receive close frame response in ``.close_timeout``, then we
         cancel the connection.
         
         This method is a coroutine.
         
-        Parameteres
+        Parameters
+        ----------
         code : `int`, Optional.
             Websocket close code. Defaults to `1000`. Can be one of:
             `(1000, 1001, 1002, 1003, 1007, 1008, 1009, 1010, 1011) | [3000:5000)`.
@@ -368,7 +369,7 @@ class WebSocketCommonProtocol(ProtocolBase):
     @staticmethod
     def _serialize_close(code, reason):
         """
-        Packs the given `code` and `reason` toghether into a close message.
+        Packs the given `code` and `reason` together into a close message.
         
         Parameters
         ----------
@@ -412,7 +413,7 @@ class WebSocketCommonProtocol(ProtocolBase):
         ConnectionClosed
             Websocket connection closed.
         Exception
-            Websocket nonnection not yet established.
+            Websocket connection not yet established.
         """
         await self.ensure_open()
         
@@ -454,7 +455,7 @@ class WebSocketCommonProtocol(ProtocolBase):
         ConnectionClosed
             Websocket connection closed.
         Exception
-            Websocket nonnection not yet established.
+            Websocket connection not yet established.
         """
         await self.ensure_open()
         
@@ -482,7 +483,7 @@ class WebSocketCommonProtocol(ProtocolBase):
         ConnectionClosed
             Websocket connection closed.
         Exception
-            Websocket nonnection not yet established.
+            Websocket connection not yet established.
         """
         state = self.state
         if state is OPEN:
@@ -521,7 +522,7 @@ class WebSocketCommonProtocol(ProtocolBase):
                 
                 self.messages.set_result(message)
         except CancelledError as err:
-            # we alrady failed connection
+            # we already failed connection
             exception = ConnectionClosed(self.close_code or 1000, err, self.close_reason)
         
         except WebSocketProtocolError as err:
@@ -542,7 +543,7 @@ class WebSocketCommonProtocol(ProtocolBase):
         
         except BaseException as err:
             await self.loop.render_exc_async(err, [
-                'Unexpected exception occured at ',
+                'Unexpected exception occurred at ',
                 repr(self),
                 '.transfer_data\n',
                     ])
@@ -582,7 +583,7 @@ class WebSocketCommonProtocol(ProtocolBase):
             - If the reserved bits are not `0`.
             - If the frame is a control frame, but is too long for one.
             - If the websocket frame is fragmented frame. (Might be supported if people request is.)
-            - If the frame opcode is not any of the expected ones.
+            - If the frame op_code is not any of the expected ones.
             - Close frame received with invalid status code.
             - Close frame too short.
         CancelledError
@@ -592,12 +593,12 @@ class WebSocketCommonProtocol(ProtocolBase):
         if frame is None: # close frame
             return
         
-        if frame.opcode == WS_OP_TEXT:
+        if frame.op_code == WS_OP_TEXT:
             text = True
-        elif frame.opcode == WS_OP_BINARY:
+        elif frame.op_code == WS_OP_BINARY:
             text = False
-        else: # frame.opcode == OP_CONT:
-            raise WebSocketProtocolError(f'Unexpected opcode, got {frame.opcode!r}, expected {WS_OP_TEXT!r} or '
+        else: # frame.op_code == OP_CONT:
+            raise WebSocketProtocolError(f'Unexpected op_code, got {frame.op_code!r}, expected {WS_OP_TEXT!r} or '
                 f'{WS_OP_BINARY!r}.')
         
         # we got a whole frame, nice
@@ -623,8 +624,8 @@ class WebSocketCommonProtocol(ProtocolBase):
             frame = await self.read_data_frame(max_size=max_size)
             if frame is None:
                 raise WebSocketProtocolError('Incomplete fragmented message.')
-            if frame.opcode != WS_OP_CONT:
-                raise WebSocketProtocolError(f'Unexpected opcode, got {frame.opcode!r}, expected {WS_OP_CONT!r}.')
+            if frame.op_code != WS_OP_CONT:
+                raise WebSocketProtocolError(f'Unexpected op_code, got {frame.op_code!r}, expected {WS_OP_CONT!r}.')
         
         return ('' if text else b'').join(chunks)
     
@@ -635,7 +636,9 @@ class WebSocketCommonProtocol(ProtocolBase):
         
         This method is a coroutine.
         
-        Parame
+        Parameters
+        ----------
+        
         Returns
         -------
         frame : ``Frame`` or `None`
@@ -647,7 +650,7 @@ class WebSocketCommonProtocol(ProtocolBase):
             - If the reserved bits are not `0`.
             - If the frame is a control frame, but is too long for one.
             - If the websocket frame is fragmented frame. (Might be supported if people request is.)
-            - If the frame opcode is not any of the expected ones.
+            - If the frame op_code is not any of the expected ones.
             - Close frame received with invalid status code.
             - Close frame too short.
         CancelledError
@@ -665,7 +668,7 @@ class WebSocketCommonProtocol(ProtocolBase):
             frame.check()
             
             # most likely
-            if frame.opcode in WS_DATA_OPCODES:
+            if frame.op_code in WS_DATA_OPCODES:
                 return frame
 
             if (await self._process_CTRL_frame(frame)):
@@ -695,8 +698,8 @@ class WebSocketCommonProtocol(ProtocolBase):
             - Close frame received with invalid status code.
             - Close frame too short.
         """
-        opcode = frame.opcode
-        if opcode == WS_OP_CLOSE:
+        op_code = frame.op_code
+        if op_code == WS_OP_CLOSE:
             data = frame.data
             length = len(data)
             if length >= 2:
@@ -714,11 +717,11 @@ class WebSocketCommonProtocol(ProtocolBase):
             await self.write_close_frame(frame.data)
             return False
         
-        if opcode == WS_OP_PING:
+        if op_code == WS_OP_PING:
             await self.pong(frame.data)
             return True
         
-        # opcode == OP_PONG:
+        # op_code == OP_PONG:
         if frame.data in self.pings:
             #checking all pings up to the one matching this pong.
             ping_id = b''
@@ -728,7 +731,7 @@ class WebSocketCommonProtocol(ProtocolBase):
         
         return True
     
-    async def write_frame(self, opcode, data, _expected_state=OPEN):
+    async def write_frame(self, op_code, data, _expected_state=OPEN):
         """
         Writes the data as websocket.
         
@@ -736,7 +739,7 @@ class WebSocketCommonProtocol(ProtocolBase):
         
         Parameters
         ----------
-        opcode : `int`
+        op_code : `int`
             The operation code of the websocket frame.
             
             Can be 1 of the following:
@@ -761,7 +764,7 @@ class WebSocketCommonProtocol(ProtocolBase):
             The data to send.
         
         _expected_state : `str`
-            Expected state of the websocket. If the webscoekt is in other state, an `Expeciton` instannce it raised.
+            Expected state of the websocket. If the websocket is in other state, an `Exception` instance it raised.
             Defaults to `'OPEN'`.
             
             Can be set as one of the following values:
@@ -802,7 +805,7 @@ class WebSocketCommonProtocol(ProtocolBase):
         # we write only 1 frame at a time, so we 'queue' it
         async with self._drain_lock:
             try:
-                frame = Frame(True, opcode, data)
+                frame = Frame(True, op_code, data)
                 
                 extensions = self.extensions
                 if (extensions is not None):
@@ -921,14 +924,14 @@ class WebSocketCommonProtocol(ProtocolBase):
     
     def fail_connection(self, code=1006, reason=''):
         """
-        Closes the websocket if any unexpected exception occured.
+        Closes the websocket if any unexpected exception occurred.
         
         Parameters
         ----------
         code : `int`, Optional
-            Webscoekt close code. Defualts to `1006`.
+            Websocket close code. Defaults to `1006`.
         reason : `str`, Optional
-            Webscoket close reason. Defaults to empty string.
+            Websocket close reason. Defaults to empty string.
         
         Returns
         -------
@@ -976,7 +979,7 @@ class WebSocketCommonProtocol(ProtocolBase):
         
         return close_connection_task
     
-    # compability method (overwrite)
+    # compatibility method (overwrite)
     def connection_lost(self, exception):
         """
         Called when the connection is lost or closed.
@@ -998,10 +1001,10 @@ class WebSocketCommonProtocol(ProtocolBase):
         
         ProtocolBase.connection_lost(self, exception)
     
-    # compability method (overwrite)
+    # compatibility method (overwrite)
     def eof_received(self):
         """
-        Calling``.connection_lost`` without expection causes eof.
+        Calling``.connection_lost`` without exception causes eof.
         
         Marks the protocols as it is at eof and stops payload processing if applicable.
         
@@ -1035,21 +1038,21 @@ class WSClient(WebSocketCommonProtocol):
         
         Also note, that not every transport supports pausing.
     exception : `None` or `BaseException`
-        Exception set by ``.set_exception``, when an unexpected exception occures meanwhile reading from socket.
+        Exception set by ``.set_exception``, when an unexpected exception occurs meanwhile reading from socket.
     loop : ``EventThread``
-        The eventloop to what the protocol is bound to.
+        The event loop to what the protocol is bound to.
     payload_reader : `None` or `generator`
-        Payloader reader generator, what gets the control back, when data, eof or any exception is received.
+        Payload reader generator, what gets the control back, when data, eof or any exception is received.
     payload_waiter : `None` of ``Future``
         Payload waiter of the protocol, what's result is set, when the ``.payload_reader`` generator returns.
         
         If cancelled or marked by done or any other methods, the payload reader will not be cancelled.
     transport : `None` or `Any`
-        Asynchornous tarnsport implementation. Is set meanwhile the protocol is alive.
+        Asynchronous transport implementation. Is set meanwhile the protocol is alive.
     _drain_waiter : `None` or ``Future``
         A future, what is used to block the writing task, till it's writen data is drained.
     _drain_lock : ``Lock``
-        Asynchornous lock to ensure, that only `1` frame is written in `1` time.
+        Asynchronous lock to ensure, that only `1` frame is written in `1` time.
     close_code : `int`
         The websocket's close code if applicable. Defaults to `0`.
     close_connection_task : `None` or ``Task`` of ``.close_connection``
@@ -1099,7 +1102,7 @@ class WSClient(WebSocketCommonProtocol):
         
         Note, that state is compared by memory address and not by value.
     subprotocol : `None`, `str`
-        Choosed subprotocol at handshake. Defaults to `None` and might be set as `str`. Choosed from the availablee
+        Chosen subprotocol at handshake. Defaults to `None` and might be set as `str`. Chosen from the available
         subprotocols by their priority order.
     transfer_data_exc : `None` or `BaseException``
         Exception catched meanwhile processing received data.
@@ -1136,7 +1139,7 @@ class WSClient(WebSocketCommonProtocol):
             - `name`, type `str`. The extension's name.
             - `request_params` : `list` of `tuple` (`str`, `str`). Additional header parameters of the extension.
             - `decode` : `callable`. Decoder method, what processes a received websocket frame. Should accept `2`
-                parameters: The respective websocket ``Frame``, and the ˙max_size` as `int`, what descibes the
+                parameters: The respective websocket ``Frame``, and the ˙max_size` as `int`, what describes the
                 maximal size of a received frame. If it is passed, ``PayloadError`` is raised.
             - `encode` : `callable`. Encoder method, what processes the websocket frames to send. Should accept `1`
                 parameter, the respective websocket ``Frame``.
@@ -1186,7 +1189,7 @@ class WSClient(WebSocketCommonProtocol):
             - The response's upgrade header is not `'WebSocket'`.
             - The response's headers contain sec websocket accept 0 or more than 1 times.
             - The response's secret key not matches the send one.
-            - No extensions are suported, but still received.
+            - No extensions are supported, but still received.
             - Unsupported extension received.
             - No subprotocols are supported, but still received.
             - Multiple subprotocols received.
@@ -1229,7 +1232,7 @@ class WSClient(WebSocketCommonProtocol):
             request_headers[SEC_WEBSOCKET_PROTOCOL] = build_subprotocols(available_subprotocols)
         
         if extra_request_headers is not None:
-            # we use expecially items, so we check that
+            # we use especially items, so we check that
             if isinstance(extra_request_headers, imultidict) or hasattr(type(extra_request_headers), 'items'):
                 for name, value in extra_request_headers.items():
                     request_headers[name] = value
@@ -1237,7 +1240,7 @@ class WSClient(WebSocketCommonProtocol):
                 raise TypeError('`extra_response_headers` should be `dict-like` with `.items` method, got '
                     f'{extra_request_headers.__class__.__name__} instance.')
         
-        async with http_client.request(METH_GET, url, request_headers) as response:
+        async with http_client.request(METHOD_GET, url, request_headers) as response:
            
             if response.raw_message.version != HttpVersion11:
                 raise ValueError(f'Unsupported HTTP version: {response.raw_message.version}.')
@@ -1247,7 +1250,7 @@ class WSClient(WebSocketCommonProtocol):
             
             response_headers = response.headers
             connections = []
-            received_connections = response_headers.getall(CONNECTION,)
+            received_connections = response_headers.get_all(CONNECTION,)
             if (received_connections is not None):
                 for received_connection in received_connections:
                     connections.extend(parse_connections(received_connection))
@@ -1256,7 +1259,7 @@ class WSClient(WebSocketCommonProtocol):
                 raise InvalidHandshake(f'Invalid connection, no upgrade found, got {connections!r}.')
             
             upgrade = []
-            received_upgrades = response_headers.getall(UPGRADE)
+            received_upgrades = response_headers.get_all(UPGRADE)
             if (received_upgrades is not None):
                 for received_upgrade in received_upgrades:
                     upgrade.extend(parse_upgrades(received_upgrade))
@@ -1265,7 +1268,7 @@ class WSClient(WebSocketCommonProtocol):
                 raise InvalidHandshake(f'Expected \'WebSocket\' for \'Upgrade\', but got {upgrade!r}.')
             
             expected_key = b64encode(hashlib.sha1((sec_key+WS_KEY).encode()).digest()).decode()
-            received_keys = response_headers.getall(SEC_WEBSOCKET_ACCEPT)
+            received_keys = response_headers.get_all(SEC_WEBSOCKET_ACCEPT)
             if received_keys is None:
                 raise InvalidHandshake(f'Expected 1 secret key {expected_key!r}, but received 0.')
             if len(received_keys) > 1:
@@ -1277,7 +1280,7 @@ class WSClient(WebSocketCommonProtocol):
             
             #extensions
             accepted_extensions = []
-            received_extensions = response_headers.getall(SEC_WEBSOCKET_EXTENSIONS)
+            received_extensions = response_headers.get_all(SEC_WEBSOCKET_EXTENSIONS)
             if (received_extensions is not None):
                 if available_extensions is None:
                     raise InvalidHandshake(f'No extensions supported, but received {received_extensions!r}.')
@@ -1297,7 +1300,7 @@ class WSClient(WebSocketCommonProtocol):
                         raise InvalidHandshake(f'Unsupported extension: name={name!r}, params={params!r}.')
             
             subprotocol = None
-            received_subprotocols = response_headers.getall(SEC_WEBSOCKET_PROTOCOL)
+            received_subprotocols = response_headers.get_all(SEC_WEBSOCKET_PROTOCOL)
             if (received_subprotocols is not None):
                 if available_subprotocols is None:
                     raise InvalidHandshake(f'No subprotocols supported, but received {received_subprotocols!r}.')
@@ -1330,7 +1333,7 @@ class WSClient(WebSocketCommonProtocol):
 
 class WSServerProtocol(WebSocketCommonProtocol):
     """
-    Asynchornous server side websocket protocol implementation.
+    Asynchronous server side websocket protocol implementation.
     
     Attributes
     ----------
@@ -1345,21 +1348,21 @@ class WSServerProtocol(WebSocketCommonProtocol):
         
         Also note, that not every transport supports pausing.
     exception : `None` or `BaseException`
-        Exception set by ``.set_exception``, when an unexpected exception occures meanwhile reading from socket.
+        Exception set by ``.set_exception``, when an unexpected exception occurs meanwhile reading from socket.
     loop : ``EventThread``
-        The eventloop to what the protocol is bound to.
+        The event loop to what the protocol is bound to.
     payload_reader : `None` or `generator`
-        Payloader reader generator, what gets the control back, when data, eof or any exception is received.
+        Payload reader generator, what gets the control back, when data, eof or any exception is received.
     payload_waiter : `None` of ``Future``
         Payload waiter of the protocol, what's result is set, when the ``.payload_reader`` generator returns.
         
         If cancelled or marked by done or any other methods, the payload reader will not be cancelled.
     transport : `None` or `Any`
-        Asynchornous tarnsport implementation. Is set meanwhile the protocol is alive.
+        Asynchronous transport implementation. Is set meanwhile the protocol is alive.
     _drain_waiter : `None` or ``Future``
         A future, what is used to block the writing task, till it's writen data is drained.
     _drain_lock : ``Lock``
-        Asynchornous lock to ensure, that only `1` frame is written in `1` time.
+        Asynchronous lock to ensure, that only `1` frame is written in `1` time.
     close_code : `int`
         The websocket's close code if applicable. Defaults to `0`.
     close_connection_task : `None` or ``Task`` of ``.close_connection``
@@ -1409,7 +1412,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
         
         Note, that state is compared by memory address and not by value.
     subprotocol : `None`, `str`
-        Choosed subprotocol at handshake. Defaults to `None` and might be set as `str`. Choosed from the availablee
+        Chosen subprotocol at handshake. Defaults to `None` and might be set as `str`. Chosen from the available
         subprotocols by their priority order.
     transfer_data_exc : `None` or `BaseException``
         Exception catched meanwhile processing received data.
@@ -1422,7 +1425,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
         - `name`, type `str`. The extension's name.
         - `request_params` : `list` of `tuple` (`str`, `str`). Additional header parameters of the extension.
         - `decode` : `callable`. Decoder method, what processes a received websocket frame. Should accept `2`
-            parameters: The respective websocket ``Frame``, and the ˙max_size` as `int`, what descibes the
+            parameters: The respective websocket ``Frame``, and the ˙max_size` as `int`, what describes the
             maximal size of a received frame. If it is passed, ``PayloadError`` is raised.
         - `encode` : `callable`. Encoder method, what processes the websocket frames to send. Should accept `1`
             parameter, the respective websocket ``Frame``.
@@ -1431,18 +1434,18 @@ class WSServerProtocol(WebSocketCommonProtocol):
     extra_response_headers : ``imultidict`` or `dict-like` with (`str`, `str`) items, Optional
         Extra response headers.
     handler : `async-callable`
-        An asynchornous callable, what will handle a websocket connection.
+        An asynchronous callable, what will handle a websocket connection.
         
-        Should be given as an `async-callable` accepting `1` parameter the respective asynchornous server side
+        Should be given as an `async-callable` accepting `1` parameter the respective asynchronous server side
         websocket protocol implementations.
     handler_task : `None` or ``Task`` of ``.lifetime_handler``
     
     origin : `None` or `str`, Optional
         Value of the Origin header.
     request_processor : `None` or `callable`, Optional
-        An optionally asynchornous callable, what processes the initial requests from the potential clients.
+        An optionally asynchronous callable, what processes the initial requests from the potential clients.
         
-        Should accept the follinwg parameters:
+        Should accept the following parameters:
         - `path` : `str`. The requested path.
         - `request_headers` : ``imultidict`` of (`str`, `str`). The request's headers.
         
@@ -1473,7 +1476,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
         Parameters
         ----------
         server : ``WSServer``
-            The parent webscoekt server.
+            The parent websocket server.
         """
         handler, host, port, is_ssl, origin, available_extensions, available_subprotocols , extra_response_headers, \
         request_processor, subprotocol_selector, websocket_kwargs = server.protocol_arguments
@@ -1494,7 +1497,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
         self.response_headers = None
         self.origin = None
         
-    def connection_made(self, transpot):
+    def connection_made(self, transport):
         """
         Called when a connection is made.
         
@@ -1504,13 +1507,13 @@ class WSServerProtocol(WebSocketCommonProtocol):
             Asynchronous transport implementation, what calls the protocol's ``.data_received`` when data is
             received.
         """
-        WebSocketCommonProtocol.connection_made(self, transpot)
+        WebSocketCommonProtocol.connection_made(self, transport)
         self.server.register(self)
         self.handler_task = Task(self.lifetime_handler(), self.loop)
         
     async def lifetime_handler(self):
         """
-        The asynchronous webscoket protocol's main "lifetime" task.
+        The asynchronous websocket protocol's main "lifetime" task.
         
         This method is a coroutine.
         """
@@ -1523,9 +1526,9 @@ class WSServerProtocol(WebSocketCommonProtocol):
                 await self.handler(self)
             except BaseException as err:
                 await self.loop.render_exc_async(err, before = [
-                    'Unhandled exception occured at',
+                    'Unhandled exception occurred at',
                     self.__class__.__name__,
-                    '.lifetime_handler meanhile running: ',
+                    '.lifetime_handler meanwhile running: ',
                     repr(self.handler),
                     '\n',
                         ])
@@ -1580,7 +1583,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
                 raise AbortHandshake(SERVICE_UNAVAILABLE, 'Server is shutting down.')
             
             connections = []
-            connection_headers = request_headers.getall(CONNECTION)
+            connection_headers = request_headers.get_all(CONNECTION)
             if (connection_headers is not None):
                 for connection_header in connection_headers:
                     connections.extend(parse_connections(connection_header))
@@ -1589,15 +1592,15 @@ class WSServerProtocol(WebSocketCommonProtocol):
                 raise InvalidUpgrade(f'Invalid connection, no upgrade found, got {connections!r}.')
             
             upgrade = []
-            upgrade_headers = request_headers.getall(UPGRADE)
+            upgrade_headers = request_headers.get_all(UPGRADE)
             if (upgrade_headers is not None):
                 for upgrade_header in upgrade_headers:
                     upgrade.extend(parse_upgrades(upgrade_header))
             
-            if len(upgrade) != 1 and upgrade[0].lower() != 'websocket': #ignore case
+            if len(upgrade) != 1 and upgrade[0].lower() != 'websocket': # ignore case
                 raise InvalidUpgrade(f'Expected \'WebSocket\' for \'Upgrade\', but got {upgrade!r}.')
             
-            received_keys = request_headers.getall(SEC_WEBSOCKET_KEY)
+            received_keys = request_headers.get_all(SEC_WEBSOCKET_KEY)
             if received_keys is None:
                 raise InvalidHandshake(f'Missing {SEC_WEBSOCKET_KEY!r} from headers')
             
@@ -1614,7 +1617,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
             if len(raw_key) != 16:
                 raise InvalidHandshake(f'Invalid {SEC_WEBSOCKET_KEY!r}, should be length 16; {key!r}.')
             
-            sw_version = request_headers.getall(SEC_WEBSOCKET_VERSION)
+            sw_version = request_headers.get_all(SEC_WEBSOCKET_VERSION)
             if sw_version is None:
                 raise InvalidHandshake(f'Missing {SEC_WEBSOCKET_VERSION!r} values at headers.')
             
@@ -1631,7 +1634,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
                     origin = None
                     break
                 
-                origin_headers = request_headers.getall(ORIGIN)
+                origin_headers = request_headers.get_all(ORIGIN)
                 
                 if (origin_headers is None):
                     raise InvalidOrigin('No origin at header.')
@@ -1656,7 +1659,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
                     extension_header = None
                     break
                 
-                extension_headers_ = request_headers.getall(SEC_WEBSOCKET_EXTENSIONS)
+                extension_headers_ = request_headers.get_all(SEC_WEBSOCKET_EXTENSIONS)
                 if (extension_headers_ is None):
                     extension_header = None
                     break
@@ -1697,7 +1700,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
                     selected_subprotocol = None
                     break
                     
-                protocol_headers = request_headers.getall(SEC_WEBSOCKET_PROTOCOL)
+                protocol_headers = request_headers.get_all(SEC_WEBSOCKET_PROTOCOL)
                 if (protocol_headers is None):
                     selected_subprotocol = None
                     break
@@ -1752,7 +1755,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
             self.connection_open()
         except (CancelledError, ConnectionError) as err:
             await self.loop.render_exc_async(err, before = [
-                'Unhandled exception occured at ',
+                'Unhandled exception occurred at ',
                 self.__class__.__name__,
                 '.handshake, when handshaking:\n'])
             return False
@@ -1798,7 +1801,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
                 await self.wait_for_connection_lost()
             except BaseException as err2:
                 await self.loop.render_exc_async(err2, before=[
-                    'Unhandled exception occured at ',
+                    'Unhandled exception occurred at ',
                     self.__class__.__name__,
                     '.handshake, when handling an other exception;',
                     repr(err), ':'])
@@ -1816,24 +1819,24 @@ class WSServer(object):
     loop : ``EventThread``
         The event loop to what the websocket server is bound to.
     websockets : `set` of (``WSServerProtocol`` or `Any`)
-        Active server side asynchornous websocket protocol implementations.
+        Active server side asynchronous websocket protocol implementations.
     close_connection_task : `None` or ``Task`` of ``_close``
-        Close connection task, what's result is set, when closing of the webscoekt is done.
+        Close connection task, what's result is set, when closing of the websocket is done.
         
         Should not be cancelled.
         
         Set, when ``.close`` is called.
     handler : `async-callable`
-        An asynchornous callable, what will handle a websocket connection.
+        An asynchronous callable, what will handle a websocket connection.
         
-        Should be given as an `async-callable` accepting `1` parameter the respective asynchornous server side websocket
+        Should be given as an `async-callable` accepting `1` parameter the respective asynchronous server side websocket
         protocol implementations.
     server : `None` or ``Server``
-        Asynchornous server instance. Set meanwhile the wesbcoekt server is running.
+        Asynchronous server instance. Set meanwhile the websocket server is running.
     protocol_arguments : `tuple` of `Any`
         Websocket protocol arguments.
         
-        Conatins the following elements:
+        Contains the following elements:
             - `handler` : `async-callable` Same as ``.handler``.
             - `host` : `None` or `str`, `iterable` of (`None` or `str`). To what network interfaces the server be bound.
             - `port` :  `None` or `int`. The port used by the `host`(s).
@@ -1845,16 +1848,16 @@ class WSServer(object):
                 - `name`, type `str`. The extension's name.
                 - `request_params` : `list` of `tuple` (`str`, `str`). Additional header parameters of the extension.
                 - `decode` : `callable`. Decoder method, what processes a received websocket frame. Should accept `2`
-                    parameters: The respective websocket ``Frame``, and the ˙max_size` as `int`, what descibes the
+                    parameters: The respective websocket ``Frame``, and the ˙max_size` as `int`, what describes the
                     maximal size of a received frame. If it is passed, ``PayloadError`` is raised.
                 - `encode` : `callable`. Encoder method, what processes the websocket frames to send. Should accept `1`
                     parameter, the respective websocket ``Frame``.
             - `available_subprotocols` : `None` or (`list` of `str`). A list of supported subprotocols in order of
                 decreasing preference.
             - `extra_response_headers` : `None` or (``imultidict``, `dict-like`) of (`str`, `str`) items. Extra
-                hedaders to send with the http response.
-            - `request_processor` : `None` or `callable`. An optionally asynchornous callable, what processes the
-                initial requests from the potential clients. Should accept the follinwg parameters:
+                headers to send with the http response.
+            - `request_processor` : `None` or `callable`. An optionally asynchronous callable, what processes the
+                initial requests from the potential clients. Should accept the following parameters:
                 - `path` : `str`. The requested path.
                 - `request_headers` : ``imultidict`` of (`str`, `str`). The request's headers.
                 
@@ -1880,7 +1883,7 @@ class WSServer(object):
             extra_response_headers=None, origin=None, available_subprotocols=None, request_processor=None,
             subprotocol_selector=None, websocket_kwargs=None, ssl=None, **server_kwargs):
         """
-        Creates a new ``WSServer`` instance wit hthe given prameters.
+        Creates a new ``WSServer`` instance with the given parameters.
         
         This method is a coroutine.
         
@@ -1893,12 +1896,12 @@ class WSServer(object):
         port : `None` or `int`, Optional
             The port to use by the `host`(s).
         handler : `async-callable`
-            An asynchornous callable, what will handle a websocket connection.
+            An asynchronous callable, what will handle a websocket connection.
             
-            Should be given as an `async-callable` accepting `1` parameter the respective asynchornous server side
+            Should be given as an `async-callable` accepting `1` parameter the respective asynchronous server side
             websocket protocol implementations.
         protocol : `Any`, Optional
-            Asynchornous server side websocket protocol implementation. Defaults to ``WSServerProtocol``.
+            Asynchronous server side websocket protocol implementation. Defaults to ``WSServerProtocol``.
         available_extensions : `None` or (`list` of `Any`), Optional
             Available websocket extensions.
             
@@ -1906,20 +1909,20 @@ class WSServer(object):
             - `name`, type `str`. The extension's name.
             - `request_params` : `list` of `tuple` (`str`, `str`). Additional header parameters of the extension.
             - `decode` : `callable`. Decoder method, what processes a received websocket frame. Should accept `2`
-                parameters: The respective websocket ``Frame``, and the ˙max_size` as `int`, what descibes the
+                parameters: The respective websocket ``Frame``, and the ˙max_size` as `int`, what decides the
                 maximal size of a received frame. If it is passed, ``PayloadError`` is raised.
             - `encode` : `callable`. Encoder method, what processes the websocket frames to send. Should accept `1`
                 parameter, the respective websocket ``Frame``.
         extra_response_headers : `None` or (``imultidict``, `dict-like`) of (`str`, `str`) items, Optional
-            Extra hedaders to send with the http response.
+            Extra headers to send with the http response.
         origin : `None` or `str`, Optional
             Value of the Origin header.
         available_subprotocols : `None` or (`list` of `str`), Optional
             A list of supported subprotocols in order of decreasing preference.
         request_processor : `None` or `callable`, Optional
-            An optionally asynchornous callable, what processes the initial requests from the potential clients.
+            An optionally asynchronous callable, what processes the initial requests from the potential clients.
             
-            Should accept the follinwg parameters:
+            Should accept the following parameters:
             - `path` : `str`. The requested path.
             - `request_headers` : ``imultidict`` of (`str`, `str`). The request's headers.
             
@@ -1975,10 +1978,10 @@ class WSServer(object):
             - If `reuse_port` is given as non `bool`.
             - If `host` is not given as `None`, `str` and neither as `iterable` of `str` or `None`.
         ValueError
-            - If `host` or `port` parameter is given, when `sock` is defined as well.
+            - If `host` or `port` parameter is given, when `socket` is defined as well.
             - If `reuse_port` is given as `True`, but not supported.
-            - If neither `host`, `port nor `sock` were given.
-            - If `sock` is given, but it's type is not `module_socket.SOCK_STREAM`.
+            - If neither `host`, `port nor `socket` were given.
+            - If `socket` is given, but it's type is not `module_socket.SOCK_STREAM`.
         OsError
             Error while attempting to binding to address.
         """
@@ -2002,7 +2005,7 @@ class WSServer(object):
             
             extra_response_headers = extra_response_headers_local
         else:
-            raise TypeError(f'`extra_response_headers` should be `None` or a dictlike with \'.items\' method, got '
+            raise TypeError(f'`extra_response_headers` should be `None` or a dict-like with \'.items\' method, got '
                 f'{extra_response_headers.__class__.__name__} instance.')
         
         if (extra_response_headers is not None) and (not extra_response_headers):
@@ -2071,7 +2074,7 @@ class WSServer(object):
         Returns
         -------
         close_connection_task : ``Task`` of ``_close``
-            Close connection task, what's result is set, when closing of the webscoekt is done.
+            Close connection task, what's result is set, when closing of the websocket is done.
             
             Should not be cancelled.
         """

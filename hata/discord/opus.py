@@ -11,12 +11,12 @@ opus = None
 
 class OpusError(Exception):
     """
-    Exception raised by libopus related methods.
+    Exception raised by lib-opus related methods.
     
     Attributes
     ----------
     code : `int`
-        Returned error code by libopus.
+        Returned error code by lib-opus.
     """
     def __new__(cls, code):
         """
@@ -37,7 +37,7 @@ class OpusError(Exception):
         Parameters
         ----------
         code : `int`
-            Returned error code by libopus.
+            Returned error code by lib-opus.
         """
         self.code = code
         msg = opus.opus_strerror(code).decode('utf-8')
@@ -54,12 +54,12 @@ ERROR_CODE_ALLOC_FAIL = -7
 
 APPLICATION_AUDIO = 2049
 APPLICATION_VOIP = 2048
-APPLICATION_LOWDELAY = 2051
+APPLICATION_LOW_DELAY = 2051
 
 SET_BITRATE = 4002
 SET_BANDWIDTH = 4008
 SET_INBAND_FEC = 4012
-SET_PACKET_LOSS_PERC = 4014
+SET_PACKET_LOSS_PERCENTAGE = 4014
 SET_SIGNAL = 4024
 SET_GAIN = 4034
 GET_LAST_PACKET_DURATION = 4039
@@ -67,7 +67,7 @@ GET_LAST_PACKET_DURATION = 4039
 BANDWIDTH_NARROW = 1101
 BANDWIDTH_MEDIUM = 1102
 BANDWIDTH_WIDE = 1103
-BANDWIDTH_SUPERWIDE = 1104
+BANDWIDTH_SUPER_WIDE = 1104
 BANDWIDTH_FULL = 1105
 
 SIGNAL_TYPE_AUTO = -1000
@@ -219,7 +219,7 @@ class OpusEncoder(object):
         
         opus.opus_encoder_control(encoder, SET_BITRATE, 131072)
         opus.opus_encoder_control(encoder, SET_INBAND_FEC, 1)
-        opus.opus_encoder_control(encoder, SET_PACKET_LOSS_PERC, 15)
+        opus.opus_encoder_control(encoder, SET_PACKET_LOSS_PERCENTAGE, 15)
         opus.opus_encoder_control(encoder, SET_BANDWIDTH, BANDWIDTH_FULL)
         opus.opus_encoder_control(encoder, SET_SIGNAL, SIGNAL_TYPE_MUSIC)
         
@@ -232,7 +232,7 @@ class OpusEncoder(object):
     
     def set_bitrate(self, kbps):
         """
-        Sets the birate of the encoder in kilo bit per second. Can be between `16` and `512`.
+        Sets the bitrate of the encoder in kilo bit per second. Can be between `16` and `512`.
         
         Parameters
         ----------
@@ -247,7 +247,7 @@ class OpusEncoder(object):
 
     def set_bandwidth(self, bandwidth):
         """
-        Set's the bandtype of the encoder.
+        Set's the band-type of the encoder.
         
         Parameters
         ----------
@@ -264,7 +264,7 @@ class OpusEncoder(object):
             +-----------------------+-------+
             | BANDWIDTH_WIDE        | 1103  |
             +-----------------------+-------+
-            | BANDWIDTH_SUPERWIDE   | 1104  |
+            | BANDWIDTH_SUPER_WIDE  | 1104  |
             +-----------------------+-------+
             | BANDWIDTH_FULL        | 1105  |
             +-----------------------+-------+
@@ -321,7 +321,7 @@ class OpusEncoder(object):
         else:
             percentage = int(percentage*100.0)
         
-        opus.opus_encoder_control(self._encoder, SET_PACKET_LOSS_PERC, percentage)
+        opus.opus_encoder_control(self._encoder, SET_PACKET_LOSS_PERCENTAGE, percentage)
     
     def encode(self, data):
         """

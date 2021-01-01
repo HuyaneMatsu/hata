@@ -30,11 +30,11 @@ class PrettyEmpty(object):
     def __str__(self):
         return ''
     def __repr__(self):
-        return f'<{self.__class__.__name__} back=0 textlen=0>'
+        return f'<{self.__class__.__name__} back=0 text_length=0>'
     def __len__(self):
         return None
     @property
-    def textform(self):
+    def text_form(self):
         return ''
 
     def get_text(self):
@@ -62,11 +62,11 @@ class Pretty_line(object):
     def __str__(self):
         return self.text
     def __repr__(self):
-        return f'<{self.__class__.__name__} back=ignored textlen={len(self.text)}>'
+        return f'<{self.__class__.__name__} back=ignored text_length={len(self.text)}>'
     def __len__(self):
         return len(self.text)
     @property
-    def textform(self):
+    def text_form(self):
         return f'{" "*(self.back<<2)}{self.text}'
     def __call__(self, amount):
         self.back += amount
@@ -80,11 +80,11 @@ class PrettyIgnorePush(object):
     def __str__(self):
         return self.text
     def __repr__(self):
-        return f'<{self.__class__.__name__} back={self.back} textlen={len(self.text)}>'
+        return f'<{self.__class__.__name__} back={self.back} text_length={len(self.text)}>'
     def __len__(self):
         return (self.back<<2)+len(self.text)
     @property
-    def textform(self):
+    def text_form(self):
         return self.text
     def __call__(self, amount):
         pass
@@ -109,17 +109,17 @@ class PrettyBlock(object):
         self.container.append(value)
         
     def __repr__(self):
-        return f'<{self.__class__.__name__} linelen={len(self.container)}>'
+        return f'<{self.__class__.__name__} line_length={len(self.container)}>'
     def __call__(self, amount):
         self.back += amount
         for value in self.container:
             value(amount)
         return self
     @property
-    def textform(self):
+    def text_form(self):
         result = []
         for line in self.container:
-            content = line.textform
+            content = line.text_form
             if type(content) is list:
                 result.extend(content)
             else:
@@ -127,14 +127,14 @@ class PrettyBlock(object):
         return result
 
 def pretty_print(obj, **kwargs):
-    return PRETTY_PRINTERS[obj.__class__.__name__](obj, **kwargs).textform
-    
+    return PRETTY_PRINTERS[obj.__class__.__name__](obj, **kwargs).text_form
+
 def pchunkify(obj, **kwargs):
     return cchunkify(pretty_print(obj, **kwargs))
 
 def pconnect(obj, **kwargs):
     return '\n'.join(pretty_print(obj, **kwargs))
-    
+
 def str_message(message, index=None, **kwargs):
     result = PrettyBlock()
     if index is None:
@@ -268,7 +268,7 @@ def str_message(message, index=None, **kwargs):
         if isinstance(referenced_message, Message):
             referenced_message_message_id = referenced_message.id
             referenced_message_channel = referenced_message.channel
-            referenced_message_channeL_id = referenced_message_channel.id
+            referenced_message_channel_id = referenced_message_channel.id
             referenced_message_guild = referenced_message_channel.guild
             if referenced_message_guild is None:
                 referenced_message_guild_id = 0
@@ -276,17 +276,17 @@ def str_message(message, index=None, **kwargs):
                 referenced_message_guild_id = referenced_message_guild.id
         else:
             referenced_message_message_id = referenced_message.message_id
-            referenced_message_channeL_id = referenced_message.channel_id
+            referenced_message_channel_id = referenced_message.channel_id
             referenced_message_guild_id = referenced_message.guild_id
         
         result.append('Referenced message:', 1)
         result.append(f'- message id : {referenced_message_message_id}', 2)
-        result.append(f'- channel id : {referenced_message_channeL_id}', 2)
+        result.append(f'- channel id : {referenced_message_channel_id}', 2)
         if referenced_message_guild_id:
             result.append(f'- guild id : {referenced_message_guild_id}', 2)
     
     stickers = message.stickers
-    if (attachments is not None):
+    if (stickers is not None):
         result.append(f'Stickers: ({len(stickers)})', 1)
         for index, sticker in enumerate(stickers, 1):
             result.append(str_sticker(sticker, index), 1)
@@ -301,13 +301,13 @@ def str_reaction_mapping(reactions, index=None, **kwargs): #ignore index, 1 mess
     reaction_ordering.sort(reverse=True,key=lambda x:x[0])
     for times, emoji in reaction_ordering:
         if emoji.is_unicode_emoji():
-            anim = ''
+            animated = ''
         else:
             if emoji.animated:
-                anim = ' (animated)'
+                animated = ' (animated)'
             else:
-                anim = ''
-        result.append(f'- {emoji} ({emoji.id}){anim} : {times} times', 1)
+                animated = ''
+        result.append(f'- {emoji} ({emoji.id}){animated} : {times} times', 1)
     #TODO: create a more accurate rendering for containers with small amount of emojis
     #    it will need to be able to handle unknown reactors too!
     return result
@@ -317,9 +317,9 @@ def str_reaction_mapping_line(users, **kwargs): #ignore index
     user_count = len(users)
     unknown = users.unknown
     if unknown:
-        result.append(f'Reacters: ({user_count}, unknown: {unknown})')
+        result.append(f'Reactors: ({user_count}, unknown: {unknown})')
     else:
-        result.append(f'Reacters: ({user_count})')
+        result.append(f'Reactors: ({user_count})')
     
     for index, user in enumerate(users):
         result.append(f'{index}.: {user.full_name} ({user.id})')
@@ -342,9 +342,9 @@ def str_message_application(application, index=None, **kwargs): #ignore index, 1
     
     description = application.description
     if len(description)>32:
-        result.append(f'- descr.: {description[:26]}...(+{len(description)-26})', 1)
+        result.append(f'- description: {description[:26]}...(+{len(description)-26})', 1)
     else:
-        result.append(f'- descr.: {description}', 1)
+        result.append(f'- description: {description}', 1)
     
     return result
     
@@ -378,7 +378,7 @@ def str_sticker(sticker, index=None, **kwargs):
     result.append(f'- type: {type_.name} ({type_.value})')
     result.append(f'- name : {sticker.name}', 1)
     result.append(f'- pack_id : {sticker.pack_id}', 1)
-    result.append(f'- description : {description!r}', 1)
+    result.append(f'- description : {sticker.description!r}', 1)
     
     tags = sticker.tags
     if tags is not None:
@@ -420,7 +420,7 @@ def str_embed_core(embed, index=None, **kwargs):
     if description:
         content = description
         content_ln = len(content)
-        result.append(f'- descript.: (len={content_ln})', 1)
+        result.append(f'- description: (len={content_ln})', 1)
         if content_ln > 500:
             content = content[:500].replace('`', '\\`')
             result.append(f'--------------------\n{content}\n... +{content_ln-500} more\n--------------------', -1)
@@ -1011,7 +1011,7 @@ def str_invite(invite, index=None,write_parents=True, **kwargs):
     if user_count:
         result.append(f'- user count : {user_count}', 1)
     
-    result.append(f'- {"temporary" if invite.temporary else "permament"}', 1)
+    result.append(f'- {"temporary" if invite.temporary else "permanent"}', 1)
 
     return result
 
@@ -1095,9 +1095,9 @@ def str_webhook(webhook, index=None,write_parents=True, **kwargs):
         if guild is not None:
             result.append(f'- guild : {guild.name} ({guild.id})', 1)
     
-    applciation_id = webhook.application_id
-    if applciation_id:
-        result.append(f'- applciation id : {applciation_id}', 1)
+    application_id = webhook.application_id
+    if application_id:
+        result.append(f'- application id : {application_id}', 1)
     
     return result
 
@@ -1331,7 +1331,7 @@ def str_integration_application(application, index=None, head_line=True, **kwarg
 def str_activity(activity, **kwargs):
     result = PrettyBlock()
     result.append('Activity:')
-    for key, value in activity.fulldict().items():
+    for key, value in activity.full_dict().items():
         if type(value) is dict:
             result.append(f'- {key} :', 1)
             for key, value in value.items():
@@ -1352,7 +1352,7 @@ def str_voice_state(state, index=None, **kwargs):
     result.append(f'{start}Voice state:')
     user = state.user
     if user.partial:
-        result.append(f'- user : Parital user {user.id}', 1)
+        result.append(f'- user : Partial user {user.id}', 1)
     else:
         result.append(f'- user : {user:f} ({user.id})', 1)
     channel = state.channel
@@ -1369,7 +1369,7 @@ def str_voice_state(state, index=None, **kwargs):
 
     return result
 
-def str_useroa2(user, index=None, **kwargs):
+def str_user_oa2(user, index=None, **kwargs):
     result = PrettyBlock()
     if index is None:
         start = ''
@@ -1747,7 +1747,7 @@ def str_message_repr(message, index=None, **kwargs):
     else:
         start = f'{index}.: '
     
-    result.append(f'{start}MessagRepr {message.id}:')
+    result.append(f'{start}MessageRepr {message.id}:')
     channel = message.channel
     result.append(f'- channel {channel.id} ({channel.__class__.__name__}, {channel.type})', 1)
     
@@ -1784,7 +1784,7 @@ PRETTY_PRINTERS['ChannelGroup'] = str_channel_group
 PRETTY_PRINTERS['ChannelCategory'] = str_channel_category
 PRETTY_PRINTERS['ChannelStore'] = str_channel_store
 PRETTY_PRINTERS['ChannelThread'] = str_channel_thread
-PRETTY_PRINTERS['ChannelGuildUndefnied'] = str_channel_guild_undefined
+PRETTY_PRINTERS['ChannelGuildUndefined'] = str_channel_guild_undefined
 PRETTY_PRINTERS['Guild'] = str_guild
 PRETTY_PRINTERS['PermOW'] = str_PermOW
 PRETTY_PRINTERS['Permission'] = str_permission
@@ -1800,7 +1800,7 @@ PRETTY_PRINTERS['ActivityRich'] = str_activity
 PRETTY_PRINTERS['ActivityUnknown'] = str_activity
 PRETTY_PRINTERS['ActivityCustom'] = str_activity
 PRETTY_PRINTERS['VoiceState'] = str_voice_state
-PRETTY_PRINTERS['UserOA2'] = str_useroa2
+PRETTY_PRINTERS['UserOA2'] = str_user_oa2
 PRETTY_PRINTERS['GuildEmbed'] = str_GuildEmbed
 PRETTY_PRINTERS['User'] = str_user
 PRETTY_PRINTERS['Client'] = str_user

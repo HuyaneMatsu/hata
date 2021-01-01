@@ -21,7 +21,7 @@ from .preconverters import preconvert_flag, preconvert_bool, preconvert_snowflak
     preconvert_preinstanced_type
 from .preinstanced import MessageType, MessageActivityType, StickerType
 
-from . import ratelimit as module_ratelimit
+from . import rate_limit as module_rate_limit
 
 Client           = NotImplemented
 ChannelBase      = NotImplemented
@@ -87,7 +87,7 @@ class MessageActivity(object):
         self.type = MessageActivityType.get(data['type'])
 
     def __eq__(self, other):
-        """Returns whether the two message activitys are equal."""
+        """Returns whether the two message activities are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -110,7 +110,7 @@ class Attachment(DiscordEntity):
     Attributes
     ----------
     id : `int`
-        The unique identificcator number of the attachment.
+        The unique identifier number of the attachment.
     height : `int`
         The height of the attachment if applicable. Defaults to `0`.
     name : `str`
@@ -170,7 +170,7 @@ class MessageApplication(DiscordEntity):
     Attributes
     ----------
     id : `int`
-        Unique identificator of the respective appliaction.
+        Unique identifier of the respective application.
     cover_hash : `int`
         The respective application's store cover image's hash in `uint128`. If the application is sold at Discord,
         this image will be used at the store.
@@ -211,7 +211,7 @@ class MessageApplication(DiscordEntity):
     cover_url_as = URLS.application_cover_url_as
     
     def __repr__(self):
-        """Returns the represnetation of the message application."""
+        """Returns the representation of the message application."""
         return f'<{self.__class__.__name__} name={self.name!r}, id={self.id}>'
 
 
@@ -222,15 +222,15 @@ class Sticker(DiscordEntity):
     Attributes
     ----------
     id : `int`
-        The unique identificator number of the sticker.
+        The unique identifier number of the sticker.
     pack_id : `int`
-        The unique indetificator number of the pack from the sticker is.
+        The unique identifier number of the pack from the sticker is.
     name : `str`
         The sticker's name.
     description : `str`
-        The sticket's description.
+        The sticker's description.
     tags : None` or `list` of `str`
-        Tags of the stcikers if applicable.
+        Tags of the sticker if applicable.
     asset_value : `int`
         The sticker's asset's hash as `uint128`.
     asset_type : ``IconType``
@@ -304,7 +304,7 @@ class MessageReference(object):
     __slots__ = ('_channel', '_message', '_guild', 'channel_id', 'guild_id', 'message_id',)
     def __new__(cls, data):
         """
-        Creates a ``MessagReference`` from message reference data included inside of a ``Message``'s.
+        Creates a ``MessageReference`` from message reference data included inside of a ``Message``'s.
         
         If the message is loaded already, returns that instead.
         
@@ -461,9 +461,9 @@ class UnknownCrossMention(DiscordEntity):
     Attributes
     ----------
     id : `int`
-        The unique identificator number of the respective channel.
+        The unique identifier number of the respective channel.
     guild_id : `int`
-        The unique identificator number of the respective channel's guild.
+        The unique identifier number of the respective channel's guild.
     name : `str`
         The name of the respective channel.
     type : `int`
@@ -472,7 +472,7 @@ class UnknownCrossMention(DiscordEntity):
     __slots__ = ('guild_id', 'name', 'type',)
     def __new__(cls, data):
         """
-        Tries to find the refernced channel by `id`. If it fails creates and returns an ``UnknownCrossMention``
+        Tries to find the referenced channel by `id`. If it fails creates and returns an ``UnknownCrossMention``
         instead.
         
         Parameters
@@ -538,7 +538,7 @@ class UnknownCrossMention(DiscordEntity):
     
     def __format__(self, code):
         """
-        Formats the unknown corss mention ina format string. Check ``ChannelBase.__format__`` for availabl format
+        Formats the unknown cross mention ina format string. Check ``ChannelBase.__format__`` for available format
         codes.
         
         Parameters
@@ -548,7 +548,7 @@ class UnknownCrossMention(DiscordEntity):
         
         Returns
         -------
-        unknow_cross_mention : `str`
+        unknown_cross_mention : `str`
         
         Raises
         ------
@@ -653,19 +653,19 @@ class MessageRepr(DiscordEntity):
     Attributes
     ----------
     id : `int`
-        The unique identificator number of the represented message.
+        The unique identifier number of the represented message.
     channel : ``ChannelBase``
         The respective message's channel.
     """
     __slots__ = ('channel',)
     def __init__(self, message_id, channel):
         """
-        Creates a new message represnetation with the given parameters.
+        Creates a new message representation with the given parameters.
         
         Parameters
         ----------
         message_id : `int`
-            The unique identificator number of the represented message.
+            The unique identifier number of the represented message.
         channel : ``ChannelBase`` instance
             The respective message's channel.
         """
@@ -684,11 +684,11 @@ class MessageRepr(DiscordEntity):
         return self.channel.guild
     
     def __repr__(self):
-        """Returns the message representation's reprentation."""
+        """Returns the message representation's representation."""
         return f'<{self.__class__.__name__} id={self.id}, channel={self.channel!r}>'
     
     def __gt__(self, other):
-        """Returns wherhet this message's id is greater than the other's."""
+        """Returns whether this message's id is greater than the other's."""
         other_type = other.__class__
         if other_type is type(self) or other_type is Message:
             return (self.id > other.id)
@@ -696,7 +696,7 @@ class MessageRepr(DiscordEntity):
         return NotImplemented
     
     def __ge__(self, other):
-        """Returns wherhet this message's id is greater than the other's, or whether the two messages are equal."""
+        """Returns whether this message's id is greater than the other's, or whether the two messages are equal."""
         other_type = other.__class__
         if other_type is type(self):
             return (self.id >= other.id)
@@ -721,7 +721,7 @@ class MessageRepr(DiscordEntity):
         return NotImplemented
     
     def __le__(self, other):
-        """Returns wherhet this message's id is less than the other's, or whether the two messages are equal."""
+        """Returns whether this message's id is less than the other's, or whether the two messages are equal."""
         other_type = other.__class__
         if other_type is type(self):
             return (self.id <= other.id)
@@ -732,7 +732,7 @@ class MessageRepr(DiscordEntity):
         return NotImplemented
     
     def __lt__(self, other):
-        """Returns wherhet this message's id is less than the other's."""
+        """Returns whether this message's id is less than the other's."""
         other_type = other.__class__
         if other_type is type(self) or other_type is Message:
             return (self.id < other.id)
@@ -747,7 +747,7 @@ class Message(DiscordEntity, immortal=True):
     Attributes
     ----------
     id : `int`
-        The unique identificator number of the message.
+        The unique identifier number of the message.
     _channel_mentions : `None` or `list` of (``UnknownCrossMention`` or ``ChannelBase`` instances)
         Cache used by the ``.channel_mentions` property.
     activity : `None` or ``MessageActivity``
@@ -774,7 +774,7 @@ class Message(DiscordEntity, immortal=True):
     edited : `None` or `datetime`
         The time when the message was edited, or `None` if it was not.
         
-        Pinning or (un)supressing a mesage will not change it's edited value.
+        Pinning or (un)suppressing a message will not change it's edited value.
     embeds : `None` or `list` of ``EmbedCore``
         List of embeds included with the message if any.
         
@@ -817,7 +817,7 @@ class Message(DiscordEntity, immortal=True):
         ----------
         data : `dict` of (`str`, `Any`) items
             Message data.
-        channel : ``ChanneltextBase`` instance
+        channel : ``ChannelTextBase`` instance
             Source channel.
         
         Raises
@@ -835,10 +835,10 @@ class Message(DiscordEntity, immortal=True):
         Parameters
         ----------
         message_id : `int`
-            The message's unique identificator number.
+            The message's unique identifier number.
         data : `dict` of (`str`, `Any`) items
             Message data.
-        channel : ``ChanneltextBase`` instance
+        channel : ``ChannelTextBase`` instance
             Source channel.
         
         Returns
@@ -859,7 +859,7 @@ class Message(DiscordEntity, immortal=True):
         ----------
         data : `dict` of (`str`, `Any`) items
             Message data.
-        channel : ``ChanneltextBase`` instance
+        channel : ``ChannelTextBase`` instance
             Source channel.
         """
         self.deleted = False
@@ -1014,7 +1014,7 @@ class Message(DiscordEntity, immortal=True):
     @BaseMethodDescriptor
     def custom(cls, base, validate=True, **kwargs):
         """
-        Creates a custom message. If called as a method of a message, then the attribues of the created custom message
+        Creates a custom message. If called as a method of a message, then the attributes of the created custom message
         will default to that message's. Meanwhile if called as a classmethod, then the attributes of the created
         custom message will default to the overall defaults.
         
@@ -1047,12 +1047,12 @@ class Message(DiscordEntity, immortal=True):
         channel : `ChannelTextBase` instance, Optional if called as method
             The ``.channel`` attribute of the message.
             
-            If called as a clasmethod this attribute must be passed, or `TypeError` is raised.
+            If called as a classmethod this attribute must be passed, or `TypeError` is raised.
         content : `str`, Optional
             The ``.content`` attribute of the message. Can be between length `0` and `2000`.
             
             If called as a classmethod defaults to `''` (empty string).
-        cross_mentions : `None` or (`list` of (``UnknownCrossMetntion`` or ``ChannelGUildBase`` instances)), Optional
+        cross_mentions : `None` or (`list` of (``UnknownCrossMention`` or ``ChannelGuildBase`` instances)), Optional
             The `.cross_mentions` attribute of the message. If passed as an empty list, then will be set `None` instead.
             
             If called as a classmethod defaults to `None`.
@@ -1081,7 +1081,7 @@ class Message(DiscordEntity, immortal=True):
             The ``.flags`` attribute of the message. If passed as other `int` instances than ``MessageFlag``, then will
             be converted to ``MessageFlag``.
             
-            If called as a classmethod defaults to `MesageFlag(0)`.
+            If called as a classmethod defaults to `MessageFlag(0)`.
         id : `int` or `str`, Optional
             The ``.id`` attribute of the message. If passed as `str`, will be converted to `int`.
             
@@ -1122,8 +1122,8 @@ class Message(DiscordEntity, immortal=True):
             The ``.type`` attribute of the message. If passed as `int`, it will be converted to it's wrapper side
             ``MessageType`` representation.
             
-            If called as a classmethod defaults to ``Messagetype.default`
-        type_ : ``MesageType`` or `int`, Optional
+            If called as a classmethod defaults to ``MessageType.default`
+        type_ : ``MessageType`` or `int`, Optional
             Alias of ``type`.
         user_mentions : `None` or (`list` of (``User`` or ``Client``)), Optional
             The ``.user_mentions`` attribute of the message. If passed as an empty list will be set as `None` instead.
@@ -1154,7 +1154,7 @@ class Message(DiscordEntity, immortal=True):
             channel = base.channel
         else:
             if not isinstance(channel, ChannelTextBase):
-                raise TypeError(f'`channel` should be `{ChannelTextBase.__name__}` subclasse\'s instance, got '
+                raise TypeError(f'`channel` should be `{ChannelTextBase.__name__}` subclass\'s instance, got '
                     f'`{channel!r}`')
         
         # `_channel_mentions` is internal, we wont check kwargs
@@ -1488,8 +1488,8 @@ class Message(DiscordEntity, immortal=True):
         
         if validate:
             if (role_mentions is not None) and (not isinstance(channel,ChannelGuildBase)):
-                raise ValueError('`role_mentions` are set as not `None`, meanhile the `channel` is not '
-                    f'`{ChannelGuildBase}` subclasse\'s instance; `{channel!r}`')
+                raise ValueError('`role_mentions` are set as not `None`, meanwhile the `channel` is not '
+                    f'`{ChannelGuildBase}` subclass\'s instance; `{channel!r}`')
         
         try:
             stickers = kwargs.pop('stickers')
@@ -1641,7 +1641,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channel_mentions : `None` or (`list` of (``Channelbase`` or ``UnknownCrossMentions`` instances))
+        channel_mentions : `None` or (`list` of (``ChannelBase`` or ``UnknownCrossMentions`` instances))
         """
         channel_mentions = self._channel_mentions
         if channel_mentions is _spaceholder:
@@ -2067,7 +2067,7 @@ class Message(DiscordEntity, immortal=True):
         # This function gets called if only the embeds of the message are updated. There can be 3 case:
         # 0 -> Nothing changed or the embeds are already suppressed.
         # 1 -> Only sizes are updated -> images showed up?
-        # 2 -> New embeds appeard -> link.
+        # 2 -> New embeds appeared -> link.
         # 3 -> There are less embed -> bug?
         
         embeds = self.embeds
@@ -2198,7 +2198,7 @@ class Message(DiscordEntity, immortal=True):
     def clean_content(self):
         """
         Returns them message's clean content, what actually depends on the message's type. By default it is the
-        message's content with transformed mentions, but for differnt message types it means different things.
+        message's content with transformed mentions, but for different message types it means different things.
         
         Returns
         -------
@@ -2206,7 +2206,7 @@ class Message(DiscordEntity, immortal=True):
         
         Notes
         -----
-        The converting can not display join messages, call mesages and private channel names correctly.
+        The converting can not display join messages, call messages and private channel names correctly.
         """
         return self.type.convert(self)
     
@@ -2302,7 +2302,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        clean_emebds : `list` of ``EmbedCore``
+        clean_embeds : `list` of ``EmbedCore``
         
         Notes
         -----
@@ -2322,29 +2322,29 @@ class Message(DiscordEntity, immortal=True):
 
     def did_react(self, emoji, user):
         """
-        Returns whether the given user reacted with the given emoji on the mesage.
+        Returns whether the given user reacted with the given emoji on the message.
         
         Parameters
         ----------
         emoji : ``Emoji``
             The reacted emoji.
         user : ``User`` or ``Client``
-            The reacter.
+            The reactor.
         
         Returns
         -------
         did_react : `bool`
         """
         try:
-            reacters = self.reactions[emoji]
+            reactors = self.reactions[emoji]
         except KeyError:
             return False
-        return (user in reacters)
+        return (user in reactors)
 
-module_ratelimit.Message = Message
+module_rate_limit.Message = Message
 
 del URLS
-del module_ratelimit
+del module_rate_limit
 del DiscordEntity
 del FlagBase
 del IconSlot

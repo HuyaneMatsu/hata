@@ -16,7 +16,7 @@ The implemented checks are the following:
 | client_has_guild_permissions   | permissions     | Whether the client has the given permissions at the guild.   |
 |                                |                 | (Fails in private channels.)                                 |
 +--------------------------------+-----------------+--------------------------------------------------------------+
-| client_has_permissions         | permissions     | Wehther the client has the given permissions at the channel. |
+| client_has_permissions         | permissions     | Whether the client has the given permissions at the channel. |
 +--------------------------------+-----------------+--------------------------------------------------------------+
 | client_only                    | N/A             | Whether the message was sent by a ``Client``.                |
 +--------------------------------+-----------------+--------------------------------------------------------------+
@@ -24,7 +24,7 @@ The implemented checks are the following:
 +--------------------------------+-----------------+--------------------------------------------------------------+
 | guild_only                     | N/A             | Whether the message was sent to a guild channel.             |
 +--------------------------------+-----------------+--------------------------------------------------------------+
-| guild_owner                    | N/A             | Wehther the message's author is the guild's owner.           |
+| guild_owner                    | N/A             | Whether the message's author is the guild's owner.           |
 |                                |                 | (Fails in private channels.)                                 |
 +--------------------------------+-----------------+--------------------------------------------------------------+
 | has_any_role                   | roles           | Whether the message's author has any of the given roles.     |
@@ -39,7 +39,7 @@ The implemented checks are the following:
 +--------------------------------+-----------------+--------------------------------------------------------------+
 | is_any_channel                 | channels        | Whether the message was sent to any of the given channels.   |
 +--------------------------------+-----------------+--------------------------------------------------------------+
-| is_any_guild                   | guils           | Whether the message was sent to any of the given guilds.     |
+| is_any_guild                   | guilds          | Whether the message was sent to any of the given guilds.     |
 +--------------------------------+-----------------+--------------------------------------------------------------+
 | is_channel                     | channel         | Whether the message's channel is the given one.              |
 +--------------------------------+-----------------+--------------------------------------------------------------+
@@ -179,7 +179,7 @@ def _convert_handler(handler):
     
     Parameters
     ----------
-    handler : `None` or `async-callable` or instanceable to `async-callable`
+    handler : `None` or `async-callable` or instantiable to `async-callable`
         The handler to convert.
         
         If the handler is `async-callable` or if it would be instanced to it, then it should accept the following
@@ -248,7 +248,7 @@ class _check_meta(type):
         Parameters
         ----------
         class_name : `str`
-            The created classe's name.
+            The created class's name.
         class_parents : `tuple` of `type` instances
             The superclasses of the creates type.
         class_attributes : `dict` of (`str`, `Any`) items
@@ -292,9 +292,9 @@ class _check_base(metaclass=_check_meta):
         """
         Creates a check with the given parameters.
         
-        Paramaters
+        Parameters
         ----------
-        handler : `None` or `async-callable` or instanceable to `async-callable`
+        handler : `None` or `async-callable` or instantiable to `async-callable`
             Will be called when the check fails.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -456,7 +456,7 @@ class _invert_op_check(_check_base):
                 self.check = check
                 self.handler = check.handler
             else:
-                # None of these classes have other attributes yet, so we need just to asign their `.handler`.
+                # None of these classes have other attributes yet, so we need just to assign their `.handler`.
                 self = object.__new__(target_type)
                 self.handler = check.handler
         
@@ -561,7 +561,7 @@ class _or_op_check(_check_base):
                 self.handler = handler
                 return self
             
-            # Connectable cases?
+            # Connectible cases?
             if issubclass(check_1_type, CHECKS_OR_ONLY_TYPES) or issubclass(check_2_type, CHECKS_OR_ONLY_TYPES):
                 if issubclass(check_1_type, CHECKS_OR_ONLY_TYPES):
                     other_check = check_2
@@ -584,7 +584,7 @@ class _or_op_check(_check_base):
                 entities = []
                 
                 for check in (check_1, check_2):
-                    slot_name = CHECKS_ENTITIY_SLOTS[check.__class__]
+                    slot_name = CHECKS_ENTITY_SLOTS[check.__class__]
                     slot_value = getattr(check, slot_name)
                     if isinstance(slot_value, set):
                         entities.extend(slot_value)
@@ -698,7 +698,7 @@ class _and_op_check(_check_base):
         
         check_type = CHECK_AND_TABLE.get(frozenset((check_1_type, check_2_type)))
         if (check_type is not None):
-            # Connectable cases?
+            # Connectible cases?
             if issubclass(check_1_type, CHECKS_AND_ONLY_TYPES) or issubclass(check_2_type, CHECKS_AND_ONLY_TYPES):
                 if issubclass(check_1_type, CHECKS_AND_ONLY_TYPES):
                     other_check = check_2
@@ -720,7 +720,7 @@ class _and_op_check(_check_base):
             if issubclass(check_1_type, CHECKS_ENTITY_TYPES) and issubclass(check_2_type, CHECKS_ENTITY_TYPES):
                 entities = []
                 
-                slot_name = CHECKS_ENTITIY_SLOTS[check_1_type]
+                slot_name = CHECKS_ENTITY_SLOTS[check_1_type]
                 slot_value = getattr(check_1, slot_name)
                 
                 if isinstance(slot_value, set):
@@ -728,7 +728,7 @@ class _and_op_check(_check_base):
                 else:
                     entities.append(slot_value)
                 
-                slot_name = CHECKS_ENTITIY_SLOTS[check_2_type]
+                slot_name = CHECKS_ENTITY_SLOTS[check_2_type]
                 slot_value = getattr(check_2, slot_name)
                 
                 if isinstance(slot_value, set):
@@ -812,7 +812,7 @@ class has_role(_check_base):
         ----------
         role : `str`, `int` or ``Role``
             The role what the message's author should have.
-        handler : `None` or `async-callable` or instanceable to `async-callable`
+        handler : `None` or `async-callable` or instantiable to `async-callable`
             Will be called when the check fails.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -929,7 +929,7 @@ class has_any_role(_check_base):
         ----------
         roles : `iterable` of (`str`, `int` or ``Role``)
             Role from what the message's author should have at least 1.
-        handler : `None` or `async-callable` or instanceable to `async-callable`
+        handler : `None` or `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1024,7 +1024,7 @@ class owner_or_has_any_role(has_any_role):
         ----------
         roles : `iterable` of (`str`, `int` or ``Role``)
             Role from what the message's author should have at least 1.
-        handler : `None` or `async-callable` or instanceable to `async-callable`
+        handler : `None` or `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1134,39 +1134,6 @@ class guild_only(_check_base):
         
         return False
 
-
-class private_only(_check_base):
-    """
-    Checks whether a message was sent to a private channel.
-    
-    Attributes
-    ----------
-    handler : `None` or `async-callable`
-        An async callable what will be called when the check fails.
-    """
-    __slots__ = ()
-    async def __call__(self, client, message):
-        """
-        Calls the check to validate whether it passes with the given conditions.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        client : ``Client``
-            The client who's received the message.
-        message : ``Message``
-            The received message.
-        
-        Returns
-        -------
-        passed : `bool`
-            Whether the check passed.
-        """
-        if (message.guild is None):
-            return True
-        
-        return False
 
 class private_only(_check_base):
     """
@@ -1334,8 +1301,8 @@ class has_permissions(_check_base):
         Parameters
         ----------
         permissions : ``Permission`` or `in` instance
-            The permisison, what the message's author should have at the message's channel.
-        handler : `None` or `async-callable` or instanceable to `async-callable`
+            The permission, what the message's author should have at the message's channel.
+        handler : `None` or `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1449,8 +1416,8 @@ class has_guild_permissions(_check_base):
         Parameters
         ----------
         permissions : ``Permission`` or `in` instance
-            The permisison, what the message's author should have at the message's guild.
-        handler : `None` or `async-callable` or instanceable to `async-callable`
+            The permission, what the message's author should have at the message's guild.
+        handler : `None` or `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1574,8 +1541,8 @@ class client_has_permissions(_check_base):
         Parameters
         ----------
         permissions : ``Permission`` or `in` instance
-            The permisison, what the client should have at the message's channel.
-        handler : `None` or `async-callable` or instanceable to `async-callable`
+            The permission, what the client should have at the message's channel.
+        handler : `None` or `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1649,8 +1616,8 @@ class client_has_guild_permissions(_check_base):
         Parameters
         ----------
         permissions : ``Permission`` or `in` instance
-            The permisison, what the client should have at the message's guild.
-        handler : `None` or `async-callable` or instanceable to `async-callable`
+            The permission, what the client should have at the message's guild.
+        handler : `None` or `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1729,7 +1696,7 @@ class is_guild(_check_base):
         ----------
         guild : `str`, `int` or ``Guild``
             The guild where the message should be sent.
-        handler : `None` or `async-callable` or instanceable to `async-callable`
+        handler : `None` or `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1810,7 +1777,7 @@ class is_any_guild(_check_base):
         ----------
         guilds : `iterable` of (`str`, `int` or ``Guild``)
             Guilds to where the message should be sent.
-        handler : `None` or `async-callable` or instanceable to `async-callable`
+        handler : `None` or `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1909,7 +1876,7 @@ class custom(_check_base):
         ----------
         function : `callable`
             The custom check what should pass. Can be async.
-        handler : `None` or `async-callable` or instanceable to `async-callable`
+        handler : `None` or `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -2007,7 +1974,7 @@ class is_channel(_check_base):
         ----------
         channel : `str`, `int` or ``ChannelBase``
             The channel where the message should be sent.
-        handler : `None` or `async-callable` or instanceable to `async-callable`
+        handler : `None` or `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -2084,7 +2051,7 @@ class is_any_channel(_check_base):
         ----------
         channels : `iterable` of (`str`, `int` or ``ChannelBase``)
             Channels to where the message should be sent.
-        handler : `None` or `async-callable` or instanceable to `async-callable`
+        handler : `None` or `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -2474,11 +2441,11 @@ class is_in_category(_check_base):
         Parameters
         ----------
         category : `str`, `int`, ``ChannelCategory`` or ``Guild``
-            The category, whitin sent messages pass the check.
+            The category, within sent messages pass the check.
             
             If you want to check those channels, which are not in any category, pass the respective ``Guild`` instead.
         
-        handler : `None` or `async-callable` or instanceable to `async-callable`
+        handler : `None` or `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -2562,11 +2529,11 @@ class is_in_any_category(_check_base):
         Parameters
         ----------
         categories : `iterable` of (`str`, `int`, ``ChannelCategory`` or ``Guild``)
-            The categories, whitin sent messages pass the check.
+            The categories, within sent messages pass the check.
             
             If you want to check those channels, which are not in any category, pass the respective ``Guild`` instead.
         
-        handler : `None` or `async-callable` or instanceable to `async-callable`
+        handler : `None` or `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -2655,7 +2622,7 @@ CHECK_INVERT_TABLE = {
     user_account_only   : bot_account_only      ,
         }
 
-CHECKS_ENTITIY_SLOTS = {
+CHECKS_ENTITY_SLOTS = {
     is_channel              : 'channel_id'   ,
     is_guild                : 'guild_id'     ,
     is_in_category          : 'category_id'  ,

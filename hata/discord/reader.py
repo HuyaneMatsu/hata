@@ -121,9 +121,9 @@ class RTPPacket(PacketBase):
     _offset1 : `int`
         Offset of the received data marking the end of the CSRC identifiers and the start of the encrypted data.
     _offset2 : `int`
-        Offset of the descrypted data marking the end of the extensions (?) and the start of the descrypted data.
+        Offset of the decrypted data marking the end of the extensions (?) and the start of the decrypted data.
     _decrypted : `bytes`
-        Descrypted data of the RTP packet.
+        Decrypted data of the RTP packet.
     """
     __slots__ = ('_data', '_offset1', '_offset2', '_decrypted',)
     
@@ -299,7 +299,7 @@ class RTPPacket(PacketBase):
 ##        
 ###http://www.rfcreader.com/#rfc3550_line1614
 ##class SenderReportPacket(RTCPPacket):
-##    __slots__ = ('_descripted', '_offset1')
+##    __slots__ = ('_decrypted', '_offset1')
 ##    type = 200
 ##    
 ##    def __init__(self, data, voice_client):
@@ -307,8 +307,8 @@ class RTPPacket(PacketBase):
 ##        self._data = data_shard
 ##        
 ##        nonce = data_shard+b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-##        descripted = voice_client._secret_box.decrypt(data[8:], nonce)
-##        self._descripted = descripted
+##        decrypted = voice_client._secret_box.decrypt(data[8:], nonce)
+##        self._decrypted = decrypted
 ##        
 ##        report_count = data_shard[0]&0b00011111
 ##        offset = (report_count*24)+20
@@ -319,54 +319,54 @@ class RTPPacket(PacketBase):
 ##            f'{self.report_count}>')
 ##    
 ##    @property
-##    def descripted(self):
-##        return memoryview(self._descripted)[24:]
+##    def decrypted(self):
+##        return memoryview(self._decrypted)[24:]
 ##    
 ##    @property
 ##    def info_ntp_ts_msw(self):
-##        return int.from_bytes(self._descripted[0:4], 'big')
+##        return int.from_bytes(self._decrypted[0:4], 'big')
 ##
 ##    @property
 ##    def info_ntp_ts_lsw(self):
-##        return int.from_bytes(self._descripted[4:8], 'big')
+##        return int.from_bytes(self._decrypted[4:8], 'big')
 ##
 ##    @property
 ##    def info_ntp_ts(self):
-##        low = int.from_bytes(self._descripted[4:8], 'big')
+##        low = int.from_bytes(self._decrypted[4:8], 'big')
 ##        low = low/(1<<low.bit_length())
 ##        
-##        high = int.from_bytes(self._descripted[0:4], 'big')
+##        high = int.from_bytes(self._decrypted[0:4], 'big')
 ##        
 ##        return high+low
 ##
 ##    @property
 ##    def info_rtp_ts(self):
-##        return int.from_bytes(self._descripted[8:12], 'big')
+##        return int.from_bytes(self._decrypted[8:12], 'big')
 ##
 ##    @property
 ##    def info_sequence(self):
-##        return int.from_bytes(self._descripted[12:16], 'big')
+##        return int.from_bytes(self._decrypted[12:16], 'big')
 ##
 ##    @property
 ##    def info_octet(self):
-##        return int.from_bytes(self._descripted[16:20], 'big')
+##        return int.from_bytes(self._decrypted[16:20], 'big')
 ##
 ##    @property
 ##    def extension(self):
-##        data = self._descripted
+##        data = self._decrypted
 ##        offset = self._offset1
 ##        
 ##        if len(data)>offset:
-##            return memoryview(descripted)[offset:]
+##            return memoryview(decrypted)[offset:]
 ##
 ##    def report_get(self,index):
 ##        offset = (index*24)+20
-##        obj = _RPReport(self._descripted, offset)
+##        obj = _RPReport(self._decrypted, offset)
 ##        
 ##        return obj
 ##
 ##    def report_iter(self, index):
-##        data = self._descripted
+##        data = self._decrypted
 ##        limit = self._offset1
 ##        offset = 20
 ##        
@@ -380,7 +380,7 @@ class RTPPacket(PacketBase):
 ##
 ###http://www.rfcreader.com/#rfc3550_line1879
 ##class ReceiverReportPacket(RTCPPacket):
-##    __slots__ = ('_descripted', '_offset1')
+##    __slots__ = ('_decrypted', '_offset1')
 ##    type = 201
 ##    
 ##    def __init__(self,data,voice_client):
@@ -388,8 +388,8 @@ class RTPPacket(PacketBase):
 ##        self._data = data_shard
 ##        
 ##        nonce = data_shard+b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-##        descripted = voice_client._secret_box.decrypt(data[8:], nonce)
-##        self._descripted = descripted
+##        decrypted = voice_client._secret_box.decrypt(data[8:], nonce)
+##        self._decrypted = decrypted
 ##        
 ##        report_count = data_shard[0]&0b00011111
 ##        offset = report_count*24
@@ -400,17 +400,17 @@ class RTPPacket(PacketBase):
 ##            f'{self.report_count}>')
 ##
 ##    @property
-##    def descripted(self):
-##        return memoryview(self._descripted)
+##    def decrypted(self):
+##        return memoryview(self._decrypted)
 ##    
 ##    def report_get(self,index):
 ##        offset = index*24
-##        obj = _RPReport(self._descripted,offset)
+##        obj = _RPReport(self._decrypted,offset)
 ##        
 ##        return obj
 ##
 ##    def report_iter(self,index):
-##        data = self._descripted
+##        data = self._decrypted
 ##        limit = self._offset1
 ##        offset = 0
 ##        
@@ -437,7 +437,7 @@ class AudioStream(AudioSource):
     client : `WeakReferer`
         Weakreference to the parent ``AudioReader`` to avoid reference loops.
     source : `None` or `int`
-        Identificator value of the respective user.
+        Identifier value of the respective user.
     user : ``User`` or ``Client``
         The user, who's audio is received.
     yield_decoded : `bool`
@@ -480,7 +480,7 @@ class AudioStream(AudioSource):
     
     def stop(self):
         """
-        Stops the audio stream by marking it as done and unlinks it as well.
+        Stops the audio stream by marking it as done and un-links it as well.
         """
         if self.done:
             return
@@ -578,7 +578,7 @@ class AudioReader(object):
     client : ``VoiceClient``
         The parent voice client.
     done : `bool`
-        Whether the audio reader is done receing and should stop.
+        Whether the audio reader is done receiving and should stop.
     task : `None` or ``Task``
         Audio reader task. Set as `None` if the reader is stopped.
     """
@@ -629,7 +629,7 @@ class AudioReader(object):
                         protocol.cancel_current_reader()
                         return
                     
-                    # If cancelled, we are probably establishing connection, so wait till thats done.
+                    # If cancelled, we are probably establishing connection, so wait till that is done.
                     payload_waiter = protocol.payload_waiter
                     if payload_waiter is None:
                         # Wait some?
@@ -646,7 +646,7 @@ class AudioReader(object):
             
                 try:
                     if data[1] != 120:
-                        # not voice data, we dont care
+                        # not voice data, we don't care
                         continue
                     
                     packet = RTPPacket(data, voice_client)
@@ -667,7 +667,7 @@ class AudioReader(object):
                     if isinstance(err, CancelledError) and self.done:
                         return
                     await KOKORO.render_exc_async(err, before=[
-                        'Exception occured at decoding voice packet at\n',
+                        'Exception occurred at decoding voice packet at\n',
                         repr(self),
                         '\n',
                             ])
@@ -677,7 +677,7 @@ class AudioReader(object):
                 return
             
             await KOKORO.render_exc_async(err, before=[
-                'Exception occured at \n',
+                'Exception occurred at \n',
                 repr(self),
                 '\n',
                     ])

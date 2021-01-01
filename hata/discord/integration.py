@@ -14,14 +14,14 @@ INTEGRATION_TYPE_DISCORD = 'discord'
 
 def create_partial_integration(integration_id, role=None):
     """
-    Creates an integartion with the given id.
+    Creates an integration with the given id.
     
     If the integration already exists, returns that instead.
     
     Parameters
     ----------
     integration_id : `int`
-        The unique identificator number of the integration.
+        The unique identifier number of the integration.
     role : ``Role``, Optional
         The role of the integration.
     
@@ -52,8 +52,10 @@ class Integration(DiscordEntity, immortal=True):
     """
     Represents a Discord Integration.
     
+    Parameters
+    ----------
     id : `int`
-        The unique identificator number of the integration.
+        The unique identifier number of the integration.
     account : ``IntegrationAccount``, ``Client``, ``User``
         The integration's respective account. If the integration type is `'discord'`, then set as a discord user
         itself.
@@ -66,7 +68,7 @@ class Integration(DiscordEntity, immortal=True):
     name : `str`
         The name of the integration.
     type : `str`
-        The type of the intgation (`'twitch'`, `'youtube'`, `'disocrd'`, ).
+        The type of the integration (`'twitch'`, `'youtube'`, `'discord'`, ).
     user : ``Client`` or ``User``
         User for who the integration is. Defaults to `ZEROUSER`
     """
@@ -136,7 +138,7 @@ class Integration(DiscordEntity, immortal=True):
     @property
     def partial(self):
         """
-        Reuturns whether the integration is partial.
+        Returns whether the integration is partial.
         
         Returns
         -------
@@ -178,7 +180,7 @@ class Integration(DiscordEntity, immortal=True):
 
 class IntegrationDetail(object):
     """
-    Details about a non discord integrartion.
+    Details about a non discord integration.
     
     expire_behaviour : `int`
         The behavior of expiring subscription. `0` for kick or `1` for remove role. Might be set as `-1`, if not
@@ -254,7 +256,7 @@ class IntegrationDetail(object):
         return self
     
     def __repr__(self):
-        """Returns the integration detial's represnetation."""
+        """Returns the integration detail's representation."""
         return f'<{self.__class__.__name__} role={self.role!r}>'
 
 
@@ -330,7 +332,7 @@ class IntegrationApplication(DiscordEntity):
         The name of the application. Defaults to empty string.
     summary : `str`
         if this application is a game sold on Discord, this field will be the summary field for the store page of its
-        primary sku. Defautls to empty string.
+        primary sku. Defaults to empty string.
     """
     __slots__ = ('bot', 'description', 'name', 'summary', )
     

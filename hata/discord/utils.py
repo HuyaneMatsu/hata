@@ -168,7 +168,7 @@ def id_to_time(id_):
     Parameters
     ----------
     id_ : `int`
-        Unique identificator number of a Discord entity.
+        Unique identifier number of a Discord entity.
     
     Returns
     -------
@@ -180,7 +180,7 @@ DISCORD_EPOCH_START = id_to_time(0)
 
 def time_to_id(time):
     """
-    Converts the given time to it's respective discord identitifactor number.
+    Converts the given time to it's respective discord identifier number.
     
     Parameters
     ----------
@@ -194,7 +194,7 @@ def time_to_id(time):
 
 def random_id():
     """
-    Generates a random Discord identificator number what's datetime value did not surpass the current time.
+    Generates a random Discord identifier number what's datetime value did not surpass the current time.
     
     Returns
     -------
@@ -252,11 +252,11 @@ def log_time_converter(value):
     ----------
     value : `int`, ``DiscordEntity`` instance or `datetime`
         If the value is given as `int`, returns it. If given as a ``DiscordEntity``, then returns it's id and if it
-        is given as a `datetime` object, then converts that to snowfalke then returns it.
+        is given as a `datetime` object, then converts that to snowflake then returns it.
     
     Returns
     -------
-    snowfalke : `int`
+    snowflake : `int`
     
     Raises
     ------
@@ -472,7 +472,7 @@ def cchunkify(lines, lang='', limit=2000):
     lines : `list` of `str`
         Lines of text to be chunkified.
     lang : `str`, Optional
-        Language prefix of the codeblock.
+        Language prefix of the code-block.
     limit : `int`, Optional
         The maximal length of a generated chunk.
     
@@ -617,7 +617,7 @@ class Relationship(object):
     """
     Represents a Discord relationship.
     
-    Attrbiutes
+    Attributes
     ----------
     type : ``RelationshipType``
         The relationship's type.
@@ -653,7 +653,7 @@ class Unknown(DiscordEntity):
     Attributes
     ----------
     id : `int`
-        The entitiy's unique identificator number.
+        The entity's unique identifier number.
     name : `str`
         The entity's name.
     type : `str`
@@ -680,7 +680,7 @@ class Unknown(DiscordEntity):
         type_ : `str`
             The entity's respective type's respective name.
         id_ : `int`
-            The entitiy's unique identificator number.
+            The entity's unique identifier number.
         name : `str`, Optional
             The name of the entity if applicable. If not, `type_` will be used as name instead.
         """
@@ -802,17 +802,17 @@ class Gift(object):
         self.code = data['code']
 
 @modulize
-class Discord_hdrs:
+class DISCORD_HEADERS:
     # to receive
     AUDIT_LOG_REASON = istr('X-Audit-Log-Reason')
-    RATELIMIT_REMAINING = istr('X-Ratelimit-Remaining')
-    RATELIMIT_RESET = istr('X-Ratelimit-Reset')
-    RATELIMIT_RESET_AFTER = istr('X-Ratelimit-Reset-After')
-    RATELIMIT_LIMIT = istr('X-Ratelimit-Limit')
+    RATE_LIMIT_REMAINING = istr('X-RateLimit-Remaining')
+    RATE_LIMIT_RESET = istr('X-RateLimit-Reset')
+    RATE_LIMIT_RESET_AFTER = istr('X-RateLimit-Reset-After')
+    RATE_LIMIT_LIMIT = istr('X-RateLimit-Limit')
     # to send
-    RATELIMIT_PRECISION = istr('X-RateLimit-Precision')
+    RATE_LIMIT_PRECISION = istr('X-RateLimit-Precision')
 
-def urlcutter(url):
+def url_cutter(url):
     """
     Cuts down the given url to a more suitable length.
     

@@ -3,21 +3,22 @@ import re
 
 from .utils import istr
 
-METH_ANY = '*'
-METH_CONNECT = 'CONNECT'
-METH_HEAD = 'HEAD'
-METH_GET = 'GET'
-METH_DELETE = 'DELETE'
-METH_OPTIONS = 'OPTIONS'
-METH_PATCH = 'PATCH'
-METH_POST = 'POST'
-METH_PUT = 'PUT'
-METH_TRACE = 'TRACE'
+METHOD_ANY = '*'
+METHOD_CONNECT = 'CONNECT'
+METHOD_HEAD = 'HEAD'
+METHOD_GET = 'GET'
+METHOD_DELETE = 'DELETE'
+METHOD_OPTIONS = 'OPTIONS'
+METHOD_PATCH = 'PATCH'
+METHOD_POST = 'POST'
+METHOD_PUT = 'PUT'
+METHOD_TRACE = 'TRACE'
 
-METH_GET_ALL = {METH_GET, METH_HEAD, METH_OPTIONS}
-METH_POST_ALL = {METH_PATCH, METH_POST, METH_PUT}
+METHOD_GET_ALL = {METHOD_GET, METHOD_HEAD, METHOD_OPTIONS}
+METHOD_POST_ALL = {METHOD_PATCH, METHOD_POST, METHOD_PUT}
 
-METH_ALL = {METH_CONNECT, METH_HEAD, METH_GET, METH_DELETE, METH_OPTIONS, METH_PATCH, METH_POST, METH_PUT, METH_TRACE}
+METHOD_ALL = {METHOD_CONNECT, METHOD_HEAD, METHOD_GET, METHOD_DELETE, METHOD_OPTIONS, METHOD_PATCH, METHOD_POST,
+    METHOD_PUT, METHOD_TRACE}
 
 
 ACCEPT = istr('Accept')
@@ -109,19 +110,19 @@ del istr
 
 def build_extensions(available_extensions):
     """
-    Builds websocket extesnions header from the given extension values.
+    Builds websocket extensions header from the given extension values.
     
     Parameters
     ----------
     available_extensions : `list` of `Any`
-        Each webscoket extension should have the following `4` attributes / methods:
+        Each websocket extension should have the following `4` attributes / methods:
         - `name`, type `str`. The extension's name.
         - `request_params` : `list` of `tuple` (`str`, `str`). Additional header parameters of the extension.
         - `decode` : `callable`. Decoder method, what processes a received websocket frame. Should accept `2`
-            parameters: The respective webcsocket ``Frame``, and the ˙max_size` as `int`, what descibes the
+            parameters: The respective websocket ``Frame``, and the ˙max_size` as `int`, what decides the
             maximal size of a received frame. If it is passed, ``PayloadError`` is raised.
         - `encode` : `callable`. Encoder method, what processes the websocket frames to send. Should accept `1`
-            parameter, the respective webcsocket ``Frame``.
+            parameter, the respective websocket ``Frame``.
     
     Returns
     -------
@@ -216,7 +217,7 @@ def parse_extensions(header_value):
 
                 # invalid character
                 if header_value[index] != ';':
-                    raise ValueError(f'Exptected \';\' at index {index}.')
+                    raise ValueError(f'Expected \';\' at index {index}.')
                 
                 # we have a sublist
                 index += 1
@@ -270,7 +271,7 @@ def parse_extensions(header_value):
 
             #invalid character
             if header_value[index] != '=':
-                raise ValueError(f'Expetced \',\' or \';\' or \'=\' at index {index}.')
+                raise ValueError(f'Expected \',\' or \';\' or \'=\' at index {index}.')
             
             index += 1
             
@@ -371,7 +372,7 @@ def parse_connections(header_value):
             index += 1
             continue
         
-        raise ValueError(f'Exptected \',\' at index {index}.')
+        raise ValueError(f'Expected \',\' at index {index}.')
 
 def build_subprotocols(subprotocols):
     """
@@ -449,4 +450,4 @@ def parse_upgrades(header_value):
             index += 1
             continue
         
-        raise ValueError(f'Exptected \',\' at index {index}.')
+        raise ValueError(f'Expected \',\' at index {index}.')

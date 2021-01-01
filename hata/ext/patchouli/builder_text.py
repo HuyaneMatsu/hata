@@ -267,7 +267,7 @@ class BuilderContext(object):
         The maximal length of a generated line.
     space_char : `str`
         The character what is used when building tables and indents.
-    word_converter : `fucntion`
+    word_converter : `function`
         Converter to transform graved content to words.
     """
     __slots__ = ('indent', 'indent_size', 'max_line_length', 'space_char', 'word_converter')
@@ -279,7 +279,7 @@ class BuilderContext(object):
         self.indent = indent_size*space_char
     
     def __repr__(self):
-        """Returns the builder context's represnetation."""
+        """Returns the builder context's representation."""
         return (f'{self.__class__.__name__}(indent_size={self.indent_size!r}, max_line_length='
             f'{self.max_line_length!r}, space_char={self.space_char!r}, word_converter={self.word_converter!r})')
 
@@ -289,7 +289,7 @@ TEXT_SOURCE_BUILDER_CONTEXT = BuilderContext(INDENT_SIZE_DEFAULT, SPACE_CHAR_DEF
 
 class TableLine(object):
     """
-    Represnets a line inside of a table.
+    Represents a line inside of a table.
     
     Attributes
     ----------
@@ -298,14 +298,14 @@ class TableLine(object):
     """
     def __init__(self, indent_level, line, sizes, builder_context):
         """
-        Creates a new tabel line instance.
+        Creates a new table line instance.
         
         Parameters
         ----------
         indent_level : `int`
             How much the respective table is indented.
         line : `list` of (`None`, `str`, `list` of `str`)
-            The generated line(s) of the represneted line of the table.
+            The generated line(s) of the represented line of the table.
         sizes : `list` of `int`
             The internal size for each column.
         builder_context : ``BuilderContext``
@@ -394,7 +394,7 @@ class TableConverter(object):
     Attributes
     ----------
     head_under_line : `str`
-        Seperataor line after the first line of the table.
+        Separator line after the first line of the table.
     lines : `list` of `str`
         The lines of the table.
     separator_line : `str`
@@ -497,9 +497,9 @@ class TableConverter(object):
                 (((average_lengths[index]<<1) + longest_lengths[index])*shortest_lengths[index])**.5 \
                     for index in range(x)]
             
-            factorizbale_chars = fillable_chars - sum(shortest_lengths)
+            factorizable_chars = fillable_chars - sum(shortest_lengths)
             
-            factor = factorizbale_chars / fillable_chars
+            factor = factorizable_chars / fillable_chars
             
             sizes = [ceil(size_factors[index]*factor + shortest_lengths[index]) for index in range(x)]
             
@@ -757,7 +757,7 @@ class CodeBlockConverter(object):
     @property
     def interactive_row_count(self):
         """
-        Returns the code block reprentative interactive shell row count.
+        Returns the code block representative interactive shell row count.
         
         Returns
         -------
@@ -1468,7 +1468,7 @@ def should_insert_linebreak(part_1, part_2):
 
 def should_accept_section_break(section_1, section_2):
     """
-    Returns whether the two section is correctly breaked into two parts.
+    Returns whether the two section is correctly broken into two parts.
     
     Note that, `section_1._test_break()` and `section_2._test_break()` should be already handled before this function is
     called.
@@ -1841,7 +1841,7 @@ def serialize_docs_source_text(docs):
 
 def generate_preview_for(docs, length=200, min_cut_off=20, end='...'):
     """
-    Gnereates preview for the given docs.
+    Generates preview for the given docs.
     
     Parameters
     ----------

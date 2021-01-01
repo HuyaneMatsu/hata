@@ -21,11 +21,11 @@ class Structure(object):
         The title of the represented unit or section.
     prefixed_title : `str`
         Can be used as local reference in the html file.
-    childs : `None` or (`list` of ``Structure``)
+    children : `None` or (`list` of ``Structure``)
         The child units of sections. Set as `None` if would have non.
     """
-    __slots__ = ( 'title', 'prefixed_title', 'childs')
-    def __init__(self, title, prefixed_title, childs):
+    __slots__ = ( 'title', 'prefixed_title', 'children')
+    def __init__(self, title, prefixed_title, children):
         """
         Creates a nw structure object with the given parameters.
         
@@ -35,16 +35,16 @@ class Structure(object):
             The title of the represented unit or section.
         prefixed_title : `str`
             Can be used as local reference in the html file.
-        childs : `None` or (`list` of ``Structure``)
+        children : `None` or (`list` of ``Structure``)
             The child units of sections.
             
             Should be given as `None` if the structure has no child.
         """
         self.title = title
         self.prefixed_title = prefixed_title
-        self.childs = childs
+        self.children = children
 
-def create_relative_sectionated_link(source, target):
+def create_relative_sectioned_link(source, target):
     """
     Creates relative link between two objects. Not like ``create_relative_link``, this function uses anchors as well.
     
@@ -267,7 +267,7 @@ def get_anchor_prefix_for(path):
 
 def get_tier_for(path):
     """
-    Returns the given object's tier level. Tier level should be used to deside header type.
+    Returns the given object's tier level. Tier level should be used to decide header type.
     
     Parameters
     ----------
@@ -328,7 +328,7 @@ def name_sort_key(name):
     Parameters
     ----------
     name : `str`
-            Name of an atrribute, method or class.
+            Name of an attribute, method or class.
     
     Returns
     -------
@@ -408,7 +408,7 @@ class SimpleSection(object):
     
     def serialize(self):
         """
-        Serilalizes the attribute section to html string parts.
+        Serializes the attribute section to html string parts.
         
         This method is a generator.
         
@@ -439,7 +439,8 @@ class SimpleSection(object):
             yield '>'
         
         
-        yield from sub_section_serializer(self.content, object_, get_parent_path_of(path), create_relative_sectionated_link)
+        yield from sub_section_serializer(self.content, object_, get_parent_path_of(path),
+            create_relative_sectioned_link)
         return
     
     def structurize(self):
@@ -479,11 +480,11 @@ class FunctionOrPropertySerializer(object):
     __slots__ = ('content', 'object', 'path')
     def __init__(self, object_, path=None):
         """
-        Creates a new method or property serilaizer.
+        Creates a new method or property serializer.
         
         Parameters
         ----------
-        object_ : ``PorpertyUnit`` or ``MethodUnit``
+        object_ : ``PropertyUnit`` or ``MethodUnit``
             The object to serialize.
         path : `None` or ``QualPath``, Optional
             Path to use instead of the object's.
@@ -513,11 +514,11 @@ class FunctionOrPropertySerializer(object):
                 continue
             
             try:
-                exising = section_parts[SECTION_TYPE_X]
+                existing = section_parts[SECTION_TYPE_X]
             except KeyError:
-                exising = section_parts[SECTION_TYPE_X] = []
+                existing = section_parts[SECTION_TYPE_X] = []
             
-            exising.append(SimpleSection(section_name, section_content, object_, path))
+            existing.append(SimpleSection(section_name, section_content, object_, path))
             continue
         
         content = []
@@ -562,8 +563,8 @@ class FunctionOrPropertySerializer(object):
         if tier > 1:
             yield '<div class="sub_unit">'
         
-        for serailizer in content:
-            yield from serailizer.serialize()
+        for serializer in content:
+            yield from serializer.serialize()
         
         if tier > 1:
             yield '</div>'
@@ -572,7 +573,7 @@ class FunctionOrPropertySerializer(object):
     
     def structurize(self):
         """
-        Creates a structure for the represneted unit.
+        Creates a structure for the represented unit.
         
         Returns
         -------
@@ -580,28 +581,28 @@ class FunctionOrPropertySerializer(object):
         """
         content = self.content
         if content is None:
-            childs = None
+            children = None
         else:
-            childs = []
-            for serailizer in self.content:
-                child = serailizer.structurize()
+            children = []
+            for serializer in self.content:
+                child = serializer.structurize()
                 if child is None:
                     continue
                 
-                childs.append(child)
+                children.append(child)
                 continue
             
-            if not childs:
-                childs = None
+            if not children:
+                children = None
         
         path = self.path
         title = path.parts[-1]
         prefixed_title = get_anchor_prefix_for(path)
-        return Structure(title, prefixed_title, childs)
+        return Structure(title, prefixed_title, children)
 
 class UnitSection(object):
     """
-    Represnets a seciton, which is filled with units.
+    Represents a section, which is filled with units.
     
     Attributes
     ----------
@@ -637,7 +638,7 @@ class UnitSection(object):
     
     def serialize(self):
         """
-        Serializes theunit section to html parts.
+        Serializes the unit section to html parts.
         
         This method is a generator.
         
@@ -685,16 +686,16 @@ class UnitSection(object):
             If the section is unnamed, returns `None`.
         """
         path = self.path
-        childs = []
+        children = []
         
         for name, unit in self.units:
             serializer_type = UNIT_CONVERSION_TABLE[type(unit)]
             serializer = serializer_type(unit, path/name)
             child = serializer.structurize()
-            childs.append(child)
+            children.append(child)
         
-        if not childs:
-            childs = None
+        if not children:
+            children = None
         
         title = self.title
         prefixed_title = get_anchor_prefix_for(path)
@@ -704,11 +705,11 @@ class UnitSection(object):
         else:
             prefixed_title = anchor_escape(title)
         
-        return Structure(title, prefixed_title, childs)
+        return Structure(title, prefixed_title, children)
     
 class AttributeSection(object):
     """
-    Represnets an attribute section.
+    Represents an attribute section.
     
     Attributes
     ----------
@@ -776,7 +777,7 @@ class AttributeSection(object):
     
     def serialize(self):
         """
-        Serilalizes the attribute section to html string parts.
+        Serializes the attribute section to html string parts.
         
         This method is a generator.
         
@@ -826,8 +827,8 @@ class AttributeSection(object):
                 yield '<br>'
                 continue
             
-            atrribute_content = attribute_unit.sections[0][1]
-            maybe_head = atrribute_content[0]
+            attribute_content = attribute_unit.sections[0][1]
+            maybe_head = attribute_content[0]
             if type(maybe_head) is GravedAttributeDescription:
                 separator = maybe_head.separator
                 if separator == '(':
@@ -843,16 +844,16 @@ class AttributeSection(object):
                 if yield_space:
                     yield ' '
                 
-                yield graved_to_escaped(maybe_head.content, object_, parent_path, create_relative_sectionated_link)
+                yield graved_to_escaped(maybe_head.content, object_, parent_path, create_relative_sectioned_link)
                 yield '</div>'
-                atrribute_content = atrribute_content[1:]
-                if not atrribute_content:
+                attribute_content = attribute_content[1:]
+                if not attribute_content:
                     continue
             else:
                 yield '</div>'
             
             yield '<div class="sub_section">'
-            yield from sub_section_serializer(atrribute_content, object_, parent_path, create_relative_sectionated_link)
+            yield from sub_section_serializer(attribute_content, object_, parent_path, create_relative_sectioned_link)
             yield '</div>'
             continue
         
@@ -861,12 +862,12 @@ class AttributeSection(object):
             return
         
         extra_content = extra.sections[0][1]
-        yield from sub_section_serializer(extra_content, object_, parent_path, create_relative_sectionated_link)
+        yield from sub_section_serializer(extra_content, object_, parent_path, create_relative_sectioned_link)
         return
     
     def structurize(self):
         """
-        Creates a section structure for the represneted attribute section.
+        Creates a section structure for the represented attribute section.
         
         Returns
         -------
@@ -875,7 +876,7 @@ class AttributeSection(object):
         path = self.path
         prefix = get_anchor_prefix_for(path)
         
-        childs = []
+        children = []
         
         for child_title in sorted(self.relations, key=name_sort_key):
             if prefix:
@@ -884,10 +885,10 @@ class AttributeSection(object):
                 child_prefixed_title = anchor_escape(child_title)
             
             child = Structure(child_title, child_prefixed_title, None)
-            childs.append(child)
+            children.append(child)
         
-        if not childs:
-            childs = None
+        if not children:
+            children = None
         
         title = self.title
         if prefix:
@@ -895,7 +896,7 @@ class AttributeSection(object):
         else:
             prefixed_title = anchor_escape(title)
         
-        return Structure(title, prefixed_title, childs)
+        return Structure(title, prefixed_title, children)
 
 SECTION_NAME_TYPE_DEFAULT_RELATIONS = {
     'Usage' : SECTION_TYPE_USAGES,
@@ -911,7 +912,7 @@ SECTION_NAME_TYPE_DEFAULT_RELATIONS = {
 
 class TypeSerializer(object):
     """
-    Converts the given type docs to topically breaken down parts.
+    Converts the given type docs to topically broken down parts.
     
     Attributes
     ----------
@@ -976,11 +977,11 @@ class TypeSerializer(object):
                     continue
                 
                 try:
-                    exising = section_parts[SECTION_TYPE_X]
+                    existing = section_parts[SECTION_TYPE_X]
                 except KeyError:
-                    exising = section_parts[SECTION_TYPE_X] = []
+                    existing = section_parts[SECTION_TYPE_X] = []
                 
-                exising.append(SimpleSection(section_name, section_content, object_, path))
+                existing.append(SimpleSection(section_name, section_content, object_, path))
                 continue
         
         collected_instance_attributes = []
@@ -1033,7 +1034,7 @@ class TypeSerializer(object):
                 if found:
                     continue
             
-            # Maybe missplaced?
+            # Maybe misplaced?
             try:
                 section_attributes_c = section_parts[SECTION_TYPE_CLASS_ATTRIBUTES]
             except:
@@ -1075,7 +1076,7 @@ class TypeSerializer(object):
         
     def serialize(self):
         """
-        Serilalizes the attribute section to html string parts.
+        Serializes the attribute section to html string parts.
         
         This method is a generator.
         
@@ -1111,28 +1112,28 @@ class TypeSerializer(object):
 
     def structurize(self):
         """
-        Creates a section structure for the represneted unit.
+        Creates a section structure for the represented unit.
         
         Returns
         -------
         structure : ``Structure``
         """
-        childs = []
+        children = []
         for section in self.sections:
             child = section.structurize()
             if child is None:
                 continue
             
-            childs.append(child)
+            children.append(child)
         
-        if not childs:
-            childs = None
+        if not children:
+            children = None
         
         path = self.path
         title = path.parts[-1]
         prefixed_title = get_anchor_prefix_for(path)
         
-        return Structure(title, prefixed_title, childs)
+        return Structure(title, prefixed_title, children)
 
 class UnitListerSection(object):
     """
@@ -1217,7 +1218,7 @@ class UnitListerSection(object):
     
     def structurize(self):
         """
-        Creates a section structure for the represneted unit listing.
+        Creates a section structure for the represented unit listing.
         
         Returns
         -------
@@ -1229,7 +1230,7 @@ class UnitListerSection(object):
 
 class ModuleSerializer(object):
     """
-    Collects the given module to topically breaken down parts.
+    Collects the given module to topically broken down parts.
     
     Attributes
     ----------
@@ -1248,7 +1249,7 @@ class ModuleSerializer(object):
         Parameters
         ----------
         object_ : ``ModuleUnit``
-            The moduel to serialize.
+            The module to serialize.
         path : `None` or ``QualPath``
             Path to use instead of the object's.
         """
@@ -1296,11 +1297,11 @@ class ModuleSerializer(object):
                     continue
                 
                 try:
-                    exising = section_parts[SECTION_TYPE_X]
+                    existing = section_parts[SECTION_TYPE_X]
                 except KeyError:
-                    exising = section_parts[SECTION_TYPE_X] = []
+                    existing = section_parts[SECTION_TYPE_X] = []
                 
-                exising.append(SimpleSection(section_name, section_content, object_, path))
+                existing.append(SimpleSection(section_name, section_content, object_, path))
                 continue
         
         collected_functions = []
@@ -1345,7 +1346,7 @@ class ModuleSerializer(object):
     
     def serialize(self):
         """
-        Serilalizes the attribute section to html string parts.
+        Serializes the attribute section to html string parts.
         
         This method is a generator.
         
@@ -1368,27 +1369,27 @@ class ModuleSerializer(object):
     
     def structurize(self):
         """
-        Creates a section structure for the represneted unit.
+        Creates a section structure for the represented unit.
         
         Returns
         -------
         structure : ``Structure``
         """
-        childs = []
+        children = []
         for section in self.sections:
             child = section.structurize()
             if child is None:
                 continue
             
-            childs.append(child)
+            children.append(child)
         
-        if not childs:
-            childs = None
+        if not children:
+            children = None
         
         title = self.path.parts[-1]
         prefixed_title = anchor_escape(title)
         
-        return Structure(title, prefixed_title, childs)
+        return Structure(title, prefixed_title, children)
         
 UNIT_CONVERSION_TABLE = {
     PropertyUnit : FunctionOrPropertySerializer,

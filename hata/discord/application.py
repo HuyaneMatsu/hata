@@ -12,7 +12,7 @@ class ApplicationFlag(FlagBase):
     """
     Represents an application's flags.
     
-    The implememted user flags are the following:
+    The implemented user flags are the following:
     
     +-------------------------------+-------------------+
     | Respective name               | Bitwise position  |
@@ -25,7 +25,7 @@ class Application(DiscordEntity, immortal=True):
     """
     Represents a Discord application with all of it's spice.
     
-    When a ``Client`` is created, it starts it's life with an empty application by defualt. However when the client
+    When a ``Client`` is created, it starts it's life with an empty application by default. However when the client
     logs in, it's application is requested, but it can be updated by ``Client.update_application_info`` anytime.
     
     Attributes
@@ -49,7 +49,7 @@ class Application(DiscordEntity, immortal=True):
     eula_id : `int`
         The end-user license agreement's id of the application. Defaults to `0` if not applicable.
     executables : `None` or `list` of ``ApplicationExecutable``
-        A list of the appplication's executables. Defaults to `None`.
+        A list of the application's executables. Defaults to `None`.
     flags : ``ApplicationFlag``
         The application's public flags.
     guild_id : `int`
@@ -87,9 +87,9 @@ class Application(DiscordEntity, immortal=True):
         The application's splash image's type.
     summary : `str`
         if this application is a game sold on Discord, this field will be the summary field for the store page of its
-        primary sku. Defautls to empty string.
+        primary sku. Defaults to empty string.
     third_party_skus : `None` or `list` of ``ThirdPartySKU``
-         A list of the appplication's third party stock keeping units. Defaults to `None`.
+         A list of the application's third party stock keeping units. Defaults to `None`.
     verify_key : `str`
         A base64 encoded key for the GameSDK's `GetTicket`. Defaults to empty string.
     
@@ -108,7 +108,7 @@ class Application(DiscordEntity, immortal=True):
     @classmethod
     def _create_empty(cls):
         """
-        Creates an empty application, witth it's default attributes set.
+        Creates an empty application, with it's default attributes set.
         
         Returns
         -------
@@ -151,7 +151,7 @@ class Application(DiscordEntity, immortal=True):
     
     def _create_update(self, data, ready_data):
         """
-        Cretaes a new application if the given data refers to an other one. Updates the application and returns it.
+        Creates a new application if the given data refers to an other one. Updates the application and returns it.
         
         Parameters
         ----------
@@ -267,7 +267,7 @@ class Application(DiscordEntity, immortal=True):
             Application data received from Discord.
         set_owner : `bool`, Optional
             Whether the application's owner should be set from the given data. Defaults to `False`.
-            Should be given as `True`, if the application is created or if it contans owner data.
+            Should be given as `True`, if the application is created or if it contains owner data.
         """
         self.name = data['name']
         
@@ -380,12 +380,12 @@ class Application(DiscordEntity, immortal=True):
 
 class Team(DiscordEntity, immortal=True):
     """
-    Represents a Team on the Discord developer protal.
+    Represents a Team on the Discord developer portal.
     
     Attributes
     ----------
     id : `int`
-        The unique identificator number of the team.
+        The unique identifier number of the team.
     icon_hash : `int`
         The team's icon's hash as `uint128`. Defaults to `0`.
     icon_type : `IconType`
@@ -399,7 +399,7 @@ class Team(DiscordEntity, immortal=True):
     
     Notes
     -----
-    Team objects support weakreferencig.
+    Team objects support weakreferencing.
     """
     __slots__ = ('members', 'name', 'owner_id',)
     
@@ -547,7 +547,7 @@ class ApplicationSubEntity(DiscordEntity):
     Attributes
     ----------
     id : `int`
-        The unique identificator number of the entity.
+        The unique identifier number of the entity.
     name : `str`
         The name of the entity.
     """
@@ -566,7 +566,7 @@ class ApplicationSubEntity(DiscordEntity):
         self.name = data['name']
     
     def __repr__(self):
-        """Returns the entity's rerepsentation."""
+        """Returns the entity's representation."""
         return f'<{self.__class__.__name__} {self.name!r}, id={self.id}>'
     
     def __eq__(self, other):
@@ -606,7 +606,7 @@ class ApplicationExecutable(object):
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
-            Executures data.
+            Executable data.
         """
         self.name = data['name']
         self.os = data['os']
@@ -674,9 +674,9 @@ class ThirdPartySKU(object):
     Represents a third party Stock Keeping Unit.
     
     distributor : `str`
-        The districbutor of the SKU.
+        The distributor of the SKU.
     id : `str`
-        The identificator of the third party SKU.
+        The identifier of the third party SKU.
     sku : `str`
         Might be same as `.id`.
     """
@@ -730,12 +730,12 @@ class ThirdPartySKU(object):
 
 class EULA(DiscordEntity, immortal=True):
     """
-    Represnts a Discord end-user license agreement
+    Represents a Discord end-user license agreement
     
     Attributes
     ----------
     id : `int`
-        The unique identificator number of the eula.
+        The unique identifier number of the eula.
     content : `str`
         The eula's content.
     name : `str`
@@ -747,7 +747,7 @@ class EULA(DiscordEntity, immortal=True):
     """
     def __new__(cls, data):
         """
-        Creates a new eula instance from the givne parameters.
+        Creates a new eula instance from the given parameters.
         
         If the eula already exists, returns that instead.
         

@@ -20,9 +20,9 @@ class SyncWait(object):
     Attributes
     ----------
     _exception : `None` or `BaseException` instance
-        The waiter's exception if applicable. efaults to `None`.
+        The waiter's exception if applicable. defaults to `None`.
     _result : `Any`
-        The waiter's reult if applicable. Defaults to `None`.
+        The waiter's result if applicable. Defaults to `None`.
     _waiter : `threading.SyncEvent`
         Threading event, what is set, when the waiter's result is set.
     """
@@ -111,7 +111,7 @@ class SyncWait(object):
 
 class SyncQueue(object):
     """
-    Synchoronous queue for retrieving set elements outside of an eventloop.
+    Synchronous queue for retrieving set elements outside of an event loop.
     
     Attributes
     ----------
@@ -126,20 +126,20 @@ class SyncQueue(object):
     """
     __slots__ = ('_cancelled', '_lock', '_results', '_waiter',)
     
-    def __init__(self, iterable=None, maxlen=None, cancelled=False):
+    def __init__(self, iterable=None, max_length=None, cancelled=False):
         """
         Creates a new ``SyncQueue`` instance with the given parameters.
         
         Parameters
         ----------
-        iterable : `iterbale` of `Any`
+        iterable : `iterable` of `Any`
             Iterable to set the queue's results initially from.
-        maxlen : `int`
+        max_length : `int`
             Maximal length of the queue. If the queue would pass it's maximal length, it's oldest results are popped.
         cancelled : `bool`
             Whether the queue should be initially cancelled.
         """
-        self._results = deque(maxlen=maxlen) if iterable is None else deque(iterable, maxlen=maxlen)
+        self._results = deque(maxlen=max_length) if iterable is None else deque(iterable, maxlen=max_length)
         self._waiter = None
         self._cancelled = cancelled
         self._lock = SyncLock()
@@ -164,7 +164,7 @@ class SyncQueue(object):
     
     def cancel(self):
         """
-        Cancels the syncqueue and it's waiter as well.
+        Cancels the sync-queue and it's waiter as well.
         """
         if self._cancelled:
             return
@@ -257,10 +257,10 @@ class SyncQueue(object):
             
             result.append(']')
             
-            maxlen = results.maxlen
-            if (maxlen is not None):
-                result.append(', maxlen=')
-                result.append(repr(maxlen))
+            max_length = results.maxlen
+            if (max_length is not None):
+                result.append(', max_length=')
+                result.append(repr(max_length))
             
             if self._cancelled:
                 result.append(', cancelled')
@@ -273,13 +273,13 @@ class SyncQueue(object):
     # deque operations
     
     @property
-    def maxlen(self):
+    def max_length(self):
         """
         The maximal length of the queue if applicable.
         
         Returns
         -------
-        maxlen : `None` or `int`
+        max_length : `None` or `int`
         """
         return self._results.maxlen
     
@@ -320,7 +320,7 @@ class SyncQueue(object):
             return len(self._results)
     
     def __bool__(self):
-        """Returns `True` if the quque has any elements."""
+        """Returns `True` if the queue has any elements."""
         with self._lock:
             if self._results:
                 result = True
@@ -329,7 +329,7 @@ class SyncQueue(object):
         
         return result
 
-EXEUCTOR_THREAD_CREATED = 0
+EXECUTOR_THREAD_CREATED = 0
 EXECUTOR_THREAD_RUNNING = 1
 EXECUTOR_THREAD_STOPPED = 2
 
@@ -346,7 +346,7 @@ class ExecutorThread(Thread):
         +---------------------------+-------+
         | Respective name           | Value |
         +===========================+=======+
-        | EXEUCTOR_THREAD_CREATED   | 0     |
+        | EXECUTOR_THREAD_CREATED   | 0     |
         +---------------------------+-------+
         | EXECUTOR_THREAD_RUNNING   | 1     |
         +---------------------------+-------+
@@ -354,14 +354,14 @@ class ExecutorThread(Thread):
         +---------------------------+-------+
     
     queue : ``SyncQueue`` of ``ExecutionPair``
-        Synchornous queue of functions to execute and of their waiter future.
+        Synchronous queue of functions to execute and of their waiter future.
     """
     __slots__ = ('state', 'queue',)
     def __init__(self):
         """
         Creates and start a ``ExecutorThread``.
         """
-        self.state = EXEUCTOR_THREAD_CREATED
+        self.state = EXECUTOR_THREAD_CREATED
         self.queue = SyncQueue()
         Thread.__init__(self, daemon=True)
         self.start()
@@ -370,7 +370,7 @@ class ExecutorThread(Thread):
         """
         The main runner of an ``ExecutorThread``.
         """
-        if self.state != EXEUCTOR_THREAD_CREATED:
+        if self.state != EXECUTOR_THREAD_CREATED:
             return
             
         self.state = EXECUTOR_THREAD_RUNNING
@@ -399,9 +399,9 @@ class ExecutorThread(Thread):
                         err = exception
                         exception = None
                     
-                    future._loop.call_soon_threadsafe(future.__class__.set_exception_if_pending, future, err)
+                    future._loop.call_soon_thread_safe(future.__class__.set_exception_if_pending, future, err)
                 else:
-                    future._loop.call_soon_threadsafe(future.__class__.set_result_if_pending, future, result)
+                    future._loop.call_soon_thread_safe(future.__class__.set_result_if_pending, future, result)
                     result = None
                 
                 future = None
@@ -410,7 +410,7 @@ class ExecutorThread(Thread):
             except BaseException as err:
                 extracted = [
                     self.__class__.__name__,
-                    ' exception occured\n',
+                    ' exception occurred\n',
                     repr(self),
                     '\n',
                         ]
@@ -453,13 +453,13 @@ class ExecutorThread(Thread):
     
     def cancel(self):
         """
-        Cancels all the pending elements on the executor thread's queue, then cansels the queue itself as well.
+        Cancels all the pending elements on the executor thread's queue, then cancels the queue itself as well.
         """
         self.state = EXECUTOR_THREAD_STOPPED
         queue = self.queue
         while queue:
             future = queue.result_no_wait().future
-            future._loop.call_soon_threadsafe(future.cancel)
+            future._loop.call_soon_thread_safe(future.cancel)
         
         queue.cancel()
     
@@ -551,7 +551,7 @@ class _claim_ended_cb(object):
         executor._shrink_queue()
         if not executor.queue:
             parent = self.parent
-            loop.call_soon_threadsafe(parent.__class__._claim_ended, parent, executor)
+            loop.call_soon_thread_safe(parent.__class__._claim_ended, parent, executor)
     
     def __eq__(self,other):
         """Returns whether the two claim ended callbacks are the same."""
@@ -574,7 +574,7 @@ class ClaimedExecutor(object):
     __slots__ = ('executor', 'parent',)
     def __init__(self, parent, executor):
         """
-        Creates a new claimed executor instance which will wrap the givne executor thread of it's executor.
+        Creates a new claimed executor instance which will wrap the given executor thread of it's executor.
         
         Parameters
         ----------
@@ -599,7 +599,7 @@ class ClaimedExecutor(object):
         Returns
         -------
         future : ``Future``
-            The future, to what the ruturned value or the raised exception of `func` is set.
+            The future, to what the returned value or the raised exception of `func` is set.
         
         Raises
         ------
@@ -681,7 +681,7 @@ class _execution_ended_cb(object):
     def __call__(self, future):
         """calls the parent executor's ``._execution_ended`` method, giving the executor thread back to it."""
         parent = self.parent
-        future._loop.call_soon_threadsafe(parent.__class__._execution_ended, parent, self.executor)
+        future._loop.call_soon_thread_safe(parent.__class__._execution_ended, parent, self.executor)
     
     def __eq__(self, other):
         """Returns whether the two execution ended callbacks are the same."""
@@ -709,7 +709,7 @@ class Executor(object):
     
     def __init__(self, keep_executor_count=1):
         """
-        Initiliazes the executor.
+        Initializes the executor.
         
         Parameters
         ----------
@@ -792,7 +792,7 @@ class Executor(object):
     
     def create_future(self):
         """
-        Creates a future bound to the respective eventloop.
+        Creates a future bound to the respective event loop.
         
         Returns
         -------
@@ -824,7 +824,7 @@ class Executor(object):
         Returns
         -------
         future : ``Future``
-            The future, to what the ruturned value or the raised exception of `func` is set.
+            The future, to what the returned value or the raised exception of `func` is set.
             
             If the executor is cancelled, then these futures are cancelled as well.
         """
@@ -837,7 +837,7 @@ class Executor(object):
 
     def _execution_ended(self, executor):
         """
-        Called when an executed function finishes esnured by ``.run_in_executor``. Used to give back the
+        Called when an executed function finishes ensured by ``.run_in_executor``. Used to give back the
         ``ExecutorThread`` to the executor and maybe cancel it.
         
         Parameters
@@ -902,12 +902,12 @@ class Executor(object):
         """
         Called when an executor thread is given back to the executor.
         
-        The method desides whether the executor should be kept or released.
+        The method decides whether the executor should be kept or released.
         
         Parameters
         ----------
         executor : ``ExecutorThread``
-            The given back exectuor.
+            The given back executor.
         """
         executors = self.free_executors
         if len(executors) < self.keep_executor_count:

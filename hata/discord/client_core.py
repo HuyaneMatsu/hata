@@ -9,7 +9,7 @@ from threading import current_thread
 
 from ..backend.utils import WeakValueDictionary
 from ..backend.futures import Future, sleep, CancelledError, future_or_timeout, Task
-from ..backend.eventloop import EventThread
+from ..backend.event_loop import EventThread
 
 Client = NotImplemented
 
@@ -22,13 +22,13 @@ else:
     create_array = list
     
 if sys.implementation.name == 'cpython':
-    #on cpython bisect is 4~ times faster.
+    #on CPython bisect is 4~ times faster.
     import bisect
-    _relativeindex = bisect.bisect_left
+    _relative_index = bisect.bisect_left
     del bisect
 
 else:
-    def _relativeindex(array, value):
+    def _relative_index(array, value):
         """
         Return the index where to insert item `value`  in list `array`, assuming `array` is sorted.
         
@@ -58,13 +58,13 @@ else:
 
 class ClientDictionary(object):
     """
-    A dictionary like data object for storing irectly ``Client`` objects.
+    A dictionary like data object for storing directly ``Client`` objects.
     
     Attributes
     ----------
     _elements : `list` of ``Client``
         The stored ``Client`` objects sorted by their id.
-    _ids : (`array` of `uint64`) if sysbit >= 64 else (`list` of `int`)
+    _ids : (`array` of `uint64`) if sys.bit >= 64 else (`list` of `int`)
         The client's from `._elements` in a sorted form.
     _next : `int`
         The next added ``Client``'s auto id, if it has no id set.
@@ -102,7 +102,7 @@ class ClientDictionary(object):
             self._next = id_+1
         
         array = self._ids
-        index = _relativeindex(array, id_)
+        index = _relative_index(array, id_)
         
         if index == len(array): #put it at the last place
             array.append(id_)
@@ -134,7 +134,7 @@ class ClientDictionary(object):
             return #not in the container
         
         array = self._ids
-        index = _relativeindex(array, id_)
+        index = _relative_index(array, id_)
         
         if index == len(array): #not in the container
             return
@@ -157,7 +157,7 @@ class ClientDictionary(object):
             The `.id` of a client to remove.
         """
         array = self._ids
-        index = _relativeindex(array, id_)
+        index = _relative_index(array, id_)
         
         if index == len(array): #not in the container
             return
@@ -170,7 +170,7 @@ class ClientDictionary(object):
     
     def update(self, client, new_id):
         """
-        Upates a client at the continer with a new id. Sets the new `.id` of the client and modifies it's position
+        Updates a client at the container with a new id. Sets the new `.id` of the client and modifies it's position
         at the container if needed.
         
         Parameters
@@ -188,13 +188,13 @@ class ClientDictionary(object):
         old_id = client.id
         client.id = new_id
         array = self._ids
-        old_index = _relativeindex(array, old_id)
+        old_index = _relative_index(array, old_id)
         
         if old_index == len(array) or array[old_index] != old_id: #not in the container?
             self.append(client)
             return
         
-        new_index=_relativeindex(array,new_id)
+        new_index=_relative_index(array,new_id)
         
         #above or under?
         if old_index < new_index:
@@ -219,7 +219,7 @@ class ClientDictionary(object):
         array[index] = new_id
         
         elements = self._elements
-        #move objest
+        #move object
         index = old_index
         while True:
             if index == new_index:
@@ -232,7 +232,7 @@ class ClientDictionary(object):
     def __getitem__(self, id_):
         """Returns the client for the specified id."""
         array = self._ids
-        index = _relativeindex(array, id_)
+        index = _relative_index(array, id_)
         if index == len(array) or array[index] != id_:
             raise KeyError(f'{id_!r} is not in the {self.__class__.__name__}')
         return self._elements[index]
@@ -251,7 +251,7 @@ class ClientDictionary(object):
         client : ``Client`` or `default`
         """
         array = self._ids
-        index = _relativeindex(array, id_)
+        index = _relative_index(array, id_)
         if index == len(array) or array[index] != id_:
             return default
         return self._elements[index]
@@ -260,7 +260,7 @@ class ClientDictionary(object):
         """Returns whether the client is at the container."""
         id_ = client.id
         array = self._ids
-        index = _relativeindex(array, id_)
+        index = _relative_index(array, id_)
         if index == len(array):
             return False
         return (array[index] == id_)
@@ -280,7 +280,7 @@ class ClientDictionary(object):
         
         Returns
         -------
-        inddex : `int`
+        index : `int`
         
         Raises
         ------
@@ -289,7 +289,7 @@ class ClientDictionary(object):
         """
         id_ = client.id
         array = self._ids
-        index = _relativeindex(array, id_)
+        index = _relative_index(array, id_)
         if index == len(array) or array[index] != id_:
             raise ValueError(f'{client!r} is not in the {self.__class__.__name__}')
         return index
@@ -299,7 +299,7 @@ class ClientDictionary(object):
         return iter(self._elements)
 
     def __reversed__(self):
-        """Returns a revrsed iterator over the clients stored by the container."""
+        """Returns a reversed iterator over the clients stored by the container."""
         return reversed(self._elements)
     
     def count(self, client):
@@ -318,7 +318,7 @@ class ClientDictionary(object):
         """
         id_ = client.id
         array = self._ids
-        index = _relativeindex(array, id_)
+        index = _relative_index(array, id_)
         if index == len(array):
             return 0
         if array[index] == id_:
@@ -385,7 +385,7 @@ def start_clients():
         Task(client.connect(), KOKORO)
     
     if (current_thread() is not KOKORO):
-        KOKORO.wakeup()
+        KOKORO.wake_up()
 
 def stop_clients():
     """
@@ -398,7 +398,7 @@ def stop_clients():
             Task(client.disconnect(), KOKORO)
     
     if (current_thread() is not KOKORO):
-        KOKORO.wakeup()
+        KOKORO.wake_up()
 
 KOKORO = EventThread(daemon=False, name='KOKORO')
 
@@ -444,12 +444,12 @@ class Kokoro(object):
     task : `None` or ``Task`` of ``._start``
         The main keep alive task of kokoro.
     ws_waiter : `None` or ``Future``
-        The waiter of kokoro, what waits for it's geteway to connect it's websocket.
+        The waiter of kokoro, what waits for it's gateway to connect it's websocket.
     
     Class attributes
     ----------------
     DEFAULT_LATENCY : `float` = `9999.0`
-        The default lateny of kokoro. Better than using `inf`.
+        The default latency of kokoro. Better than using `inf`.
     """
     __slots__ = ('beat_task', 'beat_waiter', 'beater', 'gateway', 'interval', 'last_answer', 'last_send', 'latency',
         'running', 'should_beat', 'task', 'ws_waiter')
@@ -516,7 +516,7 @@ class Kokoro(object):
         
         The control flow of the method is the following:
             - Set `.ws_waiter` and wait till it is done. If it is done, means that kokoro's gateway is connected.
-                If it was canelled meanwhile, means the beat task should stop.
+                If it was cancelled meanwhile, means the beat task should stop.
             - Sets `.beater` to ``._keep_beating`` and awaits it. This is the main beater of kokoro and runs meanwhile
                 it's gateway is connected. This task can be cancelled, but we ignore that case.
             - If `.running` is still `True`, repeat.
@@ -569,7 +569,7 @@ class Kokoro(object):
             - We beat one with starting `gateway._beat` as a ``Task`` and setting it to `.beat_task`. If the task is
                 not completed before it's respective timeout, we stop the gateway here as well. We also break out
                 from the loop to terminate the beating state and we will wait for the websocket to connect again.
-                This task can also be cancelled. If cancellation occures, we repeat the loop.
+                This task can also be cancelled. If cancellation occurs, we repeat the loop.
             - If the beating task is done, we update `.last_send` to the current `perf_counter` time. Repeat the loop.
         
         This method is a coroutine.
@@ -611,7 +611,7 @@ class Kokoro(object):
     
     def start_beating(self):
         """
-        Starts kokoro's beating. Handles all the cases arround the board to do so.
+        Starts kokoro's beating. Handles all the cases around the board to do so.
         """
         # case 1 : we are not running
         if not self.running:
@@ -756,7 +756,7 @@ class Kokoro(object):
                 should_beat_now = True # True = send beat data
                 break
             
-            # case 4 : we aready beat
+            # case 4 : we already beat
 ##            task=self.beat_task
 ##            if task is not None:
 ##                should_beat_now=False

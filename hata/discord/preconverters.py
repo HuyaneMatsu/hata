@@ -8,7 +8,7 @@ def preconvert_snowflake(snowflake, name):
     Parameters
     ----------
     snowflake : `str` or `int`
-        The snowfalke to convert.
+        The snowflake to convert.
     name : `str`
         The name of the snowflake.
     
@@ -19,9 +19,9 @@ def preconvert_snowflake(snowflake, name):
     Raises
     ------
     TypeError
-        - If `snowfalke` was not passed neither as `int` or as `str` instance.
+        - If `snowflake` was not passed neither as `int` or as `str` instance.
     ValueError
-        - If `snowfalke` was passed as `str` and cannot be converted to `int`.
+        - If `snowflake` was passed as `str` and cannot be converted to `int`.
         - If the converted `snowflake` is negative or it's bit length is over 64.
     """
     snowflake_type = snowflake.__class__

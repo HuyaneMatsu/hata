@@ -1,13 +1,13 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('DiscordException', 'DiscordGatewayException', 'ERROR_CODES', 'InvalidToken',)
 
-from ..backend.hdrs import RETRY_AFTER
+from ..backend.headers import RETRY_AFTER
 
 class DiscordException(Exception):
     """
-    Represents an exception raised by Discord, when it respons with a not expected response code.
+    Represents an exception raised by Discord, when it response with a not expected response code.
     
-    Depending on Discord's reponse code, the http client's behaiours differently.
+    Depending on Discord's response code, the http client's behaviours differently.
     
     +-------+-----------------------+---------------+
     | Code  | Meaning               | Behaviour     |
@@ -30,9 +30,9 @@ class DiscordException(Exception):
     +-------+-----------------------+---------------+
     | 405   | METHOD NOT ALLOWED    | raise         |
     +-------+-----------------------+---------------+
-    | 429   | TOO MANY REQUESTS     | ratelimited   |
+    | 429   | TOO MANY REQUESTS     | rate limited  |
     +-------+-----------------------+---------------+
-    | 500   | SERVER ERRROR         | \*retry       |
+    | 500   | SERVER ERROR          | \*retry       |
     +-------+-----------------------+---------------+
     | 502   | GATEWAY UNAVAILABLE   | \*retry       |
     +-------+-----------------------+---------------+
@@ -46,15 +46,15 @@ class DiscordException(Exception):
     Attributes
     ----------
     response : ``ClientResponse``
-        The http client reponse, what caused the error.
+        The http client response, what caused the error.
     data : `Any`
         Deserialized `json` response data if applicable.
     _messages : `None` or `list` of `str`
-        Initally the `._messages` attribute is `None`, but when the `.messages` property is used for the first time,
-        the messages will be parsed out from the resposne and from it's data.
+        Initially the `._messages` attribute is `None`, but when the `.messages` property is used for the first time,
+        the messages will be parsed out from the response and from it's data.
     _code : `None` or `int`
         Initially the `._code` attribute is set to `None`, but first time when the `.code` property is accessed, it is
-        parsed out. If the reponse data does not contains `code`, then this attribute is set to `0`.
+        parsed out. If the response data does not contains `code`, then this attribute is set to `0`.
     """
     def __init__(self, response, data):
         """
@@ -63,7 +63,7 @@ class DiscordException(Exception):
         Parameters
         ----------
         response : ``ClientResponse``
-            The http client reponse, what caused the error.
+            The http client response, what caused the error.
         data : `Any`
             Deserialized `json` response data if applicable.
         """
@@ -80,7 +80,7 @@ class DiscordException(Exception):
         exception's name, the response's reason and it's status. If set, then also the Discord's internal error code
         and it's message as well.
         
-        Every other element at the list is optional. Those are extra errors included in the reponse's data.
+        Every other element at the list is optional. Those are extra errors included in the response's data.
         
         Returns
         -------
@@ -356,6 +356,8 @@ class ERROR_CODES:
     +---------------------------------------------------+-----------+-------+
     | unknown_interaction                               | 10062     | -     |
     +---------------------------------------------------+-----------+-------+
+    | unknown_application_command                       | 10063     | -     |
+    +---------------------------------------------------+-----------+-------+
     | bots_not_allowed                                  | 20001     | -     |
     +---------------------------------------------------+-----------+-------+
     | only_bots_allowed                                 | 20002     | -     |
@@ -370,9 +372,9 @@ class ERROR_CODES:
     +---------------------------------------------------+-----------+-------+
     | account_disabled                                  | 20013     | -     |
     +---------------------------------------------------+-----------+-------+
-    | slowmode_ratelimited                              | 20016     | -     |
+    | slowmode_rate_limited                             | 20016     | -     |
     +---------------------------------------------------+-----------+-------+
-    | channel_following_edit_ratelimited                | 20022     | -     |
+    | channel_following_edit_rate_limited               | 20022     | -     |
     +---------------------------------------------------+-----------+-------+
     | under_minimum_age                                 | 20024     | -     |
     +---------------------------------------------------+-----------+-------+
@@ -384,7 +386,7 @@ class ERROR_CODES:
     +---------------------------------------------------+-----------+-------+
     | max_pins                                          | 30003     | 50    |
     +---------------------------------------------------+-----------+-------+
-    | max_recipements                                   | 30004     | -     |
+    | max_recipients                                    | 30004     | -     |
     +---------------------------------------------------+-----------+-------+
     | max_roles                                         | 30005     | 250   |
     +---------------------------------------------------+-----------+-------+
@@ -579,6 +581,7 @@ class ERROR_CODES:
     unknown_guild_template  = 10057
     unknown_discovery_category = 10059
     unknown_interaction     = 10062
+    unknown_application_command = 10063
     
     bots_not_allowed        = 20001
     only_bots_allowed       = 20002
@@ -587,15 +590,15 @@ class ERROR_CODES:
     account_scheduled_for_deletion = 20011
     user_not_authorized_for_application = 20012
     account_disabled        = 20013
-    slowmode_ratelimited    = 20016
-    channel_following_edit_ratelimited = 20022
+    slowmode_rate_limited    = 20016
+    channel_following_edit_rate_limited = 20022
     under_minimum_age       = 20024
     channel_send_rate_limit = 20028
     
     max_guilds              = 30001 # 100
     max_friends             = 30001 # 10000
     max_pins                = 30003 # 50
-    max_recipements         = 30004
+    max_recipients          = 30004
     max_roles               = 30005 # 250
     max_used_usernames      = 30006
     max_webhooks            = 30007 # 10

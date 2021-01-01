@@ -17,7 +17,7 @@ CO_NOFREE      = 64
 CO_COROUTINE           = 128
 CO_ITERABLE_COROUTINE  = 256
 CO_ASYNC_GENERATOR     = 512
-# macthes `async def` functions and `@coroutine` functions.
+# matches `async def` functions and `@coroutine` functions.
 CO_COROUTINE_ALL       = CO_COROUTINE|CO_ITERABLE_COROUTINE
 
 INSTANCE_TO_ASYNC_FALSE           = 0
@@ -26,8 +26,8 @@ INSTANCE_TO_ASYNC_CANNOT          = 2
 INSTANCE_TO_ASYNC_GENERATOR_FALSE = 3
 INSTANCE_TO_ASYNC_GENERATOR_TRUE  = 4
 
-ARGUMNET_POSITIONAL_ONLY        = 0
-ARGUMNET_POSITIONAL_AND_KEYWORD = 1
+ARGUMENT_POSITIONAL_ONLY        = 0
+ARGUMENT_POSITIONAL_AND_KEYWORD = 1
 ARGUMENT_KEYWORD_ONLY           = 2
 ARGUMENT_ARGS                   = 3
 ARGUMENT_KWARGS                 = 4
@@ -55,9 +55,9 @@ class Argument(object):
         +-----------------------------------+-----------+
         | Respective Name                   | Value     |
         +===================================+===========+
-        | ARGUMNET_POSITIONAL_ONLY          | 0         |
+        | ARGUMENT_POSITIONAL_ONLY          | 0         |
         +-----------------------------------+-----------+
-        | ARGUMNET_POSITIONAL_AND_KEYWORD   | 1         |
+        | ARGUMENT_POSITIONAL_AND_KEYWORD   | 1         |
         +-----------------------------------+-----------+
         | ARGUMENT_KEYWORD_ONLY             | 2         |
         +-----------------------------------+-----------+
@@ -81,7 +81,7 @@ class Argument(object):
         if self.reserved:
             result.append(' reserved ,')
         
-        result.append((' positonal only', ' positional', ' keyword only', ' args', ' kwargs')[self.positionality])
+        result.append(('positional only', ' positional', ' keyword only', ' args', ' kwargs')[self.positionality])
         
         result.append(', name=')
         result.append(repr(self.name))
@@ -106,7 +106,7 @@ class Argument(object):
         is_positional_only : `bool`
         """
         positionality = self.positionality
-        if positionality == ARGUMNET_POSITIONAL_ONLY:
+        if positionality == ARGUMENT_POSITIONAL_ONLY:
             return True
         
         return False
@@ -120,10 +120,10 @@ class Argument(object):
         is_positional : `bool`
         """
         positionality = self.positionality
-        if positionality == ARGUMNET_POSITIONAL_ONLY:
+        if positionality == ARGUMENT_POSITIONAL_ONLY:
             return True
         
-        if positionality == ARGUMNET_POSITIONAL_AND_KEYWORD:
+        if positionality == ARGUMENT_POSITIONAL_AND_KEYWORD:
             return True
         
         return False
@@ -137,7 +137,7 @@ class Argument(object):
         is_keyword : `bool`
         """
         positionality = self.positionality
-        if positionality == ARGUMNET_POSITIONAL_AND_KEYWORD:
+        if positionality == ARGUMENT_POSITIONAL_AND_KEYWORD:
             return True
         
         if positionality == ARGUMENT_KEYWORD_ONLY:
@@ -189,16 +189,16 @@ class Argument(object):
 
 class CallableAnalyzer(object):
     """
-    Analyzer for callables.
+    Analyzer for callable-s.
     
     Can analyze functions, methods, callable objects and types or such.
     
     Attributes
     ----------
     args_argument : `None` or ``Argument``
-        If the analyzed callable has `*args` argument, then this attribute is set to it. Defautls to `None`.
+        If the analyzed callable has `*args` argument, then this attribute is set to it. Defaults to `None`.
     arguments : `list` of ``Argument``
-        The analyzed callable's argumnets.
+        The analyzed callable's arguments.
     callable : `callable`
         The analyzed object.
     instance_to_async : `int`
@@ -215,7 +215,7 @@ class CallableAnalyzer(object):
         | INSTANCE_TO_ASYNC_CANNOT  | 2         | Whether the object is not async.          |
         +---------------------------+-----------+-------------------------------------------+
     kwargs_argument : `None` or ``Argument``
-        If the analyzed callable has `**kwargs`, then this attribute is set to it. Defautls to `None`.
+        If the analyzed callable has `**kwargs`, then this attribute is set to it. Defaults to `None`.
     method_allocation : `int`
         How much argument is allocated if the analyzed callable is method if applicable.
     real_function : `callable`
@@ -468,7 +468,7 @@ class CallableAnalyzer(object):
                     argument_index+=1
             
             if (method_allocation>argument_count) and (args_name is None):
-                raise TypeError(f'The passed object is a method like, but has not enought positional arguments: '
+                raise TypeError(f'The passed object is a method like, but has not enough positional arguments: '
                     f'`{real_function!r}`.')
             
             index = 0
@@ -496,9 +496,9 @@ class CallableAnalyzer(object):
                     argument.default = default
                 
                 if index<positional_only_argcount:
-                    argument.positionality = ARGUMNET_POSITIONAL_ONLY
+                    argument.positionality = ARGUMENT_POSITIONAL_ONLY
                 else:
-                    argument.positionality = ARGUMNET_POSITIONAL_AND_KEYWORD
+                    argument.positionality = ARGUMENT_POSITIONAL_AND_KEYWORD
                 
                 argument.reserved = (index<method_allocation)
                 arguments.append(argument)
@@ -660,7 +660,7 @@ class CallableAnalyzer(object):
         
         return True
     
-    # call `.can_instance_async_callable` or `.can_instacne_to_async_generator` before
+    # call `.can_instance_async_callable` or `.can_instance_to_async_generator` before
     def instance(self):
         """
         Instances the analyzed callable.

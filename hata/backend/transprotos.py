@@ -6,12 +6,12 @@ import socket as module_socket
 from .futures import Future
 
 if hasattr(module_socket, 'TCP_NODELAY'):
-    def _set_nodelay(sock):
-        if (sock.family in (module_socket.AF_INET, module_socket.AF_INET6) and
-            sock.type == module_socket.SOCK_STREAM and sock.proto == module_socket.IPPROTO_TCP):
-            sock.setsockopt(module_socket.IPPROTO_TCP, module_socket.TCP_NODELAY, 1)
+    def _set_nodelay(socket):
+        if (socket.family in (module_socket.AF_INET, module_socket.AF_INET6) and
+            socket.type == module_socket.SOCK_STREAM and socket.proto == module_socket.IPPROTO_TCP):
+            socket.setsockopt(module_socket.IPPROTO_TCP, module_socket.TCP_NODELAY, 1)
 else:
-    def _set_nodelay(sock):
+    def _set_nodelay(socket):
         pass
 
 MAX_SIZE = 262144
@@ -48,9 +48,9 @@ class _SSLPipe(object):
         | handshake_exc     | `None` or `BaseException` |
         +-------------------+---------------------------+
         
-        If the hahdshake is successfull, then the `handshake_exc` is given as `None`, else as an exception instance.
+        If the handshake is successful, then the `handshake_exc` is given as `None`, else as an exception instance.
     _incoming : `ssl.MemoryBIO`
-        Does the incodming data encryption/decryption.
+        Does the incoming data encryption/decryption.
     _outgoing : `ssl.MemoryBIO`
         Does the outgoing data encryption/decryption.
     _shutdown_cb : `None` or `callable`
@@ -59,7 +59,7 @@ class _SSLPipe(object):
         Should accept no parameters.
     context : `ssl.SSLContext`
         The SSL pipe's SSL type.
-    need_ssldata : `bool`
+    need_ssl_data : `bool`
         Whether more record level data is needed to complete a handshake that is currently in progress.
     server_hostname : `None` or `str`
         The ssl protocol's server hostname if applicable.
@@ -86,12 +86,12 @@ class _SSLPipe(object):
         
         Note, that ``.state`` is checked by memory address and not by value.
     """
-    __slots__ = ('_handshake_cb', '_incoming', '_outgoing', '_shutdown_cb', 'context', 'need_ssldata',
+    __slots__ = ('_handshake_cb', '_incoming', '_outgoing', '_shutdown_cb', 'context', 'need_ssl_data',
         'server_hostname', 'server_side', 'ssl_object', 'state',)
     
     def __init__(self, context, server_side, server_hostname):
         """
-        Creates a new ``_SSLPipe`` instacne with teh given parameters.
+        Creates a new ``_SSLPipe`` instance with teh given parameters.
         
         Parameters
         ----------
@@ -110,7 +110,7 @@ class _SSLPipe(object):
         self._incoming = ssl.MemoryBIO()
         self._outgoing = ssl.MemoryBIO()
         self.ssl_object = None
-        self.need_ssldata = False
+        self.need_ssl_data = False
         self._handshake_cb = None
         self._shutdown_cb = None
     
@@ -143,12 +143,12 @@ class _SSLPipe(object):
             | handshake_exc     | `None` or `BaseException` |
             +-------------------+---------------------------+
             
-            If the hahdshake is successfull, then the `handshake_exc` is given as `None`, else as an exception
+            If the handshake is successful, then the `handshake_exc` is given as `None`, else as an exception
             instance.
             
         Returns
         -------
-        ssldata : `list` of `bytes`
+        ssl_data : `list` of `bytes`
             A list of SSL data. Always an empty list is returned.
         
         Raises
@@ -164,9 +164,9 @@ class _SSLPipe(object):
         
         self.state = DO_HANDSHAKE
         self._handshake_cb = callback
-        ssldata, appdata = self.feed_ssldata(b'', only_handshake=True)
+        ssl_data, application_data = self.feed_ssl_data(b'', only_handshake=True)
         
-        return ssldata
+        return ssl_data
     
     def shutdown(self, callback=None):
         """
@@ -181,7 +181,7 @@ class _SSLPipe(object):
         
         Returns
         -------
-        ssldata : `list` of `bytes`
+        ssl_data : `list` of `bytes`
             A list of SSL data.
         
         Raises
@@ -198,8 +198,8 @@ class _SSLPipe(object):
         
         self.state = SHUTDOWN
         self._shutdown_cb = callback
-        ssldata, appdata = self.feed_ssldata(b'')
-        return ssldata
+        ssl_data, application_data = self.feed_ssl_data(b'')
+        return ssl_data
     
     def feed_eof(self):
         """
@@ -212,38 +212,38 @@ class _SSLPipe(object):
         """
         self._incoming.write_eof()
         # Ignore return.
-        self.feed_ssldata(b'')
+        self.feed_ssl_data(b'')
     
-    def feed_ssldata(self, data, only_handshake=False):
+    def feed_ssl_data(self, data, only_handshake=False):
         """
         Feed SSL record level data into the pipe.
         
         Parameters
         ----------
         data : `bytes`
-            If empty `bytes` is given, then it will get ssldata for the handshake initialization.
+            If empty `bytes` is given, then it will get ssl_data for the handshake initialization.
         
         Returns
         -------
-        ssldata : `list` of `bytes`
-            Conatins the SSL data that needs to be sent to the remote SSL.
-        appdata : `list` of `bytes`
+        ssl_data : `list` of `bytes`
+            Contains the SSL data that needs to be sent to the remote SSL.
+        application_data : `list` of `bytes`
             Plaintext data that needs to be forwarded to the application.
             
             Might contain an empty `bytes`, what indicates that ``.shutdown`` should be called.
         """
         state = self.state
-        ssldata = []
-        appdata = []
+        ssl_data = []
+        application_data = []
         
         if state is UNWRAPPED:
             # If unwrapped, pass plaintext data straight through.
             if data:
-                appdata.append(data)
+                application_data.append(data)
             
-            return ssldata, appdata
+            return ssl_data, application_data
         
-        self.need_ssldata = False
+        self.need_ssl_data = False
         if data:
             self._incoming.write(data)
         
@@ -258,14 +258,14 @@ class _SSLPipe(object):
                     handshake_cb(None)
                 
                 if only_handshake:
-                    return ssldata, appdata
+                    return ssl_data, application_data
                 # Handshake done: execute the wrapped block
             
             if state is WRAPPED:
                 # Main state: read data from SSL until close_notify.
                 while True:
                     chunk = self.ssl_object.read(MAX_SIZE)
-                    appdata.append(chunk)
+                    application_data.append(chunk)
                     if not chunk:  # close_notify
                         break
             
@@ -281,7 +281,7 @@ class _SSLPipe(object):
             
             elif state is UNWRAPPED:
                 # Drain possible plaintext data after close_notify.
-                appdata.append(self._incoming.read())
+                application_data.append(self._incoming.read())
         
         except (ssl.SSLError, ssl.CertificateError) as err:
             err_number = getattr(err, 'errno', None)
@@ -292,30 +292,30 @@ class _SSLPipe(object):
                         handshake_cb(err)
                 raise
             
-            self.need_ssldata = (err_number == ssl.SSL_ERROR_WANT_READ)
+            self.need_ssl_data = (err_number == ssl.SSL_ERROR_WANT_READ)
 
-        # Check for record level data that needs to be sent back. Happens for the initial handshake and renegotiations.
+        # Check for record level data that needs to be sent back. Happens for the initial handshake and renegotiation.
         if self._outgoing.pending:
-            ssldata.append(self._outgoing.read())
+            ssl_data.append(self._outgoing.read())
         
-        return ssldata, appdata
+        return ssl_data, application_data
 
-    def feed_appdata(self, data, offset):
+    def feed_application_data(self, data, offset):
         """
         Feed plaintext data into the pipe.
         
         If the returned `offset` is less than the returned data's total length in bytes, that case is called
-        `short write`. If `short-write` happens, than the same `data` should be passed to ``.feed_appdata`` next time.
-        (This is an OpenSSL requirement.) A further particularity is that a short write will always have `offset = 0`,
-        because the `_ssl` module does not enable partial writes. And even though the offset is `0`, there will still
-        be encrypted data in ssldata.
+        `short write`. If `short-write` happens, than the same `data` should be passed to ``.feed_application_data``
+        next time. (This is an OpenSSL requirement.) A further particularity is that a short write will always have
+        `offset = 0`, because the `_ssl` module does not enable partial writes. And even though the offset is `0`,
+        there will still be encrypted data in ssl_data.
         
         Returns
         -------
-        ssldata : `list` of `bytes-like`
+        ssl_data : `list` of `bytes-like`
             Containing record level data that needs to be sent to the remote SSL instance.
         offset : `int`
-            The number of the porcessed plaintext data in bytes. Might be less than the total length of the returned
+            The number of the processed plaintext data in bytes. Might be less than the total length of the returned
             data.
         
         Raises
@@ -323,16 +323,16 @@ class _SSLPipe(object):
         ssl.SSLError
             Any unexpected SSL error.
         """
-        ssldata = []
+        ssl_data = []
         if self.state is UNWRAPPED:
             # pass through data in unwrapped mode
             if offset < len(data):
-                ssldata.append(memoryview(data)[offset:])
-            oofset = len(data)
+                ssl_data.append(memoryview(data)[offset:])
+            offset = len(data)
         else:
             view = memoryview(data)
             while True:
-                self.need_ssldata = False
+                self.need_ssl_data = False
                 try:
                     if offset < len(view):
                         offset += self.ssl_object.write(view[offset:])
@@ -341,29 +341,29 @@ class _SSLPipe(object):
                     # return the condition to the caller as a short write.
                     if err.reason == 'PROTOCOL_IS_SHUTDOWN':
                         err.errno = ssl.SSL_ERROR_WANT_READ
-                        need_ssldata = True
+                        need_ssl_data = True
                     else:
                         errno = getattr(err, 'errno', None)
                         if errno is None:
                             raise
                         
                         if errno == ssl.SSL_ERROR_WANT_READ:
-                            need_ssldata = True
+                            need_ssl_data = True
                         elif errno == ssl.SSL_ERROR_WANT_WRITE or errno == ssl.SSL_ERROR_SYSCALL:
-                            need_ssldata = False
+                            need_ssl_data = False
                         else:
                             raise
                     
-                    self.need_ssldata = need_ssldata
+                    self.need_ssl_data = need_ssl_data
     
                 # See if there's any record level data back for us.
                 if self._outgoing.pending:
-                    ssldata.append(self._outgoing.read())
+                    ssl_data.append(self._outgoing.read())
                 
-                if offset == len(view) or self.need_ssldata:
+                if offset == len(view) or self.need_ssl_data:
                     break
         
-        return ssldata, offset
+        return ssl_data, offset
 
 
 class _SSLProtocolTransport(object):
@@ -440,7 +440,7 @@ class _SSLProtocolTransport(object):
         name : `str`
             The extra information's name to get.
         default : `Any`, Optional
-            Default value to return if `name` could not be macthed. Defaults to `None`.
+            Default value to return if `name` could not be matched. Defaults to `None`.
         
         Returns
         -------
@@ -462,7 +462,7 @@ class _SSLProtocolTransport(object):
      
     def get_protocol(self):
         """
-        Gets the ssl protocol transport actual protocol.
+        Gets the ssl protocol transport's actual protocol.
         
         Returns
         -------
@@ -473,7 +473,7 @@ class _SSLProtocolTransport(object):
     
     def is_closing(self):
         """
-        Returns whether the ssl protoco ltransport is closing.
+        Returns whether the ssl protocol transport is closing.
         
         Returns
         -------
@@ -490,14 +490,14 @@ class _SSLProtocolTransport(object):
 
     def __del__(self):
         """
-        Closes the ssl protocol transport ifn ot yet clsoed.
+        Closes the ssl protocol transport if not yet closed.
         """
         if not self.closed:
             self.close()
 
     def pause_reading(self):
         """
-        Pause the receiving end.
+        Pauses the receiving end.
         
         No data will be passed to the respective protocol's ``.data_received`` method until ``.resume_reading`` is
         called.
@@ -508,7 +508,7 @@ class _SSLProtocolTransport(object):
 
     def resume_reading(self):
         """
-        Resume the receiving end.
+        Resumes the receiving end.
         
         Data received will once again be passed to the respective protocol's ``.data_received`` method.
         """
@@ -580,7 +580,7 @@ class _SSLProtocolTransport(object):
             raise TypeError(f'`data` expecting a `bytes-like`, got {data.__class__.__name__}.')
         
         if data:
-            self.ssl_protocol._write_appdata(data)
+            self.ssl_protocol._write_application_data(data)
     
     def writelines(self, list_of_data):
         """
@@ -622,7 +622,7 @@ class _SSLProtocolTransport(object):
 
 class SSLProtocol(object):
     """
-    Asynchornous SSL protocol implementation on top of a `socket`. Uses `ssl.MemoryBIO` instances for incoming and
+    Asynchronous SSL protocol implementation on top of a `socket`. Uses `ssl.MemoryBIO` instances for incoming and
     outgoing data.
     
     Attributes
@@ -630,12 +630,12 @@ class SSLProtocol(object):
     _call_connection_made : `bool`
         Whether the the ``.app_protocol``'s `.connection_made` should be called when handshake is completed.
     _connection_made_waiter : `None` or ``Future``
-        A waiter future, what's result is set when connection is made, aka handshae is completed, or if when the
+        A waiter future, what's result is set when connection is made, aka handshake is completed, or if when the
         connection is lost, depending which happens first.
         
         After the future's result or exception is set, the attribute is set as `None`.
-    _extra : `dict` of (`str`, `Any`) items, Optional
-        Optional transport informations.
+    _extra : `dict` of (`str`, `Any`) items
+        Optional transport information.
     _in_handshake : `bool`
         Whether the ssl transport is in handshaking.
     _in_shutdown : `bool`
@@ -649,23 +649,23 @@ class SSLProtocol(object):
         Ensured data queued up to be written. Each element contains a tuple of the data to write and an offset till
         write from.
     app_protocol : `Any`
-        Asynchronous protcol implemnetation.
+        Asynchronous protocol implementation.
     app_transport : ``_SSLProtocolTransport``
         Asynchronous ssl protocol's read-write  transport implementation.
-    loop : ``eventThread``
-        The respective eventloop of the ssl protocol.
+    loop : ``EventThread``
+        The respective event loop of the ssl protocol.
     server_hostname : `None` or `str`
         The ssl protocol's server hostname if applicable.
     server_side : `bool`
         Whether the ssl protocol is server side.
-    sslpipe : `None` or ``_SSLPipe``
+    ssl_pipe : `None` or ``_SSLPipe``
         Ssl pipe set meanwhile the protocol is connected to feed the ssl data to.
     transport : `None` or `Any`
         Asynchronous transport implementation.
     """
     __slots__ = ('_call_connection_made', '_connection_made_waiter', '_extra', '_handshake_start_time', '_in_handshake',
         '_in_shutdown', '_session_established', '_ssl_context', '_write_backlog', 'app_protocol', 'app_transport',
-        'loop', 'server_hostname', 'server_side', 'sslpipe', 'transport',)
+        'loop', 'server_hostname', 'server_side', 'ssl_pipe', 'transport',)
     
     def __new__(cls, loop, app_protocol, ssl_context, connection_made_waiter, server_side=False, server_hostname=None,
             call_connection_made=True):
@@ -675,16 +675,16 @@ class SSLProtocol(object):
         Parameters
         ----------
         loop : ``EventThread``
-            The respective eventloop of the protocol.
+            The respective event loop of the protocol.
         app_protocol : `Any`
-            Asynchronous protcol implemnetation.
+            Asynchronous protocol implementation.
         ssl_context : `None` or `ssl.SSLContext`
             The connection ssl type. If SSl was given as `True` when creating a connection at this point we get it as
             `None`, so we create a default ssl context.
             
             Note, that if the connection is server side, a valid `ssl_context` should be given.
         connection_made_waiter : `None` or ``Future``
-            A waiter future, what's result is set when connection is made, aka handshae is completed, or if when the
+            A waiter future, what's result is set when connection is made, aka handshake is completed, or if when the
             connection is lost, depending which happens first.
             
             After the future's result or exception is set, the attribute is set as `None`.
@@ -724,7 +724,7 @@ class SSLProtocol(object):
         self.loop = loop
         self.app_protocol = app_protocol
         self.app_transport = _SSLProtocolTransport(self, app_protocol)
-        self.sslpipe = None
+        self.ssl_pipe = None
         self._session_established = False
         self._in_handshake = False
         self._in_shutdown = False
@@ -733,13 +733,13 @@ class SSLProtocol(object):
         
         return self
     
-    def _wakeup_connection_made_waiter(self, exception=None):
+    def _wake_up_connection_made_waiter(self, exception=None):
         """
         Wakes up the ssl protocol's ``._connection_made_waiter`` if applicable.
         
         Called when connection is made closed or lost, depending, which happens first. If connection is made or closed,
         then the connection made waiter's result is set as `None`, if the connection is lost, then the respective
-        exception is throwed into it if any.
+        exception is thrown into it if any.
         
         Parameters
         ----------
@@ -768,7 +768,7 @@ class SSLProtocol(object):
             received.
         """
         self.transport = transport
-        self.sslpipe = _SSLPipe(self._ssl_context, self.server_side, self.server_hostname)
+        self.ssl_pipe = _SSLPipe(self._ssl_context, self.server_side, self.server_hostname)
         self._start_handshake()
     
     def connection_lost(self, exception):
@@ -790,7 +790,7 @@ class SSLProtocol(object):
         
         self.transport = None
         self.app_transport = None
-        self._wakeup_connection_made_waiter(exception)
+        self._wake_up_connection_made_waiter(exception)
     
     def pause_writing(self):
         """
@@ -819,15 +819,15 @@ class SSLProtocol(object):
             The received data.
         """
         try:
-            ssldata, appdata = self.sslpipe.feed_ssldata(data)
+            ssl_data, application_data = self.ssl_pipe.feed_ssl_data(data)
         except ssl.SSLError:
             self._abort()
             return
         
-        for chunk in ssldata:
+        for chunk in ssl_data:
             self.transport.write(chunk)
         
-        for chunk in appdata:
+        for chunk in application_data:
             if chunk:
                 self.app_protocol.data_received(chunk)
                 continue
@@ -837,11 +837,11 @@ class SSLProtocol(object):
     
     def eof_received(self):
         """
-        Calling``.connection_lost`` without expection causes eof.
+        Calling``.connection_lost`` without exception causes eof.
         
         Marks the protocol as it is at eof.
         
-        If the protocol's ``._connection_made_waiter`` is not yet waken up, then raises `ConnectionResetError` imto it.
+        If the protocol's ``._connection_made_waiter`` is not yet waken up, then raises `ConnectionResetError` into it.
         
         Returns
         -------
@@ -852,7 +852,7 @@ class SSLProtocol(object):
             Always returns `False`.
         """
         try:
-            self._wakeup_connection_made_waiter(ConnectionResetError)
+            self._wake_up_connection_made_waiter(ConnectionResetError)
             if not self._in_handshake:
                 # has no effect whatever it returns when we use ssl
                 self.app_protocol.eof_received()
@@ -870,7 +870,7 @@ class SSLProtocol(object):
         name : `str`
             The extra information's name to get.
         default : `Any`, Optional
-            Default value to return if `name` could not be macthed. Defaults to `None`.
+            Default value to return if `name` could not be matched. Defaults to `None`.
         
         Returns
         -------
@@ -895,9 +895,9 @@ class SSLProtocol(object):
         """
         if not self._in_shutdown:
             self._in_shutdown = True
-            self._write_appdata(b'')
+            self._write_application_data(b'')
     
-    def _write_appdata(self, data):
+    def _write_application_data(self, data):
         """
         Writes data to the ``SSLProtocol`` to be sent.
         
@@ -918,24 +918,24 @@ class SSLProtocol(object):
     
     def _on_handshake_complete(self, handshake_exc):
         self._in_handshake = False
-        ssl_object = self.sslpipe.ssl_object
+        ssl_object = self.ssl_pipe.ssl_object
         
         try:
             if (handshake_exc is not None):
                 raise handshake_exc
             
-            peercert = ssl_object.getpeercert()
+            peer_certification = ssl_object.getpeercert()
         except BaseException as err:
             self.transport.close()
             if isinstance(err, Exception):
-                self._wakeup_connection_made_waiter(err)
+                self._wake_up_connection_made_waiter(err)
                 return
             raise
         
         
         # Add extra info that becomes available after handshake.
         extra = self._extra
-        extra['peercert'] = peercert
+        extra['peercert'] = peer_certification
         extra['cipher'] = ssl_object.cipher()
         extra['compression']= ssl_object.compression()
         extra['ssl_object'] = ssl_object
@@ -943,20 +943,17 @@ class SSLProtocol(object):
         if self._call_connection_made:
             self.app_protocol.connection_made(self.app_transport)
         
-        self._wakeup_connection_made_waiter()
+        self._wake_up_connection_made_waiter()
         self._session_established = True
-        # In case transport.write() was already called. Don't call
-        # immediately _process_write_backlog(), but schedule it:
-        # _on_handshake_complete() can be called indirectly from
-        # _process_write_backlog(), and _process_write_backlog() is not
-        # reentrant.
+        
+        # Don's call it immediately, other tasks might be scheduled already.
         self.loop.call_soon(self._process_write_backlog)
 
     def _process_write_backlog(self):
         """
         Try to make progress on the write backlog.
         
-        Feeds data to ``.sslpipe`` till it is full.
+        Feeds data to ``.ssl_pipe`` till it is full.
         """
         transport = self.transport
         if transport is None:
@@ -967,24 +964,24 @@ class SSLProtocol(object):
             for _ in range(len(write_backlog)):
                 data, offset = write_backlog[0]
                 if data:
-                    ssldata, offset = self.sslpipe.feed_appdata(data, offset)
+                    ssl_data, offset = self.ssl_pipe.feed_application_data(data, offset)
                 else:
                     # If data is given as empty bytes means we either have handshake complete or there is no more data
                     # to write
                     if offset:
-                        ssldata = self.sslpipe.do_handshake(self._on_handshake_complete)
+                        ssl_data = self.ssl_pipe.do_handshake(self._on_handshake_complete)
                     else:
-                        ssldata = self.sslpipe.shutdown(self._finalize)
+                        ssl_data = self.ssl_pipe.shutdown(self._finalize)
                     
                     offset = 1
                 
-                for chunk in ssldata:
+                for chunk in ssl_data:
                     transport.write(chunk)
                 
                 if offset < len(data):
                     write_backlog[0] = (data, offset)
                     # A short write means that a write is blocked on a read, we need to enable reading if it is paused!
-                    assert self.sslpipe.need_ssldata
+                    assert self.ssl_pipe.need_ssl_data
                     if transport._paused:
                         transport.resume_reading()
                     
@@ -1004,20 +1001,19 @@ class SSLProtocol(object):
     
     def _fatal_error(self, exception, message='Fatal error on transport.'):
         """
-        If a fatal error occures on the protocol renders it's traceback and closes it's transport.
+        If a fatal error occurs on the protocol renders it's traceback and closes it's transport.
         
         Parameters
         ----------
-        exception : `BaseExcetpion`
-            The occured exception-
-        message : `st`, Optional
+        exception : `BaseException`
+            The occurred exception.
+        message : `str`, Optional
             Additional error message to render.
         """
-        # Should be called from exception handler only.
         if not isinstance(exception, (BrokenPipeError, ConnectionResetError, ConnectionAbortedError)):
             self.loop.render_exc_async(exception, [
                 message,
-                ' exception occured\n',
+                ' exception occurred\n',
                 repr(self),
                 '\n',
                     ])
@@ -1049,10 +1045,10 @@ class SSLProtocol(object):
 
 
 class _SelectorSocketTransport(object):
-    __slots__ = ('_extra', 'loop', 'protocol', '_low_water', '_high_water', '_protocol_paused', 'socket', '_sock_fd',
+    __slots__ = ('_extra', 'loop', 'protocol', '_low_water', '_high_water', '_protocol_paused', 'socket', '_socket_fd',
         '_protocol_connected', 'server', 'buffer', '_conn_lost', 'closing', 'eof', 'paused',)
     
-    def __init__(self, loop, sock, protocol, waiter=None, extra=None, server=None):
+    def __init__(self, loop, socket, protocol, waiter=None, extra=None, server=None):
         
         if extra is None:
             extra = {}
@@ -1062,23 +1058,23 @@ class _SelectorSocketTransport(object):
         self._protocol_paused = False
         self._set_write_buffer_limits()
         
-        extra['socket'] = sock
+        extra['socket'] = socket
         
         try:
-            sockname = sock.getsockname()
+            socket_name = socket.getsockname()
         except OSError:
-            sockname = None
-        extra['sockname'] = sockname
+            socket_name = None
+        extra['sockname'] = socket_name
         
         if 'peername' not in extra:
             try:
-                peername = sock.getpeername()
+                peer_name = socket.getpeername()
             except module_socket.error:
-                peername = None
-            extra['peername'] = peername
+                peer_name = None
+            extra['peername'] = peer_name
         
-        self.socket = sock
-        self._sock_fd = sock.fileno()
+        self.socket = socket
+        self._socket_fd = socket.fileno()
         
         self.protocol = protocol
         self._protocol_connected = True
@@ -1095,12 +1091,12 @@ class _SelectorSocketTransport(object):
         
         # Disable the Nagle algorithm -- small writes will be sent without waiting for the TCP ACK.  This generally
         # decreases the latency (in some cases significantly.)
-        _set_nodelay(sock)
+        _set_nodelay(socket)
         
         loop.call_soon(protocol.connection_made, self)
         
         #only start reading when connection_made() has been called
-        loop.call_soon(loop.add_reader, self._sock_fd, self._read_ready)
+        loop.call_soon(loop.add_reader, self._socket_fd, self._read_ready)
         if (waiter is not None):
             # only wake up the waiter when connection_made() has been called
             loop.call_soon(Future.set_result_if_pending, waiter, None)
@@ -1122,14 +1118,14 @@ class _SelectorSocketTransport(object):
             result.append(' closing')
         
         result.append(' fd=')
-        result.append(repr(self._sock_fd))
+        result.append(repr(self._socket_fd))
         
         loop = self.loop
         #is the transport open?
         if (loop is not None) and loop.running:
         
             try:
-                key = loop.selector.get_key(self._sock_fd)
+                key = loop.selector.get_key(self._socket_fd)
             except KeyError:
                 polling = 0
             else:
@@ -1143,7 +1139,7 @@ class _SelectorSocketTransport(object):
             result.append(state)
 
             try:
-                key = loop.selector.get_key(self._sock_fd)
+                key = loop.selector.get_key(self._socket_fd)
             except KeyError:
                 polling = 0
             else:
@@ -1156,10 +1152,10 @@ class _SelectorSocketTransport(object):
                 state = 'idle'
             result.append(state)
 
-            result.append(', bufsize=')
+            result.append(', buffer_size=')
             
-            bufsize = self.get_write_buffer_size()
-            result.append(str(bufsize))
+            buffer_size = self.get_write_buffer_size()
+            result.append(str(buffer_size))
             result.append('>')
         
         result.append('>')
@@ -1185,7 +1181,7 @@ class _SelectorSocketTransport(object):
             self.protocol.pause_writing()
         except Exception as err:
             self.loop.render_exc_async(err, [
-                'Exception occured at:\n',
+                'Exception occurred at:\n',
                 repr(self),
                 '._maybe_pause_protocol\n',
                     ])
@@ -1198,7 +1194,7 @@ class _SelectorSocketTransport(object):
             self.protocol.resume_writing()
         except Exception as err:
             self.loop.render_exc_async(err, [
-                'Exception occured at:\n',
+                'Exception occurred at:\n',
                 repr(self),
                 '._maybe_resume_protocol\n',
                     ])
@@ -1243,17 +1239,17 @@ class _SelectorSocketTransport(object):
             return
         
         self.closing = True
-        self.loop.remove_reader(self._sock_fd)
+        self.loop.remove_reader(self._socket_fd)
         if not self.buffer:
             self._conn_lost += 1
-            self.loop.remove_writer(self._sock_fd)
+            self.loop.remove_writer(self._socket_fd)
             self.loop.call_soon(self._call_connection_lost, None)
     
     def _fatal_error(self, exception, message='Fatal error on transport'):
         if not isinstance(exception, (BrokenPipeError, ConnectionResetError, ConnectionAbortedError)):
             self.loop.render_exc_async(exception, [
                 message,
-                ' exception occured\n',
+                ' exception occurred\n',
                 repr(self),
                 '\n',
                     ])
@@ -1266,11 +1262,11 @@ class _SelectorSocketTransport(object):
         
         if self.buffer:
             self.buffer.clear()
-            self.loop.remove_writer(self._sock_fd)
+            self.loop.remove_writer(self._socket_fd)
         
         if not self.closing:
             self.closing = True
-            self.loop.remove_reader(self._sock_fd)
+            self.loop.remove_reader(self._socket_fd)
         
         self._conn_lost += 1
         self.loop.call_soon(self._call_connection_lost, exception)
@@ -1298,7 +1294,7 @@ class _SelectorSocketTransport(object):
         if self.paused:
             raise RuntimeError('Already paused')
         self.paused = True
-        self.loop.remove_reader(self._sock_fd)
+        self.loop.remove_reader(self._socket_fd)
     
     def resume_reading(self):
         if not self.paused:
@@ -1308,7 +1304,7 @@ class _SelectorSocketTransport(object):
         if self.closing:
             return
         
-        self.loop.add_reader(self._sock_fd, self._read_ready)
+        self.loop.add_reader(self._socket_fd, self._read_ready)
     
     def _read_ready(self):
         if self._conn_lost:
@@ -1326,7 +1322,7 @@ class _SelectorSocketTransport(object):
                 # We're keeping the connection open so the
                 # protocol can write more, but we still can't
                 # receive more, so remove the reader callback.
-                self.loop.remove_reader(self._sock_fd)
+                self.loop.remove_reader(self._socket_fd)
             else:
                 self.close()
     
@@ -1356,7 +1352,7 @@ class _SelectorSocketTransport(object):
                 if not data:
                     return
             # Not all was written; register write handler.
-            self.loop.add_writer(self._sock_fd, self._write_ready)
+            self.loop.add_writer(self._socket_fd, self._write_ready)
         
         # Add it to the buffer.
         self.buffer.extend(data)
@@ -1371,7 +1367,7 @@ class _SelectorSocketTransport(object):
         except (BlockingIOError, InterruptedError):
             pass
         except Exception as err:
-            self.loop.remove_writer(self._sock_fd)
+            self.loop.remove_writer(self._socket_fd)
             self.buffer.clear()
             self._fatal_error(err, 'Fatal write error on socket transport')
         else:
@@ -1380,7 +1376,7 @@ class _SelectorSocketTransport(object):
             
             self._maybe_resume_protocol()  # May append to buffer.
             if not self.buffer:
-                self.loop.remove_writer(self._sock_fd)
+                self.loop.remove_writer(self._socket_fd)
                 
                 if self.closing:
                     self._call_connection_lost(None)
@@ -1402,10 +1398,10 @@ class _SelectorSocketTransport(object):
 
 
 class _SelectorDatagramTransport(object):
-    __slots__ = ('_extra', 'loop', '_protocol_paused', '_high_water', '_low_water', 'protocol', '_sock_fd',
+    __slots__ = ('_extra', 'loop', '_protocol_paused', '_high_water', '_low_water', 'protocol', '_socket_fd',
         'buffer', '_conn_lost', 'socket', '_protocol_connected', 'closing', 'address')
     
-    def __init__(self, loop, sock, protocol, address=None, waiter=None, extra=None):
+    def __init__(self, loop, socket, protocol, address=None, waiter=None, extra=None):
         if extra is None:
             extra = {}
         
@@ -1415,24 +1411,24 @@ class _SelectorDatagramTransport(object):
         self._protocol_paused = False
         self._set_write_buffer_limits()
         
-        extra['socket'] = sock
+        extra['socket'] = socket
         
         try:
-            sockname = sock.getsockname()
+            socket_name = socket.getsockname()
         except OSError:
-            sockname = None
-        extra['sockname'] = sockname
+            socket_name = None
+        extra['sockname'] = socket_name
         
         if 'peername' not in extra:
             try:
-                peername = sock.getpeername()
+                peer_name = socket.getpeername()
             except module_socket.error:
-                peername = None
+                peer_name = None
             
-            extra['peername'] = peername
+            extra['peername'] = peer_name
         
-        self.socket = sock
-        self._sock_fd = sock.fileno()
+        self.socket = socket
+        self._socket_fd = socket.fileno()
         
         self._protocol_connected = False
         self.protocol = protocol
@@ -1444,7 +1440,7 @@ class _SelectorDatagramTransport(object):
         self.address = address
         self.loop.call_soon(self.protocol.connection_made, self)
         # only start reading when connection_made() has been called
-        self.loop.call_soon(self._add_reader, self._sock_fd, self._read_ready)
+        self.loop.call_soon(self._add_reader, self._socket_fd, self._read_ready)
         
         if waiter is not None:
             # only wake up the waiter when connection_made() has been called
@@ -1488,7 +1484,7 @@ class _SelectorDatagramTransport(object):
             self.protocol.pause_writing()
         except Exception as err:
             self.loop.render_exc_async(err, [
-                'Exception occured at:\n',
+                'Exception occurred at:\n',
                 repr(self),
                 '._maybe_pause_protocol\n',
                     ])
@@ -1502,7 +1498,7 @@ class _SelectorDatagramTransport(object):
             self.protocol.resume_writing()
         except Exception as err:
             self.loop.render_exc_async(err, [
-                'Exception occured at:\n',
+                'Exception occurred at:\n',
                 repr(self),
                 '._maybe_resume_protocol\n',
                     ])
@@ -1542,13 +1538,13 @@ class _SelectorDatagramTransport(object):
             result.append(' closing')
         
         result.append(' fd=')
-        result.append(repr(self._sock_fd))
+        result.append(repr(self._socket_fd))
         
         loop = self.loop
         #is the transport open?
         if (loop is not None) and loop.running:
             try:
-                key = loop.selector.get_key(self._sock_fd)
+                key = loop.selector.get_key(self._socket_fd)
             except KeyError:
                 polling = 0
             else:
@@ -1562,7 +1558,7 @@ class _SelectorDatagramTransport(object):
             result.append(state)
             
             try:
-                key = loop.selector.get_key(self._sock_fd)
+                key = loop.selector.get_key(self._socket_fd)
             except KeyError:
                 polling = 0
             else:
@@ -1575,10 +1571,10 @@ class _SelectorDatagramTransport(object):
                 state = 'idle'
             result.append(state)
             
-            result.append(', bufsize=')
+            result.append(', buffer_size=')
             
-            bufsize = self.get_write_buffer_size()
-            result.append(str(bufsize))
+            buffer_size = self.get_write_buffer_size()
+            result.append(str(buffer_size))
             result.append('>')
         
         result.append('>')
@@ -1603,10 +1599,10 @@ class _SelectorDatagramTransport(object):
             return
         
         self.closing = True
-        self.loop.remove_reader(self._sock_fd)
+        self.loop.remove_reader(self._socket_fd)
         if not self.buffer:
             self._conn_lost += 1
-            self.loop.remove_writer(self._sock_fd)
+            self.loop.remove_writer(self._socket_fd)
             self.loop.call_soon(self._call_connection_lost, None)
     
     def __del__(self):
@@ -1618,7 +1614,7 @@ class _SelectorDatagramTransport(object):
         if not isinstance(exception, OSError):
             self.loop.render_exc_async(exception, [
                 message,
-                ' exception occured\n',
+                ' exception occurred\n',
                 repr(self),
                 '\n',
                     ])
@@ -1631,11 +1627,11 @@ class _SelectorDatagramTransport(object):
         
         if self.buffer:
             self.buffer.clear()
-            self.loop.remove_writer(self._sock_fd)
+            self.loop.remove_writer(self._socket_fd)
         
         if not self.closing:
             self.closing = True
-            self.loop.remove_reader(self._sock_fd)
+            self.loop.remove_reader(self._socket_fd)
         
         self._conn_lost += 1
         self.loop.call_soon(self._call_connection_lost, exception)
@@ -1667,7 +1663,7 @@ class _SelectorDatagramTransport(object):
         if self._conn_lost:
             return
         try:
-            data, addr = self.socket.recvfrom(MAX_SIZE)
+            data, address = self.socket.recvfrom(MAX_SIZE)
         except (BlockingIOError, InterruptedError):
             pass
         except OSError as err:
@@ -1677,9 +1673,9 @@ class _SelectorDatagramTransport(object):
         except BaseException as err:
             self._fatal_error(err, 'Fatal read error on datagram transport')
         else:
-            self.protocol.datagram_received(data, addr)
+            self.protocol.datagram_received(data, address)
     
-    def sendto(self, data, addr=None):
+    def sendto(self, data, maybe_address=None):
         if not isinstance(data, (bytes, bytearray, memoryview)):
             raise TypeError(f'data argument must be a bytes-like object, not {type(data).__name__!r}')
         
@@ -1688,9 +1684,9 @@ class _SelectorDatagramTransport(object):
         
         address = self.address
         if (address is not None):
-            if (addr is not None) or (addr != address):
-                raise ValueError(f'Invalid address: must be `None` or `{address!r}`, got {addr!r}.')
-            addr = address
+            if (maybe_address is not None) or (maybe_address != address):
+                raise ValueError(f'Invalid address: must be `None` or `{address!r}`, got {maybe_address!r}.')
+            maybe_address = address
         
         if self._conn_lost and (address is not None):
             self._conn_lost += 1
@@ -1701,11 +1697,11 @@ class _SelectorDatagramTransport(object):
             # Attempt to send it right away first.
             try:
                 if self._extra['peername'] is None:
-                    self.socket.sendto(data, addr)
+                    self.socket.sendto(data, maybe_address)
                 else:
                     self.socket.send(data)
             except (BlockingIOError, InterruptedError):
-                self.loop.add_writer(self._sock_fd, self._sendto_ready)
+                self.loop.add_writer(self._socket_fd, self._sendto_ready)
             except OSError as err:
                 self.protocol.error_received(err)
                 return
@@ -1716,20 +1712,20 @@ class _SelectorDatagramTransport(object):
                 return
         
         # Ensure that what we buffer is immutable.
-        buffer.append((bytes(data), addr))
+        buffer.append((bytes(data), maybe_address))
         self._maybe_pause_protocol()
     
     def _sendto_ready(self):
         buffer = self.buffer
         while buffer:
-            data, addr = buffer.popleft()
+            data, address = buffer.popleft()
             try:
                 if self._extra['peername'] is None:
-                    self.socket.sendto(data, addr)
+                    self.socket.sendto(data, address)
                 else:
                     self.socket.send(data)
             except (BlockingIOError, InterruptedError):
-                buffer.appendleft((data, addr))  # Try again later.
+                buffer.appendleft((data, address))  # Try again later.
                 break
             except OSError as err:
                 self.protocol.error_received(err)
@@ -1740,6 +1736,6 @@ class _SelectorDatagramTransport(object):
         
         self._maybe_resume_protocol() # May append to buffer.
         if not buffer:
-            self.loop.remove_writer(self._sock_fd)
+            self.loop.remove_writer(self._socket_fd)
             if self.closing:
                 self._call_connection_lost(None)

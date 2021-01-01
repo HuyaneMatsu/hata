@@ -367,7 +367,7 @@ def listing_element_serializer(listing_element, object_, path, linker):
     Parameters
     ----------
     listing_element : ``GravedListingElement``
-        The listing element to seralize.
+        The listing element to serialize.
     object_ : ``UnitBase``
         The respective unit.
     path : ``QualPath``
@@ -401,7 +401,7 @@ def listing_serializer(listing, object_, path, linker):
     Parameters
     ----------
     listing : ``GravedListing``
-        The listing element to seralize.
+        The listing element to serialize.
     object_ : ``UnitBase``
         The respective unit.
     path : ``QualPath``

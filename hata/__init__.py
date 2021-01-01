@@ -2,7 +2,7 @@
 """
 Hata is an async Discord API wrapper written in Python named after Hata no Kokoro.
 
-If naming a Discord API wrapper after a Touhou character is not enough to convince you to try it, it got some real
+If naming a Discord API wrapper after a Touhou character is not enough to convince you to try it, it has got some real
 stuff:
 
 - Fast and simple asynchronous framework to write concurrent code using async/await syntax, but also great for
@@ -10,8 +10,8 @@ stuff:
 - Usage of Privileged Intents
 - Running more clients from the same instance.
 - Shared entity cache between shards and clients.
-- Feature rich API for common usacases.
-- Fast ratelimit handling.
+- Feature rich API for common use cases.
+- Fast rate limit handling.
 - No more member objects associated with guilds, if there is a user in more guilds, then there is only ONE user.
 - Optimized dispatch event parsers depending on intents, client count and on handled events as well.
 - Option to disable user presences or even user caching, although disabling user cache is not recommended.
@@ -44,7 +44,7 @@ async def message_create(client, message):
 Nue.start()
 ```
 
-An improved example using the `commands` extension to handle common usecases.
+An improved example using the `commands` extension to handle common use cases.
 
 ```
 from hata import Client
@@ -59,7 +59,7 @@ async def ready(client):
 
 @Saki.commands
 async def ping(client, message):
-    reutrn 'pong'
+    return 'pong'
 
 Saki.start()
 ```
@@ -70,7 +70,7 @@ Hata leaves the main thread free, `client.start()` blocks it only till the clien
 can still use the `start_clients` function, what as it says, starts up all the non-running clients parallelly, so go
 ahead and start python with `-i` option, then interact with the clients from your interactive console in runtime.
 """
-__version__ = '1.1.28'
+__version__ = '1.1.29'
 
 from .env import BACKEND_ONLY
 

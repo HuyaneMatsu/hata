@@ -28,7 +28,7 @@ class VoiceClient(object):
     _audio_port : `int`
         The port, where the voice client should send the audio data.
     _audio_source : `int`
-        An identificator sent by Discord what should be sent back with every voice packet.
+        An identifier sent by Discord what should be sent back with every voice packet.
     _audio_sources : `dict` of (`int`, `int`) items
         `user_id` - `audio_source` mapping used by ``AudioStream``-s.
     _audio_streams : `None` or `dict` of (`int`, (``AudioStream`` or (`list` of ``AudioStream``)) items
@@ -48,7 +48,7 @@ class VoiceClient(object):
     _pref_volume : `float`
         The preferred volume of the voice client. can be between `0.0` and `2.0`.
     _protocol : `None` or ``DatagramMergerReadProtocol``
-        Asynchornous protocol of the voice client to communicate with it's socket.
+        Asynchronous protocol of the voice client to communicate with it's socket.
     _secret_box : `None` or `nacl.secret.SecretBox`
         Data encoder of the voice client.
     _sequence : `int`
@@ -62,13 +62,13 @@ class VoiceClient(object):
         method, when the client's gateway receives response after connecting. If the client leaves the voice channel,
         then the socket is closed and set back to `None`.
     _timestamp : `int`
-        A timestamp identificaotr to tell Discord how much frames we sent to it.
+        A timestamp identifier to tell Discord how much frames we sent to it.
     _token : `str`
         Token received by the voice client's owner client's gateway. Used to authorize the voice client.
     _transport : `None` or ``_SelectorDatagramTransport``
-        Asynchornous transport of the voice client to communicate with it's socket.
+        Asynchronous transport of the voice client to communicate with it's socket.
     _video_source : `int`
-        An identificator sent by Discord what should be sent back with every video packet.
+        An identifier sent by Discord what should be sent back with every video packet.
     _video_sources : `dict` of (`int`, `int`) items
         `user_id` - `video_source` mapping. Not used for now.
     call_after : `callable` (`awaitable`)
@@ -101,7 +101,7 @@ class VoiceClient(object):
     guild : ``Guild``
         The guild where the voice client is.
     lock : `Lock`
-        A lock used meanwile changing the currently playing audio to not modifying it pararelly.
+        A lock used meanwhile changing the currently playing audio to not modifying it parallelly.
     player : ``AudioPlayer``
         The actual player of the ``VoiceClient``. If the voice client is not playing nor paused, then set as `None`.
     queue : `list` of ``AudioSource`` instances
@@ -122,7 +122,7 @@ class VoiceClient(object):
         """
         Creates a ``VoiceClient`` instance. If any of the required libraries are not present, raises `RuntimeError`.
         
-        If the voice client was succesfully created, returns a ``Future``, what is a waiter for it's ``._connect``
+        If the voice client was successfully created, returns a ``Future``, what is a waiter for it's ``._connect``
         method. If connecting failed, then the future will raise `TimeoutError`.
         
         Parameters
@@ -218,7 +218,7 @@ class VoiceClient(object):
     if DOCS_ENABLED:
         volume.__doc__ = (
         """
-        Get-set proparty for accessing the voice client's volume.
+        Get-set property for accessing the voice client's volume.
         
         Can be between `0.0` and `2.0`.
         """)
@@ -226,7 +226,7 @@ class VoiceClient(object):
     @property
     def source(self):
         """
-        Returns the voice client's palyer's source if applicable.
+        Returns the voice client's player's source if applicable.
         
         Returns
         -------
@@ -339,7 +339,7 @@ class VoiceClient(object):
     
     def _unlink_audio_stream(self, audio_stream):
         """
-        Unlinks the given audio stream from the voice client causing it to stop receiving audio.
+        Un-links the given audio stream from the voice client causing it to stop receiving audio.
         
         Parameters
         ----------
@@ -389,8 +389,8 @@ class VoiceClient(object):
     
     def _remove_source(self, user_id):
         """
-        Unlinks the audio and video streams's source listening to the given user (id), causing the affected audio
-        stream(s) to stop receiving audio data at the meanwhile.
+        Un-links the audio and video streams's source listening to the given user (id), causing the affected audio
+        str-eam(s) to stop receiving audio data at the meanwhile.
         
         Parameters
         ----------
@@ -432,13 +432,13 @@ class VoiceClient(object):
         user_id : `int`
             The respective user's id.
         audio_source : `int`
-            Audio source identitifcator of the user.
+            Audio source identifier of the user.
         """
         voice_sources = self._audio_sources
         try:
             old_audio_source = voice_sources.pop(user_id)
         except KeyError:
-            # Should not happen if it is an update, onyl if it is an add
+            # Should not happen if it is an update, only if it is an add
             pass
         else:
             # Should happen if it is an update
@@ -512,7 +512,7 @@ class VoiceClient(object):
         user_id : `int`
             The respective user's id.
         video_source : `int`
-            Video source identitifcator of the user.
+            Video source identifier of the user.
         """
         self._video_sources[user_id] = video_source
     
@@ -722,7 +722,7 @@ class VoiceClient(object):
     
     async def _connect(self, waiter=None):
         """
-        Connects the voice client to Discord and keeps receiveing the gateway events.
+        Connects the voice client to Discord and keeps receiving the gateway events.
         
         This method is a coroutine.
         
@@ -898,7 +898,7 @@ class VoiceClient(object):
         """
         Starts to play the next audio object on ``.queue`` and cancels the actual one if applicable.
 
-        Should be used inside of ``.lock`` to ensure that the voice client is not modified pararelly.
+        Should be used inside of ``.lock`` to ensure that the voice client is not modified parallelly.
         
         This function is a coroutine.
         
@@ -938,7 +938,7 @@ class VoiceClient(object):
         """
         Repeats the last played audio if applicable.
         
-        Should be used inside of ``.lock``to ensure that the voice client is not modified pararelly.
+        Should be used inside of ``.lock``to ensure that the voice client is not modified parallelly.
         
         This function is a coroutine.
         
@@ -969,7 +969,7 @@ class VoiceClient(object):
         """
         Puts the last played audio back on the voice client's queue.
         
-        Should be used inside of ``.lock``to ensure that the voice client is not modified pararelly.
+        Should be used inside of ``.lock``to ensure that the voice client is not modified parallelly.
         
         This function is a coroutine.
         
@@ -1036,7 +1036,7 @@ class VoiceClient(object):
         Called when voice server update data is received from Discord.
         
         If full data was received, closes the actual socket if exists and creates a new one connected to the received
-        adress.
+        address.
         
         If the voice client is already connected reconnects it, if not then marks it as connected.
         
@@ -1063,7 +1063,7 @@ class VoiceClient(object):
         
         socket = module_socket.socket(module_socket.AF_INET, module_socket.SOCK_DGRAM)
         
-        transport, protocol = await KOKORO.create_datagram_endpoint(DatagramMergerReadProtocol(KOKORO), sock=socket)
+        transport, protocol = await KOKORO.create_datagram_endpoint(DatagramMergerReadProtocol(KOKORO), socket=socket)
         self._transport = transport
         self._protocol = protocol
         self._socket = socket

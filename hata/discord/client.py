@@ -4,7 +4,7 @@ __all__ = ('Client', )
 import re, sys, warnings
 from time import time as time_now
 from collections import deque
-from os.path import split as splitpath
+from os.path import split as split_path
 from threading import current_thread
 from math import inf
 from datetime import datetime
@@ -13,9 +13,9 @@ from ..env import CACHE_USER, CACHE_PRESENCE, API_VERSION
 from ..backend.utils import imultidict, methodize, change_on_switch
 from ..backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, WaitTillFirst, WaitTillExc, \
     future_or_timeout
-from ..backend.eventloop import EventThread, LOOP_TIME
+from ..backend.event_loop import EventThread, LOOP_TIME
 from ..backend.formdata import Formdata
-from ..backend.hdrs import AUTHORIZATION
+from ..backend.headers import AUTHORIZATION
 from ..backend.helpers import BasicAuth
 from ..backend.url import URL
 
@@ -24,13 +24,13 @@ from .utils import log_time_converter, DISCORD_EPOCH, image_to_base64, random_id
 from .user import User, USERS, GuildProfile, UserBase, UserFlag, create_partial_user, GUILD_PROFILES_TYPE
 from .emoji import Emoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, ChannelStore, \
-    message_relativeindex, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES, ChannelTextBase, ChannelVoice
+    message_relative_index, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES, ChannelTextBase, ChannelVoice
 from .guild import Guild, create_partial_guild, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
     DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen, SystemChannelFlag, VerificationScreen, WelcomeChannel, \
     VerificationScreenStep
 from .http import DiscordHTTPClient, URLS
 from .http.URLS import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDPOINT
-from .role import Role, PermOW, PERMOW_TYPE_ROLE, PERMOW_TYPE_USER
+from .role import Role, PermOW, PERM_OW_TYPE_ROLE, PERM_OW_TYPE_USER
 from .webhook import Webhook, create_partial_webhook
 from .gateway import DiscordGateway, DiscordGatewaySharder
 from .parsers import EventDescriptor, _with_error, IntentFlag, PARSER_DEFAULTS, InteractionEvent
@@ -44,7 +44,7 @@ from .voice_client import VoiceClient
 from .activity import ActivityUnknown, ActivityBase, ActivityCustom
 from .integration import Integration
 from .application import Application, Team, EULA
-from .ratelimit import RatelimitProxy, RATELIMIT_GROUPS
+from .rate_limit import RateLimitProxy, RATE_LIMIT_GROUPS
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool, preconvert_discriminator, \
     preconvert_flag, preconvert_preinstanced_type
 from .permission import Permission
@@ -74,14 +74,14 @@ class Client(UserBase):
     Attributes
     ----------
     id : `int`
-        The client's unique identificator number.
+        The client's unique identifier number.
     name : str
         The client's username.
     discriminator : `int`
         The client's discriminator. Given to avoid overlapping names.
     avatar_hash : `int`
         The client's avatar's hash in `uint128`.
-    avatar_type : ``Icontype``
+    avatar_type : ``IconType``
         The client's avatar's type.
     guild_profiles : `dict` or ``WeakKeyDictionary`` of (``Guild``, ``GuildProfile``) items
         A dictionary, which contains the client's guild profiles. If a client is member of a guild, then it should
@@ -123,7 +123,7 @@ class Client(UserBase):
     intents : ``IntentFlag``
         The intent flags of the client.
     private_channels : `dict` of (`int`, ``ChannelPrivate``) items
-        Stores the private channels of the client. The channels' other recipement' ids are the keys, meanwhile the
+        Stores the private channels of the client. The channels' other recipient' ids are the keys, meanwhile the
         channels are the values.
     group_channels : `dict` of (`int`, ``ChannelGroup``) items
         The group channels of the client. They can be accessed by their id as the key.
@@ -132,7 +132,7 @@ class Client(UserBase):
         requested.
         
         When receiving a `READY` dispatch event, the client's ``.ready_state`` is set as a ``ReadyState`` instance and
-        a ``._delay_ready`` task is started, what delays the handleable `ready` event, till every user from the received
+        a ``._delay_ready`` task is started, what delays the handle-able `ready` event, till every user from the received
         guilds is cached up. When done, ``.ready_state`` is set back to `None`.
     
     relationships : `dict` of (`int`, ``Relationship``) items
@@ -144,7 +144,7 @@ class Client(UserBase):
     secret : `str`
         The client's secret used when interacting with oauth2 endpoints.
     shard_count : `int`
-        The client's shardcount. Set as `0` if the is not using sharding.
+        The client's shard count. Set as `0` if the is not using sharding.
     token : `str`
         The client's token.
     voice_clients : `dict` of (`int`, ``VoiceClient``) items
@@ -152,14 +152,14 @@ class Client(UserBase):
         guild. This attribute stores these voice clients. They keys are the guilds' ids, meanwhile the values are
         the voice clients.
     _activity : ``ActivityBase`` instance
-        The client's preffered activity.
+        The client's preferred activity.
     _additional_owner_ids : `None` or `set` of `int`
         Additional users' (as id) to be passed by the ``.is_owner`` check.
     _gateway_url : `str`
         Cached up gateway url, what is invalidated after `1` minute. Used to avoid unnecessary requests when launching
         up more shards.
     _gateway_requesting : `bool`
-        Whether the client alredy requests it's gateway.
+        Whether the client already requests it's gateway.
     _gateway_time : `float`
         The last timestamp when ``._gateway_url`` was updated.
     _gateway_max_concurrency : `int`
@@ -178,7 +178,7 @@ class Client(UserBase):
     Class Attributes
     ----------------
     loop : ``EventThread``
-        The eventloop of the client. Every client uses the same one.
+        The event loop of the client. Every client uses the same one.
     
     See Also
     --------
@@ -206,7 +206,7 @@ class Client(UserBase):
     def __new__(cls, token, *, secret=None, client_id=None, application_id=None, activity=ActivityUnknown, status=None,
             is_bot=True, shard_count=0, intents=-1, additional_owners=None, **kwargs):
         """
-        Creates a new ``Client`` instance with the given pramateres.
+        Creates a new ``Client`` instance with the given parameters.
         
         Parameters
         ----------
@@ -218,10 +218,10 @@ class Client(UserBase):
             The client's `.id`. If passed as `str` will be converted to `int`. Defaults to `None`.
             
             When more `Client` is started up, it is recommended to define their id initially. The wrapper can detect the
-            clients' id-s only when they are logging in, so the wrapper  needs to check if a ``User`` alterego of the
+            clients' id-s only when they are logging in, so the wrapper  needs to check if a ``User`` alter_ego of the
             client exists anywhere, and if does will replace it.
         application_id : `None`, `int` or `str`, Optional
-            The client's application id. If passed as `str`, will be converterd to `int`. Defaults to `None`.
+            The client's application id. If passed as `str`, will be converted to `int`. Defaults to `None`.
         activity : ``ActivityBase``, optional
             The client's preferred activity.
         status : `str` or ``Status``, optional
@@ -231,7 +231,7 @@ class Client(UserBase):
         shard_count : `int`, optional
             The client's shard count. If passed as lower as the recommended one, will reshard itself.
         intents : ``IntentFlag``, optional
-             By default the client will launch up using all the intent flags. Negative values will be interpretered as
+             By default the client will launch up using all the intent flags. Negative values will be interpreted as
              using all the intents, meanwhile if passed as positive, non existing intent flags are removed.
         **kwargs : keyword arguments
             Additional predefined attributes for the client.
@@ -244,7 +244,7 @@ class Client(UserBase):
             The client's ``.discriminator``. Is accepted as `str` instance as well and will be converted to `int`.
         avatar : `None`, ``Icon`` or `str`, Optional
             The client's avatar. Mutually exclusive with `avatar_type` and `avatar_hash`.
-        avatar_type : ``Icontype``, Optional
+        avatar_type : ``IconType``, Optional
             The client's avatar's type. Mutually exclusive with `avatar_type`.
         avatar_hash : `int`, Optional
             The client's avatar hash. Mutually exclusive with `avatar`.
@@ -322,7 +322,7 @@ class Client(UserBase):
         # intents
         intents = preconvert_flag(intents, 'intents', IntentFlag)
         
-        # additonal owners
+        # additional owners
         if additional_owners is None:
             additional_owner_ids = None
         else:
@@ -447,13 +447,13 @@ class Client(UserBase):
         CLIENTS.append(self)
         
         if client_id:
-            self._maybe_replace_alterego()
+            self._maybe_replace_alter_ego()
         
         return self
     
-    def _maybe_replace_alterego(self):
+    def _maybe_replace_alter_ego(self):
         """
-        Replaces the type ``User`` alterego of the client if applicable.
+        Replaces the type ``User`` alter_ego of the client if applicable.
         """
         client_id = self.id
         
@@ -461,19 +461,19 @@ class Client(UserBase):
         while True:
             if CACHE_USER:
                 try:
-                    alterego = USERS[client_id]
+                    alter_ego = USERS[client_id]
                 except KeyError:
                     # Go Out
                     break
                 else:
-                    if alterego is not self:
-                        # we already exists, we need to go tru everthing and replace ourself.
-                        guild_profiles = alterego.guild_profiles
+                    if alter_ego is not self:
+                        # we already exists, we need to go tru everything and replace our self.
+                        guild_profiles = alter_ego.guild_profiles
                         self.guild_profiles = guild_profiles
                         for guild in guild_profiles:
                             guild.users[client_id] = self
             
-            # This part should run at both case, except when there is no alterego detected when caching users.
+            # This part should run at both case, except when there is no alter_ego detected when caching users.
             for client in CLIENTS:
                 if (client is self) or (not client.running):
                     continue
@@ -499,7 +499,7 @@ class Client(UserBase):
     def _init_on_ready(self, data):
         """
         Fills up the client's instance attributes on login. If there is an already existing User object with the same
-        id, the client will replace it at channel participans, at ``USERS`` weakreference dictionary, at
+        id, the client will replace it at channel participants, at ``USERS`` weakreference dictionary, at
         ``guild.users``. This replacing is avoidable, if at the creation of the client the ``.client_id`` argument is
         set.
         
@@ -512,7 +512,7 @@ class Client(UserBase):
         if self.id != client_id:
             CLIENTS.update(self, client_id)
         
-        self._maybe_replace_alterego()
+        self._maybe_replace_alter_ego()
         
         self.name = data['username']
         self.discriminator = int(data['discriminator'])
@@ -551,7 +551,7 @@ class Client(UserBase):
     
     def _delete(self):
         """
-        Cleares up the client's references. By default this is not called when a client is stopped. This method should
+        Clears up the client's references. By default this is not called when a client is stopped. This method should
         be used when you want to get rid of every allocated objects by the client. Take care, local modules might still
         have active references to the client or to some other objects, what could cause them to not garbage collect.
         
@@ -584,14 +584,14 @@ class Client(UserBase):
         
         CLIENTS.remove(self)
         client_id = self.id
-        alterego = object.__new__(User)
-        for attrname in User.__slots__:
-            if attrname.startswith('__'):
+        alter_ego = object.__new__(User)
+        for attribute_name in User.__slots__:
+            if attribute_name.startswith('__'):
                 continue
-            setattr(alterego, attrname, getattr(self, attrname))
+            setattr(alter_ego, attribute_name, getattr(self, attribute_name))
         
         if CACHE_USER:
-            USERS[client_id] = alterego
+            USERS[client_id] = alter_ego
             guild_profiles = self.guild_profiles
             for guild in guild_profiles:
                 guild.users[client_id] = self
@@ -600,7 +600,7 @@ class Client(UserBase):
                 if (client is not self) and client.running:
                     for relationship in client.relationships:
                         if relationship.user is self:
-                            relationship.user = alterego
+                            relationship.user = alter_ego
         
         else:
             try:
@@ -619,7 +619,7 @@ class Client(UserBase):
             users = channel.users
             for index in range(users):
                 if users[index].id == client_id:
-                    users[index] = alterego
+                    users[index] = alter_ego
                     continue
         
         self.private_channels.clear()
@@ -739,13 +739,13 @@ class Client(UserBase):
             - If `avatar`'s type in unsettable for the client.
             - If password was not given meanwhile the client is not bot.
             - If password was not given as `str` instance.
-            - If `email` was given, but nto as `str` instance.
-            - If `new_password` was given, but nto as `str` instance.
+            - If `email` was given, but not as `str` instance.
+            - If `new_password` was given, but not as `str` instance.
         
         Notes
         -----
-        The method's endpoint has long ratelimit reset, so consider using timeout and checking ratelimits with
-        ``RatelimitProxy``.
+        The method's endpoint has long rate limit reset, so consider using timeout and checking rate limits with
+        ``RateLimitProxy``.
         
         The `password`, `new_password`, `email` and the `house` parameters are only for user accounts.
         """
@@ -848,14 +848,14 @@ class Client(UserBase):
             The guild where the client's nickname will be changed. If `guild` is given as `None`, then the function
             returns instantly.
         nick : `str` or `None`
-            The client's new nickname. Pass it as `None` to remove it. Empty strings are interpretered as `None`.
+            The client's new nickname. Pass it as `None` to remove it. Empty strings are interpreted as `None`.
         reason : `None` or `str`, Optional
             Will show up at the respective guild's audit logs.
         
         Raises
         ------
         TypeError
-            - `guild` was not given neither as ``GUild`` or `int` instance.
+            - `guild` was not given neither as ``Guild`` or `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -909,7 +909,7 @@ class Client(UserBase):
             try:
                 guild_profile = self.guild_profiles[guild]
             except KeyError:
-                # we arent at the guild probably ->  will raise the request for us, if really
+                # we aren't at the guild probably ->  will raise the request for us, if really
                 should_edit_nick = True
             else:
                 should_edit_nick = (guild_profile.nick != nick)
@@ -988,9 +988,9 @@ class Client(UserBase):
             activity = None
         else:
             if self.is_bot:
-                activity = activity.botdict()
+                activity = activity.bot_dict()
             else:
-                activity = activity.hoomandict()
+                activity = activity.user_dict()
         
         if status == 'idle':
             since = int(time_now()*1000.)
@@ -1024,7 +1024,7 @@ class Client(UserBase):
         redirect_url : `str`
             The url, where the activation page redirected to.
         code : `str`
-            The code, what is included with the redirect url after a successfull activation.
+            The code, what is included with the redirect url after a successful activation.
         scopes : `str` or `list` of `str`
             Scope or a  list of oauth2 scopes to request.
         
@@ -1036,7 +1036,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            If `Scopes` wasnt neither as `str` not `list` of `str` instances.
+            If `Scopes` wasn't neither as `str` not `list` of `str` instances.
         ConnectionError
             No internet connection.
         DiscordException
@@ -1118,7 +1118,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            If `Scopes` wasnt neither as `str` not `list` of `str` instances.
+            If `Scopes` wasn't neither as `str` not `list` of `str` instances.
         ConnectionError
             No internet connection.
         DiscordException
@@ -1175,8 +1175,8 @@ class Client(UserBase):
         This method is a coroutine.
         """
         warnings.warn(
-            '`Client.user_info` is deprecated, and will be removed in 2021 february. '
-            'Please use `Client.get_user_info` instead.',
+            f'`{self.__class__.__name__}.user_info` is deprecated, and will be removed in 2021 february. '
+            f'Please use `{self.__class__.__name__}.get_user_info` instead.',
             FutureWarning)
         
         return await self.get_user_info(*args, **kwargs)
@@ -1184,7 +1184,7 @@ class Client(UserBase):
     async def get_user_info(self, access):
         """
         Request the a user's information with oauth2 access token. By default a bot account should be able to request
-        every public infomation about a user (but you do not need oauth2 for that). If the access token has email
+        every public information about a user (but you do not need oauth2 for that). If the access token has email
         or/and identify scopes, then more information should show up like this.
         
         This method is a coroutine.
@@ -1192,7 +1192,7 @@ class Client(UserBase):
         Parameters
         ----------
         access : ``OA2Access``, ``UserOA2`` or `str` instance
-            Oauth2 acess to the respective user or it's access token.
+            Oauth2 access to the respective user or it's access token.
         
         Returns
         -------
@@ -1236,7 +1236,7 @@ class Client(UserBase):
         Parameters
         ----------
         access : ``OA2Access``, ``UserOA2`` or `str` instance
-            Oauth2 acess to the respective user or it's access token.
+            Oauth2 access to the respective user or it's access token.
         
         Returns
         -------
@@ -1282,7 +1282,7 @@ class Client(UserBase):
         Parameters
         ----------
         access : ``OA2Access`` or ``UserOA2``
-            Oauth2 acess to the respective user.
+            Oauth2 access to the respective user.
         
         Raises
         ------
@@ -1335,7 +1335,7 @@ class Client(UserBase):
         guild : ``Guild`` or `int`
             The guild, where the user is going to be added.
         access: ``OA2Access``, ``UserOA2`` or `str` instance
-            The access of the user, who will be addded.
+            The access of the user, who will be added.
         user : ``Client``, ``User`` or `int` Optional
             Defines which user will be added to the guild. The `access` must refer to this specified user.
             
@@ -1355,7 +1355,7 @@ class Client(UserBase):
             - If `user` was not given neither as `None`, ``User``, ``Client`` or `int` instance.
             - If `user` was passed as `None` and `access` was passed as ``OA2Access`` or as `str` instance.
             - If `access` was not given as ``OA2Access``, ``UserOA2``, nether as `str` instance.
-            - If the given `acess` not grants `'guilds.join'` scope.
+            - If the given `access` not grants `'guilds.join'` scope.
             - If `guild` was not given neither as ``Guild``, not `int` instance.
             - If `roles` contain not ``Role``, nor `int` instance.
         ConnectionError
@@ -1581,7 +1581,7 @@ class Client(UserBase):
     
     async def achievement_create(self, name, description, icon, secret=False, secure=False):
         """
-        Creates an achievment for the client's application and returns it.
+        Creates an achievement for the client's application and returns it.
         
         This method is a coroutine.
         
@@ -1614,7 +1614,7 @@ class Client(UserBase):
         AssertionError
             - If the `icon`'s format is not any of the expected ones.
             - If `name` was not given as `str` instance.
-            - If `description` was not gvein as `str` instance.
+            - If `description` was not given as `str` instance.
             - If `secret` was not given as `bool` instance.
             - If `secure` was not given as `bool` instance.
         """
@@ -1660,7 +1660,7 @@ class Client(UserBase):
     
     async def achievement_edit(self, achievement, name=None, description=None, secret=None, secure=None, icon=None):
         """
-        Edits the passed achievemnt with the specified parameters. All parameter is optional.
+        Edits the passed achievement with the specified parameters. All parameter is optional.
         
         This method is a coroutine.
         
@@ -1671,7 +1671,7 @@ class Client(UserBase):
         name : `str`, Optional
             The new name of the achievement.
         description : `str`, Optional
-            The achievemnt's new description.
+            The achievement's new description.
         secret : `bool`, Optional
             The achievement's new secret value.
         secure : `bool`, Optional
@@ -1752,7 +1752,7 @@ class Client(UserBase):
             if __debug__:
                 extension = get_image_extension(icon)
                 if extension not in VALID_ICON_FORMATS_EXTENDED:
-                    raise ValueError(f'Invalid icon type for achievemen: `{extension}`.')
+                    raise ValueError(f'Invalid icon type for achievement: `{extension}`.')
             
             data['icon'] = image_to_base64(icon)
         
@@ -1843,7 +1843,7 @@ class Client(UserBase):
     
     async def user_achievement_update(self, user, achievement, percent_complete):
         """
-        Updates the `user`'s achievement with the given percentage. The  achevement should be `secure`. This
+        Updates the `user`'s achievement with the given percentage. The  achievement should be `secure`. This
         method only updates the achievement's percentage.
         
         This method is a coroutine.
@@ -1910,7 +1910,7 @@ class Client(UserBase):
     
     async def application_get(self, application_id):
         """
-        Requst a specific application by it's id.
+        Requests a specific application by it's id.
         
         This method is a coroutine.
         
@@ -1985,7 +1985,7 @@ class Client(UserBase):
     
     async def applications_detectable(self):
         """
-        Requst the detectable applications
+        Requests the detectable applications
         
         This method is a coroutine.
         
@@ -2004,10 +2004,10 @@ class Client(UserBase):
         return [Application(application_data) for application_data in applications_data]
     
     
-    # loggin
+    # login
     async def client_login_static(self):
         """
-        The first step at loggin in is requesting the client's user data. This method is also used to check whether
+        The first step at login in is requesting the client's user data. This method is also used to check whether
         the token of the client is valid.
         
         This method is a coroutine.
@@ -2203,7 +2203,7 @@ class Client(UserBase):
             - If `name`'s length is out of range [2:100].
         Notes
         -----
-        No request is done if no optional paremeter is provided.
+        No request is done if no optional parameter is provided.
         """
         if isinstance(channel, ChannelGroup):
             channel_id = channel.id
@@ -2313,7 +2313,7 @@ class Client(UserBase):
     
     async def channel_private_create(self, user):
         """
-        Creates a private channel with the given user. If there is an already cahced private channel with the user,
+        Creates a private channel with the given user. If there is an already cached private channel with the user,
         returns that.
         
         This method is a coroutine.
@@ -2362,7 +2362,7 @@ class Client(UserBase):
         
         Returns
         -------
-        channnels : `list` of (``ChannelPrivate`` or ``ChannelGroup``) objects
+        channels : `list` of (``ChannelPrivate`` or ``ChannelGroup``) objects
         
         Raises
         ------
@@ -2450,7 +2450,7 @@ class Client(UserBase):
         
         # Cannot put category under category
         if isinstance(channel, ChannelCategory) and isinstance(category, ChannelCategory):
-            raise ValueError(f'Can not move categroy chanen lunedr category channel. Channel: {channel!r}; Category: '
+            raise ValueError(f'Can not move category channel under category channel. Channel: {channel!r}; Category: '
                     f'{category!r}')
         
         if not isinstance(visual_position, int):
@@ -2494,7 +2494,7 @@ class Client(UserBase):
             
             display_new.append(channel_key)
         
-        # We have 2 display states, we will compare the old to the new one when calculating differences, but we didnt
+        # We have 2 display states, we will compare the old to the new one when calculating differences, but we didn't
         # move our channel yet!
         
         # We get from where we will move from.
@@ -2851,7 +2851,7 @@ class Client(UserBase):
             - If `user_limit` was given, but the respective channel type is not ``ChannelVoice``.
             - If `user_limit` was not given as `int` instance.
             - If `user_limit`' was given, but is out of the expected [0:99] range.
-            - If `category` was given, but the respective channel type cannto be put under other categories.
+            - If `category` was given, but the respective channel type cannot be put under other categories.
         ConnectionError
             No internet connection.
         DiscordException
@@ -2899,7 +2899,7 @@ class Client(UserBase):
         
         Notes
         -----
-        If a category channel is deleted, it's subchannels will not be removed, instead they will move under the guild.
+        If a category channel is deleted, it's sub-channels will not be removed, instead they will move under the guild.
         """
         if isinstance(channel, ChannelGuildBase):
             channel_id = channel.id
@@ -2983,7 +2983,7 @@ class Client(UserBase):
         Method for creating a channel from `channel_id`. Used by ``.message_logs`` and familiar methods to detect
         and create channel type from id.
         
-        The method should be called only after successfull data request.
+        The method should be called only after successful data request.
         
         This method is a coroutine.
         
@@ -3016,7 +3016,7 @@ class Client(UserBase):
     async def message_logs(self, channel, limit=100, *, after=None, around=None, before=None):
         """
         Requests messages from the given text channel. The `after`, `around` and the `before` arguments are mutually
-        exclusive and they can be passed as `int`, or as a ``DiscordEntitiy`` instance or as a `datetime` object.
+        exclusive and they can be passed as `int`, or as a ``DiscordEntity`` instance or as a `datetime` object.
         If there is at least 1 message overlap between the received and the loaded messages, the wrapper will chain
         the channel's message history up. If this happens the channel will get on a queue to have it's messages again
         limited to the default one, but requesting old messages more times, will cause it to extend.
@@ -3027,7 +3027,7 @@ class Client(UserBase):
         ----------
         channel : ``ChannelTextBase`` or `int` instance
             The channel from where we want to request the messages.
-        limit : `int`, Optiomal
+        limit : `int`, Optional
             The amount of messages to request. Can be between 1 and 100.
         after : `int`, ``DiscordEntity`` or `datetime`, Optional
             The timestamp after the requested messages were created.
@@ -3055,11 +3055,11 @@ class Client(UserBase):
         
         See Also
         --------
-        - ``.message_logs_fromzero`` : Familiar to this method, but it requests only the newest messages of the channel
+        - ``.message_logs_from_zero`` : Familiar to this method, but it requests only the newest messages of the channel
             and makes sure they are chained up with the channel's message history.
-        - ``.message_at_index`` : A toplevel method to get a message at the specified index at the given channel.
+        - ``.message_at_index`` : A top-level method to get a message at the specified index at the given channel.
             Usually used to load the channel's message history to that point.
-        - ``.messages_in_range`` : A toplevel method to get all the messages till the specified index at the given
+        - ``.messages_in_range`` : A top-level method to get all the messages till the specified index at the given
             channel.
         - ``.message_iterator`` : An iterator over a channel's message history.
         """
@@ -3101,7 +3101,7 @@ class Client(UserBase):
     
     # If you have 0-1-2 messages at a channel, and you wanna store the messages. The other wont store it, because it
     # wont see anything what allows channeling.
-    async def message_logs_fromzero(self, channel, limit=100):
+    async def message_logs_from_zero(self, channel, limit=100):
         """
         If the `channel` has `1` or less messages loaded use this method instead of ``.message_logs`` to request the
         newest messages there, because this method makes sure, the returned messages will be chained at the
@@ -3113,7 +3113,7 @@ class Client(UserBase):
         ----------
         channel : ``ChannelTextBase`` instance
             The channel from where we want to request the messages.
-        limit : `int`, Optiomal
+        limit : `int`, Optional
             The amount of messages to request. Can be between 1 and 100.
         
         Returns
@@ -3237,7 +3237,7 @@ class Client(UserBase):
         tts : `bool`, Optional
             Whether the message is text-to-speech.
         nonce : `str`, Optional
-            Used for optimisting message sending. Will shop up at the message's data.
+            Used for optimistic message sending. Will shop up at the message's data.
         
         Returns
         -------
@@ -3250,7 +3250,7 @@ class Client(UserBase):
             - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
             - If `allowed_mentions` contains an element of invalid type.
             - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
-            - If ivalid file type would be sent.
+            - If invalid file type would be sent.
             - If `channel`'s type is incorrect.
         ValueError
             - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
@@ -3266,7 +3266,7 @@ class Client(UserBase):
         """
         
         # Channel check order:
-        # 1.: ChannChannelTextBaseelText -> channel
+        # 1.: ChannelTextBase -> channel
         # 2.: Message -> channel + reply
         # 3.: int (str) -> channel
         # 4.: MessageRepr -> channel + reply
@@ -3454,13 +3454,13 @@ class Client(UserBase):
         
         Raises `TypeError` at the case of invalid `io` type.
         
-        There are two predefined datatypes specialized to send files:
+        There are two predefined data types specialized to send files:
         - ``ReuBytesIO``
         - ``ReuAsyncIO``
         
         If a buffer is sent, then when the request is done, it is closed. So if the request fails, we would not be
-        able to resend the file, except if we have a datatype, what instead of closing on `.close()` just seeks to
-        `0` (or later if needed) on close, instead of really closing instantly. These datatypes implement a
+        able to resend the file, except if we have a data type, what instead of closing on `.close()` just seeks to
+        `0` (or later if needed) on close, instead of really closing instantly. These data types implement a
         `.real_close()` method, but they do `real_close` on `__exit__` as well.
         """
         form = Formdata()
@@ -3490,7 +3490,7 @@ class Client(UserBase):
                     #guessing name
                     name = getattr(io, 'name', '')
                     if name:
-                        _, name = splitpath(name)
+                        _, name = split_path(name)
                     else:
                         name = str(random_id())
                 
@@ -3501,7 +3501,7 @@ class Client(UserBase):
             name = getattr(file, 'name', '')
             #guessing name
             if name:
-                _, name = splitpath(name)
+                _, name = split_path(name)
             else:
                 name = str(random_id())
             
@@ -3678,7 +3678,7 @@ class Client(UserBase):
         
         Notes
         -----
-        The ratelimit group is different for own or for messages newer than 2 weeks than for message's of others,
+        The rate limit group is different for own or for messages newer than 2 weeks than for message's of others,
         which are older than 2 weeks.
         """
         if message.deleted:
@@ -3717,7 +3717,7 @@ class Client(UserBase):
         
         Notes
         -----
-        This method uses up 3 different ratelimit groups parallelly to maximalize the deletion speed.
+        This method uses up 3 different rate limit groups parallelly to maximize the deletion speed.
         """
         if not messages:
             return
@@ -3785,7 +3785,7 @@ class Client(UserBase):
                         if (message_id+20971520000) < limit:
                             continue
                         
-                        # If the message is really older than the limit, with ingoring the 10 second, then we move it.
+                        # If the message is really older than the limit, with ignoring the 10 second, then we move it.
                         if own:
                             group = message_group_old_own
                         else:
@@ -3826,7 +3826,7 @@ class Client(UserBase):
             
             if not tasks:
                 # It can happen, that there are no more tasks left,  at that case we check if there is more message
-                # left. Only at `message_group_new` can be anymore message, because there is a time intervallum of 10
+                # left. Only at `message_group_new` can be anymore message, because there is a time interval of 10
                 # seconds, what we do not move between categories.
                 if not message_group_new:
                     break
@@ -3873,7 +3873,7 @@ class Client(UserBase):
         """
         Similar to ``.message_delete_multiple`, but it accepts messages from different channels. Groups them up by
         channel and creates ``.message_delete_multiple`` tasks for them. Returns when all the task are finished.
-        If any exception was rasised meanwhile, then returns each of them in a list.
+        If any exception was raised meanwhile, then returns each of them in a list.
         
         This method is a coroutine.
         
@@ -3918,8 +3918,8 @@ class Client(UserBase):
         
     async def message_delete_sequence(self, channel, after=None, before=None, limit=None, filter=None, reason=None):
         """
-        Deletes messages between an intervallum determined by `before` and `after`. They can be passed as `int`, or as
-        a ``DiscordEntitiy`` instance or as a `datetime` object.
+        Deletes messages between an interval determined by `before` and `after`. They can be passed as `int`, or as
+        a ``DiscordEntity`` instance or as a `datetime` object.
         
         If the client has no `manage_messages` permission at the channel, then returns instantly.
         
@@ -3951,7 +3951,7 @@ class Client(UserBase):
         
         Notes
         -----
-        This method uses up 4 different ratelimit groups parallelly to maximalize the request and the deletion speed.
+        This method uses up 4 different rate limit groups parallelly to maximize the request and the deletion speed.
         """
         # Check permissions
         permissions = channel.cached_permissions_for(self)
@@ -3984,8 +3984,8 @@ class Client(UserBase):
         
         messages_ = channel.messages
         if (messages_ is not None) and messages_:
-            before_index = message_relativeindex(messages_, before)
-            after_index = message_relativeindex(messages_, after)
+            before_index = message_relative_index(messages_, before)
+            after_index = message_relative_index(messages_, after)
             if before_index != after_index:
                 time_limit = int((time_now()-1209600.)*1000.-DISCORD_EPOCH)<<22
                 while True:
@@ -4062,7 +4062,7 @@ class Client(UserBase):
                         pass
                     
                     elif collected == 1:
-                        # Delete the message if we dont delete a new message already
+                        # Delete the message if we don't delete a new message already
                         if (delete_new_task is None):
                             # We collected 1 message -> We cannot use mass delete on this.
                             own, message_id = message_group_new.popleft()
@@ -4083,7 +4083,7 @@ class Client(UserBase):
                     # After we checked what is at this group, lets move the others from it's end, if needed ofc
                     message_limit = len(message_group_new)
                     if message_limit:
-                        # timelimit -> 2 week
+                        # time limit -> 2 week
                         time_limit = time_limit-20971520000
                         
                         while True:
@@ -4123,7 +4123,7 @@ class Client(UserBase):
             
             if not tasks:
                 # It can happen, that there are no more tasks left, at that case we check if there is more message
-                # left. Only at `message_group_new` can be anymore message, because there is a time intervallum of
+                # left. Only at `message_group_new` can be anymore message, because there is a time interval of
                 # 10 seconds, what we do not move between categories.
                 if not message_group_new:
                     break
@@ -4163,7 +4163,7 @@ class Client(UserBase):
                         if received_count == 0:
                             continue
                     
-                    # We dont really care about the limit, because we check message id when we delete too.
+                    # We don't really care about the limit, because we check message id when we delete too.
                     time_limit = int((time_now()-1209600.)*1000.-DISCORD_EPOCH)<<22 # 2 weeks
                     
                     for message_data in result:
@@ -4178,7 +4178,7 @@ class Client(UserBase):
                             # If filter is `None`, we just have to decide, if we were the author or nope.
                             
                             # Try to get user id, first start it with trying to get author data. The default author_id
-                            # will be 0, because thats sure not the id of the client.
+                            # will be 0, because that's sure not the id of the client.
                             try:
                                 author_data = message_data['author']
                             except KeyError:
@@ -4248,8 +4248,8 @@ class Client(UserBase):
     async def multi_client_message_delete_sequence(self, channel, after=None, before=None, limit=None, filter=None,
             reason=None):
         """
-        Deletes messages between an intervallum determined by `before` and `after`. They can be passed as `int`, or as
-        a ``DiscordEntitiy`` instance or as a `datetime` object.
+        Deletes messages between an interval determined by `before` and `after`. They can be passed as `int`, or as
+        a ``DiscordEntity`` instance or as a `datetime` object.
         
         Not like ``.message_delete_sequence``, this method uses up all he clients at the respective channel to delete
         messages an not only the one from what it was called from.
@@ -4285,7 +4285,7 @@ class Client(UserBase):
         Notes
         -----
         This method uses up to 4 different endpoint groups too as ``.message_delete_sequence``, but tries to
-        pararellize the them between more clients as well.
+        parallelize the them between more clients as well.
         """
         # Check permissions
         sharders = []
@@ -4341,8 +4341,8 @@ class Client(UserBase):
         
         messages_ = channel.messages
         if (messages_ is not None) and messages_:
-            before_index = message_relativeindex(messages_, before)
-            after_index = message_relativeindex(messages_, after)
+            before_index = message_relative_index(messages_, before)
+            after_index = message_relative_index(messages_, after)
             if before_index != after_index:
                 time_limit = int((time_now()-1209600.)*1000.-DISCORD_EPOCH)<<22
                 while True:
@@ -4357,14 +4357,14 @@ class Client(UserBase):
                             continue
                     
                     last_message_id = message_.id
-                    whos = is_own_getter.get(message_.author.id, -1)
+                    who_s = is_own_getter.get(message_.author.id, -1)
                     if last_message_id > time_limit:
-                        message_group_new.append((whos, last_message_id,),)
+                        message_group_new.append((who_s, last_message_id,),)
                     else:
-                        if whos == -1:
+                        if who_s == -1:
                             message_group_old.append(last_message_id)
                         else:
-                            message_group_old_own.append((whos, last_message_id,),)
+                            message_group_old_own.append((who_s, last_message_id,),)
                     
                     # Check if we reached the limit
                     limit -= 1
@@ -4377,7 +4377,7 @@ class Client(UserBase):
         tasks = []
         # Handle requesting together, since we need to know, till where the last request yielded.
         get_mass_task = None
-        # Loop the sharders when requesting, so ratelimits are used up.
+        # Loop the sharders when requesting, so rate limits are used up.
         get_mass_task_next = 0
         
         channel_id = channel.id
@@ -4420,7 +4420,7 @@ class Client(UserBase):
                             if collected == 100:
                                 break
                             
-                            whos, message_id = message_group_new[collected]
+                            who_s, message_id = message_group_new[collected]
                             if message_id < time_limit:
                                 break
                             
@@ -4431,11 +4431,11 @@ class Client(UserBase):
                             pass
                         
                         elif collected == 1:
-                            # Delete the message if we dont delete a new message already
+                            # Delete the message if we don't delete a new message already
                             for sub_sharder in sharders:
                                 if (sub_sharder.can_manage_messages) and (sharder.delete_new_task is None):
                                     # We collected 1 message -> We cannot use mass delete on this.
-                                    whos, message_id = message_group_new.popleft()
+                                    who_s, message_id = message_group_new.popleft()
                                     delete_new_task = Task(sub_sharder.client.http.message_delete(channel_id,
                                         message_id, reason=reason), KOKORO)
                                     sub_sharder.delete_new_task = delete_new_task
@@ -4445,7 +4445,7 @@ class Client(UserBase):
                             message_ids = []
                             while collected:
                                 collected -= 1
-                                whos, message_id = message_group_new.popleft()
+                                who_s, message_id = message_group_new.popleft()
                                 message_ids.append(message_id)
                             
                             delete_mass_task = Task(sharder.client.http.message_delete_multiple(channel_id,
@@ -4456,23 +4456,23 @@ class Client(UserBase):
                         # After we checked what is at this group, lets move the others from it's end, if needed ofc
                         message_limit = len(message_group_new)
                         if message_limit:
-                            # timelimit -> 2 week
+                            # time limit -> 2 week
                             time_limit = time_limit-20971520000
                             
                             while True:
                                 # Cannot start at index = len(...), so we instantly do -1
                                 message_limit -= 1
                                 
-                                whos, message_id = message_group_new[message_limit]
+                                who_s, message_id = message_group_new[message_limit]
                                 # Check if we should not move -> leave
                                 if message_id > time_limit:
                                     break
                                 
                                 del message_group_new[message_limit]
-                                if whos == -1:
+                                if who_s == -1:
                                     message_group_old.appendleft(message_id)
                                 else:
-                                    message_group_old_own.appendleft((whos, message_group_old,),)
+                                    message_group_old_own.appendleft((who_s, message_group_old,),)
                                 
                                 if message_limit:
                                     continue
@@ -4484,8 +4484,8 @@ class Client(UserBase):
                 # Check who's is the last message. And delete with it. These speed is pretty fast.
                 # I doubt it needs further speedup, since deleting not own messages are the bottleneck of message
                 # deletions.
-                whos, message_id = message_group_old_own[0]
-                sharder = sharders[whos]
+                who_s, message_id = message_group_old_own[0]
+                sharder = sharders[who_s]
                 if sharder.delete_new_task is None:
                     del message_group_old_own[0]
                     delete_new_task = Task(sharder.client.http.message_delete(channel_id, message_id,
@@ -4507,16 +4507,16 @@ class Client(UserBase):
             
             if not tasks:
                 # It can happen, that there are no more tasks left, at that case we check if there is more message
-                # left. Only at `message_group_new` can be anymore message, because there is a time intervallum of
+                # left. Only at `message_group_new` can be anymore message, because there is a time interval of
                 # 10 seconds, what we do not move between categories.
                 if not message_group_new:
                     break
                 
                 # We really have at least 1 message at that interval.
-                whos, message_id = message_group_new.popleft()
+                who_s, message_id = message_group_new.popleft()
                 # We will delete that message with old endpoint if not own, to make sure it will not block the other
                 # endpoint for 2 minutes with any chance.
-                if whos == -1:
+                if who_s == -1:
                     for sharder in sharders:
                         if sharder.can_manage_messages:
                             task = Task(sharder.client.http.message_delete_b2wo(channel_id, message_id,
@@ -4524,7 +4524,7 @@ class Client(UserBase):
                             sharder.delete_old_task = task
                             break
                 else:
-                    sharder = sharders[whos]
+                    sharder = sharders[who_s]
                     task = Task(sharder.client.http.message_delete(channel_id, message_id, reason=reason), KOKORO)
                     sharder.delete_new_task = task
                 
@@ -4552,7 +4552,7 @@ class Client(UserBase):
                         if received_count == 0:
                             continue
                     
-                    # We dont really care about the limit, because we check message id when we delete too.
+                    # We don't really care about the limit, because we check message id when we delete too.
                     time_limit = int((time_now()-1209600.)*1000.-DISCORD_EPOCH)<<22 # 2 weeks
                     
                     for message_data in result:
@@ -4567,7 +4567,7 @@ class Client(UserBase):
                             # If filter is `None`, we just have to decide, if we were the author or nope.
                             
                             # Try to get user id, first start it with trying to get author data. The default author_id
-                            # will be 0, because thats sure not the id of the client.
+                            # will be 0, because that's sure not the id of the client.
                             try:
                                 author_data = message_data['author']
                             except KeyError:
@@ -4599,15 +4599,15 @@ class Client(UserBase):
                             
                             author_id = message_.author.id
                         
-                        whos = is_own_getter.get(author_id, -1)
+                        who_s = is_own_getter.get(author_id, -1)
                         
                         if last_message_id > time_limit:
-                            message_group_new.append((whos, last_message_id,),)
+                            message_group_new.append((who_s, last_message_id,),)
                         else:
-                            if whos == -1:
+                            if who_s == -1:
                                 message_group_old.append(last_message_id)
                             else:
-                                message_group_old_own.append((whos, last_message_id,),)
+                                message_group_old_own.append((who_s, last_message_id,),)
                         
                         # Did we reach the amount limit?
                         limit -= 1
@@ -4710,7 +4710,7 @@ class Client(UserBase):
                 f'`{message.__class__.__name__}`.')
         
         # Embed check order:
-        # 1.: Elipsis
+        # 1.: Ellipsis
         # 2.: None
         # 3.: Embed
         # 4.: list of Embed -> embed[0] or None
@@ -4741,7 +4741,7 @@ class Client(UserBase):
                 f'{EmbedBase.__name__} instances, got {embed.__class__.__name__}.')
         
         # Content check order:
-        # 1.: Elipsis
+        # 1.: Ellipsis
         # 2.: None
         # 3.: str
         # 4.: Embed -> embed = content
@@ -4980,22 +4980,22 @@ class Client(UserBase):
             else:
                 ln = len(channel.messages)
             
-            loadto = index-ln
+            load_to = index-ln
             
-            # we want to load it till the exact index, so if `loadto` is `0`, thats not enough!
-            if loadto < 0:
+            # we want to load it till the exact index, so if `load_to` is `0`, that's not enough!
+            if load_to < 0:
                 result_state = 0
                 break
             
-            if loadto < 98:
-                planned = loadto+2
+            if load_to < 98:
+                planned = load_to+2
             else:
                 planned = 100
             
             if ln:
                 result = await self.message_logs(channel, planned, before=messages[ln-2].id)
             else:
-                result = await self.message_logs_fromzero(channel, planned)
+                result = await self.message_logs_from_zero(channel, planned)
             
             if len(result) < planned:
                 channel.message_history_reached_end = True
@@ -5053,7 +5053,7 @@ class Client(UserBase):
             channel = CHANNELS.get(channel_id)
             
             if channel is None:
-                messages = await self.message_logs_fromzero(channel_id, min(index+1, 100))
+                messages = await self.message_logs_from_zero(channel_id, min(index+1, 100))
                 
                 if messages:
                     channel = messages[0].channel
@@ -5091,7 +5091,7 @@ class Client(UserBase):
         start : `int`, Optional
             The first message's index at the channel to be requested. Defaults to `0`.
         end : `int`
-            The last message's index at the channel to be requested. Deffaults to `100`.
+            The last message's index at the channel to be requested. Defaults to `100`.
         
         Returns
         -------
@@ -5135,7 +5135,7 @@ class Client(UserBase):
             channel = CHANNELS.get(channel_id)
             
             if channel is None:
-                messages = await self.message_logs_fromzero(channel_id, min(end+1, 100))
+                messages = await self.message_logs_from_zero(channel_id, min(end+1, 100))
                 
                 if messages:
                     channel = messages[0].channel
@@ -5176,7 +5176,7 @@ class Client(UserBase):
         
         return result
     
-    async def message_iterator(self, channel, chunksize=99):
+    async def message_iterator(self, channel, chunk_size=99):
         """
         Returns an asynchronous message iterator over the given text channel.
         
@@ -5186,7 +5186,7 @@ class Client(UserBase):
         ----------
         channel : ``ChannelTextBase``  or `int` instance
             The channel from were the messages will be requested.
-        chunksize : `int`, Optional
+        chunk_size : `int`, Optional
             The amount of messages to request when the currently loaded history is exhausted. For message chaining
             it is preferably `99`.
         
@@ -5203,10 +5203,10 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `chunksize` was not given as `int` instance.
-            - If `chunksize` is out of range [1:].
+            - If `chunk_size` was not given as `int` instance.
+            - If `chunk_size` is out of range [1:].
         """
-        return await MessageIterator(self, channel, chunksize)
+        return await MessageIterator(self, channel, chunk_size)
     
     async def typing(self, channel):
         """
@@ -5479,8 +5479,8 @@ class Client(UserBase):
         """
         Requests the users, who reacted on the given message with the given emoji.
         
-        If the message has no reacters at all or no reacters with that emoji, returns an empty list. If we know the
-        emoji's every reacters we query the parameters from that.
+        If the message has no reactors at all or no reactors with that emoji, returns an empty list. If we know the
+        emoji's every reactors we query the parameters from that.
         
         This method is a coroutine.
         
@@ -5489,11 +5489,11 @@ class Client(UserBase):
         message : ``Message``, ``MessageRepr`` or ``MessageReference``
             The message, what's reactions will be requested.
         emoji : ``Emoji`` object
-            The emoji, what's reacters will be requested.
+            The emoji, what's reactors will be requested.
         limit : `None` `int`
             The amount of users to request. Can be in range [1:100]. Defaults to 25 by Discord.
         after : `int`, ``DiscordEntity`` or `datetime`, Optional
-            The timestamp after the message's reacters were created.
+            The timestamp after the message's reactors were created.
         
         Returns
         -------
@@ -5581,8 +5581,8 @@ class Client(UserBase):
         """
         Requests the all the users, which reacted on the message with the given message.
         
-        If the message has no reacters at all or no reacters with that emoji returns an empty list. If the emoji's
-        every reacters are known, then do requests are done.
+        If the message has no reactors at all or no reactors with that emoji returns an empty list. If the emoji's
+        every reactors are known, then do requests are done.
         
         This method is a coroutine.
         
@@ -5591,7 +5591,7 @@ class Client(UserBase):
         message : ``Message``, ``MessageRepr`` or ``MessageReference``
             The message, what's reactions will be requested.
         emoji : ``Emoji`` object
-            The emoji, what's reacters will be requested.
+            The emoji, what's reactors will be requested.
         
         Returns
         -------
@@ -5657,7 +5657,7 @@ class Client(UserBase):
     
     async def reaction_load_all(self, message):
         """
-        Requests all the reacters for every emoji on the given message.
+        Requests all the reactors for every emoji on the given message.
         
         Like the other reaction getting methods, this method prefers using the internal cache as well over doing a
         request.
@@ -5782,7 +5782,7 @@ class Client(UserBase):
         ------
         TypeError
             - If `guild` was not given neither as ``Guild`` nor `int` instance.
-            - If `user` was not given neither as ``User``, ``Client``, nnor `int` instance.
+            - If `user` was not given neither as ``User``, ``Client``, nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -5864,7 +5864,7 @@ class Client(UserBase):
     
     async def welcome_screen_edit(self, guild, *, enabled=..., description=..., welcome_channels=...):
         """
-        Edits the givne guild's welcome screen.
+        Edits the given guild's welcome screen.
         
         This method is a coroutine.
         
@@ -5896,7 +5896,7 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `enabled` was nto given as `bool` instance.
+            - If `enabled` was not given as `bool` instance.
             - If `description` was not given neither as `None` or `str` instance.
             - If `description`'s length is out of range [0:140].
             - If `welcome_channels`'s length is out of range [0:5].
@@ -6157,7 +6157,7 @@ class Client(UserBase):
         ------
         TypeError
             - If `guild` was not given neither as ``Guild`` nor `int` instance.
-            - If `user` was not given neither as ``User``, ``Client``, nnor `int` instance.
+            - If `user` was not given neither as ``User``, ``Client``, nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -6222,7 +6222,7 @@ class Client(UserBase):
         ------
         TypeError
             - If `guild` was not given neither as ``Guild`` nor `int` instance.
-            - If `user` was not given neither as ``User``, ``Client``, nnor `int` instance.
+            - If `user` was not given neither as ``User``, ``Client``, nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -6252,7 +6252,7 @@ class Client(UserBase):
     
     async def guild_sync(self, guild):
         """
-        Syncs a guild by it's id with the wrapper. Used internally if desync is detected when parsing dispatch events.
+        Syncs a guild by it's id with the wrapper. Used internally if de-sync is detected when parsing dispatch events.
         
         This method is a coroutine.
         
@@ -6312,7 +6312,7 @@ class Client(UserBase):
         return guild
 
 ##    # Disable user syncing, takes too much time
-##    async def _guild_sync_postprocess(self, guild):
+##    async def _guild_sync_post_process(self, guild):
 ##        for client in CLIENTS:
 ##            try:
 ##                user_data = await self.http.guild_user_get(guild.id, client.id)
@@ -6609,8 +6609,8 @@ class Client(UserBase):
         guild : ``Guild`` or `int` instance
             Where the pruning will be executed.
         days : `int`
-            The amount of days since atleast the users need to inactive. Can be in range [1:30].
-        roles : `None` or `list` of (`Role` or `int` instances), Optional
+            The amount of days since at least the users need to inactive. Can be in range [1:30].
+        roles : `None` or `list` of (``Role`` or `int` instances), Optional
             By default pruning will kick only the users without any roles, but it can defined which roles to include.
         count : `bool`, Optional
             Whether the method should return how much user were pruned, but if the guild is large it will be set to
@@ -6708,7 +6708,7 @@ class Client(UserBase):
         guild : ``Guild`` or `int` instance.
             Where the counting of prunable users will be done.
         days : `int`
-            The amount of days since atleast the users need to inactive. Can be in range [1:30].
+            The amount of days since at least the users need to inactive. Can be in range [1:30].
         roles : `None` or `list` of ``Role`` objects, Optional
             By default pruning would kick only the users without any roles, but it can be defined which roles to
             include.
@@ -6781,7 +6781,7 @@ class Client(UserBase):
             afk_timeout=None, verification_level=None, content_filter=None, message_notification=None, description=...,
             preferred_locale=None, system_channel_flags=None, add_feature=None, remove_feature=None, reason=None):
         """
-        Edis the guild with the given parameters.
+        Edits the guild with the given parameters.
         
         This method is a coroutine.
         
@@ -6854,7 +6854,7 @@ class Client(UserBase):
             - If `system_channel`, `rules_channel` or `public_updates_channel` was given, but not as `None`,
                 ``ChannelText``, neither as `int` instance.
             - If `owner` was not given neither as ``User``, ``Client`` or `int` instance.
-            - If `region` wasg iven neither as ``VoiceRegion`` or `str` instance.
+            - If `region` was given neither as ``VoiceRegion`` or `str` instance.
             - If `verification_level` was not given neither as ``VerificationLevel`` or `int` instance.
             - If `content_filter` was not given neither as ``ContentFilterLevel`` or `int` instance.
             - If `description` was not given either as `None` or `str` instance.
@@ -7467,7 +7467,7 @@ class Client(UserBase):
                         keyword = str(keyword)
                     else:
                         raise TypeError(f'`keywords` can be `None` or `iterable` of `str`. Got `iterable`, but it\'s '
-                            f'elemnet at index {index} is not `str` instance, got {keyword.__class__.__name__}.')
+                            f'element at index {index} is not `str` instance, got {keyword.__class__.__name__}.')
                     
                     keywords_processed.add(keyword)
                     index += 1
@@ -7668,7 +7668,7 @@ class Client(UserBase):
         return data['valid']
     
     discovery_validate_term = DiscoveryTermRequestCacher(discovery_validate_term, 86400.0,
-        RATELIMIT_GROUPS.discovery_validate_term)
+        RATE_LIMIT_GROUPS.discovery_validate_term)
     
     async def guild_users(self, guild):
         """
@@ -7743,7 +7743,7 @@ class Client(UserBase):
     
     async def guild_regions(self, guild):
         """
-        Requests the available voice regions for the given guild and returns them and the optiomal ones.
+        Requests the available voice regions for the given guild and returns them and the optional ones.
         
         This method is a coroutine.
         
@@ -7755,7 +7755,7 @@ class Client(UserBase):
         Returns
         -------
         voice_regions : `list` of ``VoiceRegion`` objects
-            The available voice reions for the guild.
+            The available voice regions for the guild.
         optimals : `list` of ``VoiceRegion`` objects
             The optimal voice regions for the guild.
         
@@ -7805,7 +7805,7 @@ class Client(UserBase):
     
     async def guild_sync_channels(self, guild):
         """
-        Requests the given guild's channels and if there any desync between the wrapper and Discord, applies the
+        Requests the given guild's channels and if there any de-sync between the wrapper and Discord, applies the
         changes.
         
         This method is a coroutine.
@@ -7827,7 +7827,7 @@ class Client(UserBase):
     
     async def guild_sync_roles(self, guild):
         """
-        Requests the given guild's roles and if there any desync between the wrapper and Discord, applies the
+        Requests the given guild's roles and if there any de-sync between the wrapper and Discord, applies the
         changes.
         
         This method is a coroutine.
@@ -7850,7 +7850,7 @@ class Client(UserBase):
     async def audit_logs(self, guild, limit=100, before=None, after=None, user=None, event=None,):
         """
         Request a batch of audit logs of the guild and returns them. The `after`, `around` and the `before` arguments
-        are mutually exclusive and they can be passed as `int`, or as a ``DiscordEntitiy`` instance or as a `datetime`
+        are mutually exclusive and they can be passed as `int`, or as a ``DiscordEntity`` instance or as a `datetime`
         object.
         
         This method is a coroutine.
@@ -7949,7 +7949,7 @@ class Client(UserBase):
             Moves the user to the given voice channel. Only applicable if the user is already at a voice channel.
             Pass it as `None` to kick the user from it's voice channel.
         roles : `None` or `list` of ``Role`` objects, Optional
-            The new roles of the user. Give it as `None` to remvoe all of the user's roles.
+            The new roles of the user. Give it as `None` to remove all of the user's roles.
         reason : `None` or `str`, Optional
             Will show up at the guild's audit logs.
         
@@ -8209,7 +8209,7 @@ class Client(UserBase):
         query : `name`
             The query string with what the user's name or nick should start.
         limit : `int`, Optional
-            The maximal amount of users to return. Can bebetween `1` and `1000`. Defaults to `1`.
+            The maximal amount of users to return. Can between `1` and `1000`. Defaults to `1`.
         
         Returns
         -------
@@ -8232,7 +8232,7 @@ class Client(UserBase):
         elif limit > 0 and limit < 1000:
             data['limit'] = limit
         else:
-            raise ValueError('`limit` can be betwwen 1 and 1000, got `{limit}`')
+            raise ValueError('`limit` can be between 1 and 1000, got `{limit}`')
         
         data = await self.http.guild_user_search(guild.id, data)
         return [User._create_and_update(user_data, guild) for user_data in data]
@@ -8250,7 +8250,7 @@ class Client(UserBase):
             Parameters
             ----------
             guild : ``Guild``
-                The guild, what's intgrations will be requested.
+                The guild, what's integrations will be requested.
             
             Returns
             -------
@@ -8275,7 +8275,7 @@ class Client(UserBase):
             Parameters
             ----------
             guild : ``Guild``
-                The guild, what's intgrations will be requested.
+                The guild, what's integrations will be requested.
             
             Returns
             -------
@@ -8338,7 +8338,7 @@ class Client(UserBase):
         expire_behavior : `int`, Optional
             Can be `0` for kick or `1` for role  remove.
         expire_grace_period : `int`, Optional
-            The time in days, after the subscribtion will be ignored. Can be `1`, `3`, `7`, `14` or `30`.
+            The time in days, after the subscription will be ignored. Can be `1`, `3`, `7`, `14` or `30`.
         enable_emojis : `bool`, Optional
             Twitch only.
         
@@ -8403,7 +8403,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        integration : ``Integation``
+        integration : ``Integration``
             The integration what will be deleted.
         
         Raises
@@ -8435,7 +8435,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        integration : ``Integation``
+        integration : ``Integration``
             The integration to sync.
         
         Raises
@@ -8461,7 +8461,7 @@ class Client(UserBase):
     
     async def permission_ow_edit(self, channel, overwrite, allow, deny, reason=None):
         """
-        Edits the given prmission overwrite.
+        Edits the given permission overwrite.
         
         This method is a coroutine.
         
@@ -8525,7 +8525,7 @@ class Client(UserBase):
         Parameters
         ----------
         channel : ``ChannelGuildBase`` instance
-            The channel to what the permission ovrwrite will be added.
+            The channel to what the permission overwrite will be added.
         target : ``Role`` or ``UserBase`` instance
             The permission overwrite's target.
         allow : ``Permission``
@@ -8550,9 +8550,9 @@ class Client(UserBase):
             If any exception was received from the Discord API.
         """
         if type(target) is Role:
-            type_ = PERMOW_TYPE_ROLE
+            type_ = PERM_OW_TYPE_ROLE
         elif isinstance(target, UserBase):
-            type_ = PERMOW_TYPE_USER
+            type_ = PERM_OW_TYPE_USER
         else:
             raise TypeError(f'`target` can be either `{Role.__name__}` or `{UserBase.__name__}` instance, got '
                 f'{target.__class__.__name__}.')
@@ -8580,7 +8580,7 @@ class Client(UserBase):
         channel : ``ChannelText``
             The channel of the created webhook.
         name : `str`
-            The name of the new webhook. It's lngth can be between `1` and `80`.
+            The name of the new webhook. It's length can be between `1` and `80`.
         avatar : `bytes-like`, Optional
             The webhook's avatar. Can be `'jpg'`, `'png'`, `'webp'` or `'gif'` image's raw data. However if set as
             `'gif'`, it will not have any animation.
@@ -8858,7 +8858,7 @@ class Client(UserBase):
             for id_ in old_ids:
                 guild.webhooks[id_]._delete()
         
-        guild.webhooks_uptodate = True
+        guild.webhooks_up_to_date = True
         
         return result
         
@@ -8910,7 +8910,7 @@ class Client(UserBase):
         """
         await self.http.webhook_delete_token(webhook)
             
-    # later there gonna be more stuff thats why 2 different
+    # later there gonna be more stuff that's why 2 different
     async def webhook_edit(self, webhook, name=None, avatar=..., channel=None):
         """
         Edits and updates the given webhook.
@@ -9084,7 +9084,7 @@ class Client(UserBase):
         tts : `bool`, Optional
             Whether the message is text-to-speech.
         name : `str`, Optional
-            The mesage's author's new name. Default to the webhook's name by Discord.
+            The message's author's new name. Default to the webhook's name by Discord.
         avatar_url : `str`, Optional
             The message's author's avatar's url. Defaults to the webhook's avatar' url by Discord.
         wait : `bool`, Optional
@@ -9101,7 +9101,7 @@ class Client(UserBase):
             - If `allowed_mentions` contains an element of invalid type.
             - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
             - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
-            - If ivalid file type would be sent.
+            - If invalid file type would be sent.
         ValueError
             - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
             - If more than `10` files would be sent.
@@ -9339,7 +9339,7 @@ class Client(UserBase):
                     f'`int` instance, got {message.__class__.__name__}`.')
         
         # Embed check order:
-        # 1.: Elipsis
+        # 1.: Ellipsis
         # 2.: None
         # 3.: Embed : -> [embed]
         # 4.: list of Embed -> embed[:10] or None
@@ -9370,7 +9370,7 @@ class Client(UserBase):
                 f'{EmbedBase.__name__} instances, got {embed.__class__.__name__}.')
         
         # Content check order:
-        # 1.: Elipsis
+        # 1.: Ellipsis
         # 2.: None
         # 3.: str
         # 4.: Embed -> embed = [content]
@@ -9559,7 +9559,7 @@ class Client(UserBase):
         guild : ``Guild``
             The guild, where the emoji will be created.
         name : `str`
-            The emoji's name. It's length can be beween `2` and `32`.
+            The emoji's name. It's length can be between `2` and `32`.
         image : `bytes-like`
             The emoji's icon.
         roles : `list` of `Role` objects, Optional
@@ -9929,7 +9929,7 @@ class Client(UserBase):
         except DiscordException as err:
             if err.code in (
                     ERROR_CODES.unknown_channel, # the channel was deleted meanwhile
-                    ERROR_CODES.invalid_permissions, # permissons changed meanwhile
+                    ERROR_CODES.invalid_permissions, # permissions changed meanwhile
                         ):
                 return None
             raise
@@ -10291,7 +10291,7 @@ class Client(UserBase):
     
     async def role_reorder(self, roles, reason=None):
         """
-        Moves more roles at their guild to the specifie positions.
+        Moves more roles at their guild to the specific positions.
         
         Partial roles are ignored and if passed any, every role's position after it is reduced. If there are roles
         passed with different guilds, then `ValueError` will be raised. If there are roles passed with the same
@@ -10326,15 +10326,15 @@ class Client(UserBase):
         # Lets check `roles` structure
         roles_valid = []
         
-        # Is `roles` passed as dictlike?
+        # Is `roles` passed as dict-like?
         if hasattr(type(roles), 'items'):
             for item in roles.items():
                 if type(item) is not tuple:
-                    raise TypeError(f'`roles` passed as dictlike, but when iterating it\'s `.items` returned not a '
+                    raise TypeError(f'`roles` passed as dict-like, but when iterating it\'s `.items` returned not a '
                         f'`tuple`, got `{item!r}`')
                 
                 if len(item)!=2:
-                    raise TypeError(f'`roles` passed as dictlike, but when iterating it\'s `.items` returned a '
+                    raise TypeError(f'`roles` passed as dict-like, but when iterating it\'s `.items` returned a '
                         f'`tuple`, but not with length `2`, got `{item!r}`')
                 
                 if (type(item[0]) is not Role) or (type(item[1]) is not int):
@@ -10361,7 +10361,7 @@ class Client(UserBase):
         # `roles` has an unknown format
         else:
             raise TypeError(
-                f'`roles` should have been passed as dictlike with (`{Role.__name__}, `int`) items, or as other '
+                f'`roles` should have been passed as dict-like with (`{Role.__name__}, `int`) items, or as other '
                 f'iterable with (`{Role.__name__}, `int`) elements, but got `{roles!r}`')
         
         # Check default and moving to default position
@@ -10425,7 +10425,7 @@ class Client(UserBase):
                 continue
             
             # Oh no, we need to reorder
-            # First role cannot get here, becuase it cannot have position 0.
+            # First role cannot get here, because it cannot have position 0.
             roles = [roles_valid[index-1][0], role]
             
             sub_index = index+1
@@ -10657,7 +10657,7 @@ class Client(UserBase):
         
         Notes
         -----
-        Creating a global command with the same name as an already exisitng one, will overwrite the old command.
+        Creating a global command with the same name as an already existing one, will overwrite the old command.
         
         The command will be available in all guilds after 1 hour.
         """
@@ -10734,7 +10734,7 @@ class Client(UserBase):
     
     async def application_command_global_delete(self, application_command):
         """
-        Delets the given application command.
+        Deletes the given application command.
         
         Parameters
         ----------
@@ -10844,7 +10844,7 @@ class Client(UserBase):
         
         Notes
         -----
-        Creating a global command with the same name as an already exisitng one, will overwrite the old command.
+        Creating a global command with the same name as an already existing one, will overwrite the old command.
         """
         application_id = self.application.id
         if __debug__:
@@ -10928,7 +10928,7 @@ class Client(UserBase):
     
     async def application_command_guild_delete(self, guild, application_command):
         """
-        Delets the given application command.
+        Deletes the given application command.
         
         Parameters
         ----------
@@ -10978,6 +10978,9 @@ class Client(UserBase):
         """
         Sends an interaction response.
         
+        When calling ``.interaction_response_message_create`` second time on the same `interaction`, will redirect to
+        ``.interaction_followup_message_create`` and drop a warning.
+        
         This method is a coroutine.
         
         Parameters
@@ -11018,9 +11021,9 @@ class Client(UserBase):
         
         Notes
         -----
-        Discord do not returns message data, so the method cannto return a ``Message`` either.
+        Discord do not returns message data, so the method cannot return a ``Message`` either.
         
-        By calling the method on the same interaction twice, you will get:
+        If the interaction is already timed or out or was used, you will get:
         
         ```
         DiscordException Not Found (404), code=10062: Unknown interaction
@@ -11030,6 +11033,15 @@ class Client(UserBase):
             if not isinstance(interaction, InteractionEvent):
                 raise AssertionError(f'`interaction` can be given as `{InteractionEvent.__name__}` instance, got '
                     f'{interaction.__class__.__name__}.')
+        
+        if interaction._responded:
+            warnings.warn(
+                f'`{self.__class__.__name__}.interaction_response_message_create` called multiple times on the same '
+                f'{interaction!r}. Redirecting to `{self.__class__.__name__}.interaction_followup_message_create`.',
+                ResourceWarning)
+            
+            return await self.interaction_followup_message_create(interaction, content, embed=embed,
+                allowed_mentions=allowed_mentions, tts=tts)
         
         # Embed check order:
         # 1.: None
@@ -11142,6 +11154,8 @@ class Client(UserBase):
         data['type'] = response_type
         
         await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
+        # Mark the interaction as responded.
+        interaction._responded = True
         # No message data is provided, return `None`.
         return None
     
@@ -11170,8 +11184,7 @@ class Client(UserBase):
             
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
-            Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions``
-            for details.
+            Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
         
         Raises
         ------
@@ -11200,7 +11213,7 @@ class Client(UserBase):
                     f'{interaction.__class__.__name__}.')
         
         # Embed check order:
-        # 1.: Elipsis
+        # 1.: Ellipsis
         # 2.: None
         # 3.: Embed : -> [embed]
         # 4.: list of Embed -> embed[:10] or None
@@ -11231,7 +11244,7 @@ class Client(UserBase):
                 f'{EmbedBase.__name__} instances, got {embed.__class__.__name__}.')
         
         # Content check order:
-        # 1.: Elipsis
+        # 1.: Ellipsis
         # 2.: None
         # 3.: str
         # 4.: Embed -> embed = [content]
@@ -11342,6 +11355,9 @@ class Client(UserBase):
         """
         Sends a followup message with the given interaction.
         
+        When calling ``.interaction_followup_message_create`` before calling ``.interaction_response_message_create``
+        on an interaction, will redirect to ``.interaction_followup_message_create``and drop a warning.
+        
         This method is a coroutine.
         
         Parameters
@@ -11374,7 +11390,7 @@ class Client(UserBase):
             - If `allowed_mentions` contains an element of invalid type.
             - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
             - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
-            - If ivalid file type would be sent.
+            - If invalid file type would be sent.
         ValueError
             - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
             - If more than `10` files would be sent.
@@ -11388,17 +11404,29 @@ class Client(UserBase):
         
         Notes
         -----
-        Can be used before calling ``.interaction_response_message_create``.
+        Can be used before calling ``.interaction_response_message_create``, tho it will be redirected manually with
+        the `show_source` parameter passed as `False`.
         """
-        application_id = self.application.id
-        if __debug__:
-            if application_id == 0:
-                raise AssertionError('The client\'s application is not yet synced.')
-        
         if __debug__:
             if not isinstance(interaction, InteractionEvent):
                 raise AssertionError(f'`interaction` can be given as `{InteractionEvent.__name__}` instance, got '
                     f'{interaction.__class__.__name__}.')
+        
+        if (not interaction._responded):
+            warnings.warn(
+                f'`{self.__class__.__name__}.interaction_followup_message_create` called before calling '
+                f'`{self.__class__.__name__}.interaction_response_message_create` with {interaction!r}. Tho it is '
+                f'possible to call `.interaction_followup_message_create`` before, the request is still redirected to '
+                f'`.interaction_response_message_create` with `show_source` parameter as `False`.',
+                ResourceWarning)
+            
+            return await self.interaction_response_message_create(interaction, content, embed=embed,
+                allowed_mentions=allowed_mentions, tts=tts, show_source=False)
+        
+        application_id = self.application.id
+        if __debug__:
+            if application_id == 0:
+                raise AssertionError('The client\'s application is not yet synced.')
         
         # Embed check order:
         # 1.: None
@@ -11580,7 +11608,7 @@ class Client(UserBase):
                     f'`int` instance, got {message.__class__.__name__}`.')
         
         # Embed check order:
-        # 1.: Elipsis
+        # 1.: Ellipsis
         # 2.: None
         # 3.: Embed : -> [embed]
         # 4.: list of Embed -> embed[:10] or None
@@ -11611,7 +11639,7 @@ class Client(UserBase):
                 f'{EmbedBase.__name__} instances, got {embed.__class__.__name__}.')
         
         # Content check order:
-        # 1.: Elipsis
+        # 1.: Ellipsis
         # 2.: None
         # 3.: str
         # 4.: Embed -> embed = [content]
@@ -11774,7 +11802,7 @@ class Client(UserBase):
         Parameters
         ----------
         user : ``Client`` or ``User``
-            The user with who the relationsthip will be created.
+            The user with who the relationship will be created.
         relationship_type : ``RelationshipType``, Optional
             The type of the relationship.
         
@@ -11837,7 +11865,7 @@ class Client(UserBase):
         
         Notes
         -----
-        Meanwhile the clients logs in this method is called to ensrue that the client's application info is loaded.
+        Meanwhile the clients logs in this method is called to ensure that the client's application info is loaded.
         
         This endpoint is available only for bot accounts.
         """
@@ -11941,7 +11969,7 @@ class Client(UserBase):
         Returns
         -------
         gateway_url : `str`
-            The url to what the gateways' webscoket will be connected.
+            The url to what the gateways' websocket will be connected.
         """
         if self._gateway_time > (LOOP_TIME()-60.0):
             return self._gateway_url
@@ -11954,7 +11982,7 @@ class Client(UserBase):
     
     async def client_gateway_reshard(self, force=False):
         """
-        Reshards the client. And also updates it's gatewas url as a sidenote.
+        Reshards the client. And also updates it's gateway's url as a side note.
         
         Should be called only if every shard is down.
         
@@ -12072,7 +12100,7 @@ class Client(UserBase):
                 `True`, if connecting was successful.
             - If the method was called from an ``EventThread``, but not from the client's, then returns a
                 `FutureAsyncWrapper`. The task will return `True`, if connecting was successful.
-            - If the method was called from any other thread, then waits for the connecter task to finish and returns
+            - If the method was called from any other thread, then waits for the connector task to finish and returns
                 `True`, if it was successful.
         
         Raises
@@ -12090,15 +12118,15 @@ class Client(UserBase):
             return task
         
         if isinstance(thread, EventThread):
-            # Asyncwrap wakes up KOKORO
-            return task.asyncwrap(thread)
+            # `.async_wrap` wakes up KOKORO
+            return task.async_wrap(thread)
         
-        KOKORO.wakeup()
-        return task.syncwrap().wait()
+        KOKORO.wake_up()
+        return task.sync_wrap().wait()
     
     def stop(self):
         """
-        Starts disconneting the client.
+        Starts disconnecting the client.
         
         The return of the method depends on the thread, from which it was called from.
         
@@ -12117,18 +12145,18 @@ class Client(UserBase):
             return task
         
         if isinstance(thread, EventThread):
-            # Asyncwrap wakes up KOKORO
-            return task.asyncwrap(thread)
+            # AsyncWrap wakes up KOKORO
+            return task.async_wrap(thread)
         
-        KOKORO.wakeup()
-        task.syncwrap().wait()
+        KOKORO.wake_up()
+        task.sync_wrap().wait()
     
     async def connect(self):
         """
         Starts connecting the client to Discord, fills up the undefined events and creates the task, what will keep
         receiving the data from Discord (``._connect``).
         
-        If you want to start the connecting process consider using the toplevel ``.start`` or ``start_clients`` instead.
+        If you want to start the connecting process consider using the top-level ``.start`` or ``start_clients`` instead.
         
         This method is a coroutine.
         
@@ -12148,7 +12176,7 @@ class Client(UserBase):
         try:
             data = await self.client_login_static()
         except BaseException as err:
-            if isinstance(err, ConnectionError) and err.args[0] == 'Invalid adress':
+            if isinstance(err, ConnectionError) and err.args[0] == 'Invalid address':
                 after = (
                     'Connection failed, could not connect to Discord.\n Please check your internet connection / has '
                     'Python rights to use it?\n'
@@ -12157,7 +12185,7 @@ class Client(UserBase):
                 after = None
             
             before = [
-                'Exception occured at calling ',
+                'Exception occurred at calling ',
                 self.__class__.__name__,
                 '.connect\n',
                     ]
@@ -12201,7 +12229,7 @@ class Client(UserBase):
                 try:
                     await self.gateway.run()
                 except (GeneratorExit, CancelledError) as err:
-                    # For now only here. These errors occured randomly for me since I made the wrapper, only once-once,
+                    # For now only here. These errors occurred randomly for me since I made the wrapper, only once-once,
                     # and it was not the wrapper causing them, so it is time to say STOP.
                     # I also know `GeneratorExit` will show up as RuntimeError, but it is already a RuntimeError.
                     try:
@@ -12220,7 +12248,7 @@ class Client(UserBase):
                 except DiscordGatewayException as err:
                     if err.code in DiscordGatewayException.RESHARD_ERROR_CODES:
                         sys.stderr.write(
-                            f'{err.__class__.__name__} occured, at {self!r}._connect:\n'
+                            f'{err.__class__.__name__} occurred, at {self!r}._connect:\n'
                             f'{err!r}\n'
                             f'The client will reshard itself and reconnect.\n'
                                 )
@@ -12264,16 +12292,16 @@ class Client(UserBase):
                      err.code in DiscordGatewayException.INTENT_ERROR_CODES):
                 
                 sys.stderr.write(
-                    f'{err.__class__.__name__} occured, at {self!r}._connect:\n'
+                    f'{err.__class__.__name__} occurred, at {self!r}._connect:\n'
                     f'{err!r}\n'
                         )
             else:
                 await KOKORO.render_exc_async(err,[
-                    'Unexpected exception occured at ',
+                    'Unexpected exception occurred at ',
                     repr(self),
                     '._connect\n',
                         ],
-                    'If you can reproduce this bug, Please send me a message or open an issue whith your code, and '
+                    'If you can reproduce this bug, Please send me a message or open an issue with your code, and '
                     'with every detail how to reproduce it.\n'
                     'Thanks!\n')
         
@@ -12357,7 +12385,7 @@ class Client(UserBase):
             Check, what tells that the waiting is over.
             
             If the `check` returns `True` the received `args` are passed to the waiter future and returned by the
-            method. However if the check returns any non `bool` value, then that object is pased next to `args` and
+            method. However if the check returns any non `bool` value, then that object is passed next to `args` and
             returned as well.
         
         timeout : `None` or `float`
@@ -12371,7 +12399,7 @@ class Client(UserBase):
         Raised
         ------
         TimeoutError
-            Timeout occured.
+            Timeout occurred.
         BaseException
             Any exception raised by `check`.
         """
@@ -12475,10 +12503,10 @@ class Client(UserBase):
     @staticmethod
     async def _request_members_loop(gateway, guilds):
         """
-        Called by ``._request_members2`` pararelly with other ``._request_members_loop``-s for each shard.
+        Called by ``._request_members2`` parallelly with other ``._request_members_loop``-s for each shard.
         
         The function requests all the members of given guilds without putting too much pressure on the respective
-        gateway's ratelimits.
+        gateway's rate limits.
         
         This function is a coroutine.
         
@@ -12553,7 +12581,7 @@ class Client(UserBase):
         Requests the members of the given guild by their name.
         
         This method uses the client's gateway to request the users. If any of the parameters do not match their
-        expected value or if timeout occures, returns an empty list instead of raising.
+        expected value or if timeout occurs, returns an empty list instead of raising.
         
         This method is a coroutine.
         
@@ -12612,7 +12640,7 @@ class Client(UserBase):
     
     async def disconnect(self):
         """
-        Disconnects the client and closes it's wewbsocket(s). Till the client goes offline, it might take even over
+        Disconnects the client and closes it's websocket(s). Till the client goes offline, it might take even over
         than `1` minute. Because bot accounts can not logout, so they need to wait for timeout.
         
         This method is a coroutine.
@@ -12717,7 +12745,7 @@ class Client(UserBase):
         
         return default
     
-    get_ratelimits_of = methodize(RatelimitProxy)
+    get_rate_limits_of = methodize(RateLimitProxy)
     
     @property
     def owner(self):
@@ -12811,7 +12839,7 @@ class Client(UserBase):
     
     def remove_additional_owners(self, *users):
         """
-        Removes additonal owners added by the ``.add_additional_owners`` method.
+        Removes additional owners added by the ``.add_additional_owners`` method.
         
         Parameters
         ----------
@@ -12879,7 +12907,7 @@ class Client(UserBase):
     
     def _update(self, data):
         """
-        Updates the client and returns it's old attribtes in a `dict` with `attribute-name`, `old-value` relation.
+        Updates the client and returns it's old attributes in a `dict` with `attribute-name`, `old-value` relation.
         
         Parameters
         ----------
@@ -13101,7 +13129,7 @@ class Client(UserBase):
     
     def _gateway_for(self, guild):
         """
-        Returns the coresponding gateway of the client to the passed guild.
+        Returns the corresponding gateway of the client to the passed guild.
         
         Parameters
         ----------
@@ -13139,7 +13167,7 @@ del re
 del URLS
 del module_message
 del module_webhook
-del RATELIMIT_GROUPS
+del RATE_LIMIT_GROUPS
 del DISCOVERY_CATEGORIES
 del module_invite
 del module_parsers

@@ -7,7 +7,7 @@ from json import dumps as dump_to_json
 
 from .utils import multidict
 
-from .hdrs import CONTENT_TYPE, CONTENT_TRANSFER_ENCODING, CONTENT_LENGTH
+from .headers import CONTENT_TYPE, CONTENT_TRANSFER_ENCODING, CONTENT_LENGTH
 from .multipart import MultipartWriter, create_payload, BytesPayload
 
 
@@ -65,7 +65,7 @@ class Formdata(object):
         Raises
         ------
         TypeError
-            Recevied unhandleable field.
+            Received unhandleable field.
         """
         if isinstance(fields, dict):
             fields = list(fields.items())
@@ -125,7 +125,7 @@ class Formdata(object):
         if (filename is not None):
             if __debug__:
                 if not isinstance(filename, str):
-                    raise AssertionError(f'`filename` can be gvien as `None` or `str` instance, got '
+                    raise AssertionError(f'`filename` can be given as `None` or `str` instance, got '
                         f'{filename.__class__.__name__}.')
         
         if (filename is None) and isinstance(value, IOBase):
@@ -229,7 +229,7 @@ class Formdata(object):
             
             if type_options:
                 part.set_content_disposition('form-data', type_options.kwargs(), quote_fields=self.quote_fields)
-                part.headers.popall(CONTENT_LENGTH, None)
+                part.headers.pop_all(CONTENT_LENGTH, None)
             
             writer.append_payload(part)
         
@@ -266,7 +266,7 @@ class Formdata(object):
         Parameters
         ----------
         data : `Any`
-            Json serealizable content.
+            Json serializable content.
         """
         if data:
             type_options = multidict()

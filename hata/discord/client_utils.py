@@ -4,13 +4,13 @@ __all__ = ('ClientWrapper', 'Typer', )
 from math import inf
 
 from ..backend.utils import basemethod, _spaceholder
-from ..backend.eventloop import LOOP_TIME
+from ..backend.event_loop import LOOP_TIME
 from ..backend.futures import Future, sleep, Task
 
 from .permission import Permission
 from .role import PERMISSION_KEY
 from .client_core import KOKORO, CLIENTS
-from .ratelimit import RatelimitProxy
+from .rate_limit import RateLimitProxy
 
 Client = NotImplemented
 
@@ -25,9 +25,9 @@ class SingleUserChunker(object):
     Attributes
     ----------
     timer : `Handle` or `None`
-        The timeouter of the chunker, what will cancel if the timeout occures.
+        The time-outer of the chunker, what will cancel if the timeout occurs.
     waiter : ``Future``
-        The waiter future what will yield, when we receive the response, or when the timeout occures.
+        The waiter future what will yield, when we receive the response, or when the timeout occurs.
     """
     __slots__ = ('timer', 'waiter',)
     
@@ -97,13 +97,13 @@ class SingleUserChunker(object):
         Raises
         ------
         CancelledError
-            If timeout occured.
+            If timeout occurred.
         """
         return self.waiter.__await__()
 
 class MassUserChunker(object):
     """
-    A user chunk waiter, which yields after the chunks of sertain amount of guilds are received. Used at
+    A user chunk waiter, which yields after the chunks of certain amount of guilds are received. Used at
     ``Client._request_members`` and at ``Client._request_members``.
     
     Attributes
@@ -113,9 +113,9 @@ class MassUserChunker(object):
     left : `int`
         The amount of guilds, which's chunks are not yet requested
     timer : `Handle` or `None`
-        The timeouter of the chunker, what will cancel if the timeout occures.
+        The time-outer of the chunker, what will cancel if the timeout occurs.
     waiter : ``Future``
-        The waiter future what will yield, when we receive the response, or when the timeout occures.
+        The waiter future what will yield, when we receive the response, or when the timeout occurs.
     """
     __slots__ = ('last', 'left', 'timer', 'waiter',)
     
@@ -201,7 +201,7 @@ class MassUserChunker(object):
         Raises
         ------
         CancelledError
-            If timeout occured.
+            If timeout occurred.
         """
         return self.waiter.__await__()
 
@@ -259,7 +259,7 @@ class DiscoveryCategoryRequestCacher(object):
     
     async def execute(self, client):
         """
-        Executes the request and returnsit's result or raises.
+        Executes the request and returns it's result or raises.
         
         This method is a coroutine.
         
@@ -345,14 +345,14 @@ class TimedCacheUnit(object):
     """
     Timed cache unit used at keyed request cachers.
     
-    Attrbiutes
+    Attributes
     ----------
     result : `str`
         The cached response object.
     creation_time : `float`
-        The LOOP_TIME time when the last resposne was received.
+        The LOOP_TIME time when the last response was received.
     last_usage_time : `float`
-        The monotnonic time when this unit was last tiem used.
+        The monotonic time when this unit was last time used.
     """
     __slots__ = ('creation_time', 'last_usage_time', 'result')
     def __repr__(self):
@@ -362,7 +362,7 @@ class TimedCacheUnit(object):
 
 class DiscoveryTermRequestCacher(object):
     """
-    Cacher for storing ``Client'' requests. Also uses other clients, if the source client's ratelimits are already
+    Cacher for storing ``Client'' requests. Also uses other clients, if the source client's rate limits are already
     exhausted.
     
     Attributes
@@ -371,8 +371,8 @@ class DiscoveryTermRequestCacher(object):
         The last time when a cleanup was done.
     _minimal_cleanup_interval : `float`
         The minimal time what needs to pass between cleanups.
-    _ratelimit_proxy_args : `tuple` (``RatelimitGroup``, (``DiscordEntity`` or `None`))
-        Ratelimit proxy arguments used when looking up the ratelimits of clients.
+    _rate_limit_proxy_args : `tuple` (``RateLimitGroup``, (``DiscordEntity`` or `None`))
+        Rate limit proxy arguments used when looking up the rate limits of clients.
     _waiters : `dict` of (`str`, `
         Waiters for requests already being done.
     cached : `dict`
@@ -380,10 +380,11 @@ class DiscoveryTermRequestCacher(object):
     func : `callable`
         Async callable, what's yields are cached.
     timeout : `float`
-        The timeout after the new request should be done insated of using the already cached response.
+        The timeout after the new request should be done instead of using the already cached response.
     """
-    __slots__ =('_last_cleanup', '_minimal_cleanup_interval', '_ratelimit_proxy_args', '_waiters', 'cached', 'func', 'timeout')
-    def __init__(self, func, timeout, ratelimit_group, ratelimit_limiter=None,):
+    __slots__ =('_last_cleanup', '_minimal_cleanup_interval', '_rate_limit_proxy_args', '_waiters', 'cached', 'func',
+        'timeout')
+    def __init__(self, func, timeout, rate_limit_group, rate_limit_limiter=None,):
         """
         Creates a new ``DiscoveryTermRequestCacher`` object with the given parameters.
         
@@ -392,16 +393,16 @@ class DiscoveryTermRequestCacher(object):
         func : `callable`
             Async callable, what's yields are cached.
         timeout : `float`
-            The timeout after the new request should be done insated of using the already cached response.
-        ratelimit_group : ``RatelimitGroup``
-            Ratelimit group of the respective request.
-        ratelimit_limiter : ``DiscordEntity``, Optional
-            Retelimit limiter fo the respective request.
+            The timeout after the new request should be done instead of using the already cached response.
+        rate_limit_group : ``RateLimitGroup``
+            Rate limit group of the respective request.
+        rate_limit_limiter : ``DiscordEntity``, Optional
+            Rate limit limiter fo the respective request.
         """
         self.func = func
         self.timeout = timeout
         self.cached = {}
-        self._ratelimit_proxy_args = (ratelimit_group, ratelimit_limiter)
+        self._rate_limit_proxy_args = (rate_limit_group, rate_limit_limiter)
         self._waiters = {}
         minimal_cleanup_interval = timeout / 10.0
         if minimal_cleanup_interval < 1800.0:
@@ -475,15 +476,15 @@ class DiscoveryTermRequestCacher(object):
         # No actual request is being done, so mark that we are doing a request.
         self._waiters[arg] = None
         
-        # Search client with free ratelimits.
-        free_count = RatelimitProxy(client, *self._ratelimit_proxy_args).free_count
+        # Search client with free rate limits.
+        free_count = RateLimitProxy(client, *self._rate_limit_proxy_args).free_count
         if not free_count:
             requester = client
             for client_ in CLIENTS:
                 if client_ is client:
                     continue
                 
-                free_count = RatelimitProxy(client_, *self._ratelimit_proxy_args).free_count
+                free_count = RateLimitProxy(client_, *self._rate_limit_proxy_args).free_count
                 if free_count:
                     requester = client_
                     break
@@ -491,7 +492,7 @@ class DiscoveryTermRequestCacher(object):
                 continue
             
             # If there is no client with free count do not care about the reset times, because probably only 1 client
-            # forces requests anyways, so that's ratelimits will reset first as well.
+            # forces requests anyways, so that's rate limits will reset first as well.
             client = requester
         
         # Do the request
@@ -557,14 +558,14 @@ class DiscoveryTermRequestCacher(object):
             repr(self.timeout),
                 ]
         
-        ratelimit_group, ratelimit_limiter = self._ratelimit_proxy_args
+        rate_limit_group, rate_limit_limiter = self._rate_limit_proxy_args
         
-        result.append(', ratelimit_group=')
-        result.append(repr(ratelimit_group))
+        result.append(', rate_limit_group=')
+        result.append(repr(rate_limit_group))
         
-        if (ratelimit_limiter is not None):
-            result.append(', ratelimit_limiter=')
-            result.append(repr(ratelimit_limiter))
+        if (rate_limit_limiter is not None):
+            result.append(', rate_limit_limiter=')
+            result.append(repr(rate_limit_limiter))
         
         result.append(')')
         
@@ -575,14 +576,14 @@ class DiscoveryTermRequestCacher(object):
 
 class UserGuildPermission(object):
     """
-    Reprents a user's permissions inside of a guild. Returned by ``Client.user_guilds``.
+    Represents a user's permissions inside of a guild. Returned by ``Client.user_guilds``.
     
     Attributes
     ----------
     owner : `bool`
         Whether the user is the owner of the guild.
     permission : ``Permission``
-        The user's prermisisons at the guild.
+        The user's permissions at the guild.
     """
     __slots__ = ('owner', 'permission', )
     def __init__(self, data):
@@ -719,10 +720,10 @@ class Typer(object):
     channel_id : `int` instance
         The channel's id where typing will be triggered.
     timeout : `float`
-        The leftover timeout till the typer will send typings. Is reduced every time, when the typer sent a typing
+        The leftover timeout till the typer will send typing events. Is reduced every time, when the typer sent a typing
         event. If goes under `0.0` the typer stops sending more events.
     waiter : ``Future`` or `None`
-        The sleeping future what will wakeup ``.run``.
+        The sleeping future what will wake_up ``.run``.
     """
     __slots__ = ('channel_id', 'client', 'timeout', 'waiter',)
     def __init__(self, client, channel_id, timeout=300.):
@@ -816,7 +817,7 @@ class ClientWrapper(object):
         return self
     
     def __repr__(self):
-        """Returns the client wrapper's represnetation."""
+        """Returns the client wrapper's representation."""
         result = [self.__class__.__name__, '(']
         
         clients = self.clients
@@ -840,7 +841,7 @@ class ClientWrapper(object):
     
     def events(self, func=None, name=None, overwrite=False):
         """
-        Adds the given `func` as event handler to the contained clients's with the givne parameters.
+        Adds the given `func` as event handler to the contained clients's with the given parameters.
         
         If `func` argument is not given, returns an ``._events_wrapper`` instance, what allows using this method
         as a decorator with passing additional keyword arguments at the same time.
@@ -886,7 +887,7 @@ class ClientWrapper(object):
         parent : ``ClientWrapper``
             The owner event descriptor.
         args: `tuple` of `Any`
-            Additonal keyword arguments (in order) passed when the wrapper was created.
+            Additional keyword arguments (in order) passed when the wrapper was created.
         """
         __slots__ = ('parent', 'args',)
         def __init__(self, parent, args):
@@ -898,7 +899,7 @@ class ClientWrapper(object):
             parent : ``EventDescriptor``
                 The owner event descriptor.
             args: `tuple` of `Any`
-                Additonal keyword arguments (in order) passed when the wrapper was created.
+                Additional keyword arguments (in order) passed when the wrapper was created.
             """
             self.parent = parent
             self.args = args

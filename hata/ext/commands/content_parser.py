@@ -209,17 +209,17 @@ for color, *names in (
 
 del color, names, name
 
-CONTENT_ARGUMNET_SEPARATORS = {}
+CONTENT_ARGUMENT_SEPARATORS = {}
 
 class ContentArgumentSeparator(object):
     """
-    Content argument separator used insisde of a ``ContentParserContext`` and stored by ``CommandContentParser``
+    Content argument separator used inside of a ``ContentParserContext`` and stored by ``CommandContentParser``
     instances.
     
     Attributes
     ----------
     _caller : `function`
-        The choosed function what is called when the separator s called.
+        The chosen function what is called when the separator s called.
         
         Can be 1 of:
         - ``._rule_single``
@@ -247,9 +247,9 @@ class ContentArgumentSeparator(object):
             - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
             - If `separator was given as `tuple`, but it's element are not `str` instances.
         ValueError
-            - If `seperator` is given as `str`, but it's length is not 1.
+            - If `separator` is given as `str`, but it's length is not 1.
             - If `separator` is given as `str`, but it is a space character.
-            - If `seperator` is given as `tuple`, but one of it's element's length is not 1.
+            - If `separator` is given as `tuple`, but one of it's element's length is not 1.
             - If `separator` is given as `tuple`, but one of it's element's is a space character.
         """
         if separator is None:
@@ -270,7 +270,7 @@ class ContentArgumentSeparator(object):
             processed_separator = list(separator)
             separator_type = tuple
         else:
-            raise TypeError(f'`sepatator` should have be given as `str` or as `tuple` instance, got '
+            raise TypeError(f'`separator` should have be given as `str` or as `tuple` instance, got '
                 f'{separator_type.__name__}.')
         
         if separator_type is str:
@@ -278,7 +278,7 @@ class ContentArgumentSeparator(object):
                 raise ValueError(f'`str` separator length can be only `1`, got {separator!r}.')
             
             if processed_separator.isspace():
-                raise ValueError(f'`str` sepratorcannot be a space character`, meanwhile it is, got {separator!r}.')
+                raise ValueError(f'`str` separator cannot be a space character`, meanwhile it is, got {separator!r}.')
             
             separator = processed_separator
         
@@ -296,21 +296,21 @@ class ContentArgumentSeparator(object):
                     processed_element  = str(element)
                     processed_separator[index] = processed_element
                 else:
-                    raise TypeError(f'`tuple` seprator\'s elements can be only `str` instances, meanwhile it\'s '
+                    raise TypeError(f'`tuple` separator\'s elements can be only `str` instances, meanwhile it\'s '
                         f'element under index `{index}` is type {element_type.__name__!r}.')
                 
                 if len(processed_element) != 1:
-                    raise ValueError(f'`tuple` seprator\'s elements can be only `str` with length of `1`, meanwhile '
+                    raise ValueError(f'`tuple` separator\'s elements can be only `str` with length of `1`, meanwhile '
                         f'it\'s element under index `{index}` is not, got {element!r}.')
                 
                 if processed_element.isspace():
-                    raise ValueError(f'`tuple` seprator\'s elements cannot be space character`, meanwhile it\'s '
+                    raise ValueError(f'`tuple` separator\'s elements cannot be space character`, meanwhile it\'s '
                         f'element under index `{index}` is, got {element!r}.')
             
             separator = tuple(processed_separator)
         
         try:
-            return CONTENT_ARGUMNET_SEPARATORS[separator]
+            return CONTENT_ARGUMENT_SEPARATORS[separator]
         except KeyError:
             pass
         
@@ -336,13 +336,13 @@ class ContentArgumentSeparator(object):
         self.separator = separator
         self._rp = rp
         self._caller = caller
-        CONTENT_ARGUMNET_SEPARATORS[separator] = self
+        CONTENT_ARGUMENT_SEPARATORS[separator] = self
         return self
     
     @staticmethod
     def _rule_single(rp, content, index):
         """
-        Rule used when the the content's part are separeted by a given character.
+        Rule used when the the content's part are separated by a given character.
         
         Parameters
         ----------
@@ -370,7 +370,7 @@ class ContentArgumentSeparator(object):
     @staticmethod
     def _rule_inter(rp, content, index):
         """
-        Rule used when the content's part are sepearted by a space or if they are between 2 (or 1) predefined
+        Rule used when the content's part are separated by a space or if they are between 2 (or 1) predefined
         character.
         
         Parameters
@@ -398,7 +398,7 @@ class ContentArgumentSeparator(object):
     
     def __call__(self, content, index):
         """
-        Calls the content argument separetor to get the next part of the given content.
+        Calls the content argument separator to get the next part of the given content.
         
         Parameters
         ----------
@@ -425,7 +425,7 @@ class ContentArgumentSeparator(object):
         return hash(self.separator)
     
     def __eq__(self, other):
-        """Returns whether the two content argument separatos are the same."""
+        """Returns whether the two content argument separator are the same."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -537,10 +537,10 @@ class ConverterFlag(FlagBase):
     |               |               | Mostly pairs with the `id` flag.                                      |
     +---------------+---------------+-----------------------------------------------------------------------+
     | profile       | 5             | User parser only. Can be used when user cache is disabled to          |
-    |               |               | esnure, that the user will have local guild profile if applicable.    |
+    |               |               | ensure, that the user will have local guild profile if applicable.    |
     +---------------+---------------+-----------------------------------------------------------------------+
     
-    There are alredy precreated flags, which are the following:
+    There are already precreated flags, which are the following:
     +-------------------+-------------------------------------------+
     | Name              | Included flags                            |
     +===================+===========================================+
@@ -578,7 +578,7 @@ class ConverterFlag(FlagBase):
     +-------------------+-------------------------------------------+
     
     Note, if you use for example a `'user'` parser, then by default it will use the `user_default` flags, and it
-    will ignore everyting else, than `user_all`.
+    will ignore everything else, than `user_all`.
     
     Some parsers, like `int`, or `str` do not have any flags, what means, their behaviour cannot be altered.
     """
@@ -710,7 +710,7 @@ class ContentParserContext(object):
     
     def mark_last_as_used(self):
         """
-        Marks the lastly returned srting as it was used up, making the next call to try to parse a
+        Marks the lastly returned string as it was used up, making the next call to try to parse a
         new one.
         """
         self.last_start = self.index
@@ -761,7 +761,7 @@ class ParserContextBase(object):
         return True
     
     def __repr__(self):
-        """Returns the parser context's represnetation."""
+        """Returns the parser context's representation."""
         return f'<{self.__class__.__name__}>'
 
 class RestParserContext(ParserContextBase):
@@ -843,7 +843,7 @@ class RestParserContext(ParserContextBase):
         return True
     
     def __repr__(self):
-        """Returns the parser context's represnetation."""
+        """Returns the parser context's representation."""
         result = [
             '<',
             self.__class__.__name__,
@@ -864,7 +864,7 @@ class RestParserContext(ParserContextBase):
 
 class ParserContext(ParserContextBase):
     """
-    Parser context used inside of chanined content parsers.
+    Parser context used inside of chained content parsers.
     
     Attributes
     ----------
@@ -889,7 +889,7 @@ class ParserContext(ParserContextBase):
         Raises
         ------
         TypeError
-            If `flagged_annotation` was gived as `tuple`.
+            If `flagged_annotation` was given as `tuple`.
         """
         type_ = flagged_annotation.annotation
         if type(type_) is tuple:
@@ -927,7 +927,7 @@ class ParserContext(ParserContextBase):
         return True
     
     def __repr__(self):
-        """Returns the parser context's represnetation."""
+        """Returns the parser context's representation."""
         result = [
             '<',
             self.__class__.__name__,
@@ -1015,7 +1015,7 @@ class ChainedArgsParserContext(ParserContextBase):
         Raises
         ------
         TypeError
-            If `flagged_annotation` was gived not given as `tuple` or it contains only 1 (or less) element.
+            If `flagged_annotation` was given not given as `tuple` or it contains only 1 (or less) element.
         """
         if (type(flagged_annotations) is not tuple) or (len(flagged_annotations) < 2):
             raise TypeError(f'`flagged_annotations` cannot be given as not `tuple`, or as `tuple` with 1 (or less) '
@@ -1060,7 +1060,7 @@ class ChainedArgsParserContext(ParserContextBase):
         return True
     
     def __repr__(self):
-        """Returns the parser context's represnetation."""
+        """Returns the parser context's representation."""
         result = [
             '<',
             self.__class__.__name__,
@@ -1124,7 +1124,7 @@ class SingleParserContext(ParserContext):
         Parameters
         ----------
         flagged_annotation : ``FlaggedAnnotation``
-            Describes what type on entity and how it whould be parsed.
+            Describes what type on entity and how it should be parsed.
         default_type : `Any`
             Describes how `default` is used up.
             
@@ -1144,7 +1144,7 @@ class SingleParserContext(ParserContext):
         Raises
         ------
         TypeError
-            If `flagged_annotation` was gived as `tuple`.
+            If `flagged_annotation` was given as `tuple`.
         """
         type_ = flagged_annotation.annotation
         if type(type_) is tuple:
@@ -1193,7 +1193,7 @@ class SingleParserContext(ParserContext):
         return True
 
     def __repr__(self):
-        """Returns the parser context's represnetation."""
+        """Returns the parser context's representation."""
         result = [
             '<',
             self.__class__.__name__,
@@ -1285,7 +1285,7 @@ class ChainedParserContext(ChainedArgsParserContext):
         Raises
         ------
         TypeError
-            If `flagged_annotation` was gived not given as `tuple` or it contains only 1 (or less) element.
+            If `flagged_annotation` was given not given as `tuple` or it contains only 1 (or less) element.
         """
         if (type(flagged_annotations) is not tuple) or (len(flagged_annotations) < 2):
             raise TypeError(f'`flagged_annotations` cannot be given as not `tuple`, or as `tuple` with 1 (or less) '
@@ -1337,7 +1337,7 @@ class ChainedParserContext(ChainedArgsParserContext):
         return True
 
     def __repr__(self):
-        """Returns the parser context's represnetation."""
+        """Returns the parser context's representation."""
         result = [
             '<',
             self.__class__.__name__,
@@ -1393,7 +1393,7 @@ class ConverterSetting(object):
     converter : `async-function`
         The converter function.
     default_flags : ``ConverterFlag``
-        The detault flags whith what the converter will be used if not defining any specific.
+        The default flags with what the converter will be used if not defining any specific.
     default_type : `None` or `type`
         The default annotation type of the converter.
     uses_flags : `bool`
@@ -1412,7 +1412,7 @@ class ConverterSetting(object):
         uses_flags : `bool`
             Whether the converter processes any flags.
         default_flags : ``ConverterFlag``
-            The detault flags whith what the converter will be used if not defining any specific.
+            The default flags with what the converter will be used if not defining any specific.
         all_flags : ``ConverterFlag``
              All the flags which the converter picks up.
         alternative_type_name : `None` or `str`
@@ -1439,28 +1439,28 @@ class ConverterSetting(object):
         """
         converter_type = converter.__class__
         if (converter_type is not function):
-            raise TypeError(f'`converter` shoud have been given as `{function.__name__}` instance, got '
+            raise TypeError(f'`converter` should have been given as `{function.__name__}` instance, got '
                 f'{converter_type.__name__}.')
         
         analyzed = CallableAnalyzer(converter)
         if (not analyzed.is_async()):
-            raise TypeError(f'`converter` shoud have been given as an async function instance, got '
+            raise TypeError(f'`converter` should have been given as an async function instance, got '
                 f'{converter!r}.')
         
         non_reserved_positional_argument_count = analyzed.get_non_reserved_positional_argument_count()
         if non_reserved_positional_argument_count != 2:
-            raise TypeError(f'`converter` shoud accept `2` non reserved positonal arguments, meanwhile it expects '
+            raise TypeError(f'`converter` should accept `2` non reserved positional arguments, meanwhile it expects '
                 f'{non_reserved_positional_argument_count}.')
         
         if analyzed.accepts_args():
-            raise TypeError(f'`converter` shoud accept not expect args, meanwhile it does.')
+            raise TypeError(f'`converter` should accept not expect args, meanwhile it does.')
         
         if analyzed.accepts_kwargs():
-            raise TypeError(f'`converter` shoud accept not expect kwargs, meanwhile it does.')
+            raise TypeError(f'`converter` should accept not expect kwargs, meanwhile it does.')
         
         non_default_keyword_only_argument_count = analyzed.get_non_default_keyword_only_argument_count()
         if non_default_keyword_only_argument_count:
-            raise TypeError(f'`converter` shoud accept `0` keyword only arguments, meanwhile it expects '
+            raise TypeError(f'`converter` should accept `0` keyword only arguments, meanwhile it expects '
                 f'{non_default_keyword_only_argument_count}.')
         
         uses_flags_type = uses_flags.__class__
@@ -2153,7 +2153,7 @@ async def _message_converter_cm_id(parser_ctx, content_parser_ctx, channel_id, m
         return None
 
     if parser_ctx.flags&CONVERTER_FLAG_EVERYWHERE:
-        # Lets use that multy client core
+        # Lets use that multi client core
         for client in message_channel.clients:
             if message_channel.cached_permissions_for(client).can_read_message_history:
                 try:
@@ -2517,7 +2517,7 @@ del prdc_mgr
 
 def validate_default_code(default_code):
     """
-    Valdiates the given `default-code`.
+    Validates the given `default-code`.
     
     Parameters
     ----------
@@ -2545,12 +2545,12 @@ def validate_default_code(default_code):
     elif callable(default_code):
         analyzed = CallableAnalyzer(default_code)
         if (not analyzed.is_async()):
-            raise TypeError(f'`default_code` shoud have been given as `str`, or as an `async-callable` `function`, '
+            raise TypeError(f'`default_code` should have been given as `str`, or as an `async-callable` `function`, '
                 f'got a function, but not an `async` one: an async function instance, got {default_code!r}.')
         
         non_reserved_positional_argument_count = analyzed.get_non_reserved_positional_argument_count()
         if non_reserved_positional_argument_count!=1:
-            raise TypeError(f'`default_code` should accept `1` non reserved positonal arguments, meanwhile it expects '
+            raise TypeError(f'`default_code` should accept `1` non reserved positional arguments, meanwhile it expects '
                 f'{non_reserved_positional_argument_count}.')
         
         if analyzed.accepts_args():
@@ -2568,7 +2568,7 @@ def validate_default_code(default_code):
     
     else:
         raise TypeError(f'`default_code` can be given as `str` instance, identifying a predefined default code '
-            f'funcion, or as an `async-callable` `function` type, got {default_code_type.__name__}.')
+            f'function, or as an `async-callable` `function` type, got {default_code_type.__name__}.')
     
     try:
         default_code = PREREGISTERED_DEFAULT_CODES[default_code]
@@ -2594,7 +2594,7 @@ def validate_annotation_type(annotation):
     Raises
     ------
     LookupError
-        - If `annotation` was given as `type` instance, but that specfied type has no parser settings added to it.
+        - If `annotation` was given as `type` instance, but that specified type has no parser settings added to it.
         - If `annotation` was given as `str` instance, but there is no added type representation to it.
     TypeError
         - If `annotation` was not given as `str`, neither as `type` instance.
@@ -2632,7 +2632,7 @@ def validate_annotation_type_flags(annotation, flags):
     TypeError
         - If `annotation` is not given as `type` instance.
         - If `flags` is not given as ``ConverterFlag`` instance.
-        - If `annotation`'s setting allows flags, and given, but the given flags have no interseption with the allowed
+        - If `annotation`'s setting allows flags, and given, but the given flags have no interception with the allowed
             ones.
         - If `annotation`'s setting do not allows any flags, meanwhile given.
     """
@@ -2654,7 +2654,7 @@ def validate_annotation_type_flags(annotation, flags):
             new_flags = ConverterFlag(setting.all_flags&flags)
             if not new_flags:
                 raise TypeError(f'Flags was given as `{flags!r}`, meanwhile the {annotation!r} annotation\'s setting '
-                    f'allows: {setting.all_flags!r}. The two has no interseption.')
+                    f'allows: {setting.all_flags!r}. The two has no interception.')
         else:
             new_flags = setting.default_flags
     
@@ -2671,7 +2671,7 @@ class FlaggedAnnotation(object):
     """
     Flagged annotation to store an annotation type with it's flags.
     
-    This type of annotation can be used to define a multy-type parsers, not, like ``Converter``, which should not be
+    This type of annotation can be used to define a multi-type parsers, not, like ``Converter``, which should not be
     used for that.
     
     Attributes
@@ -2697,12 +2697,12 @@ class FlaggedAnnotation(object):
         Raises
         ------
         LookupError
-            - If `annotation` was given as `type` instance, but that specfied type has no parser settings added to it.
+            - If `annotation` was given as `type` instance, but that specified type has no parser settings added to it.
             - If `annotation` was given as `str` instance, but there is no added type representation to it.
         TypeError
             - If `annotation` was not given as `str`, neither as `type` instance.
             - If `flags` is not given as ``ConverterFlag`` instance, neither as `int`.
-            - If `annotation`'s setting allows flags, and given, but the given flags have no interseption with the
+            - If `annotation`'s setting allows flags, and given, but the given flags have no interception with the
                 allowed ones.
             - If `annotation`'s setting do not allows any flags, meanwhile given.
             - If `annotation` is given as ``Converter`` instance with default set.
@@ -2736,7 +2736,7 @@ class FlaggedAnnotation(object):
 
 def unnest_tuple(tuple_):
     """
-    Yields the elements of the given `tuple`. If any of them is a `tuple` as well, then yields thats elements
+    Yields the elements of the given `tuple`. If any of them is a `tuple` as well, then yields that's elements
     and repeat this cycle.
     
     This function is a generator.
@@ -2812,7 +2812,7 @@ def validate_annotation(annotation, flags=None):
 
 class Converter(object):
     """
-    Represents a converter typehint for setting additional information for the parser.
+    Represents a converter type-hint for setting additional information for the parser.
     
     Parameters
     ----------
@@ -2842,15 +2842,15 @@ class Converter(object):
         Parameters
         ----------
         annotation : `str`, `type`, ``Converter``, ``FlaggedAnnotation`` or `tuple` (repeat)
-            The type or a typehint to what type the respective value should be converted.
+            The type or a type-hint to what type the respective value should be converted.
         flags : ``ConverterFlag``, Optional
             Flags to use with the specified type's converter.
         default : `Any`, Optional
             Default object returned if conversion fails.
-        default_code : `str` or `async-funciton`, Optional
+        default_code : `str` or `async-function`, Optional
             Default code, what will be called, when the conversion fails. Mutually exclusive with `default`.
             
-            Can be given as an `async-function`, or as a `str` represneting an already precreated one.
+            Can be given as an `async-function`, or as a `str` representing an already precreated one.
             
             The precreated ones are the following:
             
@@ -2923,7 +2923,7 @@ class Converter(object):
         return self
     
     def __repr__(self):
-        """Returns the converter's represnetation."""
+        """Returns the converter's representation."""
         result = [
             self.__class__.__name__,
             '(annotation=',
@@ -2986,9 +2986,9 @@ class Converter(object):
         default_type = self.default_type
         if default_type != DEFAULT_TYPE_NONE:
             if default_type == DEFAULT_TYPE_OBJ:
-                default_name = 'defeault'
+                default_name = 'default'
             else:
-                default_name = 'defualt_code'
+                default_name = 'default_code'
             
             result.append(', ')
             result.append(default_name)
@@ -3021,14 +3021,14 @@ class ContentParserArgumentHinter(object):
         | DEFAULT_TYPE_CALL     | 2     |
         +-----------------------+-------+
     is_args : `bool`
-        Whether *args parser should be choosed.
+        Whether *args parser should be chosen.
     annotation : `None`, ``FlaggedAnnotation``, `tuple` of ``FlaggedAnnotation``
-        The type of the parser to be choosed or a typehint about it.
+        The type of the parser to be chosen or a type-hint about it.
     """
     __slots__ = ('default',  'default_type', 'annotation', 'is_args', )
     
     def __repr__(self):
-        """Returns theh inter's represnetation."""
+        """Returns the inter's representation."""
         return f'{self.__class__.__name__}(default={self.default!r}, default_type={self.default_type!r}, annotation=' \
             f'{self.annotation!r}, is_args={self.is_args!r})'
 
@@ -3044,6 +3044,7 @@ class CommandContentParser(object):
         The argument separator of the parser.
     """
     __slots__ = ('_parsers', '_separator')
+    
     def __new__(cls, func, separator):
         """
         Parameters
@@ -3076,9 +3077,9 @@ class CommandContentParser(object):
             - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
             - If `separator was given as `tuple`, but it's element are not `str` instances.
         ValueError
-            - If `seperator` is given as `str`, but it's length is not 1.
+            - If `separator` is given as `str`, but it's length is not 1.
             - If `separator` is given as `str`, but it is a space character.
-            - If `seperator` is given as `tuple`, but one of it's element's length is not 1.
+            - If `separator` is given as `tuple`, but one of it's element's length is not 1.
             - If `separator` is given as `tuple`, but one of it's element's is a space character.
         """
         separator = ContentArgumentSeparator(separator)
@@ -3337,7 +3338,7 @@ class ContentParser(CommandContentParser):
     _func : `async-callable`
         The wrapped function.
     _handler : `None` or `async-callable`
-        A coroutine function what is ensured, when parseing the arguments fail.
+        A coroutine function what is ensured, when parsing the arguments fail.
     _is_method : `bool`
         Whether the ``ContentParser`` should act like a method descriptor.
     """
@@ -3346,9 +3347,9 @@ class ContentParser(CommandContentParser):
         """
         Parameters
         ----------
-        func : `None`, `async-callable` or instanceable to `async-callable`, Optional
+        func : `None`, `async-callable` or instantiable to `async-callable`, Optional
         
-        handler : `None`, `async-callable` or instanceable to `async-callable`, Optional
+        handler : `None`, `async-callable` or instantiable to `async-callable`, Optional
             An async callable, what is ensured when the parser's cannot parse all the required parameters out.
             
             If given, should accept the following arguments:
@@ -3384,13 +3385,13 @@ class ContentParser(CommandContentParser):
         TypeError
             - If `is_method` is not given as `bool` instance.
             - If `handler` is not async, neither cannot be instanced to async.
-            - If `handler` (or it's converted form) would accept bad amount of arguents.
+            - If `handler` (or it's converted form) would accept bad amount of arguments.
             - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
             - If `separator was given as `tuple`, but it's element are not `str` instances.
         ValueError
-            - If `seperator` is given as `str`, but it's length is not 1.
+            - If `separator` is given as `str`, but it's length is not 1.
             - If `separator` is given as `str`, but it is a space character.
-            - If `seperator` is given as `tuple`, but one of it's element's length is not 1.
+            - If `separator` is given as `tuple`, but one of it's element's length is not 1.
             - If `separator` is given as `tuple`, but one of it's element's is a space character.
         """
         is_method = preconvert_bool(is_method, 'is_method')
@@ -3488,7 +3489,7 @@ class ContentParser(CommandContentParser):
             
             Parameters
             ----------
-            func : `async-callable` or instanceable to `async-callable`
+            func : `async-callable` or instantiable to `async-callable`
                 The function to wrap.
             
             Returns
@@ -3521,7 +3522,7 @@ class ContentParser(CommandContentParser):
             content : `str`, Optional
                 The content to parse. Defaults to empty string.
         
-        If the contnet parser is not a method:
+        If the content parser is not a method:
             client : ``Client``
                 The respective client.
             message : ``Message``
@@ -3646,7 +3647,7 @@ class ContentParserMethod(MethodLike):
     __self__ : `Any`
         The object with what the method was called.
     _content_parser : ``ContentParser``
-        The parent contnet parser, what was called as a method.
+        The parent content parser, what was called as a method.
     """
     __slots__ = ('__self__', '_content_parser', )
     __reserved_argcount__ = 2
@@ -3669,7 +3670,7 @@ class ContentParserMethod(MethodLike):
     
     @property
     def __func__(self):
-        """Retuns the wrapped function."""
+        """Returns the wrapped function."""
         return self._content_parser._func
     
     async def __call__(self, *args):
@@ -3711,7 +3712,7 @@ class ContentParserMethod(MethodLike):
         return getattr(self._content_parser._func, name)
     
     def __repr__(self):
-        """Returns the method's rerpesnetation."""
+        """Returns the method's representation."""
         return f'{self.__class__.__name__}(content_parser={self._content_parser!r}, obj={self.__self__!r})'
 
 del module_property

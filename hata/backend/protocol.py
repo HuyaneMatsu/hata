@@ -7,7 +7,7 @@ from collections import deque
 from .utils import imultidict, DOCS_ENABLED
 from .futures import Future, CancelledError, Task, future_or_timeout
 
-from .hdrs import CONNECTION, CONTENT_ENCODING, CONTENT_LENGTH, TRANSFER_ENCODING, METH_CONNECT
+from .headers import CONNECTION, CONTENT_ENCODING, CONTENT_LENGTH, TRANSFER_ENCODING, METHOD_CONNECT
 from .exceptions import PayloadError, WebSocketProtocolError, ContentEncodingError
 from .helpers import HttpVersion, HttpVersion11
 
@@ -216,14 +216,14 @@ class RawRequestMessage(RawMessage):
         The headers of the http message.
     version : ``HttpVersion``
         The http version of the response.
-    meth : `int`
+    method : `int`
         The request's method.
     path : `str`
         The requested path.
     """
-    __slots__ = ('version', 'meth', 'path',)
+    __slots__ = ('version', 'method', 'path',)
     
-    def __init__(self, version, meth, path, headers):
+    def __init__(self, version, method, path, headers):
         """
         Creates a new ``RawRequestMessage`` instance with the given parameters.
         
@@ -231,7 +231,7 @@ class RawRequestMessage(RawMessage):
         ----------
         version : ``HttpVersion``
             The http version of the response.
-        meth : `int`
+        method : `int`
             The request's method.
         path : `str`
             The requested path.
@@ -239,7 +239,7 @@ class RawRequestMessage(RawMessage):
             The headers of the http message.
         """
         self.version = version
-        self.meth = meth
+        self.method = method
         self.path = path
         self.headers = headers
         self._upgraded = 2
@@ -253,7 +253,7 @@ def apply_mask(mask, data):
     Parameters
     ----------
     data : `bytes-like`
-        Data to appply the mask to.
+        Data to apply the mask to.
     mask : `bytes`
         `uint32` websocket mask in bytes.
     """
@@ -264,7 +264,7 @@ def apply_mask(mask, data):
 
 class Frame(object):
     """
-    Represents a webscoket frame.
+    Represents a websocket frame.
     
     Attributes
     ----------
@@ -274,16 +274,16 @@ class Frame(object):
         The first bytes of websocket frame's, because it holds all the required data needed.
     """
     __slots__ = ('data', 'head1',)
-    def __init__(self, fin, opcode, data):
+    def __init__(self, fin, op_code, data):
         """
         Creates a websocket frame.
         
-        Paramateres
+        Parameters
         -----------
         fin : `bool`
-            Whether this websocket frame is a final webscoket frame. When sending websocket frames, the data of frames
+            Whether this websocket frame is a final websocket frame. When sending websocket frames, the data of frames
             it collected, till a final frame is received.
-        opcode : `int`
+        op_code : `int`
             The operation code of the websocket frame.
             
             Can be 1 of the following:
@@ -305,10 +305,10 @@ class Frame(object):
             +-------------------+-------+
         
         data : `bytes`
-            The data to ship with the webscoket frame.
+            The data to ship with the websocket frame.
         """
         self.data = data
-        self.head1 = (fin<<7)|opcode
+        self.head1 = (fin<<7)|op_code
     
     @property
     def fin(self):
@@ -361,13 +361,13 @@ class Frame(object):
         return (self.head1&0b00010000)>>4
     
     @property
-    def opcode(self):
+    def op_code(self):
         """
-        Returns the websocket frame's opcode.
+        Returns the websocket frame's op_code.
         
         Returns
         -------
-        opcode : `int`
+        op_code : `int`
             Can be one of the following values:
             
             +-------------------+-------+
@@ -397,24 +397,24 @@ class Frame(object):
         WebSocketProtocolError
             - If the reserved bits are not `0`.
             - If the frame is a control frame, but is too long for one.
-            - If the webscoket frame is fragmented frame. (Might be supported if people request is.)
-            - If the frame opcode is not any of the expected ones.
+            - If the websocket frame is fragmented frame. (Might be supported if people request is.)
+            - If the frame op_code is not any of the expected ones.
         """
         if self.head1&0b01110000:
             raise WebSocketProtocolError('Reserved bits must be `0`.')
         
-        opcode = self.head1&0b00001111
-        if opcode in WS_DATA_OPCODES:
+        op_code = self.head1&0b00001111
+        if op_code in WS_DATA_OPCODES:
             return
         
-        if opcode in WS_CTRL_OPCODES:
+        if op_code in WS_CTRL_OPCODES:
             if len(self.data) > 125:
                 raise WebSocketProtocolError('Control frame too long.')
             if not self.head1&0b10000000:
                 raise WebSocketProtocolError('Fragmented control frame.')
             return
         
-        raise WebSocketProtocolError(f'Invalid opcode: {opcode}.')
+        raise WebSocketProtocolError(f'Invalid op_code: {op_code}.')
 
 class HTTPStreamWriter(object):
     """
@@ -426,16 +426,16 @@ class HTTPStreamWriter(object):
         The amount of written data in bytes. If reaches a limit, drain lock is awaited.
     chunked : `bool`
         Whether the http message's content is chunked.
-    compresser : `None` or `lib.compressobj`
+    compressor : `None` or `lib.compressobj`
         Decompressor used to compress the sent data. Defaults to `None` if no compression is given.
     eof : `bool`
         Whether ``.write_eof`` was called.
     protocol : `Any`
-        Asynchornous transport implementation.
+        Asynchronous transport implementation.
     transport : `None` or `Any`
-        Asynchoronous transport implementation. Set as `None` if at eof.
+        Asynchronous transport implementation. Set as `None` if at eof.
     """
-    __slots__ = ('size', 'chunked', 'compresser', 'eof', 'protocol', 'transport', )
+    __slots__ = ('size', 'chunked', 'compressor', 'eof', 'protocol', 'transport', )
     def __init__(self, protocol, compression, chunked):
         """
         Creates a new ``HTTPStreamWriter`` with the given parameter.
@@ -443,22 +443,22 @@ class HTTPStreamWriter(object):
         Parameters
         ----------
         protocol : `Any`
-            Asynchornous transport implementation.
+            Asynchronous transport implementation.
         compression : `None` or `str`
             The compression's type to encode the written content with.
         chunked : `bool`
             Whether the given data should be written with chunking.
         """
         if (compression is None):
-            compresser = None
+            compressor = None
         elif compression == 'gzip':
-            compresser = zlib.compressobj(wbits=16+zlib.MAX_WBITS)
+            compressor = zlib.compressobj(wbits=16+zlib.MAX_WBITS)
         elif compression == 'deflate':
-            compresser = zlib.compressobj(wbits=zlib.MAX_WBITS)
+            compressor = zlib.compressobj(wbits=zlib.MAX_WBITS)
         else:
-            compresser = None
+            compressor = None
         
-        self.compresser = compresser
+        self.compressor = compressor
         
         self.protocol = protocol
         self.transport = protocol.transport
@@ -496,7 +496,7 @@ class HTTPStreamWriter(object):
         Writes the given chunk of data to the writer's ``.transport``.
         
         Compresses and "chunks" the `chunk` if applicable. If after writing the respective buffer limit is reached,
-        waits for drainlock.
+        waits for drain lock.
         
         This method is a coroutine.
         
@@ -510,9 +510,9 @@ class HTTPStreamWriter(object):
         ConnectionResetError
             Cannot write to closing transport.
         """
-        compresser = self.compresser
-        if (compresser is not None):
-            chunk = compresser.compress(chunk)
+        compressor = self.compressor
+        if (compressor is not None):
+            chunk = compressor.compress(chunk)
         
         if not chunk:
             return
@@ -544,8 +544,8 @@ class HTTPStreamWriter(object):
         if self.eof:
             return
         
-        compresser = self.compresser
-        if compresser is None:
+        compressor = self.compressor
+        if compressor is None:
             if self.chunked:
                 if chunk:
                     chunk = b''.join([len(chunk).__format__('x').encode('ascii'), b'\r\n', chunk, b'\r\n0\r\n\r\n'])
@@ -553,10 +553,10 @@ class HTTPStreamWriter(object):
                     chunk = b'0\r\n\r\n'
         else:
             if chunk:
-                chunk = compresser.compress(chunk)
-                chunk = chunk+compresser.flush()
+                chunk = compressor.compress(chunk)
+                chunk = chunk+compressor.flush()
             else:
-                chunk = compresser.flush()
+                chunk = compressor.flush()
             
             if chunk and self.chunked:
                 chunk = b''.join([len(chunk).__format__('x').encode('ascii'), b'\r\n', chunk, b'\r\n0\r\n\r\n'])
@@ -585,7 +585,7 @@ class ReadProtocolBase(object):
     Asynchronous protocol, what implements common reading operations.
     
     Hata backend uses optimistic generator based chunked readers, which have really long and complicated
-    implementattion, but their speed is pretty good.
+    implementation, but their speed is pretty good.
     
     Attributes
     ----------
@@ -600,17 +600,17 @@ class ReadProtocolBase(object):
         
         Also note, that not every transport supports pausing.
     exception : `None` or `BaseException`
-        Exception set by ``.set_exception``, when an unexpected exception occures meanwhile reading from socket.
+        Exception set by ``.set_exception``, when an unexpected exception occur meanwhile reading from socket.
     loop : ``EventThread``
-        The eventloop to what the protocol is bound to.
+        The event loop to what the protocol is bound to.
     payload_reader : `None` or `generator`
-        Payloader reader generator, what gets the control back, when data, eof or any exception is received.
+        Payload reader generator, what gets the control back, when data, eof or any exception is received.
     payload_waiter : `None` of ``Future``
         Payload waiter of the protocol, what's result is set, when the ``.payload_reader`` generator returns.
         
         If cancelled or marked by done or any other methods, the payload reader will not be cancelled.
     transport : `None` or `Any`
-        Asynchornous tarnsport implementation. Is set meanwhile the protocol is alive.
+        Asynchronous transport implementation. Is set meanwhile the protocol is alive.
     """
     __slots__ = ('_chunks', '_eof', '_offset', '_paused', 'exception', 'loop', 'payload_reader',  'payload_waiter',
         'transport', )
@@ -744,7 +744,7 @@ class ReadProtocolBase(object):
         name : `str`
             The extra information's name to get.
         default : `Any`, Optional
-            Default value to return if `name` could not be macthed. Defaults to `None`.
+            Default value to return if `name` could not be matched. Defaults to `None`.
         
         Returns
         -------
@@ -774,7 +774,7 @@ class ReadProtocolBase(object):
     
     def at_eof(self):
         """
-        Reutnrs whether the protocol is at eof. If at eof, but has content left, then returns `False` however.
+        Returns whether the protocol is at eof. If at eof, but has content left, then returns `False` however.
         
         Returns
         -------
@@ -814,7 +814,7 @@ class ReadProtocolBase(object):
     
     def eof_received(self):
         """
-        Calling``.connection_lost`` without expection causes eof.
+        Calling``.connection_lost`` without exception causes eof.
         
         Marks the protocol as it is at eof and stops payload processing if applicable.
         
@@ -927,7 +927,7 @@ class ReadProtocolBase(object):
     
     def handle_payload_waiter_cancellation(self):
         """
-        If you expect, that the payload waiter will be cancelled from outside, call this method to thorw eof into the
+        If you expect, that the payload waiter will be cancelled from outside, call this method to throw eof into the
         protocol at that case.
         """
         payload_waiter = self.payload_waiter
@@ -936,7 +936,7 @@ class ReadProtocolBase(object):
     
     def _payload_waiter_cancellation_cb(self, future):
         """
-        Callback to the ``.payload_waiter`` by ``.handle_payload_waiter_cancellation`` to thorw eof into the
+        Callback to the ``.payload_waiter`` by ``.handle_payload_waiter_cancellation`` to throw eof into the
         ``.payload_reader`` task if payload waiter is cancelled from outside.
         
         Parameters
@@ -968,7 +968,7 @@ class ReadProtocolBase(object):
     
     def set_payload_reader(self, payload_reader):
         """
-        Stes payload reader to the protocol.
+        Sets payload reader to the protocol.
         
         Parameters
         ----------
@@ -1035,7 +1035,7 @@ class ReadProtocolBase(object):
         except EOFError as err:
             return err.args[0]
     
-    async def readexactly(self, n):
+    async def read_exactly(self, n):
         """
         Read exactly `n` bytes from the protocol.
         
@@ -1067,17 +1067,17 @@ class ReadProtocolBase(object):
             if n == 0:
                 return b''
             
-            raise ValueError(f'`.readexactly` size can not be less than zero, got {n}.')
+            raise ValueError(f'`.read_exactly` size can not be less than zero, got {n}.')
         
         return await self.set_payload_reader(self._read_exactly(n))
     
-    async def readline(self):
+    async def read_line(self):
         raise NotImplementedError
     
-    async def readuntil(self):
+    async def read_until(self):
         raise NotImplementedError
     
-    async def readonce(self):
+    async def read_once(self):
         """
         Waits till exactly one chunk is of data is received.
         
@@ -1122,10 +1122,10 @@ class ReadProtocolBase(object):
         self._chunks.append(chunk)
         return chunk
     
-    def _readtill_CRLF(self):
+    def _read_until_CRLF(self):
         """
-        Payload reader task helper, what returns a received line untill `CRLF` (`\\r\\n`). Note, that `CRLF` is not
-        includedi n the returned value, tho they are added to the read offset.
+        Payload reader task helper, what returns a received line until `CRLF` (`\\r\\n`). Note, that `CRLF` is not
+        including the returned value, tho they are added to the read offset.
         
         This method is a generator.
         
@@ -1234,7 +1234,7 @@ class ReadProtocolBase(object):
                 # cast memoryview
                 collected.append(memoryview(chunk)[:position])
                 
-                # Add 2 position to ompensate CRLF
+                # Add 2 position to compensate CRLF
                 position += 2
                 # If the chunk is fully exhausted remove it
                 if len(chunk) == position:
@@ -1282,7 +1282,7 @@ class ReadProtocolBase(object):
         """
         if n < 1:
             if n < 0:
-                raise ValueError(f'.readexactly called with negative `n`: {n!r}.')
+                raise ValueError(f'.read_exactly called with negative `n`: {n!r}.')
             else:
                 return b''
         
@@ -1317,7 +1317,7 @@ class ReadProtocolBase(object):
             if chunk_size > end:
                 self._offset = end
                 return chunk[offset:end]
-            # chunksize + offset end when the requested's end is.
+            # chunk_size + offset end when the requested's end is.
             elif chunk_size == end:
                 del chunks[0]
                 self._offset = 0
@@ -1373,7 +1373,7 @@ class ReadProtocolBase(object):
         Raises
         ------
         EOFError
-            Connection lsot before a chunk was received.
+            Connection lost before a chunk was received.
         CancelledError
             If the reader task is cancelled not by receiving eof.
         """
@@ -1422,7 +1422,7 @@ class ReadProtocolBase(object):
             parsed = HTTP_STATUS_RP.match(chunk, offset)
             if parsed is None:
                 # stupid fallback
-                line = yield from self._readtill_CRLF()
+                line = yield from self._read_until_CRLF()
                 parsed = HTTP_STATUS_LINE_RP.fullmatch(line)
                 if parsed is None:
                     raise PayloadError(f'Invalid status line: {line!r}.')
@@ -1470,7 +1470,7 @@ class ReadProtocolBase(object):
             parsed = HTTP_REQUEST_RP.match(chunk, offset)
             if parsed is None:
                 # stupid fallback
-                line = yield from self._readtill_CRLF()
+                line = yield from self._read_until_CRLF()
                 parsed = HTTP_REQUEST_LINE_RP.fullmatch(line)
                 if parsed is None:
                     raise PayloadError(f'invalid request line: {line!r}')
@@ -1479,11 +1479,11 @@ class ReadProtocolBase(object):
             else:
                 offset = parsed.end()
             
-            meth, path, major, minor = parsed.groups()
+            method, path, major, minor = parsed.groups()
             
             headers = yield from self._read_http_headers(chunk, offset)
             path = path.decode('ascii', 'surrogateescape')
-            return RawRequestMessage(HttpVersion(int(major), int(minor)), meth.upper().decode(), path, headers)
+            return RawRequestMessage(HttpVersion(int(major), int(minor)), method.upper().decode(), path, headers)
         except EOFError as err:
             raise PayloadError(PAYLOAD_ERROR_EOF_AT_HTTP_HEADER) from err
     
@@ -1517,7 +1517,7 @@ class ReadProtocolBase(object):
         chunks = self._chunks
         
         end = chunk.find(b'\r\n', offset)
-        # At this case something is in the irst line, but is it a header?
+        # At this case something is in the istr line, but is it a header?
         if end > offset:
             middle = chunk.find(b':', offset, end)
             if middle <= offset:
@@ -1548,10 +1548,10 @@ class ReadProtocolBase(object):
             # Store offset
             self._offset = offset
             # try getting a full line
-            line = yield from self._readtill_CRLF()
+            line = yield from self._read_until_CRLF()
             # no headers at all? OK, I guess
             if not line:
-                # because ._readtill_CRLF updates the chunk and the offset state for us, not needed to store it.
+                # because ._read_until_CRLF updates the chunk and the offset state for us, not needed to store it.
                 return headers
             
             middle = line.find(b':')
@@ -1562,7 +1562,7 @@ class ReadProtocolBase(object):
             name = line[:middle]
             value = line[middle+1:]
             
-            # Jump on this part at the end if not done, we will need this for checking continous lines.
+            # Jump on this part at the end if not done, we will need this for checking continuous lines.
             if chunks:
                 chunk = chunks[0]
                 offset = self._offset
@@ -1577,17 +1577,17 @@ class ReadProtocolBase(object):
         
         while True:
             if chunk[offset] in (b'\t'[0], b' '[0]):
-                # continous
+                # continuous
                 value = [value]
                 while True:
                     end = chunk.find(b'\r\n', offset)
                     # most likely case if we find \r\n
                     if end > offset:
                         value.append(chunk[offset:end].strip())
-                        # andd \r\n shift
+                        # add \r\n shift
                         offset = end+2
                         
-                        # if we are at the en of the chunk, we need again a new one for continous check
+                        # if we are at the en of the chunk, we need again a new one for continuous check
                         if offset == len(chunk):
                             del chunks[0]
                             if chunks:
@@ -1600,30 +1600,30 @@ class ReadProtocolBase(object):
                             
                             offset = 0
                         
-                        # If next line is continous as well, continue loop
+                        # If next line is continuous as well, continue loop
                         if chunk[offset] in (b'\t'[0], b' '[0]):
                             continue
                         
-                        # Not continous, join lines and break
+                        # Not continuous, join lines and break
                         value = b' '.join(value)
                         break
                     
-                    # We cannot be at the end now, because we just checked continous above >.> at least 1 char
+                    # We cannot be at the end now, because we just checked continuous above >.> at least 1 char
                     
                     # We did not find \r\n
                     # Store offset and get a full line
                     self._offset = offset
-                    line = yield from self._readtill_CRLF()
+                    line = yield from self._read_until_CRLF()
                     
-                    # We cannot get empty line, because we just checked continous above <.< at least 1 char
+                    # We cannot get empty line, because we just checked continuous above <.< at least 1 char
                     
-                    # Tho it can be an empty line. At that case we dont want to add it to the values, because
+                    # Tho it can be an empty line. At that case we don't want to add it to the values, because
                     # we join them with b' '.
                     line = line.strip()
                     if line:
                         value.append(line)
                     
-                    # Update chunk data after _readtill_CRLF, becase we want to check continous.
+                    # Update chunk data after _read_until_CRLF, because we want to check continuous.
                     if chunks:
                         chunk = chunks[0]
                         offset = self._offset
@@ -1634,11 +1634,11 @@ class ReadProtocolBase(object):
                         chunk = yield from self._wait_for_data()
                         offset = 0
                     
-                    # If continous, continue
+                    # If continuous, continue
                     if chunk[offset] in (b'\t'[0], b' '[0]):
                         continue
                     
-                    # Not continous, leave loop
+                    # Not continuous, leave loop
                     value = b' '.join(value)
                     break
             
@@ -1647,7 +1647,7 @@ class ReadProtocolBase(object):
             
             # Find end again
             end = chunk.find(b'\r\n', offset)
-            # If we found and we arent at the end yet.
+            # If we found and we aren't at the end yet.
             if end > offset:
                 middle = chunk.find(b':', offset, end)
                 # New header line always must have b':', leave if not found, or if it is at the start.
@@ -1659,7 +1659,7 @@ class ReadProtocolBase(object):
                 
                 # Add 2 to the offset, to apply \r\n
                 offset = end+2
-                # if we are at the end of the cgunk, remove it and reset the offset
+                # if we are at the end of the chunk, remove it and reset the offset
                 if offset == len(chunk):
                     del chunks[0]
                     
@@ -1745,10 +1745,10 @@ class ReadProtocolBase(object):
                 else:
                     # Save offset and get a new line
                     self._offset = offset
-                    line = yield from self._readtill_CRLF()
+                    line = yield from self._read_until_CRLF()
                     if not line:
                         # If the line is empty, we can leave.
-                        # Offset and chunk state is updated by the _readtill_CRLF method already.
+                        # Offset and chunk state is updated by the _read_until_CRLF method already.
                         return headers
                     
                     # Find middle
@@ -1776,9 +1776,9 @@ class ReadProtocolBase(object):
             else:
                 # Store offset and read a line
                 self._offset = offset
-                line = yield from self._readtill_CRLF()
+                line = yield from self._read_until_CRLF()
                 # If the line is empty we leave.
-                # Offset and chunk state is updated by the _readtill_CRLF method already.
+                # Offset and chunk state is updated by the _read_until_CRLF method already.
                 if not line:
                     return headers
                 
@@ -1807,7 +1807,7 @@ class ReadProtocolBase(object):
     
     def _read_websocket_frame(self, is_client, max_size):
         """
-        Payload reader task, which reads a webscoket frame.
+        Payload reader task, which reads a websocket frame.
         
         This method is a generator.
         
@@ -1879,37 +1879,37 @@ class ReadProtocolBase(object):
         
         if (not message.upgraded):
             if message.chunked:
-                decompresser = self._decompresser_for(message.encoding)
-                if decompresser is None:
+                decompressor = self._decompressor_for(message.encoding)
+                if decompressor is None:
                     return self._read_chunked()
                 else:
-                    return self._read_chunked_encoded(decompresser)
+                    return self._read_chunked_encoded(decompressor)
             
             if (length is not None) and (length > 0):
-                decompresser = self._decompresser_for(message.encoding)
-                if decompresser is None:
+                decompressor = self._decompressor_for(message.encoding)
+                if decompressor is None:
                     return self._read_exactly(length)
                 else:
-                    return self._read_exactly_encoded(length, decompresser)
+                    return self._read_exactly_encoded(length, decompressor)
         
-        if (type(message) is RawRequestMessage) and (message.meth == METH_CONNECT):
+        if (type(message) is RawRequestMessage) and (message.method == METHOD_CONNECT):
             message.upgraded = True
             return self._read_until_eof()
         
         if (type(message) is RawResponseMessage) and message.status >= 199 and (length is None):
             if message.chunked:
-                decompresser = self._decompresser_for(message.encoding)
-                if decompresser is None:
+                decompressor = self._decompressor_for(message.encoding)
+                if decompressor is None:
                     return self._read_chunked()
                 else:
-                    return self._read_chunked_encoded(decompresser)
+                    return self._read_chunked_encoded(decompressor)
             
             return self._read_until_eof()
         
         return None
     
     @staticmethod
-    def _decompresser_for(content_encoding):
+    def _decompressor_for(content_encoding):
         """
         Gets decompress object for the given content-encoding if applicable.
         
@@ -1925,7 +1925,7 @@ class ReadProtocolBase(object):
         Raises
         ------
         ContentEncodingError
-            - `'content_encoding'` was given as `'br'` meanwhile brotli or brolipy are not installed.
+            - `'content_encoding'` was given as `'br'` meanwhile brotli or brotlipy are not installed.
             - `'content_encoding'` is not an from the expected values.
         CancelledError
             If the reader task is cancelled not by receiving eof.
@@ -1941,7 +1941,7 @@ class ReadProtocolBase(object):
                 raise ContentEncodingError('Can not decode content-encoding: brotli (br). Please install `brotlipy`.')
             decompressor = BROTLI_DECOMPRESSOR()
         elif content_encoding == 'identity':
-            # I asume this is no encoding
+            # I assume this is no encoding
             decompressor = None
         else:
             raise ContentEncodingError(f'Can not decode content-encoding: {content_encoding!r}.')
@@ -1970,7 +1970,7 @@ class ReadProtocolBase(object):
         """
         collected = []
         while True:
-            chunk_length = yield from self._readtill_CRLF()
+            chunk_length = yield from self._read_until_CRLF()
             # strip chunk extension
             index = chunk_length.find(b';')
             if index != -1:
@@ -1984,13 +1984,13 @@ class ReadProtocolBase(object):
             if chunk_length == 0:
                 end = yield from self._read_exactly(2)
                 if end != b'\r\n':
-                    raise PayloadError(f'Recevied chunk does not end with b\'\\r\\n\', instead with: {end}.')
+                    raise PayloadError(f'received chunk does not end with b\'\\r\\n\', instead with: {end}.')
                 break
             
             chunk = yield from self._read_exactly(chunk_length)
             end = yield from self._read_exactly(2)
             if end != b'\r\n':
-                raise PayloadError(f'Recevied chunk does not end with b\'\\r\\n\', instead with: {end}.')
+                raise PayloadError(f'received chunk does not end with b\'\\r\\n\', instead with: {end}.')
             
             collected.append(chunk)
         
@@ -1998,7 +1998,7 @@ class ReadProtocolBase(object):
     
     def _read_until_eof(self):
         """
-        Payload reader task, which reads the protocol unitil EOF is hit.
+        Payload reader task, which reads the protocol until EOF is hit.
         
         This method is a generator.
         
@@ -2046,7 +2046,7 @@ class ReadProtocolBase(object):
         length : `int`
             The amount of bytes to read.
         decompressobj : `zlib.decompressobj`, `brotli.Decompressor`, `BROTLI_COMPRESSOR`
-            Decompressor used to decompress the data afetr receiving it.
+            Decompressor used to decompress the data after receiving it.
         
         Returns
         -------
@@ -2079,7 +2079,7 @@ class ReadProtocolBase(object):
         Parameters
         ----------
         decompressobj : `zlib.decompressobj`, `brotli.Decompressor`, `BROTLI_COMPRESSOR`
-            Decompressor used to decompress the data afetr receiving it.
+            Decompressor used to decompress the data after receiving it.
             
         Returns
         -------
@@ -2092,13 +2092,13 @@ class ReadProtocolBase(object):
         PayloadError
             - Chunk size is not hexadecimal.
             - Chunk not ends with CRLF.
-            - Cannot decopress a chunk.
+            - Cannot decompress a chunk.
         CancelledError
             If the reader task is cancelled not by receiving eof.
         """
         collected = []
         while True:
-            chunk_length = yield from self._readtill_CRLF()
+            chunk_length = yield from self._read_until_CRLF()
             # strip chunk extension
             index = chunk_length.find(b';')
             if index != -1:
@@ -2112,13 +2112,13 @@ class ReadProtocolBase(object):
             if chunk_length == 0:
                 end = yield from self._read_exactly(2)
                 if end != b'\r\n':
-                    raise PayloadError(f'Recevied chunk does not end with b\'\\r\\n\', instead with: {end}.')
+                    raise PayloadError(f'Received chunk does not end with b\'\\r\\n\', instead with: {end}.')
                 break
             
             chunk = yield from self._read_exactly(chunk_length)
             end = yield from self._read_exactly(2)
             if end != b'\r\n':
-                raise PayloadError(f'Recevied chunk does not end with b\'\\r\\n\', instead with: {end}.')
+                raise PayloadError(f'Received chunk does not end with b\'\\r\\n\', instead with: {end}.')
             
             try:
                 chunk = decompressobj.decompress(chunk)
@@ -2176,7 +2176,7 @@ class ReadProtocolBase(object):
 
 class DatagramAddressedReadProtocol(object):
     """
-    Datagram reader protocool for reading from payloads form multiple addresses.
+    Datagram reader protocol for reading from payloads form multiple addresses.
     
     ``DatagramAddressedReadProtocol`` can also be used as a factory of itself, because when called, returns itself.
     
@@ -2296,15 +2296,15 @@ class DatagramAddressedReadProtocol(object):
         """
         Called when a send or receive operation raises an `OSError`, but not `BlockingIOError`, nor `InterruptedError`.
         
-        Parameteres
-        -----------
+        Parameters
+        ----------
         exception : `OSError`
             The catched exception.
         """
     
     async def wait_for_receive(self, address=None, timeout=None):
         """
-        Can be used to wait for payload to receive. Note, that this method should be used onyl initially, because the
+        Can be used to wait for payload to receive. Note, that this method should be used only initially, because the
         reader protocols implement the reading.
         
         This method is a coroutine.
@@ -2318,7 +2318,7 @@ class DatagramAddressedReadProtocol(object):
         Returns
         -------
         result : `None` or ``ReadProtocolBase`` or (`tuple` (`str`, `int`), ``ReadProtocolBase``)
-            - If `timeout` is given and timeot occures, then returns `None`.
+            - If `timeout` is given and timeout occur, then returns `None`.
             - if `address` is given and data is received from ir, then returns the respective ``ReadProtocolBase``.
             - If `address` is not given, then returns a `tuple` of the respective `address` and protocol.
         """
@@ -2384,17 +2384,17 @@ class DatagramMergerReadProtocol(ReadProtocolBase):
         
         Also note, that not every transport supports pausing.
     exception : `None` or `BaseException`
-        Exception set by ``.set_exception``, when an unexpected exception occures meanwhile reading from socket.
+        Exception set by ``.set_exception``, when an unexpected exception occur meanwhile reading from socket.
     loop : ``EventThread``
-        The eventloop to what the protocol is bound to.
+        The event loop to what the protocol is bound to.
     payload_reader : `None` or `generator`
-        Payloader reader generator, what gets the control back, when data, eof or any exception is received.
+        Payload reader generator, what gets the control back, when data, eof or any exception is received.
     payload_waiter : `None` of ``Future``
         Payload waiter of the protocol, what's result is set, when the ``.payload_reader`` generator returns.
         
         If cancelled or marked by done or any other methods, the payload reader will not be cancelled.
     transport : `None` or `Any`
-        Asynchornous tarnsport implementation. Is set meanwhile the protocol is alive.
+        Asynchronous transport implementation. Is set meanwhile the protocol is alive.
     """
     __slots__ = ()
     
@@ -2444,17 +2444,17 @@ class ProtocolBase(ReadProtocolBase):
         
         Also note, that not every transport supports pausing.
     exception : `None` or `BaseException`
-        Exception set by ``.set_exception``, when an unexpected exception occures meanwhile reading from socket.
+        Exception set by ``.set_exception``, when an unexpected exception occur meanwhile reading from socket.
     loop : ``EventThread``
-        The eventloop to what the protocol is bound to.
+        The event loop to what the protocol is bound to.
     payload_reader : `None` or `generator`
-        Payloader reader generator, what gets the control back, when data, eof or any exception is received.
+        Payload reader generator, what gets the control back, when data, eof or any exception is received.
     payload_waiter : `None` of ``Future``
         Payload waiter of the protocol, what's result is set, when the ``.payload_reader`` generator returns.
         
         If cancelled or marked by done or any other methods, the payload reader will not be cancelled.
     transport : `None` or `Any`
-        Asynchornous tarnsport implementation. Is set meanwhile the protocol is alive.
+        Asynchronous transport implementation. Is set meanwhile the protocol is alive.
     _drain_waiter : `None` or ``Future``
         A future, what is used to block the writing task, till it's writen data is drained.
     """
@@ -2528,7 +2528,7 @@ class ProtocolBase(ReadProtocolBase):
     
     async def _drain_helper(self):
         """
-        Called when the trasnport buffer aftre writing goes ove the high limit mark to wait till it is drained.
+        Called when the transport buffer after writing goes ove the high limit mark to wait till it is drained.
         
         This method is a coroutine.
         """
@@ -2547,7 +2547,7 @@ class ProtocolBase(ReadProtocolBase):
         exception : `None` or `BaseException` instance
             Defines whether the connection is closed, or an exception was received.
             
-            If the connection was closed, then `err` is given as `None`. This can happen at the case, when eof is
+            If the connection was closed, then `exception` is given as `None`. This can happen at the case, when eof is
             received as well.
         """
         if exception is None:
@@ -2612,13 +2612,13 @@ class ProtocolBase(ReadProtocolBase):
         
         transport.writelines(data)
     
-    def write_http_request(self, meth, path, headers, version=HttpVersion11):
+    def write_http_request(self, method, path, headers, version=HttpVersion11):
         """
         Writes an http request to the protocol's transport.
         
         Parameters
         ----------
-        meth : `str`
+        method : `str`
             The request's method.
         path : `str`
             The request's path.
@@ -2636,7 +2636,7 @@ class ProtocolBase(ReadProtocolBase):
         if transport is None:
             raise RuntimeError('Protocol has no attached transport.')
         
-        result = [f'{meth} {path} HTTP/{version.major}.{version.major}\r\n']
+        result = [f'{method} {path} HTTP/{version.major}.{version.major}\r\n']
         extend = result.extend
         for k, v in headers.items():
             extend((k, ': ', v, '\r\n'))
@@ -2652,7 +2652,7 @@ class ProtocolBase(ReadProtocolBase):
         Parameters
         ----------
         status : `http.HTTPStatus`
-            The response's statis.
+            The response's status.
         headers : ``imultidict``
             Response headers.
         version : ``HttpVersion``, Optional

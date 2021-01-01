@@ -1,5 +1,4 @@
 ﻿# -*- coding: utf-8 -*-
-# https://github.com/squeaky-pl/zenchmarks/blob/master/vendor/aiohttp/cookiejar.py
 import re
 from datetime import datetime, timezone
 from collections import defaultdict
@@ -8,7 +7,7 @@ from math import ceil
 
 from .url import URL
 from .helpers import is_ip_address
-from .eventloop import LOOP_TIME
+from .event_loop import LOOP_TIME
 
 class CookieJar(object):
     """
@@ -17,7 +16,7 @@ class CookieJar(object):
     Attributes
     ----------
     cookies : `defaultdict` of (`str`, `http.cookies.SimpleCookie`) items
-        Dictionary contianing the sotred cookies.
+        Dictionary containing the stored cookies.
     expirations : `dict` of (`tuple` (`str`, `str`), `float`) item
         Cookie expirations. The keys are a domain, name pairs, meanwhile the values are their expirations.
     host_only_cookies : `set` of `tuple` (`str`, `str`)
@@ -39,7 +38,7 @@ class CookieJar(object):
     
     def __init__(self, unsafe=False):
         """
-        Creates a new cookiejar.
+        Creates a new cookie-jar.
         
         Parameters
         ----------
@@ -72,7 +71,7 @@ class CookieJar(object):
     
     def clear(self):
         """
-        Clears the cookiejar.
+        Clears the cookie-jar.
         """
         self.cookies.clear()
         self.host_only_cookies.clear()
@@ -94,7 +93,7 @@ class CookieJar(object):
             yield from val.values()
     
     def __len__(self):
-        """Returns the length of the cookiejar."""
+        """Returns the length of the cookie-jar."""
         length = 0
         for cookie in self.cookies.values():
             length += len(cookie)
@@ -137,7 +136,7 @@ class CookieJar(object):
         Parameters
         ----------
         when : `int`
-            Posix timestam of the cookie's expiration.
+            Posix timestamp of the cookie's expiration.
         domain : `str`
             The cookie's domain.
         name : `str`
@@ -229,7 +228,7 @@ class CookieJar(object):
         Parameters
         ----------
         request_url : ``URL``
-            Utrl to filter the cookies by.
+            The url to filter the cookies by.
         
         Returns
         -------
@@ -271,12 +270,12 @@ class CookieJar(object):
                 continue
             
             # It's critical we use the Morsel so the coded_value (based on cookie version) is preserved
-            mrsl_val = cookie.get(cookie.key, Morsel())
-            mrsl_val.set(cookie.key, cookie.value, cookie.coded_value)
-            filtered[name] = mrsl_val
-
+            morsel_value = cookie.get(cookie.key, Morsel())
+            morsel_value.set(cookie.key, cookie.value, cookie.coded_value)
+            filtered[name] = morsel_value
+        
         return filtered
-
+    
     @staticmethod
     def _is_domain_match(domain, hostname):
         """

@@ -88,7 +88,9 @@ OA2_RU_RP = re.compile('(https?://.+?)\?code=([a-zA-Z0-9]{30})')
 
 def parse_oauth2_redirect_url(url):
     """
-    Parses the `redirect_url` and the `code` out from a whole `url`, what an user was redircted to after outh2 authorization.
+    Parses the `redirect_url` and the `code` out from a whole `url`, what an user was redirected to after oauth2
+    authorization.
+    
     If the parsing was successful, then returns a `tuple` of `redirect_url` and `code`. If it fails, returns `None`.
     
     Parameters
@@ -113,11 +115,11 @@ class Connection(DiscordEntity):
     Attributes
     ----------
     id : `int`
-        The unique identificator value of the connection.
+        The unique identifier value of the connection.
     friend_sync : `bool`
         Whether the user has friend sync enabled for the connection.
     integrations : `None` or (`list` of ``Integration``)
-        A list (if any) of guild inegrations which are attached to the connection.
+        A list (if any) of guild integrations which are attached to the connection.
     name : `str`
         The username of the connected account.
     revoked : `bool`
@@ -144,7 +146,7 @@ class Connection(DiscordEntity):
     
     def __init__(self, data):
         """
-        Creates a connection obejct from received conenction data.
+        Creates a connection object from received connection data.
         
         Parameters
         ----------
@@ -187,7 +189,7 @@ class OA2Access(object):
     Attributes
     ----------
     access_token : `str`
-        Token used for `Bearer` authorazitions, when requesting OAuth2 data about the respective user.
+        Token used for `Bearer` authorizations, when requesting OAuth2 data about the respective user.
     created_at : `datetime`
         The time when the access was last created or renewed.
     expires_in : `int`
@@ -195,11 +197,11 @@ class OA2Access(object):
     redirect_url : `str`
         The redirect url with what the user granted the authorization code for the oauth2 scopes for the application.
         
-        Can be empty string if application's onwer's access was requested.
+        Can be empty string if application's owner's access was requested.
     refresh_token : `str`
         The token used to renew the access token.
         
-        Can be empty string if application's onwer's access was requested.
+        Can be empty string if application's owner's access was requested.
     scopes : `set` of `str`
         A list of the scopes, what the user granted with the access token.
     
@@ -218,7 +220,7 @@ class OA2Access(object):
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
-            Received acces data.
+            Received access data.
         redirect_url : `str`
             The redirect url with what the user granted the authorization code for the oauth2 scopes for the
             application.
@@ -268,14 +270,14 @@ class OA2Access(object):
 
 class UserOA2(UserBase):
     """
-    Represents a Discord user with extra personal informations. If a ``UserOA2`` is  created it will NOT overwrite the
+    Represents a Discord user with extra personal information. If a ``UserOA2`` is  created it will NOT overwrite the
     already existing user with the same ID, if exists.
     
     Attributes
     ----------
 
     id : `int`
-        The user's unique identificator number.
+        The user's unique identifier number.
     name : str
         The user's username.
     discriminator : `int`
@@ -409,7 +411,7 @@ class Achievement(DiscordEntity):
     Attributes
     ----------
     id : `int`
-        The achievement's unique identificator number.
+        The achievement's unique identifier number.
     application_id : `int`
         The achievement's respective application's id.
     description : `str`
@@ -444,7 +446,7 @@ class Achievement(DiscordEntity):
         self._update_no_return(data)
     
     def __repr__(self):
-        """Returns the achievement's represnetation."""
+        """Returns the achievement's representation."""
         return f'<{self.__class__.__name__} name={self.name!r}, id={self.id}>'
     
     def __str__(self):

@@ -35,7 +35,7 @@ class BasicAuth(object):
     Class Attributes
     ----------------
     DEFAULT_ENCODING : `str` = `'latin1'`
-        Default encoding used to encode and decode the authorzation headers.
+        Default encoding used to encode and decode the authorization headers.
     """
     DEFAULT_ENCODING = 'latin1'
     __slots__ = ('username', 'password', 'encoding',)
@@ -128,8 +128,8 @@ class BasicAuth(object):
         auth_header : `str`
         """
         credits_ = (f'{self.username}:{self.password}').encode(self.encoding)
-        subv = base64.b64encode(credits_).decode(self.encoding)
-        return f'Basic {subv}'
+        sub_value = base64.b64encode(credits_).decode(self.encoding)
+        return f'Basic {sub_value}'
     
     def __repr__(self):
         """Returns the basic auth's representation."""
@@ -167,8 +167,8 @@ _ipv6_pattern = (
 
 _ipv4_regex = re.compile(_ipv4_pattern)
 _ipv6_regex = re.compile(_ipv6_pattern, flags=re.I)
-_ipv4_regexb = re.compile(_ipv4_pattern.encode('ascii'))
-_ipv6_regexb = re.compile(_ipv6_pattern.encode('ascii'), flags=re.I)
+_ipv4_regex_b = re.compile(_ipv4_pattern.encode('ascii'))
+_ipv6_regex_b = re.compile(_ipv6_pattern.encode('ascii'), flags=re.I)
 
 del _ipv4_pattern, _ipv6_pattern, re
 
@@ -203,10 +203,10 @@ def is_ip_address(host):
         return False
         
     if isinstance(host, (bytes, bytearray, memoryview)):
-        if _ipv4_regexb.match(host) is not None:
+        if _ipv4_regex_b.match(host) is not None:
             return True
         
-        if _ipv6_regexb.match(host) is not None:
+        if _ipv6_regex_b.match(host) is not None:
             return True
         
         return False
@@ -226,12 +226,12 @@ class Timeout(object):
     Attributes
     ----------
     _handle : `None` or ``TimerHandle``
-        Timer handle to cancel the respective task when it occures. After timeout occures, or the timeouter is
+        Timer handle to cancel the respective task when it occurs. After timeout occurs, or the timeouter is
         cancelled, set as `None`.
     _loop : ``EventThread``
         The event loop to what the timeouter is bound to.
     _task : `None` or ``Task``
-        The respective task what will be cancelled. Set as `None` at creation and when calcelled or exited.
+        The respective task what will be cancelled. Set as `None` at creation and when cancelled or exited.
     _state : `int`
         The timeouter's state.
         
@@ -251,7 +251,7 @@ class Timeout(object):
     __slots__ = ('_handle', '_loop', '_task', '_state')
     def __new__(cls, loop, timeout):
         """
-        Creates a new timeouter instance bund to the given loop.
+        Creates a new timeouter instance bound to the given loop.
         
         The timeout starts when the timeouter is created.
         
@@ -260,7 +260,7 @@ class Timeout(object):
         loop : ``EventThread``
             The event loop to what the timeouter will be bound to.
         timeout : `float`
-            Time in seconds after the task is cancelled. When the cancelation reaches the context manager, raises
+            Time in seconds after the task is cancelled. When the cancellation reaches the context manager, raises
             `TimeoutError` instead.
         """
         self = object.__new__(cls)
@@ -301,7 +301,7 @@ class Timeout(object):
         RuntimeError
             ``Timeout`` entered outside of a ``Task``.
         TimeoutError
-            Timeout already occured.
+            Timeout already occurred.
         """
         task = self._loop.current_task
         if (task is None):
@@ -338,7 +338,7 @@ class Timeout(object):
     
     def __exit__(self, exc_type, exc_val, exc_tb):
         """
-        Exits from the timeouter. If the timeout occures, then raises ``TimeoutError`` from the received cancellation.
+        Exits from the timeouter. If the timeout occurs, then raises ``TimeoutError`` from the received cancellation.
         """
         handle = self._handle
         if (handle is not None):
@@ -358,15 +358,15 @@ class Timeout(object):
         return f'<{self.__class__.__name__}>'
 
 
-def content_disposition_header(disptype, params, quote_fields=True):
+def content_disposition_header(disposition_type, parameters, quote_fields=True):
     """
     Creates Content-Disposition header value.
     
     Parameters
     ----------
-    disptype : `str`
+    disposition_type : `str`
         Disposition type. Can be one of following: `'inline'`, `'attachment'`, '`form-data`'.
-    params : `dict` of (`str`, `str`) items
+    parameters : `dict` of (`str`, `str`) items
         Disposition parameters.
     quote_fields : `bool`
         Whether field values should be quoted.
@@ -375,37 +375,37 @@ def content_disposition_header(disptype, params, quote_fields=True):
     -------
     value : `str`
     """
-    if not disptype or not (TOKEN > set(disptype)):
-        raise ValueError(f'Bad content disposition type {disptype!r}.')
+    if not disposition_type or not (TOKEN > set(disposition_type)):
+        raise ValueError(f'Bad content disposition type {disposition_type!r}.')
     
-    if params:
-        param_parts = [disptype]
-        for key, val in params.items():
+    if parameters:
+        parameter_parts = [disposition_type]
+        for key, value in parameters.items():
             if (not key) or (not (TOKEN > set(key))):
-                raise ValueError(f'Bad content disposition parameter {key!r}={val!r}.')
+                raise ValueError(f'Bad content disposition parameter {key!r}={value!r}.')
             
             if quote_fields:
-                val = quote(val, '')
+                value = quote(value, '')
             
-            param_parts.append(f'{key}="{val}"')
+            parameter_parts.append(f'{key}="{value}"')
             
             if key == 'filename':
-                param_parts.append(f'filename*=utf-8\'\'{val}')
+                parameter_parts.append(f'filename*=utf-8\'\'{value}')
         
-        value = '; '.join(param_parts)
+        value = '; '.join(parameter_parts)
     else:
-        value = disptype
+        value = disposition_type
     
     return value
 
 def tcp_nodelay(transport, value):
     """
-    Sets or removes tcp nodlay socket option to the given transport's socket if applicable.
+    Sets or removes tcp nodelay socket option to the given transport's socket if applicable.
     
     Parameters
     ----------
     transport : `Any`
-        Asynchoronous transport implementation.
+        Asynchronous transport implementation.
     value : `bool`
         Value to set tcp nodelay to.
     """

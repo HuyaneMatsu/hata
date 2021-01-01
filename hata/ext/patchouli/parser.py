@@ -21,7 +21,7 @@ ATTRIBUTE_NAME_RP = re.compile('([A-Za-z_][0-9A-Za-z_]*) *([\:\(]) *')
 del TABLE_BORDER_PATTERN
 del TABLE_TEXT_PATTERN
 
-RSTRIP_IGNORE = '\\ \t\n'
+RIGHT_STRIP_IGNORE = '\\ \t\n'
 
 def remove_indents(lines):
     """
@@ -40,7 +40,7 @@ def remove_indents(lines):
     
     # remove tailing characters from the right side
     for index in range(len(lines)):
-        lines[index] = lines[index].rstrip(RSTRIP_IGNORE)
+        lines[index] = lines[index].rstrip(RIGHT_STRIP_IGNORE)
     
     # First line might not be indented, so check it meanwhile it is first.
     first_line = lines[0]
@@ -252,7 +252,7 @@ class TextTable(object):
             # GOTO
             while True:
                 if not splitted_line:
-                    # Leave instanetly if empty
+                    # Leave immediately if empty
                     break
                 
                 if not splitted_line[-1]:
@@ -272,7 +272,7 @@ class TextTable(object):
                 # Replace empty elements with None and also strip the lines down as well.
                 for index in range(len(splitted_line)):
                     splitted_part = splitted_line[index]
-                    splitted_part = splitted_part.lstrip().rstrip(RSTRIP_IGNORE)
+                    splitted_part = splitted_part.lstrip().rstrip(RIGHT_STRIP_IGNORE)
                     if not splitted_part:
                         splitted_part = None
                     
@@ -336,8 +336,8 @@ class TextTable(object):
             index +=1
             
             if splitted_line is None:
-                # If we are at a border line, join the continous lines together.
-                # If every continous line is empty, do not add them.
+                # If we are at a border line, join the continuous lines together.
+                # If every continuous line is empty, do not add them.
                 only_none = True
                 for part_index in range(longest):
                     processed_part = processed_line[part_index]
@@ -466,7 +466,7 @@ class TextTable(object):
             yield line
     
     def __repr__(self):
-        """Returns the table's represnetation."""
+        """Returns the table's representation."""
         result = [
             '<',
             self.__class__.__name__,
@@ -701,7 +701,7 @@ def detect_code_block(lines, index, limit):
 
 class TextCodeBlock(object):
     """
-    Represnets a codeblock part in a docstring.
+    Represents a code-block part in a docstring.
     
     Attributes
     ----------
@@ -715,16 +715,16 @@ class TextCodeBlock(object):
         Parameters
         ----------
         lines : `list` of `str`
-            Lines to create the code blcok from.
+            Lines to create the code block from.
         start : `int`
-            The first line's index, where the code blcok starts.
+            The first line's index, where the code block starts.
         end : `int`
             The 1 after the last line's index of the code block.
         
         Returns
         -------
         self : `None` or ``TextCodeBlock``
-            Returns `Nonee` if would create an empty code block.
+            Returns `None` if would create an empty code block.
         """
         start += 1
         if lines[end-1] == '```':
@@ -853,7 +853,7 @@ def parse_section(lines):
         if index == limit:
             break
         
-        for detecter, builder in (
+        for detector, builder in (
             (detect_void, build_void),
             (detect_indent, build_indent),
             (detect_table, TextTable),
@@ -862,7 +862,7 @@ def parse_section(lines):
             (detect_description, TextDescription),
                 ):
             
-            detected_end = detecter(lines, index, limit)
+            detected_end = detector(lines, index, limit)
             if detected_end == index:
                 continue
             
@@ -1054,7 +1054,7 @@ class TextListingElement(object):
         return self
     
     def __repr__(self):
-        """Returns the listing element's represnetation."""
+        """Returns the listing element's representation."""
         result = [
             '<',
             self.__class__.__name__
@@ -1138,7 +1138,7 @@ class TextListing(object):
             start +=1
             
             if line.startswith('-'):
-                # If the linestarts with `-`, then save the currently created part if any.
+                # If the line starts with `-`, then save the currently created part if any.
                 if section_parts:
                     sections.append(section_parts)
                     section_parts = []
@@ -1185,7 +1185,7 @@ class TextListing(object):
         return self
     
     def __repr__(self):
-        """Returns the listing's represnetation."""
+        """Returns the listing's representation."""
         return f'<{self.__class__.__name__} elements={self._elements!r}>'
     
     def graved(self, path):
@@ -1310,9 +1310,9 @@ def get_attribute_docs_from(sections):
             
             attr_name, attr_separator = parsed.groups()
             attr_head = part.content.copy()
-            starter_continous = starter[parsed.end():]
-            if starter_continous:
-                attr_head[0] = starter_continous
+            starter_continuous = starter[parsed.end():]
+            if starter_continuous:
+                attr_head[0] = starter_continuous
             else:
                 if len(attr_head) == 1:
                     attr_head = []
@@ -1351,7 +1351,7 @@ def get_attribute_docs_from(sections):
 
 class DocString(object):
     """
-    Represnets a docstring.
+    Represents a docstring.
     
     Attributes
     ----------
@@ -1380,7 +1380,7 @@ class DocString(object):
         return self
     
     def __repr__(self):
-        """Returns the docstring's represnetation."""
+        """Returns the docstring's representation."""
         return f'<{self.__class__.__name__} sections={self.sections!r}>'
     
     @classmethod

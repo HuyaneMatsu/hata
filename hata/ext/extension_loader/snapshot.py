@@ -71,12 +71,14 @@ def take_event_handler_snapshot(client):
     return collected
 
 
-def calculate_event_handler_snapshot_difference(snapshot_old, snapshot_new):
+def calculate_event_handler_snapshot_difference(client, snapshot_old, snapshot_new):
     """
     Calculates the difference between two event handler snapshot returning the difference.
     
     Parameters
     ----------
+    client : ``Client``
+        The respective client instance.
     snapshot_old : `multidict` of `str`, `async-callable` items
         An old snapshot taken.
     snapshot_new : `multidict` of `str`, `async-callable` items
@@ -239,7 +241,7 @@ def calculate_snapshot_difference(snapshot_old, snapshot_new):
             snapshot_taker, difference_calculator, reverter = SNAPSHOT_TAKERS[snapshot_type_name]
             
             snapshot_type_specific_difference = \
-                difference_calculator(type_specific_snapshot_old, type_specific_snapshot_new)
+                difference_calculator(client, type_specific_snapshot_old, type_specific_snapshot_new)
             
             # `difference_calculator` might return `None`
             if (snapshot_type_specific_difference is not None):

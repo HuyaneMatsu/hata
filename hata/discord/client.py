@@ -3092,6 +3092,9 @@ class Client(UserBase):
         if (before is not None):
             data['before'] = log_time_converter(before)
         
+        if not channel._turn_message_keep_limit_on_at:
+            channel._turn_message_keep_limit_on_at = LOOP_TIME()
+        
         data = await self.http.message_logs(channel_id, data)
         
         if channel is None:
@@ -3150,11 +3153,17 @@ class Client(UserBase):
             if limit < 1 or limit > 100:
                 raise AssertionError(f'`limit` is out from the expected [1:100] range, got {limit!r}.')
         
+        if not channel._turn_message_keep_limit_on_at:
+            channel._turn_message_keep_limit_on_at = LOOP_TIME()
+        
         data = {'limit': limit, 'before': 9223372036854775807}
         data = await self.http.message_logs(channel_id, data)
         if data:
             if channel is None:
                 channel = await self._maybe_get_channel(channel_id)
+            
+            # Call this method first, so the channel's messages will be set even if message caching is at 0
+            channel._maybe_increase_queue_size()
             
             channel._create_new_message(data[0])
             messages = channel._process_message_chunk(data)
@@ -4993,7 +5002,7 @@ class Client(UserBase):
                 planned = 100
             
             if ln:
-                result = await self.message_logs(channel, planned, before=messages[ln-2].id)
+                result = await self.message_logs(channel, planned, before=messages[ln-1].id+1)
             else:
                 result = await self.message_logs_from_zero(channel, planned)
             

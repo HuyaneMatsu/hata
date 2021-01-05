@@ -730,30 +730,39 @@ class ChannelTextBase:
         """
         message_id = int(data['id'])
         
-        messages = self.messages
-        if messages is None:
-            self.messages = messages = deque(maxlen=self._message_keep_limit)
-        else:
-            if messages:
-                message = messages[0]
-                last_message_id = message.id
-                if last_message_id < message_id:
-                    pass
-                elif last_message_id == message_id:
-                    return message
-                else:
-                    return self._create_asynced_message(data, message_id, False)
-                
-                # If limiting is enabled and we are at max length.
-                max_length = messages.maxlen
-                if (max_length is not None) and (len(messages) == max_length):
-                    self.message_history_reached_end = False
+        try:
+            return MESSAGES[message_id]
+        except KeyError:
+            pass
+        
+        messages = self._maybe_create_queue()
         
         message = object.__new__(Message)
         message.id = message_id
         message._finish_init(data, self)
         
-        messages.appendleft(message)
+        if (messages is not None):
+            if messages and (messages[0].id < message_id):
+                index = message_relative_index(messages, message_id)
+                max_length = messages.maxlen
+                max_length_reached = (max_length is not None) and (max_length >= self._message_keep_limit)
+                
+                if index == len(messages):
+                    if not max_length_reached:
+                        messages.append(message)
+                else:
+                    if max_length_reached:
+                        messages.pop()
+                        self.message_history_reached_end = False
+                    
+                    messages.insert(index, message)
+            
+            else:
+                messages_length = len(messages)
+                messages.appendleft(message)
+                if messages_length != len(messages):
+                    self.message_history_reached_end = False
+        
         return message
     
     def _create_old_message(self, data):
@@ -776,10 +785,6 @@ class ChannelTextBase:
         """
         message_id = int(data['id'])
         
-        messages = self.messages
-        if (messages is not None) and messages and (message_id > messages[-1].id):
-            return self._create_asynced_message(data, message_id, True)
-        
         try:
             message = MESSAGES[message_id]
         except KeyError:
@@ -787,54 +792,15 @@ class ChannelTextBase:
             message.id = message_id
             message._finish_init(data, self)
         
-        self._increased_queue_size().append(message)
-        return message
-    
-    def _create_asynced_message(self, data, message_id, increase_queue_size):
-        """
-        This method gets called if ``._create_new_message`` sees that the message is older than it's first one,
-        or if ``._create_old_message`` sees that the message is newer than it's last. As the method's name says,
-        it tries to find the message by it's  `id` and insert to the right place if not exists. If it exists
-        returns the found one.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Message data received from Discord.
-        message_id : `int`
-            The id of the message.
-        increase_queue_size : `bool`
-            Whether the message's queue size should be increased if older messages are loaded.
-        
-        Returns
-        -------
-        message : ``Message``
-        """
         messages = self.messages
-        if messages is None:
-            index = 0
-        else:
+        if (messages is not None) and messages and (message_id > messages[-1].id):
             index = message_relative_index(messages, message_id)
             if index != len(messages):
-                actual = messages[index]
-                if actual.id == message_id:
-                    return actual
-        
-        if increase_queue_size:
-            messages = self._increased_queue_size()
+                if messages[index].id != message_id:
+                    self._maybe_increase_queue_size().insert(index, message)
         else:
-            if messages is None:
-                self.messages = messages = deque(maxlen=self._message_keep_limit)
-            else:
-                max_length = messages.maxlen
-                if (max_length is not None) and (max_length == len(messages)):
-                    messages.pop()
+            self._maybe_increase_queue_size().append(message)
         
-        message = object.__new__(Message)
-        message.id = message_id
-        message._finish_init(data, self)
-        
-        messages.insert(index, message)
         return message
     
     def _create_find_message(self, data, chained):
@@ -855,7 +821,6 @@ class ChannelTextBase:
         found : `bool`
         """
         message_id = int(data['id'])
-        
         messages = self.messages
         if (messages is not None):
             index = message_relative_index(messages, message_id)
@@ -872,7 +837,7 @@ class ChannelTextBase:
             message._finish_init(data, self)
         
         if chained:
-            self._increased_queue_size().append(message)
+            self._maybe_increase_queue_size().append(message)
         
         return message, False
     
@@ -898,7 +863,7 @@ class ChannelTextBase:
         
         return message
     
-    def _increased_queue_size(self):
+    def _maybe_increase_queue_size(self):
         """
         Increases the queue size of the channel's message history if needed and returns it.
         
@@ -923,6 +888,35 @@ class ChannelTextBase:
                     self.messages = messages = deque(messages)
                     self._turn_message_keep_limit_on_at = LOOP_TIME() + 110.0
                     TURN_MESSAGE_LIMITING_ON.add(self)
+        
+        return messages
+    
+    def _maybe_create_queue(self):
+        """
+        Gets the channel's messages when creating a new message is created.
+        
+        Returns
+        -------
+        messages : `deque` or `None`
+        """
+        messages = self.messages
+        if messages is None:
+            message_keep_limit = self._message_keep_limit
+            if message_keep_limit == 0:
+                if self._turn_message_keep_limit_on_at:
+                    self.messages = messages = deque(maxlen=None)
+                else:
+                    messages =None
+            else:
+                self.messages = messages = deque(maxlen=message_keep_limit)
+        else:
+            
+            max_length = messages.maxlen
+            if (max_length is not None) and (len(messages) == max_length):
+                if self._turn_message_keep_limit_on_at:
+                    self.messages = messages = deque(messages, maxlen=None)
+                else:
+                    self.message_history_reached_end = False
         
         return messages
     

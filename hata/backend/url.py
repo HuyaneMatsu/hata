@@ -98,7 +98,7 @@ class URL(object):
 
     def __new__(cls, value='', encoded=False):
         """
-        Creates a new ``URL`` instance from teh given `value`
+        Creates a new ``URL`` instance from the given `value`
         
         Parameters
         ----------

@@ -245,7 +245,7 @@ class LocalAudio(AudioSource):
             executable, args, stdin = self._process_args
             try:
                 process = await KOKORO.subprocess_exec(executable, args, stdin=stdin, stdout=subprocess.PIPE,
-                    startupinfo=SUBPROCESS_STARTUP_INFO)
+                    startup_info=SUBPROCESS_STARTUP_INFO)
             except FileNotFoundError:
                 raise ValueError(f'{executable!r} was not found.') from None
             except subprocess.SubprocessError as err:
@@ -331,7 +331,7 @@ class LocalAudio(AudioSource):
         else:
             try:
                 result = await stdout.read(FRAME_SIZE)
-            except CancelledError:
+            except (CancelledError, ConnectionError):
                 result = None
             else:
                 if len(result) != FRAME_SIZE:

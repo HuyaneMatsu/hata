@@ -91,7 +91,7 @@ class _SSLPipe(object):
     
     def __init__(self, context, server_side, server_hostname):
         """
-        Creates a new ``_SSLPipe`` instance with teh given parameters.
+        Creates a new ``_SSLPipe`` instance with the given parameters.
         
         Parameters
         ----------

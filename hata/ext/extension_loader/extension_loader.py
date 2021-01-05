@@ -740,21 +740,21 @@ class ExtensionLoader(object):
     Traceback (most recent call last):
       File "<pyshell#13>", line 1, in <module>
         EXTENSION_LOADER.reload_all()
-      File ".../hata/extension_loader.py", line 652, in reload_all
+      File ".../hata/backend/extension_loader.py", line 652, in reload_all
         task.sync_wrap().wait()
-      File ".../hata/futures.py", line 823, in wait
+      File ".../hata/backend/futures.py", line 823, in wait
         return self.result()
-      File ".../hata/futures.py", line 723, in result
+      File ".../hata/backend/futures.py", line 723, in result
         raise exception
-      File ".../hata/futures.py", line 1602, in __step
+      File ".../hata/backend/futures.py", line 1602, in __step
         result=coro.throw(exception)
-      File ".../hata/extension_loader.py", line 670, in _reload_all
+      File ".../hata/ext/extension_loader/extension_loader.py", line 670, in _reload_all
         raise ExtensionError(error_messages) from None
-    hata.extension_loader.ExtensionError: ExtensionError (1):
+    hata.ext.extension_loader.ExtensionError: ExtensionError (1):
     Exception occurred meanwhile loading an extension: `extension`.
     
     Traceback (most recent call last):
-      File ".../hata/extension_loader.py", line 675, in _load_extension
+      File ".../hata/ext/extension_loader/extension_loader.py", line 675, in _load_extension
         lib = await KOKORO.run_in_executor(extension.load)
       File ".../hata/extension_loader.py", line 270, in load
         reload_module(lib)

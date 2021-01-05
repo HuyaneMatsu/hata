@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from ..extension_loader.snapshot import SNAPSHOT_TAKERS
+from .command import CommandProcesser
 
 def take_command_processer_snapshot(client):
     """
@@ -12,10 +13,10 @@ def take_command_processer_snapshot(client):
     
     Returns
     -------
-    collected : `tuple` of `Any`
+    collected : `None` or `tuple` of `Any`
     """
     command_processer = getattr(client, 'command_processer', None)
-    if (command_processer is None):
+    if (command_processer is None) or (not isinstance(command_processer, CommandProcesser)):
         collected = None
     else:
         
@@ -40,15 +41,17 @@ def take_command_processer_snapshot(client):
     
     return collected
 
-def calculate_command_processer_snapshot_difference(snapshot_old, snapshot_new):
+def calculate_command_processer_snapshot_difference(client, snapshot_old, snapshot_new):
     """
-    Calculates the difference between two event handler snapshot returning the difference.
+    Calculates the difference between two command processer snapshots.
     
     Parameters
     ----------
-    snapshot_old : `tuple` of `Any`
+    client : ``Client``
+        The respective client.
+    snapshot_old : None or `tuple` of `Any`
         An old snapshot taken.
-    snapshot_new : `tuple` of `Any`
+    snapshot_new : None or `tuple` of `Any`
         A new snapshot.
     
     Returns
@@ -112,7 +115,7 @@ def revert_command_processer_snapshot(client, snapshot_difference):
         The taken snapshot.
     """
     command_processer = getattr(client, 'command_processer', None)
-    if (command_processer is None):
+    if (command_processer is None) or (not isinstance(command_processer, CommandProcesser)):
         return
     
     element_category_name_rule_difference, element_command_error_difference, element_default_event_difference, \

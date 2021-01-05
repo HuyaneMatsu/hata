@@ -215,6 +215,7 @@ GLOBAL_INTENT_EVENTS = (
     'APPLICATION_COMMAND_UPDATE',
     'APPLICATION_COMMAND_DELETE',
     'USER_GUILD_SETTINGS_UPDATE', # User account only
+    'CHANNEL_UNREAD_UPDATE', # User account only
         )
 
 INTENT_SHIFT_DEFAULT_EVENT = 255
@@ -4363,7 +4364,7 @@ PARSER_DEFAULTS(
     SESSIONS_REPLACE)
 del SESSIONS_REPLACE
 
-#hooman only event,
+# Hooman only event,
 def USER_GUILD_SETTINGS_UPDATE(client, data):
     # individual guild settings data.
     pass
@@ -4375,6 +4376,19 @@ PARSER_DEFAULTS(
     USER_GUILD_SETTINGS_UPDATE,
     USER_GUILD_SETTINGS_UPDATE)
 del USER_GUILD_SETTINGS_UPDATE
+
+
+# Hooman only event,
+def CHANNEL_UNREAD_UPDATE(client, data):
+    pass
+
+PARSER_DEFAULTS(
+    'CHANNEL_UNREAD_UPDATE',
+    CHANNEL_UNREAD_UPDATE,
+    CHANNEL_UNREAD_UPDATE,
+    CHANNEL_UNREAD_UPDATE,
+    CHANNEL_UNREAD_UPDATE)
+del CHANNEL_UNREAD_UPDATE
 
 
 class InteractionEvent(EventBase, DiscordEntity):
@@ -4391,7 +4405,7 @@ class InteractionEvent(EventBase, DiscordEntity):
         
         Also used by the ``Client`` class to ensure correct flow order.
     channel : ``ChannelText`` or ``ChannelPrivate``
-        The channel from where the interaction was called from. Might be a partial channel if not cached.
+        The channel from where the interaction was called. Might be a partial channel if not cached.
     guild : `None` or ``Guild`
         The from where the interaction was called from. Might be `None` if the interaction was called from a private
         channel.
@@ -4579,7 +4593,7 @@ del INTERACTION_CREATE_CAL, \
 
 
 def APPLICATION_COMMAND_CREATE_CAL(client, data):
-    guild_id = data[int('guild_id')]
+    guild_id = int(data['guild_id'])
     try:
         guild = GUILDS[guild_id]
     except KeyError:
@@ -4603,7 +4617,7 @@ del APPLICATION_COMMAND_CREATE_CAL, \
 
 
 def APPLICATION_COMMAND_UPDATE_CAL(client, data):
-    guild_id = data[int('guild_id')]
+    guild_id = int(data['guild_id'])
     application_command_id = data['id']
     try:
         guild = GUILDS[guild_id]
@@ -4648,7 +4662,7 @@ del APPLICATION_COMMAND_UPDATE_CAL, \
 
 
 def APPLICATION_COMMAND_DELETE_CAL(client, data):
-    guild_id = data[int('guild_id')]
+    guild_id = int(data['guild_id'])
     try:
         guild = GUILDS[guild_id]
     except KeyError:
@@ -5599,7 +5613,6 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         routed_names = route_name(func, name, count)
         routed_kwargs = route_kwargs(kwargs, count)
         routed_func = maybe_route_func(func, count)
-        
         routed = []
         for handler, func_, name, kwargs in zip(handlers, routed_func, routed_names, routed_kwargs):
             func = handler.__setevent__(func_, name, **kwargs)
@@ -5837,7 +5850,10 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         
         if collected:
             raise ValueError('\n'.join(collected)) from None
-
+    
+    def __repr__(self):
+        return f'<{self.__class__.__name__} parent={self.parent!r}, getter={self._getter!r}, from_class_constructor=' \
+               f'{self._from_class_constructor!r}>'
 
 class EventListElement(object):
     """

@@ -623,7 +623,7 @@ class AudioReader(object):
                     protocol = voice_client._protocol
                 
                 try:
-                    data = await protocol.readonce()
+                    data = await protocol.read_once()
                 except CancelledError:
                     if self.done:
                         protocol.cancel_current_reader()

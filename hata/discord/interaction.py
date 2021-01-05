@@ -6,6 +6,7 @@ from .bases import DiscordEntity
 from .preinstanced import ApplicationCommandOptionType
 from .client_core import APPLICATION_COMMANDS
 from .preconverters import preconvert_preinstanced_type
+from .utils import is_valid_application_command_name, DATETIME_FORMAT_CODE
 
 from ..backend.utils import modulize
 
@@ -51,6 +52,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         AssertionError
             - If `name` was not given as `str` instance.
             - If `name` length is out of range [3:32].
+            - If `name` contains unexpected character.
             - If `description` was not given as `str` instance.
             - If `description` length is out of range [1:100].
             - If `options` was not given neither as `None` nor as (`list` or `tuple`) of ``ApplicationCommandOption``
@@ -63,7 +65,11 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             
             name_ln = len(name)
             if name_ln < 3 or name_ln > 32:
-                raise AssertionError(f'`name` length can be in range [1:32], got {name_ln!r}; {name!r}.')
+                raise AssertionError(f'`name` length can be in range [3:32], got {name_ln!r}; {name!r}.')
+            
+            if not is_valid_application_command_name(name):
+                raise AssertionError(f'`name` contains an unexpected character; Expected pattern: '
+                    f'{APPLICATION_COMMAND_NAME_RP.pattern!r}; Got {name!r}.')
             
             if not isinstance(description, str):
                 raise AssertionError(f'`description` can be given as `str` instance, got '
@@ -73,7 +79,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             if description_ln < 2 or description_ln > 100:
                 raise AssertionError(f'`description` length can be in range [2:100], got {description_ln!r}; '
                     f'{description!r}.')
-        
+            
         if options is None:
             options_processed = None
         else:
@@ -408,6 +414,85 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             return False
         
         return True
+    
+    @property
+    def mention(self):
+        """
+        Returns the application command's mention.
+        
+        Returns
+        -------
+        mention : `str`
+        """
+        return f'</{self.name}:{self.id}>'
+    
+    @property
+    def display_name(self):
+        """
+        Returns the application command's display name.
+        
+        Returns
+        -------
+        display_name : `str`
+        """
+        return self.name.lower().replace('_', '-')
+    
+    def __str__(self):
+        """Returns the application command's name."""
+        return self.name
+    
+    def __format__(self, code):
+        """
+        Formats the application command in a format string.
+        
+        Parameters
+        ----------
+        code : `str`
+            The option on based the result will be formatted.
+        
+        Returns
+        -------
+        application_command : `str`
+        
+        Raises
+        ------
+        ValueError
+            Unknown format code.
+        
+        Examples
+        --------
+        ```
+        >>> from hata import ApplicationCommand
+        >>> application_command = ApplicationCommand('CakeLover', 'Sends a random cake recipe OwO')
+        >>> application_command
+        <ApplicationCommand partial name='CakeLover', description='Sends a random cake recipe OwO'>
+        >>> # no code stands for str(application_command).
+        >>> f'{application_command}'
+        'CakeLover'
+        >>> # 'd' stands for display name.
+        >>> f'{application_command:d}'
+        'cakelover'
+        >>> # 'm' stands for mention.
+        >>> f'{application_command:m}'
+        '</CakeLover:0>'
+        >>> # 'c' stands for created at.
+        >>> f'{application_command:c}'
+        '2021-01-03 20:17:36'
+        ```
+        """
+        if not code:
+            return self.__str__()
+        
+        if code == 'm':
+            return f'</{self.name}:{self.id}>'
+        
+        if code == 'd':
+            return self.display_name
+        
+        if code == 'c':
+            return self.created_at.__format__(DATETIME_FORMAT_CODE)
+        
+        raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
 
 
 class ApplicationCommandOption(object):
@@ -651,7 +736,7 @@ class ApplicationCommandOption(object):
         ------
         TypeError
             - If the source application command's type is not a string nor int group type.
-            - If the `choice`'s value's type is not teh expected one by the command option's type.
+            - If the `choice`'s value's type is not the expected one by the command option's type.
             - If `choice`'s type is neither ``ApplicationCommandOptionChoice`` nor a `tuple` representing it's `.name`
                 nad `.value`.
         AssertionError

@@ -9,7 +9,7 @@ from ...discord.parsers import _EventHandlerManagerRouter
 from .command import Slasher, SlashCommand
 
 
-def commands_getter(manager_router):
+def interactions_getter(manager_router):
     """
     Gets the slash command processer using `Client.slasher` of an ``_EventHandlerManagerRouter``.
     
@@ -24,7 +24,7 @@ def commands_getter(manager_router):
     """
     handlers = []
     for client in manager_router.parent.clients:
-        manager = getattr(client, 'commands', None)
+        manager = getattr(client, 'interactions', None)
         if manager is None:
             continue
         
@@ -60,7 +60,7 @@ class ClientWrapper:
         -------
         event_handler_manager_router : ``_EventHandlerManagerRouter``
         """
-        return _EventHandlerManagerRouter(self, commands_getter, from_class_constructor)
+        return _EventHandlerManagerRouter(self, interactions_getter, from_class_constructor)
 
 
 del KeepType

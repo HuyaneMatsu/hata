@@ -19,7 +19,7 @@ async def _do_initial_sync(client):
     """
     slasher = getattr(client, 'slasher', None)
     if (slasher is not None) and isinstance(slasher, Slasher):
-        success = await slasher.do_initial_sync(client)
+        success = await slasher._do_main_sync(client)
         if not success:
             return
     
@@ -72,16 +72,16 @@ async def _application_command_delete_watcher(client, guild, application_command
 
 
 async def delay_immediate_start_initial_sync(client, slasher):
-    slash_command_count = len(slasher.registered_commands)
+    changes = slasher._estimate_pending_changes()
     while True:
         await sleep(0.2, KOKORO)
-        slash_command_new_count = len(slasher.registered_commands)
-        if slash_command_count == slash_command_new_count:
+        new_changes = slasher._estimate_pending_changes()
+        if changes == new_changes:
             break
         
-        slash_command_count = slash_command_new_count
+        changes = new_changes
         continue
     
-    await slasher.do_initial_sync(client)
-    # Ignore method return, will be called by ``_do_initial_sync`` anyways.
+    await slasher._do_main_sync(client)
+    # Ignore method return, will be called by ``.Slasher_do_main_sync`` anyways.
 

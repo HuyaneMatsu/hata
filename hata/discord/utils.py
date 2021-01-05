@@ -275,17 +275,35 @@ def log_time_converter(value):
     raise TypeError(f'Expected `int`, `{DiscordEntity.__name__}` instance, or a `datetime` object, got '
         f'`{value.__class__.__name__}`.')
 
+APPLICATION_COMMAND_NAME_RP = re.compile('[a-zA-Z0-9_\-]{3,32}')
+
 ID_RP = re.compile('(\d{7,21})')
-IS_MENTION_RP = re.compile('@everyone|@here|<@[!&]?\d{7,21}>|<#\d{7,21}>')
+IS_MENTION_RP = re.compile('@(?:everyone|here)|<(?:@[!&]?|#|/[a-zA-Z0-9_\-]{3,32}:)\d{7,21}>')
 
 USER_MENTION_RP = re.compile('<@!?(\d{7,21})>')
 CHANNEL_MENTION_RP = re.compile('<#(\d{7,21})>')
 ROLE_MENTION_RP = re.compile('<@&(\d{7,21})>')
+APPLICATION_COMMAND_MENTION_RP = re.compile('</([a-zA-Z0-9_\-]{3,32}):(\d{7,21})>')
 
 EMOJI_RP = re.compile('<(a)?:([a-zA-Z0-9_]{2,32})(?:~[1-9])?:(\d{7,21})>')
 EMOJI_NAME_RP = re.compile(':?([a-zA-Z0-9_\\-~]{1,32}):?')
 FILTER_RP = re.compile('("(.+?)"|\S+)')
 INVITE_CODE_RP = re.compile('([a-zA-Z0-9-]+)')
+
+def is_valid_application_command_name(name):
+    """
+    Returns whether the given application command name is valid.
+    
+    Parameters
+    ----------
+    name : `str`
+        The name of the application command.
+    
+    Returns
+    -------
+    valid : `bool`
+    """
+    return (APPLICATION_COMMAND_NAME_RP.fullmatch(name) is not None)
 
 def is_id(text):
     """
@@ -356,6 +374,20 @@ def is_role_mention(text):
     result : `bool`
     """
     return ROLE_MENTION_RP.fullmatch(text) is not None
+
+def is_application_command_mention(text):
+    """
+    Returns whether the given text is an interaction command mention.
+    
+    Parameters
+    ----------
+    text : `str`
+    
+    Returns
+    -------
+    result : `bool`
+    """
+    return (APPLICATION_COMMAND_MENTION_RP.fullmatch(text) is not None)
 
 def is_invite_code(text):
     """

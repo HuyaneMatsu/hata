@@ -8,7 +8,7 @@ HERE = pathlib.Path(__file__).parent
 version_search_pattern = re.compile('^__version__[ ]*=[ ]*((?:\'[^\']+\')|(?:\"[^\"]+\"))[ ]*$', re.M)
 parsed = version_search_pattern.search((HERE / 'hata' / '__init__.py').read_text())
 if parsed is None:
-    raise RuntimeError('No version found in `__init__.py`')
+    raise RuntimeError('VERSION NOT FOUND IN `__init__.py`')
 
 version = literal_eval(parsed.group(1))
 

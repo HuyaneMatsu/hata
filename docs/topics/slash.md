@@ -1,4 +1,4 @@
-## Slash
+# Slash
 
 Slash refers to slash commands as probably known by the users or by interactions as mentioned by the api.
 
@@ -8,7 +8,7 @@ inherent slash extension.
 The slash command API is familiar to the `commands` extension's one, but it has limitations by the Discord API, what
 we cannot overpass.
 
-### Limitations
+## Limitations
 
 Discord sets the following limitations:
 
@@ -19,7 +19,12 @@ Discord sets the following limitations:
 - Choice name length to [1:100].
 - Parameter name length to [1:32].
 - Parameter description length to [1:32].
+- A command can have 10 sub-commands or sub-categories.
+- A sub-category can have 10 sub-commands.
+- A sub-category cannot have sub-category under itself.
 - Global commands are updated only after 1 hour.
+- Acknowledging must be done within 3 seconds.
+- Followup messages can be sent within 15 minutes after acknowledging.
 
 The parameter types can be the following:
 
@@ -40,8 +45,7 @@ requires bot cache, or if the user gives invalid data (Discord does no validatio
 
 There are also choice parameters, but lets talk about those only later.
 
-
-### Setup
+## Setup
 
 To setup the extension you just need to import `setup_ext_slash` from the extension and call it on your client, like:
 
@@ -71,7 +75,7 @@ setup_ext_slash(Nitori, immediate_sync=True)
 For newer clients' application id is same as their bots' id, what in most of the cases you should also pass to the
 client's constructor, so getting the application id should be pretty straightforward.
 
-### Adding commands & responding
+## Adding commands & responding
 
 After the extension is setuped, commands can be added using the `client.interaction` decorator.
 
@@ -98,9 +102,9 @@ async def perms(client, event):
 Every `return`-ed or `yield`-ed string or embed (list or tuple of embeds as well) from a slash command will be
 propagated to be sent as a response to the user, but you can also send responses manually with the
 `Client.interaction_response_message_create` or with the `Client.interaction_followup_message_create` methods. There
-are also other interaction related client methods, but those wont be mentioned here.
+are also other interaction related client methods, which are mentioned [later](#manual-responding).
 
-### Command Parameters
+## Command Parameters
 
 By default 2 parameter is passed to every slash command, the respective client, and the received interaction event, what
 can be used to access every related information about the received event's context.
@@ -153,7 +157,7 @@ async def showemoji(client, event,
     return f'**Name:** {emoji:e} **Link:** {emoji.url}'
 ```
 
-#### Choice parameters
+### Choice parameters
 
 Slash commands support choice parameters, for string and integer types. Each choice has a `name` and a
 `value` field, where the values must be the same type, either `str` or `int` as mentioned above.
@@ -222,15 +226,28 @@ async def guild_icon(client, event,
     # Code goes brr..
 ```
 
-Formatting choice into a table-like appearance can help as well.
+Formatting choice into a table-like appearance might help as well.
 
-#### Required & not required parameters
+List example:
+
+```py
+from random import random
+
+@Nitori.interactions(guild=TEST_GUILD)
+async def roll(client, event,
+        dice_count: ([(str(v), v) for v in range(1, 7)], 'With how much dice do you wanna roll?') = 1,
+            ):
+    """Rolls with dices."""
+    return str(round((1.+(random()*5.))*dice_count))
+```
+
+### Required & not required parameters
 
 Whether a command parameter is required or not, is defined whether you assign default value to it.
 
 Examples are the  `cookie` command above for required and the `guild-icon` command for not required one.
 
-> Do not forget that in python default-value parameters always follow non-default-value parameters.
+> Do not forget that in python default-value parameters always follows non-default-value parameters.
 
 Lets improve the `cookie` command to not require user!
 
@@ -298,7 +315,7 @@ async def cookie(client, event,
 
 ##### name
 
-The most important feature, changing the name! By default a command's name will it's function's name.
+The most important feature, changing the name! By default a command's name will be it's function's name.
 
 An important note might be, that the command's name might be displayed differently by Discord, so the extension will
 do the prettification for you internally.
@@ -317,7 +334,43 @@ async def idtotime(client, event,
     return f'{time:{DATETIME_FORMAT_CODE}}\n{elapsed_time(time)} ago'
 ```
 
-### Responding multiple times & Tricks and recommendations
+##### description
+
+Description can be passed instead of defining as docstring. As an example this feature can be used when auto-generating
+commands, like:
+
+```py
+class Action(object):
+    __slots__ = ('action_name', 'embed_color', )
+    def __init__(self, action_name, embed_color):
+        self.action_name = action_name
+        self.embed_color = embed_color
+    
+    async def __call__(self, client, event,
+            user : ('user', 'Who?') = None,
+                ):
+        if user is None:
+            source_user = client
+            target_user = event.user
+        else:
+            source_user = event.user
+            target_user = user
+        
+        return Embed(description=f'{source_user:f} {self.action_name}s {target_user:f} !', color=self.embed_color)
+
+for action_name, embed_color in (('pat', 0x325b34), ('hug', 0xa4b51b), ('lick', 0x7840c3), ('slap', 0xdff1dc),):
+    Nitori.interactions(Action(action_name, embed_color),
+        name = action_name,
+        description = f'Do you want some {action_name}s, or to {action_name} someone?',
+        guild = TEST_GUILD,
+        show_source = False,
+            )
+
+# Cleanup
+del action_name, embed_color
+```
+
+## Responding multiple times & Tricks and recommendations
 
 Sometimes you might wanna respond multiple times on an event. At this case use `yield` instead of `return`.
 
@@ -431,7 +484,7 @@ async def enable_ping(client, event,
         if command_present:
             content = 'The command is already present.'
         else:
-            await client.application_command_guild_create(guild, ping.schema)
+            await client.application_command_guild_create(guild, ping.get_schema())
             content = 'The command has been added.'
     else:
         if command_present:
@@ -448,4 +501,129 @@ you added your ping as guild bound, then modified it to non-global, then the non
 bound one.
 
 > If you are using `ClientWrapper` to add commands to more clients you will get back a command router instead of
-> the command, so you wont be able to use `.name` or `.schema` on it.
+> the command, so you wont be able to use `.name` or `.get_schema()` on it.
+
+## Categories
+
+It is possible to create a "category" command by creating a command with giving function as `None`. If you do not pass
+a function, then name and description can not be auto-detected, so you will need to pass those manually as well.
+
+```py
+from random import choice
+from bs4 import BeautifulSoup 
+# `bs4` requires `lxml` library or you will get an error.
+
+# You might wanna add `-tag`-s to surely avoid nsfw pictures
+SAFE_BOORU = 'http://safebooru.org/index.php?page=dapi&s=post&q=index&tags='
+
+# Use a cache to avoid repeated requests.
+# Booru also might ban ban you for a time if you do too much requests.
+IMAGE_URL_CACHE = {}
+
+async def get_image_embed(client, tags, name, color):
+    image_urls = IMAGE_URL_CACHE.get(tags)
+    if image_urls is None:
+        
+        # Request image information
+        async with client.http.get(SAFE_BOORU+tags) as response:
+            if response.status != 200:
+                return Embed('Error', 'Safe-booru unavailable', color=color)
+            
+            result = await response.read()
+        
+        # Read response and get image urls.
+        soup = BeautifulSoup(result, 'lxml')
+        image_urls = [post['file_url'] for post in soup.find_all('post')]
+        
+        if not image_urls:
+            return Embed('Error', 'No images found.\nPlease try again later.', color=color)
+        
+        # If we received image urls, cache them
+        IMAGE_URL_CACHE[tags] = image_urls
+    
+    image_url = choice(image_urls)
+    return Embed(name, color=color, url=image_url).add_image(image_url)
+
+
+SCARLET = Nitori.interactions(None, name='scarlet', description='Scarlet?', guild=TEST_GUILD)
+
+@SCARLET.interactions
+async def flandre(client, event):
+    """Flandre!"""
+    yield # Yield one to acknowledge the interaction
+    yield await get_image_embed(client, 'flandre_scarlet', 'Scarlet Flandre', 0xdc143c)
+
+@SCARLET.interactions
+async def remilia(client, event):
+    """Remilia!"""
+    yield # Yield one to acknowledge the interaction
+    yield await get_image_embed(client, 'remilia_scarlet', 'Remilia Flandre', 0x9400d3)
+```
+
+## Manual Responding
+
+Sometimes the auto-responding feature just cannot do it. For these cases there are the questionably long named
+`Client` interaction methods. This section just mentions these methods, please check their docs for more info.
+
+The first response message can be sent only with `Client.interaction_response_message_create`. The `3` second
+acknowledge time still stands.
+
+```py
+@Nitori.interactions(guild=TEST_GUILD)
+async def repeat(client, event,
+        text: ('str', 'Uhum?')
+            ):
+    """What should I exactly repeat?"""
+    await client.interaction_response_message_create(event, text, allowed_mentions=None, show_source=True)
+```
+
+Not like `Client.message_create`, this endpoint can be called without any content to still acknowledge the
+interaction event. This method also wont return a ``Message`` object (thank to Discord), but at least
+`.interaction_followup_message_create` will.
+
+The followup message methods are the following:
+- `Client.interaction_followup_message_create`
+- `Client.interaction_followup_message_edit`
+- `Client.interaction_followup_message_delete`
+
+An example using pure client methods:
+
+```py
+@Niori.interactions(guild=TEST_GUILD)
+async def kaboom(client, event):
+    """Kabooom!!"""
+    await client.interaction_response_message_create(event)
+    
+    messages = []
+    for x in reversed(range(1, 4)):
+        message = await client.interaction_followup_message_create(event, x)
+        messages.append(message)
+        await sleep(1.0)
+    
+    await client.interaction_followup_message_create(event, 'KABOOM!!')
+    
+    for message in messages:
+        await sleep(1.0)
+        await client.interaction_followup_message_delete(event, message)
+```
+
+An example using mixed `yield` and `Client` methods:
+
+```py
+@Niori.interactions(guild=TEST_GUILD)
+async def kaboom_mixed(client, event):
+    """Kabooom!!"""
+    yield
+    
+    messages = []
+    for x in reversed(range(1, 4)):
+        message = yield str(x)
+        messages.append(message)
+        await sleep(1.0)
+    
+    yield 'KABOOM!!'
+    
+    for message in messages:
+        await sleep(1.0)
+        await client.interaction_followup_message_delete(event, message)
+```

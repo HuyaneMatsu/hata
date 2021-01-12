@@ -8,7 +8,7 @@ HERE = pathlib.Path(__file__).parent
 version_search_pattern = re.compile('^__version__[ ]*=[ ]*((?:\'[^\']+\')|(?:\"[^\"]+\"))[ ]*$', re.M)
 parsed = version_search_pattern.search((HERE / 'hata' / '__init__.py').read_text())
 if parsed is None:
-    raise RuntimeError('No version found in `__init__.py`')
+    raise RuntimeError('No version found in `__init__.py`.')
 
 version = literal_eval(parsed.group(1))
 
@@ -54,6 +54,7 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
         
@@ -70,17 +71,17 @@ setup(
             },
     python_requires = '>=3.6',
     install_requires = [
-        'chardet>=2.0,<4.0',
+        'chardet>=2.0',
             ],
     extras_require = {
         'voice' : [
-            'PyNaCl==1.3.0',
+            'PyNaCl>=1.3.0',
                 ],
         'relativedelta' : [
             'python-dateutil>=2.0',
                 ],
         'cpythonspeedups': [
-            'cchardet',
+            'cchardet>=2.0',
                 ],
             },
         )

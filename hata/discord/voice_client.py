@@ -567,7 +567,7 @@ class VoiceClient(object):
         if (own_guild is not channel.guild):
             raise RuntimeError('Cannot move to an another guild.')
         
-        gateway = self.client._gateway_for(own_guild)
+        gateway = self.client._gateway_for(own_guild.id)
         await gateway._change_voice_state(own_guild.id, channel.id)
     
     def append(self, source):
@@ -999,12 +999,17 @@ class VoiceClient(object):
             We did not receive answer in time.
         """
         client = self.client
+        
         guild = self.guild
-        gateway = client._gateway_for(guild)
+        if guild is None:
+            guild_id = 0
+        else:
+            guild_id = guild.id
+        gateway = client._gateway_for(guild_id)
 
         # request joining
-        await gateway._change_voice_state(guild.id, self.channel.id)
-        future_or_timeout(self._handshake_complete,60.0)
+        await gateway._change_voice_state(guild_id, self.channel.id)
+        future_or_timeout(self._handshake_complete, 60.0)
         
         try:
             await self._handshake_complete
@@ -1019,11 +1024,16 @@ class VoiceClient(object):
         This method is a coroutine.
         """
         self._handshake_complete.clear()
+        
         guild = self.guild
-        gateway = self.client._gateway_for(guild)
+        if guild is None:
+            guild_id = 0
+        else:
+            guild_id = guild.id
+        gateway = self.client._gateway_for(guild_id)
         
         try:
-            await gateway._change_voice_state(guild.id, None, self_mute=True)
+            await gateway._change_voice_state(guild_id, None, self_mute=True)
         except ConnectionClosed:
             pass
         
@@ -1048,7 +1058,14 @@ class VoiceClient(object):
             Voice server update data.
         """
         self.connected.clear()
-        gateway = self.client._gateway_for(self.guild)
+        
+        guild = self.guild
+        if guild is None:
+            guild_id = 0
+        else:
+            guild_id = guild.id
+        gateway = self.client._gateway_for(guild_id)
+        
         self._session_id = gateway.session_id
         token = data.get('token')
         self._token = token

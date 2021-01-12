@@ -64,6 +64,28 @@ async def ping(client, message):
 Saki.start()
 ```
 
+Or use slash commands!
+
+```
+from hata import Client, Guild
+from hata.ext.slash import setup_ext_slash
+
+GUILD = Guild.precreate(guild_id)
+
+Seija = Client('TOKEN')
+setup_ext_commands(Seija, 's!')
+
+@Seija.events
+async def ready(client):
+    print(f'{client:f} logged in.')
+
+@Seija.interactions(guild=GUILD)
+async def ping(client, event):
+    return 'pong'
+
+Seija.start()
+```
+
 If you wonder, how to run up more clients, just put the two code snippet into the same file.
 
 Hata leaves the main thread free, `client.start()` blocks it only till the client logs in (or fails it), although you

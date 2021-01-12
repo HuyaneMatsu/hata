@@ -3197,7 +3197,7 @@ if CACHE_PRESENCE:
         ready_state = client.ready_state
         if ready_state is None:
             if guild.is_large:
-                Task(client._request_members(guild), KOKORO)
+                Task(client._request_members(guild.id), KOKORO)
             Task(client.events.guild_create(client, guild), KOKORO)
             return
         
@@ -3213,7 +3213,7 @@ if CACHE_PRESENCE:
         ready_state = client.ready_state
         if ready_state is None:
             if guild.is_large:
-                Task(client._request_members(guild), KOKORO)
+                Task(client._request_members(guild.id), KOKORO)
             return
         
         ready_state.feed(guild)
@@ -3228,7 +3228,7 @@ elif CACHE_USER:
         
         ready_state = client.ready_state
         if ready_state is None:
-            Task(client._request_members(guild), KOKORO)
+            Task(client._request_members(guild.id), KOKORO)
             Task(client.events.guild_create(client, guild), KOKORO)
             return
         
@@ -3243,7 +3243,7 @@ elif CACHE_USER:
         
         ready_state = client.ready_state
         if ready_state is None:
-            Task(client._request_members(guild), KOKORO)
+            Task(client._request_members(guild.id), KOKORO)
             return
         
         ready_state.feed(guild)
@@ -4787,7 +4787,7 @@ def check_name(func, name):
     
     Parameters
     ----------
-    func : `callable`
+    func : `None` or `callable`
         The function, what preferred name we are looking for.
     name : `None` or `str`
         A directly given name value by the user. Defaults to `None` by caller (or at least sit should).
@@ -4802,7 +4802,11 @@ def check_name(func, name):
     TypeError
         - If a checked name is not `None` or `str` instance.
         - If a metaclass was given.
+        - If both `name` and `func` are given as `None`.
     """
+    if None is func is name:
+        raise TypeError(f'Both `func` and `name` are given as `None`')
+    
     while True:
         if _check_name_should_break(name):
             break
@@ -5227,7 +5231,7 @@ class _EventHandlerManager(object):
         """Returns the representation of the event handler manager."""
         return f'<{self.__class__.__name__} of {self.parent!r}>'
     
-    def __call__(self, func=None, name=None, **kwargs):
+    def __call__(self, func=..., name=None, **kwargs):
         """
         Adds the given `func` to the event handler manager's parent. If `func` is not passed, then returns a
         ``._wrapper` to allow using the manager as a decorator with still passing keyword arguments.
@@ -5256,7 +5260,7 @@ class _EventHandlerManager(object):
         **kwargs : Keyword arguments
             Additionally passed keyword arguments to be used when the passed `func` is used up.
         """
-        if func is None:
+        if func is ...:
             return self._wrapper(self, name, kwargs)
         
         name = check_name(func, name)
@@ -5357,10 +5361,10 @@ class _EventHandlerManager(object):
             Raises
             ------
             TypeError
-                If `func` is given as `None`.
+                If `func` was not supplied.
             """
-            if func is None:
-                raise TypeError('`func` is given as `None`.')
+            if func is ...:
+                raise TypeError('`func` was not supplied.')
             
             return self.parent(func, self.name, **self.kwargs)
     
@@ -5574,7 +5578,7 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         self._getter = getter
         self._from_class_constructor = from_class_constructor
     
-    def __call__(self, func=None, name=None, **kwargs):
+    def __call__(self, func=..., name=None, **kwargs):
         """
         Adds the given `func` to all of the represented client's respective event handler managers.
         
@@ -5601,7 +5605,7 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         **kwargs : Keyword arguments
             Additionally passed keyword arguments to be used when the passed `func` is used up.
         """
-        if func is None:
+        if func is ...:
             return self._wrapper(self, name, kwargs)
         
         handlers = self._getter(self)
@@ -6038,7 +6042,7 @@ def route_name(func, name, count):
     
     Parameters
     ----------
-    func : `callable`
+    func : `None` or `callable`
         The respective callable to get name from if no name was passed.
     name : `None`, `Ellipsis`, `str`, `tuple` of (`None`, `Ellipsis`, `str`)
         The name to use instead of `func`'s real one.
@@ -6052,9 +6056,10 @@ def route_name(func, name, count):
     Raises
     ------
     TypeError
-        `name` was not given as `None`, `Ellipsis`, `str`, neither as `tuple` of (`None`, `Ellipsis`, `str`).
+        - If `name` was not given as `None`, `Ellipsis`, `str`, neither as `tuple` of (`None`, `Ellipsis`, `str`).
+        - If both `name` and `func` are given as `None`.
     ValueError
-        `name` was given as `tuple` but it's length is different from the expected one.
+        If `name` was given as `tuple` but it's length is different from the expected one.
     """
     result = []
     
@@ -6267,10 +6272,10 @@ class eventlist(list):
             Raises
             ------
             TypeError
-                If `func` is given as `None`.
+                If `func` was not supplied.
             """
-            if func is None:
-                raise TypeError('`func` is given as `None`.')
+            if func is ...:
+                raise TypeError('`func` was not supplied.')
             
             parent = self.parent
             type_ = parent.type
@@ -6376,7 +6381,7 @@ class eventlist(list):
         if collected:
             raise ValueError('\n'.join(collected))
         
-    def __call__(self, func=None, name = None, **kwargs):
+    def __call__(self, func=..., name = None, **kwargs):
         """
         Adds the given `func` to the ``eventlist`` with the other given keyword arguments. If `func` is not passed,
         then returns a ``._wrapper` to allow using the ``eventlist`` as a decorator with still passing keyword
@@ -6418,7 +6423,7 @@ class eventlist(list):
             for name_, value_ in own_kwargs.items():
                 kwargs.setdefault(name_, value_)
         
-        if func is None:
+        if func is ...:
             return self._wrapper(self, name, kwargs)
         
         type_ = self.type

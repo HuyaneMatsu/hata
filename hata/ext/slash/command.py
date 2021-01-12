@@ -5,9 +5,11 @@ from threading import current_thread
 from ...backend.futures import Task, is_coroutine_generator, WaitTillAll
 from ...backend.analyzer import CallableAnalyzer
 from ...backend.event_loop import EventThread
+from ...backend.utils import WeakReferer
 
 from ...discord.client_core import KOKORO, ROLES, CHANNELS
-from ...discord.parsers import route_value, EventHandlerBase, InteractionEvent, check_name, Router, route_name
+from ...discord.parsers import route_value, EventHandlerBase, InteractionEvent, check_name, Router, route_name, \
+    _EventHandlerManager
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.embed import EmbedBase
 from ...discord.guild import Guild
@@ -18,9 +20,6 @@ from ...discord.role import Role
 from ...discord.channel import ChannelBase
 from ...discord.preinstanced import ApplicationCommandOptionType
 from ...discord.interaction import ApplicationCommandOption, ApplicationCommandOptionChoice, ApplicationCommand
-
-
-IGNORED_COMMAND_CLEANUP_CYCLE_TIME = 3615.0
 
 
 def is_only_embed(maybe_embeds):
@@ -220,7 +219,7 @@ async def converter_int(client, value):
     """
     try:
         value = int(value)
-    except (TypeError, ValueError):
+    except ValueError:
         value = None
     
     return value
@@ -244,7 +243,7 @@ async def converter_str(client, value):
     value : `None` or `str`
         If conversion fails, then returns `None`.
     """
-    return str(value)
+    return value
 
 
 async def converter_bool(client, value):
@@ -291,7 +290,7 @@ async def converter_snowflake(client, value):
     """
     try:
         snowflake = int(value)
-    except (TypeError, ValueError):
+    except ValueError:
         snowflake = None
     else:
         if (snowflake < (1<<22)) or (snowflake > ((1<<64)-1)):
@@ -435,9 +434,11 @@ ANNOTATION_TYPE_TO_CONVERTER = {
     ANNOTATION_TYPE_CHANNEL_ID : converter_snowflake ,
         }
 
+# `int` Discord fields are broken and they are refusing to fix it, use string instead.
+# Reference: https://github.com/discord/discord-api-docs/issues/2448
 ANNOTATION_TYPE_TO_OPTION_TYPE = {
     ANNOTATION_TYPE_STR        : ApplicationCommandOptionType.STRING  ,
-    ANNOTATION_TYPE_INT        : ApplicationCommandOptionType.INTEGER ,
+    ANNOTATION_TYPE_INT        : ApplicationCommandOptionType.STRING  ,
     ANNOTATION_TYPE_BOOL       : ApplicationCommandOptionType.BOOLEAN ,
     ANNOTATION_TYPE_USER       : ApplicationCommandOptionType.USER    ,
     ANNOTATION_TYPE_USER_ID    : ApplicationCommandOptionType.USER    ,
@@ -715,7 +716,7 @@ class ArgumentConverter(object):
         if choices is None:
             option_choices = None
         else:
-            option_choices = [ApplicationCommandOptionChoice(name, value) for value, name in choices.items()]
+            option_choices = [ApplicationCommandOptionChoice(name, str(value)) for value, name in choices.items()]
         
         option_type = ANNOTATION_TYPE_TO_OPTION_TYPE[self.type]
         
@@ -868,47 +869,25 @@ def normalize_description(description):
     return ' '.join(lines)
 
 
-def create_schema(name, description, argument_parsers):
-    """
-    Creates application schema from processed slash command parameters.
-    
-    Parameters
-    ----------
-    name : `str`
-        Command name.
-    description : `str`
-        Command description.
-    argument_parsers : `tuple` of ``ArgumentConverter``
-    
-    Returns
-    -------
-    schema : ``ApplicationCommand``
-    """
-    if argument_parsers:
-        options = [argument_parser.as_option() for argument_parser in argument_parsers]
-    else:
-        options = None
-    
-    return ApplicationCommand(name, description, options=options)
-
-
-
 class SlashCommand(object):
     """
-    Represents an application command's backend implementation.
+    Class to wrap an application command providing interface for ``Slasher``.
     
     Attributes
     ----------
+    _command : `None` or ``SlashCommandFunction``
+        The command of the slash command.
     _registered_application_command_ids : `None` or `dict` of (`int`, `int`) items
         The registered application command ids, which are matched by the command's schema.
         
         If empty set as `None`, if not then the keys are the respective guild's id and the values are the application
         command id.
+    _schema : `None` or ``ApplicationCommand``
+        Internal slot used by the ``.get_schema`` method.
+    _sub_commands  : `None` or `dict` of (`str`, ``SlashCommandFunction`` or ``SlashSubCommand``) items
+        Sub-commands of the slash command.
         
-    argument_parsers : `tuple` of ``ArgumentConverter``
-        Parsers to parse command parameters.
-    command : `async-callable˛
-        The command's function to call.
+        Mutually exclusive with the ``._command`` parameter.
     description : `str`
         Application command description. It\'s length can be in range [2:100].
     guild_ids : `None` or `set` of `int`
@@ -918,14 +897,14 @@ class SlashCommand(object):
         
         Guild commands have ``.guild_ids`` set as `None`.
     name : `str`
-        Application command name. It\'s length can be in range [3:32].
-    schema : ``ApplicationCommand``
-        The application command schema of the slash command.
-    show_source : `bool`
-        Whether the source message should be shown when using the command.
+        Application command name. It's length can be in range [3:32].
+    
+    Notes
+    -----
+    ``SlashCommand`` instances are weakreferable.
     """
-    __slots__ = ('_registered_application_command_ids', 'argument_parsers', 'command', 'description', 'guild_ids',
-        'is_global', 'name', 'schema', 'show_source')
+    __slots__ = ('__weakref__', '_command', '_registered_application_command_ids', '_schema', '_sub_commands',
+        'description', 'guild_ids', 'is_global', 'name', )
     
     def _register_guild_and_application_command_id(self, guild_id, application_command_id):
         """
@@ -958,12 +937,15 @@ class SlashCommand(object):
         registered_application_command_ids = self._registered_application_command_ids
         if registered_application_command_ids is not None:
             try:
-                registered_application_command_ids[guild_id] = application_command_id
+                maybe_application_command_id = registered_application_command_ids[guild_id]
             except KeyError:
                 pass
             else:
-                if not registered_application_command_ids:
-                    self._registered_application_command_ids = None
+                if maybe_application_command_id == application_command_id:
+                    del registered_application_command_ids[guild_id]
+                    
+                    if not registered_application_command_ids:
+                        self._registered_application_command_ids = None
     
     def _pop_command_ids_for(self, guild_id):
         """
@@ -1040,7 +1022,7 @@ class SlashCommand(object):
             for sync_id in registered_application_command_ids:
                 if sync_id > (1<<22):
                     yield sync_id
-        
+    
     @classmethod
     def from_class(cls, klass, kwargs=None):
         """
@@ -1062,14 +1044,13 @@ class SlashCommand(object):
             - guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
                     `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``))
                 To which guild(s) the command is bound to.
-            - is_global : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
+            - is_global : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
                 Whether the slash command is global. Defaults to `False`.
             - name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
                 If was not defined, or was defined as `None`, the class's name will be used.
-            - show_source : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
+            - show_source : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
                 Whether when responding the source message should be shown. Defaults to `True`.
-
-
+        
         kwargs, `None` or `dict` of (`str`, `Any`) items, Optional
             Additional parameters arguments. Defaults to `None`.
             
@@ -1082,7 +1063,7 @@ class SlashCommand(object):
         
         Returns
         -------
-        self : ``SlashCommand`` or ``Router``
+        self : ``SlashCommand``
         
         Raises
         ------
@@ -1121,7 +1102,7 @@ class SlashCommand(object):
             - If an argument's `choice` values are mixed types.
             - If `description` length is out of range [2:100].
             - If `guild` is given as an empty container.
-            - If `name` length is out of the expected range [3:32].
+            - If `name` length is out of the expected range [1:32].
         """
         klass_type = klass.__class__
         if not issubclass(klass_type, type):
@@ -1133,12 +1114,7 @@ class SlashCommand(object):
         
         command = getattr(klass, 'command', None)
         if command is None:
-            while True:
-                command = getattr(klass, name, None)
-                if (command is not None):
-                    break
-                
-                raise ValueError('`command` class attribute is missing.')
+            command = getattr(klass, name, None)
         
         description = getattr(klass, 'description', None)
         if description is None:
@@ -1201,16 +1177,17 @@ class SlashCommand(object):
             Additional keyword arguments.
             
             The expected keyword arguments are the following:
+            
             - description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`)
             - guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
                     `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``))
-            - is_global : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
+            - is_global : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
             - name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
             - show_source : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
         
         Returns
         -------
-        self : ``Command`` or ``Router``
+        self : ``SlashCommand``
         
         Raises
         ------
@@ -1248,7 +1225,7 @@ class SlashCommand(object):
             - If an argument's `choice` values are mixed types.
             - If `description` length is out of range [2:100].
             - If `guild` is given as an empty container.
-            - If `name` length is out of the expected range [3:32].
+            - If `name` length is out of the expected range [1:32].
         """
         if (kwargs is None) or (not kwargs):
             description = None
@@ -1358,7 +1335,7 @@ class SlashCommand(object):
         Raises
         ------
         TypeError
-            If `show_source` was not given as `bool` instance.
+            If `show_source` was not given as `None` nor as `bool` instance.
         """
         if show_source is None:
             show_source = True
@@ -1385,7 +1362,7 @@ class SlashCommand(object):
         Raises
         ------
         TypeError
-            If `is_global` was not given as `bool` instance.
+            If `is_global` was not given as `None` nor as `bool` instance.
         """
         if is_global is None:
             is_global = False
@@ -1484,9 +1461,9 @@ class SlashCommand(object):
         Raises
         ------
         TypeError
-            - If `name` is not given as `str` instance.
+            If `name` is not given as `None` neither as `str` instance.
         ValueError
-            - If `name` length is out of the expected range [1:32].
+            If `name` length is out of the expected range [1:32].
         """
         if name is not None:
             name_type = name.__class__
@@ -1499,8 +1476,9 @@ class SlashCommand(object):
                     f'{name!r}.')
             
             name_length = len(name)
-            if name_length < 3 or name_length > 32:
-                raise ValueError(f'`name` length is out of the expected range [3:32], got {name_length!r}; {name!r}.')
+            if name_length < 1 or name_length > 32:
+                raise ValueError(f'`name` length is out of the expected range [1:32], got '
+                    f'{name_length!r}; {name!r}.')
         
         return name
     
@@ -1511,7 +1489,7 @@ class SlashCommand(object):
         
         Parameters
         ----------
-        command : `str`
+        command : `None` or `callable`
             The command's function.
         description : `Any`
             The command's description.
@@ -1524,11 +1502,15 @@ class SlashCommand(object):
         Raises
         ------
         TypeError
-            If `str` description could not be detected.
+            - If `str` description could not be detected.
+            - If both `command` and `description` are `None`.
         ValueError
             If `description` length is out of range [2:100].
         """
         if description is None:
+            if command is None:
+                raise TypeError(f'`description` is a required parameter if `command` is given as `None`.')
+            
             description = getattr(command, '__doc__', None)
         
         if (description is None) or (not isinstance(description, str)):
@@ -1553,7 +1535,7 @@ class SlashCommand(object):
         
         Parameters
         ----------
-        command : `async-callable`
+        command : `None` or `async-callable`
             The function used as the command when using the respective slash command.
         name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
             The command's name if applicable. If not given or if given as `None`, the `func`'s name will be use
@@ -1562,11 +1544,15 @@ class SlashCommand(object):
             Description to use instead of the function's docstring.
         show_source : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
             Whether when responding the source message should be shown. Defaults to `True`.
-        is_global : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
+        is_global : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
             Whether the slash command is global. Defaults to `False`.
         guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
                 `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``))
             To which guild(s) the command is bound to.
+        
+        Returns
+        -------
+        self : ``SlashCommand``
         
         Raises
         ------
@@ -1602,7 +1588,7 @@ class SlashCommand(object):
             - If an argument's `choice` values are mixed types.
             - If `description` length is out of range [2:100].
             - If `guild` is given as an empty container.
-            - If `name` length is out of the expected range [3:32].
+            - If `name` length is out of the expected range [1:32].
         """
         # Check for routing
         route_to = 0
@@ -1612,15 +1598,8 @@ class SlashCommand(object):
         is_global, route_to = cls._check_maybe_route('is_global', is_global, route_to, cls._validate_is_global)
         guild_ids, route_to = cls._check_maybe_route('guild', guild, route_to, cls._validate_guild)
         
-        
         if route_to:
             name = route_name(command, name, route_to)
-            
-            for sub_name in name:
-                sub_name_length = len(sub_name)
-                if sub_name_length < 3 or sub_name_length > 32:
-                    raise ValueError(f'`name` length is out of the expected range [3:32], got {sub_name_length!r}; '
-                        f'{name!r}.')
             
             default_description = cls._generate_description_from(command, None)
             show_source = route_value(show_source, route_to)
@@ -1631,17 +1610,21 @@ class SlashCommand(object):
                 cls._generate_description_from(command, description)
                     if ((description is None) or (description is not default_description)) else default_description
                 for description in description]
+            
         else:
             name = check_name(command, name)
             
             sub_name_length = len(name)
-            if sub_name_length < 3 or sub_name_length > 32:
-                raise ValueError(f'`name` length is out of the expected range [3:32], got {sub_name_length!r}; '
-                    f'{name!r}.')
+            if sub_name_length < 1 or sub_name_length > 32:
+                raise ValueError(f'`name` length is out of the expected range [1:32], '
+                    f'got {sub_name_length!r}; {name!r}.')
             
             description = cls._generate_description_from(command, description)
         
-        command, argument_parsers = generate_argument_parsers(command)
+        if command is None:
+            argument_parsers = None
+        else:
+            command, argument_parsers = generate_argument_parsers(command)
         
         if route_to:
             router = []
@@ -1654,19 +1637,23 @@ class SlashCommand(object):
                         f'guild={guild!r}')
                 
                 name = raw_name_to_display(name)
-                schema = create_schema(name, description, argument_parsers)
+                
+                if (command is None):
+                    command_function = None
+                    sub_commands = {}
+                else:
+                    command_function = SlashCommandFunction(command, argument_parsers, name, description, show_source)
+                    sub_commands = None
                 
                 self = object.__new__(cls)
-                self.show_source = show_source
-                self.argument_parsers = argument_parsers
+                self._command = command_function
+                self._sub_commands = sub_commands
                 self.description = description
-                self.name = name
-                self.command = command
                 self.guild_ids = guild_ids
                 self.is_global = is_global
-                self.schema = schema
+                self.name = name
+                self._schema = None
                 self._registered_application_command_ids = None
-                
                 router.append(self)
             
             return Router(router)
@@ -1676,51 +1663,24 @@ class SlashCommand(object):
                     f'guild={guild!r}')
             
             name = raw_name_to_display(name)
-            schema = create_schema(name, description, argument_parsers)
+            
+            if (command is None):
+                sub_commands = {}
+                command_function = None
+            else:
+                command_function = SlashCommandFunction(command, argument_parsers, name, description, show_source)
+                sub_commands = None
             
             self = object.__new__(cls)
-            self.show_source = show_source
-            self.argument_parsers = argument_parsers
+            self._command = command_function
+            self._sub_commands = sub_commands
             self.description = description
-            self.name = name
-            self.command = command
             self.guild_ids = guild_ids
             self.is_global = is_global
-            self.schema = schema
+            self.name = name
+            self._schema = None
             self._registered_application_command_ids = None
-            
             return self
-    
-    async def __call__(self, client, interaction_event):
-        """
-        Calls the slash command.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        client : ``Client``
-            The respective client who received the event.
-        """
-        parameters = []
-        
-        parameter_relation = {}
-        options = interaction_event.interaction.options
-        if (options is not None):
-            for option in options:
-                parameter_relation[option.name] = option.value
-        
-        for argument_parser in self.argument_parsers:
-            value = parameter_relation.get(argument_parser.name)
-            
-            passed, parameter = await argument_parser(client, value)
-            if not passed:
-                return
-            
-            parameters.append(parameter)
-        
-        coro = self.command(client, interaction_event, *parameters)
-        await process_command_coro(client, interaction_event, self.show_source, coro)
     
     def __repr__(self):
         """returns the slash command's representation."""
@@ -1748,7 +1708,722 @@ class SlashCommand(object):
     def __str__(self):
         """Returns the slash command's name."""
         return self.name
+    
+    async def __call__(self, client, interaction_event):
+        """
+        Calls the slash command.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The respective client who received the event.
+        interaction_event : ``InteractionEvent``
+            The received interaction event.
+        """
+        options = interaction_event.interaction.options
+        
+        command = self._command
+        if (command is not None):
+            await command(client, interaction_event, options)
+            return
+        
+        if (options is None) or (len(options) != 1):
+            return
+        
+        option = options[0]
+        
+        try:
+            sub_command = self._sub_commands[option.name]
+        except KeyError:
+            return
+        
+        await sub_command(client, interaction_event, option.options)
+    
+    def get_schema(self):
+        """
+        Returns an application command schema representing the slash command.
+        
+        Returns
+        -------
+        schema : ``ApplicationCommand``
+        """
+        schema = self._schema
+        if schema is None:
+            schema = self._schema = self.as_schema()
+        
+        return schema
+    
+    def as_schema(self):
+        """
+        Creates a new application command schema representing the slash command.
+        
+        Returns
+        -------
+        schema : ``ApplicationCommand``
+        """
+        command = self._command
+        if command is None:
+            sub_commands = self._sub_commands
+            options = [sub_command.as_option() for sub_command in sub_commands.values()]
+        else:
+            argument_parsers = command._argument_parsers
+            if argument_parsers:
+                options = [argument_parser.as_option() for argument_parser in argument_parsers]
+            else:
+                options = None
+        
+        return ApplicationCommand(self.name, self.description, options=options)
+    
+    def as_sub(self):
+        """
+        Returns the slash command as a sub-command or sub-category.
+        
+        Returns
+        -------
+        new : ``SlashCommandFunction`` or ``SlashCommandCategory``
+        """
+        command = self._command
+        if command is not None:
+            return command
+        
+        return SlashCommandCategory(self)
+        
+    def copy(self):
+        """
+        Copies the slash command.
+        
+        Returns
+        -------
+        new : ``ApplicationCommand``
+        """
+        command = self._command
+        if (command is not None):
+            command = command.copy()
+        
+        sub_commands = self._sub_commands
+        if (sub_commands is not None):
+            sub_commands = {category_name: category.copy() for category_name, category in sub_commands.items()}
+        
+        guild_ids = self.guild_ids
+        if (guild_ids is not None):
+            guild_ids = guild_ids.copy()
+        
+        new = object.__new__(type(self))
+        new._command = command
+        new._sub_commands = sub_commands
+        new._registered_application_command_ids = None
+        new._schema = None
+        new.description = self.description
+        new.guild_ids = guild_ids
+        new.is_global = self.is_global
+        new.name = self.name
+        
+        if (sub_commands is not None):
+            parent_reference = None
+            for sub_command in sub_commands.values():
+                if isinstance(sub_command, SlashCommandCategory):
+                    if parent_reference is None:
+                        parent_reference = WeakReferer(new)
+                    sub_command._parent_reference = parent_reference
+        
+        return new
+    
+    @property
+    def interactions(self):
+        """
+        Enables you to add sub-commands or sub-categories to the slash command.
+        
+        Returns
+        -------
+        handler : ``_EventHandlerManager``
+        
+        Raises
+        ------
+        RuntimeError
+            The ``SlashCommand`` is not a category.
+        """
+        if self._command is not None:
+            raise RuntimeError(f'The {self.__class__.__name__} is not a category.')
+        
+        return _EventHandlerManager(self)
+    
+    def __setevent__(self, func, name, description=None, show_source=None, is_global=None, guild=None):
+        """
+        Adds a sub-command under the slash command.
+        
+        Parameters
+        ----------
+        func : `async-callable`
+            The function used as the command when using the respective slash command.
+        name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
+            The command's name if applicable. If not given or if given as `None`, the `func`'s name will be use
+            instead.
+        description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`), Optional
+            Description to use instead of the function's docstring.
+        show_source : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
+            Whether when responding the source message should be shown. Defaults to `True`.
+        is_global : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
+            Whether the slash command is global. Defaults to `False`.
+        guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
+                `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``)), Optional
+            To which guild(s) the command is bound to.
+        
+        Returns
+        -------
+        self : ``SlashCommand``
+        
+        Raises
+        ------
+        TypeError
+            - If `show_source` was not given as `bool` instance.
+            - If `global_` was not given as `bool` instance.
+            - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
+            - If `func` is not async callable, neither cannot be instanced to async.
+            - If `func` accepts keyword only arguments.
+            - If `func` accepts `*args`.
+            - If `func` accepts `**kwargs`.
+            - If `func` accepts less than `2` argument.
+            - If `func` accepts more than `12` argument.
+            - If `func`'s 0th argument is annotated, but not as ``Client``.
+            - If `func`'s 1th argument is annotated, but not as ``InteractionEvent``.
+            - If `name` was not given neither as `None` or `str` instance.
+            - If an argument's `annotation_value` is `list` instance, but it's elements do not match the
+                `tuple` (`str`, `str` or `int`) pattern.
+            - If an argument's `annotation_value` is `dict` instance, but it's items do not match the
+                (`str`, `str` or `int`) pattern.
+            - If an argument's `annotation_value` is unexpected.
+            - If an argument's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
+            - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
+            - If `is_global` and `guild` contradicts each other.
+        ValueError
+            - If `guild` is or contains an integer out of uint64 value range.
+            - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
+            - If an argument's `annotation_value` is `str` instance, but not any of the expected ones.
+            - If an argument's `annotation_value` is `type` instance, but not any of the expected ones.
+            - If an argument's `choice` amount is out of the expected range [1:10].
+            - If an argument's `choice` name is duped.
+            - If an argument's `choice` values are mixed types.
+            - If `description` length is out of range [2:100].
+            - If `guild` is given as an empty container.
+            - If `name` length is out of the expected range [1:32].
+        RuntimeError
+            - The ``SlashCommand`` is not a category.
+            - The ``SlashCommand`` reached the maximal amount of children.
+        """
+        if self._command is not None:
+            raise RuntimeError(f'The {self.__class__.__name__} is not a category.')
+        
+        if isinstance(func, Router):
+            func = func[0]
+        
+        if isinstance(func, type(self)):
+            self._add_command(func)
+            return self
+        
+        command = type(self)(func, name, description, show_source, is_global, guild)
+        if isinstance(command, Router):
+            command = command[0]
+        
+        self._add_command(command)
+        return self
+    
+    def __setevent_from_class__(self, klass):
+        """
+        Breaks down the given class to it's class attributes and tries to add it as a sub-command or sub-category.
+        
+        Parameters
+        ----------
+        klass : `type`
+            The class, from what's attributes the command will be created.
+            
+            The expected attributes of the given `klass` are the following:
+            
+            - description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`)
+                Description of the command.
+            - command : `async-callable`
+                If no description was provided, then the class's `.__doc__` will be picked up.
+            - guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
+                    `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``))
+                To which guild(s) the command is bound to.
+            - is_global : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
+                Whether the slash command is global. Defaults to `False`.
+            - name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
+                If was not defined, or was defined as `None`, the class's name will be used.
+            - show_source : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
+                Whether when responding the source message should be shown. Defaults to `True`.
+        
+        Returns
+        -------
+        self : ``SlashCommand``
+         
+        Raises
+        ------
+        TypeError
+            - If `klass` was not given as `type` instance.
+            - If `kwargs` was not given as `None` and not all of it's items were used up.
+            - If a value is routed but to a bad count amount.
+            - If `show_source` was not given as `bool` instance.
+            - If `global_` was not given as `bool` instance.
+            - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
+            - If `func` is not async callable, neither cannot be instanced to async.
+            - If `func` accepts keyword only arguments.
+            - If `func` accepts `*args`.
+            - If `func` accepts `**kwargs`.
+            - If `func` accepts less than `2` arguments.
+            - If `func` accepts more than `12` arguments.
+            - If `func`'s 0th argument is annotated, but not as ``Client``.
+            - If `func`'s 1th argument is annotated, but not as ``InteractionEvent``.
+            - If `name` was not given neither as `None` or `str` instance.
+            - If an argument's `annotation_value` is `list` instance, but it's elements do not match the
+                `tuple` (`str`, `str` or `int`) pattern.
+            - If an argument's `annotation_value` is `dict` instance, but it's items do not match the
+                (`str`, `str` or `int`) pattern.
+            - If an argument's `annotation_value` is unexpected.
+            - If an argument's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
+            - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
+            - If `is_global` and `guild` contradicts each other.
+        ValueError
+            - If `guild` is or contains an integer out of uint64 value range.
+            - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
+            - If an argument's `annotation_value` is `str` instance, but not any of the expected ones.
+            - If an argument's `annotation_value` is `type` instance, but not any of the expected ones.
+            - If an argument's `choice` amount is out of the expected range [1:10].
+            - If an argument's `choice` name is duped.
+            - If an argument's `choice` values are mixed types.
+            - If `description` length is out of range [2:100].
+            - If `guild` is given as an empty container.
+            - If `name` length is out of the expected range [1:32].
+        RuntimeError
+            - The ``SlashCommand`` is not a category.
+            - The ``SlashCommand`` reached the maximal amount of children.
+        """
+        command = type(self).from_class(klass)
+        if isinstance(command, Router):
+            command = command[0]
+        
+        self._add_command(command)
+        return self
+    
+    def _add_command(self, command):
+        """
+        Adds a sub-command or sub-category to the slash command.
+        
+        Parameters
+        ----------
+        command : ``SlashCommand``
+            The slash command to add.
+        
+        Raises
+        ------
+        RuntimeError
+            The ``SlashCommand`` reached the maximal amount of children.
+        """
+        sub_commands = self._sub_commands
+        if len(sub_commands) == 10 and (command.name not in sub_commands):
+            raise RuntimeError(f'The {self.__class__.__name__} reached the maximal amount of children (10).')
+        
+        sub_commands[command.name] = command.as_sub()
+        self._schema = None
 
+class SlashCommandFunction(object):
+    """
+    Represents an application command's backend implementation.
+    
+    Attributes
+    ----------
+    _argument_parsers : `tuple` of ``ArgumentConverter``
+        Parsers to parse command parameters.
+    _command : `async-callable˛
+        The command's function to call.
+    description : `str`
+        The slash command's description.
+    name : `str`
+        The name of the slash command. It's length can be in range [1:32].
+    show_source : `bool`
+        Whether the source message should be shown when using the command.
+    """
+    __slots__ = ('_argument_parsers', '_command', 'category', 'description', 'name', 'show_source')
+    
+    def __new__(cls, command, argument_parsers, name, description, show_source):
+        """
+        Creates a new ``SlashCommandFunction`` instance with the given parameters-
+        
+        Parameters
+        ----------
+        command : `async-callable`
+            The command's function to call.
+        argument_parsers : `tuple` of ``ArgumentConverter``
+            Parsers to parse command parameters.
+        name : `str`
+            The name of the slash command.
+        description : `str`
+            The slash command's description.
+        show_source : `bool`
+            Whether the source message should be shown when using the command.
+        """
+        self = object.__new__(cls)
+        self._command = command
+        self._argument_parsers = argument_parsers
+        self.show_source = show_source
+        self.description = description
+        self.name = name
+        return self
+    
+    async def __call__(self, client, interaction_event, options):
+        """
+        Calls the slash command function.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The respective client who received the event.
+        interaction_event : ``InteractionEvent``
+            The received interaction event.
+        options : `None` or `list` of ``InteractionEventChoice``
+            Options bound to the function.
+        """
+        parameters = []
+        
+        parameter_relation = {}
+        if (options is not None):
+            for option in options:
+                parameter_relation[option.name] = option.value
+        
+        for argument_parser in self._argument_parsers:
+            value = parameter_relation.get(argument_parser.name)
+            
+            passed, parameter = await argument_parser(client, value)
+            if not passed:
+                return
+            
+            parameters.append(parameter)
+        
+        coro = self._command(client, interaction_event, *parameters)
+        await process_command_coro(client, interaction_event, self.show_source, coro)
+    
+    def as_option(self):
+        """
+        Returns the slash command function as an application command option.
+        
+        Returns
+        -------
+        option : ``ApplicationCommandOption``
+        """
+        argument_parsers = self._argument_parsers
+        if argument_parsers:
+            options = [argument_parser.as_option() for argument_parser in argument_parsers]
+        else:
+            options = None
+        
+        return ApplicationCommandOption(self.name, self.description, ApplicationCommandOptionType.SUB_COMMAND,
+            options=options)
+    
+    def copy(self):
+        """
+        Copies the slash command function.
+        
+        They are not mutable, so just returns itself.
+        
+        Returns
+        -------
+        self : ``SlashCommandFunction``
+        """
+        return self
+
+
+class SlashCommandCategory(object):
+    """
+    Represents an application command's backend implementation.
+    
+    Attributes
+    ----------
+    _sub_commands : `dict` of (`str`, ``SlashCommandFunction``) items
+        The sub-commands of the category.
+    _parent_reference : `None` or ``WeakReferer`` to ``SlashCommand
+        The parent slash command of the category if any.
+    description : `str`
+        The slash command's description.
+    name : `str`
+        The name of the slash sub-category.
+    """
+    __slots__ = ('_sub_commands', '_parent_reference', 'description', 'name')
+    
+    def __new__(cls, slash_command):
+        """
+        Creates a new ``SlashCommandCategory`` instance with the given parameters.
+        
+        Parameters
+        ----------
+        slash_command : ``SlashCommand``
+            The parent slash command.
+        """
+        self = object.__new__(cls)
+        self.name = slash_command.name
+        self.description = slash_command.description
+        self._sub_commands = {}
+        self._parent_reference = WeakReferer(slash_command)
+        return self
+    
+    async def __call__(self, client, interaction_event, options):
+        """
+        Calls the slash command category.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The respective client who received the event.
+        interaction_event : ``InteractionEvent``
+            The received interaction event.
+        options : `None` or `list` of ``InteractionEventChoice``
+            Options bound to the category.
+        """
+        if (options is None) or len(options) != 1:
+            return
+        
+        option = options[0]
+        
+        try:
+            sub_command = self._sub_commands[option.name]
+        except KeyError:
+            return
+        
+        await sub_command(client, interaction_event, option.options)
+    
+    def as_option(self):
+        """
+        Returns the slash command category as an application command option.
+        
+        Returns
+        -------
+        option : ``ApplicationCommandOption``
+        """
+        sub_commands = self._sub_commands
+        if sub_commands:
+            options = [sub_command.as_option() for sub_command in sub_commands]
+        else:
+            options = None
+        
+        return ApplicationCommandOption(self.name, self.description, ApplicationCommandOptionType.SUB_COMMAND_GROUP,
+            options=options)
+    
+    def copy(self):
+        """
+        Copies the slash command category.
+        
+        Returns
+        -------
+        new : ``SlashCommandCategory``
+        """
+        sub_commands = {category_name: category.copy() for category_name, category in self._sub_commands.items()}
+        
+        new = object.__new__(type(self))
+        new._sub_commands = sub_commands
+        new.description = self.description
+        new.name = self.name
+        new._parent_reference = None
+        return new
+    
+    @property
+    def interactions(self):
+        """
+        Enables you to add sub-commands under the sub-category.
+        
+        Returns
+        -------
+        handler : ``_EventHandlerManager``
+        """
+        return _EventHandlerManager(self)
+    
+    def __setevent__(self, func, name, description=None, show_source=None, is_global=None, guild=None):
+        """
+        Adds a sub-command under the slash category.
+        
+        Parameters
+        ----------
+        func : `async-callable`
+            The function used as the command when using the respective slash command.
+        name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
+            The command's name if applicable. If not given or if given as `None`, the `func`'s name will be use
+            instead.
+        description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`), Optional
+            Description to use instead of the function's docstring.
+        show_source : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
+            Whether when responding the source message should be shown. Defaults to `True`.
+        is_global : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
+            Whether the slash command is global. Defaults to `False`.
+        guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
+                `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``)), Optional
+            To which guild(s) the command is bound to.
+        
+        Returns
+        -------
+        self : ``SlashCommandCategory``
+        
+        Raises
+        ------
+        TypeError
+            - If `show_source` was not given as `bool` instance.
+            - If `global_` was not given as `bool` instance.
+            - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
+            - If `func` is not async callable, neither cannot be instanced to async.
+            - If `func` accepts keyword only arguments.
+            - If `func` accepts `*args`.
+            - If `func` accepts `**kwargs`.
+            - If `func` accepts less than `2` argument.
+            - If `func` accepts more than `12` argument.
+            - If `func`'s 0th argument is annotated, but not as ``Client``.
+            - If `func`'s 1th argument is annotated, but not as ``InteractionEvent``.
+            - If `name` was not given neither as `None` or `str` instance.
+            - If an argument's `annotation_value` is `list` instance, but it's elements do not match the
+                `tuple` (`str`, `str` or `int`) pattern.
+            - If an argument's `annotation_value` is `dict` instance, but it's items do not match the
+                (`str`, `str` or `int`) pattern.
+            - If an argument's `annotation_value` is unexpected.
+            - If an argument's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
+            - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
+            - If `is_global` and `guild` contradicts each other.
+        ValueError
+            - If `guild` is or contains an integer out of uint64 value range.
+            - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
+            - If an argument's `annotation_value` is `str` instance, but not any of the expected ones.
+            - If an argument's `annotation_value` is `type` instance, but not any of the expected ones.
+            - If an argument's `choice` amount is out of the expected range [1:10].
+            - If an argument's `choice` name is duped.
+            - If an argument's `choice` values are mixed types.
+            - If `description` length is out of range [2:100].
+            - If `guild` is given as an empty container.
+            - If `name` length is out of the expected range [1:32].
+        RuntimeError
+            - The ``SlashCommand`` reached the maximal amount of children.
+            - Cannot add anymore sub-category under sub-categories.
+        """
+        if isinstance(func, Router):
+            func = func[0]
+        
+        if isinstance(func, SlashCommand):
+            self._add_command(func)
+            return self
+        
+        command = SlashCommand(func, name, description, show_source, is_global, guild)
+        if isinstance(command, Router):
+            command = command[0]
+        
+        self._add_command(command)
+        return self
+    
+    def __setevent_from_class__(self, klass):
+        """
+        Breaks down the given class to it's class attributes and tries to add it as a sub-command.
+        
+        Parameters
+        ----------
+        klass : `type`
+            The class, from what's attributes the command will be created.
+            
+            The expected attributes of the given `klass` are the following:
+            
+            - description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`)
+                Description of the command.
+            - command : `async-callable`
+                If no description was provided, then the class's `.__doc__` will be picked up.
+            - guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
+                    `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``))
+                To which guild(s) the command is bound to.
+            - is_global : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
+                Whether the slash command is global. Defaults to `False`.
+            - name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
+                If was not defined, or was defined as `None`, the class's name will be used.
+            - show_source : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
+                Whether when responding the source message should be shown. Defaults to `True`.
+        
+        Returns
+        -------
+        self : ``SlashCommandCategory``
+         
+        Raises
+        ------
+        TypeError
+            - If `klass` was not given as `type` instance.
+            - If `kwargs` was not given as `None` and not all of it's items were used up.
+            - If a value is routed but to a bad count amount.
+            - If `show_source` was not given as `bool` instance.
+            - If `global_` was not given as `bool` instance.
+            - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
+            - If `func` is not async callable, neither cannot be instanced to async.
+            - If `func` accepts keyword only arguments.
+            - If `func` accepts `*args`.
+            - If `func` accepts `**kwargs`.
+            - If `func` accepts less than `2` arguments.
+            - If `func` accepts more than `12` arguments.
+            - If `func`'s 0th argument is annotated, but not as ``Client``.
+            - If `func`'s 1th argument is annotated, but not as ``InteractionEvent``.
+            - If `name` was not given neither as `None` or `str` instance.
+            - If an argument's `annotation_value` is `list` instance, but it's elements do not match the
+                `tuple` (`str`, `str` or `int`) pattern.
+            - If an argument's `annotation_value` is `dict` instance, but it's items do not match the
+                (`str`, `str` or `int`) pattern.
+            - If an argument's `annotation_value` is unexpected.
+            - If an argument's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
+            - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
+            - If `is_global` and `guild` contradicts each other.
+        ValueError
+            - If `guild` is or contains an integer out of uint64 value range.
+            - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
+            - If an argument's `annotation_value` is `str` instance, but not any of the expected ones.
+            - If an argument's `annotation_value` is `type` instance, but not any of the expected ones.
+            - If an argument's `choice` amount is out of the expected range [1:10].
+            - If an argument's `choice` name is duped.
+            - If an argument's `choice` values are mixed types.
+            - If `description` length is out of range [2:100].
+            - If `guild` is given as an empty container.
+            - If `name` length is out of the expected range [1:32].
+        RuntimeError
+            - The ``SlashCommand`` reached the maximal amount of children.
+            - Cannot add anymore sub-category under sub-categories.
+        """
+        command = SlashCommand.from_class(klass)
+        if isinstance(command, Router):
+            command = command[0]
+        
+        self._add_command(command)
+        return self
+    
+    def _add_command(self, command):
+        """
+        Adds a sub-command or sub-category to the slash command.
+        
+        Parameters
+        ----------
+        command : ``SlashCommand``
+            The slash command to add.
+        
+        Raises
+        ------
+        RuntimeError
+            - The ``SlashCommand`` reached the maximal amount of children.
+            - Cannot add anymore sub-category under sub-categories.
+        """
+        sub_commands = self._sub_commands
+        if len(sub_commands) == 10 and (command.name not in sub_commands):
+            raise RuntimeError(f'The {self.__class__.__name__} reached the maximal amount of children (10).')
+        
+        as_sub = command.as_sub()
+        if isinstance(as_sub, type(self)):
+            raise RuntimeError('Cannot add anymore sub-category under sub-categories.')
+        
+        sub_commands[command.name] = as_sub
+        
+        parent_reference = self._parent_reference
+        if (parent_reference is not None):
+            parent = parent_reference()
+            if (parent is not None):
+                parent._schema = None
 
 SYNC_ID_GLOBAL = 0
 SYNC_ID_MAIN = 1
@@ -1910,7 +2585,7 @@ class Slasher(EventHandlerBase):
         
     def __setevent_from_class__(self, klass):
         """
-        Breaks down the given class to it's class attributes and tries to add is as a slash command.
+        Breaks down the given class to it's class attributes and tries to add it as a slash command.
         
         Parameters
         ----------
@@ -2536,7 +3211,7 @@ class Slasher(EventHandlerBase):
                     del maybe_removed_application_commands[maybe_removed_application_command_index]
                     del non_global_commands[non_global_command_index]
                     
-                    if non_global_command.schema == application_command:
+                    if non_global_command.get_schema() == application_command:
                         # Why do you have same non_global as guild command?
                         self._unregister_helper(guild_command, guild_id)
                         self._register_helper(non_global_command, guild_id, application_command.id)
@@ -2593,7 +3268,7 @@ class Slasher(EventHandlerBase):
                     del application_commands[application_command_index]
                     del added_commands[guild_command_index]
                     
-                    if guild_command.schema == application_command:
+                    if guild_command.get_schema() == application_command:
                         self._register_helper(guild_command, guild_id, application_command.id)
                         self._mark_command_sync_done(guild_command, guild_id)
                     else:
@@ -2623,7 +3298,7 @@ class Slasher(EventHandlerBase):
                 del application_commands[application_command_index]
                 del non_global_commands[non_global_command_index]
                 
-                if non_global_command.schema == application_command:
+                if non_global_command.get_schema() == application_command:
                     self._register_helper(non_global_command, guild_id, application_command.id)
                 else:
                     task = Task(self._edit_non_global_command(client, guild_id, non_global_command, application_command),
@@ -2708,12 +3383,10 @@ class Slasher(EventHandlerBase):
             if added_commands:
                 for application_command_index in reversed(range(len(application_commands))):
                     application_command = application_commands[application_command_index]
-                    
                     application_command_name = application_command.name
                     
-                    for global_command_index in reversed(range(len(removed_commands))):
-                        global_command = removed_commands[global_command_index]
-                        
+                    for global_command_index in reversed(range(len(added_commands))):
+                        global_command = added_commands[global_command_index]
                         if global_command.name == application_command_name:
                             break
                     else:
@@ -2722,7 +3395,7 @@ class Slasher(EventHandlerBase):
                     del added_commands[global_command_index]
                     del application_commands[application_command_index]
                     
-                    if global_command.schema == application_command:
+                    if global_command.get_schema() == application_command:
                         self._register_helper(global_command, SYNC_ID_GLOBAL, application_command.id)
                         self._mark_command_sync_done(global_command, SYNC_ID_GLOBAL)
                     else:
@@ -2785,7 +3458,7 @@ class Slasher(EventHandlerBase):
         """
         try:
             application_command = await client.application_command_guild_edit(guild_id, application_command,
-                non_global_command.schema)
+                non_global_command.get_schema())
         except BaseException as err:
             if isinstance(err, ConnectionError):
                 return False
@@ -2827,7 +3500,7 @@ class Slasher(EventHandlerBase):
             Whether the command was updated successfully.
         """
         try:
-            await client.application_command_guild_edit(guild_id, application_command, guild_command.schema)
+            await client.application_command_guild_edit(guild_id, application_command, guild_command.get_schema())
         except BaseException as err:
             if isinstance(err, ConnectionError):
                 # No internet connection
@@ -2906,7 +3579,7 @@ class Slasher(EventHandlerBase):
             Whether the command was created successfully.
         """
         try:
-            application_command = await client.application_command_guild_create(guild_id, guild_command.schema)
+            application_command = await client.application_command_guild_create(guild_id, guild_command.get_schema())
         except BaseException as err:
             if isinstance(err, ConnectionError):
                 # No internet connection
@@ -2942,7 +3615,7 @@ class Slasher(EventHandlerBase):
             Whether the command was edited successfully.
         """
         try:
-            await client.application_command_guild_edit(guild_id, application_command, non_global_command.schema)
+            await client.application_command_guild_edit(guild_id, application_command, non_global_command.get_schema())
         except BaseException as err:
             if isinstance(err, ConnectionError):
                 # No internet connection
@@ -2980,7 +3653,8 @@ class Slasher(EventHandlerBase):
             Whether the non_global command was created successfully.
         """
         try:
-            application_command = await client.application_command_guild_create(guild_id, non_global_command.schema)
+            application_command = await client.application_command_guild_create(guild_id,
+                non_global_command.get_schema())
         except BaseException as err:
             if isinstance(err, ConnectionError):
                 return False
@@ -3050,7 +3724,7 @@ class Slasher(EventHandlerBase):
             Whether the command was updated successfully.
         """
         try:
-            await client.application_command_global_edit(application_command, global_command.schema)
+            await client.application_command_global_edit(application_command, global_command.get_schema())
         except BaseException as err:
             if isinstance(err, ConnectionError):
                 # No internet connection
@@ -3087,7 +3761,7 @@ class Slasher(EventHandlerBase):
             Whether the command was created successfully.
         """
         try:
-            application_command = await client.application_command_global_create(global_command.schema)
+            application_command = await client.application_command_global_create(global_command.get_schema())
         except BaseException as err:
             if isinstance(err, ConnectionError):
                 # No internet connection
@@ -3215,7 +3889,7 @@ class Slasher(EventHandlerBase):
             The respective guild's identifier.
         """
         for command in self._get_non_global_commands():
-            if command.schema == application_command:
+            if command.get_schema() == application_command:
                 self._register_helper(command, guild_id, application_command.id)
                 break
     
@@ -3231,7 +3905,7 @@ class Slasher(EventHandlerBase):
             The respective guild's identifier.
         """
         for command in self._get_non_global_commands():
-            if command.schema == application_command:
+            if command.get_schema() == application_command:
                 self._unregister_helper(command, guild_id)
                 break
     

@@ -707,6 +707,9 @@ class DiscordGateway(object):
         self_deaf : `bool`
             Whether the voice client is deafen.
         """
+        if guild_id == 0:
+            guild_id = None
+        
         data = {
             'op' : self.VOICE_STATE,
             'd'  : {

@@ -1278,7 +1278,7 @@ class DiscordHTTPClient(HTTPClient):
                         response_data = await response.text(encoding='utf-8')
                 except OSError as err:
                     if not try_again:
-                        raise ConnectionError('Invalid address or no connection with Discord') from err
+                        raise ConnectionError('Invalid address or no connection with Discord.') from err
                     
                     # os cant handle more, need to wait for the blocking job to be done
                     await sleep(0.5/try_again, self.loop)

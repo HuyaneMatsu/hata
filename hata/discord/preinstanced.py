@@ -812,7 +812,7 @@ class RelationshipType(PreinstancedBase):
     +-----------------------+-------------------+-------+
     | blocked               | blocked           | 2     |
     +-----------------------+-------------------+-------+
-    | pending_incoming      | pending_incoming | 3     |
+    | pending_incoming      | pending_incoming  | 3     |
     +-----------------------+-------------------+-------+
     | pending_outgoing      | pending_outgoing  | 4     |
     +-----------------------+-------------------+-------+

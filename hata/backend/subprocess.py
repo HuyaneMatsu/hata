@@ -33,7 +33,7 @@ class UnixReadPipeTransport(object):
         Is set to non-blocking mode.
         
         After closing the transport is set to `None`.
-    protocol : `None` or `Any`
+    protocol : `None`, ``SubprocessReadPipeProtocol``, `Any`
         Asynchronous protocol implementation used by the transport.
         
         After closing the transport is set to `None`.
@@ -51,7 +51,7 @@ class UnixReadPipeTransport(object):
             The respective event loop of the transport.
         pipe : `file-like` object
             The pipe to connect to on read end.
-        protocol : `Any`
+        protocol : ``SubprocessReadPipeProtocol`` or `Any`
             Asynchronous protocol implementation used by the transport.
         extra : `None` or `dict` of (`str`, `Any`) items, Optional
             Optional transport information.
@@ -65,7 +65,7 @@ class UnixReadPipeTransport(object):
         mode = os.fstat(fileno).st_mode
         if not (S_ISFIFO(mode) or S_ISSOCK(mode) or S_ISCHR(mode)):
             raise ValueError(f'{cls.__name__} is only for pipes, sockets and character devices, got '
-                f'{pipe.__class__.__name__}.')
+                f'{pipe.__class__.__name__}; {pipe!r}.')
         
         self = object.__new__(cls)
         if extra is None:
@@ -120,7 +120,7 @@ class UnixReadPipeTransport(object):
     
     def _read_ready(self):
         """
-        Added as a a read callback for the respective event loop to be called when the data is received on the pipe,
+        Added as a read callback on the respective event loop to be called when the data is received on the pipe.
         """
         try:
             data = os.read(self.fileno, MAX_READ_SIZE)
@@ -170,7 +170,7 @@ class UnixReadPipeTransport(object):
         
         Parameters
         ----------
-        protocol : `Any`
+        protocol : ``SubprocessReadPipeProtocol`` or `Any`
             Asynchronous protocol implementation.
         """
         self.protocol = protocol
@@ -181,7 +181,7 @@ class UnixReadPipeTransport(object):
         
         Returns
         -------
-        protocol : `Any`
+        protocol : `None`, ``SubprocessReadPipeProtocol`` or `Any`
             Asynchronous protocol implementation.
         """
         return self.protocol
@@ -213,7 +213,7 @@ class UnixReadPipeTransport(object):
     
     def _fatal_error(self, exception, message='Fatal error on pipe transport'):
         """
-        If a fatal error occurs on the protocol renders it's traceback and closes it's transport.
+        If a fatal error occurs on the transport, renders its traceback and closes itself.
         
         Parameters
         ----------
@@ -274,18 +274,69 @@ class UnixReadPipeTransport(object):
             self.protocol = None
 
 class UnixWritePipeTransport(object):
+    """
+    Asynchronous write only transport implementation for pipes.
     
-    __slots__ = ('_buffer', '_connection_lost', '_extra', '_high_water', '_low_water', 'closing', 'fileno', 'loop',
-        'pipe', 'protocol', 'protocol_paused')
+    Attributes
+    ----------
+    _buffer : `bytearray`
+        Data ensured to be written on the wrapped pipe as it becomes readable again.
+    _high_water : `int`
+        The ``.protocol`` is paused writing when the buffer size passes the high water mark. Defaults to `65536`.
+    _low_water : `int`
+        The ``.protocol`` is resumed writing when the buffer size goes under the low water mark. Defaults to `16384`.
+    _extra : `dict` of (`str`, `Any`) items
+        Optional transport information.
+    closing : `bool`
+        Whether the transport ic closing.
+    fileno : `int`
+        The used socket's file descriptor number.
+    loop : ``EventThread``
+        The respective event loop of the transport.
+    pipe : `None` or `file-like` object
+        The pipe to connect to on read end.
+        
+        Is set to non-blocking mode.
+        
+        After closing the transport is set to `None`.
+    protocol : `None`, ``SubprocessWritePipeProtocol`` or `Any`
+        Asynchronous protocol implementation used by the transport.
+        
+        After closing the transport is set to `None`.
+    protocol_paused : `bool`
+        Whether ``.protocol`` is paused writing.
+    """
+    __slots__ = ('_buffer', '_extra', '_high_water', '_low_water', 'closing', 'fileno', 'loop', 'pipe', 'protocol',
+        'protocol_paused')
     
     async def __new__(cls, loop, pipe, protocol, extra=None):
+        """
+        Creates a new ``UnixWritePipeTransport`` instance with the given parameters.
+        
+        Parameters
+        ----------
+        loop : ``EventThread``
+            The respective event loop of the transport.
+        pipe `: file-like` object
+            The pipe to connect to on read end.
+        protocol : ``SubprocessWritePipeProtocol`` or `Any`
+            Asynchronous protocol implementation used by the transport.
+        extra : `None` or `dict` of (`str`, `Any`) items, Optional
+            Optional transport information.
+
+        Raises
+        ------
+        ValueError
+            If `pipe` was not given neither as pipe, socket or character device.
+        """
         fileno = pipe.fileno()
         mode = os.fstat(fileno).st_mode
         is_char = S_ISCHR(mode)
         is_fifo = S_ISFIFO(mode)
         is_socket = S_ISSOCK(mode)
         if not (is_char or is_fifo or is_socket):
-            raise ValueError('Pipe transport is only for pipes, sockets and character devices.')
+            raise ValueError('Pipe transport is only for pipes, sockets and character devices, got '
+                f'{pipe.__class__.__name__}; {pipe!r}.')
         
         if extra is None:
             extra = {}
@@ -300,7 +351,6 @@ class UnixWritePipeTransport(object):
         self.fileno = fileno
         self.protocol = protocol
         self._buffer = bytearray()
-        self._connection_lost = 0
         self.closing = False  # Set when close() or write_eof() called.
         
         self._high_water = 65536
@@ -326,15 +376,42 @@ class UnixWritePipeTransport(object):
         return self
     
     def __repr__(self):
+        """Returns the ``UnixWritePipeTransport``'s representation."""
         return f'<{self.__class__.__name__} fd={self.fileno}>'
     
     def get_extra_info(self, name, default=None):
+        """
+        Gets optional transport information.
+        
+        Parameters
+        ----------
+        name : `str`
+            The extra information's name to get.
+        default : `Any`, Optional
+            Default value to return if `name` could not be matched. Defaults to `None`.
+        
+        Returns
+        -------
+        info : `default`, `Any`
+        """
         return self._extra.get(name, default)
     
     def get_write_buffer_size(self):
+        """
+        Return the current size of the write buffer.
+        
+        Returns
+        -------
+        get_write_buffer_size : `int`
+        """
         return len(self._buffer)
     
     def _read_ready(self):
+        """
+        Added as a read callback on the respective event loop to be called when the data is received on the pipe.
+        
+        If this happens, since it is a write only pipe, means it should be closed, so we do like that.
+        """
         # Pipe was closed by peer.
         if self._buffer:
             exception = BrokenPipeError()
@@ -344,14 +421,23 @@ class UnixWritePipeTransport(object):
         self._close(exception)
     
     def write(self, data):
+        """
+        Write the given data to the transport.
+        
+        The method do no blocks, instead arranges the data to be sent asynchronously.
+        
+        Parameters
+        ----------
+        data : `bytes-like`
+            The bytes data to be sent.
+        """
         if not data:
             return
         
         if isinstance(data, bytearray):
             data = memoryview(data)
         
-        if self._connection_lost or self.closing:
-            self._connection_lost += 1
+        if self.closing:
             return
         
         buffer = self._buffer
@@ -361,7 +447,6 @@ class UnixWritePipeTransport(object):
             except (BlockingIOError, InterruptedError):
                 n = 0
             except BaseException as err:
-                self._connection_lost += 1
                 self._fatal_error(err, 'Fatal write error on pipe transport')
                 return
             
@@ -377,6 +462,10 @@ class UnixWritePipeTransport(object):
         self._maybe_pause_protocol()
     
     def _write_ready(self):
+        """
+        Added as a write callback on the respective event loop when the transport has unsent data. Called when the
+        respective socket becomes writable.
+        """
         buffer = self._buffer
         
         try:
@@ -385,7 +474,6 @@ class UnixWritePipeTransport(object):
             pass
         except BaseException as err:
             buffer.clear()
-            self._connection_lost += 1
             self.loop.remove_writer(self.fileno)
             self._fatal_error(err, 'Fatal write error on pipe transport')
         else:
@@ -402,9 +490,22 @@ class UnixWritePipeTransport(object):
                 del buffer[:n]
     
     def can_write_eof(self):
+        """
+        Return whether the transport supports ``.write_eof``.
+        
+        Returns
+        -------
+        can_write_eof : `bool`
+            ``UnixWritePipeTransport`` instances always return `True`.
+        """
         return True
     
     def write_eof(self):
+        """
+        Writes eof to the transport's protocol if applicable.
+        
+        If the write transport's buffer is empty, calls connection lost as well.
+        """
         if self.closing:
             return
         
@@ -415,33 +516,88 @@ class UnixWritePipeTransport(object):
             loop.call_soon(self.__class__._call_connection_lost, self, None)
     
     def set_protocol(self, protocol):
+        """
+        Sets a new protocol to the transport.
+        
+        Parameters
+        ----------
+        protocol : ``SubprocessWritePipeProtocol`` or `Any`
+            Asynchronous protocol implementation.
+        """
         self.protocol = protocol
     
     def get_protocol(self):
+        """
+        Gets the transport's actual protocol.
+        
+        Returns
+        -------
+        protocol : `None`, ``SubprocessWritePipeProtocol` or  `Any`
+            Asynchronous protocol implementation.
+        """
         return self.protocol
     
     def is_closing(self):
+        """
+        Returns whether the read pipe transport is closing.
+        
+        Returns
+        -------
+        is_closing : `bool`
+        """
         return self.closing
     
     def close(self):
+        """
+        Starts the shutdown process of the write pipe transport.
+        """
         if (self.pipe is not None) and (not self.closing):
             self.write_eof()
     
     def __del__(self):
+        """
+        Closes the write pipe transport if not yet closed.
+        """
         pipe = self.pipe
         if (pipe is not None):
             pipe.close()
     
     def abort(self):
+        """
+        Close the transport immediately.
+        
+        The buffered data will be lost.
+        """
         self._close(None)
     
     def _fatal_error(self, exception, message='Fatal error on pipe transport'):
+        """
+        If a fatal error occurs on the transport, renders its traceback and closes itself.
+        
+        Parameters
+        ----------
+        exception : `BaseException`
+            The occurred exception.
+        message : `str`, Optional
+            Additional error message to render.
+        """
         if not isinstance(exception, OSError):
             self.loop.render_exc_async(exception, [message, '\non: ', repr(self), '\n'])
         
         self._close(exception)
     
     def _close(self, exception):
+        """
+        Starts the transport's closing process.
+        
+        Parameters
+        ----------
+        exception : `None` or ``BaseException``
+            Defines whether the connection is closed, or an exception was received.
+            
+            If the connection was closed, then `exception` is given as `None`. This can happen at the case, when eof is
+            received as well.
+        """
         self.closing = True
         
         loop = self.loop
@@ -454,6 +610,20 @@ class UnixWritePipeTransport(object):
         loop.call_soon(self.__class__._call_connection_lost, self, exception)
     
     def _call_connection_lost(self, exception):
+        """
+        Calls the write pipe transport's protocol's `.connection_lost` with the given exception and closes the
+        transport's pipe.
+        
+        Parameters
+        ----------
+        exception : `None` or ``BaseException``
+            Exception to call the protocol's ``.connection_lost`` with.
+            
+            Defines whether the connection is closed, or an exception was received.
+            
+            If the connection was closed, then `exception` is given as `None`. This can happen at the case, when eof is
+            received as well.
+        """
         protocol = self.protocol
         if protocol is None:
             return
@@ -469,6 +639,9 @@ class UnixWritePipeTransport(object):
             self.protocol = None
     
     def _maybe_pause_protocol(self):
+        """
+        Called after data was ensured to be written into the transfer to check whether it's protocol should be paused.
+        """
         size = self.get_write_buffer_size()
         if size <= self._high_water:
             return
@@ -486,10 +659,13 @@ class UnixWritePipeTransport(object):
             protocol.pause_writing()
         except BaseException as err:
             self.loop.render_exc_async(err, [
-                repr(self), '._maybe_pause_protocol() failed\n'
+                repr(self), '`._maybe_pause_protocol` failed\n'
                 'On: ', repr(protocol), '.pause_writing()\n'])
     
     def _maybe_resume_protocol(self):
+        """
+        Called after successful writing to the pipe to check whether the protocol should be resumed.
+        """
         if (self.protocol_paused and self.get_write_buffer_size() <= self._low_water):
             self.protocol_paused = False
             protocol = self.protocol
@@ -498,13 +674,40 @@ class UnixWritePipeTransport(object):
                     protocol.resume_writing()
                 except BaseException as err:
                     self.loop.render_exc_async(err, [
-                        repr(self), '._maybe_resume_protocol() failed\n'
+                        repr(self), '`._maybe_resume_protocol` failed\n'
                         'on: ', repr(protocol), '.resume_writing()\n'])
     
     def get_write_buffer_limits(self):
-        return self._low_water, self._high_water
+        """
+        Returns the low and the high water of the transport.
+        
+        Returns
+        -------
+        low_water : `int`
+            The ``.protocol`` is paused writing when the buffer size passes the high water mark. Defaults to `65536`.
+        high_water : `int`
+            The ``.protocol`` is resumed writing when the buffer size goes under the low water mark. Defaults to
+            `16384`.
+        """
+        return (self._low_water, self._high_water)
     
     def _set_write_buffer_limits(self, low=None, high=None):
+        """
+        Sets the write buffer limits of the transport.
+        
+        Parameters
+        ----------
+        low : None` or `int`, Optional
+            The ``.protocol`` is paused writing when the buffer size passes the high water mark. Defaults to `65536`.
+        high : `None` or `int`, Optional
+            The ``.protocol`` is resumed writing when the buffer size goes under the low water mark. Defaults to
+            `16384`.
+
+        Raises
+        ------
+        ValueError
+            If `high` is lower than `low` or if `low` is lower than `0`.
+        """
         if high is None:
             if low is None:
                 high = 65536
@@ -516,47 +719,173 @@ class UnixWritePipeTransport(object):
                 low = high>>2
         
         if low < 0 or high < low:
-            raise ValueError(f'high ({high!r}) must be >= low ({low!r}) must be >= 0')
+            raise ValueError(f'High water must be greater or equal than low, what must be greater than equal than `0`, '
+                f'got high={high!r}; low={low!r}.')
         
         self._high_water = high
         self._low_water = low
     
     def set_write_buffer_limits(self, low=None, high=None):
+        """
+        Set the high- and low-water limits for write flow control.
+        
+        These two values control when to call the protocol's ``.pause_writing`` and ``.resume_writing`` methods. If
+        specified, the low-water limit must be less than or equal to the high-water limit. Neither value can be
+        negative. The defaults are implementation-specific. If only the high-water limit is given, the low-water limit
+        defaults to an implementation-specific value less than or equal to the high-water limit. Setting high to zero
+        forces low to zero as well, and causes ``.pause_writing`` to be called whenever the buffer becomes non-empty.
+        Setting low to zero causes ``.resume_writing`` to be called only once the buffer is empty. Use of zero for
+        either limit is generally sub-optimal as it reduces opportunities for doing I/O and computation concurrently.
+        
+        Parameters
+        ----------
+        low : None` or `int`, Optional
+            The ``.protocol`` is paused writing when the buffer size passes the high water mark. Defaults to `65536`.
+        high : `None` or `int`, Optional
+            The ``.protocol`` is resumed writing when the buffer size goes under the low water mark. Defaults to
+            `16384`.
+        
+        Raises
+        ------
+        ValueError
+            If `low` is lower than `0` or if `low` is higher than `high`.
+        """
         self._set_write_buffer_limits(low=low, high=high)
         self._maybe_pause_protocol()
 
 class SubprocessStreamWriter(object):
+    """
+    Writer interface for subprocess calls.
+    
+    Attributes
+    ----------
+    loop : ``EventThread``
+        The respective event loop of the stream.
+    transport : ``UnixWritePipeTransport`` or `Any`
+        Asynchronous transport implementation.
+    protocol : ``AsyncProcess`` or `Any`
+        Asynchronous protocol implementation.
+    """
     __slots__ = ('loop', 'transport', 'protocol', )
     def __init__(self, loop, transport, protocol):
+        """
+        Stream-writer used as ``AsyncProcess.stdin``.
+        
+        Parameters
+        ----------
+        loop : ``EventThread``
+            The respective event loop of the stream.
+        transport : ``UnixWritePipeTransport`` or `Any`
+            Asynchronous transport implementation.
+        protocol : ``AsyncProcess`` or `Any`
+            Asynchronous protocol implementation.
+        """
         self.transport = transport
         self.protocol = protocol
         self.loop = loop
     
     def write(self, data):
+        """
+        Write the given data to subprocess pipe's transport.
+        
+        The method do no blocks, instead arranges the data to be sent asynchronously.
+        
+        Parameters
+        ----------
+        data : `bytes-like`
+            The bytes data to be sent.
+        """
         self.transport.write(data)
     
     def writelines(self, data):
+        """
+        Writes the given lines to the subprocess pipe's transport.
+        
+        Parameters
+        ----------
+        data : `iterable` of `bytes-like`
+            The lines to write.
+        
+        Raises
+        ------
+        RuntimeError
+            Protocol has no attached transport.
+        """
         self.transport.writelines(data)
     
     def write_eof(self):
+        """
+        Writes eof to the subprocess pipe's transport's protocol if applicable.
+        
+        By default ``SubprocessStreamWriter``'s transport is ``UnixWritePipeTransport``, what will call connection lost
+        as well when the write buffer is empty.
+        """
         return self.transport.write_eof()
     
     def can_write_eof(self):
+        """
+        Return whether the pipe's transport supports ``.write_eof``.
+        
+        Returns
+        -------
+        can_write_eof : `bool`
+            By default ``SubprocessStreamWriter``'s transport is ``UnixWritePipeTransport`` instance, what always
+            return `True`.
+        """
         return self.transport.can_write_eof()
     
     def close(self):
+        """
+        Starts the shutdown process of subprocess pipe's transport.
+        """
         return self.transport.close()
     
     def is_closing(self):
+        """
+        Returns whether the subprocess pipe's transport is closing.
+        
+        Returns
+        -------
+        is_closing : `bool`
+        """
         return self.transport.is_closing()
     
     async def wait_closed(self):
+        """
+        Blocks till the subprocess pipe's protocol closes.
+        
+        This method is a coroutine.
+        """
         await self.protocol._get_close_waiter(self)
     
     def get_extra_info(self, name, default=None):
+        """
+        Gets optional transport information.
+        
+        Parameters
+        ----------
+        name : `str`
+            The extra information's name to get.
+        default : `Any`, Optional
+            Default value to return if `name` could not be matched. Defaults to `None`.
+        
+        Returns
+        -------
+        info : `default`, `Any`
+        """
         return self.transport.get_extra_info(name, default)
     
     async def drain(self):
+        """
+        Blocks till the write buffer is drained.
+        
+        This method is a coroutine.
+        
+        Raises
+        ------
+        BaseException
+            Connection lost exception if applicable.
+        """
         if self.transport.is_closing():
             loop = self.loop
             future = Future(loop)
@@ -566,24 +895,77 @@ class SubprocessStreamWriter(object):
         await self.protocol._drain_helper()
 
 class SubprocessWritePipeProtocol(object):
+    """
+    Asynchronous subprocess write pipe protocol.
+    
+    Attributes
+    ----------
+    disconnected : `bool`
+        Whether the protocol is disconnected.
+    fd : `int`
+        The used socket's file descriptor number.
+    transport : ``UnixWritePipeTransport`` or `Any`
+        Asynchronous transport implementation.
+    process : ``AsyncProcess``
+        The parent process of the pipe protocol.
+    """
     __slots__ = ('disconnected', 'fd', 'transport', 'process', )
     
     def __init__(self, process, fd):
+        """
+        Creates a new ``SubprocessWritePipeProtocol`` instance with the given parameters.
+        
+        Parameters
+        ----------
+        process : ``AsyncProcess``
+            The parent process of the pipe protocol.
+        fd : `int`
+            The used socket's file descriptor number.
+        """
         self.process = process
         self.fd = fd
         self.transport = None
         self.disconnected = False
     
     def __call__(self):
+        """
+        ``SubprocessWritePipeProtocol`` instances return themselves allowing using them as their one-time factory.
+        
+        Returns
+        -------
+        self : ``SubprocessWritePipeProtocol``
+        """
         return self
     
     def connection_made(self, transport):
+        """
+        Called when the connection is made.
+        
+        Sets the ``SubprocessWritePipeProtocol``'s ``.transport``.
+        
+        Parameters
+        ----------
+        transport : ``UnixWritePipeTransport`` or `Any`
+            Asynchronous transport implementation.
+        """
         self.transport = transport
     
     def __repr__(self):
+        """Returns the subprocess write protocol's representation."""
         return f'<{self.__class__.__name__} fd={self.fd} pipe={self.transport!r}>'
     
     def connection_lost(self, exception):
+        """
+        Called when the connection is lost or closed.
+        
+        Parameters
+        ----------
+        exception : `None` or `BaseException` instance
+            Defines whether the connection is closed, or an exception was received.
+            
+            If the connection was closed, then `exception` is given as `None`. This can happen at the case, when eof is
+            received as well.
+        """
         process = self.process
         if (process is not None):
             self.process = None
@@ -591,26 +973,174 @@ class SubprocessWritePipeProtocol(object):
             self.disconnected = True
     
     def pause_writing(self):
-        self.process._protocol.pause_writing()
+        """
+        Called when the transport's buffer goes over the high-water mark.
+        
+        ``.pause_writing`` is called when the buffer goes over the high-water mark, and eventually
+        ``.resume_writing`` is called when the buffer size reaches the low-water mark.
+        """
+        self.process.pause_writing()
     
     def resume_writing(self):
-        self.process._protocol.resume_writing()
+        """
+        Called when the transport's buffer drains below the low-water mark.
+        
+        See ``.pause_writing`` for details.
+        """
+        self.process.resume_writing()
 
 class SubprocessReadPipeProtocol(SubprocessWritePipeProtocol):
+    """
+    Asynchronous subprocess read pipe protocol.
+    
+    Attributes
+    ----------
+    disconnected : `bool`
+        Whether the protocol is disconnected.
+    fd : `int`
+        The used socket's file descriptor number.
+    transport : ``UnixWritePipeTransport`` or `Any`
+        Asynchronous transport implementation.
+    process : ``AsyncProcess``
+        The parent process of the pipe protocol.
+    """
     __slots__ = ()
     def data_received(self, data):
+        """
+        Called when some data is received on the pipe.
+        
+        Parameters
+        ----------
+        data : `bytes`
+            The received data.
+        """
         self.process._pipe_data_received(self.fd, data)
     
     def eof_received(self):
         # connection_lost is received anyways after eof, and connection_lost without exception will cause eof.
-        pass
+        """
+        Calling ``.connection_lost`` without exception causes eof. ``.connection_lost`` is called anyways after
+        ``.eof_received``, so this method does nothing.
+        
+        Returns
+        -------
+        transport_closes : `bool`
+            Returns `False` if the transport will close itself. If it returns `True`, then closing the transport is up
+            to the protocol.
+            
+            Always returns `False`.
+        """
+        return False
+
 
 class AsyncProcess(object):
-    __slots__ = ('_alive_fds', '_connection_lost', '_drain_waiter', '_exit_waiters', '_extra', '_finished', '_paused',
-    '_pending_calls', '_stdin_closed', '_subprocess_stderr_protocol', '_subprocess_stdin_protocol',
-    '_subprocess_stdout_protocol', 'closed', 'loop', 'pid', 'process', 'return_code', 'stderr', 'stdin', 'stdout', )
+    """
+    Asynchronous process implementation.
     
-    async def __new__(cls, loop, args, shell, stdin, stdout, stderr, buffer_size, extra, popen_kwargs):
+    Attributes
+    ----------
+    _alive_fds : `list` if `int`
+        A list of alive file descriptor's respective internal identifier.
+        
+        Can have the following elements:
+        
+        +-------------------+-------+
+        | Respective name   | Value |
+        +===================+=======+
+        | stdin             | `0`   |
+        +-------------------+-------+
+        | stdout            | `1`   |
+        +-------------------+-------+
+        | stderr            | `2`   |
+        +-------------------+-------+
+    
+    _connection_lost : `bool`
+        Whether all the pipes of the ``AsyncProcess`` lost connection.
+    _drain_waiter : `None` or ``Future``
+        A future, what is used to block the writing task, till it's writen data is drained.
+    _exit_waiters : `None` or `set of ``Future``
+        Waiter futures which wait for the subprocess to shutdown.
+    _extra : `dict` of (`str`, `Any`) items
+        Optional transport information.
+    _paused : `bool`
+        Whether the subprocess is paused writing because it hit's the high water mark.
+    _pending_calls : `None` or `list` of (`callable`, `tuple` of `Any`)
+        Meanwhile the subprocess connection is established, this attribute is set as a list to put connection lost
+        and related calls it to with their parameters.
+    _subprocess_stderr_protocol : `None` or ``SubprocessReadPipeProtocol``
+        Protocol of the stderr pipe if applicable.
+    _subprocess_stdin_protocol : `None` or ``SubprocessWritePipeProtocol``
+        Protocol of the stdin pipe if applicable.
+    _subprocess_stdout_protocol : `None` or ``SubprocessReadPipeProtocol``
+        Protocol of the stdout pipe if applicable.
+    closed : `bool`
+        Whether subprocess is closed.
+    loop : ``EventThread``
+        the respective event loop of the async subprocess to what is bound to.
+    process : `subprocess.Process`
+        The internal blocking subprocess object.
+    process_id : `int`
+        The subprocess identifier.
+    return_code : `None` or `int`
+        The returned exit code of the subprocess. Set as `None` if not yet applicable.
+    stderr : ``ReadProtocolBase``
+        Asynchronous stderr implementation.
+    stdin : ``SubprocessStreamWriter``
+        Asynchronous stdin implementation.
+    stdout : ``ReadProtocolBase``
+        Asynchronous stdout implementation.
+    """
+    __slots__ = ('_alive_fds', '_connection_lost', '_drain_waiter', '_exit_waiters', '_extra', '_paused',
+        '_pending_calls', '_subprocess_stderr_protocol', '_subprocess_stdin_protocol', '_subprocess_stdout_protocol',
+        'closed', 'loop', 'process_id', 'process', 'return_code', 'stderr', 'stdin', 'stdout', )
+    
+    async def __new__(cls, loop, process_arguments, shell, stdin, stdout, stderr, buffer_size, extra,
+            process_open_kwargs):
+        """
+        Creates a new ``AsyncProcess`` instance.
+        
+        Parameters
+        ----------
+        loop : ``EventThread``
+            The event loop to what the async process is bound to.
+        process_arguments : `tuple` of `Any`
+            Process arguments to open the subprocess with.
+        shell : `bool
+            Whether the specified command will be executed through the shell.
+        stdin : `file-like`, `subprocess.PIPE`.
+            Standard input for the created shell. Defaults to `subprocess.PIPE`.
+        stdout : `file-like`, `subprocess.PIPE`, `subprocess.DEVNULL`
+            Standard output for the created shell.
+        stderr : `file-like`, `subprocess.PIPE`, `subprocess.DEVNULL`, `subprocess.STDOUT`
+            Standard error for the created shell.
+        buffer_size : `int`
+            Will be supplied as the corresponding argument to the open() function when creating the
+            stdin/stdout/stderr pipe file objects:
+            
+            Expected values:
+            
+            +---------------+-----------+-----------------------------------------------------------------------+
+            | Name          | Value     | Description                                                           |
+            +===============+===========+=======================================================================+
+            | unbuffered    | `0`       | Read and write are one system call and can return short.              |
+            +---------------+-----------+-----------------------------------------------------------------------+
+            | line buffered | `1`       | Only usable if `universal_newlines=True`, for example in text mode.   |
+            +---------------+-----------+-----------------------------------------------------------------------+
+            | buffer size   | `>1`      | Use a buffer of approximately to that value.                          |
+            +---------------+-----------+-----------------------------------------------------------------------+
+            | default       | `<0`      | use the system default: `io.DEFAULT_BUFFER_SIZE`.                     |
+            +---------------+-----------+-----------------------------------------------------------------------+
+            
+        extra : `None` or `dict` of (`str`, `Any`) items
+            Optional transport information.
+        process_open_kwargs : `dict` of (`str`, `Any`) items
+            Additional parameters to open the process with.
+        
+        Raises
+        ------
+        TypeError
+            If `process_open_kwargs` contains unexpected key.
+        """
         if stdin == PIPE:
             # Use a socket pair for stdin, since not all platforms support selecting read events on the write end of a
             # socket (which we use in order to detect closing of the other end).  Notably this is needed on AIX, and
@@ -623,8 +1153,8 @@ class AsyncProcess(object):
         process = None
         
         try:
-            process = Popen(args, shell=shell, stdin=stdin_r, stdout=stdout, stderr=stderr, universal_newlines=False,
-                bufsize=buffer_size, **popen_kwargs)
+            process = Popen(process_arguments, shell=shell, stdin=stdin_r, stdout=stdout, stderr=stderr,
+                universal_newlines=False, bufsize=buffer_size, **process_open_kwargs)
             
             if (stdin_w is not None):
                 stdin_r.close()
@@ -653,14 +1183,13 @@ class AsyncProcess(object):
         self.closed = False
         self.loop = loop
         self.process = process
-        self.pid = process.pid
+        self.process_id = process.pid
         self.return_code = None
         self._exit_waiters = None
         self._pending_calls = []
         self._subprocess_stdin_protocol = None
         self._subprocess_stdout_protocol = None
         self._subprocess_stderr_protocol = None
-        self._finished = False
         self.stdin = None
         self.stdout = None
         self.stderr = None
@@ -668,7 +1197,6 @@ class AsyncProcess(object):
         self._drain_waiter = None
         self._connection_lost = False
         self._alive_fds = []
-        self._stdin_closed = Future(loop)
         
         try:
             stdin = process.stdin
@@ -678,7 +1206,7 @@ class AsyncProcess(object):
                 self._subprocess_stdin_protocol = subprocess_stdin_protocol
                 stdin_transport = subprocess_stdin_protocol.transport
                 if (stdin_transport is not None):
-                    self.stdin = SubprocessStreamWriter(loop, stdin_transport, protocol=self)
+                    self.stdin = SubprocessStreamWriter(loop, stdin_transport, self)
             
             stdout = process.stdout
             if (stdout is not None):
@@ -714,6 +1242,7 @@ class AsyncProcess(object):
         return self
     
     def __repr__(self):
+        """Returns the async process's representation."""
         result = [
             '<',
             self.__class__.__name__,
@@ -758,12 +1287,36 @@ class AsyncProcess(object):
         return ''.join(result)
     
     def get_extra_info(self, name, default=None):
+        """
+        Gets optional transport information.
+        
+        Parameters
+        ----------
+        name : `str`
+            The extra information's name to get.
+        default : `Any`, Optional
+            Default value to return if `name` could not be matched. Defaults to `None`.
+        
+        Returns
+        -------
+        info : `default`, `Any`
+        """
         return self._extra.get(name, default)
     
     def is_closing(self):
+        """
+        Returns whether the async process is closing.
+        
+        Returns
+        -------
+        is_closing : `bool`
+        """
         return self.closed
     
     def close(self):
+        """
+        Starts the shutdown process of the async process.
+        """
         if self.closed:
             return
         
@@ -794,6 +1347,19 @@ class AsyncProcess(object):
     __del__ = close
     
     def send_signal(self, signal):
+        """
+        Sends the signal to the child process.
+        
+        Parameters
+        ----------
+        signal : `int`
+            The signal to send.
+        
+        Raises
+        ------
+        ProcessLookupError
+            The underlying process is already dead.
+        """
         process = self.process
         if process is None:
             raise ProcessLookupError()
@@ -801,6 +1367,14 @@ class AsyncProcess(object):
         process.send_signal(signal)
     
     def terminate(self):
+        """
+        Stops the child process.
+        
+        Raises
+        ------
+        ProcessLookupError
+            The underlying process is already dead.
+        """
         process = self.process
         if process is None:
             raise ProcessLookupError()
@@ -808,6 +1382,16 @@ class AsyncProcess(object):
         process.terminate()
     
     async def kill(self):
+        """
+        Kills the child process.
+        
+        This method is a coroutine.
+        
+        Raises
+        ------
+        ProcessLookupError
+            The underlying process is already dead.
+        """
         process = self.process
         if process is None:
             raise ProcessLookupError()
@@ -836,11 +1420,6 @@ class AsyncProcess(object):
             if pipe is not None:
                 pipe.close()
             self._do_connection_lost(exception)
-            stdin_closed = self._stdin_closed
-            if exception is None:
-                stdin_closed.set_result_if_pending(None)
-            else:
-                stdin_closed.set_exception_if_pending(exception)
             return
         
         if fd == 1:
@@ -934,10 +1513,7 @@ class AsyncProcess(object):
         try:
             return await waiter
         except TimeoutError:
-            try:
-                exit_waiters.remove(waiter)
-            except ValueError:
-                pass
+            exit_waiters.discard(waiter)
             
             process = self.process
             if process is None:
@@ -962,8 +1538,6 @@ class AsyncProcess(object):
         stderr_protocol = self._subprocess_stderr_protocol
         if (stderr_protocol is None) or stderr_protocol.disconnected:
             return
-        
-        self._finished = True
         
         pending_calls = self._pending_calls
         if (pending_calls is None):

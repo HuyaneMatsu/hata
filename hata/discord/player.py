@@ -244,7 +244,7 @@ class LocalAudio(AudioSource):
         if process is None:
             executable, args, stdin = self._process_args
             try:
-                process = await KOKORO.subprocess_exec(executable, args, stdin=stdin, stdout=subprocess.PIPE,
+                process = await KOKORO.subprocess_exec(executable, *args, stdin=stdin, stdout=subprocess.PIPE,
                     startup_info=SUBPROCESS_STARTUP_INFO)
             except FileNotFoundError:
                 raise ValueError(f'{executable!r} was not found.') from None

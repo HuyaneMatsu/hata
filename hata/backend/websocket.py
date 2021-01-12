@@ -989,7 +989,7 @@ class WebSocketCommonProtocol(ProtocolBase):
         exception : `None` or `BaseException` instance
             Defines whether the connection is closed, or an exception was received.
             
-            If the connection was closed, then `err` is given as `None`. This can happen at the case, when eof is
+            If the connection was closed, then `exception` is given as `None`. This can happen at the case, when eof is
             received as well.
         """
         self.state = CLOSED
@@ -1004,7 +1004,7 @@ class WebSocketCommonProtocol(ProtocolBase):
     # compatibility method (overwrite)
     def eof_received(self):
         """
-        Calling``.connection_lost`` without exception causes eof.
+        Calling ``.connection_lost`` without exception causes eof.
         
         Marks the protocols as it is at eof and stops payload processing if applicable.
         

@@ -1466,7 +1466,8 @@ if IS_UNIX:
         if stderr is None:
             stderr = PIPE
         
-        return await loop.subprocess_exec(program, popen_args=args, stdin=stdin, stdout=stdout, stderr=stderr, **kwargs)
+        return await loop.subprocess_exec(program, *args, stdin=stdin, stdout=stdout, stderr=stderr,
+            **kwargs)
 
 else:
     async def create_subprocess_shell(cmd, stdin=None, stdout=None, stderr=None, loop=None, limit=_DEFAULT_LIMIT,

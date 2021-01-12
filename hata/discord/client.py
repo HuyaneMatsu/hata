@@ -19,8 +19,8 @@ from ..backend.headers import AUTHORIZATION
 from ..backend.helpers import BasicAuth
 from ..backend.url import URL
 
-from .utils import log_time_converter, DISCORD_EPOCH, image_to_base64, random_id, to_json, RelationshipType, \
-    get_image_extension
+from .utils import log_time_converter, DISCORD_EPOCH, image_to_base64, random_id, to_json, get_image_extension, \
+    Relationship
 from .user import User, USERS, GuildProfile, UserBase, UserFlag, create_partial_user, GUILD_PROFILES_TYPE
 from .emoji import Emoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, ChannelStore, \
@@ -50,7 +50,7 @@ from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool
 from .permission import Permission
 from .bases import ICON_TYPE_NONE
 from .preinstanced import Status, VoiceRegion, ContentFilterLevel, PremiumType, VerificationLevel, \
-    MessageNotificationLevel, HypesquadHouse
+    MessageNotificationLevel, HypesquadHouse, RelationshipType
 from .client_utils import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, UserGuildPermission, \
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, Typer, maybe_snowflake
 from .embed import EmbedBase, EmbedImage
@@ -268,7 +268,7 @@ class Client(UserBase):
         elif isinstance(token, str):
             token = str(token)
         else:
-            raise TypeError(f'`token` can be passed as `str` instance, got {token!r}.')
+            raise TypeError(f'`token` can be passed as `str` instance, got {token.__class__.__name__}.')
         
         # secret
         if (secret is None) or type(secret is str):
@@ -2375,7 +2375,7 @@ class Client(UserBase):
         if (not self.is_bot):
             data = await self.http.channel_private_get_all()
             for channel_data in data:
-                channel = CHANNEL_TYPES[channel_data['type']](data, self)
+                channel = CHANNEL_TYPES[channel_data['type']](channel_data, self)
                 channels.append(channel)
         
         return channels
@@ -4290,12 +4290,19 @@ class Client(UserBase):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            If `channel` is not ``ChannelTextBase`` instance.
         
         Notes
         -----
         This method uses up to 4 different endpoint groups too as ``.message_delete_sequence``, but tries to
         parallelize the them between more clients as well.
         """
+        if __debug__:
+            if not isinstance(channel, ChannelTextBase):
+                raise AssertionError(f'`channel` should have been given as `{ChannelTextBase.__name__}` instance, got '
+                    f'{channel.__class__.__name__}.')
+        
         # Check permissions
         sharders = []
         
@@ -8983,12 +8990,12 @@ class Client(UserBase):
             data['channel_id'] = channel.id
         
         if not data:
-            return #save 1 request
+            return # Save 1 request
         
         data = await self.http.webhook_edit(webhook.id, data)
         webhook._update_no_return(data)
         
-    async def webhook_edit_token(self, webhook, name=None, avatar=...): #channel is ignored!
+    async def webhook_edit_token(self, webhook, name=None, avatar=...):
         """
         Edits and updates the given webhook through Discord's webhook API.
         
@@ -9046,23 +9053,10 @@ class Client(UserBase):
             data['avatar'] = avatar_data
         
         if not data:
-            return # save 1 request
+            return # Save 1 request
         
         data = await self.http.webhook_edit_token(webhook, data)
         webhook._update_no_return(data)
-    
-    async def webhook_send(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.webhook_message_create`` instead. Will be removed in 2021 january.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            '`Client.webhook_send` is deprecated, and will be removed in 2021 january. '
-            'Please use `Client.webhook_message_create` instead.',
-            FutureWarning)
-        
-        return await self.webhook_message_create(*args, **kwargs)
     
     async def webhook_message_create(self, webhook, content=None, *, embed=None, file=None, allowed_mentions=...,
             tts=False, name=None, avatar_url=None, wait=False):
@@ -10985,7 +10979,13 @@ class Client(UserBase):
     async def interaction_response_message_create(self, interaction, content=None, *, embed=None, allowed_mentions=...,
             tts=False, show_source=True):
         """
-        Sends an interaction response.
+        Sends an interaction response. After receiving an ``InteractionEvent``, you should acknowledge it within
+        `3` seconds to perform followup actions.
+        
+        Not like ``.message_create``, this endpoint can be called without any content to still acknowledge the
+        interaction event. This method also wont return a ``Message`` object (thank to Discord), but at least
+        ``.interaction_followup_message_create`` will. To edit or delete this message, you can use
+        ``.interaction_response_message_edit`` and ``interaction_response_message_delete``.
         
         When calling ``.interaction_response_message_create`` second time on the same `interaction`, will redirect to
         ``.interaction_followup_message_create`` and drop a warning.
@@ -11786,11 +11786,14 @@ class Client(UserBase):
         
         Parameters
         ----------
-        relationship : ``Relationship``
-            The relationship to delete.
+        relationship : ``Relationship``, ``User``, ``Client`` or `int`
+            The relationship to delete. Also can be given the respective user with who the client hast he relationship
+            with.
 
         Raises
         ------
+        TypeError
+            If `relationship` was not given neither as ``Relationship``, ``User``, ``Client`` not as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -11800,7 +11803,17 @@ class Client(UserBase):
         -----
         This endpoint is available only for user accounts.
         """
-        await self.http.relationship_delete(relationship.user.id)
+        if isinstance(relationship, Relationship):
+            user_id = relationship.user.id
+        elif isinstance(relationship, (User, Client)):
+            user_id = relationship.id
+        else:
+            user_id = maybe_snowflake(relationship)
+            if user_id is None:
+                raise TypeError(f'`relationship` can be given as `{Relationship.__name__}`, `{User.__name__}`, '
+                    f'`{Client.__name__}` or as `int` instance, got {relationship.__class__.__name__}.')
+        
+        await self.http.relationship_delete(user_id)
     
     async def relationship_create(self, user, relationship_type=None):
         """
@@ -11810,13 +11823,16 @@ class Client(UserBase):
         
         Parameters
         ----------
-        user : ``Client`` or ``User``
+        user : ``Client``, ``User``, `int`
             The user with who the relationship will be created.
-        relationship_type : ``RelationshipType``, Optional
-            The type of the relationship.
+        relationship_type : `None`, ``RelationshipType``, `int` Optional
+            The type of the relationship. Defaults to `None`.
         
         Raises
         ------
+        TypeError
+            - If `user` is not given neither as ``User``, ``Client`` or `int` instance.
+            - If `relationship_type` was not given neither as `None`, ``RelationshipType`` neither as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -11826,10 +11842,29 @@ class Client(UserBase):
         -----
         This endpoint is available only for user accounts.
         """
+        if isinstance(user, (User, Client)):
+            user_id = user.id
+        else:
+            user_id = maybe_snowflake(user)
+            if user_id is None:
+                raise TypeError(f'`user` can be given as `None`, `{User.__name__}`, `{Client.__name__}` or `int` '
+                    f'instance, got {user.__class__.__name__}.')
+        
+        if relationship_type is None:
+            relationship_type_value = None
+        elif isinstance(relationship_type, RelationshipType):
+            relationship_type_value = relationship_type.value
+        elif isinstance(relationship_type, int):
+            relationship_type_value = relationship_type
+        else:
+            raise TypeError(f'`relationship_type` can be given as `None`, `{RelationshipType.__name__}` or as `int`'
+                f'instance, got {relationship_type.__class__.__name__}.')
+        
         data = {}
-        if (relationship_type is not None):
-            data['type'] = relationship_type.value
-        await self.http.relationship_create(user.id, data)
+        if (relationship_type_value is not None):
+            data['type'] = relationship_type_value
+        
+        await self.http.relationship_create(user_id, data)
     
     async def relationship_friend_request(self, user):
         """
@@ -11839,11 +11874,13 @@ class Client(UserBase):
         
         Parameters
         ----------
-        user : ``Client`` or ``User``
+        user : ``Client``, ``User``, `int`
             The user, who will receive the friend request.
         
         Raises
         ------
+        TypeError
+            If `user` was not given neither as ``Client``, ``User`` or `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -11853,10 +11890,19 @@ class Client(UserBase):
         -----
         This endpoint is available only for user accounts.
         """
+        if not isinstance(user, (User, Client)):
+            user_id = maybe_snowflake(user)
+            if user_id is None:
+                raise TypeError(f'`user` can be given as `None`, `{User.__name__}`, `{Client.__name__}` or `int` '
+                    f'instance, got {user.__class__.__name__}.')
+            
+            user = await self.user_get(user_id)
+        
         data = {
             'username'      : user.name,
             'discriminator' : str(user.discriminator)
                 }
+        
         await self.http.relationship_friend_request(data)
     
     async def update_application_info(self):
@@ -12075,7 +12121,7 @@ class Client(UserBase):
             raise TypeError(f'`house` can be given as `int` or `{HypesquadHouse.__name__}` instance, got '
                 f'{house.__class__.__name__}.')
         
-        await self.http.hypesquad_house_change({'house_id':house_id})
+        await self.http.hypesquad_house_change({'house_id': house_id})
     
     async def hypesquad_house_leave(self):
         """
@@ -12202,7 +12248,7 @@ class Client(UserBase):
             await KOKORO.render_exc_async(err, before, after)
             return False
         
-        if type(data) is not dict:
+        if not isinstance(data, dict):
             sys.stderr.write(''.join([
                 'Connection failed, could not connect to Discord.\n'
                 'Received invalid data:\n',
@@ -12367,16 +12413,17 @@ class Client(UserBase):
         """
         guild = channel.guild
         if guild is None:
-            raise TimeoutError(f'Cannot join channel without guild: {channel!r}')
+            raise TimeoutError(f'Cannot join channel without guild: {channel!r}.')
         
+        guild_id = guild.id
         try:
-            voice_client = self.voice_clients[guild.id]
+            voice_client = self.voice_clients[guild_id]
         except KeyError:
             voice_client = await VoiceClient(self, channel)
         else:
             if voice_client.channel is not channel:
-                gateway = self._gateway_for(guild)
-                await gateway._change_voice_state(guild.id, channel.id)
+                gateway = self._gateway_for(guild_id)
+                await gateway._change_voice_state(guild_id, channel.id)
         
         return voice_client
     
@@ -12544,7 +12591,7 @@ class Client(UserBase):
             await gateway.send_as_json(data)
             await sleep(0.6, KOKORO)
     
-    async def _request_members(self, guild):
+    async def _request_members(self, guild_id):
         """
         Requests the members of the given guild. Called when the client joins a guild and user caching is enabled
         (so by default).
@@ -12566,7 +12613,7 @@ class Client(UserBase):
         data = {
             'op' : DiscordGateway.REQUEST_MEMBERS,
             'd' : {
-                'guild_id'  : guild.id,
+                'guild_id'  : guild_id,
                 'query'     : '',
                 'limit'     : 0,
                 'presences' : CACHE_PRESENCE,
@@ -12574,7 +12621,7 @@ class Client(UserBase):
                     },
                 }
         
-        gateway = self._gateway_for(guild)
+        gateway = self._gateway_for(guild_id)
         await gateway.send_as_json(data)
         
         try:
@@ -12606,15 +12653,38 @@ class Client(UserBase):
         Returns
         -------
         users : `list` of (``Client`` or ``User``) objects
-        """
-        #do we really need these checks?
-        if limit > 100:
-            limit = 100
-        elif limit < 1:
-            return []
         
-        if not 0 < len(name) < 33:
-            return []
+        Raises
+        ------
+        TypeError
+            - If `guild` was not given neither as ``Guild`` nor as `int` instance.
+        AssertionError
+            - If `limit` is not `int` instance.
+            - If `limit` is out of the expected range [1:100].
+            - If `name` is not `str` instance.
+            - If `name` length is out of the expected range [1:32].
+        """
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as ``{Guild.__name__}`` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        if __debug__:
+            if not isinstance(limit, int):
+                raise AssertionError(f'`limit` can be given as `int` instance, got {limit.__class__.__name__}.')
+            
+            if limir < 1 or limit > 100:
+                raise AssertionError(f'`limit` is out of the expected range [1:100], got {limit!r}.')
+            
+            if not isinstance(name, str):
+                raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
+            
+            name_length = len(name)
+            if name_length < 1 or name_length > 32:
+                raise AssertionError(f'`name` length can be in range [1:32], got {name_length!r}; {name!r}.')
         
         event_handler = self.events.guild_user_chunk
         
@@ -12626,7 +12696,7 @@ class Client(UserBase):
         data = {
             'op' : DiscordGateway.REQUEST_MEMBERS,
             'd' : {
-                'guild_id'  : guild.id,
+                'guild_id'  : guild_id,
                 'query'     : name,
                 'limit'     : limit,
                 'presences' : CACHE_PRESENCE,
@@ -12634,7 +12704,7 @@ class Client(UserBase):
                     },
                 }
         
-        gateway = self._gateway_for(guild)
+        gateway = self._gateway_for(guild_id)
         await gateway.send_as_json(data)
         
         try:
@@ -12718,9 +12788,10 @@ class Client(UserBase):
         """
         guild = message.channel.guild
         if guild is None:
-            return
-        
-        return self.voice_clients.get(guild.id)
+            voice_client = None
+        else:
+            voice_client = self.voice_clients.get(guild.id)
+        return voice_client
     
     def get_guild(self, name, default=None):
         """
@@ -12741,16 +12812,21 @@ class Client(UserBase):
         Raises
         ------
         AssertionError
-            `name` was not given as `str` instance.
+            - If `name` was not given as `str` instance.
+            - If `name` length is out of teh expected range [2:100].
+        
         """
         if __debug__:
             if not isinstance(name, str):
-                raise AssertionError(f'`name` should have be given as `str` instance, got {name.__class__:__name__}.')
+                raise AssertionError(f'`name` should have be given as `str` instance, got {name.__class__.__name__}.')
+            
+            name_length = len(name)
+            if name_length < 2 or name_length > 100:
+                raise AssertionError(f'`name` length can be in range [1:100], got {name_length!r}; {name!r}.')
         
-        if 1 < len(name) < 101:
-            for guild in self.guild_profiles.keys():
-                if guild.name == name:
-                    return guild
+        for guild in self.guild_profiles.keys():
+            if guild.name == name:
+                return guild
         
         return default
     
@@ -13136,14 +13212,16 @@ class Client(UserBase):
         type_ = RelationshipType.pending_outgoing
         return [rs for rs in self.relationships.values() if rs.type is type_]
     
-    def _gateway_for(self, guild):
+    def _gateway_for(self, guild_id):
         """
         Returns the corresponding gateway of the client to the passed guild.
         
         Parameters
         ----------
-        guild : ``Guild`` or `None`
-            The guild what's gateway will be returned.
+        guild_id : `int`
+            The respective guild's identifier, what's gateway will be returned.
+            
+            Pass it as `0` to get the default gateway.
         
         Returns
         -------
@@ -13151,15 +13229,10 @@ class Client(UserBase):
         """
         shard_count = self.shard_count
         if shard_count:
-            if guild is None:
-                return self.gateway.gateways[0]
-            
-            guild_id = guild.id
-            shard_index = (guild_id>>22)%shard_count
-            
-            return self.gateway.gateways[shard_index]
-        
-        return self.gateway
+            gateway = self.gateway.gateways[(guild_id>>22)%shard_count]
+        else:
+            gateway = self.gateway
+        return gateway
 
 
 module_client_core.Client = Client

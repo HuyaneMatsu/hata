@@ -497,7 +497,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
 
 class ApplicationCommandOption(object):
     """
-    An option of a ``ApplicationCommand``.
+    An option of an ``ApplicationCommand``.
     
     Attributes
     ----------
@@ -653,11 +653,11 @@ class ApplicationCommandOption(object):
                     f'type={type_!r}.')
             
             for index, choice in enumerate(choices):
-                if not isinstance(choice.value, expected_choice_type):
-                    raise TypeError(f'`choices` element\'s {index!r} value\'s type is not '
-                        f'`{expected_choice_type.__name__}` as expected from the received command option type: '
-                        f'{type_!r}')
-        
+                #if not isinstance(choice.value, expected_choice_type):
+                #    raise TypeError(f'`choices` element\'s {index!r} value\'s type is not '
+                #        f'`{expected_choice_type.__name__}` as expected from the received command option type: '
+                #        f'{type_!r}')
+                pass
         if (options_processed is not None) and (type_ is not ApplicationCommandOptionType.SUB_COMMAND_GROUP):
             raise TypeError(f'`options` is bound to sub command option type, got options={options!r}, '
                 f'type={type_!r}.')
@@ -1173,8 +1173,8 @@ class ApplicationCommandInteractionOption(object):
         received.
         
         Mutually exclusive with the `value` attribute.
-    value : `None`, `int` or `str`
-        The given value by the user. Should be always converted to the type.
+    value : `None`, `str`
+        The given value by the user. Should be always converted to the expected type.
     """
     __slots__ = ('name', 'options', 'value')
     def __init__(self, data):
@@ -1195,7 +1195,11 @@ class ApplicationCommandInteractionOption(object):
             options = [ApplicationCommandInteractionOption(option_data) for option_data in option_datas]
         self.options = options
         
-        self.value = data.get('value')
+        value = data.get('value')
+        if value is not None:
+            value = str(value)
+        
+        self.value = value
     
     def __repr__(self):
         """Returns the application command interaction option's representation."""

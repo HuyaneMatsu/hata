@@ -759,7 +759,7 @@ class SSLProtocol(object):
         """
         Called when the connection is made.
         
-        Sets the ``SSLProtocol``'s ``._SSLPipe`` and starts the ssl handshake.
+        Sets the ``SSLProtocol``'s ``.ssl_pipe`` and starts the ssl handshake.
         
         Parameters
         ----------
@@ -780,7 +780,7 @@ class SSLProtocol(object):
         exception : `None` or `BaseException` instance
             Defines whether the connection is closed, or an exception was received.
             
-            If the connection was closed, then `err` is given as `None`. This can happen at the case, when eof is
+            If the connection was closed, then `exception` is given as `None`. This can happen at the case, when eof is
             received as well.
         """
         if self._session_established:
@@ -837,7 +837,7 @@ class SSLProtocol(object):
     
     def eof_received(self):
         """
-        Calling``.connection_lost`` without exception causes eof.
+        Calling ``.connection_lost`` without exception causes eof.
         
         Marks the protocol as it is at eof.
         

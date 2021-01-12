@@ -3922,7 +3922,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             if not isinstance(command, (bytes, str)):
                 raise TypeError(f'`cmd` must be `bytes` or `str` instance, got {command.__class__.__name__}.')
             
-            popen_kwargs = {
+            process_open_kwargs = {
                 'preexec_fn' : preexecution_function,
                 'close_fds' : close_fds,
                 'cwd' : cwd,
@@ -3933,13 +3933,13 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                 'pass_fds' : pass_fds,
                     }
             
-            return await AsyncProcess(self, command, True, stdin, stdout, stderr, 0, extra, popen_kwargs)
+            return await AsyncProcess(self, command, True, stdin, stdout, stderr, 0, extra, process_open_kwargs)
         
-        async def subprocess_exec(self, program, popen_args=(), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE, *, extra=None, preexecution_function=None, close_fds=True, cwd=None,
+        async def subprocess_exec(self, program, *args, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,  extra=None, preexecution_function=None, close_fds=True, cwd=None,
                 startup_info=None, creation_flags=0, restore_signals=True, start_new_session=False, pass_fds=()):
             
-            popen_kwargs = {
+            process_open_kwargs = {
                 'preexec_fn' : preexecution_function,
                 'close_fds' : close_fds,
                 'cwd' : cwd,
@@ -3950,8 +3950,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                 'pass_fds' : pass_fds,
                     }
             
-            popen_args = (program, *popen_args)
-            return await AsyncProcess(self, popen_args, False, stdin, stdout, stderr, 0, extra, popen_kwargs)
+            return await AsyncProcess(self, (program, *args), False, stdin, stdout, stderr, 0, extra,
+                process_open_kwargs)
     
     else:
         async def connect_read_pipe(self, protocol, pipe):
@@ -3965,9 +3965,9 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                 restore_signals=True, start_new_session=False, pass_fds=()):
             raise NotImplementedError
         
-        async def subprocess_exec(self, program, popen_args=(), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE, *, extra=None, preexecution_function=None, close_fds=True, cwd=None, startup_info=None,
-                creation_flags=0, restore_signals=True, start_new_session=False, pass_fds=()):
+        async def subprocess_exec(self, program, *args, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE, extra=None, preexecution_function=None, close_fds=True, cwd=None,
+                startup_info=None, creation_flags=0, restore_signals=True, start_new_session=False, pass_fds=()):
             raise NotImplementedError
     
     if DOCS_ENABLED:
@@ -4110,8 +4110,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         ----------
         program : `str`
             The program executable.
-        popen_args : `iterable` of `str`, Optional
-            the arguments to open the `program` with.
+        *args : `str`
+            Arguments to open the `program` with.
         stdin : `file-like`, `subprocess.PIPE`, `subprocess.DEVNULL`, Optional
             Standard input for the created shell. Defaults to `subprocess.PIPE`.
         stdout : `file-like`, `subprocess.PIPE`, `subprocess.DEVNULL`, Optional

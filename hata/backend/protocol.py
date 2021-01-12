@@ -719,7 +719,7 @@ class ReadProtocolBase(object):
         exception : `None` or `BaseException` instance
             Defines whether the connection is closed, or an exception was received.
             
-            If the connection was closed, then `err` is given as `None`. This can happen at the case, when eof is
+            If the connection was closed, then `exception` is given as `None`. This can happen at the case, when eof is
             received as well.
         """
         if exception is None:
@@ -814,7 +814,7 @@ class ReadProtocolBase(object):
     
     def eof_received(self):
         """
-        Calling``.connection_lost`` without exception causes eof.
+        Calling ``.connection_lost`` without exception causes eof.
         
         Marks the protocol as it is at eof and stops payload processing if applicable.
         
@@ -2240,7 +2240,7 @@ class DatagramAddressedReadProtocol(object):
         exception : `None` or `BaseException` instance
             Defines whether the connection is close, or an exception was received.
             
-            If the connection was closed, then `err` is given as `None`. This can happen at the case, when eof is
+            If the connection was closed, then `exception` is given as `None`. This can happen at the case, when eof is
             received as well.
         """
         for reader_protocol in self.by_address.values():

@@ -196,12 +196,14 @@ class EmbedVideo(object):
     ----------
     height : `int`
         The height of the video. Defaults to `0`.
+    proxy_url : `str` or `None`
+        A proxied url of the video.
     url : `str` or `None`
         The url of the video.
     width : `int`
         The width of the video. Defaults to `0`.
     """
-    __slots__ = ('height', 'url', 'width',)
+    __slots__ = ('height', 'proxy_url', 'url', 'width',)
     
     def __init__(self):
         """
@@ -209,6 +211,7 @@ class EmbedVideo(object):
         an empty embed video object with default attributes.
         """
         self.url = None
+        self.proxy_url = None
         self.height = 0
         self.width = 0
     
@@ -228,6 +231,7 @@ class EmbedVideo(object):
         """
         self = object.__new__(cls)
         self.url = data.get('url', None)
+        self.proxy_url = data.get('proxy_url', None)
         self.height = data.get('height', 0)
         self.width = data.get('width', 0)
         

@@ -9,12 +9,15 @@ from .permission import Permission
 from .color import Color
 from .user import User
 from .webhook import Webhook
-from .role import PermOW
+from .role import PermissionOverwrite
 from .integration import Integration
-from .guild import SystemChannelFlag
+from .guild import SystemChannelFlag, Guild
 from .bases import Icon
 from .preinstanced import AuditLogEvent, VerificationLevel, ContentFilterLevel, MessageNotificationLevel, VoiceRegion, \
     MFA
+from.client_utils import maybe_snowflake
+
+Client = NotImplemented
 
 class AuditLog(object):
     """
@@ -139,33 +142,80 @@ class AuditLogIterator(object):
     """
     __slots__ = ('guild',  'entries', 'users', 'webhooks', 'integrations', '_data', '_index', 'client', )
     
-    def __init__(self, client, guild, user=None, event=None):
+    async def __new__(cls, client, guild, user=None, event=None):
         """
         Creates an audit log iterator with the given arguments.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
         client : ``Client``
             The client, who will execute the api requests.
-        guild : ``Guild``
+        guild : ``Guild`` or `int` instance
             The guild, what's audit logs will be requested.
-        user : ``Client`` or ``User`` object, Optional
+        user : `None`, ``Client``, ``User`` or `int` instance, Optional
             Whether the audit logs should be filtered only to those, which were created by the given user.
-        event : ``AuditLogEvent``, Optional
+        event : `None`, ``AuditLogEvent`` or `int` instance, Optional
             Whether the audit logs should be filtered only on the given event.
-        """
         
+        Raises
+        ------
+        TypeError
+            - If `guild` was not given neither as ``Guild``, nor as `int` instance.
+            - If `user` was not given neither as `None`, ``User``, ``Client`` nor as `int` instance.
+            - If `event` as not not given neither as `None`, ``AuditLogEvent`` nor as `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
         data = {
             'limit' : 100,
             'before': now_as_id(),
                 }
         
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild_or_discovery` can be `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+            
+            guild = None
+        
         if (user is not None):
-            data['user_id'] = user.id
+            if isinstance(user, (User, Client)):
+                user_id = user.id
+            
+            else:
+                user_id = maybe_snowflake(user)
+                if user_id is None:
+                    raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                        f'got {user.__class__.__name__}.')
+            
+            data['user_id'] = user_id
         
         if (event is not None):
-            data['action_type'] = event.value
+            if isinstance(event, AuditLogEvent):
+                event_value = event.value
+            elif isinstance(event, int):
+                event_value = event
+            else:
+                raise TypeError(f'`event` can be given as `None`, `{AuditLogEvent.__name__}` or `int` instance, got '
+                    f'{event.__class__.__name__}.')
+            
+            data['action_type'] = event_value
         
+        if guild is None:
+            log_data = await client.http.audit_log_get_chunk(guild_id, data)
+            if guild is None:
+                guild = Guild.precreate(guild_id)
+        else:
+            log_data = None
+        
+        self = object.__new__(cls)
         self._data = data
         self._index = 0
         self.client = client
@@ -174,6 +224,11 @@ class AuditLogIterator(object):
         self.users = {}
         self.webhooks = {}
         self.integrations = {}
+        
+        if (log_data is not None):
+            self._process_data(log_data)
+        
+        return self
     
     async def load_all(self):
         """
@@ -190,7 +245,7 @@ class AuditLogIterator(object):
             if entries:
                 data['before'] = entries[-1].id
             
-            log_data = await http.audit_logs(self.guild.id, data)
+            log_data = await http.audit_log_get_chunk(self.guild.id, data)
             
             try:
                 self._process_data(log_data)
@@ -241,7 +296,7 @@ class AuditLogIterator(object):
         if ln:
             data['before'] = self.entries[ln-1].id
         
-        log_data = await self.client.http.audit_logs(self.guild.id, data)
+        log_data = await self.client.http.audit_log_get_chunk(self.guild.id, data)
         self._process_data(log_data)
         self._index +=1
         return self.entries[index]
@@ -761,9 +816,9 @@ def transform_overwrites(name, data):
     change = AuditLogChange()
     change.attr = 'overwrites'
     value = data.get('old_value')
-    change.before = None if value is None else [PermOW(ow_data) for ow_data in value]
+    change.before = None if value is None else [PermissionOverwrite(ow_data) for ow_data in value]
     value = data.get('new_value')
-    change.after = None if value is None else [PermOW(ow_data) for ow_data in value]
+    change.after = None if value is None else [PermissionOverwrite(ow_data) for ow_data in value]
     return change
 
 def transform_permission(name, data):
@@ -1060,7 +1115,7 @@ class AuditLogChange(object):
     +---------------------------+-------------------------------------------+
     | public_updates_channel    | `None` or ``ChannelText``                 |
     +---------------------------+-------------------------------------------+
-    | overwrites                | `None` or `list` of ``PermOW``            |
+    | overwrites                | `None` or `list` of ``PermissionOverwrite``            |
     +---------------------------+-------------------------------------------+
     | permissions               | `None` or ``Permission``                  |
     +---------------------------+-------------------------------------------+

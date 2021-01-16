@@ -1325,18 +1325,18 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.client_edit_nick, guild_id),
             METHOD_PATCH, f'{API_ENDPOINT}/guilds/{guild_id}/members/@me/nick', data, reason=reason)
     
-    async def client_user(self):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.client_user, NO_SPECIFIC_RATE_LIMITER),
+    async def client_user_get(self):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.client_user_get, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET, f'{API_ENDPOINT}/users/@me')
     
     # hooman only
-    async def client_get_settings(self):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.client_get_settings, NO_SPECIFIC_RATE_LIMITER),
+    async def client_settings_get(self):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.client_settings_get, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET, f'{API_ENDPOINT}/users/@me/settings')
     
     # hooman only
-    async def client_edit_settings(self, data):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.client_edit_settings, NO_SPECIFIC_RATE_LIMITER),
+    async def client_settings_edit(self, data):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.client_settings_edit, NO_SPECIFIC_RATE_LIMITER),
             METHOD_PATCH, f'{API_ENDPOINT}/users/@me/settings', data)
     
     # hooman only
@@ -1363,35 +1363,35 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_GET, f'{API_ENDPOINT}/gateway/bot')
     
     # bot only
-    async def client_application_info(self):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.client_application_info, NO_SPECIFIC_RATE_LIMITER),
+    async def client_application_get(self):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.client_application_get, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET, f'{API_ENDPOINT}/oauth2/applications/@me')
     
-    async def client_connections(self):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.client_connections, NO_SPECIFIC_RATE_LIMITER),
+    async def client_connection_get_all(self):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.client_connection_get_all, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET, f'{API_ENDPOINT}/users/@me/connections')
     
-    #oauth2
+    # oauth2
     
     async def oauth2_token(self, data, headers): #UNLIMITED
         headers[CONTENT_TYPE] = 'application/x-www-form-urlencoded'
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.oauth2_token, NO_SPECIFIC_RATE_LIMITER),
             METHOD_POST, f'{DIS_ENDPOINT}/api/oauth2/token', data, headers=headers)
     
-    async def get_user_info(self, headers):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.get_user_info, NO_SPECIFIC_RATE_LIMITER),
+    async def user_info_get(self, headers):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.user_info_get, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET, f'{API_ENDPOINT}/users/@me', headers=headers)
     
-    async def user_connections(self, headers):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.user_connections, NO_SPECIFIC_RATE_LIMITER),
+    async def user_connection_get_all(self, headers):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.user_connection_get_all, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET, f'{API_ENDPOINT}/users/@me/connections', headers=headers)
     
     async def guild_user_add(self, guild_id, user_id, data):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.guild_user_add, guild_id),
             METHOD_PUT, f'{API_ENDPOINT}/guilds/{guild_id}/members/{user_id}', data)
     
-    async def user_guilds(self, headers):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.user_guilds, NO_SPECIFIC_RATE_LIMITER),
+    async def user_guild_get_all(self, headers):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.user_guild_get_all, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET, f'{API_ENDPOINT}/users/@me/guilds', headers=headers)
     
     #channel
@@ -1407,7 +1407,7 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.channel_group_leave, channel_id),
             METHOD_DELETE, f'{API_ENDPOINT}/channels/{channel_id}')
     
-    async def channel_group_users(self, channel_id):
+    async def channel_group_user_get_all(self, channel_id):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.channel_group_user_add, channel_id),
             METHOD_GET, f'{API_ENDPOINT}/channels/{channel_id}/recipients')
     
@@ -1443,12 +1443,12 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.channel_follow, channel_id),
             METHOD_POST, f'{API_ENDPOINT}/channels/{channel_id}/followers', data)
     
-    async def permission_ow_create(self, channel_id, overwrite_id, data, reason):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.permission_ow_create, channel_id),
+    async def permission_overwrite_create(self, channel_id, overwrite_id, data, reason):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.permission_overwrite_create, channel_id),
             METHOD_PUT, f'{API_ENDPOINT}/channels/{channel_id}/permissions/{overwrite_id}', data, reason=reason)
     
-    async def permission_ow_delete(self, channel_id, overwrite_id, reason):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.permission_ow_delete, channel_id),
+    async def permission_overwrite_delete(self, channel_id, overwrite_id, reason):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.permission_overwrite_delete, channel_id),
             METHOD_DELETE, f'{API_ENDPOINT}/channels/{channel_id}/permissions/{overwrite_id}', reason=reason)
     
     #messages
@@ -1462,8 +1462,8 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.message_get, channel_id),
             METHOD_GET, f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}')
     
-    async def message_logs(self, channel_id, data):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.message_logs, channel_id),
+    async def message_get_chunk(self, channel_id, data):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.message_get_chunk, channel_id),
             METHOD_GET, f'{API_ENDPOINT}/channels/{channel_id}/messages', params=data)
     
     async def message_create(self, channel_id, data):
@@ -1505,13 +1505,13 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.message_unpin, channel_id),
             METHOD_DELETE, f'{API_ENDPOINT}/channels/{channel_id}/pins/{message_id}')
     
-    async def channel_pins(self, channel_id):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.channel_pins, channel_id),
+    async def channel_pin_get_all(self, channel_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.channel_pin_get_all, channel_id),
             METHOD_GET, f'{API_ENDPOINT}/channels/{channel_id}/pins')
     
     # hooman only
-    async def channel_pins_ack(self, channel_id):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.channel_pins_ack, channel_id),
+    async def channel_pin_ack(self, channel_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.channel_pin_ack, channel_id),
             METHOD_POST, f'{API_ENDPOINT}/channels/{channel_id}/pins/ack')
     
     #typing
@@ -1542,8 +1542,8 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.reaction_clear, channel_id),
             METHOD_DELETE, f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}/reactions')
     
-    async def reaction_users(self, channel_id, message_id, reaction, data):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.reaction_users, channel_id),
+    async def reaction_user_get_chunk(self, channel_id, message_id, reaction, data):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.reaction_user_get_chunk, channel_id),
             METHOD_GET, f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}/reactions/{reaction}', params=data)
     
     #guild
@@ -1552,8 +1552,8 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.guild_get, guild_id),
             METHOD_GET, f'{API_ENDPOINT}/guilds/{guild_id}')
     
-    async def guild_preview(self, guild_id):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.guild_preview, guild_id),
+    async def guild_preview_get(self, guild_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.guild_preview_get, guild_id),
             METHOD_GET, f'{API_ENDPOINT}/guilds/{guild_id}/preview')
     
     async def guild_user_delete(self, guild_id, user_id, reason):
@@ -1620,24 +1620,24 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.guild_edit, guild_id),
             METHOD_PATCH, f'{API_ENDPOINT}/guilds/{guild_id}', data, reason=reason)
     
-    async def guild_bans(self, guild_id):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.guild_bans, guild_id),
+    async def guild_ban_get_all(self, guild_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.guild_ban_get_all, guild_id),
             METHOD_GET, f'{API_ENDPOINT}/guilds/{guild_id}/bans')
     
     async def guild_ban_get(self, guild_id, user_id):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.guild_ban_get, guild_id),
             METHOD_GET, f'{API_ENDPOINT}/guilds/{guild_id}/bans/{user_id}')
     
-    async def vanity_get(self, guild_id):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.vanity_get, guild_id),
+    async def vanity_invite_get(self, guild_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.vanity_invite_get, guild_id),
             METHOD_GET, f'{API_ENDPOINT}/guilds/{guild_id}/vanity-url')
     
-    async def vanity_edit(self, guild_id, data, reason):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.vanity_edit, guild_id),
+    async def vanity_invite_edit(self, guild_id, data, reason):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.vanity_invite_edit, guild_id),
             METHOD_PATCH, f'{API_ENDPOINT}/guilds/{guild_id}/vanity-url', data, reason=reason)
     
-    async def audit_logs(self, guild_id, data):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.audit_logs, guild_id),
+    async def audit_log_get_chunk(self, guild_id, data):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.audit_log_get_chunk, guild_id),
             METHOD_GET, f'{API_ENDPOINT}/guilds/{guild_id}/audit-logs', params=data)
     
     async def user_role_add(self, guild_id, user_id, role_id, reason):
@@ -1684,20 +1684,20 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.guild_widget_get, guild_id),
             METHOD_GET, f'{API_ENDPOINT}/guilds/{guild_id}/widget.json', headers=imultidict())
     
-    async def guild_users(self, guild_id, data):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.guild_users, guild_id),
+    async def guild_user_get_chunk(self, guild_id, data):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.guild_user_get_chunk, guild_id),
             METHOD_GET, f'{API_ENDPOINT}/guilds/{guild_id}/members', params=data)
     
-    async def guild_regions(self, guild_id):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.guild_regions, guild_id),
+    async def guild_voice_region_get_all(self, guild_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.guild_voice_region_get_all, guild_id),
             METHOD_GET, f'{API_ENDPOINT}/guilds/{guild_id}/regions')
     
-    async def guild_channels(self, guild_id):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.guild_channels, guild_id),
+    async def guild_channel_get_all(self, guild_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.guild_channel_get_all, guild_id),
             METHOD_GET, f'{API_ENDPOINT}/guilds/{guild_id}/channels')
     
-    async def guild_roles(self, guild_id):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.guild_roles, guild_id),
+    async def guild_role_get_all(self, guild_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.guild_role_get_all, guild_id),
             METHOD_GET, f'{API_ENDPOINT}/guilds/{guild_id}/roles')
     
     async def welcome_screen_get(self, guild_id):
@@ -1726,12 +1726,12 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.invite_get, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET, f'{API_ENDPOINT}/invites/{invite_code}',params=data)
     
-    async def invite_get_guild(self, guild_id):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.invite_get_guild, guild_id),
+    async def invite_get_all_guild(self, guild_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.invite_get_all_guild, guild_id),
             METHOD_GET, f'{API_ENDPOINT}/guilds/{guild_id}/invites')
     
-    async def invite_get_channel(self, channel_id):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.invite_get_channel, channel_id),
+    async def invite_get_all_channel(self, channel_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.invite_get_all_channel, channel_id),
             METHOD_GET, f'{API_ENDPOINT}/channels/{channel_id}/invites')
     
     async def invite_delete(self,invite_code, reason):
@@ -1762,8 +1762,8 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.emoji_get, guild_id),
             METHOD_GET, f'{API_ENDPOINT}/guilds/{guild_id}/emojis/{emoji_id}')
     
-    async def guild_emojis(self, guild_id):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.guild_emojis, guild_id),
+    async def guild_emoji_get_all(self, guild_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.guild_emoji_get_all, guild_id),
             METHOD_GET, f'{API_ENDPOINT}/guilds/{guild_id}/emojis')
     
     async def emoji_edit(self, guild_id, emoji_id, data, reason):
@@ -1802,12 +1802,12 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_get, webhook_id),
             METHOD_GET, f'{API_ENDPOINT}/webhooks/{webhook_id}')
     
-    async def webhook_get_channel(self, channel_id):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_get_channel, channel_id),
+    async def webhook_get_all_channel(self, channel_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_get_all_channel, channel_id),
             METHOD_GET, f'{API_ENDPOINT}/channels/{channel_id}/webhooks')
     
-    async def webhook_get_guild(self, guild_id):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_get_guild, guild_id),
+    async def webhook_get_all_guild(self, guild_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_get_all_guild, guild_id),
             METHOD_GET, f'{API_ENDPOINT}/guilds/{guild_id}/webhooks')
     
     async def webhook_get_token(self, webhook):
@@ -1893,8 +1893,8 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.achievement_delete, NO_SPECIFIC_RATE_LIMITER),
             METHOD_DELETE, f'{API_ENDPOINT}/applications/{application_id}/achievements/{achievement_id}')
     
-    async def user_achievements(self, application_id, headers):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.user_achievements, NO_SPECIFIC_RATE_LIMITER),
+    async def user_achievement_get_all(self, application_id, headers):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.user_achievement_get_all, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET, f'{API_ENDPOINT}/users/@me/applications/{application_id}/achievements', headers=headers)
     
     async def user_achievement_update(self, user_id, application_id, achievement_id, data):
@@ -1908,16 +1908,16 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.application_get, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET, f'{API_ENDPOINT}/applications/{application_id}')
     
-    async def applications_detectable(self):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.applications_detectable, NO_SPECIFIC_RATE_LIMITER),
+    async def application_get_all_detectable(self):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.application_get_all_detectable, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET, f'{API_ENDPOINT}/applications/detectable')
     
     async def eula_get(self, eula_id):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.eula_get, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET, f'{API_ENDPOINT}/store/eulas/{eula_id}')
     
-    async def discovery_categories(self):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.discovery_categories, NO_SPECIFIC_RATE_LIMITER),
+    async def discovery_category_get_all(self):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.discovery_category_get_all, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET, f'{API_ENDPOINT}/discovery/categories')
     
     async def discovery_validate_term(self, data):
@@ -1929,20 +1929,20 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.bulk_ack, NO_SPECIFIC_RATE_LIMITER),
             METHOD_POST, f'{API_ENDPOINT}/read-states/ack-bulk',)
     
-    async def voice_regions(self):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.voice_regions, NO_SPECIFIC_RATE_LIMITER),
+    async def voice_region_get_all(self):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.voice_region_get_all, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET, f'{API_ENDPOINT}/voice/regions',)
     
     # thread
     
     # DiscordException Forbidden (403), code=20001: Bots cannot use this endpoint
-    async def channel_thread_start(self, channel_id, data):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.channel_thread_start, channel_id),
+    async def thread_create(self, channel_id, data):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.thread_create, channel_id),
             METHOD_POST, f'{API_ENDPOINT}/channels/{channel_id}/threads', data)
     
     # DiscordException Not Found (404): 404: Not Found
-    async def thread_users(self, channel_id):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.thread_users, channel_id),
+    async def thread_user_get_all(self, channel_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.thread_user_get_all, channel_id),
             METHOD_GET, f'{API_ENDPOINT}/channels/{channel_id}/threads/participants')
     
     # DiscordException Not Found (404): 404: Not Found

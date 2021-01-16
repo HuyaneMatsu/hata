@@ -30,11 +30,11 @@ from .guild import Guild, create_partial_guild, GuildWidget, GuildFeature, Guild
     VerificationScreenStep
 from .http import DiscordHTTPClient, URLS
 from .http.URLS import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDPOINT
-from .role import Role, PermOW, PERM_OW_TYPE_ROLE, PERM_OW_TYPE_USER
+from .role import Role, PermissionOverwrite, PERM_OW_TYPE_ROLE, PERM_OW_TYPE_USER
 from .webhook import Webhook, create_partial_webhook
 from .gateway import DiscordGateway, DiscordGatewaySharder
 from .parsers import EventDescriptor, _with_error, IntentFlag, PARSER_DEFAULTS, InteractionEvent
-from .audit_logs import AuditLog, AuditLogIterator
+from .audit_logs import AuditLog, AuditLogIterator, AuditLogEvent
 from .invite import Invite
 from .message import Message, MessageRepr, MessageReference, Attachment
 from .oauth2 import Connection, parse_locale, DEFAULT_LOCALE, OA2Access, UserOA2, Achievement
@@ -52,13 +52,14 @@ from .bases import ICON_TYPE_NONE
 from .preinstanced import Status, VoiceRegion, ContentFilterLevel, PremiumType, VerificationLevel, \
     MessageNotificationLevel, HypesquadHouse, RelationshipType
 from .client_utils import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, UserGuildPermission, \
-    DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, Typer, maybe_snowflake
+    DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, Typer, maybe_snowflake, \
+    BanEntry
 from .embed import EmbedBase, EmbedImage
 from .interaction import ApplicationCommand, InteractionResponseTypes
 
 from . import client_core as module_client_core, message as module_message, webhook as module_webhook, \
     channel as module_channel, invite as module_invite, parsers as module_parsers, client_utils as module_client_utils,\
-    guild as module_guild
+    guild as module_guild, audit_logs as module_audit_logs
 
 
 _VALID_NAME_CHARS = re.compile('([0-9A-Za-z_]+)')
@@ -919,6 +920,19 @@ class Client(UserBase):
     
     async def client_connections(self):
         """
+        Deprecated, please use ``.client_connection_get_all`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.client_connections` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.client_connection_get_all` instead.',
+            FutureWarning)
+        
+        return await self.client_connection_get_all()
+    
+    async def client_connection_get_all(self):
+        """
         Requests the client's connections.
         
         This method is a coroutine.
@@ -936,7 +950,7 @@ class Client(UserBase):
         -----
         For a bot account this request will always return an empty list.
         """
-        data = await self.http.client_connections()
+        data = await self.http.client_connection_get_all()
         return [Connection(connection_data) for connection_data in data]
     
     async def client_edit_presence(self, *, activity=..., status=None, afk=False):
@@ -1170,18 +1184,31 @@ class Client(UserBase):
     
     async def user_info(self, *args, **kwargs):
         """
-        Deprecated, please use ``.get_user_info`` instead. Will be removed in 2021 february.
+        Deprecated, please use ``.user_info_get`` instead. Will be removed in 2021 february.
         
         This method is a coroutine.
         """
         warnings.warn(
             f'`{self.__class__.__name__}.user_info` is deprecated, and will be removed in 2021 february. '
-            f'Please use `{self.__class__.__name__}.get_user_info` instead.',
+            f'Please use `{self.__class__.__name__}.user_info_get` instead.',
             FutureWarning)
         
-        return await self.get_user_info(*args, **kwargs)
+        return await self.user_info_get(*args, **kwargs)
     
-    async def get_user_info(self, access):
+    async def get_user_info(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.user_info_get`` instead. Will be removed in 2021 february.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.get_user_info` is deprecated, and will be removed in 2021 february. '
+            f'Please use `{self.__class__.__name__}.user_info_get` instead.',
+            FutureWarning)
+        
+        return await self.user_info_get(*args, **kwargs)
+    
+    async def user_info_get(self, access):
         """
         Request the a user's information with oauth2 access token. By default a bot account should be able to request
         every public information about a user (but you do not need oauth2 for that). If the access token has email
@@ -1222,11 +1249,24 @@ class Client(UserBase):
         
         headers = imultidict()
         headers[AUTHORIZATION] = f'Bearer {access_token}'
-        data = await self.http.get_user_info(headers)
+        data = await self.http.user_info_get(headers)
         return UserOA2(data, access)
     
+    async def user_connections(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.user_connection_get_all`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.user_connections` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.user_connection_get_all` instead.',
+            FutureWarning)
+        
+        return await self.user_connection_get_all(*args, **kwargs)
+        
     
-    async def user_connections(self, access):
+    async def user_connection_get_all(self, access):
         """
         Requests a user's connections. This method will work only if the access token has the `'connections'` scope. At
         the returned list includes the user's hidden connections as well.
@@ -1269,7 +1309,7 @@ class Client(UserBase):
         
         headers = imultidict()
         headers[AUTHORIZATION] = f'Bearer {access_token}'
-        data = await self.http.user_connections(headers)
+        data = await self.http.user_connection_get_all(headers)
         return [Connection(connection_data) for connection_data in data]
     
     
@@ -1432,9 +1472,9 @@ class Client(UserBase):
                     raise AssertionError(f'`nick` can be given as `None` or `str` instance, got '
                         f'{nick.__class__.__name__}.')
                 
-                nick_ln = len(nick)
-                if nick_ln > 32:
-                    raise AssertionError(f'`nick` length can be in range [0:32], got {nick_ln}; {nick!r}.')
+                nick_length = len(nick)
+                if nick_length > 32:
+                    raise AssertionError(f'`nick` length can be in range [0:32], got {nick_length}; {nick!r}.')
         
         if (nick is not None) and nick:
             data['nick'] = nick
@@ -1481,7 +1521,20 @@ class Client(UserBase):
         
         await self.http.guild_user_add(guild_id, user_id, data)
     
-    async def user_guilds(self, access):
+    async def user_guilds(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.user_guild_get_all`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.user_guilds` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.user_guild_get_all` instead.',
+            FutureWarning)
+        
+        return await self.user_guild_get_all(*args, **kwargs)
+    
+    async def user_guild_get_all(self, access):
         """
         Requests a user's guilds with it's ``OA2Access``. The user must provide the `'guilds'` oauth2  scope for this
         request to succeed.
@@ -1524,7 +1577,7 @@ class Client(UserBase):
         
         headers = imultidict()
         headers[AUTHORIZATION] = f'Bearer {access_token}'
-        data = await self.http.user_guilds(headers)
+        data = await self.http.user_guild_get_all(headers)
         return [(create_partial_guild(guild_data), UserGuildPermission(guild_data)) for guild_data in data]
     
     async def achievement_get_all(self):
@@ -1793,8 +1846,20 @@ class Client(UserBase):
         
         await self.http.achievement_delete(self.application.id, achievement_id)
     
+    async def user_achievements(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.user_achievement_get_all`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.user_achievements` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.user_achievement_get_all` instead.',
+            FutureWarning)
+        
+        return await self.user_achievement_get_all(*args, **kwargs)
     
-    async def user_achievements(self, access):
+    async def user_achievement_get_all(self, access):
         """
         Requests the achievements of a user with it's oauth2 access.
         
@@ -1837,7 +1902,7 @@ class Client(UserBase):
         headers = imultidict()
         headers[AUTHORIZATION] = f'Bearer {access_token}'
         
-        data = await self.http.user_achievements(self.application.id, headers)
+        data = await self.http.user_achievement_get_all(self.application.id, headers)
         return [Achievement(achievement_data) for achievement_data in data]
     
     
@@ -1983,7 +2048,20 @@ class Client(UserBase):
         eula_data = await self.http.eula_get(eula_id_c)
         return EULA(eula_data)
     
-    async def applications_detectable(self):
+    async def applications_detectable(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.application_get_all_detectable`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.applications_detectable` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.application_get_all_detectable` instead.',
+            FutureWarning)
+        
+        return await self.application_get_all_detectable(*args, **kwargs)
+    
+    async def application_get_all_detectable(self):
         """
         Requests the detectable applications
         
@@ -2000,7 +2078,7 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        applications_data = await self.http.applications_detectable()
+        applications_data = await self.http.application_get_all_detectable()
         return [Application(application_data) for application_data in applications_data]
     
     
@@ -2028,7 +2106,7 @@ class Client(UserBase):
         """
         while True:
             try:
-                data = await self.http.client_user()
+                data = await self.http.client_user_get()
             except DiscordException as err:
                 status = err.status
                 if status == 401:
@@ -2379,7 +2457,7 @@ class Client(UserBase):
                 channels.append(channel)
         
         return channels
-
+    
     async def channel_move(self, channel, visual_position, *, category=..., lock_permissions=False, reason=None):
         """
         Moves a guild channel to the given visual position under it's category, or guild. If the algorithm can not
@@ -2980,7 +3058,7 @@ class Client(UserBase):
     
     async def _maybe_get_channel(self, channel_id):
         """
-        Method for creating a channel from `channel_id`. Used by ``.message_logs`` and familiar methods to detect
+        Method for creating a channel from `channel_id`. Used by ``.message_get_chunk`` and familiar methods to detect
         and create channel type from id.
         
         The method should be called only after successful data request.
@@ -3013,7 +3091,20 @@ class Client(UserBase):
         channel = ChannelText.precreate(channel_id)
         return channel
     
-    async def message_logs(self, channel, limit=100, *, after=None, around=None, before=None):
+    async def message_logs(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.message_get_chunk`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.message_logs` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.message_get_chunk` instead.',
+            FutureWarning)
+        
+        return await self.message_get_chunk(*args, **kwargs)
+    
+    async def message_get_chunk(self, channel, limit=100, *, after=None, around=None, before=None):
         """
         Requests messages from the given text channel. The `after`, `around` and the `before` arguments are mutually
         exclusive and they can be passed as `int`, or as a ``DiscordEntity`` instance or as a `datetime` object.
@@ -3055,7 +3146,7 @@ class Client(UserBase):
         
         See Also
         --------
-        - ``.message_logs_from_zero`` : Familiar to this method, but it requests only the newest messages of the channel
+        - ``.message_get_chunk_from_zero`` : Familiar to this method, but it requests only the newest messages of the channel
             and makes sure they are chained up with the channel's message history.
         - ``.message_at_index`` : A top-level method to get a message at the specified index at the given channel.
             Usually used to load the channel's message history to that point.
@@ -3095,18 +3186,31 @@ class Client(UserBase):
         if not channel._turn_message_keep_limit_on_at:
             channel._turn_message_keep_limit_on_at = LOOP_TIME()
         
-        data = await self.http.message_logs(channel_id, data)
+        data = await self.http.message_get_chunk(channel_id, data)
         
         if channel is None:
             channel = await self._maybe_get_channel(channel_id)
         
         return channel._process_message_chunk(data)
     
-    # If you have 0-1-2 messages at a channel, and you wanna store the messages. The other wont store it, because it
-    # wont see anything what allows channeling.
-    async def message_logs_from_zero(self, channel, limit=100):
+    async def message_logs_fromzero(self, *args, **kwargs):
         """
-        If the `channel` has `1` or less messages loaded use this method instead of ``.message_logs`` to request the
+        Deprecated, please use ``.message_get_chunk_from_zero`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.message_logs_fromzero` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.message_get_chunk_from_zero` instead.',
+            FutureWarning)
+        
+        return await self.message_get_chunk_from_zero(*args, **kwargs)
+    
+    # If you have 0-1 messages at a channel, and you wanna store the messages. The other wont store it, because it
+    # wont see anything what allows channeling.
+    async def message_get_chunk_from_zero(self, channel, limit=100):
+        """
+        If the `channel` has `1` or less messages loaded use this method instead of ``.message_get_chunk`` to request the
         newest messages there, because this method makes sure, the returned messages will be chained at the
         channel's message history.
         
@@ -3157,7 +3261,7 @@ class Client(UserBase):
             channel._turn_message_keep_limit_on_at = LOOP_TIME()
         
         data = {'limit': limit, 'before': 9223372036854775807}
-        data = await self.http.message_logs(channel_id, data)
+        data = await self.http.message_get_chunk(channel_id, data)
         if data:
             if channel is None:
                 channel = await self._maybe_get_channel(channel_id)
@@ -4043,7 +4147,7 @@ class Client(UserBase):
                     'before': last_message_id,
                         }
                 
-                get_mass_task = Task(self.http.message_logs(channel_id, request_data), KOKORO)
+                get_mass_task = Task(self.http.message_get_chunk(channel_id, request_data), KOKORO)
                 tasks.append(get_mass_task)
             
             if (delete_mass_task is None):
@@ -4418,7 +4522,7 @@ class Client(UserBase):
                     'before': last_message_id,
                         }
                 
-                get_mass_task = Task(sharder.client.http.message_logs(channel_id, request_data), KOKORO)
+                get_mass_task = Task(sharder.client.http.message_get_chunk(channel_id, request_data), KOKORO)
                 tasks.append(get_mass_task)
             
             for sharder in sharders:
@@ -4837,19 +4941,45 @@ class Client(UserBase):
         
         Parameters
         ----------
-        message : ``Message`` object
+        message : ``Message``, ``MessageRepr`` or ``MessageReference``
             The message, what's embeds will be (un)suppressed.
         suppress : `bool`, Optional
             Whether the message's embeds would be suppressed or unsuppressed.
         
         Raises
         ------
+        TypeError
+            If `message` was nto given neither as ``Message``, ``MessageRepr` nor as ``MessageReference`` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            If `suppress` was not given as `bool` instance.
         """
-        await self.http.message_suppress_embeds(message.channel.id, message.id, {'suppress': suppress})
+        # Message check order
+        # 1.: Message
+        # 2.: MessageRepr
+        # 3.: MessageReference
+        
+        if isinstance(message, Message):
+            channel_id = message.channel.id
+            message_id = message.id
+        elif isinstance(message, MessageRepr):
+            channel_id = message.channel.id
+            message_id = message.id
+        elif isinstance(message, MessageReference):
+            channel_id = message.channel_id
+            message_id = message.message_id
+        else:
+            raise TypeError(f'`message` should have be given as `{Message.__name__}` or as `{MessageRepr.__name__}`, '
+                f'`{MessageReference.__name__}`, got {message.__class__.__name__}.')
+        
+        if __debug__:
+            if not isinstance(suppress, bool):
+                raise AssertionError(f'`suppress` can be given as `bool` instance, got {suppress.__class__.__name__}.')
+        
+        await self.http.message_suppress_embeds(channel_id, message_id, {'suppress': suppress})
     
     async def message_crosspost(self, message):
         """
@@ -4859,17 +4989,37 @@ class Client(UserBase):
         
         Parameters
         ----------
-        message : ``Message`` object
+        message : ``Message``, ``MessageRepr`` or ``MessageReference``
             The message to crosspost.
         
         Raises
         ------
+        TypeError
+            If `message` was nto given neither as ``Message``, ``MessageRepr` nor as ``MessageReference`` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        await self.http.message_crosspost(message.channel.id, message.id)
+        # Message check order
+        # 1.: Message
+        # 2.: MessageRepr
+        # 3.: MessageReference
+        
+        if isinstance(message, Message):
+            channel_id = message.channel.id
+            message_id = message.id
+        elif isinstance(message, MessageRepr):
+            channel_id = message.channel.id
+            message_id = message.id
+        elif isinstance(message, MessageReference):
+            channel_id = message.channel_id
+            message_id = message.message_id
+        else:
+            raise TypeError(f'`message` should have be given as `{Message.__name__}` or as `{MessageRepr.__name__}`, '
+                f'`{MessageReference.__name__}`, got {message.__class__.__name__}.')
+        
+        await self.http.message_crosspost(channel_id, message_id)
     
     async def message_pin(self, message):
         """
@@ -4879,17 +5029,37 @@ class Client(UserBase):
         
         Parameters
         ----------
-        message : ``Message`` object
+        message : ``Message``, ``MessageRepr`` or ``MessageReference``
             The message to pin.
         
         Raises
         ------
+        TypeError
+            If `message` was nto given neither as ``Message``, ``MessageRepr` nor as ``MessageReference`` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        await self.http.message_pin(message.channel.id, message.id)
+        # Message check order
+        # 1.: Message
+        # 2.: MessageRepr
+        # 3.: MessageReference
+        
+        if isinstance(message, Message):
+            channel_id = message.channel.id
+            message_id = message.id
+        elif isinstance(message, MessageRepr):
+            channel_id = message.channel.id
+            message_id = message.id
+        elif isinstance(message, MessageReference):
+            channel_id = message.channel_id
+            message_id = message.message_id
+        else:
+            raise TypeError(f'`message` should have be given as `{Message.__name__}` or as `{MessageRepr.__name__}`, '
+                f'`{MessageReference.__name__}`, got {message.__class__.__name__}.')
+        
+        await self.http.message_pin(channel_id, message_id)
     
     async def message_unpin(self, message):
         """
@@ -4899,19 +5069,52 @@ class Client(UserBase):
         
         Parameters
         ----------
-        message : ``Message`` object
+        message : ``Message``, ``MessageRepr`` or ``MessageReference``
             The message to unpin.
         
         Raises
         ------
+        TypeError
+            If `message` was nto given neither as ``Message``, ``MessageRepr` nor as ``MessageReference`` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        await self.http.message_unpin(message.channel.id, message.id)
-
-    async def channel_pins(self, channel):
+        # Message check order
+        # 1.: Message
+        # 2.: MessageRepr
+        # 3.: MessageReference
+        
+        if isinstance(message, Message):
+            channel_id = message.channel.id
+            message_id = message.id
+        elif isinstance(message, MessageRepr):
+            channel_id = message.channel.id
+            message_id = message.id
+        elif isinstance(message, MessageReference):
+            channel_id = message.channel_id
+            message_id = message.message_id
+        else:
+            raise TypeError(f'`message` should have be given as `{Message.__name__}` or as `{MessageRepr.__name__}`, '
+                f'`{MessageReference.__name__}`, got {message.__class__.__name__}.')
+        
+        await self.http.message_unpin(channel_id, message_id)
+    
+    async def channel_pins(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.channel_pin_get_all`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.channel_pins` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.channel_pin_get_all` instead.',
+            FutureWarning)
+        
+        return await self.channel_pin_get_all(*args, **kwargs)
+    
+    async def channel_pin_get_all(self, channel):
         """
         Returns the pinned messages at the given channel.
         
@@ -4947,14 +5150,14 @@ class Client(UserBase):
             
             channel = CHANNELS.get(channel_id)
         
-        data = await self.http.channel_pins(channel_id)
+        data = await self.http.channel_pin_get_all(channel_id)
         
         if channel is None:
             channel = await self._maybe_get_channel(channel_id)
         
         return [channel._create_unknown_message(message_data) for message_data in data]
-
-
+    
+    
     async def _load_messages_till(self, channel, index):
         """
         An internal function to load the messages at the given channel till the given index. Should not be called if
@@ -5009,9 +5212,9 @@ class Client(UserBase):
                 planned = 100
             
             if ln:
-                result = await self.message_logs(channel, planned, before=messages[ln-1].id+1)
+                result = await self.message_get_chunk(channel, planned, before=messages[ln-1].id+1)
             else:
-                result = await self.message_logs_from_zero(channel, planned)
+                result = await self.message_get_chunk_from_zero(channel, planned)
             
             if len(result) < planned:
                 channel.message_history_reached_end = True
@@ -5069,7 +5272,7 @@ class Client(UserBase):
             channel = CHANNELS.get(channel_id)
             
             if channel is None:
-                messages = await self.message_logs_from_zero(channel_id, min(index+1, 100))
+                messages = await self.message_get_chunk_from_zero(channel_id, min(index+1, 100))
                 
                 if messages:
                     channel = messages[0].channel
@@ -5151,7 +5354,7 @@ class Client(UserBase):
             channel = CHANNELS.get(channel_id)
             
             if channel is None:
-                messages = await self.message_logs_from_zero(channel_id, min(end+1, 100))
+                messages = await self.message_get_chunk_from_zero(channel_id, min(end+1, 100))
                 
                 if messages:
                     channel = messages[0].channel
@@ -5257,8 +5460,7 @@ class Client(UserBase):
                     f'{channel.__class__.__name__}.')
         
         await self.http.typing(channel_id)
-
-    # With context
+    
     def keep_typing(self, channel, timeout=300.):
         """
         Returns a ``Typer`` object, what will keep sending typing events at the given channel. It can be used as a
@@ -5489,9 +5691,20 @@ class Client(UserBase):
         
         await self.http.reaction_clear(channel_id, message_id)
     
-    # before is not supported
+    async def reaction_users(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.reaction_user_get_chunk`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.reaction_users` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.reaction_user_get_chunk` instead.',
+            FutureWarning)
+        
+        return await self.reaction_user_get_chunk(*args, **kwargs)
     
-    async def reaction_users(self, message, emoji, limit=None, after=None):
+    async def reaction_user_get_chunk(self, message, emoji, limit=None, after=None):
         """
         Requests the users, who reacted on the given message with the given emoji.
         
@@ -5583,7 +5796,7 @@ class Client(UserBase):
         # if (before is not None):
         #     data['before'] = log_time_converter(before)
         
-        data = await self.http.reaction_users(channel_id, message_id, emoji.as_reaction, data)
+        data = await self.http.reaction_user_get_chunk(channel_id, message_id, emoji.as_reaction, data)
         
         users = [User(user_data) for user_data in data]
         
@@ -5593,7 +5806,7 @@ class Client(UserBase):
         return users
     
     
-    async def reaction_users_all(self, message, emoji):
+    async def reaction_user_get_all(self, message, emoji):
         """
         Requests the all the users, which reacted on the message with the given message.
         
@@ -5657,7 +5870,7 @@ class Client(UserBase):
         reaction = emoji.as_reaction
             
         while True:
-            user_datas = await self.http.reaction_users(channel_id, message_id, reaction, data)
+            user_datas = await self.http.reaction_user_get_chunk(channel_id, message_id, reaction, data)
             users.extend(User(user_data) for user_data in user_datas)
             
             if len(user_datas) < 100:
@@ -5670,8 +5883,20 @@ class Client(UserBase):
         
         return users
     
+    async def reaction_load_all(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.reaction_get_all`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.reaction_load_all` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.reaction_get_all` instead.',
+            FutureWarning)
+        
+        return await self.reaction_get_all(*args, **kwargs)
     
-    async def reaction_load_all(self, message):
+    async def reaction_get_all(self, message):
         """
         Requests all the reactors for every emoji on the given message.
         
@@ -5727,7 +5952,7 @@ class Client(UserBase):
                 data['after'] = 0
                 
                 while True:
-                    user_datas = await self.http.reaction_users(channel_id, message_id, reaction, data)
+                    user_datas = await self.http.reaction_user_get_chunk(channel_id, message_id, reaction, data)
                     users.extend(User(user_data) for user_data in user_datas)
                     
                     if len(user_datas) < 100:
@@ -5742,7 +5967,20 @@ class Client(UserBase):
     
     # Guild
     
-    async def guild_preview(self, guild):
+    async def guild_preview(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.guild_preview_get`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.guild_preview` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.guild_preview_get` instead.',
+            FutureWarning)
+        
+        return await self.guild_preview_get(*args, **kwargs)
+    
+    async def guild_preview_get(self, guild):
         """
         Requests the preview of a public guild.
         
@@ -5775,7 +6013,7 @@ class Client(UserBase):
                 raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
                     f'{guild.__class__.__name__}.')
         
-        data = await self.http.guild_preview(guild_id)
+        data = await self.http.guild_preview_get(guild_id)
         return GuildPreview(data)
     
     
@@ -6304,7 +6542,7 @@ class Client(UserBase):
         
         if guild is None:
             data = await self.http.guild_get(guild_id)
-            channel_datas = await self.http.guild_channels(guild_id)
+            channel_datas = await self.http.guild_channel_get_all(guild_id)
             data['channels'] = channel_datas
             user_data = await self.http.guild_user_get(guild_id, self.id)
             data['members'] = [user_data]
@@ -6312,7 +6550,7 @@ class Client(UserBase):
         else:
             data = await self.http.guild_get(guild_id)
             guild._sync(data)
-            channel_datas = await self.http.guild_channels(guild_id)
+            channel_datas = await self.http.guild_channel_get_all(guild_id)
             guild._sync_channels(channel_datas)
             
             user_data = await self.http.guild_user_get(guild_id, self.id)
@@ -7274,7 +7512,20 @@ class Client(UserBase):
         
         await self.http.guild_edit(guild_id, data, reason)
     
-    async def guild_bans(self, guild):
+    async def guild_bans(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.guild_ban_get_all`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.guild_bans` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.guild_ban_get_all` instead.',
+            FutureWarning)
+        
+        return await self.guild_ban_get_all(*args, **kwargs)
+    
+    async def guild_ban_get_all(self, guild):
         """
         Returns the guild's bans.
         
@@ -7282,25 +7533,35 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild`` object
+        guild : ``Guild`` or `int` instance
             The guild, what's bans will be requested
         
         Returns
         -------
-        bans : `list` of `tuple` ((``Client`` or ``User`` object), (`None` or `str`)) elements
+        bans : `list` of ``BanEntry`` elements
             User, reason pairs for each ban entry.
         
         Raises
         ------
+        TypeError
+            If `guild` was not given neither as ``Guild`` or `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        data = await self.http.guild_bans(guild.id)
-        return [(User(ban_data['user']), ban_data.get('reason', None)) for ban_data in data]
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        data = await self.http.guild_ban_get_all(guild_id)
+        return [BanEntry(User(ban_data['user']), ban_data.get('reason', None)) for ban_data in data]
     
-    async def guild_ban_get(self, guild, user_id):
+    async def guild_ban_get(self, guild, user):
         """
         Returns the guild's ban entry for the given user id.
         
@@ -7308,27 +7569,46 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild`` object
+        guild : ``Guild`` or `int` instance
             The guild where the user banned.
-        user_id : `int`
+        user : ``User``, ``Client`` or `int` instance
             The user's id, who's entry is requested.
-
+        
         Returns
         -------
-        user : ``Client`` or ``User`` object
-        reason : `None` or `str`
+        ban_entry : ``BanEntry``
+            The ban entry.
         
         Raises
         ------
+        TypeError
+            - If `guild` was not passed neither as ``Guild`` or `int` instance.
+            - If `user` was not given neither as ``User``, ``Client`` or `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        data = await self.http.guild_ban_get(guild.id, user_id)
-        return User(data['user']), data.get('reason')
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        if isinstance(user, (User, Client)):
+            user_id = user.id
+        else:
+            user_id = maybe_snowflake(user)
+            if user_id is None:
+                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                    f'got {user.__class__.__name__}.')
+        
+        data = await self.http.guild_ban_get(guild_id, user_id)
+        return BanEntry(User(data['user']), data.get('reason'))
     
-    async def guild_widget_get(self, guild_or_id):
+    async def guild_widget_get(self, guild):
         """
         Returns the guild's widget.
         
@@ -7336,7 +7616,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild_or_id : ``Guild`` or `int`
+        guild : ``Guild`` or `int` instance
             The guild or the guild's id, what's widget will be requested.
         
         Returns
@@ -7347,23 +7627,24 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            If `guild_or_id` was not passed as ``Guild`` or `int` instance.
+            If `guild` was not passed neither as ``Guild`` or `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        if type(guild_or_id) is Guild:
-            guild_id = guild_or_id.id
-        elif type(guild_or_id) is int:
-            guild_id = guild_or_id
+        if isinstance(guild, Guild):
+            guild_id = guild.id
         else:
-            raise TypeError(f'Excepted `{Guild.__name__}` or `int` (id), got `{guild_or_id!r}`')
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
         
         try:
             data = await self.http.guild_widget_get(guild_id)
         except DiscordException as err:
-            if err.response.status == 403: #Widget Disabled -> return None
+            if err.response.status == 403: # Widget Disabled -> return None
                 return
             raise
         
@@ -7396,7 +7677,7 @@ class Client(UserBase):
         guild_discovery_data = await self.http.guild_discovery_get(guild.id)
         return GuildDiscovery(guild_discovery_data, guild)
     
-    async def guild_discovery_edit(self, guild_or_discovery, primary_category=..., keywords=..., emoji_discovery=...):
+    async def guild_discovery_edit(self, guild, primary_category=..., keywords=..., emoji_discovery=...):
         """
         Edits the guild's discovery metadata.
         
@@ -7406,7 +7687,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild_or_discovery : ``Guild`` or ``GuildDiscovery``
+        guild : ``Guild`` or ``GuildDiscovery``
             The guild what's discovery metadata will be edited or an existing discovery metadata object.
         primary_category : `None` or ``DiscoveryCategory`` or `int`, Optional
             The guild discovery's new primary category's id. Can be given as a ``DiscoveryCategory`` object as well.
@@ -7428,7 +7709,7 @@ class Client(UserBase):
         ConnectionError
             No internet connection.
         TypeError
-            - If `guild_or_discovery` was neither passed as type ``Guild`` or ``GuildDiscovery``.
+            - If `guild` was neither passed as type ``Guild`` or ``GuildDiscovery``.
             - If `primary_category_id` was not given neither as `None`, `int` or as ``DiscoveryCategory`` instance.
             - If `keywords` was not passed neither as `None` or `iterable` of `str`.
             - If `emoji_discovery` was not passed neither as `None`, `bool` or `int` (`0`, `1`).
@@ -7438,13 +7719,13 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if type(guild_or_discovery) is Guild:
-            guild_id = guild_or_discovery.id
-        elif type(guild_or_discovery) is GuildDiscovery:
-            guild_id = guild_or_discovery.guild.id
+        if type(guild) is Guild:
+            guild_id = guild.id
+        elif type(guild) is GuildDiscovery:
+            guild_id = guild.guild.id
         else:
-            raise TypeError(f'`guild_or_discovery` can be `{Guild.__name__}` or `{GuildDiscovery.__name__}` instance, '
-                f'got {guild_or_discovery.__class__.__name__}.')
+            raise TypeError(f'`guild` can be `{Guild.__name__}` or `{GuildDiscovery.__name__}` instance, '
+                f'got {guild.__class__.__name__}.')
         
         data = {}
         
@@ -7512,15 +7793,15 @@ class Client(UserBase):
             data['emoji_discoverability_enabled'] = emoji_discovery
         
         guild_discovery_data = await self.http.guild_discovery_edit(guild_id, data)
-        if type(guild_or_discovery) is Guild:
-            guild_discovery = GuildDiscovery(guild_discovery_data, guild_or_discovery)
+        if type(guild) is Guild:
+            guild_discovery = GuildDiscovery(guild_discovery_data, guild)
         else:
-            guild_discovery = guild_or_discovery
+            guild_discovery = guild
             guild_discovery._update_no_return(guild_discovery_data)
         
         return guild_discovery
     
-    async def guild_discovery_add_subcategory(self, guild_or_discovery, category):
+    async def guild_discovery_add_subcategory(self, guild, category):
         """
         Adds a discovery subcategory to the guild.
         
@@ -7530,18 +7811,18 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild_or_discovery : ``Guild`` or ``GuildDiscovery``
+        guild : ``Guild``, ``GuildDiscovery`` or `int` instance
             The guild to what the discovery subcategory will be added.
         category : ``DiscoveryCategory`` or `int`
             The discovery category or it's id what will be added as a subcategory.
         
         Raises
         ------
+        TypeError
+            - If `guild` was not given neither as ``Guild``, ``GuildDiscovery``, neither as `int` instance.
+            - If `category` was not passed neither as ``DiscoveryCategory`` or as `int` instance.
         ConnectionError
             No internet connection.
-        TypeError
-            - If `guild_or_discovery` was neither passed as type ``Guild`` or ``GuildDiscovery``.
-            - If `category` was not passed neither as ``DiscoveryCategory`` or as `int` instance.
         DiscordException
             If any exception was received from the Discord API.
         
@@ -7549,15 +7830,19 @@ class Client(UserBase):
         -----
         A guild can have maximum `5` discovery subcategories.
         
-        If `guild_or_discovery` was given as ``GuildDiscovery``, then it will be updated.
+        If `guild` was given as ``GuildDiscovery``, then it will be updated.
         """
-        if type(guild_or_discovery) is Guild:
-            guild_id = guild_or_discovery.id
-        elif type(guild_or_discovery) is GuildDiscovery:
-            guild_id = guild_or_discovery.guild.id
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        elif isinstance(guild, GuildDiscovery):
+            guild_id = guild.guild.id
         else:
-            raise TypeError(f'`guild_or_discovery` can be `{Guild.__name__}` or `{GuildDiscovery.__name__}` instance, '
-                f'got {guild_or_discovery.__class__.__name__}.')
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be `{Guild.__name__}`, `{GuildDiscovery.__name__}` '
+                    f'or `int` instance, got {guild.__class__.__name__}.')
+            
+            guild = None
         
         category_type = category.__class__
         if category_type is DiscoveryCategory:
@@ -7572,10 +7857,10 @@ class Client(UserBase):
         
         await self.http.guild_discovery_add_subcategory(guild_id, category_id)
         
-        if type(guild_or_discovery) is GuildDiscovery:
-            guild_or_discovery.sub_categories.add(category_id)
+        if (guild is not None) and isinstance(guild, GuildDiscovery):
+            guild.sub_categories.add(category_id)
     
-    async def guild_discovery_delete_subcategory(self, guild_or_discovery, category):
+    async def guild_discovery_delete_subcategory(self, guild, category):
         """
         Removes a discovery subcategory of the guild.
         
@@ -7585,18 +7870,18 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild_or_discovery : ``Guild`` or ``GuildDiscovery``
+        guild : ``Guild``, ``GuildDiscovery`` or `int` instance
             The guild to what the discovery subcategory will be removed from.
         category : ``DiscoveryCategory`` or `int`
             The discovery category or it's id what will be removed from the subcategories.
         
         Raises
         ------
+        TypeError
+            - If `guild` was not given neither as ``Guild``, ``GuildDiscovery``, neither as `int` instance.
+            - If `category` was not passed neither as ``DiscoveryCategory`` or as `int` instance.
         ConnectionError
             No internet connection.
-        TypeError
-            - If `guild_or_discovery` was neither passed as type ``Guild`` or ``GuildDiscovery``.
-            - If `category` was not passed neither as ``DiscoveryCategory`` or as `int` instance.
         DiscordException
             If any exception was received from the Discord API.
         
@@ -7604,15 +7889,19 @@ class Client(UserBase):
         -----
         A guild can have maximum `5` discovery subcategories.
         
-        If `guild_or_discovery` was given as ``GuildDiscovery``, then it will be updated.
+        If `guild` was given as ``GuildDiscovery``, then it will be updated.
         """
-        if type(guild_or_discovery) is Guild:
-            guild_id = guild_or_discovery.id
-        elif type(guild_or_discovery) is GuildDiscovery:
-            guild_id = guild_or_discovery.guild.id
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        elif isinstance(guild, GuildDiscovery):
+            guild_id = guild.guild.id
         else:
-            raise TypeError(f'`guild_or_discovery` can be `{Guild.__name__}` or `{GuildDiscovery.__name__}` instance, '
-                f'got {guild_or_discovery.__class__.__name__}.')
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be `{Guild.__name__}`, `{GuildDiscovery.__name__}` '
+                    f' or `int` instance, got {guild.__class__.__name__}.')
+            
+            guild = None
         
         category_type = category.__class__
         if category_type is DiscoveryCategory:
@@ -7627,13 +7916,10 @@ class Client(UserBase):
         
         await self.http.guild_discovery_delete_subcategory(guild_id, category_id)
         
-        if type(guild_or_discovery) is GuildDiscovery:
-            try:
-                guild_or_discovery.sub_categories.remove(category_id)
-            except KeyError:
-                pass
+        if (guild is not None) and isinstance(guild, GuildDiscovery):
+            guild.sub_categories.discard(category_id)
     
-    async def discovery_categories(self):
+    async def _discovery_category_get_all(self):
         """
         Returns a list of discovery categories, which can be used when editing guild discovery.
         
@@ -7650,13 +7936,29 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        discovery_category_datas = await self.http.discovery_categories()
+        discovery_category_datas = await self.http.discovery_category_get_all()
         return [
             DiscoveryCategory.from_data(discovery_category_data) for discovery_category_data in discovery_category_datas
                     ]
     
     # Add cached, so even tho the first request fails with `ConnectionError` will not be raised.
-    discovery_categories = DiscoveryCategoryRequestCacher(discovery_categories, 3600.0,
+    discovery_category_get_all = DiscoveryCategoryRequestCacher(_discovery_category_get_all, 3600.0,
+        cached=list(DISCOVERY_CATEGORIES.values()))
+    
+    async def _discovery_categories(self):
+        """
+        Deprecated, please use ``.discovery_category_get_all`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.discovery_categories` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.discovery_category_get_all` instead.',
+            FutureWarning)
+        
+        return await self._discovery_category_get_all()
+    
+    discovery_categories = DiscoveryCategoryRequestCacher(_discovery_categories, 3600.0,
         cached=list(DISCOVERY_CATEGORIES.values()))
     
     async def discovery_validate_term(self, term):
@@ -7686,7 +7988,20 @@ class Client(UserBase):
     discovery_validate_term = DiscoveryTermRequestCacher(discovery_validate_term, 86400.0,
         RATE_LIMIT_GROUPS.discovery_validate_term)
     
-    async def guild_users(self, guild):
+    async def guild_users(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.guild_user_get_all`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.guild_users` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.guild_user_get_all` instead.',
+            FutureWarning)
+        
+        return await self.guild_user_get_all(*args, **kwargs)
+    
+    async def guild_user_get_all(self, guild):
         """
         Requests all the users of the guild and returns them.
         
@@ -7694,7 +8009,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild``
+        guild : ``Guild`` or `int`
             The guild what's users will be requested.
         
         Returns
@@ -7703,6 +8018,8 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `guild` was not given neither as ``Guild``, nor as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -7712,18 +8029,36 @@ class Client(UserBase):
         -----
         If user caching is allowed, these users should be already loaded if the client finished starting up.
         This method takes a long time to finish for huge guilds.
+        
+        When using it with user account, the client's token will be invalidated.
         """
-        data = {'limit': 1000, 'after': '0'}
-        result = []
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+            
+            guild = None
+        
+        data = {'limit': 1000, 'after': 0}
+        users = []
         while True:
-            user_datas = await self.http.guild_users(guild.id, data)
+            user_datas = await self.http.guild_user_get_chunk(guild_id, data)
+            if guild is None:
+                guild = Guild.precreate(guild_id)
+            
             for user_data in user_datas:
                 user = User(user_data, guild)
-                result.append(user)
+                users.append(user)
+            
             if len(user_datas) < 1000:
                 break
-            data['after'] = user_datas[999]['user']['id']
-        return result
+            
+            data['after'] = user.id
+        
+        return users
     
     async def guild_get_all(self):
         """
@@ -7733,7 +8068,7 @@ class Client(UserBase):
         
         Returns
         -------
-        guilds : `list` of ``Guilds` objects
+        guilds : `list` of ``Guild``
         
         Raises
         ------
@@ -7757,7 +8092,20 @@ class Client(UserBase):
         
         return result
     
-    async def guild_regions(self, guild):
+    async def guild_regions(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.guild_voice_region_get_all`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.guild_regions` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.guild_voice_region_get_all` instead.',
+            FutureWarning)
+        
+        return await self.guild_voice_region_get_all(*args, **kwargs)
+    
+    async def guild_voice_region_get_all(self, guild):
         """
         Requests the available voice regions for the given guild and returns them and the optional ones.
         
@@ -7765,7 +8113,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild``
+        guild : ``Guild`` or `int` instance
             The guild, what's regions will be requested.
         
         Returns
@@ -7777,12 +8125,22 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `guild` was not given neither as ``Guild``, nor as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        data = await self.http.guild_regions(guild.id)
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        data = await self.http.guild_voice_region_get_all(guild_id)
         voice_regions = []
         optimals = []
         for voice_region_data in data:
@@ -7793,7 +8151,20 @@ class Client(UserBase):
         
         return voice_regions, optimals
     
-    async def voice_regions(self):
+    async def voice_regions(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.voice_region_get_all`` instead. Will be removed in 2021 february.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.voice_regions` is deprecated, and will be removed in 2021 february. '
+            f'Please use `{self.__class__.__name__}.voice_region_get_all` instead.',
+            FutureWarning)
+        
+        return await self.guild_voice_region_get_all(*args, **kwargs)
+    
+    async def voice_region_get_all(self):
         """
         Returns all the voice regions.
         
@@ -7811,7 +8182,7 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        data = await self.http.voice_regions()
+        data = await self.http.voice_region_get_all()
         voice_regions = []
         for voice_region_data in data:
             region = VoiceRegion.from_data(voice_region_data)
@@ -7828,17 +8199,32 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild``
+        guild : ``Guild`` or `int` instance
             The guild, what's channels will be requested.
         
         Raises
         ------
+        TypeError
+            If `guild` was not given neither as ``Guild``, nor as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        data = await self.http.guild_channels(guild.id)
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+            
+            guild = None
+        
+        data = await self.http.guild_channel_get_all(guild_id)
+        if guild is None:
+            guild = Guild.precreate(guild_id)
+        
         guild._sync_channels(data)
     
     async def guild_sync_roles(self, guild):
@@ -7850,20 +8236,48 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild``
+        guild : ``Guild`` or `int` instance
             The guild, what's roles will be requested.
         
         Raises
         ------
+        TypeError
+            If `guild` was not given neither as ``Guild``, nor as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        data = await self.http.guild_roles(guild.id)
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+            
+            guild = None
+        
+        data = await self.http.guild_role_get_all(guild_id)
+        if guild is None:
+            guild = Guild.precreate(guild_id)
+        
         guild._sync_roles(data)
     
-    async def audit_logs(self, guild, limit=100, before=None, after=None, user=None, event=None,):
+    async def audit_logs(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.audit_log_get_chunk`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.audit_logs` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.audit_log_get_chunk` instead.',
+            FutureWarning)
+        
+        return await self.audit_log_get_chunk(*args, **kwargs)
+    
+    async def audit_log_get_chunk(self, guild, limit=100, before=None, after=None, user=None, event=None):
         """
         Request a batch of audit logs of the guild and returns them. The `after`, `around` and the `before` arguments
         are mutually exclusive and they can be passed as `int`, or as a ``DiscordEntity`` instance or as a `datetime`
@@ -7873,7 +8287,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild``
+        guild : ``Guild`` or `int` instance
             The guild, what's audit logs will be requested.
         limit : `int`, Optional
             The amount of audit logs to request. Can b between 1 and 100. Defaults to 100.
@@ -7881,9 +8295,9 @@ class Client(UserBase):
             The timestamp before the audit log entries wer created.
         after : `int`, ``DiscordEntity`` or `datetime`, Optional
             The timestamp after the audit log entries wer created.
-        user : ``Client`` or ``User`` object, Optional
+        user : `None`, ``Client``, ``User`` or `int` instance, Optional
             Whether the audit logs should be filtered only to those, which were created by the given user.
-        event : ``AuditLogEvent``, Optional
+        event : `None`, ``AuditLogEvent``, `int`, Optional
             Whether the audit logs should be filtered only on the given event.
         
         Returns
@@ -7893,15 +8307,35 @@ class Client(UserBase):
         
         Raises
         ------
-        ValueError
-            If `limit` is under `1` or over `100`.
+        TypeError
+            - If `guild` was not given neither as ``Guild``, nor as `int` instance.
+            - If `after` or `before` was passed with an unexpected type.
+            - If `user` was not given neither as `None`, ``User``, ``Client`` nor as `int` instance.
+            - If `event` as not not given neither as `None`, ``AuditLogEvent`` nor as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `limit` was not given as `int` instance.
+            - If `limit` is out of teh expected range [1:100].
         """
-        if limit < 1 or limit > 100:
-            raise ValueError(f'Limit can be in <1, 100>, got {limit}')
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+            
+            guild = None
+        
+        if __debug__:
+            if not isinstance(limit, int):
+                raise AssertionError(f'`limit` can be given as `int` instance, got {limit.__class__.__name__}.')
+            
+            if limit < 1 or limit > 100:
+                raise ValueError(f'`limit` out of the expected range [1:100], got {limit!r}.')
         
         data = {'limit': limit}
         
@@ -7912,15 +8346,35 @@ class Client(UserBase):
             data['after'] = log_time_converter(after)
         
         if (user is not None):
-            data['user_id'] = user.id
+            if isinstance(user, (User, Client)):
+                user_id = user.id
+            
+            else:
+                user_id = maybe_snowflake(user)
+                if user_id is None:
+                    raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                        f'got {user.__class__.__name__}.')
+            
+            data['user_id'] = user_id
         
         if (event is not None):
-            data['action_type'] = event.value
+            if isinstance(event, AuditLogEvent):
+                event_value = event.value
+            elif isinstance(event, int):
+                event_value = event
+            else:
+                raise TypeError(f'`event` can be given as `None`, `{AuditLogEvent.__name__}` or `int` instance, got '
+                    f'{event.__class__.__name__}.')
+            
+            data['action_type'] = event_value
         
-        data = await self.http.audit_logs(guild.id, data)
+        data = await self.http.audit_log_get_chunk(guild_id, data)
+        if guild is None:
+            guild = Guild.precreate(guild_id)
+        
         return AuditLog(data, guild)
     
-    def audit_log_iterator(self, guild, user=None, event=None):
+    async def audit_log_iterator(self, guild, user=None, event=None):
         """
         Returns an audit log iterator for the given guild.
         
@@ -7928,18 +8382,18 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild``
+        guild : ``Guild`` or `int` instance
             The guild, what's audit logs will be requested.
-        user : ``Client`` or ``User`` object, Optional
+        user : `None`, ``Client``, ``User`` or `int` instance, Optional
             Whether the audit logs should be filtered only to those, which were created by the given user.
-        event : ``AuditLogEvent``, Optional
+        event : `None`, ``AuditLogEvent` or `int`, Optional
             Whether the audit logs should be filtered only on the given event.
         
         Returns
         -------
         audit_log_iterator : ``AuditLogIterator``
         """
-        return AuditLogIterator(self, guild, user=user, event=event)
+        return await AuditLogIterator(self, guild, user=user, event=event)
     
     # users
     
@@ -7951,9 +8405,9 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild``
+        guild : ``Guild`` or `int` instance
             Where the user will be edited.
-        user : ``User`` or ``Client`` object
+        user : ``User``, ``Client`` or `int` instance
             The user to edit
         nick : `None` or `str`, Optional
             The new nick of the user. You can remove the current one by passing it as `None` or as an empty string.
@@ -7961,75 +8415,136 @@ class Client(UserBase):
             Whether the user should be deafen at the voice channels.
         mute : `bool`, Optional
             Whether the user should be muted at the voice channels.
-        voice_channel : `None` or ``ChannelVoice`` object, Optional
+        voice_channel : `None`, ``ChannelVoice``, `int` instance , Optional
             Moves the user to the given voice channel. Only applicable if the user is already at a voice channel.
+            
             Pass it as `None` to kick the user from it's voice channel.
-        roles : `None` or `list` of ``Role`` objects, Optional
+        roles : `None` or (`tuple`, `set`, `list`) of (``Role``, `int`), Optional
             The new roles of the user. Give it as `None` to remove all of the user's roles.
         reason : `None` or `str`, Optional
             Will show up at the guild's audit logs.
         
         Raises
         ------
-        ValueError
-            If `nick` was passed as `str` and it's length is over `32`.
+        TypeError
+            - If `guild` was not given neither as ``Guild`` neither as `int` instance.
+            - If `user` was not given neither as ``User``, ``Client``, neither as `int` instance.
+            - If `voice_channel` was not given neither as `None`, ``ChannelVoice``, neither as `int` instance.
+            - If `roles` contains neither ``Role`` or `int` element.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `nick` was not given neither as `None` or `str` instance.
+            - If `nick` length is out of the expected range [0:32].
+            - If `deaf` was not given as `bool` instance.
+            - If `mute` was not given as `bool` instance.
+            - If `roles` is not `None`, `set`, `tuple` or `list` instance.
         """
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+            
+            guild = GUILDS.get(guild_id)
+        
+        if isinstance(user, (User, Client)):
+            user_id = user.id
+        else:
+            user_id = maybe_snowflake(user)
+            if user_id is None:
+                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                    f'got {user.__class__.__name__}.')
+            
+            user = USERS.get(user_id)
+        
         data = {}
         if (nick is not ...):
-            if (nick is not None):
-                nick_ln = len(nick)
-                if nick_ln > 32:
-                    raise ValueError(f'The length of the nick can be between 1-32, got {nick_ln}')
-                if nick_ln == 0:
-                    nick = None
+            if __debug__:
+                if (nick is not None):
+                    if not isinstance(nick, str):
+                        raise AssertionError(f'`nick` can be given as `None` or `str` instance, got '
+                            f'{nick.__class__.__name__}.')
+                    
+                    nick_length = len(nick)
+                    if nick_length > 32:
+                        raise AssertionError(f'`nick` length can be in range [0:32], got {nick_length}; {nick!r}.')
             
-            try:
-                actual_nick = user.guild_profiles[guild].nick
-            except KeyError:
-                # user cache disabled, or the user is not at the guild -> will raise later
-                should_edit_nick = True
-            else:
-                if (nick is None):
-                    if (actual_nick is None):
-                        should_edit_nick = False
-                    else:
-                        should_edit_nick = True
+            if (nick is not None) and (not nick):
+                nick = None
+            
+            if (guild is not None) and (user is not None) and guild.partial:
+                try:
+                    guild_profile = user.guild_profiles[guild]
+                except KeyError:
+                    should_edit_nick = True
                 else:
-                    if (actual_nick is None):
-                        should_edit_nick = True
-                    elif actual_nick == nick:
+                    if guild_profile.nick == nick:
                         should_edit_nick = False
                     else:
                         should_edit_nick = True
+            else:
+                should_edit_nick = True
             
             if should_edit_nick:
-                if self == user:
-                    await self.http.client_edit_nick(guild.id, {'nick': nick}, reason)
+                if self.id == user_id:
+                    await self.http.client_edit_nick(guild_id, {'nick': nick}, reason)
                 else:
                     data['nick'] = nick
                     
         if (deaf is not None):
+            if __debug__:
+                if not isinstance(deaf, bool):
+                    raise AssertionError(f'`deaf` can be given as `bool` instance, got {deaf.__class__.__name__}.')
+            
             data['deaf'] = deaf
             
         if (mute is not None):
+            if __debug__:
+                if not isinstance(mute, bool):
+                    raise AssertionError(f'`mute` can be given as `bool` instance, got {mute.__class__.__name__}.')
+            
             data['mute'] = mute
             
         if (voice_channel is not ...):
-            data['channel_id'] = None if voice_channel is None else voice_channel.id
+            if voice_channel is None:
+                voice_channel_id = None
+            elif isinstance(voice_channel, ChannelVoice):
+                voice_channel_id = voice_channel.id
+            else:
+                voice_channel_id = maybe_snowflake(voice_channel)
+                if voice_channel_id is None:
+                    raise TypeError(f'`voice_channel` can be given either as `None`, `{ChannelVoice.__name__}` or as '
+                        f'`int` instance, got {voice_channel.__class__.__name__}.')
+            
+            data['channel_id'] = voice_channel_id
         
         if (roles is not ...):
-            if roles is None:
-                role_ids = []
-            else:
-                role_ids = [role.id for role in roles]
+            role_ids = set()
+            if (roles is not None):
+                if __debug__:
+                    if not isinstance(roles, (list, set, tuple)):
+                        raise AssertionError(f'`roles` can be given either `None`, `list`, `set` or `tuple` instance, '
+                            f'got {roles.__class__.__name__}.')
+                
+                for role in roles:
+                    if isinstance(role, Role):
+                        role_id = role.id
+                    else:
+                        role_id = maybe_snowflake(role)
+                        if role_id is None:
+                            raise TypeError(f'`roles` contains not `{Role.__name__}` neither `int` instance element, '
+                                f'got role={role!r}; roles={roles!r}.')
+                    
+                    role_ids.add(role_id)
             
             data['roles'] = role_ids
         
-        await self.http.user_edit(guild.id, user.id, data, reason)
+        await self.http.user_edit(guild_id, user_id, data, reason)
     
     async def user_role_add(self, user, role, reason=None):
         """
@@ -8039,7 +8554,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        user : ``Client`` or ``User``
+        user : ``Client``, ``User``, `int`
             The user who will get the role.
         role : ``Role``
             The role to add on the user.
@@ -8048,17 +8563,34 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `user` was not given neither as ``User``, ``Client``, neither as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            If `role` was not given as ``Role`` instance.
         """
+        if __debug__:
+            if not isinstance(role, Role):
+                raise AssertionError(f'`role` can be given as `{Role.__name__}` instance, got '
+                    f'{role.__class__.__name__}.')
+        
+        if isinstance(user, (User, Client)):
+            user_id = user.id
+        else:
+            user_id = maybe_snowflake(user)
+            if user_id is None:
+                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                    f'got {user.__class__.__name__}.')
+        
         # If the role is partial, it's guild is None.
         guild = role.guild
         if guild is None:
             return
         
-        await self.http.user_role_add(guild.id, user.id, role.id, reason)
+        await self.http.user_role_add(guild.id, user_id, role.id, reason)
     
     async def user_role_delete(self, user, role, reason=None):
         """
@@ -8068,7 +8600,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        user : ``Client`` or ``User``
+        user : ``Client``, ``User`` or `int`
             The user from who the role will be removed.
         role : ``Role``
             The role to remove from the user.
@@ -8077,17 +8609,34 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `user` was not given neither as ``User``, ``Client``, neither as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            If `role` was not given as ``Role`` instance.
         """
+        if __debug__:
+            if not isinstance(role, Role):
+                raise AssertionError(f'`role` can be given as `{Role.__name__}` instance, got '
+                    f'{role.__class__.__name__}.')
+        
+        if isinstance(user, (User, Client)):
+            user_id = user.id
+        else:
+            user_id = maybe_snowflake(user)
+            if user_id is None:
+                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                    f'got {user.__class__.__name__}.')
+        
         # If the role is partial, it's guild is None.
         guild = role.guild
         if guild is None:
             return
         
-        await self.http.user_role_delete(guild.id, user.id, role.id, reason)
+        await self.http.user_role_delete(guild.id, user_id, role.id, reason)
     
     async def user_voice_move(self, user, voice_channel):
         """
@@ -8097,24 +8646,41 @@ class Client(UserBase):
         
         Parameters
         ----------
-        user : ``Client`` or ``User``
+        user : ``Client``, ``User`` or `int`
             The user to move.
         voice_channel : ``ChannelVoice``
             The channel where the user will be moved.
         
         Raises
         ------
+        TypeError
+            If `user` was not given neither as ``User``, ``Client``, neither as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            If `channel` was not given as ``ChannelVoice`` instance.
         """
+        if __debug__:
+            if not isinstance(voice_channel, ChannelVoice):
+                raise AssertionError(f'`channel` can be given as `{ChannelVoice.__name__}` instance, got '
+                    f'{voice_channel.__class__.__name__}.')
+        
+        if isinstance(user, (User, Client)):
+            user_id = user.id
+        else:
+            user_id = maybe_snowflake(user)
+            if user_id is None:
+                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                    f'got {user.__class__.__name__}.')
+        
         # If the channel is partial, it's guild is None.
-        guild = voice_channel
+        guild = voice_channel.guild
         if guild is None:
             return
        
-        await self.http.user_move(guild.id, user.id, {'channel_id': voice_channel.id})
+        await self.http.user_move(guild.id, user_id, {'channel_id': voice_channel.id})
     
     async def user_voice_kick(self, user, guild):
         """
@@ -8124,21 +8690,40 @@ class Client(UserBase):
         
         Parameters
         ----------
-        user : ``Client`` or ``User``
+        user : ``Client``, ``User`` or `int`
             The user who will be kicked from the voice channel.
-        guild : ``Guild``
+        guild : ``Guild`` or `int`
             The guild from what's voice channel the user will be kicked.
         
         Raises
         ------
+        TypeError
+            - If `user` was not given neither as ``User``, ``Client``, neither as `int` instance.
+            - If `guild` was not given neither as ``Guild`` nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        await self.http.user_move(guild.id, user.id, {'channel_id': None})
+        if isinstance(user, (User, Client)):
+            user_id = user.id
+        else:
+            user_id = maybe_snowflake(user)
+            if user_id is None:
+                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                    f'got {user.__class__.__name__}.')
+        
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        await self.http.user_move(guild_id, user_id, {'channel_id': None})
     
-    async def user_get(self, user_id, force_update=False):
+    async def user_get(self, user, force_update=False):
         """
         Gets an user by it's id. If the user is already loaded updates it.
         
@@ -8146,8 +8731,8 @@ class Client(UserBase):
         
         Parameters
         ----------
-        user_id : `int`
-            The user's id, who will be requested.
+        user : ``User``, `Client`` or `int`
+            The user, who will be requested.
         force_update : `bool`
             Whether the user should be requested even if it supposed to be up to date.
         
@@ -8157,6 +8742,8 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `user` was not given neither as ``User``, ``Client``, neither as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -8167,24 +8754,37 @@ class Client(UserBase):
         TypeError
             If `user_id` was not given as `int` instance.
         """
-        user_id_value = maybe_snowflake(user_id)
-        if user_id_value is None:
-            raise TypeError(f'`user_id` can be given as `int` instance, got {user_id.__class__.__name__}.')
+        if isinstance(user, (User, Client)):
+            user_id = user.id
+        else:
+            user_id = maybe_snowflake(user)
+            if user_id is None:
+                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                    f'got {user.__class__.__name__}.')
+            
+            user = None
         
-        if not force_update:
-            try:
-                user = USERS[user_id_value]
-            except KeyError:
-                pass
-            else:
-                for guild in user.guild_profiles:
-                    if not guild.partial:
-                        return user
+        # a goto to check whether we should force update the user.
+        while True:
+            if force_update:
+                break
+            
+            if user is None:
+                try:
+                    user = USERS[user_id]
+                except KeyError:
+                    break
+            
+            for guild in user.guild_profiles:
+                if not guild.partial:
+                    return user
+            
+            break
         
-        data = await self.http.user_get(user_id_value)
+        data = await self.http.user_get(user_id)
         return User._create_and_update(data)
     
-    async def guild_user_get(self, guild, user_id):
+    async def guild_user_get(self, guild, user):
         """
         Gets an user and it's profile at a guild. The user must be the member of the guild. If the user is already
         loaded updates it.
@@ -8193,9 +8793,9 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild``
+        guild : ``Guild`` or `int`
             The guild, where the user is.
-        user_id : `int`
+        user : ``Client``, ``User`` or `int`
             The user's id, who will be requested.
         
         Returns
@@ -8204,12 +8804,37 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            - If `user` was not given neither as ``User``, ``Client``, neither as `int` instance.
+            - If `guild` was not given neither as ``Guild`` nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        data = await self.http.guild_user_get(guild.id, user_id)
+        if isinstance(user, (User, Client)):
+            user_id = user.id
+        else:
+            user_id = maybe_snowflake(user)
+            if user_id is None:
+                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                    f'got {user.__class__.__name__}.')
+        
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+            
+            guild = None
+        
+        data = await self.http.guild_user_get(guild_id, user_id)
+        
+        if guild is None:
+            guild = Guild.precreate(guild_id)
+        
         return User._create_and_update(data, guild)
     
     async def guild_user_search(self, guild, query, limit=1):
@@ -8225,7 +8850,7 @@ class Client(UserBase):
         query : `name`
             The query string with what the user's name or nick should start.
         limit : `int`, Optional
-            The maximal amount of users to return. Can between `1` and `1000`. Defaults to `1`.
+            The maximal amount of users to return. Can be in range [1:1000], defaults to `1`.
         
         Returns
         -------
@@ -8233,24 +8858,52 @@ class Client(UserBase):
         
         Raises
         ------
-        ValueError
-            If limit is not between `1` and `1000`.
+        TypeError
+            If `guild` was not given neither as ``Guild`` nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `query` was not given as `str` instance.
+            - If `query`'s length is out of teh expected range [1:32].
+            - If `limit` was not given as `str` instance.
+            - If `limit` is out fo expected range [1:1000].
         """
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+            
+            guild = None
+        
+        if __debug__:
+            if not isinstance(query, str):
+                raise AssertionError(f'`query` can be given as `str` instance, got {query.__class__.__name__}.')
+            
+            query_length = len(query)
+            if query_length < 1 or query_length > 1000:
+                raise AssertionError(f'`query` length can be in range [1:1000], got {query_length!r}; {query!r}.')
+            
+            if not isinstance(limit, int):
+                raise AssertionError(f'`limit` can be given as `int` instance, got {limit.__class__.__name__}.')
+            
+            if limit < 0 or limit > 1000:
+                raise AssertionError(f'`limit` can be in range [1:1000], got {limit!r}.')
+                
         data = {'query': query}
         
-        if limit == 1:
-            # default limit is `0`, so not needed to send it.
-            pass
-        elif limit > 0 and limit < 1000:
+        if limit != 1:
             data['limit'] = limit
-        else:
-            raise ValueError('`limit` can be between 1 and 1000, got `{limit}`')
         
-        data = await self.http.guild_user_search(guild.id, data)
+        data = await self.http.guild_user_search(guild_id, data)
+        
+        if guild is None:
+            guild = Guild.precreate(guild_id)
+        
         return [User._create_and_update(user_data, guild) for user_data in data]
     
     # integrations
@@ -8265,7 +8918,7 @@ class Client(UserBase):
             
             Parameters
             ----------
-            guild : ``Guild``
+            guild : ``Guild`` or `int`
                 The guild, what's integrations will be requested.
             
             Returns
@@ -8274,13 +8927,23 @@ class Client(UserBase):
             
             Raises
             ------
+            TypeError
+                If `guild` was not given neither as ``Guild`` nor `int` instance.
             ConnectionError
                 No internet connection.
             DiscordException
                 If any exception was received from the Discord API.
             """
-            integrations_data = await self.http.integration_get_all(guild.id, None)
-            return [Integration(integration_data) for integration_data in integrations_data]
+            if isinstance(guild, Guild):
+                guild_id = guild.id
+            else:
+                guild_id = maybe_snowflake(guild)
+                if guild_id is None:
+                    raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
+                        f'{guild.__class__.__name__}.')
+            
+            integration_datas = await self.http.integration_get_all(guild_id, None)
+            return [Integration(integration_data) for integration_data in integration_datas]
     else:
         async def integration_get_all(self, guild):
             """
@@ -8290,7 +8953,7 @@ class Client(UserBase):
             
             Parameters
             ----------
-            guild : ``Guild``
+            guild : ``Guild`` or `int`
                 The guild, what's integrations will be requested.
             
             Returns
@@ -8299,13 +8962,23 @@ class Client(UserBase):
             
             Raises
             ------
+            TypeError
+                If `guild` was not given neither as ``Guild`` nor `int` instance.
             ConnectionError
                 No internet connection.
             DiscordException
                 If any exception was received from the Discord API.
             """
-            integrations_data = await self.http.integration_get_all(guild.id, {'include_applications': True})
-            return [Integration(integration_data) for integration_data in integrations_data]
+            if isinstance(guild, Guild):
+                guild_id = guild.id
+            else:
+                guild_id = maybe_snowflake(guild)
+                if guild_id is None:
+                    raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
+                        f'{guild.__class__.__name__}.')
+            
+            integration_datas = await self.http.integration_get_all(guild_id, {'include_applications': True})
+            return [Integration(integration_data) for integration_data in integration_datas]
     
     async def integration_create(self, guild, integration_id, type_):
         """
@@ -8315,7 +8988,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild``
+        guild : ``Guild`` or `int`
             The guild to what the integration will be attached to.
         integration_id : ``int``
             The integration's id.
@@ -8329,19 +9002,42 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            - If `guild` was not given neither as ``Guild`` nor `int` instance.
+            - If `integration_id` was not given as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            If `type_` is not given as `str` instance.
         """
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        integration_id_value = maybe_snowflake(integration_id)
+        if integration_id_value is None:
+            raise TypeError(f'`integration_id` can be given as `int` instance, got '
+                f'{integration_id.__class__.__name__}.')
+        
+        if __debug__:
+            if not isinstance(type_, str):
+                raise AssertionError(f'`type_` can be given as `int` instance, got {type_.__class__.__name__}.')
+        
         data = {
-            'id'   : integration_id,
+            'id'   : integration_id_value,
             'type' : type_,
                 }
-        data = await self.http.integration_create(guild.id, data)
+        
+        data = await self.http.integration_create(guild_id, data)
         return Integration(data)
 
-    async def integration_edit(self, integration, expire_behavior=None, expire_grace_period=None, enable_emojis=True):
+    async def integration_edit(self, integration, expire_behavior=None, expire_grace_period=None, enable_emojis=None):
         """
         Edits the given integration.
         
@@ -8351,12 +9047,12 @@ class Client(UserBase):
         ----------
         integration : ``Integration``
             The integration to edit.
-        expire_behavior : `int`, Optional
+        expire_behavior : `None` or `int`, Optional
             Can be `0` for kick or `1` for role  remove.
-        expire_grace_period : `int`, Optional
-            The time in days, after the subscription will be ignored. Can be `1`, `3`, `7`, `14` or `30`.
-        enable_emojis : `bool`, Optional
-            Twitch only.
+        expire_grace_period : `None` or `int`, Optional
+            The time in days, after the subscription will be ignored. Can be any of `(1, 3, 7, 14, 30)`.
+        enable_emojis : `None` or `bool`, Optional
+            Whether teh users can use the integration's emojis in Discord.
         
         Raises
         ------
@@ -8365,13 +9061,24 @@ class Client(UserBase):
             - If `expire_grace_period` was not passed as `int`.
             - If `enable_emojis` was not passed as `bool`.
         ValueError
-            - If `expire_behavior` was passed as `int`, but not any of: `0`, `1`.
-            - If `expire_grace_period` was passed as `int`, but not any of `1`, `3`, `7`, `14`, `30`.
+
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `integration` was not given as ``Integration``` instance.
+            - If `expire_behavior` was not given neither as `None` nor as `int` instance.
+            - If `expire_grace_period` was not given neither as `None` nor as `int` instance.
+            - If `expire_behavior` is not any of: `(0, 1)`.
+            - If `expire_grace_period` is not any of `(1, 3, 7, 14, 30)`.
+            - If `enable_emojis` is neither `None` or `bool` instance.
         """
+        if __debug__:
+            if not isinstance(integration, Integration):
+                raise AssertionError(f'`integration` can be given as `{Integration.__name__}` instance, got '
+                    f'{integration.__class__.__name__}.')
+        
         detail = integration.detail
         if detail is None:
             return
@@ -8384,29 +9091,39 @@ class Client(UserBase):
         if guild is None:
             return
         
-        if expire_behavior is None:
-            expire_behavior = integration.expire_behavior
-        elif type(expire_behavior) is int:
-            if expire_behavior not in (0, 1):
-                raise ValueError(f'`expire_behavior` should be 0 for kick, 1 for remove role, got {expire_behavior!r}.')
-        else:
-            raise TypeError(f'`expire_behavior` should be type `int`, got {expire_behavior.__class__.__name__}.')
-        if expire_grace_period is None:
-            expire_grace_period=integration.expire_grace_period
-        elif type(expire_grace_period) is int:
-            if expire_grace_period not in (1, 3, 7, 14, 30):
-                raise ValueError(f'`expire_grace_period` should be 1, 3, 7, 14, 30, got {expire_grace_period!r}.')
-        else:
-            raise TypeError(f'`expire_grace_period` should be type `int`, got {expire_grace_period.__class__.__name__}.')
+        data = {}
         
-        data = {
-            'expire_behavior'     : expire_behavior,
-            'expire_grace_period' : expire_grace_period,
-                }
+        if expire_behavior is not None:
+            if __debug__:
+                if not isinstance(expire_behavior, int):
+                    raise AssertionError(f'`expire_behavior` can be given either as `None` or as `int` instance, got '
+                        f'{expire_behavior.__class__.__name__}.')
+                
+                if expire_behavior not in (0, 1):
+                    raise AssertionError(f'`expire_behavior` should be 0 for kick, 1 for remove role, got '
+                        f'{expire_behavior!r}.')
+            
+            data['expire_behavior'] = expire_behavior
         
-        if (integration.type == 'twitch') and (enable_emojis is not None):
-            if type(enable_emojis) is not bool:
-                raise TypeError(f'`enable_emojis` should be `bool`, got {enable_emojis.__class__.__name__}.')
+        if expire_grace_period is not None:
+            if __debug__:
+                if not isinstance(expire_grace_period, int):
+                    raise AssertionError(f'`expire_grace_period` can be given either as `None` or as `int` instance, '
+                        f'got {expire_grace_period.__class__.__name__}.')
+                
+                if expire_grace_period not in (1, 3, 7, 14, 30):
+                    raise AssertionError(f'`expire_grace_period` can be one of `(1, 3, 7, 14, 30)`, got '
+                        f'{expire_grace_period!r}.')
+                
+            data['expire_grace_period'] = expire_grace_period
+   
+        
+        if (enable_emojis is not None):
+            if __debug__:
+                if not isinstance(enable_emojis, bool):
+                    raise AssertionError(f'`enable_emojis` can be given either as `None` or as `bool` instance, '
+                        f'got {enable_emojis.__class__.__name__}.')
+            
             data['enable_emoticons'] = enable_emojis
         
         await self.http.integration_edit(guild.id, integration.id, data)
@@ -8428,7 +9145,14 @@ class Client(UserBase):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            If `integration` was not given as ``Integration``` instance.
         """
+        if __debug__:
+            if not isinstance(integration, Integration):
+                raise AssertionError(f'`integration` can be given as `{Integration.__name__}` instance, got '
+                    f'{integration.__class__.__name__}.')
+        
         detail = integration.detail
         if detail is None:
             return
@@ -8460,7 +9184,14 @@ class Client(UserBase):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            If `integration` was not given as ``Integration``` instance.
         """
+        if __debug__:
+            if not isinstance(integration, Integration):
+                raise AssertionError(f'`integration` can be given as `{Integration.__name__}` instance, got '
+                    f'{integration.__class__.__name__}.')
+        
         detail = integration.detail
         if detail is None:
             return
@@ -8475,7 +9206,20 @@ class Client(UserBase):
         
         await self.http.integration_sync(guild.id, integration.id)
     
-    async def permission_ow_edit(self, channel, overwrite, allow, deny, reason=None):
+    async def permission_ow_edit(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.permission_overwrite_edit`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.permission_ow_edit` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.permission_overwrite_edit` instead.',
+            FutureWarning)
+        
+        return await self.permission_overwrite_edit(*args, **kwargs)
+    
+    async def permission_overwrite_edit(self, channel, overwrite, allow, deny, reason=None):
         """
         Edits the given permission overwrite.
         
@@ -8485,7 +9229,7 @@ class Client(UserBase):
         ----------
         channel : ˙˙ChannelGuildBase`` instance
             The channel where the permission overwrite is.
-        overwrite : ``PermOW``
+        overwrite : ``PermissionOverwrite``
             The permission overwrite to edit.
         allow : ``Permission``
             The permission overwrite's new allowed permission's value.
@@ -8506,9 +9250,23 @@ class Client(UserBase):
             'deny'  : deny,
             'type'  : overwrite.type
                 }
-        await self.http.permission_ow_create(channel.id, overwrite.target.id, data, reason)
+        
+        await self.http.permission_overwrite_create(channel.id, overwrite.target.id, data, reason)
     
-    async def permission_ow_delete(self, channel, overwrite, reason=None):
+    async def permission_ow_delete(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.permission_overwrite_delete`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.permission_ow_delete` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.permission_overwrite_delete` instead.',
+            FutureWarning)
+        
+        return await self.permission_overwrite_delete(*args, **kwargs)
+    
+    async def permission_overwrite_delete(self, channel, overwrite, reason=None):
         """
         Deletes the given permission overwrite.
         
@@ -8518,7 +9276,7 @@ class Client(UserBase):
         ----------
         channel : ˙˙ChannelGuildBase`` instance
             The channel where the permission overwrite is.
-        overwrite : ``PermOW``
+        overwrite : ``PermissionOverwrite``
             The permission overwrite to delete.
         reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
@@ -8530,9 +9288,22 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        await self.http.permission_ow_delete(channel.id, overwrite.target.id, reason)
+        await self.http.permission_overwrite_delete(channel.id, overwrite.target.id, reason)
     
-    async def permission_ow_create(self, channel, target, allow, deny, reason=None):
+    async def permission_ow_create(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.permission_overwrite_create`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.permission_ow_create` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.permission_overwrite_create` instead.',
+            FutureWarning)
+        
+        return await self.permission_overwrite_create(*args, **kwargs)
+    
+    async def permission_overwrite_create(self, channel, target, allow, deny, reason=None):
         """
         Creates a permission overwrite at the given channel.
         
@@ -8553,7 +9324,7 @@ class Client(UserBase):
         
         Returns
         -------
-        permission_overwrite : ``PermOW``
+        permission_overwrite : ``PermissionOverwrite``
             A permission overwrite, what estimatedly is same as the one what Discord will create.
         
         Raises
@@ -8580,8 +9351,8 @@ class Client(UserBase):
             'type'  : type_,
                 }
         
-        await self.http.permission_ow_create(channel.id, target.id, data, reason)
-        return PermOW.custom(target, allow, deny)
+        await self.http.permission_overwrite_create(channel.id, target.id, data, reason)
+        return PermissionOverwrite.custom(target, allow, deny)
     
     # Webhook management
     
@@ -8683,7 +9454,7 @@ class Client(UserBase):
             channel = webhook.channel
             if (channel is not None):
                 guild = channel.guild
-                if (guild is not None) and guild.webhooks_uptodate:
+                if (guild is not None) and guild.webhooks_up_to_date:
                     return webhook
             
             data = await self.http.webhook_get(webhook_id_value)
@@ -8739,7 +9510,7 @@ class Client(UserBase):
             channel = webhook.channel
             if (channel is not None):
                 guild = channel.guild
-                if (guild is not None) and guild.webhooks_uptodate:
+                if (guild is not None) and guild.webhooks_up_to_date:
                     return webhook
         
         data = await self.http.webhook_get_token(webhook)
@@ -8791,8 +9562,21 @@ class Client(UserBase):
         """
         data = await self.http.webhook_get_token(webhook)
         webhook._update_no_return(data)
+    
+    async def webhook_get_channel(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.webhook_get_all_channel`` instead. Will be removed in 2021 April.
         
-    async def webhook_get_channel(self, channel):
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.webhook_get_channel` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.webhook_get_all_channel` instead.',
+            FutureWarning)
+        
+        return await self.webhook_get_all_channel(*args, **kwargs)
+    
+    async def webhook_get_all_channel(self, channel):
         """
         Requests the webhooks of the channel.
         
@@ -8822,13 +9606,26 @@ class Client(UserBase):
         if guild is None:
             return []
         
-        if guild.webhooks_uptodate:
+        if guild.webhooks_up_to_date:
             return [webhook for webhook in guild.webhooks.values() if webhook.channel is channel]
         
-        data = await self.http.webhook_get_channel(channel.id)
+        data = await self.http.webhook_get_all_channel(channel.id)
         return [Webhook(data) for data in data]
     
-    async def webhook_get_guild(self, guild):
+    async def webhook_get_guild(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.webhook_get_all_guild`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.webhook_get_guild` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.webhook_get_all_guild` instead.',
+            FutureWarning)
+        
+        return await self.webhook_get_all_guild(*args, **kwargs)
+    
+    async def webhook_get_all_guild(self, guild):
         """
         Requests the webhooks of the given guild.
         
@@ -8854,14 +9651,14 @@ class Client(UserBase):
         -----
         No request is done, if the guild's webhooks are up to date.
         """
-        if guild.webhooks_uptodate:
+        if guild.webhooks_up_to_date:
             return list(guild.webhooks.values())
         
         old_ids = list(guild.webhooks)
         
         result = []
         
-        data = await self.http.webhook_get_guild(guild.id)
+        data = await self.http.webhook_get_all_guild(guild.id)
         for webhook_data in data:
             webhook = Webhook(webhook_data)
             result.append(webhook)
@@ -9548,7 +10345,7 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        data = await self.http.guild_emojis(guild.id)
+        data = await self.http.guild_emoji_get_all(guild.id)
         guild._sync_emojis(data)
     
     async def emoji_create(self, guild, name, image, roles=[], reason=None):
@@ -9686,8 +10483,21 @@ class Client(UserBase):
         await self.http.emoji_edit(guild.id, emoji.id, data, reason)
         
     # Invite management
+    
+    async def vanity_invite(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.vanity_invite_get`` instead. Will be removed in 2021 April.
         
-    async def vanity_invite(self, guild):
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.vanity_invite` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.vanity_invite_get` instead.',
+            FutureWarning)
+        
+        return await self.vanity_invite_get(*args, **kwargs)
+    
+    async def vanity_invite_get(self, guild):
         """
         Returns the vanity invite of the given guild.
         
@@ -9717,7 +10527,20 @@ class Client(UserBase):
         data = await self.http.invite_get(vanity_code, {})
         return Invite._create_vanity(guild, data)
     
-    async def vanity_edit(self, guild, code, reason=None):
+    async def vanity_edit(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.vanity_invite_edit`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.vanity_edit` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.vanity_invite_edit` instead.',
+            FutureWarning)
+        
+        return await self.vanity_invite_edit(*args, **kwargs)
+    
+    async def vanity_invite_edit(self, guild, code, reason=None):
         """
         Edits the given guild's vanity invite's code.
         
@@ -9739,7 +10562,7 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        await self.http.vanity_edit(guild.id, {'code': code}, reason)
+        await self.http.vanity_invite_edit(guild.id, {'code': code}, reason)
     
     async def invite_create(self, channel, max_age=0, max_uses=0, unique=True, temporary=False):
         """
@@ -9858,7 +10681,20 @@ class Client(UserBase):
         data = await self.http.invite_create(voice_state.channel.id, data)
         return Invite(data, False)
     
-    async def invite_create_pref(self, guild, *args, **kwargs):
+    async def invite_create_pref(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.invite_create_preferred`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.invite_create_pref` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.invite_create_preferred` instead.',
+            FutureWarning)
+        
+        return await self.invite_create_preferred(*args, **kwargs)
+    
+    async def invite_create_preferred(self, guild, *args, **kwargs):
         """
         Creates an invite to the guild's preferred channel.
         
@@ -9993,7 +10829,20 @@ class Client(UserBase):
         
         updater(invite, data)
     
-    async def invite_get_guild(self, guild):
+    async def invite_get_guild(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.invite_get_all_guild`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.invite_get_guild` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.invite_get_all_guild` instead.',
+            FutureWarning)
+        
+        return await self.invite_get_all_guild(*args, **kwargs)
+    
+    async def invite_get_all_guild(self, guild):
         """
         Gets the invites of the given guild.
         
@@ -10015,10 +10864,23 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        data = await self.http.invite_get_guild(guild.id)
+        data = await self.http.invite_get_all_guild(guild.id)
         return [Invite(invite_data, False) for invite_data in data]
     
-    async def invite_get_channel(self, channel):
+    async def invite_get_channel(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.invite_get_all_channel`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.invite_get_channel` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.invite_get_all_channel` instead.',
+            FutureWarning)
+        
+        return await self.invite_get_all_channel(*args, **kwargs)
+    
+    async def invite_get_all_channel(self, channel):
         """
         Gets the invites of the given channel.
         
@@ -10040,7 +10902,7 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        data = await self.http.invite_get_channel(channel.id)
+        data = await self.http.invite_get_all_channel(channel.id)
         return [Invite(invite_data, False) for invite_data in data]
 
     async def invite_delete(self, invite, reason=None):
@@ -11925,7 +12787,7 @@ class Client(UserBase):
         This endpoint is available only for bot accounts.
         """
         if self.is_bot:
-            data = await self.http.client_application_info()
+            data = await self.http.client_application_get()
             self.application = self.application._create_update(data, False)
     
     async def client_gateway(self):
@@ -13197,7 +14059,7 @@ class Client(UserBase):
         -------
         relationships : `list` of ``Relationship`` objects
         """
-        type_ = RelationshipType.pending_incoiming
+        type_ = RelationshipType.pending_incoming
         return [rs for rs in self.relationships.values() if rs.type is type_]
     
     @property
@@ -13243,6 +14105,7 @@ module_invite.Client = Client
 module_parsers.Client = Client
 module_client_utils.Client = Client
 module_guild.Client = Client
+module_audit_logs.Client = Client
 
 del module_client_core
 del re
@@ -13257,3 +14120,4 @@ del methodize
 del module_client_utils
 del module_channel
 del module_guild
+del module_audit_logs

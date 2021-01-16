@@ -48,7 +48,7 @@ class EVENT_SYSTEM_CORE(object):
     parsers : `dict` of (`str`, `tuple` (`str`, `str`)) items
         Event name - tuple of parser names relation for checking which parser is used when an event is added.
     """
-    __slots__=('defaults', 'parsers',)
+    __slots__ = ('defaults', 'parsers',)
     def __init__(self):
         """
         Creates an ``EVENT_SYSTEM_CORE`` instance. This method is called only once, when creating
@@ -7396,7 +7396,7 @@ class EventDescriptor(object):
         +---------------+---------------------------------------+
         | nsfw          | `bool`                                |
         +---------------+---------------------------------------+
-        | overwrites    | `list` of ``PermOW``                  |
+        | overwrites    | `list` of ``PermissionOverwrite``     |
         +---------------+---------------------------------------+
         | owner_id      | `int`                                 |
         +---------------+---------------------------------------+
@@ -8012,7 +8012,7 @@ class EventDescriptor(object):
             The ``EventDescriptor`` has no attribute named as the given `name`.
         """
         parser_names = EVENTS.parsers.get(name, None)
-        if (parser_names is None):
+        if (parser_names is None) or (not parser_names):
             object.__setattr__(self, name, value)
             return
         

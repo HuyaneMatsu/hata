@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('PermOW', 'Role', 'cr_p_overwrite_object', 'cr_p_role_object', )
+__all__ = ('PermissionOverwrite', 'Role', 'cr_p_overwrite_object', 'cr_p_role_object', )
 
 from ..backend.utils import DOCS_ENABLED
 
@@ -755,7 +755,7 @@ class Role(DiscordEntity, immortal=True):
         return NotImplemented
 
 
-class PermOW(object):
+class PermissionOverwrite(object):
     """
     Represents a permission overwrite of a guild channel.
     
@@ -825,7 +825,7 @@ class PermOW(object):
         
         Returns
         -------
-        self : ``PermOW``
+        self : ``PermissionOverwrite``
         """
         if type(target) is Role:
             target_role = target
@@ -1133,7 +1133,7 @@ def cr_p_role_object(name, id_=None, color=Color(), separated=False, position=0,
 
 def cr_p_overwrite_object(target, allow, deny):
     """
-    Creates a json serializable object representing a ``PermOW``(permission overwrite).
+    Creates a json serializable object representing a ``PermissionOverwrite``(permission overwrite).
     
     Parameters
     ----------

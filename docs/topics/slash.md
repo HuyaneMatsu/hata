@@ -177,7 +177,7 @@ async def guild_icon(client, event,
             'Invite-splash'    : 'invite_splash'    ,
                 }, 'Which icon of the guild?' ) = 'icon',
             ):
-    """Shows the guild's icon."""
+    """Shows the guild's icon or it's selected splash."""
     guild = event.guild
     if (guild is None) or guild.partial:
         return Embed('Error', 'The command unavailable in guilds, where the application\'s bot is not in.')
@@ -238,7 +238,11 @@ async def roll(client, event,
         dice_count: ([(str(v), v) for v in range(1, 7)], 'With how much dice do you wanna roll?') = 1,
             ):
     """Rolls with dices."""
-    return str(round((1.+(random()*5.))*dice_count))
+    amount = 0
+    for _ in range(dice_count):
+        amount += round(1.+(random()*5.))
+    
+    return str(amount)
 ```
 
 ### Required & not required parameters

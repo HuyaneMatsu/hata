@@ -408,7 +408,7 @@ class ERROR_CODES:
     +---------------------------------------------------+-----------+-------+
     | not_enough_guild_members                          | 30029     | -     |
     +---------------------------------------------------+-----------+-------+
-    | max_guild_discovery_categories                    | 30030     | 5     |
+    | max_guild_discovery_category                      | 30030     | 5     |
     +---------------------------------------------------+-----------+-------+
     | unauthorized                                      | 40001     | -     |
     +---------------------------------------------------+-----------+-------+
@@ -609,7 +609,7 @@ class ERROR_CODES:
     max_invites             = 30016 # 1000
     max_animated_emoji      = 30018
     not_enough_guild_members = 30029
-    max_guild_discovery_categories = 30030 # 5
+    max_guild_discovery_category = 30030 # 5
     
     unauthorized            = 40001
     email_verification_required = 40002

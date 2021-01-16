@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-__all__ = ('ClientWrapper', 'Typer', )
+__all__ = ('BanEntry', 'ClientWrapper', 'Typer', )
 
 from math import inf
+from collections import namedtuple
 
 from ..backend.utils import basemethod, _spaceholder
 from ..backend.event_loop import LOOP_TIME
@@ -576,7 +577,7 @@ class DiscoveryTermRequestCacher(object):
 
 class UserGuildPermission(object):
     """
-    Represents a user's permissions inside of a guild. Returned by ``Client.user_guilds``.
+    Represents a user's permissions inside of a guild. Returned by ``Client.user_guild_get_all``.
     
     Attributes
     ----------
@@ -1012,3 +1013,15 @@ def maybe_snowflake(value):
                 f'{value!r}.')
     
     return value
+
+BanEntry = namedtuple('BanEntry', ('user', 'reason'))
+BanEntry.__doc__ = ("""
+    A `namedtuple` instance representing a ban entry.
+    
+    Attributes
+    ----------
+    user : `User`` or ``Client``
+        The banned user.
+    reason : `None` or `str`
+        The ban reason if applicable.
+    """)

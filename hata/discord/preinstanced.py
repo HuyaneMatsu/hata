@@ -835,7 +835,7 @@ class RelationshipType(PreinstancedBase):
 RelationshipType.stranger          = RelationshipType(0, 'stranger')
 RelationshipType.friend            = RelationshipType(1, 'friend')
 RelationshipType.blocked           = RelationshipType(2, 'blocked')
-RelationshipType.pending_incoming = RelationshipType(3, 'pending_incoming')
+RelationshipType.pending_incoming  = RelationshipType(3, 'pending_incoming')
 RelationshipType.pending_outgoing  = RelationshipType(4, 'pending_outgoing')
 RelationshipType.implicit          = RelationshipType(5, 'implicit')
 

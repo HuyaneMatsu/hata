@@ -15,7 +15,7 @@ from .permission import Permission
 from .http import URLS
 from .message import Message, MESSAGES
 from .user import User, ZEROUSER
-from .role import PermOW
+from .role import PermissionOverwrite
 from .client_core import GC_CYCLER
 from .webhook import Webhook, WebhookRepr
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_bool
@@ -531,7 +531,7 @@ class MessageIterator(object):
             
             if channel is None:
                 try:
-                    messages = await client.message_logs_fromzero(channel_id, 100)
+                    messages = await client.message_get_chunk_from_zero(channel_id, 100)
                 except BaseException as err:
                     if isinstance(err, DiscordException) and err.code in (
                             ERROR_CODES.unknown_message, # message deleted
@@ -742,10 +742,16 @@ class ChannelTextBase:
         message._finish_init(data, self)
         
         if (messages is not None):
-            if messages and (messages[0].id < message_id):
+            if messages and (messages[0].id > message_id):
                 index = message_relative_index(messages, message_id)
                 max_length = messages.maxlen
-                max_length_reached = (max_length is not None) and (max_length >= self._message_keep_limit)
+                if max_length is None:
+                    max_length_reached = False
+                else:
+                    if max_length == len(messages):
+                        max_length_reached = True
+                    else:
+                        max_length_reached = False
                 
                 if index == len(messages):
                     if not max_length_reached:
@@ -1162,7 +1168,7 @@ class ChannelGuildBase(ChannelBase):
         The channel's guild. If the channel is deleted, set to `None`.
     name : `str`
         The channel's name.
-    overwrites : `list` of ``PermOW`` objects
+    overwrites : `list` of ``PermissionOverwrite`` objects
         The channel's permission overwrites.
     position : `int`
         The channel's position.
@@ -1514,7 +1520,7 @@ class ChannelGuildBase(ChannelBase):
         
         Returns
         -------
-        overwrites : `list` of ``PermOW``
+        overwrites : `list` of ``PermissionOverwrite``
         """
         overwrites = []
         try:
@@ -1528,7 +1534,7 @@ class ChannelGuildBase(ChannelBase):
         default_role = self.guild.default_role
         
         for overwrite_data in overwrites_data:
-            overwrite = PermOW(overwrite_data)
+            overwrite = PermissionOverwrite(overwrite_data)
             if overwrite.target_role is default_role:
                 overwrites.insert(0, overwrite)
             else:
@@ -1765,7 +1771,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         The channel's guild. If the channel is deleted, set to `None`.
     name : `str`
         The channel's name.
-    overwrites : `list` of ``PermOW`` objects
+    overwrites : `list` of ``PermissionOverwrite`` objects
         The channel's permission overwrites.
     position : `int`
         The channel's position.
@@ -1952,7 +1958,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         +---------------+-----------------------------------+
         | nsfw          | `bool`                            |
         +---------------+-----------------------------------+
-        | overwrites    | `list` of ``PermOW``              |
+        | overwrites    | `list` of ``PermissionOverwrite``              |
         +---------------+-----------------------------------+
         | position      | `int`                             |
         +---------------+-----------------------------------+
@@ -2530,7 +2536,7 @@ class ChannelVoice(ChannelGuildBase):
         The channel's guild. If the channel is deleted, set to `None`.
     name : `str`
         The channel's name.
-    overwrites : `list` of ``PermOW`` objects
+    overwrites : `list` of ``PermissionOverwrite`` objects
         The channel's permission overwrites.
     position : `int`
         The channel's position.
@@ -2706,7 +2712,7 @@ class ChannelVoice(ChannelGuildBase):
         +---------------+-----------------------------------+
         | name          | `str`                             |
         +---------------+-----------------------------------+
-        | overwrites    | `list` of ``PermOW``              |
+        | overwrites    | `list` of ``PermissionOverwrite``              |
         +---------------+-----------------------------------+
         | position      | `int`                             |
         +---------------+-----------------------------------+
@@ -3288,7 +3294,7 @@ class ChannelCategory(ChannelGuildBase):
         The channel's guild. If the channel is deleted, set to `None`.
     name : `str`
         The channel's name.
-    overwrites : `list` of ``PermOW`` objects
+    overwrites : `list` of ``PermissionOverwrite`` objects
         The channel's permission overwrites.
     position : `int`
         The channel's position.
@@ -3427,7 +3433,7 @@ class ChannelCategory(ChannelGuildBase):
         +===============+===================================+
         | name          | `str`                             |
         +---------------+-----------------------------------+
-        | overwrites    | `list` of ``PermOW``              |
+        | overwrites    | `list` of ``PermissionOverwrite``              |
         +---------------+-----------------------------------+
         | position      | `int`                             |
         +---------------+-----------------------------------+
@@ -3574,7 +3580,7 @@ class ChannelStore(ChannelGuildBase):
         The channel's guild. If the channel is deleted, set to `None`.
     name : `str`
         The channel's name.
-    overwrites : `list` of ``PermOW`` objects
+    overwrites : `list` of ``PermissionOverwrite`` objects
         The channel's permission overwrites.
     position : `int`
         The channel's position.
@@ -3722,7 +3728,7 @@ class ChannelStore(ChannelGuildBase):
         +---------------+-----------------------------------+
         | nsfw          | `bool`                            |
         +---------------+-----------------------------------+
-        | overwrites    | `list` of ``PermOW``              |
+        | overwrites    | `list` of ``PermissionOverwrite``              |
         +---------------+-----------------------------------+
         | position      | `int`                             |
         +---------------+-----------------------------------+
@@ -3903,7 +3909,7 @@ class ChannelThread(ChannelGuildBase):
         The channel's guild. If the channel is deleted, set to `None`.
     name : `str`
         The channel's name.
-    overwrites : `list` of ``PermOW`` objects
+    overwrites : `list` of ``PermissionOverwrite`` objects
         The channel's permission overwrites.
     position : `int`
         The channel's position.
@@ -4043,7 +4049,7 @@ class ChannelThread(ChannelGuildBase):
         +---------------+-----------------------------------+
         | name          | `str`                             |
         +---------------+-----------------------------------+
-        | overwrites    | `list` of ``PermOW``              |
+        | overwrites    | `list` of ``PermissionOverwrite``              |
         +---------------+-----------------------------------+
         | position      | `int`                             |
         +---------------+-----------------------------------+
@@ -4207,7 +4213,7 @@ class ChannelGuildUndefined(ChannelGuildBase):
         The channel's guild. If the channel is deleted, set to `None`.
     name : `str`
         The channel's name.
-    overwrites : `list` of ``PermOW`` objects
+    overwrites : `list` of ``PermissionOverwrite`` objects
         The channel's permission overwrites.
     position : `int`
         The channel's position.
@@ -4380,7 +4386,7 @@ class ChannelGuildUndefined(ChannelGuildBase):
         +---------------+-----------------------------------+
         | name          | `str`                             |
         +---------------+-----------------------------------+
-        | overwrites    | `list` of ``PermOW``              |
+        | overwrites    | `list` of ``PermissionOverwrite``              |
         +---------------+-----------------------------------+
         | position      | `int`                             |
         +---------------+-----------------------------------+

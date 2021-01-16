@@ -1909,7 +1909,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `N/A`
         - Resets after : `N/A`
     
-    - applications_detectable
+    - application_get_all_detectable
         - Endpoint : `/applications/detectable`
         - Method : `GET`
         - Required auth : `bot`
@@ -1969,7 +1969,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `OPT`
         - Resets after : `OPT`
     
-    - invite_get_channel
+    - invite_get_all_channel
         - Endpoint : `/channels/{channel_id}/invites`
         - Method : `GET`
         - Required auth : `bot`
@@ -1985,7 +1985,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `5`
         - Resets after : `15.0`
     
-    - message_logs
+    - message_get_chunk
         - Endpoint : `/channels/{channel_id}/messages`
         - Method : `GET`
         - Required auth : `bot`
@@ -2075,7 +2075,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `1`
         - Resets after : `0.25`
     
-    - reaction_users
+    - reaction_user_get_chunk
         - Endpoint : `/channels/{channel_id}/messages/{message_id}/reactions/{reaction}`
         - Method : `GET`
         - Required auth : `bot`
@@ -2115,7 +2115,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `3`
         - Resets after : `1`
     
-    - permission_ow_delete
+    - permission_overwrite_delete
         - Endpoint : `/channels/{channel_id}/permissions/{overwrite_id}`
         - Method : `DELETE`
         - Required auth : `bot`
@@ -2123,7 +2123,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `OPT`
         - Resets after : `OPT`
     
-    - permission_ow_create
+    - permission_overwrite_create
         - Endpoint : `/channels/{channel_id}/permissions/{overwrite_id}`
         - Method : `PUT`
         - Required auth : `bot`
@@ -2131,7 +2131,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `OPT`
         - Resets after : `OPT`
     
-    - channel_pins
+    - channel_pin_get_all
         - Endpoint : `/channels/{channel_id}/pins`
         - Method : `GET`
         - Required auth : `bot`
@@ -2139,7 +2139,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `1`
         - Resets after : `5`
     
-    - channel_pins_ack
+    - channel_pin_ack
         - Endpoint : `/channels/{channel_id}/pins/ack`
         - Method : `POST`
         - Required auth : `user`
@@ -2164,7 +2164,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `5`
         - Resets after : `4`
     
-    - channel_group_users
+    - channel_group_user_get_all
         - Endpoint : `/channels/{channel_id}/recipients/`
         - Method : `GET`
         - Required auth : `user`
@@ -2191,7 +2191,7 @@ class RATE_LIMIT_GROUPS:
         - Resets after : `OPT`
         - Notes : Untested.
         
-    - channel_thread_start
+    - thread_create
         - Endpoint : `/channels/{channel_id}/threads`
         - Method : `POST`
         - Required auth : `UN`
@@ -2200,7 +2200,7 @@ class RATE_LIMIT_GROUPS:
         - Resets after : `OPT`
         - Notes : Untested.
     
-    - thread_users
+    - thread_user_get_all
         - Endpoint : `/channels/{channel_id}/threads/participants`
         - Method : `GET`
         - Required auth : `UN`
@@ -2235,7 +2235,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `5`
         - Resets after : `5.0`
     
-    - webhook_get_channel
+    - webhook_get_all_channel
         - Endpoint : `/channels/{channel_id}/webhooks`
         - Method : `GET`
         - Required auth : `bot`
@@ -2251,7 +2251,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `OPT`
         - Resets after : `OPT`
     
-    - discovery_categories
+    - discovery_category_get_all
         - Endpoint : `/discovery/categories`
         - Method : `GET`
         - Required auth : `bot`
@@ -2325,7 +2325,7 @@ class RATE_LIMIT_GROUPS:
         - Resets after : `UN`
         - Notes : Untested.
     
-    - audit_logs
+    - audit_log_get_chunk
         - Endpoint : `/guilds/{guild_id}/audit-logs`
         - Method : `GET`
         - Required auth : `bot`
@@ -2333,7 +2333,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `OPT`
         - Resets after : `OPT`
     
-    - guild_bans
+    - message_id
         - Endpoint : `/guilds/{guild_id}/bans`
         - Method : `GET`
         - Required auth : `bot`
@@ -2365,7 +2365,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `OPT`
         - Resets after : `OPT`
     
-    - guild_channels
+    - guild_channel_get_all
         - Endpoint : `/guilds/{guild_id}/channels`
         - Method : `GET`
         - Required auth : `bot`
@@ -2448,7 +2448,7 @@ class RATE_LIMIT_GROUPS:
         - Resets after : `N/A`
         - Notes : Deprecated. Works on v6, v7.
     
-    - guild_emojis
+    - guild_emoji_get_all
         - Endpoint : `/guilds/{guild_id}/emojis`
         - Method : `GET`
         - Required auth : `bot`
@@ -2532,7 +2532,7 @@ class RATE_LIMIT_GROUPS:
         - Resets after : `OPT`
         - Notes : Untested.
     
-    - invite_get_guild
+    - invite_get_all_guild
         - Endpoint : `/guilds/{guild_id}/invites`
         - Method : `GET`
         - Required auth : `bot`
@@ -2556,7 +2556,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `OPT`
         - Resets after : `OPT`
     
-    - guild_users
+    - guild_user_get_chunk
         - Endpoint : `/guilds/{guild_id}/members`
         - Method : `GET`
         - Required auth : `bot`
@@ -2628,7 +2628,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `10`
         - Resets after : `10.0`
     
-    - guild_preview
+    - guild_preview_get
         - Endpoint : `/guilds/{guild_id}/preview`
         - Method : `GET`
         - Required auth : `bot`
@@ -2652,7 +2652,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `OPT`
         - Resets after : `OPT`
     
-    - guild_regions
+    - guild_voice_region_get_all
         - Endpoint : `/guilds/{guild_id}/regions`
         - Method : `GET`
         - Required auth : `bot`
@@ -2660,7 +2660,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `OPT`
         - Resets after : `OPT`
     
-    - guild_roles
+    - guild_role_get_all
         - Endpoint : `/guilds/{guild_id}/roles`
         - Method : `GET`
         - Required auth : `bot`
@@ -2700,7 +2700,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `1000`
         - Resets after : `86400.0`
     
-    - vanity_get
+    - vanity_invite_get
         - Endpoint : `/guilds/{guild_id}/vanity-url`
         - Method : `GET`
         - Required auth : `bot`
@@ -2708,7 +2708,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `OPT`
         - Resets after : `OPT`
     
-    - vanity_get
+    - vanity_invite_get
         - Endpoint : `/guilds/{guild_id}/vanity-url`
         - Method : `PATCH`
         - Required auth : `bot`
@@ -2733,7 +2733,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `100`
         - Resets after : `86400`
     
-    - webhook_get_guild
+    - webhook_get_all_guild
         - Endpoint : `/guilds/{guild_id}/webhooks`
         - Method : `GET`
         - Required auth : `bot`
@@ -2799,7 +2799,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `250`
         - Resets after : `6.0`
     
-    - client_application_info
+    - client_application_get
         - Endpoint : `/oauth2/applications/@me`
         - Method : `GET`
         - Required auth : `bot`
@@ -2824,7 +2824,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `OPT`
         - Resets after : `OPT`
     
-    - get_user_info
+    - user_info_get
         - Endpoint : `/users/@me`
         - Method : `GET`
         - Required auth : `bearer`
@@ -2832,7 +2832,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `OPT`
         - Resets after : `OPT`
     
-    - client_user
+    - client_user_get
         - Endpoint : `/users/@me`
         - Method : `GET`
         - Required auth : `bot`
@@ -2848,7 +2848,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `2`
         - Resets after : `3600.0`
     
-    - user_achievements
+    - user_achievement_get_all
         - Endpoint : `/users/@me/applications/{application_id}/achievements`
         - Method : `GET`
         - Required auth : `bearer`
@@ -2881,7 +2881,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `N/A`
         - Resets after : `N/A`
     
-    - client_connections
+    - client_connection_get_all
         - Endpoint : `/users/@me/connections`
         - Method : `GET`
         - Required auth : `bot`
@@ -2889,7 +2889,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `OPT`
         - Resets after : `OPT`
     
-    - user_connections
+    - user_connection_get_all
         - Endpoint : `/users/@me/connections`
         - Method : `GET`
         - Required auth : `bearer`
@@ -2905,7 +2905,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `1`
         - Resets after : `1.0`
     
-    - user_guilds
+    - user_guild_get_all
         - Endpoint : `/users/@me/guilds`
         - Method : `GET`
         - Required auth : `bearer`
@@ -2948,7 +2948,7 @@ class RATE_LIMIT_GROUPS:
         - Resets after : `OPT`
         - Notes : Untested.
     
-    - client_get_settings
+    - client_settings_get
         - Endpoint : `/users/@me/settings`
         - Method : `GET`
         - Required auth : `user`
@@ -2957,7 +2957,7 @@ class RATE_LIMIT_GROUPS:
         - Resets after : `OPT`
         - Notes : Untested.
     
-    - client_edit_settings
+    - client_settings_edit
         - Endpoint : `/users/@me/settings`
         - Method : `PATCH`
         - Required auth : `user`
@@ -2992,7 +2992,7 @@ class RATE_LIMIT_GROUPS:
         - Resets after : `OPT`
         - Notes : Untested.
     
-    - voice_regions
+    - voice_region_get_all
         - Endpoint : `/voice/regions`
         - Method : `GET`
         - Required auth : `bot`
@@ -3097,7 +3097,7 @@ class RATE_LIMIT_GROUPS:
         - Resets after : `2.0`
     
     - webhook_message_delete
-        - Endpoint : `/webhooks/{webhook_id}/{webhook_token}/messages/{message-id}`
+        - Endpoint : `/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}`
         - Method : `DELETE`
         - Required auth : `N/A`
         - Limiter : `webhook_id`
@@ -3105,7 +3105,7 @@ class RATE_LIMIT_GROUPS:
         - Resets after : `2.0`
     
     - webhook_message_edit
-        - Endpoint : `/webhooks/{webhook_id}/{webhook_token}/messages/{message-id}`
+        - Endpoint : `/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}`
         - Method : `PATCH`
         - Required auth : `N/A`
         - Limiter : `webhook_id`
@@ -3134,16 +3134,16 @@ class RATE_LIMIT_GROUPS:
     application_command_guild_delete = RateLimitGroup.unlimited() # untested
     application_command_guild_create = RateLimitGroup.unlimited() # untested
     application_command_guild_edit = RateLimitGroup.unlimited() # untested
-    applications_detectable     = RateLimitGroup(optimistic=True)
+    application_get_all_detectable = RateLimitGroup(optimistic=True)
     client_logout               = RateLimitGroup() # untested
     channel_delete              = RateLimitGroup.unlimited()
     channel_group_leave         = RateLimitGroup.unlimited() # untested; same as channel_delete?
     channel_edit                = RateLimitGroup(LIMITER_CHANNEL)
     channel_group_edit          = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested; same as channel_edit?
     channel_follow              = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
-    invite_get_channel          = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
+    invite_get_all_channel      = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
     invite_create               = RateLimitGroup()
-    message_logs                = RateLimitGroup(LIMITER_CHANNEL)
+    message_get_chunk           = RateLimitGroup(LIMITER_CHANNEL)
     message_create              = RateLimitGroup(LIMITER_CHANNEL)
     message_delete_multiple     = RateLimitGroup(LIMITER_CHANNEL)
     message_delete              = RateLimitGroup(LIMITER_CHANNEL)
@@ -3154,28 +3154,28 @@ class RATE_LIMIT_GROUPS:
     message_crosspost           = RateLimitGroup(LIMITER_CHANNEL)
     reaction_clear              = GROUP_REACTION_MODIFY
     reaction_delete_emoji       = GROUP_REACTION_MODIFY
-    reaction_users              = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
+    reaction_user_get_chunk     = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
     reaction_delete_own         = GROUP_REACTION_MODIFY
     reaction_add                = GROUP_REACTION_MODIFY
     reaction_delete             = GROUP_REACTION_MODIFY
     message_suppress_embeds     = RateLimitGroup()
-    permission_ow_delete        = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
-    permission_ow_create        = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
-    channel_pins                = RateLimitGroup()
-    channel_pins_ack            = RateLimitGroup(optimistic=True) # untested
+    permission_overwrite_delete = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
+    permission_overwrite_create = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
+    channel_pin_get_all         = RateLimitGroup()
+    channel_pin_ack             = RateLimitGroup(optimistic=True) # untested
     message_unpin               = GROUP_PIN_MODIFY
     message_pin                 = GROUP_PIN_MODIFY
-    channel_group_users         = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
+    channel_group_user_get_all  = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     channel_group_user_delete   = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     channel_group_user_add      = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
-    channel_thread_start        = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
-    thread_users                = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
+    thread_create               = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
+    thread_user_get_all         = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     thread_user_delete          = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     thread_user_add             = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     typing                      = RateLimitGroup(LIMITER_CHANNEL)
-    webhook_get_channel         = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
+    webhook_get_all_channel     = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
     webhook_create              = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
-    discovery_categories        = RateLimitGroup()
+    discovery_category_get_all  = RateLimitGroup()
     discovery_validate_term     = RateLimitGroup()
     client_gateway_hooman       = RateLimitGroup()
     client_gateway_bot          = RateLimitGroup()
@@ -3184,12 +3184,12 @@ class RATE_LIMIT_GROUPS:
     guild_get                   = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     guild_edit                  = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     guild_ack                   = RateLimitGroup() # untested
-    audit_logs                  = RateLimitGroup(LIMITER_GUILD, optimistic=True)
-    guild_bans                  = RateLimitGroup(LIMITER_GUILD, optimistic=True)
+    audit_log_get_chunk         = RateLimitGroup(LIMITER_GUILD, optimistic=True)
+    message_id                  = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     guild_ban_delete            = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     guild_ban_get               = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     guild_ban_add               = RateLimitGroup(LIMITER_GUILD, optimistic=True)
-    guild_channels              = RateLimitGroup(LIMITER_GUILD, optimistic=True)
+    guild_channel_get_all       = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     channel_move                = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     channel_create              = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     guild_discovery_delete_subcategory = RateLimitGroup(LIMITER_GUILD, optimistic=True)
@@ -3198,7 +3198,7 @@ class RATE_LIMIT_GROUPS:
     guild_discovery_edit        = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     guild_embed_get             = RateLimitGroup(LIMITER_GUILD, optimistic=True) # deprecated
     guild_embed_edit            = RateLimitGroup(LIMITER_GUILD, optimistic=True) # deprecated
-    guild_emojis                = RateLimitGroup(LIMITER_GUILD, optimistic=True)
+    guild_emoji_get_all         = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     emoji_create                = RateLimitGroup()
     emoji_delete                = RateLimitGroup()
     emoji_get                   = RateLimitGroup(LIMITER_GUILD, optimistic=True)
@@ -3208,10 +3208,10 @@ class RATE_LIMIT_GROUPS:
     integration_delete          = RateLimitGroup(optimistic=True) # untested
     integration_edit            = RateLimitGroup(optimistic=True) # untested
     integration_sync            = RateLimitGroup(optimistic=True) # untested
-    invite_get_guild            = RateLimitGroup(LIMITER_GUILD, optimistic=True)
+    invite_get_all_guild        = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     verification_screen_get     = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     verification_screen_edit    = RateLimitGroup(LIMITER_GUILD, optimistic=True)
-    guild_users                 = RateLimitGroup(LIMITER_GUILD)
+    guild_user_get_chunk        = RateLimitGroup(LIMITER_GUILD)
     client_edit_nick            = RateLimitGroup()
     guild_user_delete           = RateLimitGroup(LIMITER_GUILD)
     guild_user_get              = RateLimitGroup(LIMITER_GUILD)
@@ -3221,50 +3221,50 @@ class RATE_LIMIT_GROUPS:
     guild_user_search           = RateLimitGroup(LIMITER_GUILD)
     user_role_delete            = GROUP_USER_ROLE_MODIFY
     user_role_add               = GROUP_USER_ROLE_MODIFY
-    guild_preview               = RateLimitGroup()
+    guild_preview_get           = RateLimitGroup()
     guild_prune_estimate        = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     guild_prune                 = RateLimitGroup(LIMITER_GUILD, optimistic=True)
-    guild_regions               = RateLimitGroup(LIMITER_GUILD, optimistic=True)
-    guild_roles                 = RateLimitGroup(LIMITER_GUILD, optimistic=True)
+    guild_voice_region_get_all  = RateLimitGroup(LIMITER_GUILD, optimistic=True)
+    guild_role_get_all          = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     role_move                   = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     role_create                 = RateLimitGroup(LIMITER_GUILD)
     role_delete                 = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     role_edit                   = RateLimitGroup(LIMITER_GUILD)
-    vanity_get                  = RateLimitGroup(LIMITER_GUILD, optimistic=True)
-    vanity_edit                 = RateLimitGroup(LIMITER_GUILD, optimistic=True) # untested
+    vanity_invite_get           = RateLimitGroup(LIMITER_GUILD, optimistic=True)
+    vanity_invite_edit          = RateLimitGroup(LIMITER_GUILD, optimistic=True) # untested
     welcome_screen_get          = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     welcome_screen_edit         = RateLimitGroup(LIMITER_GUILD)
-    webhook_get_guild           = RateLimitGroup(LIMITER_GUILD, optimistic=True)
+    webhook_get_all_guild       = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     guild_widget_get            = RateLimitGroup.unlimited()
     hypesquad_house_leave       = RateLimitGroup() # untested
     hypesquad_house_change      = RateLimitGroup() # untested
     interaction_response_message_create = RateLimitGroup.unlimited() # untested
     invite_delete               = RateLimitGroup.unlimited()
     invite_get                  = RateLimitGroup()
-    client_application_info     = RateLimitGroup(optimistic=True)
+    client_application_get      = RateLimitGroup(optimistic=True)
     bulk_ack                    = RateLimitGroup(optimistic=True) # untested
     eula_get                    = RateLimitGroup(optimistic=True)
-    get_user_info               = RateLimitGroup(optimistic=True)
-    client_user                 = RateLimitGroup(optimistic=True)
+    user_info_get               = RateLimitGroup(optimistic=True)
+    client_user_get             = RateLimitGroup(optimistic=True)
     client_edit                 = RateLimitGroup()
-    user_achievements           = RateLimitGroup() # untested; has expected global rate limit
+    user_achievement_get_all    = RateLimitGroup() # untested; has expected global rate limit
     user_achievement_update     = RateLimitGroup()
     channel_private_get_all     = RateLimitGroup(optimistic=True)
     channel_private_create      = RateLimitGroup.unlimited()
-    client_connections          = RateLimitGroup(optimistic=True)
-    user_connections            = RateLimitGroup(optimistic=True)
+    client_connection_get_all   = RateLimitGroup(optimistic=True)
+    user_connection_get_all     = RateLimitGroup(optimistic=True)
     guild_get_all               = RateLimitGroup()
-    user_guilds                 = RateLimitGroup()
+    user_guild_get_all          = RateLimitGroup()
     guild_leave                 = RateLimitGroup.unlimited()
     relationship_friend_request = RateLimitGroup(optimistic=True) # untested
     relationship_delete         = RateLimitGroup(optimistic=True) # untested
     relationship_create         = RateLimitGroup(optimistic=True) # untested
-    client_get_settings         = RateLimitGroup(optimistic=True) # untested
-    client_edit_settings        = RateLimitGroup(optimistic=True) # untested
+    client_settings_get         = RateLimitGroup(optimistic=True) # untested
+    client_settings_edit        = RateLimitGroup(optimistic=True) # untested
     user_get                    = RateLimitGroup()
     channel_group_create        = RateLimitGroup(optimistic=True) # untested
     user_get_profile            = RateLimitGroup(optimistic=True) # untested
-    voice_regions               = RateLimitGroup(optimistic=True)
+    voice_region_get_all        = RateLimitGroup(optimistic=True)
     interaction_followup_message_create = GROUP_INTERACTION_EXECUTE
     interaction_response_message_delete = GROUP_INTERACTION_EXECUTE
     interaction_response_message_edit = GROUP_INTERACTION_EXECUTE

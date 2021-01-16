@@ -634,7 +634,7 @@ def write_guild_channel_extras(channel, result, write_parents, write_overwrites,
         if write_overwrites:
             result.append(f'Permission overwrites: ({len(overwrites)})', 1)
             for index,overwrite in enumerate(overwrites, 1):
-                result.append(str_PermOW(overwrite, index=index, **kwargs), 2)
+                result.append(str_PermissionOverwrite(overwrite, index=index, **kwargs), 2)
         else:
             result.append(f'- overwrites count: {len(overwrites)}', 1)
 
@@ -912,7 +912,7 @@ def str_guild(guild, index=None, **kwargs):
             result.append(f'{index}.: {emoji.name} {emoji.id}{animated}', 2)
     return result
 
-def str_PermOW(overwrite, index=None, detailed=True, **kwargs):
+def str_PermissionOverwrite(overwrite, index=None, detailed=True, **kwargs):
     result = PrettyBlock()
     if index is None:
         start = ''
@@ -1153,7 +1153,7 @@ def str_AuditLogEntry(entry, index=None, **kwargs):
                     if attr == 'role':
                         text=', '.join(f'{element.name} {element.id}' for element in value)
                     elif attr == 'overwrites':
-                        text = ', '.join(f'PermOW of {element.target.name} ({element.target.id})' for element in value)
+                        text = ', '.join(f'PermissionOverwrite of {element.target.name} ({element.target.id})' for element in value)
                     else:
                         raise ValueError(attr, value)
                 
@@ -1786,7 +1786,7 @@ PRETTY_PRINTERS['ChannelStore'] = str_channel_store
 PRETTY_PRINTERS['ChannelThread'] = str_channel_thread
 PRETTY_PRINTERS['ChannelGuildUndefined'] = str_channel_guild_undefined
 PRETTY_PRINTERS['Guild'] = str_guild
-PRETTY_PRINTERS['PermOW'] = str_PermOW
+PRETTY_PRINTERS['PermissionOverwrite'] = str_PermissionOverwrite
 PRETTY_PRINTERS['Permission'] = str_permission
 PRETTY_PRINTERS['Invite'] = str_invite
 PRETTY_PRINTERS['list'] = str_list

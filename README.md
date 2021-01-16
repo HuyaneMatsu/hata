@@ -66,7 +66,7 @@ Saki.start()
 
 Or use slash commands!
 
-```
+```py
 from hata import Client, Guild
 from hata.ext.slash import setup_ext_slash
 

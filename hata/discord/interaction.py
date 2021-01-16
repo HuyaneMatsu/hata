@@ -623,7 +623,7 @@ class ApplicationCommandOption(object):
                         f'`{ApplicationCommandOption.__name__}`, got {options.__class__.__name__}.')
             
             # Copy it
-            options_processed = list(options_processed)
+            options_processed = list(options)
             
             if __debug__:
                 if len(options_processed) > 10:
@@ -653,14 +653,11 @@ class ApplicationCommandOption(object):
                     f'type={type_!r}.')
             
             for index, choice in enumerate(choices):
-                #if not isinstance(choice.value, expected_choice_type):
-                #    raise TypeError(f'`choices` element\'s {index!r} value\'s type is not '
-                #        f'`{expected_choice_type.__name__}` as expected from the received command option type: '
-                #        f'{type_!r}')
+                if not isinstance(choice.value, expected_choice_type):
+                    raise TypeError(f'`choices` element\'s {index!r} value\'s type is not '
+                        f'`{expected_choice_type.__name__}` as expected from the received command option type: '
+                        f'{type_!r}')
                 pass
-        if (options_processed is not None) and (type_ is not ApplicationCommandOptionType.SUB_COMMAND_GROUP):
-            raise TypeError(f'`options` is bound to sub command option type, got options={options!r}, '
-                f'type={type_!r}.')
         
         self = object.__new__(cls)
         self.name = name

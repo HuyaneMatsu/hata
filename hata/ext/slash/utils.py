@@ -72,6 +72,7 @@ async def _application_command_delete_watcher(client, guild, application_command
 
 
 async def delay_immediate_start_initial_sync(client, slasher):
+    await sleep(0.3, KOKORO)
     changes = slasher._estimate_pending_changes()
     while True:
         await sleep(0.3, KOKORO)

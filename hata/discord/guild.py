@@ -2701,7 +2701,7 @@ class GuildPreview(DiscordEntity):
         >>> TOKEN = 'a token goes here'
         >>> client = Client(TOKEN)
         >>> guild_id = 302094807046684672
-        >>> guild_preview = KOKORO.run(client.guild_preview(guild_id))
+        >>> guild_preview = KOKORO.run(client.guild_preview_get(guild_id))
         >>> guild_preview
         <GuildPreview name='MINECRAFT', id=302094807046684672>
         >>> # no code stands for str(guild_preview).

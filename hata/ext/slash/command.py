@@ -209,7 +209,7 @@ async def converter_int(client, value):
     ----------
     client : ``Client``
         The client who received the respective ``InteractionEvent``.
-    value : `Any`
+    value : `str`
         ``ApplicationCommandInteractionOption.value``.
     
     Returns
@@ -235,7 +235,7 @@ async def converter_str(client, value):
     ----------
     client : ``Client``
         The client who received the respective ``InteractionEvent``.
-    value : `Any`
+    value : `str`
         ``ApplicationCommandInteractionOption.value``.
     
     Returns
@@ -245,6 +245,10 @@ async def converter_str(client, value):
     """
     return value
 
+BOOL_TABLE = {
+    str(True) : True,
+    str(False): False,
+        }
 
 async def converter_bool(client, value):
     """
@@ -256,7 +260,7 @@ async def converter_bool(client, value):
     ----------
     client : ``Client``
         The client who received the respective ``InteractionEvent``.
-    value : `Any`
+    value : `str`
         ``ApplicationCommandInteractionOption.value``.
     
     Returns
@@ -264,10 +268,7 @@ async def converter_bool(client, value):
     value : `None` or `bool`
         If conversion fails, then returns `None`.
     """
-    if not isinstance(value, bool):
-        value = None
-    
-    return value
+    return BOOL_TABLE.get(value)
 
 
 async def converter_snowflake(client, value):
@@ -280,7 +281,7 @@ async def converter_snowflake(client, value):
     ----------
     client : ``Client``
         The client who received the respective ``InteractionEvent``.
-    value : `Any`
+    value : `str`
         ``ApplicationCommandInteractionOption.value``.
     
     Returns
@@ -309,7 +310,7 @@ async def converter_user(client, value):
     ----------
     client : ``Client``
         The client who received the respective ``InteractionEvent``.
-    value : `Any`
+    value : `str`
         ``ApplicationCommandInteractionOption.value``.
     
     Returns
@@ -345,7 +346,7 @@ async def converter_role(client, value):
     ----------
     client : ``Client``
         The client who received the respective ``InteractionEvent``.
-    value : `Any`
+    value : `str`
         ``ApplicationCommandInteractionOption.value``.
     
     Returns
@@ -373,7 +374,7 @@ async def converter_channel(client, value):
     ----------
     client : ``Client``
         The client who received the respective ``InteractionEvent``.
-    value : `Any`
+    value : `str`
         ``ApplicationCommandInteractionOption.value``.
     
     Returns
@@ -667,7 +668,7 @@ class ArgumentConverter(object):
         ----------
         client : ``Client``
             The client who received the respective ``InteractionEvent``.
-        value : `Any`
+        value : `str`
             ``ApplicationCommandInteractionOption.value``.
         
         Returns
@@ -1252,7 +1253,7 @@ class SlashCommand(object):
         ----------
         variable_name : `str`
             The name of the respective variable
-        variable_value : `Any`
+        variable_value : `str`
             The respective value to route maybe.
         route_to : `int`
             The value how much times the routing should happen. by default should be given as `0` if no routing was
@@ -1262,7 +1263,7 @@ class SlashCommand(object):
         
         Returns
         -------
-        processed_value : `Any`
+        processed_value : `str`
             Processed value returned by the `validator`. If routing is happening, then a `tuple` of those values is
             returned.
         route_to : `int`

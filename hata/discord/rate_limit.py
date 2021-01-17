@@ -2333,7 +2333,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `OPT`
         - Resets after : `OPT`
     
-    - message_id
+    - guild_ban_get_all
         - Endpoint : `/guilds/{guild_id}/bans`
         - Method : `GET`
         - Required auth : `bot`
@@ -3185,7 +3185,7 @@ class RATE_LIMIT_GROUPS:
     guild_edit                  = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     guild_ack                   = RateLimitGroup() # untested
     audit_log_get_chunk         = RateLimitGroup(LIMITER_GUILD, optimistic=True)
-    message_id                  = RateLimitGroup(LIMITER_GUILD, optimistic=True)
+    guild_ban_get_all           = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     guild_ban_delete            = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     guild_ban_get               = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     guild_ban_add               = RateLimitGroup(LIMITER_GUILD, optimistic=True)

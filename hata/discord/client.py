@@ -9219,7 +9219,7 @@ class Client(UserBase):
         
         return await self.permission_overwrite_edit(*args, **kwargs)
     
-    async def permission_overwrite_edit(self, channel, overwrite, allow, deny, reason=None):
+    async def permission_overwrite_edit(self, channel, overwrite, *, allow=None, deny=None, reason=None):
         """
         Edits the given permission overwrite.
         
@@ -9227,31 +9227,66 @@ class Client(UserBase):
         
         Parameters
         ----------
-        channel : ˙˙ChannelGuildBase`` instance
+        channel : ˙˙ChannelGuildBase`` or `int` instance
             The channel where the permission overwrite is.
         overwrite : ``PermissionOverwrite``
             The permission overwrite to edit.
-        allow : ``Permission``
+        allow : `None`, ``Permission`` or `int`, Optional
             The permission overwrite's new allowed permission's value.
-        deny : ``Permission``
+        deny : `None`, ``Permission`` or `int`, Optional
             The permission overwrite's new denied permission's value.
         reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
         
         Raises
         ------
+        TypeError
+            If `channel` was nto given neither as ``ChannelGuildBase`` nor as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `overwrite` was not given as ``PermissionOverwrite`` instance.
+            - If `allow` was not given neither as `None`, ``Permission`` nto other `int` instance.
+            - If `deny` was not given neither as `None`, ``Permission`` nto other `int` instance.
         """
+        if isinstance(channel, ChannelGuildBase):
+            channel_id = channel.id
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as `{ChannelGuildBase.__name__}` or `int` instance, got '
+                    f'{channel.__class__.__name__}.')
+        
+        if __debug__:
+            if not isinstance(overwrite, PermissionOverwrite):
+                raise AssertionError(f'`overwrite` can be given as `{PermissionOverwrite.__name__}` instance, got '
+                    f'{overwrite.__class__.__name__}.')
+        
+        if allow is None:
+            allow = overwrite.allow
+        else:
+            if __debug__:
+                if not isinstance(allow, int):
+                    raise AssertionError(f'`allow` can be given either as `None`, `{Permmission.__name__}` or as other '
+                        f'`int` instance, got {allow.__class__.__name__}.')
+        
+        if deny is None:
+            deny = overwrite.deny
+        else:
+            if __debug__:
+                if not isinstance(deny, int):
+                    raise AssertionError(f'`deny` can be given either as `None`, `{Permission.__name__}` or as other '
+                        f'`int` instance, got {deny.__class__.__name__}.')
+        
         data = {
             'allow' : allow,
             'deny'  : deny,
             'type'  : overwrite.type
                 }
         
-        await self.http.permission_overwrite_create(channel.id, overwrite.target.id, data, reason)
+        await self.http.permission_overwrite_create(channel_id, overwrite.target.id, data, reason)
     
     async def permission_ow_delete(self, *args, **kwargs):
         """
@@ -9266,7 +9301,7 @@ class Client(UserBase):
         
         return await self.permission_overwrite_delete(*args, **kwargs)
     
-    async def permission_overwrite_delete(self, channel, overwrite, reason=None):
+    async def permission_overwrite_delete(self, channel, overwrite, *, reason=None):
         """
         Deletes the given permission overwrite.
         
@@ -9280,15 +9315,32 @@ class Client(UserBase):
             The permission overwrite to delete.
         reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
-        
+
         Raises
         ------
+        TypeError
+            If `channel` was nto given neither as ``ChannelGuildBase`` nor as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            If `overwrite` was not given as ``PermissionOverwrite`` instance.
         """
-        await self.http.permission_overwrite_delete(channel.id, overwrite.target.id, reason)
+        if isinstance(channel, ChannelGuildBase):
+            channel_id = channel.id
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as `{ChannelGuildBase.__name__}` or `int` instance, got '
+                    f'{channel.__class__.__name__}.')
+        
+        if __debug__:
+            if not isinstance(overwrite, PermissionOverwrite):
+                raise AssertionError(f'`overwrite` can be given as `{PermissionOverwrite.__name__}` instance, got '
+                    f'{overwrite.__class__.__name__}.')
+        
+        await self.http.permission_overwrite_delete(channel_id, overwrite.target.id, reason)
     
     async def permission_ow_create(self, *args, **kwargs):
         """
@@ -9303,7 +9355,7 @@ class Client(UserBase):
         
         return await self.permission_overwrite_create(*args, **kwargs)
     
-    async def permission_overwrite_create(self, channel, target, allow, deny, reason=None):
+    async def permission_overwrite_create(self, channel, target, allow, deny, *, reason=None):
         """
         Creates a permission overwrite at the given channel.
         
@@ -9311,13 +9363,13 @@ class Client(UserBase):
         
         Parameters
         ----------
-        channel : ``ChannelGuildBase`` instance
+        channel : ``ChannelGuildBase`` or `int` instance
             The channel to what the permission overwrite will be added.
-        target : ``Role`` or ``UserBase`` instance
+        target : ``Role``, ``User``, ``Client`` instance
             The permission overwrite's target.
-        allow : ``Permission``
+        allow : ``Permission`` or `int` instance
             The permission overwrite's allowed permission's value.
-        deny : ``Permission``
+        deny : ``Permission`` or `int` instance
             The permission overwrite's denied permission's value.
         reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
@@ -9330,19 +9382,40 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            If `target` was not passed neither as ``Role`` or as ``UserBase`` instance.
+            - If `channel` was nto given neither as ``ChannelGuildBase`` nor as `int` instance.
+            - If `target` was not passed neither as ``Role``,``User``, neither as ``Client`` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `allow` was not given neither as ``Permission`` nor as other `int` instance.
+            - If `deny ` was not given neither as ``Permission`` not as other `int` instance.
         """
-        if type(target) is Role:
+        if isinstance(channel, ChannelGuildBase):
+            channel_id = channel.id
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as `{ChannelGuildBase.__name__}` or `int` instance, got '
+                    f'{channel.__class__.__name__}.')
+        
+        if isinstance(target, Role):
             type_ = PERM_OW_TYPE_ROLE
-        elif isinstance(target, UserBase):
+        elif isinstance(target, (User, Client)):
             type_ = PERM_OW_TYPE_USER
         else:
-            raise TypeError(f'`target` can be either `{Role.__name__}` or `{UserBase.__name__}` instance, got '
-                f'{target.__class__.__name__}.')
+            raise TypeError(f'`target` can be either `{Role.__name__}`, `{User.__name__}` or `{Client.__name__}` '
+                f'instance, got {target.__class__.__name__}.')
+        
+        if __debug__:
+            if not isinstance(allow, int):
+                raise AssertionError(f'`allow` can be given as `{Permission.__name__}` or as other `int` instance, '
+                    f'got {allow.__class__.__name__}.')
+        
+            if not isinstance(deny, int):
+                raise AssertionError(f'`deny` can be given as `{Permission.__name__}` or as other `int` instance, '
+                    f'got {deny.__class__.__name__}.')
         
         data = {
             'target': target.id,
@@ -9351,12 +9424,12 @@ class Client(UserBase):
             'type'  : type_,
                 }
         
-        await self.http.permission_overwrite_create(channel.id, target.id, data, reason)
+        await self.http.permission_overwrite_create(channel_id, target.id, data, reason)
         return PermissionOverwrite.custom(target, allow, deny)
     
     # Webhook management
     
-    async def webhook_create(self, channel, name, avatar=None):
+    async def webhook_create(self, channel, name, *, avatar=None):
         """
         Creates a webhook at the given channel.
         
@@ -9364,10 +9437,10 @@ class Client(UserBase):
         
         Parameters
         ----------
-        channel : ``ChannelText``
+        channel : ``ChannelText`` or `int`
             The channel of the created webhook.
         name : `str`
-            The name of the new webhook. It's length can be between `1` and `80`.
+            The name of the new webhook. It's length can be in range [1:80].
         avatar : `bytes-like`, Optional
             The webhook's avatar. Can be `'jpg'`, `'png'`, `'webp'` or `'gif'` image's raw data. However if set as
             `'gif'`, it will not have any animation.
@@ -9380,36 +9453,51 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            If `avatar` was passed, but not as `bytes-like`.
-        ValueError
-            - If `name`'s length is under `1` or over `80`.
-            - If `avatar` was passed as `bytes-like`, but it's format is not `'jpg'`, `'png'`, `'webp'` or `'gif'`.
+            - If `channel` was not given neither as ``ChannelText`` nor as `int` instance.
+            - If `avatar` was not given neither as `None` or `bytes-like`.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `name` was not given as `str` instance.
+            - If `name` range is out of the expected range [1:80].
+            - If `avatar`'s type is not any of the expected ones: `'jpg'`, `'png'`, `'webp'` or `'gif'`.
         """
-        name_ln = len(name)
-        if name_ln == 0 or name_ln > 80:
-            raise ValueError(f'`name` length can be between 1-80, got {name!r}')
+        if isinstance(channel, ChannelText):
+            channel_id = channel.id
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given either as `{ChannelText.__name__}` or as `int` instance, got '
+                    f'{channel.__class__.__name__}.')
+        
+        if __debug__:
+            if not isinstance(name, str):
+                raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
+            
+            name_length = len(name)
+            if name_length < 1 or name_length > 80:
+                raise AssertionError(f'`name` length can be in range [1:80], got {name_length!r}; {name!r}.')
         
         data = {'name': name}
         
         if (avatar is not None):
             avatar_type = avatar.__class__
             if not issubclass(avatar_type, (bytes, bytearray, memoryview)):
-                raise TypeError(f'`icon` can be passed as `bytes-like`, got {avatar_type.__name__}.')
+                raise TypeError(f'`avatar` can be passed as `bytes-like`, got {avatar_type.__name__}.')
             
-            extension = get_image_extension(avatar)
-            if extension not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Invalid icon type: `{extension}`.')
+            if __debug__:
+                extension = get_image_extension(avatar)
+                if extension not in VALID_ICON_FORMATS_EXTENDED:
+                    raise AssertionError(f'Invalid avatar type: `{extension}`.')
             
             data['avatar'] = image_to_base64(avatar)
         
-        data = await self.http.webhook_create(channel.id, data)
+        data = await self.http.webhook_create(channel_id, data)
         return Webhook(data)
     
-    async def webhook_get(self, webhook_id):
+    async def webhook_get(self, webhook):
         """
         Requests the webhook by it's id.
         
@@ -9417,8 +9505,8 @@ class Client(UserBase):
         
         Parameters
         ----------
-        webhook_id : `int`
-            The webhook's id.
+        webhook : ``Webhook`` or `int` instance
+            The webhook to update or the webhook's id to get.
         
         Returns
         -------
@@ -9427,7 +9515,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            If `webhook_id` was not given as `int` instance.
+            If `webhook` was not given neither as ``Webhook`` neither as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -9441,27 +9529,32 @@ class Client(UserBase):
         -----
         If the webhook already loaded and if it's guild's webhooks are up to date, no request is done.
         """
-        webhook_id_value = maybe_snowflake(webhook_id)
-        if webhook_id_value is None:
-            raise TypeError(f'`webhook_id` can be given as `int` instance, got {webhook_id.__class__.__name__}.')
-        
-        try:
-            webhook = USERS[webhook_id_value]
-        except KeyError:
-            data = await self.http.webhook_get(webhook_id_value)
-            return Webhook(data)
+        if isinstance(webhook, Webhook):
+            webhook_id = webhook.id
         else:
+            webhook_id = maybe_snowflake(webhook)
+            if webhook_id is None:
+                raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `int` instance, got '
+                    f'{webhook.__class__.__name__}.')
+            
+            webhook = USERS.get(webhook_id)
+        
+        if (webhook is not None):
             channel = webhook.channel
             if (channel is not None):
                 guild = channel.guild
                 if (guild is not None) and guild.webhooks_up_to_date:
                     return webhook
-            
-            data = await self.http.webhook_get(webhook_id_value)
+        
+        data = await self.http.webhook_get(webhook_id)
+        if webhook is None:
+            webhook = Webhook(data)
+        else:
             webhook._update_no_return(data)
-            return webhook
+        
+        return webhook
     
-    async def webhook_get_token(self, webhook_id, webhook_token):
+    async def webhook_get_token(self, webhook, webhook_token):
         """
         Requests the webhook through Discord's webhook API. The client do not needs to be in the guild of the webhook.
         
@@ -9469,8 +9562,8 @@ class Client(UserBase):
         
         Parameters
         ----------
-        webhook_id : `int`
-            The webhook's id.
+        webhook : ``Webhook`` or `int` instance
+            The webhook to update or the webhook's id to get.
         webhook_token : `str`
             The webhook's token.
         
@@ -9481,7 +9574,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            If `webhook_id` was not given as `int` instance.
+            If `webhook` was not given neither as ``Webhook`` neither as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -9493,18 +9586,22 @@ class Client(UserBase):
         -----
         If the webhook already loaded and if it's guild's webhooks are up to date, no request is done.
         """
-        webhook_id_value = maybe_snowflake(webhook_id)
-        if webhook_id_value is None:
-            raise TypeError(f'`webhook_id` can be given as `int` instance, got {webhook_id.__class__.__name__}.')
+        if isinstance(webhook, Webhook):
+            webhook_id = webhook.id
+        else:
+            webhook_id = maybe_snowflake(webhook)
+            if webhook_id is None:
+                raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `int` instance, got '
+                    f'{webhook.__class__.__name__}.')
+            
+            webhook = USERS.get(webhook_id)
         
         if __debug__:
             if not isinstance(webhook_token, str):
                 raise AssertionError(f'`webhook_token` can be given as `str` instance, got '
                     f'{webhook_token.__class__.__name__}')
         
-        try:
-            webhook = USERS[webhook_id_value]
-        except KeyError:
+        if (webhook is None):
             webhook = create_partial_webhook(webhook_id_value, webhook_token)
         else:
             channel = webhook.channel
@@ -9516,52 +9613,6 @@ class Client(UserBase):
         data = await self.http.webhook_get_token(webhook)
         webhook._update_no_return(data)
         return webhook
-    
-    async def webhook_update(self, webhook):
-        """
-        Updates the given webhook.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        webhook : ``Webhook``
-            The webhook to update.
-        
-        Raises
-        ------
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        
-        See Also
-        --------
-        ``.webhook_update_token`` : Updating webhook with Discord webhook API.
-        """
-        data = await self.http.webhook_get(webhook.id)
-        webhook._update_no_return(data)
-
-    async def webhook_update_token(self, webhook):
-        """
-        Updates the given webhook through Discord's webhook API.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        webhook : ``Webhook``
-            The webhook to update.
-        
-        Raises
-        ------
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        """
-        data = await self.http.webhook_get_token(webhook)
-        webhook._update_no_return(data)
     
     async def webhook_get_channel(self, *args, **kwargs):
         """
@@ -9584,7 +9635,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        channel : ``ChannelText``
+        channel : ``ChannelText`` or `int`
             The channel, what's webhooks will be requested.
         
         Returns
@@ -9593,23 +9644,41 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `channel was not given neither as ``ChannelText``, neither as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            If `channel` was given as a channel's identifier but it detectably not refers to a ``ChannelText`` instance.
         
         Notes
         -----
         No request is done, if the passed channel is partial, or if the channel's guild's webhooks are up to date.
         """
-        guild = channel.guild
-        if guild is None:
-            return []
+        if isinstance(channel, ChannelText):
+            channel_id = channel.id
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` cna be given either as `{ChannelText.__name__}` or as `int` instance, got '
+                    f'{channel.__class__.__name__}.')
+            
+            channel = CHANNELS.get(channel_id)
+            
+            if __debug__:
+                if (channel is not None) and (not isinstance(channel, ChannelText)):
+                    raise AssertionError(f'`channel` was given as a channel\'s identifier, but it detectably not '
+                        f'refers to a ``ChannelText`` instance. Got {channel_id}; refers to: {channel!r}.')
         
-        if guild.webhooks_up_to_date:
-            return [webhook for webhook in guild.webhooks.values() if webhook.channel is channel]
+        if (channel is not None):
+            guild = channel.guild
+            if (guild is not None):
+                if guild.webhooks_up_to_date:
+                    return [webhook for webhook in guild.webhooks.values() if webhook.channel is channel]
         
-        data = await self.http.webhook_get_all_channel(channel.id)
+        data = await self.http.webhook_get_all_channel(channel_id)
         return [Webhook(data) for data in data]
     
     async def webhook_get_guild(self, *args, **kwargs):
@@ -9633,7 +9702,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild``
+        guild : ``Guild`` or `int`
             The guild, what's webhooks will be requested.
         
         Returns
@@ -9642,6 +9711,8 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `guild` was not given neither as ``Guild`` nor as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -9651,30 +9722,42 @@ class Client(UserBase):
         -----
         No request is done, if the guild's webhooks are up to date.
         """
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given either as `{Guild.__name__}` or as `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+            
+            guild = GUILDS.get(guild_id)
+        
+        if guild is None:
+            webhook_datas = await self.http.webhook_get_all_guild(guild_id)
+            return [Webhook(webhook_data) for webhook_data in webhook_datas]
+        
+        
         if guild.webhooks_up_to_date:
             return list(guild.webhooks.values())
         
-        old_ids = list(guild.webhooks)
+        old_webhook_ids = set(guild.webhooks)
         
-        result = []
+        webhooks = []
         
-        data = await self.http.webhook_get_all_guild(guild.id)
-        for webhook_data in data:
+        webhook_datas = await self.http.webhook_get_all_guild(guild.id)
+        for webhook_data in webhook_datas:
             webhook = Webhook(webhook_data)
-            result.append(webhook)
-            try:
-                old_ids.remove(webhook.id)
-            except ValueError:
-                pass
+            webhooks.append(webhook)
+            old_webhook_ids.discard(webhook.id)
         
-        if old_ids:
-            for id_ in old_ids:
-                guild.webhooks[id_]._delete()
+        if old_webhook_ids:
+            for old_webhook_id in old_webhook_ids:
+                guild.webhooks[old_webhook_id]._delete()
         
         guild.webhooks_up_to_date = True
         
-        return result
-        
+        return webhooks
+    
     async def webhook_delete(self, webhook):
         """
         Deletes the webhook.
@@ -9683,11 +9766,13 @@ class Client(UserBase):
         
         Parameters
         ----------
-        webhook : ``Webhook``
+        webhook : ``Webhook`` or `int`
             The webhook to delete.
         
         Raises
         ------
+        TypeError
+            If `webhook` was not given neither as ``Webhook`` or `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -9697,7 +9782,15 @@ class Client(UserBase):
         --------
         ``.webhook_delete_token`` : Deleting webhook with Discord's webhook API.
         """
-        await self.http.webhook_delete(webhook.id)
+        if isinstance(webhook, Webhook):
+            webhook_id = webhook.id
+        else:
+            webhook_id = maybe_snowflake(webhook)
+            if webhook_id is None:
+                raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `int` instance, got '
+                    f'{webhook.__class__.__name__}.')
+        
+        await self.http.webhook_delete(webhook_id)
 
     async def webhook_delete_token(self, webhook):
         """
@@ -9720,7 +9813,14 @@ class Client(UserBase):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            If `webhook` was not given as ``Webhook`` instance.
         """
+        if __debug__:
+            if not isinstance(webhook, Webhook):
+                raise AssertionError(f'`webhook` can be given as `{Webhook.__name__}` instance, got '
+                    f'{webhook.__class__.__name__}.')
+        
         await self.http.webhook_delete_token(webhook)
             
     # later there gonna be more stuff that's why 2 different

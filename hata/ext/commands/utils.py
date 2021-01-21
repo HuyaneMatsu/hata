@@ -407,7 +407,7 @@ class Pagination(object):
                         ERROR_CODES.max_reactions, # reached reaction 20, some1 is trolling us.
                         ERROR_CODES.invalid_access, # client removed
                         ERROR_CODES.invalid_permissions, # permissions changed meanwhile
-                        ERROR_CODES.invalid_message_send_user, # user has dm-s disallowed
+                        ERROR_CODES.cannot_message_user, # user has dm-s disallowed
                             ):
                     return None
             
@@ -828,7 +828,7 @@ class Closer(object):
                         ERROR_CODES.max_reactions, # reached reaction 20, some1 is trolling us.
                         ERROR_CODES.invalid_access, # client removed
                         ERROR_CODES.invalid_permissions, # permissions changed meanwhile
-                        ERROR_CODES.invalid_message_send_user, # user has dm-s disallowed
+                        ERROR_CODES.cannot_message_user, # user has dm-s disallowed
                             ):
                     return None
             
@@ -1292,7 +1292,7 @@ class ChooseMenu(object):
                         ERROR_CODES.max_reactions, # reached reaction 20, some1 is trolling us.
                         ERROR_CODES.invalid_access, # client removed
                         ERROR_CODES.invalid_permissions, # permissions changed meanwhile
-                        ERROR_CODES.invalid_message_send_user, # user has dm-s disallowed
+                        ERROR_CODES.cannot_message_user, # user has dm-s disallowed
                             ):
                     return self
             
@@ -2006,7 +2006,7 @@ class Cooldown(object):
                             ERROR_CODES.unknown_channel, # message's channel deleted
                             ERROR_CODES.invalid_access, # client removed
                             ERROR_CODES.invalid_permissions, # permissions changed meanwhile
-                            ERROR_CODES.invalid_message_send_user, # user has dm-s disallowed
+                            ERROR_CODES.cannot_message_user, # user has dm-s disallowed
                                 ):
                         return
                 

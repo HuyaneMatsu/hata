@@ -538,7 +538,7 @@ class MessageIterator(object):
                             ERROR_CODES.unknown_channel, # message's channel deleted
                             ERROR_CODES.invalid_access, # client removed
                             ERROR_CODES.invalid_permissions, # permissions changed meanwhile
-                            ERROR_CODES.invalid_message_send_user, # user has dm-s disallowed
+                            ERROR_CODES.cannot_message_user, # user has dm-s disallowed
                                 ):
                         pass
                     
@@ -591,7 +591,7 @@ class MessageIterator(object):
                 ERROR_CODES.unknown_channel, # message's channel deleted
                 ERROR_CODES.invalid_access, # client removed
                 ERROR_CODES.invalid_permissions, # permissions changed meanwhile
-                ERROR_CODES.invalid_message_send_user, # user has dm-s disallowed
+                ERROR_CODES.cannot_message_user, # user has dm-s disallowed
                     ):
                 pass
             else:

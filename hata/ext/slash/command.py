@@ -119,7 +119,7 @@ async def process_command_coro(client, interaction_event, show_source, coro):
                             ERROR_CODES.unknown_channel, # Message's channel deleted; Can we get this?
                             ERROR_CODES.invalid_access, # Client removed.
                             ERROR_CODES.invalid_permissions, # Permissions changed meanwhile; Can we get this?
-                            ERROR_CODES.invalid_message_send_user, # User has dm-s disallowed; Can we get this?
+                            ERROR_CODES.cannot_message_user, # User has dm-s disallowed; Can we get this?
                             ERROR_CODES.unknown_interaction, # We times out, do not drop error.
                                 ):
                         return
@@ -191,7 +191,7 @@ async def process_command_coro(client, interaction_event, show_source, coro):
                         ERROR_CODES.unknown_channel, # message's channel deleted; Can we get this?
                         ERROR_CODES.invalid_access, # client removed.
                         ERROR_CODES.invalid_permissions, # permissions changed meanwhile; Can we get this?
-                        ERROR_CODES.invalid_message_send_user, # user has dm-s disallowed; Can we get this?
+                        ERROR_CODES.cannot_message_user, # user has dm-s disallowed; Can we get this?
                         ERROR_CODES.unknown_interaction, # we times out, do not drop error.
                             ):
                     return
@@ -648,6 +648,7 @@ class ArgumentConverter(object):
             default = None
             required = True
         
+        name = raw_name_to_display(name)
         self = object.__new__(cls)
         self.choices = choices
         self.converter = ANNOTATION_TYPE_TO_CONVERTER[annotation_type]

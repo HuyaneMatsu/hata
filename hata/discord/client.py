@@ -39,7 +39,7 @@ from .invite import Invite
 from .message import Message, MessageRepr, MessageReference, Attachment
 from .oauth2 import Connection, parse_locale, DEFAULT_LOCALE, OA2Access, UserOA2, Achievement
 from .exceptions import DiscordException, DiscordGatewayException, ERROR_CODES, InvalidToken
-from .client_core import CLIENTS, KOKORO, GUILDS, DISCOVERY_CATEGORIES, EULAS, CHANNELS
+from .client_core import CLIENTS, KOKORO, GUILDS, DISCOVERY_CATEGORIES, EULAS, CHANNELS, EMOJIS
 from .voice_client import VoiceClient
 from .activity import ActivityUnknown, ActivityBase, ActivityCustom
 from .integration import Integration
@@ -56,6 +56,7 @@ from .client_utils import SingleUserChunker, MassUserChunker, DiscoveryCategoryR
     BanEntry
 from .embed import EmbedBase, EmbedImage
 from .interaction import ApplicationCommand, InteractionResponseTypes
+from .color import Color
 
 from . import client_core as module_client_core, message as module_message, webhook as module_webhook, \
     channel as module_channel, invite as module_invite, parsers as module_parsers, client_utils as module_client_utils,\
@@ -738,8 +739,8 @@ class Client(UserBase):
             - If `name` was given but not as `str` instance.
             - If `name`'s length is out of range [2:32].
             - If `avatar`'s type in unsettable for the client.
-            - If password was not given meanwhile the client is not bot.
-            - If password was not given as `str` instance.
+            - If `password` was not given meanwhile the client is not bot.
+            - If `password` was not given as `str` instance.
             - If `email` was given, but not as `str` instance.
             - If `new_password` was given, but not as `str` instance.
         
@@ -1487,7 +1488,7 @@ class Client(UserBase):
                         f'{roles.__class__.__name__}.')
             
             if roles:
-                role_ids = []
+                role_ids = set()
                 
                 for index, role in enumerate(roles):
                     if isinstance(role, Role):
@@ -1498,7 +1499,7 @@ class Client(UserBase):
                             raise TypeError(f'`roles` element `{index}` is not `{Role.__name__}`, neither `int` '
                                 f'instance,  but{role.__class__.__name__}; got {roles!r}.')
                     
-                    role_ids.append(role_id)
+                    role_ids.add(role_id)
                 
                 data['roles'] = role_ids
         
@@ -5381,7 +5382,7 @@ class Client(UserBase):
                     ERROR_CODES.unknown_channel, # message's channel deleted
                     ERROR_CODES.invalid_access, # client removed
                     ERROR_CODES.invalid_permissions, # permissions changed meanwhile
-                    ERROR_CODES.invalid_message_send_user, # user has dm-s disallowed
+                    ERROR_CODES.cannot_message_user, # user has dm-s disallowed
                         ):
                     pass
                 else:
@@ -6454,8 +6455,10 @@ class Client(UserBase):
             
             data['delete_message_days'] = delete_message_days
         
-        await self.http.guild_ban_add(guild_id, user_id, data, reason)
-    
+        if (reason is not None) and reason:
+            data['reason'] = reason
+        
+        await self.http.guild_ban_add(guild_id, user_id, data, None)
     
     async def guild_ban_delete(self, guild, user, reason=None):
         """
@@ -9602,7 +9605,7 @@ class Client(UserBase):
                     f'{webhook_token.__class__.__name__}')
         
         if (webhook is None):
-            webhook = create_partial_webhook(webhook_id_value, webhook_token)
+            webhook = create_partial_webhook(webhook_id, webhook_token)
         else:
             channel = webhook.channel
             if (channel is not None):
@@ -9824,7 +9827,7 @@ class Client(UserBase):
         await self.http.webhook_delete_token(webhook)
             
     # later there gonna be more stuff that's why 2 different
-    async def webhook_edit(self, webhook, name=None, avatar=..., channel=None):
+    async def webhook_edit(self, webhook, *, name=None, avatar=..., channel=None):
         """
         Edits and updates the given webhook.
         
@@ -9832,38 +9835,53 @@ class Client(UserBase):
         
         Parameters
         ----------
-        webhook : ``Webhook``
+        webhook : ``Webhook`` or `int`
             The webhook to edit.
         name : `str`, Optional
-            The webhook's new name. It's length can be between `1` and `80`.
+            The webhook's new name. It's length can be in range [1:80].
         avatar : `None` or `bytes-like`, Optional
             The webhook's new avatar. Can be `'jpg'`, `'png'`, `'webp'` or `'gif'` image's raw data. However if set as
             `'gif'`, it will not have any animation. If passed as `None`, will remove the webhook's current avatar.
-        channel : ``ChannelText``
-            The webhook's name channel.
+        channel : ``ChannelText`` or `int`
+            The webhook's channel.
         
         Raises
         ------
         TypeError
-            If `avatar` was passed, but not as `bytes-like`.
-        ValueError
-            - If `name`'s length is under `1` or over `80`.
-            - If `avatar` was passed as `bytes-like`, but it's format is not `'jpg'`, `'png'`, `'webp'` or `'gif'`.
+            - If `webhook` was not given neither as ``Webhook`` neither as `int` instance.
+            - If `avatar` was not given neither as `None` nor as `bytes-like`.
+            - If `channel` was not given neither as ``ChannelText`` neither as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `name` was given but not as `str` instance.
+            - If `name`'s length is out of range [1:80].
+            - If `avatar`'s type is not any of the expected ones: `'jpg'`, `'png'`, `'webp'` or `'gif'`.
         
         See Also
         --------
         ``.webhook_edit_token`` : Editing webhook with Discord's webhook API.
         """
+        if isinstance(webhook, Webhook):
+            webhook_id = webhook.id
+        else:
+            webhook_id = maybe_snowflake(webhook)
+            if webhook_id is None:
+                raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `int` instance, got '
+                    f'{webhook.__class__.__name__}.')
+        
         data = {}
         
         if (name is not None):
-            name_ln = len(name)
-            if name_ln == 0 or name_ln > 80:
-                raise ValueError(f'The length of the name can be between 1-80, got {name!r}')
+            if __debug__:
+                if not isinstance(name, str):
+                    raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
+                
+                name_ln = len(name)
+                if name_ln < 1 or name_ln > 80:
+                    raise AssertionError(f'The length of the name can be in range [1:80], got {name_ln}; {name!r}.')
             
             data['name'] = name
         
@@ -9871,28 +9889,42 @@ class Client(UserBase):
             if avatar is None:
                 avatar_data = None
             else:
-                avatar_type = avatar.__class__
-                if not issubclass(avatar_type, (bytes, bytearray, memoryview)):
-                    raise TypeError(f'`icon` can be passed as `bytes-like`, got {avatar_type.__name__}.')
-            
-                extension = get_image_extension(avatar)
-                if extension not in VALID_ICON_FORMATS_EXTENDED:
-                    raise ValueError(f'Invalid icon type: `{extension}`.')
+                if not isinstance(avatar, (bytes, bytearray, memoryview)):
+                    raise TypeError(f'`avatar` can be passed as `bytes-like` or None, got {avatar.__class__.__name__}.')
+                
+                if __debug__:
+                    extension = get_image_extension(avatar)
+                    
+                    if self.premium_type.value:
+                        valid_icon_types = VALID_ICON_FORMATS_EXTENDED
+                    else:
+                        valid_icon_types = VALID_ICON_FORMATS
+                    
+                    if extension not in valid_icon_types:
+                        raise AssertionError(f'Invalid avatar type for the client: `{extension}`.')
                 
                 avatar_data = image_to_base64(avatar)
             
             data['avatar'] = avatar_data
         
         if (channel is not None):
-            data['channel_id'] = channel.id
+            if isinstance(channel, ChannelText):
+                channel_id = channel.id
+            else:
+                channel_id = maybe_snowflake(channel)
+                if channel_id is None:
+                    raise TypeError(f'`channel` can be given either as `{ChannelText.__name__}` or as `int` instance, got '
+                        f'{channel.__class__.__name__}.')
+            
+            data['channel_id'] = channel_id
         
         if not data:
             return # Save 1 request
         
-        data = await self.http.webhook_edit(webhook.id, data)
+        data = await self.http.webhook_edit(webhook_id, data)
         webhook._update_no_return(data)
-        
-    async def webhook_edit_token(self, webhook, name=None, avatar=...):
+    
+    async def webhook_edit_token(self, webhook, *, name=None, avatar=...):
         """
         Edits and updates the given webhook through Discord's webhook API.
         
@@ -9911,25 +9943,37 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            If `avatar` was passed, but not as `bytes-like`.
-        ValueError
-            - If `name`'s length is under `1` or over `80`.
-            - If `avatar` was passed as `bytes-like`, but it's format is not `'jpg'`, `'png'`, `'webp'` or `'gif'`.
+            - If `webhook` was not given as ``Webhook`` instance.
+            - If `avatar` was not given neither as `None` nor as `bytes-like`.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `name` was given but not as `str` instance.
+            - If `name`'s length is out of range [1:80].
+            - If `avatar`'s type is not any of the expected ones: `'jpg'`, `'png'`, `'webp'` or `'gif'`.
         
         Notes
         -----
         This endpoint cannot edit the webhook's channel, like ``.webhook_edit``.
         """
+        
+        if __debug__:
+            if not isinstance(webhook, Webhook):
+                raise AssertionError(f'`webhook` can be given as `{Webhook.__name__}` instance, got '
+                    f'{webhook.__class__.__name__}.')
+        
         data = {}
         
         if (name is not None):
-            name_ln = len(name)
-            if name_ln == 0 or name_ln > 80:
-                raise ValueError(f'The length of the name can be between 1-80, got {name_ln}')
+            if __debug__:
+                if not isinstance(name, str):
+                    raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
+                
+                name_ln = len(name)
+                if name_ln < 1 or name_ln > 80:
+                    raise AssertionError(f'The length of the name can be in range [1:80], got {name_ln}; {name!r}.')
             
             data['name'] = name
         
@@ -9937,13 +9981,19 @@ class Client(UserBase):
             if avatar is None:
                 avatar_data = None
             else:
-                avatar_type = avatar.__class__
-                if not issubclass(avatar_type, (bytes, bytearray, memoryview)):
-                    raise TypeError(f'`icon` can be passed as `bytes-like`, got {avatar_type.__name__}.')
+                if not isinstance(avatar, (bytes, bytearray, memoryview)):
+                    raise TypeError(f'`avatar` can be passed as `bytes-like` or None, got {avatar.__class__.__name__}.')
                 
-                extension = get_image_extension(avatar)
-                if extension not in VALID_ICON_FORMATS_EXTENDED:
-                    raise ValueError(f'Invalid icon type: `{extension}`.')
+                if __debug__:
+                    extension = get_image_extension(avatar)
+                    
+                    if self.premium_type.value:
+                        valid_icon_types = VALID_ICON_FORMATS_EXTENDED
+                    else:
+                        valid_icon_types = VALID_ICON_FORMATS
+                    
+                    if extension not in valid_icon_types:
+                        raise AssertionError(f'Invalid avatar type for the client: `{extension}`.')
                 
                 avatar_data = image_to_base64(avatar)
             
@@ -10399,7 +10449,7 @@ class Client(UserBase):
         
         await self.http.webhook_message_delete(webhook, message_id)
     
-    async def emoji_get(self, guild, emoji_id):
+    async def emoji_get(self, guild, emoji):
         """
         Requests the emoji by it's id at the given guild. If the client's logging in is finished, then it should have
         it's every emoji loaded already.
@@ -10408,10 +10458,10 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild``
+        guild : ``Guild`` or `int`
             The guild, where the emoji is.
-        emoji_id : `int`
-            The id of the emoji.
+        emoji : ``Emoji`` or `int`
+            The emoji to get.
         
         Returns
         -------
@@ -10419,13 +10469,45 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            - If `guild` was not given neither as ``Guild`` nor as `int` instance.
+            - If `emoji` was not given neither as ``Emoji`` nor as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        data = await self.http.emoji_get(guild.id, emoji_id)
-        return Emoji(data, guild)
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given either as `{Guild.__name__}` or as `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+            
+            guild = GUILDS.get(guild_id)
+        
+        if isinstance(emoji, Emoji):
+            emoji_id = emoji.id
+        else:
+            emoji_id = maybe_snowflake(emoji)
+            if emoji_id is None:
+                raise TypeError(f'`emoji` can be given either as `{Emoji.__name__}` or as `int` instance, got '
+                    f'{emoji.__class__.__name__}.')
+            
+            emoji = EMOJIS.get(emoji)
+        
+        emoji_data = await self.http.emoji_get(guild_id, emoji_id)
+        
+        if (emoji is None) or emoji.partial:
+            if guild is None:
+                guild = Guild.precreate(guild_id)
+        
+            emoji = Emoji(emoji_data, guild)
+        else:
+            emoji._update_no_return(emoji_data)
+        
+        return emoji
     
     async def guild_sync_emojis(self, guild):
         """
@@ -10435,20 +10517,34 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild``
+        guild : ``Guild`` or `int`
             The guild, what's emojis will be synced.
         
         Raises
         ------
+        TypeError
+            If `guild` was not given neither as ``Guild`` nor as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        data = await self.http.guild_emoji_get_all(guild.id)
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given either as `{Guild.__name__}` or as `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        data = await self.http.guild_emoji_get_all(guild_id)
+        
+        if guild is None:
+            guild = Guild.precreate(guild_id)
+        
         guild._sync_emojis(data)
     
-    async def emoji_create(self, guild, name, image, roles=[], reason=None):
+    async def emoji_create(self, guild, name, image, *, roles=None, reason=None):
         """
         Creates an emoji at the given guild.
         
@@ -10456,13 +10552,13 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild``
+        guild : ``Guild`` or `int`
             The guild, where the emoji will be created.
         name : `str`
             The emoji's name. It's length can be between `2` and `32`.
         image : `bytes-like`
             The emoji's icon.
-        roles : `list` of `Role` objects, Optional
+        roles : None` or (`list`, `set` or `tuple`) of (`Role` or `int`), Optional
             Whether the created emoji should be limited only to users with any of the specified roles.
         reason : `None` or `str`, Optional
             Will show up at the guild's audit logs.
@@ -10474,36 +10570,78 @@ class Client(UserBase):
         
         Raises
         ------
-        ValueError
-            If the `name`'s length is under `2`, or over `32`.
+        TypeError
+            If `guild` was not given neither as ``Guild`` nor as `int` instance.
+            If `roles` contains a non ``Role`` or `int` element.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        
+        AssertionError
+            - If `name` was not given as `str` instance.
+            - If `name` length is out of the expected range [1:32].
+            - If `roles` was not given neither as `None`, `list`, `tuple` or `set` instance.
         Notes
         -----
         Only some characters can be in the emoji's name, so every other character is filtered out.
         """
-        name = ''.join(_VALID_NAME_CHARS.findall(name))
-        name_ln = len(name)
-        if name_ln < 2 or name_ln > 32:
-            raise ValueError(f'The length of the emoji can be between 2-32, got {name!r}.')
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given either as `{Guild.__name__}` or as `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+            
+            guild = GUILDS.get(guild_id)
         
+        if __debug__:
+            if not isinstance(name, str):
+                raise AssertionError(f'`name` can be given as `st` instance, got {name.__class__.__name__}.')
+        
+        name = ''.join(_VALID_NAME_CHARS.findall(name))
+        
+        if __debug__:
+            name_length = len(name)
+            if name_length < 2 or name_length > 32:
+                raise AssertionError(f'`name` length can be in range [2:32], got {name_length!r}; {name!r}.')
+        
+        role_ids = set()
+        if (roles is not None):
+            if __debug__:
+                if not isinstance(roles, (list, set, tuple)):
+                    raise AssertionError(f'`roles` can be given either `None`, `list`, `set` or `tuple` instance, '
+                        f'got {roles.__class__.__name__}.')
+            
+            for role in roles:
+                if isinstance(role, Role):
+                    role_id = role.id
+                else:
+                    role_id = maybe_snowflake(role)
+                    if role_id is None:
+                        raise TypeError(f'`roles` contains not `{Role.__name__}` neither `int` instance element, '
+                            f'got role={role!r}; roles={roles!r}.')
+                
+                role_ids.add(role_id)
+            
         image = image_to_base64(image)
         
         data = {
             'name'     : name,
             'image'    : image,
-            'role_ids' : [role.id for role in roles]
+            'roles' : role_ids
                 }
         
-        data = await self.http.emoji_create(guild.id, data, reason)
+        data = await self.http.emoji_create(guild_id, data, reason)
+        
+        if guild is None:
+            guild = Guild.precreate(guild_id)
+        
         emoji = Emoji(data, guild)
         emoji.user = self
         return emoji
     
-    async def emoji_delete(self, emoji, reason=None):
+    async def emoji_delete(self, emoji, *, reason=None):
         """
         Deletes the given emoji.
         
@@ -10522,14 +10660,21 @@ class Client(UserBase):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            If `emoji` was not given as ``Emoji`` instance.
         """
+        if __debug__:
+            if not isinstance(emoji, Emoji):
+                raise AssertionError(f'`emoji` can be given as `{Emoji.__name__}` instance, got '
+                    f'{emoji.__class__.__name__}.')
+        
         guild = emoji.guild
         if guild is None:
             return
         
         await self.http.emoji_delete(guild.id, emoji.id, reason=reason)
     
-    async def emoji_edit(self, emoji, name=None, roles=..., reason=None):
+    async def emoji_edit(self, emoji, *, name=None, roles=..., reason=None):
         """
         Edits the given emoji.
         
@@ -10539,8 +10684,8 @@ class Client(UserBase):
         ----------
         emoji : ``Emoji``
             The emoji to edit.
-        name : `str`, Optional.
-            The emoji's new name.
+        name : `str`, Optional
+            The emoji's new name. It's length can be in range [2:32].
         roles : `None` or `list` of ``Role`` objects, Optional
             The roles to what is the role limited. By passing it as `None`, or as an empty `list` you can remove the
             current ones.
@@ -10549,13 +10694,23 @@ class Client(UserBase):
         
         Raises
         ------
-        ValueError
-            If the `name`'s length is under `2`, or over `32`.
+        TypeError
+            If `roles` contains a non ``Role`` or `int` element.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `emoji` was not given as ``Emoji`` instance.
+            - If `name` was not given as `str` instance.
+            - If `name` length is out of the expected range [1:32].
+            - If `roles` was not given neither as `None`, `list`, `tuple` or `set` instance.
         """
+        if __debug__:
+            if not isinstance(emoji, Emoji):
+                raise AssertionError(f'`emoji` can be given as `{Emoji.__name__}` instance, got '
+                    f'{emoji.__class__.__name__}.')
+        
         guild = emoji.guild
         if guild is None:
             return
@@ -10564,24 +10719,45 @@ class Client(UserBase):
         
         # name is required
         if (name is None):
-            data['name'] = emoji.name
+            name = emoji.name
         else:
-            name = ''.join(_VALID_NAME_CHARS.findall(name))
-            name_ln = len(name)
-            if name_ln < 2 or name_ln > 32:
-                raise ValueError(f'The length of `name` can be between 2-32, got {name!r}.')
+            if __debug__:
+                if not isinstance(name, str):
+                    raise AssertionError(f'`name` can be given as `st` instance, got {name.__class__.__name__}.')
             
-            data['name'] = name
+            name = ''.join(_VALID_NAME_CHARS.findall(name))
+            
+            if __debug__:
+                name_length = len(name)
+                if name_length < 2 or name_length > 32:
+                    raise AssertionError(f'`name` length can be in range [2:32], got {name_length!r}; {name!r}.')
+        
+        data['name'] = name
         
         # roles are not required
         if (roles is not ...):
+            role_ids = set()
             if (roles is not None):
-                roles = [role.id for role in roles]
+                if __debug__:
+                    if not isinstance(roles, (list, set, tuple)):
+                        raise AssertionError(f'`roles` can be given either `None`, `list`, `set` or `tuple` instance, '
+                            f'got {roles.__class__.__name__}.')
+                
+                for role in roles:
+                    if isinstance(role, Role):
+                        role_id = role.id
+                    else:
+                        role_id = maybe_snowflake(role)
+                        if role_id is None:
+                            raise TypeError(f'`roles` contains not `{Role.__name__}` neither `int` instance element, '
+                                f'got role={role!r}; roles={roles!r}.')
+                    
+                    role_ids.add(role_id)
             
-            data['roles'] = roles
+            data['roles'] = role_ids
         
         await self.http.emoji_edit(guild.id, emoji.id, data, reason)
-        
+    
     # Invite management
     
     async def vanity_invite(self, *args, **kwargs):
@@ -10605,7 +10781,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild``
+        guild : ``Guild`` or `int`
             The guild, what's invite will be returned.
         
         Returns
@@ -10615,17 +10791,37 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `guild` was not given neither as ``Guild`` nor as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        vanity_code = guild.vanity_code
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given either as `{Guild.__name__}` or as `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+            
+            guild = GUILDS.get(guild_id)
+        
+        if guild is None or guild.partial:
+            invite_data = await self.http.vanity_invite_get(guild_id)
+            vanity_code = invite_data['code']
+        else:
+            vanity_code = guild.vanity_code
+        
         if vanity_code is None:
             return None
         
-        data = await self.http.invite_get(vanity_code, {})
-        return Invite._create_vanity(guild, data)
+        if guild is None:
+            guild = Guild.precreate(guild_id)
+        
+        invite_data = await self.http.invite_get(vanity_code, {})
+        return Invite._create_vanity(guild, invite_data)
     
     async def vanity_edit(self, *args, **kwargs):
         """
@@ -10640,7 +10836,7 @@ class Client(UserBase):
         
         return await self.vanity_invite_edit(*args, **kwargs)
     
-    async def vanity_invite_edit(self, guild, code, reason=None):
+    async def vanity_invite_edit(self, guild, vanity_code, *, reason=None):
         """
         Edits the given guild's vanity invite's code.
         
@@ -10650,21 +10846,38 @@ class Client(UserBase):
         ----------
         guild : ``Guild``
             Th guild, what's invite will be edited.
-        code : `str`
+        vanity_code : `str`
             The new code of the guild's vanity invite.
         reason : `None` or `str`, Optional
             Shows up at the guild's audit logs.
         
         Raises
         ------
+        TypeError
+            If `guild` was not given neither as ``Guild`` nor as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            If `vanity_code` was not given as `str` instance.
         """
-        await self.http.vanity_invite_edit(guild.id, {'code': code}, reason)
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given either as `{Guild.__name__}` or as `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        if __debug__:
+            if not isinstance(vanity_code, str):
+                raise AssertionError(f'`vanity_code` can be given as `str` instance, got '
+                    f'{vanity_code.__class__.__name__}.')
+        
+        await self.http.vanity_invite_edit(guild_id, {'code': vanity_code}, reason)
     
-    async def invite_create(self, channel, max_age=0, max_uses=0, unique=True, temporary=False):
+    async def invite_create(self, channel, *, max_age=0, max_uses=0, unique=True, temporary=False):
         """
         Creates an invite at the given channel with the given parameters.
         
@@ -10672,7 +10885,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        channel : ``ChannelText``, ``ChannelVoice``, ``ChannelGroup`` or ``ChannelStore``
+        channel : ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``, ``ChannelStore``, `int`
             The channel of the created invite.
         max_age : `int`, Optional
             After how much time (in seconds) will the invite expire. Defaults is never.
@@ -10690,14 +10903,41 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            If the passed's channel is ``ChannelPrivate`` or ``ChannelCategory``.
+            If `channel` was not given neither as ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``,
+            ``ChannelStore``, neither as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `max_age` was not given as `int` instance.
+            - If `max_uses` was not given as `int` instance.
+            - If `unique` was not given as `bool` instance.
+            - If `temporary` was not given as `bool` instance.
+            
         """
-        if channel.type in (1, 4):
-            raise TypeError(f'Cannot create invite from {channel.__class__.__name__}.')
+        if isinstance(channel, (ChannelText, ChannelVoice, ChannelGroup, ChannelStore)):
+            channel_id = channel.id
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as `{ChannelText.__name__}`, `{ChannelText.__name__}`, '
+                    f'`{ChannelText.__name__}`, `{ChannelText.__name__}` or as `int` instance, got '
+                    f'{channel.__class__.__name__}.')
+        
+        if __debug__:
+            if not isinstance(max_age, int):
+                raise AssertionError(f'`max_age` can be given as `int` instance, got {max_age.__class__.__name__}.')
+            
+            if not isinstance(max_uses, int):
+                raise AssertionError(f'`max_uses` can be given as `int` instance, got {max_uses.__class__.__name__}.')
+            
+            if not isinstance(unique, bool):
+                raise AssertionError(f'`unique` can be given as `bool` instance, got {unique.__class__.__name__}.')
+            
+            if not isinstance(temporary, bool):
+                raise AssertionError(f'`temporary` can be given as `bool` instance, got '
+                    f'{temporary.__class__.__name__}.')
         
         data = {
             'max_age'   : max_age,
@@ -10706,9 +10946,9 @@ class Client(UserBase):
             'unique'    : unique,
                 }
         
-        data = await self.http.invite_create(channel.id, data)
+        data = await self.http.invite_create(channel_id, data)
         return Invite(data, False)
-
+    
     # 'target_user_id' :
     #     DiscordException BAD REQUEST (400), code=50035: Invalid Form Body
     #     target_user_type.GUILD_INVITE_INVALID_TARGET_USER_TYPE('Invalid target user type')
@@ -10725,7 +10965,7 @@ class Client(UserBase):
     #     DiscordException BAD REQUEST (400), code=50035: Invalid Form Body
     #     target_user_id.GUILD_INVITE_INVALID_STREAMER('The specified user is currently not streaming in this channel')
     
-    async def stream_invite_create(self, guild, user, max_age=0, max_uses=0, unique=True, temporary=False):
+    async def stream_invite_create(self, guild, user, *, max_age=0, max_uses=0, unique=True, temporary=False):
         """
         Creates an STREAM invite at the given guild for the specific user. The user must be streaming at the guild,
         when the invite is created.
@@ -10736,7 +10976,7 @@ class Client(UserBase):
         ----------
         guild : ``Guild``
             The guild where the user streams
-        user : ``Client`` or ``User``
+        user : ``Client``, ``User`` or `int`
             The streaming user.
         max_age : `int`, Optional
             After how much time (in seconds) will the invite expire. Defaults is never.
@@ -10753,14 +10993,34 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `user` was not given neither as ``User``, ``Client`` neither as `int` instance.
         ValueError
             If the user is not streaming at the guild.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `guild` was not given as ``Guild`` instance.
+            - If `max_age` was not given as `int` instance.
+            - If `max_uses` was not given as `int` instance.
+            - If `unique` was not given as `bool` instance.
+            - If `temporary` was not given as `bool` instance.
         """
-        user_id = user.id
+        if __debug__:
+            if not isinstance(guild, Guild):
+                raise AssertionError(f'`guild` can be given as `{Guild.__name__}` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        if isinstance(user, (User, Client)):
+            user_id = user.id
+        else:
+            user_id = maybe_snowflake(user)
+            if user_id is None:
+                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                    f'got {user.__class__.__name__}.')
+        
         try:
             voice_state = guild.voice_states[user_id]
         except KeyError:
@@ -10768,6 +11028,20 @@ class Client(UserBase):
         
         if not voice_state.self_stream:
             raise ValueError('The user must stream at a voice channel of the guild!')
+        
+        if __debug__:
+            if not isinstance(max_age, int):
+                raise AssertionError(f'`max_age` can be given as `int` instance, got {max_age.__class__.__name__}.')
+            
+            if not isinstance(max_uses, int):
+                raise AssertionError(f'`max_uses` can be given as `int` instance, got {max_uses.__class__.__name__}.')
+            
+            if not isinstance(unique, bool):
+                raise AssertionError(f'`unique` can be given as `bool` instance, got {unique.__class__.__name__}.')
+            
+            if not isinstance(temporary, bool):
+                raise AssertionError(f'`temporary` can be given as `bool` instance, got '
+                    f'{temporary.__class__.__name__}.')
         
         data = {
             'max_age'          : max_age,
@@ -10794,7 +11068,7 @@ class Client(UserBase):
         
         return await self.invite_create_preferred(*args, **kwargs)
     
-    async def invite_create_preferred(self, guild, *args, **kwargs):
+    async def invite_create_preferred(self, guild, **kwargs):
         """
         Creates an invite to the guild's preferred channel.
         
@@ -10804,8 +11078,6 @@ class Client(UserBase):
         ----------
         guild . ``Guild``
             The guild to her the invite will be created to.
-        *args : Arguments
-            Additional arguments to describe the created invite.
         **kwargs : Keyword arguments
             Additional keyword arguments to describe the created invite.
         
@@ -10832,7 +11104,18 @@ class Client(UserBase):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `guild` was not given as ``Guild`` instance.
+            - If `max_age` was not given as `int` instance.
+            - If `max_uses` was not given as `int` instance.
+            - If `unique` was not given as `bool` instance.
+            - If `temporary` was not given as `bool` instance.
         """
+        if __debug__:
+            if not isinstance(guild, Guild):
+                raise AssertionError(f'`guild` can be given as `{Guild.__name__}` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
         while True:
             if not guild.channels:
                 raise ValueError('The guild has no channels (yet?), try waiting for dispatch or create a channel')
@@ -10846,7 +11129,7 @@ class Client(UserBase):
                 break
             
             for channel_type in (0, 2):
-                for channel in guild.channels:
+                for channel in guild.channels.values():
                     if channel.type == 4:
                         for channel in channel.channels:
                             if channel.type == channel_type:
@@ -10864,16 +11147,17 @@ class Client(UserBase):
             return None
         
         try:
-            return (await self.invite_create(channel, *args, **kwargs))
+            return (await self.invite_create(channel, **kwargs))
         except DiscordException as err:
             if err.code in (
                     ERROR_CODES.unknown_channel, # the channel was deleted meanwhile
                     ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                    ERROR_CODES.invalid_access, # client removed
                         ):
                 return None
             raise
     
-    async def invite_get(self, invite_code, with_count=True):
+    async def invite_get(self, invite, *, with_count=True):
         """
         Requests a partial invite with the given code.
         
@@ -10881,7 +11165,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        invite_code : `str`
+        invite : ``Invite``, `str`
             The invites code.
         with_count : `bool`, Optional
             Whether the invite should contain the respective guild's user and online user count. Defaults to `True`.
@@ -10892,42 +11176,43 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `invite` was not given neither ``Invite`` nor `str` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            If `invite_code` was not given as `str` instance.
+            If `with_count`was not given as `bool` instance.
         """
-        data = await self.http.invite_get(invite_code, {'with_counts': with_count})
-        return Invite(data, False)
-    
-    async def invite_update(self, invite, with_count=True):
-        """
-        Updates the given invite. Because this method uses the same endpoint as ``.invite_get``, no new information
-        is received if `with_count` is passed as `False`.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        invite : ``Invite``
-            The invite to update.
-        with_count : `bool`, Optional
-            Whether the invite should contain the respective guild's user and online user count. Defaults to `True`.
-        
-        Raises
-        ------
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        """
-        data = await self.http.invite_get(invite.code, {'with_counts': with_count})
-        if invite.partial:
-            updater = Invite._update_attributes
+        if isinstance(invite, Invite):
+            invite_code = invite.code
+        elif isinstance(invite, str):
+            invite_code = invite
+            invite = None
         else:
-            updater = Invite._update_counts_only
+            raise TypeError(f'`invite`` can be given as `{Invite.__name__}` or `str` instance, got '
+                f'{invite.__class__.__name__}.')
         
-        updater(invite, data)
+        if __debug__:
+            if not isinstance(with_count, bool):
+                raise AssertionError(f'`with_count` can be given as `str` instance, got '
+                    f'{with_count.__class__.__name__}.')
+        
+        invite_data = await self.http.invite_get(invite_code, {'with_counts': with_count})
+        
+        if invite is None:
+            invite = Invite(invite_data, False)
+        else:
+            if invite.partial:
+                updater = Invite._update_attributes
+            else:
+                updater = Invite._update_counts_only
+            
+            updater(invite, invite_data)
+        
+        return invite
     
     async def invite_get_guild(self, *args, **kwargs):
         """
@@ -10950,7 +11235,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild``
+        guild : ``Guild`` or `int`
             The guild, what's invites will be requested.
         
         Returns
@@ -10959,13 +11244,23 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `guild` was not given neither as ``Guild`` nor as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        data = await self.http.invite_get_all_guild(guild.id)
-        return [Invite(invite_data, False) for invite_data in data]
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given either as `{Guild.__name__}` or as `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        invite_datas = await self.http.invite_get_all_guild(guild_id)
+        return [Invite(invite_data, False) for invite_data in invite_datas]
     
     async def invite_get_channel(self, *args, **kwargs):
         """
@@ -10988,7 +11283,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        channel : ``ChannelBase`` instance
+        channel : ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``, ``ChannelStore``, `int`
             The channel, what's invites will be requested.
         
         Returns
@@ -10997,15 +11292,27 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `channel` was not given neither as ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``,
+            ``ChannelStore``, neither as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        data = await self.http.invite_get_all_channel(channel.id)
-        return [Invite(invite_data, False) for invite_data in data]
-
-    async def invite_delete(self, invite, reason=None):
+        if isinstance(channel, (ChannelText, ChannelVoice, ChannelGroup, ChannelStore)):
+            channel_id = channel.id
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as `{ChannelText.__name__}`, `{ChannelText.__name__}`, '
+                    f'`{ChannelText.__name__}`, `{ChannelText.__name__}` or as `int` instance, got '
+                    f'{channel.__class__.__name__}.')
+        
+        invite_datas = await self.http.invite_get_all_channel(channel_id)
+        return [Invite(invite_data, False) for invite_data in invite_datas]
+    
+    async def invite_delete(self, invite, *, reason=None):
         """
         Deletes the given invite.
         
@@ -11020,44 +11327,34 @@ class Client(UserBase):
         
         Raises
         ------
+        TypeError
+            If `invite` was not given neither ``Invite`` nor `str` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        await self.http.invite_delete(invite.code, reason)
-
-    async def invite_delete_by_code(self, invite_code, reason=None):
-        """
-        Deletes the invite by it's code and returns it.
+        if isinstance(invite, Invite):
+            invite_code = invite.code
+        elif isinstance(invite, str):
+            invite_code = invite
+            invite = None
+        else:
+            raise TypeError(f'`invite`` can be given as `{Invite.__name__}` or `str` instance, got '
+                f'{invite.__class__.__name__}.')
         
-        This method is a coroutine.
+        invite_data = await self.http.invite_delete(invite_code, reason)
         
-        Parameters
-        ----------
-        invite_code : ``str``
-            The invite's code to delete.
-        reason : `None` or `str`, Optional
-            Shows up at the respective guild's audit logs.
+        if invite is None:
+            invite = Invite(invite_data, False)
+        else:
+            invite._update_attributes(invite_data)
         
-        Returns
-        -------
-        invite : ``Invite``
-            The deleted invite.
-        
-        Raises
-        ------
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        """
-        data = await self.http.invite_delete(invite_code, reason)
-        return Invite(data, False)
+        return invite
     
     # Role management
     
-    async def role_edit(self, role, name=None, color=None, separated=None, mentionable=None, permissions=None,
+    async def role_edit(self, role, *, name=None, color=None, separated=None, mentionable=None, permissions=None,
             position=None, reason=None):
         """
         Edits the role with the given parameters.
@@ -11069,16 +11366,16 @@ class Client(UserBase):
         role : ``Role``
             The role to edit.
         name : `str`, Optional
-            The role's new name.
-        color : ``Color`` or `int` Optional
+            The role's new name. It's length ca be in range [2:32].
+        color : `None`, ``Color`` or `int`, Optional
             The role's new color.
-        separated : `bool`, Optional
+        separated : `None`, `bool`, Optional
             Whether the users with this role should be shown up as separated from the others.
-        mentionable : `bool`, Optional
+        mentionable : `None`, `bool`, Optional
             Whether the role should be mentionable.
-        permissions : ``Permission`` or `int`, Optional
+        permissions : `None`, ``Permission`` or `int`, Optional
             The new permission value of the role.
-        position : `int`, Optional
+        position : `None`, `int`, Optional
             The role's new position.
         reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
@@ -11088,12 +11385,24 @@ class Client(UserBase):
         ValueError
             - If default role would be moved.
             - If any role would be moved to position `0`.
-            - If `name`'s length is under `2` or over `32`.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `name` was not given neither as `None` nor `str` instance.
+            - If `name` length is out of range [2:32].
+            - If `color` was not given as `None`, ``Color`` nor as other `int` instance.
+            - If `separated` was not given as `None`, nor as `bool` instance.
+            - If `mentionable` was not given as `None`, nor as `bool˛` instance.
+            - If `permissions` was not given as `None`, ``Permission``, neither as other `int` instance.
+            - If `role` was not given as ``Role`` instance.
         """
+        if __debug__:
+            if not isinstance(role, Role):
+                raise AssertionError(f'`role` can be given as `{Role.__name__}` instance, got '
+                    f'{role.__class__.__name__}.')
+        
         guild = role.guild
         if guild is None:
             return
@@ -11104,27 +11413,53 @@ class Client(UserBase):
         data = {}
         
         if (name is not None):
-            name_ln = len(name)
-            if name_ln < 2 or name_ln > 32:
-                raise ValueError(f'The name of the role can be between 2-32, got {name!r}.')
+            if __debug__:
+                if not isinstance(name, str):
+                    raise AssertionError(f'`name` can be given as `None` or as `str` instance, got '
+                        f'{name.__class__.__name__}.')
+                
+                name_length = len(name)
+                if name_length < 2 or name_length > 32:
+                    raise AssertionError(f'`name` length can be in range [2:32], got {name_length!r}; {name!r}.')
+            
             data['name'] = name
         
         if (color is not None):
+            if __debug__:
+                if not isinstance(color, int):
+                    raise AssertionError(f'`color` can be given as `None`, `{Color.__name__}` or as other `int` '
+                        f'instance, got {color.__class__.__name__}.')
+            
             data['color'] = color
         
         if (separated is not None):
+            if __debug__:
+                if not isinstance(separated, bool):
+                    raise AssertionError(f'`separated` can be given as `None` or as `bool` instance, got '
+                        f'{separated.__class__.__name__}.')
+            
             data['hoist'] = separated
         
         if (mentionable is not None):
+            if __debug__:
+                if not isinstance(mentionable, bool):
+                    raise AssertionError(f'`mentionable` can be given as `None` or as `bool` instance, got '
+                        f'{mentionable.__class__.__name__}.')
+            
             data['mentionable'] = mentionable
         
         if (permissions is not None):
+            if __debug__:
+                if not isinstance(color, int):
+                    raise AssertionError(f'`permissions` can be given as `None`, `{Permission.__name__}` or as other '
+                        f'`int` instance, got {permissions.__class__.__name__}.')
+            
             data['permissions'] = permissions
         
         if data:
             await self.http.role_edit(guild.id, role.id, data, reason)
     
-    async def role_delete(self, role, reason=None):
+    async def role_delete(self, role, *, reason=None):
         """
         Deletes the given role.
         
@@ -11143,14 +11478,21 @@ class Client(UserBase):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            If `role` was not given as ``Role`` instance.
         """
+        if __debug__:
+            if not isinstance(role, Role):
+                raise AssertionError(f'`role` can be given as `{Role.__name__}` instance, got '
+                    f'{role.__class__.__name__}.')
+        
         guild = role.guild
         if guild is None:
             return
         
         await self.http.role_delete(guild.id, role.id, reason)
     
-    async def role_create(self, guild, name=None, permissions=None, color=None, separated=None, mentionable=None,
+    async def role_create(self, guild, *, name=None, permissions=None, color=None, separated=None, mentionable=None,
             reason=None):
         """
         Creates a role at the given guild.
@@ -11159,10 +11501,10 @@ class Client(UserBase):
         
         Parameters
         ----------
-        guild : ``Guild``
+        guild : ``Guild`` or `int7
             The guild where the role will be created.
         name : `str`, Optional
-            The created role's name.
+            The created role's name. It's length can be in range [2:32].
         color : ``Color`` or `int` Optional
             The created role's color.
         separated : `bool`, Optional
@@ -11176,36 +11518,85 @@ class Client(UserBase):
         
         Raises
         ------
-        ValueError
-            If `name`'s length is under `2` or over `32`.
+        TypeError
+            If `guild` was not given neither as ``Guild`` nor as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `name` was not given neither as `None` nor `str` instance.
+            - If `name` length is out of range [2:32].
+            - If `color` was not given as `None`, ``Color`` nor as other `int` instance.
+            - If `separated` was not given as `None`, nor as `bool` instance.
+            - If `mentionable` was not given as `None`, nor as `bool˛` instance.
+            - If `permissions` was not given as `None`, ``Permission``, neither as other `int` instance.
         """
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given either as `{Guild.__name__}` or as `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+            
+            guild = GUILDS.get(guild_id)
+        
         data = {}
+        
         if (name is not None):
-            name_ln = len(name)
-            if name_ln < 2 or name_ln > 32:
-                raise ValueError(f'Role\'s name\'s length can be between 2-32, got {name!r}.')
+            if __debug__:
+                if not isinstance(name, str):
+                    raise AssertionError(f'`name` can be given as `None` or as `str` instance, got '
+                        f'{name.__class__.__name__}.')
+                
+                name_length = len(name)
+                if name_length < 2 or name_length > 32:
+                    raise AssertionError(f'`name` length can be in range [2:32], got {name_length!r}; {name!r}.')
+            
             data['name'] = name
         
         if (permissions is not None):
+            if __debug__:
+                if not isinstance(color, int):
+                    raise AssertionError(f'`permissions` can be given as `None`, `{Permission.__name__}` or as other '
+                        f'`int` instance, got {permissions.__class__.__name__}.')
+            
             data['permissions'] = permissions
         
         if (color is not None):
+            if __debug__:
+                if not isinstance(color, int):
+                    raise AssertionError(f'`color` can be given as `None`, `{Color.__name__}` or as other `int` '
+                        f'instance, got {color.__class__.__name__}.')
+            
             data['color'] = color
         
         if (separated is not None):
+            if __debug__:
+                if not isinstance(separated, bool):
+                    raise AssertionError(f'`separated` can be given as `None` or as `bool` instance, got '
+                        f'{separated.__class__.__name__}.')
+            
             data['hoist'] = separated
         
         if (mentionable is not None):
+            if __debug__:
+                if not isinstance(mentionable, bool):
+                    raise AssertionError(f'`mentionable` can be given as `None` or as `bool` instance, got '
+                        f'{mentionable.__class__.__name__}.')
+            
             data['mentionable'] = mentionable
         
-        data = await self.http.role_create(guild.id, data, reason)
+        data = await self.http.role_create(guild_id, data, reason)
+        
+        if guild is None:
+            guild = Guild.precreate(guild_id)
+        
         return Role(data, guild)
     
-    async def role_move(self, role, position, reason=None):
+    
+    async def role_move(self, role, position, *, reason=None):
         """
         Moves the given role.
         
@@ -11229,7 +11620,14 @@ class Client(UserBase):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            If `role` was not given as ``Role`` instance.
         """
+        if __debug__:
+            if not isinstance(role, Role):
+                raise AssertionError(f'`role` can be given as `{Role.__name__}` instance, got '
+                    f'{role.__class__.__name__}.')
+        
         guild = role.guild
         if guild is None:
             # The role is partial, we cannot move it, because there is nowhere to move it >.>
@@ -11254,7 +11652,7 @@ class Client(UserBase):
         
         await self.http.role_move(guild.id, data, reason)
     
-    async def role_reorder(self, roles, reason=None):
+    async def role_reorder(self, roles, *, reason=None):
         """
         Moves more roles at their guild to the specific positions.
         
@@ -11294,15 +11692,15 @@ class Client(UserBase):
         # Is `roles` passed as dict-like?
         if hasattr(type(roles), 'items'):
             for item in roles.items():
-                if type(item) is not tuple:
+                if not isinstance(item, tuple):
                     raise TypeError(f'`roles` passed as dict-like, but when iterating it\'s `.items` returned not a '
                         f'`tuple`, got `{item!r}`')
                 
-                if len(item)!=2:
+                if len(item) != 2:
                     raise TypeError(f'`roles` passed as dict-like, but when iterating it\'s `.items` returned a '
                         f'`tuple`, but not with length `2`, got `{item!r}`')
                 
-                if (type(item[0]) is not Role) or (type(item[1]) is not int):
+                if (not isinstance(item[0], Role)) or (not isinstance(item[1], int)):
                     raise TypeError(f'Items should be `{Role.__name__}`, `int` pairs, but got `{item!r}`')
                 
                 roles_valid.append(item)
@@ -11310,7 +11708,7 @@ class Client(UserBase):
         # Is `roles` passed as other iterable
         elif hasattr(type(roles), '__iter__'):
             for item in roles:
-                if type(item) is not tuple:
+                if not isinstance(item, tuple):
                     raise TypeError(f'`roles` passed as other iterable, but when iterating returned not a `tuple`, got '
                         f'`{item!r}`')
                 
@@ -11318,7 +11716,7 @@ class Client(UserBase):
                     raise TypeError(f'`roles` passed as other iterable, but when iterating returned a `tuple`, but not '
                         f'with length `2`, got `{item!r}`')
                 
-                if (type(item[0]) is not Role) or (type(item[1]) is not int):
+                if (not isinstance(item[0], Role)) or (not isinstance(item[1], int)):
                     raise TypeError(f'Items should be `{Role.__name__}`, `int` pairs, but got `{item!r}`')
                 
                 roles_valid.append(item)
@@ -11695,7 +12093,7 @@ class Client(UserBase):
         
         data = new_application_command.to_data()
         await self.http.application_command_global_edit(application_id, application_command_id, data)
-        return Application_command._from_edit_data(data, application_command_id, application_id)
+        return ApplicationCommand._from_edit_data(data, application_command_id, application_id)
     
     async def application_command_global_delete(self, application_command):
         """

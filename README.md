@@ -73,7 +73,7 @@ from hata.ext.slash import setup_ext_slash
 GUILD = Guild.precreate(guild_id)
 
 Seija = Client('TOKEN')
-setup_ext_commands(Seija, 's!')
+setup_ext_commands(Seija)
 
 @Seija.events
 async def ready(client):

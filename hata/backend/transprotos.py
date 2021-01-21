@@ -45,10 +45,10 @@ class _SSLPipe(object):
         +-------------------+---------------------------+
         | Respective name   | Value                     |
         +===================+===========================+
-        | handshake_exc     | `None` or `BaseException` |
+        | handshake_exception     | `None` or `BaseException` |
         +-------------------+---------------------------+
         
-        If the handshake is successful, then the `handshake_exc` is given as `None`, else as an exception instance.
+        If the handshake is successful, then the `handshake_exception` is given as `None`, else as an exception instance.
     _incoming : `ssl.MemoryBIO`
         Does the incoming data encryption/decryption.
     _outgoing : `ssl.MemoryBIO`
@@ -140,10 +140,10 @@ class _SSLPipe(object):
             +-------------------+---------------------------+
             | Respective name   | Value                     |
             +===================+===========================+
-            | handshake_exc     | `None` or `BaseException` |
+            | handshake_exception     | `None` or `BaseException` |
             +-------------------+---------------------------+
             
-            If the handshake is successful, then the `handshake_exc` is given as `None`, else as an exception
+            If the handshake is successful, then the `handshake_exception` is given as `None`, else as an exception
             instance.
             
         Returns
@@ -769,7 +769,12 @@ class SSLProtocol(object):
         """
         self.transport = transport
         self.ssl_pipe = _SSLPipe(self._ssl_context, self.server_side, self.server_hostname)
-        self._start_handshake()
+        
+        self._handshake_start_time = None
+        self._in_handshake = True
+        # `(b'', 1)` is a special value in ``._process_write_backlog`` to do the SSL handshake
+        self._write_backlog.append((b'', 1))
+        self.loop.call_soon(self._process_write_backlog)
     
     def connection_lost(self, exception):
         """
@@ -909,29 +914,30 @@ class SSLProtocol(object):
         self._write_backlog.append((data, 0))
         self._process_write_backlog()
     
-    def _start_handshake(self):
-        self._handshake_start_time = None
-        self._in_handshake = True
-        # (b'',1) is a special value in _process_write_backlog() to do the SSL handshake
-        self._write_backlog.append((b'', 1))
-        self.loop.call_soon(self._process_write_backlog)
-    
-    def _on_handshake_complete(self, handshake_exc):
+    def _on_handshake_complete(self, handshake_exception):
+        """
+        Called when ssl handshake is completed.
+        
+        Parameters
+        ----------
+        handshake_exception : `None` or `BaseException` instance
+        
+        """
         self._in_handshake = False
         ssl_object = self.ssl_pipe.ssl_object
         
-        try:
-            if (handshake_exc is not None):
-                raise handshake_exc
-            
-            peer_certification = ssl_object.getpeercert()
-        except BaseException as err:
-            self.transport.close()
-            if isinstance(err, Exception):
-                self._wake_up_connection_made_waiter(err)
-                return
-            raise
+        if (handshake_exception is None):
+            try:
+                peer_certification = ssl_object.getpeercert()
+            except BaseException as err:
+                handshake_exception = err
+            else:
+                handshake_exception = None
         
+        if (handshake_exception is not None):
+            self.transport.close()
+            self._wake_up_connection_made_waiter(handshake_exception)
+            raise
         
         # Add extra info that becomes available after handshake.
         extra = self._extra

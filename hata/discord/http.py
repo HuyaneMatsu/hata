@@ -1561,11 +1561,8 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_DELETE, f'{API_ENDPOINT}/guilds/{guild_id}/members/{user_id}', reason)
     
     async def guild_ban_add(self, guild_id, user_id, data, reason):
-        if (reason is not None) and reason:
-            data['reason'] = quote(reason)
-        
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.guild_ban_add, guild_id),
-            METHOD_PUT, f'{API_ENDPOINT}/guilds/{guild_id}/bans/{user_id}', params=data)
+            METHOD_PUT, f'{API_ENDPOINT}/guilds/{guild_id}/bans/{user_id}', data, reason=reason)
     
     async def guild_ban_delete(self, guild_id, user_id, reason):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.guild_ban_delete, guild_id),

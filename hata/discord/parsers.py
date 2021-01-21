@@ -2861,7 +2861,7 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client, data):
         clients.close()
         return
     
-    changes=guild._update_emojis(data['emojis'])
+    changes = guild._update_emojis(data['emojis'])
     
     if not changes:
         return

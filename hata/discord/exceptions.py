@@ -444,7 +444,7 @@ class ERROR_CODES:
     +---------------------------------------------------+-----------+-------+
     | invalid_message_empty                             | 50006     | -     |
     +---------------------------------------------------+-----------+-------+
-    | invalid_message_send_user                         | 50007     | -     |
+    | cannot_message_user                               | 50007     | -     |
     +---------------------------------------------------+-----------+-------+
     | invalid_message_send_non_text                     | 50008     | -     |
     +---------------------------------------------------+-----------+-------+
@@ -629,7 +629,7 @@ class ERROR_CODES:
     invalid_widget_disabled = 50004
     invalid_message_author  = 50005
     invalid_message_empty   = 50006
-    invalid_message_send_user = 50007
+    cannot_message_user     = 50007
     invalid_message_send_non_text = 50008
     invalid_message_verification_level = 50009
     invalid_oauth_app_bot   = 50010

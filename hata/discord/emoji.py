@@ -10,6 +10,7 @@ from .utils import id_to_time, EMOJI_RP, DISCORD_EPOCH_START, DATETIME_FORMAT_CO
 from .http import URLS
 from .user import User, ZEROUSER
 from .preconverters import preconvert_str, preconvert_bool, preconvert_snowflake
+from .role import create_partial_role
 
 from . import activity as module_activity
 
@@ -163,15 +164,11 @@ class Emoji(DiscordEntity, immortal=True):
         emoji.user = ZEROUSER
         emoji.unicode = None
         
-        try:
-            role_ids = data['roles']
-        except KeyError:
+        role_ids = data.get('roles')
+        if (role_ids is None) or (not role_ids):
             roles = None
         else:
-            if role_ids:
-                roles = {guild.roles[int(role_id)] for role_id in role_ids}
-            else:
-                roles = None
+            roles = sorted(create_partial_role(int(role_id)) for role_id in role_ids)
         
         emoji.roles = roles
         
@@ -348,7 +345,13 @@ class Emoji(DiscordEntity, immortal=True):
         -------
         partial : `bool`
         """
-        return (self.guild is None) and (self.unicode is not None)
+        if (self.unicode is not None):
+            return False
+        
+        if (self.guild is not None):
+            return False
+        
+        return True
     
     def is_custom_emoji(self):
         """
@@ -456,19 +459,11 @@ class Emoji(DiscordEntity, immortal=True):
         
         self.name = name
         
-        try:
-            role_ids = data['roles']
-        except KeyError:
+        role_ids = data.get('roles')
+        if (role_ids is None) or (not role_ids):
             roles = None
         else:
-            guild = self.guild
-            if guild is None:
-                roles = None
-            else:
-                if role_ids:
-                    roles = {guild.roles[int(role_id)] for role_id in role_ids}
-                else:
-                    roles = None
+            roles = sorted(create_partial_role(int(role_id)) for role_id in role_ids)
         
         self.roles = roles
         
@@ -538,19 +533,11 @@ class Emoji(DiscordEntity, immortal=True):
             old_attributes['name'] = self.name
             self.name = name
         
-        try:
-            role_ids = data['roles']
-        except KeyError:
+        role_ids = data.get('roles')
+        if (role_ids is None) or (not role_ids):
             roles = None
         else:
-            guild = self.guild
-            if guild is None:
-                roles = None
-            else:
-                if role_ids:
-                    roles = {guild.roles[int(role_id)] for role_id in role_ids}
-                else:
-                    roles = None
+            roles = sorted(create_partial_role(int(role_id)) for role_id in role_ids)
         
         if self.roles != roles:
             old_attributes['roles'] = self.roles

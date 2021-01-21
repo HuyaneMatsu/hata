@@ -1342,7 +1342,7 @@ class AsyncProcess(object):
                 except ProcessLookupError:
                     pass
         
-        self.loop.call_soon(self.__class__._process_exited, self, 0)
+        Task(self._process_exited(), self.loop)
     
     __del__ = close
     
@@ -1406,6 +1406,34 @@ class AsyncProcess(object):
         await future
     
     def _pipe_connection_lost(self, fd, exception):
+        """
+        Called when a file descriptor of the subprocess lost connection.
+        
+        Calls ``._do_pipe_connection_lost`` or adds it as a callback if the process is still connecting.
+        
+        Parameters
+        ----------
+        fd : `int`
+            File descriptor identifier.
+            
+            It's value can be any of the following:
+            
+            +-------------------+-------+
+            | Respective name   | Value |
+            +===================+=======+
+            | stdin             | `0`   |
+            +-------------------+-------+
+            | stdout            | `1`   |
+            +-------------------+-------+
+            | stderr            | `2`   |
+            +-------------------+-------+
+        
+        exception : `None` or `BaseException` instance
+            Defines whether the connection is closed, or an exception was received.
+            
+            If the connection was closed, then `exception` is given as `None`. This can happen at the case, when eof is
+            received as well.
+        """
         pending_calls = self._pending_calls
         if (pending_calls is None):
             self._do_pipe_connection_lost(fd, exception)
@@ -1415,10 +1443,37 @@ class AsyncProcess(object):
         self._try_finish()
     
     def _do_pipe_connection_lost(self, fd, exception):
+        """
+        Called by ``._pipe_connection_lost`` to call the pipe's connection lost method.
+        
+        Parameters
+        ----------
+        fd : `int`
+            File descriptor identifier.
+            
+            It's value can be any of the following:
+            
+            +-------------------+-------+
+            | Respective name   | Value |
+            +===================+=======+
+            | stdin             | `0`   |
+            +-------------------+-------+
+            | stdout            | `1`   |
+            +-------------------+-------+
+            | stderr            | `2`   |
+            +-------------------+-------+
+        
+        exception : `None` or `BaseException` instance
+            Defines whether the connection is closed, or an exception was received.
+            
+            If the connection was closed, then `exception` is given as `None`. This can happen at the case, when eof is
+            received as well.
+        """
         if fd == 0:
             pipe = self.stdin
-            if pipe is not None:
+            if (pipe is not None):
                 pipe.close()
+            
             self._do_connection_lost(exception)
             return
         
@@ -1440,6 +1495,31 @@ class AsyncProcess(object):
         self._maybe_process_exited()
     
     def _pipe_data_received(self, fd, data):
+        """
+        Called when one of the subprocess's pipe receives any data.
+        
+        Calls ``._do_pipe_data_received`` or adds it as a callback if the process is still connecting.
+        
+        Parameters
+        ----------
+        fd : `int`
+            File descriptor identifier.
+            
+            It's value can be any of the following:
+            
+            +-------------------+-------+
+            | Respective name   | Value |
+            +===================+=======+
+            | stdin             | `0`   |
+            +-------------------+-------+
+            | stdout            | `1`   |
+            +-------------------+-------+
+            | stderr            | `2`   |
+            +-------------------+-------+
+        
+        data : `bytes`
+            The received data.
+        """
         pending_calls = self._pending_calls
         if (pending_calls is None):
             self._do_pipe_data_received(fd, data)
@@ -1447,6 +1527,29 @@ class AsyncProcess(object):
             pending_calls.append((self.__class__._do_pipe_data_received, (fd, data)))
     
     def _do_pipe_data_received(self, fd, data):
+        """
+        Called by ``._pipe_data_received`` to call the respective protocol' data received method.
+        
+        Parameters
+        ----------
+        fd : `int`
+            File descriptor identifier.
+            
+            It's value can be any of the following:
+            
+            +-------------------+-------+
+            | Respective name   | Value |
+            +===================+=======+
+            | stdin             | `0`   |
+            +-------------------+-------+
+            | stdout            | `1`   |
+            +-------------------+-------+
+            | stderr            | `2`   |
+            +-------------------+-------+
+        
+        data : `bytes`
+            The received data.
+        """
         if fd == 1:
             reader = self.stdout
         elif fd == 2:
@@ -1457,45 +1560,62 @@ class AsyncProcess(object):
         if (reader is not None):
             reader.data_received(data)
     
-    def _process_exited(self, delayed):
-        return_code = self.process.poll()
-        if return_code is None:
-            if delayed == PROCESS_EXIT_DELAY_LIMIT:
-                # do not wait more
-                return_code = 255
-            else:
-                # not yet exited, delay a little bit.
-                delayed += 1
-                
-                self.loop.call_later(0.01*delayed, self.__class__._process_exited, self, delayed)
-                return
+    async def _process_exited(self):
+        """
+        Task created by ``.close``to wait till the sub-process is closed and to set
         
-        self.return_code = return_code
-        
-        pending_calls = self._pending_calls
-        if (pending_calls is None):
-            self._maybe_process_exited()
-        else:
-            pending_calls.append((self.__class__._maybe_process_exited, ()))
-        
-        self._try_finish()
-        
-        # wake up futures waiting for wait()
-        exit_waiters = self._exit_waiters
-        if (exit_waiters is not None):
-            for waiter in self._exit_waiters:
-                if not waiter.cancelled():
-                    waiter.set_result(return_code)
-        
-        self._exit_waiters = None
+        This method is a coroutine.
+        """
+        try:
+            return_code = self.process.poll()
+            if return_code is None:
+                return_code = await self.loop.run_in_executor(self.process.wait)
+            
+            self.return_code = return_code
+            
+            self._try_finish()
+            
+            # wake up futures waiting for wait()
+            exit_waiters = self._exit_waiters
+            if (exit_waiters is not None):
+                for waiter in self._exit_waiters:
+                    if not waiter.cancelled():
+                        waiter.set_result(return_code)
+            
+            self._exit_waiters = None
+        finally:
+            self.process = None
     
     def _maybe_process_exited(self):
+        """
+        Called when a sub-process pipe is closed. When all all pipe is closed, calls ``.close``.
+        """
         if self._alive_fds:
             return
         
         self.close()
     
     async def wait(self, timeout=None):
+        """
+        Wait for child process to terminate.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        timeout : `None` or `float`
+            The maximal amount of time to wait for teh process to close in seconds.
+
+        Returns
+        -------
+        return_code : `int`
+            The returncode of the subprocess.
+        
+        Raises
+        ------
+        TimeoutExpired
+            If the process was not closed before timeout.
+        """
         return_code = self.return_code
         if (return_code is not None):
             return return_code
@@ -1524,6 +1644,10 @@ class AsyncProcess(object):
             raise TimeoutExpired(args, timeout) from None
     
     def _try_finish(self):
+        """
+        If the sub-process finished closing, calls ``._do_connection_lost``. If the process is still connecting, adds
+        it as a callback instead.
+        """
         if self.return_code is None:
             return
         
@@ -1541,23 +1665,29 @@ class AsyncProcess(object):
         
         pending_calls = self._pending_calls
         if (pending_calls is None):
-            self._call_connection_lost(None)
+            self._do_connection_lost(None)
         else:
-            pending_calls.append((self.__class__._call_connection_lost, (self, None,)))
+            pending_calls.append((self.__class__._do_connection_lost, (self, None,)))
     
-    def _call_connection_lost(self, exception):
-        try:
-            self._do_connection_lost(exception)
-        finally:
-            self.process = None
-    
-    # Used by .communicate
     async def _feed_stdin(self, input_):
+        """
+        Feeds the given data to ``.stdin``, waits till it drains and closes it.
+        
+        Used by ``.communicate``.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        input_ : `None` or `bytes-like`
+            Optional data to be sent to the sub-process.
+        """
         stdin = self.stdin
         if stdin is None:
             return
         
-        stdin.write(input_)
+        if (input_ is not None):
+            stdin.write(input_)
         
         try:
             await stdin.drain()
@@ -1567,22 +1697,42 @@ class AsyncProcess(object):
         
         stdin.close()
     
-    # Used by .communicate
     async def _read_close_stdout_stream(self):
+        """
+        Reads every data from ``.stdout``. When reading is done, closes it.
+        
+        Used by ``.communicate``.
+        
+        This method is a coroutine.
+        
+        Returns
+        -------
+        result :`None` or `bytes`
+        """
         stream = self.stdout
         if stream is None:
-            return b''
+            return None
         
         transport = self._subprocess_stdout_protocol.transport
         result = await stream.read()
         transport.close()
         return result
     
-    # Used by .communicate
     async def _read_close_stderr_stream(self):
+        """
+        Reads every data from ``.stderr``. When reading is done, closes it.
+        
+        Used by ``.communicate``.
+        
+        This method is a coroutine.
+        
+        Returns
+        -------
+        result : `None` or `bytes`
+        """
         stream = self.stderr
         if stream is None:
-            return b''
+            return None
         
         transport = self._subprocess_stderr_protocol.transport
         result = await stream.read()
@@ -1590,6 +1740,32 @@ class AsyncProcess(object):
         return result
     
     async def communicate(self, input_=None, timeout=None):
+        """
+        Sends data to stdin and reads data from stdout and stderr.
+        
+        Returns when the process is closed or raises when timeout occurs.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        input_ : `None` or `bytes-like`, Optional
+            Optional data to be sent to the sub-process.
+        timeout : `None` or `float`, Optional
+            The maximal amount of time to wait for teh process to close in seconds.
+        
+        Returns
+        -------
+        stdout : `None` or `bytes`
+            The read data from stdout.
+        stderr : `None` or `bytes`
+            The read data from stderr.
+        
+        Raises
+        ------
+        TimeoutExpired
+            If the process was not closed before timeout.
+        """
         tasks = []
         
         loop = self.loop
@@ -1652,14 +1828,30 @@ class AsyncProcess(object):
         return stdout, stderr
     
     def poll(self):
-        return_code = self.return_code
-        if (return_code is not None):
-            return return_code
+        """
+        Returns the subprocess's returncode if terminated.
+        
+        Returns
+        -------
+        return_code : `None` or `int`
+        """
+        return self.return_code
     
     def pause_writing(self):
+        """
+        Called when the write transport's buffer goes over the high-water mark.
+        
+        ``.pause_writing`` is called when the write buffer goes over the high-water mark, and eventually
+        ``.resume_writing`` is called when the write buffer size reaches the low-water mark.
+        """
         self._paused = True
     
     def resume_writing(self):
+        """
+        Called when the transport's write buffer drains below the low-water mark.
+        
+        See ``.pause_writing`` for details.
+        """
         self._paused = False
         
         drain_waiter = self._drain_waiter
@@ -1670,6 +1862,17 @@ class AsyncProcess(object):
         drain_waiter.set_result_if_pending(None)
     
     def _do_connection_lost(self, exception):
+        """
+        Sets ``._connection_lost`` as `True` and set ``._drain_waiter`` result or exception as well.
+        
+        Parameters
+        ----------
+        exception : `None` or `BaseException` instance
+            Defines whether the connection is closed, or an exception was received.
+            
+            If the connection was closed, then `exception` is given as `None`. This can happen at the case, when eof is
+            received as well.
+        """
         self._connection_lost = True
         # Wake up the writer if currently paused.
         if not self._paused:
@@ -1686,6 +1889,11 @@ class AsyncProcess(object):
             drain_waiter.set_exception_if_pending(exception)
     
     async def _drain_helper(self):
+        """
+        Called when the transport buffer after writing goes over the high limit mark to wait till it is drained.
+        
+        This method is a coroutine.
+        """
         if self._connection_lost:
             raise ConnectionResetError('Connection lost')
         

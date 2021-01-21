@@ -2528,7 +2528,7 @@ class ProtocolBase(ReadProtocolBase):
     
     async def _drain_helper(self):
         """
-        Called when the transport buffer after writing goes ove the high limit mark to wait till it is drained.
+        Called when the transport buffer after writing goes over the high limit mark to wait till it is drained.
         
         This method is a coroutine.
         """

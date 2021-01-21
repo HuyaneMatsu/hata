@@ -593,7 +593,9 @@ The followup message methods are the following:
 An example using pure client methods:
 
 ```py
-@Niori.interactions(guild=TEST_GUILD)
+from hata import sleep
+
+@Nitori.interactions(guild=TEST_GUILD)
 async def kaboom(client, event):
     """Kabooom!!"""
     await client.interaction_response_message_create(event)
@@ -614,7 +616,9 @@ async def kaboom(client, event):
 An example using mixed `yield` and `Client` methods:
 
 ```py
-@Niori.interactions(guild=TEST_GUILD)
+from hata import sleep
+
+@Nitori.interactions(guild=TEST_GUILD)
 async def kaboom_mixed(client, event):
     """Kabooom!!"""
     yield

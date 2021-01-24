@@ -521,6 +521,8 @@ class Guild(DiscordEntity, immortal=True):
     
     Attributes
     ----------
+    id : `int`
+        The unique identifier number of the guild.
     _boosters : `None` or `list` of (``User`` or ``Client``) objects
         Cached slot for the boosters of the guild.
     _cache_perm : `None` or `dict` of (`int`, ``Permission``) items

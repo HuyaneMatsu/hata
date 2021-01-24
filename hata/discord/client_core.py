@@ -412,7 +412,7 @@ if sys.implementation.name == 'pypy':
     
     del manual_gc_call
 
-HEARTBEAT_TIMEOUT=20.0
+HEARTBEAT_TIMEOUT = 20.0
 
 class Kokoro(object):
     """

@@ -1025,3 +1025,42 @@ BanEntry.__doc__ = ("""
     reason : `None` or `str`
         The ban reason if applicable.
     """)
+
+
+def maybe_snowflake_pair(value):
+    """
+    Checks whether the given value is a `tuple` of 2 snowflakes. If it, returns it, if not returns `None`.
+    
+    Parameters
+    ----------
+    value : `tuple` of (`str`, `int`) or `Any`
+        A value what might be snowflake.
+    
+    Returns
+    -------
+    value : `tuple` (`int`, `int`) or `None`
+    
+    Raises
+    ------
+    AssertionError
+        - If `value` contains a `str` element, what cannot be converted to `int`.
+        - If `value` contains a value, what is negative or it's bit length is over 64.
+    """
+    if isinstance(value, tuple):
+        if len(value) == 2:
+            value_1, value_2 = value
+            value_1 = maybe_snowflake(value_1)
+            if value_1 is None:
+                value = None
+            else:
+                value_2 = maybe_snowflake(value_2)
+                if value_2 is None:
+                    value = None
+                else:
+                    value = (value_1, value_2)
+        else:
+            value = None
+    else:
+        value = None
+    
+    return value

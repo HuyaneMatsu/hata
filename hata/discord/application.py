@@ -745,6 +745,7 @@ class EULA(DiscordEntity, immortal=True):
     -----
     The instances of the class support weakreferencing.
     """
+    __slots__ = ('id', 'content', 'name')
     def __new__(cls, data):
         """
         Creates a new eula instance from the given parameters.
@@ -763,12 +764,23 @@ class EULA(DiscordEntity, immortal=True):
         except KeyError:
             self = object.__new__(cls)
             self.id = eula_id
-            self.content = data['content']
-            self.name = data['name']
+            self._update_no_return(data)
             
             EULAS[eula_id] = self
         
         return self
+    
+    def _update_no_return(self, data):
+        """
+        Updates the eula with the received data from Discord.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Data received from Discord.
+        """
+        self.content = data['content']
+        self.name = data['name']
     
     def __repr__(self):
         """Returns the eula's representation"""

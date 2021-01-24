@@ -795,7 +795,7 @@ class URL(object):
             If `host` was not given as `str` instance.
         ValueError
             - If the source URL is relative; Host replacement is not allowed for relative URL-s.
-            - If `host` was given as empty string; Removing `host` is nto allowed.
+            - If `host` was given as empty string; Removing `host` is not allowed.
         
         Notes
         -----

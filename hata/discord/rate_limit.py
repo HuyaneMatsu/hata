@@ -1853,6 +1853,14 @@ class RATE_LIMIT_GROUPS:
         - Limit : `N/A`
         - Resets after : `N/A`
     
+    - application_command_global_get
+        - Endpoint : `/applications/{application_id}/commands/{application_command_id}`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+    
     - application_command_global_delete
         - Endpoint : `/applications/{application_id}/commands/{application_command_id}`
         - Method : `DELETE`
@@ -1879,6 +1887,14 @@ class RATE_LIMIT_GROUPS:
     
     - application_command_guild_get_all
         - Endpoint : `/applications/{application_id}/guilds/{guild_id}/commands`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+    
+    - application_command_guild_get
+        - Endpoint : `/applications/{application_id}/guilds/{guild_id}/commands/{application_command_id}`
         - Method : `GET`
         - Required auth : `bot`
         - Limiter : `UNLIMITED`
@@ -3126,14 +3142,16 @@ class RATE_LIMIT_GROUPS:
     achievement_delete          = RateLimitGroup()
     achievement_get             = RateLimitGroup()
     achievement_edit            = RateLimitGroup()
-    application_command_global_get_all = RateLimitGroup.unlimited() # untested
-    application_command_global_delete = RateLimitGroup.unlimited() # untested
-    application_command_global_create = RateLimitGroup.unlimited() # untested
-    application_command_global_edit = RateLimitGroup.unlimited() # untested
-    application_command_guild_get_all = RateLimitGroup.unlimited() # untested
-    application_command_guild_delete = RateLimitGroup.unlimited() # untested
-    application_command_guild_create = RateLimitGroup.unlimited() # untested
-    application_command_guild_edit = RateLimitGroup.unlimited() # untested
+    application_command_global_get_all = RateLimitGroup.unlimited()
+    application_command_global_get = RateLimitGroup.unlimited()
+    application_command_global_delete = RateLimitGroup.unlimited()
+    application_command_global_create = RateLimitGroup.unlimited()
+    application_command_global_edit = RateLimitGroup.unlimited()
+    application_command_guild_get_all = RateLimitGroup.unlimited()
+    application_command_guild_get = RateLimitGroup.unlimited()
+    application_command_guild_delete = RateLimitGroup.unlimited()
+    application_command_guild_create = RateLimitGroup.unlimited()
+    application_command_guild_edit = RateLimitGroup.unlimited()
     application_get_all_detectable = RateLimitGroup(optimistic=True)
     client_logout               = RateLimitGroup() # untested
     channel_delete              = RateLimitGroup.unlimited()

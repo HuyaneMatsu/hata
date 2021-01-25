@@ -761,7 +761,9 @@ class multidict(dict):
             result[key] = values[-1]
         
         return result
-
+    
+    update = RemovedDescriptor()
+    
 class imultidict(multidict):
     """
     ``multidict`` subclass, what can be used to hold http headers.

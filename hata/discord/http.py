@@ -1955,6 +1955,10 @@ class DiscordHTTPClient(HTTPClient):
     
     # application command & interaction
     
+    async def application_command_global_get(self, application_id, application_command_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.application_command_global_get, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET, f'{API_ENDPOINT}/applications/{application_id}/commands/{application_command_id}')
+    
     async def application_command_global_get_all(self, application_id):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.application_command_global_get_all, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET, f'{API_ENDPOINT}/applications/{application_id}/commands')
@@ -1970,6 +1974,10 @@ class DiscordHTTPClient(HTTPClient):
     async def application_command_global_delete(self, application_id, application_command_id):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.application_command_global_delete, NO_SPECIFIC_RATE_LIMITER),
             METHOD_DELETE, f'{API_ENDPOINT}/applications/{application_id}/commands/{application_command_id}')
+    
+    async def application_command_guild_get(self, application_id, guild_id, application_command_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.application_command_guild_get, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET, f'{API_ENDPOINT}/applications/{application_id}/guilds/{guild_id}/commands/{application_command_id}')
     
     async def application_command_guild_get_all(self, application_id, guild_id):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.application_command_guild_get_all, NO_SPECIFIC_RATE_LIMITER),

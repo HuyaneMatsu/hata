@@ -396,7 +396,7 @@ class ClientRequest(object):
         
         # Check proxy settings.
         if proxy_url is not None:
-            if proxy_auth.scheme != 'http':
+            if proxy_url.scheme != 'http':
                 raise ValueError(f'Only http proxies are supported, got {proxy_url!r}.')
             
             if (proxy_auth is not None):
@@ -439,8 +439,9 @@ class ClientRequest(object):
                 if CONTENT_TYPE not in headers:
                     headers[CONTENT_TYPE] = data.content_type
                 
-                if data.headers:
-                    for key, value in data.headers.items():
+                data_headers = data.headers
+                if data_headers:
+                    for key, value in data_headers.items():
                         headers.setdefault(key, value)
             else:
                 data = None

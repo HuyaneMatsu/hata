@@ -40,7 +40,7 @@ from .message import Message, MessageRepr, MessageReference, Attachment
 from .oauth2 import Connection, parse_locale, DEFAULT_LOCALE, OA2Access, UserOA2, Achievement
 from .exceptions import DiscordException, DiscordGatewayException, ERROR_CODES, InvalidToken
 from .client_core import CLIENTS, KOKORO, GUILDS, DISCOVERY_CATEGORIES, EULAS, CHANNELS, EMOJIS, APPLICATIONS, ROLES, \
-    MESSAGES
+    MESSAGES, APPLICATION_COMMANDS
 from .voice_client import VoiceClient
 from .activity import ActivityUnknown, ActivityBase, ActivityCustom
 from .integration import Integration
@@ -12345,6 +12345,56 @@ class Client(UserBase):
     
     # Application Command & Interaction related
     
+    async def application_command_global_get(self, application_command):
+        """
+        Requests the given global application command.
+        
+        Parameters
+        ----------
+        application_command : ``ApplicationCommand`` or `int`
+            The application command, or it's id to request.
+        
+        Returns
+        -------
+        application_commands : ``ApplicationCommand``
+            The received application command.
+        
+        Raises
+        ------
+        TypeError
+            If `application_command` was not given neither as ``ApplicationCommand`` not as `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            If the client's application is not yet synced.
+        """
+        application_id = self.application.id
+        if __debug__:
+            if application_id == 0:
+                raise AssertionError('The client\'s application is not yet synced.')
+        
+        if isinstance(application_command, ApplicationCommand):
+            application_command_id = application_command.id
+        else:
+            application_command_id = maybe_snowflake(application_command)
+            if application_command_id is None:
+                raise TypeError(f'`application_command` can be given as `{ApplicationCommand.__name__}`, or as `int` '
+                    f'instance, got {application_command.__class__.__name__}.')
+            
+            application_command = APPLICATION_COMMANDS.get(application_command_id)
+        
+        application_command_data = await self.http.application_command_global_get(application_id,
+            application_command_id)
+        
+        if application_command is None:
+            application_command = ApplicationCommand.from_data(application_command_data)
+        else:
+            application_command._update_no_return(application_command_data)
+        
+        return application_command
+    
     async def application_command_global_get_all(self):
         """
         Requests the client's global application commands.
@@ -12512,6 +12562,64 @@ class Client(UserBase):
         
         await self.http.application_command_global_delete(application_id, application_command_id)
     
+    async def application_command_guild_get(self, guild, application_command):
+        """
+        Requests the given guild application command.
+        
+        Parameters
+        ----------
+        application_command : ``ApplicationCommand`` or `int`
+            The application command, or it's id to request.
+        
+        Returns
+        -------
+        application_commands : ``ApplicationCommand``
+            The received application command.
+        
+        Raises
+        ------
+        TypeError
+            - If `guild` was not given neither as``Guild`` nor `int` instance.
+            - If `application_command` was not given neither as ``ApplicationCommand`` not as `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            If the client's application is not yet synced.
+        """
+        application_id = self.application.id
+        if __debug__:
+            if application_id == 0:
+                raise AssertionError('The client\'s application is not yet synced.')
+        
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as ``{Guild.__name__}`` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        if isinstance(application_command, ApplicationCommand):
+            application_command_id = application_command.id
+        else:
+            application_command_id = maybe_snowflake(application_command)
+            if application_command_id is None:
+                raise TypeError(f'`application_command` can be given as `{ApplicationCommand.__name__}`, or as `int` '
+                    f'instance, got {application_command.__class__.__name__}.')
+            
+            application_command = APPLICATION_COMMANDS.get(application_command_id)
+        
+        application_command_data = await self.http.application_command_guild_get(application_id, guild_id,
+            application_command_id)
+        
+        if application_command is None:
+            application_command = ApplicationCommand.from_data(application_command_data)
+        else:
+            application_command._update_no_return(application_command_data)
+        
+        return application_command
     
     async def application_command_guild_get_all(self, guild):
         """

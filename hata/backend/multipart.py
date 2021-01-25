@@ -41,9 +41,9 @@ def create_payload(data, kwargs):
         `payload` is not serializable.
     """
     data_type = data.__class__
-    if issubclass(data_type, BodyPartReader):
-        type_ = BodyPartReaderPayload
-    elif issubclass(data_type, (bytes, bytearray, memoryview)):
+    #if issubclass(data_type, BodyPartReader):
+    #    type_ = BodyPartReaderPayload
+    if issubclass(data_type, (bytes, bytearray, memoryview)):
         type_ = BytesPayload
     elif issubclass(data_type, str):
         type_ = StringPayload
@@ -124,7 +124,7 @@ class PayloadBase(object):
         
         headers_parameter = kwargs.get('headers')
         if (headers_parameter is not None) or  headers_parameter:
-            headers.update(headers_parameter)
+            headers.extend(headers_parameter)
         
         self.headers = headers
         self.content_type = content_type
@@ -810,17 +810,17 @@ def parse_content_disposition(header):
             return False
         substring = string[pos:-1] if string.endswith('*') else string[pos:]
         return substring.isdigit()
-
+    
     def unescape(text, *, chars=''.join(map(re.escape, CHAR))):
         return re.sub(f'\\\\([{chars}])', '\\1', text)
-
+    
     if not header:
         return None, {}
-
+    
     disposition_type, *parts = header.split(';')
     if not is_token(disposition_type):
         return None, {}
-
+    
     params = {}
     while parts:
         item = parts.pop(0)
@@ -878,7 +878,7 @@ def parse_content_disposition(header):
     return disposition_type.lower(), params
 
 
-def content_disposition_filename(params,name='filename'):
+def content_disposition_filename(params, name='filename'):
     name_suf = f'{name}*'
     if not params:
         return None
@@ -905,238 +905,6 @@ def content_disposition_filename(params,name='filename'):
             encoding = encoding or 'utf-8'
             return unquote(value, encoding, 'strict')
         return value
-
-# TODO
-class BodyPartReader(object):
-    # Multipart reader for single body part.
-    __slots__ = ('headers', '_boundary', '_content', '_at_eof', '_length', '_read_bytes', '_unread', '_prev_chunk',
-        '_content_eof', '_cache',)
-    
-    chunk_size = 8192
-    
-    def __init__(self, boundary, headers, content):
-        self.headers = headers
-        self._boundary = boundary
-        self._content = content
-        self._at_eof = False
-        length = self.headers.get(CONTENT_LENGTH)
-        self._length = None  if length is None else int(length)
-        self._read_bytes = 0
-        self._unread = deque()
-        self._prev_chunk = None
-        self._content_eof = 0
-        self._cache = {}
-        
-    def __aiter__(self):
-        return self
-
-    async def __anext__(self):
-        item = await self.read()
-        if item:
-            return item
-        raise StopAsyncIteration
-
-    async def next(self):
-        item = await self.read()
-        if not item:
-            return None
-        return item
-
-    async def read(self, *, decode=False):
-        # Reads body part data.
-        #decode : `bool`, Optional : should decode data following by encoding method from `Content-Encoding` header.
-        #     Defaults to `False`.
-        if self._at_eof:
-            return b''
-        data = bytearray()
-        while not self._at_eof:
-            data.extend((await self.read_chunk(self.chunk_size)))
-        if decode:
-            return self.decode(data)
-        return data
-    
-    async def read_chunk(self, size=chunk_size):
-        # Reads body part content chunk of the specified size.
-        if self._at_eof:
-            return b''
-        if self._length:
-            chunk = await self._read_chunk_from_length(size)
-        else:
-            chunk = await self._read_chunk_from_stream(size)
-        
-        self._read_bytes += len(chunk)
-        if self._read_bytes == self._length:
-            self._at_eof = True
-        if self._at_eof:
-            await self._content.read_line()
-        
-        return chunk
-
-    async def _read_chunk_from_length(self, size):
-        # Reads body part content chunk of the specified size.
-        chunk_size = min(size,self._length-self._read_bytes)
-        chunk = await self._content.read(chunk_size)
-        return chunk
-    
-    async def _read_chunk_from_stream(self, size):
-        # Reads content chunk of body part with unknown length.
-        first_chunk = self._prev_chunk is None
-        if first_chunk:
-            self._prev_chunk = await self._content.read(size)
-        
-        chunk = await self._content.read(size)
-        self._content_eof += int(self._content.at_eof())
-        
-        window = self._prev_chunk + chunk
-        sub = b'\r\n' + self._boundary
-        
-        if first_chunk:
-            idx = window.find(sub)
-        else:
-            idx = window.find(sub, max(0, len(self._prev_chunk)-len(sub)))
-        if idx >= 0:
-            # pushing boundary back to content
-            self._content.unread_data(window[idx:])
-            if size > idx:
-                self._prev_chunk = self._prev_chunk[:idx]
-            chunk = window[len(self._prev_chunk):idx]
-            if not chunk:
-                self._at_eof = True
-        result = self._prev_chunk
-        self._prev_chunk = chunk
-        return result
-    
-    async def read_line(self):
-        if self._at_eof:
-            return b''
-        
-        if self._unread:
-            line = self._unread.popleft()
-        else:
-            line = await self._content.read_line()
-        
-        if line.startswith(self._boundary):
-            # the very last boundary may not come with \r\n,
-            # so set single rules for everyone
-            separator_line = line.rstrip(b'\r\n')
-            boundary = self._boundary
-            last_boundary = self._boundary + b'--'
-            #make sure that we read exactly the boundary, not something alike
-            if separator_line == boundary or separator_line == last_boundary:
-                self._at_eof = True
-                self._unread.append(line)
-                return b''
-        else:
-            next_line = await self._content.read_line()
-            if next_line.startswith(self._boundary):
-                line = line[:-2]  # strip CRLF but only once
-            self._unread.append(next_line)
-        
-        return line
-
-    async def release(self):
-        # Like `.read`, but reads all the data.
-        if self._at_eof:
-            return
-        
-        while not self._at_eof:
-            await self.read_chunk(self.chunk_size)
-    
-    async def text(self, *, encoding=None):
-        # Like `.read`, but assumes that body part contains text data.
-        # encoding : `str`, Optional : Custom text encoding. Overrides specified in charset param of `Content-Type`
-        #     header
-        
-        data = await self.read(decode=True)
-        # see https://www.w3.org/TR/html5/forms.html#multipart/form-data-encoding-algorithm
-        # and https://dvcs.w3.org/hg/xhr/raw-file/tip/Overview.html#dom-xmlhttprequest-send
-        encoding = encoding or self.get_charset(default='utf-8')
-        return data.decode(encoding)
-
-    async def json(self, *, encoding=None):
-        # Like `.read`, but assumes that body parts contains JSON data.
-        # encoding :`str`, Optional : Custom JSON encoding. Overrides specified in charset param of `Content-Type`
-        #     header
-        
-        data = await self.read(decode=True)
-        if not data:
-            return None
-        encoding = encoding or self.get_charset(default='utf-8')
-        return json.loads(data.decode(encoding))
-    
-    async def form(self, *, encoding=None):
-        # Like `.read`, but assumes that body parts contains form url_encoded data.
-        # encoding : `str`, Optional : Custom form encoding. Overrides specified in charset param of `Content-Type`
-        #     header
-        data = await self.read(decode=True)
-        if not data:
-            return None
-        encoding = encoding or self.get_charset(default='utf-8')
-        return parse_query_string_list(data.rstrip().decode(encoding), keep_blank_values=True, encoding=encoding)
-
-    def at_eof(self):
-        #Returns True if the boundary was reached or False otherwise.
-
-        return self._at_eof
-
-    def decode(self, data):
-        #Decodes data according the specified Content-Encoding
-        #or Content-Transfer-Encoding headers value.
-        
-        #arguments: data=bytearray
-        #raises RuntimeError if encoding is unknown.
-        #returns bytes
-
-        if CONTENT_TRANSFER_ENCODING in self.headers:
-            data = self._decode_content_transfer(data)
-        if CONTENT_ENCODING in self.headers:
-            return self._decode_content(data)
-        return data
-
-    def _decode_content(self, data):
-        encoding = self.headers[CONTENT_ENCODING].lower()
-
-        if encoding == 'deflate':
-            return zlib.decompress(data, -zlib.MAX_WBITS)
-        elif encoding == 'gzip':
-            return zlib.decompress(data, 16 + zlib.MAX_WBITS)
-        elif encoding == 'identity':
-            return data
-        else:
-            raise RuntimeError(f'unknown content encoding: {encoding}')
-
-    def _decode_content_transfer(self, data):
-        encoding = self.headers[CONTENT_TRANSFER_ENCODING].lower()
-
-        if encoding == 'base64':
-            return base64.b64decode(data)
-        elif encoding == 'quoted-printable':
-            return binascii.a2b_qp(data)
-        elif encoding in ('binary', '8bit', '7bit'):
-            return data
-        else:
-            raise RuntimeError(f'unknown content transfer encoding: {encoding}')
-
-    def get_charset(self, default=None):
-        #Returns charset parameter from Content-Type header or default.
-
-        content_type = self.headers.get(CONTENT_TYPE, '')
-        mime_type = MimeType(content_type)
-        return mime_type.params.get('charset', default)
-
-    @property
-    def name(self):
-        #Returns name specified in Content-Disposition header or None
-        #if missed or header is malformed.
-        _, params = parse_content_disposition(self.headers.get(CONTENT_DISPOSITION))
-        return content_disposition_filename(params, 'name')
-    
-    @property
-    def filename(self):
-        #Returns filename specified in Content-Disposition header or None
-        #if missed or header is malformed
-        _, params = parse_content_disposition(self.headers.get(CONTENT_DISPOSITION))
-        return content_disposition_filename(params, 'filename')
 
 
 class MultipartWriter(PayloadBase):
@@ -1261,7 +1029,7 @@ class MultipartWriter(PayloadBase):
         
         if isinstance(body_part, PayloadBase):
             if (headers is not None):
-                body_part.headers.update(headers)
+                body_part.headers.extend(headers)
             
             payload = body_part
         else:
@@ -1310,7 +1078,7 @@ class MultipartWriter(PayloadBase):
             else:
                 raise RuntimeError(f'Unknown content-encoding: {content_encoding!r}.')
         
-        # te-encoding
+        # transfer-encoding
         try:
             transfer_encoding = payload_headers[CONTENT_TRANSFER_ENCODING].lower()
         except KeyError:
@@ -1442,11 +1210,7 @@ class MultipartWriter(PayloadBase):
         close_boundary : `bool`, Optional
             Whether the multipart's payload should be closed with it's boundary.
         """
-        data = self.data
-        if not data:
-            return
-        
-        for part, headers, content_encoding, transfer_encoding in data:
+        for part, headers, content_encoding, transfer_encoding in self.data:
             await writer.write(b'--' + self._boundary + b'\r\n') # fb strings pls!
             await writer.write(headers)
             
@@ -1462,19 +1226,100 @@ class MultipartWriter(PayloadBase):
         if close_boundary:
             await writer.write(b'--'+self._boundary+b'--\r\n')
 
+TRANSFER_ENCODING_NONE = 0
+TRANSFER_ENCODING_BASE64 = 1
+TRANSFER_ENCODING_QUOTED_PRINTABLE = 2
 
 class MultipartPayloadWriter(object):
+    """
+    Multipart payload writer of ``MultipartWriter``.
+    
+    Attributes
+    ----------
+    compressor : `None`, `ZLIB_COMPRESSOR`, `BROTLI_COMPRESSOR`
+        The compressor matching the respective payload's content-encoding.
+         used by the respective payload
+    encoding_buffer : `None` or `bytearray`
+        Buffer used when transfer-encoding is base64.
+    transfer_encoding : `int`
+        The transfer encoding's identifier used by the multipart writer.
+        
+        Can be any of the following values:
+        
+        +---------------------------------------+-------+
+        | Respective name                       | Value |
+        +---------------------------------------+-------+
+        | TRANSFER_ENCODING_NONE                | `0`   |
+        +---------------------------------------+-------+
+        | TRANSFER_ENCODING_BASE64              | `1`   |
+        +---------------------------------------+-------+
+        | TRANSFER_ENCODING_QUOTED_PRINTABLE    | `2`   |
+        +---------------------------------------+-------+
+    writer : ``HTTPStreamWriter``
+        HTTP writer to write the encoded data into.
+    """
     __slots__ = ('compressor', 'encoding_buffer', 'transfer_encoding', 'writer',)
     
-    def __init__(self, writer, content_encoding, transfer_encoding):
+    def __new__(cls, writer, content_encoding, transfer_encoding):
+        """
+        Creates a new ``MultipartPayloadWriter`` instance with the given parameters.
         
-        if content_encoding == 'gzip':
+        Parameters
+        ----------
+        writer : ``HTTPStreamWriter``
+            HTTP writer to write the encoded data into.
+        content_encoding : `None` or `str`
+            Content encoding to write the data with.
+            
+            Can be any of the following:
+            
+            +---------------+-----------------------------------------------+
+            | Value         | Used compressor                               |
+            +===============+===============================================+
+            | `None`        | `None`                                        |
+            +---------------+-----------------------------------------------+
+            | `'gzip'`      | `ZLIB_COMPRESSOR(wbits=16+zlib.MAX_WBITS)`    |
+            +---------------+-----------------------------------------------+
+            | `'deflate'`   | `ZLIB_COMPRESSOR(wbits=-zlib.MAX_WBITS)`      |
+            +---------------+-----------------------------------------------+
+            | `'br'`        | `BROTLI_COMPRESSOR()`                         |
+            +---------------+-----------------------------------------------+
+            | `'identity'`  | `None`                                        |
+            +---------------+-----------------------------------------------+
+            
+            You need to have `brotlipy` installed to handle `'br'` encoding.
+        
+        transfer_encoding : `None` or `str`
+            Transfer encoding to write the data with.
+            
+            Can be given as any of:
+            +-----------------------+---------------------------------------+
+            | Value                 | Used transfer-encoding                |
+            +=======================+=======================================+
+            | `None`                | TRANSFER_ENCODING_NONE                |
+            +-----------------------+---------------------------------------+
+            | `'base64'`            | TRANSFER_ENCODING_BASE64              |
+            +-----------------------+---------------------------------------+
+            | `'quoted-printable'`  | TRANSFER_ENCODING_QUOTED_PRINTABLE    |
+            +-----------------------+---------------------------------------+
+            | ...                   | TRANSFER_ENCODING_NONE                |
+            +-----------------------+---------------------------------------+
+        
+        Raises
+        ------
+        ContentEncodingError
+            If the given ``content_encoding`` is not supported.
+        """
+        if content_encoding is None:
+            compressor = None
+        elif content_encoding == 'gzip':
             compressor = ZLIB_COMPRESSOR(wbits=16+zlib.MAX_WBITS)
         elif content_encoding == 'deflate':
             compressor = ZLIB_COMPRESSOR(wbits=-zlib.MAX_WBITS)
         elif content_encoding == 'br':
             if BROTLI_COMPRESSOR is None:
                 raise ContentEncodingError('Can not decode content-encoding: brotli (br). Please install `brotlipy`.')
+            
             compressor = BROTLI_COMPRESSOR()
         elif content_encoding == 'identity':
             # I assume this is no encoding
@@ -1482,36 +1327,59 @@ class MultipartPayloadWriter(object):
         else:
             raise ContentEncodingError(f'Can not decode content-encoding: {content_encoding!r}.')
         
-        if transfer_encoding == 'base64':
-            transfer_encoding = transfer_encoding
-            encoding_buffer = bytearray()
+        if transfer_encoding is None:
+            transfer_encoding = TRANSFER_ENCODING_NONE
+            encoding_buffer   = None
+        elif transfer_encoding == 'base64':
+            transfer_encoding = TRANSFER_ENCODING_BASE64
+            encoding_buffer   = bytearray()
+        elif transfer_encoding == 'quoted-printable':
+            transfer_encoding = TRANSFER_ENCODING_QUOTED_PRINTABLE
+            encoding_buffer   = None
         else:
-            if transfer_encoding == 'quoted-printable':
-                transfer_encoding = transfer_encoding
-            else:
-                transfer_encoding = None
-            encoding_buffer = None
+            transfer_encoding = TRANSFER_ENCODING_NONE
+            encoding_buffer   = None
         
+        self = object.__new__(cls)
         self.writer = writer
         self.transfer_encoding = transfer_encoding
         self.compressor = compressor
         self.encoding_buffer = encoding_buffer
+        return self
     
     async def write_eof(self):
+        """
+        Writes eof to the writer ending the ``MultipartPayloadWriter``, but not to the ``HTTPStreamWriter``.
+        
+        Writing eof at this case, means, to end the respective payload part, what the multipart payload writer actually
+        writes.
+        
+        This method is a coroutine.
+        """
         compressor = self.compressor
         if (compressor is not None):
             self.compressor = None
             chunk = compressor.flush()
-                
+            
             if chunk:
                 await self.write(chunk)
         
-        if self.transfer_encoding == 'base64':
+        if self.transfer_encoding == TRANSFER_ENCODING_BASE64:
             encoding_buffer = self.encoding_buffer
             if encoding_buffer:
                 await self.writer.write(base64.b64encode(encoding_buffer))
     
     async def write(self, chunk):
+        """
+        Writes a chunk of data to the ``MultipartPayloadWriter``.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        chunk : `bytes-like`
+            A chunk of data to write.
+        """
         compressor = self.compressor
         if (compressor is not None):
             if chunk:
@@ -1520,22 +1388,28 @@ class MultipartPayloadWriter(object):
                     return
         
         transfer_encoding = self.transfer_encoding
-        if transfer_encoding == 'base64':
+        if transfer_encoding == TRANSFER_ENCODING_BASE64:
             encoding_buffer = self.encoding_buffer
             encoding_buffer.extend(chunk)
             
-            if encoding_buffer:
-                barrier = (len(encoding_buffer)//3)*3
-                if barrier:
-                    encoding_chunk = encoding_buffer[:barrier]
-                    del encoding_buffer[:barrier]
-                    encoding_chunk = base64.b64encode(encoding_chunk)
-                    await self.writer.write(encoding_chunk)
+            barrier = len(encoding_buffer)
+            if not barrier:
+                return
+            
+            barrier = (barrier//3)*3
+            if not barrier:
+                return
+            
+            chunk = encoding_buffer[:barrier]
+            del encoding_buffer[:barrier]
+            chunk = base64.b64encode(chunk)
         
-        elif transfer_encoding == 'quoted-printable':
-            await self.writer.write(binascii.b2a_qp(chunk))
+        elif transfer_encoding == TRANSFER_ENCODING_QUOTED_PRINTABLE:
+            chunk = binascii.b2a_qp(chunk)
             
         else:
-            await self.writer.write(chunk)
+            pass
+        
+        await self.writer.write(chunk)
 
 
